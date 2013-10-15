@@ -1,0 +1,129 @@
+// OpenM++ data library: parameter_dims table
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#include "libopenm/db/dbMetaRow.h"
+#include "dbMetaTable.h"
+using namespace openm;
+
+namespace openm
+{
+    // parameter_dims table implementation
+    class ParamDimsTable : public IParamDimsTable
+    {
+    public:
+        ParamDimsTable(IDbExec * i_dbExec, int i_modelId = 0);
+        ParamDimsTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
+        ~ParamDimsTable() throw();
+
+        // get reference to list of all table rows
+        IRowBaseVec & rowsRef(void) { return rowVec; }
+
+        // find row by primary key: model id, parameter id, dimension name
+        const ParamDimsRow * byKey(int i_modelId, int i_paramId, const string & i_name) const;
+
+        // get list of all table rows
+        vector<ParamDimsRow> rows(void) const { return IMetaTable<ParamDimsRow>::rows(rowVec); }
+
+        // get list of rows by model id and parameter id
+        vector<ParamDimsRow> byModelIdParamId(int i_modelId, int i_paramId) const;
+
+    private:
+        IRowBaseVec rowVec;     // table rows
+
+    private:
+        ParamDimsTable(const ParamDimsTable & i_table);             // = delete;
+        ParamDimsTable & operator=(const ParamDimsTable & i_table); // = delete;
+    };
+
+    // Columns type for parameter_dims row
+    static const type_info * typeParamDimsRow[] = { 
+        &typeid(decltype(ParamDimsRow::modelId)), 
+        &typeid(decltype(ParamDimsRow::paramId)), 
+        &typeid(decltype(ParamDimsRow::name)), 
+        &typeid(decltype(ParamDimsRow::pos)), 
+        &typeid(decltype(ParamDimsRow::typeId)) 
+    };
+
+    // Size (number of columns) for parameter_dims row
+    static const int sizeParamDimsRow = sizeof(typeParamDimsRow) / sizeof(const type_info *);
+
+    // Row adapter to select parameter_dims rows
+    class ParamDimsRowAdapter : public IRowAdapter
+    {
+    public:
+        IRowBase * createRow(void) const { return new ParamDimsRow(); }
+        int size(void) const { return sizeParamDimsRow; }
+        const type_info ** columnTypes(void) const { return typeParamDimsRow; }
+
+        void set(IRowBase * i_row, int i_column, const void * i_value) const
+        {
+            switch (i_column) {
+            case 0:
+                dynamic_cast<ParamDimsRow *>(i_row)->modelId = (*(int *)i_value);
+                break;
+            case 1:
+                dynamic_cast<ParamDimsRow *>(i_row)->paramId = (*(int *)i_value);
+                break;
+            case 2:
+                dynamic_cast<ParamDimsRow *>(i_row)->name = ((const char *)i_value);
+                break;
+            case 3:
+                dynamic_cast<ParamDimsRow *>(i_row)->pos = (*(int *)i_value);
+                break;
+            case 4:
+                dynamic_cast<ParamDimsRow *>(i_row)->typeId = (*(int *)i_value);
+                break;
+            default:
+                throw DbException("db column number out of range");
+            }
+        }
+    };
+}
+
+// Table never unloaded
+IParamDimsTable::~IParamDimsTable(void) throw() { }
+
+// Create new table rows by loading db rows
+IParamDimsTable * IParamDimsTable::create(IDbExec * i_dbExec, int i_modelId)
+{
+    return new ParamDimsTable(i_dbExec, i_modelId);
+}
+
+// Create new table rows by swap with supplied vector of rows
+IParamDimsTable * IParamDimsTable::create(IRowBaseVec & io_rowVec)
+{
+    return new ParamDimsTable(io_rowVec);
+}
+
+// Load table
+ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
+{ 
+    const IRowAdapter & adp = ParamDimsRowAdapter();
+    rowVec = IMetaTable<ParamDimsRow>::load(
+        "SELECT" \
+        " model_id, parameter_id, dim_name, dim_pos, mod_type_id" \
+        " FROM parameter_dims" + 
+        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " ORDER BY 1, 2, 3", 
+        i_dbExec,
+        adp
+        );
+}
+
+// Table never unloaded
+ParamDimsTable::~ParamDimsTable(void) throw() { }
+
+// Find row by primary key: model id, parameter id, dimension name
+const ParamDimsRow * ParamDimsTable::byKey(int i_modelId, int i_paramId, const string & i_name) const
+{
+    const IRowBaseUptr keyRow( new ParamDimsRow(i_modelId, i_paramId, i_name) );
+    return IMetaTable<ParamDimsRow>::byKey(keyRow, rowVec);
+}
+
+// get list of rows by model id and parameter id
+vector<ParamDimsRow> ParamDimsTable::byModelIdParamId(int i_modelId, int i_paramId) const
+{
+    const IRowBaseUptr row( new ParamDimsRow(i_modelId, i_paramId, ""));
+    return IMetaTable<ParamDimsRow>::findAll(row, rowVec, ParamDimsRow::modelIdParamIdEqual);
+}

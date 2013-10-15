@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5F4BEA41-A06D-4677-B4FE-9F1B5DE0BAB1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>omc_nobison</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <!-- Import openM common project settings -->
+  <Import Project="$(SolutionDir)openm.build.props" />
+  <PropertyGroup>
+    <BUILD_OMC_SRC_DIR>$(BUILD_DIR)/$(ProjectName)/src</BUILD_OMC_SRC_DIR>
+    <OutDir>$(SolutionDir)$(Configuration)/$(Platform)/</OutDir>
+    <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>omc</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>omc</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\libopenm\db\metaModelHolder.h" />
+    <ClInclude Include="..\include\libopenm\db\modelBuilder.h" />
+    <ClInclude Include="..\include\libopenm\omCommon.h" />
+    <ClInclude Include="ast.h" />
+    <ClInclude Include="CodeBlock.h" />
+    <ClInclude Include="CodeGen.h" />
+    <ClInclude Include="dirent\dirent.h" />
+    <ClInclude Include="Driver.h" />
+    <ClInclude Include="ExprForTable.h" />
+    <ClInclude Include="Literal.h" />
+    <ClInclude Include="ModelSpec.h" />
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
+    <ClInclude Include="ParseContext.h" />
+    <ClInclude Include="parser_helper.h" />
+    <ClInclude Include="Symbol.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/location.hh" />
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/position.hh" />
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/stack.hh" />
+    <ClInclude Include="parser.y" />
+    <ClInclude Include="scanner.l" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CodeGen.cpp" />
+    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="ModelSpec.cpp" />
+    <ClCompile Include="omc.cpp" />
+    <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
+    <ClCompile Include="parser_helper.cpp" />
+    <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
+    <ClCompile Include="Symbol.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <Target Name="CleanBisonFlex" BeforeTargets="PrepareForClean">
+    <Message Text="Delete flex and bison output" />
+    <RemoveDir Directories="$(BUILD_OMC_SRC_DIR)" />
+  </Target>
+  <Target Name="MakeDirBisonFlex">
+    <MakeDir Directories="$(BUILD_OMC_SRC_DIR)" />
+  </Target>
+  <Target Name="DoFlex" DependsOnTargets="MakeDirBisonFlex" Inputs="scanner.l" Outputs="$(BUILD_OMC_SRC_DIR)/scanner.cpp">
+    <Message Text="$(WIN_BIN)/$(FLEX_EXE) scanner.l" />
+    <Exec Command="$(WIN_BIN)/$(FLEX_EXE) -Cem --wincompat -o $(BUILD_OMC_SRC_DIR)/scanner.cpp scanner.l" />
+  </Target>
+  <Target Name="DoBison" DependsOnTargets="MakeDirBisonFlex" Inputs="parser.y" Outputs="$(BUILD_OMC_SRC_DIR)/location.hh;$(BUILD_OMC_SRC_DIR)/parser.cpp;$(BUILD_OMC_SRC_DIR)/parser.hpp;$(BUILD_OMC_SRC_DIR)/position.hh;$(BUILD_OMC_SRC_DIR)/stack.hh">
+    <Message Text="$(WIN_BIN)/$(BISON_EXE) parser.y" />
+    <Exec Command="$(WIN_BIN)/$(BISON_EXE) -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
+  </Target>
+  <Target Name="BisonFlex" BeforeTargets="BeforeClCompile" DependsOnTargets="DoFlex;DoBison" />
+  <!--
+    Name="BeforeBuild" 
+    BeforeTargets="PrepareForBuild" 
+-->
+</Project>

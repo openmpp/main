@@ -1,0 +1,8 @@
+OpenM++ contributors
+--------------------
+
+Original version created in 2013 by:
+
+Steve Gribble:      steve.gribble@hotmail.com
+Anatoly Cherkassky: anatoly@beyond2020.com
+

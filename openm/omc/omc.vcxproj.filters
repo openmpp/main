@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\libopenm">
+      <UniqueIdentifier>{ec257c89-3a4c-4cea-a585-beec1acc6980}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\libopenm\db">
+      <UniqueIdentifier>{d09c849d-516a-49c7-abf5-6e35b468fa88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="flex_bison">
+      <UniqueIdentifier>{fd7aac60-d94a-4034-8148-dde46d2f13cd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeBlock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeGen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Driver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExprForTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Literal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelSpec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Symbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\libopenm\omCommon.h">
+      <Filter>Header Files\libopenm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\libopenm\db\metaModelHolder.h">
+      <Filter>Header Files\libopenm\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\libopenm\db\modelBuilder.h">
+      <Filter>Header Files\libopenm\db</Filter>
+    </ClInclude>
+    <ClInclude Include="scanner.l">
+      <Filter>flex_bison</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.y">
+      <Filter>flex_bison</Filter>
+    </ClInclude>
+    <ClInclude Include="dirent\dirent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CodeGen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelSpec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="omc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Symbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp">
+      <Filter>flex_bison</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/location.hh">
+      <Filter>flex_bison</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/position.hh">
+      <Filter>flex_bison</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BUILD_OMC_SRC_DIR)/stack.hh">
+      <Filter>flex_bison</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp">
+      <Filter>flex_bison</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp">
+      <Filter>flex_bison</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

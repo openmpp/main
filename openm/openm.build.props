@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- 
+  Use this to specify additional build directories and tools, such as bison and flex
+  -->
+  <PropertyGroup>
+    <BUILD_DIR>$(SolutionDir)build</BUILD_DIR>
+    <WIN_BIN>$(SolutionDir)../bin</WIN_BIN>
+    <BISON_EXE>win_bison.exe</BISON_EXE>
+    <FLEX_EXE>win_flex.exe</FLEX_EXE>
+    <OMC_EXE>omc.exe</OMC_EXE>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose database library provider, now only SQlite supported
+    SQLITE - use SQlite version
+  -->
+  <PropertyGroup>
+    <OM_DB_USE>SQLITE</OM_DB_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
+    <OM_DB_DEF>OM_DB_SQLITE</OM_DB_DEF>
+    <OM_DB_INC>$(SolutionDir)libsqlite</OM_DB_INC>
+    <OM_DB_LIB>libsqlite3.lib</OM_DB_LIB>
+    <OM_DB_LIB_DIR></OM_DB_LIB_DIR>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose message passing library provider
+    MPI   - use MPI-based version (you must have MS-MPI installed)
+    EMPTY - use empty version of the library which does nothing
+  -->
+  <PropertyGroup>
+    <OM_MSG_USE>EMPTY</OM_MSG_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='EMPTY'">
+    <OM_MSG_DEF>OM_MSG_EMPTY</OM_MSG_DEF>
+    <OM_MSG_INC></OM_MSG_INC>
+    <OM_MSG_LIB></OM_MSG_LIB>
+    <OM_MSG_LIB_DIR></OM_MSG_LIB_DIR>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI'">
+    <OM_MSG_DEF>OM_MSG_MPI</OM_MSG_DEF>
+    <OM_MSG_INC>$(MSMPI_INC)</OM_MSG_INC>
+    <OM_MSG_LIB>msmpi.lib;</OM_MSG_LIB>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI' And '$(Platform)'=='Win32'">
+    <OM_MSG_LIB_DIR>$(MSMPI_LIB32)</OM_MSG_LIB_DIR>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI' And '$(Platform)'=='x64'">
+    <OM_MSG_LIB_DIR>$(MSMPI_LIB64)</OM_MSG_LIB_DIR>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose UTF-8 conversion library
+    MSSTL - use MS VC++ wstring_convert and codecvt_utf8
+    ICONV - use libiconv
+  -->
+  <PropertyGroup>
+    <OM_UCVT_USE>MSSTL</OM_UCVT_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_UCVT_USE)'=='MSSTL'">
+    <OM_UCVT_DEF>OM_UCVT_MSSTL</OM_UCVT_DEF>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_UCVT_USE)'=='ICONV'">
+    <OM_UCVT_DEF>OM_UCVT_ICONV</OM_UCVT_DEF>
+  </PropertyGroup>
+
+</Project>

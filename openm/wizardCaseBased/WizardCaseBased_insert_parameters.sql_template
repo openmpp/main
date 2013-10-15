@@ -1,0 +1,95 @@
+﻿--
+-- insert parameters for model: WizardCaseBased 
+-- model timestamp: ${OM_MODEL_TIMESTAMP}
+-- db names prefix: ${OM_MODEL_PREFIX}
+-- script created:  ${OMC_COMPILE_TIME}
+--
+-- Copyright (c) 2013 OpenM++
+-- This code is licensed under MIT license (see LICENSE.txt for details)
+--
+
+--
+-- create default set of parameters for new model
+--
+BEGIN TRANSACTION;
+UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_set';
+
+INSERT INTO workset_lst 
+  (set_id, run_id, model_id, is_readonly, create_dt) 
+SELECT
+  RSL.id_value,
+  NULL, 
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  1, 
+  '${OMC_COMPILE_TIME}'
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+INSERT INTO workset_txt
+  (set_id, model_id, lang_id, descr, note) 
+SELECT
+  RSL.id_value, 
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'), 
+  'WizardCaseBased default set of parameters', 
+  'WizardCaseBased default set of parameters notes'
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+INSERT INTO workset_txt
+  (set_id, model_id, lang_id, descr, note) 
+SELECT
+  RSL.id_value, 
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'FR'), 
+  '(FR) WizardCaseBased default set of parameters', 
+  '(FR) WizardCaseBased default set of parameters notes'
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+--
+-- all model parameters must be included in default set
+--
+INSERT INTO workset_parameter 
+  (set_id, model_id, parameter_id) 
+SELECT
+  RSL.id_value,
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  0
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+INSERT INTO workset_parameter_txt 
+  (set_id, model_id, parameter_id, lang_id, note) 
+SELECT
+  RSL.id_value, 
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  0,
+  (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'), 
+  'An arbitrarily selected value, chosen to produce a life expectancy of about 70 years'
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+INSERT INTO workset_parameter_txt 
+  (set_id, model_id, parameter_id, lang_id, note) 
+SELECT
+  RSL.id_value, 
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  0,
+  (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'FR'), 
+  'Une valeur sélectionnée arbitrairement, choisie pour produire une espérance de vie d''environ 70 ans.'
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+--
+-- default values for all input parameters
+--
+INSERT INTO ${OM_MODEL_PREFIX}w0_MortalityHazard
+  (set_id, Value) 
+SELECT
+  RSL.id_value, 
+  0.014
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+COMMIT;

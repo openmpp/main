@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Model Source Files">
+      <UniqueIdentifier>{a9f0feb1-3c15-4153-8127-865fbc12a220}</UniqueIdentifier>
+      <Extensions>mpp;ompp</Extensions>
+    </Filter>
+    <Filter Include="Header Files\omc">
+      <UniqueIdentifier>{a642d820-b296-41e5-9196-56b888534ac1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OmcOutput">
+      <UniqueIdentifier>{41dc53e1-737e-48b3-9886-481334d7443b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SqlScripts">
+      <UniqueIdentifier>{980b9fa7-f891-49b8-8db4-013a19403c0f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="WizardCaseBased.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="WizardCaseBasedFR.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="simulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hard_coded.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp">
+      <Filter>OmcOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OMC_OUT_DIR)/om_outside.cpp">
+      <Filter>OmcOutput</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_agents.h">
+      <Filter>OmcOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">
+      <Filter>OmcOutput</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="AgentVar.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\omc\Agent.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\omc\Event.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\omc\omSimulation.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_create_model.sql">
+      <Filter>SqlScript</Filter>
+    </SqlScript>
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_insert_parameters.sql">
+      <Filter>SqlScript</Filter>
+    </SqlScript>
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_optional_views.sql">
+      <Filter>SqlScript</Filter>
+    </SqlScript>
+  </ItemGroup>
+
+</Project>

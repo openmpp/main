@@ -1,0 +1,221 @@
+/**
+ * @file
+ * OpenM++ data library: public interface
+ */
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#ifndef DB_EXEC_H
+#define DB_EXEC_H
+
+#include "libopenm/omCommon.h"
+#include "libopenm/db/dbCommon.h"
+
+namespace openm
+{
+    /** database connection wrapper to execute sql commands. */
+    class IDbExec
+    {
+    public:
+        /** close db-connection and cleanup connection resources. */
+        virtual ~IDbExec(void) throw() = 0;
+
+        /** db-connection factory: create new db-connection. */
+        static IDbExec * create(const string & i_connectionStr);
+
+        /**
+         * select integer value of first (row,column) or default if no rows or value IS NULL.
+         *
+         * @param[in]   i_sql       select sql query
+         * @param[in]   i_default   default value if no row(s) selected or db-value IS NULL
+         *
+         * @return  integer value of first (row,column) or default if no rows or value IS NULL
+         */
+        virtual int selectToInt(const string & i_sql, int i_default) = 0;
+
+        /**
+         * select long value of first (row,column) or default if no rows or value IS NULL.
+         *
+         * @param[in]   i_sql       select sql query
+         * @param[in]   i_default   default value if no row(s) selected or db-value IS NULL
+         *
+         * @return  long value of first (row,column) or default if no rows or value IS NULL
+         */
+        virtual long long selectToLong(const string & i_sql, long long i_default) = 0;
+
+        /**
+         * select string value of first (row,column) or empty "" string if no rows or value IS NULL.
+         *
+         * @param[in]   i_sql       select sql query
+         *
+         * @return  string value of first (row,column) or empty "" string if no rows or value IS NULL
+         */
+        virtual string selectToStr(const string & i_sql) = 0;
+
+        /**
+         * select boolean value of first (row,column) or false if no rows or value IS NULL.
+         *
+         * @param[in]   i_sql       select sql query
+         *
+         * @return  boolean value of first (row,column) or false if no rows or value IS NULL
+         */
+        virtual bool selectToBool(const string & i_sql) = 0;
+
+        /**
+         * select double value of first (row,column) or default if no rows or value IS NULL.
+         *
+         * @param[in]   i_sql       select sql query
+         * @param[in]   i_default   default value if no row(s) selected or db-value IS NULL
+         *
+         * @return  double value of first (row,column) or default if no rows or value IS NULL
+         */
+        virtual double selectToDouble(const string & i_sql, double i_default) = 0;
+
+        /**
+         * select string vector of first row or empty vector if no rows, empty "" string used for NULLs.
+         *
+         * @param[in]   i_sql       select sql query
+         *
+         * @return  string vector of first row or empty vector if no rows, empty "" string used for NULLs
+         */
+        virtual vector<string> selectRowStr(const string & i_sql) = 0;
+
+        /**
+         * select vector of rows, each row created and field values set by row adapter.
+         *
+         * @param[in]   i_sql       select sql query
+         * @param[in]   i_adapter   row adapter class to create rows and set values
+         *
+         * @return  vector of rows
+         */
+        virtual IRowBaseVec selectRowList(const string & i_sql, const IRowAdapter & i_adapter) = 0;
+
+        /**
+         * select column into io_valueArray[i_size] buffer and return row count.
+         *
+         * @param[in]      i_sql       select sql query
+         * @param[in]      i_column    zero-based column index                            
+         * @param[in]      i_type      type of io_valueArr array (target type of values)
+         * @param[in]      i_size      size of io_valueArr array
+         * @param[in,out]  io_valueArr one dimensional array to put selected values
+         *
+         * @return  row count, may throw exception if row count not equal i_size
+         *
+         * convert db-values into target type and put into io_valueArr \n
+         * if db-value in current row IS NULL then do not change io_valueArray at this index \n
+         * if target type is string then io_valueArray expected to be string[] \n
+         * it may throw exception if selected row count not equal i_size
+         */
+        virtual long long selectColumn(
+            const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr
+            ) = 0;
+
+        /**
+         * execute sql statement (update, insert, delete, create, etc).
+         *
+         * @param[in] i_sql     sql statement of "update" type (update, insert, delete, create, etc.)
+         *
+         * @return   number of affected rows (db-vendor specific).
+         */
+        virtual long long update(const string & i_sql) = 0;
+
+        /** begin transaction. */
+        virtual void beginTransaction(void) = 0;
+
+        /** commit transaction, does nothing if no active transaction. */
+        virtual void commit(void) = 0;
+
+        /** rollback transaction. */
+        virtual void rollback(void) = 0;
+
+        /** return true in transaction scope. */
+        virtual bool isTransaction(void) = 0;
+
+        /**
+         * create new statement with specified parameters.
+         *
+         * @param[in] i_sql        sql to create statement
+         * @param[in] i_paramCount number of parameters
+         * @param[in] i_typeArr    array of parameters type
+         *            
+         * usage example: \n
+         * @code
+         *      createStatement(); 
+         *      while(...) { 
+         *          for (int k = 0; k < paramCount; k++) { 
+         *              valueArr[k] = some value; 
+         *          } 
+         *          executeStatement(paramCount, valueArr); 
+         *      } 
+         *      releaseStatement(); 
+         * @endcode
+         */
+        virtual void createStatement(const string & i_sql, int i_paramCount, const type_info ** i_typeArr) = 0;
+
+        /**   
+         * release statement resources.
+         *            
+         * usage example: \n
+         * @code
+         *      createStatement(); 
+         *      while(...) { 
+         *          for (int k = 0; k < paramCount; k++) { 
+         *              valueArr[k] = some value; 
+         *          } 
+         *          executeStatement(paramCount, valueArr); 
+         *      } 
+         *      releaseStatement(); 
+         * @endcode
+         */
+        virtual void releaseStatement(void) throw() = 0;
+
+        /**
+         * execute statement with parameters.
+         *
+         * @param[in] i_paramCount number of parameters
+         * @param[in] i_valueArr   array of parameters value
+         *            
+         * this method can be used only after createStatement() call \n
+         * usage example: \n
+         * @code
+         *      createStatement(); 
+         *      while(...) { 
+         *          for (int k = 0; k < paramCount; k++) { 
+         *              valueArr[k] = some value; 
+         *          } 
+         *          executeStatement(paramCount, valueArr); 
+         *      } 
+         *      releaseStatement(); 
+         * @endcode
+         */
+        virtual void executeStatement(int i_paramCount, const DbValue * i_valueArr) = 0;
+
+        /**
+         * make sql statement to create table if not exists.
+         *
+         * @param[in] i_tableName     table name to create
+         * @param[in] i_tableBodySql  table body definition sql: columns, keys, etc.
+         *
+         * @return  string with create table statment (db-vendor specific)
+         *
+         * it does return db-vendor specific sql to create table if not already exists, for example: \n
+         *      CREATE TABLE IF NOT EXISTS tableName (...column definition and other table body sql...)
+         */
+        virtual string makeSqlCreateTableIfNotExist(const string & i_tableName, const string & i_tableBodySql) const = 0;
+
+        /**
+         * make sql statement to create view if not exists.
+         *
+         * @param[in] i_viewName      view name to create
+         * @param[in] i_viewBodySql   view body definition sql
+         *
+         * @return  string with create view statment (db-vendor specific)
+         *
+         * it does return db-vendor specific sql to create view if not already exists, for example: \n
+         *      CREATE VIEW IF NOT EXISTS viewName AS ...select or other view body deifinition sql...
+         */
+        virtual string makeSqlCreateViewIfNotExist(const string & i_viewName, const string & i_viewBodySql) const = 0;
+    };
+}
+
+#endif  // DB_EXEC_H

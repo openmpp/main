@@ -1,0 +1,157 @@
+// OpenM++ data library: parameter_dic table
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#include "libopenm/db/dbMetaRow.h"
+#include "dbMetaTable.h"
+using namespace openm;
+
+namespace openm
+{
+    // parameter_dic table implementation
+    class ParamDicTable : public IParamDicTable
+    {
+    public:
+        ParamDicTable(IDbExec * i_dbExec, int i_modelId = 0);
+        ParamDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
+        ~ParamDicTable() throw();
+
+        // get reference to list of all table rows
+        IRowBaseVec & rowsRef(void) { return rowVec; }
+
+        // find row by primary key: model id and parameter id
+        const ParamDicRow * byKey(int i_modelId, int i_paramId) const;
+
+        // get list of all table rows
+        vector<ParamDicRow> rows(void) const { return IMetaTable<ParamDicRow>::rows(rowVec); }
+
+        // get list of rows by model id
+        vector<ParamDicRow> byModelId(int i_modelId) const;
+
+        // find first row by model id and parameter name or NULL if not found
+        const ParamDicRow * byModelIdName(int i_modelId, const string & i_name) const;
+
+    private:
+        IRowBaseVec rowVec;     // table rows
+
+    private:
+        ParamDicTable(const ParamDicTable & i_table);               // = delete;
+        ParamDicTable & operator=(const ParamDicTable & i_table);   // = delete;
+    };
+
+    // Columns type for parameter_dic row
+    static const type_info * typeParamDicRow[] = { 
+        &typeid(decltype(ParamDicRow::modelId)), 
+        &typeid(decltype(ParamDicRow::paramId)), 
+        &typeid(decltype(ParamDicRow::dbNameSuffix)), 
+        &typeid(decltype(ParamDicRow::paramName)), 
+        &typeid(decltype(ParamDicRow::rank)), 
+        &typeid(decltype(ParamDicRow::typeId)), 
+        &typeid(decltype(ParamDicRow::isHidden)), 
+        &typeid(decltype(ParamDicRow::isGenerated)),
+        &typeid(decltype(ParamDicRow::numCumulated))
+    };
+
+    // Size (number of columns) for parameter_dic row
+    static const int sizeParamDicRow = sizeof(typeParamDicRow) / sizeof(const type_info *);
+
+    // Row adapter to select parameter_dic rows
+    class ParamDicRowAdapter : public IRowAdapter
+    {
+    public:
+        IRowBase * createRow(void) const { return new ParamDicRow(); }
+        int size(void) const { return sizeParamDicRow; }
+        const type_info ** columnTypes(void) const { return typeParamDicRow; }
+
+        void set(IRowBase * i_row, int i_column, const void * i_value) const
+        {
+            switch (i_column) {
+            case 0:
+                dynamic_cast<ParamDicRow *>(i_row)->modelId = (*(int *)i_value);
+                break;
+            case 1:
+                dynamic_cast<ParamDicRow *>(i_row)->paramId = (*(int *)i_value);
+                break;
+            case 2:
+                dynamic_cast<ParamDicRow *>(i_row)->dbNameSuffix = ((const char *)i_value);
+                break;
+            case 3:
+                dynamic_cast<ParamDicRow *>(i_row)->paramName = ((const char *)i_value);
+                break;
+            case 4:
+                dynamic_cast<ParamDicRow *>(i_row)->rank = (*(int *)i_value);
+                break;
+            case 5:
+                dynamic_cast<ParamDicRow *>(i_row)->typeId = (*(int *)i_value);
+                break;
+            case 6:
+                dynamic_cast<ParamDicRow *>(i_row)->isHidden = (*(bool *)i_value);
+                break;
+            case 7:
+                dynamic_cast<ParamDicRow *>(i_row)->isGenerated = (*(bool *)i_value);
+                break;
+            case 8:
+                dynamic_cast<ParamDicRow *>(i_row)->numCumulated = (*(int *)i_value);
+                break;
+            default:
+                throw DbException("db column number out of range");
+            }
+        }
+    };
+}
+
+// Table never unloaded
+IParamDicTable::~IParamDicTable(void) throw() { }
+
+// Create new table rows by loading db rows
+IParamDicTable * IParamDicTable::create(IDbExec * i_dbExec, int i_modelId)
+{
+    return new ParamDicTable(i_dbExec, i_modelId);
+}
+
+// Create new table rows by swap with supplied vector of rows
+IParamDicTable * IParamDicTable::create(IRowBaseVec & io_rowVec)
+{
+    return new ParamDicTable(io_rowVec);
+}
+
+// Load table
+ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
+{ 
+    const IRowAdapter & adp = ParamDicRowAdapter();
+    rowVec = IMetaTable<ParamDicRow>::load(
+        "SELECT" \
+        " model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated" \
+        " FROM parameter_dic" +
+        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " ORDER BY 1, 2", 
+        i_dbExec,
+        adp
+        );
+}
+
+// Table never unloaded
+ParamDicTable::~ParamDicTable(void) throw() { }
+
+// Find row by primary key: model id and parameter id
+const ParamDicRow * ParamDicTable::byKey(int i_modelId, int i_paramId) const
+{
+    const IRowBaseUptr keyRow( new ParamDicRow(i_modelId, i_paramId) );
+    return IMetaTable<ParamDicRow>::byKey(keyRow, rowVec);
+}
+
+// find first row by model id and parameter name or NULL if not found
+const ParamDicRow * ParamDicTable::byModelIdName(int i_modelId, const string & i_name) const
+{
+    const IRowBaseUptr row( new ParamDicRow(i_modelId, 0));
+    dynamic_cast<ParamDicRow *>(row.get())->paramName = i_name;
+
+    return IMetaTable<ParamDicRow>::findFirst(row, rowVec, ParamDicRow::modelIdNameEqual);
+}
+
+// get list of rows by model id
+vector<ParamDicRow> ParamDicTable::byModelId(int i_modelId) const
+{
+    const IRowBaseUptr row( new ParamDicRow(i_modelId, 0) );
+    return IMetaTable<ParamDicRow>::findAll(row, rowVec, ParamDicRow::modelIdEqual);
+}
