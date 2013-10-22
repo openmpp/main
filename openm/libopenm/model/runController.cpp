@@ -47,7 +47,7 @@ namespace openm
     const char * RunShortKey::optionsFile = "s";
 
     /** compatibility short name for options file name: -sc fileName.ini */
-    const char * RunShortKey::optionsFileSc = "s";
+    const char * RunShortKey::optionsFileSc = "sc";
 }
 
 /** array of model run option keys. */

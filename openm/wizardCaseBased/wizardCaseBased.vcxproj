@@ -207,8 +207,8 @@
     Outputs="$(OMC_OUT_DIR)/om_agents.h;$(OMC_OUT_DIR)/om_types.h;$(OMC_OUT_DIR)/om_agents.cpp;$(OMC_OUT_DIR)/om_outside.cpp;@(SqlScript)"
     >
     <MakeDir Directories="$(OMC_OUT_DIR)" />
-    <Message Text="$(OutDir)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
-    <Exec Command="$(OutDir)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
+    <Message Text="$(OutDir)$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
+    <Exec Command="$(OutDir)$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
 
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />

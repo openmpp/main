@@ -1,5 +1,5 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "2.7"
+%require "2.6"
 %defines
 %define parser_class_name "parser"
 
