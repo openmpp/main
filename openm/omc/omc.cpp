@@ -189,8 +189,13 @@ int main(int argc, char * argv[])
         // UTF-8 BOM for Microsoft compiler
         outside_cpp << "\xEF\xBB\xBF";
     #endif
+        outside_cpp << "/**" << endl;
+        outside_cpp << " * @file om_outside.cpp" << endl;
+        outside_cpp << " * Developer-supplied C++ functions" << endl;
+        outside_cpp << " */" << endl;
+        outside_cpp << "" << endl;
         outside_cpp << "#include \"om_agents.h\"" << endl;
-        outside_cpp << "using namespace openm;" << endl;
+		outside_cpp << "using namespace openm;" << endl;
         outside_cpp << "namespace mm {" << endl;
 
         for (const string & name : source_files) {

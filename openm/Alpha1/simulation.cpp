@@ -1,3 +1,8 @@
+/**
+ * @file    simulation.cpp
+ * Residual framework code awaiting incorporation in omc / simulation run-time
+ *         
+ */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
