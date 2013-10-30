@@ -12,9 +12,6 @@ using namespace mm;
 
 void StartCase( int case_counter )
 {
-    // hard-code parameter value pending meta-info API
-    HappinessReversalHazard = 0.10;
-
     Person *thePerson = new Person;
 
     thePerson->Start();
