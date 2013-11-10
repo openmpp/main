@@ -94,7 +94,7 @@ ParameterReader::ParameterReader(
 
         int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(i_modelId, dim.typeId).size();
 
-        if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without no enums in enum list
+        if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
     }
 
     if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
