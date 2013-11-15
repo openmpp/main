@@ -1,4 +1,4 @@
-﻿--
+--
 -- Copyright (c) 2013 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
@@ -17,25 +17,9 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 -- INSERT INTO id_lst (id_key, id_value) VALUES ('run_set', 10);
 
 --
--- ModelOne run's list
---
--- INSERT INTO run_lst 
---   (run_id, model_id, run_name, sub_count, sub_started, sub_completed, create_dt)
--- VALUES
---   (1, 1, 'modelone_201208171604590148_run_1', 1, 0, 0, '2013-05-29 19:08:55');
-
--- INSERT INTO run_txt (run_id, model_id, lang_id, descr, note) VALUES (1, 1, 0, 'ModelOne base run', 'ModelOne base run: default parameters');
--- INSERT INTO run_txt (run_id, model_id, lang_id, descr, note) VALUES (1, 1, 1, 'ModelOne base run (fr)', 'ModelOne base run: default parameters (fr)');
-
--- INSERT INTO parameter_run_txt (run_id, model_id, parameter_id, lang_id, note) VALUES (1, 1, 0, 0, 'Age by Sex base run value note');
--- INSERT INTO parameter_run_txt (run_id, model_id, parameter_id, lang_id, note) VALUES (1, 1, 0, 1, '(fr) Age by Sex base run value note');
--- INSERT INTO parameter_run_txt (run_id, model_id, parameter_id, lang_id, note) VALUES (1, 1, 1, 0, 'Salary by Age base run value note');
--- INSERT INTO parameter_run_txt (run_id, model_id, parameter_id, lang_id, note) VALUES (1, 1, 1, 1, '(fr) Salary by Age base run value note');
-
---
 -- ModelOne default set of parameters
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, create_dt) VALUES (2, NULL, 1, 1, '2013-05-29 23:55:07.1234');
+INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, update_dt) VALUES (2, NULL, 1, 1, '2013-05-29 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 0, 'ModelOne default set of parameters', NULL);
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) ModelOne default set of parameters', NULL);
@@ -51,7 +35,7 @@ INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note
 --
 -- ModelOne modified set of parameters
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, create_dt) VALUES (3, NULL, 1, 0, '2013-05-30 23:55:07.1234');
+INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, update_dt) VALUES (3, NULL, 1, 0, '2013-05-30 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (3, 1, 0, 'ModelOne modified set of parameters', NULL);
 

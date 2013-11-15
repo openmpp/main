@@ -891,8 +891,8 @@ namespace openm
         /** is_readonly SMALLINT    NOT NULL */
         bool isReadonly;
         
-        /** create_dt   VARCHAR(32) NOT NULL */
-        string createDateTime;
+        /** update_dt   VARCHAR(32) NOT NULL */
+        string updateDateTime;
 
         /** create row with default empty field values. */
         WorksetLstRow(void) : 
@@ -900,7 +900,7 @@ namespace openm
             runId(0),
             modelId(0),
             isReadonly(false),
-            createDateTime("")
+            updateDateTime("")
         { }
 
         /** create row with supplied primary key field values. */
@@ -909,7 +909,7 @@ namespace openm
             runId(0),
             modelId(0),
             isReadonly(false),
-            createDateTime("")
+            updateDateTime("")
         { }
 
         ~WorksetLstRow(void) throw() { }

@@ -28,7 +28,7 @@ namespace openm
         &typeid(decltype(WorksetLstRow::runId)), 
         &typeid(decltype(WorksetLstRow::modelId)), 
         &typeid(decltype(WorksetLstRow::isReadonly)), 
-        &typeid(decltype(WorksetLstRow::createDateTime))
+        &typeid(decltype(WorksetLstRow::updateDateTime))
     };
 
     // Size (number of columns) for workset_lst row
@@ -60,7 +60,7 @@ namespace openm
                 dynamic_cast<WorksetLstRow *>(i_row)->isReadonly = (*(bool *)i_value);
                 break;
             case 4:
-                dynamic_cast<WorksetLstRow *>(i_row)->createDateTime = ((const char *)i_value);
+                dynamic_cast<WorksetLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -98,7 +98,7 @@ vector<WorksetLstRow> WorksetLstTable::select(IDbExec * i_dbExec, const string &
 
     const IRowAdapter & adp = WorksetLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT set_id, run_id, model_id, is_readonly, create_dt FROM workset_lst " + i_where + " ORDER BY 1", 
+        "SELECT set_id, run_id, model_id, is_readonly, update_dt FROM workset_lst " + i_where + " ORDER BY 1", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), WorksetLstRow::keyLess);

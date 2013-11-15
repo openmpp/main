@@ -1,4 +1,4 @@
-﻿--
+--
 -- Copyright (c) 2013 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
@@ -83,14 +83,23 @@ INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)
 -- ModelOne classifcation types
 --
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 21, 'age', 2, 4);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 22, 'sex', 2, 2);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 23, 'salary', 2, 3);
 
 INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 21, 0, 'Age', NULL);
 INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 21, 1, 'Age (fr)', NULL);
+INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 22, 0, 'Sex', NULL);
+INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 23, 0, 'Salary', NULL);
 
 INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 21, 0, '10');
 INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 21, 1, '20');
 INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 21, 2, '30');
 INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 21, 3, '40');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 22, 0, 'M');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 22, 1, 'F');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 23, 0, 'L');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 23, 1, 'M');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 23, 2, 'H');
 
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 21, 0, 0, 'age 10', NULL);
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 21, 0, 1, 'age 10 (fr)', NULL);
@@ -100,25 +109,8 @@ INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 21, 2, 1, 'age 30 (fr)', NULL);
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 21, 3, 0, 'age 40', NULL);
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 21, 3, 1, 'age 40 (fr)', NULL);
-
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 22, 'sex', 2, 2);
-
-INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 22, 0, 'Sex', NULL);
-
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 22, 0, 'M');
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 22, 1, 'F');
-
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 22, 0, 0, 'Male', NULL);
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 22, 1, 0, 'Female', NULL);
-
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 23, 'salary', 2, 3);
-
-INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 23, 0, 'Salary', NULL);
-
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 23, 0, 'L');
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 23, 1, 'M');
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 23, 2, 'H');
-
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 23, 0, 0, 'Low', NULL);
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 23, 1, 0, 'Medium', NULL);
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 23, 2, 0, 'High', NULL);
@@ -130,21 +122,18 @@ INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
 VALUES
   (1, 0, '0_ageSex', 'ageSex', 2, 12, 0, 0, 0);
-
-INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 0, 'Age by Sex', 'Age by Sex note');
-INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 1, 'Age by Sex (fr)', NULL);
-
-INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim0', 0, 21);
-INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim1', 1, 22);
-
 INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
 VALUES
   (1, 1, '1_salaryAge', 'salaryAge', 2, 0, 0, 0, 0);
 
+INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 0, 'Age by Sex', 'Age by Sex note');
+INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 1, 'Age by Sex (fr)', NULL);
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 1, 0, 'Salary by Age', 'Salary by Age note');
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 1, 1, 'Salary by Age (fr)', 'Salary by Age note (fr)');
 
+INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim0', 0, 21);
+INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim1', 1, 22);
 INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 1, 'dim0', 0, 23);
 INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 1, 'dim1', 1, 21);
 
@@ -160,19 +149,16 @@ INSERT INTO table_dic_txt
   (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)
 VALUES
   (1, 0, 0, 'Salary by Sex', 'Salary by Sex notes', 'Salary Dim', NULL);
-
 INSERT INTO table_dic_txt
   (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)
 VALUES
   (1, 0, 1, 'Salary by Sex (fr)', 'Salary by Sex notes (fr)', 'Salary Dim (fr)', NULL);
 
 INSERT INTO table_dims (model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size) VALUES (1, 0, 'dim0', 0, 23, 0, 3);
+INSERT INTO table_dims (model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size) VALUES (1, 0, 'dim1', 1, 22, 0, 2);
 
 INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim0', 0, 'Salary Dim', 'Salary Dim notes');
 INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim0', 1, 'Salary Dim (fr)', 'Salary Dim notes (fr)');
-
-INSERT INTO table_dims (model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size) VALUES (1, 0, 'dim1', 1, 22, 0, 2);
-
 INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim1', 0, 'Sex Dim', 'Sex Dim notes');
 INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim1', 1, 'Sex Dim (fr)', NULL);
 
@@ -186,17 +172,14 @@ INSERT INTO table_unit
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
   (1, 0, 0, 'Expr0', 4, 'OM_AVG(acc0)', 'AVG(S.acc0)');
-
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
   (1, 0, 1, 'Expr1', 4, 'OM_SUM(acc1)', 'SUM(S.acc1)');
-
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
   (1, 0, 2, 'Expr2', 2, 'OM_MIN(acc0)', 'MIN(S.acc0)');
-  
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 

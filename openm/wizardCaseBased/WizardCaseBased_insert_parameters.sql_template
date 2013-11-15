@@ -15,7 +15,7 @@ BEGIN TRANSACTION;
 UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_set';
 
 INSERT INTO workset_lst 
-  (set_id, run_id, model_id, is_readonly, create_dt) 
+  (set_id, run_id, model_id, is_readonly, update_dt) 
 SELECT
   RSL.id_value,
   NULL, 

@@ -1,4 +1,4 @@
-﻿--
+--
 -- Copyright (c) 2013 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
@@ -303,7 +303,7 @@ CREATE TABLE IF NOT EXISTS workset_lst
   run_id      INT         NULL,     -- if not NULL and positive then base run id (source run id)
   model_id    INT         NOT NULL, -- model id
   is_readonly SMALLINT    NOT NULL, -- if non-zero then working set is read-only
-  create_dt   VARCHAR(32) NOT NULL, -- creation date-time
+  update_dt   VARCHAR(32) NOT NULL, -- last update date-time
   PRIMARY KEY (set_id),
   CONSTRAINT workset_lst_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
