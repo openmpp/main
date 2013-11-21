@@ -1,0 +1,13 @@
+# it should be generic import(DBI)
+import(RSQLite)
+
+export(
+  createWorkset,
+  createWorksetBasedOnRun,
+  updateWorksetParameter,
+  setReadonlyDefaultWorkset,
+  setReadonlyWorkset,
+  getLanguageRs,
+  getParameterDefs,
+  toQuoted
+)

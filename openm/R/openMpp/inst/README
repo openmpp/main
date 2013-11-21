@@ -1,0 +1,9 @@
+openMpp: Read and write OpenM++ database from R
+
+For now only input parameters support implemented. 
+You can create or modify working set of input parameters to run OpenM++ models.
+More functionality coming, specially output tables reading.
+
+In order to run examples or tests please create modelOne database m1.sqlite.
+
+More information about OpenM++ at http://ompp.sourceforge.net/wiki/
