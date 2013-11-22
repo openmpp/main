@@ -2,7 +2,7 @@
 # To run this test you must have modelOne database m1.sqlite in your home directory
 # It must contain run_id = 16 (see runId usage below)
 #
-library("RSQLite")
+library("openMpp")
 
 #
 # model parameters:

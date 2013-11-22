@@ -180,7 +180,7 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
   dbGetPreparedQuery(
     dbCon, 
     sqlIns,
-    bind.data = i_wsParamTxt[which(!is.null(i_wsParamTxt$"note") && !is.na(i_wsParamTxt$"lang")), ]
+    bind.data = i_wsParamTxt[which(!is.na(i_wsParamTxt$lang) & !is.na(i_wsParamTxt$note)), ]
   )
 }
 

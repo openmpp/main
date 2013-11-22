@@ -222,7 +222,7 @@ createWorksetParameter <- function(dbCon, i_modelName, i_modelTs, i_isRunBased, 
       dbGetPreparedQuery(
         dbCon, 
         sqlInsTxt,
-        bind.data = worksetTxt[which(!is.null(worksetTxt$"lang") && !is.na(worksetTxt$"lang") && !is.na(worksetTxt$"descr")), ]
+        bind.data = worksetTxt[which(!is.na(worksetTxt$lang) & !is.na(worksetTxt$descr)), ]
       )
     }
     
