@@ -221,6 +221,7 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
   dimCount <- length(i_dimSize)
   
   if (isScalar) {
+    valSize <- ifelse(is.na(valSize) || valSize == 0L, 1L, valSize)
     if(valSize != 1) stop("value size must be 0, 1, or NA")
   }
   if (isVector) {
