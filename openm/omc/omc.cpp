@@ -338,7 +338,7 @@ void writeToFile(const string & i_filePath, const string & i_fileContent)
     ofstream ost;
     exit_guard<ofstream> onExit(&ost, &ofstream::close);   // close on exit
 
-    ost.open(i_filePath, ios_base::out | ios_base::trunc);
+    ost.open(i_filePath, ios_base::out | ios_base::trunc | ios_base::binary);
     if(ost.fail()) throw HelperException("Failed to create file: %s", i_filePath.c_str());
 
     ost << i_fileContent;
