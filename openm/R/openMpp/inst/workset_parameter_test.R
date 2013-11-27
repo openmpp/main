@@ -137,11 +137,4 @@ setReadonlyDefaultWorkset(theDb, TRUE, modelName, modelTs)
 # get model parameters definition
 defRs <- getParameterDefs(theDb, modelName, modelTs)
 
-#dbGetQuery(theDb, "SELECT * FROM workset_lst")
-#dbGetQuery(theDb, "SELECT * FROM workset_parameter")
-#dbGetQuery(theDb, "SELECT * FROM workset_parameter_txt")
-#dbGetQuery(theDb, "SELECT COUNT(*) FROM modelone_201208171604590148_w0_ageSex")
-#dbGetQuery(theDb, "SELECT * FROM modelone_201208171604590148_w0_ageSex")
-#dbGetQuery(theDb, "SELECT * FROM modelone_201208171604590148_w1_salaryAge")
-
 dbDisconnect(theDb)
