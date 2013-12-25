@@ -1,0 +1,90 @@
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(Happiness, EN) Happiness
+
+/* NOTE(Happiness, EN)
+	This module implements happiness.
+*/
+
+
+parameters 
+{
+	//EN Annual hazard for a reversal of happiness
+	double HappinessReversalHazard;
+};
+
+
+actor Person            //EN Individual
+{
+	//EN Happy
+	logical happy = { TRUE };
+
+	//EN Happiness reversal event
+	event timeHappinessReversalEvent, HappinessReversalEvent;	//EN Happiness reversal event
+
+};
+
+
+TIME Person::timeHappinessReversalEvent()
+{
+	TIME event_time = TIME_INFINITE;
+
+	if ( HappinessReversalHazard > 0 ) {
+		event_time = WAIT( - TIME( log( RandUniform(2) ) / HappinessReversalHazard ) );
+	}
+
+	return event_time;
+}
+
+void Person::HappinessReversalEvent()
+{
+	happy = !happy;
+	if ( !happy && playing ) {
+		// stop playing if unhappy
+		playing = FALSE;
+	}
+}
+
+
+actor Person            //EN Individual
+{
+	//EN Playing
+	logical playing = { FALSE };
+
+	//EN Start playing event
+	event timeStartPlayingEvent, StartPlayingEvent;	//EN Start plyaing event
+
+};
+
+
+TIME Person::timeStartPlayingEvent()
+{
+	double StartPlayingHazard = 0.10;
+	TIME event_time = TIME_INFINITE;
+
+	if ( happy && StartPlayingHazard > 0 ) {
+		event_time = WAIT( - TIME( log( RandUniform(3) ) / StartPlayingHazard ) );
+	}
+
+	return event_time;
+}
+
+void Person::StartPlayingEvent()
+{
+	playing = TRUE;
+}
+
+
+/*NOTE(ProbeOfHappiness, EN)
+	This table contains statistics related to happiness.
+*/
+table Person ProbeOfHappiness //EN Probe of happiness
+{
+	{
+		value_in(alive),				   //EN Population size
+		value_out(happy),             //EN Happy at death
+		duration(playing, TRUE) / value_in(alive), //EN Average years playing in lifetime decimals=4
+		duration(happy, TRUE) / value_in(alive) //EN happiness-adjusted life-years decimals=4
+	} //EN Quantity
+};
