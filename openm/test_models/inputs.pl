@@ -15,7 +15,7 @@ my $version = 1.0;
 
 if ( $#ARGV+1 != 1 ) {
 	print "inputs version $version\n";
-	print "inputs modelname\n";
+	print "usage: inputs modelname\n";
 	exit -1;
 }
 
