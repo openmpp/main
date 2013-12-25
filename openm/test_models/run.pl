@@ -1,14 +1,7 @@
 # Copyright (c) 2013 OpenM++
 # This code is licensed under MIT license (see LICENSE.txt for details)
 
-# Create openM++ database for a subsequent run of a model
-# Run this script from the /openm/test_models folder
-# Argument is the name of a model, located in a sister directory of test_models, e.g. Alpha1
-
-# Input files:
-#   Alpha1_inputs.pl - input parameter values for Alpha1
-# 
-# Creates a new openM++ database, which  has a fixed model_id of 11.
+# Runs a model using a previously created database.
 
 
 my $version = 1.0;
