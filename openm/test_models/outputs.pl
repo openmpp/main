@@ -20,8 +20,8 @@ my $model_name = $ARGV[0];
 # for diagnostics
 my $debug = 0;
 
-# sqlite3 executable (assumed to be accessible from Path)
-my $sqlite_exe = "sqlite3.exe";
+# sqlite3 executable
+my $sqlite_exe = "../../bin/sqlite3.exe";
 
 # model database
 my $model_db = $model_name . ".sqlite";
