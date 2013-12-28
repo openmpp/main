@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -39,7 +39,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
   <PropertyGroup>
@@ -47,7 +46,6 @@
     <OutDir>$(SolutionDir)$(Configuration)/$(Platform)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>omc</TargetName>
@@ -127,26 +125,20 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-
   <Target Name="CleanBisonFlex" BeforeTargets="PrepareForClean">
     <Message Text="Delete flex and bison output" />
     <RemoveDir Directories="$(BUILD_OMC_SRC_DIR)" />
   </Target>
-
   <Target Name="MakeDirBisonFlex">
     <MakeDir Directories="$(BUILD_OMC_SRC_DIR)" />
   </Target>
-
   <Target Name="DoFlex" DependsOnTargets="MakeDirBisonFlex" Inputs="scanner.l" Outputs="$(BUILD_OMC_SRC_DIR)/scanner.cpp">
     <Message Text="$(WIN_BIN)/$(FLEX_EXE) scanner.l" />
     <Exec Command="$(WIN_BIN)/$(FLEX_EXE) -Cem --wincompat -o $(BUILD_OMC_SRC_DIR)/scanner.cpp scanner.l" />
   </Target>
-
   <Target Name="DoBison" DependsOnTargets="MakeDirBisonFlex" Inputs="parser.y" Outputs="$(BUILD_OMC_SRC_DIR)/location.hh;$(BUILD_OMC_SRC_DIR)/parser.cpp;$(BUILD_OMC_SRC_DIR)/parser.hpp;$(BUILD_OMC_SRC_DIR)/position.hh;$(BUILD_OMC_SRC_DIR)/stack.hh">
     <Message Text="$(WIN_BIN)/$(BISON_EXE) parser.y" />
     <Exec Command="$(WIN_BIN)/$(BISON_EXE) -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
   </Target>
-
   <Target Name="BisonFlex" BeforeTargets="BeforeClCompile" DependsOnTargets="DoFlex;DoBison" />
-
 </Project>

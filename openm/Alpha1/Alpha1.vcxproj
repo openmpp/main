@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -27,26 +27,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -66,7 +66,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
   <PropertyGroup>
@@ -74,7 +73,6 @@
     <OutDir>$(SolutionDir)$(Configuration)/$(Platform)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -87,7 +85,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -104,7 +101,6 @@
       <AdditionalLibraryDirectories>$(OM_MSG_LIB_DIR);$(OM_DB_LIB_DIR);$(SolutionDir)$(Configuration)\$(Platform);$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -121,7 +117,6 @@
       <AdditionalLibraryDirectories>$(OM_MSG_LIB_DIR);$(OM_DB_LIB_DIR);$(SolutionDir)$(Configuration)\$(Platform);$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -142,7 +137,6 @@
       <AdditionalLibraryDirectories>$(OM_MSG_LIB_DIR);$(OM_DB_LIB_DIR);$(SolutionDir)$(Configuration)\$(Platform);$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -163,14 +157,12 @@
       <AdditionalLibraryDirectories>$(OM_MSG_LIB_DIR);$(OM_DB_LIB_DIR);$(SolutionDir)$(Configuration)\$(Platform);$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
     <ClCompile Include="hard_coded.cpp" />
     <ClCompile Include="simulation.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_outside.cpp" />
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="..\include\omc\Agent.h" />
     <ClInclude Include="..\include\omc\AgentVar.h" />
@@ -178,41 +170,29 @@
     <ClInclude Include="$(OMC_OUT_DIR)/om_agents.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_types.h" />
   </ItemGroup>
-
   <ItemGroup>
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_create_model.sql" />
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_optional_views.sql" />
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="Happiness.mpp" />
     <ClInclude Include="PersonCore.mpp" />
     <ClInclude Include="Alpha1.mpp" />
   </ItemGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-
   <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
     <Message Text="Delete omc compiler output" />
     <RemoveDir Directories="$(OMC_OUT_DIR)" />
   </Target>
-
-  <Target 
-    Name="OmcCompile" 
-    BeforeTargets="PrepareForBuild" 
-    Inputs="Happiness.mpp;PersonCore.mpp;Alpha1.mpp" 
-    Outputs="$(OMC_OUT_DIR)/om_agents.h;$(OMC_OUT_DIR)/om_types.h;$(OMC_OUT_DIR)/om_agents.cpp;$(OMC_OUT_DIR)/om_outside.cpp;@(SqlScript)"
-    >
+  <Target Name="OmcCompile" BeforeTargets="PrepareForBuild" Inputs="Happiness.mpp;PersonCore.mpp;Alpha1.mpp" Outputs="$(OMC_OUT_DIR)/om_agents.h;$(OMC_OUT_DIR)/om_types.h;$(OMC_OUT_DIR)/om_agents.cpp;$(OMC_OUT_DIR)/om_outside.cpp;@(SqlScript)">
     <MakeDir Directories="$(OMC_OUT_DIR)" />
     <Message Text="$(OutDir)$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
     <Exec Command="$(OutDir)$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
-
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
     </ItemGroup>
     <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(SolutionDir)$(Configuration)\$(Platform)" />
   </Target>
-
 </Project>

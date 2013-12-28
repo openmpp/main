@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
@@ -28,19 +27,6 @@
       <UniqueIdentifier>{980b9fa7-f891-49b8-8db4-013a19403c0f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="WizardCaseBased.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="WizardCaseBasedFR.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-  </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="simulation.cpp">
       <Filter>Source Files</Filter>
@@ -49,7 +35,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp">
       <Filter>OmcOutput</Filter>
@@ -58,7 +43,6 @@
       <Filter>OmcOutput</Filter>
     </ClCompile>
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="$(OMC_OUT_DIR)/om_agents.h">
       <Filter>OmcOutput</Filter>
@@ -66,8 +50,16 @@
     <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
+    <ClInclude Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WizardCaseBased.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WizardCaseBasedFR.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="AgentVar.h">
       <Filter>Header Files\omc</Filter>
@@ -82,17 +74,8 @@
       <Filter>Header Files\omc</Filter>
     </ClInclude>
   </ItemGroup>
-
   <ItemGroup>
-    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_create_model.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
-    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_insert_parameters.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
-    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_optional_views.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_create_model.sql" />
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_optional_views.sql" />
   </ItemGroup>
-
 </Project>

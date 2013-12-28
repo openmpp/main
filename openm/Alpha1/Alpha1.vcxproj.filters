@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ItemGroup>
     <Filter Include="C++ Files">
       <UniqueIdentifier>{0e7866a6-65b3-41a1-b201-3b7d043e1098}</UniqueIdentifier>
@@ -22,19 +21,6 @@
       <UniqueIdentifier>{cde252cf-1ec2-45f3-9e90-96803cd7895a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Alpha1.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="Happiness.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-  </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="hard_coded.cpp">
       <Filter>C++ Files</Filter>
@@ -43,7 +29,6 @@
       <Filter>C++ Files</Filter>
     </ClCompile>
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="..\include\omc\Agent.h">
       <Filter>C++ Files</Filter>
@@ -54,8 +39,16 @@
     <ClInclude Include="..\include\omc\Event.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
+    <ClInclude Include="Happiness.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Alpha1.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp">
       <Filter>OmcOutput</Filter>
@@ -64,7 +57,6 @@
       <Filter>OmcOutput</Filter>
     </ClCompile>
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="$(OMC_OUT_DIR)/om_agents.h">
       <Filter>OmcOutput</Filter>
@@ -73,17 +65,12 @@
       <Filter>OmcOutput</Filter>
     </ClInclude>
   </ItemGroup>
-
   <ItemGroup>
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_create_model.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
-    <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_insert_parameters.sql">
       <Filter>SqlScript</Filter>
     </SqlScript>
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_optional_views.sql">
       <Filter>SqlScript</Filter>
     </SqlScript>
   </ItemGroup>
-
 </Project>

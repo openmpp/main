@@ -18,13 +18,14 @@ const char openm:: helperUnknownErrorMessage[] = "unknown error in helper method
 // convert string to lower case
 void openm::toLower(string & io_str)
 {
-    locale defaultLoc = locale("");
-    transform(
-        io_str.begin(), 
-        io_str.end(), 
-        io_str.begin(), 
-        bind(ref(tolower<char>), placeholders::_1, ref(defaultLoc))
-        );
+    //locale defaultLoc = locale("");
+    //transform(
+    //    io_str.begin(), 
+    //    io_str.end(), 
+    //    io_str.begin(), 
+    //    bind(ref(tolower<char>), placeholders::_1, ref(defaultLoc))
+    //    );
+	transform(io_str.begin(), io_str.end(), io_str.begin(), ptr_fun<int, int>(tolower));
 }
 
 // convert string to lower case
@@ -37,13 +38,14 @@ void openm::toLower(char * io_str)
 // convert string to upper case
 void openm::toUpper(string & io_str)
 {
-    locale defaultLoc = locale("");
-    transform(
-        io_str.begin(), 
-        io_str.end(), 
-        io_str.begin(), 
-        bind(ref(toupper<char>), placeholders::_1, ref(defaultLoc))
-        );
+    //locale defaultLoc = locale("");
+    //transform(
+    //    io_str.begin(), 
+    //    io_str.end(), 
+    //    io_str.begin(), 
+    //    bind(ref(toupper<char>), placeholders::_1, ref(defaultLoc))
+    //    );
+	transform(io_str.begin(), io_str.end(), io_str.begin(), ptr_fun<int, int>(toupper));
 }
 
 // convert string to upper case

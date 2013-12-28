@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -27,26 +27,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -66,14 +66,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Configuration)/$(Platform)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>libsqlite3</TargetName>
@@ -90,14 +88,12 @@
     <LinkIncremental>false</LinkIncremental>
     <TargetName>libsqlite3</TargetName>
   </PropertyGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>
-        SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
+      <PreprocessorDefinitions>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;_DEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
@@ -112,8 +108,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>
-       SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
+      <PreprocessorDefinitions>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;DEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
@@ -130,10 +125,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>
-        SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
+      <PreprocessorDefinitions>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;NDEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,10 +144,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>
-        SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
+      <PreprocessorDefinitions>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;NDEBUG;_WINDOWS;_USRDLL;LIBSQLITE_EXPORTS;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
