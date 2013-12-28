@@ -32,6 +32,7 @@ class ExprForTable;
 #include "parser_helper.h" 
 #include "ast.h"
 #include <stdarg.h>
+#include "libopenm/omCommon.h"
 // last item found by flex.  Used in grammar to provide error information
 // TODO check and eliminate use
 extern char *yytext;
@@ -446,17 +447,6 @@ extern char *yytext;
 
 Model:
 Model Declaration
-	| Model error
-							{
-								if ( yychar == yyeof_ ) {
-									semantic_error( "unexpected end of file" );
-								}
-								else {
-									semantic_error( "unexpected input: %s", yytext );
-									yyclearin;
-									yyerrok;
-								}
-							}
 	| /* nothing */
 	;
 
@@ -563,6 +553,7 @@ Decl_parameter:
 							{
                                 auto *sym = new ParameterSymbol( $SYMBOL, (token_type)$type );
 							}
+	| error ";"
 	;
 
 ParameterType:
@@ -595,6 +586,7 @@ AgentMember:
 	  Decl_SimpleAgentVar
 	| Decl_AgentFunction
 	| Decl_AgentEvent
+	| error ";"
 	;
 
 Decl_SimpleAgentVar:
@@ -698,6 +690,7 @@ Decl_table:
 								pc.counter2 = 0;
 								pc.counter3 = 0;
 							}
+	| error ";"
 	;
 
 TableExpressions:
@@ -919,21 +912,7 @@ void
 yy::parser::error (const yy::parser::location_type& l,
                           const std::string& m)
 {
-  drv.error (l, m);
+    drv.error (l, m);
 }
 
 
-void
-semantic_error(const char *fmt, ...)
-{
-	va_list va;
-
-	va_start(va, fmt);
-	(void) vfprintf(stderr, fmt, va);
-	va_end(va);
-}
-
-void
-discard(const char *fmt, ...)
-{
-}

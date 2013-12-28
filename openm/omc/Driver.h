@@ -11,12 +11,9 @@
 #include <iostream>
 #include <fstream>
 #include "parser_helper.h"
+#include "ParseContext.h"
 
 using namespace std;
-
-// Globals common to parser and scanner
-void	semantic_error( const char *fmt, ... );
-void	discard( const char *fmt, ... );
 
 
 // Tell Flex the lexer's prototype ...
@@ -35,13 +32,13 @@ YY_DECL;
 class Driver
 {
 public:
-  Driver ();
-  virtual ~Driver ();
+    Driver ( ParseContext& pc );
+    virtual ~Driver ();
 
-	// pointer to output stream for pass-through / mark-up
-	ofstream *outside;
+    // pointer to output stream for pass-through / mark-up
+    ofstream *outside;
 
-  int result;
+    int result;
 
   // Handling the scanner.
   void scan_begin ();
@@ -49,7 +46,7 @@ public:
   bool trace_scanning;
 
 	// Run the parser.  Return 0 on success.
-  int parse (const string& in_filename, const string& module_name, ofstream *markup_stream, ModelSpec& ms, ParseContext& pc);
+  int parse (const string& in_filename, const string& module_name, ofstream *markup_stream, ModelSpec& ms);
 
     string file;
     string stem;
@@ -58,4 +55,6 @@ public:
     // Error handling.
     void error (const yy::location& l, const string& m);
     void error (const string& m);
+private:
+    ParseContext &pc;
 };

@@ -11,11 +11,14 @@
 #include "ModelSpec.h"
 #include "ParseContext.h"
 #include "location.hh"
+#include "libopenm/omCommon.h"
 
 using namespace std;
 
-Driver::Driver ()
-  : trace_scanning (false), trace_parsing (false)
+Driver::Driver ( ParseContext& pc )
+	: pc ( pc )
+    , trace_scanning (false)
+	, trace_parsing (false)
 {
 }
 
@@ -23,7 +26,7 @@ Driver::~Driver ()
 {
 }
 
-int Driver::parse (const string& in_filename, const string& mname, ofstream *outside_output, ModelSpec& ms, ParseContext& pc)
+int Driver::parse (const string& in_filename, const string& mname, ofstream *outside_output, ModelSpec& ms)
 {
     pc.InitializeForModule();
 	file = in_filename;
@@ -46,11 +49,15 @@ int Driver::parse (const string& in_filename, const string& mname, ofstream *out
 
 void Driver::error (const yy::location& l, const string& m)
 {
-  cerr << l << ": " << m << endl;
+    pc.parse_errors++;
+    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    //cerr << l << ": " << m << endl;
 }
 
 void Driver::error (const string& m)
 {
-  cerr << m << endl;
+    pc.parse_errors++;
+    theLog->logFormatted("%s", m.c_str());
+    //cerr << m << endl;
 }
 

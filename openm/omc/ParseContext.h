@@ -32,6 +32,8 @@ public:
         , cxx_memfunc_name ("")
         , agent_context (nullptr)
         , table_context (nullptr)
+		, parse_errors (0)
+		, post_parse_errors (0)
     {
         // The default location constructor for comment_location is fine.
     }
@@ -175,6 +177,18 @@ public:
      */
 
     string cxx_memfunc_name;
+
+	/**
+	 * A count of the number of omc parse errors in the model source files.
+	 */
+
+	int parse_errors;
+
+	/**
+	 * A count of the number of omc post_parse errors in the model source files.
+	 */
+
+	int post_parse_errors;
 
 private:
 

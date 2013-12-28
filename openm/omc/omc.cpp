@@ -113,7 +113,7 @@ namespace openm
 }
 
 // get list of source (.mpp or .ompp) files from specified directory or current directory if source path is empty
-static list<string> listSoureFiles(const string & i_srcDir);
+static list<string> listSourceFiles(const string & i_srcDir);
 
 // write string line into new output file
 static void writeLinesToFile(const string & i_filePath, const vector<string> & i_lineVec);
@@ -149,7 +149,7 @@ int main(int argc, char * argv[])
 
         if (!isFromCurrent) theLog->logFormatted("Compile from: %s", inpDir.c_str());
 
-        list<string> source_files = listSoureFiles(inpDir);     // list of source file names
+        list<string> source_files = listSourceFiles(inpDir);     // list of source file names
 
         if (source_files.empty()) {
             theLog->logMsg("No source files found, nothing to compile at current directory");
@@ -183,67 +183,99 @@ int main(int argc, char * argv[])
         // create unique instance of ParseContext
         ParseContext pc;
 
-        // open & prepare pass-through / markup stream outside.cpp
-        ofstream outside_cpp ( outDir + "om_outside.cpp", ios::trunc );
+        // open & prepare pass-through / markup stream om_outside.cpp
+        ofstream om_outside_cpp ( outDir + "om_outside.cpp", ios::trunc );
     #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
-        outside_cpp << "\xEF\xBB\xBF";
+        om_outside_cpp << "\xEF\xBB\xBF";
     #endif
-        outside_cpp << "/**" << endl;
-        outside_cpp << " * @file om_outside.cpp" << endl;
-        outside_cpp << " * Developer-supplied C++ functions" << endl;
-        outside_cpp << " */" << endl;
-        outside_cpp << "" << endl;
-        outside_cpp << "#include \"om_agents.h\"" << endl;
-		outside_cpp << "using namespace openm;" << endl;
-        outside_cpp << "namespace mm {" << endl;
+        om_outside_cpp << "/**" << endl;
+        om_outside_cpp << " * @file om_outside.cpp" << endl;
+        om_outside_cpp << " * Developer-supplied C++ functions" << endl;
+        om_outside_cpp << " */" << endl;
+        om_outside_cpp << "" << endl;
+        om_outside_cpp << "#include \"om_agents.h\"" << endl;
+		om_outside_cpp << "using namespace openm;" << endl;
+        om_outside_cpp << "namespace mm {" << endl;
 
         for (const string & name : source_files) {
+            try {
+                theLog->logFormatted("Parsing %s", name.c_str());
 
-            theLog->logFormatted("Parsing %s", name.c_str());
+                // create new instance of parser-scanner driver for each source file
+                Driver drv( pc );
 
-            // create new instance of parser-scanner driver for each source file
-            Driver drv;
+                // set to true to see detailed scanning actions
+                drv.trace_scanning = false;
 
-            // set to true to see detailed parsing actions
-            drv.trace_parsing = false;
+                // set to true to see detailed parsing actions
+                drv.trace_parsing = false;
 
-            string in_stem = name;
-            if (endWithNoCase(name, ".mpp")) in_stem = name.substr(0, name.length() - 4);
-            if (endWithNoCase(name, ".ompp")) in_stem = name.substr(0, name.length() - 5);
+                string in_stem = name;
+                if (endWithNoCase(name, ".mpp")) in_stem = name.substr(0, name.length() - 4);
+                if (endWithNoCase(name, ".ompp")) in_stem = name.substr(0, name.length() - 5);
 
-            drv.parse( inpDir + name, in_stem, &outside_cpp, ms, pc );
+                drv.parse( inpDir + name, in_stem, &om_outside_cpp, ms );
+            }
+            catch(exception & ex) {
+                theLog->logErr(ex);
+                if ( pc.parse_errors == 0 ) {
+                    pc.parse_errors = 1;
+                }
+                // continue parsing any remaining source code modules to detect additional syntax errors (possibly non-spurious)
+            }
         }
 
-        outside_cpp << "} //namespace mm" << endl;
-        outside_cpp.close();
+        om_outside_cpp << "} //namespace mm" << endl;
+        om_outside_cpp.close();
 
+        if ( pc.parse_errors > 0 ) {
+            theLog->logFormatted("Syntax errors (%d) in parse phase", pc.parse_errors);
+        }
+        else {
+            try {
+                theLog->logMsg("Post-parse processing");
+                Symbol::post_parse_all();
+            }
+            catch(exception & ex) {
+                theLog->logErr(ex);
+                if ( pc.post_parse_errors == 0 ) {
+                    pc.post_parse_errors = 1;
+                }
+                // fall through to subsequent code to perform output file clean-up on parse or post-parse errors
+            }
+        }
+        if ( pc.post_parse_errors > 0 ) {
+            theLog->logFormatted("Syntax errors (%d) in post-parse phase", pc.post_parse_errors);
+        }
+
+        if ( pc.parse_errors > 0 || pc.post_parse_errors > 0 ) {
+            theLog->logFormatted("Truncing generated C++ file om_outside.cpp");
+            ofstream om_outside_cpp ( outDir + "om_outside.cpp", ios::trunc );
+            om_outside_cpp.close();
+
+            throw HelperException("Finish omc");
+        }
+
+        theLog->logMsg("Code generation");
+
+        // open output streams for generated code
         ofstream om_agents_t( outDir + "om_types.h", ios::trunc );
         ofstream om_agents_h( outDir + "om_agents.h", ios::trunc );
         ofstream om_agents_cpp( outDir + "om_agents.cpp", ios::trunc );
 
-    #if defined(_MSC_VER)
+#if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
         om_agents_t << "\xEF\xBB\xBF";
         om_agents_h << "\xEF\xBB\xBF";
         om_agents_cpp << "\xEF\xBB\xBF";
-    #endif
-
-        // perform post-parse processing for all symbols
-        theLog->logMsg("Post-parse processing");
-        Symbol::post_parse_all();
-
-        theLog->logMsg("Code generation");
+#endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create());
         
         CodeGen cg( ms, &om_agents_t, &om_agents_h, &om_agents_cpp, builder->timeStamp(), metaRows );
         cg.do_all();
-
-        om_agents_t.close();
-        om_agents_h.close();
-        om_agents_cpp.close();
 
         // debug only: add test metadata to produce at least some output
         addTestMetadata(metaRows);
@@ -266,6 +298,10 @@ int main(int argc, char * argv[])
         else {
             theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
         }
+
+        om_agents_t.close();
+        om_agents_h.close();
+        om_agents_cpp.close();
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
@@ -281,7 +317,7 @@ int main(int argc, char * argv[])
 }
 
 // get list of source (.mpp or .ompp) files from specified directory or current directory if source path is empty
-list<string> listSoureFiles(const string & i_srcPath)
+list<string> listSourceFiles(const string & i_srcPath)
 {
     using namespace openm;
     list<string> nameLst;
