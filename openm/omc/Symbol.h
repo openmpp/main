@@ -7,7 +7,9 @@
 
 #pragma once
 #include <string>
+#include <unordered_set>
 #include <unordered_map>
+#include <forward_list>
 #include <map>
 #include <typeinfo>
 #include <cassert>
@@ -254,6 +256,45 @@ public:
     static void default_symbols();
     static void post_parse_all();
 
+    /**
+     * Store a C++ style single-line comment for later use
+     *
+     * @param   cmt         The comment.
+     * @param [in,out]  loc The source code location.
+     */
+
+    static void process_cxx_comment(const string& cmt, yy::location& loc);
+
+    /**
+     * Store a C style comment for later use
+     *
+     * @param   cmt         The comment.
+     * @param [in,out]  loc The source code location.
+     */
+
+    static void process_c_comment(const string& cmt, yy::location& loc);
+
+    /**
+     * Query if 'tok' is an om outer keyword (introducing a syntactic declarative island)
+     *
+     * @param   tok The token.
+     *
+     * @return  true if an om outer keyword, false if not.
+     */
+
+    static bool is_om_outer_keyword(const token_type& tok);
+
+    /**
+    * Query if 'nm' is an om developer-supplied function
+    * These are functions with special names, e.g. Start
+    *
+    * @param   nm  The name.
+    *
+    * @return  true if om developer function, false if not.
+    */
+
+    static bool is_om_developer_function(const char* nm);
+
     // static data members
 	static symbol_map_type symbols;
     static list<AgentSymbol *> pp_agents;
@@ -261,6 +302,13 @@ public:
     static list<ParameterSymbol *> pp_parameters;
     static multimap<string, string> memfunc_bodyids;
 
+    static unordered_set<token_type, std::hash<int> > om_outer_keywords;
+    static unordered_set<string> om_developer_functions;
+
+    // TODO comments are just dumped into placeholder collections for testing.
+    // Need to retrieve by location searching, at some point, to match up with identifiers, languages, etc.
+    static forward_list<string> cxx_comments;
+    static forward_list<string> c_comments;
 };
 
 /**

@@ -467,6 +467,53 @@ list<ParameterSymbol *> Symbol::pp_parameters;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
+// NB: There is a direct correspondence between the following lines and code in parser_helper.cpp
+unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
+{
+    token::TK_agent,
+    token::TK_agent_set,
+    token::TK_aggregation,
+    token::TK_classification,
+    token::TK_counter_type,
+    token::TK_dependency,
+    token::TK_extend_parameter,
+    token::TK_hide,
+    token::TK_import,
+    token::TK_index_type,
+    token::TK_integer_type,
+    token::TK_languages,
+    token::TK_link,
+    token::TK_model_generated_parameter_group,
+    token::TK_model_type,
+    token::TK_options,
+    token::TK_parameter_group,
+    token::TK_parameters,
+    token::TK_partition,
+    token::TK_range,
+    token::TK_real_type,
+    token::TK_string,
+    token::TK_table,
+    token::TK_table_group,
+    token::TK_time_type,
+    token::TK_track,
+    token::TK_user_table,
+    token::TK_version,
+};
+
+unordered_set<string> Symbol::om_developer_functions =
+{
+    "Simulation",
+    "CaseSimulation",
+    "Start",
+    "Finish",
+    "PreSimulation",
+    "UserTables",
+};
+
+forward_list<string> Symbol::cxx_comments;
+
+forward_list<string> Symbol::c_comments;
+
 // symbols which are always in the symbol table,
 // and which have default properties unless specified by om developer.
 void Symbol::default_symbols()
@@ -687,3 +734,27 @@ void Symbol::post_parse_all()
             );
 
 }
+
+void Symbol::process_cxx_comment(const string& cmt, yy::location& loc)
+{
+    // TODO just a placeholder container
+    cxx_comments.push_front(cmt);
+}
+
+void Symbol::process_c_comment(const string& cmt, yy::location& loc)
+{
+    // TODO just a placeholder container
+    c_comments.push_front(cmt);
+}
+
+bool Symbol::is_om_outer_keyword(const token_type& tok)
+{
+    return om_outer_keywords.count(tok) == 0 ? false : true;
+}
+
+bool Symbol::is_om_developer_function(const char* nm)
+{
+    return om_developer_functions.count(nm) == 0 ? false : true;
+}
+
+

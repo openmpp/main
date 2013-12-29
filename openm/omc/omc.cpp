@@ -180,6 +180,9 @@ int main(int argc, char * argv[])
         // create unique instance of ModelSpec
         ModelSpec ms;
 
+        // Populate symbol table with default symbols
+        Symbol::default_symbols();
+
         // create unique instance of ParseContext
         ParseContext pc;
 

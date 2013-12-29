@@ -266,7 +266,7 @@ blank       [ \t\r]
                 /* note end position of comment body */
                 pc.comment_location.end = yylloc->end;
 
-                ms.process_c_comment(pc.comment_body, pc.comment_location);
+                Symbol::process_c_comment(pc.comment_body, pc.comment_location);
 
                 /* position maintenance */
 				yylloc->step();
@@ -308,7 +308,7 @@ blank       [ \t\r]
                 pc.comment_body = yytext + 2;
                 pc.comment_body.erase( pc.comment_body.length() - 1 );
 
-                ms.process_cxx_comment(pc.comment_body, pc.comment_location);
+                Symbol::process_cxx_comment(pc.comment_body, pc.comment_location);
 
 				/* mark-up file - output newline to maintain validity of #line directives */
 				if ( YY_START == cxx_outside || YY_START == cxx_inside ) *drv.outside << "\n";
@@ -452,7 +452,7 @@ blank       [ \t\r]
 {word}      {
 			    token_type tok = string_to_token( yytext );
                 /* tok has value TK_error if not a keyword */
-                if ( ms.is_om_outer_keyword( tok ) ) {
+                if ( Symbol::is_om_outer_keyword( tok ) ) {
                     /* transition to openM++ declarative island */
     				BEGIN(om_decl);
                     yylval->val_token = tok;
