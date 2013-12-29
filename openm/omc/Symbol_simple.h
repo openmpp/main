@@ -178,3 +178,31 @@ public:
     token_type value;
 };
 
+/**
+* ParameterSymbol.
+*/
+class ParameterSymbol : public Symbol
+{
+private:
+    typedef Symbol super;
+
+public:
+    ParameterSymbol(Symbol *sym, token_type type)
+        : Symbol(sym)
+        , type(type)
+    {
+    }
+
+    void post_parse(int pass);
+    // members
+    token_type type;
+
+    /**
+    * Numeric identifier.
+    * Used for communicating with metadata API.
+    */
+
+    int pp_numeric_id;
+};
+
+

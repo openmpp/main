@@ -9,5 +9,8 @@
 #include "Literal.h"
 #include "Symbol.h"
 #include "Symbol_simple.h"
+#include "AgentMemberSymbol.h"
+#include "AgentSymbol.h"
+#include "TableSymbol.h"
 #include "ExprForTable.h"
 

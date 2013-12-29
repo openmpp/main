@@ -92,6 +92,8 @@
     <ClInclude Include="..\include\libopenm\db\metaModelHolder.h" />
     <ClInclude Include="..\include\libopenm\db\modelBuilder.h" />
     <ClInclude Include="..\include\libopenm\omCommon.h" />
+    <ClInclude Include="AgentMemberSymbol.h" />
+    <ClInclude Include="AgentSymbol.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="CodeBlock.h" />
     <ClInclude Include="CodeGen.h" />
@@ -104,6 +106,7 @@
     <ClInclude Include="parser_helper.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="Symbol_simple.h" />
+    <ClInclude Include="TableSymbol.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/location.hh" />
@@ -113,6 +116,8 @@
     <ClInclude Include="scanner.l" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AgentMemberSymbol.cpp" />
+    <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="omc.cpp" />
@@ -121,6 +126,7 @@
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="Symbol_simple.cpp" />
+    <ClCompile Include="TableSymbol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
