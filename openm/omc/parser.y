@@ -464,84 +464,133 @@ Declaration:
 	;
 
 Decl_languages:
-	TK_languages "{" Languages "}" ";"
-	;
+          "languages" "{" Languages "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+        | "languages" "{" error "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+        | "languages" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+        ;
 
 Languages:
-	  SYMBOL
-							{
-                                // first language is default language
-                                // morph existing symbol to LanguageSymbol
-                                auto *sym = new LanguageSymbol( $SYMBOL, true );
-							}
+      SYMBOL
+                        {
+                            // first language is default language
+                            // morph existing symbol to LanguageSymbol
+                            auto *sym = new LanguageSymbol( $SYMBOL, true );
+                        }
 	| Languages "," SYMBOL
-							{
-                                auto *sym = new LanguageSymbol( $SYMBOL, false );
-							}
+                        {
+                            auto *sym = new LanguageSymbol( $SYMBOL, false );
+                        }
 	;
 
 Decl_time_type:
-	TK_time_type FundamentalType[type_to_use] ";"
-							{
-                                auto *sym = new TypeDeclSymbol( token::TK_Time, (token_type) $type_to_use );
-							}
-	;
+	  "time_type" FundamentalType[type_to_use] ";"
+                        {
+                            auto *sym = new TypeDeclSymbol( token::TK_Time, (token_type) $type_to_use );
+                        }
+    | "time_type" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 Decl_real_type:
-	TK_real_type FundamentalType[type_to_use] ";"
-							{
-                                auto *sym = new TypeDeclSymbol( token::TK_real, (token_type) $type_to_use );
-							}
-	;
+      "real_type" FundamentalType[type_to_use] ";"
+                        {
+                            auto *sym = new TypeDeclSymbol( token::TK_real, (token_type) $type_to_use );
+                        }
+    | "real_type" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 Decl_counter_type:
-	TK_counter_type FundamentalType[type_to_use] ";"
-							{
-                                auto *sym = new TypeDeclSymbol( token::TK_counter, (token_type) $type_to_use );
-							}
-	;
+	  "counter_type" FundamentalType[type_to_use] ";"
+						{
+                            auto *sym = new TypeDeclSymbol( token::TK_counter, (token_type) $type_to_use );
+						}
+    | "counter_type" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 Decl_integer_type:
-	TK_integer_type FundamentalType[type_to_use] ";"
-							{
-                                auto *sym = new TypeDeclSymbol( token::TK_integer, (token_type) $type_to_use );
-							}
-	;
+      "integer_type" FundamentalType[type_to_use] ";"
+                        {
+                            auto *sym = new TypeDeclSymbol( token::TK_integer, (token_type) $type_to_use );
+                        }
+    | "integer_type" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 Decl_model_type:
-	TK_model_type ModelType[type_to_use] ";"
-							{
-                                auto *sym = new TypeDeclSymbol( token::TK_model_type, (token_type) $type_to_use );
-							}
-	;
+        "model_type" ModelType[type_to_use] ";"
+                        {
+                            auto *sym = new TypeDeclSymbol( token::TK_model_type, (token_type) $type_to_use );
+                        }
+      | "model_type" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+      ;
 
 ModelType:
-	  TK_case_based
-	| TK_time_based
+	  "case_based"
+	| "time_based"
 	;
 
 Decl_version:
-	"version" INTEGER_LITERAL[major] "," INTEGER_LITERAL[minor] "," INTEGER_LITERAL[sub_minor] "," INTEGER_LITERAL[sub_sub_minor] ";"
-							{
-                                int major = stoi( $major->cxx_token );
-                                delete $major;
+        "version" INTEGER_LITERAL[major] "," INTEGER_LITERAL[minor] "," INTEGER_LITERAL[sub_minor] "," INTEGER_LITERAL[sub_sub_minor] ";"
+                        {
+                            int major = stoi( $major->cxx_token );
+                            delete $major;
 
-                                int minor = stoi( $minor->cxx_token );
-                                delete $minor;
+                            int minor = stoi( $minor->cxx_token );
+                            delete $minor;
 
-                                int sub_minor = stoi( $sub_minor->cxx_token );
-                                delete $sub_minor;
+                            int sub_minor = stoi( $sub_minor->cxx_token );
+                            delete $sub_minor;
 
-                                int sub_sub_minor = stoi( $sub_sub_minor->cxx_token );
-                                delete $sub_sub_minor;
+                            int sub_sub_minor = stoi( $sub_sub_minor->cxx_token );
+                            delete $sub_sub_minor;
 
-                                auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor );
- 							}
-	;
+                            auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor );
+                        }
+      | "version" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 Decl_parameters:
-	  TK_parameters "{" Parameters "}" ";"
-	;
+	  "parameters" "{" Parameters "}" ";"
+	| "parameters" "{" error "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+      ;
 
 Parameters: 
 	  Decl_parameter
@@ -549,33 +598,44 @@ Parameters:
 	;
 
 Decl_parameter:
-	  ParameterType[type] SYMBOL ";"
-							{
-                                auto *sym = new ParameterSymbol( $SYMBOL, (token_type)$type );
-							}
+      ParameterType[type] SYMBOL ";"
+                        {
+                            auto *sym = new ParameterSymbol( $SYMBOL, (token_type)$type );
+                        }
 	| error ";"
+                        {
+                            // Error recovery: Prepare to parse another parameter in a parameters declarative island
+                            pc.brace_level = 1;
+                            pc.parenthesis_level = 0;
+                            pc.bracket_level = 0;
+                        }
 	;
 
 ParameterType:
-	  TK_int
-	| TK_double
+	  "int"
+	| "double"
 	;
 
 Decl_agent:
-	  TK_agent SYMBOL[agent]
-							{
-                                // Morph Symbol (or AgentSymbol) to AgentSymbol
-                                // Note that re-morphing of agent symbols is harmless
-                                $agent = new AgentSymbol( $agent );
-								// Set agent context for body of agent declaration
-								pc.set_agent_context( $agent );
-							}
-				"{" AgentMembers "}" ";"
-							{
-								// No valid agent context
-								pc.set_agent_context( nullptr );
-							}
-	;
+      "agent" SYMBOL[agent]
+                        {
+                            // Morph Symbol (or AgentSymbol) to AgentSymbol
+                            // Note that re-morphing of agent symbols is harmless
+                            $agent = new AgentSymbol( $agent );
+                            // Set agent context for body of agent declaration
+                            pc.set_agent_context( $agent );
+                        }
+            "{" AgentMembers "}" ";"
+                        {
+                            // No valid agent context
+                            pc.set_agent_context( nullptr );
+                        }
+            | "agent" "{" error "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+            ;
 
 AgentMembers:
 	  AgentMember
@@ -586,308 +646,318 @@ AgentMember:
 	  Decl_SimpleAgentVar
 	| Decl_AgentFunction
 	| Decl_AgentEvent
-	| error ";"
-	;
+    | error ";"
+                        {
+                            // Error recovery: Prepare to parse another member in an agent declarative island
+                            pc.brace_level = 1;
+                            pc.parenthesis_level = 0;
+                            pc.bracket_level = 0;
+                        }
+    ;
 
 Decl_SimpleAgentVar:
-	  FundamentalType[type] SYMBOL ";"
-							{
-                                auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, nullptr );
-							}
-	| FundamentalType[type] SYMBOL "=" "{" AnyLiteral "}" ";"
-							{
-                                auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
-							}
-		;
+      FundamentalType[type] SYMBOL ";"
+                        {
+                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, nullptr );
+                        }
+    | FundamentalType[type] SYMBOL "=" "{" AnyLiteral "}" ";"
+                        {
+                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
+                        }
+    ;
 
 FundamentalType:
-	  TK_int
-	| TK_double
-	| TK_bool
+      "int"
+    | "double"
+    | "bool"
 	;
 
 BoolLiteral:
-		  TK_true
-		| TK_false
+      "true"
+    | "false"
 	;
 
 AnyLiteral:
-          INTEGER_LITERAL
-                            {
-                                $AnyLiteral = $INTEGER_LITERAL;
-                            }
-        | CHARACTER_LITERAL
-                            {
-                                $AnyLiteral = $CHARACTER_LITERAL;
-                            }
-        | FLOATING_POINT_LITERAL
-                            {
-                                $AnyLiteral = $FLOATING_POINT_LITERAL;
-                            }
-        | STRING_LITERAL
-                            {
-                                $AnyLiteral = $STRING_LITERAL;
-                            }
-		| BoolLiteral
-                            {
-                                $AnyLiteral = new BooleanLiteral( token_to_string( (token_type) $BoolLiteral ) );
-                            }
-		| TK_nullptr
-                            {
-                                $AnyLiteral = new PointerLiteral( token_to_string( (token_type) $TK_nullptr ) );
-                            }
-		| TK_time_infinite
-                            {
-                                $AnyLiteral = new TimeLiteral( token_to_string( (token_type) $TK_time_infinite ) );
-                            }
-		| TK_time_undef
-                            {
-                                $AnyLiteral = new TimeLiteral( token_to_string( (token_type) $TK_time_undef ) );
-                            }
-	;
+      INTEGER_LITERAL
+                        {
+                            $AnyLiteral = $INTEGER_LITERAL;
+                        }
+    | CHARACTER_LITERAL
+                        {
+                            $AnyLiteral = $CHARACTER_LITERAL;
+                        }
+    | FLOATING_POINT_LITERAL
+                        {
+                            $AnyLiteral = $FLOATING_POINT_LITERAL;
+                        }
+    | STRING_LITERAL
+                        {
+                            $AnyLiteral = $STRING_LITERAL;
+                        }
+    | BoolLiteral
+                        {
+                            $AnyLiteral = new BooleanLiteral( token_to_string( (token_type) $BoolLiteral ) );
+                        }
+    | "nullptr"
+                        {
+                            $AnyLiteral = new PointerLiteral( token_to_string( token::TK_nullptr ) );
+                        }
+    | "time_infinite"
+                        {
+                            $AnyLiteral = new TimeLiteral( token_to_string( token::TK_time_infinite ) );
+                        }
+    | "time_undef"
+                        {
+                            $AnyLiteral = new TimeLiteral( token_to_string( token::TK_time_undef ) );
+                        }
+    ;
 
 Decl_AgentFunction:
-	  TK_void SYMBOL "(" ")" ";"
-							{
-                                auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context() );
-							}
-	;
+      "void" SYMBOL "(" ")" ";"
+                        {
+                            auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context() );
+                        }
+    ;
 
 Decl_AgentEvent:
-	TK_event SYMBOL[time_func] "," SYMBOL[implement_func] ";"
-							{
-                                auto *agent = pc.get_agent_context();
-                                // create agent event symbol
-                                auto *event = new AgentEventSymbol( $implement_func, agent, $time_func );
-                                // also create associated AgentEventTimeSymbol
-                                string member_name = AgentEventTimeSymbol::member_name( event );
-                                auto *sym = new AgentEventTimeSymbol( member_name, agent, event );
-							}
-	;
+      "event" SYMBOL[time_func] "," SYMBOL[implement_func] ";"
+                        {
+                            auto *agent = pc.get_agent_context();
+                            // create agent event symbol
+                            auto *event = new AgentEventSymbol( $implement_func, agent, $time_func );
+                            // also create associated AgentEventTimeSymbol
+                            string member_name = AgentEventTimeSymbol::member_name( event );
+                            auto *sym = new AgentEventTimeSymbol( member_name, agent, event );
+                        }
+    ;
 
 Decl_table:
-	TK_table SYMBOL[agent] SYMBOL[table] 
-							{
-                                // morph $table to TableSymbol
-                                $table = new TableSymbol( $table, $agent );
-								// Set agent context and table context for body of table declaration
-								pc.set_agent_context( $agent );
-								pc.set_table_context( $table );
-                                // initialize working counter used for table expressions
-								pc.counter1 = 0;
-                                // initialize working counter used for table accumulators
-								pc.counter2 = 0;
-                                // initialize working counter used for table agentvars
-								pc.counter3 = 0;
-							}
-				 "{" "{" TableExpressions[expr1] "}" "}" ";"
-							{
-								// No valid agent or table context
-								pc.set_table_context( nullptr );
-								pc.set_agent_context( nullptr );
-                                // Reset working counters
-								pc.counter1 = 0;
-								pc.counter2 = 0;
-								pc.counter3 = 0;
-							}
-	| error ";"
-	;
+      "table" SYMBOL[agent] SYMBOL[table] 
+                        {
+                            // morph $table to TableSymbol
+                            $table = new TableSymbol( $table, $agent );
+                            // Set agent context and table context for body of table declaration
+                            pc.set_agent_context( $agent );
+                            pc.set_table_context( $table );
+                            // initialize working counter used for table expressions
+                            pc.counter1 = 0;
+                            // initialize working counter used for table accumulators
+                            pc.counter2 = 0;
+                            // initialize working counter used for table agentvars
+                            pc.counter3 = 0;
+                        }
+            "{" "{" TableExpressions[expr1] "}" "}" ";"
+                        {
+                            // No valid agent or table context
+                            pc.set_table_context( nullptr );
+                            pc.set_agent_context( nullptr );
+                            // Reset working counters
+                            pc.counter1 = 0;
+                            pc.counter2 = 0;
+                            pc.counter3 = 0;
+                        }
+    | "table" error ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 TableExpressions:
-	ExprForTable[root]
-							{
-                                auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1 );
-								pc.counter1++;  // counter for expressions
-							}
-	| TableExpressions "," ExprForTable[root]
-							{
-                                auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1 );
-								pc.counter1++;  // counter for expressions
-							}
+      ExprForTable[root]
+                        {
+                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1 );
+                            pc.counter1++;  // counter for expressions
+                        }
+    | TableExpressions "," ExprForTable[root]
+                        {
+                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1 );
+                            pc.counter1++;  // counter for expressions
+                        }
 	;
 
 ExprForTable[result]:
-	AgentVar
-							{
-                                Symbol *agentvar = $AgentVar;
-                                Symbol *table = pc.get_table_context();
-                                // The default accumulator is sum and the default increment is delta
-                                token_type acc = token::TK_sum;
-                                token_type incr = token::TK_delta;
+      AgentVar
+                        {
+                            Symbol *agentvar = $AgentVar;
+                            Symbol *table = pc.get_table_context();
+                            // The default accumulator is sum and the default increment is delta
+                            token_type acc = token::TK_sum;
+                            token_type incr = token::TK_delta;
 
-                                // Also create symbol for associated analysis agentvar if not already present
-                                TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-                                if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-                                    string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-                                    analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
-                                    assert( analysis_agentvar );
-                                }
-                                else {
-                                    analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
-                                    pc.counter3++;
-                                }
-                                // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
-                                if ( analysis_agentvar->need_value_in == false ) {
-                                    if (   incr == token::TK_delta
-                                        || incr == token::TK_delta2
-                                        || incr == token::TK_nz_delta
-                                        || incr == token::TK_value_in
-                                        || incr == token::TK_value_in2
-                                        || incr == token::TK_nz_value_in
-                                        ) analysis_agentvar->need_value_in = true;
-                                }
-                                // Also create symbol for associated accumulator if not already present
-                                TableAccumulatorSymbol *accumulator = nullptr;
-                                if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-                                    string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
-                                    accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
-                                    assert( accumulator );
-                                }
-                                else {
-                                    accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
-                                    pc.counter2++;
-                                }
-								$result = new ExprForTableLeaf( accumulator );
-							}
-	| ModgenCumulationOperator "(" AgentVar ")"
-							{
-                                Symbol *agentvar = $AgentVar;
-                                Symbol *table = pc.get_table_context();
-                                token_type acc = modgen_cumulation_operator_to_acc( (token_type) $ModgenCumulationOperator );
-                                token_type incr = modgen_cumulation_operator_to_incr( (token_type) $ModgenCumulationOperator );
+                            // Also create symbol for associated analysis agentvar if not already present
+                            TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
+                            if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
+                                string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
+                                analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
+                                assert( analysis_agentvar );
+                            }
+                            else {
+                                analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
+                                pc.counter3++;
+                            }
+                            // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
+                            if ( analysis_agentvar->need_value_in == false ) {
+                                if (   incr == token::TK_delta
+                                    || incr == token::TK_delta2
+                                    || incr == token::TK_nz_delta
+                                    || incr == token::TK_value_in
+                                    || incr == token::TK_value_in2
+                                    || incr == token::TK_nz_value_in
+                                    ) analysis_agentvar->need_value_in = true;
+                            }
+                            // Also create symbol for associated accumulator if not already present
+                            TableAccumulatorSymbol *accumulator = nullptr;
+                            if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
+                                string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
+                                accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
+                                assert( accumulator );
+                            }
+                            else {
+                                accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
+                                pc.counter2++;
+                            }
+	                        $result = new ExprForTableLeaf( accumulator );
+                        }
+    | ModgenCumulationOperator "(" AgentVar ")"
+                        {
+                            Symbol *agentvar = $AgentVar;
+                            Symbol *table = pc.get_table_context();
+                            token_type acc = modgen_cumulation_operator_to_acc( (token_type) $ModgenCumulationOperator );
+                            token_type incr = modgen_cumulation_operator_to_incr( (token_type) $ModgenCumulationOperator );
 
-                                // Also create symbol for associated analysis agentvar if not already present
-                                TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-                                if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-                                    string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-                                    analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
-                                    assert( analysis_agentvar );
-                                }
-                                else {
-                                    analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
-                                    pc.counter3++;
-                                }
-                                // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
-                                if ( analysis_agentvar->need_value_in == false ) {
-                                    if (   incr == token::TK_delta
-                                        || incr == token::TK_delta2
-                                        || incr == token::TK_nz_delta
-                                        || incr == token::TK_value_in
-                                        || incr == token::TK_value_in2
-                                        || incr == token::TK_nz_value_in
-                                        ) analysis_agentvar->need_value_in = true;
-                                }
-                                // Also create symbol for associated accumulator if not already present
-                                TableAccumulatorSymbol *accumulator = nullptr;
-                                if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-                                    string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
-                                    accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
-                                    assert( accumulator );
-                                }
-                                else {
-                                    accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
-                                    pc.counter2++;
-                                }
-								$result = new ExprForTableLeaf( accumulator );
-							}
-	| TableAccumulator[acc] "(" TableIncrement[incr] "(" AgentVar ")" ")"
-							{
-                                Symbol *agentvar = $AgentVar;
-                                Symbol *table = pc.get_table_context();
-                                token_type acc = (token_type) $acc;
-                                token_type incr = (token_type) $incr;
+                            // Also create symbol for associated analysis agentvar if not already present
+                            TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
+                            if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
+                                string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
+                                analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
+                                assert( analysis_agentvar );
+                            }
+                            else {
+                                analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
+                                pc.counter3++;
+                            }
+                            // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
+                            if ( analysis_agentvar->need_value_in == false ) {
+                                if (   incr == token::TK_delta
+                                    || incr == token::TK_delta2
+                                    || incr == token::TK_nz_delta
+                                    || incr == token::TK_value_in
+                                    || incr == token::TK_value_in2
+                                    || incr == token::TK_nz_value_in
+                                    ) analysis_agentvar->need_value_in = true;
+                            }
+                            // Also create symbol for associated accumulator if not already present
+                            TableAccumulatorSymbol *accumulator = nullptr;
+                            if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
+                                string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
+                                accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
+                                assert( accumulator );
+                            }
+                            else {
+                                accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
+                                pc.counter2++;
+                            }
+	                        $result = new ExprForTableLeaf( accumulator );
+                        }
+    | TableAccumulator[acc] "(" TableIncrement[incr] "(" AgentVar ")" ")"
+                        {
+                            Symbol *agentvar = $AgentVar;
+                            Symbol *table = pc.get_table_context();
+                            token_type acc = (token_type) $acc;
+                            token_type incr = (token_type) $incr;
 
-                                // Also create symbol for associated analysis agentvar if not already present
-                                TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-                                if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-                                    string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-                                    analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
-                                    assert( analysis_agentvar );
-                                }
-                                else {
-                                    analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
-                                    pc.counter3++;
-                                }
-                                // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
-                                if ( analysis_agentvar->need_value_in == false ) {
-                                    if (   incr == token::TK_delta
-                                        || incr == token::TK_delta2
-                                        || incr == token::TK_nz_delta
-                                        || incr == token::TK_value_in
-                                        || incr == token::TK_value_in2
-                                        || incr == token::TK_nz_value_in
-                                        ) analysis_agentvar->need_value_in = true;
-                                }
-                                // Also create symbol for associated accumulator if not already present
-                                TableAccumulatorSymbol *accumulator = nullptr;
-                                if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-                                    string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
-                                    accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
-                                    assert( accumulator );
-                                }
-                                else {
-                                    accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
-                                    pc.counter2++;
-                                }
-								$result = new ExprForTableLeaf( accumulator );
-							}
-	| ExprForTable[left] "+"[op] ExprForTable[right]
-							{
-								$result = new ExprForTableOp( (token_type) $op, $left, $right );
-							}
-	| ExprForTable[left] "-"[op] ExprForTable[right]
-							{
-								$result = new ExprForTableOp( (token_type) $op, $left, $right );
-							}
-	| ExprForTable[left] "*"[op] ExprForTable[right]
-							{
-								$result = new ExprForTableOp( (token_type) $op, $left, $right );
-							}
-	| ExprForTable[left] "/"[op] ExprForTable[right]
-							{
-								$result = new ExprForTableOp( (token_type) $op, $left, $right );
-							}
-	| "(" ExprForTable[expr] ")"
-							{
-								$result = $expr;
-							}
+                            // Also create symbol for associated analysis agentvar if not already present
+                            TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
+                            if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
+                                string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
+                                analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
+                                assert( analysis_agentvar );
+                            }
+                            else {
+                                analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
+                                pc.counter3++;
+                            }
+                            // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
+                            if ( analysis_agentvar->need_value_in == false ) {
+                                if (   incr == token::TK_delta
+                                    || incr == token::TK_delta2
+                                    || incr == token::TK_nz_delta
+                                    || incr == token::TK_value_in
+                                    || incr == token::TK_value_in2
+                                    || incr == token::TK_nz_value_in
+                                    ) analysis_agentvar->need_value_in = true;
+                            }
+                            // Also create symbol for associated accumulator if not already present
+                            TableAccumulatorSymbol *accumulator = nullptr;
+                            if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
+                                string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
+                                accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
+                                assert( accumulator );
+                            }
+                            else {
+                                accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
+                                pc.counter2++;
+                            }
+	                        $result = new ExprForTableLeaf( accumulator );
+                        }
+    | ExprForTable[left] "+"[op] ExprForTable[right]
+                        {
+	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
+                        }
+    | ExprForTable[left] "-"[op] ExprForTable[right]
+                        {
+	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
+                        }
+    | ExprForTable[left] "*"[op] ExprForTable[right]
+                        {
+	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
+                        }
+    | ExprForTable[left] "/"[op] ExprForTable[right]
+                        {
+	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
+                        }
+    | "(" ExprForTable[expr] ")"
+                        {
+	                        $result = $expr;
+                        }
 	;
 
 ModgenCumulationOperator:
-		  TK_delta
-		| TK_delta2
-		| TK_nz_delta
-		| TK_value_in
-		| TK_value_in2
-		| TK_nz_value_in
-		| TK_value_out
-		| TK_value_out2
-		| TK_nz_value_out
-		| TK_max_delta
-		| TK_max_value_in
-		| TK_max_value_out
-		| TK_min_delta
-		| TK_min_value_in
-		| TK_min_value_out
+      TK_delta
+    | TK_delta2
+    | TK_nz_delta
+    | TK_value_in
+    | TK_value_in2
+    | TK_nz_value_in
+    | TK_value_out
+    | TK_value_out2
+    | TK_nz_value_out
+    | TK_max_delta
+    | TK_max_value_in
+    | TK_max_value_out
+    | TK_min_delta
+    | TK_min_value_in
+    | TK_min_value_out
 	;
 
 TableAccumulator:
-		  TK_sum
-		| TK_min
-		| TK_max
-	;
+      TK_sum
+    | TK_min
+    | TK_max
+    ;
 
 TableIncrement:
-		  TK_delta
-		| TK_delta2
-		| TK_nz_delta
-		| TK_value_in
-		| TK_value_in2
-		| TK_nz_value_in
-		| TK_value_out
-		| TK_value_out2
-		| TK_nz_value_out
-	;
+      TK_delta
+    | TK_delta2
+    | TK_nz_delta
+    | TK_value_in
+    | TK_value_in2
+    | TK_nz_value_in
+    | TK_value_out
+    | TK_value_out2
+    | TK_nz_value_out
+    ;
 
 AgentVar:
 		SYMBOL
@@ -895,14 +965,14 @@ AgentVar:
 	;
 
 DerivedAgentVar:
-	TK_duration "(" ")"
-							{
-                                $DerivedAgentVar = DurationAgentVarSymbol::get_symbol( pc.get_agent_context() );
-							}
+    TK_duration "(" ")"
+                        {
+                            $DerivedAgentVar = DurationAgentVarSymbol::get_symbol( pc.get_agent_context() );
+                        }
     | TK_duration "(" SYMBOL[agentvar] "," AnyLiteral[constant] ")"
-							{
-                                $DerivedAgentVar = ConditionedDurationAgentVarSymbol::get_symbol( pc.get_agent_context(), $agentvar, $constant );
-							}
+                        {
+                            $DerivedAgentVar = ConditionedDurationAgentVarSymbol::get_symbol( pc.get_agent_context(), $agentvar, $constant );
+                        }
 	;
 
 

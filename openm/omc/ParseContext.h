@@ -78,7 +78,26 @@ public:
         }
     }
 
-    /// Initialize members before parsing another module
+    /**
+     * Initialize parse context for outermost code level.
+     */
+
+    void InitializeForCxxOutside()
+    {
+        brace_level = 0;
+        parenthesis_level = 0;
+        bracket_level = 0;
+        counter1 = 0;
+        counter2 = 0;
+        counter3 = 0;
+        agent_context = nullptr;
+        table_context = nullptr;
+    }
+
+    /**
+     * Initialize parse contaxt for a new module.
+     */
+
     void InitializeForModule()
     {
         comment_location.begin.initialize();
@@ -86,17 +105,11 @@ public:
         comment_body = "";
         literal_length = 0;
         literal_specification = "";
-        brace_level = 0;
-        parenthesis_level = 0;
-        bracket_level = 0;
         cxx_suppress = false;
-        counter1 = 0;
-        counter2 = 0;
-        counter3 = 0;
         cxx_memfunc_gather = false;
-        cxx_memfunc_name  = "";
-        agent_context = nullptr;
-        table_context = nullptr;
+        cxx_memfunc_name = "";
+
+        InitializeForCxxOutside();
     }
 
     /**
