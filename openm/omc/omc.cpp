@@ -184,7 +184,10 @@ int main(int argc, char * argv[])
         ParseContext pc;
 
         // open & prepare pass-through / markup stream om_outside.cpp
-        ofstream om_outside_cpp ( outDir + "om_outside.cpp", ios::trunc );
+        ofstream om_outside_cpp;
+        exit_guard<ofstream> onExit_om_outside_cpp(&om_outside_cpp, &ofstream::close);   // close on exit
+        om_outside_cpp.open(outDir + "om_outside.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+
     #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
         om_outside_cpp << "\xEF\xBB\xBF";
@@ -227,42 +230,39 @@ int main(int argc, char * argv[])
         }
 
         om_outside_cpp << "} //namespace mm" << endl;
-        om_outside_cpp.close();
 
         if ( pc.parse_errors > 0 ) {
             theLog->logFormatted("Syntax errors (%d) in parse phase", pc.parse_errors);
+            throw HelperException("Finish omc");
         }
-        else {
-            try {
-                theLog->logMsg("Post-parse processing");
-                Symbol::post_parse_all();
-            }
-            catch(exception & ex) {
-                theLog->logErr(ex);
-                if ( pc.post_parse_errors == 0 ) {
-                    pc.post_parse_errors = 1;
-                }
-                // fall through to subsequent code to perform output file clean-up on parse or post-parse errors
-            }
+
+        try {
+            theLog->logMsg("Post-parse processing");
+            Symbol::post_parse_all();
         }
-        if ( pc.post_parse_errors > 0 ) {
+        catch(exception & ex) {
+            theLog->logErr(ex);
+            if ( pc.post_parse_errors == 0 ) {
+                pc.post_parse_errors = 1;
+            }
             theLog->logFormatted("Syntax errors (%d) in post-parse phase", pc.post_parse_errors);
-        }
-
-        if ( pc.parse_errors > 0 || pc.post_parse_errors > 0 ) {
-            theLog->logFormatted("Truncing generated C++ file om_outside.cpp");
-            ofstream om_outside_cpp ( outDir + "om_outside.cpp", ios::trunc );
-            om_outside_cpp.close();
-
             throw HelperException("Finish omc");
         }
 
         theLog->logMsg("Code generation");
 
         // open output streams for generated code
-        ofstream om_agents_t( outDir + "om_types.h", ios::trunc );
-        ofstream om_agents_h( outDir + "om_agents.h", ios::trunc );
-        ofstream om_agents_cpp( outDir + "om_agents.cpp", ios::trunc );
+        ofstream om_agents_t;
+        exit_guard<ofstream> onExit_om_agents_t(&om_agents_t, &ofstream::close);   // close on exit
+        om_agents_t.open(outDir + "om_types.h", ios_base::out | ios_base::trunc | ios_base::binary);
+
+        ofstream om_agents_h;
+        exit_guard<ofstream> onExit_om_agents_h(&om_agents_h, &ofstream::close);   // close on exit
+        om_agents_h.open(outDir + "om_agents.h", ios_base::out | ios_base::trunc | ios_base::binary);
+
+        ofstream om_agents_cpp;
+        exit_guard<ofstream> onExit_om_agents_cpp(&om_agents_cpp, &ofstream::close);   // close on exit
+        om_agents_cpp.open(outDir + "om_agents.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
 
 #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
@@ -298,10 +298,6 @@ int main(int argc, char * argv[])
         else {
             theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
         }
-
-        om_agents_t.close();
-        om_agents_h.close();
-        om_agents_cpp.close();
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
