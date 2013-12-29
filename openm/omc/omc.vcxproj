@@ -103,6 +103,7 @@
     <ClInclude Include="ParseContext.h" />
     <ClInclude Include="parser_helper.h" />
     <ClInclude Include="Symbol.h" />
+    <ClInclude Include="Symbol_simple.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/location.hh" />
@@ -119,6 +120,7 @@
     <ClCompile Include="parser_helper.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
     <ClCompile Include="Symbol.cpp" />
+    <ClCompile Include="Symbol_simple.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,6 +10,7 @@
 #include "Driver.h"
 #include "ParseContext.h"
 #include "location.hh"
+#include "Symbol_simple.h" // for ModuleSymbol
 #include "libopenm/omCommon.h"
 
 using namespace std;

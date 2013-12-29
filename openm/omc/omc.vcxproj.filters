@@ -69,6 +69,9 @@
     <ClInclude Include="dirent\dirent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Symbol_simple.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Symbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Symbol_simple.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
