@@ -22,7 +22,6 @@ using namespace std;
   yylex (yy::parser::semantic_type* yylval,      \
          yy::parser::location_type* yylloc,      \
          Driver& drv,    \
-         ModelSpec& ms, \
          ParseContext& pc )
 // ... and declare it for the parser's sake.
 YY_DECL;
@@ -46,7 +45,7 @@ public:
   bool trace_scanning;
 
 	// Run the parser.  Return 0 on success.
-  int parse (const string& in_filename, const string& module_name, ofstream *markup_stream, ModelSpec& ms);
+  int parse (const string& in_filename, const string& module_name, ofstream *markup_stream);
 
     string file;
     string stem;

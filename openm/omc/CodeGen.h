@@ -8,7 +8,6 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include "ModelSpec.h"
 #include "CodeBlock.h"
 
 #include "libopenm/db/metaModelHolder.h"
@@ -19,15 +18,13 @@ class CodeGen
 {
 public:
 	CodeGen( 
-        ModelSpec& ms_arg, 
         ofstream *oat_arg, 
         ofstream *oah_arg, 
         ofstream *oac_arg, 
         const string & i_timestamp, 
         openm::MetaModelHolder & io_metaRows 
         )
-		: ms (ms_arg)
-		, oat (oat_arg)
+		: oat (oat_arg)
 		, oah (oah_arg)
 		, oac (oac_arg)
         , modelTimeStamp(i_timestamp)
@@ -52,8 +49,6 @@ public:
 	void do_RunModel( CodeBlock& h, CodeBlock& c );
 	void do_ModelShutdown( CodeBlock& h, CodeBlock& c );
     void do_API_entries( CodeBlock& h, CodeBlock& c );
-
-	ModelSpec ms;
 
     /** output stream for om_types.h */
 	ofstream *oat;

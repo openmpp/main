@@ -99,7 +99,6 @@
     <ClInclude Include="Driver.h" />
     <ClInclude Include="ExprForTable.h" />
     <ClInclude Include="Literal.h" />
-    <ClInclude Include="ModelSpec.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
     <ClInclude Include="ParseContext.h" />
     <ClInclude Include="parser_helper.h" />
@@ -115,7 +114,6 @@
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="Driver.cpp" />
-    <ClCompile Include="ModelSpec.cpp" />
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
     <ClCompile Include="parser_helper.cpp" />

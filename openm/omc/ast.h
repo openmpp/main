@@ -8,6 +8,5 @@
 #pragma once
 #include "Literal.h"
 #include "Symbol.h"
-#include "ModelSpec.h"
 #include "ExprForTable.h"
 

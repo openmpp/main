@@ -42,9 +42,6 @@
     <ClInclude Include="Literal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModelSpec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ParseContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,9 +75,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Driver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelSpec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="omc.cpp">

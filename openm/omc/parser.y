@@ -14,7 +14,6 @@
 // forward declarations
 class Driver;
 class ParseContext;
-class ModelSpec;
 class Literal;
 class IntegerLiteral;
 class CharacterLiteral;
@@ -41,11 +40,9 @@ extern char *yytext;
 // The parsing context.
 
 %parse-param { Driver& drv }
-%parse-param { ModelSpec& ms }
 %parse-param { ParseContext& pc }
 
 %lex-param   { Driver& drv }
-%lex-param   { ModelSpec& ms }
 %lex-param   { ParseContext& pc }
 
 %locations

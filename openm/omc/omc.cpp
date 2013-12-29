@@ -31,7 +31,6 @@
 #include <fstream>
 #include <list>
 #include "Driver.h"
-#include "ModelSpec.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
 #include "libopenm/common/argReader.h"
@@ -177,9 +176,6 @@ int main(int argc, char * argv[])
             if (outDir.back() != '/' && outDir.back() != '\\') outDir += '/';
         }
 
-        // create unique instance of ModelSpec
-        ModelSpec ms;
-
         // Populate symbol table with default symbols
         Symbol::default_symbols();
 
@@ -221,7 +217,7 @@ int main(int argc, char * argv[])
                 if (endWithNoCase(name, ".mpp")) in_stem = name.substr(0, name.length() - 4);
                 if (endWithNoCase(name, ".ompp")) in_stem = name.substr(0, name.length() - 5);
 
-                drv.parse( inpDir + name, in_stem, &om_outside_cpp, ms );
+                drv.parse( inpDir + name, in_stem, &om_outside_cpp);
             }
             catch(exception & ex) {
                 theLog->logErr(ex);
@@ -277,7 +273,7 @@ int main(int argc, char * argv[])
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create());
         
-        CodeGen cg( ms, &om_agents_t, &om_agents_h, &om_agents_cpp, builder->timeStamp(), metaRows );
+        CodeGen cg( &om_agents_t, &om_agents_h, &om_agents_cpp, builder->timeStamp(), metaRows );
         cg.do_all();
 
         // debug only: add test metadata to produce at least some output

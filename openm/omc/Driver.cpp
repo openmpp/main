@@ -8,7 +8,6 @@
 #include <iostream>
 #include <fstream>
 #include "Driver.h"
-#include "ModelSpec.h"
 #include "ParseContext.h"
 #include "location.hh"
 #include "libopenm/omCommon.h"
@@ -26,7 +25,7 @@ Driver::~Driver ()
 {
 }
 
-int Driver::parse (const string& in_filename, const string& mname, ofstream *outside_output, ModelSpec& ms)
+int Driver::parse (const string& in_filename, const string& mname, ofstream *outside_output)
 {
     pc.InitializeForModule();
 	file = in_filename;
@@ -39,7 +38,7 @@ int Driver::parse (const string& in_filename, const string& mname, ofstream *out
     auto sym = new ModuleSymbol( file );
 
     scan_begin ();
-    yy::parser parser (*this, ms, pc);
+    yy::parser parser (*this, pc);
     parser.set_debug_level (trace_parsing);
     int res = parser.parse ();
     scan_end ();
