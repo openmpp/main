@@ -1,7 +1,6 @@
 /**
 * @file    AgentMemberSymbol.h
-* Declares the AgentMemberSymbol derived class of the Symbol class.
-* Also declares sub-classes.
+* Declarations for the AgentMemberSymbol class.
 */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
