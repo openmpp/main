@@ -9,3 +9,28 @@
 #include "Symbol.h"
 
 using namespace std;
+
+/**
+* BuiltinAgentVarSymbol.
+*/
+class BuiltinAgentVarSymbol : public AgentVarSymbol
+{
+private:
+    typedef AgentVarSymbol super;
+
+public:
+    BuiltinAgentVarSymbol(const string member_name, const Symbol *agent, token_type type)
+        : AgentVarSymbol(member_name, agent, type)
+    {
+    }
+
+    void post_parse(int pass);
+
+    /**
+    * Gets the c++ declaration for the builtin agentvar.
+    */
+
+    CodeBlock cxx_declaration_agent_scope();
+
+};
+
