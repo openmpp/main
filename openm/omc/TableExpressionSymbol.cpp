@@ -10,7 +10,7 @@
 #include <typeinfo>
 #include <set>
 #include "ast.h"
-#include "parser_helper.h"
+#include "token.h"
 
 // static
 string TableExpressionSymbol::symbol_name(const Symbol* table, int index)

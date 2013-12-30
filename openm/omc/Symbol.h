@@ -13,7 +13,7 @@
 #include <map>
 #include <typeinfo>
 #include <cassert>
-#include "parser_helper.h"
+#include "token.h"
 #include "location.hh"
 #include "Literal.h"
 #include "CodeBlock.h"

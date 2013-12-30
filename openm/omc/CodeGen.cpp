@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <utility>
 #include <typeinfo>
-#include "parser_helper.h"
+#include "token.h"
 #include "CodeGen.h"
 #include "CodeBlock.h"
 #include "ast.h"

@@ -10,7 +10,7 @@
 #include <typeinfo>
 #include <set>
 #include "ast.h"
-#include "parser_helper.h"
+#include "token.h"
 
 
 void TableSymbol::post_parse(int pass)

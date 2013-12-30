@@ -1,7 +1,7 @@
 /**
-* @file    BuiltinAgentVarSymbol.cpp
-* Definitions for the BuiltinAgentVarSymbol class.
-*/
+ * @file    BuiltinAgentVarSymbol.cpp
+ * Definitions for the BuiltinAgentVarSymbol class.
+ */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
@@ -10,7 +10,7 @@
 #include <typeinfo>
 #include <set>
 #include "ast.h"
-#include "parser_helper.h"
+#include "token.h"
 
 using namespace std;
 

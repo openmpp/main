@@ -10,7 +10,7 @@
 #include <typeinfo>
 #include <set>
 #include "ast.h"
-#include "parser_helper.h"
+#include "token.h"
 
 // static
 string TableAnalysisAgentVarSymbol::symbol_name(const Symbol *table, const Symbol *agentvar)
