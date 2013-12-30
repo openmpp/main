@@ -106,6 +106,9 @@
     <ClInclude Include="parser_helper.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="Symbol_simple.h" />
+    <ClInclude Include="TableAccumulatorSymbol.h" />
+    <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
+    <ClInclude Include="TableExpressionSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
   </ItemGroup>
   <ItemGroup>
@@ -126,6 +129,9 @@
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="Symbol_simple.cpp" />
+    <ClCompile Include="TableAccumulatorSymbol.cpp" />
+    <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
+    <ClCompile Include="TableExpressionSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

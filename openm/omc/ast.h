@@ -11,6 +11,9 @@
 #include "Symbol_simple.h"
 #include "AgentMemberSymbol.h"
 #include "AgentSymbol.h"
+#include "TableExpressionSymbol.h"
+#include "TableAccumulatorSymbol.h"
+#include "TableAnalysisAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "ExprForTable.h"
 

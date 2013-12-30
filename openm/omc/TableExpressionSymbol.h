@@ -1,0 +1,74 @@
+/**
+* @file    TableExpressionSymbol.h
+* Declarations for the TableExpressionSymbol class.
+*/
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#pragma once
+#include <string>
+#include "Symbol.h"
+
+using namespace std;
+
+/**
+* TableExpressionSymbol.
+*/
+class TableExpressionSymbol : public Symbol
+{
+private:
+    typedef Symbol super;
+
+public:
+    TableExpressionSymbol(Symbol *table, ExprForTable *root, int index)
+        : Symbol(symbol_name(table, index))
+        , root(root)
+        , index(index)
+        , table(table->get_rpSymbol())
+        , pp_table(nullptr)
+    {
+    }
+
+    // Construct symbol name for the table expression symbol.
+    // Example: BasicDemography.Expr0
+    static string symbol_name(const Symbol* table, int index);
+
+    void post_parse(int pass);
+
+    void post_parse_traverse(ExprForTable *node);
+
+    enum expression_style {
+        cxx,
+        sql
+    };
+    string get_expression(const ExprForTable *node, expression_style style);
+
+    /**
+    * Root of the expression tree
+    */
+
+    ExprForTable *root;
+
+    /**
+    * Zero-based index of the expression in the expression table dimension
+    */
+
+    int index;
+
+    /**
+    * The table containing this expression (reference to pointer)
+    *
+    * Stable to symbol morphing during parse phase.
+    */
+
+    Symbol*& table;
+
+    /**
+    * The table containing this expression (pointer)
+    *
+    * Only valid after post-parse phase 1.
+    */
+
+    TableSymbol* pp_table;
+};
+
