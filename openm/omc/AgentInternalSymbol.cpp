@@ -14,3 +14,43 @@
 
 using namespace std;
 
+void AgentInternalSymbol::post_parse(int pass)
+{
+    // First perform post-parse operations at next level up in the Symbol hierarchy
+    super::post_parse(pass);
+
+    // Now do operations specific to this level in the Symbol hierarchy
+    switch (pass) {
+    case 1:
+        // Nothing
+        break;
+    default:
+        break;
+    }
+}
+
+CodeBlock AgentInternalSymbol::cxx_initialize_expression() const
+{
+    CodeBlock c;
+    // example:              om_in_DurationOfLife_alive = false;\n
+    c += name + " = " + initial_value() + ";";
+    return c;
+}
+
+CodeBlock AgentInternalSymbol::cxx_declaration_agent_scope()
+{
+    // First get declaration code at next level up in the Symbol hierarchy
+    CodeBlock h = super::cxx_declaration_agent_scope();
+    // Now add declaration code specific to this level in the Symbol hierarchy
+    h += token_to_string(type) + " " + name + ";";
+    return h;
+}
+
+CodeBlock AgentInternalSymbol::cxx_definition()
+{
+    // First get definition code at next level up in the Symbol hierarchy
+    CodeBlock c = super::cxx_definition();
+    return c;
+}
+
+

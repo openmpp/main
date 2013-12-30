@@ -14,3 +14,111 @@
 
 using namespace std;
 
+// static
+string ConditionedDurationAgentVarSymbol::member_name(const Symbol *observed, const Literal *constant)
+{
+    string result = "om_" + token_to_string(token::TK_duration) + "_" + observed->name + "_" + constant->cxx_token;
+    return result;
+}
+
+// static
+string ConditionedDurationAgentVarSymbol::symbol_name(const Symbol* agent, const Symbol* observed, const Literal* constant)
+{
+    string member = ConditionedDurationAgentVarSymbol::member_name(observed, constant);
+    string result = Symbol::symbol_name(member, agent);
+    return result;
+}
+
+// static
+Symbol * ConditionedDurationAgentVarSymbol::get_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant)
+{
+    Symbol *sym = nullptr;
+    string nm = ConditionedDurationAgentVarSymbol::symbol_name(agent, observed, constant);
+    auto it = symbols.find(nm);
+    if (it != symbols.end())
+        sym = it->second;
+    else
+        sym = new ConditionedDurationAgentVarSymbol(agent, observed, constant);
+
+    return sym;
+}
+
+
+/**
+* Post-parse operations for ConditionedDurationAgentVarSymbol
+*/
+
+void ConditionedDurationAgentVarSymbol::post_parse(int pass)
+{
+    // First perform post-parse operations at next level up in Symbol hierarchy
+    super::post_parse(pass);
+
+    switch (pass) {
+    case 1:
+        // assign direct pointer for post-parse use
+        pp_observed = dynamic_cast<AgentVarSymbol *> (observed);
+        break;
+    case 2:
+    {
+              // add side-effect to time agentvar
+              AgentVarSymbol *av = pp_agent->pp_time;
+              // Eg. om_duration.wait( new_value - old_value );
+              string line = name + ".wait( new_value - old_value );";
+              av->pp_side_effects.push_back(line);
+    }
+    default:
+        break;
+    }
+}
+
+const string ConditionedDurationAgentVarSymbol::condition_func()
+{
+    return name + "_condition";
+}
+
+const string ConditionedDurationAgentVarSymbol::condition_decl()
+{
+    return "bool " + condition_func() + "()";
+}
+
+const string ConditionedDurationAgentVarSymbol::condition_decl_qualified()
+{
+    return "bool " + agent->name + "::" + condition_func() + "()";
+}
+
+CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent_scope()
+{
+    // get declaration code common to all agentvars
+    CodeBlock h = super::cxx_declaration_agent_scope();
+
+    // add declaration code specific to this kind of derived agentvar
+    // 
+    // example:        bool om_duration_alive_true_condition();
+    h += condition_decl() + ";";
+
+    // example:         DurationAgentVar<Time, Person, &om_duration_alive_true_offset, &Person::om_duration_alive_true_side_effects, &Person::om_duration_alive_true_condition> om_duration
+    h += "DurationAgentVar<" + token_to_string(type) + ", "
+        + agent->name + ", "
+        + "&" + agent->name + "::" + side_effects_func() + ", "
+        + "&" + agent->name + "::" + condition_func() + "> "
+        + name + ";";
+
+    return h;
+}
+
+CodeBlock ConditionedDurationAgentVarSymbol::cxx_definition()
+{
+    // start with definition code from next higher level in symbol hierarchy
+    CodeBlock c = super::cxx_definition();
+
+    // add definition code specific to this kind of derived agentvar
+    // example:        bool Person::om_duration_alive_true_condition()
+    c += condition_decl_qualified();
+    c += "{";
+    // example:             return ( alive == true );
+    c += "return (" + observed->name + " == " + constant->cxx_token + " );";
+    c += "}";
+
+    return c;
+}
+
