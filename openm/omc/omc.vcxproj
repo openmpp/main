@@ -130,14 +130,25 @@
     <ClInclude Include="scanner.l" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AgentCallbackMemberSymbol.cpp" />
+    <ClCompile Include="AgentDataMemberSymbol.cpp" />
+    <ClCompile Include="AgentEventSymbol.cpp" />
+    <ClCompile Include="AgentEventTimeSymbol.cpp" />
+    <ClCompile Include="AgentFuncSymbol.cpp" />
+    <ClCompile Include="AgentInternalSymbol.cpp" />
     <ClCompile Include="AgentMemberSymbol.cpp" />
     <ClCompile Include="AgentSymbol.cpp" />
+    <ClCompile Include="AgentVarSymbol.cpp" />
+    <ClCompile Include="BuiltinAgentVarSymbol.cpp" />
     <ClCompile Include="CodeGen.cpp" />
+    <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="DurationAgentVarSymbol.cpp" />
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
     <ClCompile Include="parser_helper.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
+    <ClCompile Include="SimpleAgentVarSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="Symbol_simple.cpp" />
     <ClCompile Include="TableAccumulatorSymbol.cpp" />

@@ -1,7 +1,6 @@
 /**
 * @file    AgentMemberSymbol.cpp
-* Implements the AgentMemberSymbol derived class of the Symbol class.
-* Also implements sub-classes.
+* Definitions for the AgentMemberSymbol class.
 */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
