@@ -13,6 +13,7 @@
 class TableExpressionSymbol;
 class TableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
+class CodeBlock;
 
 using namespace std;
 

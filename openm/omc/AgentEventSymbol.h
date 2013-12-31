@@ -6,7 +6,9 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "Symbol.h"
+#include "AgentMemberSymbol.h"
+
+class CodeBlock;
 
 using namespace std;
 

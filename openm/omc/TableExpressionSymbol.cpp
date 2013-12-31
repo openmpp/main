@@ -6,11 +6,10 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include <algorithm>
-#include <typeinfo>
-#include <set>
-#include "ast.h"
-#include "token.h"
+#include "TableAccumulatorSymbol.h"
+#include "TableExpressionSymbol.h"
+#include "TableSymbol.h"
+#include "ExprForTable.h"
 
 // static
 string TableExpressionSymbol::symbol_name(const Symbol* table, int index)

@@ -17,13 +17,6 @@ class AgentVarSymbol;
 class AgentInternalSymbol;
 class BuiltinAgentVarSymbol;
 
-//#include "BuiltinAgentVarSymbol.h"
-//#include "AgentInternalSymbol.h"
-//#include "AgentEventSymbol.h"
-//#include "AgentEventTimeSymbol.h"
-//#include "AgentFuncSymbol.h"
-
-
 using namespace std;
 
 /**

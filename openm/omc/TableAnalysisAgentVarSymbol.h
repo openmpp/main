@@ -10,6 +10,9 @@
 #include <string>
 #include "Symbol.h"
 
+class AgentVarSymbol;
+class CodeBlock;
+
 using namespace std;
 
 /**

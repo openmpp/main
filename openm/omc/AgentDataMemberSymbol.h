@@ -8,6 +8,9 @@
 #pragma once
 #include "AgentMemberSymbol.h"
 
+
+class CodeBlock;
+
 using namespace std;
 
 class AgentDataMemberSymbol : public AgentMemberSymbol

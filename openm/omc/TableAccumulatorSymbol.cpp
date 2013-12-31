@@ -5,12 +5,11 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include <cassert>
-#include <algorithm>
-#include <typeinfo>
-#include <set>
-#include "ast.h"
-#include "token.h"
+#include "TableAccumulatorSymbol.h"
+#include "TableSymbol.h"
+#include "AgentVarSymbol.h"
+#include "TableAnalysisAgentVarSymbol.h"
+#include "CodeBlock.h"
 
 
 // static

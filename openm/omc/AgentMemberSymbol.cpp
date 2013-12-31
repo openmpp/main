@@ -5,12 +5,8 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include <cassert>
-#include <algorithm>
-#include <typeinfo>
-#include <set>
-#include "ast.h"
-#include "token.h"
+#include "AgentMemberSymbol.h"
+#include "AgentSymbol.h"
 
 using namespace std;
 

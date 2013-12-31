@@ -11,12 +11,8 @@
 #include <unordered_map>
 #include <forward_list>
 #include <map>
-#include <typeinfo>
-#include <cassert>
 #include "token.h"
 #include "location.hh"
-#include "Literal.h"
-#include "CodeBlock.h"
 
 class AgentSymbol;
 class ParameterSymbol;

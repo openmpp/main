@@ -31,6 +31,7 @@ class ExprForTable;
 #include "token.h" 
 #include "ast.h"
 #include <stdarg.h>
+#include <cassert>
 #include "libopenm/omCommon.h"
 // last item found by flex.  Used in grammar to provide error information
 // TODO check and eliminate use

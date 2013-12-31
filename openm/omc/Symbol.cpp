@@ -22,7 +22,6 @@
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableSymbol.h"
-#include "token.h"
 
 symbol_map_type Symbol::symbols;
 

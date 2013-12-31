@@ -8,6 +8,8 @@
 #pragma once
 #include "AgentCallbackMemberSymbol.h"
 
+class AgentEventSymbol;
+
 using namespace std;
 
 /**
