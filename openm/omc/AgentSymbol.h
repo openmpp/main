@@ -9,6 +9,21 @@
 #include <list>
 #include "Symbol.h"
 
+class AgentDataMemberSymbol;
+class AgentEventSymbol;
+class AgentEventTimeSymbol;
+class AgentFuncSymbol;
+class AgentVarSymbol;
+class AgentInternalSymbol;
+class BuiltinAgentVarSymbol;
+
+//#include "BuiltinAgentVarSymbol.h"
+//#include "AgentInternalSymbol.h"
+//#include "AgentEventSymbol.h"
+//#include "AgentEventTimeSymbol.h"
+//#include "AgentFuncSymbol.h"
+
+
 using namespace std;
 
 /**
@@ -32,21 +47,10 @@ public:
         , pp_age(nullptr)
         , pp_events(nullptr)
     {
-        // Create builtin agentvars for this agent: time, age, events, agent_id
-        if (!exists("time", this))
-            new BuiltinAgentVarSymbol("time", this, token::TK_Time);
-        if (!exists("age", this))
-            new BuiltinAgentVarSymbol("age", this, token::TK_Time);
-        if (!exists("events", this))
-            new BuiltinAgentVarSymbol("events", this, token::TK_counter);
-        if (!exists("agent_id", this))
-            new BuiltinAgentVarSymbol("agent_id", this, token::TK_int);
-
-        // TODO: Remove test - Create internal data members for this agent: allow_assignment
-        if (!exists("allow_assignment", this))
-            new AgentInternalSymbol("allow_assignment", this, token::TK_bool);
+        create_builtin_symbols();
     }
 
+    void create_builtin_symbols();
     void post_parse(int pass);
 
     BuiltinAgentVarSymbol *pp_time;

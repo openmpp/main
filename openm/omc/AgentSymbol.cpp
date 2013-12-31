@@ -14,6 +14,23 @@
 
 using namespace std;
 
+void AgentSymbol::create_builtin_symbols()
+{
+    //Create builtin agentvars for this agent: time, age, events, agent_id
+    if (!exists("time", this))
+        new BuiltinAgentVarSymbol("time", this, token::TK_Time);
+    if (!exists("age", this))
+        new BuiltinAgentVarSymbol("age", this, token::TK_Time);
+    if (!exists("events", this))
+        new BuiltinAgentVarSymbol("events", this, token::TK_counter);
+    if (!exists("agent_id", this))
+        new BuiltinAgentVarSymbol("agent_id", this, token::TK_int);
+
+    // TODO: Remove test - Create internal data members for this agent: allow_assignment
+    if (!exists("allow_assignment", this))
+        new AgentInternalSymbol("allow_assignment", this, token::TK_bool);
+}
+
 void AgentSymbol::post_parse(int pass)
 {
     // First perform post-parse operations at next level up in Symbol hierarchy

@@ -9,11 +9,20 @@
 #include <algorithm>
 #include <typeinfo>
 #include <set>
-#include "ast.h"
+#include "Symbol.h"
+#include "Symbol_simple.h" // For VersionSymbol, TypeDeclSymbol, ParameterSymbol
+#include "AgentSymbol.h"
+#include "AgentDataMemberSymbol.h"
+#include "AgentDataMemberSymbol.h"
+#include "AgentEventSymbol.h"
+#include "AgentEventTimeSymbol.h"
+#include "AgentFuncSymbol.h"
+#include "AgentVarSymbol.h"
+#include "TableExpressionSymbol.h"
+#include "TableAccumulatorSymbol.h"
+#include "TableAnalysisAgentVarSymbol.h"
+#include "TableSymbol.h"
 #include "token.h"
-
-
-// Static members of the Symbol class. 
 
 symbol_map_type Symbol::symbols;
 

@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include "token.h"
 #include "Literal.h"
 #include "Symbol.h"
 #include "Symbol_simple.h"

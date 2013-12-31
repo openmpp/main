@@ -10,7 +10,12 @@
 #include <list>
 #include "Symbol.h"
 
+class TableExpressionSymbol;
+class TableAccumulatorSymbol;
+class TableAnalysisAgentVarSymbol;
+
 using namespace std;
+
 
 
 /**

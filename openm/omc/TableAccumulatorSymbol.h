@@ -8,6 +8,10 @@
 #pragma once
 #include "Symbol.h"
 
+class AgentVarSymbol;
+class TableAnalysisAgentVarSymbol;
+class TableSymbol;
+
 using namespace std;
 
 /**

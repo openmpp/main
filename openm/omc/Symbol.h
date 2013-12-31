@@ -18,6 +18,10 @@
 #include "Literal.h"
 #include "CodeBlock.h"
 
+class AgentSymbol;
+class ParameterSymbol;
+class TableSymbol;
+
 using namespace std;
 
 /**
@@ -49,31 +53,31 @@ typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 // The underlying collection std::unordered_map guarantees that references and pointers remain valid even if rehashing occurs.
 
 // Forward declarations of all classes in the Symbol hierarchy
-class AgentDataMemberSymbol;
-class AgentEventSymbol;
-class AgentEventTimeSymbol;
-class AgentFuncSymbol;
-class AgentInternalSymbol;
-class AgentMemberSymbol;
-class AgentSymbol;
-class AgentVarSymbol;
-class BuiltinAgentVarSymbol;
-class ConditionedDurationAgentVarSymbol;
-class DurationAgentVarSymbol;
-class ExprForTable;
-class LanguageSymbol;
-class ModelSymbol;
-class ModuleSymbol;
-class ParameterSymbol;
-class SimpleAgentVarSymbol;
-class Symbol;
-class TableSymbol;
-class TableAccumulatorSymbol;
-class TableAnalysisAgentVarSymbol;
-class TableExpressionSymbol;
-class TableSymbol;
-class TypeDeclSymbol;
-class VersionSymbol;
+//class AgentDataMemberSymbol;
+//class AgentEventSymbol;
+//class AgentEventTimeSymbol;
+//class AgentFuncSymbol;
+//class AgentInternalSymbol;
+//class AgentMemberSymbol;
+//class AgentSymbol;
+//class AgentVarSymbol;
+//class BuiltinAgentVarSymbol;
+//class ConditionedDurationAgentVarSymbol;
+//class DurationAgentVarSymbol;
+//class ExprForTable;
+//class LanguageSymbol;
+//class ModelSymbol;
+//class ModuleSymbol;
+//class ParameterSymbol;
+//class SimpleAgentVarSymbol;
+//class Symbol;
+//class TableSymbol;
+//class TableAccumulatorSymbol;
+//class TableAnalysisAgentVarSymbol;
+//class TableExpressionSymbol;
+//class TableSymbol;
+//class TypeDeclSymbol;
+//class VersionSymbol;
 
 
 
