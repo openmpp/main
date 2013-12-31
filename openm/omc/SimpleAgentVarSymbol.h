@@ -27,7 +27,6 @@ public:
 
     ~SimpleAgentVarSymbol()
     {
-        if (initializer != nullptr) delete initializer;
     }
 
     /**
