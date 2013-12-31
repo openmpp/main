@@ -5,6 +5,7 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
 #include "TableAnalysisAgentVarSymbol.h"
 #include "AgentVarSymbol.h"
 #include "AgentInternalSymbol.h"

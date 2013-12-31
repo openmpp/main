@@ -145,6 +145,7 @@
     <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="AgentVarSymbol.cpp" />
     <ClCompile Include="BuiltinAgentVarSymbol.cpp" />
+    <ClCompile Include="CodeBlock.cpp" />
     <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
