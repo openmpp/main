@@ -10,7 +10,9 @@
 #include <typeinfo>
 #include <set>
 #include "Symbol.h"
-#include "Symbol_simple.h" // For VersionSymbol, TypeDeclSymbol, ParameterSymbol
+#include "VersionSymbol.h"
+#include "TypeDeclSymbol.h"
+#include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
 #include "AgentDataMemberSymbol.h"

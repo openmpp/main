@@ -1,0 +1,31 @@
+/**
+* @file    ModelSymbol.h
+* Declarations for the ModelSymbol class.
+*/
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#pragma once
+#include "Symbol.h"
+
+/**
+* Symbol for the model itself.
+*
+* A single instance of ModelSymbol exists in the symbol table
+* after parsing is complete.  It is constructed from the file name
+* of the module which contains the developer-supplied definition
+* of the C++ function Simulation().
+*
+*/
+class ModelSymbol : public Symbol
+{
+private:
+    typedef Symbol super;
+
+public:
+    ModelSymbol(string nm)
+        : Symbol(nm)
+    {
+    }
+};
+

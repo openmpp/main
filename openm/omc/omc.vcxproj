@@ -110,17 +110,22 @@
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DurationAgentVarSymbol.h" />
     <ClInclude Include="ExprForTable.h" />
+    <ClInclude Include="LanguageSymbol.h" />
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
+    <ClInclude Include="ModelSymbol.h" />
+    <ClInclude Include="ModuleSymbol.h" />
+    <ClInclude Include="ParameterSymbol.h" />
     <ClInclude Include="ParseContext.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
     <ClInclude Include="Symbol.h" />
-    <ClInclude Include="Symbol_simple.h" />
     <ClInclude Include="TableAccumulatorSymbol.h" />
     <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
     <ClInclude Include="TableExpressionSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
     <ClInclude Include="token.h" />
+    <ClInclude Include="TypeDeclSymbol.h" />
+    <ClInclude Include="VersionSymbol.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/location.hh" />
@@ -147,9 +152,9 @@
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
+    <ClCompile Include="ParameterSymbol.cpp" />
     <ClCompile Include="SimpleAgentVarSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
-    <ClCompile Include="Symbol_simple.cpp" />
     <ClCompile Include="TableAccumulatorSymbol.cpp" />
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
     <ClCompile Include="TableExpressionSymbol.cpp" />
