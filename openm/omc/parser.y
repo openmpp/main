@@ -76,7 +76,7 @@ extern char *yytext;
 	ExprForTable         *pval_TableExpr;
 };
 
-%printer { yyoutput << "token " << token_to_string((token_type)$$); } <val_token>
+%printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
 %printer { yyoutput << "literal " << $$->cxx_token; } <pval_Literal>
 %printer { yyoutput << "integer literal " << $$->cxx_token; } <pval_IntegerLiteral>
 %printer { yyoutput << "character literal " << $$->cxx_token; } <pval_CharacterLiteral>
@@ -84,7 +84,7 @@ extern char *yytext;
 %printer { yyoutput << "string literal " << $$->cxx_token; } <pval_StringLiteral>
 %printer { yyoutput << "symbol " << '"' << $$->name << '"' << " type=" << typeid($$).name(); } <pval_Symbol>
 %printer { yyoutput << "table expr "; } <pval_TableExpr>
-%printer { yyoutput << "initial value type=" << token_to_string($$->associated_token); } <pval_InitialValue>
+%printer { yyoutput << "initial value type=" << Symbol::token_to_string($$->associated_token); } <pval_InitialValue>
 
 %destructor { delete $$; } <pval_IntegerLiteral> <pval_CharacterLiteral> <pval_FloatingPointLiteral> <pval_StringLiteral>
 
@@ -693,19 +693,19 @@ AnyLiteral:
                         }
     | BoolLiteral
                         {
-                            $AnyLiteral = new BooleanLiteral( token_to_string( (token_type) $BoolLiteral ) );
+                            $AnyLiteral = new BooleanLiteral( Symbol::token_to_string( (token_type) $BoolLiteral ) );
                         }
     | "nullptr"
                         {
-                            $AnyLiteral = new PointerLiteral( token_to_string( token::TK_nullptr ) );
+                            $AnyLiteral = new PointerLiteral( Symbol::token_to_string( token::TK_nullptr ) );
                         }
     | "time_infinite"
                         {
-                            $AnyLiteral = new TimeLiteral( token_to_string( token::TK_time_infinite ) );
+                            $AnyLiteral = new TimeLiteral( Symbol::token_to_string( token::TK_time_infinite ) );
                         }
     | "time_undef"
                         {
-                            $AnyLiteral = new TimeLiteral( token_to_string( token::TK_time_undef ) );
+                            $AnyLiteral = new TimeLiteral( Symbol::token_to_string( token::TK_time_undef ) );
                         }
     ;
 
@@ -820,8 +820,8 @@ ExprForTable[result]:
                         {
                             Symbol *agentvar = $AgentVar;
                             Symbol *table = pc.get_table_context();
-                            token_type acc = modgen_cumulation_operator_to_acc( (token_type) $ModgenCumulationOperator );
-                            token_type incr = modgen_cumulation_operator_to_incr( (token_type) $ModgenCumulationOperator );
+                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $ModgenCumulationOperator );
+                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $ModgenCumulationOperator );
 
                             // Also create symbol for associated analysis agentvar if not already present
                             TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;

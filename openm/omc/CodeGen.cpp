@@ -115,9 +115,9 @@ void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
 	c += "// types";
 
     {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( token_to_string( token::TK_Time ) ) );
+	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_Time ) ) );
         assert ( sym ); // compiler guarantee
-	    string typ = token_to_string( sym->value );
+	    string typ = Symbol::token_to_string( sym->value );
         // E.g. typedef double Time;
 	    t += "typedef " + typ + " " + sym->name + ";";
 	    t += "typedef " + typ + " TIME; // for Modgen models";
@@ -132,25 +132,25 @@ void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
     }
 
     {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( token_to_string( token::TK_real ) ) );
+	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_real ) ) );
         assert ( sym ); // compiler guarantee
-	    string typ = token_to_string( sym->value );
+	    string typ = Symbol::token_to_string( sym->value );
         // E.g. typedef double real;
 	    t += "typedef " + typ + " " + sym->name + ";";
     }
 
     {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( token_to_string( token::TK_counter ) ) );
+	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_counter ) ) );
         assert ( sym ); // compiler guarantee
-	    string typ = token_to_string( sym->value );
+	    string typ = Symbol::token_to_string( sym->value );
         // E.g. typedef uint counter;
 	    t += "typedef " + typ + " " + sym->name + ";";
     }
 
     {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( token_to_string( token::TK_integer ) ) );
+	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_integer ) ) );
         assert ( sym ); // compiler guarantee
-	    string typ = token_to_string( sym->value );
+	    string typ = Symbol::token_to_string( sym->value );
         // E.g. typedef int integer;
 	    t += "typedef " + typ + " " + sym->name + ";";
     }
@@ -164,7 +164,7 @@ void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
 	// agents.h - parameter declaration
 	h += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
-	    string type = token_to_string( parameter->type );
+	    string type = Symbol::token_to_string( parameter->type );
     	h += "extern " + type + " " + parameter->name + ";";
     }
 	h += "";
@@ -172,7 +172,7 @@ void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
 	// agents.cpp - parameter definition
 	c += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
-	    string type = token_to_string( parameter->type );
+	    string type = Symbol::token_to_string( parameter->type );
     	c += type + " " + parameter->name + " = 0.0;";
     }
 	c += "";
@@ -217,7 +217,7 @@ void CodeGen::do_ModelStartup( CodeBlock& h, CodeBlock& c )
 	c += "theLog->logMsg(\"Reading Parameters\");";
     for ( auto parameter : Symbol::pp_parameters ) {
         string name = parameter->name;
-    	string typ = token_to_string( parameter->type );
+    	string typ = Symbol::token_to_string( parameter->type );
     	//c += "try {";
 	    c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
         //c += "}";
@@ -489,7 +489,7 @@ void CodeGen::do_tables( CodeBlock& h, CodeBlock& c )
                 assert( 0 );
             }
             // e.g.  sum(value_in(alive))
-            c += "// " + token_to_string(acc->accumulator) + "(" + token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
+            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
             // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc0[cell] =   0.0;
             c += "for ( int cell = 0; cell < n_cells; cell++ ) acc" + to_string(acc->index) + "[cell] = " + initial_value + ";";
             // e.g. accumulators[0] = acc0;

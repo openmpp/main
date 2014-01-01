@@ -45,7 +45,7 @@ multimap<string, string> Symbol::memfunc_bodyids;
 * create hard-coded equivalent.
 */
 
-static unordered_map<token_type, string, std::hash<int> > token_string =
+unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 {
     // top level om keywords, in alphabetic order
     { token::TK_agent, "agent" },
@@ -381,17 +381,7 @@ unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
     token::TK_version,
 };
 
-/**
-* Map from a string to the token associated with that string.
-*
-* The lexical scanner calls @a string_to_token to map each word to the corresponding preferred
-* token using this map. The map is initialized with deprecated synonyms for preferred terms.
-* These deprecated terms are only in the map @a string_token, not in the map @a token_string.
-* On the first call to the helper function @a string_to_token, this map is populated using all
-* entries in the reciprocal map @a token_string.
-*/
-
-static unordered_map<string, token_type> string_token =
+unordered_map<string, token_type> Symbol::string_token =
 {
     { "actor", token::TK_agent },
     { "actor_id", token::TK_agent_id },
@@ -661,32 +651,16 @@ bool Symbol::is_om_developer_function(const char* nm)
     return om_developer_functions.count(nm) == 0 ? false : true;
 }
 
-/**
-* Get the string corresponding to a token.
-*
-* @param e The token value, e.g. TK_agent.
-*
-* @return The string representation of the token, e.g. "agent".
-*/
 
-const string token_to_string(const token_type& e)
+//static
+const string Symbol::token_to_string(const token_type& e)
 {
     auto i = token_string.find(e);
     return i->second;
 }
 
-
-/**
-* Get the token corresponding to a string.
-*
-* @param s A string with an associated token, e.g. "agent".
-*
-* @return The token associated with the string, e.g. token::TK:agent.
-*
-*         If the string is not a token, the special value token::TK_error is returned.
-*/
-
-const token_type string_to_token(const char * s)
+//static
+const token_type Symbol::string_to_token(const char * s)
 {
     static bool initialization_done = false;
 
@@ -700,16 +674,8 @@ const token_type string_to_token(const char * s)
     else return i->second;
 }
 
-
-/**
-* Extract accumulator from Modgen cumulation operator.
-*
-* @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
-*
-* @return The associated accumulator, e.g. token::TK_max.
-*/
-
-const token_type modgen_cumulation_operator_to_acc(const token_type& e)
+// static
+const token_type Symbol::modgen_cumulation_operator_to_acc(const token_type& e)
 {
     token_type result;
     switch (e) {
@@ -766,15 +732,8 @@ const token_type modgen_cumulation_operator_to_acc(const token_type& e)
 }
 
 
-/**
-* Extract increment from Modgen cumulation operator.
-*
-* @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
-*
-* @return The associated increment, e.g. token::TK_value_in.
-*/
-
-const token_type modgen_cumulation_operator_to_incr(const token_type& e)
+//static
+const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
 {
     token_type result;
     switch (e) {

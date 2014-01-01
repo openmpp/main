@@ -37,11 +37,6 @@ typedef yy::parser::token token;
 
 typedef yy::parser::token_type token_type;
 
-const string token_to_string(const token_type& e);
-const token_type string_to_token(const char * s);
-const token_type modgen_cumulation_operator_to_acc(const token_type& e);
-const token_type modgen_cumulation_operator_to_incr(const token_type& e);
-
 /**
 * Defines an alias representing the type of the symbol table.
 *
@@ -251,14 +246,56 @@ public:
 
 
     /**
+     * Get the string corresponding to a token.
+     *
+     * @param e The token value, e.g. TK_agent.
+     *
+     * @return The string representation of the token, e.g. "agent".
+     */
+
+    static const string token_to_string(const token_type& e);
+
+
+    /**
+     * Get the token corresponding to a string.
+     *
+     * @param s A string with an associated token, e.g. "agent".
+     *
+     * @return The token associated with the string, e.g. token::TK:agent. If the string is not a
+     *         token, the special value token::TK_error is returned.
+     */
+
+    static const token_type string_to_token(const char * s);
+
+    /**
+     * Extract accumulator from Modgen cumulation operator.
+     *
+     * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     *
+     * @return The associated accumulator, e.g. token::TK_max.
+     */
+
+    static const token_type modgen_cumulation_operator_to_acc(const token_type& e);
+
+
+    /**
+     * Extract increment from Modgen cumulation operator.
+     *
+     * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     *
+     * @return The associated increment, e.g. token::TK_value_in.
+     */
+
+    static const token_type modgen_cumulation_operator_to_incr(const token_type& e);
+
+
+    /**
      * Default symbols in symbol table
      * 
-     * These are symbols which are added to the symbol table 
-     * when it is created.  They have default properties
-     * which can be overridden by the om developer.  An example
-     * is the @a TypeDeclSymbol with name 'Time'.  By default, the type is double,
-     * but this can be overridden by the model developer using the time_type statement
-     * in the model source code.
+     * These are symbols which are added to the symbol table when it is created.  They have default
+     * properties which can be overridden by the om developer.  An example is the @a TypeDeclSymbol
+     * with name 'Time'.  By default, the type is double, but this can be overridden by the model
+     * developer using the time_type statement in the model source code.
      */
 
     static void default_symbols();
@@ -342,6 +379,18 @@ public:
 
     static multimap<string, string> memfunc_bodyids;
 
+
+    /**
+     * The list of om outer keywords.
+     * 
+     * During parsing these keywords cause a transition from C++ code
+     * to om declarative code islands.  There is an exact one-to-one
+     * relationship between this list and the first block of entries
+     * in the list @a token_string
+     *
+     * @return The om outer keywords.
+     */
+
     static unordered_set<token_type, std::hash<int> > om_outer_keywords;
 
 
@@ -373,6 +422,34 @@ public:
     */
 
     static forward_list<string> c_comments;
+
+
+    /**
+     * Map from a token to the preferred string representation of that token.
+     * 
+     * This map has a unique key and maps the symbol enum to the preferred term. There is an exact
+     * one-to-one correspondence with code in @a parser.y. Maintain this correspondence in all
+     * changes or additions. Unfortunately, bison 2.7 with C++ does not expose yytname so we need to
+     * create hard-coded equivalent.
+     *
+     * @return The token string.
+     */
+
+    static unordered_map<token_type, string, std::hash<int> > Symbol::token_string;
+
+
+    /**
+    * Map from a string to the token associated with that string.
+    *
+    * The lexical scanner calls @a string_to_token to map each word to the corresponding preferred
+    * token using this map. The map is initialized with deprecated synonyms for preferred terms.
+    * These deprecated terms are only in the map @a string_token, not in the map @a token_string.
+    * On the first call to the helper function @a string_to_token, this map is populated using all
+    * entries in the reciprocal map @a token_string.
+    */
+
+    static unordered_map<string, token_type> Symbol::string_token;
+
 };
 
 

@@ -317,7 +317,7 @@ blank       [ \t\r]
 <om_decl>{ /* interior of openM++ declarative islands */
 	
 {word}      {
-			    token_type tok = string_to_token( yytext );
+			    token_type tok = Symbol::string_to_token( yytext );
                 if ( tok != token::TK_error ) {
                     /* valid keyword */
                     yylval->val_token = tok;
@@ -354,7 +354,7 @@ blank       [ \t\r]
                     case ']': pc.bracket_level--; break;
                 }
 				
-				token_type tok = string_to_token(yytext);
+				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
 			}
@@ -367,28 +367,28 @@ blank       [ \t\r]
 					/* this does not work with windows back-slashed pathes */
 					/* *drv.outside << std::endl << "#line " << yylloc->end.line << " \"" << *yylloc->end.filename << "\"" << std::endl; */
 				}
-				token_type tok = string_to_token(yytext);
+				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
 			}
 
 "->*"|"<<="|">>=" {
 				/* three character C++ operators */
-				token_type tok = string_to_token(yytext);
+				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
 			}
 
 "::"|"++"|"--"|"->"|".*"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"^="|"|=" {
 				/* two character C++ operator */
-				token_type tok = string_to_token(yytext);
+				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
 			}
 
 "."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
 				/* one character C++ operator */
-				token_type tok = string_to_token(yytext);
+				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
 			}
@@ -449,7 +449,7 @@ blank       [ \t\r]
             }
 
 {word}      {
-			    token_type tok = string_to_token( yytext );
+			    token_type tok = Symbol::string_to_token( yytext );
                 /* tok has value TK_error if not a keyword */
                 if ( Symbol::is_om_outer_keyword( tok ) ) {
                     /* transition to openM++ declarative island */
@@ -493,7 +493,7 @@ blank       [ \t\r]
 
 {word}      {
                 if ( pc.cxx_memfunc_gather ) {
-			        token_type tok = string_to_token( yytext );
+			        token_type tok = Symbol::string_to_token( yytext );
                     if ( tok == token::TK_error ) {
                         /* word is not a token, so it must be an identifier */
                         Symbol::memfunc_bodyids.insert( pair<string, string>(pc.cxx_memfunc_name, yytext) );
