@@ -8,6 +8,8 @@
 #pragma once
 #include "Symbol.h"
 
+class TableAccumulatorSymbol;
+
 using namespace std;
 
 /**

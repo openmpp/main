@@ -4,7 +4,6 @@
 #include <typeinfo>
 #include "Driver.h"
 #include "ParseContext.h"
-#include "token.h"
 #include "ast.h"
 
 /* Copyright (c) 2013 OpenM++

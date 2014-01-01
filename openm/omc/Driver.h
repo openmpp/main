@@ -10,11 +10,11 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include "token.h"
-#include "ParseContext.h"
+#include "Symbol.h"
+
+class ParseContext;
 
 using namespace std;
-
 
 // Tell Flex the lexer's prototype ...
 # define YY_DECL                                        \

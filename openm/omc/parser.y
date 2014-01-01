@@ -28,7 +28,6 @@ class ExprForTable;
 %code {
 #include "Driver.h"
 #include "ParseContext.h"
-#include "token.h" 
 #include "ast.h"
 #include <stdarg.h>
 #include <cassert>

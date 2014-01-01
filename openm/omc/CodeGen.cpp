@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <utility>
 #include <typeinfo>
-#include "token.h"
 #include "CodeGen.h"
 #include "CodeBlock.h"
 #include "ast.h"
