@@ -117,9 +117,6 @@
     <ClInclude Include="SimpleAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="token.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LanguageSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -201,9 +198,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SimpleAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="token.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParameterSymbol.cpp">

@@ -11,15 +11,14 @@
 
 using namespace std;
 
-// Unfortunately, bison 2.7 with C++ does not expose yytname
-// so we need to create hard-coded equivalent.
 
 /**
  * Map from a token to the preferred string representation of that token.
  * 
- * This map has a unique key and maps the symbol enum to the preferred term. There is an
- * exact one-to-one correspondence with code in @a parser.y. Maintain this correspondence in all
- * changes or additions.
+ * This map has a unique key and maps the symbol enum to the preferred term. There is an exact
+ * one-to-one correspondence with code in @a parser.y. Maintain this correspondence in all
+ * changes or additions. Unfortunately, bison 2.7 with C++ does not expose yytname so we need to
+ * create hard-coded equivalent.
  */
 
 static unordered_map<token_type, string, std::hash<int> > token_string =

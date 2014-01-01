@@ -11,14 +11,36 @@
 #include <unordered_map>
 #include <forward_list>
 #include <map>
-#include "token.h"
 #include "location.hh"
+#include "parser.hpp"
 
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
 
 using namespace std;
+
+/**
+* Defines an alias used to reference bison-generated token values.
+*
+* For example token::TK_agent is the value of the bison-generated token associated with the
+* openM++ keyword 'agent'.
+*/
+
+typedef yy::parser::token token;
+
+/**
+* Defines an alias for the bison-generated enum holding token values.
+*
+* Used to declare members, function arguments, and return values for token values.
+*/
+
+typedef yy::parser::token_type token_type;
+
+const string token_to_string(const token_type& e);
+const token_type string_to_token(const char * s);
+const token_type modgen_cumulation_operator_to_acc(const token_type& e);
+const token_type modgen_cumulation_operator_to_incr(const token_type& e);
 
 /**
 * Defines an alias representing the type of the symbol table.
@@ -47,35 +69,6 @@ typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 // Instead, store a reference to the pointer of, which can always be obtained using the member function get_rpSymbol().
 // Actually, it's a reference to the second pair of the element for the symbol in the symbol table (the first element of the pair is the name)
 // The underlying collection std::unordered_map guarantees that references and pointers remain valid even if rehashing occurs.
-
-// Forward declarations of all classes in the Symbol hierarchy
-//class AgentDataMemberSymbol;
-//class AgentEventSymbol;
-//class AgentEventTimeSymbol;
-//class AgentFuncSymbol;
-//class AgentInternalSymbol;
-//class AgentMemberSymbol;
-//class AgentSymbol;
-//class AgentVarSymbol;
-//class BuiltinAgentVarSymbol;
-//class ConditionedDurationAgentVarSymbol;
-//class DurationAgentVarSymbol;
-//class ExprForTable;
-//class LanguageSymbol;
-//class ModelSymbol;
-//class ModuleSymbol;
-//class ParameterSymbol;
-//class SimpleAgentVarSymbol;
-//class Symbol;
-//class TableSymbol;
-//class TableAccumulatorSymbol;
-//class TableAnalysisAgentVarSymbol;
-//class TableExpressionSymbol;
-//class TableSymbol;
-//class TypeDeclSymbol;
-//class VersionSymbol;
-
-
 
 
 
