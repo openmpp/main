@@ -50,7 +50,7 @@ Symbol * ConditionedDurationAgentVarSymbol::get_symbol(const Symbol* agent, cons
 
 void ConditionedDurationAgentVarSymbol::post_parse(int pass)
 {
-    // First perform post-parse operations at next level up in Symbol hierarchy
+    // Hook into post_parse hierarchical calling chain
     super::post_parse(pass);
 
     switch (pass) {

@@ -10,9 +10,14 @@
 
 using namespace std;
 
+
 /**
-* SimpleAgentVarSymbol.
-*/
+ * SimpleAgentVarSymbol.
+ * 
+ * A symbol of this class represents an agentvar whose value can be modified by C++ code in an
+ * event implement function.
+ */
+
 class SimpleAgentVarSymbol : public AgentVarSymbol
 {
 private:
@@ -29,24 +34,35 @@ public:
     {
     }
 
+
     /**
-    * Gets the initial value for the agentvar
-    *
-    * @return  The initial value as a string.
-    */
+     * Gets the initial value for the agentvar.
+     *
+     * @return The initial value as a string.
+     */
+
     string initial_value() const;
 
     void post_parse(int pass);
 
+
     /**
-    * Gets the c++ declaration for the simple agentvar.
-    */
+     * Gets the c++ declaration for the simple agentvar.
+     *
+     * @return A CodeBlock.
+     */
 
     CodeBlock cxx_declaration_agent_scope();
 
     // members
 
-    /** C++ literal to initialize simple agentvar at agent creation */
+
+    /**
+     * The initializer.
+     *
+     *  C++ literal to initialize simple agentvar at agent creation.
+     */
+
     Literal *initializer;
 
 };

@@ -29,7 +29,7 @@ bool TableAnalysisAgentVarSymbol::exists(const Symbol *table, const Symbol *agen
 
 void TableAnalysisAgentVarSymbol::post_parse(int pass)
 {
-    // First perform post-parse operations at next level up in Symbol hierarchy
+    // Hook into post_parse hierarchical calling chain
     super::post_parse(pass);
 
     switch (pass) {

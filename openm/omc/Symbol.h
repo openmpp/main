@@ -1,6 +1,6 @@
 /**
  * @file    Symbol.h
- * Declarions for the Symbol class.
+ * Declarations for the Symbol class.
  */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -20,38 +20,43 @@ class TableSymbol;
 
 using namespace std;
 
+
 /**
-* Defines an alias used to reference bison-generated token values.
-*
-* For example token::TK_agent is the value of the bison-generated token associated with the
-* openM++ keyword 'agent'.
-*/
+ * Defines an alias used to reference bison-generated token values.
+ * 
+ * For example token::TK_agent is the value of the bison-generated token associated with the
+ * openM++ keyword 'agent'.
+ */
 
 typedef yy::parser::token token;
 
+
 /**
-* Defines an alias for the bison-generated enum holding token values.
-*
-* Used to declare members, function arguments, and return values for token values.
-*/
+ * Defines an alias for the bison-generated enum holding token values.
+ * 
+ * Used to declare members, function arguments, and return values for token values.
+ */
 
 typedef yy::parser::token_type token_type;
 
-/**
-* Defines an alias representing the type of the symbol table.
-*
-* The symbol table maps strings to pointers to symbols.
-* The use of pointers to Symbols allows polymorphic symbols in the symbol table.
-* It also allows a given symbol to be 'morphed' to a different
-* kind of symbol during parsing by replacing the Symbol pointer by a pointer to a new instance
-* of a derived class of Symbol.  Morphing requires that any persistent use of a Symbol
-* in another object must be through an additional level of indirection, i.e. Symbol **.
-*/
-typedef unordered_map<string, Symbol *> symbol_map_type;
 
 /**
-* Defines an alias representing the type of a pair in the symbol table.
-*/
+ * Defines an alias representing the type of the symbol table.
+ * 
+ * The symbol table maps strings to pointers to symbols. The use of pointers to Symbols allows
+ * polymorphic symbols in the symbol table. It also allows a given symbol to be 'morphed' to a
+ * different kind of symbol during parsing by replacing the Symbol pointer by a pointer to a new
+ * instance of a derived class of Symbol.  Morphing requires that any persistent use of a Symbol
+ * in another object must be through an additional level of indirection, i.e. Symbol **.
+ */
+
+typedef unordered_map<string, Symbol *> symbol_map_type;
+
+
+/**
+ * Defines an alias representing the type of a pair in the symbol table.
+ */
+
 typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 
 // ======================================================
@@ -66,40 +71,40 @@ typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 // The underlying collection std::unordered_map guarantees that references and pointers remain valid even if rehashing occurs.
 
 
-
 /**
  * A Symbol is a named syntactic entity in openM++.
  * 
  * When the scanner encounters a name in the model source code which is neither a C++ keyword
- * nor an openM++ keyword, it creates an associated Symbol object, places it in
- * the symbol table, and returns it to the parser.  The parser may subsequently morph this
- * original symbol table entry to a derived class of Symbol.
+ * nor an openM++ keyword, it creates an associated Symbol object, places it in the symbol table,
+ * and returns it to the parser.  The parser may subsequently morph this original symbol table
+ * entry to a derived class of Symbol.
  * 
- * The Symbol class also contains static members which provide all functionality
- * associated with the symbol table.
+ * The Symbol class also contains static members which provide all functionality associated with
+ * the symbol table.
  */
+
 class Symbol {
 public:
 
     /**
      * Constructor for new Symbol.
-     *
-     * @param   unm  The unique name for the symbol
-     *              
-     * If the symbol table does not contain an entry with unique name @a unm
-     * a new symbol table entry is created with this unique name.
      * 
-     * This constructor sets the name equal to the unique name, and is used for
-     * symbols outside agent scope, e.g. classifications.
-     *                           
+     * If the symbol table does not contain an entry with unique name @a unm a new symbol table
+     * entry is created with this unique name.
+     * 
+     * This constructor sets the name equal to the unique name, and is used for symbols outside
+     * agent scope, e.g. classifications.
+     * 
      * If the symbol table does contain an entry with unique name @a unm the existing symbol is
-     * morphed to a new base class Symbol. This is useful for replacing a default symbol
-     * by a symbol specified in the model source code. For example, a default
-     * TypeDeclSymbol with name 'Time' and type 'double' is inserted into the
-     * symbol table at initialization.  If a time_type statement is encountered in model
-     * code, this symbol is replaced by a new symbol with the developer-specified type
-     * used for time.
+     * morphed to a new base class Symbol. This is useful for replacing a default symbol by a symbol
+     * specified in the model source code. For example, a default @a TypeDeclSymbol with name 'Time'
+     * and type 'double' is inserted into the symbol table at initialization.  If a time_type
+     * statement is encountered in model code, this symbol is replaced by a new symbol with the
+     * developer-specified type used for time.
+     *
+     * @param unm The unique name for the symbol.
      */
+
     Symbol( const string unm )
         : unique_name( unm )
         , name ( unm )
@@ -119,20 +124,21 @@ public:
             }
         }
 
+
     /**
      * Constructor.
-     *
-     * @param   nm      The name.
-     * @param   agent   The agent qualifying the name
-     *                  
-     * This constructor creates a Symbol with unique name based on 
-     * @a nm in the context of @a agent, e.g. "Person::time"
-     *                           
-     * If the symbol table does not contain a corresponding entry
-     * a new symbol table entry is created with this unique name.
      * 
-     * If the symbol table does contain a corresponding entry the existing symbol is
-     * morphed to a new base class Symbol.
+     * This constructor creates a Symbol with unique name based on
+     * @a nm in the context of @a agent, e.g. "Person::time"
+     * 
+     * If the symbol table does not contain a corresponding entry a new symbol table entry is
+     * created with this unique name.
+     * 
+     * If the symbol table does contain a corresponding entry the existing symbol is morphed to a
+     * new base class Symbol.
+     *
+     * @param nm    The name.
+     * @param agent The agent qualifying the name.
      */
 
     Symbol( const string nm, const Symbol *agent )
@@ -153,17 +159,18 @@ public:
                 it->second = this;
             }
         }
-    
+
+
     /**
      * Morph existing symbol to a new symbol.
      * 
-     * This constructor is used to morph an existing symbol table entry to
-     * a new kind of symbol.  It is called by constructors for derived Symbol classes.
-     * The existing Symbol is destroyed, and the symbol table entry is modified
-     * to refer to the new symbol.
+     * This constructor is used to morph an existing symbol table entry to a new kind of symbol.  It
+     * is called by constructors for derived Symbol classes. The existing Symbol is destroyed, and
+     * the symbol table entry is modified to refer to the new symbol.
      *
-     * @param [in,out]  sym [in,out] Original symbol to be morphed.
+     * @param [in,out] sym [in,out] Original symbol to be morphed.
      */
+
     Symbol( Symbol*& sym )
         : unique_name( sym->unique_name )
         , name ( sym->name )
@@ -176,15 +183,16 @@ public:
             it->second = this;
         }
 
+
     /**
      * Get stable reference to pointer to symbol.
      * 
-     * This reference is a double indirection and is stable to morphing,
-     * since unordered_map guarantees that references to existing map entries
-     * will not change.
+     * This reference is a double indirection and is stable to morphing, since unordered_map
+     * guarantees that references to existing map entries will not change.
      *
-     * @return  Reference to pointer to this Symbol.
+     * @return Reference to pointer to this Symbol.
      */
+
 	Symbol*& get_rpSymbol() const
     {
     	auto it = symbols.find( unique_name );
@@ -195,21 +203,24 @@ public:
     {
     }
 
+
     /**
-     * Perform post-parse operations
-     * 
+     * Perform post-parse operations.
+     *
+     * @param pass The pass number.
      */
 
     virtual void post_parse( int pass )
     {
     }
 
+
     /**
      * Gets a short pretty name for a symbol
      * 
      * Used for diagnostics and in comments in generated code.
      *
-     * @return  The short pretty name as a string.
+     * @return The short pretty name as a string.
      */
 
     virtual string pretty_name()
@@ -217,21 +228,22 @@ public:
         return name;
     }
 
+
     /**
      * The unique identifier for the symbol
-     *
-     * To create unique names for all agentvars, 
-     * member names in the model source code are prefixed
+     * 
+     * To create unique names for all agentvars, member names in the model source code are prefixed
      * with the agent context to create a unique name for symbol table lookup,
      * e.g. 'time' becomes 'Person::time'.
      */
 
     string unique_name;
 
+
     /**
      * The identifier for the symbol (possibly non-unique)
      * 
-     * E.g. 'time'
+     * E.g. 'time'.
      */
 
 	string name;
@@ -267,6 +279,7 @@ public:
 
     static const token_type string_to_token(const char * s);
 
+
     /**
      * Extract accumulator from Modgen cumulation operator.
      *
@@ -301,68 +314,77 @@ public:
     static void default_symbols();
     static void post_parse_all();
 
+
     /**
-     * Store a C++ style single-line comment for later use
+     * Store a C++ style single-line comment for later use.
      *
-     * @param   cmt         The comment.
-     * @param [in,out]  loc The source code location.
+     * @param cmt          The comment.
+     * @param [in,out] loc The source code location.
      */
 
     static void process_cxx_comment(const string& cmt, yy::location& loc);
 
+
     /**
-     * Store a C style comment for later use
+     * Store a C style comment for later use.
      *
-     * @param   cmt         The comment.
-     * @param [in,out]  loc The source code location.
+     * @param cmt          The comment.
+     * @param [in,out] loc The source code location.
      */
 
     static void process_c_comment(const string& cmt, yy::location& loc);
 
+
     /**
-     * Query if 'tok' is an om outer keyword (introducing a syntactic declarative island)
+     * Determine if @ tok is an om outer keyword (introducing a syntactic declarative island)
      *
-     * @param   tok The token.
+     * For example the tokens for 'agent' and 'table' are outer level keywords,
+     * but the token for 'int' is not.
+     * 
+     * @param tok The token.
      *
-     * @return  true if an om outer keyword, false if not.
+     * @return true if an om outer keyword, false if not.
      */
 
     static bool is_om_outer_keyword(const token_type& tok);
 
+
     /**
-    * Query if 'nm' is an om developer-supplied function
-    * These are functions with special names, e.g. Start
-    *
-    * @param   nm  The name.
-    *
-    * @return  true if om developer function, false if not.
-    */
+     * Query if 'nm' is an om developer-supplied function These are functions with special names,
+     * for example 'Simulation'.
+     *
+     * @param nm The name.
+     *
+     * @return true if om developer function, false if not.
+     */
 
     static bool is_om_developer_function(const char* nm);
 
-    // static data members
-    
+
     /**
-    * The symbol table
-    */
+     * The symbol table.
+     */
 
     static symbol_map_type symbols;
 
+
     /**
-    * The agents in the model
-    *
-    * Populated after parsing is complete.
-    */
+     * The agents in the model
+     * 
+     * Populated after parsing is complete.
+     */
 
     static list<AgentSymbol *> pp_agents;
 
+
     /**
-    * The tables in the model
-    *
-    * Populated after parsing is complete.
-    */
+     * The tables in the model
+     * 
+     * Populated after parsing is complete.
+     */
 
     static list<TableSymbol *> pp_tables;
+
 
     /**
      * The parameters in the model
@@ -372,36 +394,14 @@ public:
 
     static list<ParameterSymbol *> pp_parameters;
 
+
     /**
-     * Map of member function qualified names to all identifiers used in the function body. Example
-     * entry might be "Person::Mortality" ==> "alive".
+     * Map of member function qualified names to all identifiers used in the body of the function.
+     * 
+     * An example entry might be "Person::Mortality" ==> "alive".
      */
 
     static multimap<string, string> memfunc_bodyids;
-
-
-    /**
-     * The list of om outer keywords.
-     * 
-     * During parsing these keywords cause a transition from C++ code
-     * to om declarative code islands.  There is an exact one-to-one
-     * relationship between this list and the first block of entries
-     * in the list @a token_string
-     *
-     * @return The om outer keywords.
-     */
-
-    static unordered_set<token_type, std::hash<int> > om_outer_keywords;
-
-
-    /**
-     * The list of om developer functions.
-     * 
-     * These are C++ functions with fixed names which are supplied by the om developer
-     * in the model source code.  An example is the 'Simulation' function.
-     */
-
-    static unordered_set<string> om_developer_functions;
 
 
     /**
@@ -427,10 +427,10 @@ public:
     /**
      * Map from a token to the preferred string representation of that token.
      * 
-     * This map has a unique key and maps the symbol enum to the preferred term. There is an exact
-     * one-to-one correspondence with code in @a parser.y. Maintain this correspondence in all
-     * changes or additions. Unfortunately, bison 2.7 with C++ does not expose yytname so we need to
-     * create hard-coded equivalent.
+     * This is a fixed map independent of any model.  It has a unique key and maps the symbol enum
+     * to the preferred term. There is an exact one-to-one correspondence with code in @a parser.y.
+     * Maintain this correspondence in all changes or additions. Unfortunately, bison 2.7 with C++
+     * does not expose yytname so we need to create this hard-coded equivalent.
      *
      * @return The token string.
      */
@@ -439,16 +439,42 @@ public:
 
 
     /**
-    * Map from a string to the token associated with that string.
-    *
-    * The lexical scanner calls @a string_to_token to map each word to the corresponding preferred
-    * token using this map. The map is initialized with deprecated synonyms for preferred terms.
-    * These deprecated terms are only in the map @a string_token, not in the map @a token_string.
-    * On the first call to the helper function @a string_to_token, this map is populated using all
-    * entries in the reciprocal map @a token_string.
-    */
+     * Map from a string to the token associated with that string.
+     * 
+     * This is a fixed map independent of any model.  The lexical scanner calls @a string_to_token
+     * to map each word to the corresponding preferred token using this map. The map is initialized
+     * with deprecated synonyms for preferred terms. These deprecated terms are only in the map @a
+     * string_token, not in the map @a token_string. On the first call to the helper function @a
+     * string_to_token, this map is populated using all entries in the reciprocal map @a
+     * token_string.
+     */
 
     static unordered_map<string, token_type> Symbol::string_token;
+
+
+    /**
+     * The list of om outer keywords.
+     * 
+     * This is a fixed map independent of any model.  During parsing these keywords cause a
+     * transition from C++ code to om declarative code islands.  There is an exact one-to-one
+     * relationship between this list and the first block of entries in the list @a token_string.
+     *
+     * @return The om outer keywords.
+     */
+
+    static unordered_set<token_type, std::hash<int> > om_outer_keywords;
+
+
+    /**
+     * The list of om developer functions.
+     * 
+     * This is a fixed map independent of any model.  These are C++ functions with fixed names which
+     * are supplied by the om developer in the model source code.  An example is the 'Simulation'
+     * function.
+     */
+
+    static unordered_set<string> om_developer_functions;
+
 
 };
 
