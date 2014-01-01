@@ -1,6 +1,6 @@
 /**
  * @file    Symbol.h
- * Declares the Symbol class and sub-classes.
+ * Declarions for the Symbol class.
  */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -255,6 +255,19 @@ public:
 	static Symbol *get_symbol( const string& unm );
 	static Symbol *get_symbol( const string& nm, const Symbol *agent );
 	static Symbol *find_a_symbol( const type_info& cls );
+
+
+    /**
+     * Default symbols in symbol table
+     * 
+     * These are symbols which are added to the symbol table 
+     * when it is created.  They have default properties
+     * which can be overridden by the om developer.  An example
+     * is the @a TypeDeclSymbol with name 'Time'.  By default, the type is double,
+     * but this can be overridden by the model developer using the time_type statement
+     * in the model source code.
+     */
+
     static void default_symbols();
     static void post_parse_all();
 
@@ -337,11 +350,35 @@ public:
     static multimap<string, string> memfunc_bodyids;
 
     static unordered_set<token_type, std::hash<int> > om_outer_keywords;
+
+
+    /**
+     * The list of om developer functions.
+     * 
+     * These are C++ functions with fixed names which are supplied by the om developer
+     * in the model source code.  An example is the 'Simulation' function.
+     */
+
     static unordered_set<string> om_developer_functions;
 
-    // TODO comments are just dumped into placeholder collections for testing.
-    // Need to retrieve by location searching, at some point, to match up with identifiers, languages, etc.
+
+    /**
+     * A list of all the C++ style single line comments in the model source code
+     * 
+     * This is a place holder collection at the moment, for testing.
+     * It will be replaced by a collection which also includes source code location information.
+     */
+
     static forward_list<string> cxx_comments;
+
+
+    /**
+    * A list of all the C style multi-line comments in the model source code
+    *
+    * This is a place holder collection at the moment, for testing.
+    * It will be replaced by a collection which also includes source code location information.
+    */
+
     static forward_list<string> c_comments;
 };
 

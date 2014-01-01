@@ -1,6 +1,6 @@
 /**
  * @file    Symbol.cpp
- * Implements functionality of the static members of the Symbol class.
+ * Definitions for the Symbol class.
  */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -35,7 +35,8 @@ list<ParameterSymbol *> Symbol::pp_parameters;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
-// NB: There is a direct correspondence between the following lines and code in parser_helper.cpp
+// NB: There is a direct correspondence between the following lines and code in token.cpp
+// Maintain exactly the same order.
 unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 {
     token::TK_agent,
@@ -82,8 +83,6 @@ forward_list<string> Symbol::cxx_comments;
 
 forward_list<string> Symbol::c_comments;
 
-// symbols which are always in the symbol table,
-// and which have default properties unless specified by om developer.
 void Symbol::default_symbols()
 {
     Symbol *sym;
