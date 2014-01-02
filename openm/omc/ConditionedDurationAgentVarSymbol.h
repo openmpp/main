@@ -77,15 +77,7 @@ public:
 
     const string condition_decl_qualified();
 
-    /**
-    * Generates the c++ declaration for the derived agentvar.
-    */
-
     CodeBlock cxx_declaration_agent_scope();
-
-    /**
-    * Generates the c++ definition for the derived agentvar.
-    */
 
     CodeBlock cxx_definition();
 

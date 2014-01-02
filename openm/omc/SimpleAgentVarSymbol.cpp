@@ -24,9 +24,10 @@ string SimpleAgentVarSymbol::initial_value() const
 
 CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent_scope()
 {
-    // obtain declaration code common to all agentvars
+    // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent_scope();
 
+    // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to simple agentvars
 
     // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;

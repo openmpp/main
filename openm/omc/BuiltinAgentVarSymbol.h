@@ -26,10 +26,6 @@ public:
 
     void post_parse(int pass);
 
-    /**
-    * Gets the c++ declaration for the builtin agentvar.
-    */
-
     CodeBlock cxx_declaration_agent_scope();
 
 };

@@ -13,7 +13,10 @@ using namespace std;
 
 CodeBlock AgentEventSymbol::cxx_declaration_agent_scope()
 {
-    CodeBlock h;
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_agent_scope();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
     h += "";
     // example:         //* Mortality */
     h += "//* " + name + " */";

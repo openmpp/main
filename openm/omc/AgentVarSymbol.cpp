@@ -29,10 +29,10 @@ void AgentVarSymbol::post_parse(int pass)
 
 CodeBlock AgentVarSymbol::cxx_declaration_agent_scope()
 {
-    // First get declaration code at next level up in the Symbol hierarchy
+    // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent_scope();
 
-    // Now add declaration code specific to this level in the Symbol hierarchy
+    // Perform operations specific to this level in the Symbol hierarchy.
     // example:        void time_side_effects(Time old_value, Time new_value);
     h += side_effects_decl() + ";";
     return h;

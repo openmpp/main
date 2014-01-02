@@ -30,9 +30,10 @@ string DurationAgentVarSymbol::symbol_name(const Symbol *agent)
 
 CodeBlock DurationAgentVarSymbol::cxx_declaration_agent_scope()
 {
-    // get declaration code common to all agentvars
+    // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent_scope();
 
+    // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to derived agentvars
 
     // example:         DurationAgentVar<Time, Person, &duration_offset, &Person::duration_side_effects, nullptr> om_duration

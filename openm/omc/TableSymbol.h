@@ -62,15 +62,7 @@ public:
 
     const string do_increments_defn();
 
-    /**
-    * Get the c++ declaration code (in agent scope) associated with the symbol.
-    */
-
     virtual CodeBlock cxx_declaration_agent_scope();
-
-    /**
-    * Get the c++ definition code associated with the symbol.
-    */
 
     virtual CodeBlock cxx_definition();
 

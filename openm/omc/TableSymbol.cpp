@@ -51,7 +51,10 @@ const string TableSymbol::do_increments_defn()
 
 CodeBlock TableSymbol::cxx_declaration_agent_scope()
 {
-    CodeBlock h;
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_agent_scope();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
     h += "";
     // example:         // DurationOfLife
     h += "// " + name;

@@ -43,12 +43,6 @@ public:
 
     string initial_value() const;
 
-    /**
-     * Gets the c++ declaration for the simple agentvar.
-     *
-     * @return A CodeBlock.
-     */
-
     CodeBlock cxx_declaration_agent_scope();
 
     // members

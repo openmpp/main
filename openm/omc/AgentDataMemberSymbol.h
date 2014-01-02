@@ -43,22 +43,9 @@ public:
     virtual CodeBlock cxx_initialize_expression() const;
 
 
-    /**
-    * Get the c++ declaration code (in agent scope) associated with the symbol.
-    *
-    * @return A CodeBlock.
-    */
+    CodeBlock cxx_declaration_agent_scope();
 
-    virtual CodeBlock cxx_declaration_agent_scope();
-
-
-    /**
-    * Get the c++ definition code associated with the symbol.
-    *
-    * @return A CodeBlock.
-    */
-
-    virtual CodeBlock cxx_definition();
+    CodeBlock cxx_definition();
 
 
     void post_parse(int pass);

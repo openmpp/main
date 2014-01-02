@@ -10,6 +10,7 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <set>
+#include "CodeBlock.h"
 #include "Symbol.h"
 #include "VersionSymbol.h"
 #include "TypeDeclSymbol.h"
@@ -409,6 +410,24 @@ unordered_set<string> Symbol::om_developer_functions =
 forward_list<string> Symbol::cxx_comments;
 
 forward_list<string> Symbol::c_comments;
+
+void Symbol::post_parse(int pass)
+{
+}
+
+CodeBlock Symbol::cxx_declaration_agent_scope()
+{
+    // An empty CodeBlock to start with
+    return CodeBlock();
+}
+
+CodeBlock Symbol::cxx_definition()
+{
+    // An empty CodeBlock to start with
+    return CodeBlock();
+}
+
+
 
 void Symbol::default_symbols()
 {

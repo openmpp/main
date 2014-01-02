@@ -35,9 +35,10 @@ CodeBlock AgentInternalSymbol::cxx_initialize_expression() const
 
 CodeBlock AgentInternalSymbol::cxx_declaration_agent_scope()
 {
-    // First get declaration code at next level up in the Symbol hierarchy
+    // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent_scope();
-    // Now add declaration code specific to this level in the Symbol hierarchy
+
+    // Perform operations specific to this level in the Symbol hierarchy.
     h += token_to_string(type) + " " + name + ";";
     return h;
 }

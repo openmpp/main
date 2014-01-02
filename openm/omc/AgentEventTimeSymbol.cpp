@@ -86,9 +86,11 @@ string AgentEventTimeSymbol::symbol_name(const Symbol *agent, const Symbol *even
 
 CodeBlock AgentEventTimeSymbol::cxx_declaration_agent_scope()
 {
-    // First get declaration code at next level up in the Symbol hierarchy
+    // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent_scope();
-    // Now add declaration code specific to this level in the Symbol hierarchy
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
     //h += token_to_string(type) + " " + name + ";";
     string implement_func = pp_event->unique_name;
     string time_func = pp_event->time_function->unique_name;

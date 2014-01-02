@@ -16,7 +16,7 @@ void AgentDataMemberSymbol::post_parse(int pass)
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
 
-    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    // Perform operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case 1:
         // Add this agent data symbol to the agent's list of all such symbols
@@ -55,7 +55,10 @@ CodeBlock AgentDataMemberSymbol::cxx_initialize_expression() const
 
 CodeBlock AgentDataMemberSymbol::cxx_declaration_agent_scope()
 {
-    CodeBlock h;
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_agent_scope();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
     h += "";
     // example:         //* time */
     h += doxygen(name);

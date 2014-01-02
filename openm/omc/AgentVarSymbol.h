@@ -29,19 +29,9 @@ public:
     void post_parse(int pass);
 
 
-    /**
-    * Get the c++ declaration code associated with the symbol.
-    *
-    * @return A CodeBlock.
-    */
+    CodeBlock cxx_declaration_agent_scope();
 
-    virtual CodeBlock cxx_declaration_agent_scope();
-
-    /**
-    * Get the c++ definition code associated with the symbol.
-    */
-
-    virtual CodeBlock cxx_definition();
+    CodeBlock cxx_definition();
 
     /**
     * Get name of member function which implements side-effects

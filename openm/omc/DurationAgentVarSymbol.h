@@ -44,10 +44,6 @@ public:
 
     void post_parse(int pass);
 
-    /**
-    * Generates the c++ declaration for the derived agentvar.
-    */
-
     CodeBlock cxx_declaration_agent_scope();
 
 };

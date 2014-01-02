@@ -47,17 +47,9 @@ public:
         return token_to_string(token::TK_time_infinite);
     }
 
-    /**
-    * Get the c++ declaration code associated with the symbol.
-    */
+    CodeBlock cxx_declaration_agent_scope();
 
-    virtual CodeBlock cxx_declaration_agent_scope();
-
-    /**
-    * Get the c++ definition code associated with the symbol.
-    */
-
-    virtual CodeBlock cxx_definition();
+    CodeBlock cxx_definition();
 
     /**
     * The associated event.

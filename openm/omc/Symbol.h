@@ -14,6 +14,7 @@
 #include "location.hh"
 #include "parser.hpp"
 
+class CodeBlock;
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
@@ -224,11 +225,47 @@ public:
      * @param pass The pass number.
      */
 
-    virtual void post_parse( int pass )
-    {
-    }
+    virtual void post_parse(int pass);
 
 
+    /**
+     * Get the c++ declaration code (in agent scope) for the symbol.
+     * 
+     * The code fragment is valid within the context of an agent class declaration.
+     * 
+     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+     * passed upwards through the inheritance hierarchy so that operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels.
+     *
+     * @return A CodeBlock.
+     */
+
+    virtual CodeBlock cxx_declaration_agent_scope();
+
+
+    /**
+     * Get the c++ definition code for the symbol.
+     *
+     *
+     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+     * passed upwards through the inheritance hierarchy so that operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels.
+     *
+     * @return A CodeBlock.
+     */
+
+    virtual CodeBlock cxx_definition();
+
+    /**
+    * Get name of member function which implements side-effects
+    *
+    * Example:  Person::time_side_effects
+    *
+    * @return  The qualified function name as a string
+    */
+
+
+    
     /**
      * Gets a short pretty name for a symbol
      * 

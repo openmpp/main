@@ -90,9 +90,10 @@ const string ConditionedDurationAgentVarSymbol::condition_decl_qualified()
 
 CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent_scope()
 {
-    // get declaration code common to all agentvars
+    // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent_scope();
 
+    // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to this kind of derived agentvar
     // 
     // example:        bool om_duration_alive_true_condition();
