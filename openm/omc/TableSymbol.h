@@ -62,9 +62,9 @@ public:
 
     const string do_increments_defn();
 
-    virtual CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent_scope();
 
-    virtual CodeBlock cxx_definition();
+    CodeBlock cxx_definition();
 
     /**
     * Reference to pointer to agent.

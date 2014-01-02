@@ -22,10 +22,10 @@ CodeBlock AgentCallbackMemberSymbol::cxx_declaration_agent_scope()
 
 CodeBlock AgentCallbackMemberSymbol::cxx_definition()
 {
-    // First get definition code at next level up in the Symbol hierarchy
+    // Hook into the hierarchical calling chain
     CodeBlock c = super::cxx_definition();
 
-    // Now add definition code specific to this level in the Symbol hierarchy
+    // Perform operations specific to this level in the Symbol hierarchy.
 
     return c;
 }

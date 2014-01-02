@@ -67,7 +67,10 @@ CodeBlock AgentDataMemberSymbol::cxx_declaration_agent_scope()
 
 CodeBlock AgentDataMemberSymbol::cxx_definition()
 {
-    CodeBlock c;
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
     c += "";
     // example:         //* time */
     c += doxygen(name);

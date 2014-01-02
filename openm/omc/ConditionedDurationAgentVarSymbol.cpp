@@ -111,9 +111,10 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent_scope()
 
 CodeBlock ConditionedDurationAgentVarSymbol::cxx_definition()
 {
-    // start with definition code from next higher level in symbol hierarchy
+    // Hook into the hierarchical calling chain
     CodeBlock c = super::cxx_definition();
 
+    // Perform operations specific to this level in the Symbol hierarchy.
     // add definition code specific to this kind of derived agentvar
     // example:        bool Person::om_duration_alive_true_condition()
     c += condition_decl_qualified();
