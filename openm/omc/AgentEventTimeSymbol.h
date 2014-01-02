@@ -36,22 +36,26 @@ public:
 
     void post_parse(int pass);
 
-    /**
-    * Gets the initial value for the data member
-    * Events are disabled at initialization by setting the event_time to time_infinite.
-    * @return  The initial value as a string.
-    */
 
-    virtual string initial_value() const
+    /**
+     * Gets the initial value for the data member
+     * 
+     * Events are disabled at initialization by setting the event_time to time_infinite.
+     *
+     * @return The initial value as a string.
+     */
+
+    string initial_value() const
     {
         return token_to_string(token::TK_time_infinite);
     }
 
     CodeBlock cxx_declaration_agent_scope();
 
+
     /**
-    * The associated event.
-    */
+     * The associated event.
+     */
 
     Symbol*& event;
 
