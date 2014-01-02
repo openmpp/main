@@ -218,8 +218,8 @@ public:
      * hierarchical levels, and at higher levels before lower levels (for each @a pass).
      * 
      * Post-parse operations occur in a series of sequential passes, with the results of each pass
-     * used by subsequent passes.  \ref post_parse is called on all symbols through the function \
-     * ref post_parse_all.
+     * usable by subsequent passes.  \ref post_parse is called on all symbols through the function
+     * \ref Symbol::post_parse_all.
      *
      * @param pass The pass number.
      */

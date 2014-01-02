@@ -31,8 +31,6 @@ public:
     {
     }
 
-    void post_parse(int pass);
-
     /**
     * Get the c++ declaration code associated with the symbol.
     */

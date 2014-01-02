@@ -61,13 +61,7 @@ public:
     virtual CodeBlock cxx_definition();
 
 
-    /**
-    * Post-parse operations for the symbol.
-    *
-    * @param pass The pass.
-    */
-
-    virtual void post_parse(int pass);
+    void post_parse(int pass);
 
 
     /**

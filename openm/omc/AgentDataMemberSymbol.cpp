@@ -16,7 +16,7 @@ void AgentDataMemberSymbol::post_parse(int pass)
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
 
-    // Now do operations specific to this level in the Symbol hierarchy
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case 1:
         // Add this agent data symbol to the agent's list of all such symbols
