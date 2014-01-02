@@ -24,6 +24,11 @@ public:
     }
 
     void post_parse(int pass);
+
+    CodeBlock cxx_declaration();
+
+    CodeBlock cxx_definition();
+
     // members
     token_type type;
 

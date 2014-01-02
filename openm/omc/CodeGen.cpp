@@ -164,16 +164,14 @@ void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
 	// agents.h - parameter declaration
 	h += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
-	    string type = Symbol::token_to_string( parameter->type );
-    	h += "extern " + type + " " + parameter->name + ";";
+        h += parameter->cxx_declaration();
     }
 	h += "";
 
 	// agents.cpp - parameter definition
 	c += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
-	    string type = Symbol::token_to_string( parameter->type );
-    	c += type + " " + parameter->name + " = 0.0;";
+        c += parameter->cxx_definition();
     }
 	c += "";
 
