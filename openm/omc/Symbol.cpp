@@ -29,6 +29,8 @@
 
 symbol_map_type Symbol::symbols;
 
+list<TypeDeclSymbol *> Symbol::pp_types;
+
 list<AgentSymbol *> Symbol::pp_agents;
 
 list<TableSymbol *> Symbol::pp_tables;
@@ -590,6 +592,7 @@ void Symbol::post_parse_all()
             );
 
     // Sort all global collections in lexicographic order
+    pp_types.sort([](TypeDeclSymbol *a, TypeDeclSymbol *b) { return a->name < b->name; });
     pp_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
     pp_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );

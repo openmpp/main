@@ -15,6 +15,7 @@
 #include "parser.hpp"
 
 class CodeBlock;
+class TypeDeclSymbol;
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
@@ -436,6 +437,15 @@ public:
      */
 
     static symbol_map_type symbols;
+
+
+    /**
+    * The types in the model
+    *
+    * Populated after parsing is complete.
+    */
+
+    static list<TypeDeclSymbol *> pp_types;
 
 
     /**

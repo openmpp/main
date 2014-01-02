@@ -111,49 +111,19 @@ void CodeGen::do_time_stamp( CodeBlock& h, CodeBlock& c )
 
 void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
 {
-	t += "// types";
-	c += "// types";
-
-    {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_Time ) ) );
-        assert ( sym ); // compiler guarantee
-	    string typ = Symbol::token_to_string( sym->value );
-        // E.g. typedef double Time;
-	    t += "typedef " + typ + " " + sym->name + ";";
-	    t += "typedef " + typ + " TIME; // for Modgen models";
-
-	    // Time 'literals'
-	    t += "extern const Time time_infinite;";
-	    t += "extern const Time TIME_INFINITE; // for Modgen models";
-	    t += "";
-	    c += "const Time time_infinite = 32767;";
-	    c += "const Time TIME_INFINITE = 32767; // for Modgen models";
-	    c += "";
+    // om_types.h - types declaration
+    t += "// types";
+    for (auto type : Symbol::pp_types) {
+        t += type->cxx_declaration();
     }
+    t += "";
 
-    {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_real ) ) );
-        assert ( sym ); // compiler guarantee
-	    string typ = Symbol::token_to_string( sym->value );
-        // E.g. typedef double real;
-	    t += "typedef " + typ + " " + sym->name + ";";
+    // om_agents.cpp - types definitions
+    c += "// types";
+    for (auto type : Symbol::pp_types) {
+        c += type->cxx_definition();
     }
-
-    {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_counter ) ) );
-        assert ( sym ); // compiler guarantee
-	    string typ = Symbol::token_to_string( sym->value );
-        // E.g. typedef uint counter;
-	    t += "typedef " + typ + " " + sym->name + ";";
-    }
-
-    {
-	    auto *sym = dynamic_cast<TypeDeclSymbol *>( Symbol::get_symbol( Symbol::token_to_string( token::TK_integer ) ) );
-        assert ( sym ); // compiler guarantee
-	    string typ = Symbol::token_to_string( sym->value );
-        // E.g. typedef int integer;
-	    t += "typedef " + typ + " " + sym->name + ";";
-    }
+    c += "";
 
 }
 

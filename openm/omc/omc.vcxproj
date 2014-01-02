@@ -159,6 +159,7 @@
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
     <ClCompile Include="TableExpressionSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
+    <ClCompile Include="TypeDeclSymbol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
