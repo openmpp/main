@@ -427,6 +427,16 @@ CodeBlock Symbol::cxx_definition()
     return CodeBlock();
 }
 
+CodeBlock Symbol::cxx_declaration()
+{
+    // An empty CodeBlock to start with
+    return CodeBlock();
+}
+
+void Symbol::populate_metadata()
+{
+}
+
 
 
 void Symbol::default_symbols()

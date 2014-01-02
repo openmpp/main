@@ -256,16 +256,32 @@ public:
 
     virtual CodeBlock cxx_definition();
 
+    
     /**
-    * Get name of member function which implements side-effects
+    * Get the c++ declaration code for the symbol.
     *
-    * Example:  Person::time_side_effects
     *
-    * @return  The qualified function name as a string
+    * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+    * passed upwards through the inheritance hierarchy so that operations are performed at all
+    * hierarchical levels, and at higher levels before lower levels.
+    *
+    * @return A CodeBlock.
     */
 
+    virtual CodeBlock cxx_declaration();
 
-    
+
+    /**
+    * Populate metadata for the symbol.
+    *
+    *
+    * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+    * passed upwards through the inheritance hierarchy so that operations are performed at all
+    * hierarchical levels, and at higher levels before lower levels.
+    */
+
+    virtual void populate_metadata();
+
     /**
      * Gets a short pretty name for a symbol
      * 
