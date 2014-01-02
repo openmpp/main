@@ -105,11 +105,3 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent_scope()
     return h;
 }
 
-CodeBlock AgentEventTimeSymbol::cxx_definition()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    return c;
-}

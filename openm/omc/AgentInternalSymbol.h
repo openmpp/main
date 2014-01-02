@@ -39,7 +39,5 @@ public:
 
     CodeBlock cxx_declaration_agent_scope();
 
-    CodeBlock cxx_definition();
-
 };
 
