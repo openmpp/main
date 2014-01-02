@@ -29,6 +29,8 @@ public:
 
     CodeBlock cxx_definition();
 
+    void populate_metadata(openm::MetaModelHolder & metaRows);
+
     // members
     token_type type;
 

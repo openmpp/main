@@ -159,8 +159,6 @@ void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
 
 void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
 {
-    // TODO: Move this to ParameterSymbol
-
 	// agents.h - parameter declaration
 	h += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
@@ -177,31 +175,7 @@ void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
 
 	// populate meta-data for parameters
     for ( auto parameter : Symbol::pp_parameters ) {
-        ParamDicRow paramDic;
-        ParamDicTxtLangRow paramTxt;
-
-        paramDic.paramId = parameter->pp_numeric_id;
-        paramDic.paramName = parameter->name;  // must be valid database view name, if we want to use compatibility views
-        paramDic.rank = 0; // TODO: currently hard-coded to scalar parmaeters for alpha
-        paramDic.typeId = 12;           // TODO: hard-coded to double
-        paramDic.isHidden = false; // TODO: not implemented
-        paramDic.isGenerated = false; // TODO: not implemented
-        paramDic.numCumulated = 0; //TODO: not implemented
-        metaRows.paramDic.push_back(paramDic);
-
-        // TODO language entries are hard-coded bilingual for alpha
-        paramTxt.paramId = parameter->pp_numeric_id;
-        paramTxt.langName = "EN";
-        paramTxt.descr = parameter->name + " short name (EN)";
-        paramTxt.note = parameter->name + " note (EN)";
-        metaRows.paramTxt.push_back(paramTxt);
-
-        paramTxt.langName = "FR";
-        paramTxt.descr = parameter->name + " short name (FR)";
-        paramTxt.note = parameter->name + " note (FR)";
-        metaRows.paramTxt.push_back(paramTxt);
-
-        // TODO: rank 0 parameters in alpha have no ParamDimsRows entries
+        parameter->populate_metadata(metaRows);
     }
 }
 

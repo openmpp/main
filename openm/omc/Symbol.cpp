@@ -433,7 +433,7 @@ CodeBlock Symbol::cxx_declaration()
     return CodeBlock();
 }
 
-void Symbol::populate_metadata()
+void Symbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
 }
 

@@ -18,6 +18,9 @@ class CodeBlock;
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
+namespace openm {
+    struct MetaModelHolder;
+}
 
 using namespace std;
 
@@ -280,7 +283,7 @@ public:
     * hierarchical levels, and at higher levels before lower levels.
     */
 
-    virtual void populate_metadata();
+    virtual void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
      * Gets a short pretty name for a symbol
