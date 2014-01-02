@@ -24,7 +24,7 @@ string TableExpressionSymbol::symbol_name(const Symbol* table, int index)
 
 void TableExpressionSymbol::post_parse(int pass)
 {
-    // Hook into post_parse hierarchical calling chain
+    // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
 
     switch (pass) {

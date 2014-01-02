@@ -22,12 +22,6 @@ string SimpleAgentVarSymbol::initial_value() const
     return result;
 }
 
-void SimpleAgentVarSymbol::post_parse(int pass)
-{
-    // Hook into post_parse hierarchical calling chain
-    super::post_parse(pass);
-}
-
 CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent_scope()
 {
     // obtain declaration code common to all agentvars

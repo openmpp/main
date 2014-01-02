@@ -206,6 +206,20 @@ public:
 
     /**
      * Perform post-parse operations.
+     * 
+     * Post-parse operations create derived information based on information obtained during the
+     * parse phase. This information is stored in members of the Symbol class hierarchy which by
+     * convention have a 'pp_' prefix in their name. For example, the \ref pp_agentvars collection
+     * of the \ref AgentSymbol class contains a list of all agentvars of the agent after post-parse
+     * processing.  These pp_ members are used subsequently in the code-generation phase.
+     * 
+     * When post_parse is called on an object in the \ref Symbol hierarchy, the call is first passed
+     * upwards through the inheritance hierarchy so that post-parse operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels (for each @a pass).
+     * 
+     * Post-parse operations occur in a series of sequential passes, with the results of each pass
+     * used by subsequent passes.  \ref post_parse is called on all symbols through the function \
+     * ref post_parse_all.
      *
      * @param pass The pass number.
      */

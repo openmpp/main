@@ -43,9 +43,6 @@ public:
 
     string initial_value() const;
 
-    void post_parse(int pass);
-
-
     /**
      * Gets the c++ declaration for the simple agentvar.
      *

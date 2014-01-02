@@ -13,7 +13,7 @@
 
 void TableSymbol::post_parse(int pass)
 {
-    // Hook into post_parse hierarchical calling chain
+    // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
 
     switch (pass) {

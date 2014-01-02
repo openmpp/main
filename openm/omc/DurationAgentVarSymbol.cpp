@@ -62,20 +62,21 @@ Symbol * DurationAgentVarSymbol::get_symbol(const Symbol *agent)
 
 void DurationAgentVarSymbol::post_parse(int pass)
 {
-    // Hook into post_parse hierarchical calling chain
+    // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
 
     switch (pass) {
     case 1:
         break;
     case 2:
-    {
-              // add side-effect to time agentvar
-              AgentVarSymbol *av = pp_agent->pp_time;
-              // Eg. om_duration.wait( new_value - old_value );
-              string line = name + ".wait( new_value - old_value );";
-              av->pp_side_effects.push_back(line);
-    }
+        {
+            // add side-effect to time agentvar
+            AgentVarSymbol *av = pp_agent->pp_time;
+            // Eg. om_duration.wait( new_value - old_value );
+            string line = name + ".wait( new_value - old_value );";
+            av->pp_side_effects.push_back(line);
+        }
+        break;
     default:
         break;
     }

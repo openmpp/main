@@ -30,7 +30,7 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent_scope()
 
 void AgentEventSymbol::post_parse(int pass)
 {
-    // Hook into post_parse hierarchical calling chain
+    // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
 
     switch (pass) {
