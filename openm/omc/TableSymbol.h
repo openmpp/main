@@ -64,6 +64,8 @@ public:
 
     CodeBlock cxx_declaration_global();
 
+    CodeBlock cxx_definition_global();
+
     CodeBlock cxx_declaration_agent();
 
     CodeBlock cxx_definition_agent();

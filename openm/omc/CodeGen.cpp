@@ -366,107 +366,13 @@ void CodeGen::do_tables( CodeBlock& h, CodeBlock& c )
 	c += "// model output tables";
 
 	for ( auto table : Symbol::pp_tables ) {
-        int n_accumulators = table->pp_accumulators.size();
-        int n_expressions = table->pp_expressions.size();
-        int n_cells = 1;
-
-	    h += "";
-	    h += "class " + table->name + " {";
-        h += "public:";
-        h += "void initialize_accumulators();";
-        h += "void compute_expressions();";
-        // constructor
-        // E.g. DurationOfLife() { initialize_accumulators();}
-        h += table->name + "() { initialize_accumulators();}";
-        h += "";
-        h += "// constants";
-        h += "static const int n_cells = " + to_string(n_cells) + ";";
-        h += "static const int n_accumulators = " + to_string(n_accumulators) + ";";
-        h += "static const int n_expressions = " + to_string(n_expressions) + ";";
-
-        h += "";
-        h += "// expression storage";
-        for ( int j = 0; j < n_expressions; j++ ) {
-            h += "double expr" + to_string(j) + "[" + to_string(n_cells) + "];";
-        }
-
-        h += "";
-        h += "// accumulator storage";
-        for ( int j = 0; j < n_accumulators; j++ ) {
-            h += "double acc" + to_string(j) + "[" + to_string(n_cells) + "];";
-        }
-
-        h += "";
-        h += "// accumulator array of pointers";
-        h += "double *accumulators[n_accumulators];";
-        h += "";
-        h += "// expression array of pointers";
-	    h += "double *expressions[n_expressions];";
-
-        h += "};";
-	    h += "extern " + table->name + " the" + table->name + ";";
-
-	    c += "";
-        // table definition
-        // E.g. DurationOfLife theDurationOfLife;
-	    c += table->name + " the" + table->name + ";";
-
-        // definition of initialize_accumulators()
-        c += "void " + table->name + "::initialize_accumulators()";
-        c += "{";
-        for ( auto acc : table->pp_accumulators ) {
-            string initial_value = "";
-            switch ( acc->accumulator ) {
-            case token::TK_sum:
-                initial_value = "  0.0";
-                break;
-            case token::TK_min:
-                initial_value = " DBL_MAX";
-                break;
-            case token::TK_max:
-                initial_value = "-DBL_MAX";
-                break;
-            default:
-                // not reached
-                assert( 0 );
-            }
-            // e.g.  sum(value_in(alive))
-            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
-            // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc0[cell] =   0.0;
-            c += "for ( int cell = 0; cell < n_cells; cell++ ) acc" + to_string(acc->index) + "[cell] = " + initial_value + ";";
-            // e.g. accumulators[0] = acc0;
-    	    c += "accumulators[" + to_string(acc->index) + "] = acc" + to_string(acc->index) + ";";
-            c += "";
-    	         
-        }
-        c += "}";
-        c += "";
-
-        // definition of compute_expressions()
-        // E.g. void DurationOfLife::compute_expressions()
-        c += "void " + table->name + "::compute_expressions()";
-        c += "{";
-        for ( auto table_expr : table->pp_expressions ) {
-            // E.g.  // SUM_BEFORE( acc0 )
-            c += "// " + table_expr->get_expression( table_expr->root, TableExpressionSymbol::expression_style::sql ) ;
-            // E.g. expressions[0] = expr0;
-            c += "expressions[" + to_string(table_expr->index) + "] = expr" + to_string(table_expr->index) + ";";
-            // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expressions[0][cell] = accumulators[0][cell] ;
-            c += "for ( int cell = 0; cell < n_cells; cell++ ) "
-                 "expressions[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression( table_expr->root, TableExpressionSymbol::expression_style::cxx ) + " ;" ;
-            c += "";
-        }
-        c += "}";
-        c += "";
+        h += table->cxx_declaration_global();
+        c += table->cxx_definition_global();
+        table->populate_metadata(metaRows);
     }
 
 	h += "";
 	c += "";
-
-	// populate meta-data for tables
-    for ( auto table : Symbol::pp_tables ) {
-        table->populate_metadata(metaRows);
-    }
 }
 
 void CodeGen::do_event_queue( CodeBlock& h, CodeBlock& c )
