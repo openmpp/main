@@ -88,10 +88,10 @@ const string ConditionedDurationAgentVarSymbol::condition_decl_qualified()
     return "bool " + agent->name + "::" + condition_func() + "()";
 }
 
-CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent_scope()
+CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to this kind of derived agentvar
@@ -109,10 +109,10 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent_scope()
     return h;
 }
 
-CodeBlock ConditionedDurationAgentVarSymbol::cxx_definition()
+CodeBlock ConditionedDurationAgentVarSymbol::cxx_definition_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition();
+    CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // add definition code specific to this kind of derived agentvar

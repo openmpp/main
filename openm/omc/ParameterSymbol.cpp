@@ -28,10 +28,10 @@ void ParameterSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock ParameterSymbol::cxx_declaration()
+CodeBlock ParameterSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration();
+    CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     string parm_type = Symbol::token_to_string(type);
@@ -39,10 +39,10 @@ CodeBlock ParameterSymbol::cxx_declaration()
     return h;
 }
 
-CodeBlock ParameterSymbol::cxx_definition()
+CodeBlock ParameterSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_declaration();
+    CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     string parm_type = Symbol::token_to_string(type);

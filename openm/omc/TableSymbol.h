@@ -62,11 +62,11 @@ public:
 
     const string do_increments_defn();
 
-    CodeBlock cxx_declaration();
+    CodeBlock cxx_declaration_global();
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
-    CodeBlock cxx_definition();
+    CodeBlock cxx_definition_agent();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 

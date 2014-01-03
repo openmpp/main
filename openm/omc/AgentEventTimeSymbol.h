@@ -50,7 +50,7 @@ public:
         return token_to_string(token::TK_time_infinite);
     }
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
 
     /**

@@ -43,7 +43,7 @@ public:
 
     string initial_value() const;
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
     // members
 

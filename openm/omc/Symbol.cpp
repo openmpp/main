@@ -417,19 +417,25 @@ void Symbol::post_parse(int pass)
 {
 }
 
-CodeBlock Symbol::cxx_declaration_agent_scope()
+CodeBlock Symbol::cxx_declaration_agent()
 {
     // An empty CodeBlock to start with
     return CodeBlock();
 }
 
-CodeBlock Symbol::cxx_definition()
+CodeBlock Symbol::cxx_definition_agent()
 {
     // An empty CodeBlock to start with
     return CodeBlock();
 }
 
-CodeBlock Symbol::cxx_declaration()
+CodeBlock Symbol::cxx_declaration_global()
+{
+    // An empty CodeBlock to start with
+    return CodeBlock();
+}
+
+CodeBlock Symbol::cxx_definition_global()
 {
     // An empty CodeBlock to start with
     return CodeBlock();

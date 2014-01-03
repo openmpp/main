@@ -77,9 +77,9 @@ public:
 
     const string condition_decl_qualified();
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
-    CodeBlock cxx_definition();
+    CodeBlock cxx_definition_agent();
 
     /**
     * agentvar observed (reference to pointer)

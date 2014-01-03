@@ -27,10 +27,10 @@ void AgentVarSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock AgentVarSymbol::cxx_declaration_agent_scope()
+CodeBlock AgentVarSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:        void time_side_effects(Time old_value, Time new_value);
@@ -38,10 +38,10 @@ CodeBlock AgentVarSymbol::cxx_declaration_agent_scope()
     return h;
 }
 
-CodeBlock AgentVarSymbol::cxx_definition()
+CodeBlock AgentVarSymbol::cxx_definition_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition();
+    CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:         Person::time_side_effects(Time old_value, Time new_value)

@@ -37,7 +37,7 @@ public:
 
     CodeBlock cxx_initialize_expression() const;
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
 };
 

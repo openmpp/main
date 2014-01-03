@@ -22,10 +22,10 @@ string SimpleAgentVarSymbol::initial_value() const
     return result;
 }
 
-CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent_scope()
+CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to simple agentvars

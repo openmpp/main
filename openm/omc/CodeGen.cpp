@@ -114,14 +114,14 @@ void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
     // om_types.h - types declaration
     t += "// types";
     for (auto type : Symbol::pp_types) {
-        t += type->cxx_declaration();
+        t += type->cxx_declaration_global();
     }
     t += "";
 
     // om_agents.cpp - types definitions
     c += "// types";
     for (auto type : Symbol::pp_types) {
-        c += type->cxx_definition();
+        c += type->cxx_definition_global();
     }
     c += "";
 
@@ -132,14 +132,14 @@ void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
 	// agents.h - parameter declaration
 	h += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
-        h += parameter->cxx_declaration();
+        h += parameter->cxx_declaration_global();
     }
 	h += "";
 
 	// agents.cpp - parameter definition
 	c += "// model parameters";
     for ( auto parameter : Symbol::pp_parameters ) {
-        c += parameter->cxx_definition();
+        c += parameter->cxx_definition_global();
     }
 	c += "";
 
@@ -232,15 +232,15 @@ void CodeGen::do_agents( CodeBlock& h, CodeBlock& c )
         // iterate all agent events in agent
 	    h += "// agent events";
         for ( auto ae : agent->pp_agentevents ) {
-            h += ae->cxx_declaration_agent_scope();
+            h += ae->cxx_declaration_agent();
         }
 	    h += "";
 
 	    h += "// agent data members";
         // iterate all agent data members in agent
         for ( auto data_member : agent->pp_agent_data_members ) {
-            h += data_member->cxx_declaration_agent_scope();
-            c += data_member->cxx_definition();
+            h += data_member->cxx_declaration_agent();
+            c += data_member->cxx_definition_agent();
         }
 	    h += "";
 
@@ -248,9 +248,9 @@ void CodeGen::do_agents( CodeBlock& h, CodeBlock& c )
 	    h += "// tables in agent";
         for ( auto table : agent->pp_agent_tables ) {
             // declaration of agent scope members
-            h += table->cxx_declaration_agent_scope();
+            h += table->cxx_declaration_agent();
             // definition
-            c += table->cxx_definition();
+            c += table->cxx_definition_agent();
 	    }
 	    h += "";
 	    c += "";

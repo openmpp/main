@@ -29,9 +29,9 @@ public:
     void post_parse(int pass);
 
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
-    CodeBlock cxx_definition();
+    CodeBlock cxx_definition_agent();
 
     /**
     * Get name of member function which implements side-effects

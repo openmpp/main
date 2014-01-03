@@ -55,19 +55,19 @@ const string TableSymbol::do_increments_defn()
     return "void " + agent->name + "::" + do_increments_func() + "( bool prepare, bool process )";
 }
 
-CodeBlock TableSymbol::cxx_declaration()
+CodeBlock TableSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration();
+    CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     return h;
 }
 
-CodeBlock TableSymbol::cxx_declaration_agent_scope()
+CodeBlock TableSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += "";
@@ -78,10 +78,10 @@ CodeBlock TableSymbol::cxx_declaration_agent_scope()
     return h;
 }
 
-CodeBlock TableSymbol::cxx_definition()
+CodeBlock TableSymbol::cxx_definition_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition();
+    CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     c += "";

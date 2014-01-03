@@ -84,10 +84,10 @@ string AgentEventTimeSymbol::symbol_name(const Symbol *agent, const Symbol *even
     return result;
 }
 
-CodeBlock AgentEventTimeSymbol::cxx_declaration_agent_scope()
+CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 

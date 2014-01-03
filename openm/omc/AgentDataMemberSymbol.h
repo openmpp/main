@@ -43,9 +43,9 @@ public:
     virtual CodeBlock cxx_initialize_expression() const;
 
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
-    CodeBlock cxx_definition();
+    CodeBlock cxx_definition_agent();
 
 
     void post_parse(int pass);

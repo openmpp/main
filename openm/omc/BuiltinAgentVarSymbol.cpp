@@ -32,10 +32,10 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent_scope()
+CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:         AgentVar<Time, Person, &Person::time_side_effects> time;

@@ -44,7 +44,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent_scope();
+    CodeBlock cxx_declaration_agent();
 
 };
 

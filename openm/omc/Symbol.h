@@ -233,9 +233,9 @@ public:
 
 
     /**
-     * Get the c++ declaration code (in agent scope) for the symbol.
+     * Get the c++ declaration code (in agent scope) associated with the symbol.
      * 
-     * The code fragment is valid within the context of an agent class declaration.
+     * The code fragment is valid within an agent class declaration.
      * 
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all
@@ -244,12 +244,13 @@ public:
      * @return A CodeBlock.
      */
 
-    virtual CodeBlock cxx_declaration_agent_scope();
+    virtual CodeBlock cxx_declaration_agent();
 
 
     /**
-     * Get the c++ definition code for the symbol.
-     *
+     * Get the c++ definition code (for agent members) associated with the symbol.
+     * 
+     * The code fragment is qualified by the agent class.
      *
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all
@@ -258,12 +259,13 @@ public:
      * @return A CodeBlock.
      */
 
-    virtual CodeBlock cxx_definition();
+    virtual CodeBlock cxx_definition_agent();
 
     
     /**
-    * Get the c++ declaration code for the symbol.
+    * Get the c++ declaration code associated with the symbol.
     *
+    * The code fragment is valid outside all class declarations.
     *
     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
     * passed upwards through the inheritance hierarchy so that operations are performed at all
@@ -272,11 +274,26 @@ public:
     * @return A CodeBlock.
     */
 
-    virtual CodeBlock cxx_declaration();
+    virtual CodeBlock cxx_declaration_global();
 
 
     /**
-    * Populate metadata for the symbol.
+    * Get the c++ definition code associated with the symbol.
+    *
+    * The code fragment is not qualified by any agent class.
+    *
+    * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+    * passed upwards through the inheritance hierarchy so that operations are performed at all
+    * hierarchical levels, and at higher levels before lower levels.
+    *
+    * @return A CodeBlock.
+    */
+
+    virtual CodeBlock cxx_definition_global();
+
+
+    /**
+    * Populate metadata associated with the symbol.
     *
     *
     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
@@ -407,7 +424,7 @@ public:
 
 
     /**
-     * Determine if @ tok is an om outer keyword (introducing a syntactic declarative island)
+     * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
      *
      * For example the tokens for 'agent' and 'table' are outer level keywords,
      * but the token for 'int' is not.
@@ -421,7 +438,7 @@ public:
 
 
     /**
-     * Query if 'nm' is an om developer-supplied function These are functions with special names,
+     * Query if @a nm is an om developer-supplied function. These are functions with special names,
      * for example 'Simulation'.
      *
      * @param nm The name.

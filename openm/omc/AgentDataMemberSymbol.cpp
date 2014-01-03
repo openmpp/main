@@ -53,10 +53,10 @@ CodeBlock AgentDataMemberSymbol::cxx_initialize_expression() const
     return c;
 }
 
-CodeBlock AgentDataMemberSymbol::cxx_declaration_agent_scope()
+CodeBlock AgentDataMemberSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent_scope();
+    CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += "";
@@ -65,10 +65,10 @@ CodeBlock AgentDataMemberSymbol::cxx_declaration_agent_scope()
     return h;
 }
 
-CodeBlock AgentDataMemberSymbol::cxx_definition()
+CodeBlock AgentDataMemberSymbol::cxx_definition_agent()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition();
+    CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     c += "";

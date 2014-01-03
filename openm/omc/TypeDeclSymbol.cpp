@@ -25,10 +25,10 @@ void TypeDeclSymbol::post_parse(int pass)
         break;
     }
 }
-CodeBlock TypeDeclSymbol::cxx_declaration()
+CodeBlock TypeDeclSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration();
+    CodeBlock h = super::cxx_declaration_global();
 
 
     // Perform operations specific to this level in the Symbol hierarchy.
@@ -50,10 +50,10 @@ CodeBlock TypeDeclSymbol::cxx_declaration()
     return h;
 }
 
-CodeBlock TypeDeclSymbol::cxx_definition()
+CodeBlock TypeDeclSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_declaration();
+    CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     if (name == Symbol::token_to_string(token::TK_Time)) {
