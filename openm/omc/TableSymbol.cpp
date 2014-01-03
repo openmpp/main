@@ -9,7 +9,12 @@
 #include "AgentSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
+#include "TableExpressionSymbol.h"
 #include "CodeBlock.h"
+#include "libopenm/db/metaModelHolder.h"
+
+using namespace std;
+using namespace openm;
 
 void TableSymbol::post_parse(int pass)
 {
@@ -31,6 +36,7 @@ void TableSymbol::post_parse(int pass)
     }
 }
 
+
 const string TableSymbol::do_increments_func()
 {
     // Eg. DurationOfLife_do_increments
@@ -47,6 +53,15 @@ const string TableSymbol::do_increments_defn()
 {
     // E.g. void Person::DurationOfLife_do_increments(bool prepare = true, bool process = true)
     return "void " + agent->name + "::" + do_increments_func() + "( bool prepare, bool process )";
+}
+
+CodeBlock TableSymbol::cxx_declaration()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    return h;
 }
 
 CodeBlock TableSymbol::cxx_declaration_agent_scope()
@@ -136,6 +151,90 @@ CodeBlock TableSymbol::cxx_definition()
 
     return c;
 }
+
+void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+{
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    TableDicRow tableDic;
+    TableDicTxtLangRow tableTxt;
+
+    tableDic.tableId = pp_numeric_id;
+    tableDic.tableName = name;
+    tableDic.isUser = false;
+    tableDic.rank = 0;
+    tableDic.isSparse = true;   // do not store NULLs
+    tableDic.isHidden = false;
+    metaRows.tableDic.push_back(tableDic);
+
+    // TODO language entries are hard-coded bilingual for alpha
+    tableTxt.tableId = pp_numeric_id;
+    tableTxt.langName = "EN";
+    tableTxt.descr = name + " short name (EN)";
+    tableTxt.note = name + " note (EN)";
+    tableTxt.unitDescr = "Expressions (EN)"; // TODO
+    tableTxt.unitNote = "Expressions Note (EN)"; // TODO
+    metaRows.tableTxt.push_back(tableTxt);
+
+    tableTxt.langName = "FR";
+    tableTxt.descr = name + " short name (FR)";
+    tableTxt.note = name + " note (FR)";
+    tableTxt.unitDescr = "Expressions (FR)"; // TODO
+    tableTxt.unitNote = "Expressions Note (FR)"; // TODO
+    metaRows.tableTxt.push_back(tableTxt);
+
+    // TODO: rank 0 tables in alpha have no TableDimsRow entries
+    // or TableDimsTxtLangRow entries
+
+    // accumulators for table
+    TableAccRow tableAcc;
+    tableAcc.tableId = pp_numeric_id;
+    TableAccTxtLangRow tableAccTxt;
+    tableAccTxt.tableId = pp_numeric_id;
+    for (auto acc : pp_accumulators) {
+        tableAcc.accId = acc->index;
+        tableAcc.name = "acc" + to_string(acc->index);
+        tableAcc.expr = acc->pretty_name();
+        metaRows.tableAcc.push_back(tableAcc);
+
+        tableAccTxt.accId = acc->index;
+        tableAccTxt.langName = "EN";
+        tableAccTxt.descr = acc->name + " short name (EN)";
+        tableAccTxt.note = acc->name + " note (EN)";
+        metaRows.tableAccTxt.push_back(tableAccTxt);
+
+        tableAccTxt.langName = "FR";
+        tableAccTxt.descr = acc->name + " short name (FR)";
+        tableAccTxt.note = acc->name + " note (FR)";
+        metaRows.tableAccTxt.push_back(tableAccTxt);
+    }
+
+    // expressions for table
+    TableUnitRow tableUnit;
+    tableUnit.tableId = pp_numeric_id;
+    TableUnitTxtLangRow tableUnitTxt;
+    tableUnitTxt.tableId = pp_numeric_id;
+    for (auto expr : pp_expressions) {
+        tableUnit.unitId = expr->index;
+        tableUnit.name = "expr" + to_string(expr->index);
+        tableUnit.src = expr->get_expression(expr->root, TableExpressionSymbol::expression_style::sql);
+        metaRows.tableUnit.push_back(tableUnit);
+
+        tableUnitTxt.unitId = expr->index;
+        tableUnitTxt.langName = "EN";
+        tableUnitTxt.descr = expr->name + " short name (EN)";
+        tableUnitTxt.note = expr->name + " note (EN)";
+        metaRows.tableUnitTxt.push_back(tableUnitTxt);
+
+        tableUnitTxt.langName = "FR";
+        tableUnitTxt.descr = expr->name + " short name (FR)";
+        tableUnitTxt.note = expr->name + " note (FR)";
+        metaRows.tableUnitTxt.push_back(tableUnitTxt);
+    }
+}
+
 
 
 

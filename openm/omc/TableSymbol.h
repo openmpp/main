@@ -62,9 +62,13 @@ public:
 
     const string do_increments_defn();
 
+    CodeBlock cxx_declaration();
+
     CodeBlock cxx_declaration_agent_scope();
 
     CodeBlock cxx_definition();
+
+    void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
     * Reference to pointer to agent.

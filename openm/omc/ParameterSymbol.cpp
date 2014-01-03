@@ -9,7 +9,6 @@
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
-
 using namespace std;
 using namespace openm;
 

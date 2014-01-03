@@ -463,84 +463,9 @@ void CodeGen::do_tables( CodeBlock& h, CodeBlock& c )
 	h += "";
 	c += "";
 
-    // TODO: Move all of this to member function of TableSymbol
 	// populate meta-data for tables
     for ( auto table : Symbol::pp_tables ) {
-        TableDicRow tableDic;
-        TableDicTxtLangRow tableTxt;
-
-        tableDic.tableId = table->pp_numeric_id;
-        tableDic.tableName = table->name;
-        tableDic.isUser = false;
-        tableDic.rank = 0;
-        tableDic.isSparse = true;   // do not store NULLs
-        tableDic.isHidden = false;
-        metaRows.tableDic.push_back(tableDic);
-
-        // TODO language entries are hard-coded bilingual for alpha
-        tableTxt.tableId = table->pp_numeric_id;
-        tableTxt.langName = "EN";
-        tableTxt.descr = table->name + " short name (EN)";
-        tableTxt.note = table->name + " note (EN)";
-        tableTxt.unitDescr = "Expressions (EN)"; // TODO
-        tableTxt.unitNote = "Expressions Note (EN)"; // TODO
-        metaRows.tableTxt.push_back(tableTxt);
-
-        tableTxt.langName = "FR";
-        tableTxt.descr = table->name + " short name (FR)";
-        tableTxt.note = table->name + " note (FR)";
-        tableTxt.unitDescr = "Expressions (FR)"; // TODO
-        tableTxt.unitNote = "Expressions Note (FR)"; // TODO
-        metaRows.tableTxt.push_back(tableTxt);
-
-        // TODO: rank 0 tables in alpha have no TableDimsRow entries
-        // or TableDimsTxtLangRow entries
-        
-        // accumulators for table
-        TableAccRow tableAcc;
-        tableAcc.tableId = table->pp_numeric_id;
-        TableAccTxtLangRow tableAccTxt;
-        tableAccTxt.tableId = table->pp_numeric_id;
-        for ( auto acc : table->pp_accumulators ) {
-            tableAcc.accId = acc->index;
-            tableAcc.name = "acc" + to_string(acc->index);
-            tableAcc.expr = acc->pretty_name();
-            metaRows.tableAcc.push_back(tableAcc);
-
-            tableAccTxt.accId = acc->index;
-            tableAccTxt.langName = "EN";
-            tableAccTxt.descr = acc->name + " short name (EN)";
-            tableAccTxt.note = acc->name + " note (EN)";
-            metaRows.tableAccTxt.push_back(tableAccTxt);
-
-            tableAccTxt.langName = "FR";
-            tableAccTxt.descr = acc->name + " short name (FR)";
-            tableAccTxt.note = acc->name + " note (FR)";
-            metaRows.tableAccTxt.push_back(tableAccTxt);
-        }
-
-        // expressions for table
-        TableUnitRow tableUnit;
-        tableUnit.tableId = table->pp_numeric_id;
-        TableUnitTxtLangRow tableUnitTxt;
-        tableUnitTxt.tableId = table->pp_numeric_id;
-        for ( auto expr : table->pp_expressions ) {
-            tableUnit.unitId = expr->index;
-            tableUnit.name = "expr" + to_string(expr->index);
-            tableUnit.src = expr->get_expression( expr->root, TableExpressionSymbol::expression_style::sql );
-            metaRows.tableUnit.push_back(tableUnit);
-
-            tableUnitTxt.unitId = expr->index;
-            tableUnitTxt.langName = "EN";
-            tableUnitTxt.descr = expr->name + " short name (EN)";
-            tableUnitTxt.note = expr->name + " note (EN)";
-            metaRows.tableUnitTxt.push_back(tableUnitTxt);
-
-            tableUnitTxt.langName = "FR";
-            tableUnitTxt.descr = expr->name + " short name (FR)";
-            tableUnitTxt.note = expr->name + " note (FR)";
-            metaRows.tableUnitTxt.push_back(tableUnitTxt);
-        }
+        table->populate_metadata(metaRows);
     }
 }
 
