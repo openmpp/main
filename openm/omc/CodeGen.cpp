@@ -20,39 +20,36 @@ using namespace openm;
 
 void CodeGen::do_all()
 {
-    CodeBlock t;
-    CodeBlock h;
-    CodeBlock c;
 
-	do_preamble(t, h, c);
-    do_model_name(h, c);
-    do_time_stamp(h, c);
+	do_preamble();
+    do_model_name();
+    do_time_stamp();
 
    	t += "namespace mm {";
    	h += "namespace mm {";
     c += "namespace mm {";
 
-	do_types(t, c);
-	do_parameters(h, c);
-	do_tables(h, c);
-	do_agents(h, c);
-    do_event_queue(h, c);
+	do_types();
+	do_parameters();
+	do_tables();
+	do_agents();
+    do_event_queue();
 
 	t += "} // namespace mm";
 	h += "} // namespace mm";
 	c += "} // namespace mm";
 
-    do_ModelStartup(h, c);
-    do_RunModel(h, c);
-    do_ModelShutdown(h, c);
-    do_API_entries(h, c);
+    do_ModelStartup();
+    do_RunModel();
+    do_ModelShutdown();
+    do_API_entries();
 
     *oat << t;
     *oah << h;
     *oac << c;
 }
 
-void CodeGen::do_preamble( CodeBlock& t, CodeBlock& h, CodeBlock& c )
+void CodeGen::do_preamble()
 {
 	Symbol *s = Symbol::find_a_symbol( typeid(ModelSymbol) );
 
@@ -91,7 +88,7 @@ void CodeGen::do_preamble( CodeBlock& t, CodeBlock& h, CodeBlock& c )
 	c += "";
 }
 
-void CodeGen::do_model_name( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_model_name()
 {
 	Symbol *s = Symbol::find_a_symbol( typeid(ModelSymbol) );
 	c += "// model identification" ;
@@ -100,7 +97,7 @@ void CodeGen::do_model_name( CodeBlock& h, CodeBlock& c )
     metaRows.modelDic.name = s->name;
 }
 
-void CodeGen::do_time_stamp( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_time_stamp()
 {
     using namespace openm;
 	c += "// model time stamp" ;
@@ -109,7 +106,7 @@ void CodeGen::do_time_stamp( CodeBlock& h, CodeBlock& c )
     metaRows.modelDic.timestamp = modelTimeStamp;
 }
 
-void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
+void CodeGen::do_types()
 {
     // om_types.h - types declaration
     t += "// types";
@@ -127,7 +124,7 @@ void CodeGen::do_types( CodeBlock& t, CodeBlock& c )
 
 }
 
-void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_parameters()
 {
 	// agents.h - parameter declaration
 	h += "// model parameters";
@@ -149,7 +146,7 @@ void CodeGen::do_parameters( CodeBlock& h, CodeBlock& c )
     }
 }
 
-void CodeGen::do_ModelStartup( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_ModelStartup()
 {
     c += "// Model startup method: initialize parameters";
 	c += "void ModelStartup(IModel * i_model)";
@@ -172,7 +169,7 @@ void CodeGen::do_ModelStartup( CodeBlock& h, CodeBlock& c )
 	c += "";
 }
 
-void CodeGen::do_ModelShutdown( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_ModelShutdown()
 {
 	c += "// Model shutdown method: write output tables";
 	c += "void ModelShutdown(IModel * i_model)";
@@ -196,7 +193,7 @@ void CodeGen::do_ModelShutdown( CodeBlock& h, CodeBlock& c )
 	c += "";
 }
 
-void CodeGen::do_agents( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_agents()
 {
     for ( auto agent : Symbol::pp_agents ) {
 
@@ -360,7 +357,7 @@ void CodeGen::do_agents( CodeBlock& h, CodeBlock& c )
 
 }
 
-void CodeGen::do_tables( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_tables()
 {
 	h += "// model output tables";
 	c += "// model output tables";
@@ -375,7 +372,7 @@ void CodeGen::do_tables( CodeBlock& h, CodeBlock& c )
 	c += "";
 }
 
-void CodeGen::do_event_queue( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_event_queue()
 {
     c += doxygen( "The event queue (definition)" );
     c += "set<BaseEvent *, less_deref<BaseEvent *> > BaseEvent::event_queue;";
@@ -387,7 +384,7 @@ void CodeGen::do_event_queue( CodeBlock& h, CodeBlock& c )
 }
 
 
-void CodeGen::do_RunModel( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_RunModel()
 {
 	// agents.cpp
 	c += "// Model simulation (implemented in simulation.cpp for prototype)";
@@ -395,7 +392,7 @@ void CodeGen::do_RunModel( CodeBlock& h, CodeBlock& c )
 }
 
 
-void CodeGen::do_API_entries( CodeBlock& h, CodeBlock& c )
+void CodeGen::do_API_entries()
 {
 	// agents.cpp
 	c.smart_indenting ( false );

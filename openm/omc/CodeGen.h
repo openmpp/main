@@ -29,6 +29,7 @@ public:
 		, oac (oac_arg)
         , modelTimeStamp(i_timestamp)
         , metaRows(io_metaRows)
+
 	{
 	}
 
@@ -37,18 +38,39 @@ public:
 	}
 
 	void do_all();
-	void do_preamble( CodeBlock& t, CodeBlock& h, CodeBlock& c );
-	void do_model_name( CodeBlock& h, CodeBlock& c );
-	void do_time_stamp( CodeBlock& h, CodeBlock& c );
-	void do_types( CodeBlock& t, CodeBlock& c );
-	void do_parameters( CodeBlock& h, CodeBlock& c );
-	void do_agents( CodeBlock& h, CodeBlock& c );
-	void do_tables( CodeBlock& h, CodeBlock& c );
-	void do_event_queue( CodeBlock& h, CodeBlock& c );
-	void do_ModelStartup( CodeBlock& h, CodeBlock& c );
-	void do_RunModel( CodeBlock& h, CodeBlock& c );
-	void do_ModelShutdown( CodeBlock& h, CodeBlock& c );
-    void do_API_entries( CodeBlock& h, CodeBlock& c );
+	void do_preamble();
+	void do_model_name();
+	void do_time_stamp();
+	void do_types();
+	void do_parameters();
+	void do_agents();
+	void do_tables();
+	void do_event_queue();
+	void do_ModelStartup();
+	void do_RunModel();
+	void do_ModelShutdown();
+    void do_API_entries();
+
+
+    /**
+     * CodeBlock for om_types.h
+     */
+
+    CodeBlock t;
+
+
+    /**
+    * CodeBlock for om_agents.h
+    */
+
+    CodeBlock h;
+
+
+    /**
+    * CodeBlock for om_agents.cpp
+    */
+
+    CodeBlock c;
 
     /** output stream for om_types.h */
 	ofstream *oat;
