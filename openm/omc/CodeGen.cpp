@@ -25,9 +25,12 @@ void CodeGen::do_all()
     do_model_name();
     do_time_stamp();
 
-   	t += "namespace mm {";
-   	h += "namespace mm {";
-    c += "namespace mm {";
+   	t += "namespace mm {" ;
+    t += "void StartSimulation(int id);" ;
+    t += "void EndSimulation();" ;
+        
+    h += "namespace mm {" ;
+    c += "namespace mm {" ;
 
 	do_types();
 	do_parameters();

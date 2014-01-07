@@ -22,11 +22,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="hard_coded.cpp">
-      <Filter>C++ Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\include\omc\Agent.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
@@ -69,5 +64,10 @@
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha2_optional_views.sql">
       <Filter>SqlScript</Filter>
     </SqlScript>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StartSimulation.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

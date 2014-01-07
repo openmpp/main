@@ -124,6 +124,8 @@ namespace openm {
 } // namespace openm
 
 using namespace openm;
+using namespace mm;
+
 void RunModel(IModel * i_model)
 {
     theLog->logMsg("Running Simulation");
@@ -153,9 +155,9 @@ void RunModel(IModel * i_model)
         }
 
         // simulate the case
-        StartCase(thisCase);
-        while (DoNextEvent());
-        EndCase();
+        mm::StartSimulation(thisCase);
+        while (mm::BaseEvent::do_next_event());
+        mm::EndSimulation();
 
         {
             // generate the case seed for the next case
