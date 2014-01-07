@@ -158,8 +158,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="hard_coded.cpp" />
-    <ClCompile Include="simulation.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_outside.cpp" />
   </ItemGroup>
@@ -178,6 +176,9 @@
     <ClInclude Include="Happiness.mpp" />
     <ClInclude Include="PersonCore.mpp" />
     <ClInclude Include="Alpha1.mpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StartSimulation.ompp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

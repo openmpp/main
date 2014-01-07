@@ -28,14 +28,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="simulation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hard_coded.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp">
       <Filter>OmcOutput</Filter>
     </ClCompile>
@@ -77,5 +69,10 @@
   <ItemGroup>
     <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_create_model.sql" />
     <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_optional_views.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StartSimulation.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
