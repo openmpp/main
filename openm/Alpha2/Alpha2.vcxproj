@@ -159,7 +159,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="hard_coded.cpp" />
-    <ClCompile Include="simulation.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_outside.cpp" />
   </ItemGroup>

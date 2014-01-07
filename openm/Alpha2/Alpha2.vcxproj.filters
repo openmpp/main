@@ -25,9 +25,6 @@
     <ClCompile Include="hard_coded.cpp">
       <Filter>C++ Files</Filter>
     </ClCompile>
-    <ClCompile Include="simulation.cpp">
-      <Filter>C++ Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\omc\Agent.h">
