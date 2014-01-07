@@ -22,8 +22,23 @@
 #define case_id 0
 
 namespace openm {
-    // run-time support functions
 
+    // model API entries holder
+    struct ModelEntryHolder
+    {
+        ModelEntryHolder(
+        OM_STARTUP_HANDLER i_ModelStartupHandler,
+        OM_EVENT_LOOP_HANDLER i_RunModelHandler,
+        OM_SHUTDOWN_HANDLER i_ModelShutdownHandler
+        )
+        {
+            ::ModelStartupHandler = i_ModelStartupHandler;    // link model startup function
+            ::RunModelHandler = i_RunModelHandler;            // link user portion of model event loop
+            ::ModelShutdownHandler = i_ModelShutdownHandler;  // link model shutdown function
+        }
+    };
+
+    // run-time support functions
 	double RandUniform(int strm);
 }
 
