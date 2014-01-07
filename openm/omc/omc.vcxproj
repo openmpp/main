@@ -114,6 +114,7 @@
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
     <ClInclude Include="ModelSymbol.h" />
+    <ClInclude Include="ModelTypeSymbol.h" />
     <ClInclude Include="ModuleSymbol.h" />
     <ClInclude Include="ParameterSymbol.h" />
     <ClInclude Include="ParseContext.h" />
@@ -149,6 +150,7 @@
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
+    <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />

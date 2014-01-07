@@ -89,17 +89,13 @@ void CodeGen::do_preamble()
     c += "#include \"omc/Agent.cpp\" // defines for Agent static template members";
 	c += "#include \"omc/AgentVar.cpp\" // defines for AgentVar static members";
 	c += "#include \"omc/Event.cpp\" // defines for Event static members";
-    // get the model_type symbol
-    TypeDeclSymbol *model_type_symbol = dynamic_cast<TypeDeclSymbol *>(Symbol::get_symbol(Symbol::token_to_string(token::TK_model_type)));
+
+    // process the model_type symbol
+    ModelTypeSymbol *model_type_symbol = dynamic_cast<ModelTypeSymbol *>(Symbol::find_a_symbol(typeid(ModelTypeSymbol)));
     assert(model_type_symbol);
-    if (model_type_symbol->value == token::TK_case_based) {
-        c += "#include \"omc/omSimulation_casebased.cpp\" // Definitions for framework code for case-based model";
-        metaRows.modelDic.type = ModelType::caseBased;
-    }
-    else {
-        c += "#include \"omc/omSimulation_timebased.cpp\" // Definitions for framework code for time-based model";
-        metaRows.modelDic.type = ModelType::timeBased;
-    }
+    c += model_type_symbol->cxx_definition_global();
+    model_type_symbol->populate_metadata(metaRows);
+
     c += "";
 	c += "using namespace openm;";
 	c += "";

@@ -12,6 +12,7 @@
 #include "ModelSymbol.h"
 #include "ModuleSymbol.h"
 #include "VersionSymbol.h"
+#include "ModelTypeSymbol.h"
 #include "TypeDeclSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentMemberSymbol.h"

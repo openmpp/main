@@ -25,17 +25,13 @@ void TypeDeclSymbol::post_parse(int pass)
         break;
     }
 }
+
 CodeBlock TypeDeclSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_global();
 
-
     // Perform operations specific to this level in the Symbol hierarchy.
-    if (name == Symbol::token_to_string(token::TK_model_type)) {
-        // no declarations are associated with the model_type statement
-        return h;
-    }
 
     string typ = Symbol::token_to_string(value);
     // E.g. typedef double real;

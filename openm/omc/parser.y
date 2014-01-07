@@ -542,7 +542,7 @@ Decl_integer_type:
 Decl_model_type:
         "model_type" ModelType[type_to_use] ";"
                         {
-                            auto *sym = new TypeDeclSymbol( token::TK_model_type, (token_type) $type_to_use );
+                            auto *sym = new ModelTypeSymbol( (token_type) $type_to_use );
                         }
       | "model_type" error ";"
                         {
