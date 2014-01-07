@@ -462,7 +462,7 @@ public:
     * Populated after parsing is complete.
     */
 
-    static list<TypeDeclSymbol *> pp_types;
+    static list<TypeDeclSymbol *> pp_all_types;
 
 
     /**
@@ -471,7 +471,7 @@ public:
      * Populated after parsing is complete.
      */
 
-    static list<AgentSymbol *> pp_agents;
+    static list<AgentSymbol *> pp_all_agents;
 
 
     /**
@@ -480,7 +480,7 @@ public:
      * Populated after parsing is complete.
      */
 
-    static list<TableSymbol *> pp_tables;
+    static list<TableSymbol *> pp_all_tables;
 
 
     /**
@@ -489,7 +489,7 @@ public:
      * Populated after parsing is complete.
      */
 
-    static list<ParameterSymbol *> pp_parameters;
+    static list<ParameterSymbol *> pp_all_parameters;
 
 
     /**

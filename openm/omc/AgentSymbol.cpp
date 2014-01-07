@@ -37,7 +37,7 @@ void AgentSymbol::post_parse(int pass)
     switch (pass) {
     case 1:
         // Add this agent to the complete list of agents.
-        pp_agents.push_back(this);
+        pp_all_agents.push_back(this);
         break;
     default:
         break;

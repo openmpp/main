@@ -29,13 +29,13 @@
 
 symbol_map_type Symbol::symbols;
 
-list<TypeDeclSymbol *> Symbol::pp_types;
+list<TypeDeclSymbol *> Symbol::pp_all_types;
 
-list<AgentSymbol *> Symbol::pp_agents;
+list<AgentSymbol *> Symbol::pp_all_agents;
 
-list<TableSymbol *> Symbol::pp_tables;
+list<TableSymbol *> Symbol::pp_all_tables;
 
-list<ParameterSymbol *> Symbol::pp_parameters;
+list<ParameterSymbol *> Symbol::pp_all_parameters;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
@@ -598,26 +598,26 @@ void Symbol::post_parse_all()
             );
 
     // Sort all global collections in lexicographic order
-    pp_types.sort([](TypeDeclSymbol *a, TypeDeclSymbol *b) { return a->name < b->name; });
-    pp_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
-    pp_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
-    pp_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+    pp_all_types.sort([](TypeDeclSymbol *a, TypeDeclSymbol *b) { return a->name < b->name; });
+    pp_all_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
+    pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
+    pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
 
     // Assign numeric identifiers to symbols in selected collections
     // These numeric id's are used for communicating with the meta-data API.
     int id = 0;
-    for ( auto parameter : pp_parameters ) {
+    for ( auto parameter : pp_all_parameters ) {
         parameter->pp_numeric_id = id;
         ++id;
     }
     id = 0;
-    for ( auto table : pp_tables ) {
+    for ( auto table : pp_all_tables ) {
         table->pp_numeric_id = id;
         ++id;
     }
 
     // Sort collections in agents in lexicographic order
-    for ( auto agent : pp_agents ) {
+    for ( auto agent : pp_all_agents ) {
         agent->pp_agent_data_members.sort( [] (AgentDataMemberSymbol *a, AgentDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_agentvars.sort( [] (AgentVarSymbol *a, AgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_agentevents.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->name < b->name ; } );
@@ -627,7 +627,7 @@ void Symbol::post_parse_all()
     }
 
     // Sort collections in tables
-    for ( auto table : pp_tables ) {
+    for ( auto table : pp_all_tables ) {
         // Sort expressions in sequence order
         table->pp_expressions.sort( [] (TableExpressionSymbol *a, TableExpressionSymbol *b) { return a->index < b->index; } );
         // Sort accumulators in sequence order
@@ -639,7 +639,7 @@ void Symbol::post_parse_all()
     // Create an amalgamated set of event names, in all agents, sorted lexicographically.
     // Note that the set contains no duplicates, but event names can be duplicates in different agents.
     set<string> all_event_names;
-    for ( auto *agent : pp_agents ) {
+    for ( auto *agent : pp_all_agents ) {
         for ( auto *event : agent->pp_agentevents )
         {
             all_event_names.insert( event->name );
@@ -647,7 +647,7 @@ void Symbol::post_parse_all()
     }
 
     // For each event in the model, find the index in the sorted list, and assign it as event_id
-    for ( auto *agent : pp_agents ) {
+    for ( auto *agent : pp_all_agents ) {
         for ( auto *event : agent->pp_agentevents )
         {
             auto iter = all_event_names.find( event->name );

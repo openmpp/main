@@ -27,7 +27,7 @@ void TableSymbol::post_parse(int pass)
         // assign direct pointer to agent for use post-parse
         pp_agent = dynamic_cast<AgentSymbol *> (agent);
         // add this table to the complete list of tables
-        pp_tables.push_back(this);
+        pp_all_tables.push_back(this);
         // Add this table to the agent's list of tables
         pp_agent->pp_agent_tables.push_back(this);
         break;

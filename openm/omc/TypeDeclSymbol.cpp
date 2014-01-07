@@ -19,7 +19,7 @@ void TypeDeclSymbol::post_parse(int pass)
     switch (pass) {
     case 1:
         // add this type to the complete list of types
-        pp_types.push_back(this);
+        pp_all_types.push_back(this);
         break;
     default:
         break;

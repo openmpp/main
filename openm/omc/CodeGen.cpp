@@ -127,14 +127,14 @@ void CodeGen::do_types()
 {
     // om_types.h - types declaration
     t += "// types";
-    for (auto type : Symbol::pp_types) {
+    for (auto type : Symbol::pp_all_types) {
         t += type->cxx_declaration_global();
     }
     t += "";
 
     // om_agents.cpp - types definitions
     c += "// types";
-    for (auto type : Symbol::pp_types) {
+    for (auto type : Symbol::pp_all_types) {
         c += type->cxx_definition_global();
     }
     c += "";
@@ -145,20 +145,20 @@ void CodeGen::do_parameters()
 {
 	// agents.h - parameter declaration
 	h += "// model parameters";
-    for ( auto parameter : Symbol::pp_parameters ) {
+    for ( auto parameter : Symbol::pp_all_parameters ) {
         h += parameter->cxx_declaration_global();
     }
 	h += "";
 
 	// agents.cpp - parameter definition
 	c += "// model parameters";
-    for ( auto parameter : Symbol::pp_parameters ) {
+    for ( auto parameter : Symbol::pp_all_parameters ) {
         c += parameter->cxx_definition_global();
     }
 	c += "";
 
 	// populate meta-data for parameters
-    for ( auto parameter : Symbol::pp_parameters ) {
+    for ( auto parameter : Symbol::pp_all_parameters ) {
         parameter->populate_metadata(metaRows);
     }
 }
@@ -171,7 +171,7 @@ void CodeGen::do_ModelStartup()
 	c += "using namespace mm;";
 	c += "// load model parameters";
 	c += "theLog->logMsg(\"Reading Parameters\");";
-    for ( auto parameter : Symbol::pp_parameters ) {
+    for ( auto parameter : Symbol::pp_all_parameters ) {
         string name = parameter->name;
     	string typ = Symbol::token_to_string( parameter->type );
 	    c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
@@ -188,10 +188,10 @@ void CodeGen::do_ModelShutdown()
 	c += "using namespace mm;";
 	c += "// write output result tables";
 	c += "theLog->logMsg(\"Writing Output Tables\");";
-    for ( auto table : Symbol::pp_tables ) {
+    for ( auto table : Symbol::pp_all_tables ) {
 	    c += "the" + table->name + ".compute_expressions();";
     }
-    for ( auto table : Symbol::pp_tables ) {
+    for ( auto table : Symbol::pp_all_tables ) {
 	    c += "i_model->writeOutputTable( \"" + table->name + "\", the" + table->name + ".n_accumulators, 1, const_cast<const double **>(the" + table->name + ".accumulators) );";
     }
     c += "}";
@@ -200,7 +200,7 @@ void CodeGen::do_ModelShutdown()
 
 void CodeGen::do_agents()
 {
-    for ( auto agent : Symbol::pp_agents ) {
+    for ( auto agent : Symbol::pp_all_agents ) {
 
 	    // agents.h
 	    h += "// model agents";
@@ -354,7 +354,7 @@ void CodeGen::do_agents()
     c += doxygen("Free all zombie agents");
     c += "void BaseAgent::free_all_zombies()";
     c += "{";
-    for ( auto agent : Symbol::pp_agents ) {
+    for ( auto agent : Symbol::pp_all_agents ) {
         // e.g. Person::free_zombies();
         c += agent->name + "::free_zombies();";
     }
@@ -367,7 +367,7 @@ void CodeGen::do_tables()
 	h += "// model output tables";
 	c += "// model output tables";
 
-	for ( auto table : Symbol::pp_tables ) {
+	for ( auto table : Symbol::pp_all_tables ) {
         h += table->cxx_declaration_global();
         c += table->cxx_definition_global();
         table->populate_metadata(metaRows);

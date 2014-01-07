@@ -21,7 +21,7 @@ void ParameterSymbol::post_parse(int pass)
     switch (pass) {
     case 1:
         // add this parameter to the complete list of parameters
-        pp_parameters.push_back(this);
+        pp_all_parameters.push_back(this);
         break;
     default:
         break;
