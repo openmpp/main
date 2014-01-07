@@ -7,9 +7,11 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include <cstddef> // for size_t, offsetof
 #include <set>
-#include <forward_list>
+#include "omc/Agent.h"
+#include "om_types.h" // for Time
+
+using namespace std;
 
 namespace mm {
 

@@ -1,11 +1,19 @@
+/**
+* @file    omSimulation.h
+* Common declarations for all models.
+*/
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#pragma once
 #include <cmath>
 #include "om_types.h" // model-specific types
 #include "omc/Agent.h"
 #include "omc/AgentVar.h"
 #include "omc/Event.h"
+#include "libopenm/omModel.h"
+#include "om_agents.h" // model-specific classes
+
 
 // The following macro is not defined for Modgen models.
 // It can be used to exclude Modgen-specific C++ code during C++ compilation by openM++.

@@ -196,7 +196,7 @@ int main(int argc, char * argv[])
         om_outside_cpp << " * Developer-supplied C++ functions" << endl;
         om_outside_cpp << " */" << endl;
         om_outside_cpp << "" << endl;
-        om_outside_cpp << "#include \"om_agents.h\"" << endl;
+        om_outside_cpp << "#include \"omc/omSimulation.h\"" << endl;
 		om_outside_cpp << "using namespace openm;" << endl;
         om_outside_cpp << "namespace mm {" << endl;
 

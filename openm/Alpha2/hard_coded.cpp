@@ -6,7 +6,7 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include "om_agents.h"
+#include "omc/omSimulation.h"
 
 using namespace mm;
 

@@ -6,7 +6,6 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include "libopenm/omModel.h"
 #include "omc/omSimulation.h"
 
 namespace openm {

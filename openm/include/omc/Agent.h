@@ -7,9 +7,11 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include <cstddef> // for size_t
 #include <list>
 #include <forward_list>
+#include "om_types.h" // for Time
+
+using namespace std;
 
 namespace mm {
 
