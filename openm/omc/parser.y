@@ -666,6 +666,7 @@ Decl_SimpleAgentVar:
 FundamentalType:
       "int"
     | "double"
+    | "float"
     | "bool"
 	;
 

@@ -1,0 +1,111 @@
+//LABEL(WizardTimeBased, EN) Core simulation functions
+
+/* NOTE(WizardTimeBased, EN)
+	This module contains core simulation functions and definitions.
+*/
+
+// The model version number
+version 1, 0, 0, 0;
+
+// The model type
+//model_type time_based, just_in_time;
+model_type time_based;
+
+// The data type used to represent time
+time_type double;
+
+// Other data types
+//real_type		float;
+//counter_type	ushort;
+//integer_type	short;
+//index_type		ushort;
+
+// The following option reduces memory use at the expense of speed
+//options packing_level=2;
+
+// Supported languages
+languages 
+{
+	EN // English
+};
+
+// The Simulation function is called by Modgen to simulate a replicate.
+void Simulation()
+{
+	// Buffer for reporting progress
+	const size_t nBufSize = 255;
+	char szBuffer[nBufSize];
+
+	// Note replicate number for progress reporting
+	int nReplicate = GetReplicate();
+
+	// Create the single ticker actor
+	Ticker *paTicker = new Ticker();
+	paTicker->Start();
+
+	// Create the starting population
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_START"));
+	ProgressMessage( szBuffer );
+
+	for ( int nJ = 0; nJ < StartingPopulationSize; nJ++ )
+	{
+		Person *paPerson = new Person();
+		paPerson->Start();
+	}
+
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_SIMULATION"));
+	ProgressMessage( szBuffer );
+
+	// event loop
+	double dCurrentTime = TIME_INFINITE;
+	double dStartTime = TIME_INFINITE;
+
+	int nLastProgressPercent = -1;
+	int nThisProgressPercent = -1;
+
+	while ( !gpoEventQueue->Empty() ) 
+	{
+
+		// get the time of next event, verify against the simulation end
+		dCurrentTime = gpoEventQueue->NextEvent();
+
+		// Note the start time (time of first event) for progress indicator
+		if ( dStartTime == TIME_INFINITE )
+		{
+			dStartTime = dCurrentTime;
+		}
+
+		if ( dCurrentTime > SIMULATION_END() || gbInterrupted || gbCancelled || gbErrors )
+		{
+			if (dCurrentTime > SIMULATION_END())
+			{
+				// age all actors to the simulation end time
+				gpoEventQueue->WaitUntilAllActors( SIMULATION_END() );
+			}
+
+			sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_FINISH"));
+			ProgressMessage( szBuffer );
+
+			gpoEventQueue->FinishAllActors();
+		}
+		else 
+		{
+			// age all actors to the time of next event
+			gpoEventQueue->WaitUntil( dCurrentTime );
+
+			// implement the next event
+			gpoEventQueue->Implement();
+		}
+
+		// Update progress indicator only if the integer percentage complete changes
+		// (updates to the progress bar at every event are expensive).
+		nThisProgressPercent = (int)( 100 * ( dCurrentTime - dStartTime ) /
+		                                    ( SIMULATION_END() - dStartTime ) );
+
+		if ( nThisProgressPercent > nLastProgressPercent )
+		{
+			TimeReport( dCurrentTime );	// update simulation progress
+			nLastProgressPercent = nThisProgressPercent;
+		}
+	}
+}

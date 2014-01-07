@@ -89,7 +89,17 @@ void CodeGen::do_preamble()
     c += "#include \"omc/Agent.cpp\" // defines for Agent static template members";
 	c += "#include \"omc/AgentVar.cpp\" // defines for AgentVar static members";
 	c += "#include \"omc/Event.cpp\" // defines for Event static members";
-    c += "#include \"omc/omSimulation_casebased.cpp\" // Definitions for framework code";
+    // get the model_type symbol
+    TypeDeclSymbol *model_type_symbol = dynamic_cast<TypeDeclSymbol *>(Symbol::get_symbol(Symbol::token_to_string(token::TK_model_type)));
+    assert(model_type_symbol);
+    if (model_type_symbol->value == token::TK_case_based) {
+        c += "#include \"omc/omSimulation_casebased.cpp\" // Definitions for framework code for case-based model";
+        metaRows.modelDic.type = ModelType::caseBased;
+    }
+    else {
+        c += "#include \"omc/omSimulation_timebased.cpp\" // Definitions for framework code for time-based model";
+        metaRows.modelDic.type = ModelType::timeBased;
+    }
     c += "";
 	c += "using namespace openm;";
 	c += "";
@@ -164,13 +174,7 @@ void CodeGen::do_ModelStartup()
     for ( auto parameter : Symbol::pp_parameters ) {
         string name = parameter->name;
     	string typ = Symbol::token_to_string( parameter->type );
-    	//c += "try {";
 	    c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
-        //c += "}";
-	    //c += "catch(...)";
-        //c += "{";
-        //c += "// ignore";
-        //c += "}";
     }
 	c += "}";
 	c += "";
@@ -188,13 +192,7 @@ void CodeGen::do_ModelShutdown()
 	    c += "the" + table->name + ".compute_expressions();";
     }
     for ( auto table : Symbol::pp_tables ) {
-    	//c += "try {";
 	    c += "i_model->writeOutputTable( \"" + table->name + "\", the" + table->name + ".n_accumulators, 1, const_cast<const double **>(the" + table->name + ".accumulators) );";
-        //c += "}";
-	    //c += "catch(...)";
-        //c += "{";
-        //c += "// ignore";
-        //c += "}";
     }
     c += "}";
 	c += "";
@@ -320,7 +318,7 @@ void CodeGen::do_agents()
         c += "// Initialize tabulation-related data members";
         c += "void " + agent->name + "::initialize_agent_tables()";
         c += "{";
-        for ( auto table : agent->pp_tables ) {
+        for (auto table : agent->pp_agent_tables) {
             c += table->do_increments_func() + "(true, false);";
         }
         c += "}";
@@ -329,7 +327,7 @@ void CodeGen::do_agents()
         c += "// Finalize tabulation-related operations";
         c += "void " + agent->name + "::finalize_agent_tables()";
         c += "{";
-        for ( auto table : agent->pp_tables ) {
+        for (auto table : agent->pp_agent_tables) {
             c += table->do_increments_func() + "(false, true);";
         }
         c += "}";

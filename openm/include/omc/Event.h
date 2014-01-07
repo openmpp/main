@@ -156,6 +156,28 @@ public:
         }
     }
 
+
+    /**
+     * Time of next event
+     *
+     * @return Time of next event, time_infinite if none
+     */
+
+    static Time time_next_event()
+    {
+        BaseEvent::clean_all();
+        BaseAgent::free_all_zombies();
+
+        if ( BaseEvent::event_queue.empty() ) {
+            return time_infinite;
+        }
+        else {
+            // get the next event from front of the event queue
+            auto *evt = *BaseEvent::event_queue.begin();
+            return evt->event_time;
+        }
+    }
+
     /**
      * Advances time to the next event and implements it.
      *
@@ -165,7 +187,6 @@ public:
     static bool do_next_event()
     {
         BaseEvent::clean_all();
-
         BaseAgent::free_all_zombies();
 
         if ( BaseEvent::event_queue.empty() ) {
