@@ -27,5 +27,10 @@ public:
         : Symbol(nm)
     {
     }
+
+    CodeBlock cxx_definition_global();
+
+    void populate_metadata(openm::MetaModelHolder & metaRows);
+
 };
 

@@ -1,0 +1,39 @@
+/**
+* @file    ModelSymbol.cpp
+* Definitions for the ModelSymbol class.
+*/
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#include <cassert>
+#include "ModelSymbol.h"
+#include "CodeBlock.h"
+#include "libopenm/db/modelBuilder.h"
+
+using namespace std;
+using namespace openm;
+
+
+CodeBlock ModelSymbol::cxx_definition_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    c += "// model identification";
+    c += "const char * OM_MODEL_NAME =\"" + name + "\";";
+    c += "";
+
+    return c;
+}
+
+void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+{
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    metaRows.modelDic.name = name;
+};

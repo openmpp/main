@@ -48,6 +48,13 @@ public:
     {
     }
 
+    string formatted_value() const
+    {
+        return to_string(major) + "." + to_string(minor) + "." + to_string(sub_minor) + "." + to_string(sub_sub_minor);
+    }
+
+    void populate_metadata(openm::MetaModelHolder & metaRows);
+
     /** major model version (position 1) */
     int major;
 
