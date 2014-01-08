@@ -61,7 +61,7 @@ void CodeGen::do_preamble()
     // Get the model_type symbol
     ModelTypeSymbol *model_type_symbol = dynamic_cast<ModelTypeSymbol *>(Symbol::find_a_symbol(typeid(ModelTypeSymbol)));
     assert(model_type_symbol);
-    model_symbol->populate_metadata(metaRows);
+    model_type_symbol->populate_metadata(metaRows);
 
     // Get the version symbol
     VersionSymbol *version_symbol = dynamic_cast<VersionSymbol *>(Symbol::find_a_symbol(typeid(VersionSymbol)));

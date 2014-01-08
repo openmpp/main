@@ -8,8 +8,7 @@
 version 1, 0, 0, 0;
 
 // The model type
-//model_type time_based, just_in_time;
-model_type time_based;
+model_type time_based, just_in_time;
 
 // The data type used to represent time
 time_type double;

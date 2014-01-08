@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <cassert>
 #include "Symbol.h"
 
 /**
@@ -29,17 +30,35 @@ public:
      * @param value The token for the model type, e.g. token::KW_case_based.
      */
 
-    ModelTypeSymbol(token_type value)
+    ModelTypeSymbol(token_type value, bool just_in_time = false)
         : Symbol(token_to_string(token::TK_model_type))
         , value(value)
+        , just_in_time(just_in_time)
     {
+        // compiler guarantee
+        assert(value == token::TK_case_based || value == token::TK_time_based);
     }
 
     CodeBlock cxx_definition_global();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
-    /** The model type */
+
+    /**
+     * The model type
+     *
+     *  This can be either TK_case_based or TK_time_based.
+     */
+
     token_type value;
+
+
+    /**
+     * Value of just-in-time option
+     * 
+     * True if active, false if inactive
+     */
+
+    bool just_in_time;
 };
 

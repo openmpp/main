@@ -540,11 +540,15 @@ Decl_integer_type:
     ;
 
 Decl_model_type:
-        "model_type" ModelType[type_to_use] ";"
+          "model_type" ModelType[type_to_use] ";"
                         {
                             auto *sym = new ModelTypeSymbol( (token_type) $type_to_use );
                         }
-      | "model_type" error ";"
+        | "model_type" ModelType[type_to_use] "," "just_in_time" ";"
+                        {
+                            auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true);
+                        }
+        | "model_type" error ";"
                         {
                             // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
                             pc.InitializeForCxxOutside();

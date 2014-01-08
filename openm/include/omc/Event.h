@@ -196,7 +196,6 @@ public:
         // get the next event from front of the event queue
         auto *evt = *BaseEvent::event_queue.begin();
 
-        bool just_in_time = false;
         if ( just_in_time ) {
             // age the agent to the time of the event
             evt->age_agent();
@@ -214,6 +213,7 @@ public:
 
         return true;
     }
+
 
     /**
      * Scheduled time of event.
@@ -251,6 +251,15 @@ public:
      */
 
     static tailed_forward_list<BaseEvent *> dirty_events;
+
+
+    /**
+    * Value of just-in-time option
+    *
+    * True if active, false if inactive
+    */
+
+    static const bool just_in_time;
 };
 
 template<typename A, const int event_id, const int event_priority, void (A::*implement_function)(), Time (A::*time_function)()>
