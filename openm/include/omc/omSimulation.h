@@ -12,7 +12,7 @@
 #include "omc/AgentVar.h"
 #include "omc/Event.h"
 #include "libopenm/omModel.h"
-#include "om_agents.h" // model-specific classes
+#include "om_declarations.h" // model-specific classes
 
 
 // The following macro is not defined for Modgen models.

@@ -182,17 +182,17 @@ int main(int argc, char * argv[])
         // create unique instance of ParseContext
         ParseContext pc;
 
-        // open & prepare pass-through / markup stream om_outside.cpp
-        ofstream om_outside_cpp(outDir + "om_outside.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        // open & prepare pass-through / markup stream om_developer.cpp
+        ofstream om_outside_cpp(outDir + "om_developer.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
         exit_guard<ofstream> onExit_om_outside_cpp(&om_outside_cpp, &ofstream::close);   // close on exit
-        if (om_outside_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_outside.cpp");
+        if (om_outside_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_developer.cpp");
 
     #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
         om_outside_cpp << "\xEF\xBB\xBF";
     #endif
         om_outside_cpp << "/**" << endl;
-        om_outside_cpp << " * @file om_outside.cpp" << endl;
+        om_outside_cpp << " * @file om_developer.cpp" << endl;
         om_outside_cpp << " * Developer-supplied C++ functions" << endl;
         om_outside_cpp << " */" << endl;
         om_outside_cpp << "" << endl;
@@ -255,13 +255,13 @@ int main(int argc, char * argv[])
         exit_guard<ofstream> onExit_om_agents_t(&om_agents_t, &ofstream::close);   // close on exit
         if (om_agents_t.fail()) throw HelperException("Unable to open %s for writing", "om_types.h");
 
-        ofstream om_agents_h(outDir + "om_agents.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_agents_h(outDir + "om_declarations.h", ios_base::out | ios_base::trunc | ios_base::binary);
         exit_guard<ofstream> onExit_om_agents_h(&om_agents_h, &ofstream::close);   // close on exit
-        if (om_agents_h.fail()) throw HelperException("Unable to open %s for writing", "om_agents.h");
+        if (om_agents_h.fail()) throw HelperException("Unable to open %s for writing", "om_declarations.h");
 
-        ofstream om_agents_cpp(outDir + "om_agents.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_agents_cpp(outDir + "om_definitions.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
         exit_guard<ofstream> onExit_om_agents_cpp(&om_agents_cpp, &ofstream::close);   // close on exit
-        if (om_agents_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_agents.cpp");
+        if (om_agents_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
 
 #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler

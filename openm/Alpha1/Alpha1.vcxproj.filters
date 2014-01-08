@@ -42,15 +42,15 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(OMC_OUT_DIR)/om_agents.cpp">
+    <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
       <Filter>OmcOutput</Filter>
     </ClCompile>
-    <ClCompile Include="$(OMC_OUT_DIR)/om_outside.cpp">
+    <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp">
       <Filter>OmcOutput</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_agents.h">
+    <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">

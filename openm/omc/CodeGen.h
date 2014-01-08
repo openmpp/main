@@ -60,14 +60,14 @@ public:
 
 
     /**
-    * CodeBlock for om_agents.h
+    * CodeBlock for om_declarations.h
     */
 
     CodeBlock h;
 
 
     /**
-    * CodeBlock for om_agents.cpp
+    * CodeBlock for om_definitions.cpp
     */
 
     CodeBlock c;
@@ -75,10 +75,10 @@ public:
     /** output stream for om_types.h */
 	ofstream *oat;
 
-    /** output stream for om_agents.h */
+    /** output stream for om_declarations.h */
 	ofstream *oah;
 
-    /** output stream for om_agents.cpp */
+    /** output stream for om_definitions.cpp */
 	ofstream *oac;
 
 private:

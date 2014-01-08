@@ -53,8 +53,8 @@ MODEL_OMC_SQL = \
   $(OMC_OUT_DIR)/$(MODEL_SQL_PREFIX)_optional_views.sql
 
 MODEL_OMC_CPP = \
-  $(OMC_OUT_DIR)/om_agents.cpp \
-  $(OMC_OUT_DIR)/om_outside.cpp
+  $(OMC_OUT_DIR)/om_definitions.cpp \
+  $(OMC_OUT_DIR)/om_developer.cpp
 
 MODEL_CPPLIST = \
   hard_coded.cpp \
