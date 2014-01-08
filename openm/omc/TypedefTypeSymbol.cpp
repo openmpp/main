@@ -1,16 +1,16 @@
 /**
-* @file    TypeDeclSymbol.cpp
-* Definitions for the TypeDeclSymbol class.
+* @file    TypedefTypeSymbol.cpp
+* Definitions for the TypedefTypeSymbol class.
 */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include "TypeDeclSymbol.h"
+#include "TypedefTypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
 
-void TypeDeclSymbol::post_parse(int pass)
+void TypedefTypeSymbol::post_parse(int pass)
 {
     // Hook into the hierarchical calling chain
     super::post_parse(pass);
@@ -26,7 +26,7 @@ void TypeDeclSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock TypeDeclSymbol::cxx_declaration_global()
+CodeBlock TypedefTypeSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_global();
@@ -46,7 +46,7 @@ CodeBlock TypeDeclSymbol::cxx_declaration_global()
     return h;
 }
 
-CodeBlock TypeDeclSymbol::cxx_definition_global()
+CodeBlock TypedefTypeSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock c = super::cxx_definition_global();

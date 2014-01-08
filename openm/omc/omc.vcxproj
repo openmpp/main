@@ -124,7 +124,8 @@
     <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
     <ClInclude Include="TableExpressionSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
-    <ClInclude Include="TypeDeclSymbol.h" />
+    <ClInclude Include="TypedefTypeSymbol.h" />
+    <ClInclude Include="TypeSymbol.h" />
     <ClInclude Include="VersionSymbol.h" />
   </ItemGroup>
   <ItemGroup>
@@ -162,7 +163,8 @@
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
     <ClCompile Include="TableExpressionSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
-    <ClCompile Include="TypeDeclSymbol.cpp" />
+    <ClCompile Include="TypedefTypeSymbol.cpp" />
+    <ClCompile Include="TypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

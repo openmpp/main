@@ -13,7 +13,8 @@
 #include "CodeBlock.h"
 #include "Symbol.h"
 #include "VersionSymbol.h"
-#include "TypeDeclSymbol.h"
+#include "ModelTypeSymbol.h"
+#include "TypedefTypeSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
@@ -29,7 +30,7 @@
 
 symbol_map_type Symbol::symbols;
 
-list<TypeDeclSymbol *> Symbol::pp_all_types;
+list<TypedefTypeSymbol *> Symbol::pp_all_types;
 
 list<AgentSymbol *> Symbol::pp_all_agents;
 
@@ -451,12 +452,33 @@ void Symbol::default_symbols()
 {
     Symbol *sym;
     sym = new VersionSymbol( 1, 0, 0, 0 );
-    sym = new TypeDeclSymbol( token::TK_Time, token::TK_double );
-    sym = new TypeDeclSymbol( token::TK_model_type, token::TK_case_based );
-    sym = new TypeDeclSymbol( token::TK_real, token::TK_double );
-    sym = new TypeDeclSymbol( token::TK_counter, token::TK_int );
-    sym = new TypeDeclSymbol( token::TK_integer, token::TK_int );
-    sym = new TypeDeclSymbol( token::TK_index, token::TK_int );
+    sym = new ModelTypeSymbol(token::TK_case_based, false);
+
+    // types
+
+    // int (0)
+    // char
+    // short
+    // long
+    // uint
+    // uchar
+    // ushort
+    // ulong
+    sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int);
+    sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int);
+    sym = new TypedefTypeSymbol(token::TK_real, token::TK_double);
+    // float (11)
+    // double (12)
+    sym = new TypedefTypeSymbol(token::TK_Time, token::TK_double);
+    // rate
+    // cumrate
+    // haz1rate
+    // haz2rate
+    // piece_linear (18)
+    // file (19)
+    // logical / bool - implemented as enum (20)
+
+    sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);
 }
 
 /**
@@ -598,7 +620,7 @@ void Symbol::post_parse_all()
             );
 
     // Sort all global collections in lexicographic order
-    pp_all_types.sort([](TypeDeclSymbol *a, TypeDeclSymbol *b) { return a->name < b->name; });
+    pp_all_types.sort([](TypedefTypeSymbol *a, TypedefTypeSymbol *b) { return a->name < b->name; });
     pp_all_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );

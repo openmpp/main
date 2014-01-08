@@ -15,7 +15,7 @@
 #include "parser.hpp"
 
 class CodeBlock;
-class TypeDeclSymbol;
+class TypedefTypeSymbol;
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
@@ -102,7 +102,7 @@ public:
      * 
      * If the symbol table does contain an entry with unique name @a unm the existing symbol is
      * morphed to a new base class Symbol. This is useful for replacing a default symbol by a symbol
-     * specified in the model source code. For example, a default @a TypeDeclSymbol with name 'Time'
+     * specified in the model source code. For example, a default @a TypedefTypeSymbol with name 'Time'
      * and type 'double' is inserted into the symbol table at initialization.  If a time_type
      * statement is encountered in model code, this symbol is replaced by a new symbol with the
      * developer-specified type used for time.
@@ -394,7 +394,7 @@ public:
      * Default symbols in symbol table
      * 
      * These are symbols which are added to the symbol table when it is created.  They have default
-     * properties which can be overridden by the om developer.  An example is the @a TypeDeclSymbol
+     * properties which can be overridden by the om developer.  An example is the @a TypedefTypeSymbol
      * with name 'Time'.  By default, the type is double, but this can be overridden by the model
      * developer using the time_type statement in the model source code.
      */
@@ -462,7 +462,7 @@ public:
     * Populated after parsing is complete.
     */
 
-    static list<TypeDeclSymbol *> pp_all_types;
+    static list<TypedefTypeSymbol *> pp_all_types;
 
 
     /**

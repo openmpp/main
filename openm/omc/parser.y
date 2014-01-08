@@ -494,7 +494,7 @@ Languages:
 Decl_time_type:
 	  "time_type" FundamentalType[type_to_use] ";"
                         {
-                            auto *sym = new TypeDeclSymbol( token::TK_Time, (token_type) $type_to_use );
+                            auto *sym = new TypedefTypeSymbol( token::TK_Time, (token_type) $type_to_use );
                         }
     | "time_type" error ";"
                         {
@@ -506,7 +506,7 @@ Decl_time_type:
 Decl_real_type:
       "real_type" FundamentalType[type_to_use] ";"
                         {
-                            auto *sym = new TypeDeclSymbol( token::TK_real, (token_type) $type_to_use );
+                            auto *sym = new TypedefTypeSymbol( token::TK_real, (token_type) $type_to_use );
                         }
     | "real_type" error ";"
                         {
@@ -518,7 +518,7 @@ Decl_real_type:
 Decl_counter_type:
 	  "counter_type" FundamentalType[type_to_use] ";"
 						{
-                            auto *sym = new TypeDeclSymbol( token::TK_counter, (token_type) $type_to_use );
+                            auto *sym = new TypedefTypeSymbol( token::TK_counter, (token_type) $type_to_use );
 						}
     | "counter_type" error ";"
                         {
@@ -530,7 +530,7 @@ Decl_counter_type:
 Decl_integer_type:
       "integer_type" FundamentalType[type_to_use] ";"
                         {
-                            auto *sym = new TypeDeclSymbol( token::TK_integer, (token_type) $type_to_use );
+                            auto *sym = new TypedefTypeSymbol( token::TK_integer, (token_type) $type_to_use );
                         }
     | "integer_type" error ";"
                         {

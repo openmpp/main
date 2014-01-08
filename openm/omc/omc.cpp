@@ -391,7 +391,7 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
 
     // model_dic table
     //io_metaRows.modelDic.type = ModelType::caseBased;
-    io_metaRows.modelDic.version = "test";
+    //io_metaRows.modelDic.version = "test";
 
     // model_dic_txt table
     ModelDicTxtLangRow modelTxt;

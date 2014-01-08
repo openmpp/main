@@ -129,13 +129,16 @@
     <ClInclude Include="VersionSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TypeDeclSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ParameterSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModelTypeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TypedefTypeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -209,9 +212,6 @@
     <ClCompile Include="CodeBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TypeDeclSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ModelTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -219,6 +219,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModelSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TypedefTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
