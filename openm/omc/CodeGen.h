@@ -27,7 +27,7 @@ public:
 		: oat (oat_arg)
 		, oah (oah_arg)
 		, oac (oac_arg)
-        , modelTimeStamp(i_timestamp)
+        , time_stamp(i_timestamp)
         , metaRows(io_metaRows)
 
 	{
@@ -82,6 +82,6 @@ public:
 	ofstream *oac;
 
 private:
-    const string modelTimeStamp;        // model compilation timestamp
+    const string time_stamp;        // model compilation timestamp
     openm::MetaModelHolder & metaRows;  // model metadata rows
 };

@@ -32,5 +32,6 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+    string time_stamp;
 };
 

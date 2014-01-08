@@ -24,6 +24,8 @@ CodeBlock ModelSymbol::cxx_definition_global()
     c += "// model identification";
     c += "const char * OM_MODEL_NAME =\"" + name + "\";";
     c += "";
+    c += "// model time stamp";
+    c += "const char * OM_MODEL_TIMESTAMP = \"" + time_stamp + "\";";
 
     return c;
 }
@@ -36,4 +38,5 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Perform operations specific to this level in the Symbol hierarchy.
 
     metaRows.modelDic.name = name;
+    metaRows.modelDic.timestamp = time_stamp;
 };
