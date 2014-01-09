@@ -14,8 +14,7 @@
 * The symbol table is initialized with one TypedefTypeSymbol
 * corresponding to each kind of type declaration statement in openM++, e.g. time_type, real_type.
 * The symbol type (first argument of constructor) is the token associated with the corresponding type name,
-* e.g. TK_Time for the time_type statement, TK_index to the index_type statement.
-* The one exception is the model_type statement which has an associated TypedefTypeSymbol with 'type' TK_model_type.
+* e.g. TK_Time for the time_type statement, TK_real to the real_type statement.
 * These default symbols are morphed if the corresponding statement is found
 * in the model source code.
 */
@@ -29,21 +28,86 @@ public:
     /**
     * Constructor.
     *
-    * @param   type    The token for the keyword of the type, e.g. token::KW_Time
-    * @param   value   The token for the associated type, e.g. token::KW_double
+    * @param type The token for the keyword of the type, e.g. token::KW_Time.
     */
-    TypedefTypeSymbol(token_type type, token_type value)
+
+    TypedefTypeSymbol(token_type type)
         : TypeSymbol(token_to_string(type))
-        , value(value)
+        , type(type)
     {
+        Set_keywords();
     }
 
-    void post_parse(int pass);
+    /**
+    * Constructor.
+    *
+    * @param type The token for the keyword of the type, e.g. token::KW_Time.
+    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_double.
+    */
+
+    TypedefTypeSymbol(token_type type, token_type kw1)
+        : TypeSymbol(token_to_string(type))
+        , type(type)
+    {
+        Set_keywords(kw1);
+    }
+
+    /**
+    * Constructor.
+    *
+    * @param type The token for the keyword of the type, e.g. token::KW_uint.
+    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_unsigned.
+    * @param kw2  Keyword #2 for the associated typedef, e.g. token::KW_int.
+    */
+
+    TypedefTypeSymbol(token_type type, token_type kw1, token_type kw2)
+        : TypeSymbol(token_to_string(type))
+        , type(type)
+    {
+        Set_keywords(kw1, kw2);
+    }
+
+    void Set_keywords() {
+        keywords.clear();
+    }
+
+    void Set_keywords( token_type kw1 ) {
+        Set_keywords();
+        keywords.push_back(kw1);
+    }
+
+    void Set_keywords(token_type kw1, token_type kw2) {
+        Set_keywords(kw1);
+        keywords.push_back(kw2);
+    }
 
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();
 
-    /** The C++ type of the given openM++ type */
-    token_type value;
+    void populate_metadata(openm::MetaModelHolder & metaRows);
+
+
+    /**
+     * The type, e.g. TK_uint
+     */
+
+    token_type type;
+
+    /**
+     * A list of keywords used to construct the typedef statement, e.g. TK_unsigned, TK_int
+     */
+
+    list<token_type> keywords;
+
+
+    /**
+     * Gets the TypedefTypeSymbol for a given type
+     *
+     * @param type The type.
+     *
+     * @return null if it fails, else the TypedefTypeymbol.
+     */
+
+    static TypedefTypeSymbol *get_typedef_symbol(token_type type);
 };

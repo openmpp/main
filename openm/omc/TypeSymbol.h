@@ -40,6 +40,8 @@ public:
         next_type_id++;
     }
 
+    void post_parse(int pass);
+
 
     /**
      * Identifier for the type.

@@ -15,7 +15,7 @@
 #include "parser.hpp"
 
 class CodeBlock;
-class TypedefTypeSymbol;
+class TypeSymbol;
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
@@ -462,7 +462,7 @@ public:
     * Populated after parsing is complete.
     */
 
-    static list<TypedefTypeSymbol *> pp_all_types;
+    static list<TypeSymbol *> pp_all_types;
 
 
     /**

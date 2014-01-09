@@ -139,6 +139,10 @@ void CodeGen::do_types()
     }
     c += "";
 
+    // populate meta-data for types
+    for (auto type : Symbol::pp_all_types) {
+        type->populate_metadata(metaRows);
+    }
 }
 
 void CodeGen::do_parameters()

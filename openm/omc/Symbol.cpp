@@ -30,7 +30,7 @@
 
 symbol_map_type Symbol::symbols;
 
-list<TypedefTypeSymbol *> Symbol::pp_all_types;
+list<TypeSymbol *> Symbol::pp_all_types;
 
 list<AgentSymbol *> Symbol::pp_all_agents;
 
@@ -456,29 +456,29 @@ void Symbol::default_symbols()
 
     // types
 
-    // int (0)
-    // char
-    // short
-    // long
-    // uint
-    // uchar
-    // ushort
-    // ulong
+    sym = new TypedefTypeSymbol(token::TK_int);
+    sym = new TypedefTypeSymbol(token::TK_char);
+    sym = new TypedefTypeSymbol(token::TK_short);
+    sym = new TypedefTypeSymbol(token::TK_long);
+    sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int);
+    sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char);
+    sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short);
+    sym = new TypedefTypeSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long);
     sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int);
     sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int);
     sym = new TypedefTypeSymbol(token::TK_real, token::TK_double);
-    // float (11)
-    // double (12)
+    sym = new TypedefTypeSymbol(token::TK_float);
+    sym = new TypedefTypeSymbol(token::TK_double);
     sym = new TypedefTypeSymbol(token::TK_Time, token::TK_double);
-    // rate
-    // cumrate
-    // haz1rate
-    // haz2rate
-    // piece_linear (18)
-    // file (19)
+    sym = new TypedefTypeSymbol(token::TK_rate);
+    sym = new TypedefTypeSymbol(token::TK_cumrate);
+    sym = new TypedefTypeSymbol(token::TK_haz1rate);
+    sym = new TypedefTypeSymbol(token::TK_haz2rate);
+    sym = new TypedefTypeSymbol(token::TK_piece_linear);
+    sym = new TypedefTypeSymbol(token::TK_file);
     // logical / bool - implemented as enum (20)
 
-    sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);
+    //sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);
 }
 
 /**
@@ -619,8 +619,8 @@ void Symbol::post_parse_all()
                 }
             );
 
-    // Sort all global collections in lexicographic order
-    pp_all_types.sort([](TypedefTypeSymbol *a, TypedefTypeSymbol *b) { return a->name < b->name; });
+    // Sort all global collections
+    pp_all_types.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );

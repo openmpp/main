@@ -133,7 +133,7 @@ void RunModel(IModel * i_model)
     int samples = i_model->subSampleCount();
     int sample = i_model->subSampleNumber();
     int seed = i_model->runOptions()->startingSeed;
-    int cases = dynamic_cast<ICaseModel *>(i_model)->runOptions()->cases;
+    long long cases = dynamic_cast<ICaseModel *>(i_model)->runOptions()->cases;
 
     // for sample numbers greater than 40, re-use generators cyclically
     // and increment the starting case_seed for the simulation of the sample
@@ -141,7 +141,7 @@ void RunModel(IModel * i_model)
     case_seed_generator = case_seed_generators[sample % max_samples];
     model_stream_generator = model_stream_generators[sample % max_samples];
 
-    for (int thisCase = 0; thisCase < cases; thisCase++) {
+    for (long long thisCase = 0; thisCase < cases; thisCase++) {
 
         {
             // initialize the stream generators

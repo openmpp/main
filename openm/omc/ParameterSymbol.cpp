@@ -5,7 +5,9 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
 #include "ParameterSymbol.h"
+#include "TypedefTypeSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -56,14 +58,19 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     super::populate_metadata( metaRows );
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    // 
+ 
     ParamDicRow paramDic;
     ParamDicTxtLangRow paramTxt;
 
     paramDic.paramId = pp_numeric_id;
     paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
     paramDic.rank = 0; // TODO: currently hard-coded to scalar parmaeters for alpha
-    paramDic.typeId = 12;           // TODO: hard-coded to double
+
+    // get the type_id (e.g. 12) of the parameter data type (e.g. TK_double)
+    auto *sym = TypedefTypeSymbol::get_typedef_symbol(type);
+    assert(sym); // Initialization guarantee
+    paramDic.typeId = sym->type_id;
+
     paramDic.isHidden = false; // TODO: not implemented
     paramDic.isGenerated = false; // TODO: not implemented
     paramDic.numCumulated = 0; //TODO: not implemented

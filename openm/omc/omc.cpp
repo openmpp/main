@@ -407,87 +407,87 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
 
     // built-in types: simple types
     TypeDicRow typeDic;
-    typeDic.typeId = 0;
-    typeDic.name = "int";
-    typeDic.dicId = 0;          // simple types
-    typeDic.totalEnumId = 1;
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 0;
+    //typeDic.name = "int";
+    //typeDic.dicId = 0;          // simple types
+    //typeDic.totalEnumId = 1;
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 1;
-    typeDic.name = "char";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 1;
+    //typeDic.name = "char";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 2;
-    typeDic.name = "short";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 2;
+    //typeDic.name = "short";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 3;
-    typeDic.name = "long";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 3;
+    //typeDic.name = "long";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 4;
-    typeDic.name = "uint";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 4;
+    //typeDic.name = "uint";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 5;
-    typeDic.name = "uchar";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 5;
+    //typeDic.name = "uchar";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 6;
-    typeDic.name = "ushort";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 6;
+    //typeDic.name = "ushort";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 7;
-    typeDic.name = "ulong";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 7;
+    //typeDic.name = "ulong";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 8;
-    typeDic.name = "integer";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 8;
+    //typeDic.name = "integer";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 9;
-    typeDic.name = "counter";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 9;
+    //typeDic.name = "counter";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 10;
-    typeDic.name = "real";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 10;
+    //typeDic.name = "real";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 11;
-    typeDic.name = "float";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 11;
+    //typeDic.name = "float";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 12;
-    typeDic.name = "double";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 12;
+    //typeDic.name = "double";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 13;
-    typeDic.name = "TIME";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 13;
+    //typeDic.name = "TIME";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 14;
-    typeDic.name = "rate";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 14;
+    //typeDic.name = "rate";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 15;
-    typeDic.name = "cumrate";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 15;
+    //typeDic.name = "cumrate";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 16;
-    typeDic.name = "haz1rate";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 16;
+    //typeDic.name = "haz1rate";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 17;
-    typeDic.name = "haz2rate";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 17;
+    //typeDic.name = "haz2rate";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 18;
-    typeDic.name = "piece_linear";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 18;
+    //typeDic.name = "piece_linear";
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeDic.typeId = 19;
-    typeDic.name = "file";
-    io_metaRows.typeDic.push_back(typeDic);
+    //typeDic.typeId = 19;
+    //typeDic.name = "file";
+    //io_metaRows.typeDic.push_back(typeDic);
 
     // built-in types: logical type
     TypeDicRow typeRow;

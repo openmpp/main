@@ -7,24 +7,10 @@
 
 #include "TypedefTypeSymbol.h"
 #include "CodeBlock.h"
+#include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
-
-void TypedefTypeSymbol::post_parse(int pass)
-{
-    // Hook into the hierarchical calling chain
-    super::post_parse(pass);
-
-    // Perform post-parse operations specific to this level in the Symbol hierarchy.
-    switch (pass) {
-    case 1:
-        // add this type to the complete list of types
-        pp_all_types.push_back(this);
-        break;
-    default:
-        break;
-    }
-}
+using namespace openm;
 
 CodeBlock TypedefTypeSymbol::cxx_declaration_global()
 {
@@ -33,11 +19,16 @@ CodeBlock TypedefTypeSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    string typ = Symbol::token_to_string(value);
-    // E.g. typedef double real;
-    h += "typedef " + typ + " " + name + ";";
-    if (name == Symbol::token_to_string(token::TK_Time)) {
-        h += "typedef " + typ + " TIME; // for Modgen models";
+    string typedef_string;
+    if (!keywords.empty()) {
+        for (auto tk : keywords) {
+            typedef_string += " " + token_to_string(tk);
+        }
+        h += "typedef " + typedef_string + " " + name + ";";
+    }
+
+    if ( type == token::TK_Time ) {
+        h += "typedef " + typedef_string + " TIME; // for Modgen models";
         // Time 'literals'
         h += "extern const Time time_infinite;";
         h += "extern const Time TIME_INFINITE; // for Modgen models";
@@ -52,7 +43,8 @@ CodeBlock TypedefTypeSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    if (name == Symbol::token_to_string(token::TK_Time)) {
+ 
+    if (type == token::TK_Time) {
         // Time 'literals'
         c += "const Time time_infinite = 32767;";
         c += "const Time TIME_INFINITE = 32767; // for Modgen models";
@@ -61,3 +53,23 @@ CodeBlock TypedefTypeSymbol::cxx_definition_global()
     return c;
 }
 
+void TypedefTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+{
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    TypeDicRow typeDic;
+    typeDic.typeId = type_id;
+    typeDic.name = name;
+    typeDic.dicId = 0;          // simple types
+    typeDic.totalEnumId = 1;
+    metaRows.typeDic.push_back(typeDic);
+
+}
+
+TypedefTypeSymbol *TypedefTypeSymbol::get_typedef_symbol(token_type type)
+{
+    return dynamic_cast<TypedefTypeSymbol *>(get_symbol(token_to_string(type)));
+}
