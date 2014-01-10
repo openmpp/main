@@ -30,7 +30,7 @@ void AgentEventTimeSymbol::post_parse(int pass)
         {
             // assign direct pointer(s) for use post-parse
             pp_event = dynamic_cast<AgentEventSymbol *> (event);
-            assert(pp_event); // grammar guarantee
+            assert(pp_event); // parser guarantee
 
             // Add this agent event time symbol to the agent's list of all such symbols
             pp_agent->pp_agent_event_times.push_back(this);

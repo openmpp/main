@@ -22,7 +22,7 @@ void AgentMemberSymbol::post_parse(int pass)
         {
             // assign direct pointer to agent for use post-parse
             pp_agent = dynamic_cast<AgentSymbol *> (agent);
-            assert(pp_agent); // grammar guarantee
+            assert(pp_agent); // parser guarantee
         }
         break;
     default:

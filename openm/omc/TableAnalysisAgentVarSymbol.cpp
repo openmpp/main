@@ -49,11 +49,11 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
         {
             // assign direct pointer to table for post-parse use
             pp_table = dynamic_cast<TableSymbol *> (table);
-            assert(pp_table); // grammar guarantee
+            assert(pp_table); // parser guarantee
 
             // assign direct pointer to agentvar for post-parse use
             pp_agentvar = dynamic_cast<AgentVarSymbol *> (agentvar);
-            assert(pp_agentvar); // grammar guarantee
+            assert(pp_agentvar); // parser guarantee
 
             // Add this TableAnalysisAgentVarSymbol to the table's list of agentvars
             pp_table->pp_table_agentvars.push_back(this);

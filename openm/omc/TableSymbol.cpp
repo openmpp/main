@@ -28,7 +28,7 @@ void TableSymbol::post_parse(int pass)
         {
             // assign direct pointer to agent for use post-parse
             pp_agent = dynamic_cast<AgentSymbol *> (agent);
-            assert(pp_agent); // grammar guarantee
+            assert(pp_agent); // parser guarantee
 
             // add this table to the complete list of tables
             pp_all_tables.push_back(this);
@@ -224,7 +224,7 @@ CodeBlock TableSymbol::cxx_definition_agent()
             break;
             // TODO - all other increment operators
         default:
-            assert(0); // grammar guarantee
+            assert(0); // parser guarantee
         }
 
         c += "{";
@@ -243,7 +243,7 @@ CodeBlock TableSymbol::cxx_definition_agent()
             c += "if ( dIncrement > dAccumulator ) " + accumulator_expr + " = dIncrement;";
             break;
         default:
-            assert(0); // grammar guarantee
+            assert(0); // parser guarantee
         }
         c += "}";
     }

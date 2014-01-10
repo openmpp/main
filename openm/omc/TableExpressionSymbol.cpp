@@ -33,7 +33,7 @@ void TableExpressionSymbol::post_parse(int pass)
         {
             // assign direct pointer to table for post-parse use
             pp_table = dynamic_cast<TableSymbol *> (table);
-            assert(pp_table); // grammar guarantee
+            assert(pp_table); // parser guarantee
 
             // Add this table expression to the table's list of expressions
             pp_table->pp_expressions.push_back(this);
@@ -60,11 +60,11 @@ void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
     auto leaf = dynamic_cast<ExprForTableLeaf *>(node);
     if (leaf != nullptr) {
         (leaf->pp_accumulator) = dynamic_cast<TableAccumulatorSymbol *>(leaf->accumulator);
-        assert(leaf->pp_accumulator); // grammar guarantee
+        assert(leaf->pp_accumulator); // parser guarantee
     }
     else {
         auto op = dynamic_cast<ExprForTableOp *>(node);
-        assert(op); // grammar guarantee
+        assert(op); // parser guarantee
         post_parse_traverse(op->left);
         post_parse_traverse(op->right);
     }
@@ -115,7 +115,7 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
     }
     else {
         auto binary_node = dynamic_cast<const ExprForTableOp *>(node);
-        assert(binary_node); // grammar guarantee
+        assert(binary_node); // parser guarantee
         string expr_left = get_expression(binary_node->left, style);
         string expr_right = get_expression(binary_node->right, style);
         return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";
