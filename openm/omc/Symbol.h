@@ -16,6 +16,7 @@
 
 class CodeBlock;
 class TypeSymbol;
+class ClassificationSymbol;
 class LanguageSymbol;
 class AgentSymbol;
 class ParameterSymbol;
@@ -511,6 +512,15 @@ public:
     */
 
     static list<LanguageSymbol *> pp_all_languages;
+
+
+    /**
+    * The classifications in the model
+    *
+    * Populated after parsing is complete.
+    */
+
+    static list<ClassificationSymbol *> pp_all_classifications;
 
 
     /**

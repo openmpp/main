@@ -103,6 +103,8 @@
     <ClInclude Include="AgentVarSymbol.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="BuiltinAgentVarSymbol.h" />
+    <ClInclude Include="ClassificationLevelSymbol.h" />
+    <ClInclude Include="ClassificationSymbol.h" />
     <ClInclude Include="CodeBlock.h" />
     <ClInclude Include="CodeGen.h" />
     <ClInclude Include="ConditionedDurationAgentVarSymbol.h" />
@@ -146,6 +148,8 @@
     <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="AgentVarSymbol.cpp" />
     <ClCompile Include="BuiltinAgentVarSymbol.cpp" />
+    <ClCompile Include="ClassificationLevelSymbol.cpp" />
+    <ClCompile Include="ClassificationSymbol.cpp" />
     <ClCompile Include="CodeBlock.cpp" />
     <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />

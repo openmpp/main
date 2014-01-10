@@ -11,6 +11,10 @@
 #include "AgentInternalSymbol.h"
 #include "TableSymbol.h"
 #include "CodeBlock.h"
+#include "libopenm/common/omHelper.h"
+
+using namespace std;
+using namespace openm;
 
 // static
 string TableAnalysisAgentVarSymbol::symbol_name(const Symbol *table, const Symbol *agentvar)
@@ -36,10 +40,12 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
         {
-            if (need_value_in) {
+            if ( need_value_in ) {
                 // Create symbol for the data member which will hold the 'in' value of the increment.
                 auto av = dynamic_cast<AgentVarSymbol *>(agentvar);
-                assert(av); // TODO: catch developer code error - table analysis agentvar not declared
+                if (av == nullptr) {
+                    throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
+                }
                 string member_name = in_agentvar_name();
                 auto sym = new AgentInternalSymbol(member_name, av->agent, av->type);
             }

@@ -16,6 +16,8 @@
 #include "VersionSymbol.h"
 #include "ModelTypeSymbol.h"
 #include "TypedefTypeSymbol.h"
+#include "ClassificationSymbol.h"
+#include "ClassificationLevelSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
@@ -32,6 +34,8 @@
 symbol_map_type Symbol::symbols;
 
 list<TypeSymbol *> Symbol::pp_all_types;
+
+list<ClassificationSymbol *> Symbol::pp_all_classifications;
 
 list<LanguageSymbol *> Symbol::pp_all_languages;
 
@@ -650,6 +654,11 @@ void Symbol::post_parse_all()
     for ( auto table : pp_all_tables ) {
         table->pp_table_id = id;
         ++id;
+    }
+
+    // Sort collection of classification levels in each classification in ordinal order
+    for (auto classification : pp_all_classifications) {
+        classification->pp_classification_levels.sort([](ClassificationLevelSymbol *a, ClassificationLevelSymbol *b) { return a->ordinal < b->ordinal; });
     }
 
     // Sort collections in agents in lexicographic order

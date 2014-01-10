@@ -32,7 +32,8 @@ public:
         , cxx_memfunc_name ("")
         , agent_context (nullptr)
         , table_context (nullptr)
-		, parse_errors (0)
+        , classification_context(nullptr)
+        , parse_errors(0)
 		, post_parse_errors (0)
     {
         // The default location constructor for comment_location is fine.
@@ -78,6 +79,26 @@ public:
         }
     }
 
+    void set_classification_context(Symbol *classification)
+    {
+        if (classification != nullptr) {
+            classification_context = &classification->get_rpSymbol();
+        }
+        else {
+            classification_context = nullptr;
+        }
+    }
+
+    Symbol * get_classification_context()
+    {
+        if (classification_context != nullptr) {
+            return *classification_context;
+        }
+        else {
+            return nullptr;
+        }
+    }
+
     /**
      * Initialize parse context for outermost code level.
      */
@@ -92,6 +113,7 @@ public:
         counter3 = 0;
         agent_context = nullptr;
         table_context = nullptr;
+        classification_context = nullptr;
     }
 
     /**
@@ -222,4 +244,13 @@ private:
      */
 
 	Symbol **table_context;
+
+    /**
+    * classification context.
+    *
+    * Note that this cannot be Symbol &*, since
+    * the value can be nullptr.
+    */
+
+    Symbol **classification_context;
 };

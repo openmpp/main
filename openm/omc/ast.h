@@ -15,6 +15,8 @@
 #include "ModelTypeSymbol.h"
 #include "TypeSymbol.h"
 #include "TypedefTypeSymbol.h"
+#include "ClassificationSymbol.h"
+#include "ClassificationLevelSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentMemberSymbol.h"
 #include "AgentEventSymbol.h"

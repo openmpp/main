@@ -42,6 +42,7 @@ public:
     }
 
     void create_builtin_symbols();
+
     void post_parse(int pass);
 
     BuiltinAgentVarSymbol *pp_time;

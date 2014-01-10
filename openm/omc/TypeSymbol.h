@@ -40,6 +40,16 @@ public:
         next_type_id++;
     }
 
+    /**
+    * Constructor.
+    *
+    * @param [in,out]  sym The symbol to be morphed.
+    */
+    TypeSymbol(Symbol *sym)
+        : Symbol(sym)
+    {
+    }
+
     void post_parse(int pass);
 
 

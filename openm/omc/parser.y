@@ -89,7 +89,7 @@ extern char *yytext;
 %destructor { delete $$; } <pval_IntegerLiteral> <pval_CharacterLiteral> <pval_FloatingPointLiteral> <pval_StringLiteral>
 
 
-// NB: There is an exact one-to-one correspondnce with code in parser_helper.cpp
+// NB: There is an exact one-to-one correspondence with code in Symbol.cpp
 
 // top-level om keywords, in alphabetic order
 %token <val_token>    TK_agent          "agent"
@@ -455,6 +455,7 @@ Declaration:
 	| Decl_counter_type
 	| Decl_integer_type
 	| Decl_version
+    | Decl_classification
 	| Decl_parameters
 	| Decl_agent
 	| Decl_table
@@ -595,6 +596,43 @@ Decl_version:
                             pc.InitializeForCxxOutside();
                         }
     ;
+
+Decl_classification:
+      "classification" SYMBOL[classification]
+                        {
+                            // Morph Symbol to ClassificationSymbol
+                            $classification = new ClassificationSymbol( $classification );
+                            // Set classification context for body of classification declaration
+                            pc.set_classification_context( $classification );
+                            // initialize working counter used for classification levels
+                            pc.counter1 = 0;
+                        }
+            "{" ClassificationLevels "}" ";"
+                        {
+                            // No valid classification context
+                            pc.set_classification_context( nullptr );
+                        }
+            | "classification" "{" error "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+            ;
+
+ClassificationLevels:
+      SYMBOL
+                        {
+                            // morph existing symbol to ClassificationLevelSymbol
+                            auto *sym = new ClassificationLevelSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
+                            pc.counter1++;  // counter for classification levels
+                        }
+      | ClassificationLevels "," SYMBOL
+                        {
+                            // morph existing symbol to LanguageSymbol
+                            auto *sym = new ClassificationLevelSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
+                            pc.counter1++;  // counter for classification levels
+                        }
+	;
 
 Decl_parameters:
 	  "parameters" "{" Parameters "}" ";"
