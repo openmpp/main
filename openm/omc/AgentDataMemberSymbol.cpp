@@ -18,9 +18,11 @@ void AgentDataMemberSymbol::post_parse(int pass)
 
     // Perform operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // Add this agent data symbol to the agent's list of all such symbols
-        pp_agent->pp_agent_data_members.push_back(this);
+    case ePopulateCollections:
+        {
+            // Add this agent data symbol to the agent's list of all such symbols
+            pp_agent->pp_agent_data_members.push_back(this);
+        }
         break;
     default:
         break;

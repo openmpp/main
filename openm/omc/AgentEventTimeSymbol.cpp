@@ -8,6 +8,7 @@
 //#include <cassert>
 //#include <algorithm>
 //#include <typeinfo>
+#include <cassert>
 #include <set>
 #include "AgentEventTimeSymbol.h"
 #include "AgentEventSymbol.h"
@@ -25,46 +26,50 @@ void AgentEventTimeSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // assign direct pointer(s) for use post-parse
-        pp_event = dynamic_cast<AgentEventSymbol *> (event);
-        // Add this agent event time symbol to the agent's list of all such symbols
-        pp_agent->pp_agent_event_times.push_back(this);
+    case ePopulateCollections:
+        {
+            // assign direct pointer(s) for use post-parse
+            pp_event = dynamic_cast<AgentEventSymbol *> (event);
+            assert(pp_event); // grammar guarantee
+
+            // Add this agent event time symbol to the agent's list of all such symbols
+            pp_agent->pp_agent_event_times.push_back(this);
+        }
         break;
-    case 2:
-    {
-              // E.g. Person
-              string agent_name = pp_agent->name;
-              // E.g. Person::timeMortalityEvent
-              string time_func_name = pp_event->time_function->unique_name;
-              // create sorted unduplicated list of identifiers in body of event time function
-              set<string> identifiers;
-              auto rng = memfunc_bodyids.equal_range(time_func_name);
-              for_each(rng.first,
-                  rng.second,
-                  [&](unordered_multimap<string, string>::value_type& vt)
-              {
-                  identifiers.insert(vt.second);
-              }
-              );
-              // iterate through list looking for agentvars with name = identifier
-              for (auto identifier : identifiers) {
-                  if (exists(identifier, pp_agent)) {
-                      auto sym = get_symbol(identifier, pp_agent);
-                      auto av = dynamic_cast<AgentVarSymbol *>(sym);
-                      if (av) {
-                          // dependency of time function on av detected
-                          // E.g. om_time_StartPlayingEvent.make_dirty();
-                          string line = name + ".make_dirty();";
-                          av->pp_side_effects.push_back(line);
-                      }
-                  }
-              }
-              // add side-effect to time agentvar
-              AgentVarSymbol *av = pp_agent->pp_time;
-              // Eg. om_duration.wait( new_value - old_value );
-              //string line = name + ".make_dirty();";
-    }
+    case ePopulateDependencies:
+        {
+            // E.g. Person
+            string agent_name = pp_agent->name;
+            // E.g. Person::timeMortalityEvent
+            string time_func_name = pp_event->time_function->unique_name;
+            // create sorted unduplicated list of identifiers in body of event time function
+            set<string> identifiers;
+            auto rng = memfunc_bodyids.equal_range(time_func_name);
+            for_each(rng.first,
+                rng.second,
+                [&](unordered_multimap<string, string>::value_type& vt)
+            {
+                identifiers.insert(vt.second);
+            }
+            );
+            // iterate through list looking for agentvars with name = identifier
+            for (auto identifier : identifiers) {
+                if (exists(identifier, pp_agent)) {
+                    auto sym = get_symbol(identifier, pp_agent);
+                    auto av = dynamic_cast<AgentVarSymbol *>(sym);
+                    if (av) {
+                        // dependency of time function on av detected
+                        // E.g. om_time_StartPlayingEvent.make_dirty();
+                        string line = name + ".make_dirty();";
+                        av->pp_side_effects.push_back(line);
+                    }
+                }
+            }
+            // add side-effect to time agentvar
+            AgentVarSymbol *av = pp_agent->pp_time;
+            // Eg. om_duration.wait( new_value - old_value );
+            //string line = name + ".make_dirty();";
+        }
         break;
     default:
         break;

@@ -5,6 +5,7 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
 #include "AgentMemberSymbol.h"
 #include "AgentSymbol.h"
 
@@ -17,9 +18,12 @@ void AgentMemberSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<AgentSymbol *> (agent);
+    case ePopulateCollections:
+        {
+            // assign direct pointer to agent for use post-parse
+            pp_agent = dynamic_cast<AgentSymbol *> (agent);
+            assert(pp_agent); // grammar guarantee
+        }
         break;
     default:
         break;

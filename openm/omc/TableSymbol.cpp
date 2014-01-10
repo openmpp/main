@@ -5,6 +5,7 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
 #include "TableSymbol.h"
 #include "AgentSymbol.h"
 #include "TableAccumulatorSymbol.h"
@@ -23,13 +24,18 @@ void TableSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<AgentSymbol *> (agent);
-        // add this table to the complete list of tables
-        pp_all_tables.push_back(this);
-        // Add this table to the agent's list of tables
-        pp_agent->pp_agent_tables.push_back(this);
+    case ePopulateCollections:
+        {
+            // assign direct pointer to agent for use post-parse
+            pp_agent = dynamic_cast<AgentSymbol *> (agent);
+            assert(pp_agent); // grammar guarantee
+
+            // add this table to the complete list of tables
+            pp_all_tables.push_back(this);
+
+            // Add this table to the agent's list of tables
+            pp_agent->pp_agent_tables.push_back(this);
+        }
         break;
     default:
         break;

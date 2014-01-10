@@ -18,15 +18,16 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        break;
-    case 2:
-        if (name == "age") {
-            // add side-effect to time agentvar
-            AgentVarSymbol *av = pp_agent->pp_time;
-            string line = "age.set( age.get() + new_value - old_value );";
-            av->pp_side_effects.push_back(line);
+    case ePopulateDependencies:
+        {
+            if (name == "age") {
+                // add side-effect to time agentvar
+                AgentVarSymbol *av = pp_agent->pp_time;
+                string line = "age.set( age.get() + new_value - old_value );";
+                av->pp_side_effects.push_back(line);
+            }
         }
+        break;
     default:
         break;
     }

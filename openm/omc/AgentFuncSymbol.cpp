@@ -17,7 +17,7 @@ void AgentFuncSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
+    case ePopulateCollections:
         // Add this agentfunc to the agent's list of agentfuncs
         pp_agent->pp_agentfuncs.push_back(this);
         break;

@@ -68,9 +68,7 @@ void DurationAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        break;
-    case 2:
+    case ePopulateDependencies:
         {
             // add side-effect to time agentvar
             AgentVarSymbol *av = pp_agent->pp_time;

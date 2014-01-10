@@ -210,6 +210,19 @@ public:
 
 
     /**
+     * Values that represent a post-parse pass of all symbols
+     */
+
+    enum post_parse_pass {
+        ///< post-parse pass to create missing symbols
+        eCreateMissingSymbols,
+        ///< post-parse pass to populate pp_ collections
+        ePopulateCollections,
+        ///< post-parse pass to populate dependencies
+        ePopulateDependencies
+    };
+
+    /**
      * Perform post-parse operations.
      * 
      * Post-parse operations create derived information based on information obtained during the

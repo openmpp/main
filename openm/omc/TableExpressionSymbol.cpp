@@ -29,14 +29,18 @@ void TableExpressionSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // assign direct pointer to table for post-parse use
-        pp_table = dynamic_cast<TableSymbol *> (table);
-        // Add this table expression to the table's list of expressions
-        pp_table->pp_expressions.push_back(this);
-        // Perform post-parse operation to each element of the expression
-        post_parse_traverse(root);
+    case ePopulateCollections:
+        {
+            // assign direct pointer to table for post-parse use
+            pp_table = dynamic_cast<TableSymbol *> (table);
+            assert(pp_table); // grammar guarantee
 
+            // Add this table expression to the table's list of expressions
+            pp_table->pp_expressions.push_back(this);
+
+            // Perform post-parse operation to each element of the expression
+            post_parse_traverse(root);
+        }
         break;
     default:
         break;
@@ -56,10 +60,11 @@ void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
     auto leaf = dynamic_cast<ExprForTableLeaf *>(node);
     if (leaf != nullptr) {
         (leaf->pp_accumulator) = dynamic_cast<TableAccumulatorSymbol *>(leaf->accumulator);
+        assert(leaf->pp_accumulator); // grammar guarantee
     }
     else {
         auto op = dynamic_cast<ExprForTableOp *>(node);
-        assert(op);
+        assert(op); // grammar guarantee
         post_parse_traverse(op->left);
         post_parse_traverse(op->right);
     }
@@ -84,24 +89,25 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
             result = "accumulators[" + to_string(accumulator->index) + "][cell]";
             break;
         case sql:
-        {
-                    string agg_func = "";
-                    switch (accumulator->accumulator) {
-                    case token::TK_sum:
-                        agg_func = "OM_SUM";
-                        break;
-                    case token::TK_min:
-                        agg_func = "OM_MIN";
-                        break;
-                    case token::TK_max:
-                        agg_func = "OM_MAX";
-                        break;
-                    default:
-                        assert(0);
-                    }
-                    result = agg_func + "( acc" + to_string(accumulator->index) + " )";
+            {
+                string agg_func = "";
+                switch (accumulator->accumulator) {
+                case token::TK_sum:
+                    agg_func = "OM_SUM";
                     break;
-        }
+                case token::TK_min:
+                    agg_func = "OM_MIN";
+                    break;
+                case token::TK_max:
+                    agg_func = "OM_MAX";
+                    break;
+                default:
+                    assert(0);
+                }
+                result = agg_func + "( acc" + to_string(accumulator->index) + " )";
+                break;
+            }
+            break;
         default:
             assert(0);
         }
@@ -109,7 +115,7 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
     }
     else {
         auto binary_node = dynamic_cast<const ExprForTableOp *>(node);
-        assert(binary_node);
+        assert(binary_node); // grammar guarantee
         string expr_left = get_expression(binary_node->left, style);
         string expr_right = get_expression(binary_node->right, style);
         return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";

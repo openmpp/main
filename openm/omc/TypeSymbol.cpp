@@ -16,9 +16,11 @@ void TypeSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // add this type to the complete list of types
-        pp_all_types.push_back(this);
+    case ePopulateCollections:
+        {
+            // add this type to the complete list of types
+            pp_all_types.push_back(this);
+        }
         break;
     default:
         break;

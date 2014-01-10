@@ -18,9 +18,11 @@ void AgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // Add this agentvar to the agent's list of all agentvars
-        pp_agent->pp_agentvars.push_back(this);
+    case ePopulateCollections:
+        {
+            // Add this agentvar to the agent's list of all agentvars
+            pp_agent->pp_agentvars.push_back(this);
+        }
         break;
     default:
         break;

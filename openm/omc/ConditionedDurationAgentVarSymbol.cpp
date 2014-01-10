@@ -5,6 +5,7 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
 #include "ConditionedDurationAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentVarSymbol.h"
@@ -55,11 +56,14 @@ void ConditionedDurationAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // assign direct pointer for post-parse use
-        pp_observed = dynamic_cast<AgentVarSymbol *> (observed);
+    case ePopulateCollections:
+        {
+            // assign direct pointer for post-parse use
+            pp_observed = dynamic_cast<AgentVarSymbol *> (observed);
+            assert(pp_observed); // grammar guarantee
+    }
         break;
-    case 2:
+    case ePopulateDependencies:
         {
             // add side-effect to time agentvar
             AgentVarSymbol *av = pp_agent->pp_time;

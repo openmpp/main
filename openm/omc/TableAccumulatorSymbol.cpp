@@ -41,22 +41,23 @@ void TableAccumulatorSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case 1:
-        // assign direct pointer to table for post-parse use
-        pp_table = dynamic_cast<TableSymbol *> (table);
-        assert(pp_table); // grammar guarantee
+    case ePopulateCollections:
+        {
+            // assign direct pointer to table for post-parse use
+            pp_table = dynamic_cast<TableSymbol *> (table);
+            assert(pp_table); // grammar guarantee
 
-        // assign direct pointer to agentvar for post-parse use
-        pp_agentvar = dynamic_cast<AgentVarSymbol *> (agentvar);
-        assert(pp_agentvar); // grammar guarantee
+            // assign direct pointer to agentvar for post-parse use
+            pp_agentvar = dynamic_cast<AgentVarSymbol *> (agentvar);
+            assert(pp_agentvar); // grammar guarantee
 
-        // assign direct pointer to TableAnalysisAgentVarSymbol for post-parse use
-        pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (analysis_agentvar);
-        assert(pp_analysis_agentvar); // grammar guarantee
+            // assign direct pointer to TableAnalysisAgentVarSymbol for post-parse use
+            pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (analysis_agentvar);
+            assert(pp_analysis_agentvar); // grammar guarantee
 
-        // Add this table accumulator to the table's list of accumulators
-        pp_table->pp_accumulators.push_back(this);
-
+            // Add this table accumulator to the table's list of accumulators
+            pp_table->pp_accumulators.push_back(this);
+        }
         break;
     default:
         break;
