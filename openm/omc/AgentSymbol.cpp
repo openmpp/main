@@ -44,14 +44,6 @@ void AgentSymbol::post_parse(int pass)
             // assign direct pointer to builtin member 'time' for use post-parse
             pp_time = dynamic_cast<BuiltinAgentVarSymbol *>(get_symbol("time", this));
             assert(pp_time); // parser guarantee
-
-            // assign direct pointer to builtin member 'age' for use post-parse
-            pp_age = dynamic_cast<BuiltinAgentVarSymbol *>(get_symbol("age", this));
-            assert(pp_age); // parser guarantee
-
-            // assign direct pointer to builtin member 'events' for use post-parse
-            pp_events = dynamic_cast<BuiltinAgentVarSymbol *>(get_symbol("events", this));
-            assert(pp_events); // parser guarantee
         }
         break;
     default:

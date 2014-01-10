@@ -37,8 +37,6 @@ public:
     AgentSymbol(Symbol *sym)
         : Symbol(sym)
         , pp_time(nullptr)
-        , pp_age(nullptr)
-        , pp_events(nullptr)
     {
         create_builtin_symbols();
     }
@@ -47,8 +45,6 @@ public:
     void post_parse(int pass);
 
     BuiltinAgentVarSymbol *pp_time;
-    BuiltinAgentVarSymbol *pp_age;
-    BuiltinAgentVarSymbol *pp_events;
 
     /**
     * The agentvars of this agent
