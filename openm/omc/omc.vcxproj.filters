@@ -227,6 +227,9 @@
     <ClCompile Include="TypedefTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LanguageSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp">

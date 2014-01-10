@@ -8,13 +8,17 @@
 #pragma once
 #include "Symbol.h"
 
+
 /**
-* Symbol for a supported human language in the model.
-*
-* Each of the comma-separated language codes in the 'languages' statement
-* becomes a LanguageSymbol in the symbol table.  The first language in the
-* languages statement becomes the default language for the model.
-*/
+ * Symbol for a supported human language in the model.
+ * 
+ * Each of the comma-separated language codes in the 'languages' statement becomes a
+ * LanguageSymbol in the symbol table.  Languages are assigned unique numeric identifiers when
+ * the corresponging LanguageSymbol is created.  This corresponds to the order in the languages
+ * statement.  The first language in the languages statement becomes the default language for
+ * the model.
+ */
+
 class LanguageSymbol : public Symbol
 {
 private:
@@ -28,16 +32,29 @@ public:
     * @param [in,out]  sym Symbol to be morphed
     * @param   deflang     true if this is the model's default language.
     */
-    LanguageSymbol(Symbol *sym, bool deflang)
+    LanguageSymbol(Symbol *sym)
         : Symbol(sym)
-        , default_language(deflang)
     {
+        language_id = next_language_id;
+        next_language_id++;
     }
 
+    void post_parse(int pass);
+
+
     /**
-    * Flag indicating if this is the default language.
+    * Identifier for the language.
     */
 
-    bool default_language;
+    int language_id;
+
+
+    /**
+    * language_id for the next LanguageSymbol
+    *
+    * A shared counter used to assign sequentially increasing type_id to each LanguageSymbol.
+    */
+
+    static int next_language_id;
 };
 

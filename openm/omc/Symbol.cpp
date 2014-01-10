@@ -12,6 +12,7 @@
 #include <set>
 #include "CodeBlock.h"
 #include "Symbol.h"
+#include "LanguageSymbol.h"
 #include "VersionSymbol.h"
 #include "ModelTypeSymbol.h"
 #include "TypedefTypeSymbol.h"
@@ -31,6 +32,8 @@
 symbol_map_type Symbol::symbols;
 
 list<TypeSymbol *> Symbol::pp_all_types;
+
+list<LanguageSymbol *> Symbol::pp_all_languages;
 
 list<AgentSymbol *> Symbol::pp_all_agents;
 
@@ -606,7 +609,7 @@ void Symbol::post_parse_all()
                 symbols.end(),
                 [] (symbol_map_value_type& vt)
                 { 
-                    (vt.second)->post_parse( 0 );
+                    (vt.second)->post_parse( eCreateMissingSymbols );
                 }
             );
 
@@ -615,11 +618,12 @@ void Symbol::post_parse_all()
                 symbols.end(),
                 [] (symbol_map_value_type& vt)
                 { 
-                    (vt.second)->post_parse( 1 );
+                    (vt.second)->post_parse( ePopulateCollections );
                 }
             );
 
     // Sort all global collections
+    pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
     pp_all_types.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
@@ -683,7 +687,7 @@ void Symbol::post_parse_all()
                 symbols.end(),
                 [] (symbol_map_value_type& vt)
                 { 
-                    (vt.second)->post_parse( 2 );
+                    (vt.second)->post_parse( ePopulateDependencies );
                 }
             );
 

@@ -16,6 +16,7 @@
 
 class CodeBlock;
 class TypeSymbol;
+class LanguageSymbol;
 class AgentSymbol;
 class ParameterSymbol;
 class TableSymbol;
@@ -479,10 +480,19 @@ public:
 
 
     /**
-     * The agents in the model
-     * 
-     * Populated after parsing is complete.
-     */
+    * The languages in the model
+    *
+    * Populated after parsing is complete.
+    */
+
+    static list<LanguageSymbol *> pp_all_languages;
+
+
+    /**
+    * The agents in the model
+    *
+    * Populated after parsing is complete.
+    */
 
     static list<AgentSymbol *> pp_all_agents;
 

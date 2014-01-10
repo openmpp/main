@@ -481,13 +481,13 @@ Decl_languages:
 Languages:
       SYMBOL
                         {
-                            // first language is default language
                             // morph existing symbol to LanguageSymbol
-                            auto *sym = new LanguageSymbol( $SYMBOL, true );
+                            auto *sym = new LanguageSymbol( $SYMBOL );
                         }
 	| Languages "," SYMBOL
                         {
-                            auto *sym = new LanguageSymbol( $SYMBOL, false );
+                            // morph existing symbol to LanguageSymbol
+                            auto *sym = new LanguageSymbol( $SYMBOL );
                         }
 	;
 
