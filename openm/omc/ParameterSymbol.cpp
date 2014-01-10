@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "ParameterSymbol.h"
+#include "LanguageSymbol.h"
 #include "TypedefTypeSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
@@ -62,9 +63,8 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Perform operations specific to this level in the Symbol hierarchy.
  
     ParamDicRow paramDic;
-    ParamDicTxtLangRow paramTxt;
 
-    paramDic.paramId = pp_numeric_id;
+    paramDic.paramId = pp_parameter_id;
     paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
     paramDic.rank = 0; // TODO: currently hard-coded to scalar parmaeters for alpha
 
@@ -78,18 +78,14 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     paramDic.numCumulated = 0; //TODO: not implemented
     metaRows.paramDic.push_back(paramDic);
 
-    // TODO language entries are hard-coded bilingual for alpha
-    paramTxt.paramId = pp_numeric_id;
-    paramTxt.langName = "EN";
-    paramTxt.descr = name + " short name (EN)";
-    paramTxt.note = name + " note (EN)";
-    metaRows.paramTxt.push_back(paramTxt);
-
-    paramTxt.langName = "FR";
-    paramTxt.descr = name + " short name (FR)";
-    paramTxt.note = name + " note (FR)";
-    metaRows.paramTxt.push_back(paramTxt);
-
-    // TODO: rank 0 parameters in alpha have no ParamDimsRows entries
+    for (auto lang : Symbol::pp_all_languages) {
+        ParamDicTxtLangRow paramTxt;
+        paramTxt.paramId = pp_parameter_id;
+        paramTxt.langName = lang->name;
+        paramTxt.langId = lang->language_id;
+        paramTxt.descr = label(*lang);
+        paramTxt.note = note(*lang);
+        metaRows.paramTxt.push_back(paramTxt);
+    }
 }
 

@@ -151,6 +151,7 @@
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
+    <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />

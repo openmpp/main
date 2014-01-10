@@ -332,6 +332,31 @@ public:
 
 
     /**
+     * Get the symbol label in the given language.
+     * 
+     * Language-specific symbol labels come from structured comments in the model source code.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
+
+    virtual string label(const LanguageSymbol & language) const;
+
+
+    /**
+     * Get the symbol note in the given language.
+     * 
+     * Language-specific symbol notes come from structured comments in the model source code.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
+
+    virtual string note(const LanguageSymbol & language) const;
+
+    /**
      * The unique identifier for the symbol
      * 
      * To create unique names for all agentvars, member names in the model source code are prefixed
@@ -350,7 +375,7 @@ public:
 
 	string name;
 
-    // static functions
+    // static helper functions
 	static bool exists( const string& unm );
 	static bool exists( const string& nm, const Symbol *agent );
     static string symbol_name( const string& nm, const Symbol *agent );
@@ -405,15 +430,15 @@ public:
 
 
     /**
-     * Default symbols in symbol table
+     * Populate default symbols in symbol table
      * 
      * These are symbols which are added to the symbol table when it is created.  They have default
-     * properties which can be overridden by the om developer.  An example is the @a TypedefTypeSymbol
+     * properties which can be overridden by the om developer.  An example is the @ref TypedefTypeSymbol
      * with name 'Time'.  By default, the type is double, but this can be overridden by the model
      * developer using the time_type statement in the model source code.
      */
 
-    static void default_symbols();
+    static void populate_default_symbols();
     static void post_parse_all();
 
 

@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "ModelSymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/modelBuilder.h"
 
@@ -39,4 +40,13 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     metaRows.modelDic.name = name;
     metaRows.modelDic.timestamp = time_stamp;
+
+    for (auto lang : Symbol::pp_all_languages) {
+        ModelDicTxtLangRow modelTxt;
+        modelTxt.langName = lang->name;
+        modelTxt.langId = lang->language_id;
+        modelTxt.descr = label(*lang);
+        modelTxt.note = note(*lang);
+        metaRows.modelTxt.push_back(modelTxt);
+    }
 };

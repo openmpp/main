@@ -449,9 +449,19 @@ void Symbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
 }
 
+string Symbol::label(const LanguageSymbol & language) const
+{
+    // placeholder implementation
+    return name + " label (" + language.name + ")";
+}
 
+string Symbol::note(const LanguageSymbol & language) const
+{
+    // placeholder implementation
+    return name + " note (" + language.name + ")";
+}
 
-void Symbol::default_symbols()
+void Symbol::populate_default_symbols()
 {
     Symbol *sym;
     sym = new VersionSymbol( 1, 0, 0, 0 );
@@ -633,12 +643,12 @@ void Symbol::post_parse_all()
     // These numeric id's are used for communicating with the meta-data API.
     int id = 0;
     for ( auto parameter : pp_all_parameters ) {
-        parameter->pp_numeric_id = id;
+        parameter->pp_parameter_id = id;
         ++id;
     }
     id = 0;
     for ( auto table : pp_all_tables ) {
-        table->pp_numeric_id = id;
+        table->pp_table_id = id;
         ++id;
     }
 

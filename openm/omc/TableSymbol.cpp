@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "TableSymbol.h"
+#include "LanguageSymbol.h"
 #include "AgentSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
@@ -266,9 +267,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
     TableDicRow tableDic;
-    TableDicTxtLangRow tableTxt;
 
-    tableDic.tableId = pp_numeric_id;
+    tableDic.tableId = pp_table_id;
     tableDic.tableName = name;
     tableDic.isUser = false;
     tableDic.rank = 0;
@@ -276,69 +276,63 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.isHidden = false;
     metaRows.tableDic.push_back(tableDic);
 
-    // TODO language entries are hard-coded bilingual for alpha
-    tableTxt.tableId = pp_numeric_id;
-    tableTxt.langName = "EN";
-    tableTxt.descr = name + " short name (EN)";
-    tableTxt.note = name + " note (EN)";
-    tableTxt.unitDescr = "Expressions (EN)"; // TODO
-    tableTxt.unitNote = "Expressions Note (EN)"; // TODO
-    metaRows.tableTxt.push_back(tableTxt);
-
-    tableTxt.langName = "FR";
-    tableTxt.descr = name + " short name (FR)";
-    tableTxt.note = name + " note (FR)";
-    tableTxt.unitDescr = "Expressions (FR)"; // TODO
-    tableTxt.unitNote = "Expressions Note (FR)"; // TODO
-    metaRows.tableTxt.push_back(tableTxt);
+    for (auto lang : Symbol::pp_all_languages) {
+        TableDicTxtLangRow tableTxt;
+        tableTxt.tableId = pp_table_id;
+        tableTxt.langName = lang->name;
+        tableTxt.langId = lang->language_id;
+        tableTxt.descr = label(*lang);
+        tableTxt.note = note(*lang);
+        tableTxt.unitDescr = "Expressions (" + lang->name + ")"; // TODO
+        tableTxt.unitNote = "Expressions Note (" + lang->name + ")"; // TODO
+        metaRows.tableTxt.push_back(tableTxt);
+    }
 
     // TODO: rank 0 tables in alpha have no TableDimsRow entries
     // or TableDimsTxtLangRow entries
 
     // accumulators for table
-    TableAccRow tableAcc;
-    tableAcc.tableId = pp_numeric_id;
-    TableAccTxtLangRow tableAccTxt;
-    tableAccTxt.tableId = pp_numeric_id;
     for (auto acc : pp_accumulators) {
+        TableAccRow tableAcc;
+
+        tableAcc.tableId = pp_table_id;
         tableAcc.accId = acc->index;
         tableAcc.name = "acc" + to_string(acc->index);
         tableAcc.expr = acc->pretty_name();
         metaRows.tableAcc.push_back(tableAcc);
 
-        tableAccTxt.accId = acc->index;
-        tableAccTxt.langName = "EN";
-        tableAccTxt.descr = acc->name + " short name (EN)";
-        tableAccTxt.note = acc->name + " note (EN)";
-        metaRows.tableAccTxt.push_back(tableAccTxt);
-
-        tableAccTxt.langName = "FR";
-        tableAccTxt.descr = acc->name + " short name (FR)";
-        tableAccTxt.note = acc->name + " note (FR)";
-        metaRows.tableAccTxt.push_back(tableAccTxt);
+        for (auto lang : Symbol::pp_all_languages) {
+            TableAccTxtLangRow tableAccTxt;
+            tableAccTxt.tableId = pp_table_id;
+            tableAccTxt.accId = acc->index;
+            tableAccTxt.langName = lang->name;
+            tableAccTxt.langId = lang->language_id;
+            tableAccTxt.descr = acc->label(*lang);
+            tableAccTxt.note = acc->note(*lang);
+            metaRows.tableAccTxt.push_back(tableAccTxt);
+        }
     }
 
     // expressions for table
-    TableUnitRow tableUnit;
-    tableUnit.tableId = pp_numeric_id;
-    TableUnitTxtLangRow tableUnitTxt;
-    tableUnitTxt.tableId = pp_numeric_id;
     for (auto expr : pp_expressions) {
+        TableUnitRow tableUnit;
+        tableUnit.tableId = pp_table_id;
         tableUnit.unitId = expr->index;
         tableUnit.name = "expr" + to_string(expr->index);
         tableUnit.src = expr->get_expression(expr->root, TableExpressionSymbol::expression_style::sql);
         metaRows.tableUnit.push_back(tableUnit);
 
-        tableUnitTxt.unitId = expr->index;
-        tableUnitTxt.langName = "EN";
-        tableUnitTxt.descr = expr->name + " short name (EN)";
-        tableUnitTxt.note = expr->name + " note (EN)";
-        metaRows.tableUnitTxt.push_back(tableUnitTxt);
+        for (auto lang : Symbol::pp_all_languages) {
+            TableUnitTxtLangRow tableUnitTxt;
+            tableUnitTxt.tableId = pp_table_id;
+            tableUnitTxt.unitId = expr->index;
 
-        tableUnitTxt.langName = "FR";
-        tableUnitTxt.descr = expr->name + " short name (FR)";
-        tableUnitTxt.note = expr->name + " note (FR)";
-        metaRows.tableUnitTxt.push_back(tableUnitTxt);
+            tableUnitTxt.langName = lang->name;
+            tableUnitTxt.langId = lang->language_id;
+            tableUnitTxt.descr = expr->label(*lang);
+            tableUnitTxt.note = expr->note(*lang);
+            metaRows.tableUnitTxt.push_back(tableUnitTxt);
+        }
     }
 }
 

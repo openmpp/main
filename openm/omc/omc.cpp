@@ -177,7 +177,7 @@ int main(int argc, char * argv[])
         }
 
         // Populate symbol table with default symbols
-        Symbol::default_symbols();
+        Symbol::populate_default_symbols();
 
         // create unique instance of ParseContext
         ParseContext pc;
@@ -394,19 +394,20 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
     //io_metaRows.modelDic.version = "test";
 
     // model_dic_txt table
-    ModelDicTxtLangRow modelTxt;
-    modelTxt.langName = "EN";
-    modelTxt.descr = "model description (EN)";
-    modelTxt.note = "model notes  (EN)";
-    io_metaRows.modelTxt.push_back(modelTxt);
+    //ModelDicTxtLangRow modelTxt;
+    //modelTxt.langName = "EN";
+    //modelTxt.descr = "model description (EN)";
+    //modelTxt.note = "model notes  (EN)";
+    //io_metaRows.modelTxt.push_back(modelTxt);
 
-    modelTxt.langName = "FR";
-    modelTxt.descr = "model description (FR)";
-    modelTxt.note = "model notes (FR)";
-    io_metaRows.modelTxt.push_back(modelTxt);
+    //modelTxt.langName = "FR";
+    //modelTxt.descr = "model description (FR)";
+    //modelTxt.note = "model notes (FR)";
+    //io_metaRows.modelTxt.push_back(modelTxt);
 
     // built-in types: simple types
     TypeDicRow typeDic;
+
     //typeDic.typeId = 0;
     //typeDic.name = "int";
     //typeDic.dicId = 0;          // simple types

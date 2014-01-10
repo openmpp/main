@@ -39,6 +39,6 @@ public:
     * Used for communicating with metadata API.
     */
 
-    int pp_numeric_id;
+    int pp_parameter_id;
 };
 
