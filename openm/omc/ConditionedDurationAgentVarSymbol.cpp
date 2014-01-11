@@ -18,7 +18,7 @@ using namespace std;
 // static
 string ConditionedDurationAgentVarSymbol::member_name(const Symbol *observed, const Literal *constant)
 {
-    string result = "om_" + token_to_string(token::TK_duration) + "_" + observed->name + "_" + constant->cxx_token;
+    string result = "om_" + token_to_string(token::TK_duration) + "_" + observed->name + "_" + constant->value();
     return result;
 }
 
@@ -124,7 +124,7 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_definition_agent()
     c += condition_decl_qualified();
     c += "{";
     // example:             return ( alive == true );
-    c += "return (" + observed->name + " == " + constant->cxx_token + " );";
+    c += "return (" + observed->name + " == " + constant->value() + " );";
     c += "}";
 
     return c;

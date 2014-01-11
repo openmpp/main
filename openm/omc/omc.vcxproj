@@ -123,6 +123,7 @@
     <ClInclude Include="ParseContext.h" />
     <ClInclude Include="PartitionEnumeratorSymbol.h" />
     <ClInclude Include="PartitionSymbol.h" />
+    <ClInclude Include="RangeSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableAccumulatorSymbol.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
     <ClCompile Include="ParameterSymbol.cpp" />
     <ClCompile Include="PartitionSymbol.cpp" />
+    <ClCompile Include="RangeSymbol.cpp" />
     <ClCompile Include="SimpleAgentVarSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableAccumulatorSymbol.cpp" />

@@ -34,6 +34,12 @@ public:
     {
     }
 
+    virtual string value() const
+    {
+        return cxx_token;
+    }
+
+protected:
     const string cxx_token;
 };
 
@@ -46,10 +52,69 @@ public:
 class IntegerLiteral : public Literal
 {
 public:
+
+    /**
+     * Constructor.
+     *
+     * @param tok The literal, with no leading minus sign
+     */
+
     IntegerLiteral( const string& tok )
         : Literal (tok)
+        , negative(false)
     {
     }
+
+    string value() const
+    {
+        if (negative) return "-" + cxx_token;
+        else return cxx_token;
+    }
+
+    void set_negative(bool arg)
+    {
+        negative = arg;
+    }
+
+private:
+    bool negative;
+};
+
+/**
+* A C++ floating point literal
+*
+* Example: 3.14159
+*/
+
+class FloatingPointLiteral : public Literal
+{
+public:
+
+    /**
+     * Constructor.
+     *
+     * @param tok The literal, with no leading minus sign.
+     */
+
+    FloatingPointLiteral(const string& tok)
+        : Literal(tok)
+        , negative(false)
+    {
+    }
+
+    string value() const
+    {
+        if (negative) return "-" + cxx_token;
+        else return cxx_token;
+    }
+
+    void set_negative(bool arg)
+    {
+        negative = arg;
+    }
+
+private:
+    bool negative;
 };
 
 /**
@@ -62,21 +127,6 @@ class CharacterLiteral : public Literal
 {
 public:
     CharacterLiteral( const string& tok )
-        : Literal (tok)
-    {
-    }
-};
-
-/**
- * A C++ floating point literal
- * 
- * Example: 3.14159
- */
-
-class FloatingPointLiteral : public Literal
-{
-public:
-    FloatingPointLiteral( const string& tok )
         : Literal (tok)
     {
     }

@@ -15,7 +15,7 @@ string SimpleAgentVarSymbol::initial_value() const
 {
     string result;
     if (initializer != nullptr)
-        result = initializer->cxx_token;
+        result = initializer->value();
     else
         result = AgentVarSymbol::initial_value();
 

@@ -77,11 +77,11 @@ extern char *yytext;
 };
 
 %printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
-%printer { yyoutput << "literal " << $$->cxx_token; } <pval_Literal>
-%printer { yyoutput << "integer literal " << $$->cxx_token; } <pval_IntegerLiteral>
-%printer { yyoutput << "character literal " << $$->cxx_token; } <pval_CharacterLiteral>
-%printer { yyoutput << "floating point literal " << $$->cxx_token; } <pval_FloatingPointLiteral>
-%printer { yyoutput << "string literal " << $$->cxx_token; } <pval_StringLiteral>
+%printer { yyoutput << "literal " << $$->value(); } <pval_Literal>
+%printer { yyoutput << "integer literal " << $$->value(); } <pval_IntegerLiteral>
+%printer { yyoutput << "character literal " << $$->value(); } <pval_CharacterLiteral>
+%printer { yyoutput << "floating point literal " << $$->value(); } <pval_FloatingPointLiteral>
+%printer { yyoutput << "string literal " << $$->value(); } <pval_StringLiteral>
 %printer { yyoutput << "symbol " << '"' << $$->name << '"' << " type=" << typeid($$).name(); } <pval_Symbol>
 %printer { yyoutput << "table expr "; } <pval_TableExpr>
 %printer { yyoutput << "initial value type=" << Symbol::token_to_string($$->associated_token); } <pval_InitialValue>
@@ -426,7 +426,8 @@ extern char *yytext;
 %type  <val_token>      FundamentalType
 %type  <val_token>      BoolLiteral
 %type  <pval_Literal>   AnyLiteral
-%type  <pval_Literal>   NumericLiteral
+%type  <pval_Literal>   SignedNumericLiteral
+%type  <pval_Literal>   SignedIntegerLiteral
 
 %type  <pval_TableExpr> ExprForTable
 %type  <pval_TableExpr> TableExpressions
@@ -458,6 +459,7 @@ Declaration:
 	| Decl_version
     | Decl_classification
     | Decl_partition
+    | Decl_range
     | Decl_parameters
 	| Decl_agent
 	| Decl_table
@@ -578,16 +580,16 @@ ModelType:
 Decl_version:
         "version" INTEGER_LITERAL[major] "," INTEGER_LITERAL[minor] "," INTEGER_LITERAL[sub_minor] "," INTEGER_LITERAL[sub_sub_minor] ";"
                         {
-                            int major = stoi( $major->cxx_token );
+                            int major = stoi( $major->value() );
                             delete $major;
 
-                            int minor = stoi( $minor->cxx_token );
+                            int minor = stoi($minor->value());
                             delete $minor;
 
-                            int sub_minor = stoi( $sub_minor->cxx_token );
+                            int sub_minor = stoi($sub_minor->value());
                             delete $sub_minor;
 
-                            int sub_sub_minor = stoi( $sub_sub_minor->cxx_token );
+                            int sub_sub_minor = stoi($sub_sub_minor->value());
                             delete $sub_sub_minor;
 
                             auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor );
@@ -665,25 +667,44 @@ Decl_partition:
             ;
 
 PartitionSplits:
-      NumericLiteral
+      SignedNumericLiteral
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
-                            string upper_split_point = $NumericLiteral->cxx_token;
+                            string upper_split_point = $SignedNumericLiteral->value();
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
                             pc.counter1++;  // counter for partition split points
                         }
-      | PartitionSplits "," NumericLiteral
+      | PartitionSplits "," SignedNumericLiteral
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
-                            string upper_split_point = $NumericLiteral->cxx_token;
+                            string upper_split_point = $SignedNumericLiteral->value();
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
                             pc.counter1++;  // counter for partition split points
                         }
 	;
+
+Decl_range:
+      "range" SYMBOL[range] "{" SignedIntegerLiteral[lower_bound] "," SignedIntegerLiteral[upper_bound] "}" ";"
+                        {
+                            int lower_bound = stoi( $lower_bound->value() );
+                            delete $lower_bound;
+
+                            int upper_bound = stoi($upper_bound->value());
+                            delete $upper_bound;
+
+                            // Morph Symbol to RangeSymbol
+                            $range = new RangeSymbol( $range, lower_bound, upper_bound );
+                        }
+      | "range" "{" error "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+    ;
 
 Decl_parameters:
 	  "parameters" "{" Parameters "}" ";"
@@ -780,14 +801,36 @@ BoolLiteral:
     | "false"
 	;
 
-NumericLiteral:
+SignedIntegerLiteral:
       INTEGER_LITERAL
                         {
-                            $NumericLiteral = $INTEGER_LITERAL;
+                            $SignedIntegerLiteral = $INTEGER_LITERAL;
+                        }
+    | "-" INTEGER_LITERAL
+                        {
+                            $INTEGER_LITERAL->set_negative(true);
+                            $SignedIntegerLiteral = $INTEGER_LITERAL;
+                        }
+    ;
+
+SignedNumericLiteral:
+      INTEGER_LITERAL
+                        {
+                            $SignedNumericLiteral = $INTEGER_LITERAL;
+                        }
+    | "-" INTEGER_LITERAL
+                        {
+                            $INTEGER_LITERAL->set_negative(true);
+                            $SignedNumericLiteral = $INTEGER_LITERAL;
                         }
     | FLOATING_POINT_LITERAL
                         {
-                            $NumericLiteral = $FLOATING_POINT_LITERAL;
+                            $SignedNumericLiteral = $FLOATING_POINT_LITERAL;
+                        }
+    | "-" FLOATING_POINT_LITERAL
+                        {
+                            $FLOATING_POINT_LITERAL->set_negative(true);
+                            $SignedNumericLiteral = $FLOATING_POINT_LITERAL;
                         }
     ;
 

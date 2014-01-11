@@ -20,6 +20,7 @@
 #include "ClassificationSymbol.h"
 #include "PartitionSymbol.h"
 #include "PartitionEnumeratorSymbol.h"
+#include "RangeSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentMemberSymbol.h"
 #include "AgentEventSymbol.h"

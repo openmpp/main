@@ -24,6 +24,12 @@ partition AGE_GROUP //EN Age group
     30
 };
 
+range YEARS //EN Year
+{
+    -10,
+    10
+};
+
 parameters 
 {
 	//EN Annual hazard of death
