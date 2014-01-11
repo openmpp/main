@@ -4,8 +4,17 @@
 //LABEL(PersonCore, EN) Core functionality of the Person actor
 
 /* NOTE(PersonCore, EN)
-	This module contains the basic information which defines the Person case.
+This module contains the basic information which defines the Person case.
 */
+
+classification SEX //EN Sex
+{
+    //EN Female
+    FEMALE,
+
+    //EN Male
+    MALE
+};
 
 parameters 
 {

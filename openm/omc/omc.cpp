@@ -491,186 +491,186 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
     //io_metaRows.typeDic.push_back(typeDic);
 
     // built-in types: logical type
-    TypeDicRow typeRow;
-    typeDic.typeId = 20;
-    typeDic.name = "logical";
-    typeDic.dicId = 1;          // logical type
-    typeDic.totalEnumId = 2;
-    io_metaRows.typeDic.push_back(typeDic);
+    //TypeDicRow typeRow;
+    //typeDic.typeId = 20;
+    //typeDic.name = "logical";
+    //typeDic.dicId = 1;          // logical type
+    //typeDic.totalEnumId = 2;
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    TypeDicTxtLangRow typeTxt;
-    typeTxt.typeId = 20;
-    typeTxt.langName = "EN";
-    typeTxt.descr = "logical type";
-    typeTxt.note = "logical type notes";
-    io_metaRows.typeTxt.push_back(typeTxt);
+    //TypeDicTxtLangRow typeTxt;
+    //typeTxt.typeId = 20;
+    //typeTxt.langName = "EN";
+    //typeTxt.descr = "logical type";
+    //typeTxt.note = "logical type notes";
+    //io_metaRows.typeTxt.push_back(typeTxt);
 
-    typeTxt.langName = "FR";
-    typeTxt.descr = "(FR) logical type";
-    typeTxt.note = "(FR) logical type notes";
-    io_metaRows.typeTxt.push_back(typeTxt);
+    //typeTxt.langName = "FR";
+    //typeTxt.descr = "(FR) logical type";
+    //typeTxt.note = "(FR) logical type notes";
+    //io_metaRows.typeTxt.push_back(typeTxt);
 
-    TypeEnumLstRow typeEnum;
-    typeEnum.typeId = 20;
-    typeEnum.enumId = 0;
-    typeEnum.name = "FALSE";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //TypeEnumLstRow typeEnum;
+    //typeEnum.typeId = 20;
+    //typeEnum.enumId = 0;
+    //typeEnum.name = "FALSE";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 1;
-    typeEnum.name = "TRUE";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 1;
+    //typeEnum.name = "TRUE";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    TypeEnumTxtLangRow typeEnumTxt;
-    typeEnumTxt.typeId = 20;
-    typeEnumTxt.enumId = 0;
-    typeEnumTxt.langName = "EN";
-    typeEnumTxt.descr = "False";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
-    
-    typeEnumTxt.enumId = 0;
-    typeEnumTxt.langName = "FR";
-    typeEnumTxt.descr = "Faux";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //TypeEnumTxtLangRow typeEnumTxt;
+    //typeEnumTxt.typeId = 20;
+    //typeEnumTxt.enumId = 0;
+    //typeEnumTxt.langName = "EN";
+    //typeEnumTxt.descr = "False";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //
+    //typeEnumTxt.enumId = 0;
+    //typeEnumTxt.langName = "FR";
+    //typeEnumTxt.descr = "Faux";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 1;
-    typeEnumTxt.langName = "EN";
-    typeEnumTxt.descr = "True";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 1;
+    //typeEnumTxt.langName = "EN";
+    //typeEnumTxt.descr = "True";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 1;
-    typeEnumTxt.langName = "FR";
-    typeEnumTxt.descr = "Vrai";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 1;
+    //typeEnumTxt.langName = "FR";
+    //typeEnumTxt.descr = "Vrai";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    // classification types: age
-    typeDic.typeId = 21;
-    typeDic.name = "age";
-    typeDic.dicId = 2;          // classifcation type
-    typeDic.totalEnumId = 4;
-    io_metaRows.typeDic.push_back(typeDic);
+    //// classification types: age
+    //typeDic.typeId = 21;
+    //typeDic.name = "age";
+    //typeDic.dicId = 2;          // classifcation type
+    //typeDic.totalEnumId = 4;
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeTxt.typeId = 21;
-    typeTxt.langName = "EN";
-    typeTxt.descr = "Age";
-    typeTxt.note = "age type notes";
-    io_metaRows.typeTxt.push_back(typeTxt);
+    //typeTxt.typeId = 21;
+    //typeTxt.langName = "EN";
+    //typeTxt.descr = "Age";
+    //typeTxt.note = "age type notes";
+    //io_metaRows.typeTxt.push_back(typeTxt);
 
-    typeEnum.typeId = 21;
-    typeEnum.enumId = 0;
-    typeEnum.name = "10";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.typeId = 21;
+    //typeEnum.enumId = 0;
+    //typeEnum.name = "10";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 1;
-    typeEnum.name = "20";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 1;
+    //typeEnum.name = "20";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 2;
-    typeEnum.name = "30";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 2;
+    //typeEnum.name = "30";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 3;
-    typeEnum.name = "40";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 3;
+    //typeEnum.name = "40";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnumTxt.typeId = 21;
-    typeEnumTxt.enumId = 0;
-    typeEnumTxt.langName = "EN";
-    typeEnumTxt.descr = "age 10";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.typeId = 21;
+    //typeEnumTxt.enumId = 0;
+    //typeEnumTxt.langName = "EN";
+    //typeEnumTxt.descr = "age 10";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 1;
-    typeEnumTxt.descr = "age 20";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 1;
+    //typeEnumTxt.descr = "age 20";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 2;
-    typeEnumTxt.descr = "age 30";
-    typeEnumTxt.note = "age 20 notes";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 2;
+    //typeEnumTxt.descr = "age 30";
+    //typeEnumTxt.note = "age 20 notes";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 3;
-    typeEnumTxt.descr = "age 40";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 3;
+    //typeEnumTxt.descr = "age 40";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    // classification types: sex
-    typeDic.typeId = 22;
-    typeDic.name = "sex";
-    typeDic.dicId = 2;          // classifcation type
-    typeDic.totalEnumId = 2;
-    io_metaRows.typeDic.push_back(typeDic);
+    //// classification types: sex
+    //typeDic.typeId = 22;
+    //typeDic.name = "sex";
+    //typeDic.dicId = 2;          // classifcation type
+    //typeDic.totalEnumId = 2;
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeTxt.typeId = 22;
-    typeTxt.langName = "EN";
-    typeTxt.descr = "Sex";
-    typeTxt.note = "";
-    io_metaRows.typeTxt.push_back(typeTxt);
+    //typeTxt.typeId = 22;
+    //typeTxt.langName = "EN";
+    //typeTxt.descr = "Sex";
+    //typeTxt.note = "";
+    //io_metaRows.typeTxt.push_back(typeTxt);
 
-    typeEnum.typeId = 22;
-    typeEnum.enumId = 0;
-    typeEnum.name = "M";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.typeId = 22;
+    //typeEnum.enumId = 0;
+    //typeEnum.name = "M";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 1;
-    typeEnum.name = "F";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 1;
+    //typeEnum.name = "F";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnumTxt.typeId = 22;
-    typeEnumTxt.enumId = 0;
-    typeEnumTxt.langName = "EN";
-    typeEnumTxt.descr = "Male";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.typeId = 22;
+    //typeEnumTxt.enumId = 0;
+    //typeEnumTxt.langName = "EN";
+    //typeEnumTxt.descr = "Male";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 1;
-    typeEnumTxt.descr = "Female";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 1;
+    //typeEnumTxt.descr = "Female";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    // classification types: salary
-    typeDic.typeId = 23;
-    typeDic.name = "salary";
-    typeDic.dicId = 2;          // classifcation type
-    typeDic.totalEnumId = 3;
-    io_metaRows.typeDic.push_back(typeDic);
+    //// classification types: salary
+    //typeDic.typeId = 23;
+    //typeDic.name = "salary";
+    //typeDic.dicId = 2;          // classifcation type
+    //typeDic.totalEnumId = 3;
+    //io_metaRows.typeDic.push_back(typeDic);
 
-    typeTxt.typeId = 23;
-    typeTxt.langName = "EN";
-    typeTxt.descr = "Salary level";
-    typeTxt.note = "salary type notes";
-    io_metaRows.typeTxt.push_back(typeTxt);
+    //typeTxt.typeId = 23;
+    //typeTxt.langName = "EN";
+    //typeTxt.descr = "Salary level";
+    //typeTxt.note = "salary type notes";
+    //io_metaRows.typeTxt.push_back(typeTxt);
 
-    typeEnum.typeId = 23;
-    typeEnum.enumId = 0;
-    typeEnum.name = "L";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.typeId = 23;
+    //typeEnum.enumId = 0;
+    //typeEnum.name = "L";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 1;
-    typeEnum.name = "M";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 1;
+    //typeEnum.name = "M";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnum.enumId = 2;
-    typeEnum.name = "H";
-    io_metaRows.typeEnum.push_back(typeEnum);
+    //typeEnum.enumId = 2;
+    //typeEnum.name = "H";
+    //io_metaRows.typeEnum.push_back(typeEnum);
 
-    typeEnumTxt.typeId = 23;
-    typeEnumTxt.enumId = 0;
-    typeEnumTxt.langName = "EN";
-    typeEnumTxt.descr = "Low";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.typeId = 23;
+    //typeEnumTxt.enumId = 0;
+    //typeEnumTxt.langName = "EN";
+    //typeEnumTxt.descr = "Low";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 1;
-    typeEnumTxt.descr = "Medium";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 1;
+    //typeEnumTxt.descr = "Medium";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
-    typeEnumTxt.enumId = 2;
-    typeEnumTxt.descr = "High";
-    typeEnumTxt.note = "";
-    io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
+    //typeEnumTxt.enumId = 2;
+    //typeEnumTxt.descr = "High";
+    //typeEnumTxt.note = "";
+    //io_metaRows.typeEnumTxt.push_back(typeEnumTxt);
 
     // model input parameters
     ParamDicRow paramDic;

@@ -48,6 +48,8 @@ public:
     TypeSymbol(Symbol *sym)
         : Symbol(sym)
     {
+        type_id = next_type_id;
+        next_type_id++;
     }
 
     void post_parse(int pass);
