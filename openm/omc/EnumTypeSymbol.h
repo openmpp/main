@@ -24,13 +24,28 @@ private:
 public:
 
     /**
-    * Constructor.
-    *
-    * @param [in,out] sym The symbol to be morphed.
-    */
+     * Constructor.
+     *
+     * @param [in,out] sym The symbol to be morphed.
+     * @param dicId        The kind of type.
+     */
 
     EnumTypeSymbol(Symbol *sym, int dicId)
         : TypeSymbol(sym)
+        , dicId(dicId)
+    {
+    }
+
+
+    /**
+     * Constructor.
+     *
+     * @param unm   The unique Symbol name.
+     * @param dicId The kind of type.
+     */
+
+    EnumTypeSymbol(const string unm, int dicId)
+        : TypeSymbol(unm)
         , dicId(dicId)
     {
     }

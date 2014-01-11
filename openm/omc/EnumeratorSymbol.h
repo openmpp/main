@@ -26,6 +26,14 @@ public:
     {
     }
 
+    EnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal)
+        : Symbol(unm)
+        , enumeration(enumeration->get_rpSymbol())
+        , ordinal(ordinal)
+        , pp_enumeration(nullptr)
+    {
+    }
+
     void post_parse(int pass);
 
     /**

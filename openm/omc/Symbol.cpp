@@ -31,6 +31,9 @@
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableSymbol.h"
 
+using namespace std;
+using namespace openm;
+
 symbol_map_type Symbol::symbols;
 
 list<TypeSymbol *> Symbol::pp_all_types;
@@ -493,7 +496,12 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_haz2rate);
     sym = new TypedefTypeSymbol(token::TK_piece_linear);
     sym = new TypedefTypeSymbol(token::TK_file);
-    // logical / bool - implemented as enum (20)
+
+    // bool built-in type
+    Symbol *sym_enum = new EnumTypeSymbol(token_to_string(token::TK_bool), kind_of_type::logical_type);
+    sym = new EnumeratorSymbol(token_to_string(token::TK_false), sym_enum, 0);
+    sym = new EnumeratorSymbol(token_to_string(token::TK_true), sym_enum, 1);
+
 
     //sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);
 }
