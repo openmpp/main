@@ -456,7 +456,8 @@ Declaration:
 	| Decl_integer_type
 	| Decl_version
     | Decl_classification
-	| Decl_parameters
+    | Decl_partition
+    | Decl_parameters
 	| Decl_agent
 	| Decl_table
 	;
@@ -631,6 +632,55 @@ ClassificationLevels:
                             // morph existing symbol to EnumeratorSymbol
                             auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
                             pc.counter1++;  // counter for classification levels
+                        }
+	;
+
+Decl_partition:
+      "partition" SYMBOL[partition]
+                        {
+                            // Morph Symbol to PartitionSymbol
+                            $partition = new PartitionSymbol( $partition );
+                            // Set partition context for body of partition declaration
+                            pc.set_partition_context($partition);
+                            // initialize working counter used for partition split points
+                            pc.counter1 = 0;
+                        }
+            "{" PartitionSplits "}" ";"
+                        {
+                            // create PartitionEnumeratorSymbol for upper partition interval
+                            Symbol *enum_symbol = pc.get_partition_context();
+                            string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
+                            string upper_split_point = "max";
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
+
+                            // No valid partition context
+                            pc.set_partition_context( nullptr );
+                        }
+            | "partition" "{" error "}" ";"
+                        {
+                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
+                            pc.InitializeForCxxOutside();
+                        }
+            ;
+
+PartitionSplits:
+      INTEGER_LITERAL
+                        {
+                            // create PartitionEnumeratorSymbol for interval which ends at this split point
+                            Symbol *enum_symbol = pc.get_partition_context();
+                            string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
+                            string upper_split_point = $INTEGER_LITERAL->cxx_token;
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
+                            pc.counter1++;  // counter for partition split points
+                        }
+      | PartitionSplits "," INTEGER_LITERAL
+                        {
+                            // create PartitionEnumeratorSymbol for interval which ends at this split point
+                            Symbol *enum_symbol = pc.get_partition_context();
+                            string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
+                            string upper_split_point = $INTEGER_LITERAL->cxx_token;
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
+                            pc.counter1++;  // counter for partition split points
                         }
 	;
 

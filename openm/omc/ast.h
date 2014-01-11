@@ -18,6 +18,8 @@
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "ClassificationSymbol.h"
+#include "PartitionSymbol.h"
+#include "PartitionEnumeratorSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentMemberSymbol.h"
 #include "AgentEventSymbol.h"

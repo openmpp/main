@@ -16,6 +16,13 @@ classification SEX //EN Sex
     MALE
 };
 
+partition AGE_GROUP //EN Age group
+{
+    10,
+    20,
+    30
+};
+
 parameters 
 {
 	//EN Annual hazard of death

@@ -36,6 +36,7 @@ public:
 
     void post_parse(int pass);
 
+
     /**
     * Reference to pointer to enumeration.
     *
@@ -53,10 +54,10 @@ public:
 
 
     /**
-    * Direct pointer to enumeration.
-    *
-    * Set during post-parse for convenience.
-    */
+     * Direct pointer to enumeration.
+     * 
+     * Set during post-parse for convenience.
+     */
 
     EnumTypeSymbol *pp_enumeration;
 };

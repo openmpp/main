@@ -44,7 +44,7 @@ void EnumTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         typeDic.typeId = type_id;
         typeDic.name = name;
         typeDic.dicId = dicId;          // see enum kind_of_type for possible values
-        typeDic.totalEnumId = pp_enumerators.size();
+        typeDic.totalEnumId = pp_size();
         metaRows.typeDic.push_back(typeDic);
     }
 

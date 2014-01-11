@@ -54,6 +54,18 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+
+    /**
+     * Gets the size of the enumeration
+     *
+     * @return An int.
+     */
+
+    int pp_size()
+    {
+        return pp_enumerators.size();
+    }
+
     /**
     * The enumerators of this enum
     *

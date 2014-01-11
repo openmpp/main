@@ -33,6 +33,7 @@ public:
         , agent_context (nullptr)
         , table_context (nullptr)
         , classification_context(nullptr)
+        , partition_context(nullptr)
         , parse_errors(0)
 		, post_parse_errors (0)
     {
@@ -99,6 +100,26 @@ public:
         }
     }
 
+    void set_partition_context(Symbol *partition)
+    {
+        if (partition != nullptr) {
+            partition_context = &partition->get_rpSymbol();
+        }
+        else {
+            partition_context = nullptr;
+        }
+    }
+
+    Symbol * get_partition_context()
+    {
+        if (partition_context != nullptr) {
+            return *partition_context;
+        }
+        else {
+            return nullptr;
+        }
+    }
+
     /**
      * Initialize parse context for outermost code level.
      */
@@ -114,6 +135,7 @@ public:
         agent_context = nullptr;
         table_context = nullptr;
         classification_context = nullptr;
+        partition_context = nullptr;
     }
 
     /**
@@ -253,4 +275,14 @@ private:
     */
 
     Symbol **classification_context;
+
+
+    /**
+    * partition context.
+    *
+    * Note that this cannot be Symbol &*, since
+    * the value can be nullptr.
+    */
+
+    Symbol **partition_context;
 };
