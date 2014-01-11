@@ -52,6 +52,22 @@ public:
 
 
     /**
+    * Gets the (always empty) note for the interval in the partition.
+    *
+    * This specialization is language-independent.
+    *
+    * @param language The language.
+    *
+    * @return A string.
+    */
+
+    string note(const LanguageSymbol & language) const
+    {
+        return "";
+    }
+
+
+    /**
     * The lower split point of the partition interval
     *
     * The lower value is supplied in the post-parse phase.

@@ -123,6 +123,7 @@
     <ClInclude Include="ParseContext.h" />
     <ClInclude Include="PartitionEnumeratorSymbol.h" />
     <ClInclude Include="PartitionSymbol.h" />
+    <ClInclude Include="RangeEnumeratorSymbol.h" />
     <ClInclude Include="RangeSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
     <ClInclude Include="Symbol.h" />
