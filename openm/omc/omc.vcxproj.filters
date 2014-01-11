@@ -144,7 +144,10 @@
     <ClInclude Include="ClassificationSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClassificationLevelSymbol.h">
+    <ClInclude Include="EnumTypeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumeratorSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -239,10 +242,10 @@
     <ClCompile Include="HeaderCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClassificationLevelSymbol.cpp">
+    <ClCompile Include="EnumTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClassificationSymbol.cpp">
+    <ClCompile Include="EnumeratorSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

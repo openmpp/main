@@ -63,7 +63,7 @@ void TypedefTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     TypeDicRow typeDic;
     typeDic.typeId = type_id;
     typeDic.name = name;
-    typeDic.dicId = 0;          // simple types
+    typeDic.dicId = kind_of_type::simple_type;          // simple types
     typeDic.totalEnumId = 1;
     metaRows.typeDic.push_back(typeDic);
 

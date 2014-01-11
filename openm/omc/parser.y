@@ -622,14 +622,14 @@ Decl_classification:
 ClassificationLevels:
       SYMBOL
                         {
-                            // morph existing symbol to ClassificationLevelSymbol
-                            auto *sym = new ClassificationLevelSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
+                            // morph existing symbol to EnumeratorSymbol
+                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
                             pc.counter1++;  // counter for classification levels
                         }
       | ClassificationLevels "," SYMBOL
                         {
-                            // morph existing symbol to LanguageSymbol
-                            auto *sym = new ClassificationLevelSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
+                            // morph existing symbol to EnumeratorSymbol
+                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
                             pc.counter1++;  // counter for classification levels
                         }
 	;

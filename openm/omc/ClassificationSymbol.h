@@ -7,19 +7,19 @@
 
 #pragma once
 #include <list>
-#include "TypeSymbol.h"
-
-class ClassificationLevelSymbol;
+#include "EnumTypeSymbol.h"
 
 using namespace std;
+using namespace openm;
+
 
 /**
 * ClassificationSymbol.
 */
-class ClassificationSymbol : public TypeSymbol
+class ClassificationSymbol : public EnumTypeSymbol
 {
 private:
-    typedef TypeSymbol super;
+    typedef EnumTypeSymbol super;
 
 public:
 
@@ -30,22 +30,8 @@ public:
      */
 
     ClassificationSymbol(Symbol *sym)
-        : TypeSymbol(sym)
+        : EnumTypeSymbol(sym, kind_of_type::classification_type)
     {
     }
-
-    void post_parse(int pass);
-
-    CodeBlock cxx_declaration_global();
-
-    void populate_metadata(openm::MetaModelHolder & metaRows);
-
-    /**
-    * The classification levels of this classification
-    *
-    *  Populated after parsing is complete.
-    */
-
-    list<ClassificationLevelSymbol *> pp_classification_levels;
 };
 

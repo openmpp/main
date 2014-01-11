@@ -70,3 +70,24 @@ public:
 
     static int next_type_id;
 };
+
+
+namespace openm {
+
+    /**
+    * Indicates the kind of the type.
+    *
+    * Used to communicate with meta-data API through the dicId member
+    * of things like TypeDicRow.
+    */
+
+    enum kind_of_type {
+        simple_type = 0,
+        logical_type = 1,
+        classification_type = 2,
+        range_type = 3,
+        partition_type = 4,
+        link_type = 5,
+    };
+}
+

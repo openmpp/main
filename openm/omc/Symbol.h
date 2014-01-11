@@ -16,7 +16,7 @@
 
 class CodeBlock;
 class TypeSymbol;
-class ClassificationSymbol;
+class EnumTypeSymbol;
 class LanguageSymbol;
 class AgentSymbol;
 class ParameterSymbol;
@@ -515,12 +515,12 @@ public:
 
 
     /**
-    * The classifications in the model
+    * The enumerations in the model
     *
     * Populated after parsing is complete.
     */
 
-    static list<ClassificationSymbol *> pp_all_classifications;
+    static list<EnumTypeSymbol *> pp_all_enumerations;
 
 
     /**

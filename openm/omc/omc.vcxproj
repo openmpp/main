@@ -103,7 +103,6 @@
     <ClInclude Include="AgentVarSymbol.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="BuiltinAgentVarSymbol.h" />
-    <ClInclude Include="ClassificationLevelSymbol.h" />
     <ClInclude Include="ClassificationSymbol.h" />
     <ClInclude Include="CodeBlock.h" />
     <ClInclude Include="CodeGen.h" />
@@ -111,6 +110,8 @@
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DurationAgentVarSymbol.h" />
+    <ClInclude Include="EnumeratorSymbol.h" />
+    <ClInclude Include="EnumTypeSymbol.h" />
     <ClInclude Include="ExprForTable.h" />
     <ClInclude Include="LanguageSymbol.h" />
     <ClInclude Include="Literal.h" />
@@ -148,13 +149,13 @@
     <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="AgentVarSymbol.cpp" />
     <ClCompile Include="BuiltinAgentVarSymbol.cpp" />
-    <ClCompile Include="ClassificationLevelSymbol.cpp" />
-    <ClCompile Include="ClassificationSymbol.cpp" />
     <ClCompile Include="CodeBlock.cpp" />
     <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
+    <ClCompile Include="EnumeratorSymbol.cpp" />
+    <ClCompile Include="EnumTypeSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />

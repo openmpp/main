@@ -1,12 +1,12 @@
 /**
-* @file    ClassificationSymbol.cpp
-* Definitions for the ClassificationSymbol class.
+* @file    EnumTypeSymbol.cpp
+* Definitions for the EnumTypeSymbol class.
 */
 // Copyright (c) 2013 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include "ClassificationSymbol.h"
-#include "ClassificationLevelSymbol.h"
+#include "EnumTypeSymbol.h"
+#include "EnumeratorSymbol.h"
 #include "LanguageSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
@@ -14,7 +14,7 @@
 using namespace std;
 using namespace openm;
 
-void ClassificationSymbol::post_parse(int pass)
+void EnumTypeSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
@@ -23,8 +23,8 @@ void ClassificationSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
-            // Add this classification to the complete list of classifications.
-            pp_all_classifications.push_back(this);
+            // Add this enumeration to the complete list of enumerations.
+            pp_all_enumerations.push_back(this);
         }
         break;
     default:
@@ -32,24 +32,24 @@ void ClassificationSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock ClassificationSymbol::cxx_declaration_global()
+CodeBlock EnumTypeSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    
+
     h += doxygen(name);
-    h += "typedef enum {";
-    for ( auto classification_level : pp_classification_levels) {
-        h += classification_level->name + ",";
+    h += "enum " + name + " {";
+    for (auto enumerator : pp_enumerators) {
+        h += enumerator->name + ",";
     }
-    h += "} " + name + ";" ;
+    h += "};";
 
     return h;
 }
 
-void ClassificationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+void EnumTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
@@ -60,8 +60,8 @@ void ClassificationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         TypeDicRow typeDic;
         typeDic.typeId = type_id;
         typeDic.name = name;
-        typeDic.dicId = 2;          // classification types
-        typeDic.totalEnumId = pp_classification_levels.size();
+        typeDic.dicId = dicId;          // see enum kind_of_type for possible values
+        typeDic.totalEnumId = pp_enumerators.size();
         metaRows.typeDic.push_back(typeDic);
     }
 
@@ -74,22 +74,22 @@ void ClassificationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.typeTxt.push_back(typeTxt);
     }
 
-    for (auto classification_level : pp_classification_levels) {
+    for (auto enumerator : pp_enumerators) {
         {
             TypeEnumLstRow typeEnum;
             typeEnum.typeId = type_id;
-            typeEnum.enumId = classification_level->ordinal;
-            typeEnum.name = classification_level->name;
+            typeEnum.enumId = enumerator->ordinal;
+            typeEnum.name = enumerator->name;
             metaRows.typeEnum.push_back(typeEnum);
         }
 
         for (auto lang : Symbol::pp_all_languages) {
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
-            typeEnumTxt.enumId = classification_level->ordinal;
+            typeEnumTxt.enumId = enumerator->ordinal;
             typeEnumTxt.langName = lang->name;
-            typeEnumTxt.descr = classification_level->label(*lang);
-            typeEnumTxt.note = classification_level->note(*lang);
+            typeEnumTxt.descr = enumerator->label(*lang);
+            typeEnumTxt.note = enumerator->note(*lang);
             metaRows.typeEnumTxt.push_back(typeEnumTxt);
         }
     }
