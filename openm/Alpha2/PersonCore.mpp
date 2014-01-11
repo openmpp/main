@@ -18,6 +18,7 @@ classification SEX //EN Sex
 
 partition AGE_GROUP //EN Age group
 {
+    0.5,
     10,
     20,
     30

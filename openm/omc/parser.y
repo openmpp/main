@@ -426,6 +426,7 @@ extern char *yytext;
 %type  <val_token>      FundamentalType
 %type  <val_token>      BoolLiteral
 %type  <pval_Literal>   AnyLiteral
+%type  <pval_Literal>   NumericLiteral
 
 %type  <pval_TableExpr> ExprForTable
 %type  <pval_TableExpr> TableExpressions
@@ -664,21 +665,21 @@ Decl_partition:
             ;
 
 PartitionSplits:
-      INTEGER_LITERAL
+      NumericLiteral
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
-                            string upper_split_point = $INTEGER_LITERAL->cxx_token;
+                            string upper_split_point = $NumericLiteral->cxx_token;
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
                             pc.counter1++;  // counter for partition split points
                         }
-      | PartitionSplits "," INTEGER_LITERAL
+      | PartitionSplits "," NumericLiteral
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
-                            string upper_split_point = $INTEGER_LITERAL->cxx_token;
+                            string upper_split_point = $NumericLiteral->cxx_token;
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
                             pc.counter1++;  // counter for partition split points
                         }
@@ -778,6 +779,17 @@ BoolLiteral:
       "true"
     | "false"
 	;
+
+NumericLiteral:
+      INTEGER_LITERAL
+                        {
+                            $NumericLiteral = $INTEGER_LITERAL;
+                        }
+    | FLOATING_POINT_LITERAL
+                        {
+                            $NumericLiteral = $FLOATING_POINT_LITERAL;
+                        }
+    ;
 
 AnyLiteral:
       INTEGER_LITERAL
