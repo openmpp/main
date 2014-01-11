@@ -37,8 +37,6 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_global();
-
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

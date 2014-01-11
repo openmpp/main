@@ -33,5 +33,8 @@ public:
         : EnumTypeSymbol(sym, kind_of_type::classification_type)
     {
     }
+
+    CodeBlock cxx_declaration_global();
+
 };
 
