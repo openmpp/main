@@ -69,7 +69,6 @@ void ClassificationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         TypeDicTxtLangRow typeTxt;
         typeTxt.typeId = type_id;
         typeTxt.langName = lang->name;
-        typeTxt.langId = lang->language_id;
         typeTxt.descr = label(*lang);
         typeTxt.note = note(*lang);
         metaRows.typeTxt.push_back(typeTxt);
@@ -89,7 +88,6 @@ void ClassificationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             typeEnumTxt.typeId = type_id;
             typeEnumTxt.enumId = classification_level->ordinal;
             typeEnumTxt.langName = lang->name;
-            typeEnumTxt.langId = lang->language_id;
             typeEnumTxt.descr = classification_level->label(*lang);
             typeEnumTxt.note = classification_level->note(*lang);
             metaRows.typeEnumTxt.push_back(typeEnumTxt);

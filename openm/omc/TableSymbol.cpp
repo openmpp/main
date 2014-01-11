@@ -280,7 +280,6 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         TableDicTxtLangRow tableTxt;
         tableTxt.tableId = pp_table_id;
         tableTxt.langName = lang->name;
-        tableTxt.langId = lang->language_id;
         tableTxt.descr = label(*lang);
         tableTxt.note = note(*lang);
         tableTxt.unitDescr = "Expressions (" + lang->name + ")"; // TODO
@@ -306,7 +305,6 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableAccTxt.tableId = pp_table_id;
             tableAccTxt.accId = acc->index;
             tableAccTxt.langName = lang->name;
-            tableAccTxt.langId = lang->language_id;
             tableAccTxt.descr = acc->label(*lang);
             tableAccTxt.note = acc->note(*lang);
             metaRows.tableAccTxt.push_back(tableAccTxt);
@@ -328,7 +326,6 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableUnitTxt.unitId = expr->index;
 
             tableUnitTxt.langName = lang->name;
-            tableUnitTxt.langId = lang->language_id;
             tableUnitTxt.descr = expr->label(*lang);
             tableUnitTxt.note = expr->note(*lang);
             metaRows.tableUnitTxt.push_back(tableUnitTxt);

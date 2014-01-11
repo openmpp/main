@@ -82,7 +82,6 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         ParamDicTxtLangRow paramTxt;
         paramTxt.paramId = pp_parameter_id;
         paramTxt.langName = lang->name;
-        paramTxt.langId = lang->language_id;
         paramTxt.descr = label(*lang);
         paramTxt.note = note(*lang);
         metaRows.paramTxt.push_back(paramTxt);
