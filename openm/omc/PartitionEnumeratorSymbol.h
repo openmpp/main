@@ -18,8 +18,8 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point)
-        : EnumeratorSymbol(unm, enumeration, ordinal)
+    PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point, yy::location decl_loc = yy::location())
+        : EnumeratorSymbol(unm, enumeration, ordinal, decl_loc)
         , upper_split_point(upper_split_point)
     {
     }

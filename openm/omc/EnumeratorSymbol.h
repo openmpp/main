@@ -26,8 +26,8 @@ public:
     {
     }
 
-    EnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal)
-        : Symbol(unm)
+    EnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
+        : Symbol(unm, decl_loc)
         , enumeration(enumeration->get_rpSymbol())
         , ordinal(ordinal)
         , pp_enumeration(nullptr)

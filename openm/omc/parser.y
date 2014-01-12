@@ -652,13 +652,13 @@ Decl_partition:
                             // initialize working counter used for partition split points
                             pc.counter1 = 0;
                         }
-            "{" PartitionSplits "}" ";"
+            "{" PartitionSplits "}"[last] ";"
                         {
                             // create PartitionEnumeratorSymbol for upper partition interval
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
                             string upper_split_point = "max";
-                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @last);
 
                             // No valid partition context
                             pc.set_partition_context( nullptr );
@@ -677,7 +677,7 @@ PartitionSplits:
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
                             string upper_split_point = $SignedNumericLiteral->value();
-                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @SignedNumericLiteral);
                             pc.counter1++;  // counter for partition split points
                         }
       | PartitionSplits "," SignedNumericLiteral
@@ -686,7 +686,7 @@ PartitionSplits:
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
                             string upper_split_point = $SignedNumericLiteral->value();
-                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point);
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @SignedNumericLiteral);
                             pc.counter1++;  // counter for partition split points
                         }
 	;
