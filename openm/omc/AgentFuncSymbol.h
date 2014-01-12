@@ -28,8 +28,8 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    AgentFuncSymbol(Symbol *sym, const Symbol *agent)
-        : AgentMemberSymbol(sym, agent)
+    AgentFuncSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
+        : AgentMemberSymbol(sym, agent, decl_loc)
     {
     }
 

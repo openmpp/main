@@ -34,8 +34,8 @@ public:
     * @param   time_function   The symbol for the associated event time function.
     */
 
-    AgentEventSymbol(Symbol *sym, const Symbol *agent, const Symbol *time_function)
-        : AgentMemberSymbol(sym, agent)
+    AgentEventSymbol(Symbol *sym, const Symbol *agent, const Symbol *time_function, yy::location decl_loc = yy::location())
+        : AgentMemberSymbol(sym, agent, decl_loc)
         , time_function(time_function->get_rpSymbol())
     {
     }

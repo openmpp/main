@@ -903,7 +903,7 @@ AnyLiteral:
 Decl_AgentFunction:
       "void" SYMBOL "(" ")" ";"
                         {
-                            auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context() );
+                            auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), @SYMBOL );
                         }
     ;
 
@@ -912,10 +912,10 @@ Decl_AgentEvent:
                         {
                             auto *agent = pc.get_agent_context();
                             // create agent event symbol
-                            auto *event = new AgentEventSymbol( $implement_func, agent, $time_func );
+                            auto *event = new AgentEventSymbol( $implement_func, agent, $time_func, @implement_func );
                             // also create associated AgentEventTimeSymbol
                             string member_name = AgentEventTimeSymbol::member_name( event );
-                            auto *sym = new AgentEventTimeSymbol( member_name, agent, event );
+                            auto *sym = new AgentEventTimeSymbol( member_name, agent, event, @time_func );
                         }
     ;
 

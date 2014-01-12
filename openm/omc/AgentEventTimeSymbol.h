@@ -24,8 +24,8 @@ private:
     typedef AgentCallbackMemberSymbol super;
 
 public:
-    AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *event)
-        : AgentCallbackMemberSymbol(member_name, agent, token::TK_Time)
+    AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *event, yy::location decl_loc = yy::location())
+        : AgentCallbackMemberSymbol(member_name, agent, token::TK_Time, decl_loc)
         , event(event->get_rpSymbol())
     {
     }
