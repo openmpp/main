@@ -18,12 +18,6 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    PartitionEnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, string upper_split_point)
-        : EnumeratorSymbol(sym, enumeration, ordinal)
-        , upper_split_point(upper_split_point)
-    {
-    }
-
     PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point)
         : EnumeratorSymbol(unm, enumeration, ordinal)
         , upper_split_point(upper_split_point)

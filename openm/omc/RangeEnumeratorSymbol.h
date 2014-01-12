@@ -18,12 +18,6 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    RangeEnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, int lower_bound)
-        : EnumeratorSymbol(sym, enumeration, ordinal)
-        , lower_bound(lower_bound)
-    {
-    }
-
     RangeEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, int lower_bound)
         : EnumeratorSymbol(unm, enumeration, ordinal)
         , lower_bound(lower_bound)
