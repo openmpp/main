@@ -18,6 +18,7 @@
 #include "TypedefTypeSymbol.h"
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
+#include "BoolEnumeratorSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
@@ -499,8 +500,8 @@ void Symbol::populate_default_symbols()
 
     // bool built-in type
     Symbol *sym_enum = new EnumTypeSymbol(token_to_string(token::TK_bool), kind_of_type::logical_type);
-    sym = new EnumeratorSymbol(token_to_string(token::TK_false), sym_enum, 0);
-    sym = new EnumeratorSymbol(token_to_string(token::TK_true), sym_enum, 1);
+    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), sym_enum, 0);
+    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_true), sym_enum, 1);
 
 
     //sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);

@@ -102,6 +102,7 @@
     <ClInclude Include="AgentSymbol.h" />
     <ClInclude Include="AgentVarSymbol.h" />
     <ClInclude Include="ast.h" />
+    <ClInclude Include="BoolEnumeratorSymbol.h" />
     <ClInclude Include="BuiltinAgentVarSymbol.h" />
     <ClInclude Include="ClassificationSymbol.h" />
     <ClInclude Include="CodeBlock.h" />
