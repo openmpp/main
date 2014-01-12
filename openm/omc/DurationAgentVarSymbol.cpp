@@ -47,7 +47,7 @@ CodeBlock DurationAgentVarSymbol::cxx_declaration_agent()
 }
 
 // static
-Symbol * DurationAgentVarSymbol::get_symbol(const Symbol *agent)
+Symbol * DurationAgentVarSymbol::create_symbol(const Symbol *agent)
 {
     Symbol *sym = nullptr;
     string nm = DurationAgentVarSymbol::symbol_name(agent);

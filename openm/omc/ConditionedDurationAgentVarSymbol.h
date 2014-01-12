@@ -47,7 +47,7 @@ public:
 
     static string symbol_name(const Symbol* agent, const Symbol* observed, const Literal* constant);
 
-    static Symbol * get_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant);
+    static Symbol * create_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant);
 
     void post_parse(int pass);
 

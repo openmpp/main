@@ -31,7 +31,7 @@ string ConditionedDurationAgentVarSymbol::symbol_name(const Symbol* agent, const
 }
 
 // static
-Symbol * ConditionedDurationAgentVarSymbol::get_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant)
+Symbol * ConditionedDurationAgentVarSymbol::create_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant)
 {
     Symbol *sym = nullptr;
     string nm = ConditionedDurationAgentVarSymbol::symbol_name(agent, observed, constant);

@@ -326,10 +326,14 @@ blank       [ \t\r]
 				/* find existing symbol or create a new one */
                 Symbol *sym = nullptr;
                 Symbol *agent = pc.get_agent_context();
-                if ( agent == nullptr )
-				    sym = Symbol::get_symbol( yytext );
-                else
-				    sym = Symbol::get_symbol( yytext, agent );
+                if (agent == nullptr) {
+                    sym = Symbol::get_symbol(yytext);
+                    if (!sym) sym = new Symbol(yytext, *yylloc);
+                }
+                else {
+                    sym = Symbol::get_symbol(yytext, agent);
+                    if (!sym) sym = new Symbol(yytext, agent, *yylloc);
+                }
 				yylval->pval_Symbol = sym;
 				return token::SYMBOL;
 			}

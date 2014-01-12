@@ -33,14 +33,14 @@ public:
     static string symbol_name(const Symbol *agent);
 
     /**
-    * Get a symbol for a derived agentvar of form duration()
+    * Create a symbol for a derived agentvar of form duration()
     *
     * @param   agent   The agent.
     *
     * @return  The symbol.
     */
 
-    static Symbol * get_symbol(const Symbol *agent);
+    static Symbol * create_symbol(const Symbol *agent);
 
     void post_parse(int pass);
 

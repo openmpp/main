@@ -112,24 +112,25 @@ public:
      * @param unm The unique name for the symbol.
      */
 
-    Symbol( const string unm )
+    Symbol(string unm, yy::location decl_loc = yy::location())
         : unique_name( unm )
         , name ( unm )
-        {
-            auto it = symbols.find( unique_name );
-            if (it == symbols.end() ) {
-                // add to symbol table
-                symbol_map_value_type element( unique_name, this );
-                symbols.insert( element );
-            }
-            else {
-                // redeclaration or override of default - morph to new symbol
-                // delete old symbol
-                delete it->second;
-                // replace with new symbol
-                it->second = this;
-            }
+        , decl_loc(decl_loc)
+    {
+        auto it = symbols.find( unique_name );
+        if (it == symbols.end() ) {
+            // add to symbol table
+            symbol_map_value_type element( unique_name, this );
+            symbols.insert( element );
         }
+        else {
+            // redeclaration or override of default - morph to new symbol
+            // delete old symbol
+            delete it->second;
+            // replace with new symbol
+            it->second = this;
+        }
+    }
 
 
     /**
@@ -148,24 +149,25 @@ public:
      * @param agent The agent qualifying the name.
      */
 
-    Symbol( const string nm, const Symbol *agent )
-        : unique_name( symbol_name(nm, agent) )
+    Symbol(const string nm, const Symbol *agent, yy::location decl_loc = yy::location())
+        : unique_name(symbol_name(nm, agent))
         , name ( nm )
-        {
-            auto it = symbols.find( unique_name );
-            if (it == symbols.end() ) {
-                // add to symbol table
-                symbol_map_value_type element( unique_name, this );
-                symbols.insert( element );
-            }
-            else {
-                // redeclaration or override of default - morph to new symbol
-                // delete old symbol
-                delete it->second;
-                // replace with new symbol
-                it->second = this;
-            }
+        , decl_loc(decl_loc)
+    {
+        auto it = symbols.find( unique_name );
+        if (it == symbols.end() ) {
+            // add to symbol table
+            symbol_map_value_type element( unique_name, this );
+            symbols.insert( element );
         }
+        else {
+            // redeclaration or override of default - morph to new symbol
+            // delete old symbol
+            delete it->second;
+            // replace with new symbol
+            it->second = this;
+        }
+    }
 
 
     /**
@@ -178,17 +180,18 @@ public:
      * @param [in,out] sym [in,out] Original symbol to be morphed.
      */
 
-    Symbol( Symbol*& sym )
-        : unique_name( sym->unique_name )
+    Symbol(Symbol*& sym, yy::location decl_loc = yy::location())
+        : unique_name(sym->unique_name)
         , name ( sym->name )
-        {
-            // find symbol table entry for the existing symbol
-            auto it = symbols.find( unique_name );
-            // delete existing symbol
-            delete it->second;
-            // replace with new symbol
-            it->second = this;
-        }
+        , decl_loc(decl_loc)
+    {
+        // find symbol table entry for the existing symbol
+        auto it = symbols.find( unique_name );
+        // delete existing symbol
+        delete it->second;
+        // replace with new symbol
+        it->second = this;
+    }
 
 
     /**
@@ -375,6 +378,17 @@ public:
      */
 
 	string name;
+
+
+    /**
+     * The declaration location.
+     * 
+     * Set using location information of syntactic
+     * elements (from bison) during parsing.
+     * 
+     */
+
+    yy::location decl_loc;
 
     // static helper functions
 	static bool exists( const string& unm );

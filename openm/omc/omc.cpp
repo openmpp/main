@@ -272,7 +272,8 @@ int main(int argc, char * argv[])
             symbols_ordered.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
             unsigned symbols_count = symbols_ordered.size();
         }
-        theLog->logMsg("Code generation");
+
+        theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code
         ofstream om_agents_t(outDir + "om_types.h", ios_base::out | ios_base::trunc | ios_base::binary);

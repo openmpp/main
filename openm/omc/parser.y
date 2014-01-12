@@ -1151,11 +1151,11 @@ AgentVar:
 DerivedAgentVar:
     TK_duration "(" ")"
                         {
-                            $DerivedAgentVar = DurationAgentVarSymbol::get_symbol( pc.get_agent_context() );
+                            $DerivedAgentVar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
                         }
     | TK_duration "(" SYMBOL[agentvar] "," AnyLiteral[constant] ")"
                         {
-                            $DerivedAgentVar = ConditionedDurationAgentVarSymbol::get_symbol( pc.get_agent_context(), $agentvar, $constant );
+                            $DerivedAgentVar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
                         }
 	;
 

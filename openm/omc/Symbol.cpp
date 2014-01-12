@@ -555,7 +555,7 @@ string Symbol::symbol_name( const string& member, const Symbol *agent )
  *
  * @param   unm The unique name
  *
- * @return  The symbol.
+ * @return  The symbol, or nullptr if not found
  */
 
 Symbol *Symbol::get_symbol(const string& unm)
@@ -564,8 +564,6 @@ Symbol *Symbol::get_symbol(const string& unm)
 	auto it = symbols.find( unm );
     if ( it != symbols.end() ) 
         sym = it->second;
-    else
-        sym = new Symbol( unm );
 
     return sym;
 }
@@ -576,7 +574,7 @@ Symbol *Symbol::get_symbol(const string& unm)
  * @param   member  The member name.
  * @param   agent   The agent.
  *
- * @return  The symbol.
+ * @return  The symbol, or nullptr if not found
  */
 
 Symbol *Symbol::get_symbol( const string& member, const Symbol *agent )
@@ -586,8 +584,6 @@ Symbol *Symbol::get_symbol( const string& member, const Symbol *agent )
 	auto it = symbols.find( unm );
 	if (it != symbols.end() )
         sym = it->second;
-    else
-        sym = new Symbol( member, agent );
 
     return sym;
 }
