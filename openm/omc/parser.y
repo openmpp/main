@@ -631,13 +631,13 @@ ClassificationLevels:
       SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
-                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
+                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             pc.counter1++;  // counter for classification levels
                         }
       | ClassificationLevels "," SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
-                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1);
+                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             pc.counter1++;  // counter for classification levels
                         }
 	;
@@ -646,7 +646,7 @@ Decl_partition:
       "partition" SYMBOL[partition]
                         {
                             // Morph Symbol to PartitionSymbol
-                            $partition = new PartitionSymbol( $partition );
+                            $partition = new PartitionSymbol( $partition, @partition );
                             // Set partition context for body of partition declaration
                             pc.set_partition_context($partition);
                             // initialize working counter used for partition split points

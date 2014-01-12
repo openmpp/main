@@ -29,8 +29,8 @@ public:
     * @param [in,out] sym The symbol to be morphed.
     */
 
-    PartitionSymbol(Symbol *sym)
-        : EnumTypeSymbol(sym, kind_of_type::partition_type)
+    PartitionSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+        : EnumTypeSymbol(sym, kind_of_type::partition_type, decl_loc)
     {
     }
 
