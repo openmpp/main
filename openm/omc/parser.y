@@ -49,8 +49,8 @@ extern char *yytext;
 
 %initial-action
 {
-  // Initialize location.
-  @$.begin.filename = @$.end.filename = &drv.file;
+    // Initialize location.
+    @$.begin.filename = @$.end.filename = drv.pfile;
 };
 
 %debug

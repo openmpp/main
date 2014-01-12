@@ -37,23 +37,31 @@ public:
     // pointer to output stream for pass-through / mark-up
     ofstream *outside;
 
+    // pointer to the input source file name (persistent)
+    string *pfile;
+
+    // input source file (transient)
+    string file;
+
+    // Stem of the file name (used later to generated default ModelName)
+    string stem;
+
     int result;
 
-  // Handling the scanner.
-  void scan_begin ();
-  void scan_end ();
-  bool trace_scanning;
+    // Handling the scanner.
+    void scan_begin ();
+    void scan_end ();
+    bool trace_scanning;
 
-	// Run the parser.  Return 0 on success.
-  int parse (const string& in_filename, const string& module_name, ofstream *markup_stream);
+    // Run the parser.  Return 0 on success.
+    int parse(string *in_filename, const string& module_name, const string& file_stem, ofstream *markup_stream);
 
-    string file;
-    string stem;
     bool trace_parsing;
 
     // Error handling.
     void error (const yy::location& l, const string& m);
     void error (const string& m);
+
 private:
     ParseContext &pc;
 };

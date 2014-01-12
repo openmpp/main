@@ -517,13 +517,12 @@ blank       [ \t\r]
 
 void Driver::scan_begin ()
 {
-  yy_flex_debug = trace_scanning;
-  if (file.empty () || file == "-")
-    yyin = stdin;
-  else if (!(yyin = fopen (file.c_str (), "r")))
-    {
-      error ("cannot open " + file + ": " + strerror(errno));
-      exit (EXIT_FAILURE);
+    yy_flex_debug = trace_scanning;
+    if (file.empty () || file == "-")
+        yyin = stdin;
+    else if (!(yyin = fopen (file.c_str (), "r"))) {
+        error ("cannot open " + file + ": " + strerror(errno));
+        exit (EXIT_FAILURE);
     }
 
     // detect and discard UTF-8 BOM if present

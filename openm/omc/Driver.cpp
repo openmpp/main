@@ -26,17 +26,17 @@ Driver::~Driver ()
 {
 }
 
-int Driver::parse (const string& in_filename, const string& mname, ofstream *outside_output)
+int Driver::parse(string *in_filename, const string& module_name, const string& file_stem, ofstream *markup_stream)
 {
-    pc.InitializeForModule();
-	file = in_filename;
-	stem = mname;
-
-	outside = outside_output;
+    pfile = in_filename;
+    file = *pfile;
+    stem = file_stem;
+    outside = markup_stream;
 
 	// Create symbol for this module.
-	// This symbol can be overidden later by model code in the module
-    auto sym = new ModuleSymbol( file );
+    auto sym = new ModuleSymbol(module_name);
+
+    pc.InitializeForModule();
 
     scan_begin ();
     yy::parser parser (*this, pc);
