@@ -66,8 +66,11 @@ actor Person            //EN Individual
 	*/
 
 
+    uint my_uint = { 0 };
 	
-	event timeMortalityEvent, MortalityEvent;	//EN Mortality event
+    Time my_first_happy_time;
+
+    event timeMortalityEvent, MortalityEvent;	//EN Mortality event
 
 	//LABEL(Person.Start, EN) Starts the actor
 	void Start();

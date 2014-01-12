@@ -787,13 +787,40 @@ Decl_SimpleAgentVar:
                         {
                             auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
                         }
+    | SYMBOL[type] SYMBOL[agentvar] ";"
+                        {
+                            // $type is a classification or range
+                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr );
+                        }
+    | SYMBOL[type] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
+                        {
+                            // $type is a classification or range
+                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
+                        }
+    | SYMBOL[type] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
+                        {
+                            // $type is a classification or range
+                            // $enumerator is an enumerator of a classification
+                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
+                        }
     ;
 
 FundamentalType:
       "int"
-    | "double"
+    | "char"
+    | "short"
+    | "long"
+    | "uint"
+    | "uchar"
+    | "ushort"
+    | "ulong"
     | "float"
+    | "double"
     | "bool"
+    | "integer"
+    | "counter"
+    | "real"
+    | "Time"
 	;
 
 BoolLiteral:
