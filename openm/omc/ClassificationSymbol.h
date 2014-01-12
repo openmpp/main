@@ -29,8 +29,8 @@ public:
      * @param [in,out] sym The symbol to be morphed.
      */
 
-    ClassificationSymbol(Symbol *sym)
-        : EnumTypeSymbol(sym, kind_of_type::classification_type)
+    ClassificationSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+        : EnumTypeSymbol(sym, kind_of_type::classification_type, decl_loc)
     {
     }
 

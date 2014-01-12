@@ -30,8 +30,8 @@ public:
      * @param value The token for the model type, e.g. token::KW_case_based.
      */
 
-    ModelTypeSymbol(token_type value, bool just_in_time = false)
-        : Symbol(token_to_string(token::TK_model_type))
+    ModelTypeSymbol(token_type value, bool just_in_time = false, yy::location decl_loc = yy::location())
+        : Symbol(token_to_string(token::TK_model_type), decl_loc)
         , value(value)
         , just_in_time(just_in_time)
     {

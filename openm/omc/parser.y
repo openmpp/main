@@ -563,11 +563,11 @@ Decl_integer_type:
 Decl_model_type:
           "model_type" ModelType[type_to_use] ";"
                         {
-                            auto *sym = new ModelTypeSymbol( (token_type) $type_to_use );
+                            auto *sym = new ModelTypeSymbol((token_type) $type_to_use, false, @$);
                         }
         | "model_type" ModelType[type_to_use] "," "just_in_time" ";"
                         {
-                            auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true);
+                            auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true, @$);
                         }
         | "model_type" error ";"
                         {
@@ -596,7 +596,7 @@ Decl_version:
                             int sub_sub_minor = stoi($sub_sub_minor->value());
                             delete $sub_sub_minor;
 
-                            auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor );
+                            auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor, @$ );
                         }
       | "version" error ";"
                         {
@@ -609,7 +609,7 @@ Decl_classification:
       "classification" SYMBOL[classification]
                         {
                             // Morph Symbol to ClassificationSymbol
-                            $classification = new ClassificationSymbol( $classification );
+                            $classification = new ClassificationSymbol( $classification, @classification );
                             // Set classification context for body of classification declaration
                             pc.set_classification_context( $classification );
                             // initialize working counter used for classification levels

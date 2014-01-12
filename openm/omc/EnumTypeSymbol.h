@@ -30,8 +30,8 @@ public:
      * @param dicId        The kind of type.
      */
 
-    EnumTypeSymbol(Symbol *sym, int dicId)
-        : TypeSymbol(sym)
+    EnumTypeSymbol(Symbol *sym, int dicId, yy::location decl_loc = yy::location())
+        : TypeSymbol(sym, decl_loc)
         , dicId(dicId)
     {
     }

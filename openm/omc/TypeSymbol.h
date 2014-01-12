@@ -45,8 +45,8 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TypeSymbol(Symbol *sym)
-        : Symbol(sym)
+    TypeSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+        : Symbol(sym, decl_loc)
     {
         type_id = next_type_id;
         next_type_id++;
