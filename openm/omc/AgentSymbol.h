@@ -34,8 +34,8 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    AgentSymbol(Symbol *sym)
-        : Symbol(sym)
+    AgentSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+        : Symbol(sym, decl_loc)
         , pp_time(nullptr)
     {
         create_builtin_symbols();

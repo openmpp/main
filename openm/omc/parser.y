@@ -748,7 +748,7 @@ Decl_agent:
                         {
                             // Morph Symbol (or AgentSymbol) to AgentSymbol
                             // Note that re-morphing of agent symbols is harmless
-                            $agent = new AgentSymbol( $agent );
+                            $agent = new AgentSymbol( $agent, @agent );
                             // Set agent context for body of agent declaration
                             pc.set_agent_context( $agent );
                         }
