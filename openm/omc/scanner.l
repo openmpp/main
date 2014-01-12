@@ -301,7 +301,8 @@ blank       [ \t\r]
                 pc.comment_location = *yylloc;
 
                 /* location maintenance */
-				yylloc->lines(1);
+                yylloc->lines(1);
+                yylloc->step();
 
                 /* build comment body, does not include comment introducer or trailing newline */
                 pc.comment_body = yytext + 2;

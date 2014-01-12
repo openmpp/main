@@ -487,12 +487,12 @@ Languages:
       SYMBOL
                         {
                             // morph existing symbol to LanguageSymbol
-                            auto *sym = new LanguageSymbol( $SYMBOL );
+                            auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
 	| Languages "," SYMBOL
                         {
                             // morph existing symbol to LanguageSymbol
-                            auto *sym = new LanguageSymbol( $SYMBOL );
+                            auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
 	;
 
@@ -503,6 +503,7 @@ Decl_time_type:
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_Time);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
+                            sym->decl_loc = @$;
                         }
     | "time_type" error ";"
                         {
@@ -518,7 +519,8 @@ Decl_real_type:
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_real);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
-      }
+                            sym->decl_loc = @$;
+                        }
     | "real_type" error ";"
                         {
                             // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
@@ -533,7 +535,8 @@ Decl_counter_type:
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_counter);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
-      }
+                            sym->decl_loc = @$;
+                        }
     | "counter_type" error ";"
                         {
                             // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
@@ -548,7 +551,8 @@ Decl_integer_type:
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_integer);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
-      }
+                            sym->decl_loc = @$;
+                        }
     | "integer_type" error ";"
                         {
                             // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
