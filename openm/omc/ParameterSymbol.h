@@ -17,8 +17,8 @@ private:
     typedef Symbol super;
 
 public:
-    ParameterSymbol(Symbol *sym, token_type type)
-        : Symbol(sym)
+    ParameterSymbol(Symbol *sym, token_type type, yy::location decl_loc = yy::location())
+        : Symbol(sym, decl_loc)
         , type(type)
     {
     }

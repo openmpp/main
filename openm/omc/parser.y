@@ -701,7 +701,7 @@ Decl_range:
                             delete $upper_bound;
 
                             // Morph Symbol to RangeSymbol
-                            $range = new RangeSymbol( $range, lower_bound, upper_bound );
+                            $range = new RangeSymbol( $range, lower_bound, upper_bound, @range );
                         }
       | "range" "{" error "}" ";"
                         {
@@ -727,7 +727,7 @@ Parameters:
 Decl_parameter:
       ParameterType[type] SYMBOL ";"
                         {
-                            auto *sym = new ParameterSymbol( $SYMBOL, (token_type)$type );
+                            auto *sym = new ParameterSymbol( $SYMBOL, (token_type)$type, @SYMBOL );
                         }
 	| error ";"
                         {

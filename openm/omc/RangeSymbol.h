@@ -29,8 +29,8 @@ public:
     * @param [in,out] sym The symbol to be morphed.
     */
 
-    RangeSymbol(Symbol *sym, int lower_bound, int upper_bound)
-        : EnumTypeSymbol(sym, kind_of_type::range_type)
+    RangeSymbol(Symbol *sym, int lower_bound, int upper_bound, yy::location decl_loc = yy::location())
+        : EnumTypeSymbol(sym, kind_of_type::range_type, decl_loc)
         , lower_bound(lower_bound)
         , upper_bound(upper_bound)
     {
