@@ -923,7 +923,7 @@ Decl_table:
       "table" SYMBOL[agent] SYMBOL[table] 
                         {
                             // morph $table to TableSymbol
-                            $table = new TableSymbol( $table, $agent );
+                            $table = new TableSymbol( $table, $agent, @table );
                             // Set agent context and table context for body of table declaration
                             pc.set_agent_context( $agent );
                             pc.set_table_context( $table );
@@ -954,12 +954,12 @@ Decl_table:
 TableExpressions:
       ExprForTable[root]
                         {
-                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1 );
+                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
                             pc.counter1++;  // counter for expressions
                         }
     | TableExpressions "," ExprForTable[root]
                         {
-                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1 );
+                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
                             pc.counter1++;  // counter for expressions
                         }
 	;

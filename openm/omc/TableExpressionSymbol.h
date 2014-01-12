@@ -20,8 +20,8 @@ private:
     typedef Symbol super;
 
 public:
-    TableExpressionSymbol(Symbol *table, ExprForTable *root, int index)
-        : Symbol(symbol_name(table, index))
+    TableExpressionSymbol(Symbol *table, ExprForTable *root, int index, yy::location decl_loc = yy::location())
+        : Symbol(symbol_name(table, index), decl_loc)
         , root(root)
         , index(index)
         , table(table->get_rpSymbol())

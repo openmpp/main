@@ -28,8 +28,8 @@ private:
     typedef Symbol super;
 
 public:
-    TableSymbol(Symbol *sym, const Symbol *agent)
-        : Symbol(sym)
+    TableSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
+        : Symbol(sym, decl_loc)
         , agent(agent->get_rpSymbol())
     {
     }
