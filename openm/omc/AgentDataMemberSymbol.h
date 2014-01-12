@@ -19,14 +19,14 @@ private:
     typedef AgentMemberSymbol super;
 
 public:
-    AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, token_type type)
-        : AgentMemberSymbol(sym, agent)
+    AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+        : AgentMemberSymbol(sym, agent, decl_loc)
         , type(type)
     {
     }
 
-    AgentDataMemberSymbol(const string member_name, const Symbol *agent, token_type type)
-        : AgentMemberSymbol(member_name, agent)
+    AgentDataMemberSymbol(const string member_name, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+        : AgentMemberSymbol(member_name, agent, decl_loc)
         , type(type)
     {
     }

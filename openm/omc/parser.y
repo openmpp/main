@@ -785,11 +785,11 @@ AgentMember:
 Decl_SimpleAgentVar:
       FundamentalType[type] SYMBOL ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, nullptr );
+                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, nullptr, @SYMBOL );
                         }
     | FundamentalType[type] SYMBOL "=" "{" AnyLiteral "}" ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
+                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral, @SYMBOL );
                         }
     | SYMBOL[type] SYMBOL[agentvar] ";"
                         {

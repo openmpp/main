@@ -16,13 +16,13 @@ private:
     typedef AgentCallbackMemberSymbol super;
 
 public:
-    AgentVarSymbol(Symbol *sym, const Symbol *agent, token_type type)
-        : AgentCallbackMemberSymbol(sym, agent, type)
+    AgentVarSymbol(Symbol *sym, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+        : AgentCallbackMemberSymbol(sym, agent, type, decl_loc)
     {
     }
 
-    AgentVarSymbol(const string member_name, const Symbol *agent, token_type type)
-        : AgentCallbackMemberSymbol(member_name, agent, type)
+    AgentVarSymbol(const string member_name, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+        : AgentCallbackMemberSymbol(member_name, agent, type, decl_loc)
     {
     }
 
