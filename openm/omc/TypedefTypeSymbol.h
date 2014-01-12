@@ -83,8 +83,6 @@ public:
 
     CodeBlock cxx_declaration_global();
 
-    CodeBlock cxx_definition_global();
-
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
 

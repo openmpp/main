@@ -27,30 +27,7 @@ CodeBlock TypedefTypeSymbol::cxx_declaration_global()
         h += "typedef " + typedef_string + " " + name + ";";
     }
 
-    if ( type == token::TK_Time ) {
-        h += "typedef " + typedef_string + " TIME; // for Modgen models";
-        // Time 'literals'
-        h += "extern const Time time_infinite;";
-        h += "extern const Time TIME_INFINITE; // for Modgen models";
-        h += "";
-    }
     return h;
-}
-
-CodeBlock TypedefTypeSymbol::cxx_definition_global()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_global();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
- 
-    if (type == token::TK_Time) {
-        // Time 'literals'
-        c += "const Time time_infinite = 32767;";
-        c += "const Time TIME_INFINITE = 32767; // for Modgen models";
-        c += "";
-    }
-    return c;
 }
 
 void TypedefTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)

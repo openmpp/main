@@ -132,6 +132,7 @@
     <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
     <ClInclude Include="TableExpressionSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
+    <ClInclude Include="TimeTypedefTypeSymbol.h" />
     <ClInclude Include="TypedefTypeSymbol.h" />
     <ClInclude Include="TypeSymbol.h" />
     <ClInclude Include="VersionSymbol.h" />
@@ -178,6 +179,7 @@
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
     <ClCompile Include="TableExpressionSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
+    <ClCompile Include="TimeTypedefTypeSymbol.cpp" />
     <ClCompile Include="TypedefTypeSymbol.cpp" />
     <ClCompile Include="TypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />

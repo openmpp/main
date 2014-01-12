@@ -15,6 +15,7 @@
 #include "ModelTypeSymbol.h"
 #include "TypeSymbol.h"
 #include "TypedefTypeSymbol.h"
+#include "TimeTypedefTypeSymbol.h"
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolEnumeratorSymbol.h"

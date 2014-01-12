@@ -16,6 +16,7 @@
 #include "VersionSymbol.h"
 #include "ModelTypeSymbol.h"
 #include "TypedefTypeSymbol.h"
+#include "TimeTypedefTypeSymbol.h"
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolEnumeratorSymbol.h"
@@ -490,7 +491,7 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_real, token::TK_double);
     sym = new TypedefTypeSymbol(token::TK_float);
     sym = new TypedefTypeSymbol(token::TK_double);
-    sym = new TypedefTypeSymbol(token::TK_Time, token::TK_double);
+    sym = new TimeTypedefTypeSymbol(token::TK_double);
     sym = new TypedefTypeSymbol(token::TK_rate);
     sym = new TypedefTypeSymbol(token::TK_cumrate);
     sym = new TypedefTypeSymbol(token::TK_haz1rate);
