@@ -422,9 +422,9 @@ unordered_set<string> Symbol::om_developer_functions =
     "UserTables",
 };
 
-forward_list<string> Symbol::cxx_comments;
+comment_map_type Symbol::cxx_comments;
 
-forward_list<string> Symbol::c_comments;
+comment_map_type Symbol::c_comments;
 
 void Symbol::post_parse(int pass)
 {
@@ -718,16 +718,16 @@ void Symbol::post_parse_all()
 
 }
 
-void Symbol::process_cxx_comment(const string& cmt, yy::location& loc)
+void Symbol::process_cxx_comment(string cmt, yy::location loc)
 {
-    // TODO just a placeholder container
-    cxx_comments.push_front(cmt);
+    comment_map_value_type element(loc, cmt);
+    cxx_comments.insert(element);
 }
 
-void Symbol::process_c_comment(const string& cmt, yy::location& loc)
+void Symbol::process_c_comment(string cmt, yy::location loc)
 {
-    // TODO just a placeholder container
-    c_comments.push_front(cmt);
+    comment_map_value_type element(loc, cmt);
+    c_comments.insert(element);
 }
 
 bool Symbol::is_om_outer_keyword(const token_type& tok)

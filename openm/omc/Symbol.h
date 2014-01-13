@@ -66,6 +66,42 @@ typedef unordered_map<string, Symbol *> symbol_map_type;
 
 typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 
+
+// Specialization of std::hash for yy::location.
+// Required for creating unordered_map for lookup of comment
+// text by location.
+
+namespace std {
+    template <>
+    struct hash<yy::location>
+    {
+        size_t operator()(const yy::location& k) const
+        {
+            // Comments are uniquely determined by first position in location
+            return (
+                      (hash<unsigned int>()(k.begin.column))
+                    ^ (hash<unsigned int>()(k.begin.line) << 7) // assume max 128 columns
+                    ^ (hash<unsigned int>()((unsigned char)k.begin.filename) << 10) // assume max 1024 lines 
+                   );
+        }
+    };
+}
+
+
+/**
+ * Defines an alias representing type of the comment map.
+ */
+
+typedef unordered_map<yy::location, string> comment_map_type;
+
+
+/**
+ * Defines an alias representing type of a pair in the comment map.
+ */
+
+typedef unordered_map<yy::location, string>::value_type comment_map_value_type;
+
+
 // ======================================================
 
 // TODO: Explain better the use of double indirection to persist of Symbols and allow morphing within the SYmbol class hierarchy.
@@ -383,9 +419,8 @@ public:
     /**
      * The declaration location.
      * 
-     * Set using location information of syntactic
-     * elements (from bison) during parsing.
-     * 
+     * Set using location information of syntactic elements (from bison) on object creationduring
+     * parsing.
      */
 
     yy::location decl_loc;
@@ -464,7 +499,7 @@ public:
      * @param [in,out] loc The source code location.
      */
 
-    static void process_cxx_comment(const string& cmt, yy::location& loc);
+    static void process_cxx_comment(string cmt, yy::location loc);
 
 
     /**
@@ -474,7 +509,7 @@ public:
      * @param [in,out] loc The source code location.
      */
 
-    static void process_c_comment(const string& cmt, yy::location& loc);
+    static void process_c_comment(string cmt, yy::location loc);
 
 
     /**
@@ -574,23 +609,21 @@ public:
 
 
     /**
-     * A list of all the C++ style single line comments in the model source code
+     * A map of all the C++ style single line comments in the model source code, indexed by location
      * 
-     * This is a place holder collection at the moment, for testing.
-     * It will be replaced by a collection which also includes source code location information.
+     * This map is used with other collections to retrieve a comment based on its location.
      */
 
-    static forward_list<string> cxx_comments;
+    static comment_map_type cxx_comments;
 
 
     /**
-    * A list of all the C style multi-line comments in the model source code
+    * A map of all the C style multi-line comments in the model source code, indexed by location
     *
-    * This is a place holder collection at the moment, for testing.
-    * It will be replaced by a collection which also includes source code location information.
+    * This map is used with other collections to retrieve a comment based on its location.
     */
 
-    static forward_list<string> c_comments;
+    static comment_map_type c_comments;
 
 
     /**
