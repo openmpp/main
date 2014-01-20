@@ -919,9 +919,9 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
                 if (equalNoCase(typeRow.name.c_str(), "uchar")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "ushort")) tblInf.valueTypeName = "SMALLINT";
                 if (equalNoCase(typeRow.name.c_str(), "ulong")) tblInf.valueTypeName = "BIGINT";
-                if (equalNoCase(typeRow.name.c_str(), "integer")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "counter")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "real")) tblInf.valueTypeName = "FLOAT";
+                //if (equalNoCase(typeRow.name.c_str(), "integer")) tblInf.valueTypeName = "INT";
+                //if (equalNoCase(typeRow.name.c_str(), "counter")) tblInf.valueTypeName = "INT";
+                //if (equalNoCase(typeRow.name.c_str(), "real")) tblInf.valueTypeName = "FLOAT";
                 if (equalNoCase(typeRow.name.c_str(), "float")) tblInf.valueTypeName = "FLOAT";
                 if (equalNoCase(typeRow.name.c_str(), "double")) tblInf.valueTypeName = "FLOAT";
                 // if (equalNoCase(typeRow.name.c_str(), "TIME")) tblInf.valueTypeName = "INT";
@@ -931,7 +931,7 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
                 // if (equalNoCase(typeRow.name.c_str(), "haz2rate")) tblInf.valueTypeName = "FLOAT";
                 // if (equalNoCase(typeRow.name.c_str(), "piece_linear")) tblInf.valueTypeName = "INT";
                 // if (equalNoCase(typeRow.name.c_str(), "file")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "logical")) tblInf.valueTypeName = "SMALLINT";
+                if (equalNoCase(typeRow.name.c_str(), "bool")) tblInf.valueTypeName = "SMALLINT";
                 break;
             }
 
