@@ -34,8 +34,11 @@ parameters
     //EN a float
     float a_float;
 
+    //EN a double
+    double a_double;
+
     //EN a switch
-    //bool a_switch;
+    bool a_switch;
 };
 
 actor Person            //EN Individual
