@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
+#include "TypedefTypeSymbol.h"
 
 /**
 * ParameterSymbol.
@@ -17,9 +18,9 @@ private:
     typedef Symbol super;
 
 public:
-    ParameterSymbol(Symbol *sym, token_type type, yy::location decl_loc = yy::location())
+    ParameterSymbol(Symbol *sym, Symbol *type_symbol, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , type(type)
+        , type_symbol(type_symbol->get_rpSymbol())
     {
     }
 
@@ -32,7 +33,23 @@ public:
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     // members
-    token_type type;
+    
+    /**
+    * Reference to pointer to type symbol
+    *
+    * Stable to symbol morphing during parse phase.
+    * Indirection is required because the type symbol might be a classification
+    * or range which has not yet been declared.
+    */
+
+    Symbol*& type_symbol;
+
+
+    /**
+     * Direct pointer to type symbol for post-parse convenience.
+     */
+
+    TypeSymbol *pp_type_symbol;
 
     /**
     * Numeric identifier.

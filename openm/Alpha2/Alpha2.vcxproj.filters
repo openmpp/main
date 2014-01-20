@@ -69,5 +69,8 @@
     <None Include="StartSimulation.ompp">
       <Filter>Model Source Files</Filter>
     </None>
+    <None Include="SyntaxProbes.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

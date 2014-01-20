@@ -7,28 +7,6 @@
 This module contains the basic information which defines the Person case.
 */
 
-classification SEX //EN Sex
-{
-    //EN Female
-    FEMALE,
-
-    //EN Male
-    MALE
-};
-
-partition AGE_GROUP //EN Age group
-{
-    0.5,
-    10,
-    20,
-    30
-};
-
-range YEARS //EN Year
-{
-    -10,
-    10
-};
 
 parameters 
 {
@@ -38,6 +16,7 @@ parameters
 		A constant hazard of death results in an exponential
 		survival function.
 	*/
+
 };
 
 actor Person            //EN Individual
@@ -64,11 +43,6 @@ actor Person            //EN Individual
 		Since the numeric value of TRUE is 1 and FALSE is 0, this variable
 		can also be used to count actors in tables.
 	*/
-
-
-    uint my_uint = { 0 };
-	
-    Time my_first_happy_time;
 
     event timeMortalityEvent, MortalityEvent;	//EN Mortality event
 

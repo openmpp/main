@@ -50,6 +50,8 @@ public:
     {
     }
 
+    const string get_initial_value() const;
+
     void post_parse(int pass);
 
     void populate_metadata(openm::MetaModelHolder & metaRows);

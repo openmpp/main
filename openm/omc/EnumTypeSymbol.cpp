@@ -14,6 +14,12 @@
 using namespace std;
 using namespace openm;
 
+const string EnumTypeSymbol::get_initial_value() const
+{
+    // initial value is first enumerator
+    return pp_enumerators.front()->name;
+};
+
 void EnumTypeSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

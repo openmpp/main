@@ -419,7 +419,7 @@ extern char *yytext;
 %left  "::"              // precedence 1
 
 %type  <val_token>      ModelType
-%type  <val_token>      ParameterType
+%type  <val_token>      ParameterAllowedType
 %type  <val_token>      ModgenCumulationOperator
 %type  <val_token>      TableAccumulator
 %type  <val_token>      TableIncrement
@@ -725,9 +725,11 @@ Parameters:
 	;
 
 Decl_parameter:
-      ParameterType[type] SYMBOL ";"
+      ParameterAllowedType SYMBOL ";"
                         {
-                            auto *sym = new ParameterSymbol( $SYMBOL, (token_type)$type, @SYMBOL );
+                            auto *type_symbol = TypedefTypeSymbol::get_typedef_symbol((token_type)$ParameterAllowedType);
+                            assert(type_symbol); // grammar guarantee
+                            auto *sym = new ParameterSymbol( $SYMBOL, type_symbol, @SYMBOL );
                         }
 	| error ";"
                         {
@@ -738,10 +740,18 @@ Decl_parameter:
                         }
 	;
 
-ParameterType:
-	  "int"
-	| "double"
-	;
+ParameterAllowedType:
+      "int"
+    | "char"
+    | "short"
+    | "long"
+    | "uint"
+    | "uchar"
+    | "ushort"
+    | "ulong"
+    | "float"
+    | "double"
+    ;
 
 Decl_agent:
       "agent" SYMBOL[agent]

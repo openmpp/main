@@ -36,6 +36,11 @@ public:
     {
     }
 
+    const string get_initial_value() const {
+        return to_string(lower_bound);
+    }
+
+
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_global();

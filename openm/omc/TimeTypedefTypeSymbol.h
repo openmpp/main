@@ -22,7 +22,7 @@ public:
     */
 
     TimeTypedefTypeSymbol(token_type kw1)
-        : TypedefTypeSymbol(token::TK_Time, kw1)
+        : TypedefTypeSymbol(token::TK_Time, kw1, "0")
     {
     }
 

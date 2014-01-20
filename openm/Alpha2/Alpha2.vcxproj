@@ -179,6 +179,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="StartSimulation.ompp" />
+    <None Include="SyntaxProbes.mpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

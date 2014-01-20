@@ -1,0 +1,47 @@
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(SyntaxProbes, EN) Probes for omc development and tssting
+
+classification SEX //EN Sex
+{
+    //EN Female
+    FEMALE,
+
+    //EN Male
+    MALE
+};
+
+partition AGE_GROUP //EN Age group
+{
+    0.5,
+    10,
+    20,
+    30
+};
+
+range YEARS //EN Year
+{
+    -10,
+    10
+};
+
+parameters
+{
+    //EN a long
+    long a_long;
+
+    //EN a float
+    float a_float;
+
+    //EN a switch
+    //bool a_switch;
+};
+
+actor Person            //EN Individual
+{
+    uint my_uint = { 0 };
+
+    Time my_first_happy_time;
+
+};

@@ -177,7 +177,7 @@ void CodeGen::do_ModelStartup()
 	c += "theLog->logMsg(\"Reading Parameters\");";
     for ( auto parameter : Symbol::pp_all_parameters ) {
         string name = parameter->name;
-    	string typ = Symbol::token_to_string( parameter->type );
+    	string typ = parameter->type_symbol->name;
 	    c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
     }
 	c += "}";

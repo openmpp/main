@@ -31,9 +31,10 @@ public:
     * @param type The token for the keyword of the type, e.g. token::KW_Time.
     */
 
-    TypedefTypeSymbol(token_type type)
+    TypedefTypeSymbol(token_type type, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
+        , initial_value(initial_value)
     {
         Set_keywords();
     }
@@ -45,9 +46,10 @@ public:
     * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_double.
     */
 
-    TypedefTypeSymbol(token_type type, token_type kw1)
+    TypedefTypeSymbol(token_type type, token_type kw1, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
+        , initial_value(initial_value)
     {
         Set_keywords(kw1);
     }
@@ -60,9 +62,10 @@ public:
     * @param kw2  Keyword #2 for the associated typedef, e.g. token::KW_int.
     */
 
-    TypedefTypeSymbol(token_type type, token_type kw1, token_type kw2)
+    TypedefTypeSymbol(token_type type, token_type kw1, token_type kw2, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
+        , initial_value(initial_value)
     {
         Set_keywords(kw1, kw2);
     }
@@ -81,6 +84,10 @@ public:
         keywords.push_back(kw2);
     }
 
+    const string get_initial_value() const {
+        return initial_value;
+    }
+
     CodeBlock cxx_declaration_global();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
@@ -91,6 +98,12 @@ public:
      */
 
     token_type type;
+
+    /**
+    * The initial value for a quantity of this type.
+    */
+
+    const string initial_value;
 
     /**
      * A list of keywords used to construct the typedef statement, e.g. TK_unsigned, TK_int

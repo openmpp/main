@@ -75,7 +75,7 @@ public:
     /**
     * Reference to pointer to agent.
     *
-    * Stable to symbol morhing during parse phase.
+    * Stable to symbol morphing during parse phase.
     */
 
     Symbol*& agent;

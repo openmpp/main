@@ -24,6 +24,10 @@ void ParameterSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
+            // assign direct pointer to type symbol for use post-parse
+            pp_type_symbol = dynamic_cast<TypeSymbol *>(type_symbol);
+            assert(pp_type_symbol);  //TODO throw instead - developer error if cast fails!
+
             // add this parameter to the complete list of parameters
             pp_all_parameters.push_back(this);
         }
@@ -39,8 +43,7 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    string parm_type = Symbol::token_to_string(type);
-    h += "extern " + parm_type + " " + name + ";";
+    h += "extern " + type_symbol->name + " " + name + ";";
     return h;
 }
 
@@ -50,8 +53,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    string parm_type = Symbol::token_to_string(type);
-    c += parm_type + " " + name + " = 0.0;";
+    c += type_symbol->name + " " + name + " = " + pp_type_symbol->get_initial_value() + ";";
     return c;
 }
 
@@ -69,9 +71,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     paramDic.rank = 0; // TODO: currently hard-coded to scalar parmaeters for alpha
 
     // get the type_id (e.g. 12) of the parameter data type (e.g. TK_double)
-    auto *sym = TypedefTypeSymbol::get_typedef_symbol(type);
-    assert(sym); // Initialization guarantee
-    paramDic.typeId = sym->type_id;
+    paramDic.typeId = pp_type_symbol->type_id;
 
     paramDic.isHidden = false; // TODO: not implemented
     paramDic.isGenerated = false; // TODO: not implemented

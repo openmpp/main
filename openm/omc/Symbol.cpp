@@ -478,26 +478,26 @@ void Symbol::populate_default_symbols()
 
     // types
 
-    sym = new TypedefTypeSymbol(token::TK_int);
-    sym = new TypedefTypeSymbol(token::TK_char);
-    sym = new TypedefTypeSymbol(token::TK_short);
-    sym = new TypedefTypeSymbol(token::TK_long);
-    sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int);
-    sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char);
-    sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short);
-    sym = new TypedefTypeSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long);
-    sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int);
-    sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int);
-    sym = new TypedefTypeSymbol(token::TK_real, token::TK_double);
-    sym = new TypedefTypeSymbol(token::TK_float);
-    sym = new TypedefTypeSymbol(token::TK_double);
+    sym = new TypedefTypeSymbol(token::TK_int, "0");
+    sym = new TypedefTypeSymbol(token::TK_char, "0");
+    sym = new TypedefTypeSymbol(token::TK_short, "0");
+    sym = new TypedefTypeSymbol(token::TK_long, "0");
+    sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
+    sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
+    sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
+    sym = new TypedefTypeSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long, "0");
+    sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int, "0");
+    sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int, "0");
+    sym = new TypedefTypeSymbol(token::TK_real, token::TK_double, "0");
+    sym = new TypedefTypeSymbol(token::TK_float, "0.0");
+    sym = new TypedefTypeSymbol(token::TK_double, "0.0");
     sym = new TimeTypedefTypeSymbol(token::TK_double);
-    sym = new TypedefTypeSymbol(token::TK_rate);
-    sym = new TypedefTypeSymbol(token::TK_cumrate);
-    sym = new TypedefTypeSymbol(token::TK_haz1rate);
-    sym = new TypedefTypeSymbol(token::TK_haz2rate);
-    sym = new TypedefTypeSymbol(token::TK_piece_linear);
-    sym = new TypedefTypeSymbol(token::TK_file);
+    sym = new TypedefTypeSymbol(token::TK_rate, "0");
+    sym = new TypedefTypeSymbol(token::TK_cumrate, "0");
+    sym = new TypedefTypeSymbol(token::TK_haz1rate, "0");
+    sym = new TypedefTypeSymbol(token::TK_haz2rate, "0");
+    sym = new TypedefTypeSymbol(token::TK_piece_linear, "0");
+    sym = new TypedefTypeSymbol(token::TK_file, "");
 
     // bool built-in type
     Symbol *sym_enum = new EnumTypeSymbol(token_to_string(token::TK_bool), kind_of_type::logical_type);
