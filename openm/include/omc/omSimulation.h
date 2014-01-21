@@ -25,6 +25,14 @@
 #define FALSE false
 #define WAIT( delta_time ) (time + (delta_time))
 
+// Implementation of old-style Modgen macros for properties of classifications and ranges
+#define MIN( symbol )				(symbol::min)
+#define MAX( symbol )				(symbol::max)
+#define SIZE( symbol )				(symbol::size)
+#define RANGE_POS( rname, val )     (((rname)val).index())
+#define COERCE( rname, val )        ((rname)val)
+#define WITHIN( rname, val )        (rname::within(val))
+
 // The following are temporary kludges
 #define WriteDebugLogEntry printf
 #define GetCaseSample() 0

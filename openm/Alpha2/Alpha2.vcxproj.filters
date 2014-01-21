@@ -43,6 +43,9 @@
     <ClInclude Include="..\include\omc\Range.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\omc\omSimulation.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">

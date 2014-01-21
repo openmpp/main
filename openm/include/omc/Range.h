@@ -12,7 +12,6 @@
 
 using namespace std;
 
-
 namespace mm {
 
     template<typename T, T min_val, T max_val>
@@ -32,14 +31,13 @@ namespace mm {
             if (!initialization_done) initialize();
         }
 
-        // initialize static helper arrays for range-based for iteration
+        // initialize static helper arrays for range-based for in model code
         void initialize()
         {
             for (int i = 0; i < size; ++i) {
                 indices[i] = i;
                 values[i] = i + min_val;
             }
-
             initialization_done = true;
         }
 
@@ -183,16 +181,16 @@ namespace mm {
         }
 
         // 0-based value for indexing
-        const int pos()
+        int index() const
         {
             return (int)value - (int)min_val;
         }
 
-        // methods for range-based for
-        Range begin() const { return min; }
-
-        // methods for range-based for
-        Range end() const { return max; }
+        // test if value falls within range limits
+        static bool within(int value)
+        {
+            return (value >= min_val) && (value <= max_val);
+        }
 
         // storage
         T value;

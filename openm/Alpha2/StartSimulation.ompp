@@ -9,7 +9,14 @@
 
 void StartSimulation(int id)
 {
-    YEARS my_range;
+    YEARS my_range = -2;
+
+    int n1 = MIN(YEARS);
+    int n2 = MAX(YEARS);
+    int n3 = SIZE(YEARS);
+    int n4 = RANGE_POS(YEARS, my_range);
+    bool b1 = WITHIN(YEARS, 50);
+    bool b2 = WITHIN(YEARS, 3);
 
     Person *thePerson = new Person;
 
