@@ -110,9 +110,6 @@ void CodeGen::do_preamble()
     c += "#include <typeinfo>";
     c += "#include \"omc/omSimulation.h\"";
     c += "";
-    c += "#include \"omc/Agent.cpp\" // defines for Agent static template members";
-	c += "#include \"omc/AgentVar.cpp\" // defines for AgentVar static members";
-	c += "#include \"omc/Event.cpp\" // defines for Event static members";
 
     // Get definition code associated with the model_type symbol (#include of framework code)
     c += model_type_symbol->cxx_definition_global();
