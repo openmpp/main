@@ -8,6 +8,7 @@
 #pragma once
 #include <list>
 #include "EnumTypeSymbol.h"
+#include "EnumeratorSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -37,7 +38,9 @@ public:
     }
 
     const string get_initial_value() const {
-        return to_string(lower_bound);
+        //return to_string(lower_bound);
+        // initial value is first enumerator
+        return pp_enumerators.front()->name;
     }
 
 

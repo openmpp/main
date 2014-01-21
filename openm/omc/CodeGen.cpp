@@ -105,7 +105,8 @@ void CodeGen::do_preamble()
                 " Time stamp = " + model_symbol->time_stamp
                 );
 	c += "";
-	c += "#include \"omc/omSimulation.h\"";
+    c += "#include <typeinfo>";
+    c += "#include \"omc/omSimulation.h\"";
     c += "";
     c += "#include \"omc/Agent.cpp\" // defines for Agent static template members";
 	c += "#include \"omc/AgentVar.cpp\" // defines for AgentVar static members";
@@ -177,7 +178,14 @@ void CodeGen::do_ModelStartup()
 	c += "theLog->logMsg(\"Reading Parameters\");";
     for ( auto parameter : Symbol::pp_all_parameters ) {
         string name = parameter->name;
-    	string typ = parameter->type_symbol->name;
+        string typ;
+        if (parameter->pp_is_enum) {
+            // enum types have underlying type 'int'
+            typ = "int";
+        }
+        else {
+            typ = parameter->type_symbol->name;
+        }
 	    c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
     }
 	c += "}";

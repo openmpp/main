@@ -39,6 +39,15 @@ parameters
 
     //EN a switch
     bool a_switch;
+
+    //EN a SEX
+    SEX a_sex;
+
+    //EN a YEARS
+    YEARS a_years;
+
+    //EN a AGE_GROUP
+    AGE_GROUP a_age_group;
 };
 
 actor Person            //EN Individual

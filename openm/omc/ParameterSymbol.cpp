@@ -9,6 +9,9 @@
 #include "ParameterSymbol.h"
 #include "LanguageSymbol.h"
 #include "TypedefTypeSymbol.h"
+#include "ClassificationSymbol.h"
+#include "RangeSymbol.h"
+#include "PartitionSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -26,7 +29,20 @@ void ParameterSymbol::post_parse(int pass)
         {
             // assign direct pointer to type symbol for use post-parse
             pp_type_symbol = dynamic_cast<TypeSymbol *>(type_symbol);
-            assert(pp_type_symbol);  //TODO throw instead - developer error if cast fails!
+
+            if (!pp_type_symbol) {
+                throw HelperException("Invalid type '%s' for parameter '%s'", type_symbol->name.c_str(), name.c_str());
+            }
+
+            if (dynamic_cast<ClassificationSymbol *>(type_symbol)
+                || dynamic_cast<RangeSymbol *>(type_symbol)
+                || dynamic_cast<PartitionSymbol *>(type_symbol)
+                ) {
+                pp_is_enum = true;
+            }
+            else {
+                pp_is_enum = false;
+            }
 
             // add this parameter to the complete list of parameters
             pp_all_parameters.push_back(this);

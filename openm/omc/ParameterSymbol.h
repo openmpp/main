@@ -51,10 +51,17 @@ public:
 
     TypeSymbol *pp_type_symbol;
 
+
     /**
-    * Numeric identifier.
-    * Used for communicating with metadata API.
-    */
+     * true if the data is enum., i.e. a classification or a range.
+     */
+
+    bool pp_is_enum;
+
+
+    /**
+     * Numeric identifier. Used for communicating with metadata API.
+     */
 
     int pp_parameter_id;
 };

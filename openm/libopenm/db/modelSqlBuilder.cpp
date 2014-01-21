@@ -909,8 +909,9 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
         tblInf.valueTypeName.clear();
         for (const TypeDicRow & typeRow : i_metaRows.typeDic) {
 
-            // built-in types
             if (typeRow.typeId == paramRow.typeId) {
+
+                // built-in types
                 if (equalNoCase(typeRow.name.c_str(), "int")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "char")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "short")) tblInf.valueTypeName = "SMALLINT";
@@ -932,12 +933,11 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
                 // if (equalNoCase(typeRow.name.c_str(), "piece_linear")) tblInf.valueTypeName = "INT";
                 // if (equalNoCase(typeRow.name.c_str(), "file")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "bool")) tblInf.valueTypeName = "SMALLINT";
-                break;
-            }
 
-            // model specific types: it must be enum
-            if (typeRow.typeId > OM_MAX_BUILTIN_TYPE_ID) {
-                tblInf.valueTypeName = "INT"; 
+                // model specific types: it must be enum
+                if (typeRow.typeId > OM_MAX_BUILTIN_TYPE_ID) {
+                    tblInf.valueTypeName = "INT";
+                }
                 break;
             }
         }

@@ -40,6 +40,9 @@
     <ClInclude Include="Alpha2.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\omc\Range.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">

@@ -725,17 +725,22 @@ Parameters:
 	;
 
 Decl_parameter:
-      ParameterFundamentalType SYMBOL ";"
+      ParameterFundamentalType SYMBOL[parm] ";"
                         {
                             auto *type_symbol = TypedefTypeSymbol::get_typedef_symbol((token_type)$ParameterFundamentalType);
-                            assert(type_symbol); // grammar guarantee
-                            auto *sym = new ParameterSymbol( $SYMBOL, type_symbol, @SYMBOL );
+                            assert(type_symbol); // grammar/initialization guarantee
+                            auto *sym = new ParameterSymbol( $parm, type_symbol, @parm );
                         }
-    | "bool" SYMBOL ";"
+    | "bool" SYMBOL[parm] ";"
                         {
                             auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string(token::TK_bool));
-                            assert(type_symbol); // initialization guarantee
-                            auto *sym = new ParameterSymbol( $SYMBOL, type_symbol, @SYMBOL );
+                            assert(type_symbol); // grammar/initialization guarantee
+                            auto *sym = new ParameterSymbol( $parm, type_symbol, @parm );
+                        }
+    | SYMBOL[range_or_classification] SYMBOL[parm] ";"
+                        {
+                            // validity of range_or_classification verified in post-parse phase
+                            auto *sym = new ParameterSymbol($parm, $range_or_classification, @parm);
                         }
 	| error ";"
                         {
