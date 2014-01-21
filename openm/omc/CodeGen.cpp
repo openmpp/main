@@ -79,6 +79,8 @@ void CodeGen::do_preamble()
     t += "" ;
 	t += "#pragma once";
 	t += "";
+    t += "#include \"omc/Range.h\"";
+    t += "";
 
     // om_declarations.h
     h += doxygen(

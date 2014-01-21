@@ -37,16 +37,16 @@ parameters
     //EN a double
     double a_double;
 
-    //EN a switch
+    //EN a switch (bool)
     bool a_switch;
 
-    //EN a SEX
+    //EN a SEX (classification)
     SEX a_sex;
 
-    //EN a YEARS
+    //EN a YEARS (range)
     YEARS a_years;
 
-    //EN a AGE_GROUP
+    //EN a AGE_GROUP (partition)
     AGE_GROUP a_age_group;
 };
 

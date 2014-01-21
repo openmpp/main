@@ -7,6 +7,7 @@
 
 #pragma once
 #include <cmath>
+#include "omc/Range.h"
 #include "om_types.h" // model-specific types
 #include "omc/Agent.h"
 #include "omc/AgentVar.h"

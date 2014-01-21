@@ -9,6 +9,8 @@
 
 void StartSimulation(int id)
 {
+    YEARS my_range;
+
     Person *thePerson = new Person;
 
     thePerson->Start();

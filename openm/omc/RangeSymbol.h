@@ -37,12 +37,7 @@ public:
     {
     }
 
-    const string get_initial_value() const {
-        //return to_string(lower_bound);
-        // initial value is first enumerator
-        return pp_enumerators.front()->name;
-    }
-
+    const string get_initial_value() const;
 
     void post_parse(int pass);
 

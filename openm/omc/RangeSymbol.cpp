@@ -13,6 +13,10 @@
 using namespace std;
 using namespace openm;
 
+const string RangeSymbol::get_initial_value() const {
+    return to_string(lower_bound);
+}
+
 void RangeSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
@@ -47,11 +51,12 @@ CodeBlock RangeSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += doxygen(name);
-    h += "enum " + name + " {";
-    for (auto enumerator : pp_enumerators) {
-        h += enumerator->name + ",";
-    }
-    h += "};";
+    h += "typedef Range<int," + to_string(lower_bound) + "," + to_string(upper_bound) + "> " + name + ";" ;
+    //h += "enum " + name + " {";
+    //for (auto enumerator : pp_enumerators) {
+    //    h += enumerator->name + ",";
+    //}
+    //h += "};";
 
     return h;
 }

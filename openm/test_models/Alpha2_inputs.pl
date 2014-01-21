@@ -8,6 +8,6 @@
 	a_double                => 0.20 ,
 	a_switch                => 1 ,
 	a_sex                   => 0 ,
-	a_years                 => 0 ,
+	a_years                 => -1 ,
 	a_age_group             => 0 ,
 );
