@@ -20,11 +20,19 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += doxygen(name);
-    h += "enum " + name + " {";
+    h += "enum om_enum_" + name + " {";
+    bool first = true;
     for (auto enumerator : pp_enumerators) {
-        h += enumerator->name + ",";
+        if (first) {
+            h += enumerator->name + " = 0," ;
+            first = false;
+        }
+        else {
+            h += enumerator->name + "," ;
+        }
     }
     h += "};";
+    h += "typedef Classification<om_enum_" + name + ", " + to_string(pp_size()) + "> " + name + ";" ;
 
     return h;
 }

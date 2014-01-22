@@ -166,6 +166,7 @@
     <ClInclude Include="..\build\Alpha2\src\om_types1.h" />
     <ClInclude Include="..\include\omc\Agent.h" />
     <ClInclude Include="..\include\omc\AgentVar.h" />
+    <ClInclude Include="..\include\omc\Classification.h" />
     <ClInclude Include="..\include\omc\Event.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h" />
   </ItemGroup>

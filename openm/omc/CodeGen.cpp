@@ -97,6 +97,7 @@ void CodeGen::do_preamble()
     t1 += "#include \"om_types0.h\"";
     t1 += "#include \"omc/Range.h\"";
     t1 += "#include \"omc/Partition.h\"";
+    t1 += "#include \"omc/Classification.h\"";
     t1 += "";
 
     // om_declarations.h

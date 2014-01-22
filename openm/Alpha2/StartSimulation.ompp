@@ -22,6 +22,13 @@ void StartSimulation(int id)
     int n5 = AGE_GROUP::size;
     double *p_cuts = AGE_GROUP::cut_points();
 
+    SEX my_sex = MALE;
+
+    double proportions[SEX::size];
+    for (int j : SEX::indices) {
+        proportions[j] = 1 / (double)SEX::size;
+    }
+
     Person *thePerson = new Person;
 
     thePerson->Start();
