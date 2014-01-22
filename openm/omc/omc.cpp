@@ -183,22 +183,22 @@ int main(int argc, char * argv[])
         ParseContext pc;
 
         // open & prepare pass-through / markup stream om_developer.cpp
-        ofstream om_outside_cpp(outDir + "om_developer.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
-        exit_guard<ofstream> onExit_om_outside_cpp(&om_outside_cpp, &ofstream::close);   // close on exit
-        if (om_outside_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_developer.cpp");
+        ofstream om_developer_cpp(outDir + "om_developer.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_developer_cpp(&om_developer_cpp, &ofstream::close);   // close on exit
+        if (om_developer_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_developer.cpp");
 
     #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
-        om_outside_cpp << "\xEF\xBB\xBF";
+        om_developer_cpp << "\xEF\xBB\xBF";
     #endif
-        om_outside_cpp << "/**" << endl;
-        om_outside_cpp << " * @file om_developer.cpp" << endl;
-        om_outside_cpp << " * Developer-supplied C++ functions" << endl;
-        om_outside_cpp << " */" << endl;
-        om_outside_cpp << "" << endl;
-        om_outside_cpp << "#include \"omc/omSimulation.h\"" << endl;
-		om_outside_cpp << "using namespace openm;" << endl;
-        om_outside_cpp << "namespace mm {" << endl;
+        om_developer_cpp << "/**" << endl;
+        om_developer_cpp << " * @file om_developer.cpp" << endl;
+        om_developer_cpp << " * Developer-supplied C++ functions" << endl;
+        om_developer_cpp << " */" << endl;
+        om_developer_cpp << "" << endl;
+        om_developer_cpp << "#include \"omc/omSimulation.h\"" << endl;
+		om_developer_cpp << "using namespace openm;" << endl;
+        om_developer_cpp << "namespace mm {" << endl;
 
         // List of source file names with path.
         // On each call, drv.parse will be provided a pointer to a file name
@@ -232,7 +232,7 @@ int main(int argc, char * argv[])
 
                 source_files_long.push_back(inpDir + name);
 
-                drv.parse(&source_files_long.back(), in_stem + in_ext, in_stem, &om_outside_cpp);
+                drv.parse(&source_files_long.back(), in_stem + in_ext, in_stem, &om_developer_cpp);
             }
             catch(exception & ex) {
                 theLog->logErr(ex);
@@ -243,7 +243,7 @@ int main(int argc, char * argv[])
             }
         }
 
-        om_outside_cpp << "} //namespace mm" << endl;
+        om_developer_cpp << "} //namespace mm" << endl;
 
         if ( pc.parse_errors > 0 ) {
             theLog->logFormatted("Syntax errors (%d) in parse phase", pc.parse_errors);
@@ -276,29 +276,33 @@ int main(int argc, char * argv[])
         theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code
-        ofstream om_agents_t(outDir + "om_types.h", ios_base::out | ios_base::trunc | ios_base::binary);
-        exit_guard<ofstream> onExit_om_agents_t(&om_agents_t, &ofstream::close);   // close on exit
-        if (om_agents_t.fail()) throw HelperException("Unable to open %s for writing", "om_types.h");
+        ofstream om_types0_h(outDir + "om_types0.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_types0_h(&om_types0_h, &ofstream::close);   // close on exit
+        if (om_types0_h.fail()) throw HelperException("Unable to open %s for writing", "om_types0.h");
 
-        ofstream om_agents_h(outDir + "om_declarations.h", ios_base::out | ios_base::trunc | ios_base::binary);
-        exit_guard<ofstream> onExit_om_agents_h(&om_agents_h, &ofstream::close);   // close on exit
-        if (om_agents_h.fail()) throw HelperException("Unable to open %s for writing", "om_declarations.h");
+        ofstream om_types1_h(outDir + "om_types1.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_types1_h(&om_types1_h, &ofstream::close);   // close on exit
+        if (om_types1_h.fail()) throw HelperException("Unable to open %s for writing", "om_types1.h");
 
-        ofstream om_agents_cpp(outDir + "om_definitions.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
-        exit_guard<ofstream> onExit_om_agents_cpp(&om_agents_cpp, &ofstream::close);   // close on exit
-        if (om_agents_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
+        ofstream om_declarations_h(outDir + "om_declarations.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_declarations_h(&om_declarations_h, &ofstream::close);   // close on exit
+        if (om_declarations_h.fail()) throw HelperException("Unable to open %s for writing", "om_declarations.h");
+
+        ofstream om_definitions_cpp(outDir + "om_definitions.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_definitions_cpp(&om_definitions_cpp, &ofstream::close);   // close on exit
+        if (om_definitions_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
 
 #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
-        om_agents_t << "\xEF\xBB\xBF";
-        om_agents_h << "\xEF\xBB\xBF";
-        om_agents_cpp << "\xEF\xBB\xBF";
+        om_types0_h << "\xEF\xBB\xBF";
+        om_declarations_h << "\xEF\xBB\xBF";
+        om_definitions_cpp << "\xEF\xBB\xBF";
 #endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create());
         
-        CodeGen cg( &om_agents_t, &om_agents_h, &om_agents_cpp, builder->timeStamp(), metaRows );
+        CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, builder->timeStamp(), metaRows);
         cg.do_all();
 
         // debug only: add test metadata to produce at least some output

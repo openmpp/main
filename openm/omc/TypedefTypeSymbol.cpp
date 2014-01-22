@@ -12,6 +12,24 @@
 using namespace std;
 using namespace openm;
 
+void TypedefTypeSymbol::post_parse(int pass)
+{
+    // Hook into the post_parse hierarchical calling chain
+    super::post_parse(pass);
+
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    switch (pass) {
+    case ePopulateCollections:
+        {
+            // add this to the complete list of fundamental types
+            pp_all_types0.push_back(this);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 CodeBlock TypedefTypeSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain

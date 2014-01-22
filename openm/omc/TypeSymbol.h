@@ -54,8 +54,6 @@ public:
 
     virtual const string get_initial_value() const = 0;
 
-    void post_parse(int pass);
-
 
     /**
      * Identifier for the type.

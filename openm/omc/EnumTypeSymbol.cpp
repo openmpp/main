@@ -29,6 +29,9 @@ void EnumTypeSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
+            // add this to the complete list of templated types
+            pp_all_types1.push_back(this);
+
             // Add this enumeration to the complete list of enumerations.
             pp_all_enumerations.push_back(this);
         }

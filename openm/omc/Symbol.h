@@ -546,12 +546,23 @@ public:
 
 
     /**
-    * The types in the model
+    * The fundamental types in the model
     *
+    * Ex. Time, real
     * Populated after parsing is complete.
     */
 
-    static list<TypeSymbol *> pp_all_types;
+    static list<TypeSymbol *> pp_all_types0;
+
+
+    /**
+    * The templated types in the model
+    *
+    * Ex. classifications, ranges
+    * Populated after parsing is complete.
+    */
+
+    static list<TypeSymbol *> pp_all_types1;
 
 
     /**

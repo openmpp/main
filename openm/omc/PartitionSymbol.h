@@ -34,9 +34,13 @@ public:
     {
     }
 
+    const string get_initial_value() const;
+
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_global();
+
+    CodeBlock cxx_definition_global();
 
 };
 

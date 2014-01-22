@@ -173,6 +173,8 @@
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_optional_views.sql" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\omc\Partition.h" />
+    <ClInclude Include="..\include\omc\Range.h" />
     <ClInclude Include="Happiness.mpp" />
     <ClInclude Include="PersonCore.mpp" />
     <ClInclude Include="Alpha1.mpp" />

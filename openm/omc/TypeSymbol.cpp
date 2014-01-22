@@ -9,23 +9,4 @@
 
 using namespace std;
 
-void TypeSymbol::post_parse(int pass)
-{
-    // Hook into the hierarchical calling chain
-    super::post_parse(pass);
-
-    // Perform post-parse operations specific to this level in the Symbol hierarchy.
-    switch (pass) {
-    case ePopulateCollections:
-        {
-            // add this type to the complete list of types
-            pp_all_types.push_back(this);
-        }
-        break;
-    default:
-        break;
-    }
-}
-
-
 int TypeSymbol::next_type_id = 0;

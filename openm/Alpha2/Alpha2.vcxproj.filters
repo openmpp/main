@@ -46,6 +46,15 @@
     <ClInclude Include="..\include\omc\omSimulation.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\build\Alpha2\src\om_types0.h">
+      <Filter>OmcOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="..\build\Alpha2\src\om_types1.h">
+      <Filter>OmcOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\omc\Partition.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
@@ -57,9 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
   </ItemGroup>

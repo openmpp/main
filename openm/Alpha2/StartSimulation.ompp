@@ -18,6 +18,10 @@ void StartSimulation(int id)
     bool b1 = WITHIN(YEARS, 50);
     bool b2 = WITHIN(YEARS, 3);
 
+    AGE_GROUP my_age_group = 0;
+    int n5 = AGE_GROUP::size;
+    double *p_cuts = AGE_GROUP::cut_points();
+
     Person *thePerson = new Person;
 
     thePerson->Start();

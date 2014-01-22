@@ -162,11 +162,12 @@
     <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\build\Alpha2\src\om_types0.h" />
+    <ClInclude Include="..\build\Alpha2\src\om_types1.h" />
     <ClInclude Include="..\include\omc\Agent.h" />
     <ClInclude Include="..\include\omc\AgentVar.h" />
     <ClInclude Include="..\include\omc\Event.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h" />
-    <ClInclude Include="$(OMC_OUT_DIR)/om_types.h" />
   </ItemGroup>
   <ItemGroup>
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha2_create_model.sql" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\omc\omSimulation.h" />
+    <ClInclude Include="..\include\omc\Partition.h" />
     <ClInclude Include="..\include\omc\Range.h" />
     <ClInclude Include="Happiness.mpp" />
     <ClInclude Include="PersonCore.mpp" />

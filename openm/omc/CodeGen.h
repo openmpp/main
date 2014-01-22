@@ -18,15 +18,17 @@ class CodeGen
 {
 public:
 	CodeGen( 
-        ofstream *oat_arg, 
-        ofstream *oah_arg, 
+        ofstream *oat0_arg, 
+        ofstream *oat1_arg,
+        ofstream *oah_arg,
         ofstream *oac_arg, 
         const string & i_timestamp, 
         openm::MetaModelHolder & io_metaRows 
         )
-		: oat (oat_arg)
-		, oah (oah_arg)
-		, oac (oac_arg)
+		: oat0(oat0_arg)
+        , oat1(oat1_arg)
+        , oah(oah_arg)
+		, oac(oac_arg)
         , time_stamp(i_timestamp)
         , metaRows(io_metaRows)
 
@@ -53,10 +55,17 @@ public:
 
 
     /**
-     * CodeBlock for om_types.h
+    * CodeBlock for om_types0.h
+    */
+
+    CodeBlock t0;
+
+
+    /**
+     * CodeBlock for om_types1.h
      */
 
-    CodeBlock t;
+    CodeBlock t1;
 
 
     /**
@@ -72,8 +81,11 @@ public:
 
     CodeBlock c;
 
-    /** output stream for om_types.h */
-	ofstream *oat;
+    /** output stream for om_types0.h */
+    ofstream *oat0;
+
+    /** output stream for om_types1.h */
+    ofstream *oat1;
 
     /** output stream for om_declarations.h */
 	ofstream *oah;

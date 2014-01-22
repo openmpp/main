@@ -38,7 +38,9 @@ using namespace openm;
 
 symbol_map_type Symbol::symbols;
 
-list<TypeSymbol *> Symbol::pp_all_types;
+list<TypeSymbol *> Symbol::pp_all_types0;
+
+list<TypeSymbol *> Symbol::pp_all_types1;
 
 list<EnumTypeSymbol *> Symbol::pp_all_enumerations;
 
@@ -644,8 +646,9 @@ void Symbol::post_parse_all()
 
     // Sort all global collections
     pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
-    pp_all_types.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
-    pp_all_agents.sort( [] (AgentSymbol *a, AgentSymbol *b) { return a->name < b->name ; } );
+    pp_all_types0.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
+    pp_all_types1.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
+    pp_all_agents.sort([](AgentSymbol *a, AgentSymbol *b) { return a->name < b->name; });
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
 

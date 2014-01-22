@@ -1,6 +1,6 @@
 /**
-* @file    Range.h
-* Declares the Range template
+* @file    Partition.h
+* Declares the Partition template
 *
 */
 // Copyright (c) 2013 OpenM++
@@ -8,23 +8,25 @@
 
 #pragma once
 #include <array>
+#include "om_types0.h" // for real
+
 
 using namespace std;
 
 namespace mm {
 
-    template<typename T, T min_val, T max_val>
-    class Range
+    template<typename T, T size_val, real *cut_points_val>
+    class Partition
     {
     public:
         // ctors
-        Range()
+        Partition()
         {
-            set(min_val);
+            set(0);
             if (!initialization_done) initialize();
         }
 
-        Range(T val)
+        Partition(T val)
         {
             set(val);
             if (!initialization_done) initialize();
@@ -35,7 +37,6 @@ namespace mm {
             // initialize static helper arrays for range-based for in model code
             for (int i = 0; i < size; ++i) {
                 indices[i] = i;
-                values[i] = i + min_val;
             }
             initialization_done = true;
         }
@@ -43,11 +44,11 @@ namespace mm {
         // assignment cover function
         void set(T new_value)
         {
-            if (new_value < min_val) {
-                value = min_val;
+            if (new_value < 0) {
+                value = 0;
             }
-            else if (new_value > max_val) {
-                value = max_val;
+            else if (new_value > max) {
+                value = max;
             }
             else {
                 value = new_value;
@@ -61,14 +62,14 @@ namespace mm {
         }
 
         // operator: direct assignment
-        Range& operator=(T new_value)
+        Partition& operator=(T new_value)
         {
             this->set(new_value);
             return *this;
         }
 
         // operator: assignment by sum
-        Range& operator+=(T modify_value)
+        Partition& operator+=(T modify_value)
         {
             T new_value = value + modify_value;
             this->set(new_value);
@@ -76,7 +77,7 @@ namespace mm {
         }
 
         // operator: assignment by difference
-        Range& operator-=(T modify_value)
+        Partition& operator-=(T modify_value)
         {
             T new_value = value - modify_value;
             this->set(new_value);
@@ -84,7 +85,7 @@ namespace mm {
         }
 
         // operator: assignment by product
-        Range& operator*=(T modify_value)
+        Partition& operator*=(T modify_value)
         {
             T new_value = value * modify_value;
             this->set(new_value);
@@ -92,7 +93,7 @@ namespace mm {
         }
 
         // operator: assignment by quotient
-        Range& operator/=(T modify_value)
+        Partition& operator/=(T modify_value)
         {
             T new_value = value / modify_value;
             this->set(new_value);
@@ -100,7 +101,7 @@ namespace mm {
         }
 
         // operator: assignment by remainder
-        Range& operator%=(T modify_value)
+        Partition& operator%=(T modify_value)
         {
             T new_value = value % modify_value;
             this->set(new_value);
@@ -108,7 +109,7 @@ namespace mm {
         }
 
         // operator: assignment by bitwise left shift
-        Range& operator<<=(T modify_value)
+        Partition& operator<<=(T modify_value)
         {
             T new_value = value << modify_value;
             this->set(new_value);
@@ -116,7 +117,7 @@ namespace mm {
         }
 
         // operator: assignment by bitwise right shift
-        Range& operator>>=(T modify_value)
+        Partition& operator>>=(T modify_value)
         {
             T new_value = value >> modify_value;
             this->set(new_value);
@@ -124,7 +125,7 @@ namespace mm {
         }
 
         // operator: assignment by bitwise AND
-        Range& operator&=(T modify_value)
+        Partition& operator&=(T modify_value)
         {
             T new_value = value & modify_value;
             this->set(new_value);
@@ -132,7 +133,7 @@ namespace mm {
         }
 
         // operator: assignment by bitwise XOR
-        Range& operator^=(T modify_value)
+        Partition& operator^=(T modify_value)
         {
             T new_value = value ^ modify_value;
             this->set(new_value);
@@ -140,7 +141,7 @@ namespace mm {
         }
 
         // operator: assignment by bitwise OR
-        Range& operator|=(T modify_value)
+        Partition& operator|=(T modify_value)
         {
             T new_value = value | modify_value;
             this->set(new_value);
@@ -148,7 +149,7 @@ namespace mm {
         }
 
         // operator: prefix increment
-        Range& operator++()
+        Partition& operator++()
         {
             T new_value = value + 1;
             this->set(new_value);
@@ -156,7 +157,7 @@ namespace mm {
         }
 
         // operator: prefix decrement
-        Range& operator--()
+        Partition& operator--()
         {
             T new_value = value - 1;
             this->set(new_value);
@@ -179,42 +180,34 @@ namespace mm {
             return new_value;
         }
 
-        // 0-based value for indexing
-        int index() const
-        {
-            return (int)value - (int)min_val;
-        }
-
-        // test if value falls within range limits
+        // test if value falls within Partition limits
         static bool within(int value)
         {
-            return (value >= min_val) && (value <= max_val);
+            return (value >= 0) && (value <= max);
         }
+
+        // location of array containing cut-points
+        static double *cut_points() { return cut_points_val; }
 
         // storage
         T value;
 
         // limits (static constants)
-        static const T min = min_val;
-        static const T max = max_val;
-        static const T size = max_val - min_val + 1;
+        static const T max = size_val - 1;
+        static const T size = size_val;
 
         static bool initialization_done;
 
         // Support for range-based for loops in model code
-        // Would be more elegant with boost:counting_range or similar.
-        static array<int, size> values;
+        // Would be more elegant with boost::counting_range or similar.
         static array<int, size> indices;
     };
 
-    template<typename T, T min_val, T max_val>
-    array<int, max_val - min_val + 1> Range<T, min_val, max_val>::indices;
+    template<typename T, T size_val, real *cut_points>
+    array<int, size_val> Partition<T, size_val, cut_points>::indices;
 
-    template<typename T, T min_val, T max_val>
-    array<int, max_val - min_val + 1> Range<T, min_val, max_val>::values;
-
-    template<typename T, T min_val, T max_val>
-    bool Range<T, min_val, max_val>::initialization_done = false;
+    template<typename T, T size_val, real *cut_points>
+    bool Partition<T, size_val, cut_points>::initialization_done = false;
 
 } // namespace mm
 

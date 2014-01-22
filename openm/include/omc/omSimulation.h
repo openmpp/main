@@ -7,11 +7,12 @@
 
 #pragma once
 #include <cmath>
+#include "om_types0.h" // fundamental model types
 #include "omc/Range.h"
-#include "om_types.h" // model-specific types
 #include "omc/Agent.h"
 #include "omc/AgentVar.h"
 #include "omc/Event.h"
+#include "om_types1.h" // model-specific types
 #include "libopenm/omModel.h"
 #include "om_declarations.h" // model-specific classes
 
@@ -25,13 +26,14 @@
 #define FALSE false
 #define WAIT( delta_time ) (time + (delta_time))
 
-// Implementation of old-style Modgen macros for properties of classifications and ranges
+// Implementation of old-style Modgen macros related to classifications, ranges, nad partitions
 #define MIN( symbol )				(symbol::min)
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
 #define RANGE_POS( rname, val )     (((rname)val).index())
 #define COERCE( rname, val )        ((rname)val)
 #define WITHIN( rname, val )        (rname::within(val))
+#define POINTS( symbol )		   	(symbol::cut_points())
 
 // The following are temporary kludges
 #define WriteDebugLogEntry printf
