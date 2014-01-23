@@ -7,52 +7,32 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <set>
 #include <array>
+#include "omc/range_int.h"
 #include "om_types0.h" // for real
-
 
 using namespace std;
 
 namespace mm {
 
-    template<typename T, T size_val, real *cut_points_val>
+    template<typename T, T min_val, T max_val, const set<real> &splitter>
     class Partition
     {
     public:
         // ctors
         Partition()
-        {
-            set(0);
-            if (!initialization_done) initialize();
-        }
+            : value(min_val)
+        {}
 
         Partition(T val)
-        {
-            set(val);
-            if (!initialization_done) initialize();
-        }
-
-        void initialize()
-        {
-            // initialize static helper arrays for range-based for in model code
-            for (int i = 0; i < size; ++i) {
-                indices[i] = i;
-            }
-            initialization_done = true;
-        }
+            : value((val < min ) ? min : (val > max) ? max : val)
+        {}
 
         // assignment cover function
-        void set(T new_value)
+        void set_value(T new_value)
         {
-            if (new_value < 0) {
-                value = 0;
-            }
-            else if (new_value > max) {
-                value = max;
-            }
-            else {
-                value = new_value;
-            }
+            value = (val < min) ? min : (val > max) ? max : val;
         }
 
         // operator: cast to T (use in C++ expression)
@@ -64,7 +44,7 @@ namespace mm {
         // operator: direct assignment
         Partition& operator=(T new_value)
         {
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -72,7 +52,7 @@ namespace mm {
         Partition& operator+=(T modify_value)
         {
             T new_value = value + modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -80,7 +60,7 @@ namespace mm {
         Partition& operator-=(T modify_value)
         {
             T new_value = value - modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -88,7 +68,7 @@ namespace mm {
         Partition& operator*=(T modify_value)
         {
             T new_value = value * modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -96,7 +76,7 @@ namespace mm {
         Partition& operator/=(T modify_value)
         {
             T new_value = value / modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -104,7 +84,7 @@ namespace mm {
         Partition& operator%=(T modify_value)
         {
             T new_value = value % modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -112,7 +92,7 @@ namespace mm {
         Partition& operator<<=(T modify_value)
         {
             T new_value = value << modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -120,7 +100,7 @@ namespace mm {
         Partition& operator>>=(T modify_value)
         {
             T new_value = value >> modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -128,7 +108,7 @@ namespace mm {
         Partition& operator&=(T modify_value)
         {
             T new_value = value & modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -136,7 +116,7 @@ namespace mm {
         Partition& operator^=(T modify_value)
         {
             T new_value = value ^ modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -144,7 +124,7 @@ namespace mm {
         Partition& operator|=(T modify_value)
         {
             T new_value = value | modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -152,7 +132,7 @@ namespace mm {
         Partition& operator++()
         {
             T new_value = value + 1;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -160,7 +140,7 @@ namespace mm {
         Partition& operator--()
         {
             T new_value = value - 1;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -168,7 +148,7 @@ namespace mm {
         T operator++(int)
         {
             T new_value = 1 + value;
-            this->set(new_value);
+            this->set_value(new_value);
             return new_value;
         }
 
@@ -176,38 +156,40 @@ namespace mm {
         T operator--(int)
         {
             T new_value = value - 1;
-            this->set(new_value);
+            this->set_value(new_value);
             return new_value;
         }
 
-        // test if value falls within Partition limits
+        // test if value (index) falls within limits
         static bool within(int value)
         {
-            return (value >= 0) && (value <= max);
+            return (value >= min) && (value <= max);
         }
 
-        // location of array containing cut-points
-        static double *cut_points() { return cut_points_val; }
+        // Determine interval within which a value falls.
+        static T find_interval(real value)
+        {
+            auto it = splitter.lower_bound(value);
+            return (it == end()) ? max : *it;
+        }
 
-        // storage
+        // storage - the index of the interval in the partition
         T value;
 
         // limits (static constants)
-        static const T max = size_val - 1;
-        static const T size = size_val;
-
-        static bool initialization_done;
+        static const T min = min_val;
+        static const T max = max_val;
+        static const size_t size = max - min + 1;
 
         // Support for range-based for loops in model code
-        // Would be more elegant with boost::counting_range or similar.
-        static array<int, size> indices;
+        static range_int<min, max> indices;
+
+        // Splitter set for fast determination of interval
+
     };
 
-    template<typename T, T size_val, real *cut_points>
-    array<int, size_val> Partition<T, size_val, cut_points>::indices;
-
-    template<typename T, T size_val, real *cut_points>
-    bool Partition<T, size_val, cut_points>::initialization_done = false;
+    template<typename T, T min, T max, const set<real> &splitter>
+    range_int<min, max> Partition<T, min, max, splitter>::indices;
 
 } // namespace mm
 

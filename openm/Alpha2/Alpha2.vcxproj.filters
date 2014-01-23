@@ -58,6 +58,9 @@
     <ClInclude Include="..\include\omc\Classification.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\omc\less_deref.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">

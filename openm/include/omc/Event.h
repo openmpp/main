@@ -8,29 +8,13 @@
 
 #pragma once
 #include <set>
+#include "omc/less_deref.h"
 #include "omc/Agent.h"
 #include "om_types0.h" // for Time
 
 using namespace std;
 
 namespace mm {
-
-    /**
-     * Functor for operator< on dereferenced pointers
-     * For use as comparison function in std::set storing pointers, etc.
-     *
-     * @tparam  T   Generic type parameter.
-     */
-
-    template<class T>
-    struct less_deref
-    {	
-        bool operator()(const T& lhs, const T& rhs) const
-        {
-            return ( *lhs < *rhs );
-        }
-    };
-
 
     /**
      * A forward_list with push_back()

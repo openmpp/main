@@ -9,7 +9,6 @@
 #pragma once
 #include <array>
 
-
 using namespace std;
 
 namespace mm {
@@ -105,7 +104,7 @@ namespace mm {
             return (value >= 0) && (value <= max);
         }
 
-        // storage
+        // storage - the index of the interval in the partition
         T value;
 
         // limits (static constants)
@@ -120,10 +119,10 @@ namespace mm {
     };
 
     template<typename T, int size_val>
-    array<int, size_val> Classification<T, size_val>::indices;
+    bool Classification<T, size_val>::initialization_done = false;
 
     template<typename T, int size_val>
-    bool Classification<T, size_val>::initialization_done = false;
+    array<int, size_val> Classification<T, size_val>::indices;
 
 } // namespace mm
 

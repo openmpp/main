@@ -45,6 +45,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Alpha2", "Alpha2\Alpha2.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WizardTimeBased", "WizardTimeBased\WizardTimeBased.vcxproj", "{93DE9507-8699-4BB8-A568-7F36C2F80D35}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_templates", "test_templates\test_templates.vcxproj", "{9A306F19-FF08-4100-AC19-DE26A53E92D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -123,6 +125,12 @@ Global
 		{93DE9507-8699-4BB8-A568-7F36C2F80D35}.Release|Win32.Build.0 = Release|Win32
 		{93DE9507-8699-4BB8-A568-7F36C2F80D35}.Release|x64.ActiveCfg = Release|x64
 		{93DE9507-8699-4BB8-A568-7F36C2F80D35}.Release|x64.Build.0 = Release|x64
+		{9A306F19-FF08-4100-AC19-DE26A53E92D8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9A306F19-FF08-4100-AC19-DE26A53E92D8}.Debug|Win32.Build.0 = Debug|Win32
+		{9A306F19-FF08-4100-AC19-DE26A53E92D8}.Debug|x64.ActiveCfg = Debug|Win32
+		{9A306F19-FF08-4100-AC19-DE26A53E92D8}.Release|Win32.ActiveCfg = Release|Win32
+		{9A306F19-FF08-4100-AC19-DE26A53E92D8}.Release|Win32.Build.0 = Release|Win32
+		{9A306F19-FF08-4100-AC19-DE26A53E92D8}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
