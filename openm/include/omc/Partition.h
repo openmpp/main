@@ -7,7 +7,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include <set>
+#include <map>
 #include <array>
 #include "omc/range_int.h"
 #include "om_types0.h" // for real
@@ -16,23 +16,41 @@ using namespace std;
 
 namespace mm {
 
-    template<typename T, T min_val, T max_val, const set<real> &splitter>
+
+    /**
+     * A partition.
+     *
+     * @tparam T     Storage type for partition value (index).
+     * @tparam T_min Minimum value of partition value (always 0 for partitions).
+     * @tparam T_max Maximum value of partition value (index).
+     * @tparam T_lower  Array containing lower limit of each interval in the partition.
+     * @tparam T_upper  Array containing upper limit of each interval in the partition.
+     * @tparam T_set Set used by find_interval to find the interval for a given number.
+     */
+
+    template<
+        typename T,
+        T T_min,
+        T T_max,
+        const array<real, T_max - T_min + 1> &T_lower,
+        const array<real, T_max - T_min + 1> &T_upper,
+        const map<real, T> &T_splitter>
     class Partition
     {
     public:
         // ctors
         Partition()
-            : value(min_val)
+            : value(T_min)
         {}
 
         Partition(T val)
-            : value((val < min ) ? min : (val > max) ? max : val)
+            : value((val < T_min ) ? T_min : (val > T_max) ? T_max : val)
         {}
 
         // assignment cover function
         void set_value(T new_value)
         {
-            value = (val < min) ? min : (val > max) ? max : val;
+            value = (new_value < T_min) ? T_min : (new_value > T_max) ? T_max : new_value;
         }
 
         // operator: cast to T (use in C++ expression)
@@ -160,36 +178,46 @@ namespace mm {
             return new_value;
         }
 
+        // return a range_int object for iterating this partition
+        static range_int<T_min, T_max> indices()
+        {
+            return range_int<T_min, T_max>();
+        }
+
         // test if value (index) falls within limits
         static bool within(int value)
         {
-            return (value >= min) && (value <= max);
+            return (value >= T_min) && (value <= T_max);
         }
 
-        // Determine interval within which a value falls.
-        static T find_interval(real value)
+        // return reference to array containing lower value of intervals
+        static const array<real, T_max - T_min + 1> lower_bound()
         {
-            auto it = splitter.lower_bound(value);
-            return (it == end()) ? max : *it;
+            return T_lower;
+        }
+
+        // return reference to array containing upper value of intervals
+        static const array<real, T_max - T_min + 1> upper_bound()
+        {
+            return T_upper;
+        }
+
+        // Find the interval within which a value falls.
+        static T to_index(real value)
+        {
+            // find first interval whose upper bound exceeds value
+            auto it = T_splitter.upper_bound(value);
+            return (it == T_splitter.end()) ? T_max : it->second;
         }
 
         // storage - the index of the interval in the partition
         T value;
 
         // limits (static constants)
-        static const T min = min_val;
-        static const T max = max_val;
-        static const size_t size = max - min + 1;
-
-        // Support for range-based for loops in model code
-        static range_int<min, max> indices;
-
-        // Splitter set for fast determination of interval
-
+        static const T min = T_min;
+        static const T max = T_max;
+        static const size_t size = (size_t)T_max - (size_t)T_min + 1;
     };
-
-    template<typename T, T min, T max, const set<real> &splitter>
-    range_int<min, max> Partition<T, min, max, splitter>::indices;
 
 } // namespace mm
 

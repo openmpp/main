@@ -168,6 +168,9 @@
     <ClInclude Include="TimeTypedefTypeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RealTypedefTypeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -276,6 +279,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TimeTypedefTypeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RealTypedefTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

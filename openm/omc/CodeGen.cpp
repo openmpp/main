@@ -81,6 +81,7 @@ void CodeGen::do_preamble()
         );
     t0 += "";
     t0 += "#pragma once";
+    t0 += "#include <cmath>";
     t0 += "";
 
     // om_types1.h
@@ -93,7 +94,6 @@ void CodeGen::do_preamble()
                 );
     t1 += "" ;
 	t1 += "#pragma once";
-	t1 += "";
     t1 += "#include \"om_types0.h\"";
     t1 += "#include \"omc/Range.h\"";
     t1 += "#include \"omc/Partition.h\"";
@@ -110,7 +110,6 @@ void CodeGen::do_preamble()
                 );
     h += "" ;
 	h += "#pragma once";
-	h += "";
 	h += "#include \"omc/omSimulation.h\"";
     h += "";
     h += "using namespace std;";

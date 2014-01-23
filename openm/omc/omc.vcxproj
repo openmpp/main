@@ -126,6 +126,7 @@
     <ClInclude Include="PartitionSymbol.h" />
     <ClInclude Include="RangeEnumeratorSymbol.h" />
     <ClInclude Include="RangeSymbol.h" />
+    <ClInclude Include="RealTypedefTypeSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableAccumulatorSymbol.h" />
@@ -173,6 +174,7 @@
     <ClCompile Include="ParameterSymbol.cpp" />
     <ClCompile Include="PartitionSymbol.cpp" />
     <ClCompile Include="RangeSymbol.cpp" />
+    <ClCompile Include="RealTypedefTypeSymbol.cpp" />
     <ClCompile Include="SimpleAgentVarSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableAccumulatorSymbol.cpp" />

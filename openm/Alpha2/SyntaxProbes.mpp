@@ -38,7 +38,7 @@ parameters
     double a_double;
 
     //EN a switch (bool)
-    bool a_switch;
+    logical a_switch;
 
     //EN a SEX (classification)
     SEX a_sex;

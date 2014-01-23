@@ -20,11 +20,10 @@ CodeBlock TimeTypedefTypeSymbol::cxx_declaration_global()
     // only one keyword for Time
     string typedef_string = token_to_string(keywords.front());
 
-    h += "typedef " + typedef_string + " TIME; // for Modgen models";
+    h += "typedef " + typedef_string + " TIME; // For Modgen source compatibility";
     // Time 'literals'
     h += "extern const Time time_infinite;";
-    h += "extern const Time TIME_INFINITE; // for Modgen models";
-    h += "";
+    h += "extern const Time TIME_INFINITE; // For Modgen source compatibility";
 
     return h;
 }

@@ -1,0 +1,31 @@
+/**
+* @file    RealTypedefTypeSymbol.h
+* Declarations for the RealTypedefTypeSymbol class.
+*/
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#pragma once
+#include "TypedefTypeSymbol.h"
+
+class RealTypedefTypeSymbol : public TypedefTypeSymbol
+{
+private:
+    typedef TypedefTypeSymbol super;
+
+public:
+
+    /**
+    * Constructor.
+    *
+    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_double.
+    */
+
+    RealTypedefTypeSymbol(token_type kw1)
+        : TypedefTypeSymbol(token::TK_real, kw1, "0")
+    {
+    }
+
+    CodeBlock cxx_declaration_global();
+
+};

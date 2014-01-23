@@ -42,7 +42,7 @@ CodeBlock TypedefTypeSymbol::cxx_declaration_global()
         for (auto tk : keywords) {
             typedef_string += " " + token_to_string(tk);
         }
-        h += "typedef " + typedef_string + " " + name + ";";
+        h += "typedef" + typedef_string + " " + name + ";";
     }
 
     return h;
