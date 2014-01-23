@@ -33,7 +33,7 @@
 #define RANGE_POS( rname, val )     (((rname)val).index())
 #define COERCE( rname, val )        ((rname)val)
 #define WITHIN( rname, val )        (rname::within(val))
-#define POINTS( symbol )		   	(symbol::upper())
+#define POINTS( symbol )		   	(symbol::upper_bounds())
 
 // The following are temporary kludges
 #define WriteDebugLogEntry printf

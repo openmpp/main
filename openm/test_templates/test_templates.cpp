@@ -8,12 +8,16 @@
 namespace mm
 {
     extern void test_partition();
+    extern void test_range();
+    extern void test_classification();
 }
 
 
 int main(int argc, char * argv[])
 {
     mm::test_partition();
+    mm::test_range();
+    mm::test_classification();
 
 	return 0;
 }

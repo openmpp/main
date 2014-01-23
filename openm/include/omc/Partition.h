@@ -21,8 +21,8 @@ namespace mm {
      * A partition.
      *
      * @tparam T     Storage type for partition value (index).
-     * @tparam T_min Minimum value of partition value (always 0 for partitions).
-     * @tparam T_max Maximum value of partition value (index).
+     * @tparam T_min Minimum partition value (always 0 for partitions).
+     * @tparam T_max Maximum partition value (index).
      * @tparam T_lower  Array containing lower limit of each interval in the partition.
      * @tparam T_upper  Array containing upper limit of each interval in the partition.
      * @tparam T_set Set used by find_interval to find the interval for a given number.
@@ -34,7 +34,8 @@ namespace mm {
         T T_max,
         const array<real, T_max - T_min + 1> &T_lower,
         const array<real, T_max - T_min + 1> &T_upper,
-        const map<real, T> &T_splitter>
+        const map<real, T> &T_splitter
+    >
     class Partition
     {
     public:
@@ -47,14 +48,8 @@ namespace mm {
             : value((val < T_min ) ? T_min : (val > T_max) ? T_max : val)
         {}
 
-        // assignment cover function
-        void set_value(T new_value)
-        {
-            value = (new_value < T_min) ? T_min : (new_value > T_max) ? T_max : new_value;
-        }
-
         // operator: cast to T (use in C++ expression)
-        operator T()
+        operator T() const
         {
             return value;
         }
@@ -184,20 +179,14 @@ namespace mm {
             return range_int<T_min, T_max>();
         }
 
-        // test if value (index) falls within limits
-        static bool within(int value)
-        {
-            return (value >= T_min) && (value <= T_max);
-        }
-
         // return reference to array containing lower value of intervals
-        static const array<real, T_max - T_min + 1> lower_bound()
+        static const array<real, T_max - T_min + 1> lower_bounds()
         {
             return T_lower;
         }
 
         // return reference to array containing upper value of intervals
-        static const array<real, T_max - T_min + 1> upper_bound()
+        static const array<real, T_max - T_min + 1> upper_bounds()
         {
             return T_upper;
         }
@@ -210,13 +199,20 @@ namespace mm {
             return (it == T_splitter.end()) ? T_max : it->second;
         }
 
-        // storage - the index of the interval in the partition
-        T value;
-
         // limits (static constants)
         static const T min = T_min;
         static const T max = T_max;
-        static const size_t size = (size_t)T_max - (size_t)T_min + 1;
+        static const size_t size = T_max - T_min + 1;
+
+    private:
+        // assignment cover function
+        void set_value(T new_value)
+        {
+            value = (new_value < T_min) ? T_min : (new_value > T_max) ? T_max : new_value;
+        }
+
+        // storage - the index of the interval in the partition
+        T value;
     };
 
 } // namespace mm

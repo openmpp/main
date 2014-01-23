@@ -35,12 +35,6 @@ namespace mm {
         20,
         30
     };
-    //extern const set<real> om_splitter_AGE_GROUP = {
-    //    0.5,
-    //    10,
-    //    20,
-    //    30
-    //};
     extern const std::map<real, int> om_splitter_AGE_GROUP = {
         { 0.5, 0 },
         { 10, 1 },
@@ -61,6 +55,15 @@ namespace mm {
         // test of object creation/initialization
         AGE_GROUP ag1 = 0;
 
+        // test of operator overloading
+        ag1++;
+
+        // test of operator overloading
+        ag1 = 42;
+
+        // test of arithmetic
+        AGE_GROUP ag2 = ag1 - 2;
+
         // test of compile-time constant array limits for declarations
         double income[AGE_GROUP::size] = { 100, 200, 300, 400, 500 };
 
@@ -68,8 +71,8 @@ namespace mm {
         double sum = 0;
         for (int j : AGE_GROUP::indices()) {
             // test of upper() & lower()
-            double lower = AGE_GROUP::lower_bound()[j];
-            double upper = AGE_GROUP::upper_bound()[j];
+            double lower = AGE_GROUP::lower_bounds()[j];
+            double upper = AGE_GROUP::upper_bounds()[j];
             sum += income[j];
         }
 

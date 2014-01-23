@@ -83,10 +83,20 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="test_classification.cpp" />
     <ClCompile Include="test_partition.cpp" />
+    <ClCompile Include="test_range.cpp" />
     <ClCompile Include="test_templates.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\omc\Agent.h" />
+    <ClInclude Include="..\include\omc\AgentVar.h" />
+    <ClInclude Include="..\include\omc\Classification.h" />
+    <ClInclude Include="..\include\omc\Event.h" />
+    <ClInclude Include="..\include\omc\less_deref.h" />
+    <ClInclude Include="..\include\omc\Partition.h" />
+    <ClInclude Include="..\include\omc\Range.h" />
+    <ClInclude Include="..\include\omc\range_int.h" />
     <ClInclude Include="om_types0.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

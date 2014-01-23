@@ -7,55 +7,39 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include <array>
+#include "omc/range_int.h"
 
 using namespace std;
 
 namespace mm {
 
-    template<typename T, T min_val, T max_val>
+    /**
+    * A range.
+    *
+    * @tparam T     Storage type for range value.
+    * @tparam T_min Minimum value of range.
+    * @tparam T_max Maximum value of range.
+    */
+
+    template<
+        typename T,
+        T T_min,
+        T T_max
+    >
     class Range
     {
     public:
         // ctors
         Range()
-        {
-            set(min_val);
-            if (!initialization_done) initialize();
-        }
+            : value(T_min)
+        {}
 
         Range(T val)
-        {
-            set(val);
-            if (!initialization_done) initialize();
-        }
-
-        void initialize()
-        {
-            // initialize static helper arrays for range-based for in model code
-            for (int i = 0; i < size; ++i) {
-                indices[i] = i;
-                values[i] = i + min_val;
-            }
-            initialization_done = true;
-        }
-
-        // assignment cover function
-        void set(T new_value)
-        {
-            if (new_value < min_val) {
-                value = min_val;
-            }
-            else if (new_value > max_val) {
-                value = max_val;
-            }
-            else {
-                value = new_value;
-            }
-        }
+            : value((val < T_min) ? T_min : (val > T_max) ? T_max : val)
+        {}
 
         // operator: cast to T (use in C++ expression)
-        operator T()
+        operator T() const
         {
             return value;
         }
@@ -63,7 +47,7 @@ namespace mm {
         // operator: direct assignment
         Range& operator=(T new_value)
         {
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -71,7 +55,7 @@ namespace mm {
         Range& operator+=(T modify_value)
         {
             T new_value = value + modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -79,7 +63,7 @@ namespace mm {
         Range& operator-=(T modify_value)
         {
             T new_value = value - modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -87,7 +71,7 @@ namespace mm {
         Range& operator*=(T modify_value)
         {
             T new_value = value * modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -95,7 +79,7 @@ namespace mm {
         Range& operator/=(T modify_value)
         {
             T new_value = value / modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -103,7 +87,7 @@ namespace mm {
         Range& operator%=(T modify_value)
         {
             T new_value = value % modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -111,7 +95,7 @@ namespace mm {
         Range& operator<<=(T modify_value)
         {
             T new_value = value << modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -119,7 +103,7 @@ namespace mm {
         Range& operator>>=(T modify_value)
         {
             T new_value = value >> modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -127,7 +111,7 @@ namespace mm {
         Range& operator&=(T modify_value)
         {
             T new_value = value & modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -135,7 +119,7 @@ namespace mm {
         Range& operator^=(T modify_value)
         {
             T new_value = value ^ modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -143,7 +127,7 @@ namespace mm {
         Range& operator|=(T modify_value)
         {
             T new_value = value | modify_value;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -151,7 +135,7 @@ namespace mm {
         Range& operator++()
         {
             T new_value = value + 1;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -159,7 +143,7 @@ namespace mm {
         Range& operator--()
         {
             T new_value = value - 1;
-            this->set(new_value);
+            this->set_value(new_value);
             return *this;
         }
 
@@ -167,7 +151,7 @@ namespace mm {
         T operator++(int)
         {
             T new_value = 1 + value;
-            this->set(new_value);
+            this->set_value(new_value);
             return new_value;
         }
 
@@ -175,46 +159,55 @@ namespace mm {
         T operator--(int)
         {
             T new_value = value - 1;
-            this->set(new_value);
+            this->set_value(new_value);
             return new_value;
-        }
-
-        // 0-based value for indexing
-        int index() const
-        {
-            return (int)value - (int)min_val;
         }
 
         // test if value falls within range limits
         static bool within(int value)
         {
-            return (value >= min_val) && (value <= max_val);
+            return (value >= T_min) && (value <= T_max);
         }
 
-        // storage
-        T value;
+        // test if value falls within range limits
+        static bool within(double value)
+        {
+            return (value >= T_min) && (value <= T_max);
+        }
+
+        // return a range_int object for iterating indices of this range
+        static range_int<0, T_max - T_min + 1> indices()
+        {
+            return range_int<0, T_max - T_min + 1>();
+        }
+
+        // return a range_int object for iterating values of this range
+        static range_int<T_min, T_max> values()
+        {
+            return range_int<T_min, T_max>();
+        }
+
+        // 0-based index corresponding to value
+        static size_t to_index(T value)
+        {
+            return value - T_min;
+        }
 
         // limits (static constants)
-        static const T min = min_val;
-        static const T max = max_val;
-        static const T size = max_val - min_val + 1;
+        static const T min = T_min;
+        static const T max = T_max;
+        static const size_t size = T_max - T_min + 1;
 
-        static bool initialization_done;
+    private:
+        // assignment cover function
+        void set_value(T new_value)
+        {
+            value = (new_value < T_min) ? T_min : (new_value > T_max) ? T_max : new_value;
+        }
 
-        // Support for range-based for loops in model code
-        // Would be more elegant with boost:counting_range or similar.
-        static array<int, size> values;
-        static array<int, size> indices;
+        // storage - the index of the interval in the partition
+        T value;
     };
-
-    template<typename T, T min_val, T max_val>
-    array<int, max_val - min_val + 1> Range<T, min_val, max_val>::indices;
-
-    template<typename T, T min_val, T max_val>
-    array<int, max_val - min_val + 1> Range<T, min_val, max_val>::values;
-
-    template<typename T, T min_val, T max_val>
-    bool Range<T, min_val, max_val>::initialization_done = false;
 
 } // namespace mm
 
