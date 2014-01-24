@@ -54,10 +54,20 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += doxygen(name);
-    // Ex. extern real om_cutpoints_AGE_GROUP[];
-    h += "extern real om_cutpoints_" + name + "[];";
+
+    // lower bounds of intervals in partition
+    h += "extern const array<real, " + to_string(pp_size()) + "> om_lower_" + name + ";";
+    // upper bounds of intervals in partition
+    h += "extern const array<real, " + to_string(pp_size()) + "> om_upper_" + name + ";";
+    // splitter map for partition
+    h += "extern const map<real, int> om_splitter_" + name + ";";
+
     // Ex. typedef Partition<int, 5, om_cutpoints_AGE_GROUP> AGE_GROUP;
-    h += "typedef Partition<int, " + to_string(pp_size()) + ", om_cutpoints_" + name + "> " + name + "; " ;
+    h += "typedef Partition<int, "
+        + to_string(pp_size()) + ", "
+        + "om_lower_" + name + ", "
+        + "om_upper_" + name + ", "
+        + "om_splitter_" + name + "> " + name + ";" ;
 
     return h;
 }
@@ -70,16 +80,55 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += doxygen(name);
-    h += "real om_cutpoints_" + name + "[] = { ";
-    int j = 0;
+
+    int index;  // index of interval in partition
+
+    h += "// lower bounds of intervals in partition";
+    h += "const array<real, " + to_string(pp_size()) + "> om_lower_" + name + " = {";
+    index = 0;  // index of interval in partition
+    for (auto enumerator : pp_enumerators) {
+        if (index > 0) {
+            auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
+            assert(pes); // grammar guarantee
+            h += pes->lower_split_point + ",";
+        }
+        else {
+            // special case for upper limit of last partition interval
+            h += "-REAL_MAX,";
+        }
+        ++index;
+    }
+    h += "};";
+
+    h += "// upper bounds of intervals in partition";
+    h += "const array<real, " + to_string(pp_size()) + "> om_upper_" + name + " = {";
+    index = 0;
+    for (auto enumerator : pp_enumerators) {
+        if (index < (pp_size() - 1)) {
+            auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
+            assert(pes); // grammar guarantee
+            h += pes->upper_split_point + ",";
+        }
+        else {
+            // special case for upper limit of last partition interval
+            h += "REAL_MAX";
+        }
+        ++index;
+    }
+    h += "};";
+
+    h += "// splitter map for partition";
+    h += "extern const map<real, int> om_splitter_" + name + " = {";
+    index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
         assert(pes); // grammar guarantee
-        h += pes->upper_split_point + ",";
-        // omit last partition interval, since it has no upper break-point
-        if ( (pp_size() - 1) == ++j ) break;
+        h += "{ " + pes->upper_split_point + ", " + to_string(index) + " }," ;
+        ++index;
+        if (index == (pp_size() - 1)) break;
     }
     h += "};";
+
 
     return h;
 }

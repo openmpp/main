@@ -20,7 +20,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += doxygen(name);
-    h += "enum om_enum_" + name + " {";
+    h += "enum om_enum_" + name + " : int {";
     bool first = true;
     for (auto enumerator : pp_enumerators) {
         if (first) {

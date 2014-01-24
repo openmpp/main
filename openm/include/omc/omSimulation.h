@@ -30,10 +30,12 @@
 #define MIN( symbol )				(symbol::min)
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
-#define RANGE_POS( rname, val )     (((rname)val).index())
+#define RANGE_POS( rname, val )     (rname::to_index(val))
 #define COERCE( rname, val )        ((rname)val)
 #define WITHIN( rname, val )        (rname::within(val))
 #define POINTS( symbol )		   	(symbol::upper_bounds())
+#define SPLIT( val, symbol )        (symbol::to_index(val))
+
 
 // The following are temporary kludges
 #define WriteDebugLogEntry printf

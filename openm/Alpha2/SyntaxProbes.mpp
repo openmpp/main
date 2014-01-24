@@ -12,6 +12,15 @@ classification SEX //EN Sex
     MALE
 };
 
+classification REGION //EN Region
+{
+    //EN East
+    EAST,
+
+    //EN West
+    WEST
+};
+
 partition AGE_GROUP //EN Age group
 {
     0.5,
@@ -22,8 +31,8 @@ partition AGE_GROUP //EN Age group
 
 range YEARS //EN Year
 {
-    -10,
-    10
+    -3,
+     4
 };
 
 parameters
