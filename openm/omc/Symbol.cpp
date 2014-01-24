@@ -2,7 +2,7 @@
  * @file    Symbol.cpp
  * Definitions for the Symbol class.
  */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>

@@ -2,7 +2,7 @@
  * @file
  * OpenM++ data library: class to produce insert sql statements for new model
  */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #ifndef MODEL_INSERT_SQL_H

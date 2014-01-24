@@ -2,7 +2,7 @@
  * @file
  * OpenM++ data library: base class for db connection wrapper
  */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #ifndef DB_EXEC_BASE_H

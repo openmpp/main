@@ -2,7 +2,7 @@
 * @file    test_classification.cpp
 * Used for development testing of the run-time support classes
 */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>

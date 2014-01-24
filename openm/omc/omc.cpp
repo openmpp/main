@@ -24,7 +24,7 @@
 * Parameters can be specified on command line or through ini-file. 
 * Command line parameters take precedence.
 */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <iostream>

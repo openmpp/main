@@ -2,7 +2,7 @@
  * @file
  * OpenM++ data library: db tables for model metadata
  */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #ifndef DB_META_TABLE_H

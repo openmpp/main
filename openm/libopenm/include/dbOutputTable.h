@@ -2,7 +2,7 @@
  * @file
  * OpenM++ data library: output table interfaces
  */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #ifndef DB_OUTPUT_TABLE_H

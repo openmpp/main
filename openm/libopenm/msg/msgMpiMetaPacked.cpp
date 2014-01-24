@@ -1,5 +1,5 @@
 // OpenM++ message passing library: pack and unpack adapters for metadata db rows
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #ifdef OM_MSG_MPI

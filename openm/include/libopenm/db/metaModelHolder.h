@@ -2,7 +2,7 @@
  * @file
  * OpenM++ modeling library: holder struct for model metadata.
  */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #ifndef META_MODEL_HOLDER_H
