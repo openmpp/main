@@ -31,11 +31,11 @@ namespace mm {
     public:
         // ctors
         Range()
-            : value(T_min)
+            : value(min)
         {}
 
         Range(T val)
-            : value((val < T_min) ? T_min : (val > T_max) ? T_max : val)
+            : value((val < min) ? min : (val > max) ? max : val)
         {}
 
         // operator: cast to T (use in C++ expression)
@@ -54,7 +54,7 @@ namespace mm {
         // operator: assignment by sum
         Range& operator+=(T modify_value)
         {
-            T new_value = value + modify_value;
+            int new_value = (int)value + modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -62,7 +62,7 @@ namespace mm {
         // operator: assignment by difference
         Range& operator-=(T modify_value)
         {
-            T new_value = value - modify_value;
+            int new_value = (int)value - modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -70,7 +70,7 @@ namespace mm {
         // operator: assignment by product
         Range& operator*=(T modify_value)
         {
-            T new_value = value * modify_value;
+            int new_value = (int)value * modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -78,7 +78,7 @@ namespace mm {
         // operator: assignment by quotient
         Range& operator/=(T modify_value)
         {
-            T new_value = value / modify_value;
+            int new_value = (int)value / modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -86,7 +86,7 @@ namespace mm {
         // operator: assignment by remainder
         Range& operator%=(T modify_value)
         {
-            T new_value = value % modify_value;
+            int new_value = (int) value % modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -94,7 +94,7 @@ namespace mm {
         // operator: assignment by bitwise left shift
         Range& operator<<=(T modify_value)
         {
-            T new_value = value << modify_value;
+            int new_value = (int)value << modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -102,7 +102,7 @@ namespace mm {
         // operator: assignment by bitwise right shift
         Range& operator>>=(T modify_value)
         {
-            T new_value = value >> modify_value;
+            int new_value = (int)value >> modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -110,7 +110,7 @@ namespace mm {
         // operator: assignment by bitwise AND
         Range& operator&=(T modify_value)
         {
-            T new_value = value & modify_value;
+            int new_value = (int)value & modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -118,7 +118,7 @@ namespace mm {
         // operator: assignment by bitwise XOR
         Range& operator^=(T modify_value)
         {
-            T new_value = value ^ modify_value;
+            int new_value = (int)value ^ modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -126,7 +126,7 @@ namespace mm {
         // operator: assignment by bitwise OR
         Range& operator|=(T modify_value)
         {
-            T new_value = value | modify_value;
+            int new_value = (int)value | modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -134,7 +134,7 @@ namespace mm {
         // operator: prefix increment
         Range& operator++()
         {
-            T new_value = value + 1;
+            int new_value = (int)value + 1;
             this->set_value(new_value);
             return *this;
         }
@@ -142,7 +142,7 @@ namespace mm {
         // operator: prefix decrement
         Range& operator--()
         {
-            T new_value = value - 1;
+            int new_value = (int)value - 1;
             this->set_value(new_value);
             return *this;
         }
@@ -150,35 +150,33 @@ namespace mm {
         // operator: postfix increment
         T operator++(int)
         {
-            T new_value = 1 + value;
-            this->set_value(new_value);
-            return new_value;
+            int new_value = 1 + (int)value;
+            return this->set_value(new_value);
         }
 
         // operator: postfix decrement
         T operator--(int)
         {
-            T new_value = value - 1;
-            this->set_value(new_value);
-            return new_value;
+            int new_value = (int)value - 1;
+            return this->set_value(new_value);
         }
 
         // test if value falls within range limits
         static bool within(int value)
         {
-            return (value >= T_min) && (value <= T_max);
+            return (value >= min) && (value <= max);
         }
 
         // test if value falls within range limits
         static bool within(double value)
         {
-            return (value >= T_min) && (value <= T_max);
+            return (value >= min) && (value <= max);
         }
 
         // return a range_int object for iterating indices of this range
-        static range_int<0, T_max - T_min + 1> indices()
+        static range_int<0, T_max - T_min> indices()
         {
-            return range_int<0, T_max - T_min + 1>();
+            return range_int<0, T_max - T_min>();
         }
 
         // return a range_int object for iterating values of this range
@@ -190,19 +188,19 @@ namespace mm {
         // 0-based index corresponding to value
         static size_t to_index(T value)
         {
-            return value - T_min;
+            return value - min;
         }
 
         // limits (static constants)
         static const T min = T_min;
         static const T max = T_max;
-        static const size_t size = T_max - T_min + 1;
+        static const size_t size = (int)T_max - (int)T_min + 1;
 
     private:
         // assignment cover function
-        void set_value(T new_value)
+        T set_value(int new_value)
         {
-            value = (new_value < T_min) ? T_min : (new_value > T_max) ? T_max : new_value;
+            return value = (T)((new_value < min) ? min : (new_value > max) ? max : new_value);
         }
 
         // storage - the index of the interval in the partition

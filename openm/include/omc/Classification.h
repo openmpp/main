@@ -33,7 +33,7 @@ namespace mm {
         {}
 
         Classification(T val)
-            : value(val)
+            : value(val) // C++ compiler provides value protection through enum
         {}
 
         // operator: cast to T (use in C++ expression)
@@ -52,7 +52,7 @@ namespace mm {
         // operator: prefix increment
         Classification& operator++()
         {
-            T new_value = (T) (value + 1);
+            int new_value = (int)value + 1;
             this->set_value(new_value);
             return *this;
         }
@@ -60,7 +60,7 @@ namespace mm {
         // operator: prefix decrement
         Classification& operator--()
         {
-            T new_value = (T) (value - 1);
+            int new_value = (int)value - 1;
             this->set_value(new_value);
             return *this;
         }
@@ -68,14 +68,14 @@ namespace mm {
         // operator: postfix increment
         T operator++(int)
         {
-            T new_value = (T) (1 + value);
+            int new_value = 1 + (int)value;
             return this->set_value(new_value);
         }
 
         // operator: postfix decrement
         T operator--(int)
         {
-            T new_value = (T) (value - 1);
+            int new_value = (int)value - 1;
             return this->set_value(new_value);
         }
 
@@ -92,9 +92,9 @@ namespace mm {
 
     private:
         // assignment cover function
-        T set_value(T new_value)
+        T set_value(int new_value)
         {
-            return value = (T)((new_value < 0) ? 0 : (new_value >= T_size) ? T_size - 1 : new_value);
+            return value = (T)((new_value < min) ? min : (new_value > max) ? max : new_value);
         }
 
         // storage - the level in the classification

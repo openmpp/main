@@ -20,9 +20,8 @@ namespace mm {
     /**
      * A partition.
      *
-     * @tparam T     Storage type for partition value (index).
-     * @tparam T_min Minimum partition value (always 0 for partitions).
-     * @tparam T_max Maximum partition value (index).
+     * @tparam T     Storage type for partition value (index).  Must fall within limits of int.
+     * @tparam T_size Number of intervals in partition
      * @tparam T_lower  Array containing lower limit of each interval in the partition.
      * @tparam T_upper  Array containing upper limit of each interval in the partition.
      * @tparam T_set Set used by find_interval to find the interval for a given number.
@@ -30,10 +29,9 @@ namespace mm {
 
     template<
         typename T,
-        T T_min,
-        T T_max,
-        const array<real, T_max - T_min + 1> &T_lower,
-        const array<real, T_max - T_min + 1> &T_upper,
+        T T_size,
+        const array<real, T_size> &T_lower,
+        const array<real, T_size> &T_upper,
         const map<real, T> &T_splitter
     >
     class Partition
@@ -41,11 +39,11 @@ namespace mm {
     public:
         // ctors
         Partition()
-            : value(T_min)
+            : value(0)
         {}
 
         Partition(T val)
-            : value((val < T_min ) ? T_min : (val > T_max) ? T_max : val)
+            : value((val < 0 ) ? 0 : (val > max) ? max : val)
         {}
 
         // operator: cast to T (use in C++ expression)
@@ -64,7 +62,7 @@ namespace mm {
         // operator: assignment by sum
         Partition& operator+=(T modify_value)
         {
-            T new_value = value + modify_value;
+            int new_value = (int)value + modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -72,7 +70,7 @@ namespace mm {
         // operator: assignment by difference
         Partition& operator-=(T modify_value)
         {
-            T new_value = value - modify_value;
+            int new_value = (int)value - modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -80,7 +78,7 @@ namespace mm {
         // operator: assignment by product
         Partition& operator*=(T modify_value)
         {
-            T new_value = value * modify_value;
+            int new_value = (int)value * modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -88,7 +86,7 @@ namespace mm {
         // operator: assignment by quotient
         Partition& operator/=(T modify_value)
         {
-            T new_value = value / modify_value;
+            int new_value = (int)value / modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -96,7 +94,7 @@ namespace mm {
         // operator: assignment by remainder
         Partition& operator%=(T modify_value)
         {
-            T new_value = value % modify_value;
+            int new_value = (int)value % modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -104,7 +102,7 @@ namespace mm {
         // operator: assignment by bitwise left shift
         Partition& operator<<=(T modify_value)
         {
-            T new_value = value << modify_value;
+            int new_value = (int)value << modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -112,7 +110,7 @@ namespace mm {
         // operator: assignment by bitwise right shift
         Partition& operator>>=(T modify_value)
         {
-            T new_value = value >> modify_value;
+            int new_value = (int)value >> modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -120,7 +118,7 @@ namespace mm {
         // operator: assignment by bitwise AND
         Partition& operator&=(T modify_value)
         {
-            T new_value = value & modify_value;
+            int new_value = (int)value & modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -128,7 +126,7 @@ namespace mm {
         // operator: assignment by bitwise XOR
         Partition& operator^=(T modify_value)
         {
-            T new_value = value ^ modify_value;
+            int new_value = (int)value ^ modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -136,7 +134,7 @@ namespace mm {
         // operator: assignment by bitwise OR
         Partition& operator|=(T modify_value)
         {
-            T new_value = value | modify_value;
+            int new_value = (int)value | modify_value;
             this->set_value(new_value);
             return *this;
         }
@@ -144,7 +142,7 @@ namespace mm {
         // operator: prefix increment
         Partition& operator++()
         {
-            T new_value = value + 1;
+            int new_value = (int)value + 1;
             this->set_value(new_value);
             return *this;
         }
@@ -152,7 +150,7 @@ namespace mm {
         // operator: prefix decrement
         Partition& operator--()
         {
-            T new_value = value - 1;
+            int new_value = (int)value - 1;
             this->set_value(new_value);
             return *this;
         }
@@ -160,33 +158,31 @@ namespace mm {
         // operator: postfix increment
         T operator++(int)
         {
-            T new_value = 1 + value;
-            this->set_value(new_value);
-            return new_value;
+            int new_value = 1 + (int)value;
+            return this->set_value(new_value);
         }
 
         // operator: postfix decrement
         T operator--(int)
         {
-            T new_value = value - 1;
-            this->set_value(new_value);
-            return new_value;
+            int new_value = (int)value - 1;
+            return this->set_value(new_value);
         }
 
         // return a range_int object for iterating this partition
-        static range_int<T_min, T_max> indices()
+        static range_int<0, T_size - 1> indices()
         {
-            return range_int<T_min, T_max>();
+            return range_int<0, T_size - 1>();
         }
 
         // return reference to array containing lower value of intervals
-        static const array<real, T_max - T_min + 1> lower_bounds()
+        static const array<real, T_size> lower_bounds()
         {
             return T_lower;
         }
 
         // return reference to array containing upper value of intervals
-        static const array<real, T_max - T_min + 1> upper_bounds()
+        static const array<real, T_size> upper_bounds()
         {
             return T_upper;
         }
@@ -196,19 +192,19 @@ namespace mm {
         {
             // find first interval whose upper bound exceeds value
             auto it = T_splitter.upper_bound(value);
-            return (it == T_splitter.end()) ? T_max : it->second;
+            return (it == T_splitter.end()) ? max : it->second;
         }
 
         // limits (static constants)
-        static const T min = T_min;
-        static const T max = T_max;
-        static const size_t size = T_max - T_min + 1;
+        static const T min = 0;
+        static const T max = T_size - 1;
+        static const size_t size = T_size;
 
     private:
         // assignment cover function
-        void set_value(T new_value)
+        T set_value(int new_value)
         {
-            value = (new_value < T_min) ? T_min : (new_value > T_max) ? T_max : new_value;
+            return value = (T) ((new_value < min) ? min : (new_value > max) ? max : new_value);
         }
 
         // storage - the index of the interval in the partition
