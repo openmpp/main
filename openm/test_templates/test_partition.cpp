@@ -10,7 +10,7 @@
 #include <cmath>
 #include "om_types0.h"
 #include "omc/Partition.h"
-#include "omc/range_int.h"
+#include "omc/integer_counter.h"
 
 namespace mm {
 

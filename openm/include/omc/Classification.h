@@ -7,7 +7,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "omc/range_int.h"
+#include "omc/integer_counter.h"
 
 using namespace std;
 
@@ -79,10 +79,10 @@ namespace mm {
             return this->set_value(new_value);
         }
 
-        // return a range_int object for iterating this classification
-        static range_int<0, T_size - 1> indices()
+        // return a integer_counter object for iterating this classification
+        static integer_counter<0, T_size - 1> indices()
         {
-            return range_int<0, T_size - 1>();
+            return integer_counter<0, T_size - 1>();
         }
 
         // limits (static constants)

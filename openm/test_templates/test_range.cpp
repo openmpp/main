@@ -8,7 +8,7 @@
 #include <cassert>
 #include "om_types0.h"
 #include "omc/Range.h"
-#include "omc/range_int.h"
+#include "omc/integer_counter.h"
 
 namespace mm {
 

@@ -1,5 +1,5 @@
 /**
- * @file    range_int.h
+ * @file    integer_counter.h
  * Template to produce an iteratable range of integers
  *         
  */
@@ -14,7 +14,7 @@ namespace mm {
     /**
      * Template to use in range-based for to iterate over a range of integers
      * 
-     * Example: for ( int i : range_int<-5, 5> ) { }
+     * Example: for ( int i : integer_counter<-5, 5> ) { }
      * will iterate over the 11 values {-5, -4, ..., 5 }
      *
      * @tparam min_val The minimum value of the range.
@@ -22,16 +22,16 @@ namespace mm {
      */
 
     template <int min_val, int max_val>
-    class range_int {
+    class integer_counter {
     public:
         // ctor
-        range_int()
+        integer_counter()
         {
         }
 
         // embed iterator for simplicity
         class iterator {
-            friend class range_int;
+            friend class integer_counter;
 
             // ctor
             iterator(int start)

@@ -56,7 +56,7 @@
     <ClInclude Include="..\include\omc\Range.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\range_int.h">
+    <ClInclude Include="..\include\omc\integer_counter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

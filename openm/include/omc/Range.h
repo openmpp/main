@@ -7,7 +7,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "omc/range_int.h"
+#include "omc/integer_counter.h"
 
 using namespace std;
 
@@ -173,16 +173,16 @@ namespace mm {
             return (value >= min) && (value <= max);
         }
 
-        // return a range_int object for iterating indices of this range
-        static range_int<0, T_max - T_min> indices()
+        // return a integer_counter object for iterating indices of this range
+        static integer_counter<0, T_max - T_min> indices()
         {
-            return range_int<0, T_max - T_min>();
+            return integer_counter<0, T_max - T_min>();
         }
 
-        // return a range_int object for iterating values of this range
-        static range_int<T_min, T_max> values()
+        // return a integer_counter object for iterating values of this range
+        static integer_counter<T_min, T_max> values()
         {
-            return range_int<T_min, T_max>();
+            return integer_counter<T_min, T_max>();
         }
 
         // 0-based index corresponding to value

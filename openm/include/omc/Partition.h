@@ -9,7 +9,7 @@
 #pragma once
 #include <map>
 #include <array>
-#include "omc/range_int.h"
+#include "omc/integer_counter.h"
 #include "om_types0.h" // for real
 
 using namespace std;
@@ -169,10 +169,10 @@ namespace mm {
             return this->set_value(new_value);
         }
 
-        // return a range_int object for iterating this partition
-        static range_int<0, T_size - 1> indices()
+        // return a integer_counter object for iterating this partition
+        static integer_counter<0, T_size - 1> indices()
         {
-            return range_int<0, T_size - 1>();
+            return integer_counter<0, T_size - 1>();
         }
 
         // return reference to array containing lower value of intervals
