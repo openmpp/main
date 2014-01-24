@@ -31,12 +31,38 @@ void PartitionSymbol::post_parse(int pass)
         {
             // Iterate the enumerators (now sorted)
             // to provide the lower limit of each enumerator.
-            string lower_split_point = "min";
-            for ( auto enumerator : pp_enumerators ) {
-                auto partition_enumerator = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
-                assert(partition_enumerator); // parser guarantee
-                partition_enumerator->lower_split_point = lower_split_point;
-                lower_split_point = partition_enumerator->upper_split_point;
+            // Also check that enumerators are strictly increasing.
+            string lower_bound = "min";
+            double lower_bound_value = -DBL_MAX;
+            string upper_bound = "";
+            double upper_bound_value = 0;
+            bool order_ok = true;
+            for ( auto e : pp_enumerators ) {
+                auto pe = dynamic_cast<PartitionEnumeratorSymbol *>(e);
+                assert(pe); // parser guarantee
+
+                // upper bound of interval is already known
+                upper_bound = pe->upper_split_point;
+                try {
+                    upper_bound_value = stod(upper_bound);
+                }
+                catch (...)
+                {
+                    upper_bound_value = DBL_MAX;
+                }
+
+                // assign lower bound to interval
+                pe->lower_split_point = lower_bound;
+
+                // check that partition cutpoints are strictly increasing
+                order_ok = order_ok && upper_bound_value > lower_bound_value;
+
+                // prepare for next interval in iteration
+                lower_bound = upper_bound;
+                lower_bound_value = upper_bound_value;
+            }
+            if (!order_ok) {
+                pp_error("semantic error, partition cutpoints are not strictly increasing");
             }
         }
         break;

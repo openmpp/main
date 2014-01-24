@@ -35,7 +35,6 @@ public:
         , classification_context(nullptr)
         , partition_context(nullptr)
         , parse_errors(0)
-		, post_parse_errors (0)
     {
         // The default location constructor for comment_location is fine.
     }
@@ -240,12 +239,6 @@ public:
 	 */
 
 	int parse_errors;
-
-	/**
-	 * A count of the number of omc post_parse errors in the model source files.
-	 */
-
-	int post_parse_errors;
 
 private:
 

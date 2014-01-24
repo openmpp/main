@@ -10,6 +10,8 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <set>
+#include "location.hh"
+#include "libopenm/omCommon.h"
 #include "CodeBlock.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
@@ -429,6 +431,8 @@ comment_map_type Symbol::cxx_comments;
 
 comment_map_type Symbol::c_comments;
 
+int Symbol::post_parse_errors = 0;
+
 void Symbol::post_parse(int pass)
 {
 }
@@ -460,6 +464,19 @@ CodeBlock Symbol::cxx_definition_global()
 void Symbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
 }
+
+string Symbol::pretty_name()
+{
+    return name;
+}
+
+void Symbol::pp_error(const string& msg)
+{
+    post_parse_errors++;
+    yy::location l = decl_loc;
+    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+}
+
 
 string Symbol::label(const LanguageSymbol & language) const
 {

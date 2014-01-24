@@ -246,7 +246,7 @@ int main(int argc, char * argv[])
         om_developer_cpp << "} //namespace mm" << endl;
 
         if ( pc.parse_errors > 0 ) {
-            theLog->logFormatted("Syntax errors (%d) in parse phase", pc.parse_errors);
+            theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);
             throw HelperException("Finish omc");
         }
 
@@ -256,10 +256,13 @@ int main(int argc, char * argv[])
         }
         catch(exception & ex) {
             theLog->logErr(ex);
-            if ( pc.post_parse_errors == 0 ) {
-                pc.post_parse_errors = 1;
-            }
-            theLog->logFormatted("Syntax errors (%d) in post-parse phase", pc.post_parse_errors);
+            // An error count of zero means something went seriously worng in the post-parse phase
+            // and an exception was thrown without first incrementing the error count and log message.
+            if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
+        }
+
+        if (Symbol::post_parse_errors > 0) {
+            theLog->logFormatted("%d semantic errors in post-parse phase", Symbol::post_parse_errors);
             throw HelperException("Finish omc");
         }
 

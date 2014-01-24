@@ -10,6 +10,9 @@
 #include "RangeEnumeratorSymbol.h"
 #include "CodeBlock.h"
 
+#include "location.hh"
+#include "libopenm/omCommon.h"
+
 using namespace std;
 using namespace openm;
 
@@ -32,6 +35,11 @@ void RangeSymbol::post_parse(int pass)
                 if (i < 0) enumerator_name += "_" + to_string(-i);
                 else  enumerator_name += to_string(i);
                 auto sym = new RangeEnumeratorSymbol(enumerator_name, this, j, lower_bound);
+            }
+
+            // Semantic errors for range can be detected in this pass
+            if (lower_bound > upper_bound) {
+                pp_error("semantic error, minimum of range is greater than maximum");
             }
         }
         break;

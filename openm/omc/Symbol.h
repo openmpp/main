@@ -365,10 +365,14 @@ public:
      * @return The short pretty name as a string.
      */
 
-    virtual string pretty_name()
-    {
-        return name;
-    }
+    virtual string pretty_name();
+
+
+    /**
+     * Process a semantic error encounftered during the post-parse phase.
+     */
+
+    void pp_error(const string& msg);
 
 
     /**
@@ -688,6 +692,12 @@ public:
 
     static unordered_set<string> om_developer_functions;
 
+
+    /**
+     * A count of errors identified during post-parse processing.
+     */
+
+    static int post_parse_errors;
 
 };
 
