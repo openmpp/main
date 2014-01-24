@@ -419,11 +419,15 @@ extern char *yytext;
 %left  "::"              // precedence 1
 
 %type  <val_token>      ModelType
+%type  <val_token>      TimeFundamentalType
+%type  <val_token>      RealFundamentalType
+%type  <val_token>      CounterFundamentalType
+%type  <val_token>      IntegerFundamentalType
 %type  <val_token>      ParameterFundamentalType
 %type  <val_token>      ModgenCumulationOperator
 %type  <val_token>      TableAccumulator
 %type  <val_token>      TableIncrement
-%type  <val_token>      FundamentalType
+%type  <val_token>      AgentVarFundamentalType
 %type  <val_token>      BoolLiteral
 %type  <pval_Literal>   AnyLiteral
 %type  <pval_Literal>   SignedNumericLiteral
@@ -497,7 +501,7 @@ Languages:
 	;
 
 Decl_time_type:
-	  "time_type" FundamentalType[type_to_use] ";"
+	  "time_type" TimeFundamentalType[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_Time);
@@ -512,8 +516,22 @@ Decl_time_type:
                         }
     ;
 
+TimeFundamentalType:
+      "char"
+    | "short"
+    | "int"
+    | "long"
+    | "uchar"
+    | "ushort"
+    | "uint"
+    | "ulong"
+    | "float"
+    | "double"
+    ;
+
+
 Decl_real_type:
-      "real_type" FundamentalType[type_to_use] ";"
+      "real_type" RealFundamentalType[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_real);
@@ -528,8 +546,13 @@ Decl_real_type:
                         }
     ;
 
+RealFundamentalType:
+      "float"
+    | "double"
+    ;
+
 Decl_counter_type:
-	  "counter_type" FundamentalType[type_to_use] ";"
+	  "counter_type" CounterFundamentalType[type_to_use] ";"
 						{
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_counter);
@@ -544,8 +567,20 @@ Decl_counter_type:
                         }
     ;
 
+CounterFundamentalType:
+      "char"
+    | "uchar"
+    | "short"
+    | "ushort"
+    | "int"
+    | "uint"
+    | "long"
+    | "ulong"
+    ;
+
+
 Decl_integer_type:
-      "integer_type" FundamentalType[type_to_use] ";"
+      "integer_type" IntegerFundamentalType[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_integer);
@@ -559,6 +594,14 @@ Decl_integer_type:
                             pc.InitializeForCxxOutside();
                         }
     ;
+
+IntegerFundamentalType:
+      "char"
+    | "short"
+    | "int"
+    | "long"
+    ;
+
 
 Decl_model_type:
           "model_type" ModelType[type_to_use] ";"
@@ -804,11 +847,11 @@ AgentMember:
     ;
 
 Decl_SimpleAgentVar:
-      FundamentalType[type] SYMBOL ";"
+      AgentVarFundamentalType[type] SYMBOL ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, nullptr, @SYMBOL );
                         }
-    | FundamentalType[type] SYMBOL "=" "{" AnyLiteral "}" ";"
+    | AgentVarFundamentalType[type] SYMBOL "=" "{" AnyLiteral "}" ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral, @SYMBOL );
                         }
@@ -830,7 +873,7 @@ Decl_SimpleAgentVar:
                         }
     ;
 
-FundamentalType:
+AgentVarFundamentalType:
       "int"
     | "char"
     | "short"
