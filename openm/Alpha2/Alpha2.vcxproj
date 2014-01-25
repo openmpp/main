@@ -184,6 +184,7 @@
     <ClInclude Include="Alpha2.mpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Extensions.ompp" />
     <None Include="StartSimulation.ompp" />
     <None Include="SyntaxProbes.mpp" />
   </ItemGroup>

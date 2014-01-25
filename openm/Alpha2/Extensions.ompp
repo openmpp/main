@@ -1,0 +1,22 @@
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(Extensions, EN) Extensions
+
+/* NOTE(Extensions, EN)
+	This module tests openM++ functionality which is not present in Modgen.
+*/
+
+parameters
+{
+    schar a_schar;
+    llong a_llong;
+    ullong a_ullong;
+    ldouble a_ldouble;
+
+    signed char b_schar;
+    long long b_llong;
+    unsigned long long b_ullong;
+    long double b_ldouble;
+};
+

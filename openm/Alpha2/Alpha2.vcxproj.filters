@@ -90,5 +90,8 @@
     <None Include="SyntaxProbes.mpp">
       <Filter>Model Source Files</Filter>
     </None>
+    <None Include="Extensions.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
