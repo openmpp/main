@@ -124,6 +124,7 @@ void CodeGen::do_preamble()
                 " Time stamp = " + model_symbol->time_stamp
                 );
 	c += "";
+    c += "#include <cassert>";
     c += "#include <typeinfo>";
     c += "#include \"omc/omSimulation.h\"";
     c += "";
@@ -206,19 +207,15 @@ void CodeGen::do_ModelStartup()
 	c += "void ModelStartup(IModel * i_model)";
 	c += "{";
 	c += "using namespace mm;";
-	c += "// load model parameters";
-	c += "theLog->logMsg(\"Reading Parameters\");";
-    for ( auto parameter : Symbol::pp_all_parameters ) {
-        string name = parameter->name;
-        string typ;
-        if (parameter->pp_is_enum) {
-            // enum types have underlying type 'int'
-            typ = "int";
-        }
-        else {
-            typ = parameter->type_symbol->name;
-        }
-	    c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
+    c += "";
+    c += "// sanity type check of storage type and readParameters type argument";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        c += parameter->cxx_assert_sanity();
+    }
+    c += "";
+    c += "theLog->logMsg(\"Reading Parameters\");";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        c += "i_model->" + parameter->cxx_read_parameter();
     }
 	c += "}";
 	c += "";

@@ -32,6 +32,24 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+
+    /**
+     * readParameter C++ code fragment
+     *
+     * @return A string.
+     */
+
+    string cxx_read_parameter();
+
+
+    /**
+     * assert C++ code fragment to verify storage type nad readParameter type.
+     *
+     * @return A string.
+     */
+
+    string cxx_assert_sanity();
+
     // members
     
     /**

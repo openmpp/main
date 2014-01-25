@@ -30,8 +30,8 @@ void PartitionSymbol::post_parse(int pass)
     case ePopulateDependencies:
         {
             // Information to compute storage type is known in this pass
-            //storage_type = optimized_storage_type(0, pp_size() - 1);
-            storage_type = token::TK_int;
+            storage_type = optimized_storage_type(0, pp_size() - 1);
+            //SFG storage_type = token::TK_int;
 
             // Iterate the enumerators (now sorted)
             // to provide the lower limit of each enumerator.

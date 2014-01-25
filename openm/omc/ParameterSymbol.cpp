@@ -104,3 +104,40 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 }
 
+string ParameterSymbol::cxx_read_parameter()
+{
+    string typ; // storage type
+    if (pp_is_enum) {
+        // for parameters of type classification, range, or partition
+        // get the underlying storage type
+        auto ens = dynamic_cast<EnumTypeSymbol *>(pp_type_symbol);
+        assert(ens); // grammar guarantee
+        typ = Symbol::token_to_string(ens->storage_type);
+    }
+    else {
+        // For fundamental types (and bool), the name of the symbol is the name of the type
+        typ = type_symbol->name;
+    }
+
+    string result = "readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
+    return result;
+}
+
+string ParameterSymbol::cxx_assert_sanity()
+{
+    string typ; // storage type
+    if (pp_is_enum) {
+        // for parameters of type classification, range, or partition
+        // get the underlying storage type
+        auto ens = dynamic_cast<EnumTypeSymbol *>(pp_type_symbol);
+        assert(ens); // grammar guarantee
+        typ = Symbol::token_to_string(ens->storage_type);
+    }
+    else {
+        // For fundamental types (and bool), the name of the symbol is the name of the type
+        typ = type_symbol->name;
+    }
+
+    string result = "assert(sizeof(" + name + ") == sizeof(" + typ + "));" ;
+    return result;
+}

@@ -39,7 +39,6 @@ void RangeSymbol::post_parse(int pass)
 
             // Information to compute storage type is known in this pass
             storage_type = optimized_storage_type(lower_bound, upper_bound);
-            storage_type = token::TK_int;
 
             // Semantic errors for range can be detected in this pass
             if (lower_bound > upper_bound) {
