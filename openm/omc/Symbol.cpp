@@ -13,6 +13,7 @@
 #include <set>
 #include "location.hh"
 #include "libopenm/omCommon.h"
+#include "../libopenm/include/modelSqlBuilder.h" // for OM_MAX_BUILTIN_TYPE_ID
 #include "CodeBlock.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
@@ -557,8 +558,11 @@ void Symbol::populate_default_symbols()
     sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), ets_bool, 0);
     sym = new BoolEnumeratorSymbol(token_to_string(token::TK_true), ets_bool, 1);
 
+    // check that there aren't more built-in types than the API allows permits.
+    assert(OM_MAX_BUILTIN_TYPE_ID >= TypeSymbol::next_type_id - 1);
 
-    //sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);
+    // Set type_id counter so that API will correctly detect these as 'enum types'.
+    TypeSymbol::next_type_id = OM_MAX_BUILTIN_TYPE_ID + 1;
 }
 
 /**
