@@ -42,6 +42,16 @@ namespace mm {
         y1 -= 100;
         assert(y1 == -3);
 
+        // test of to_index
+        size_t n1 = y1.to_index();
+        assert(n1 == 0);
+
+        size_t n2 = YEAR::to_index(0);
+        assert(n2 == 3);
+
+        int n3 = YEAR::to_value(5);
+        assert(n3 == 2);
+
         // test of arithmetic
         YEAR y2 = y1 + 2;
         assert(y2 == -1);

@@ -161,6 +161,12 @@ namespace mm {
             return this->set_value(new_value);
         }
 
+        // 0-based index corresponding to value
+        size_t to_index()
+        {
+            return value - min;
+        }
+
         // test if value falls within range limits
         static bool within(int value)
         {
@@ -185,10 +191,16 @@ namespace mm {
             return integer_counter<T_min, T_max>();
         }
 
-        // 0-based index corresponding to value
+        // convert given value to 0-based index
         static size_t to_index(T value)
         {
             return value - min;
+        }
+
+        // convert given 0-based index to value
+        static T to_value(size_t index)
+        {
+            return (T)(index + min);
         }
 
         // limits (static constants)
