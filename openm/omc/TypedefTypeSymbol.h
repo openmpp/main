@@ -70,6 +70,23 @@ public:
         Set_keywords(kw1, kw2);
     }
 
+    /**
+    * Constructor.
+    *
+    * @param type The token for the keyword of the type, e.g. token::KW_ullong.
+    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_unsigned.
+    * @param kw2  Keyword #2 for the associated typedef, e.g. token::KW_long.
+    * @param kw3  Keyword #3 for the associated typedef, e.g. token::KW_long.
+    */
+
+    TypedefTypeSymbol(token_type type, token_type kw1, token_type kw2, token_type kw3, const string & initial_value)
+        : TypeSymbol(token_to_string(type))
+        , type(type)
+        , initial_value(initial_value)
+    {
+        Set_keywords(kw1, kw2, kw3);
+    }
+
     void Set_keywords() {
         keywords.clear();
     }
@@ -82,6 +99,11 @@ public:
     void Set_keywords(token_type kw1, token_type kw2) {
         Set_keywords(kw1);
         keywords.push_back(kw2);
+    }
+
+    void Set_keywords(token_type kw1, token_type kw2, token_type kw3) {
+        Set_keywords(kw1, kw2);
+        keywords.push_back(kw3);
     }
 
     const string get_initial_value() const {

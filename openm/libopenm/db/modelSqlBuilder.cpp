@@ -911,28 +911,40 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
 
             if (typeRow.typeId == paramRow.typeId) {
 
-                // built-in types
-                if (equalNoCase(typeRow.name.c_str(), "int")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "char")) tblInf.valueTypeName = "INT";
+                // built-in types (ordered as in omc grammar for clarity)
+
+                // C++ ambiguous integral type
+                // (in C/C++, the signedness of char is not specified)
+                if (equalNoCase(typeRow.name.c_str(), "char")) tblInf.valueTypeName = "SMALLINT";
+
+                // C++ signed integral types
+                if (equalNoCase(typeRow.name.c_str(), "schar")) tblInf.valueTypeName = "SMALLINT";
                 if (equalNoCase(typeRow.name.c_str(), "short")) tblInf.valueTypeName = "SMALLINT";
+                if (equalNoCase(typeRow.name.c_str(), "int")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "long")) tblInf.valueTypeName = "BIGINT";
-                if (equalNoCase(typeRow.name.c_str(), "uint")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "uchar")) tblInf.valueTypeName = "INT";
+                if (equalNoCase(typeRow.name.c_str(), "llong")) tblInf.valueTypeName = "BIGINT";
+
+                // C++ unsigned integral types (including bool)
+                if (equalNoCase(typeRow.name.c_str(), "bool")) tblInf.valueTypeName = "SMALLINT";
+                if (equalNoCase(typeRow.name.c_str(), "uchar")) tblInf.valueTypeName = "SMALLINT";
                 if (equalNoCase(typeRow.name.c_str(), "ushort")) tblInf.valueTypeName = "SMALLINT";
+                if (equalNoCase(typeRow.name.c_str(), "uint")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "ulong")) tblInf.valueTypeName = "BIGINT";
-                //if (equalNoCase(typeRow.name.c_str(), "integer")) tblInf.valueTypeName = "INT";
-                //if (equalNoCase(typeRow.name.c_str(), "counter")) tblInf.valueTypeName = "INT";
-                //if (equalNoCase(typeRow.name.c_str(), "real")) tblInf.valueTypeName = "FLOAT";
+                if (equalNoCase(typeRow.name.c_str(), "ullong")) tblInf.valueTypeName = "BIGINT";
+
+                // C++ floating point types
                 if (equalNoCase(typeRow.name.c_str(), "float")) tblInf.valueTypeName = "FLOAT";
                 if (equalNoCase(typeRow.name.c_str(), "double")) tblInf.valueTypeName = "FLOAT";
-                // if (equalNoCase(typeRow.name.c_str(), "TIME")) tblInf.valueTypeName = "INT";
-                // if (equalNoCase(typeRow.name.c_str(), "rate")) tblInf.valueTypeName = "FLOAT";
-                // if (equalNoCase(typeRow.name.c_str(), "cumrate")) tblInf.valueTypeName = "FLOAT";
-                // if (equalNoCase(typeRow.name.c_str(), "haz1rate")) tblInf.valueTypeName = "FLOAT";
-                // if (equalNoCase(typeRow.name.c_str(), "haz2rate")) tblInf.valueTypeName = "FLOAT";
-                // if (equalNoCase(typeRow.name.c_str(), "piece_linear")) tblInf.valueTypeName = "INT";
+                if (equalNoCase(typeRow.name.c_str(), "ldouble")) tblInf.valueTypeName = "FLOAT";
+
+                // Changeable numeric types
+                if (equalNoCase(typeRow.name.c_str(), "Time")) tblInf.valueTypeName = "FLOAT";
+                if (equalNoCase(typeRow.name.c_str(), "real")) tblInf.valueTypeName = "FLOAT";
+                if (equalNoCase(typeRow.name.c_str(), "integer")) tblInf.valueTypeName = "INT";
+                if (equalNoCase(typeRow.name.c_str(), "counter")) tblInf.valueTypeName = "INT";
+
+                // Not implemented (a string)
                 // if (equalNoCase(typeRow.name.c_str(), "file")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "bool")) tblInf.valueTypeName = "SMALLINT";
 
                 // model specific types: it must be enum
                 if (typeRow.typeId > OM_MAX_BUILTIN_TYPE_ID) {

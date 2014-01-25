@@ -521,11 +521,11 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_char, "0");
 
     // C++ signed integral types
-    // schar
+    sym = new TypedefTypeSymbol(token::TK_schar, token::TK_signed, token::TK_char, "0");
     sym = new TypedefTypeSymbol(token::TK_short, "0");
     sym = new TypedefTypeSymbol(token::TK_int, "0");
     sym = new TypedefTypeSymbol(token::TK_long, "0");
-    // llong
+    sym = new TypedefTypeSymbol(token::TK_llong, token::TK_long, token::TK_long, "0");
 
     // C++ unsigned integral types (including bool)
     Symbol *ets_bool = new EnumTypeSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type);
@@ -533,12 +533,12 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
     sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
     sym = new TypedefTypeSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long, "0");
-    // ullong
+    sym = new TypedefTypeSymbol(token::TK_ullong, token::TK_unsigned, token::TK_long, token::TK_long, "0");
 
     // C++ floating point types
     sym = new TypedefTypeSymbol(token::TK_float, "0.0");
     sym = new TypedefTypeSymbol(token::TK_double, "0.0");
-    // ldouble
+    sym = new TypedefTypeSymbol(token::TK_ldouble, token::TK_long, token::TK_double, "0");
  
     // Changeable numeric types
     sym = new TimeTypedefTypeSymbol(token::TK_double); // Time
@@ -546,13 +546,8 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int, "0"); // integer
     sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int, "0"); // counter
 
-    // space junk
-    sym = new TypedefTypeSymbol(token::TK_rate, "0");
-    sym = new TypedefTypeSymbol(token::TK_cumrate, "0");
-    sym = new TypedefTypeSymbol(token::TK_haz1rate, "0");
-    sym = new TypedefTypeSymbol(token::TK_haz2rate, "0");
-    sym = new TypedefTypeSymbol(token::TK_piece_linear, "0");
-    sym = new TypedefTypeSymbol(token::TK_file, "");
+    // Not implemented (a string)
+    //sym = new TypedefTypeSymbol(token::TK_file, "");
 
     // create enums for bool built-in type (perhaps should be done in new SymbolBool)
     sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), ets_bool, 0);
