@@ -503,20 +503,49 @@ void Symbol::populate_default_symbols()
 
     // types
 
-    sym = new TypedefTypeSymbol(token::TK_int, "0");
+    // The call order below creates an ascending type_id member
+    // used with the meta-data API. This order can be changed 
+    // without breaking existing data in API database, because each model
+    // has its own dictionary of types in the database.
+    // 
+    // For clarity, the order below corresponds to the order in the
+    // grammar (parser.y).
+    // 
+    // N.B. If the number of TypedefTypeSymbols below is changed, a manifest constant
+    // in the API must also be changed.  That manifest constant is used to distinguish
+    // model-specific types (classifications, ranges, partitions) in the meta-data API.
+
+    // C++ ambiguous integral type
+    // (in C/C++, the signedness of char is not specified)
     sym = new TypedefTypeSymbol(token::TK_char, "0");
+
+    // C++ signed integral types
+    // schar
     sym = new TypedefTypeSymbol(token::TK_short, "0");
+    sym = new TypedefTypeSymbol(token::TK_int, "0");
     sym = new TypedefTypeSymbol(token::TK_long, "0");
-    sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
+    // llong
+
+    // C++ unsigned integral types (including bool)
+    Symbol *ets_bool = new EnumTypeSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type);
     sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
     sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
+    sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
     sym = new TypedefTypeSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long, "0");
-    sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int, "0");
-    sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int, "0");
-    sym = new RealTypedefTypeSymbol(token::TK_double);
+    // ullong
+
+    // C++ floating point types
     sym = new TypedefTypeSymbol(token::TK_float, "0.0");
     sym = new TypedefTypeSymbol(token::TK_double, "0.0");
-    sym = new TimeTypedefTypeSymbol(token::TK_double);
+    // ldouble
+ 
+    // Changeable numeric types
+    sym = new TimeTypedefTypeSymbol(token::TK_double); // Time
+    sym = new RealTypedefTypeSymbol(token::TK_double); // real
+    sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int, "0"); // integer
+    sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int, "0"); // counter
+
+    // space junk
     sym = new TypedefTypeSymbol(token::TK_rate, "0");
     sym = new TypedefTypeSymbol(token::TK_cumrate, "0");
     sym = new TypedefTypeSymbol(token::TK_haz1rate, "0");
@@ -524,10 +553,9 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_piece_linear, "0");
     sym = new TypedefTypeSymbol(token::TK_file, "");
 
-    // bool built-in type
-    Symbol *sym_enum = new EnumTypeSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type);
-    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), sym_enum, 0);
-    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_true), sym_enum, 1);
+    // create enums for bool built-in type (perhaps should be done in new SymbolBool)
+    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), ets_bool, 0);
+    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_true), ets_bool, 1);
 
 
     //sym = new TypedefTypeSymbol(token::TK_index, token::TK_int);

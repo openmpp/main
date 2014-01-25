@@ -1185,15 +1185,8 @@ literal:
  */
 
 numeric_type:
-      changeable_numeric_type
-    | cxx_numeric_type
-	;
-
-changeable_numeric_type:
-      "Time"
-    | "real"
-    | "integer"
-    | "counter"
+      cxx_numeric_type
+    | changeable_numeric_type
 	;
 
 cxx_numeric_type:
@@ -1205,7 +1198,7 @@ cxx_numeric_type:
 
 cxx_signed_integral_type:
       schar_synonym
-    |  short_synonym
+    | short_synonym
     | int_synonym
     | long_synonym
     | llong_synonym
@@ -1224,6 +1217,13 @@ cxx_floating_point_type:
       "float"
     | "double"
     | ldouble_synonym
+	;
+
+changeable_numeric_type:
+      "Time"
+    | "real"
+    | "integer"
+    | "counter"
 	;
 
 /*
