@@ -533,15 +533,19 @@ Decl_time_type:
 
 TimeFundamentalType:
       "char"
-    | "short"
-    | "int"
-    | "long"
-    | "uchar"
-    | "ushort"
-    | "uint"
-    | "ulong"
+    | uchar_synonym
+//    | schar_synonym
+    | short_synonym
+    | ushort_synonym
+    | int_synonym
+    | uint_synonym
+    | long_synonym
+    | ulong_synonym
+//    | llong_synonym
+//    | ullong_synonym
     | "float"
     | "double"
+//    | ldouble_synonym
     ;
 
 
@@ -564,6 +568,7 @@ Decl_real_type:
 RealFundamentalType:
       "float"
     | "double"
+//    | ldouble_synonym
     ;
 
 Decl_counter_type:
@@ -584,13 +589,16 @@ Decl_counter_type:
 
 CounterFundamentalType:
       "char"
-    | "uchar"
-    | "short"
-    | "ushort"
-    | "int"
-    | "uint"
-    | "long"
-    | "ulong"
+    | uchar_synonym
+//    | schar_synonym
+    | short_synonym
+    | ushort_synonym
+    | int_synonym
+    | uint_synonym
+    | long_synonym
+    | ulong_synonym
+//    | llong_synonym
+//    | ullong_synonym
     ;
 
 
@@ -611,10 +619,12 @@ Decl_integer_type:
     ;
 
 IntegerFundamentalType:
-      "char"
-    | "short"
-    | "int"
-    | "long"
+      "char" //SFG to be removed!
+//      schar_synonym
+    | short_synonym
+    | int_synonym
+    | long_synonym
+//    | llong_synonym
     ;
 
 
@@ -811,17 +821,25 @@ decl_parameter_type_part:
     ;
 
 ParameterFundamentalType:
-      int_synonym
+      "bool"
     | "char"
-    | short_synonym
-    | long_synonym
-    | uint_synonym
     | uchar_synonym
+//    | schar_synonym
+    | short_synonym
     | ushort_synonym
+    | int_synonym
+    | uint_synonym
+    | long_synonym
     | ulong_synonym
+//    | llong_synonym
+//    | ullong_synonym
     | "float"
     | "double"
-    | "bool"
+//    | ldouble_synonym
+    //| "Time"
+    //| "real"
+    //| "integer"
+    //| "counter"
     ;
 
 Decl_agent:
@@ -891,21 +909,25 @@ Decl_SimpleAgentVar:
     ;
 
 AgentVarFundamentalType:
-      "int"
+      "bool"
     | "char"
-    | "short"
-    | "long"
-    | "uint"
-    | "uchar"
-    | "ushort"
-    | "ulong"
+    | uchar_synonym
+//    | schar_synonym
+    | short_synonym
+    | ushort_synonym
+    | int_synonym
+    | uint_synonym
+    | long_synonym
+    | ulong_synonym
+//    | llong_synonym
+//    | ullong_synonym
     | "float"
     | "double"
-    | "bool"
+//    | ldouble_synonym
+    | "Time"
+    | "real"
     | "integer"
     | "counter"
-    | "real"
-    | "Time"
 	;
 
 BoolLiteral:
