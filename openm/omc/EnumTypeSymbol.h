@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <string>
 #include <list>
 #include "TypeSymbol.h"
 
@@ -27,11 +28,14 @@ public:
      * Constructor.
      *
      * @param [in,out] sym The symbol to be morphed.
+     * @param storage_type Type of the storage.
      * @param dicId        The kind of type.
+     * @param decl_loc     (Optional) the declaration location.
      */
 
-    EnumTypeSymbol(Symbol *sym, int dicId, yy::location decl_loc = yy::location())
+    EnumTypeSymbol(Symbol *sym, token_type storage_type, int dicId, yy::location decl_loc = yy::location())
         : TypeSymbol(sym, decl_loc)
+        , storage_type(storage_type)
         , dicId(dicId)
     {
     }
@@ -40,12 +44,14 @@ public:
     /**
      * Constructor.
      *
-     * @param unm   The unique Symbol name.
-     * @param dicId The kind of type.
+     * @param unm          The unique Symbol name.
+     * @param storage_type Type of the storage.
+     * @param dicId        The kind of type.
      */
 
-    EnumTypeSymbol(const string unm, int dicId)
+    EnumTypeSymbol(const string unm, token_type storage_type, int dicId)
         : TypeSymbol(unm)
+        , storage_type(storage_type)
         , dicId(dicId)
     {
     }
@@ -76,6 +82,12 @@ public:
 
     list<EnumeratorSymbol *> pp_enumerators;
 
+
+    /**
+     * Type used to store enumerators of this enumeration.
+     */
+
+    token_type storage_type;
 
     /**
      * Indicates the kind of type using enum kind_of_type.

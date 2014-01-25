@@ -460,6 +460,27 @@ public:
 
     static const token_type string_to_token(const char * s);
 
+    /**
+    * Storage size of a fundamental C++ type
+    *
+    * @param tok The token representing the type, eg. token::TK_int
+    *
+    * @return A size_t
+    */
+
+    static const size_t storage_size(token_type tok);
+
+
+    /**
+     * Determine fundamental integer storage type which can store a value within the specified limits
+     *
+     * @param min_value The minimum value.
+     * @param max_value The maximum value.
+     *
+     * @return A token_type.
+     */
+
+    static const token_type optimized_storage_type( long long min_value, long long max_value );
 
     /**
      * Extract accumulator from Modgen cumulation operator.

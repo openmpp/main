@@ -29,6 +29,10 @@ void PartitionSymbol::post_parse(int pass)
     switch ( pass ) {
     case ePopulateDependencies:
         {
+            // Information to compute storage type is known in this pass
+            //storage_type = optimized_storage_type(0, pp_size() - 1);
+            storage_type = token::TK_int;
+
             // Iterate the enumerators (now sorted)
             // to provide the lower limit of each enumerator.
             // Also check that enumerators are strictly increasing.
@@ -61,6 +65,7 @@ void PartitionSymbol::post_parse(int pass)
                 lower_bound = upper_bound;
                 lower_bound_value = upper_bound_value;
             }
+
             if (!order_ok) {
                 pp_error("semantic error, partition cutpoints are not strictly increasing");
             }
@@ -86,10 +91,10 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
     // upper bounds of intervals in partition
     h += "extern const array<real, " + to_string(pp_size()) + "> om_upper_" + name + ";";
     // splitter map for partition
-    h += "extern const map<real, int> om_splitter_" + name + ";";
+    h += "extern const map<real, " + token_to_string(storage_type) + "> om_splitter_" + name + ";";
 
     // Ex. typedef Partition<int, 5, om_cutpoints_AGE_GROUP> AGE_GROUP;
-    h += "typedef Partition<int, "
+    h += "typedef Partition<" + token_to_string(storage_type) + ", "
         + to_string(pp_size()) + ", "
         + "om_lower_" + name + ", "
         + "om_upper_" + name + ", "
@@ -144,7 +149,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     h += "};";
 
     h += "// splitter map for partition";
-    h += "extern const map<real, int> om_splitter_" + name + " = {";
+    h += "extern const map<real, " + token_to_string(storage_type) + "> om_splitter_" + name + " = {";
     index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);

@@ -30,7 +30,7 @@ public:
     */
 
     PartitionSymbol(Symbol *sym, yy::location decl_loc = yy::location())
-        : EnumTypeSymbol(sym, kind_of_type::partition_type, decl_loc)
+        : EnumTypeSymbol(sym, token::TK_int, kind_of_type::partition_type, decl_loc)
     {
     }
 

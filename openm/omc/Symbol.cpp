@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include <limits>
 #include <algorithm>
 #include <typeinfo>
 #include <unordered_map>
@@ -520,7 +521,7 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_file, "");
 
     // bool built-in type
-    Symbol *sym_enum = new EnumTypeSymbol(token_to_string(token::TK_bool), kind_of_type::logical_type);
+    Symbol *sym_enum = new EnumTypeSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type);
     sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), sym_enum, 0);
     sym = new BoolEnumeratorSymbol(token_to_string(token::TK_true), sym_enum, 1);
 
@@ -782,6 +783,86 @@ const token_type Symbol::string_to_token(const char * s)
     auto i = string_token.find(s);
     if (i == string_token.end()) return token::TK_error;
     else return i->second;
+}
+
+
+const size_t Symbol::storage_size(token_type tok)
+{
+    switch (tok) {
+    case token::TK_bool:
+        return sizeof(bool);
+    case token::TK_char:
+        return sizeof(char);
+    case token::TK_uchar:
+        return sizeof(unsigned char);
+    case token::TK_int:
+        return sizeof(int);
+    case token::TK_uint:
+        return sizeof(unsigned int);
+    case token::TK_long:
+        return sizeof(long);
+    case token::TK_ulong:
+        return sizeof(unsigned long);
+    case token::TK_float:
+        return sizeof(float);
+    case token::TK_double:
+        return sizeof(double);
+    default:
+        // perhaps more complex logic here, for things like TK_Time, TK_counter, etc.
+        return sizeof(double);
+    }
+}
+
+
+/**
+ * Helper macro for code in optimized_storage_type()
+ *
+ * @param TYPE The type.
+ */
+
+#define OST_HELPER(TYPE) \
+if ( numeric_limits<TYPE>::min() <= min_value \
+  && numeric_limits<TYPE>::max() >= max_value \
+  && sizeof(TYPE) < best_size) { \
+    best_type = token::TK_##TYPE; \
+    best_size = sizeof(TYPE); \
+}
+
+// static
+const token_type Symbol::optimized_storage_type(long long min_value, long long max_value)
+{
+    // typedef the om single-keyword types so that the above macro works
+    // but within function scope to reduce name pollution
+    typedef unsigned char uchar;
+    typedef unsigned short ushort;
+    typedef unsigned int uint;
+    typedef unsigned long ulong;
+
+    token_type best_type = token::TK_long;
+    int best_size = sizeof(long);
+
+    if (min_value >= 0) {
+        // start with the largest unsigned type in om
+        best_type = token::TK_ulong;
+        best_size = sizeof(ulong);
+    }
+    else {  // min_value < 0
+        // start with the largest signed type in om
+        best_type = token::TK_long;
+        best_size = sizeof(long);
+    }
+
+    // Signed typoes are preferred by the following order.
+    OST_HELPER(long);
+    OST_HELPER(int);
+    OST_HELPER(short);
+    OST_HELPER(char);
+    OST_HELPER(ulong);
+    OST_HELPER(uint);
+    OST_HELPER(ushort);
+    OST_HELPER(uchar);
+
+    return best_type;
 }
 
 // static

@@ -37,6 +37,10 @@ void RangeSymbol::post_parse(int pass)
                 auto sym = new RangeEnumeratorSymbol(enumerator_name, this, j, lower_bound);
             }
 
+            // Information to compute storage type is known in this pass
+            storage_type = optimized_storage_type(lower_bound, upper_bound);
+            storage_type = token::TK_int;
+
             // Semantic errors for range can be detected in this pass
             if (lower_bound > upper_bound) {
                 pp_error("semantic error, minimum of range is greater than maximum");
@@ -59,12 +63,7 @@ CodeBlock RangeSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += doxygen(name);
-    h += "typedef Range<int," + to_string(lower_bound) + "," + to_string(upper_bound) + "> " + name + ";" ;
-    //h += "enum " + name + " {";
-    //for (auto enumerator : pp_enumerators) {
-    //    h += enumerator->name + ",";
-    //}
-    //h += "};";
+    h += "typedef Range<" + token_to_string(storage_type) + ", " + to_string(lower_bound) + ", " + to_string(upper_bound) + "> " + name + "; " ;
 
     return h;
 }

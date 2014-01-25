@@ -30,9 +30,11 @@ public:
      */
 
     ClassificationSymbol(Symbol *sym, yy::location decl_loc = yy::location())
-        : EnumTypeSymbol(sym, kind_of_type::classification_type, decl_loc)
+        : EnumTypeSymbol(sym, token::TK_int, kind_of_type::classification_type, decl_loc)
     {
     }
+
+    void post_parse(int pass);
 
     CodeBlock cxx_declaration_global();
 
