@@ -115,6 +115,6 @@ namespace openm
 #define OM_DB_TABLE_TYPE_PREFIX_LEN         1
 
 /** max type id for built-int types, ie: int, double, logical */
-#define OM_MAX_BUILTIN_TYPE_ID              20
+#define OM_MAX_BUILTIN_TYPE_ID              25
 
 #endif  // MODEL_INSERT_SQL_H
