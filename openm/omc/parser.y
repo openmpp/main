@@ -761,10 +761,10 @@ Decl_parameter:
 	;
 
 decl_parameter_type_part:
-       cxx_numeric_type
+       numeric_type
                         {
-                            // convert token for fundamental type to corresponding symbol in symbol table
-                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$cxx_numeric_type));
+                            // convert token for type to corresponding symbol in symbol table
+                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$numeric_type));
                             assert(type_symbol); // grammar/initialization guarantee
                             $decl_parameter_type_part = type_symbol;
                         }
@@ -1125,15 +1125,7 @@ signed_integer_literal:
     ;
 
 signed_numeric_literal:
-      INTEGER_LITERAL
-                        {
-                            $signed_numeric_literal = $INTEGER_LITERAL;
-                        }
-    | "-" INTEGER_LITERAL
-                        {
-                            $INTEGER_LITERAL->set_negative(true);
-                            $signed_numeric_literal = $INTEGER_LITERAL;
-                        }
+      signed_integer_literal
     | FLOATING_POINT_LITERAL
                         {
                             $signed_numeric_literal = $FLOATING_POINT_LITERAL;

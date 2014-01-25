@@ -29,4 +29,9 @@
 
     c_double                => 42.000001 ,
 
+    a_time                  => 2013.1234,
+    a_counter               => 5,
+    a_integer               => -5,
+    a_real                  => 234.987,
+
 );
