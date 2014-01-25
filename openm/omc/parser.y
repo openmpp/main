@@ -447,16 +447,16 @@ extern char *yytext;
 %type  <val_token>      cxx_floating_point_type
 
 %type  <val_token>      uchar_synonym
-//%type  <val_token>      schar_synonym
+%type  <val_token>      schar_synonym
 %type  <val_token>      short_synonym
 %type  <val_token>      ushort_synonym
 %type  <val_token>      int_synonym
 %type  <val_token>      uint_synonym
 %type  <val_token>      long_synonym
 %type  <val_token>      ulong_synonym
-//%type  <val_token>      llong_synonym
-//%type  <val_token>      ullong_synonym
-//%type  <val_token>      ldouble_synonym
+%type  <val_token>      llong_synonym
+%type  <val_token>      ullong_synonym
+%type  <val_token>      ldouble_synonym
 
 %token END      0 "end of file"
 
@@ -1204,11 +1204,11 @@ cxx_numeric_type:
 	;
 
 cxx_signed_integral_type:
-//    | schar_synonym
-      short_synonym
+      schar_synonym
+    |  short_synonym
     | int_synonym
     | long_synonym
-//    | llong_synonym
+    | llong_synonym
 	;
 
 cxx_unsigned_integral_type:
@@ -1217,13 +1217,13 @@ cxx_unsigned_integral_type:
     | ushort_synonym
     | uint_synonym
     | ulong_synonym
-//    | ullong_synonym
+    | ullong_synonym
 	;
 
 cxx_floating_point_type:
       "float"
     | "double"
-//    | ldouble_synonym
+    | ldouble_synonym
 	;
 
 /*
@@ -1235,10 +1235,10 @@ uchar_synonym:
     | "unsigned" "char"           { $uchar_synonym = token::TK_uchar; }
     ;
 
-//schar_synonym:
-//      "schar"
-//    | "signed" "char"           { $schar_synonym = token::TK_schar; }
-//    ;
+schar_synonym:
+      "schar"
+    | "signed" "char"             { $schar_synonym = token::TK_schar; }
+    ;
 
 short_synonym:
       "short"
@@ -1278,24 +1278,24 @@ ulong_synonym:
     | "unsigned" "long" "int"     { $ulong_synonym = token::TK_ulong; }
     ;
 
-//llong_synonym:
-//      "llong"
-//    | "long" "long"                 { $long_synonym = token::TK_llong; }
-//    | "long" "long" "int"           { $long_synonym = token::TK_llong; }
-//    | "signed" "long" "long"        { $long_synonym = token::TK_llong; }
-//    | "signed" "long" "long" "int"  { $long_synonym = token::TK_llong; }
-//    ;
+llong_synonym:
+      "llong"
+    | "long" "long"                 { $llong_synonym = token::TK_llong; }
+    | "long" "long" "int"           { $llong_synonym = token::TK_llong; }
+    | "signed" "long" "long"        { $llong_synonym = token::TK_llong; }
+    | "signed" "long" "long" "int"  { $llong_synonym = token::TK_llong; }
+    ;
 
-//ulong_synonym:
-//      "ullong"
-//    | "unsigned" "long" "long"       { $ulong_synonym = token::TK_ullong; }
-//    | "unsigned" "long" "long" "int" { $ulong_synonym = token::TK_ullong; }
-//    ;
+ullong_synonym:
+      "ullong"
+    | "unsigned" "long" "long"       { $ullong_synonym = token::TK_ullong; }
+    | "unsigned" "long" "long" "int" { $ullong_synonym = token::TK_ullong; }
+    ;
 
-//ldouble_synonym:
-//      "ldouble"
-//    | "long" "double"             { $ulong_synonym = token::TK_ldouble; }
-//    ;
+ldouble_synonym:
+      "ldouble"
+    | "long" "double"             { $ldouble_synonym = token::TK_ldouble; }
+    ;
 
 %%
 
