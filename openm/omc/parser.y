@@ -419,19 +419,28 @@ extern char *yytext;
 %left  "::"              // precedence 1
 
 %type  <val_token>      ModelType
-%type  <val_token>      TimeFundamentalType
-%type  <val_token>      RealFundamentalType
-%type  <val_token>      CounterFundamentalType
-%type  <val_token>      IntegerFundamentalType
-%type  <val_token>      ParameterFundamentalType
 %type  <val_token>      ModgenCumulationOperator
 %type  <val_token>      TableAccumulator
 %type  <val_token>      TableIncrement
-%type  <val_token>      AgentVarFundamentalType
 %type  <val_token>      BoolLiteral
 %type  <pval_Literal>   AnyLiteral
 %type  <pval_Literal>   SignedNumericLiteral
 %type  <pval_Literal>   SignedIntegerLiteral
+
+%type  <pval_Symbol>    decl_parameter_type_part
+
+%type  <pval_TableExpr> ExprForTable
+%type  <pval_TableExpr> TableExpressions
+
+%type  <pval_Symbol>   AgentVar
+%type  <pval_Symbol>   DerivedAgentVar
+
+%type  <val_token>      numeric_type
+%type  <val_token>      changeable_numeric_type
+%type  <val_token>      cxx_numeric_type
+%type  <val_token>      cxx_signed_integral_type
+%type  <val_token>      cxx_unsigned_integral_type
+%type  <val_token>      cxx_floating_point_type
 
 %type  <val_token>      uchar_synonym
 //%type  <val_token>      schar_synonym
@@ -444,16 +453,6 @@ extern char *yytext;
 //%type  <val_token>      llong_synonym
 //%type  <val_token>      ullong_synonym
 //%type  <val_token>      ldouble_synonym
-
-
-%type  <pval_Symbol>    decl_parameter_type_part
-
-%type  <pval_TableExpr> ExprForTable
-%type  <pval_TableExpr> TableExpressions
-
-%type  <pval_Symbol>   AgentVar
-%type  <pval_Symbol>   DerivedAgentVar
-
 
 %token END      0 "end of file"
 
@@ -516,7 +515,7 @@ Languages:
 	;
 
 Decl_time_type:
-	  "time_type" TimeFundamentalType[type_to_use] ";"
+	  "time_type" cxx_numeric_type[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_Time);
@@ -531,26 +530,8 @@ Decl_time_type:
                         }
     ;
 
-TimeFundamentalType:
-      "char"
-    | uchar_synonym
-//    | schar_synonym
-    | short_synonym
-    | ushort_synonym
-    | int_synonym
-    | uint_synonym
-    | long_synonym
-    | ulong_synonym
-//    | llong_synonym
-//    | ullong_synonym
-    | "float"
-    | "double"
-//    | ldouble_synonym
-    ;
-
-
 Decl_real_type:
-      "real_type" RealFundamentalType[type_to_use] ";"
+      "real_type" cxx_floating_point_type[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_real);
@@ -565,14 +546,8 @@ Decl_real_type:
                         }
     ;
 
-RealFundamentalType:
-      "float"
-    | "double"
-//    | ldouble_synonym
-    ;
-
 Decl_counter_type:
-	  "counter_type" CounterFundamentalType[type_to_use] ";"
+	  "counter_type" cxx_unsigned_integral_type[type_to_use] ";"
 						{
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_counter);
@@ -587,23 +562,8 @@ Decl_counter_type:
                         }
     ;
 
-CounterFundamentalType:
-      "char"
-    | uchar_synonym
-//    | schar_synonym
-    | short_synonym
-    | ushort_synonym
-    | int_synonym
-    | uint_synonym
-    | long_synonym
-    | ulong_synonym
-//    | llong_synonym
-//    | ullong_synonym
-    ;
-
-
 Decl_integer_type:
-      "integer_type" IntegerFundamentalType[type_to_use] ";"
+      "integer_type" cxx_signed_integral_type[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
                             auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_integer);
@@ -617,16 +577,6 @@ Decl_integer_type:
                             pc.InitializeForCxxOutside();
                         }
     ;
-
-IntegerFundamentalType:
-      "char" //SFG to be removed!
-//      schar_synonym
-    | short_synonym
-    | int_synonym
-    | long_synonym
-//    | llong_synonym
-    ;
-
 
 Decl_model_type:
           "model_type" ModelType[type_to_use] ";"
@@ -807,10 +757,10 @@ Decl_parameter:
 	;
 
 decl_parameter_type_part:
-       ParameterFundamentalType
+       cxx_numeric_type
                         {
                             // convert token for fundamental type to corresponding symbol in symbol table
-                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$ParameterFundamentalType));
+                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$cxx_numeric_type));
                             assert(type_symbol); // grammar/initialization guarantee
                             $decl_parameter_type_part = type_symbol;
                         }
@@ -818,28 +768,6 @@ decl_parameter_type_part:
                         {
                             $decl_parameter_type_part = $type_symbol;
                         }
-    ;
-
-ParameterFundamentalType:
-      "bool"
-    | "char"
-    | uchar_synonym
-//    | schar_synonym
-    | short_synonym
-    | ushort_synonym
-    | int_synonym
-    | uint_synonym
-    | long_synonym
-    | ulong_synonym
-//    | llong_synonym
-//    | ullong_synonym
-    | "float"
-    | "double"
-//    | ldouble_synonym
-    //| "Time"
-    //| "real"
-    //| "integer"
-    //| "counter"
     ;
 
 Decl_agent:
@@ -882,11 +810,11 @@ AgentMember:
     ;
 
 Decl_SimpleAgentVar:
-      AgentVarFundamentalType[type] SYMBOL[agentvar] ";"
+      numeric_type[type] SYMBOL[agentvar] ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr, @agentvar );
                         }
-    | AgentVarFundamentalType[type] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
+    | numeric_type[type] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral, @agentvar );
                         }
@@ -907,28 +835,6 @@ Decl_SimpleAgentVar:
                             //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
                         }
     ;
-
-AgentVarFundamentalType:
-      "bool"
-    | "char"
-    | uchar_synonym
-//    | schar_synonym
-    | short_synonym
-    | ushort_synonym
-    | int_synonym
-    | uint_synonym
-    | long_synonym
-    | ulong_synonym
-//    | llong_synonym
-//    | ullong_synonym
-    | "float"
-    | "double"
-//    | ldouble_synonym
-    | "Time"
-    | "real"
-    | "integer"
-    | "counter"
-	;
 
 BoolLiteral:
       "true"
@@ -1266,6 +1172,51 @@ DerivedAgentVar:
                         }
 	;
 
+/*
+ * Numeric types
+ */
+
+numeric_type:
+      changeable_numeric_type
+    | cxx_numeric_type
+	;
+
+changeable_numeric_type:
+      "Time"
+    | "real"
+    | "integer"
+    | "counter"
+	;
+
+cxx_numeric_type:
+      "char"  // in C/C++, the signedness of char is not specified
+    | cxx_signed_integral_type
+    | cxx_unsigned_integral_type
+    | cxx_floating_point_type
+	;
+
+cxx_signed_integral_type:
+//    | schar_synonym
+      short_synonym
+    | int_synonym
+    | long_synonym
+//    | llong_synonym
+	;
+
+cxx_unsigned_integral_type:
+    "bool"  // in C/C++, false=0 and true=1, so this is an unsigned numeric type and can be used as such, e.g. for counting
+    | uchar_synonym
+    | ushort_synonym
+    | uint_synonym
+    | ulong_synonym
+//    | ullong_synonym
+	;
+
+cxx_floating_point_type:
+      "float"
+    | "double"
+//    | ldouble_synonym
+	;
 
 /*
  * Synonyms for fundamental C++ types 
