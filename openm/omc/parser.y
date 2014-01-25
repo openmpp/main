@@ -433,7 +433,20 @@ extern char *yytext;
 %type  <pval_Literal>   SignedNumericLiteral
 %type  <pval_Literal>   SignedIntegerLiteral
 
-%type  <pval_Symbol>    Decl_parameter_type_part
+%type  <val_token>      uchar_synonym
+//%type  <val_token>      schar_synonym
+%type  <val_token>      short_synonym
+%type  <val_token>      ushort_synonym
+%type  <val_token>      int_synonym
+%type  <val_token>      uint_synonym
+%type  <val_token>      long_synonym
+%type  <val_token>      ulong_synonym
+//%type  <val_token>      llong_synonym
+//%type  <val_token>      ullong_synonym
+//%type  <val_token>      ldouble_synonym
+
+
+%type  <pval_Symbol>    decl_parameter_type_part
 
 %type  <pval_TableExpr> ExprForTable
 %type  <pval_TableExpr> TableExpressions
@@ -770,7 +783,7 @@ Parameters:
 	;
 
 Decl_parameter:
-      Decl_parameter_type_part[type_symbol] SYMBOL[parm] ";"
+      decl_parameter_type_part[type_symbol] SYMBOL[parm] ";"
                         {
                             auto *sym = new ParameterSymbol( $parm, $type_symbol, @parm );
                         }
@@ -783,29 +796,29 @@ Decl_parameter:
                         }
 	;
 
-Decl_parameter_type_part:
+decl_parameter_type_part:
        ParameterFundamentalType
                         {
                             // convert token for fundamental type to corresponding symbol in symbol table
                             auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$ParameterFundamentalType));
                             assert(type_symbol); // grammar/initialization guarantee
-                            $Decl_parameter_type_part = type_symbol;
+                            $decl_parameter_type_part = type_symbol;
                         }
     | SYMBOL[type_symbol]
                         {
-                            $Decl_parameter_type_part = $type_symbol;
+                            $decl_parameter_type_part = $type_symbol;
                         }
     ;
 
 ParameterFundamentalType:
-      "int"
+      int_synonym
     | "char"
-    | "short"
-    | "long"
-    | "uint"
-    | "uchar"
-    | "ushort"
-    | "ulong"
+    | short_synonym
+    | long_synonym
+    | uint_synonym
+    | uchar_synonym
+    | ushort_synonym
+    | ulong_synonym
     | "float"
     | "double"
     | "bool"
@@ -1231,6 +1244,77 @@ DerivedAgentVar:
                         }
 	;
 
+
+/*
+ * Synonyms for fundamental C++ types 
+ */
+
+uchar_synonym:
+      "uchar"
+    | "unsigned" "char"           { $uchar_synonym = token::TK_uchar; }
+    ;
+
+//schar_synonym:
+//      "schar"
+//    | "signed" "char"           { $schar_synonym = token::TK_schar; }
+//    ;
+
+short_synonym:
+      "short"
+    | "short" "int"               { $short_synonym = token::TK_short; }
+    | "signed" "short"            { $short_synonym = token::TK_short; }
+    | "signed" "short" "int"      { $short_synonym = token::TK_short; }
+    ;
+
+ushort_synonym:
+      "ushort"
+    | "unsigned" "short"          { $ushort_synonym = token::TK_ushort; }
+    | "unsigned" "short" "int"    { $ushort_synonym = token::TK_ushort; }
+    ;
+
+int_synonym:
+      "int"
+    | "signed"                    { $int_synonym = token::TK_int; }
+    | "signed" "int"              { $int_synonym = token::TK_int; }
+    ;
+
+uint_synonym:
+      "uint"
+    | "unsigned"                  { $uint_synonym = token::TK_uint; }
+    | "unsigned" "int"            { $uint_synonym = token::TK_uint; }
+    ;
+
+long_synonym:
+      "long"
+    | "long" "int"                { $long_synonym = token::TK_long; }
+    | "signed" "long"             { $long_synonym = token::TK_long; }
+    | "signed" "long" "int"       { $long_synonym = token::TK_long; }
+    ;
+
+ulong_synonym:
+      "ulong"
+    | "unsigned" "long"           { $ulong_synonym = token::TK_ulong; }
+    | "unsigned" "long" "int"     { $ulong_synonym = token::TK_ulong; }
+    ;
+
+//llong_synonym:
+//      "llong"
+//    | "long" "long"                 { $long_synonym = token::TK_llong; }
+//    | "long" "long" "int"           { $long_synonym = token::TK_llong; }
+//    | "signed" "long" "long"        { $long_synonym = token::TK_llong; }
+//    | "signed" "long" "long" "int"  { $long_synonym = token::TK_llong; }
+//    ;
+
+//ulong_synonym:
+//      "ullong"
+//    | "unsigned" "long" "long"       { $ulong_synonym = token::TK_ullong; }
+//    | "unsigned" "long" "long" "int" { $ulong_synonym = token::TK_ullong; }
+//    ;
+
+//ldouble_synonym:
+//      "ldouble"
+//    | "long" "double"             { $ulong_synonym = token::TK_ldouble; }
+//    ;
 
 %%
 
