@@ -36,6 +36,8 @@
 #define POINTS( symbol )		   	(symbol::upper_bounds())
 #define SPLIT( val, symbol )        (symbol::to_index(val))
 
+// map logical to bool (for local variable declarations in Modgen models)
+#define logical bool
 
 // The following are temporary kludges
 #define WriteDebugLogEntry printf

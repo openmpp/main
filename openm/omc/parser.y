@@ -780,10 +780,10 @@ Decl_parameter:
                             assert(type_symbol); // grammar/initialization guarantee
                             auto *sym = new ParameterSymbol( $parm, type_symbol, @parm );
                         }
-    | SYMBOL[range_or_classification] SYMBOL[parm] ";"
+    | SYMBOL[type_symbol] SYMBOL[parm] ";"
                         {
-                            // validity of range_or_classification verified in post-parse phase
-                            auto *sym = new ParameterSymbol($parm, $range_or_classification, @parm);
+                            // validity of type_symbol is verified in post-parse phase
+                            auto *sym = new ParameterSymbol($parm, $type_symbol, @parm);
                         }
 	| error ";"
                         {
@@ -847,27 +847,27 @@ AgentMember:
     ;
 
 Decl_SimpleAgentVar:
-      AgentVarFundamentalType[type] SYMBOL ";"
+      AgentVarFundamentalType[type] SYMBOL[agentvar] ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, nullptr, @SYMBOL );
+                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr, @agentvar );
                         }
-    | AgentVarFundamentalType[type] SYMBOL "=" "{" AnyLiteral "}" ";"
+    | AgentVarFundamentalType[type] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $SYMBOL, pc.get_agent_context(), (token_type)$type, $AnyLiteral, @SYMBOL );
+                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral, @agentvar );
                         }
-    | SYMBOL[type] SYMBOL[agentvar] ";"
+    | SYMBOL[type_symbol] SYMBOL[agentvar] ";"
                         {
-                            // $type is a classification or range
+                            // $type_symbol is a classification, range, or partition
                             //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr );
                         }
-    | SYMBOL[type] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
+    | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
                         {
-                            // $type is a classification or range
+                            // $type_symbol is a classification, range, or partition
                             //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
                         }
-    | SYMBOL[type] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
+    | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
                         {
-                            // $type is a classification or range
+                            // $type_symbol is a classification, range, or partition
                             // $enumerator is an enumerator of a classification
                             //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
                         }

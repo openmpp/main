@@ -31,7 +31,7 @@ void ParameterSymbol::post_parse(int pass)
             pp_type_symbol = dynamic_cast<TypeSymbol *>(type_symbol);
 
             if (!pp_type_symbol) {
-                throw HelperException("Invalid type '%s' for parameter '%s'", type_symbol->name.c_str(), name.c_str());
+                pp_error("Invalid type '" + type_symbol->name + "' for parameter '" + name + "'");
             }
 
             if (dynamic_cast<ClassificationSymbol *>(type_symbol)
