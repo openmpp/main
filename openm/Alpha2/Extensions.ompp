@@ -18,5 +18,7 @@ parameters
     long long b_llong;
     unsigned long long b_ullong;
     long double b_ldouble;
+
+    double c_double;
 };
 

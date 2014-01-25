@@ -72,9 +72,6 @@ parameters
     //EN a AGE_GROUP (partition)
     AGE_GROUP a_age_group;
 
-    // tests of C++ syntax for fundamental types
-    signed a_signed;
-    signed int a_signed_int;
 };
 
 actor Person            //EN Individual

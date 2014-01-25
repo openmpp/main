@@ -921,14 +921,14 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
                 if (equalNoCase(typeRow.name.c_str(), "schar")) tblInf.valueTypeName = "SMALLINT";
                 if (equalNoCase(typeRow.name.c_str(), "short")) tblInf.valueTypeName = "SMALLINT";
                 if (equalNoCase(typeRow.name.c_str(), "int")) tblInf.valueTypeName = "INT";
-                if (equalNoCase(typeRow.name.c_str(), "long")) tblInf.valueTypeName = "BIGINT";
+                if (equalNoCase(typeRow.name.c_str(), "long")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "llong")) tblInf.valueTypeName = "BIGINT";
 
                 // C++ unsigned integral types (including bool)
-                if (equalNoCase(typeRow.name.c_str(), "bool")) tblInf.valueTypeName = "SMALLINT";
-                if (equalNoCase(typeRow.name.c_str(), "uchar")) tblInf.valueTypeName = "SMALLINT";
-                if (equalNoCase(typeRow.name.c_str(), "ushort")) tblInf.valueTypeName = "SMALLINT";
-                if (equalNoCase(typeRow.name.c_str(), "uint")) tblInf.valueTypeName = "INT";
+                if (equalNoCase(typeRow.name.c_str(), "bool")) tblInf.valueTypeName = "TINYINT";
+                if (equalNoCase(typeRow.name.c_str(), "uchar")) tblInf.valueTypeName = "TINYINT";
+                if (equalNoCase(typeRow.name.c_str(), "ushort")) tblInf.valueTypeName = "INT";
+                if (equalNoCase(typeRow.name.c_str(), "uint")) tblInf.valueTypeName = "BIGINT";
                 if (equalNoCase(typeRow.name.c_str(), "ulong")) tblInf.valueTypeName = "BIGINT";
                 if (equalNoCase(typeRow.name.c_str(), "ullong")) tblInf.valueTypeName = "BIGINT";
 
