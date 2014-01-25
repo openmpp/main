@@ -433,6 +433,8 @@ extern char *yytext;
 %type  <pval_Literal>   SignedNumericLiteral
 %type  <pval_Literal>   SignedIntegerLiteral
 
+%type  <pval_Symbol>    Decl_parameter_type_part
+
 %type  <pval_TableExpr> ExprForTable
 %type  <pval_TableExpr> TableExpressions
 
@@ -768,22 +770,9 @@ Parameters:
 	;
 
 Decl_parameter:
-      ParameterFundamentalType SYMBOL[parm] ";"
+      Decl_parameter_type_part[type_symbol] SYMBOL[parm] ";"
                         {
-                            auto *type_symbol = TypedefTypeSymbol::get_typedef_symbol((token_type)$ParameterFundamentalType);
-                            assert(type_symbol); // grammar/initialization guarantee
-                            auto *sym = new ParameterSymbol( $parm, type_symbol, @parm );
-                        }
-    | "bool" SYMBOL[parm] ";"
-                        {
-                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string(token::TK_bool));
-                            assert(type_symbol); // grammar/initialization guarantee
-                            auto *sym = new ParameterSymbol( $parm, type_symbol, @parm );
-                        }
-    | SYMBOL[type_symbol] SYMBOL[parm] ";"
-                        {
-                            // validity of type_symbol is verified in post-parse phase
-                            auto *sym = new ParameterSymbol($parm, $type_symbol, @parm);
+                            auto *sym = new ParameterSymbol( $parm, $type_symbol, @parm );
                         }
 	| error ";"
                         {
@@ -793,6 +782,20 @@ Decl_parameter:
                             pc.bracket_level = 0;
                         }
 	;
+
+Decl_parameter_type_part:
+       ParameterFundamentalType
+                        {
+                            // convert token for fundamental type to corresponding symbol in symbol table
+                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$ParameterFundamentalType));
+                            assert(type_symbol); // grammar/initialization guarantee
+                            $Decl_parameter_type_part = type_symbol;
+                        }
+    | SYMBOL[type_symbol]
+                        {
+                            $Decl_parameter_type_part = $type_symbol;
+                        }
+    ;
 
 ParameterFundamentalType:
       "int"
@@ -805,6 +808,7 @@ ParameterFundamentalType:
     | "ulong"
     | "float"
     | "double"
+    | "bool"
     ;
 
 Decl_agent:
