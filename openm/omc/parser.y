@@ -422,10 +422,10 @@ extern char *yytext;
 %type  <val_token>      ModgenCumulationOperator
 %type  <val_token>      TableAccumulator
 %type  <val_token>      TableIncrement
-%type  <val_token>      BoolLiteral
-%type  <pval_Literal>   AnyLiteral
-%type  <pval_Literal>   SignedNumericLiteral
-%type  <pval_Literal>   SignedIntegerLiteral
+%type  <val_token>      bool_literal
+%type  <pval_Literal>   literal
+%type  <pval_Literal>   signed_numeric_literal
+%type  <pval_Literal>   signed_integer_literal
 
 %type  <pval_Symbol>    decl_parameter_type_part
 
@@ -689,28 +689,28 @@ Decl_partition:
             ;
 
 PartitionSplits:
-      SignedNumericLiteral
+      signed_numeric_literal
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
-                            string upper_split_point = $SignedNumericLiteral->value();
-                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @SignedNumericLiteral);
+                            string upper_split_point = $signed_numeric_literal->value();
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
                             pc.counter1++;  // counter for partition split points
                         }
-      | PartitionSplits "," SignedNumericLiteral
+      | PartitionSplits "," signed_numeric_literal
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
                             string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
-                            string upper_split_point = $SignedNumericLiteral->value();
-                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @SignedNumericLiteral);
+                            string upper_split_point = $signed_numeric_literal->value();
+                            auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
                             pc.counter1++;  // counter for partition split points
                         }
 	;
 
 Decl_range:
-      "range" SYMBOL[range] "{" SignedIntegerLiteral[lower_bound] "," SignedIntegerLiteral[upper_bound] "}" ";"
+      "range" SYMBOL[range] "{" signed_integer_literal[lower_bound] "," signed_integer_literal[upper_bound] "}" ";"
                         {
                             int lower_bound = stoi( $lower_bound->value() );
                             delete $lower_bound;
@@ -814,98 +814,25 @@ Decl_SimpleAgentVar:
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr, @agentvar );
                         }
-    | numeric_type[type] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
+    | numeric_type[type] SYMBOL[agentvar] "=" "{" literal "}" ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral, @agentvar );
+                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal, @agentvar );
                         }
     | SYMBOL[type_symbol] SYMBOL[agentvar] ";"
                         {
                             // $type_symbol is a classification, range, or partition
                             //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr );
                         }
-    | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" AnyLiteral "}" ";"
+    | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" literal "}" ";"
                         {
                             // $type_symbol is a classification, range, or partition
-                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
+                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
                         }
     | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
                         {
                             // $type_symbol is a classification, range, or partition
                             // $enumerator is an enumerator of a classification
-                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $AnyLiteral );
-                        }
-    ;
-
-BoolLiteral:
-      "true"
-    | "false"
-	;
-
-SignedIntegerLiteral:
-      INTEGER_LITERAL
-                        {
-                            $SignedIntegerLiteral = $INTEGER_LITERAL;
-                        }
-    | "-" INTEGER_LITERAL
-                        {
-                            $INTEGER_LITERAL->set_negative(true);
-                            $SignedIntegerLiteral = $INTEGER_LITERAL;
-                        }
-    ;
-
-SignedNumericLiteral:
-      INTEGER_LITERAL
-                        {
-                            $SignedNumericLiteral = $INTEGER_LITERAL;
-                        }
-    | "-" INTEGER_LITERAL
-                        {
-                            $INTEGER_LITERAL->set_negative(true);
-                            $SignedNumericLiteral = $INTEGER_LITERAL;
-                        }
-    | FLOATING_POINT_LITERAL
-                        {
-                            $SignedNumericLiteral = $FLOATING_POINT_LITERAL;
-                        }
-    | "-" FLOATING_POINT_LITERAL
-                        {
-                            $FLOATING_POINT_LITERAL->set_negative(true);
-                            $SignedNumericLiteral = $FLOATING_POINT_LITERAL;
-                        }
-    ;
-
-AnyLiteral:
-      INTEGER_LITERAL
-                        {
-                            $AnyLiteral = $INTEGER_LITERAL;
-                        }
-    | CHARACTER_LITERAL
-                        {
-                            $AnyLiteral = $CHARACTER_LITERAL;
-                        }
-    | FLOATING_POINT_LITERAL
-                        {
-                            $AnyLiteral = $FLOATING_POINT_LITERAL;
-                        }
-    | STRING_LITERAL
-                        {
-                            $AnyLiteral = $STRING_LITERAL;
-                        }
-    | BoolLiteral
-                        {
-                            $AnyLiteral = new BooleanLiteral( Symbol::token_to_string( (token_type) $BoolLiteral ) );
-                        }
-    | "nullptr"
-                        {
-                            $AnyLiteral = new PointerLiteral( Symbol::token_to_string( token::TK_nullptr ) );
-                        }
-    | "time_infinite"
-                        {
-                            $AnyLiteral = new TimeLiteral( Symbol::token_to_string( token::TK_time_infinite ) );
-                        }
-    | "time_undef"
-                        {
-                            $AnyLiteral = new TimeLiteral( Symbol::token_to_string( token::TK_time_undef ) );
+                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
                         }
     ;
 
@@ -1166,11 +1093,88 @@ DerivedAgentVar:
                         {
                             $DerivedAgentVar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
                         }
-    | TK_duration "(" SYMBOL[agentvar] "," AnyLiteral[constant] ")"
+    | TK_duration "(" SYMBOL[agentvar] "," literal[constant] ")"
                         {
                             $DerivedAgentVar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
                         }
 	;
+
+/*
+ * Literals
+ */
+
+bool_literal:
+      "true"
+    | "false"
+	;
+
+signed_integer_literal:
+      INTEGER_LITERAL
+                        {
+                            $signed_integer_literal = $INTEGER_LITERAL;
+                        }
+    | "-" INTEGER_LITERAL
+                        {
+                            $INTEGER_LITERAL->set_negative(true);
+                            $signed_integer_literal = $INTEGER_LITERAL;
+                        }
+    ;
+
+signed_numeric_literal:
+      INTEGER_LITERAL
+                        {
+                            $signed_numeric_literal = $INTEGER_LITERAL;
+                        }
+    | "-" INTEGER_LITERAL
+                        {
+                            $INTEGER_LITERAL->set_negative(true);
+                            $signed_numeric_literal = $INTEGER_LITERAL;
+                        }
+    | FLOATING_POINT_LITERAL
+                        {
+                            $signed_numeric_literal = $FLOATING_POINT_LITERAL;
+                        }
+    | "-" FLOATING_POINT_LITERAL
+                        {
+                            $FLOATING_POINT_LITERAL->set_negative(true);
+                            $signed_numeric_literal = $FLOATING_POINT_LITERAL;
+                        }
+    ;
+
+literal:
+      INTEGER_LITERAL
+                        {
+                            $literal = $INTEGER_LITERAL;
+                        }
+    | CHARACTER_LITERAL
+                        {
+                            $literal = $CHARACTER_LITERAL;
+                        }
+    | FLOATING_POINT_LITERAL
+                        {
+                            $literal = $FLOATING_POINT_LITERAL;
+                        }
+    | STRING_LITERAL
+                        {
+                            $literal = $STRING_LITERAL;
+                        }
+    | bool_literal
+                        {
+                            $literal = new BooleanLiteral( Symbol::token_to_string( (token_type) $bool_literal ) );
+                        }
+    | "nullptr"
+                        {
+                            $literal = new PointerLiteral( Symbol::token_to_string( token::TK_nullptr ) );
+                        }
+    | "time_infinite"
+                        {
+                            $literal = new TimeLiteral( Symbol::token_to_string( token::TK_time_infinite ) );
+                        }
+    | "time_undef"
+                        {
+                            $literal = new TimeLiteral( Symbol::token_to_string( token::TK_time_undef ) );
+                        }
+    ;
 
 /*
  * Numeric types
