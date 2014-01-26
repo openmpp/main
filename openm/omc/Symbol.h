@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <cassert>
 #include <string>
 #include <unordered_set>
 #include <unordered_map>
@@ -152,6 +153,7 @@ public:
         : unique_name( unm )
         , name ( unm )
         , decl_loc(decl_loc)
+        , reference_count(0)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -161,6 +163,8 @@ public:
         }
         else {
             // redeclaration or override of default - morph to new symbol
+            // preserve reference count
+            reference_count = it->second->reference_count;
             // delete old symbol
             delete it->second;
             // replace with new symbol
@@ -189,6 +193,7 @@ public:
         : unique_name(symbol_name(nm, agent))
         , name ( nm )
         , decl_loc(decl_loc)
+        , reference_count(0)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -198,6 +203,8 @@ public:
         }
         else {
             // redeclaration or override of default - morph to new symbol
+            // preserve reference count
+            reference_count = it->second->reference_count;
             // delete old symbol
             delete it->second;
             // replace with new symbol
@@ -220,9 +227,12 @@ public:
         : unique_name(sym->unique_name)
         , name ( sym->name )
         , decl_loc(decl_loc)
+        , reference_count(0)
     {
         // find symbol table entry for the existing symbol
         auto it = symbols.find( unique_name );
+        // preserve reference count
+        reference_count = it->second->reference_count;
         // delete existing symbol
         delete it->second;
         // replace with new symbol
@@ -242,6 +252,8 @@ public:
 	Symbol*& get_rpSymbol() const
     {
     	auto it = symbols.find( unique_name );
+        assert(it->second); // code integrity guarantee
+        it->second->reference_count++;
     	return it->second;
     }
 
@@ -428,6 +440,15 @@ public:
      */
 
     yy::location decl_loc;
+
+
+    /**
+     * Number of references by other symbols to this Symbol
+     * 
+     * For debugging purposes.  Maintained by get_rpSymbol() and maintained during symbol morphing.
+     */
+
+    int reference_count;
 
     // static helper functions
 	static bool exists( const string& unm );
