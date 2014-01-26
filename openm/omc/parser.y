@@ -935,6 +935,10 @@ table_expression_list:
                         }
 	;
 
+/*
+ * table expression
+ */
+
 expr_for_table[result]:
       agentvar
                         {
@@ -1118,10 +1122,18 @@ table_increment:
     | TK_nz_value_out
     ;
 
+/*
+ * agentvar in an expression
+ */
+
 agentvar:
       SYMBOL
     | derived_agentvar
 	;
+
+/*
+ * derived agentvars
+ */
 
 derived_agentvar:
       TK_duration "(" ")"
