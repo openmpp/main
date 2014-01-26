@@ -101,7 +101,6 @@ extern char *yytext;
 %token <val_token>    TK_extend_parameter "extend_parameter"
 %token <val_token>    TK_hide           "hide"
 %token <val_token>    TK_import         "import"
-%token <val_token>    TK_index_type     "index_type"
 %token <val_token>    TK_integer_type   "integer_type"
 %token <val_token>    TK_languages      "languages"
 %token <val_token>    TK_link           "link"
@@ -422,7 +421,7 @@ extern char *yytext;
 %left  POSTFIX_INCREMENT POSTFIX_DECREMENT FUNCTION_CALL ARRAY_SUBSCRIPTING "." "->"  // precedence 2
 %left  "::"              // precedence 1
 
-%type  <val_token>      ModelType
+%type  <val_token>      model_type
 %type  <val_token>      ModgenCumulationOperator
 %type  <val_token>      TableAccumulator
 %type  <val_token>      TableIncrement
@@ -434,7 +433,7 @@ extern char *yytext;
 %type  <pval_Symbol>    decl_parameter_type_part
 
 %type  <pval_TableExpr> ExprForTable
-%type  <pval_TableExpr> TableExpressions
+%type  <pval_TableExpr> table_expression_list
 
 %type  <pval_Symbol>   AgentVar
 %type  <pval_Symbol>   DerivedAgentVar
@@ -464,31 +463,31 @@ extern char *yytext;
 
 %%
 
-%start Model;
+%start declarations;
 
-Model:
-Model Declaration
+declarations:
+declarations declaration
 	| /* nothing */
 	;
 
-Declaration:
-	  Decl_languages
-	| Decl_model_type
-	| Decl_time_type
-	| Decl_real_type
-	| Decl_counter_type
-	| Decl_integer_type
-	| Decl_version
-    | Decl_classification
-    | Decl_partition
-    | Decl_range
-    | Decl_parameters
-	| Decl_agent
-	| Decl_table
+declaration:
+	  decl_languages
+	| decl_model_type
+	| decl_time_type
+	| decl_real_type
+	| decl_counter_type
+	| decl_integer_type
+	| decl_version
+    | decl_classification
+    | decl_partition
+    | decl_range
+    | decl_parameters
+	| decl_agent
+	| decl_table
 	;
 
-Decl_languages:
-          "languages" "{" Languages "}" ";"
+decl_languages:
+          "languages" "{" language_list "}" ";"
                         {
                             // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
                             pc.InitializeForCxxOutside();
@@ -505,20 +504,20 @@ Decl_languages:
                         }
         ;
 
-Languages:
+language_list:
       SYMBOL
                         {
                             // morph existing symbol to LanguageSymbol
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
-	| Languages "," SYMBOL
+	| language_list "," SYMBOL
                         {
                             // morph existing symbol to LanguageSymbol
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
 	;
 
-Decl_time_type:
+decl_time_type:
 	  "time_type" cxx_numeric_type[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
@@ -534,7 +533,7 @@ Decl_time_type:
                         }
     ;
 
-Decl_real_type:
+decl_real_type:
       "real_type" cxx_floating_point_type[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
@@ -550,7 +549,7 @@ Decl_real_type:
                         }
     ;
 
-Decl_counter_type:
+decl_counter_type:
 	  "counter_type" cxx_unsigned_integral_type[type_to_use] ";"
 						{
                             // Change properties of existing TypedefTypeSymbol
@@ -566,7 +565,7 @@ Decl_counter_type:
                         }
     ;
 
-Decl_integer_type:
+decl_integer_type:
       "integer_type" cxx_signed_integral_type[type_to_use] ";"
                         {
                             // Change properties of existing TypedefTypeSymbol
@@ -582,12 +581,12 @@ Decl_integer_type:
                         }
     ;
 
-Decl_model_type:
-          "model_type" ModelType[type_to_use] ";"
+decl_model_type:
+          "model_type" model_type[type_to_use] ";"
                         {
                             auto *sym = new ModelTypeSymbol((token_type) $type_to_use, false, @$);
                         }
-        | "model_type" ModelType[type_to_use] "," "just_in_time" ";"
+        | "model_type" model_type[type_to_use] "," "just_in_time" ";"
                         {
                             auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true, @$);
                         }
@@ -598,12 +597,12 @@ Decl_model_type:
                         }
       ;
 
-ModelType:
+model_type:
 	  "case_based"
 	| "time_based"
 	;
 
-Decl_version:
+decl_version:
         "version" INTEGER_LITERAL[major] "," INTEGER_LITERAL[minor] "," INTEGER_LITERAL[sub_minor] "," INTEGER_LITERAL[sub_sub_minor] ";"
                         {
                             int major = stoi( $major->value() );
@@ -627,7 +626,7 @@ Decl_version:
                         }
     ;
 
-Decl_classification:
+decl_classification:
       "classification" SYMBOL[classification]
                         {
                             // Morph Symbol to ClassificationSymbol
@@ -637,7 +636,7 @@ Decl_classification:
                             // initialize working counter used for classification levels
                             pc.counter1 = 0;
                         }
-            "{" ClassificationLevels "}" ";"
+            "{" classification_levels "}" ";"
                         {
                             // No valid classification context
                             pc.set_classification_context( nullptr );
@@ -649,14 +648,14 @@ Decl_classification:
                         }
             ;
 
-ClassificationLevels:
+classification_levels:
       SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
                             auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             pc.counter1++;  // counter for classification levels
                         }
-      | ClassificationLevels "," SYMBOL
+      | classification_levels "," SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
                             auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
@@ -664,7 +663,7 @@ ClassificationLevels:
                         }
 	;
 
-Decl_partition:
+decl_partition:
       "partition" SYMBOL[partition]
                         {
                             // Morph Symbol to PartitionSymbol
@@ -674,7 +673,7 @@ Decl_partition:
                             // initialize working counter used for partition split points
                             pc.counter1 = 0;
                         }
-            "{" PartitionSplits "}"[last] ";"
+            "{" partition_splitpoints "}"[last] ";"
                         {
                             // create PartitionEnumeratorSymbol for upper partition interval
                             Symbol *enum_symbol = pc.get_partition_context();
@@ -692,7 +691,7 @@ Decl_partition:
                         }
             ;
 
-PartitionSplits:
+partition_splitpoints:
       signed_numeric_literal
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
@@ -702,7 +701,7 @@ PartitionSplits:
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
                             pc.counter1++;  // counter for partition split points
                         }
-      | PartitionSplits "," signed_numeric_literal
+      | partition_splitpoints "," signed_numeric_literal
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
@@ -713,7 +712,7 @@ PartitionSplits:
                         }
 	;
 
-Decl_range:
+decl_range:
       "range" SYMBOL[range] "{" signed_integer_literal[lower_bound] "," signed_integer_literal[upper_bound] "}" ";"
                         {
                             int lower_bound = stoi( $lower_bound->value() );
@@ -732,8 +731,8 @@ Decl_range:
                         }
     ;
 
-Decl_parameters:
-	  "parameters" "{" Parameters "}" ";"
+decl_parameters:
+	  "parameters" "{" parameter_list "}" ";"
 	| "parameters" "{" error "}" ";"
                         {
                             // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
@@ -741,12 +740,12 @@ Decl_parameters:
                         }
       ;
 
-Parameters: 
-	  Decl_parameter
-	| Parameters Decl_parameter
+parameter_list: 
+	  decl_parameter
+	| parameter_list decl_parameter
 	;
 
-Decl_parameter:
+decl_parameter:
       decl_parameter_type_part[type_symbol] SYMBOL[parm] ";"
                         {
                             auto *sym = new ParameterSymbol( $parm, $type_symbol, @parm );
@@ -774,7 +773,7 @@ decl_parameter_type_part:
                         }
     ;
 
-Decl_agent:
+decl_agent:
       "agent" SYMBOL[agent]
                         {
                             // Morph Symbol (or AgentSymbol) to AgentSymbol
@@ -783,7 +782,7 @@ Decl_agent:
                             // Set agent context for body of agent declaration
                             pc.set_agent_context( $agent );
                         }
-            "{" AgentMembers "}" ";"
+            "{" agent_member_list "}" ";"
                         {
                             // No valid agent context
                             pc.set_agent_context( nullptr );
@@ -795,15 +794,15 @@ Decl_agent:
                         }
             ;
 
-AgentMembers:
-	  AgentMember
-	| AgentMembers AgentMember
+agent_member_list:
+	  agent_member
+	| agent_member_list agent_member
 	;
 
-AgentMember:
-	  Decl_SimpleAgentVar
-	| Decl_AgentFunction
-	| Decl_AgentEvent
+agent_member:
+	  decl_simple_agentvar
+	| decl_agent_function
+	| decl_agent_event
     | error ";"
                         {
                             // Error recovery: Prepare to parse another member in an agent declarative island
@@ -813,7 +812,7 @@ AgentMember:
                         }
     ;
 
-Decl_SimpleAgentVar:
+decl_simple_agentvar:
       numeric_type[type] SYMBOL[agentvar] ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr, @agentvar );
@@ -840,14 +839,14 @@ Decl_SimpleAgentVar:
                         }
     ;
 
-Decl_AgentFunction:
+decl_agent_function:
       "void" SYMBOL "(" ")" ";"
                         {
                             auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), @SYMBOL );
                         }
     ;
 
-Decl_AgentEvent:
+decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] ";"
                         {
                             auto *agent = pc.get_agent_context();
@@ -859,7 +858,7 @@ Decl_AgentEvent:
                         }
     ;
 
-Decl_table:
+decl_table:
       "table" SYMBOL[agent] SYMBOL[table] 
                         {
                             // morph $table to TableSymbol
@@ -874,7 +873,7 @@ Decl_table:
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
                         }
-            "{" "{" TableExpressions[expr1] "}" "}" ";"
+            "{" "{" table_expression_list[expr1] "}" "}" ";"
                         {
                             // No valid agent or table context
                             pc.set_table_context( nullptr );
@@ -891,13 +890,13 @@ Decl_table:
                         }
     ;
 
-TableExpressions:
+table_expression_list:
       ExprForTable[root]
                         {
                             auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
                             pc.counter1++;  // counter for expressions
                         }
-    | TableExpressions "," ExprForTable[root]
+    | table_expression_list "," ExprForTable[root]
                         {
                             auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
                             pc.counter1++;  // counter for expressions
