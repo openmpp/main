@@ -171,6 +171,9 @@
     <ClInclude Include="RealTypedefTypeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BoolEnumTypeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -282,6 +285,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RealTypedefTypeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoolEnumTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

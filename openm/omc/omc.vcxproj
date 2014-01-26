@@ -103,6 +103,7 @@
     <ClInclude Include="AgentVarSymbol.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="BoolEnumeratorSymbol.h" />
+    <ClInclude Include="BoolEnumTypeSymbol.h" />
     <ClInclude Include="BuiltinAgentVarSymbol.h" />
     <ClInclude Include="ClassificationSymbol.h" />
     <ClInclude Include="CodeBlock.h" />
@@ -155,6 +156,7 @@
     <ClCompile Include="AgentMemberSymbol.cpp" />
     <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="AgentVarSymbol.cpp" />
+    <ClCompile Include="BoolEnumTypeSymbol.cpp" />
     <ClCompile Include="BuiltinAgentVarSymbol.cpp" />
     <ClCompile Include="ClassificationSymbol.cpp" />
     <ClCompile Include="CodeBlock.cpp" />

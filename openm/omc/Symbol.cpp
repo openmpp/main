@@ -24,7 +24,7 @@
 #include "TimeTypedefTypeSymbol.h"
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
-#include "BoolEnumeratorSymbol.h"
+#include "BoolEnumTypeSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
@@ -526,7 +526,7 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_llong, token::TK_long, token::TK_long, "0");
 
     // C++ unsigned integral types (including bool)
-    Symbol *ets_bool = new EnumTypeSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type);
+    sym = new BoolEnumTypeSymbol();
     sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
     sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
     sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
@@ -547,11 +547,7 @@ void Symbol::populate_default_symbols()
     // Not implemented (a string)
     //sym = new TypedefTypeSymbol(token::TK_file, "");
 
-    // create enums for bool built-in type (perhaps should be done in new SymbolBool)
-    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_false), ets_bool, 0);
-    sym = new BoolEnumeratorSymbol(token_to_string(token::TK_true), ets_bool, 1);
-
-    // check that there aren't more built-in types than the API allows permits.
+    // check that there aren't more built-in types than the API permits.
     assert(OM_MAX_BUILTIN_TYPE_ID >= TypeSymbol::next_type_id - 1);
 
     // Set type_id counter so that API will correctly detect these as 'enum types'.
