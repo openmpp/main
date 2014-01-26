@@ -43,6 +43,8 @@ using namespace openm;
 
 symbol_map_type Symbol::symbols;
 
+list<symbol_map_value_type> Symbol::pp_symbols_sorted;
+
 list<TypeSymbol *> Symbol::pp_all_types0;
 
 list<TypeSymbol *> Symbol::pp_all_types1;
@@ -661,12 +663,14 @@ Symbol *Symbol::find_a_symbol( const type_info& ti )
         return nullptr;
 }
 
-/**
- * Perform operations after the parser has parsed all input files.
- * 
- * This includes validating each symbol and populating post-parse symbol members containing
- * information on symbol relationships and pointer collections.
- */
+void Symbol::populate_pp_symbols_sorted()
+{
+    for (auto sym : symbols) {
+        pp_symbols_sorted.push_back(sym);
+    }
+    pp_symbols_sorted.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
+}
+
 
 void Symbol::post_parse_all()
 {

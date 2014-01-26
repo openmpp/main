@@ -514,6 +514,23 @@ public:
      */
 
     static void populate_default_symbols();
+
+
+    /**
+     * Populate pp_symbols_sorted after parsing is complete.
+     * 
+     * The pp_symbols_sorted list is useful for debugging.
+     */
+
+    static void populate_pp_symbols_sorted();
+
+    /**
+    * Perform operations after the parser has parsed all input files.
+    *
+    * This includes validating each symbol and populating post-parse symbol members containing
+    * information on symbol relationships and pointer collections.
+    */
+
     static void post_parse_all();
 
 
@@ -565,9 +582,25 @@ public:
 
     /**
      * The symbol table.
+     * 
+     * Map from a Symbol's unique_name to a reference to a pointer to the Symbol. The extra level of
+     * indirection allows morphing of a Symbol to a specialized Symbol in the Symbol hierarchy when
+     * the declaration is encountered. When morphing is done, the reference in teh symbol table is
+     * not changed, but the pointer is. That means that references to the SYmbol in other objects,
+     * which are stored as Symbol &amp;* during parsing, remain valid.
      */
 
     static symbol_map_type symbols;
+
+
+    /**
+     * All symbols, ordered in lexocographic order by unique_name
+     * 
+     * Populated after parsing is complete by populate_pp_symbols_sorted().
+     * Useful for finding a given Symbol when using the debugger. 
+     */
+
+    static list<symbol_map_value_type> pp_symbols_sorted;
 
 
     /**
@@ -581,7 +614,7 @@ public:
 
 
     /**
-    * The templated types in the model
+    * The types in the model implemented using helper template classes
     *
     * Ex. classifications, ranges
     * Populated after parsing is complete.
