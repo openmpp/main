@@ -29,7 +29,7 @@ void AgentEventTimeSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer(s) for use post-parse
-            pp_event = dynamic_cast<AgentEventSymbol *> (event);
+            pp_event = dynamic_cast<AgentEventSymbol *> (pp_symbol(event));
             assert(pp_event); // parser guarantee
 
             // Add this agent event time symbol to the agent's list of all such symbols

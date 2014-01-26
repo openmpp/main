@@ -28,7 +28,7 @@ void ParameterSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to type symbol for use post-parse
-            pp_type_symbol = dynamic_cast<TypeSymbol *>(type_symbol);
+            pp_type_symbol = dynamic_cast<TypeSymbol *>(pp_symbol(type_symbol));
 
             if (!pp_type_symbol) {
                 pp_error("Invalid type '" + type_symbol->name + "' for parameter '" + name + "'");

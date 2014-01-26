@@ -462,13 +462,90 @@ public:
 
     int reference_count;
 
-    // static helper functions
-	static bool exists( const string& unm );
-	static bool exists( const string& nm, const Symbol *agent );
-    static string symbol_name( const string& nm, const Symbol *agent );
-	static Symbol *get_symbol( const string& unm );
-	static Symbol *get_symbol( const string& nm, const Symbol *agent );
-	static Symbol *find_a_symbol( const type_info& cls );
+    /**
+    * Check for existence of symbol with this unique name.
+    *
+    * @param   unm The unique name.
+    *
+    * @return  true if found, else false.
+    */
+
+    static bool exists(const string& unm);
+
+
+    /**
+     * Check for existence of symbol with this member name in agent.
+     *
+     * @param nm    The member name.
+     * @param agent The agent.
+     *
+     * @return true if found, else false.
+     */
+
+    static bool exists(const string& nm, const Symbol *agent);
+
+
+    /**
+     * Agent member unique name.
+     *
+     * @param nm    The member name, e.g. "time".
+     * @param agent The agent qualifying the member name.
+     *
+     * @return The unique name, e.g. "Person::time".
+     */
+
+    static string symbol_name(const string& nm, const Symbol *agent);
+
+
+    /**
+     * Gets a symbol for a unique name.
+     *
+     * @param unm The unique name.
+     *
+     * @return The symbol, or nullptr if not found.
+     */
+
+    static Symbol *get_symbol(const string& unm);
+
+
+    /**
+     * Gets a symbol for a member name in an agent.
+     *
+     * @param nm    The member name.
+     * @param agent The agent.
+     *
+     * @return The symbol, or nullptr if not found.
+     */
+
+    static Symbol *get_symbol(const string& nm, const Symbol *agent);
+
+
+    /**
+     * Searches for the first symbol of the given class.
+     *
+     * @param cls The typeinfo of the class to find.
+     *
+     * @return null if it fails, else the found symbol.
+     */
+
+    static Symbol *find_a_symbol(const type_info& cls);
+
+
+    /**
+     * Gets post-parse direct pointer to a symbol
+     * 
+     * During the parse phase, relationships between Symbols are stored as
+     * stable references to pointers to Symbols (the second element of the pair
+     * in the symbol table map Symbols::symbols).  That allows symbol morphing when
+     * generic Symbols created by the scanner (when it encounters new names)
+     * are resolved in the parser to specialized Symbols.
+     * 
+     * @param rp_symbol The reference to *Symbol stored in the symbol table
+     *
+     * @return null if it fails, else the pp symbol.
+     */
+
+    static Symbol *pp_symbol(Symbol *& rp_symbol);
 
 
     /**

@@ -252,8 +252,6 @@ int main(int argc, char * argv[])
 
         try {
             theLog->logMsg("Post-parse processing");
-            // create pp_symbols_sorted to easily find Symbols in the debugger.
-            Symbol::populate_pp_symbols_sorted();
             // perform all post-parse multi-pass processing
             Symbol::post_parse_all();
         }

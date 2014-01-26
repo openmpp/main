@@ -44,15 +44,15 @@ void TableAccumulatorSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to table for post-parse use
-            pp_table = dynamic_cast<TableSymbol *> (table);
+            pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
             assert(pp_table); // parser guarantee
 
             // assign direct pointer to agentvar for post-parse use
-            pp_agentvar = dynamic_cast<AgentVarSymbol *> (agentvar);
+            pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
             assert(pp_agentvar); // parser guarantee
 
             // assign direct pointer to TableAnalysisAgentVarSymbol for post-parse use
-            pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (analysis_agentvar);
+            pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (pp_symbol(analysis_agentvar));
             assert(pp_analysis_agentvar); // parser guarantee
 
             // Add this table accumulator to the table's list of accumulators

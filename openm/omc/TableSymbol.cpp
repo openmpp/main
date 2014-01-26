@@ -28,7 +28,7 @@ void TableSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to agent for use post-parse
-            pp_agent = dynamic_cast<AgentSymbol *> (agent);
+            pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
             assert(pp_agent); // parser guarantee
 
             // add this table to the complete list of tables

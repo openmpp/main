@@ -69,7 +69,19 @@ actor Person            //EN Individual
 
     YEAR year;
 
+    EDUCATION_LEVEL edlev;
+
 };
+
+// deliberately declared after use in agent statement above.
+classification EDUCATION_LEVEL
+{
+    RL_PRESCHOOL,
+    RL_PRIMARY,
+    RL_SECONDARY,
+    RL_POST_SECONDARY
+};
+
 
 classification EYE_COLOUR
 {

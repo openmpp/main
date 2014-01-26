@@ -59,7 +59,7 @@ void ConditionedDurationAgentVarSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer for post-parse use
-            pp_observed = dynamic_cast<AgentVarSymbol *> (observed);
+            pp_observed = dynamic_cast<AgentVarSymbol *> (pp_symbol(observed));
             assert(pp_observed); // syntax error
     }
         break;

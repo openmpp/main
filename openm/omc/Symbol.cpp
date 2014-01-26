@@ -441,14 +441,15 @@ int Symbol::post_parse_errors = 0;
 
 void Symbol::post_parse(int pass)
 {
-    // This classs is the top of the post_parse hierarchical calling chain.
+    // This class is the top of the post_parse hierarchical calling chain.
     //super::post_parse(pass);
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case eCreateMissingSymbols:
         {
-            // Identify and handle cases where a name was mis-identified as agent context when it should be global.
+            // Integrity check (debugging omc only)
+            // A name can be mis-identified as agent context when it should be global.
             // This situation is an instrinsic consequence of the 'distributed declaration' feature of the language.
             if (is_base_symbol()) {
                 // This Symbol was never declared.
@@ -466,21 +467,13 @@ void Symbol::post_parse(int pass)
                         // Now get the symbol table entry for this symbol.
                         auto it_this = symbols.find(unique_name);
                         assert(it_this != symbols.end()); // logic guarantee
-
-                        // Move reference counts from this symbol to the global symbol.
-                        it_global->second->reference_count += it_this->second->reference_count;
-
-                        // Redirect all references to this symbol to the global symbol.
-                        it_this->second = it_global->second;
-
-                        // This symbol has now been (deliberately) orphaned.
-                        // Nothing in the symbol table or in other symbols refers to it.
+                        // This is the symbol returned by pp_symbol()
                     }
                     else {
                         // The source code contained an agent-qualified name token which was never declared,
                         // and no global with the same name exists.
                         // Report error and continue?  TODO
-                        assert(true || false);
+                        assert(true||false);
                     }
                 }
                 else {
@@ -609,27 +602,10 @@ void Symbol::populate_default_symbols()
     TypeSymbol::next_type_id = OM_MAX_BUILTIN_TYPE_ID + 1;
 }
 
-/**
- * Check for existence of symbol with this unique name.
- *
- * @param   unm The unique name.
- *
- * @return  true if found, else false.
- */
-
 bool Symbol::exists( const string& unm )
 {
     return symbols.count( unm ) == 0 ? false : true;
 }
-
-/**
- * Check for existence of symbol with this member name in agent
- *
- * @param   nm      The member name.
- * @param   agent   The agent.
- *
- * @return  true if found, else false.
- */
 
 bool Symbol::exists( const string& nm, const Symbol *agent )
 {
@@ -637,28 +613,11 @@ bool Symbol::exists( const string& nm, const Symbol *agent )
     return exists( unm );
 }
 
-/**
- * Agent member unique name.
- *
- * @param   member  The member name, e.g. "time".
- * @param   agent   The agent qualifying the member name.
- *
- * @return  The unique name, e.g. "Person::time".
- */
-
 string Symbol::symbol_name( const string& member, const Symbol *agent )
 {
     return agent->name + "::" + member;
 }
 
-
-/**
- * Gets a symbol for a unique name
- *
- * @param   unm The unique name
- *
- * @return  The symbol, or nullptr if not found
- */
 
 Symbol *Symbol::get_symbol(const string& unm)
 {
@@ -669,15 +628,6 @@ Symbol *Symbol::get_symbol(const string& unm)
 
     return sym;
 }
-
-/**
- * Gets a symbol for a member name in an agent.
- *
- * @param   member  The member name.
- * @param   agent   The agent.
- *
- * @return  The symbol, or nullptr if not found
- */
 
 Symbol *Symbol::get_symbol( const string& member, const Symbol *agent )
 {
@@ -690,16 +640,6 @@ Symbol *Symbol::get_symbol( const string& member, const Symbol *agent )
     return sym;
 }
 
-
-
-
-/**
- * Searches for the first symbol of the given class
- *
- * @param   ti  The typeinfo of the class to find.
- *
- * @return  null if it fails, else the found symbol.
- */
 
 Symbol *Symbol::find_a_symbol( const type_info& ti )
 {
@@ -716,8 +656,48 @@ Symbol *Symbol::find_a_symbol( const type_info& ti )
         return nullptr;
 }
 
+Symbol *Symbol::pp_symbol(Symbol *& rp_sym)
+{
+    Symbol *sym = rp_sym;
+    assert(sym);
+
+    // Identify problem  cases where a name was mis-identified as agent context rather than global context.
+    // This situation can arise as an instrinsic consequence of the 'distributed declaration' feature of the language.
+    if (sym->is_base_symbol()) {
+        // This Symbol was never declared, so there's an issue.
+        if (sym->name != sym->unique_name) {
+            // Example: name is "SEX" and unique_name is "Person::SEX".
+            // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
+            // because no global symbol with that name existed in the symbol table at the time.
+            // As it turned out, the source code contained no declared symbol with this name in agent context.
+
+            // Search the symbol table for a symbol with the same name in global context.
+            auto it_global = symbols.find(sym->name);
+            if (it_global != symbols.end()) {
+                // A global symbol with this name exists in the symbol table.
+                // That's the correct symbol so return it.
+                sym = it_global->second;
+                assert(sym); // logic guarantee
+            }
+            else {
+                // The source code contained an agent-qualified name token which was never declared,
+                // and no global with the same name exists.
+                // Report error and continue?  TODO
+                assert(false);
+            }
+        }
+        else {
+            // I don't think we should get here.  All symbols should be derived symbols at this point.
+            // A syntax error should have been detected earlier.
+            assert(false);
+        }
+    }
+    return sym;
+}
+
 void Symbol::populate_pp_symbols_sorted()
 {
+    pp_symbols_sorted.clear();
     for (auto sym : symbols) {
         pp_symbols_sorted.push_back(sym);
     }
@@ -727,6 +707,9 @@ void Symbol::populate_pp_symbols_sorted()
 
 void Symbol::post_parse_all()
 {
+    // Create pp_symbols_sorted to easily find Symbols in the debugger.
+    populate_pp_symbols_sorted();
+
     // pass 0: create support symbols not identified during parsing
     for_each(   symbols.begin(),
                 symbols.end(),
@@ -735,6 +718,9 @@ void Symbol::post_parse_all()
                     (vt.second)->post_parse( eCreateMissingSymbols );
                 }
             );
+
+    // Recreate pp_symbols_sorted because it may have changed from the previous post_parse pass
+    populate_pp_symbols_sorted();
 
     // pass 1: create pp_ members and collections
     for_each(   symbols.begin(),

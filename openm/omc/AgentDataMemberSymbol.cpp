@@ -25,7 +25,7 @@ void AgentDataMemberSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to type symbol for use post-parse
-            pp_type_symbol = dynamic_cast<TypeSymbol *> (type_symbol);
+            pp_type_symbol = dynamic_cast<TypeSymbol *> (pp_symbol(type_symbol));
             assert(pp_type_symbol); // parser guarantee
 
             // Add this agent data symbol to the agent's list of all such symbols
