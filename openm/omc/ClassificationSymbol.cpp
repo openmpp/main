@@ -12,6 +12,11 @@
 using namespace std;
 using namespace openm;
 
+const string ClassificationSymbol::default_initial_value() const {
+    // Default is first enumerator in the enumeration
+    return pp_enumerators.front()->name;
+}
+
 void ClassificationSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

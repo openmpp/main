@@ -35,6 +35,8 @@ public:
     {
     }
 
+    const string default_initial_value() const;
+
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_global();

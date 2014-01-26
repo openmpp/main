@@ -19,11 +19,10 @@ namespace mm {
         // ctor
         explicit AgentVar()
         {
-            initialize();
         }
 
         // initialization
-        void initialize( T initial_value = 0 )
+        void initialize( T initial_value )
         {
             value = initial_value;
         }
