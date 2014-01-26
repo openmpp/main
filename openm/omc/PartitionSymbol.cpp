@@ -38,8 +38,9 @@ void PartitionSymbol::post_parse(int pass)
             // Also check that enumerators are strictly increasing.
             string lower_bound = "min";
             double lower_bound_value = -DBL_MAX;
-            string upper_bound = "";
-            double upper_bound_value = 0;
+            string upper_bound = ""; // initial value doesn't matter
+            double upper_bound_value = 0; // initial value doesn't matter
+            size_t j = 0; // enumerator counter
             bool order_ok = true;
             for ( auto e : pp_enumerators ) {
                 auto pe = dynamic_cast<PartitionEnumeratorSymbol *>(e);
@@ -47,11 +48,11 @@ void PartitionSymbol::post_parse(int pass)
 
                 // upper bound of interval is already known
                 upper_bound = pe->upper_split_point;
-                try {
+                if (j <= pp_enumerators.size() - 2) {
                     upper_bound_value = stod(upper_bound);
                 }
-                catch (...)
-                {
+                else {
+                    // upper bound of final interval is something like 'max'
                     upper_bound_value = DBL_MAX;
                 }
 
@@ -62,6 +63,7 @@ void PartitionSymbol::post_parse(int pass)
                 order_ok = order_ok && upper_bound_value > lower_bound_value;
 
                 // prepare for next interval in iteration
+                ++j;
                 lower_bound = upper_bound;
                 lower_bound_value = upper_bound_value;
             }
