@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <cassert>
 #include "AgentMemberSymbol.h"
 
 
@@ -19,16 +20,17 @@ private:
     typedef AgentMemberSymbol super;
 
 public:
-    AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+    AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
-        , type(type)
+        , type_symbol(type->get_rpSymbol())
     {
     }
 
-    AgentDataMemberSymbol(const string member_name, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+    AgentDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(member_name, agent, decl_loc)
-        , type(type)
+        , type_symbol(type->get_rpSymbol())
     {
+        assert(type);  // grammar/initialization guarantee
     }
 
 
@@ -52,11 +54,19 @@ public:
 
 
     /**
-    * C++ fundamental type.
+    * Reference to pointer to the type symbol
     *
-    * Recorded as a token value, e.g. int_KW.
+    * Stable to symbol morhing during parse phase.
     */
 
-    token_type type;
+    Symbol*& type_symbol;
+
+    /**
+    * Direct pointer to the type symbol
+    *
+    * Set post-parse for convenience.
+    */
+
+    TypeSymbol *pp_type_symbol;
 
 };

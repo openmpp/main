@@ -13,7 +13,7 @@
 using namespace std;
 using namespace openm;
 
-const string PartitionSymbol::get_initial_value() const
+const string PartitionSymbol::default_initial_value() const
 {
     // initial value is the first interval
     return "0";

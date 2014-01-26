@@ -5,6 +5,7 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "LanguageSymbol.h"
@@ -14,8 +15,11 @@
 using namespace std;
 using namespace openm;
 
-const string EnumTypeSymbol::get_initial_value() const
+const string EnumTypeSymbol::default_initial_value() const
 {
+    // enumerators have been populated
+    assert(pp_enumerators.size() > 0); // grammar guarnatee
+
     // initial value is first enumerator
     return pp_enumerators.front()->name;
 };

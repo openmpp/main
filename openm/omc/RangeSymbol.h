@@ -37,7 +37,7 @@ public:
     {
     }
 
-    const string get_initial_value() const;
+    const string default_initial_value() const;
 
     void post_parse(int pass);
 

@@ -106,7 +106,7 @@ public:
         keywords.push_back(kw3);
     }
 
-    const string get_initial_value() const {
+    const string default_initial_value() const {
         return initial_value;
     }
 

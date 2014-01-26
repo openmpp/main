@@ -24,7 +24,7 @@ private:
     typedef AgentVarSymbol super;
 
 public:
-    SimpleAgentVarSymbol(Symbol *sym, const Symbol *agent, token_type type, Literal *initializer, yy::location decl_loc = yy::location())
+    SimpleAgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, Literal *initializer, yy::location decl_loc = yy::location())
         : AgentVarSymbol(sym, agent, type, decl_loc)
         , initializer(initializer)
     {

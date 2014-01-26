@@ -69,7 +69,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += type_symbol->name + " " + name + " = " + pp_type_symbol->get_initial_value() + ";";
+    c += type_symbol->name + " " + name + " = " + pp_type_symbol->default_initial_value() + ";";
     return c;
 }
 

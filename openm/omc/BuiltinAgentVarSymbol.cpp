@@ -7,6 +7,7 @@
 
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentSymbol.h"
+#include "TypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -40,7 +41,7 @@ CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:         AgentVar<Time, Person, &Person::time_side_effects> time;
-    h += "AgentVar<" + token_to_string(type) + ", "
+    h += "AgentVar<" + pp_type_symbol->name + ", "
         + agent->name + ", "
         + "&" + agent->name + "::" + side_effects_func() + "> "
         + name + ";";

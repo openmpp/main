@@ -47,7 +47,7 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
                     throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
                 }
                 string member_name = in_agentvar_name();
-                auto sym = new AgentInternalSymbol(member_name, av->agent, av->type);
+                auto sym = new AgentInternalSymbol(member_name, av->agent, av->type_symbol);
             }
         }
         break;

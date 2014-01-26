@@ -430,7 +430,7 @@ extern char *yytext;
 %type  <pval_Literal>   signed_numeric_literal
 %type  <pval_Literal>   signed_integer_literal
 
-%type  <pval_Symbol>    decl_parameter_type_part
+%type  <pval_Symbol>    decl_type_part
 
 %type  <pval_TableExpr> expr_for_table
 %type  <pval_TableExpr> table_expression_list
@@ -770,7 +770,7 @@ parameter_list:
 	;
 
 decl_parameter:
-      decl_parameter_type_part[type_symbol] SYMBOL[parm] ";"
+      decl_type_part[type_symbol] SYMBOL[parm] ";"
                         {
                             auto *sym = new ParameterSymbol( $parm, $type_symbol, @parm );
                         }
@@ -782,20 +782,6 @@ decl_parameter:
                             pc.bracket_level = 0;
                         }
 	;
-
-decl_parameter_type_part:
-       numeric_type
-                        {
-                            // convert token for type to corresponding symbol in symbol table
-                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$numeric_type));
-                            assert(type_symbol); // grammar/initialization guarantee
-                            $decl_parameter_type_part = type_symbol;
-                        }
-    | SYMBOL[type_symbol]
-                        {
-                            $decl_parameter_type_part = $type_symbol;
-                        }
-    ;
 
 /*
  * agent
@@ -841,13 +827,13 @@ agent_member:
     ;
 
 decl_simple_agentvar:
-      numeric_type[type] SYMBOL[agentvar] ";"
+        decl_type_part[type_symbol] SYMBOL[agentvar] ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr, @agentvar );
+                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, nullptr, @agentvar );
                         }
-    | numeric_type[type] SYMBOL[agentvar] "=" "{" literal "}" ";"
+      | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" literal "}" ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal, @agentvar );
+                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $literal, @agentvar );
                         }
     | SYMBOL[type_symbol] SYMBOL[agentvar] ";"
                         {
@@ -883,6 +869,24 @@ decl_agent_event:
                             // also create associated AgentEventTimeSymbol
                             string member_name = AgentEventTimeSymbol::member_name( event );
                             auto *sym = new AgentEventTimeSymbol( member_name, agent, event, @time_func );
+                        }
+    ;
+
+/*
+ * the 'type' part of a parameter or agentvar declaration
+ */
+
+decl_type_part:
+       numeric_type
+                        {
+                            // convert token for type to corresponding symbol in symbol table
+                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$numeric_type));
+                            assert(type_symbol); // grammar/initialization guarantee
+                            $decl_type_part = type_symbol;
+                        }
+    | SYMBOL[type_symbol]
+                        {
+                            $decl_type_part = $type_symbol;
                         }
     ;
 

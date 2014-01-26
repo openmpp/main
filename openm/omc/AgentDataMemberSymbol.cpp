@@ -5,8 +5,12 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
+#include <string>
 #include "AgentDataMemberSymbol.h"
 #include "AgentSymbol.h"
+#include "TypeSymbol.h"
+#include "RangeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -20,6 +24,10 @@ void AgentDataMemberSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
+            // assign direct pointer to type symbol for use post-parse
+            pp_type_symbol = dynamic_cast<TypeSymbol *> (type_symbol);
+            assert(pp_type_symbol); // parser guarantee
+
             // Add this agent data symbol to the agent's list of all such symbols
             pp_agent->pp_agent_data_members.push_back(this);
         }
@@ -31,20 +39,10 @@ void AgentDataMemberSymbol::post_parse(int pass)
 
 string AgentDataMemberSymbol::initial_value() const
 {
-    string result;
-    switch (type) {
+    assert(pp_type_symbol);
 
-    case token::TK_bool:
-        // for bool, default initial value is false
-        result = token_to_string(token::TK_false);
-        break;
-
-    default:
-        // for all other fundamental types, default initial value is 0
-        result = "( " + token_to_string(type) + " ) 0";
-
-    };
-    return result;
+    // return the default initial value for a type of this kind
+    return pp_type_symbol->default_initial_value();
 }
 
 CodeBlock AgentDataMemberSymbol::cxx_initialize_expression() const

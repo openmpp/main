@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "SimpleAgentVarSymbol.h"
+#include "TypeSymbol.h"
 #include "CodeBlock.h"
 #include "Literal.h"
 
@@ -31,7 +32,7 @@ CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent()
     // add declaration code specific to simple agentvars
 
     // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
-    h += "SimpleAgentVar<" + token_to_string(type) + ", "
+    h += "SimpleAgentVar<" + pp_type_symbol->name + ", "
         + agent->name + ", "
         + "&" + agent->name + "::" + side_effects_func() + "> "
         + name + ";";

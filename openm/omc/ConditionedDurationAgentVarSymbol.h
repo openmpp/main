@@ -7,6 +7,7 @@
 
 #pragma once
 #include "AgentVarSymbol.h"
+#include "TypedefTypeSymbol.h"
 
 using namespace std;
 
@@ -25,9 +26,8 @@ private:
 public:
     ConditionedDurationAgentVarSymbol(const Symbol *agent, const Symbol *observed, const Literal *constant)
         : AgentVarSymbol(ConditionedDurationAgentVarSymbol::member_name(observed, constant),
-        agent,
-        token::TK_Time
-        )
+                        agent,
+                        TypedefTypeSymbol::get_typedef_symbol(token::TK_Time) )
         , observed(observed->get_rpSymbol())
         , constant(constant)
         , pp_observed(nullptr)

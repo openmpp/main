@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "AgentInternalSymbol.h"
+#include "TypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -24,7 +25,7 @@ CodeBlock AgentInternalSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += token_to_string(type) + " " + name + ";";
+    h += pp_type_symbol->name + " " + name + ";";
     return h;
 }
 

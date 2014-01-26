@@ -16,7 +16,7 @@
 using namespace std;
 using namespace openm;
 
-const string RangeSymbol::get_initial_value() const {
+const string RangeSymbol::default_initial_value() const {
     return to_string(lower_bound);
 }
 

@@ -104,7 +104,7 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent()
     h += condition_decl() + ";";
 
     // example:         DurationAgentVar<Time, Person, &om_duration_alive_true_offset, &Person::om_duration_alive_true_side_effects, &Person::om_duration_alive_true_condition> om_duration
-    h += "DurationAgentVar<" + token_to_string(type) + ", "
+    h += "DurationAgentVar<" + pp_type_symbol->name + ", "
         + agent->name + ", "
         + "&" + agent->name + "::" + side_effects_func() + ", "
         + "&" + agent->name + "::" + condition_func() + "> "

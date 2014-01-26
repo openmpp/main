@@ -21,12 +21,12 @@ private:
     typedef AgentDataMemberSymbol super;
 
 public:
-    AgentCallbackMemberSymbol(Symbol *sym, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+    AgentCallbackMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(sym, agent, type, decl_loc)
     {
     }
 
-    AgentCallbackMemberSymbol(const string member_name, const Symbol *agent, token_type type, yy::location decl_loc = yy::location())
+    AgentCallbackMemberSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(member_name, agent, type, decl_loc)
     {
     }

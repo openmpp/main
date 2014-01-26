@@ -47,12 +47,12 @@ public:
 
 
     /**
-     * Gets the initial value for a quantity of this type
+     * Gets the default initial value for a quantity of this type
      *
-     * @return The initial value.
+     * @return The default initial value as a string
      */
 
-    virtual const string get_initial_value() const = 0;
+    virtual const string default_initial_value() const = 0;
 
 
     /**

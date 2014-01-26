@@ -19,7 +19,7 @@ private:
     typedef AgentVarSymbol super;
 
 public:
-    BuiltinAgentVarSymbol(const string member_name, const Symbol *agent, token_type type)
+    BuiltinAgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type)
         : AgentVarSymbol(member_name, agent, type)
     {
     }

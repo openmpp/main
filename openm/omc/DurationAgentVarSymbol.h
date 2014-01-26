@@ -7,6 +7,7 @@
 
 #pragma once
 #include "AgentVarSymbol.h"
+#include "TypedefTypeSymbol.h"
 
 using namespace std;
 
@@ -24,7 +25,9 @@ private:
 public:
     // constructor for 0-argument derived agentvars, e.g. duration()
     DurationAgentVarSymbol(const Symbol *agent)
-        : AgentVarSymbol(DurationAgentVarSymbol::member_name(), agent, token::TK_Time)
+        : AgentVarSymbol(DurationAgentVarSymbol::member_name(),
+                        agent,
+                        TypedefTypeSymbol::get_typedef_symbol(token::TK_Time))
     {
     }
 
