@@ -21,6 +21,8 @@ private:
     typedef AgentDataMemberSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     AgentCallbackMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(sym, agent, type, decl_loc)
     {

@@ -20,6 +20,8 @@ private:
     typedef Symbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     TableExpressionSymbol(Symbol *table, ExprForTable *root, int index, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(table, index), decl_loc)
         , root(root)

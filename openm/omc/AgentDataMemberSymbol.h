@@ -20,6 +20,8 @@ private:
     typedef AgentMemberSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
         , type_symbol(type->get_rpSymbol())

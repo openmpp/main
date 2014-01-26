@@ -19,6 +19,8 @@ private:
     typedef AgentVarSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     BuiltinAgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type)
         : AgentVarSymbol(member_name, agent, type)
     {

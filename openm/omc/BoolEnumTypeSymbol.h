@@ -21,6 +21,7 @@ private:
     typedef EnumTypeSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
 
     /**
      * Constructor for the bool enumeration symbol

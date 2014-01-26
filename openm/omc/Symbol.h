@@ -131,6 +131,18 @@ class Symbol {
 public:
 
     /**
+     * Query if this object is an underived instance of the base Symbol class.
+     * 
+     * Every class derived from Symbol has a polymorphic override of this function which returns
+     * false.  The definition of this function is placed at the beginning of the class declaration
+     * to help remember to include it when copying code to create new derived classes of Symbol.
+     *
+     * @return true if base symbol, false if not.
+     */
+
+    virtual bool is_base_symbol() const { return true; }
+
+    /**
      * Constructor for new Symbol.
      * 
      * If the symbol table does not contain an entry with unique name @a unm a new symbol table

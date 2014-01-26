@@ -23,6 +23,8 @@ private:
     typedef AgentVarSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     // constructor for 0-argument derived agentvars, e.g. duration()
     DurationAgentVarSymbol(const Symbol *agent)
         : AgentVarSymbol(DurationAgentVarSymbol::member_name(),

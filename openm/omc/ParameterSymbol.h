@@ -18,6 +18,8 @@ private:
     typedef Symbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     ParameterSymbol(Symbol *sym, Symbol *type_symbol, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , type_symbol(type_symbol->get_rpSymbol())

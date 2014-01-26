@@ -53,7 +53,7 @@ actor Person            //EN Individual
 	logical playing = { FALSE };
 
 	//EN Start playing event
-	event timeStartPlayingEvent, StartPlayingEvent;	//EN Start plyaing event
+	event timeStartPlayingEvent, StartPlayingEvent;	//EN Start playing event
 
 };
 

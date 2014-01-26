@@ -25,6 +25,8 @@ private:
     typedef AgentCallbackMemberSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *event, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(member_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
         , event(event->get_rpSymbol())

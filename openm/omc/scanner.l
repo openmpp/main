@@ -328,12 +328,21 @@ blank       [ \t\r]
                 Symbol *sym = nullptr;
                 Symbol *agent = pc.get_agent_context();
                 if (agent == nullptr) {
+                    /* Currently in global context */
                     sym = Symbol::get_symbol(yytext);
                     if (!sym) sym = new Symbol(yytext, *yylloc);
                 }
                 else {
-                    sym = Symbol::get_symbol(yytext, agent);
-                    if (!sym) sym = new Symbol(yytext, agent, *yylloc);
+                    /* Currently in agent context */
+                    /* Attempt first to resolve the name in global context (global names have precedence) */
+                    sym = Symbol::get_symbol(yytext);
+                    if (!sym) {
+                        /* Resolve name in agent context */
+                        sym = Symbol::get_symbol(yytext, agent);
+                        if (!sym) sym = new Symbol(yytext, agent, *yylloc);
+                        /* Possibly this was a global name not yet encountered in the source code. */
+                        /* This case is handled by fix-up in Symbol::post_parse(eCreateMissingSymbols) */
+                    }
                 }
 				yylval->pval_Symbol = sym;
 				return token::SYMBOL;

@@ -32,6 +32,8 @@ private:
     typedef Symbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     TableAnalysisAgentVarSymbol(Symbol *table, Symbol *agentvar, int index)
         : Symbol(symbol_name(table, agentvar))
         , table(table->get_rpSymbol())

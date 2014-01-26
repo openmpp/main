@@ -24,6 +24,7 @@ private:
     typedef TypeSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
 
     /**
     * Constructor.

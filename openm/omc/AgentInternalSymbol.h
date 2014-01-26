@@ -23,11 +23,7 @@ private:
     typedef AgentDataMemberSymbol super;
 
 public:
-    // SFG TODO - internal symbols can never be morhed, right?
-    //AgentInternalSymbol(Symbol *sym, const Symbol *agent, token_type type)
-    //    : AgentDataMemberSymbol(sym, agent, type)
-    //{
-    //}
+    bool is_base_symbol() const { return false; }
 
     AgentInternalSymbol(const string member_name, const Symbol *agent, const Symbol *type)
         : AgentDataMemberSymbol(member_name, agent, type)

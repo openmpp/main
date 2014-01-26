@@ -18,6 +18,8 @@ private:
     typedef Symbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     EnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , enumeration(enumeration->get_rpSymbol())

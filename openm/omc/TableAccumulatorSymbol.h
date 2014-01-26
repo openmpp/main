@@ -24,6 +24,8 @@ private:
     typedef Symbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     TableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, Symbol *agentvar, Symbol *analysis_agentvar, int index)
         : Symbol(symbol_name(table, accumulator, increment, agentvar))
         , table(table->get_rpSymbol())

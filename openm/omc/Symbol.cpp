@@ -441,6 +441,59 @@ int Symbol::post_parse_errors = 0;
 
 void Symbol::post_parse(int pass)
 {
+    // This classs is the top of the post_parse hierarchical calling chain.
+    //super::post_parse(pass);
+
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    switch (pass) {
+    case eCreateMissingSymbols:
+        {
+            // Identify and handle cases where a name was mis-identified as agent context when it should be global.
+            // This situation is an instrinsic consequence of the 'distributed declaration' feature of the language.
+            if (is_base_symbol()) {
+                // This Symbol was never declared.
+                if (name != unique_name) {
+                    // Example: name is "SEX" and unique_name is "Person::SEX".
+                    // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
+                    // because no global symbol with that name existed in the symbol table at the time.
+                    // As it turned out, the source code contained no declared symbol with this name in agent context.
+ 
+                    // Search the symbol table for a symbol with the same name in global context.
+                    auto it_global = symbols.find(name);
+                    if (it_global != symbols.end()) {
+                        // Global symbol table entry with this name exists.
+                        
+                        // Now get the symbol table entry for this symbol.
+                        auto it_this = symbols.find(unique_name);
+                        assert(it_this != symbols.end()); // logic guarantee
+
+                        // Move reference counts from this symbol to the global symbol.
+                        it_global->second->reference_count += it_this->second->reference_count;
+
+                        // Redirect all references to this symbol to the global symbol.
+                        it_this->second = it_global->second;
+
+                        // This symbol has now been (deliberately) orphaned.
+                        // Nothing in the symbol table or in other symbols refers to it.
+                    }
+                    else {
+                        // The source code contained an agent-qualified name token which was never declared,
+                        // and no global with the same name exists.
+                        // Report error and continue?  TODO
+                        assert(true || false);
+                    }
+                }
+                else {
+                    // I don't think we should get here.  All symbols should be derived symbols at this point.
+                    // A syntax error should have been detected earlier.
+                    assert(false);
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 CodeBlock Symbol::cxx_declaration_agent()

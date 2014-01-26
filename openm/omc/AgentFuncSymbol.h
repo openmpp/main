@@ -22,6 +22,8 @@ private:
     typedef AgentMemberSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
 
     /**
     * Constructor.

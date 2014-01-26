@@ -24,6 +24,8 @@ private:
     typedef AgentVarSymbol super;
 
 public:
+    bool is_base_symbol() const { return false; }
+
     SimpleAgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, Literal *initializer, yy::location decl_loc = yy::location())
         : AgentVarSymbol(sym, agent, type, decl_loc)
         , initializer(initializer)
