@@ -422,9 +422,9 @@ extern char *yytext;
 %left  "::"              // precedence 1
 
 %type  <val_token>      model_type
-%type  <val_token>      ModgenCumulationOperator
-%type  <val_token>      TableAccumulator
-%type  <val_token>      TableIncrement
+%type  <val_token>      modgen_cumulation_operator
+%type  <val_token>      table_accumulator
+%type  <val_token>      table_increment
 %type  <val_token>      bool_literal
 %type  <pval_Literal>   literal
 %type  <pval_Literal>   signed_numeric_literal
@@ -435,8 +435,8 @@ extern char *yytext;
 %type  <pval_TableExpr> expr_for_table
 %type  <pval_TableExpr> table_expression_list
 
-%type  <pval_Symbol>   AgentVar
-%type  <pval_Symbol>   DerivedAgentVar
+%type  <pval_Symbol>   agentvar
+%type  <pval_Symbol>   derived_agentvar
 
 %type  <val_token>      numeric_type
 %type  <val_token>      changeable_numeric_type
@@ -486,6 +486,10 @@ declaration:
 	| decl_table
 	;
 
+/*
+ * language
+ */
+
 decl_languages:
           "languages" "{" language_list "}" ";"
                         {
@@ -516,6 +520,10 @@ language_list:
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
 	;
+
+/*
+ * changeable types
+ */
 
 decl_time_type:
 	  "time_type" cxx_numeric_type[type_to_use] ";"
@@ -626,6 +634,10 @@ decl_version:
                         }
     ;
 
+/*
+ * classification
+ */
+
 decl_classification:
       "classification" SYMBOL[classification]
                         {
@@ -662,6 +674,10 @@ classification_levels:
                             pc.counter1++;  // counter for classification levels
                         }
 	;
+
+/*
+ * partition
+ */
 
 decl_partition:
       "partition" SYMBOL[partition]
@@ -712,6 +728,10 @@ partition_splitpoints:
                         }
 	;
 
+/*
+ * range
+ */
+
 decl_range:
       "range" SYMBOL[range] "{" signed_integer_literal[lower_bound] "," signed_integer_literal[upper_bound] "}" ";"
                         {
@@ -730,6 +750,10 @@ decl_range:
                             pc.InitializeForCxxOutside();
                         }
     ;
+
+/*
+ * parameter
+ */
 
 decl_parameters:
 	  "parameters" "{" parameter_list "}" ";"
@@ -772,6 +796,10 @@ decl_parameter_type_part:
                             $decl_parameter_type_part = $type_symbol;
                         }
     ;
+
+/*
+ * agent
+ */
 
 decl_agent:
       "agent" SYMBOL[agent]
@@ -858,6 +886,10 @@ decl_agent_event:
                         }
     ;
 
+/*
+ * table
+ */
+
 decl_table:
       "table" SYMBOL[agent] SYMBOL[table] 
                         {
@@ -904,9 +936,9 @@ table_expression_list:
 	;
 
 expr_for_table[result]:
-      AgentVar
+      agentvar
                         {
-                            Symbol *agentvar = $AgentVar;
+                            Symbol *agentvar = $agentvar;
                             Symbol *table = pc.get_table_context();
                             // The default accumulator is sum and the default increment is delta
                             token_type acc = token::TK_sum;
@@ -946,12 +978,12 @@ expr_for_table[result]:
                             }
 	                        $result = new ExprForTableLeaf( accumulator );
                         }
-    | ModgenCumulationOperator "(" AgentVar ")"
+    | modgen_cumulation_operator "(" agentvar ")"
                         {
-                            Symbol *agentvar = $AgentVar;
+                            Symbol *agentvar = $agentvar;
                             Symbol *table = pc.get_table_context();
-                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $ModgenCumulationOperator );
-                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $ModgenCumulationOperator );
+                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
+                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
 
                             // Also create symbol for associated analysis agentvar if not already present
                             TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
@@ -987,9 +1019,9 @@ expr_for_table[result]:
                             }
 	                        $result = new ExprForTableLeaf( accumulator );
                         }
-    | TableAccumulator[acc] "(" TableIncrement[incr] "(" AgentVar ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" agentvar ")" ")"
                         {
-                            Symbol *agentvar = $AgentVar;
+                            Symbol *agentvar = $agentvar;
                             Symbol *table = pc.get_table_context();
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
@@ -1050,7 +1082,7 @@ expr_for_table[result]:
                         }
 	;
 
-ModgenCumulationOperator:
+modgen_cumulation_operator:
       TK_delta
     | TK_delta2
     | TK_nz_delta
@@ -1068,13 +1100,13 @@ ModgenCumulationOperator:
     | TK_min_value_out
 	;
 
-TableAccumulator:
+table_accumulator:
       TK_sum
     | TK_min
     | TK_max
     ;
 
-TableIncrement:
+table_increment:
       TK_delta
     | TK_delta2
     | TK_nz_delta
@@ -1086,19 +1118,19 @@ TableIncrement:
     | TK_nz_value_out
     ;
 
-AgentVar:
-		SYMBOL
-		| DerivedAgentVar
+agentvar:
+      SYMBOL
+    | derived_agentvar
 	;
 
-DerivedAgentVar:
-    TK_duration "(" ")"
+derived_agentvar:
+      TK_duration "(" ")"
                         {
-                            $DerivedAgentVar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
+                            $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
                         }
     | TK_duration "(" SYMBOL[agentvar] "," literal[constant] ")"
                         {
-                            $DerivedAgentVar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
+                            $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
                         }
 	;
 
