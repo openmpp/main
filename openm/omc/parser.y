@@ -835,22 +835,22 @@ decl_simple_agentvar:
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $literal, @agentvar );
                         }
-    | SYMBOL[type_symbol] SYMBOL[agentvar] ";"
-                        {
-                            // $type_symbol is a classification, range, or partition
-                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr );
-                        }
-    | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" literal "}" ";"
-                        {
-                            // $type_symbol is a classification, range, or partition
-                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
-                        }
-    | SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
-                        {
-                            // $type_symbol is a classification, range, or partition
-                            // $enumerator is an enumerator of a classification
-                            //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
-                        }
+    //| SYMBOL[type_symbol] SYMBOL[agentvar] ";"
+    //                    {
+    //                        // $type_symbol is a classification, range, or partition
+    //                        //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr );
+    //                    }
+    //| SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" literal "}" ";"
+    //                    {
+    //                        // $type_symbol is a classification, range, or partition
+    //                        //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
+    //                    }
+    //| SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
+    //                    {
+    //                        // $type_symbol is a classification, range, or partition
+    //                        // $enumerator is an enumerator of a classification
+    //                        //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
+    //                    }
     ;
 
 decl_agent_function:

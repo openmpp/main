@@ -3,19 +3,6 @@
 
 //LABEL(SyntaxProbes, EN) Probes for omc development and tssting
 
-//range BAD_RANGE //EN My bad range
-//{
-//    10,
-//    9
-//};
-
-//partition BAD_PARTITION //EN My bad partition
-//{
-//    0.5,
-//    10,
-//    10,
-//    30
-//};
 
 classification SEX //EN Sex
 {
@@ -43,7 +30,7 @@ partition AGE_GROUP //EN Age group
     30
 };
 
-range YEARS //EN Year
+range YEAR //EN Year
 {
     -3,
      4
@@ -67,7 +54,7 @@ parameters
     SEX a_sex;
 
     //EN a YEARS (range)
-    YEARS a_years;
+    YEAR a_years;
 
     //EN a AGE_GROUP (partition)
     AGE_GROUP a_age_group;
@@ -80,4 +67,48 @@ actor Person            //EN Individual
 
     Time my_first_happy_time;
 
+    YEAR year;
+
 };
+
+classification EYE_COLOUR
+{
+    EC_BLUE,
+    EC_BROWN
+};
+
+actor Person            //EN Individual
+{
+    //EN Eye colour
+    EYE_COLOUR eye_colour;
+
+    bool eye_colour_definitive = { FALSE };
+
+    event timeEyeColourChangeEvent, EyeColourChangeEvent;
+
+};
+
+TIME Person::timeEyeColourChangeEvent()
+{
+    TIME event_time = TIME_INFINITE;
+
+    if (!eye_colour_definitive) {
+        // eye colour becomes definitive at six months of age
+        event_time = WAIT(0.5);
+    }
+
+    return event_time;
+}
+
+void Person::EyeColourChangeEvent()
+{
+    // 70% of babies change eye colour to brown by 6 months of age
+    if (RandUniform(3) < 0.7) {
+        eye_colour = EC_BLUE;
+    }
+    else {
+        eye_colour = EC_BROWN;
+    }
+    eye_colour_definitive = true;
+}
+
