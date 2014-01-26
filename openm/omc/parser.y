@@ -432,7 +432,7 @@ extern char *yytext;
 
 %type  <pval_Symbol>    decl_parameter_type_part
 
-%type  <pval_TableExpr> ExprForTable
+%type  <pval_TableExpr> expr_for_table
 %type  <pval_TableExpr> table_expression_list
 
 %type  <pval_Symbol>   AgentVar
@@ -891,19 +891,19 @@ decl_table:
     ;
 
 table_expression_list:
-      ExprForTable[root]
+      expr_for_table[root]
                         {
                             auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
                             pc.counter1++;  // counter for expressions
                         }
-    | table_expression_list "," ExprForTable[root]
+    | table_expression_list "," expr_for_table[root]
                         {
                             auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
                             pc.counter1++;  // counter for expressions
                         }
 	;
 
-ExprForTable[result]:
+expr_for_table[result]:
       AgentVar
                         {
                             Symbol *agentvar = $AgentVar;
@@ -1028,23 +1028,23 @@ ExprForTable[result]:
                             }
 	                        $result = new ExprForTableLeaf( accumulator );
                         }
-    | ExprForTable[left] "+"[op] ExprForTable[right]
+    | expr_for_table[left] "+"[op] expr_for_table[right]
                         {
 	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
                         }
-    | ExprForTable[left] "-"[op] ExprForTable[right]
+    | expr_for_table[left] "-"[op] expr_for_table[right]
                         {
 	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
                         }
-    | ExprForTable[left] "*"[op] ExprForTable[right]
+    | expr_for_table[left] "*"[op] expr_for_table[right]
                         {
 	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
                         }
-    | ExprForTable[left] "/"[op] ExprForTable[right]
+    | expr_for_table[left] "/"[op] expr_for_table[right]
                         {
 	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
                         }
-    | "(" ExprForTable[expr] ")"
+    | "(" expr_for_table[expr] ")"
                         {
 	                        $result = $expr;
                         }
