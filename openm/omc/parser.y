@@ -870,7 +870,7 @@ decl_agent_event:
                             auto *ifs = new AgentFuncSymbol($implement_func, agent, @implement_func);
                             // Create agent event symbol
                             string event_name = "om_time_" + ifs->name;
-                            auto *sym = new AgentEventTimeSymbol(event_name, agent, tfs, ifs, @implement_func);
+                            auto *sym = new AgentEventSymbol(event_name, agent, tfs, ifs, @implement_func);
       }
     ;
 

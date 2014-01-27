@@ -333,7 +333,7 @@ void CodeGen::do_agents()
         c += "// One-time initialization of event offsets";
         c += "void " + agent->name + "::initialize_event_offsets()";
         c += "{";
-        for ( auto event : agent->pp_agent_event_times ) {
+        for ( auto event : agent->pp_agent_events ) {
             // e.g. om_time_MortalityEvent.offset_in_agent = (char *)&(this->om_time_MortalityEvent) - (char *)this;
             c += event->name + ".offset_in_agent = (char *)&(this->" + event->name + ") - (char *)this;";
         }
@@ -370,7 +370,7 @@ void CodeGen::do_agents()
         c += "// Initialize events";
         c += "void " + agent->name + "::initialize_agent_events()";
         c += "{";
-        for ( auto event : agent->pp_agent_event_times ) {
+        for ( auto event : agent->pp_agent_events ) {
             c += event->name + ".make_dirty();";
         }
         c += "}";
@@ -379,7 +379,7 @@ void CodeGen::do_agents()
         c += "// Finalize events";
         c += "void " + agent->name + "::finalize_agent_events()";
         c += "{";
-        for ( auto event : agent->pp_agent_event_times ) {
+        for ( auto event : agent->pp_agent_events ) {
             c += event->name + ".make_zombie();";
         }
         c += "}";

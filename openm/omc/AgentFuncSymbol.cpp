@@ -19,7 +19,7 @@ void AgentFuncSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         // Add this agentfunc to the agent's list of agentfuncs
-        pp_agent->pp_agentfuncs.push_back(this);
+        pp_agent->pp_agent_funcs.push_back(this);
         break;
     default:
         break;

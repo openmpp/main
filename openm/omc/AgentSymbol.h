@@ -11,7 +11,7 @@
 
 class AgentDataMemberSymbol;
 class AgentEventSymbol;
-class AgentEventTimeSymbol;
+class AgentEventSymbol;
 class AgentFuncSymbol;
 class AgentVarSymbol;
 class AgentInternalSymbol;
@@ -70,15 +70,15 @@ public:
     *  Populated after parsing is complete.
     */
 
-    list<AgentEventTimeSymbol *> pp_agent_event_times;
+    list<AgentEventSymbol *> pp_agent_events;
 
     /**
-    * The agentfuncs of this agent
+    * The agent funcs of this agent
     *
     *  Populated after parsing is complete.
     */
 
-    list<AgentFuncSymbol *> pp_agentfuncs;
+    list<AgentFuncSymbol *> pp_agent_funcs;
 
     /**
     * The tables of this agent

@@ -1,6 +1,6 @@
 /**
-* @file    AgentEventTimeSymbol.h
-* Declarations for the AgentEventTimeSymbol class.
+* @file    AgentEventSymbol.h
+* Declarations for the AgentEventSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -19,7 +19,7 @@ using namespace std;
 * of an agent event.
 */
 
-class AgentEventTimeSymbol : public AgentCallbackMemberSymbol
+class AgentEventSymbol : public AgentCallbackMemberSymbol
 {
 private:
     typedef AgentCallbackMemberSymbol super;
@@ -27,7 +27,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventTimeSymbol(const string event_name, const Symbol *agent, const Symbol *time_func, const Symbol *implement_func, yy::location decl_loc = yy::location())
+    AgentEventSymbol(const string event_name, const Symbol *agent, const Symbol *time_func, const Symbol *implement_func, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(event_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
         , event_name(implement_func->name)
         , time_func(time_func->get_rpSymbol())
