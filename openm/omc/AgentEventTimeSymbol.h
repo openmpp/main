@@ -31,6 +31,7 @@ public:
     AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *time_func, const Symbol *event, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(member_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
         , time_func(time_func->get_rpSymbol())
+        , event_name(event->name)
         , event(event->get_rpSymbol())
         , pp_time_func(nullptr)
         , pp_event_id(0)
@@ -43,6 +44,14 @@ public:
 
     void post_parse(int pass);
 
+    /** The name of the Event<> template symbol for this event */
+    string event_member_name()
+    {
+        return "om_time_" + event->name;
+    }
+
+    /** The name of the event */
+    string event_name;
 
     /**
      * Gets the initial value for the data member

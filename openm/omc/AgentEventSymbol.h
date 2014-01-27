@@ -40,17 +40,15 @@ public:
 
     AgentEventSymbol(Symbol *sym, const Symbol *agent, const Symbol *time_function, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
-        , time_function(time_function->get_rpSymbol())
+//        , time_function(time_function->get_rpSymbol())
         , pp_event_id(0)
     {
     }
 
-    CodeBlock cxx_declaration_agent();
-
     void post_parse(int pass);
 
     /** The Symbol for the time function of the event.*/
-    Symbol*& time_function;
+//    Symbol*& time_function;
 
 
     /**

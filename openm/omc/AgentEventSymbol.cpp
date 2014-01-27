@@ -11,22 +11,6 @@
 
 using namespace std;
 
-CodeBlock AgentEventSymbol::cxx_declaration_agent()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    //h += "";
-    //// example:         //* Mortality */
-    //h += "//* " + name + " */";
-    //// example: void MortalityEvent(); 
-    //h += "void " + name + "();";
-    //// example: Time timeMortalityEvent(); 
-    //h += "Time " + time_function->name + "();";
-    return h;
-}
-
 /**
 * Post-parse operations for AgentEventSymbol
 */

@@ -377,8 +377,8 @@ void CodeGen::do_agents()
         c += "// Initialize events";
         c += "void " + agent->name + "::initialize_agent_events()";
         c += "{";
-        for ( auto event_time : agent->pp_agent_event_times ) {
-            c += event_time->name + ".make_dirty();";
+        for ( auto event : agent->pp_agent_event_times ) {
+            c += event->event_member_name() + ".make_dirty();";
         }
         c += "}";
 
@@ -386,8 +386,8 @@ void CodeGen::do_agents()
         c += "// Finalize events";
         c += "void " + agent->name + "::finalize_agent_events()";
         c += "{";
-        for ( auto event_time : agent->pp_agent_event_times ) {
-            c += event_time->name + ".make_zombie();";
+        for ( auto event : agent->pp_agent_event_times ) {
+            c += event->event_member_name() + ".make_zombie();";
         }
         c += "}";
     }

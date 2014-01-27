@@ -45,7 +45,7 @@ void AgentEventTimeSymbol::post_parse(int pass)
             // E.g. Person
             string agent_name = pp_agent->name;
             // E.g. Person::timeMortalityEvent
-            string time_func_name = pp_event->time_function->unique_name;
+            string time_func_name = pp_time_func->unique_name;
             // create sorted unduplicated list of identifiers in body of event time function
             set<string> identifiers;
             auto rng = memfunc_bodyids.equal_range(time_func_name);
@@ -101,7 +101,7 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     string implement_func = pp_event->unique_name;
-    string time_func = pp_event->time_function->unique_name;
+    string time_func = pp_time_func->unique_name;
     int event_id = pp_event->pp_event_id;
     h += "";
     h += doxygen_short("Event: " + implement_func);
