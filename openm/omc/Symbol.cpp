@@ -22,7 +22,7 @@
 #include "TypedefTypeSymbol.h"
 #include "RealTypedefTypeSymbol.h"
 #include "TimeTypedefTypeSymbol.h"
-#include "EnumTypeSymbol.h"
+#include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
 #include "ParameterSymbol.h"
@@ -48,7 +48,7 @@ list<TypeSymbol *> Symbol::pp_all_types0;
 
 list<TypeSymbol *> Symbol::pp_all_types1;
 
-list<EnumTypeSymbol *> Symbol::pp_all_enumerations;
+list<EnumerationSymbol *> Symbol::pp_all_enumerations;
 
 list<LanguageSymbol *> Symbol::pp_all_languages;
 

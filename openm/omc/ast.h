@@ -17,7 +17,7 @@
 #include "TypedefTypeSymbol.h"
 #include "RealTypedefTypeSymbol.h"
 #include "TimeTypedefTypeSymbol.h"
-#include "EnumTypeSymbol.h"
+#include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolEnumeratorSymbol.h"
 #include "BoolSymbol.h"

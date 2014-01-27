@@ -110,7 +110,7 @@ string ParameterSymbol::cxx_read_parameter()
     if (pp_is_enum) {
         // for parameters of type classification, range, or partition
         // get the underlying storage type
-        auto ens = dynamic_cast<EnumTypeSymbol *>(pp_type_symbol);
+        auto ens = dynamic_cast<EnumerationSymbol *>(pp_type_symbol);
         assert(ens); // grammar guarantee
         typ = Symbol::token_to_string(ens->storage_type);
     }
@@ -129,7 +129,7 @@ string ParameterSymbol::cxx_assert_sanity()
     if (pp_is_enum) {
         // for parameters of type classification, range, or partition
         // get the underlying storage type
-        auto ens = dynamic_cast<EnumTypeSymbol *>(pp_type_symbol);
+        auto ens = dynamic_cast<EnumerationSymbol *>(pp_type_symbol);
         assert(ens); // grammar guarantee
         typ = Symbol::token_to_string(ens->storage_type);
     }

@@ -17,7 +17,7 @@
 
 class CodeBlock;
 class TypeSymbol;
-class EnumTypeSymbol;
+class EnumerationSymbol;
 class LanguageSymbol;
 class AgentSymbol;
 class ParameterSymbol;
@@ -748,7 +748,7 @@ public:
     * Populated after parsing is complete.
     */
 
-    static list<EnumTypeSymbol *> pp_all_enumerations;
+    static list<EnumerationSymbol *> pp_all_enumerations;
 
 
     /**

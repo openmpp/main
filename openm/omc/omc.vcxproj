@@ -111,6 +111,7 @@
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DurationAgentVarSymbol.h" />
+    <ClInclude Include="EnumerationSymbol.h" />
     <ClInclude Include="EnumeratorSymbol.h" />
     <ClInclude Include="EnumTypeSymbol.h" />
     <ClInclude Include="ExprForTable.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
+    <ClCompile Include="EnumerationSymbol.cpp" />
     <ClCompile Include="EnumeratorSymbol.cpp" />
     <ClCompile Include="EnumTypeSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />

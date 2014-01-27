@@ -8,7 +8,7 @@
 #pragma once
 #include "Symbol.h"
 
-class EnumTypeSymbol;
+class EnumerationSymbol;
 
 using namespace std;
 
@@ -61,7 +61,7 @@ public:
      * Set during post-parse for convenience.
      */
 
-    EnumTypeSymbol *pp_enumeration;
+    EnumerationSymbol *pp_enumeration;
 };
 
 

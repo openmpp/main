@@ -7,7 +7,7 @@
 
 #pragma once
 #include <list>
-#include "EnumTypeSymbol.h"
+#include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 
 using namespace std;
@@ -17,10 +17,10 @@ using namespace openm;
 /**
 * RangeSymbol.
 */
-class RangeSymbol : public EnumTypeSymbol
+class RangeSymbol : public EnumerationSymbol
 {
 private:
-    typedef EnumTypeSymbol super;
+    typedef EnumerationSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -32,7 +32,7 @@ public:
     */
 
     RangeSymbol(Symbol *sym, int lower_bound, int upper_bound, yy::location decl_loc = yy::location())
-        : EnumTypeSymbol(sym, token::TK_int, kind_of_type::range_type, decl_loc)
+        : EnumerationSymbol(sym, token::TK_int, kind_of_type::range_type, decl_loc)
         , lower_bound(lower_bound)
         , upper_bound(upper_bound)
     {

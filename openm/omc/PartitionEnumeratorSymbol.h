@@ -8,7 +8,7 @@
 #pragma once
 #include "EnumeratorSymbol.h"
 
-class EnumTypeSymbol;
+class EnumerationSymbol;
 
 using namespace std;
 

@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include "EnumeratorSymbol.h"
-#include "EnumTypeSymbol.h"
+#include "EnumerationSymbol.h"
 
 using namespace std;
 
@@ -21,7 +21,7 @@ void EnumeratorSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to enumeration for use post-parse
-            pp_enumeration = dynamic_cast<EnumTypeSymbol *> (pp_symbol(enumeration));
+            pp_enumeration = dynamic_cast<EnumerationSymbol *> (pp_symbol(enumeration));
             assert(pp_enumeration); // parser guarantee
 
             // Add this enumerator to the enumeration's list of enumerators

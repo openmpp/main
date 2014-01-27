@@ -10,7 +10,7 @@
 #include "EnumeratorSymbol.h"
 #include "LanguageSymbol.h"
 
-class EnumTypeSymbol;
+class EnumerationSymbol;
 
 using namespace std;
 

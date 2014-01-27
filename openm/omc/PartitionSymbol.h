@@ -7,7 +7,7 @@
 
 #pragma once
 #include <list>
-#include "EnumTypeSymbol.h"
+#include "EnumerationSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -16,10 +16,10 @@ using namespace openm;
 /**
 * PartitionSymbol.
 */
-class PartitionSymbol : public EnumTypeSymbol
+class PartitionSymbol : public EnumerationSymbol
 {
 private:
-    typedef EnumTypeSymbol super;
+    typedef EnumerationSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -31,7 +31,7 @@ public:
     */
 
     PartitionSymbol(Symbol *sym, yy::location decl_loc = yy::location())
-        : EnumTypeSymbol(sym, token::TK_int, kind_of_type::partition_type, decl_loc)
+        : EnumerationSymbol(sym, token::TK_int, kind_of_type::partition_type, decl_loc)
     {
     }
 

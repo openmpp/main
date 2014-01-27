@@ -6,7 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "EnumTypeSymbol.h"
+#include "EnumerationSymbol.h"
 #include "TypeSymbol.h"
 
 using namespace std;
@@ -15,10 +15,10 @@ using namespace openm;
 /**
 * BoolSymbol.
 */
-class BoolSymbol : public EnumTypeSymbol
+class BoolSymbol : public EnumerationSymbol
 {
 private:
-    typedef EnumTypeSymbol super;
+    typedef EnumerationSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -28,7 +28,7 @@ public:
     */
 
     BoolSymbol()
-        : EnumTypeSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type)
+        : EnumerationSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type)
     {
     }
 
