@@ -95,7 +95,6 @@
     <ClInclude Include="AgentCallbackMemberSymbol.h" />
     <ClInclude Include="AgentDataMemberSymbol.h" />
     <ClInclude Include="AgentEventSymbol.h" />
-    <ClInclude Include="AgentEventTimeSymbol.h" />
     <ClInclude Include="AgentFuncSymbol.h" />
     <ClInclude Include="AgentInternalSymbol.h" />
     <ClInclude Include="AgentMemberSymbol.h" />
@@ -150,7 +149,6 @@
     <ClCompile Include="AgentCallbackMemberSymbol.cpp" />
     <ClCompile Include="AgentDataMemberSymbol.cpp" />
     <ClCompile Include="AgentEventSymbol.cpp" />
-    <ClCompile Include="AgentEventTimeSymbol.cpp" />
     <ClCompile Include="AgentFuncSymbol.cpp" />
     <ClCompile Include="AgentInternalSymbol.cpp" />
     <ClCompile Include="AgentMemberSymbol.cpp" />

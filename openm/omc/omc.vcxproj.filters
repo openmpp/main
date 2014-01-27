@@ -93,9 +93,6 @@
     <ClInclude Include="AgentEventSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentEventTimeSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AgentFuncSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -213,9 +210,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgentDataMemberSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentEventTimeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgentFuncSymbol.cpp">
