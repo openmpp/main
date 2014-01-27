@@ -15,6 +15,7 @@
 #include "AgentSymbol.h"
 #include "AgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -31,6 +32,9 @@ void AgentEventTimeSymbol::post_parse(int pass)
             // assign direct pointer(s) for use post-parse
             pp_event = dynamic_cast<AgentEventSymbol *> (pp_symbol(event));
             assert(pp_event); // parser guarantee
+
+            pp_time_func = dynamic_cast<AgentFuncSymbol *> (pp_symbol(time_func));
+            assert(pp_time_func); // parser guarantee
 
             // Add this agent event time symbol to the agent's list of all such symbols
             pp_agent->pp_agent_event_times.push_back(this);
@@ -96,10 +100,15 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    //h += token_to_string(type) + " " + name + ";";
     string implement_func = pp_event->unique_name;
     string time_func = pp_event->time_function->unique_name;
     int event_id = pp_event->pp_event_id;
+    h += "";
+    h += doxygen_short("Event: " + implement_func);
+    // example: void MortalityEvent(); 
+    h += "void " + implement_func + "();";
+    // example: Time timeMortalityEvent(); 
+    h += "Time " + pp_time_func->name + "();";
     h += "Event<" + agent->name + ", "
         + to_string(event_id) + ", "
         + "0, " // TODO event priority
@@ -107,6 +116,7 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
         + "&" + time_func + "> "
         + name
         + ";" "\n";
+
     return h;
 }
 

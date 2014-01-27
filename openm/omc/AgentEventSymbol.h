@@ -12,13 +12,15 @@ class CodeBlock;
 
 using namespace std;
 
+
 /**
-* Symbol for an Agentevent
-*
-* An AgentEventSymbol is created when an 'event' statement is encountered
-* in the model source code.  The name of the symbol
-* is the name of the event implement function specified in the 'event' statement.
-*/
+ * Symbol for an Agentevent
+ * 
+ * An AgentEventSymbol is created when an 'event' statement is encountered in the model source
+ * code.  The name of the symbol is the name of the event implement function specified in the
+ * 'event' statement.
+ */
+
 class AgentEventSymbol : public AgentMemberSymbol
 {
 private:

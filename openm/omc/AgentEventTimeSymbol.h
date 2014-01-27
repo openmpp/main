@@ -10,6 +10,7 @@
 #include "TypedefTypeSymbol.h"
 
 class AgentEventSymbol;
+class AgentFuncSymbol;
 
 using namespace std;
 
@@ -27,9 +28,12 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *event, yy::location decl_loc = yy::location())
+    AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *time_func, const Symbol *event, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(member_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
+        , time_func(time_func->get_rpSymbol())
         , event(event->get_rpSymbol())
+        , pp_time_func(nullptr)
+        , pp_event_id(0)
     {
     }
 
@@ -55,6 +59,8 @@ public:
 
     CodeBlock cxx_declaration_agent();
 
+    /** The Symbol for the time function of the event.*/
+    Symbol*& time_func;
 
     /**
      * The associated event.
@@ -62,10 +68,21 @@ public:
 
     Symbol*& event;
 
+
+    AgentFuncSymbol *pp_time_func;
+
     /**
     * The associated event.
     */
 
     AgentEventSymbol *pp_event;
+
+    /**
+    * Numeric identifier for the event. The numeric identifier is the ordinal of the event name
+    * among all events in the model.  If two agents have an event with the same name, \a
+    * pp_event_id will be identical for those two events.
+    */
+
+    int pp_event_id;
 };
 

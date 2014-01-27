@@ -868,7 +868,7 @@ decl_agent_event:
                             auto *event = new AgentEventSymbol( $implement_func, agent, $time_func, @implement_func );
                             // also create associated AgentEventTimeSymbol (that's becomes the Event<> member in the agent)
                             string member_name = AgentEventTimeSymbol::member_name( event );
-                            auto *sym = new AgentEventTimeSymbol(member_name, agent, event, @time_func);
+                            auto *sym = new AgentEventTimeSymbol(member_name, agent, $time_func, event, @implement_func);
                             // and create an AgentFuncSymbol for the time function for completeness.
                             auto *tfsym = new AgentFuncSymbol($time_func, agent, @time_func);
                         }
