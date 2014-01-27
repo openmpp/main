@@ -8,6 +8,7 @@
 #pragma once
 #include "AgentCallbackMemberSymbol.h"
 #include "TypedefTypeSymbol.h"
+#include "AgentSymbol.h"  // CAN BE REMOVED
 
 class AgentEventSymbol;
 class AgentFuncSymbol;
@@ -50,8 +51,14 @@ public:
         return "om_time_" + event->name;
     }
 
-    /** The name of the event */
+    /** The name of the event CHANGE TO name */
     string event_name;
+
+    /** The name of the event CHANGE TO unique_name */
+    string event_unique_name()
+    {
+        return pp_agent->name + "::" + event_name;
+    }
 
     /**
      * Gets the initial value for the data member

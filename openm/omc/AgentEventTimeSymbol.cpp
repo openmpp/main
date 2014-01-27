@@ -100,7 +100,7 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    string implement_func = pp_event->unique_name;
+    string implement_func = event_unique_name();
     string time_func = pp_time_func->unique_name;
     int event_id = pp_event->pp_event_id;
     h += "";

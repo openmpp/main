@@ -762,7 +762,7 @@ void Symbol::post_parse_all()
         agent->pp_agent_data_members.sort( [] (AgentDataMemberSymbol *a, AgentDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_agentvars.sort( [] (AgentVarSymbol *a, AgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_agentevents.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->name < b->name ; } );
-        agent->pp_agent_event_times.sort( [] (AgentEventTimeSymbol *a, AgentEventTimeSymbol *b) { return a->pp_event->name < b->pp_event->name ; } );
+        agent->pp_agent_event_times.sort( [] (AgentEventTimeSymbol *a, AgentEventTimeSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agentfuncs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
     }
@@ -781,9 +781,9 @@ void Symbol::post_parse_all()
     // Note that the set contains no duplicates, but event names can be duplicates in different agents.
     set<string> all_event_names;
     for ( auto *agent : pp_all_agents ) {
-        for ( auto *event : agent->pp_agentevents )
+        for ( auto *event : agent->pp_agent_event_times )
         {
-            all_event_names.insert( event->name );
+            all_event_names.insert( event->event_name );
         }
     }
 
@@ -793,6 +793,15 @@ void Symbol::post_parse_all()
         {
             auto iter = all_event_names.find( event->name );
             event->pp_event_id = distance( all_event_names.begin(), iter);
+        }
+    }
+
+    // For each event in the model, find the index in the sorted list, and assign it as event_id
+    for (auto *agent : pp_all_agents) {
+        for (auto *event : agent->pp_agent_event_times)
+        {
+            auto iter = all_event_names.find(event->event_name);
+            event->pp_event_id = distance(all_event_names.begin(), iter);
         }
     }
 

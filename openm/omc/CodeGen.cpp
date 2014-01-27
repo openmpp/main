@@ -340,9 +340,9 @@ void CodeGen::do_agents()
         c += "// One-time initialization of event offsets";
         c += "void " + agent->name + "::initialize_event_offsets()";
         c += "{";
-        for ( auto aet : agent->pp_agent_event_times ) {
+        for ( auto event : agent->pp_agent_event_times ) {
             // e.g. om_time_MortalityEvent.offset_in_agent = (char *)&(this->om_time_MortalityEvent) - (char *)this;
-            c += aet->name + ".offset_in_agent = (char *)&(this->" + aet->name + ") - (char *)this;" ;
+            c += event->event_member_name() + ".offset_in_agent = (char *)&(this->" + event->event_member_name() + ") - (char *)this;";
         }
         c += "}";
 
