@@ -39,6 +39,7 @@ public:
     AgentEventSymbol(Symbol *sym, const Symbol *agent, const Symbol *time_function, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
         , time_function(time_function->get_rpSymbol())
+        , pp_event_id(0)
     {
     }
 
@@ -49,13 +50,12 @@ public:
     /** The Symbol for the time function of the event.*/
     Symbol*& time_function;
 
+
     /**
-    * Numeric identifier for the event.
-    * The numeric identifier is the ordinal of the event name
-    * among all events in the model.  If two agents have an
-    * event with the same name, \a pp_event_id will be identical
-    * for those two events.
-    */
+     * Numeric identifier for the event. The numeric identifier is the ordinal of the event name
+     * among all events in the model.  If two agents have an event with the same name, \a
+     * pp_event_id will be identical for those two events.
+     */
 
     int pp_event_id;
 };

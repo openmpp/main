@@ -473,7 +473,7 @@ void Symbol::post_parse(int pass)
                         // The source code contained an agent-qualified name token which was never declared,
                         // and no global with the same name exists.
                         // Report error and continue?  TODO
-                        assert(true||false);
+                        assert(false);
                     }
                 }
                 else {
