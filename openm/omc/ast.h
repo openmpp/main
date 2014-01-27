@@ -20,7 +20,7 @@
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolEnumeratorSymbol.h"
-#include "BoolEnumTypeSymbol.h"
+#include "BoolSymbol.h"
 #include "ClassificationSymbol.h"
 #include "PartitionSymbol.h"
 #include "PartitionEnumeratorSymbol.h"

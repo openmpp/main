@@ -24,7 +24,7 @@
 #include "TimeTypedefTypeSymbol.h"
 #include "EnumTypeSymbol.h"
 #include "EnumeratorSymbol.h"
-#include "BoolEnumTypeSymbol.h"
+#include "BoolSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
@@ -573,7 +573,7 @@ void Symbol::populate_default_symbols()
     sym = new TypedefTypeSymbol(token::TK_llong, token::TK_long, token::TK_long, "0");
 
     // C++ unsigned integral types (including bool)
-    sym = new BoolEnumTypeSymbol();
+    sym = new BoolSymbol();
     sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
     sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
     sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
