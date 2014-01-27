@@ -41,11 +41,11 @@ public:
     AgentEventSymbol(Symbol *sym, const Symbol *agent, const Symbol *time_function, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
 //        , time_function(time_function->get_rpSymbol())
-        , pp_event_id(0)
+//        , pp_event_id(0)
     {
     }
 
-    void post_parse(int pass);
+//    void post_parse(int pass);
 
     /** The Symbol for the time function of the event.*/
 //    Symbol*& time_function;
@@ -57,6 +57,6 @@ public:
      * pp_event_id will be identical for those two events.
      */
 
-    int pp_event_id;
+//    int pp_event_id;
 };
 

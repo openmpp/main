@@ -272,13 +272,6 @@ void CodeGen::do_agents()
         c += "}";
         c += "";
 
-        // iterate all agent events in agent
-	    //h += "// agent events";
-     //   for ( auto ae : agent->pp_agentevents ) {
-     //       h += ae->cxx_declaration_agent();
-     //   }
-	    //h += "";
-
 	    h += "// agent data members";
         // iterate all agent data members in agent
         for ( auto data_member : agent->pp_agent_data_members ) {

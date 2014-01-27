@@ -65,15 +65,7 @@ public:
     list<AgentVarSymbol *> pp_agentvars;
 
     /**
-    * The agentevents of this agent
-    *
-    *  Populated after parsing is complete.
-    */
-
-    //list<AgentEventSymbol *> pp_agentevents;
-
-    /**
-    * The AgentEventTime symbols of this agent
+    * The agent events of this agent
     *
     *  Populated after parsing is complete.
     */
