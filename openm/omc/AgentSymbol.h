@@ -70,7 +70,7 @@ public:
     *  Populated after parsing is complete.
     */
 
-    list<AgentEventSymbol *> pp_agentevents;
+    //list<AgentEventSymbol *> pp_agentevents;
 
     /**
     * The AgentEventTime symbols of this agent

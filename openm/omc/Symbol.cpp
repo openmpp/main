@@ -761,7 +761,7 @@ void Symbol::post_parse_all()
     for ( auto agent : pp_all_agents ) {
         agent->pp_agent_data_members.sort( [] (AgentDataMemberSymbol *a, AgentDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_agentvars.sort( [] (AgentVarSymbol *a, AgentVarSymbol *b) { return a->name < b->name ; } );
-        agent->pp_agentevents.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->name < b->name ; } );
+        //agent->pp_agentevents.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_event_times.sort( [] (AgentEventTimeSymbol *a, AgentEventTimeSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agentfuncs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
@@ -787,14 +787,14 @@ void Symbol::post_parse_all()
         }
     }
 
-    // For each event in the model, find the index in the sorted list, and assign it as event_id
-    for ( auto *agent : pp_all_agents ) {
-        for ( auto *event : agent->pp_agentevents )
-        {
-            auto iter = all_event_names.find( event->name );
-            event->pp_event_id = distance( all_event_names.begin(), iter);
-        }
-    }
+    //// For each event in the model, find the index in the sorted list, and assign it as event_id
+    //for ( auto *agent : pp_all_agents ) {
+    //    for ( auto *event : agent->pp_agentevents )
+    //    {
+    //        auto iter = all_event_names.find( event->name );
+    //        event->pp_event_id = distance( all_event_names.begin(), iter);
+    //    }
+    //}
 
     // For each event in the model, find the index in the sorted list, and assign it as event_id
     for (auto *agent : pp_all_agents) {

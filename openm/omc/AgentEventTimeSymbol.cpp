@@ -102,7 +102,7 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
 
     string implement_func = event_unique_name();
     string time_func = pp_time_func->unique_name;
-    int event_id = pp_event->pp_event_id;
+    int event_id = pp_event_id;
     h += "";
     h += doxygen_short("Event: " + implement_func);
     // example: void MortalityEvent(); 

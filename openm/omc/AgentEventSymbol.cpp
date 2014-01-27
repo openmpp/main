@@ -25,7 +25,7 @@ void AgentEventSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // Add this agentevent to the agent's list of all agentevents
-            pp_agent->pp_agentevents.push_back(this);
+            //pp_agent->pp_agentevents.push_back(this);
         }
         break;
     default:
