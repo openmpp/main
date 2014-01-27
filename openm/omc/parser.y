@@ -864,14 +864,14 @@ decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] ";"
                         {
                             auto *agent = pc.get_agent_context();
-                            // create agent event symbol
-                            auto *event = new AgentEventSymbol( $implement_func, agent, $time_func, @implement_func );
-                            // also create associated AgentEventTimeSymbol (that's becomes the Event<> member in the agent)
-                            string member_name = AgentEventTimeSymbol::member_name( event );
-                            auto *sym = new AgentEventTimeSymbol(member_name, agent, $time_func, event, @implement_func);
-                            // and create an AgentFuncSymbol for the time function for completeness.
-                            auto *tfsym = new AgentFuncSymbol($time_func, agent, @time_func);
-                        }
+                            // Create an AgentFuncSymbol for the time function.
+                            auto *tfs = new AgentFuncSymbol($time_func, agent, @time_func);
+                            // Create an AgentFuncSymbol for the implement function.
+                            auto *ifs = new AgentFuncSymbol($implement_func, agent, @implement_func);
+                            // Create agent event symbol
+                            string event_name = "om_time_" + ifs->name;
+                            auto *sym = new AgentEventTimeSymbol(event_name, agent, tfs, ifs, @implement_func);
+      }
     ;
 
 /*

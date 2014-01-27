@@ -29,26 +29,22 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventTimeSymbol(const string member_name, const Symbol *agent, const Symbol *time_func, const Symbol *event, yy::location decl_loc = yy::location())
-        : AgentCallbackMemberSymbol(member_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
+    AgentEventTimeSymbol(const string event_name, const Symbol *agent, const Symbol *time_func, const Symbol *implement_func, yy::location decl_loc = yy::location())
+        : AgentCallbackMemberSymbol(event_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
         , time_func(time_func->get_rpSymbol())
-        , event_name(event->name)
-        , event(event->get_rpSymbol())
+        , implement_func(implement_func->get_rpSymbol())
         , pp_time_func(nullptr)
+        , pp_implement_func(nullptr)
         , pp_event_id(0)
     {
     }
-
-    static string member_name(const Symbol *event);
-
-    static string symbol_name(const Symbol *agent, const Symbol *event);
 
     void post_parse(int pass);
 
     /** The name of the Event<> template symbol for this event */
     string event_member_name()
     {
-        return "om_time_" + event->name;
+        return "om_time_" + event_name;
     }
 
     /** The name of the event CHANGE TO name */
@@ -78,20 +74,11 @@ public:
     /** The Symbol for the time function of the event.*/
     Symbol*& time_func;
 
-    /**
-     * The associated event.
-     */
-
-    Symbol*& event;
-
+    Symbol*& implement_func;
 
     AgentFuncSymbol *pp_time_func;
 
-    /**
-    * The associated event.
-    */
-
-    AgentEventSymbol *pp_event;
+    AgentFuncSymbol *pp_implement_func;
 
     /**
     * Numeric identifier for the event. The numeric identifier is the ordinal of the event name

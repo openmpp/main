@@ -335,7 +335,7 @@ void CodeGen::do_agents()
         c += "{";
         for ( auto event : agent->pp_agent_event_times ) {
             // e.g. om_time_MortalityEvent.offset_in_agent = (char *)&(this->om_time_MortalityEvent) - (char *)this;
-            c += event->event_member_name() + ".offset_in_agent = (char *)&(this->" + event->event_member_name() + ") - (char *)this;";
+            c += event->name + ".offset_in_agent = (char *)&(this->" + event->name + ") - (char *)this;";
         }
         c += "}";
 
@@ -371,7 +371,7 @@ void CodeGen::do_agents()
         c += "void " + agent->name + "::initialize_agent_events()";
         c += "{";
         for ( auto event : agent->pp_agent_event_times ) {
-            c += event->event_member_name() + ".make_dirty();";
+            c += event->name + ".make_dirty();";
         }
         c += "}";
 
@@ -380,7 +380,7 @@ void CodeGen::do_agents()
         c += "void " + agent->name + "::finalize_agent_events()";
         c += "{";
         for ( auto event : agent->pp_agent_event_times ) {
-            c += event->event_member_name() + ".make_zombie();";
+            c += event->name + ".make_zombie();";
         }
         c += "}";
     }

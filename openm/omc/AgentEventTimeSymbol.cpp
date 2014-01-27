@@ -29,12 +29,11 @@ void AgentEventTimeSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
-            // assign direct pointer(s) for use post-parse
-            pp_event = dynamic_cast<AgentEventSymbol *> (pp_symbol(event));
-            assert(pp_event); // parser guarantee
-
             pp_time_func = dynamic_cast<AgentFuncSymbol *> (pp_symbol(time_func));
             assert(pp_time_func); // parser guarantee
+
+            pp_implement_func = dynamic_cast<AgentFuncSymbol *> (pp_symbol(implement_func));
+            assert(pp_implement_func); // parser guarantee
 
             // Add this agent event time symbol to the agent's list of all such symbols
             pp_agent->pp_agent_event_times.push_back(this);
@@ -80,19 +79,6 @@ void AgentEventTimeSymbol::post_parse(int pass)
     }
 }
 
-string AgentEventTimeSymbol::member_name(const Symbol *event)
-{
-    string result = "om_time_" + event->name;
-    return result;
-}
-
-string AgentEventTimeSymbol::symbol_name(const Symbol *agent, const Symbol *event)
-{
-    string member = AgentEventTimeSymbol::member_name(event);
-    string result = Symbol::symbol_name(member, agent);
-    return result;
-}
-
 CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
@@ -100,13 +86,13 @@ CodeBlock AgentEventTimeSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    string implement_func = event_unique_name();
+    string implement_func = pp_implement_func->unique_name;
     string time_func = pp_time_func->unique_name;
     int event_id = pp_event_id;
     h += "";
     h += doxygen_short("Event: " + implement_func);
     // example: void MortalityEvent(); 
-    h += "void " + implement_func + "();";
+    h += "void " + pp_implement_func->name + "();";
     // example: Time timeMortalityEvent(); 
     h += "Time " + pp_time_func->name + "();";
     h += "Event<" + agent->name + ", "
