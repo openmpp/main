@@ -528,8 +528,8 @@ language_list:
 decl_time_type:
 	  "time_type" cxx_numeric_type[type_to_use] ";"
                         {
-                            // Change properties of existing TypedefTypeSymbol
-                            auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_Time);
+                            // Change properties of existing NumericSymbol
+                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_Time);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;
@@ -544,8 +544,8 @@ decl_time_type:
 decl_real_type:
       "real_type" cxx_floating_point_type[type_to_use] ";"
                         {
-                            // Change properties of existing TypedefTypeSymbol
-                            auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_real);
+                            // Change properties of existing NumericSymbol
+                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_real);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;
@@ -560,8 +560,8 @@ decl_real_type:
 decl_counter_type:
 	  "counter_type" cxx_unsigned_integral_type[type_to_use] ";"
 						{
-                            // Change properties of existing TypedefTypeSymbol
-                            auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_counter);
+                            // Change properties of existing NumericSymbol
+                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_counter);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;
@@ -576,8 +576,8 @@ decl_counter_type:
 decl_integer_type:
       "integer_type" cxx_signed_integral_type[type_to_use] ";"
                         {
-                            // Change properties of existing TypedefTypeSymbol
-                            auto *sym = TypedefTypeSymbol::get_typedef_symbol(token::TK_integer);
+                            // Change properties of existing NumericSymbol
+                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_integer);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;

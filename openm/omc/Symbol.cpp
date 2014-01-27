@@ -19,9 +19,9 @@
 #include "LanguageSymbol.h"
 #include "VersionSymbol.h"
 #include "ModelTypeSymbol.h"
-#include "TypedefTypeSymbol.h"
-#include "RealTypedefTypeSymbol.h"
-#include "TimeTypedefTypeSymbol.h"
+#include "NumericSymbol.h"
+#include "RealSymbol.h"
+#include "TimeSymbol.h"
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
@@ -563,36 +563,36 @@ void Symbol::populate_default_symbols()
 
     // C++ ambiguous integral type
     // (in C/C++, the signedness of char is not specified)
-    sym = new TypedefTypeSymbol(token::TK_char, "0");
+    sym = new NumericSymbol(token::TK_char, "0");
 
     // C++ signed integral types
-    sym = new TypedefTypeSymbol(token::TK_schar, token::TK_signed, token::TK_char, "0");
-    sym = new TypedefTypeSymbol(token::TK_short, "0");
-    sym = new TypedefTypeSymbol(token::TK_int, "0");
-    sym = new TypedefTypeSymbol(token::TK_long, "0");
-    sym = new TypedefTypeSymbol(token::TK_llong, token::TK_long, token::TK_long, "0");
+    sym = new NumericSymbol(token::TK_schar, token::TK_signed, token::TK_char, "0");
+    sym = new NumericSymbol(token::TK_short, "0");
+    sym = new NumericSymbol(token::TK_int, "0");
+    sym = new NumericSymbol(token::TK_long, "0");
+    sym = new NumericSymbol(token::TK_llong, token::TK_long, token::TK_long, "0");
 
     // C++ unsigned integral types (including bool)
     sym = new BoolSymbol();
-    sym = new TypedefTypeSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
-    sym = new TypedefTypeSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
-    sym = new TypedefTypeSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
-    sym = new TypedefTypeSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long, "0");
-    sym = new TypedefTypeSymbol(token::TK_ullong, token::TK_unsigned, token::TK_long, token::TK_long, "0");
+    sym = new NumericSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
+    sym = new NumericSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
+    sym = new NumericSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
+    sym = new NumericSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long, "0");
+    sym = new NumericSymbol(token::TK_ullong, token::TK_unsigned, token::TK_long, token::TK_long, "0");
 
     // C++ floating point types
-    sym = new TypedefTypeSymbol(token::TK_float, "0.0");
-    sym = new TypedefTypeSymbol(token::TK_double, "0.0");
-    sym = new TypedefTypeSymbol(token::TK_ldouble, token::TK_long, token::TK_double, "0");
+    sym = new NumericSymbol(token::TK_float, "0.0");
+    sym = new NumericSymbol(token::TK_double, "0.0");
+    sym = new NumericSymbol(token::TK_ldouble, token::TK_long, token::TK_double, "0");
  
     // Changeable numeric types
-    sym = new TimeTypedefTypeSymbol(token::TK_double); // Time
-    sym = new RealTypedefTypeSymbol(token::TK_double); // real
-    sym = new TypedefTypeSymbol(token::TK_integer, token::TK_int, "0"); // integer
-    sym = new TypedefTypeSymbol(token::TK_counter, token::TK_int, "0"); // counter
+    sym = new TimeSymbol(token::TK_double); // Time
+    sym = new RealSymbol(token::TK_double); // real
+    sym = new NumericSymbol(token::TK_integer, token::TK_int, "0"); // integer
+    sym = new NumericSymbol(token::TK_counter, token::TK_int, "0"); // counter
 
     // Not implemented (a string)
-    //sym = new TypedefTypeSymbol(token::TK_file, "");
+    //sym = new NumericSymbol(token::TK_file, "");
 
     // check that there aren't more built-in types than the API permits.
     assert(OM_MAX_BUILTIN_TYPE_ID >= TypeSymbol::next_type_id - 1);

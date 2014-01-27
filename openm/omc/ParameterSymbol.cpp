@@ -8,7 +8,7 @@
 #include <cassert>
 #include "ParameterSymbol.h"
 #include "LanguageSymbol.h"
-#include "TypedefTypeSymbol.h"
+#include "NumericSymbol.h"
 #include "ClassificationSymbol.h"
 #include "RangeSymbol.h"
 #include "PartitionSymbol.h"

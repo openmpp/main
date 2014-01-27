@@ -7,7 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
-#include "TypedefTypeSymbol.h"
+#include "NumericSymbol.h"
 
 /**
 * ParameterSymbol.

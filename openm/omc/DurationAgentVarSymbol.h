@@ -7,7 +7,7 @@
 
 #pragma once
 #include "AgentVarSymbol.h"
-#include "TypedefTypeSymbol.h"
+#include "NumericSymbol.h"
 
 using namespace std;
 
@@ -29,7 +29,7 @@ public:
     DurationAgentVarSymbol(const Symbol *agent)
         : AgentVarSymbol(DurationAgentVarSymbol::member_name(),
                         agent,
-                        TypedefTypeSymbol::get_typedef_symbol(token::TK_Time))
+                        NumericSymbol::get_typedef_symbol(token::TK_Time))
     {
     }
 
