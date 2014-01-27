@@ -8,9 +8,7 @@
 #pragma once
 #include "AgentCallbackMemberSymbol.h"
 #include "TypedefTypeSymbol.h"
-#include "AgentSymbol.h"  // CAN BE REMOVED
 
-class AgentEventSymbol;
 class AgentFuncSymbol;
 
 using namespace std;
@@ -31,6 +29,7 @@ public:
 
     AgentEventTimeSymbol(const string event_name, const Symbol *agent, const Symbol *time_func, const Symbol *implement_func, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(event_name, agent, TypedefTypeSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
+        , event_name(implement_func->name)
         , time_func(time_func->get_rpSymbol())
         , implement_func(implement_func->get_rpSymbol())
         , pp_time_func(nullptr)
@@ -41,20 +40,12 @@ public:
 
     void post_parse(int pass);
 
-    /** The name of the Event<> template symbol for this event */
-    string event_member_name()
-    {
-        return "om_time_" + event_name;
-    }
 
-    /** The name of the event CHANGE TO name */
+    /**
+     * Name of the event.
+     */
+
     string event_name;
-
-    /** The name of the event CHANGE TO unique_name */
-    string event_unique_name()
-    {
-        return pp_agent->name + "::" + event_name;
-    }
 
     /**
      * Gets the initial value for the data member
