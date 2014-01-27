@@ -59,9 +59,9 @@ CodeBlock AgentDataMemberSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+    // example:         /// time
     h += "";
-    // example:         //* time */
-    h += doxygen(name);
+    h += doxygen_short(name);
     return h;
 }
 
@@ -71,9 +71,7 @@ CodeBlock AgentDataMemberSymbol::cxx_definition_agent()
     CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += "";
-    // example:         //* time */
-    c += doxygen(name);
+ 
     return c;
 }
 

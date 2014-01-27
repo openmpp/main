@@ -61,7 +61,7 @@ CodeBlock RangeSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += doxygen(name);
+    h += doxygen("Range: " + name);
     h += "typedef Range<" + token_to_string(storage_type) + ", " + to_string(lower_bound) + ", " + to_string(upper_bound) + "> " + name + "; " ;
 
     return h;

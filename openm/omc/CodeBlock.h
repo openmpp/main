@@ -112,6 +112,18 @@ private:
 
 CodeBlock doxygen(string t1, string t2 = "", string t3 = "", string t4 = "", string t5 = "");
 
+
+/**
+ * Creates a one-line doxygen style descriptive comment
+ *
+ * @param t1 The first string.
+ *
+ * @return A CodeBlock.
+ */
+
+CodeBlock doxygen_short(string t1);
+
+
 /**
  * Intercept output stream redirection.
  *

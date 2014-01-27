@@ -79,7 +79,6 @@ CodeBlock doxygen(string t1, string t2, string t3, string t4, string t5)
     // but in any case don't use old-style var_args.
 
     CodeBlock result;
-    result += "";
     result += "/**";
     result += " * " + t1;
     if (t2.length() > 0) result += " * " + t2;
@@ -88,5 +87,12 @@ CodeBlock doxygen(string t1, string t2, string t3, string t4, string t5)
     if (t5.length() > 0) result += " * " + t5;
     result += " */";
     result += "";
+    return result;
+}
+
+CodeBlock doxygen_short(string t1)
+{
+    CodeBlock result;
+    result += "//* " + t1 + " */";
     return result;
 }

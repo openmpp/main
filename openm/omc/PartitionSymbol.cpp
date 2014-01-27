@@ -86,7 +86,7 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += doxygen(name);
+    h += doxygen("Partition: " + name);
 
     // lower bounds of intervals in partition
     h += "extern const array<real, " + to_string(pp_size()) + "> om_lower_" + name + ";";
@@ -112,7 +112,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += doxygen(name);
+    h += doxygen_short(name);
 
     int index;  // index of interval in partition
 

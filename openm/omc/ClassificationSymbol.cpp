@@ -42,10 +42,11 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += doxygen(name);
+    h += doxygen("Classification: " + name);
     h += "enum om_enum_" + name + " : " + token_to_string(storage_type) + " {";
     bool first = true;
     for (auto enumerator : pp_enumerators) {
+        h += doxygen_short(enumerator->name);
         if (first) {
             h += enumerator->name + " = 0," ;
             first = false;
@@ -53,6 +54,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
         else {
             h += enumerator->name + "," ;
         }
+        h += "";
     }
     h += "};";
     h += "typedef Classification<om_enum_" + name + ", " + to_string(pp_size()) + "> " + name + ";" ;
