@@ -44,10 +44,12 @@ void ParameterSymbol::post_parse(int pass)
                 auto es = dynamic_cast<EnumerationSymbol *>(sym);
                 if (!es) {
                     pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                    continue; // don't insert invalid type in dimension list
                 }
                 if (es->numeric_or_bool()) {
-                    // really just checking for bool, but numeric_or_bool() works fine for that here
+                    // really just checking for bool, but numeric_or_bool() works fine in this context
                     pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                    continue; // don't insert invalid type in dimension list
                 }
                 pp_dimension_list.push_back(es);
             }

@@ -59,6 +59,9 @@ parameters
     //EN a AGE_GROUP (partition)
     AGE_GROUP a_age_group;
 
+    //EN my first mutli-dimensional parameter
+    real Something[SEX];
+
 };
 
 actor Person            //EN Individual

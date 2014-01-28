@@ -770,9 +770,16 @@ parameter_list:
 	;
 
 decl_parameter:
-      decl_type_part[type_symbol] SYMBOL[parm] ";"
+      decl_type_part[type_symbol] SYMBOL[parm]
                         {
-                            auto *sym = new ParameterSymbol( $parm, $type_symbol, @parm );
+                            $parm = new ParameterSymbol( $parm, $type_symbol, @parm );
+                            // Set parameter context for gathering the dimension specification
+                            pc.set_parameter_context( $parm );
+                        }
+            decl_dim_list ";"
+                        {
+                            // No valid parameter context
+                            pc.set_parameter_context( nullptr );
                         }
 	| error ";"
                         {
@@ -780,8 +787,23 @@ decl_parameter:
                             pc.brace_level = 1;
                             pc.parenthesis_level = 0;
                             pc.bracket_level = 0;
+                            // No valid parameter context
+                            pc.set_parameter_context( nullptr );
                         }
 	;
+
+decl_dim_list:
+      decl_dim_list "[" SYMBOL[dim] "]"
+                        {
+                            // add $dim to parameter's dimension_list
+                            Symbol *sym = pc.get_parameter_context();
+                            auto ps = dynamic_cast<ParameterSymbol *>(sym);
+                            assert(ps); // grammar guarantee
+                            ps->dimension_list.push_back($dim->get_ppSymbol());
+                        }
+    | /* Nothing */
+    ;
+
 
 /*
  * agent

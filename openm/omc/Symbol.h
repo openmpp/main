@@ -255,8 +255,8 @@ public:
     /**
      * Get stable reference to pointer to symbol.
      * 
-     * This reference is a double indirection and is stable to morphing, since unordered_map
-     * guarantees that references to existing map entries will not change.
+     * The result is a double indirection and is stable to morphing, since unordered_map
+     * guarantees that references to existing map entries never change.
      *
      * @return Reference to pointer to this Symbol.
      */
@@ -267,6 +267,25 @@ public:
         assert(it->second); // code integrity guarantee
         it->second->reference_count++;
     	return it->second;
+    }
+
+    /**
+     * Get stable pointer to pointer to symbol.
+     * 
+     * The result is a double indirection and is stable to morphing, since unordered_map
+     * guarantees that pointers and references to existing map entries never change.
+     * It's better to use get_rpSymbol() if possible, but sometimes pointers are needed instead,
+     * for example to store a double indirection to a Symbol in a list<>.
+     *
+     * @return pointer to pointer to this Symbol.
+     */
+
+	Symbol** get_ppSymbol() const
+    {
+    	auto it = symbols.find( unique_name );
+        assert(it->second); // code integrity guarantee
+        it->second->reference_count++;
+    	return &(it->second);
     }
 
     virtual ~Symbol()

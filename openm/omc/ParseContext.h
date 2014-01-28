@@ -34,6 +34,7 @@ public:
         , table_context (nullptr)
         , classification_context(nullptr)
         , partition_context(nullptr)
+        , parameter_context(nullptr)
         , parse_errors(0)
     {
         // The default location constructor for comment_location is fine.
@@ -119,6 +120,26 @@ public:
         }
     }
 
+    void set_parameter_context(Symbol *parameter)
+    {
+        if (parameter != nullptr) {
+            parameter_context = &parameter->get_rpSymbol();
+        }
+        else {
+            parameter_context = nullptr;
+        }
+    }
+
+    Symbol * get_parameter_context()
+    {
+        if (parameter_context != nullptr) {
+            return *parameter_context;
+        }
+        else {
+            return nullptr;
+        }
+    }
+
     /**
      * Initialize parse context for outermost code level.
      */
@@ -135,6 +156,7 @@ public:
         table_context = nullptr;
         classification_context = nullptr;
         partition_context = nullptr;
+        parameter_context = nullptr;
     }
 
     /**
@@ -243,7 +265,7 @@ public:
 private:
 
     /**
-     * agent context.
+     * agent context for contained symbols
      * 
      * Note that this cannot be Symbol &*, since
      * the value can be nullptr.
@@ -252,7 +274,7 @@ private:
 	Symbol **agent_context;
 
     /**
-     * table context.
+     * table context for contained symbols
      * 
      * Note that this cannot be Symbol &*, since
      * the value can be nullptr.
@@ -261,7 +283,7 @@ private:
 	Symbol **table_context;
 
     /**
-    * classification context.
+    * classification context for contained symbols
     *
     * Note that this cannot be Symbol &*, since
     * the value can be nullptr.
@@ -271,11 +293,18 @@ private:
 
 
     /**
-    * partition context.
+    * partition context for contained literals
     *
     * Note that this cannot be Symbol &*, since
     * the value can be nullptr.
     */
 
     Symbol **partition_context;
+
+
+    /**
+     * parameter context for contained symbols
+     */
+
+    Symbol **parameter_context;
 };

@@ -267,16 +267,6 @@ int main(int argc, char * argv[])
             throw HelperException("Finish omc");
         }
 
-        // Create sorted collection to ease perusal of symbol table in debugger
-        {
-            list<symbol_map_value_type> symbols_ordered;
-            for (auto sym : Symbol::symbols) {
-                symbols_ordered.push_back(sym);
-            }
-            symbols_ordered.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
-            unsigned symbols_count = symbols_ordered.size();
-        }
-
         theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code
