@@ -21,7 +21,7 @@ namespace mm {
      * @tparam max_val The maximum value of the range.
      */
 
-    template <int min_val, int max_val>
+    template <typename T, T min_val, T max_val>
     class integer_counter {
     public:
         // ctor
@@ -56,7 +56,7 @@ namespace mm {
             }
 
         private:
-            unsigned long current_val;
+            T current_val;
         };
 
         iterator begin() const

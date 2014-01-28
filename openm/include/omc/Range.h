@@ -180,15 +180,15 @@ namespace mm {
         }
 
         // return a integer_counter object for iterating indices of this range
-        static integer_counter<0, T_max - T_min> indices()
+        static integer_counter<int, 0, T_max - T_min> indices()
         {
-            return integer_counter<0, T_max - T_min>();
+            return integer_counter<int, 0, T_max - T_min>();
         }
 
         // return a integer_counter object for iterating values of this range
-        static integer_counter<T_min, T_max> values()
+        static integer_counter<int, T_min, T_max> values()
         {
-            return integer_counter<T_min, T_max>();
+            return integer_counter<int, T_min, T_max>();
         }
 
         // convert given value to 0-based index

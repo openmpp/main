@@ -79,14 +79,27 @@ namespace mm {
         double income[AGE_GROUP::size] = { 100, 200, 300, 400, 500 };
 
         // test of support for ranged-based for
-        double sum = 0;
+        double sum1 = 0;
         for (int j : AGE_GROUP::indices()) {
             // test of upper() & lower()
-            double lower = AGE_GROUP::lower_bounds()[j];
-            double upper = AGE_GROUP::upper_bounds()[j];
-            sum += income[j];
+            real lower = AGE_GROUP::lower_bounds()[j];
+            real upper = AGE_GROUP::upper_bounds()[j];
+            sum1 += income[j];
         }
-        assert(sum == 1500);
+        assert(sum1 == 1500);
+
+        // test of support for ranged-based for
+        double sum2 = 0;
+        for (int j : AGE_GROUP::indices()) {
+            AGE_GROUP age_grp;
+            age_grp = j;
+            // test of upper() & lower()
+            real lower = age_grp.lower();
+            real upper = age_grp.upper();
+            real width = age_grp.width();
+            sum2 += income[j];
+        }
+        assert(sum2 == 1500);
 
         // test of to_index (find interval given value)
         ag1 = AGE_GROUP::to_index(-100);

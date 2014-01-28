@@ -80,9 +80,9 @@ namespace mm {
         }
 
         // return a integer_counter object for iterating this classification
-        static integer_counter<0, T_size - 1> indices()
+        static integer_counter<int, 0, T_size - 1> indices()
         {
-            return integer_counter<0, T_size - 1>();
+            return integer_counter<int, 0, T_size - 1>();
         }
 
         // limits (static constants)

@@ -169,10 +169,42 @@ namespace mm {
             return this->set_value(new_value);
         }
 
-        // return a integer_counter object for iterating this partition
-        static integer_counter<0, T_size - 1> indices()
+        // return lower limit of interval
+        real lower() {
+            return T_lower[value];
+        }
+
+        // return upper limit of interval
+        real upper() {
+            return T_upper[value];
+        }
+
+
+        /**
+         * return width of interval.
+         *
+         * If the interval is unbounded on the left or the right,
+         * return the maximum representable value.
+         * 
+         * @return A T.
+         */
+
+        real width() {
+            if (value == 0 && T_lower[0] == -REAL_MAX) {
+                return REAL_MAX;
+            }
+            else if (value == max && T_upper[max] == REAL_MAX) {
+                return REAL_MAX;
+            }
+            else {
+                return T_upper[value] - T_lower[value];
+            }
+        }
+
+        // return an integer_counter object for iterating this partition
+        static integer_counter<int, 0, T_size - 1> indices()
         {
-            return integer_counter<0, T_size - 1>();
+            return integer_counter<int, 0, T_size - 1>();
         }
 
         // return reference to array containing lower value of intervals
