@@ -36,6 +36,16 @@ public:
 
 
     /**
+     * C++ code fragment with parameter name followed by dimension list.
+     *
+     * @param use_zero Generate [0] instead of [n] where n is the dimension size.
+     *
+     * @return A string.
+     */
+
+    string cxx_name_and_dimensions(bool use_zero = false);
+
+    /**
      * readParameter C++ code fragment
      *
      * @return A string.

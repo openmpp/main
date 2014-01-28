@@ -71,7 +71,7 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += "extern " + datatype->name + " " + name + ";";
+    h += "extern " + datatype->name + " " + cxx_name_and_dimensions() + ";";
     return h;
 }
 
@@ -81,7 +81,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += pp_datatype->name + " " + name + " = " + pp_datatype->default_initial_value() + ";";
+    c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
     return c;
 }
 
@@ -114,6 +114,15 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         paramTxt.note = note(*lang);
         metaRows.paramTxt.push_back(paramTxt);
     }
+}
+
+string ParameterSymbol::cxx_name_and_dimensions(bool use_zero)
+{
+    string result = name;
+    for (auto es : pp_dimension_list) {
+        result += "[" + (use_zero ? "0" : to_string(es->pp_size())) + "]";
+    }
+    return result;
 }
 
 string ParameterSymbol::cxx_read_parameter()
@@ -150,6 +159,6 @@ string ParameterSymbol::cxx_assert_sanity()
         typ = Symbol::token_to_string(ens->storage_type);
     }
 
-    string result = "assert(sizeof(" + name + ") == sizeof(" + typ + "));" ;
+    string result = "assert(sizeof(" + cxx_name_and_dimensions(true) + ") == sizeof(" + typ + "));" ;
     return result;
 }
