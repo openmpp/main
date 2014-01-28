@@ -20,9 +20,9 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    ParameterSymbol(Symbol *sym, Symbol *type_symbol, yy::location decl_loc = yy::location())
+    ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , type_symbol(type_symbol->get_rpSymbol())
+        , datatype(datatype->get_rpSymbol())
     {
     }
 
@@ -45,42 +45,41 @@ public:
 
 
     /**
-     * assert C++ code fragment to verify storage type nad readParameter type.
+     * assert C++ code fragment to verify that storage type has the same size as the readParameter type.
      *
      * @return A string.
      */
 
     string cxx_assert_sanity();
 
-    // members
-    
     /**
-    * Reference to pointer to type symbol
-    *
-    * Stable to symbol morphing during parse phase.
-    * Indirection is required because the type symbol might be a classification
-    * or range which has not yet been declared.
+    *  The data type of the parameter contents (parse phase reference to pointer)
     */
 
-    Symbol*& type_symbol;
+    Symbol*& datatype;
 
 
     /**
-     * Direct pointer to type symbol for post-parse convenience.
+     * The data type of the parameter contents (post-parse phase pointer)
      */
 
-    TypeSymbol *pp_type_symbol;
+    TypeSymbol *pp_datatype;
 
 
     /**
-     * true if the data is enum., i.e. a classification or a range.
+     * List of dimensions (parse phase references to pointers)
      */
 
-    bool pp_is_enum;
-
+    list<Symbol **> dimension_list;
 
     /**
-     * Numeric identifier. Used for communicating with metadata API.
+     * List of dimensions (post-parse phase pointers)
+     */
+
+    list<EnumerationSymbol *> pp_dimension_list;
+
+    /**
+     * Numeric identifier of the parameter. Used for communicating with the metadata API.
      */
 
     int pp_parameter_id;

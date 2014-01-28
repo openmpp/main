@@ -911,7 +911,7 @@ decl_table:
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
                         }
-            "{" "{" table_expression_list[expr1] "}" "}" ";"
+            "{" "{" table_expression_list "}" "}" ";"
                         {
                             // No valid agent or table context
                             pc.set_table_context( nullptr );

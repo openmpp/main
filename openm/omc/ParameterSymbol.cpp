@@ -12,6 +12,7 @@
 #include "ClassificationSymbol.h"
 #include "RangeSymbol.h"
 #include "PartitionSymbol.h"
+#include "EnumerationSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -28,21 +29,30 @@ void ParameterSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to type symbol for use post-parse
-            pp_type_symbol = dynamic_cast<TypeSymbol *>(pp_symbol(type_symbol));
-
-            if (!pp_type_symbol) {
-                pp_error("Invalid type '" + type_symbol->name + "' for parameter '" + name + "'");
+            assert(datatype); // grammar guarantee
+            pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
+            if (!pp_datatype) {
+                pp_error("'" + datatype->name + "' is not a datatype in parameter '" + name + "'");
             }
 
-            if (dynamic_cast<ClassificationSymbol *>(type_symbol)
-                || dynamic_cast<RangeSymbol *>(type_symbol)
-                || dynamic_cast<PartitionSymbol *>(type_symbol)
-                ) {
-                pp_is_enum = true;
+            // validate dimension list
+            // and populate the post-parse version
+            for (auto psym : dimension_list) {
+                assert(psym); // logic guarantee
+                auto sym = *psym; // remove one level of indirection
+                assert(sym); // grammar guarantee
+                auto es = dynamic_cast<EnumerationSymbol *>(sym);
+                if (!es) {
+                    pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                }
+                if (es->numeric_or_bool()) {
+                    // really just checking for bool, but numeric_or_bool() works fine for that here
+                    pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                }
+                pp_dimension_list.push_back(es);
             }
-            else {
-                pp_is_enum = false;
-            }
+            // clear the parse version to avoid inadvertant use post-parse
+            dimension_list.clear();
 
             // add this parameter to the complete list of parameters
             pp_all_parameters.push_back(this);
@@ -59,7 +69,7 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += "extern " + type_symbol->name + " " + name + ";";
+    h += "extern " + datatype->name + " " + name + ";";
     return h;
 }
 
@@ -69,7 +79,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += type_symbol->name + " " + name + " = " + pp_type_symbol->default_initial_value() + ";";
+    c += pp_datatype->name + " " + name + " = " + pp_datatype->default_initial_value() + ";";
     return c;
 }
 
@@ -87,7 +97,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     paramDic.rank = 0; // TODO: currently hard-coded to scalar parmaeters for alpha
 
     // get the type_id (e.g. 12) of the parameter data type (e.g. TK_double)
-    paramDic.typeId = pp_type_symbol->type_id;
+    paramDic.typeId = pp_datatype->type_id;
 
     paramDic.isHidden = false; // TODO: not implemented
     paramDic.isGenerated = false; // TODO: not implemented
@@ -107,16 +117,16 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 string ParameterSymbol::cxx_read_parameter()
 {
     string typ; // storage type
-    if (pp_is_enum) {
-        // for parameters of type classification, range, or partition
-        // get the underlying storage type
-        auto ens = dynamic_cast<EnumerationSymbol *>(pp_type_symbol);
-        assert(ens); // grammar guarantee
-        typ = Symbol::token_to_string(ens->storage_type);
+    if (pp_datatype->numeric_or_bool()) {
+        // For fundamental types (and bool), the name of the symbol is the name of the type
+        typ = pp_datatype->name;
     }
     else {
-        // For fundamental types (and bool), the name of the symbol is the name of the type
-        typ = type_symbol->name;
+        // for parameters of type classification, range, or partition
+        // get the underlying storage type
+        auto ens = dynamic_cast<EnumerationSymbol *>(pp_datatype);
+        assert(ens); // grammar guarantee
+        typ = Symbol::token_to_string(ens->storage_type);
     }
 
     string result = "readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
@@ -126,16 +136,16 @@ string ParameterSymbol::cxx_read_parameter()
 string ParameterSymbol::cxx_assert_sanity()
 {
     string typ; // storage type
-    if (pp_is_enum) {
-        // for parameters of type classification, range, or partition
-        // get the underlying storage type
-        auto ens = dynamic_cast<EnumerationSymbol *>(pp_type_symbol);
-        assert(ens); // grammar guarantee
-        typ = Symbol::token_to_string(ens->storage_type);
+    if (pp_datatype->numeric_or_bool()) {
+        // For fundamental types (and bool), the name of the symbol is the name of the type
+        typ = pp_datatype->name;
     }
     else {
-        // For fundamental types (and bool), the name of the symbol is the name of the type
-        typ = type_symbol->name;
+        // for parameters of type classification, range, or partition
+        // get the underlying storage type
+        auto ens = dynamic_cast<EnumerationSymbol *>(pp_datatype);
+        assert(ens); // grammar guarantee
+        typ = Symbol::token_to_string(ens->storage_type);
     }
 
     string result = "assert(sizeof(" + name + ") == sizeof(" + typ + "));" ;

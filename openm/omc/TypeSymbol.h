@@ -57,6 +57,14 @@ public:
 
 
     /**
+     * Determines derived type
+     *
+     * @return true if numeric or bool, false for classification, range, or partition.
+     */
+
+    bool numeric_or_bool();
+
+    /**
      * Identifier for the type.
      */
 
