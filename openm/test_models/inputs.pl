@@ -13,6 +13,9 @@
 
 my $version = 1.0;
 
+my $debug = 1; # diagnostics level
+
+
 if ( $#ARGV+1 != 1 ) {
 	print "inputs version $version\n";
 	print "usage: inputs modelname\n";
@@ -21,9 +24,6 @@ if ( $#ARGV+1 != 1 ) {
 
 # name of model (from first argument)
 my $model_name = $ARGV[0];
-
-# for diagnostics
-my $debug = 1;
 
 # sqlite3 executable
 my $sqlite_exe = "../../bin/sqlite3.exe";
@@ -59,10 +59,12 @@ if ( $debug ) {
 
 # insert model metadata, and grab stuff. model_id will be 11
 my $model_time_stamp;
+my @size_of_type;
 my @parameters;
 my @tables;
 my @parameter_value_tables;
 my @table_value_tables;
+my @parm_dim_size;
 
 if ( $debug ) {
 	print "Insert model metadata in sqlite database - start", "\n";
@@ -74,13 +76,51 @@ while (<CREATE_MODEL>) {
 		# note model time stamp
 		$model_time_stamp = $1;
 	}
-	if ( m/^INSERT INTO parameter_dic .*, ['](\w+)/ ) {
-		# extracts the word inside  the first '' delimited string
-		push @parameters, $1;
+	if ( m/^INSERT INTO type_dic .*?SELECT.*?, (\d+), ['](\w+)['], (\d+), (\d+)/ ) {
+        my $type_id = $1;
+        my $type_name = $2;
+        my $dic_id = $3;
+        my $type_size = $4;
+		@type_name[$type_id] = $type_name;
+		@type_size[$type_id] = $type_size;
+        if ( $debug ) {
+	        print "Type: type_id=$1 type_name='$2' dic_id=$3 type_size=$4\n";
+        }
 	}
-	if ( m/^INSERT INTO table_dic .*, ['](\w+)/ ) {
-		# extracts the word inside  the first '' delimited string
-		push @tables, $1;
+	if ( m/^INSERT INTO parameter_dic .*?SELECT.*? (\d+), ['](\w+)['], ['](\w+)['], (\d)+, (\d+)/ ) {
+        my $parm_id = $1;
+        my $parm_suffix = $2;
+        my $parm_name = $3;
+        my $parm_rank = $4;
+        my $parm_datatype = $5;
+        if ( $debug ) {
+	        print "Parm: parm_id=$1 parm_suffix='$2' parm_name='$3' parm_rank=$4 parm_datatype=$5\n";
+        }
+        @parm_name[$parm_id] = $parm_name;
+        @parm_suffix[$parm_id] = $parm_suffix;
+        @parm_rank[$parm_id] = $parm_rank;
+		push @parameters, $parm_suffix;
+	}
+	if ( m/^INSERT INTO parameter_dims .*?SELECT.*? (\d+), ['](\w+)['], (\d)+, (\d+)/ ) {
+        my $parm_id = $1;
+        my $dim_name = $2;
+        my $dim_pos = $3;
+        my $type_id = $4;
+        if ( $debug ) {
+	        print "Parm dim: parm_id=$parm_id dim_name='$dim_name' dim_pos=$dim_pos type_id=$type_id type_size=@type_size[$type_id]\n";
+        }
+        $parm_dim_size{$parm_id."_".$dim_pos} = @type_size[$type_id];
+	}
+	if ( m/^INSERT INTO table_dic .*?SELECT.*?, (\d+), ['](\w+)['], ['](\w+)[']/ ) {
+        my $table_id = $1;
+        my $table_suffix = $2;
+        my $table_name = $3;
+        if ( $debug ) {
+	        print "Table: table_id=$1 table_suffix='$2' table_name='$3'\n";
+        }
+        @table_name[$table_id] = $table_name;
+        @table_suffix[$table_id] = $table_suffix;
+		push @tables, $table_suffix;
 	}
 	if ( m/^CREATE TABLE (\w+)/ ) {
 		my $sql_table = $1;
@@ -160,26 +200,110 @@ print INSERT_PARAM_SQL "\nINSERT INTO workset_txt (set_id, model_id, lang_id, de
 print INSERT_PARAM_SQL "VALUES", "\n";
 print INSERT_PARAM_SQL "  (${set_id}, ${model_id}, 0, '${model_name} default parameters', '${model_name} default set of input parameters');", "\n";
 							   
-for (my $j=0; $j<=$#parameters; $j++) {
-	my $parameter_id = $j;
-	my $parameter_name = @parameters[$j];
+for (my $parm_id=0; $parm_id<=$#parm_name; $parm_id++) {
+	my $parm_name = @parm_name[$parm_id];
+	my $parm_suffix = @parm_suffix[$parm_id];
+	my $parm_rank = @parm_rank[$parm_id];
+
+    if ( $debug ) {
+	    print "parm='$parm_name' rank=$parm_rank\n";
+    }
+
+	print INSERT_PARAM_SQL "\n";
+	print INSERT_PARAM_SQL "\n";
+	print INSERT_PARAM_SQL "--\n";
+	print INSERT_PARAM_SQL "-- $parm_name\n";
+	print INSERT_PARAM_SQL "--\n";
 
 	print INSERT_PARAM_SQL "\n";
 	print INSERT_PARAM_SQL "INSERT INTO workset_parameter (set_id, model_id, parameter_id)", "\n";
 	print INSERT_PARAM_SQL "VALUES", "\n";
-	print INSERT_PARAM_SQL "  (${set_id}, ${model_id}, ${parameter_id});", "\n";
+	print INSERT_PARAM_SQL "  (${set_id}, ${model_id}, ${parm_id});", "\n";
 
 	print INSERT_PARAM_SQL "\n";
 	print INSERT_PARAM_SQL "INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note)", "\n";
 	print INSERT_PARAM_SQL "VALUES", "\n";
-	print INSERT_PARAM_SQL "  (${set_id}, ${model_id}, ${parameter_id}, 0, 'Value note for ${parameter_name}');", "\n";
+	print INSERT_PARAM_SQL "  (${set_id}, ${model_id}, ${parm_id}, 0, 'Value note for ${parm_name}');", "\n";
 
-	my $parameter_value_table = @parameter_value_tables[$j];
-	my $parameter_value = 0.5; #arbitrary default value
-	if ( exists $parameter_values{$parameter_name} ) {
-		$parameter_value = $parameter_values{$parameter_name};
-	}
-	print INSERT_PARAM_SQL "INSERT INTO ${parameter_value_table} (set_id, Value) VALUES (${set_id}, ${parameter_value});", "\n";
+
+    $dim_list = "";
+    $cells = 1;
+    $default_value = 0.000031415900001;
+    my @indices;
+    for (my $dim_pos=0; $dim_pos<$parm_rank; $dim_pos++) {
+        $indices[$dim_pos] = 0;
+        $dim_list = "${dim_list}Dim${dim_pos}, ";
+        $type_size = $parm_dim_size{$parm_id."_".$dim_pos};
+        $cells = $cells * $type_size;
+    }
+    if ( $debug ) {
+	    print "parm='$parm_name' cells=$cells\n";
+    }
+
+    my @parm_values; # list of values for this parameter
+    if ($parm_rank == 0) {
+        # parameter_values for this parameter (if present) contains a scalar
+        # Turn it into a list with one element for the following code.
+        if ( exists $parameter_values{$parm_name} ) {
+            @parm_values = ($parameter_values{$parm_name});
+        }
+        else {
+            # no values supplied for this parameter, so use the default value
+            @parm_values = ($default_value);
+        }
+    }
+    else {
+        # parameter_values for this parameter (if present) contains a reference to a list
+        if ( exists $parameter_values{$parm_name} ) {
+            $array_ref = @parameter_values{$parm_name};
+            @parm_values = @{$array_ref};
+        }
+        else {
+            # no values supplied for this parameter, so use the default value
+            @parm_values = ($default_value);
+        }
+    }
+	my $parm_value_table = @parameter_value_tables[$parm_id];
+
+    print INSERT_PARAM_SQL "\n";
+    for ($cell=0; $cell<$cells; $cell++) {
+        $index_list = join(", ", @indices);
+        if ( $parm_rank > 0 ) {
+            # add trailing comma for non-scalar parameters
+            $index_list = $index_list.", ";
+        }
+
+        # if list does not contain enough values, use the default_value
+        if ( $cell <= $#parm_values ) {
+		    $parm_value = @parm_values[$cell];
+        }
+        else {
+            $parm_value = $default_value;
+        }
+	    print INSERT_PARAM_SQL "INSERT INTO ${parm_value_table} (set_id, ${dim_list}Value) VALUES (${set_id}, ${index_list}${parm_value});", "\n";
+
+        if ( $cell < $cells-1) {
+            # more cells to come, so increment the @indices tuple
+            # First, increment last element of @indices
+            @indices[$parm_rank-1]++;
+            # Next, perform carry operations as required, from right to left
+            if ($debug == 2) { print "before carry: indices=[" . join(",", @indices) . "]\n" };
+            for (my $dim_pos=$parm_rank-1; $dim_pos>=0; $dim_pos--) {
+                # size of this dimension
+                $type_size = $parm_dim_size{$parm_id."_".$dim_pos};
+                if (@indices[$dim_pos] == $type_size) {
+                    # perform carry
+                    @indices[$dim_pos] = 0;
+                    @indices[$dim_pos-1]++;
+                }
+                else {
+                    # no carry, so nothing to do with higher order indices, so break out of loop
+                    break;
+                }
+            }
+            if ($debug == 2) { print "after carry:  indices=[" . join(",", @indices) . "]\n" };
+        }
+    }
 }
 
 close(INSERT_PARAM_SQL);

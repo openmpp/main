@@ -59,8 +59,8 @@ parameters
     //EN a AGE_GROUP (partition)
     AGE_GROUP a_age_group;
 
-    //EN my first mutli-dimensional parameter
-    real Something[SEX];
+    //EN my first multi-dimensional parameter
+    real Something[SEX][AGE_GROUP];
 
 };
 

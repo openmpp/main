@@ -2,22 +2,22 @@
 
 %parameter_values = (
     # PersonCore.mpp
-	MortalityHazard         => 0.013 ,
+	MortalityHazard         =>  0.013  ,
 
     # Happiness.mpp
-	HappinessReversalHazard => 0.10 ,
+	HappinessReversalHazard =>  0.10 ,
 
     # SyntaxProbes.mpp
-	a_long                  => 42 ,
-	a_float                 => 0.10 ,
-	a_double                => 0.20 ,
-	a_switch                => 1 ,
-	a_sex                   => 0 ,
-	a_years                 => -1 ,
-	a_age_group             => 0 ,
+	a_long                  =>  42 ,
+	a_float                 =>  0.10 ,
+	a_double                =>  0.20 ,
+	a_switch                =>  1 ,
+	a_sex                   =>  0 ,
+	a_years                 =>  -1 ,
+	a_age_group             =>  0 ,
 
     # Extensions.ompp
-	a_schar                 => -1 ,
+	a_schar                 =>  -1 ,
 	a_llong                 => -5000000000,
 	a_ullong                => 5000000000,
 	a_ldouble               => 3.14159,
@@ -33,5 +33,7 @@
     a_counter               => 5,
     a_integer               => -5,
     a_real                  => 234.987,
+
+    Something               => [1.01, 2.02]
 
 );

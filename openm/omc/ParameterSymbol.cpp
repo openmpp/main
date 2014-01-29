@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include <string>
 #include "ParameterSymbol.h"
 #include "LanguageSymbol.h"
 #include "NumericSymbol.h"
@@ -94,18 +95,18 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
  
     ParamDicRow paramDic;
 
+    // basic information aboput the parameter
+
     paramDic.paramId = pp_parameter_id;
     paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
-    paramDic.rank = 0; // TODO: currently hard-coded to scalar parmaeters for alpha
-
-    // get the type_id (e.g. 12) of the parameter data type (e.g. TK_double)
+    paramDic.rank = rank();
     paramDic.typeId = pp_datatype->type_id;
-
     paramDic.isHidden = false; // TODO: not implemented
     paramDic.isGenerated = false; // TODO: not implemented
     paramDic.numCumulated = 0; //TODO: not implemented
     metaRows.paramDic.push_back(paramDic);
 
+    // label and note for the parameter
     for (auto lang : Symbol::pp_all_languages) {
         ParamDicTxtLangRow paramTxt;
         paramTxt.paramId = pp_parameter_id;
@@ -114,6 +115,17 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         paramTxt.note = note(*lang);
         metaRows.paramTxt.push_back(paramTxt);
     }
+
+    int dimension = 0;
+    for (auto es : pp_dimension_list) {
+        ParamDimsRow paramDims;
+        paramDims.paramId = pp_parameter_id;
+        paramDims.name = "dim" + to_string(dimension);
+        paramDims.pos = dimension;
+        paramDims.typeId = es->type_id;
+        metaRows.paramDims.push_back(paramDims);
+        ++dimension;
+    }
 }
 
 string ParameterSymbol::cxx_name_and_dimensions(bool use_zero)
@@ -121,6 +133,22 @@ string ParameterSymbol::cxx_name_and_dimensions(bool use_zero)
     string result = name;
     for (auto es : pp_dimension_list) {
         result += "[" + (use_zero ? "0" : to_string(es->pp_size())) + "]";
+    }
+    return result;
+}
+
+unsigned long ParameterSymbol::rank()
+{
+    return (unsigned long)pp_dimension_list.size();
+}
+
+
+unsigned long ParameterSymbol::cells()
+{
+    unsigned long result = 1;
+
+    for (auto es : pp_dimension_list) {
+        result *= es->pp_size();
     }
     return result;
 }
@@ -140,7 +168,7 @@ string ParameterSymbol::cxx_read_parameter()
         typ = Symbol::token_to_string(ens->storage_type);
     }
 
-    string result = "readParameter(\"" + name + "\", typeid(" + typ + "),  1, &" + name + ");";
+    string result = "readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(cells()) + ", &" + name + ");";
     return result;
 }
 

@@ -45,6 +45,23 @@ public:
 
     string cxx_name_and_dimensions(bool use_zero = false);
 
+
+    /**
+     * Gets the rank of the parameter.
+     *
+     * @return A long.
+     */
+
+    unsigned long rank();
+
+    /**
+     * Gets the total number of cells in the parameter
+     *
+     * @return An unsigned long.
+     */
+
+    unsigned long cells();
+
     /**
      * readParameter C++ code fragment
      *
