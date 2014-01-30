@@ -94,12 +94,28 @@ public:
     Symbol*& table;
 
     /**
+    * The table using the agentvar
+    *
+    * Stored as a pointer, which is only valid after post-parse phase 1.
+    */
+    TableSymbol* pp_table;
+
+    /**
     * The agentvar used in the analysis dimension of the table
     *
     * Stored as a reference to a pointer, which is stable to symbol morphing during the parse phase.
     */
 
     Symbol*& agentvar;
+
+    /**
+    * The agentvar used in the analysis dimension of the table.
+    *
+    * Stored as a pointer, which is only valid after post-parse phase 1.
+    */
+
+    AgentVarSymbol* pp_agentvar;
+
 
     /**
     * Zero-based index of the analysis agentvar
@@ -116,21 +132,7 @@ public:
 
     bool need_value_in;
 
-    /**
-    * The table using the agentvar
-    *
-    * Stored as a pointer, which is only valid after post-parse phase 1.
-    */
 
-    TableSymbol* pp_table;
-
-    /**
-    * The agentvar used in the analysis dimension of the table.
-    *
-    * Stored as a pointer, which is only valid after post-parse phase 1.
-    */
-
-    AgentVarSymbol* pp_agentvar;
 
 };
 

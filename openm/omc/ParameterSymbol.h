@@ -23,6 +23,7 @@ public:
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , datatype(datatype->get_rpSymbol())
+        , pp_datatype(nullptr)
     {
     }
 

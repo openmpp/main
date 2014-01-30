@@ -95,6 +95,14 @@ public:
 
     Symbol*& table;
 
+    /**
+    * The table containing this accumulator (pointer)
+    *
+    * Only valid after post-parse phase 1.
+    */
+
+    TableSymbol* pp_table;
+
     token_type accumulator;
 
     token_type increment;
@@ -108,28 +116,6 @@ public:
     Symbol*& agentvar;
 
     /**
-    * The analysis agentvar being accumulated (reference to pointer)
-    *
-    * Stable to symbol morphing during parse phase.
-    */
-
-    Symbol*& analysis_agentvar;
-
-    /**
-    * Zero-based index of the accumulator within this table.
-    */
-
-    int index;
-
-    /**
-    * The table containing this accumulator (pointer)
-    *
-    * Only valid after post-parse phase 1.
-    */
-
-    TableSymbol* pp_table;
-
-    /**
     * The agentvar being accumulated (pointer)
     *
     * Only valid after post-parse phase 1.
@@ -138,11 +124,26 @@ public:
     AgentVarSymbol* pp_agentvar;
 
     /**
+    * The analysis agentvar being accumulated (reference to pointer)
+    *
+    * Stable to symbol morphing during parse phase.
+    */
+
+    Symbol*& analysis_agentvar;
+
+    /**
     * The analysis agentvar being accumulated (pointer)
     *
     * Only valid after post-parse phase 1.
     */
 
     TableAnalysisAgentVarSymbol* pp_analysis_agentvar;
+
+    /**
+    * Zero-based index of the accumulator within this table.
+    */
+
+    int index;
+
 };
 

@@ -49,19 +49,19 @@ public:
 
 
     /**
-    * ordinal giving order of level within enumeration
-    */
-
-    int ordinal;
-
-
-    /**
      * Direct pointer to enumeration.
      * 
      * Set during post-parse for convenience.
      */
 
     EnumerationSymbol *pp_enumeration;
+
+
+    /**
+    * ordinal giving order of level within enumeration
+    */
+
+    int ordinal;
 };
 
 

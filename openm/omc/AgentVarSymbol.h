@@ -30,7 +30,6 @@ public:
 
     void post_parse(int pass);
 
-
     CodeBlock cxx_declaration_agent();
 
     CodeBlock cxx_definition_agent();

@@ -97,7 +97,8 @@ public:
     * Only valid after post-parse phase 1.
     */
 
-    const Literal *constant;
     AgentVarSymbol *pp_observed;
+
+    const Literal *constant;
 };
 
