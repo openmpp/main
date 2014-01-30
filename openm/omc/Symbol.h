@@ -646,12 +646,31 @@ public:
 
 
     /**
-     * Populate pp_symbols_sorted after parsing is complete.
+     * Invalidate the parse phase symbol table.
      * 
-     * The pp_symbols_sorted list is useful for debugging.
+     * In a post-parse phase, a direct pointer member (with prefix pp_)
+     * is assigned for each double indirection pointer member. All code subsequent to this post-
+     * parse phase must use these direct pointer members and not the double indirection pointer
+     * members, since they may be invalid due to post-parse fixups carried out by pp_symbol().  To
+     * help catch erroneous subsequent use of double indirection pointers, this function changes the
+     * Symbol* pointer in each symbol table reference to nullptr.  That way, any code which uses a
+     * double-indirection reference to pointer will fail immediately.  The reference remains valid
+     * because the symbol table pair still exists.  The pointer stored in that reference, however,
+     * will be nullptr.
+     * 
+     * To examine any symbol by name when debugging the post_parse phase, use the list
+     * pp_symbols.
      */
 
-    static void populate_pp_symbols_sorted();
+    static void invalidate_symbols();
+
+    /**
+     * Populate the post parse symbol table pp_symbols.
+     * 
+     * The pp_symbols list is useful for debugging.
+     */
+
+    static void populate_pp_symbols();
 
     /**
     * Perform operations after the parser has parsed all input files.
@@ -714,8 +733,8 @@ public:
      * 
      * Map from a Symbol's unique_name to a reference to a pointer to the Symbol. The extra level of
      * indirection allows morphing of a Symbol to a specialized Symbol in the Symbol hierarchy when
-     * the declaration is encountered. When morphing is done, the reference in teh symbol table is
-     * not changed, but the pointer is. That means that references to the SYmbol in other objects,
+     * the declaration is encountered. When morphing is done, the reference in the symbol table is
+     * not changed, but the pointer is. That means that references to the Symbol in other objects,
      * which are stored as Symbol &amp;* during parsing, remain valid.
      */
 
@@ -723,13 +742,13 @@ public:
 
 
     /**
-     * All symbols, ordered in lexocographic order by unique_name
+     * The post-parse symbol table.
      * 
-     * Populated after parsing is complete by populate_pp_symbols_sorted().
-     * Useful for finding a given Symbol when using the debugger. 
+     * Populated after parsing is complete by populate_pp_symbols().
+     * Sorted in lexocographic order by unique_name.
      */
 
-    static list<symbol_map_value_type> pp_symbols_sorted;
+    static list<symbol_map_value_type> pp_symbols;
 
 
     /**

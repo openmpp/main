@@ -42,7 +42,7 @@ using namespace openm;
 
 symbol_map_type Symbol::symbols;
 
-list<symbol_map_value_type> Symbol::pp_symbols_sorted;
+list<symbol_map_value_type> Symbol::pp_symbols;
 
 list<TypeSymbol *> Symbol::pp_all_types0;
 
@@ -601,6 +601,14 @@ void Symbol::populate_default_symbols()
     TypeSymbol::next_type_id = OM_MAX_BUILTIN_TYPE_ID + 1;
 }
 
+void Symbol::invalidate_symbols()
+{
+    for (auto pr : symbols) {
+        pr.second = nullptr;
+    }
+}
+
+
 bool Symbol::exists( const string& unm )
 {
     return symbols.count( unm ) == 0 ? false : true;
@@ -694,41 +702,35 @@ Symbol *Symbol::pp_symbol(Symbol *& rp_sym)
     return sym;
 }
 
-void Symbol::populate_pp_symbols_sorted()
+void Symbol::populate_pp_symbols()
 {
-    pp_symbols_sorted.clear();
+    pp_symbols.clear();
     for (auto sym : symbols) {
-        pp_symbols_sorted.push_back(sym);
+        pp_symbols.push_back(sym);
     }
-    pp_symbols_sorted.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
+    pp_symbols.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
 }
-
 
 void Symbol::post_parse_all()
 {
-    // Create pp_symbols_sorted to easily find Symbols in the debugger.
-    populate_pp_symbols_sorted();
+    // Create pp_symbols now to easily find Symbols while debugging.
+    populate_pp_symbols();
 
     // pass 0: create support symbols not identified during parsing
-    for_each(   symbols.begin(),
-                symbols.end(),
-                [] (symbol_map_value_type& vt)
-                { 
-                    (vt.second)->post_parse( eCreateMissingSymbols );
-                }
-            );
+    for (auto pr : symbols) {
+        pr.second->post_parse( eCreateMissingSymbols );
+    }
 
-    // Recreate pp_symbols_sorted because it may have changed from the previous post_parse pass
-    populate_pp_symbols_sorted();
+    // Recreate pp_symbols because symbols may have changed.
+    populate_pp_symbols();
 
     // pass 1: create pp_ members and collections
-    for_each(   symbols.begin(),
-                symbols.end(),
-                [] (symbol_map_value_type& vt)
-                { 
-                    (vt.second)->post_parse( ePopulateCollections );
-                }
-            );
+    for (auto pr : symbols) {
+        pr.second->post_parse( ePopulateCollections );
+    }
+
+    // invalidate the parse phase symbol table symbols
+    invalidate_symbols();
 
     // Sort all global collections
     pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
@@ -779,16 +781,14 @@ void Symbol::post_parse_all()
     // Note that the set contains no duplicates, but event names can be duplicates in different agents.
     set<string> all_event_names;
     for ( auto *agent : pp_all_agents ) {
-        for ( auto *event : agent->pp_agent_events )
-        {
+        for ( auto *event : agent->pp_agent_events ) {
             all_event_names.insert( event->event_name );
         }
     }
 
     // For each event in the model, find the index in the sorted list, and assign it as event_id
     for (auto *agent : pp_all_agents) {
-        for (auto *event : agent->pp_agent_events)
-        {
+        for (auto *event : agent->pp_agent_events) {
             auto iter = all_event_names.find(event->event_name);
             event->pp_event_id = distance(all_event_names.begin(), iter);
         }
@@ -796,14 +796,9 @@ void Symbol::post_parse_all()
 
     // Pass 2: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
-    for_each(   symbols.begin(),
-                symbols.end(),
-                [] (symbol_map_value_type& vt)
-                { 
-                    (vt.second)->post_parse( ePopulateDependencies );
-                }
-            );
-
+    for (auto pr : pp_symbols) {
+        pr.second->post_parse( ePopulateDependencies );
+    }
 }
 
 void Symbol::process_cxx_comment(string cmt, yy::location loc)

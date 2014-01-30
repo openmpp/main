@@ -812,9 +812,10 @@ decl_dim_list:
 decl_agent:
       "agent" SYMBOL[agent]
                         {
-                            // Morph Symbol (or AgentSymbol) to AgentSymbol
-                            // Note that re-morphing of agent symbols is harmless
-                            $agent = new AgentSymbol( $agent, @agent );
+                            if ($agent->is_base_symbol()) {
+                                // Morph Symbol to AgentSymbol
+                                $agent = new AgentSymbol( $agent, @agent );
+                            }
                             // Set agent context for body of agent declaration
                             pc.set_agent_context( $agent );
                         }
