@@ -776,7 +776,7 @@ decl_parameter:
                             // Set parameter context for gathering the dimension specification
                             pc.set_parameter_context( $parm );
                         }
-            decl_dim_list ";"
+            decl_dim_list parameter_initializer_expr ";"
                         {
                             // No valid parameter context
                             pc.set_parameter_context( nullptr );
@@ -802,6 +802,43 @@ decl_dim_list:
                             ps->dimension_list.push_back($dim->get_ppSymbol());
                         }
     | /* Nothing */
+    ;
+
+parameter_initializer_expr:
+      "=" parameter_initializer_element
+                        {
+                            // append it to the parameter initializer list
+                        }
+      "=" "{" parameter_initializer_list "}"
+                        {
+                            // put the initializer list in the parameter
+                        }
+    | /* Nothing */
+    ;
+
+
+parameter_initializer_list:
+      parameter_initializer_element
+                        {
+                            // start the list
+                        }
+    | parameter_initializer_list "," parameter_initializer_element
+                        {
+                            // append to the list
+                        }
+    ;
+
+parameter_initializer_element:
+      literal
+                        {
+                            // get the literal as a string
+                            $literal->value();
+                        }
+    | SYMBOL[enum]
+                        {
+                            // get the name of the enum as a string
+                            $enum->name;
+                        }
     ;
 
 
@@ -858,22 +895,6 @@ decl_simple_agentvar:
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $literal, @agentvar );
                         }
-    //| SYMBOL[type_symbol] SYMBOL[agentvar] ";"
-    //                    {
-    //                        // $type_symbol is a classification, range, or partition
-    //                        //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, nullptr );
-    //                    }
-    //| SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" literal "}" ";"
-    //                    {
-    //                        // $type_symbol is a classification, range, or partition
-    //                        //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
-    //                    }
-    //| SYMBOL[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
-    //                    {
-    //                        // $type_symbol is a classification, range, or partition
-    //                        // $enumerator is an enumerator of a classification
-    //                        //auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), (token_type)$type, $literal );
-    //                    }
     ;
 
 decl_agent_function:

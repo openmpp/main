@@ -97,6 +97,7 @@
     <ClInclude Include="..\include\omc\less_deref.h" />
     <ClInclude Include="..\include\omc\Partition.h" />
     <ClInclude Include="..\include\omc\Range.h" />
+    <ClInclude Include="..\include\omc\tailed_forward_list.h" />
     <ClInclude Include="om_types0.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

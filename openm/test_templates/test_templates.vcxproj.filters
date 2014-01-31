@@ -59,5 +59,8 @@
     <ClInclude Include="..\include\omc\integer_counter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\omc\tailed_forward_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

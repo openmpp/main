@@ -745,7 +745,9 @@ public:
      * The post-parse symbol table.
      * 
      * Populated after parsing is complete by populate_pp_symbols().
-     * Sorted in lexocographic order by unique_name.
+     * Sorted in lexicographic order by unique_name.  Stored as pairs
+     * with unique_name in first to maek it easy to find a symbol
+     * when debugging.
      */
 
     static list<symbol_map_value_type> pp_symbols;
