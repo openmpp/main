@@ -45,7 +45,7 @@ parameters
     float a_float;
 
     //EN a double
-    double a_double;
+    double a_double = { 2.3 };
 
     //EN a switch (bool)
     logical a_switch;
@@ -60,7 +60,10 @@ parameters
     AGE_GROUP a_age_group;
 
     //EN my first multi-dimensional parameter
-    real Something[SEX][AGE_GROUP];
+    real Something[SEX][AGE_GROUP] = {
+        1, 2, 3, 4, 5,
+        6, 7, 8, 9, 10
+    };
 
 };
 

@@ -471,27 +471,27 @@ extern char *yytext;
 
 %%
 
-%start declarative_islands;
+%start ompp_declarative_islands;
 
-declarative_islands:
-declarative_islands declarative_island
+ompp_declarative_islands:
+ompp_declarative_islands ompp_declarative_island
 	| /* nothing */
 	;
 
-declarative_island:
-	  decl_languages        { pc.InitializeForCxxOutside(); }
-	| decl_model_type       { pc.InitializeForCxxOutside(); }
-	| decl_time_type        { pc.InitializeForCxxOutside(); }
-	| decl_real_type        { pc.InitializeForCxxOutside(); }
-	| decl_counter_type     { pc.InitializeForCxxOutside(); }
-	| decl_integer_type     { pc.InitializeForCxxOutside(); }
-	| decl_version          { pc.InitializeForCxxOutside(); }
-    | decl_classification   { pc.InitializeForCxxOutside(); }
-    | decl_partition        { pc.InitializeForCxxOutside(); }
-    | decl_range            { pc.InitializeForCxxOutside(); }
-    | decl_parameters       { pc.InitializeForCxxOutside(); }
-	| decl_agent            { pc.InitializeForCxxOutside(); }
-	| decl_table            { pc.InitializeForCxxOutside(); }
+ompp_declarative_island:
+	  decl_languages        { pc.InitializeForCxx(); }
+	| decl_model_type       { pc.InitializeForCxx(); }
+	| decl_time_type        { pc.InitializeForCxx(); }
+	| decl_real_type        { pc.InitializeForCxx(); }
+	| decl_counter_type     { pc.InitializeForCxx(); }
+	| decl_integer_type     { pc.InitializeForCxx(); }
+	| decl_version          { pc.InitializeForCxx(); }
+    | decl_classification   { pc.InitializeForCxx(); }
+    | decl_partition        { pc.InitializeForCxx(); }
+    | decl_range            { pc.InitializeForCxx(); }
+    | decl_parameters       { pc.InitializeForCxx(); }
+	| decl_agent            { pc.InitializeForCxx(); }
+	| decl_table            { pc.InitializeForCxx(); }
 	;
 
 /*
@@ -781,10 +781,12 @@ decl_dim_list:
 parameter_initializer_expr:
       "=" parameter_initializer_element
                         {
-                            // append it to the parameter initializer list
-                            pc.get_parameter_context()->initializer_list.push_back($parameter_initializer_element);
+                            // add first (and only) element to the initializer list
+                            auto parm = pc.get_parameter_context();
+                            assert(parm); // grammar guarantee
+                            parm->initializer_list.push_back($parameter_initializer_element);
                         }
-      "=" "{" parameter_initializer_list "}"
+    | "=" "{" parameter_initializer_list "}"
                         {
                             // put the initializer list in the parameter
                         }
@@ -795,14 +797,17 @@ parameter_initializer_expr:
 parameter_initializer_list:
       parameter_initializer_element
                         {
-                            // start the list
-                            Symbol *sym = pc.get_parameter_context();
-                            auto ps = dynamic_cast<ParameterSymbol *>(sym);
-                            assert(ps); // grammar guarantee
+                            // add first element to the initializer list
+                            auto parm = pc.get_parameter_context();
+                            assert(parm); // grammar guarantee
+                            parm->initializer_list.push_back($parameter_initializer_element);
                         }
     | parameter_initializer_list "," parameter_initializer_element
                         {
-                            // append to the list
+                            // append element to the initializer list
+                            auto parm = pc.get_parameter_context();
+                            assert(parm); // grammar guarantee
+                            parm->initializer_list.push_back($parameter_initializer_element);
                         }
     ;
 
@@ -810,6 +815,7 @@ parameter_initializer_element:
       literal
                         {
                             // Create a new string to hold the initializer element
+                            // TODO - reuse string storage using pointer
                             string *pstr = new string();
                             // The initializer is the literal, copy it
                             *pstr = $literal->value();
@@ -822,6 +828,7 @@ parameter_initializer_element:
     | SYMBOL[enum]
                         {
                             // Create a new string to hold the initializer element
+                            // TODO - reuse string storage using pointer?  - not safe!
                             string *pstr = new string();
                             // The initializer is the enum name, copy it
                             *pstr = $enum->name;

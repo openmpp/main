@@ -133,10 +133,10 @@ public:
     }
 
     /**
-     * Initialize parse context for outermost code level.
+     * Initialize parse context for outermost code level, which is C++
      */
 
-    void InitializeForCxxOutside()
+    void InitializeForCxx()
     {
         brace_level = 0;
         parenthesis_level = 0;
@@ -167,7 +167,7 @@ public:
         cxx_memfunc_gather = false;
         cxx_memfunc_name = "";
 
-        InitializeForCxxOutside();
+        InitializeForCxx();
     }
 
     /**
