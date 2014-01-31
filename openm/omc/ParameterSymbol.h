@@ -106,6 +106,27 @@ public:
 
     list<EnumerationSymbol *> pp_dimension_list;
 
+
+    /**
+     * List of dimensions - redeclaration (parse phase references to pointers)
+     */
+
+    list<Symbol **> dimension_list2;
+
+    /**
+     * List of dimensions - redeclaration (post-parse phase pointers)
+     */
+
+    list<EnumerationSymbol *> pp_dimension_list2;
+
+
+    /**
+     * List of initializers.
+     */
+
+    list<string *> initializer_list;
+
+
     /**
      * Numeric identifier of the parameter. Used for communicating with the metadata API.
      */

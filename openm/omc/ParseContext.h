@@ -28,6 +28,7 @@ public:
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
+        , redeclaration(false)
         , cxx_memfunc_gather (false)
         , cxx_memfunc_name ("")
         , agent_context (nullptr)
@@ -120,24 +121,15 @@ public:
         }
     }
 
-    void set_parameter_context(Symbol *parameter)
+    void set_parameter_context(ParameterSymbol *parameter)
     {
-        if (parameter != nullptr) {
-            parameter_context = &parameter->get_rpSymbol();
-        }
-        else {
-            parameter_context = nullptr;
-        }
+        parameter_context = parameter;
     }
 
-    Symbol * get_parameter_context()
+    ParameterSymbol * get_parameter_context()
     {
-        if (parameter_context != nullptr) {
-            return *parameter_context;
-        }
-        else {
-            return nullptr;
-        }
+        assert(parameter_context);  // grammar/logic guarantee that requests only occur in valid parameter context
+        return parameter_context;
     }
 
     /**
@@ -152,6 +144,7 @@ public:
         counter1 = 0;
         counter2 = 0;
         counter3 = 0;
+        redeclaration = false;
         agent_context = nullptr;
         table_context = nullptr;
         classification_context = nullptr;
@@ -262,6 +255,18 @@ public:
 
 	int parse_errors;
 
+
+    /**
+     * Indicates if context is a redeclaration of an enclosing symbol.
+     * 
+     * The om langauge permits redeclaration is certain contexts, in particular agents can be freely
+     * dre-declared, and the agentvar specifications are gathered together.  Parameters can be
+     * redeclared, once to give their properties and (optionally) a second time to provide base
+     * scenario values.
+     */
+
+    bool redeclaration;
+
 private:
 
     /**
@@ -303,8 +308,12 @@ private:
 
 
     /**
-     * parameter context for contained symbols
+     * parameter context for symbols in parameter declaration
+     * 
+     * Safe to use direct pointers, since context guarantess that
+     * we are in a parameter declaration, so the parameter has already
+     * been morphed to a ParameterSymbol if not already done.
      */
 
-    Symbol **parameter_context;
+    ParameterSymbol *parameter_context;
 };

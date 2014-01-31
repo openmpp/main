@@ -10,6 +10,10 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <string>
+#include <list>
+
+using namespace std;
 
 // forward declarations
 class Driver;
@@ -26,11 +30,12 @@ class ExprForTable;
 
 // The following code is written to the implementation file, not the header file
 %code {
+#include <stdarg.h>
+#include <cassert>
+#include <string>
 #include "Driver.h"
 #include "ParseContext.h"
 #include "ast.h"
-#include <stdarg.h>
-#include <cassert>
 #include "libopenm/omCommon.h"
 // last item found by flex.  Used in grammar to provide error information
 // TODO check and eliminate use
@@ -72,8 +77,9 @@ extern char *yytext;
     FloatingPointLiteral *pval_FloatingPointLiteral;
     StringLiteral        *pval_StringLiteral;
 	Symbol               *pval_Symbol;
-
 	ExprForTable         *pval_TableExpr;
+    string               *pval_string;
+    list<string *>       *pval_string_list;
 };
 
 %printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
@@ -445,6 +451,8 @@ extern char *yytext;
 %type  <val_token>      cxx_unsigned_integral_type
 %type  <val_token>      cxx_floating_point_type
 
+%type <pval_string>     parameter_initializer_element
+
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
 %type  <val_token>      short_synonym
@@ -463,27 +471,27 @@ extern char *yytext;
 
 %%
 
-%start declarations;
+%start declarative_islands;
 
-declarations:
-declarations declaration
+declarative_islands:
+declarative_islands declarative_island
 	| /* nothing */
 	;
 
-declaration:
-	  decl_languages
-	| decl_model_type
-	| decl_time_type
-	| decl_real_type
-	| decl_counter_type
-	| decl_integer_type
-	| decl_version
-    | decl_classification
-    | decl_partition
-    | decl_range
-    | decl_parameters
-	| decl_agent
-	| decl_table
+declarative_island:
+	  decl_languages        { pc.InitializeForCxxOutside(); }
+	| decl_model_type       { pc.InitializeForCxxOutside(); }
+	| decl_time_type        { pc.InitializeForCxxOutside(); }
+	| decl_real_type        { pc.InitializeForCxxOutside(); }
+	| decl_counter_type     { pc.InitializeForCxxOutside(); }
+	| decl_integer_type     { pc.InitializeForCxxOutside(); }
+	| decl_version          { pc.InitializeForCxxOutside(); }
+    | decl_classification   { pc.InitializeForCxxOutside(); }
+    | decl_partition        { pc.InitializeForCxxOutside(); }
+    | decl_range            { pc.InitializeForCxxOutside(); }
+    | decl_parameters       { pc.InitializeForCxxOutside(); }
+	| decl_agent            { pc.InitializeForCxxOutside(); }
+	| decl_table            { pc.InitializeForCxxOutside(); }
 	;
 
 /*
@@ -492,20 +500,8 @@ declaration:
 
 decl_languages:
           "languages" "{" language_list "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
         | "languages" "{" error "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
         | "languages" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
         ;
 
 language_list:
@@ -535,10 +531,6 @@ decl_time_type:
                             sym->decl_loc = @$;
                         }
     | "time_type" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 decl_real_type:
@@ -551,10 +543,6 @@ decl_real_type:
                             sym->decl_loc = @$;
                         }
     | "real_type" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 decl_counter_type:
@@ -567,10 +555,6 @@ decl_counter_type:
                             sym->decl_loc = @$;
                         }
     | "counter_type" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 decl_integer_type:
@@ -583,10 +567,6 @@ decl_integer_type:
                             sym->decl_loc = @$;
                         }
     | "integer_type" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 decl_model_type:
@@ -599,10 +579,6 @@ decl_model_type:
                             auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true, @$);
                         }
         | "model_type" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
       ;
 
 model_type:
@@ -628,10 +604,6 @@ decl_version:
                             auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor, @$ );
                         }
       | "version" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 /*
@@ -654,10 +626,6 @@ decl_classification:
                             pc.set_classification_context( nullptr );
                         }
             | "classification" "{" error "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
             ;
 
 classification_levels:
@@ -701,10 +669,6 @@ decl_partition:
                             pc.set_partition_context( nullptr );
                         }
             | "partition" "{" error "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
             ;
 
 partition_splitpoints:
@@ -745,10 +709,6 @@ decl_range:
                             $range = new RangeSymbol( $range, lower_bound, upper_bound, @range );
                         }
       | "range" "{" error "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 /*
@@ -758,10 +718,6 @@ decl_range:
 decl_parameters:
 	  "parameters" "{" parameter_list "}" ";"
 	| "parameters" "{" error "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
       ;
 
 parameter_list: 
@@ -772,9 +728,23 @@ parameter_list:
 decl_parameter:
       decl_type_part[type_symbol] SYMBOL[parm]
                         {
-                            $parm = new ParameterSymbol( $parm, $type_symbol, @parm );
-                            // Set parameter context for gathering the dimension specification
-                            pc.set_parameter_context( $parm );
+                            ParameterSymbol *parm = nullptr;
+
+                            if ($parm->is_base_symbol()) {
+                                // Morph Symbol to ParameterSymbol
+                                parm = new ParameterSymbol( $parm, $type_symbol, @parm );
+                                assert(parm);
+                                $parm = parm;
+                            }
+                            else {
+                                // parameter re-declaration
+                                pc.redeclaration = true;
+                                parm = dynamic_cast<ParameterSymbol *>($parm);
+                                assert(parm); // grammar/logic guarantee
+                            }
+                            // Set parameter context for gathering the dimension specification (if present)
+                            // and initializer (if present).
+                            pc.set_parameter_context( parm );
                         }
             decl_dim_list parameter_initializer_expr ";"
                         {
@@ -783,10 +753,11 @@ decl_parameter:
                         }
 	| error ";"
                         {
-                            // Error recovery: Prepare to parse another parameter in a parameters declarative island
+                            // Error recovery: Prepare to parse another parameter in the 'parameters' declarative island
                             pc.brace_level = 1;
                             pc.parenthesis_level = 0;
                             pc.bracket_level = 0;
+                            pc.redeclaration = false;
                             // No valid parameter context
                             pc.set_parameter_context( nullptr );
                         }
@@ -795,11 +766,14 @@ decl_parameter:
 decl_dim_list:
       decl_dim_list "[" SYMBOL[dim] "]"
                         {
-                            // add $dim to parameter's dimension_list
-                            Symbol *sym = pc.get_parameter_context();
-                            auto ps = dynamic_cast<ParameterSymbol *>(sym);
-                            assert(ps); // grammar guarantee
-                            ps->dimension_list.push_back($dim->get_ppSymbol());
+                            if (!pc.redeclaration) {
+                                // add $dim to parameter's dimension_list
+                                pc.get_parameter_context()->dimension_list.push_back($dim->get_ppSymbol());
+                            }
+                            else {
+                                // keep track of dimension list of redelcaration for subsequent semantic check
+                                pc.get_parameter_context()->dimension_list2.push_back($dim->get_ppSymbol());
+                            }
                         }
     | /* Nothing */
     ;
@@ -808,6 +782,7 @@ parameter_initializer_expr:
       "=" parameter_initializer_element
                         {
                             // append it to the parameter initializer list
+                            pc.get_parameter_context()->initializer_list.push_back($parameter_initializer_element);
                         }
       "=" "{" parameter_initializer_list "}"
                         {
@@ -821,6 +796,9 @@ parameter_initializer_list:
       parameter_initializer_element
                         {
                             // start the list
+                            Symbol *sym = pc.get_parameter_context();
+                            auto ps = dynamic_cast<ParameterSymbol *>(sym);
+                            assert(ps); // grammar guarantee
                         }
     | parameter_initializer_list "," parameter_initializer_element
                         {
@@ -831,13 +809,24 @@ parameter_initializer_list:
 parameter_initializer_element:
       literal
                         {
-                            // get the literal as a string
-                            $literal->value();
+                            // Create a new string to hold the initializer element
+                            string *pstr = new string();
+                            // The initializer is the literal, copy it
+                            *pstr = $literal->value();
+                            // Rule returns a pointer to the string.
+                            $parameter_initializer_element = pstr;
+
+                            // delete the Literal object
+                            delete($literal);
                         }
     | SYMBOL[enum]
                         {
-                            // get the name of the enum as a string
-                            $enum->name;
+                            // Create a new string to hold the initializer element
+                            string *pstr = new string();
+                            // The initializer is the enum name, copy it
+                            *pstr = $enum->name;
+                            // Rule returns a pointer to the string.
+                            $parameter_initializer_element = pstr;
                         }
     ;
 
@@ -853,6 +842,9 @@ decl_agent:
                                 // Morph Symbol to AgentSymbol
                                 $agent = new AgentSymbol( $agent, @agent );
                             }
+                            else {
+                                pc.redeclaration = true;
+                            }
                             // Set agent context for body of agent declaration
                             pc.set_agent_context( $agent );
                         }
@@ -862,10 +854,6 @@ decl_agent:
                             pc.set_agent_context( nullptr );
                         }
             | "agent" "{" error "}" ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
             ;
 
 agent_member_list:
@@ -966,10 +954,6 @@ decl_table:
                             pc.counter3 = 0;
                         }
     | "table" error ";"
-                        {
-                            // Error recovery: Prepare to parse outermost code - C++ or an openm declarative island
-                            pc.InitializeForCxxOutside();
-                        }
     ;
 
 table_expression_list:
