@@ -9,6 +9,7 @@
 #include "Symbol.h"
 
 class TableAccumulatorSymbol;
+class Literal;
 
 using namespace std;
 
@@ -52,16 +53,16 @@ public:
 	ExprForTable *right;
 };
 
-class ExprForTableLeaf : public ExprForTable {
+class ExprForTableAccumulator : public ExprForTable {
 public:
 
     /**
-     * Constructor for a leaf (terminal) in a table expression tree.
+     * Constructor for an accumulator leaf (terminal) in a table expression tree.
      *
      * @param   accumulator The accumulator being tabulated.
      */
 
-	ExprForTableLeaf(const Symbol *accumulator)
+	ExprForTableAccumulator(const Symbol *accumulator)
 	    : accumulator ( accumulator->stable_rp() )
         , pp_accumulator ( nullptr )
     {
@@ -69,4 +70,21 @@ public:
 
 	Symbol*& accumulator;
 	TableAccumulatorSymbol *pp_accumulator;
+};
+
+class ExprForTableLiteral : public ExprForTable {
+public:
+
+    /**
+     * Constructor for an accumulator literal (terminal) in a table expression tree.
+     *
+     * @param   accumulator The accumulator being tabulated.
+     */
+
+	ExprForTableLiteral(const Literal *constant)
+	    : constant (constant)
+    {
+    }
+
+    const Literal *constant;
 };

@@ -10,6 +10,7 @@
 #include "TableExpressionSymbol.h"
 #include "TableSymbol.h"
 #include "ExprForTable.h"
+#include "Literal.h"
 
 // static
 string TableExpressionSymbol::symbol_name(const Symbol* table, int index)
@@ -50,6 +51,8 @@ void TableExpressionSymbol::post_parse(int pass)
 /**
 * Perform post-parse operations on nodes of a ExprForTable tree
 *
+* Assigns the pp_accumulator pointer using the assumulator member from the parse phase.
+* 
 * @param   node    The root of the expression tree.
 *
 * @return  Result as a \a CodeBlock
@@ -57,12 +60,18 @@ void TableExpressionSymbol::post_parse(int pass)
 
 void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
 {
-    auto leaf = dynamic_cast<ExprForTableLeaf *>(node);
-    if (leaf != nullptr) {
-        (leaf->pp_accumulator) = dynamic_cast<TableAccumulatorSymbol *>(leaf->accumulator);
-        assert(leaf->pp_accumulator); // parser guarantee
+    auto acc = dynamic_cast<ExprForTableAccumulator *>(node);
+    auto lit = dynamic_cast<const ExprForTableLiteral *>(node);
+    if (acc != nullptr) {
+        // found an accumulator leaf of the expression tree
+        (acc->pp_accumulator) = dynamic_cast<TableAccumulatorSymbol *>(acc->accumulator);
+        assert(acc->pp_accumulator); // parser guarantee
+    }
+    else if (lit != nullptr) {
+        // Literals can be left as-is for the post-parse processing phase.
     }
     else {
+        // an operator
         auto op = dynamic_cast<ExprForTableOp *>(node);
         assert(op); // parser guarantee
         if (op->left) {
@@ -85,9 +94,12 @@ void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
 
 string TableExpressionSymbol::get_expression(const ExprForTable *node, expression_style style)
 {
-    const ExprForTableLeaf* leaf = dynamic_cast<const ExprForTableLeaf *>(node);
-    if (leaf != nullptr) {
-        const TableAccumulatorSymbol *accumulator = leaf->pp_accumulator;
+    const ExprForTableAccumulator* acc = dynamic_cast<const ExprForTableAccumulator *>(node);
+    const ExprForTableLiteral* lit = dynamic_cast<const ExprForTableLiteral *>(node);
+
+    if (acc != nullptr) {
+        // Node is a terminal accumulator leaf of the expression tree
+        const TableAccumulatorSymbol *accumulator = acc->pp_accumulator;
         string result;
         switch (style) {
         case cxx:
@@ -117,6 +129,10 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
             assert(0);
         }
         return result;
+    }
+    else if (lit != nullptr) {
+        // Node is a terminal numeric literal leaf of the expression tree
+        return lit->constant->value();
     }
     else {
         auto binary_node = dynamic_cast<const ExprForTableOp *>(node);

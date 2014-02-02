@@ -1026,13 +1026,16 @@ expr_for_table[result]:
                                 accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
                                 pc.counter2++;
                             }
-	                        $result = new ExprForTableLeaf( accumulator );
+	                        $result = new ExprForTableAccumulator( accumulator );
                         }
+      // Ex. max_value_in(income)
     | modgen_cumulation_operator "(" agentvar ")"
                         {
                             Symbol *agentvar = $agentvar;
                             Symbol *table = pc.get_table_context();
+                            // Ex. token::TK_max
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
+                            // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
 
                             // Also create symbol for associated analysis agentvar if not already present
@@ -1046,7 +1049,7 @@ expr_for_table[result]:
                                 analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
                                 pc.counter3++;
                             }
-                            // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
+                            // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
                             if ( analysis_agentvar->need_value_in == false ) {
                                 if (   incr == token::TK_delta
                                     || incr == token::TK_delta2
@@ -1067,8 +1070,9 @@ expr_for_table[result]:
                                 accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
                                 pc.counter2++;
                             }
-	                        $result = new ExprForTableLeaf( accumulator );
+	                        $result = new ExprForTableAccumulator( accumulator );
                         }
+    // Ex. sum(delta(income))
     | table_accumulator[acc] "(" table_increment[incr] "(" agentvar ")" ")"
                         {
                             Symbol *agentvar = $agentvar;
@@ -1108,7 +1112,11 @@ expr_for_table[result]:
                                 accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
                                 pc.counter2++;
                             }
-	                        $result = new ExprForTableLeaf( accumulator );
+	                        $result = new ExprForTableAccumulator( accumulator );
+                        }
+    | numeric_literal
+                        {
+	                        $result = new ExprForTableLiteral( $numeric_literal );
                         }
     | expr_for_table[left] "+"[op] expr_for_table[right]
                         {
@@ -1215,14 +1223,14 @@ bool_literal:
                         }
 	;
 
-numeric_literal:
+numeric_literal: // Note that numeric_literal will never have a leading -
       INTEGER_LITERAL
                         {
-                            unsigned_numeric_literal = $INTEGER_LITERAL;
+                            $numeric_literal = $INTEGER_LITERAL;
                         }
     | FLOATING_POINT_LITERAL
                         {
-                            unsigned_numeric_literal = $FLOATING_POINT_LITERAL;
+                            $numeric_literal = $FLOATING_POINT_LITERAL;
                         }
     ;
 

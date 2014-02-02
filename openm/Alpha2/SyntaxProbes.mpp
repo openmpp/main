@@ -140,6 +140,6 @@ table Person ProbeOfHappiness2 //EN Probe of happiness #2
 		value_in(alive),				   //EN Population size
 		value_out(happy),             //EN Happy at death
 		duration(playing, TRUE) / value_in(alive), //EN Average years playing in lifetime decimals=4
-		-duration(happy, TRUE) / value_in(alive) //EN happiness-adjusted life-years decimals=4
+		- 0.5 * duration(happy, TRUE) / value_in(alive) //EN happiness-adjusted life-years decimals=4
 	} //EN Quantity
 };
