@@ -431,10 +431,15 @@ extern char *yytext;
 %type  <val_token>      modgen_cumulation_operator
 %type  <val_token>      table_accumulator
 %type  <val_token>      table_increment
-%type  <val_token>      bool_literal
-%type  <pval_Literal>   literal
-%type  <pval_Literal>   signed_numeric_literal
+
+%type  <pval_Literal>   bool_literal
+%type  <pval_Literal>   numeric_literal
 %type  <pval_Literal>   signed_integer_literal
+%type  <pval_Literal>   signed_floating_point_literal
+%type  <pval_Literal>   signed_numeric_literal
+%type  <pval_Literal>   non_numeric_literal
+%type  <pval_Literal>   literal
+%type  <pval_Literal>   signed_literal
 
 %type  <pval_Symbol>    decl_type_part
 
@@ -812,18 +817,18 @@ parameter_initializer_list:
     ;
 
 parameter_initializer_element:
-      literal
+      signed_literal
                         {
                             // Create a new string to hold the initializer element
                             // TODO - reuse string storage using pointer
                             string *pstr = new string();
                             // The initializer is the literal, copy it
-                            *pstr = $literal->value();
+                            *pstr = $signed_literal->value();
                             // Rule returns a pointer to the string.
                             $parameter_initializer_element = pstr;
 
                             // delete the Literal object
-                            delete($literal);
+                            delete $signed_literal;
                         }
     | SYMBOL[enum]
                         {
@@ -886,9 +891,9 @@ decl_simple_agentvar:
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, nullptr, @agentvar );
                         }
-      | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" literal "}" ";"
+      | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" signed_literal "}" ";"
                         {
-                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $literal, @agentvar );
+                            auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $signed_literal, @agentvar );
                         }
     ;
 
@@ -1181,7 +1186,7 @@ derived_agentvar:
                         {
                             $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
                         }
-    | TK_duration "(" SYMBOL[agentvar] "," literal[constant] ")"
+    | TK_duration "(" SYMBOL[agentvar] "," signed_literal[constant] ")"
                         {
                             $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
                         }
@@ -1192,9 +1197,26 @@ derived_agentvar:
  */
 
 bool_literal:
-      "true"
-    | "false"
+      "true"[tok]
+                        {
+                            $bool_literal = new BooleanLiteral( Symbol::token_to_string( (token_type) $tok ) );
+                        }
+    | "false"[tok]
+                        {
+                            $bool_literal = new BooleanLiteral( Symbol::token_to_string( (token_type) $tok ) );
+                        }
 	;
+
+numeric_literal:
+      INTEGER_LITERAL
+                        {
+                            unsigned_numeric_literal = $INTEGER_LITERAL;
+                        }
+    | FLOATING_POINT_LITERAL
+                        {
+                            unsigned_numeric_literal = $FLOATING_POINT_LITERAL;
+                        }
+    ;
 
 signed_integer_literal:
       INTEGER_LITERAL
@@ -1203,56 +1225,74 @@ signed_integer_literal:
                         }
     | "-" INTEGER_LITERAL
                         {
-                            $INTEGER_LITERAL->set_negative(true);
-                            $signed_integer_literal = $INTEGER_LITERAL;
+                            $signed_integer_literal = new IntegerLiteral( "-" + $INTEGER_LITERAL->value() );
+                            delete $INTEGER_LITERAL;
+                        }
+    ;
+
+signed_floating_point_literal:
+      FLOATING_POINT_LITERAL
+                        {
+                            $signed_floating_point_literal = $FLOATING_POINT_LITERAL;
+                        }
+    | "-" FLOATING_POINT_LITERAL
+                        {
+                            $signed_floating_point_literal = new FloatingPointLiteral( "-" + $FLOATING_POINT_LITERAL->value() );
+                            delete $FLOATING_POINT_LITERAL;
                         }
     ;
 
 signed_numeric_literal:
       signed_integer_literal
-    | FLOATING_POINT_LITERAL
+    | signed_floating_point_literal
+    ;
+
+non_numeric_literal:
+      bool_literal
                         {
-                            $signed_numeric_literal = $FLOATING_POINT_LITERAL;
+                            $non_numeric_literal = $bool_literal;
                         }
-    | "-" FLOATING_POINT_LITERAL
+    | CHARACTER_LITERAL
                         {
-                            $FLOATING_POINT_LITERAL->set_negative(true);
-                            $signed_numeric_literal = $FLOATING_POINT_LITERAL;
+                            $non_numeric_literal = $CHARACTER_LITERAL;
+                        }
+    | STRING_LITERAL
+                        {
+                            $non_numeric_literal = $STRING_LITERAL;
+                        }
+    | "nullptr"
+                        {
+                            $non_numeric_literal = new PointerLiteral( Symbol::token_to_string( token::TK_nullptr ) );
+                        }
+    | "time_infinite"
+                        {
+                            $non_numeric_literal = new TimeLiteral( Symbol::token_to_string( token::TK_time_infinite ) );
+                        }
+    | "time_undef"
+                        {
+                            $non_numeric_literal = new TimeLiteral( Symbol::token_to_string( token::TK_time_undef ) );
                         }
     ;
 
 literal:
-      INTEGER_LITERAL
+      numeric_literal
                         {
-                            $literal = $INTEGER_LITERAL;
+                            $literal = $numeric_literal;
                         }
-    | CHARACTER_LITERAL
+    | non_numeric_literal
                         {
-                            $literal = $CHARACTER_LITERAL;
+                            $literal = $non_numeric_literal;
                         }
-    | FLOATING_POINT_LITERAL
+    ;
+
+signed_literal:
+      signed_numeric_literal
                         {
-                            $literal = $FLOATING_POINT_LITERAL;
+                            $signed_literal = $signed_numeric_literal;
                         }
-    | STRING_LITERAL
+    | non_numeric_literal
                         {
-                            $literal = $STRING_LITERAL;
-                        }
-    | bool_literal
-                        {
-                            $literal = new BooleanLiteral( Symbol::token_to_string( (token_type) $bool_literal ) );
-                        }
-    | "nullptr"
-                        {
-                            $literal = new PointerLiteral( Symbol::token_to_string( token::TK_nullptr ) );
-                        }
-    | "time_infinite"
-                        {
-                            $literal = new TimeLiteral( Symbol::token_to_string( token::TK_time_infinite ) );
-                        }
-    | "time_undef"
-                        {
-                            $literal = new TimeLiteral( Symbol::token_to_string( token::TK_time_undef ) );
+                            $signed_literal = $non_numeric_literal;
                         }
     ;
 

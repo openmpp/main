@@ -34,7 +34,7 @@ public:
     {
     }
 
-    virtual string value() const
+    string value() const
     {
         return cxx_token;
     }
@@ -61,23 +61,8 @@ public:
 
     IntegerLiteral( const string& tok )
         : Literal (tok)
-        , negative(false)
     {
     }
-
-    string value() const
-    {
-        if (negative) return "-" + cxx_token;
-        else return cxx_token;
-    }
-
-    void set_negative(bool arg)
-    {
-        negative = arg;
-    }
-
-private:
-    bool negative;
 };
 
 /**
@@ -98,23 +83,8 @@ public:
 
     FloatingPointLiteral(const string& tok)
         : Literal(tok)
-        , negative(false)
     {
     }
-
-    string value() const
-    {
-        if (negative) return "-" + cxx_token;
-        else return cxx_token;
-    }
-
-    void set_negative(bool arg)
-    {
-        negative = arg;
-    }
-
-private:
-    bool negative;
 };
 
 /**
