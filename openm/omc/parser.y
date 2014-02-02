@@ -1126,6 +1126,14 @@ expr_for_table[result]:
                         {
 	                        $result = new ExprForTableOp( (token_type) $op, $left, $right );
                         }
+    | "-"[op] expr_for_table[right] %prec UNARY_MINUS
+                        {
+	                        $result = new ExprForTableOp( (token_type) $op, nullptr, $right );
+                        }
+    | "+"[op] expr_for_table[right] %prec UNARY_PLUS
+                        {
+	                        $result = new ExprForTableOp( (token_type) $op, nullptr, $right );
+                        }
     | "(" expr_for_table[expr] ")"
                         {
 	                        $result = $expr;

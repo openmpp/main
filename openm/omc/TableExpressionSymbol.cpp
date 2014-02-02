@@ -65,7 +65,12 @@ void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
     else {
         auto op = dynamic_cast<ExprForTableOp *>(node);
         assert(op); // parser guarantee
-        post_parse_traverse(op->left);
+        if (op->left) {
+            post_parse_traverse(op->left);
+        }
+        else {
+            // unary operators have no left argument
+        }
         post_parse_traverse(op->right);
     }
 }
@@ -116,7 +121,14 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
     else {
         auto binary_node = dynamic_cast<const ExprForTableOp *>(node);
         assert(binary_node); // parser guarantee
-        string expr_left = get_expression(binary_node->left, style);
+        string expr_left("");
+        if (binary_node->left) {
+            expr_left = get_expression(binary_node->left, style);
+        }
+        else
+        {
+            // unary operators have no left argument
+        }
         string expr_right = get_expression(binary_node->right, style);
         return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";
     }
