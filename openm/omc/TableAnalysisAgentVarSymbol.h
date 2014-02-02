@@ -36,8 +36,8 @@ public:
 
     TableAnalysisAgentVarSymbol(Symbol *table, Symbol *agentvar, int index)
         : Symbol(symbol_name(table, agentvar))
-        , table(table->get_rpSymbol())
-        , agentvar(agentvar->get_rpSymbol())
+        , table(table->stable_rp())
+        , agentvar(agentvar->stable_rp())
         , index(index)
         , need_value_in(false)
         , pp_table(nullptr)

@@ -104,9 +104,35 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
+    
+    if (initializer_list.empty()) {
+        // No initializer present in model source.
+        // Just use the default value for a type of this kind.
+        c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
+    }
+    else {
+        // Initializer present in model source.
+        c += pp_datatype->name + " " + cxx_name_and_dimensions();
+        c += cxx_initializer();
+        c += ";" ;
+    }
     return c;
 }
+
+CodeBlock ParameterSymbol::cxx_initializer()
+{
+    CodeBlock c;
+
+    if (!initializer_list.empty()) {
+        c += "{";
+        for (auto s : initializer_list) {
+            c += *s + ",";
+        }
+        c += "}";
+    }
+    return c;
+}
+
 
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {

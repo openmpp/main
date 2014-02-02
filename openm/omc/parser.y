@@ -768,11 +768,11 @@ decl_dim_list:
                         {
                             if (!pc.redeclaration) {
                                 // add $dim to parameter's dimension_list
-                                pc.get_parameter_context()->dimension_list.push_back($dim->get_ppSymbol());
+                                pc.get_parameter_context()->dimension_list.push_back($dim->stable_pp());
                             }
                             else {
                                 // keep track of dimension list of redelcaration for subsequent semantic check
-                                pc.get_parameter_context()->dimension_list2.push_back($dim->get_ppSymbol());
+                                pc.get_parameter_context()->dimension_list2.push_back($dim->stable_pp());
                             }
                         }
     | /* Nothing */

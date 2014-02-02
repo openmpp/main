@@ -20,14 +20,14 @@ public:
 
     AgentMemberSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , agent(agent->get_rpSymbol())
+        , agent(agent->stable_rp())
         , pp_agent(nullptr)
     {
     }
 
     AgentMemberSymbol(const string name, const Symbol *agent, yy::location decl_loc = yy::location())
         : Symbol(name, agent, decl_loc)
-        , agent(agent->get_rpSymbol())
+        , agent(agent->stable_rp())
         , pp_agent(nullptr)
     {
     }

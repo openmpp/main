@@ -22,7 +22,7 @@ public:
 
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , datatype(datatype->get_rpSymbol())
+        , datatype(datatype->stable_rp())
         , pp_datatype(nullptr)
     {
     }
@@ -32,6 +32,18 @@ public:
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();
+
+    /**
+     * C++ initializer list containing default values of parameter
+     * 
+     * Output is like "= { ... }".
+     * Output is an empty CodeBlock if intializer_list is empty (which means that values were not supplied
+     * in the model srouce files).
+     *
+     * @return A CodeBlock.
+     */
+
+    CodeBlock cxx_initializer();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 

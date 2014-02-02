@@ -110,7 +110,7 @@ typedef unordered_map<yy::location, string>::value_type comment_map_value_type;
 // That lets us morph an object to another type during / parsing, while maintaining
 // the persistence of symbol uses in other objects.
 // A rule must be followed, which is to never store a pointer to a Symbol, either in a Symbol or another object.
-// Instead, store a reference to the pointer of, which can always be obtained using the member function get_rpSymbol().
+// Instead, store a reference to the pointer of, which can always be obtained using the member function stable_rp().
 // Actually, it's a reference to the second pair of the element for the symbol in the symbol table (the first element of the pair is the name)
 // The underlying collection std::unordered_map guarantees that references and pointers remain valid even if rehashing occurs.
 
@@ -261,7 +261,7 @@ public:
      * @return Reference to pointer to this Symbol.
      */
 
-	Symbol*& get_rpSymbol() const
+	Symbol*& stable_rp() const
     {
     	auto it = symbols.find( unique_name );
         assert(it->second); // code integrity guarantee
@@ -274,13 +274,13 @@ public:
      * 
      * The result is a double indirection and is stable to morphing, since unordered_map
      * guarantees that pointers and references to existing map entries never change.
-     * It's better to use get_rpSymbol() if possible, but sometimes pointers are needed instead,
+     * It's better to use stable_rp() if possible, but sometimes pointers are needed instead,
      * for example to store a double indirection to a Symbol in a list<>.
      *
      * @return pointer to pointer to this Symbol.
      */
 
-	Symbol** get_ppSymbol() const
+	Symbol** stable_pp() const
     {
     	auto it = symbols.find( unique_name );
         assert(it->second); // code integrity guarantee
@@ -476,7 +476,7 @@ public:
     /**
      * Number of references by other symbols to this Symbol
      * 
-     * For debugging purposes.  Maintained by get_rpSymbol() and maintained during symbol morphing.
+     * For debugging purposes.  Maintained by stable_rp() and maintained during symbol morphing.
      */
 
     int reference_count;

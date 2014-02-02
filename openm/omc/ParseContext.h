@@ -44,7 +44,7 @@ public:
     void set_agent_context( Symbol *agent )
     {
         if ( agent != nullptr ) {
-            agent_context = &agent->get_rpSymbol();
+            agent_context = &agent->stable_rp();
         }
         else {
             agent_context = nullptr;
@@ -64,7 +64,7 @@ public:
     void set_table_context( Symbol *table )
     {
         if ( table != nullptr ) {
-            table_context = &table->get_rpSymbol();
+            table_context = &table->stable_rp();
         }
         else {
             table_context = nullptr;
@@ -84,7 +84,7 @@ public:
     void set_classification_context(Symbol *classification)
     {
         if (classification != nullptr) {
-            classification_context = &classification->get_rpSymbol();
+            classification_context = &classification->stable_rp();
         }
         else {
             classification_context = nullptr;
@@ -104,7 +104,7 @@ public:
     void set_partition_context(Symbol *partition)
     {
         if (partition != nullptr) {
-            partition_context = &partition->get_rpSymbol();
+            partition_context = &partition->stable_rp();
         }
         else {
             partition_context = nullptr;

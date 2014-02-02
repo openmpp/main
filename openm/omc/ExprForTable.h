@@ -62,7 +62,7 @@ public:
      */
 
 	ExprForTableLeaf(const Symbol *accumulator)
-	    : accumulator ( accumulator->get_rpSymbol() )
+	    : accumulator ( accumulator->stable_rp() )
         , pp_accumulator ( nullptr )
     {
     }

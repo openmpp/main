@@ -24,14 +24,14 @@ public:
 
     AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
-        , type_symbol(type->get_rpSymbol())
+        , type_symbol(type->stable_rp())
         , pp_type_symbol(nullptr)
     {
     }
 
     AgentDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(member_name, agent, decl_loc)
-        , type_symbol(type->get_rpSymbol())
+        , type_symbol(type->stable_rp())
         , pp_type_symbol(nullptr)
     {
         assert(type);  // grammar/initialization guarantee

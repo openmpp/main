@@ -26,7 +26,7 @@ public:
         : Symbol(symbol_name(table, index), decl_loc)
         , root(root)
         , index(index)
-        , table(table->get_rpSymbol())
+        , table(table->stable_rp())
         , pp_table(nullptr)
     {
     }
