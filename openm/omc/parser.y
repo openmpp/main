@@ -457,6 +457,7 @@ extern char *yytext;
 %type  <val_token>      cxx_floating_point_type
 
 %type <pval_string>     parameter_initializer_element
+%type <pval_string_list>     parameter_initializer_list
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -791,28 +792,57 @@ parameter_initializer_expr:
                             assert(parm); // grammar guarantee
                             parm->initializer_list.push_back($parameter_initializer_element);
                         }
-    | "=" "{" parameter_initializer_list "}"
+    | "=" "{" parameter_initializer_list[wrk] "}"
                         {
-                            // put the initializer list in the parameter
+                            // splice the gathered initializer list into the parameter's list
+                            auto parm = pc.get_parameter_context();
+                            assert(parm); // grammar guarantee
+                            auto wrk = $wrk; // to see it in the debugger
+                            parm->initializer_list.splice(parm->initializer_list.end(), *wrk);
+                            delete wrk;
                         }
     | /* Nothing */
     ;
 
 
-parameter_initializer_list:
-      parameter_initializer_element
+parameter_initializer_list[result]:
+    parameter_initializer_element[elem]
                         {
-                            // add first element to the initializer list
-                            auto parm = pc.get_parameter_context();
-                            assert(parm); // grammar guarantee
-                            parm->initializer_list.push_back($parameter_initializer_element);
+                            // create a new empty string list,
+                            auto result = new list<string *>;
+                            assert(result);
+                            // and add the element to it
+                            auto elem = $elem;
+                            (*result).push_back(elem);
+                            $result = result;
                         }
-    | parameter_initializer_list "," parameter_initializer_element
+      | "{" parameter_initializer_list[wrk] "}"
                         {
-                            // append element to the initializer list
-                            auto parm = pc.get_parameter_context();
-                            assert(parm); // grammar guarantee
-                            parm->initializer_list.push_back($parameter_initializer_element);
+                            $result = $wrk;
+                        }
+      // The %prec below makes the repeater bind tightly to what follows, taking precedence over any following ","
+      | "(" INTEGER_LITERAL[rpt] ")" parameter_initializer_list[wrk] %prec UNARY_MINUS
+                        {
+                            // create a new empty string list,
+                            auto result = new list<string *>;
+                            assert(result);
+                            auto wrk = $wrk;
+                            // and append the second list repeatedly to it
+                            for (int j = 0; j < stoi($rpt->value()); j++) {
+                                (*result).insert((*result).end(), (*wrk).begin(), (*wrk).end());
+                            }
+                            (*wrk).clear();
+                            delete wrk;
+                            $result = result;
+                        }
+      | parameter_initializer_list[wrk1] "," parameter_initializer_list[wrk2]
+                        {
+                            // splice the two lists together
+                            auto wrk1 = $wrk1;
+                            auto wrk2 = $wrk2;
+                            (*wrk1).splice((*wrk1).end(), *wrk2);
+                            delete wrk2;
+                            $result = $wrk1;
                         }
     ;
 

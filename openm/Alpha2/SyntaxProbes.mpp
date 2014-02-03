@@ -143,3 +143,33 @@ table Person ProbeOfHappiness2 //EN Probe of happiness #2
 		- 0.5 * duration(happy, TRUE) / value_in(alive) //EN happiness-adjusted life-years decimals=4
 	} //EN Quantity
 };
+
+parameters{
+    bool i_bool = { true };
+    SEX i_sex = { MALE };
+    AGE_GROUP i_age_group = { 2 };
+    YEAR i_year = { -2 };
+
+    bool j_bool[REGION] = { true, false };
+    SEX j_sex[REGION] = { MALE, FEMALE };
+    AGE_GROUP j_age_group[REGION] = { 2, 3 };
+    YEAR j_year[REGION] = { -2, 0 };
+
+    bool k_bool[REGION][REGION] = { true, false, false, true };
+    SEX k_sex[REGION][REGION] = { MALE, FEMALE, FEMALE, MALE };
+    AGE_GROUP k_age_group[REGION][REGION] = { 2, 3, 3, 2 };
+    YEAR k_year[REGION][REGION] = { -2, 0, 1, 3 };
+
+};
+
+range RNG20{ 0, 19 };
+
+parameters
+{
+     int z20[RNG20] = {
+        (3) {1, (2) {2, 3}},
+        (5) 42
+        //1,2,3,4,5,6,7,8,9,10,
+        //11,12,13,14,15,16,17,18,19,20
+    };
+};

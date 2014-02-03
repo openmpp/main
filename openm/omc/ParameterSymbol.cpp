@@ -112,7 +112,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     }
     else {
         // Initializer present in model source.
-        c += pp_datatype->name + " " + cxx_name_and_dimensions();
+        c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = ";
         c += cxx_initializer();
         c += ";" ;
     }
