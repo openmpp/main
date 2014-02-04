@@ -35,6 +35,11 @@ public:
     {
     }
 
+    AgentFuncSymbol(const string name, const Symbol *agent, yy::location decl_loc = yy::location())
+        : AgentMemberSymbol(name, agent, decl_loc)
+    {
+    }
+
     void post_parse(int pass);
 
 };

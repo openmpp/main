@@ -39,10 +39,15 @@ public:
         : Symbol(sym, decl_loc)
         , pp_time(nullptr)
     {
-        create_builtin_symbols();
+        create_auxiliary_symbols();
     }
 
-    void create_builtin_symbols();
+
+    /**
+     * Create auxiliary symbols associated with this agent.
+     */
+
+    void create_auxiliary_symbols();
 
     void post_parse(int pass);
 

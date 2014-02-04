@@ -10,6 +10,7 @@
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentInternalSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
@@ -19,6 +20,14 @@
 
 using namespace std;
 using namespace openm;
+
+void TableSymbol::create_auxiliary_symbols()
+{
+    assert(nullptr == update_cell_fn); // logic guarantee
+
+    // Ex. "om_update_DurationOfLife"
+    update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
+}
 
 void TableSymbol::post_parse(int pass)
 {

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void AgentSymbol::create_builtin_symbols()
+void AgentSymbol::create_auxiliary_symbols()
 {
     // Create builtin agentvars for this agent: time, age, events, agent_id
     if (!exists("time", this))

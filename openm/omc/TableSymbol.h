@@ -13,6 +13,7 @@
 class TableExpressionSymbol;
 class TableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
+class AgentFuncSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -34,13 +35,21 @@ public:
         : Symbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
+        , update_cell_fn(nullptr)
     {
+        create_auxiliary_symbols();
     }
+
+    /**
+     * Create auxiliary symbols associated with this table.
+     */
+
+    void create_auxiliary_symbols();
 
     void post_parse(int pass);
 
     /**
-     * Gets the member name which holds the value of the active table cell
+     * Gets the name of the agent member which holds the value of the active table cell
      * 
      * This is the name of the data member which holds the "in" value of the agentvar.  It holds the
      * value of the agentvar at the start of an increment, and is used to compute 'delta', etc. when
@@ -50,6 +59,7 @@ public:
      */
 
     string cell_member_name() const;
+
 
     /**
     * Get name of member function which handles increments used in the table
@@ -94,6 +104,13 @@ public:
     */
 
     Symbol*& agent;
+
+
+    /**
+     * The agent member function which updates the active table cell based on current indices.
+     */
+
+    AgentFuncSymbol *update_cell_fn;
 
     /**
     * Direct pointer to agent.
