@@ -29,7 +29,7 @@ public:
     DurationAgentVarSymbol(const Symbol *agent)
         : AgentVarSymbol(DurationAgentVarSymbol::member_name(),
                         agent,
-                        NumericSymbol::get_typedef_symbol(token::TK_Time))
+                        NumericSymbol::find(token::TK_Time))
     {
     }
 

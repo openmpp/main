@@ -29,7 +29,7 @@ public:
     ConditionedDurationAgentVarSymbol(const Symbol *agent, const Symbol *observed, const Literal *constant)
         : AgentVarSymbol(ConditionedDurationAgentVarSymbol::member_name(observed, constant),
                         agent,
-                        NumericSymbol::get_typedef_symbol(token::TK_Time) )
+                        NumericSymbol::find(token::TK_Time) )
         , observed(observed->stable_rp())
         , constant(constant)
         , pp_observed(nullptr)

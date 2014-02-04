@@ -17,13 +17,13 @@ void AgentSymbol::create_auxiliary_symbols()
 {
     // Create builtin agentvars for this agent: time, age, events, agent_id
     if (!exists("time", this))
-        new BuiltinAgentVarSymbol("time", this, NumericSymbol::get_typedef_symbol(token::TK_Time));
+        new BuiltinAgentVarSymbol("time", this, NumericSymbol::find(token::TK_Time));
     if (!exists("age", this))
-        new BuiltinAgentVarSymbol("age", this, NumericSymbol::get_typedef_symbol(token::TK_Time));
+        new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
     if (!exists("events", this))
-        new BuiltinAgentVarSymbol("events", this, NumericSymbol::get_typedef_symbol(token::TK_counter));
+        new BuiltinAgentVarSymbol("events", this, NumericSymbol::find(token::TK_counter));
     if (!exists("agent_id", this))
-        new BuiltinAgentVarSymbol("agent_id", this, NumericSymbol::get_typedef_symbol(token::TK_int));
+        new BuiltinAgentVarSymbol("agent_id", this, NumericSymbol::find(token::TK_int));
 
     // TODO: Remove test - Create internal data members for this agent: allow_assignment
     if (!exists("allow_assignment", this))

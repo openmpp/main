@@ -64,7 +64,7 @@ void NumericSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
 }
 
-NumericSymbol *NumericSymbol::get_typedef_symbol(token_type type)
+NumericSymbol *NumericSymbol::find(token_type type)
 {
     return dynamic_cast<NumericSymbol *>(get_symbol(token_to_string(type)));
 }

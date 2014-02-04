@@ -145,5 +145,5 @@ public:
      * @return null if it fails, else the TypedefTypeymbol.
      */
 
-    static NumericSymbol *get_typedef_symbol(token_type type);
+    static NumericSymbol *find(token_type type);
 };

@@ -531,7 +531,7 @@ decl_time_type:
 	  "time_type" cxx_numeric_type[type_to_use] ";"
                         {
                             // Change properties of existing NumericSymbol
-                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_Time);
+                            auto *sym = NumericSymbol::find(token::TK_Time);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;
@@ -543,7 +543,7 @@ decl_real_type:
       "real_type" cxx_floating_point_type[type_to_use] ";"
                         {
                             // Change properties of existing NumericSymbol
-                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_real);
+                            auto *sym = NumericSymbol::find(token::TK_real);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;
@@ -555,7 +555,7 @@ decl_counter_type:
 	  "counter_type" cxx_unsigned_integral_type[type_to_use] ";"
 						{
                             // Change properties of existing NumericSymbol
-                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_counter);
+                            auto *sym = NumericSymbol::find(token::TK_counter);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;
@@ -567,7 +567,7 @@ decl_integer_type:
       "integer_type" cxx_signed_integral_type[type_to_use] ";"
                         {
                             // Change properties of existing NumericSymbol
-                            auto *sym = NumericSymbol::get_typedef_symbol(token::TK_integer);
+                            auto *sym = NumericSymbol::find(token::TK_integer);
                             assert(sym);  // Initialization guarantee
                             sym->Set_keywords((token_type)$type_to_use);
                             sym->decl_loc = @$;

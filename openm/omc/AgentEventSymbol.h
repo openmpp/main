@@ -28,7 +28,7 @@ public:
     bool is_base_symbol() const { return false; }
 
     AgentEventSymbol(const string event_name, const Symbol *agent, const Symbol *time_func, const Symbol *implement_func, yy::location decl_loc = yy::location())
-        : AgentCallbackMemberSymbol(event_name, agent, NumericSymbol::get_typedef_symbol(token::TK_Time), decl_loc)
+        : AgentCallbackMemberSymbol(event_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(implement_func->name)
         , time_func(time_func->stable_rp())
         , implement_func(implement_func->stable_rp())

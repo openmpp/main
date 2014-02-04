@@ -42,7 +42,7 @@ void TableSymbol::post_parse(int pass)
             string member_name = cell_member_name();
             // Set storage type to int.
             // Can be changed in a subsequent pass to optimize storage based on array size
-            auto *typ = NumericSymbol::get_typedef_symbol(token::TK_int);
+            auto *typ = NumericSymbol::find(token::TK_int);
             assert(typ); // initialization guarantee
             auto sym = new AgentInternalSymbol(member_name, agent, typ);
         }
