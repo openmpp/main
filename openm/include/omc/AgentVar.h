@@ -228,7 +228,7 @@ namespace mm {
     {
     public:
         // update duration 
-        void wait( T delta_time )
+        void advance( T delta_time )
         {
             bool active = ( condition == nullptr || ((this->agent())->*condition)() );        if ( active ) {
                 this->set( this->get() + delta_time );

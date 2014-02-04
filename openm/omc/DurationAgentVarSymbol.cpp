@@ -72,8 +72,8 @@ void DurationAgentVarSymbol::post_parse(int pass)
         {
             // add side-effect to time agentvar
             AgentVarSymbol *av = pp_agent->pp_time;
-            // Eg. om_duration.wait( new_value - old_value );
-            string line = name + ".wait( new_value - old_value );";
+            // Eg. om_duration.advance( new_value - old_value );
+            string line = name + ".advance( new_value - old_value );";
             av->pp_side_effects.push_back(line);
         }
         break;

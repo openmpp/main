@@ -69,7 +69,7 @@ void AgentEventSymbol::post_parse(int pass)
         }
         // add side-effect to time agentvar
         AgentVarSymbol *av = pp_agent->pp_time;
-        // Eg. om_duration.wait( new_value - old_value );
+        // Eg. om_duration.advance( new_value - old_value );
         //string line = name + ".make_dirty();";
     }
     break;
