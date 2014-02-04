@@ -65,11 +65,11 @@ const string AgentVarSymbol::side_effects_func()
 
 const string AgentVarSymbol::side_effects_decl()
 {
-    return "void " + side_effects_func() + "(" + pp_type_symbol->name + " old_value, " + pp_type_symbol->name + " new_value)";
+    return "void " + side_effects_func() + "(" + pp_data_type->name + " old_value, " + pp_data_type->name + " new_value)";
 }
 
 const string AgentVarSymbol::side_effects_decl_qualified()
 {
-    return "void " + agent->name + "::" + side_effects_func() + "(" + pp_type_symbol->name + " old_value, " + pp_type_symbol->name + " new_value)";
+    return "void " + agent->name + "::" + side_effects_func() + "(" + pp_data_type->name + " old_value, " + pp_data_type->name + " new_value)";
 }
 

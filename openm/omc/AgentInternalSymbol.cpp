@@ -25,7 +25,7 @@ CodeBlock AgentInternalSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += pp_type_symbol->name + " " + name + ";";
+    h += pp_data_type->name + " " + name + ";";
     return h;
 }
 

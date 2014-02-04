@@ -25,8 +25,8 @@ void AgentDataMemberSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // assign direct pointer to type symbol for use post-parse
-            pp_type_symbol = dynamic_cast<TypeSymbol *> (pp_symbol(type_symbol));
-            assert(pp_type_symbol); // parser guarantee
+            pp_data_type = dynamic_cast<TypeSymbol *> (pp_symbol(data_type));
+            assert(pp_data_type); // parser guarantee
 
             // Add this agent data symbol to the agent's list of all such symbols
             pp_agent->pp_agent_data_members.push_back(this);
@@ -39,10 +39,10 @@ void AgentDataMemberSymbol::post_parse(int pass)
 
 string AgentDataMemberSymbol::initial_value() const
 {
-    assert(pp_type_symbol);
+    assert(pp_data_type);
 
     // return the default initial value for a type of this kind
-    return pp_type_symbol->default_initial_value();
+    return pp_data_type->default_initial_value();
 }
 
 CodeBlock AgentDataMemberSymbol::cxx_initialize_expression() const

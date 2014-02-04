@@ -41,7 +41,7 @@ CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:         AgentVar<Time, Person, &Person::time_side_effects> time;
-    h += "AgentVar<" + pp_type_symbol->name + ", "
+    h += "AgentVar<" + pp_data_type->name + ", "
         + agent->name + ", "
         + "&" + agent->name + "::" + side_effects_func() + "> "
         + name + ";";

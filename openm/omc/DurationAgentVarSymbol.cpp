@@ -37,7 +37,7 @@ CodeBlock DurationAgentVarSymbol::cxx_declaration_agent()
     // add declaration code specific to derived agentvars
 
     // example:         DurationAgentVar<Time, Person, &duration_offset, &Person::duration_side_effects, nullptr> om_duration
-    h += "DurationAgentVar<" + pp_type_symbol->name + ", "
+    h += "DurationAgentVar<" + pp_data_type->name + ", "
         + agent->name + ", "
         + "&" + agent->name + "::" + side_effects_func() + ", "
         + "nullptr> "

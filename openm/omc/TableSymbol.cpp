@@ -89,13 +89,13 @@ CodeBlock TableSymbol::cxx_declaration_global()
     h += "";
     h += "// expression storage";
     for (int j = 0; j < n_expressions; j++) {
-        h += "double expr" + to_string(j) + "[" + to_string(n_cells) + "];";
+        h += "double expr" + to_string(j) + "[n_cells];";
     }
 
     h += "";
     h += "// accumulator storage";
     for (int j = 0; j < n_accumulators; j++) {
-        h += "double acc" + to_string(j) + "[" + to_string(n_cells) + "];";
+        h += "double acc" + to_string(j) + "[n_cells];";
     }
 
     h += "";

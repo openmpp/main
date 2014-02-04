@@ -22,19 +22,39 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+
+    /**
+     * Constructor.  Morph a generic symbol to a specialized symbol of this kind.
+     *
+     * @param [in,out] sym If non-null, the symbol.
+     * @param agent        The agent.
+     * @param data_type    The type.
+     * @param decl_loc     (Optional) the declaration location.
+     */
+
+    AgentDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *data_type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
-        , type_symbol(type->stable_rp())
-        , pp_type_symbol(nullptr)
+        , data_type(data_type->stable_rp())
+        , pp_data_type(nullptr)
     {
     }
 
-    AgentDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+
+    /**
+     * Constructor.  Create a specialized symbol of this kind with a given name.
+     *
+     * @param member_name Name of the member.
+     * @param agent       The agent.
+     * @param data_type   The type.
+     * @param decl_loc    (Optional) the declaration location.
+     */
+
+    AgentDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *data_type, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(member_name, agent, decl_loc)
-        , type_symbol(type->stable_rp())
-        , pp_type_symbol(nullptr)
+        , data_type(data_type->stable_rp())
+        , pp_data_type(nullptr)
     {
-        assert(type);  // grammar/initialization guarantee
+        assert(data_type);  // grammar/initialization guarantee
     }
 
 
@@ -58,19 +78,17 @@ public:
 
 
     /**
-    * Reference to pointer to the type symbol
+    * The datatype of the agent member (reference to pointer)
     *
-    * Stable to symbol morhing during parse phase.
     */
 
-    Symbol*& type_symbol;
+    Symbol*& data_type;
 
     /**
-    * Direct pointer to the type symbol
+    * The datatype of the agent member (pointer)
     *
-    * Set post-parse for convenience.
     */
 
-    TypeSymbol *pp_type_symbol;
+    TypeSymbol *pp_data_type;
 
 };
