@@ -353,6 +353,7 @@ void CodeGen::do_agents()
         c += "void " + agent->name + "::initialize_agent_tables()";
         c += "{";
         for (auto table : agent->pp_agent_tables) {
+            c += "// TODO initialize " + table->cell_member_name();
             c += table->do_increments_func() + "(true, false);";
         }
         c += "}";

@@ -73,13 +73,13 @@ const string TableSymbol::do_increments_func()
 const string TableSymbol::do_increments_decl()
 {
     // E.g. void DurationOfLife_do_increments(bool prepare = true, bool process = true)
-    return "void " + do_increments_func() + "( bool prepare = true, bool process = true );";
+    return "void " + do_increments_func() + "(bool prepare = true, bool process = true);";
 }
 
 const string TableSymbol::do_increments_defn()
 {
     // E.g. void Person::DurationOfLife_do_increments(bool prepare = true, bool process = true)
-    return "void " + agent->name + "::" + do_increments_func() + "( bool prepare, bool process )";
+    return "void " + agent->name + "::" + do_increments_func() + "(bool prepare, bool process)";
 }
 
 CodeBlock TableSymbol::cxx_declaration_global()
@@ -214,12 +214,13 @@ CodeBlock TableSymbol::cxx_definition_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
     c += "";
 
-    // example:         // DurationOfLife
+    // Ex. // DurationOfLife
     c += "// " + name;
 
-    // example:        void DurationOfLife_do_increments( bool prepare = 0, bool process = 0 )
+    // Ex. void DurationOfLife_do_increments( int cell, bool prepare = 0, bool process = 0 )
     c += do_increments_defn();
     c += "{";
+    c += "int cell = " + cell_member_name() + ";" ;
     c += "if ( process ) {";
     for (auto acc : pp_accumulators) {
         // name of agentvar
@@ -229,7 +230,7 @@ CodeBlock TableSymbol::cxx_definition_agent()
         // index of accumulator as string
         string accumulator_index = to_string(acc->index);
         // expression for the accumulator as string
-        string accumulator_expr = "the" + name + ".accumulators[" + accumulator_index + "][0]";
+        string accumulator_expr = "the" + name + ".accumulators[" + accumulator_index + "][cell]";
 
         // expression evaluating to value of increment
         string increment_expr;
@@ -243,8 +244,8 @@ CodeBlock TableSymbol::cxx_definition_agent()
         case token::TK_delta:
             increment_expr = "( " + agentvar_name + " - " + in_agentvar_name + " )";
             break;
-            // TODO - all other increment operators
         default:
+            // TODO - all other increment operators
             assert(0); // parser guarantee
         }
 

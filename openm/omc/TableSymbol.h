@@ -64,7 +64,7 @@ public:
     /**
     * Get declaration of member function which handles increments used in the table
     *
-    * Example:  void Person::DurationOfLife_do_increments(bool prepare = true, bool process = true);
+    * Example:  void Person::DurationOfLife_do_increments(int cell, bool prepare = true, bool process = true);
     */
 
     const string do_increments_decl();
@@ -72,7 +72,7 @@ public:
     /**
     * Get definition of member function which handles increments used in the table
     *
-    * Example:  void Person::DurationOfLife_do_increments(bool prepare = true, bool process = true)
+    * Example:  void Person::DurationOfLife_do_increments(int cell, bool prepare = true, bool process = true)
     */
 
     const string do_increments_defn();
