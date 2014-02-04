@@ -40,6 +40,18 @@ public:
     void post_parse(int pass);
 
     /**
+     * Gets the member name which holds the value of the active table cell
+     * 
+     * This is the name of the data member which holds the "in" value of the agentvar.  It holds the
+     * value of the agentvar at the start of an increment, and is used to compute 'delta', etc. when
+     * the increment is finalized and passed to an accumulator.
+     *
+     * @return The name as a string.
+     */
+
+    string cell_member_name() const;
+
+    /**
     * Get name of member function which handles increments used in the table
     *
     * Example:  DurationOfLife_do_increments

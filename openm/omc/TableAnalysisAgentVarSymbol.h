@@ -70,18 +70,18 @@ public:
 
     void post_parse(int pass);
 
-    /**
-    * Gets the agentvar name for the 'in' value.
-    *
-    * This is the name of the data member which holds the
-    * "in" value of the agentvar.  It holds the value of the agentvar
-    * at the start of an increment, and is used to compute 'delta', etc.
-    * when the increment is finalized and passed to an accumulator.
-    *
-    * @return  The name as a string.
-    */
 
-    string in_agentvar_name() const;
+    /**
+     * Gets the member name for the 'in' value.
+     * 
+     * This is the name of the data member which holds the "in" value of the agentvar.  It holds the
+     * value of the agentvar at the start of an increment, and is used to compute 'delta', etc. when
+     * the increment is finalized and passed to an accumulator.
+     *
+     * @return The name as a string.
+     */
+
+    string in_member_name() const;
 
     CodeBlock cxx_prepare_increment() const;
 

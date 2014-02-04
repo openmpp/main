@@ -9,6 +9,8 @@
 #include "TableSymbol.h"
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
+#include "AgentInternalSymbol.h"
+#include "NumericSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableExpressionSymbol.h"
@@ -25,6 +27,17 @@ void TableSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+        {
+            // Create symbol for the agent member which will hold the active tabulation cell
+            string member_name = cell_member_name();
+            // Set storage type to int.
+            // Can be changed in a subsequent pass to optimize storage based on array size
+            auto *typ = NumericSymbol::get_typedef_symbol(token::TK_int);
+            assert(typ); // initialization guarantee
+            auto sym = new AgentInternalSymbol(member_name, agent, typ);
+        }
+        break;
     case ePopulateCollections:
         {
             // assign direct pointer to agent for use post-parse
@@ -41,6 +54,13 @@ void TableSymbol::post_parse(int pass)
     default:
         break;
     }
+}
+
+string TableSymbol::cell_member_name() const
+{
+    string result;
+    result = "om_cell_" + name;
+    return result;
 }
 
 
@@ -205,7 +225,7 @@ CodeBlock TableSymbol::cxx_definition_agent()
         // name of agentvar
         string agentvar_name = acc->agentvar->name;
         // name of 'in' for agentvar
-        string in_agentvar_name = acc->pp_analysis_agentvar->in_agentvar_name();
+        string in_agentvar_name = acc->pp_analysis_agentvar->in_member_name();
         // index of accumulator as string
         string accumulator_index = to_string(acc->index);
         // expression for the accumulator as string

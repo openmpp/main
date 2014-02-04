@@ -46,7 +46,7 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
                 if (av == nullptr) {
                     throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
                 }
-                string member_name = in_agentvar_name();
+                string member_name = in_member_name();
                 auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
             }
         }
@@ -70,7 +70,7 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
     }
 }
 
-string TableAnalysisAgentVarSymbol::in_agentvar_name() const
+string TableAnalysisAgentVarSymbol::in_member_name() const
 {
     string result;
     result = "om_in_" + table->name + "_" + agentvar->name;
@@ -83,7 +83,7 @@ CodeBlock TableAnalysisAgentVarSymbol::cxx_prepare_increment() const
     assert(pp_agentvar);  // only call post-parse
     CodeBlock c;
     // example:              DurationOfLife.value_in.alive = alive;\n
-    c += in_agentvar_name() + " = " + pp_agentvar->name + ";";
+    c += in_member_name() + " = " + pp_agentvar->name + ";";
     return c;
 }
 
