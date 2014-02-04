@@ -7,6 +7,7 @@
 
 #pragma once
 #include "AgentCallbackMemberSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
 
 class AgentFuncSymbol;
@@ -27,15 +28,15 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventSymbol(const string event_name, const Symbol *agent, const Symbol *time_func, const Symbol *implement_func, yy::location decl_loc = yy::location())
+    AgentEventSymbol(const string event_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(event_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
-        , event_name(implement_func->name)
-        , time_func(time_func->stable_rp())
-        , implement_func(implement_func->stable_rp())
-        , pp_time_func(nullptr)
-        , pp_implement_func(nullptr)
+        , event_name(ifs->name)
         , pp_event_id(0)
     {
+        // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
+        time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
+        // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
+        implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
     }
 
     void post_parse(int pass);
@@ -62,14 +63,11 @@ public:
 
     CodeBlock cxx_declaration_agent();
 
-    /** The Symbol for the time function of the event.*/
-    Symbol*& time_func;
+    /** The time function of the event.*/
+    AgentFuncSymbol *time_func;
 
-    Symbol*& implement_func;
-
-    AgentFuncSymbol *pp_time_func;
-
-    AgentFuncSymbol *pp_implement_func;
+    /** The implement function of the event.*/
+    AgentFuncSymbol *implement_func;
 
     /**
     * Numeric identifier for the event. The numeric identifier is the ordinal of the event name

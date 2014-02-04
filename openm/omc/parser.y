@@ -939,13 +939,10 @@ decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] ";"
                         {
                             auto *agent = pc.get_agent_context();
-                            // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
-                            auto *tfs = new AgentFuncSymbol($time_func, agent, "Time", "", true, @time_func);
-                            // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
-                            auto *ifs = new AgentFuncSymbol($implement_func, agent, "void", "", true, @implement_func);
                             // Create agent event symbol
-                            string event_name = "om_time_" + ifs->name;
-                            auto *sym = new AgentEventSymbol(event_name, agent, tfs, ifs, @implement_func);
+                            // Ex. "om_time_BirthdayEvent"
+                            string event_name = "om_time_" + $implement_func->name;
+                            auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, @decl_agent_event);
       }
     ;
 

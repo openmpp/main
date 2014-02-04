@@ -28,12 +28,6 @@ void AgentEventSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        pp_time_func = dynamic_cast<AgentFuncSymbol *> (pp_symbol(time_func));
-        assert(pp_time_func); // parser guarantee
-
-        pp_implement_func = dynamic_cast<AgentFuncSymbol *> (pp_symbol(implement_func));
-        assert(pp_implement_func); // parser guarantee
-
         // Add this agent event time symbol to the agent's list of all such symbols
         pp_agent->pp_agent_events.push_back(this);
     }
@@ -43,7 +37,7 @@ void AgentEventSymbol::post_parse(int pass)
         // E.g. Person
         string agent_name = pp_agent->name;
         // E.g. Person::timeMortalityEvent
-        string time_func_name = pp_time_func->unique_name;
+        string time_func_name = time_func->unique_name;
         // create sorted unduplicated list of identifiers in body of event time function
         set<string> identifiers;
         auto rng = memfunc_bodyids.equal_range(time_func_name);
@@ -85,20 +79,18 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    string implement_func = pp_implement_func->unique_name;
-    string time_func = pp_time_func->unique_name;
     int event_id = pp_event_id;
     h += "";
-    h += doxygen_short("Event: " + implement_func);
+    h += doxygen_short("Event: " + implement_func->unique_name);
     // example: void MortalityEvent(); 
-    h += "void " + pp_implement_func->name + "();";
+    h += "void " + implement_func->name + "();";
     // example: Time timeMortalityEvent(); 
-    h += "Time " + pp_time_func->name + "();";
+    h += "Time " + time_func->name + "();";
     h += "Event<" + agent->name + ", "
         + to_string(event_id) + ", "
         + "0, " // TODO event priority
-        + "&" + implement_func + ", "
-        + "&" + time_func + "> "
+        + "&" + implement_func->unique_name + ", "
+        + "&" + time_func->unique_name + "> "
         + name
         + ";" "\n";
 
