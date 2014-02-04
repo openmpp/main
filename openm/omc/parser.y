@@ -930,7 +930,8 @@ decl_simple_agentvar:
 decl_agent_function:
       "void" SYMBOL "(" ")" ";"
                         {
-                            auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), @SYMBOL );
+                            // argument 5 suppress_defn=true tells omc that the function definition is developer-supplied
+                            auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), "void", "", true, @SYMBOL );
                         }
     ;
 
@@ -938,10 +939,10 @@ decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] ";"
                         {
                             auto *agent = pc.get_agent_context();
-                            // Create an AgentFuncSymbol for the time function.
-                            auto *tfs = new AgentFuncSymbol($time_func, agent, @time_func);
-                            // Create an AgentFuncSymbol for the implement function.
-                            auto *ifs = new AgentFuncSymbol($implement_func, agent, @implement_func);
+                            // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
+                            auto *tfs = new AgentFuncSymbol($time_func, agent, "Time", "", true, @time_func);
+                            // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
+                            auto *ifs = new AgentFuncSymbol($implement_func, agent, "void", "", true, @implement_func);
                             // Create agent event symbol
                             string event_name = "om_time_" + ifs->name;
                             auto *sym = new AgentEventSymbol(event_name, agent, tfs, ifs, @implement_func);
