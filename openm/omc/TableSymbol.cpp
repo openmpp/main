@@ -28,7 +28,7 @@ void TableSymbol::create_auxiliary_symbols()
     // Ex. "om_update_DurationOfLife"
     update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
     assert(update_cell_fn);
-    update_cell_fn->doc_block = doxygen_short("Update the index of the tabulation cell based on changes in table indices.");
+    update_cell_fn->doc_block = doxygen_short("Updates the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
     update_cell_fn->func_body += "// TODO";
 }
 
