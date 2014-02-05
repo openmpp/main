@@ -28,25 +28,29 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventSymbol(const string event_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, yy::location decl_loc = yy::location())
-        : AgentCallbackMemberSymbol(event_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
+    AgentEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, yy::location decl_loc = yy::location())
+        : AgentCallbackMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
         , pp_event_id(0)
     {
         // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
         time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
-        time_func->doc_block = doxygen_short("Time function for " + event_name + " event in " + agent->name + "agent.");
+        time_func->doc_block = doxygen_short("Time function for the event " + event_name + " in the " + agent->name + " agent.");
         // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
         implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
-        implement_func->doc_block = doxygen_short("Implement function for " + event_name + " event in " + agent->name + "agent.");
+        implement_func->doc_block = doxygen_short("Implement function for the event " + event_name + " in the " + agent->name + " agent.");
     }
 
     void post_parse(int pass);
 
 
     /**
-    * Name of the event.
-    */
+     * Name of the event.
+     * 
+     * event_name is actually the same as the name of the event implement function.  The name of the
+     * AgentEventSymbol is different - it has a om_time_ prefix.  That's also the name of the agent
+     * member which holds the time of the event.
+     */
 
     string event_name;
 
