@@ -35,10 +35,11 @@ public:
     {
         // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
         time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
-        time_func->doc_block = doxygen_short("Time function for the event " + event_name + " in the " + agent->name + " agent.");
+        time_func->doc_block = doxygen_short("The function which returns the time to the event " + event_name + " in the " + agent->name + " agent (developer-supplied).");
+
         // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
         implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
-        implement_func->doc_block = doxygen_short("Implement function for the event " + event_name + " in the " + agent->name + " agent.");
+        implement_func->doc_block = doxygen_short("The function which implements the event " + event_name + " in the " + agent->name + " agent when it occurs (developer-supplied).");
     }
 
     void post_parse(int pass);
