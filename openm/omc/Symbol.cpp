@@ -532,7 +532,13 @@ void Symbol::pp_error(const string& msg)
 string Symbol::label(const LanguageSymbol & language) const
 {
     // placeholder implementation
-    return name + " label (" + language.name + ")";
+    return name + " [no label (" + language.name + ")]";
+}
+
+string Symbol::label() const
+{
+    // placeholder implementation
+    return name + " [no label]";
 }
 
 string Symbol::note(const LanguageSymbol & language) const

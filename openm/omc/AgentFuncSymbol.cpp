@@ -26,4 +26,43 @@ void AgentFuncSymbol::post_parse(int pass)
     }
 }
 
+CodeBlock AgentFuncSymbol::cxx_declaration_agent()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_agent();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    if (doc_block.size() == 0) {
+        // use a default short doxygen comment
+        h += doxygen_short(label());
+    }
+    else {
+        // use documentation block of this symbol
+        h += doc_block;
+    }
+    h += return_decl + " " + name + "(" + arg_list_decl + ");";
+    h += "";
+
+    return h;
+}
+
+
+
+CodeBlock AgentFuncSymbol::cxx_definition_agent()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_agent();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    if (!suppress_defn) {
+        c += return_decl + " " + unique_name + "(" + arg_list_decl + ")";
+        c += "{";
+        c += func_body;
+        c += "}";
+    }
+
+    return c;
+}
 

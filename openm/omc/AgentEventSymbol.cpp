@@ -81,11 +81,6 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent()
 
     int event_id = pp_event_id;
     h += "";
-    h += doxygen_short("Event: " + implement_func->unique_name);
-    // example: void MortalityEvent(); 
-    h += "void " + implement_func->name + "();";
-    // example: Time timeMortalityEvent(); 
-    h += "Time " + time_func->name + "();";
     h += "Event<" + agent->name + ", "
         + to_string(event_id) + ", "
         + "0, " // TODO event priority

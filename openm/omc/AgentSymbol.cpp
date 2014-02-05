@@ -9,6 +9,7 @@
 #include "AgentSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
 
 using namespace std;
@@ -28,6 +29,21 @@ void AgentSymbol::create_auxiliary_symbols()
     // TODO: Remove test - Create internal data members for this agent: allow_assignment
     if (!exists("allow_assignment", this))
         new AgentInternalSymbol("allow_assignment", this, Symbol::get_symbol(Symbol::token_to_string(token::TK_bool)));
+
+    auto start_fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
+    if (!start_fn) start_fn = new AgentFuncSymbol("Start", this);
+    assert(start_fn);
+    start_fn->suppress_defn = false;
+    start_fn->func_body += "om_Start_begin();";
+    start_fn->func_body += "om_Start_custom();";
+    start_fn->func_body += "om_Start_end();";
+
+    auto finish_fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Finish", this));
+    if (!finish_fn) finish_fn = new AgentFuncSymbol("Finish", this);
+    assert(finish_fn);
+    finish_fn->suppress_defn = false;
+    finish_fn->func_body += "om_Finish_custom();";
+    finish_fn->func_body += "om_Finish_end();";
 }
 
 void AgentSymbol::post_parse(int pass)

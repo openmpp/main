@@ -15,7 +15,7 @@ using namespace std;
 class CodeBlock : public list<string>
 {
 public:
-    explicit CodeBlock ()
+    CodeBlock ()
         : raw_mode ( false )
         , one_indent ( "    " )
         , current_indent ( "" )

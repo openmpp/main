@@ -930,8 +930,11 @@ decl_simple_agentvar:
 decl_agent_function:
       "void" SYMBOL "(" ")" ";"
                         {
-                            // argument 5 suppress_defn=true tells omc that the function definition is developer-supplied
-                            auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), "void", "", true, @SYMBOL );
+                            if ($SYMBOL->is_base_symbol()) {
+                                // silent suppress redeclaration, esp. of Start() and Finish()
+                                // argument 5 suppress_defn=true tells omc that the function definition is developer-supplied
+                                auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), "void", "", true, @SYMBOL );
+                            }
                         }
     ;
 

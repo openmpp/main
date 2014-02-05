@@ -432,6 +432,14 @@ public:
 
 
     /**
+     * Gets the symbol label in the default language
+     *
+     * @return A string.
+     */
+
+    string label() const;
+
+    /**
      * Get the symbol note in the given language.
      * 
      * Language-specific symbol notes come from structured comments in the model source code.
