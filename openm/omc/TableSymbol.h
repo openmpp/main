@@ -97,7 +97,17 @@ public:
 
     CodeBlock cxx_definition_agent();
 
+
+    /**
+     * Builds the function body of the prepare_increment function.
+     */
+
     void build_body_prepare_increment();
+
+    /**
+     * Builds the function body of the process_increment function.
+     */
+
     void build_body_process_increment();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
