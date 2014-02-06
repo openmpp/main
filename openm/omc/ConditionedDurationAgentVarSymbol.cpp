@@ -78,31 +78,12 @@ void ConditionedDurationAgentVarSymbol::post_parse(int pass)
     }
 }
 
-const string ConditionedDurationAgentVarSymbol::condition_func()
-{
-    return name + "_condition";
-}
-
-const string ConditionedDurationAgentVarSymbol::condition_decl()
-{
-    return "bool " + condition_func() + "()";
-}
-
-const string ConditionedDurationAgentVarSymbol::condition_decl_qualified()
-{
-    return "bool " + agent->name + "::" + condition_func() + "()";
-}
-
 CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    // add declaration code specific to this kind of derived agentvar
-    // 
-    // example:        bool om_duration_alive_true_condition();
-    h += condition_decl() + ";";
 
     // example:         DurationAgentVar<Time, Person, &om_duration_alive_true_offset, &Person::om_duration_alive_true_side_effects, &Person::om_duration_alive_true_condition> om_duration
     h += "DurationAgentVar<" + pp_data_type->name + ", "
@@ -114,20 +95,4 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent()
     return h;
 }
 
-CodeBlock ConditionedDurationAgentVarSymbol::cxx_definition_agent()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    // add definition code specific to this kind of derived agentvar
-    // example:        bool Person::om_duration_alive_true_condition()
-    c += condition_decl_qualified();
-    c += "{";
-    // example:             return ( alive == true );
-    c += "return (" + observed->name + " == " + constant->value() + " );";
-    c += "}";
-
-    return c;
-}
 

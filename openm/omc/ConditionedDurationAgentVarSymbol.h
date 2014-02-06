@@ -68,27 +68,7 @@ public:
     * @return  .
     */
 
-    const string condition_func();
-
-    /**
-    * Get declaration of static member function which implements the condition expression
-    *
-    * Example:  bool om_duration_happy_true_condition()
-    */
-
-    const string condition_decl();
-
-    /**
-    * Get declaration of static member function which implements the condition expression
-    *
-    * Example:  bool Person::om_duration_happy_true_condition()
-    */
-
-    const string condition_decl_qualified();
-
     CodeBlock cxx_declaration_agent();
-
-    CodeBlock cxx_definition_agent();
 
     /**
     * agentvar observed (reference to pointer)
