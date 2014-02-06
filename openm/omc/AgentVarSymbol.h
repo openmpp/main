@@ -8,6 +8,8 @@
 #pragma once
 #include "AgentCallbackMemberSymbol.h"
 
+class AgentFuncSymbol;
+
 using namespace std;
 
 class AgentVarSymbol : public AgentCallbackMemberSymbol
@@ -20,13 +22,23 @@ public:
 
     AgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(sym, agent, type, decl_loc)
+        , side_effects_fn(nullptr)
     {
+        create_auxiliary_symbols();
     }
 
     AgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentCallbackMemberSymbol(member_name, agent, type, decl_loc)
+        , side_effects_fn(nullptr)
     {
+        create_auxiliary_symbols();
     }
+
+    /**
+     * Create auxiliary symbols associated with this agentvar.
+     */
+
+    void create_auxiliary_symbols();
 
     void post_parse(int pass);
 
@@ -67,6 +79,14 @@ public:
     */
 
     list<string> pp_side_effects;
+
+
+    /**
+     * The side effects function of the agentvar
+     *
+     */
+
+    AgentFuncSymbol *side_effects_fn;
 
 };
 

@@ -7,10 +7,26 @@
 
 #include "AgentVarSymbol.h"
 #include "AgentSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "TypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
+
+void AgentVarSymbol::create_auxiliary_symbols()
+{
+    assert(!side_effects_fn); // logic guarantee
+
+    side_effects_fn = new AgentFuncSymbol("om_side_effects_" + name,
+                                          agent,
+                                          "void",
+                                          data_type->name + " old_value, " + data_type->name + " new_value");
+    assert(side_effects_fn); // out of memory check
+
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of setting " + name + " in agent " + agent->name + ".");
+}
+
+
 
 void AgentVarSymbol::post_parse(int pass)
 {
