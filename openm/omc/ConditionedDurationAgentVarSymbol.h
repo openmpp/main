@@ -7,7 +7,9 @@
 
 #pragma once
 #include "AgentVarSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
+#include "Literal.h"
 
 using namespace std;
 
@@ -34,6 +36,11 @@ public:
         , constant(constant)
         , pp_observed(nullptr)
     {
+        // Create an AgentFuncSymbol for the condition function
+        condition_fn = new AgentFuncSymbol("om_condition_" + name, agent, "bool", "");
+        assert(condition_fn); // out of memory check
+        condition_fn->func_body += "return (" + observed->name + " == " + constant->value() + ");" ;
+        condition_fn->doc_block = doxygen_short("Evaluate condition for " + pretty_name() + ".");
     }
 
     /**
@@ -100,5 +107,8 @@ public:
     AgentVarSymbol *pp_observed;
 
     const Literal *constant;
+
+    /** The condition function.*/
+    AgentFuncSymbol *condition_fn;
 };
 

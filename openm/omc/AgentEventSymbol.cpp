@@ -58,6 +58,7 @@ void AgentEventSymbol::post_parse(int pass)
                     // E.g. om_time_StartPlayingEvent.make_dirty();
                     string line = name + ".make_dirty();";
                     av->pp_side_effects.push_back(line);
+                    av->side_effects_fn->func_body += line;
                 }
             }
         }

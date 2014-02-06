@@ -8,6 +8,7 @@
 #include "DurationAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentVarSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "CodeBlock.h"
 
@@ -75,6 +76,7 @@ void DurationAgentVarSymbol::post_parse(int pass)
             // Eg. om_duration.advance( new_value - old_value );
             string line = name + ".advance( new_value - old_value );";
             av->pp_side_effects.push_back(line);
+            av->side_effects_fn->func_body += line;
         }
         break;
     default:

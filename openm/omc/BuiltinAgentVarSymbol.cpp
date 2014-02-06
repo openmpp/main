@@ -7,6 +7,7 @@
 
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "TypeSymbol.h"
 #include "CodeBlock.h"
 
@@ -26,6 +27,7 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
                 AgentVarSymbol *av = pp_agent->pp_time;
                 string line = "age.set( age.get() + new_value - old_value );";
                 av->pp_side_effects.push_back(line);
+                av->side_effects_fn->func_body += line;
             }
         }
         break;
