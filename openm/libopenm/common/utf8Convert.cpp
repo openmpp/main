@@ -289,8 +289,9 @@ class ExpicitPageConverter : public IUtf8Converter
 public:
     ExpicitPageConverter(const char * i_codePageName) 
     { 
-		cp = i_codePageName;
-        //wcvt = wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t>(new codecvt_byname<wchar_t, char, mbstate_t>(i_codePageName));
+        wcvt.reset(
+            new wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t>(new codecvt_byname<wchar_t, char, mbstate_t>(i_codePageName))
+            );
     }
     ~ExpicitPageConverter(void) throw() { }
 
@@ -299,15 +300,13 @@ public:
     {
         if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
 
-        //wstring ws = wcvt.from_bytes(i_text, i_text + i_size);
-		wstring ws = wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t>(new codecvt_byname<wchar_t, char, mbstate_t>(cp)).from_bytes(i_text, i_text + i_size);
+        wstring ws = wcvt->from_bytes(i_text, i_text + i_size);
 		return
             u8cvt.to_bytes(ws.c_str());
     }
 
 private:
-	const char *cp;
-    //wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t> wcvt;   // to convert source bytes into wide char
+    unique_ptr<wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t>> wcvt;   // to convert source bytes into wide char
     wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;              // to convert wide char into UTF-8
 };
 
