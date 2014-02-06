@@ -26,7 +26,6 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
                 // add side-effect to time agentvar
                 AgentVarSymbol *av = pp_agent->pp_time;
                 string line = "age.set( age.get() + new_value - old_value );";
-                av->pp_side_effects.push_back(line);
                 av->side_effects_fn->func_body += line;
             }
         }
@@ -45,7 +44,7 @@ CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
     // example:         AgentVar<Time, Person, &Person::time_side_effects> time;
     h += "AgentVar<" + pp_data_type->name + ", "
         + agent->name + ", "
-        + "&" + agent->name + "::" + side_effects_func() + "> "
+        + "&" + side_effects_fn->unique_name + "> "
         + name + ";";
 
     return h;

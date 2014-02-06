@@ -57,12 +57,11 @@ void AgentEventSymbol::post_parse(int pass)
                     // dependency of time function on av detected
                     // E.g. om_time_StartPlayingEvent.make_dirty();
                     string line = name + ".make_dirty();";
-                    av->pp_side_effects.push_back(line);
                     av->side_effects_fn->func_body += line;
                 }
             }
         }
-        // add side-effect to time agentvar
+        // add side-effect to time agentvar  TODO?  Or to understand?
         AgentVarSymbol *av = pp_agent->pp_time;
         // Eg. om_duration.advance( new_value - old_value );
         //string line = name + ".make_dirty();";

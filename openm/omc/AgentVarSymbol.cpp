@@ -46,46 +46,4 @@ void AgentVarSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock AgentVarSymbol::cxx_declaration_agent()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    // example:        void time_side_effects(Time old_value, Time new_value);
-    h += side_effects_decl() + ";";
-    return h;
-}
-
-CodeBlock AgentVarSymbol::cxx_definition_agent()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    // example:         Person::time_side_effects(Time old_value, Time new_value)
-    c += side_effects_decl_qualified();
-    c += "{";
-    for (string line : pp_side_effects) {
-        c += line;
-    }
-    c += "}";
-
-    return c;
-}
-
-const string AgentVarSymbol::side_effects_func()
-{
-    return name + "_side_effects";
-}
-
-const string AgentVarSymbol::side_effects_decl()
-{
-    return "void " + side_effects_func() + "(" + pp_data_type->name + " old_value, " + pp_data_type->name + " new_value)";
-}
-
-const string AgentVarSymbol::side_effects_decl_qualified()
-{
-    return "void " + agent->name + "::" + side_effects_func() + "(" + pp_data_type->name + " old_value, " + pp_data_type->name + " new_value)";
-}
 

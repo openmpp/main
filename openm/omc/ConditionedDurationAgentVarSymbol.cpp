@@ -70,7 +70,6 @@ void ConditionedDurationAgentVarSymbol::post_parse(int pass)
             AgentVarSymbol *av = pp_agent->pp_time;
             // Eg. om_duration.advance( new_value - old_value );
             string line = name + ".advance( new_value - old_value );";
-            av->pp_side_effects.push_back(line);
             av->side_effects_fn->func_body += line;
         }
         break;
