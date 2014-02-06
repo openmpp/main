@@ -37,8 +37,6 @@ void TableSymbol::create_auxiliary_symbols()
         update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
         assert(update_cell_fn); // out of memory check
         update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
-        update_cell_fn->func_body += cell->name + " = 0;" ;
-        update_cell_fn->func_body += "// TODO - pass through table shape";
     }
 
     {
@@ -65,17 +63,6 @@ void TableSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case eCreateMissingSymbols:
-        {
-            //// Create symbol for the agent member which will hold the active tabulation cell
-            //string member_name = cell_member_name();
-            //// Set storage type to int.
-            //// Can be changed in a subsequent pass to optimize storage based on array size
-            //auto *typ = NumericSymbol::find(token::TK_int);
-            //assert(typ); // initialization guarantee
-            //auto sym = new AgentInternalSymbol(member_name, agent, typ);
-        }
-        break;
     case ePopulateCollections:
         {
             // assign direct pointer to agent for use post-parse
@@ -91,6 +78,8 @@ void TableSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
+            // construct the body of the update_cell function
+            build_body_update_cell();
             // construct the body of the prepare_increment function
             build_body_prepare_increment();
             // construct the body of the process_increment function
@@ -100,32 +89,6 @@ void TableSymbol::post_parse(int pass)
     default:
         break;
     }
-}
-
-string TableSymbol::cell_member_name() const
-{
-    string result;
-    result = "om_cell_" + name;
-    return result;
-}
-
-
-const string TableSymbol::do_increments_func()
-{
-    // Eg. DurationOfLife_do_increments
-    return name + "_do_increments";
-}
-
-const string TableSymbol::do_increments_decl()
-{
-    // E.g. void DurationOfLife_do_increments(bool prepare = true, bool process = true)
-    return "void " + do_increments_func() + "(bool prepare = true, bool process = true);";
-}
-
-const string TableSymbol::do_increments_defn()
-{
-    // E.g. void Person::DurationOfLife_do_increments(bool prepare = true, bool process = true)
-    return "void " + agent->name + "::" + do_increments_func() + "(bool prepare, bool process)";
 }
 
 CodeBlock TableSymbol::cxx_declaration_global()
@@ -238,100 +201,18 @@ CodeBlock TableSymbol::cxx_definition_global()
     return c;
 }
 
-CodeBlock TableSymbol::cxx_declaration_agent()
+void TableSymbol::build_body_update_cell()
 {
-    // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock& c = update_cell_fn->func_body;
 
-    // Perform operations specific to this level in the Symbol hierarchy.
-    h += "";
-    // example:         // DurationOfLife
-    h += "// " + name;
-    // example:        void DurationOfLife_do_increments( bool prepare = 0, bool process = 0 );
-    h += do_increments_decl();
-    return h;
+    c += cell->name + " = 0;" ;
+    c += "// TODO - pass through table shape";
 }
-
-CodeBlock TableSymbol::cxx_definition_agent()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    c += "";
-
-    // Ex. // DurationOfLife
-    c += "// " + name;
-
-    // Ex. void DurationOfLife_do_increments( int cell, bool prepare = 0, bool process = 0 )
-    c += do_increments_defn();
-    c += "{";
-    c += "int cell = " + cell_member_name() + ";" ;
-    c += "if ( process ) {";
-    for (auto acc : pp_accumulators) {
-        // name of agentvar
-        string agentvar_name = acc->agentvar->name;
-        // name of 'in' for agentvar
-        string in_agentvar_name = acc->pp_analysis_agentvar->in_member_name();
-        // index of accumulator as string
-        string accumulator_index = to_string(acc->index);
-        // expression for the accumulator as string
-        string accumulator_expr = "the" + name + ".accumulators[" + accumulator_index + "][cell]";
-
-        // expression evaluating to value of increment
-        string increment_expr;
-        switch (acc->increment) {
-        case token::TK_value_in:
-            increment_expr = in_agentvar_name;
-            break;
-        case token::TK_value_out:
-            increment_expr = agentvar_name;
-            break;
-        case token::TK_delta:
-            increment_expr = "( " + agentvar_name + " - " + in_agentvar_name + " )";
-            break;
-        default:
-            // TODO - all other increment operators
-            assert(0); // parser guarantee
-        }
-
-        c += "{";
-        c += "// " + acc->pretty_name();
-        c += "double dIncrement = " + increment_expr + ";";
-        switch (acc->accumulator) {
-        case token::TK_sum:
-            c += accumulator_expr + " += dIncrement;";
-            break;
-        case token::TK_min:
-            c += "double dAccumulator = " + accumulator_expr + ";";
-            c += "if ( dIncrement < dAccumulator ) " + accumulator_expr + " = dIncrement;";
-            break;
-        case token::TK_max:
-            c += "double dAccumulator = " + accumulator_expr + ";";
-            c += "if ( dIncrement > dAccumulator ) " + accumulator_expr + " = dIncrement;";
-            break;
-        default:
-            assert(0); // parser guarantee
-        }
-        c += "}";
-    }
-    c += "}";
-    c += "if ( prepare ) {";
-    for (auto table_agentvar : pp_table_agentvars) {
-        if (table_agentvar->need_value_in)
-            c += table_agentvar->cxx_prepare_increment();
-    }
-    c += "}";
-    c += "}";
-
-    return c;
-}
-
 void TableSymbol::build_body_prepare_increment()
 {
     CodeBlock& c = prepare_increment_fn->func_body;
 
-    c += "int cell = " + cell_member_name() + ";" ;
+    c += "int cell = " + cell->name + ";" ;
     c += "";
 
     for (auto table_agentvar : pp_table_agentvars) {
@@ -339,6 +220,7 @@ void TableSymbol::build_body_prepare_increment()
             c += table_agentvar->cxx_prepare_increment();
     }
 }
+
 void TableSymbol::build_body_process_increment()
 {
     CodeBlock& c = process_increment_fn->func_body;
