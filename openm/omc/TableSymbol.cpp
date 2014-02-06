@@ -24,16 +24,25 @@ using namespace openm;
 void TableSymbol::create_auxiliary_symbols()
 {
     {
-        assert(nullptr == update_cell_fn); // initialization guarantee
-        // Ex. "om_update_DurationOfLife"
-        update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
-        assert(update_cell_fn); // out of memory check
-        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
-        update_cell_fn->func_body += "// TODO";
+        assert(!cell); // initialization guarantee
+        // Set storage type to int. Can be changed in a subsequent pass to optimize storage based on array size.
+        auto *typ = NumericSymbol::find(token::TK_int);
+        assert(typ); // initialization guarantee
+        cell = new AgentInternalSymbol("om_cell_" + name, agent, typ);
     }
 
     {
-        assert(nullptr == prepare_increment_fn); // initialization guarantee
+        assert(!update_cell_fn); // initialization guarantee
+        // Ex. "om_update_cell_DurationOfLife"
+        update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
+        assert(update_cell_fn); // out of memory check
+        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
+        update_cell_fn->func_body += cell->name + " = 0;" ;
+        update_cell_fn->func_body += "// TODO - pass through table shape";
+    }
+
+    {
+        assert(!prepare_increment_fn); // initialization guarantee
         // Ex. "om_prepare_increment_DurationOfLife"
         prepare_increment_fn = new AgentFuncSymbol("om_prepare_increment_" + name, agent);
         assert(prepare_increment_fn); // out of memory check
@@ -41,7 +50,7 @@ void TableSymbol::create_auxiliary_symbols()
     }
 
     {
-        assert(nullptr == process_increment_fn); // initialization guarantee
+        assert(!process_increment_fn); // initialization guarantee
         // Ex. "om_increment_process_DurationOfLife"
         process_increment_fn = new AgentFuncSymbol("om_process_increment_" + name, agent);
         assert(process_increment_fn); // out of memory check
@@ -58,13 +67,13 @@ void TableSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
         {
-            // Create symbol for the agent member which will hold the active tabulation cell
-            string member_name = cell_member_name();
-            // Set storage type to int.
-            // Can be changed in a subsequent pass to optimize storage based on array size
-            auto *typ = NumericSymbol::find(token::TK_int);
-            assert(typ); // initialization guarantee
-            auto sym = new AgentInternalSymbol(member_name, agent, typ);
+            //// Create symbol for the agent member which will hold the active tabulation cell
+            //string member_name = cell_member_name();
+            //// Set storage type to int.
+            //// Can be changed in a subsequent pass to optimize storage based on array size
+            //auto *typ = NumericSymbol::find(token::TK_int);
+            //assert(typ); // initialization guarantee
+            //auto sym = new AgentInternalSymbol(member_name, agent, typ);
         }
         break;
     case ePopulateCollections:
@@ -334,7 +343,7 @@ void TableSymbol::build_body_process_increment()
 {
     CodeBlock& c = process_increment_fn->func_body;
 
-    c += "int cell = " + cell_member_name() + ";" ;
+    c += "int cell = " + cell->name + ";" ;
     c += "";
 
     for (auto acc : pp_accumulators) {

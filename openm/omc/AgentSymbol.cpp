@@ -10,6 +10,7 @@
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
 #include "AgentFuncSymbol.h"
+#include "TableSymbol.h"
 #include "NumericSymbol.h"
 
 using namespace std;
@@ -29,6 +30,24 @@ void AgentSymbol::create_auxiliary_symbols()
     // TODO: Remove test - Create internal data members for this agent: allow_assignment
     if (!exists("allow_assignment", this))
         new AgentInternalSymbol("allow_assignment", this, Symbol::get_symbol(Symbol::token_to_string(token::TK_bool)));
+
+    // The initialize_tables member function
+    {
+        assert(nullptr == initialize_tables_fn); // initialization guarantee
+        // Ex. "om_prepare_increment_DurationOfLife"
+        initialize_tables_fn = new AgentFuncSymbol("om_initialize_tables", this);
+        assert(initialize_tables_fn); // out of memory check
+        initialize_tables_fn->doc_block = doxygen_short("Initialize increment for each table in " + name + ".");
+    }
+
+    // The finalize_tables member function
+    {
+        assert(nullptr == finalize_tables_fn); // initialization guarantee
+        // Ex. "om_prepare_increment_DurationOfLife"
+        finalize_tables_fn = new AgentFuncSymbol("om_finalize_tables", this);
+        assert(finalize_tables_fn); // out of memory check
+        finalize_tables_fn->doc_block = doxygen_short("Finalize increment for each table in " + name + ".");
+    }
 
     // The Start() member function
     {
@@ -71,9 +90,35 @@ void AgentSymbol::post_parse(int pass)
             assert(pp_time); // parser guarantee
         }
         break;
+    case ePopulateDependencies:
+        {
+            // construct the body of the initialize_tables function
+            build_body_initialize_tables();
+            // construct the body of the finalize_tables function
+            build_body_finalize_tables();
+        }
+        break;
     default:
         break;
     }
 }
 
+void AgentSymbol::build_body_initialize_tables()
+{
+    CodeBlock& c = initialize_tables_fn->func_body;
+
+    for (auto table : pp_agent_tables) {
+        c += table->update_cell_fn->name + "();" ;
+        c += table->prepare_increment_fn->name + "();" ;
+    }
+}
+
+void AgentSymbol::build_body_finalize_tables()
+{
+    CodeBlock& c = finalize_tables_fn->func_body;
+
+    for (auto table : pp_agent_tables) {
+        c += table->process_increment_fn->name + "();";
+    }
+}
 

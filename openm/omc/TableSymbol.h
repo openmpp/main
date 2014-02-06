@@ -14,6 +14,7 @@ class TableExpressionSymbol;
 class TableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
 class AgentFuncSymbol;
+class AgentInternalSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -35,6 +36,7 @@ public:
         : Symbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
+        , cell(nullptr)
         , update_cell_fn(nullptr)
         , prepare_increment_fn(nullptr)
         , process_increment_fn(nullptr)
@@ -122,6 +124,12 @@ public:
 
 
     /**
+     * The agentvar which will hold the active index into the table.
+     */
+
+    AgentInternalSymbol *cell;
+
+    /**
      * The agent function which updates the active cell index using agentvars.
      */
 
@@ -148,6 +156,7 @@ public:
     */
 
     AgentSymbol *pp_agent;
+
 
     /**
     * The expressions in the table
