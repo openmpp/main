@@ -36,6 +36,8 @@ public:
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
         , update_cell_fn(nullptr)
+        , prepare_increment_fn(nullptr)
+        , process_increment_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -95,6 +97,9 @@ public:
 
     CodeBlock cxx_definition_agent();
 
+    void build_body_prepare_increment();
+    void build_body_process_increment();
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
@@ -107,10 +112,24 @@ public:
 
 
     /**
-     * The agent member function which updates the active table cell based on current indices.
+     * The agent function which updates the active cell index using agentvars.
      */
 
     AgentFuncSymbol *update_cell_fn;
+
+
+    /**
+     * The agent function which prepares the increment for the active table cell.
+     */
+
+    AgentFuncSymbol *prepare_increment_fn;
+
+
+    /**
+     * The agent function which processes the increment for the active table cell.
+     */
+
+    AgentFuncSymbol *process_increment_fn;
 
     /**
     * Direct pointer to agent.

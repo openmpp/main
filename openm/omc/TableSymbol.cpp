@@ -23,13 +23,30 @@ using namespace openm;
 
 void TableSymbol::create_auxiliary_symbols()
 {
-    assert(nullptr == update_cell_fn); // logic guarantee
+    {
+        assert(nullptr == update_cell_fn); // initialization guarantee
+        // Ex. "om_update_DurationOfLife"
+        update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
+        assert(update_cell_fn); // out of memory check
+        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
+        update_cell_fn->func_body += "// TODO";
+    }
 
-    // Ex. "om_update_DurationOfLife"
-    update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
-    assert(update_cell_fn);
-    update_cell_fn->doc_block = doxygen_short("Updates the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
-    update_cell_fn->func_body += "// TODO";
+    {
+        assert(nullptr == prepare_increment_fn); // initialization guarantee
+        // Ex. "om_prepare_increment_DurationOfLife"
+        prepare_increment_fn = new AgentFuncSymbol("om_prepare_increment_" + name, agent);
+        assert(prepare_increment_fn); // out of memory check
+        prepare_increment_fn->doc_block = doxygen_short("Prepare the increment for the active table cell in " + name + ".");
+    }
+
+    {
+        assert(nullptr == process_increment_fn); // initialization guarantee
+        // Ex. "om_increment_process_DurationOfLife"
+        process_increment_fn = new AgentFuncSymbol("om_process_increment_" + name, agent);
+        assert(process_increment_fn); // out of memory check
+        process_increment_fn->doc_block = doxygen_short("Process the increment for the active table cell in " + name + ".");
+    }
 }
 
 void TableSymbol::post_parse(int pass)
@@ -61,6 +78,14 @@ void TableSymbol::post_parse(int pass)
 
             // Add this table to the agent's list of tables
             pp_agent->pp_agent_tables.push_back(this);
+        }
+        break;
+    case ePopulateDependencies:
+        {
+            // construct the body of the prepare_increment function
+            build_body_prepare_increment();
+            // construct the body of the process_increment function
+            build_body_process_increment();
         }
         break;
     default:
@@ -292,6 +317,76 @@ CodeBlock TableSymbol::cxx_definition_agent()
 
     return c;
 }
+
+void TableSymbol::build_body_prepare_increment()
+{
+    CodeBlock& c = prepare_increment_fn->func_body;
+
+    c += "int cell = " + cell_member_name() + ";" ;
+    c += "";
+
+    for (auto table_agentvar : pp_table_agentvars) {
+        if (table_agentvar->need_value_in)
+            c += table_agentvar->cxx_prepare_increment();
+    }
+}
+void TableSymbol::build_body_process_increment()
+{
+    CodeBlock& c = process_increment_fn->func_body;
+
+    c += "int cell = " + cell_member_name() + ";" ;
+    c += "";
+
+    for (auto acc : pp_accumulators) {
+        // name of agentvar
+        string agentvar_name = acc->agentvar->name;
+        // name of 'in' for agentvar
+        string in_agentvar_name = acc->pp_analysis_agentvar->in_member_name();
+        // index of accumulator as string
+        string accumulator_index = to_string(acc->index);
+        // expression for the accumulator as string
+        string accumulator_expr = "the" + name + ".accumulators[" + accumulator_index + "][cell]";
+
+        // expression evaluating to value of increment
+        string increment_expr;
+        switch (acc->increment) {
+        case token::TK_value_in:
+            increment_expr = in_agentvar_name;
+            break;
+        case token::TK_value_out:
+            increment_expr = agentvar_name;
+            break;
+        case token::TK_delta:
+            increment_expr = "( " + agentvar_name + " - " + in_agentvar_name + " )";
+            break;
+        default:
+            // TODO - all other increment operators
+            assert(0); // parser guarantee
+        }
+
+        c += "{";
+        c += "// " + acc->pretty_name();
+        c += "double dIncrement = " + increment_expr + ";";
+        switch (acc->accumulator) {
+        case token::TK_sum:
+            c += accumulator_expr + " += dIncrement;";
+            break;
+        case token::TK_min:
+            c += "double dAccumulator = " + accumulator_expr + ";";
+            c += "if ( dIncrement < dAccumulator ) " + accumulator_expr + " = dIncrement;";
+            break;
+        case token::TK_max:
+            c += "double dAccumulator = " + accumulator_expr + ";";
+            c += "if ( dIncrement > dAccumulator ) " + accumulator_expr + " = dIncrement;";
+            break;
+        default:
+            assert(0); // parser guarantee
+        }
+        c += "}";
+    }
+}
+
+
 
 void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
