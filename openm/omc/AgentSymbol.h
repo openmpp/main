@@ -38,6 +38,8 @@ public:
     AgentSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , pp_time(nullptr)
+        , initialize_events_fn(nullptr)
+        , finalize_events_fn(nullptr)
         , initialize_tables_fn(nullptr)
         , finalize_tables_fn(nullptr)
     {
@@ -54,6 +56,18 @@ public:
     void post_parse(int pass);
 
     /**
+     * Builds the function body of the initialize_events function.
+     */
+
+    void build_body_initialize_events();
+
+    /**
+     * Builds the function body of the finalize_events function.
+     */
+
+    void build_body_finalize_events();
+
+    /**
      * Builds the function body of the initialize_tables function.
      */
 
@@ -67,14 +81,41 @@ public:
 
     BuiltinAgentVarSymbol *pp_time;
 
+
+    /**
+     * The agent function which initializes all events in the agent.
+     * 
+     * This function has the fixed name om_initialize_events().  It is used in the run-time support
+     * class BaseAgent before the agent enters the simulation.
+     */
+
+    AgentFuncSymbol *initialize_events_fn;
+
+
+    /**
+     * The agent function which finalizes all events in the agent.
+     * 
+     * This function has the fixed name om_events_tables(). It is used in the run-time support
+     * class BaseAgent before the agent leaves the simulation.
+     */
+
+    AgentFuncSymbol *finalize_events_fn;
+
     /**
      * The agent function which initializes all tables in the agent.
+     * 
+     * This function has the fixed name om_initialize_tables().  It is used in the run-time support
+     * class BaseAgent before the agent enters the simulation.
      */
 
     AgentFuncSymbol *initialize_tables_fn;
 
+
     /**
      * The agent function which finalizes all tables in the agent.
+     * 
+     * This function has the fixed name om_finalize_tables(). It is used in the run-time support
+     * class BaseAgent before the agent leaves the simulation.
      */
 
     AgentFuncSymbol *finalize_tables_fn;

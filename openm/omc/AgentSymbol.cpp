@@ -10,6 +10,7 @@
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
 #include "AgentFuncSymbol.h"
+#include "AgentEventSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
 
@@ -31,22 +32,36 @@ void AgentSymbol::create_auxiliary_symbols()
     if (!exists("allow_assignment", this))
         new AgentInternalSymbol("allow_assignment", this, Symbol::get_symbol(Symbol::token_to_string(token::TK_bool)));
 
-    // The initialize_tables member function
+    // The om_initialize_events member function
     {
-        assert(nullptr == initialize_tables_fn); // initialization guarantee
-        // Ex. "om_prepare_increment_DurationOfLife"
-        initialize_tables_fn = new AgentFuncSymbol("om_initialize_tables", this);
-        assert(initialize_tables_fn); // out of memory check
-        initialize_tables_fn->doc_block = doxygen_short("Initialize increment for each table in " + name + ".");
+        assert(nullptr == initialize_events_fn); // initialization guarantee
+        initialize_events_fn = new AgentFuncSymbol("om_initialize_events", this);
+        assert(initialize_events_fn); // out of memory check
+        initialize_events_fn->doc_block = doxygen_short("Force event time calculation for each event in the agent when it enters simulation.");
     }
 
-    // The finalize_tables member function
+    // The om_finalize_events member function
+    {
+        assert(nullptr == finalize_events_fn); // initialization guarantee
+        finalize_events_fn = new AgentFuncSymbol("om_finalize_events", this);
+        assert(finalize_events_fn); // out of memory check
+        finalize_events_fn->doc_block = doxygen_short("Remove each event in the agent from the event queue when it leaves the simulation.");
+    }
+
+    // The om_initialize_tables member function
+    {
+        assert(nullptr == initialize_tables_fn); // initialization guarantee
+        initialize_tables_fn = new AgentFuncSymbol("om_initialize_tables", this);
+        assert(initialize_tables_fn); // out of memory check
+        initialize_tables_fn->doc_block = doxygen_short("Initialize the agent's increment in each table when it enters the simulation.");
+    }
+
+    // The om_finalize_tables member function
     {
         assert(nullptr == finalize_tables_fn); // initialization guarantee
-        // Ex. "om_prepare_increment_DurationOfLife"
         finalize_tables_fn = new AgentFuncSymbol("om_finalize_tables", this);
         assert(finalize_tables_fn); // out of memory check
-        finalize_tables_fn->doc_block = doxygen_short("Finalize increment for each table in " + name + ".");
+        finalize_tables_fn->doc_block = doxygen_short("Finish the agent's pending increment in each table when it leaves the simulation.");
     }
 
     // The Start() member function
@@ -92,14 +107,33 @@ void AgentSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
-            // construct the body of the initialize_tables function
+            // construct function bodies.
+            build_body_initialize_events();
+            build_body_finalize_events();
             build_body_initialize_tables();
-            // construct the body of the finalize_tables function
             build_body_finalize_tables();
         }
         break;
     default:
         break;
+    }
+}
+
+void AgentSymbol::build_body_initialize_events()
+{
+    CodeBlock& c = initialize_events_fn->func_body;
+
+    for ( auto event : pp_agent_events ) {
+        c += event->name + ".make_dirty();";
+    }
+}
+
+void AgentSymbol::build_body_finalize_events()
+{
+    CodeBlock& c = finalize_events_fn->func_body;
+
+    for ( auto event : pp_agent_events ) {
+        c += event->name + ".make_zombie();";
     }
 }
 
