@@ -1,0 +1,177 @@
+/**
+* @file    ExpressionAgentVarSymbol.cpp
+* Definitions for the ExpressionAgentVarSymbol class.
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#include "ExpressionAgentVarSymbol.h"
+#include "AgentSymbol.h"
+#include "ExprForAgentVar.h"
+#include "TypeSymbol.h"
+#include "CodeBlock.h"
+#include "Literal.h"
+
+using namespace std;
+
+void ExpressionAgentVarSymbol::create_auxiliary_symbols()
+{
+    // Create an AgentFuncSymbol for the expression function
+    expression_fn = new AgentFuncSymbol("om_expression_" + name, agent);
+    assert(expression_fn); // out of memory check
+    expression_fn->doc_block = doxygen_short("Evaluate and assign expression for " + name + ".");
+}
+
+/**
+* Post-parse operations for TableExpressionSymbol
+*/
+
+void ExpressionAgentVarSymbol::post_parse(int pass)
+{
+    // Hook into the post_parse hierarchical calling chain
+    super::post_parse(pass);
+
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    switch (pass) {
+    case ePopulateCollections:
+        {
+            // Add this expression agentvar symbol to the agent's list of all such symbols
+            pp_agent->pp_expr_agentvars.push_back(this);
+        
+            // Perform post-parse operations to each element in the expression tree
+            post_parse_traverse(root);
+        }
+        break;
+    case ePopulateDependencies:
+        {
+            // construct function body
+            build_body_expression();
+
+            // Dependency on agentvars in expression
+            for (auto av : pp_agentvars_used) {
+                CodeBlock& c = av->side_effects_fn->func_body;
+                c += "// Re-evaluate expression agentvar " + name;
+                c += expression_fn->name + "();";
+                c += "";
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void ExpressionAgentVarSymbol::post_parse_traverse(ExprForAgentVar *node)
+{
+    auto sym = dynamic_cast<ExprForAgentVarSymbol *>(node);
+    auto lit = dynamic_cast<ExprForAgentVarLiteral *>(node);
+    auto unary_op = dynamic_cast<ExprForAgentVarUnaryOp *>(node);
+    auto binary_op = dynamic_cast<ExprForAgentVarBinaryOp *>(node);
+    auto ternary_op = dynamic_cast<ExprForAgentVarTernaryOp *>(node);
+
+    if (sym != nullptr) {
+        (sym->pp_symbol) = pp_symbol(sym->symbol);
+        assert(sym->pp_symbol); // parser guarantee
+        auto av = dynamic_cast<AgentVarSymbol *>(sym->pp_symbol);
+        if (av) {
+            // add to the set of all agentvars used in this expression
+            pp_agentvars_used.insert(av);
+        }
+    }
+    else if (lit != nullptr) {
+        // Nothing needs to be done with Literals in the post-parse processing phase.
+    }
+    else if (unary_op != nullptr) {
+        assert(unary_op->right); // grammar guarantee
+        post_parse_traverse(unary_op->right);
+    }
+    else if (binary_op != nullptr) {
+        assert(binary_op->left); // grammar guarantee
+        post_parse_traverse(binary_op->left);
+        assert(binary_op->right); // grammar guarantee
+        post_parse_traverse(binary_op->right);
+    }
+    else if (ternary_op != nullptr) {
+        assert(ternary_op->cond); // grammar guarantee
+        post_parse_traverse(ternary_op->cond);
+        assert(ternary_op->first); // grammar guarantee
+        post_parse_traverse(ternary_op->first);
+        assert(ternary_op->second); // grammar guarantee
+        post_parse_traverse(ternary_op->second);
+    }
+    else {
+        assert(false); // not reached
+    }
+}
+
+string ExpressionAgentVarSymbol::cxx_expression(const ExprForAgentVar *node)
+{
+    string result;
+
+    auto sym = dynamic_cast<const ExprForAgentVarSymbol *>(node);
+    auto lit = dynamic_cast<const ExprForAgentVarLiteral *>(node);
+    auto unary_op = dynamic_cast<const ExprForAgentVarUnaryOp *>(node);
+    auto binary_op = dynamic_cast<const ExprForAgentVarBinaryOp *>(node);
+    auto ternary_op = dynamic_cast<const ExprForAgentVarTernaryOp *>(node);
+
+    if (sym != nullptr) {
+        result = sym->pp_symbol->name;
+    }
+    else if (lit != nullptr) {
+        result = lit->constant->value();
+    }
+    else if (unary_op != nullptr) {
+        assert(unary_op->right); // grammar guarantee
+        result =
+            token_to_string(unary_op->op)
+            + cxx_expression(unary_op->right);
+    }
+    else if (binary_op != nullptr) {
+        assert(binary_op->left); // grammar guarantee
+        assert(binary_op->right); // grammar guarantee
+        result = "("
+            + cxx_expression(binary_op->left)
+            + " " + token_to_string(binary_op->op) + " "
+            + cxx_expression(binary_op->right)
+            + ")";
+    }
+    else if (ternary_op != nullptr) {
+        assert(ternary_op->cond); // grammar guarantee
+        assert(ternary_op->first); // grammar guarantee
+        assert(ternary_op->second); // grammar guarantee
+        result = "("
+            + cxx_expression(ternary_op->cond) + " ? "
+            + cxx_expression(ternary_op->first) + " : "
+            + cxx_expression(ternary_op->second)
+            + ")";
+    }
+    else {
+        assert(false); // not reached
+    }
+
+    return result;
+}
+
+void ExpressionAgentVarSymbol::build_body_expression()
+{
+    CodeBlock& c = expression_fn->func_body;
+
+    c += name + ".set( " + cxx_expression(root) + " );";
+}
+
+
+CodeBlock ExpressionAgentVarSymbol::cxx_declaration_agent()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_agent();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
+    h += "AgentVar<" + pp_data_type->name + ", "
+        + agent->name + ", "
+        + "&" + side_effects_fn->unique_name + "> "
+        + name + ";";
+
+    return h;
+}

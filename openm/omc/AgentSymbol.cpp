@@ -11,6 +11,7 @@
 #include "AgentInternalSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "AgentEventSymbol.h"
+#include "ExpressionAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
 
@@ -196,8 +197,15 @@ void AgentSymbol::build_body_initialize_data_members()
 {
     CodeBlock& c = initialize_data_members_fn->func_body;
 
+    c += "// Assign default initial value to all data members";
     for ( auto adm : pp_agent_data_members ) {
         c += adm->cxx_initialize_expression();
+    }
+
+    c += "";
+    c += "// Evaluate expression agentvars";
+    for ( auto eav : pp_expr_agentvars ) {
+        c += eav->expression_fn->name + "();";
     }
 }
 

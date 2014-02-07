@@ -60,14 +60,6 @@ public:
 
     void post_parse(int pass);
 
-    /**
-    * Get name of member function which implements the condition expression
-    *
-    * Example:  om_duration_happy_true_condition.
-    *
-    * @return  .
-    */
-
     CodeBlock cxx_declaration_agent();
 
     /**

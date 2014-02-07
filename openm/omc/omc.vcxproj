@@ -112,6 +112,7 @@
     <ClInclude Include="DurationAgentVarSymbol.h" />
     <ClInclude Include="EnumerationSymbol.h" />
     <ClInclude Include="EnumeratorSymbol.h" />
+    <ClInclude Include="ExpressionAgentVarSymbol.h" />
     <ClInclude Include="ExprForAgentVar.h" />
     <ClInclude Include="ExprForTable.h" />
     <ClInclude Include="LanguageSymbol.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
     <ClCompile Include="EnumerationSymbol.cpp" />
     <ClCompile Include="EnumeratorSymbol.cpp" />
+    <ClCompile Include="ExpressionAgentVarSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />

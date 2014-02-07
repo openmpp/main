@@ -108,7 +108,7 @@ void TableSymbol::post_parse(int pass)
             build_body_prepare_increment();
             build_body_process_increment();
 
-            // Depency on change in table index agentvars
+            // Dependency on change in table index agentvars
             for (auto av : pp_dimension_list_agentvar) {
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += "// cell change in table " + name;
@@ -239,6 +239,13 @@ void TableSymbol::build_body_update_cell()
     CodeBlock& c = update_cell_fn->func_body;
 
     int rank = pp_dimension_list_enum.size();
+
+    if (rank == 0) {
+        // short version for rank 0 tables
+        c += "// only a single cell in rank 0 tables";
+        c += cell->name + " = 0;" ;
+        return;
+    }
 
     c += "int cell = 0;" ;
     c += "int index = 0;" ;

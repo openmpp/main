@@ -73,9 +73,12 @@ void DurationAgentVarSymbol::post_parse(int pass)
         {
             // add side-effect to time agentvar
             AgentVarSymbol *av = pp_agent->pp_time;
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += "// Advance time for " + pretty_name();
             // Eg. om_duration.advance( new_value - old_value );
             string line = name + ".advance( new_value - old_value );";
-            av->side_effects_fn->func_body += line;
+            c += line;
+            c += "";
         }
         break;
     default:

@@ -14,6 +14,7 @@ class AgentEventSymbol;
 class AgentEventSymbol;
 class AgentFuncSymbol;
 class AgentVarSymbol;
+class ExpressionAgentVarSymbol;
 class AgentInternalSymbol;
 class BuiltinAgentVarSymbol;
 
@@ -172,7 +173,7 @@ public:
     AgentFuncSymbol *finalize_tables_fn;
 
     /**
-    * The agentvars of this agent
+    * The data members of this agent
     *
     *  Populated after parsing is complete.
     */
@@ -186,6 +187,16 @@ public:
     */
 
     list<AgentVarSymbol *> pp_agentvars;
+
+
+    /**
+     * The expression agentvars of this agent.
+     * 
+     * Populated after parsing is complete.
+     */
+
+    list<ExpressionAgentVarSymbol *> pp_expr_agentvars;
+
 
     /**
     * The agent events of this agent

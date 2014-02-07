@@ -934,7 +934,7 @@ decl_simple_agentvar:
 decl_expr_agentvar:
         decl_type_part[type_symbol] SYMBOL[agentvar] "=" expr_for_agentvar ";"
                         {
-                            //auto *sym = new ExprAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
+                            auto *sym = new ExpressionAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
                         }
     ;
 
@@ -965,7 +965,7 @@ decl_agent_event:
  */
 
 expr_for_agentvar[result]:
-      SYMBOL[sym]
+      agentvar[sym]
                         {
 	                        $result = new ExprForAgentVarSymbol( $sym );
                         }
