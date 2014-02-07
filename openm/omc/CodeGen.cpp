@@ -270,14 +270,6 @@ void CodeGen::do_agents()
             c += data_member->cxx_definition_agent();
         }
 
-	    //// member functions with fixed names
-	    //h += "";
-	    //h += "// member functions with fixed names";
-     //   h += "void om_Start_custom(); // defined in model code";
-	    //h += "void om_Finish_custom(); // defined in model code";
-
-	    //h += "";
-
 	    h += "}; // class " + agent->name + "";
 	    h += "";
     }
