@@ -84,9 +84,6 @@
     <ClInclude Include="TableExpressionSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentCallbackMemberSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AgentDataMemberSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -201,9 +198,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TableExpressionSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentCallbackMemberSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgentEventSymbol.cpp">

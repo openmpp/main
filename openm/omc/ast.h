@@ -31,7 +31,6 @@
 #include "AgentEventSymbol.h"
 #include "AgentDataMemberSymbol.h"
 #include "AgentInternalSymbol.h"
-#include "AgentCallbackMemberSymbol.h"
 #include "AgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "SimpleAgentVarSymbol.h"

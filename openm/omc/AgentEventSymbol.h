@@ -6,7 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "AgentCallbackMemberSymbol.h"
+#include "AgentDataMemberSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
 
@@ -20,16 +20,16 @@ using namespace std;
 * of an agent event.
 */
 
-class AgentEventSymbol : public AgentCallbackMemberSymbol
+class AgentEventSymbol : public AgentDataMemberSymbol
 {
 private:
-    typedef AgentCallbackMemberSymbol super;
+    typedef AgentDataMemberSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
 
     AgentEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, yy::location decl_loc = yy::location())
-        : AgentCallbackMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
+        : AgentDataMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
         , pp_event_id(0)
     {

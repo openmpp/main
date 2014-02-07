@@ -92,7 +92,6 @@
     <ClInclude Include="..\include\libopenm\db\metaModelHolder.h" />
     <ClInclude Include="..\include\libopenm\db\modelBuilder.h" />
     <ClInclude Include="..\include\libopenm\omCommon.h" />
-    <ClInclude Include="AgentCallbackMemberSymbol.h" />
     <ClInclude Include="AgentDataMemberSymbol.h" />
     <ClInclude Include="AgentEventSymbol.h" />
     <ClInclude Include="AgentFuncSymbol.h" />
@@ -146,7 +145,6 @@
     <ClInclude Include="scanner.l" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AgentCallbackMemberSymbol.cpp" />
     <ClCompile Include="AgentDataMemberSymbol.cpp" />
     <ClCompile Include="AgentEventSymbol.cpp" />
     <ClCompile Include="AgentFuncSymbol.cpp" />

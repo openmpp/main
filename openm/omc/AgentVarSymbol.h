@@ -6,29 +6,29 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "AgentCallbackMemberSymbol.h"
+#include "AgentDataMemberSymbol.h"
 
 class AgentFuncSymbol;
 
 using namespace std;
 
-class AgentVarSymbol : public AgentCallbackMemberSymbol
+class AgentVarSymbol : public AgentDataMemberSymbol
 {
 private:
-    typedef AgentCallbackMemberSymbol super;
+    typedef AgentDataMemberSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
 
     AgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
-        : AgentCallbackMemberSymbol(sym, agent, type, decl_loc)
+        : AgentDataMemberSymbol(sym, agent, type, decl_loc)
         , side_effects_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
 
     AgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
-        : AgentCallbackMemberSymbol(member_name, agent, type, decl_loc)
+        : AgentDataMemberSymbol(member_name, agent, type, decl_loc)
         , side_effects_fn(nullptr)
     {
         create_auxiliary_symbols();
