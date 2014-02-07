@@ -24,6 +24,7 @@ class CharacterLiteral;
 class FloatingPointLiteral;
 class StringLiteral;
 class Symbol;
+class ExprForAgentVar;
 class ExprForTable;
 
 }
@@ -77,6 +78,7 @@ extern char *yytext;
     FloatingPointLiteral *pval_FloatingPointLiteral;
     StringLiteral        *pval_StringLiteral;
 	Symbol               *pval_Symbol;
+	ExprForAgentVar      *pval_AgentVarExpr;
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
     list<string *>       *pval_string_list;
@@ -448,6 +450,7 @@ extern char *yytext;
 
 %type  <pval_Symbol>   agentvar
 %type  <pval_Symbol>   derived_agentvar
+%type  <pval_AgentVarExpr> expr_for_agentvar
 
 %type  <val_token>      numeric_type
 %type  <val_token>      changeable_numeric_type
@@ -820,7 +823,7 @@ parameter_initializer_list[result]:
                         {
                             $result = $wrk;
                         }
-      // The %prec below makes the repeater bind tightly to what follows, taking precedence over any following ","
+      // The %prec below makes the bracketed repeater bind tightly to what follows, taking precedence over any following ","
       | "(" INTEGER_LITERAL[rpt] ")" parameter_initializer_list[wrk] %prec UNARY_MINUS
                         {
                             // create a new empty string list,
@@ -905,6 +908,7 @@ agent_member_list:
 
 agent_member:
 	  decl_simple_agentvar
+	| decl_expr_agentvar
 	| decl_agent_function
 	| decl_agent_event
     | error ";"
@@ -924,6 +928,13 @@ decl_simple_agentvar:
       | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" signed_literal "}" ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $signed_literal, @agentvar );
+                        }
+    ;
+
+decl_expr_agentvar:
+        decl_type_part[type_symbol] SYMBOL[agentvar] "=" expr_for_agentvar ";"
+                        {
+                            //auto *sym = new ExprAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
                         }
     ;
 
@@ -948,6 +959,54 @@ decl_agent_event:
                             auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, @decl_agent_event);
       }
     ;
+
+/*
+ * agentvar expression
+ */
+
+expr_for_agentvar[result]:
+      SYMBOL[sym]
+                        {
+	                        $result = new ExprForAgentVarSymbol( $sym );
+                        }
+    | literal
+                        {
+	                        $result = new ExprForAgentVarLiteral( $literal );
+                        }
+    | expr_for_agentvar[left] "+"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "-"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "*"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "/"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | "-"[op] expr_for_agentvar[right] %prec UNARY_MINUS
+                        {
+	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+                        }
+    | "+"[op] expr_for_agentvar[right] %prec UNARY_PLUS
+                        {
+	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+                        }
+    | expr_for_agentvar[cond] "?" expr_for_agentvar[first] ":" expr_for_agentvar[second] 
+                        {
+	                        $result = new ExprForAgentVarTernaryOp( $cond, $first, $second );
+                        }
+    | "(" expr_for_agentvar[expr] ")"
+                        {
+	                        $result = $expr;
+                        }
+	;
+
 
 /*
  * the 'type' part of a parameter or agentvar declaration

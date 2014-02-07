@@ -112,6 +112,7 @@
     <ClInclude Include="DurationAgentVarSymbol.h" />
     <ClInclude Include="EnumerationSymbol.h" />
     <ClInclude Include="EnumeratorSymbol.h" />
+    <ClInclude Include="ExprForAgentVar.h" />
     <ClInclude Include="ExprForTable.h" />
     <ClInclude Include="LanguageSymbol.h" />
     <ClInclude Include="Literal.h" />

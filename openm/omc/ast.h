@@ -43,4 +43,5 @@
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "ExprForTable.h"
+#include "ExprForAgentVar.h"
 
