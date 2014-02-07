@@ -15,6 +15,7 @@ class TableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
 class AgentFuncSymbol;
 class AgentInternalSymbol;
+class AgentVarSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -86,6 +87,15 @@ public:
 
 
     /**
+    * Direct pointer to agent.
+    *
+    * Set post-parse for convenience.
+    */
+
+    AgentSymbol *pp_agent;
+
+
+    /**
      * The agentvar which will hold the active index into the table.
      */
 
@@ -112,12 +122,16 @@ public:
     AgentFuncSymbol *process_increment_fn;
 
     /**
-    * Direct pointer to agent.
-    *
-    * Set post-parse for convenience.
-    */
+     * List of dimensions (parse phase references to pointers)
+     */
 
-    AgentSymbol *pp_agent;
+    list<Symbol **> dimension_list;
+
+    /**
+     * List of dimensions (post-parse phase pointers)
+     */
+
+    list<AgentVarSymbol *> pp_dimension_list;
 
 
     /**

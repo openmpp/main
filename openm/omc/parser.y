@@ -974,11 +974,24 @@ decl_type_part:
 decl_table:
       "table" SYMBOL[agent] SYMBOL[table] 
                         {
-                            // morph $table to TableSymbol
-                            $table = new TableSymbol( $table, $agent, @table );
+                            TableSymbol *table = nullptr;
+
+                            if ($table->is_base_symbol()) {
+                                // Morph Symbol to TableSymbol
+                                table = new TableSymbol( $table, $agent, @table );
+                                assert(table);
+                                $table = table;
+                            }
+                            else {
+                                // table re-declaration
+                                pc.redeclaration = true;
+                                table = dynamic_cast<TableSymbol *>($table);
+                                assert(table); // grammar/logic guarantee
+                                // TODO Raise error?
+                            }
                             // Set agent context and table context for body of table declaration
                             pc.set_agent_context( $agent );
-                            pc.set_table_context( $table );
+                            pc.set_table_context( table );
                             // initialize working counter used for table expressions
                             pc.counter1 = 0;
                             // initialize working counter used for table accumulators
@@ -986,7 +999,7 @@ decl_table:
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
                         }
-            "{" "{" table_expression_list "}" "}" ";"
+            "{" table_dimension_list "}" ";"
                         {
                             // No valid agent or table context
                             pc.set_table_context( nullptr );
@@ -997,6 +1010,20 @@ decl_table:
                             pc.counter3 = 0;
                         }
     | "table" error ";"
+    ;
+
+table_dimension_list:
+    table_dimension
+  | table_dimension_list "*" table_dimension
+  ;
+
+table_dimension:
+    SYMBOL[agentvar]
+                        {
+                            // add $agentvar to table's dimension_list
+                            pc.get_table_context()->dimension_list.push_back($agentvar->stable_pp());
+                        }
+    | "{" table_expression_list "}"
     ;
 
 table_expression_list:

@@ -61,24 +61,15 @@ public:
         }
     }
 
-    void set_table_context( Symbol *table )
+    void set_table_context( TableSymbol *table )
     {
-        if ( table != nullptr ) {
-            table_context = &table->stable_rp();
-        }
-        else {
-            table_context = nullptr;
-        }
+        table_context = table;
     }
 
-    Symbol * get_table_context( )
+    TableSymbol * get_table_context( )
     {
-        if ( table_context != nullptr ) {
-            return *table_context;
-        }
-        else {
-            return nullptr;
-        }
+        assert(table_context);  // grammar/logic guarantee that requests only occur in valid table context
+        return table_context;
     }
 
     void set_classification_context(Symbol *classification)
@@ -279,13 +270,14 @@ private:
 	Symbol **agent_context;
 
     /**
-     * table context for contained symbols
+     * table context for symbols in table declaration
      * 
-     * Note that this cannot be Symbol &*, since
-     * the value can be nullptr.
+     * Safe to use direct pointers, since context guarantess that
+     * we are in a table declaration, so the table has already
+     * been morphed to a TableSymbol if not already done.
      */
 
-	Symbol **table_context;
+	TableSymbol *table_context;
 
     /**
     * classification context for contained symbols
