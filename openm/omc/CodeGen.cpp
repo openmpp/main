@@ -250,32 +250,9 @@ void CodeGen::do_agents()
         h += "{";
 	    h += "public:";
 
-        // Declarations and associated definitions of members used by auxiliary classes & templates
-        // The C++ compiler needs these to successfully expand the template for Event, which needs to access
-        // the agent member functions with fixed names.
-        // They need to be declared before being used in Event class code.
-        h += "int get_agent_id() const;";
-        c += "";
-        c += "int " + agent->name + "::get_agent_id() const";
-        c += "{";
-        c += "return agent_id.get();";
-        c += "}";
-        c += "";
-
-        // the member age_agent for event management
-        // TODO - add doxygen for generated code.
-        h += "void age_agent( Time t );";
-        c += "";
-        c += "void " + agent->name + "::age_agent( Time t )";
-        c += "{";
-        c += "time.set( t );";
-        c += "}";
-        c += "";
-
-        // iterate all agent func members in agent
 	    h += "";
 	    h += "//";
-	    h += "// functions in agent";
+	    h += "// function members in agent";
 	    h += "//";
 	    h += "";
         for ( auto func_member : agent->pp_agent_funcs ) {
@@ -288,19 +265,18 @@ void CodeGen::do_agents()
 	    h += "// data members in agent";
 	    h += "//";
 	    h += "";
-        // iterate all agent data members in agent
         for ( auto data_member : agent->pp_agent_data_members ) {
             h += data_member->cxx_declaration_agent();
             c += data_member->cxx_definition_agent();
         }
 
-	    // member functions with fixed names
-	    h += "";
-	    h += "// member functions with fixed names";
-        h += "void om_Start_custom(); // defined in model code";
-	    h += "void om_Finish_custom(); // defined in model code";
+	    //// member functions with fixed names
+	    //h += "";
+	    //h += "// member functions with fixed names";
+     //   h += "void om_Start_custom(); // defined in model code";
+	    //h += "void om_Finish_custom(); // defined in model code";
 
-	    h += "";
+	    //h += "";
 
 	    h += "}; // class " + agent->name + "";
 	    h += "";

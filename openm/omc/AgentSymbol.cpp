@@ -32,6 +32,32 @@ void AgentSymbol::create_auxiliary_symbols()
     if (!exists("allow_assignment", this))
         new AgentInternalSymbol("allow_assignment", this, Symbol::get_symbol(Symbol::token_to_string(token::TK_bool)));
 
+    // The age_agent() member function
+    {
+        auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");
+        fn->doc_block = doxygen_short("Age the agent to the given time.");
+        fn->func_body += "time.set(t);";
+    }
+
+    // The get_agent_id() member function
+    {
+        auto *fn = new AgentFuncSymbol("get_agent_id", this, "int", "");
+        fn->doc_block = doxygen_short("Return unique agent_id of this agent.");
+        fn->func_body += "return agent_id.get();" ;
+    }
+
+    // The om_Start_custom() member function
+    {
+        auto *fn = new AgentFuncSymbol("om_Start_custom", this, "void", "", true);
+        fn->doc_block = doxygen_short("Model-specific customizations before simulating agent.");
+    }
+
+    // The om_Finish_custom() member function
+    {
+        auto *fn = new AgentFuncSymbol("om_Finish_custom", this, "void", "", true);
+        fn->doc_block = doxygen_short("Model-specific customizations after simulating agent.");
+    }
+
     // The initialize_agentvar_offsets member function
     {
         assert(!initialize_agentvar_offsets_fn); // initialization guarantee
