@@ -42,7 +42,7 @@ CodeBlock DurationAgentVarSymbol::cxx_declaration_agent()
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + "nullptr> "
-        + name + ";" "\n";
+        + name + ";";
 
     return h;
 }

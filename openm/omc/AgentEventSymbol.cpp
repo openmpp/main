@@ -80,14 +80,13 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     int event_id = pp_event_id;
-    h += "";
     h += "Event<" + agent->name + ", "
         + to_string(event_id) + ", "
         + "0, " // TODO event priority
         + "&" + implement_func->unique_name + ", "
         + "&" + time_func->unique_name + "> "
         + name
-        + ";" "\n";
+        + ";";
 
     return h;
 }
