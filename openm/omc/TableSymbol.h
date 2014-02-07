@@ -131,7 +131,14 @@ public:
      * List of dimensions (post-parse phase pointers)
      */
 
-    list<AgentVarSymbol *> pp_dimension_list;
+    list<AgentVarSymbol *> pp_dimension_list_agentvar;
+
+
+    /**
+     * List of dimensions (post-parse phase pointers)
+     */
+
+    list<EnumerationSymbol *> pp_dimension_list_enum;
 
 
     /**

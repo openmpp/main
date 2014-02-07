@@ -10,11 +10,13 @@
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentInternalSymbol.h"
+#include "BuiltinAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableExpressionSymbol.h"
+#include "EnumerationSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -74,6 +76,28 @@ void TableSymbol::post_parse(int pass)
 
             // Add this table to the agent's list of tables
             pp_agent->pp_agent_tables.push_back(this);
+
+            // validate dimension list
+            // and populate the post-parse version
+            for (auto psym : dimension_list) {
+                assert(psym); // logic guarantee
+                auto sym = *psym; // remove one level of indirection
+                assert(sym); // grammar guarantee
+                auto avs = dynamic_cast<AgentVarSymbol *>(sym);
+                if (!avs) {
+                    pp_error("'" + sym->name + "' is not an agentvar in dimension of table '" + name + "'");
+                    continue; // don't insert invalid type in dimension list
+                }
+                auto es = dynamic_cast<EnumerationSymbol *>(avs->data_type);
+                if (!es) {
+                    pp_error("The datatype of '" + avs->name + "' must be an enumeration type");
+                    continue; // don't insert invalid type in dimension list
+                }
+                pp_dimension_list_agentvar.push_back(avs);
+                pp_dimension_list_enum.push_back(es);
+            }
+            // clear the parse version to avoid inadvertant use post-parse
+            dimension_list.clear();
         }
         break;
     case ePopulateDependencies:
@@ -208,6 +232,7 @@ void TableSymbol::build_body_update_cell()
     c += cell->name + " = 0;" ;
     c += "// TODO - pass through table shape";
 }
+
 void TableSymbol::build_body_prepare_increment()
 {
     CodeBlock& c = prepare_increment_fn->func_body;
