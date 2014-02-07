@@ -233,7 +233,7 @@ void CodeGen::do_ModelShutdown()
 	    c += "the" + table->name + ".compute_expressions();";
     }
     for ( auto table : Symbol::pp_all_tables ) {
-	    c += "i_model->writeOutputTable( \"" + table->name + "\", the" + table->name + ".n_accumulators, 1, const_cast<const double **>(the" + table->name + ".accumulators) );";
+	    c += "i_model->writeOutputTable( \"" + table->name + "\", the" + table->name + ".n_accumulators, " + to_string(table->cell_count()) + ", const_cast<const double **>(the" + table->name + ".accumulators) );";
     }
     c += "}";
 	c += "";

@@ -77,6 +77,23 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+
+    /**
+     * The rank of the table.
+     *
+     * @return An int.
+     */
+
+    int rank();
+
+    /**
+     * The total number of table cells in the table.
+     *
+     * @return An int.
+     */
+
+    int cell_count();
+
     /**
     * Reference to pointer to agent.
     *
@@ -139,7 +156,6 @@ public:
      */
 
     list<EnumerationSymbol *> pp_dimension_list_enum;
-
 
     /**
     * The expressions in the table

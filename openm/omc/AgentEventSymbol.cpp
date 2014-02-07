@@ -57,6 +57,7 @@ void AgentEventSymbol::post_parse(int pass)
                     // dependency of time function on av detected
                     // E.g. om_time_StartPlayingEvent.make_dirty();
                     string line = name + ".make_dirty();";
+                    av->side_effects_fn->func_body += "// Recalculate time to event " + event_name;
                     av->side_effects_fn->func_body += line;
                 }
             }

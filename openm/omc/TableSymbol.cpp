@@ -13,6 +13,7 @@
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
+#include "RangeSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableExpressionSymbol.h"
@@ -102,12 +103,20 @@ void TableSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
-            // construct the body of the update_cell function
+            // construct function bodies
             build_body_update_cell();
-            // construct the body of the prepare_increment function
             build_body_prepare_increment();
-            // construct the body of the process_increment function
             build_body_process_increment();
+
+            // Depency on change in table index agentvars
+            for (auto av : pp_dimension_list_agentvar) {
+                CodeBlock& c = av->side_effects_fn->func_body;
+                c += "// cell change in table " + name;
+                c += process_increment_fn->name + "();";
+                c += update_cell_fn->name + "();";
+                c += prepare_increment_fn->name + "();";
+                c += "";
+            }
         }
         break;
     default:
@@ -123,7 +132,7 @@ CodeBlock TableSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
     int n_accumulators = pp_accumulators.size();
     int n_expressions = pp_expressions.size();
-    int n_cells = 1;
+    int n_cells = cell_count();
 
     h += "";
     h += "class " + name + " {";
@@ -229,8 +238,33 @@ void TableSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
 
-    c += cell->name + " = 0;" ;
-    c += "// TODO - pass through table shape";
+    int rank = pp_dimension_list_enum.size();
+
+    c += "int cell = 0;" ;
+    c += "int index = 0;" ;
+
+    // build an unwound loop of code
+    int dim = 0;
+    for (auto av : pp_dimension_list_agentvar ) {
+        auto es = dynamic_cast<EnumerationSymbol *>(av->data_type);
+        assert(es); // integrity check guarantee
+        c += "";
+        c += "// dimension=" + to_string(dim) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
+        if (dim > 0) {
+            c += "cell *= " + to_string(es->pp_size()) + ";";
+        }
+        c += "index = " + av->unique_name + ";";
+        auto rs = dynamic_cast<RangeSymbol *>(es);
+        if (rs) {
+            c += "// adjust range to zero-based" ;
+            c += "index -= " + to_string(rs->lower_bound) + ";";
+        }
+        c += "cell += index;";
+        ++dim;
+    }
+
+    c += "";
+    c += cell->name + " = cell;" ;
 }
 
 void TableSymbol::build_body_prepare_increment()
@@ -302,6 +336,20 @@ void TableSymbol::build_body_process_increment()
     }
 }
 
+int TableSymbol::rank()
+{
+    return pp_dimension_list_agentvar.size();
+}
+
+int TableSymbol::cell_count()
+{
+    int cells = 1;
+    for (auto es : pp_dimension_list_enum) {
+        assert(es); // integrity check guarantee
+        cells *= es->pp_size();
+    }
+    return cells;
+}
 
 
 void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
@@ -315,7 +363,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.tableId = pp_table_id;
     tableDic.tableName = name;
     tableDic.isUser = false;
-    tableDic.rank = 0;
+    tableDic.rank = rank();
     tableDic.isSparse = true;   // do not store NULLs
     tableDic.isHidden = false;
     metaRows.tableDic.push_back(tableDic);
@@ -331,8 +379,32 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.tableTxt.push_back(tableTxt);
     }
 
-    // TODO: rank 0 tables in alpha have no TableDimsRow entries
-    // or TableDimsTxtLangRow entries
+    // dimensions for table
+    int dim = 0;
+    for (auto av : pp_dimension_list_agentvar ) {
+        auto es = dynamic_cast<EnumerationSymbol *>(av->data_type);
+        assert(es); // integrity check guarantee
+        TableDimsRow tableDims;
+        tableDims.tableId = pp_table_id;
+        tableDims.name = "dim" + to_string(dim);
+        tableDims.pos = dim;
+        tableDims.typeId = es->type_id;
+        tableDims.isTotal = false;
+        tableDims.dimSize = es->pp_size();
+        metaRows.tableDims.push_back(tableDims);
+
+        for (auto lang : Symbol::pp_all_languages) {
+            TableDimsTxtLangRow tableDimsTxt;
+            tableDimsTxt.tableId = pp_table_id;
+            tableDimsTxt.name = "dim" + to_string(dim);
+            tableDimsTxt.langName = lang->name;
+            tableDimsTxt.descr = av->label(*lang);
+            tableDimsTxt.note = av->note(*lang);
+            metaRows.tableDimsTxt.push_back(tableDimsTxt);
+        }
+        ++dim;
+    }
+
 
     // accumulators for table
     for (auto acc : pp_accumulators) {
