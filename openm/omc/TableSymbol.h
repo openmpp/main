@@ -16,6 +16,7 @@ class TableAnalysisAgentVarSymbol;
 class AgentFuncSymbol;
 class AgentInternalSymbol;
 class AgentVarSymbol;
+class ExpressionAgentVarSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -41,6 +42,8 @@ public:
         , update_cell_fn(nullptr)
         , prepare_increment_fn(nullptr)
         , process_increment_fn(nullptr)
+        , filter(nullptr)
+        , pp_table_id(-1)
     {
         create_auxiliary_symbols();
     }
@@ -137,6 +140,13 @@ public:
      */
 
     AgentFuncSymbol *process_increment_fn;
+
+
+    /**
+     * The expression agentvar of the table filter.
+     */
+
+    ExpressionAgentVarSymbol *filter;
 
     /**
      * List of dimensions (parse phase references to pointers)

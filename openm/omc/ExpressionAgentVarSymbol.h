@@ -34,6 +34,13 @@ public:
         create_auxiliary_symbols();
     }
 
+    ExpressionAgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type, ExprForAgentVar *root, yy::location decl_loc = yy::location())
+        : AgentVarSymbol(member_name, agent, type, decl_loc)
+        , root(root)
+    {
+        create_auxiliary_symbols();
+    }
+
     /**
      * Create auxiliary symbols associated with this table.
      */

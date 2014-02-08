@@ -973,6 +973,14 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarLiteral( $literal );
                         }
+    | "+"[op] expr_for_agentvar[right] %prec UNARY_PLUS
+                        {
+	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+                        }
+    | "-"[op] expr_for_agentvar[right] %prec UNARY_MINUS
+                        {
+	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+                        }
     | expr_for_agentvar[left] "+"[op] expr_for_agentvar[right]
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
@@ -989,13 +997,69 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
-    | "-"[op] expr_for_agentvar[right] %prec UNARY_MINUS
+    | expr_for_agentvar[left] "%"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "~"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "|"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "&"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "^"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "<<"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] ">>"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | "!"[op] expr_for_agentvar[right]
                         {
 	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
                         }
-    | "+"[op] expr_for_agentvar[right] %prec UNARY_PLUS
+    | expr_for_agentvar[left] "&&"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "||"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "=="[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "!="[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "<"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] ">"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] "<="[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    | expr_for_agentvar[left] ">="[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[cond] "?" expr_for_agentvar[first] ":" expr_for_agentvar[second] 
                         {
@@ -1058,6 +1122,7 @@ decl_table:
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
                         }
+            table_filter_opt
             "{" table_dimension_list "}" ";"
                         {
                             // No valid agent or table context
@@ -1069,6 +1134,19 @@ decl_table:
                             pc.counter3 = 0;
                         }
     | "table" error ";"
+    ;
+
+table_filter_opt:
+    "[" expr_for_agentvar[root] "]"
+                        {
+                            TableSymbol *table = pc.get_table_context();
+                            // create an expression agentvar for the filter
+                            auto eav = new ExpressionAgentVarSymbol("om_filter_" + table->name, table->agent, Symbol::get_symbol("bool"), $root, @root);
+                            assert(eav); // out of memory check
+                            // note expression agentvar in table
+                            table->filter = eav;
+                        }
+    | /* nothing */
     ;
 
 table_dimension_list:

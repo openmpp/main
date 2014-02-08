@@ -66,5 +66,7 @@ void NumericSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
 NumericSymbol *NumericSymbol::find(token_type type)
 {
-    return dynamic_cast<NumericSymbol *>(get_symbol(token_to_string(type)));
+    auto ns = dynamic_cast<NumericSymbol *>(get_symbol(token_to_string(type)));
+    assert(ns); // only called when valid
+    return ns;
 }
