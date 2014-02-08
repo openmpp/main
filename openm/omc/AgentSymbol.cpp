@@ -240,7 +240,7 @@ void AgentSymbol::build_body_initialize_tables()
             c += "if (" + table->filter->name + ") {" ;
         }
         c += table->update_cell_fn->name + "();" ;
-        c += table->prepare_increment_fn->name + "();" ;
+        c += table->prepare_increments_fn->name + "();" ;
         if (table->filter) {
             c += "}" ;
         }
@@ -258,7 +258,7 @@ void AgentSymbol::build_body_finalize_tables()
         if (table->filter) {
             c += "if (" + table->filter->name + ") {" ;
         }
-        c += table->process_increment_fn->name + "();";
+        c += table->process_increments_fn->name + "();";
         if (table->filter) {
             c += "}" ;
         }

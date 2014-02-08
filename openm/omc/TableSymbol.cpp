@@ -44,19 +44,19 @@ void TableSymbol::create_auxiliary_symbols()
     }
 
     {
-        assert(!prepare_increment_fn); // initialization guarantee
-        // Ex. "om_prepare_increment_DurationOfLife"
-        prepare_increment_fn = new AgentFuncSymbol("om_prepare_increment_" + name, agent);
-        assert(prepare_increment_fn); // out of memory check
-        prepare_increment_fn->doc_block = doxygen_short("Prepare the increment for the active table cell in " + name + ".");
+        assert(!prepare_increments_fn); // initialization guarantee
+        // Ex. "om_prepare_increments_DurationOfLife"
+        prepare_increments_fn = new AgentFuncSymbol("om_prepare_increments_" + name, agent);
+        assert(prepare_increments_fn); // out of memory check
+        prepare_increments_fn->doc_block = doxygen_short("Prepare the increments for the active table cell in " + name + ".");
     }
 
     {
-        assert(!process_increment_fn); // initialization guarantee
-        // Ex. "om_increment_process_DurationOfLife"
-        process_increment_fn = new AgentFuncSymbol("om_process_increment_" + name, agent);
-        assert(process_increment_fn); // out of memory check
-        process_increment_fn->doc_block = doxygen_short("Process the increment for the active table cell in " + name + ".");
+        assert(!process_increments_fn); // initialization guarantee
+        // Ex. "om_process_increments_DurationOfLife"
+        process_increments_fn = new AgentFuncSymbol("om_process_increments_" + name, agent);
+        assert(process_increments_fn); // out of memory check
+        process_increments_fn->doc_block = doxygen_short("Process the increments for the active table cell in " + name + ".");
     }
 }
 
@@ -106,8 +106,8 @@ void TableSymbol::post_parse(int pass)
         {
             // construct function bodies
             build_body_update_cell();
-            build_body_prepare_increment();
-            build_body_process_increment();
+            build_body_prepare_increments();
+            build_body_process_increments();
 
             // Dependency on change in table index agentvars
             for (auto av : pp_dimension_list_agentvar) {
@@ -117,9 +117,9 @@ void TableSymbol::post_parse(int pass)
                 if (filter) {
                     c += "if (" + filter->name + ") {";
                 }
-                c += process_increment_fn->name + "();";
+                c += process_increments_fn->name + "();";
                 c += update_cell_fn->name + "();";
-                c += prepare_increment_fn->name + "();";
+                c += prepare_increments_fn->name + "();";
                 if (filter) {
                     c += "}";
                 }
@@ -135,11 +135,11 @@ void TableSymbol::post_parse(int pass)
                 c += "if (new_value) {";
                 c += "// filter changed from false to true";
                 c += update_cell_fn->name + "();";
-                c += prepare_increment_fn->name + "();";
+                c += prepare_increments_fn->name + "();";
                 c += "}";
                 c += "else {";
                 c += "// filter changed from true to false";
-                c += process_increment_fn->name + "();";
+                c += process_increments_fn->name + "();";
                 c += "}";
                 c += "}";
                 c += "";
@@ -301,9 +301,9 @@ void TableSymbol::build_body_update_cell()
     c += cell->name + " = cell;" ;
 }
 
-void TableSymbol::build_body_prepare_increment()
+void TableSymbol::build_body_prepare_increments()
 {
-    CodeBlock& c = prepare_increment_fn->func_body;
+    CodeBlock& c = prepare_increments_fn->func_body;
 
     for (auto table_agentvar : pp_table_agentvars) {
         if (table_agentvar->need_value_in)
@@ -311,9 +311,9 @@ void TableSymbol::build_body_prepare_increment()
     }
 }
 
-void TableSymbol::build_body_process_increment()
+void TableSymbol::build_body_process_increments()
 {
-    CodeBlock& c = process_increment_fn->func_body;
+    CodeBlock& c = process_increments_fn->func_body;
 
     c += "int cell = " + cell->name + ";" ;
     c += "";

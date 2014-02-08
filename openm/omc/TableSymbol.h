@@ -40,8 +40,8 @@ public:
         , pp_agent(nullptr)
         , cell(nullptr)
         , update_cell_fn(nullptr)
-        , prepare_increment_fn(nullptr)
-        , process_increment_fn(nullptr)
+        , prepare_increments_fn(nullptr)
+        , process_increments_fn(nullptr)
         , filter(nullptr)
         , pp_table_id(-1)
     {
@@ -70,13 +70,13 @@ public:
      * Builds the function body of the prepare_increment function.
      */
 
-    void build_body_prepare_increment();
+    void build_body_prepare_increments();
 
     /**
      * Builds the function body of the process_increment function.
      */
 
-    void build_body_process_increment();
+    void build_body_process_increments();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
@@ -132,14 +132,14 @@ public:
      * The agent function which prepares the increment for the active table cell.
      */
 
-    AgentFuncSymbol *prepare_increment_fn;
+    AgentFuncSymbol *prepare_increments_fn;
 
 
     /**
      * The agent function which processes the increment for the active table cell.
      */
 
-    AgentFuncSymbol *process_increment_fn;
+    AgentFuncSymbol *process_increments_fn;
 
 
     /**
