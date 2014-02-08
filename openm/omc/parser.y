@@ -500,6 +500,7 @@ ompp_declarative_island:
     | decl_range            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
 	| decl_agent            { pc.InitializeForCxx(); }
+	| decl_link             { pc.InitializeForCxx(); }
 	| decl_table            { pc.InitializeForCxx(); }
 	;
 
@@ -1089,6 +1090,44 @@ decl_type_part:
                             $decl_type_part = $type_symbol;
                         }
     ;
+
+/*
+ * link
+ */
+
+decl_link:
+          "link" SYMBOL[agent1] "." SYMBOL[link1] ";"
+                        {
+                            // single link between same kind of agent
+                            auto ls = new AgentLinkSymbol($link1, $agent1, @link1);
+                        }
+        | "link" SYMBOL[agent1] "." SYMBOL[link1] SYMBOL[agent2] "." SYMBOL[link2] ";"
+                        {
+                            // single link between two different kinds of agent
+                            auto ls1 = new AgentLinkSymbol($link1, $agent1, @link1);
+                            auto ls2 = new AgentLinkSymbol($link2, $agent2, @link2);
+                        }
+        | "link" SYMBOL[agent1] "." SYMBOL[link1] SYMBOL[agentN] "." SYMBOL[linkN] "[" "]" ";"
+                        {
+                            // one-to-many link
+                            auto ls = new AgentLinkSymbol($link1, $agent1, @link1);
+                            auto mls = new AgentMultiLinkSymbol($linkN, $agentN, @linkN);
+                            ;
+                        }
+        | "link" SYMBOL[agentN] "." SYMBOL[linkN] "[" "]" SYMBOL[agent1] "." SYMBOL[link1] ";"
+                        {
+                            // one-to-many link (same code as above)
+                            ;
+                        }
+        | "link" SYMBOL[agent1N] "." SYMBOL[link1N] "[" "]" SYMBOL[agent2N] "." SYMBOL[link2N] "[" "]" ";"
+                        {
+                            // many-to-many link
+                            auto mls1 = new AgentMultiLinkSymbol($link1N, $agent1N, @link1N);
+                            auto mls2 = new AgentMultiLinkSymbol($link2N, $agent2N, @link2N);
+                            ;
+                        }
+        | "link" error ";"
+        ;
 
 /*
  * table
