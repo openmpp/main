@@ -106,7 +106,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == initialize_tables_fn); // initialization guarantee
         initialize_tables_fn = new AgentFuncSymbol("om_initialize_tables", this);
         assert(initialize_tables_fn); // out of memory check
-        initialize_tables_fn->doc_block = doxygen_short("Initialize the agent's increment in each table when it enters the simulation.");
+        initialize_tables_fn->doc_block = doxygen_short("Initialize the agent's increments in each table when it enters the simulation.");
     }
 
     // The om_finalize_tables member function
@@ -114,7 +114,15 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_tables_fn); // initialization guarantee
         finalize_tables_fn = new AgentFuncSymbol("om_finalize_tables", this);
         assert(finalize_tables_fn); // out of memory check
-        finalize_tables_fn->doc_block = doxygen_short("Finish the agent's pending increment in each table when it leaves the simulation.");
+        finalize_tables_fn->doc_block = doxygen_short("Finish the agent's pending increments in each table when it leaves the simulation.");
+    }
+
+    // The initialize_expression_agentvars member function
+    {
+        assert(nullptr == initialize_expression_agentvars_fn); // initialization guarantee
+        initialize_expression_agentvars_fn = new AgentFuncSymbol("om_initialize_expression_agentvars", this);
+        assert(initialize_expression_agentvars_fn); // out of memory check
+        initialize_expression_agentvars_fn->doc_block = doxygen_short("Initialize each expression agentvar before the agent enters the simulation.");
     }
 
     // The Start() member function
@@ -168,6 +176,7 @@ void AgentSymbol::post_parse(int pass)
             build_body_finalize_events();
             build_body_initialize_tables();
             build_body_finalize_tables();
+            build_body_initialize_expression_agentvars();
         }
         break;
     default:
@@ -199,15 +208,8 @@ void AgentSymbol::build_body_initialize_data_members()
 {
     CodeBlock& c = initialize_data_members_fn->func_body;
 
-    c += "// Assign default initial value to all data members";
     for ( auto adm : pp_agent_data_members ) {
         c += adm->cxx_initialize_expression();
-    }
-
-    c += "";
-    c += "// Evaluate expression agentvars";
-    for ( auto eav : pp_expr_agentvars ) {
-        c += eav->expression_fn->name + "();";
     }
 }
 
@@ -266,3 +268,11 @@ void AgentSymbol::build_body_finalize_tables()
     }
 }
 
+void AgentSymbol::build_body_initialize_expression_agentvars()
+{
+    CodeBlock& c = initialize_expression_agentvars_fn->func_body;
+
+    for ( auto eav : pp_expr_agentvars ) {
+        c += eav->expression_fn->name + "();";
+    }
+}

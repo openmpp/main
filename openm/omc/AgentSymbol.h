@@ -46,6 +46,7 @@ public:
         , finalize_events_fn(nullptr)
         , initialize_tables_fn(nullptr)
         , finalize_tables_fn(nullptr)
+        , initialize_expression_agentvars_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -100,6 +101,17 @@ public:
      */
 
     void build_body_finalize_tables();
+
+    /**
+     * Builds the function body of the function.
+     */
+
+    void build_body_initialize_expression_agentvars();
+
+
+    /**
+     * The built-in agentvar for time in the agent.
+     */
 
     BuiltinAgentVarSymbol *pp_time;
 
@@ -171,6 +183,16 @@ public:
      */
 
     AgentFuncSymbol *finalize_tables_fn;
+
+
+    /**
+     * The agent function which initializes all expression agentvars in the agent.
+     * 
+     * This function has the fixed name om_initialize_expression_agentvars().  It is used in the run-time support
+     * class BaseAgent before the agent enters the simulation.
+     */
+
+    AgentFuncSymbol *initialize_expression_agentvars_fn;
 
     /**
     * The data members of this agent
