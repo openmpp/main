@@ -129,7 +129,7 @@ namespace mm {
         void make_active()
         {
             agents.push_front( this );
-            it_in_agents = agents.begin();
+            iter_in_agents = agents.begin();
         }
 
         /**
@@ -138,11 +138,12 @@ namespace mm {
     
         void make_inactive()
         {
-            agents.erase( it_in_agents );
+            agents.erase( iter_in_agents );
         }
 
         void om_Start_begin()
         {
+            om_active = false;
             om_initialize_data_members();
         }
 
@@ -155,6 +156,7 @@ namespace mm {
             om_initialize_tables();
             om_initialize_events();
             make_active();
+            om_active = true;
         }
 
         /**
@@ -166,22 +168,30 @@ namespace mm {
             om_finalize_tables();
             om_finalize_events();
             make_inactive();
+            om_active = false;
             make_zombie();
         }
 
+        /**
+         * True if agent is active in the simulation.
+         */
+
+        bool om_active;
+
     private:
+
+        /**
+         * The iterator of this agent in BaseAgent::agents.
+         */
+
+        list<BaseAgent *>::iterator iter_in_agents;
+
 
         /**
          * Active agents
          */
 
         static list<BaseAgent *> agents;
-
-        /**
-         * The iterator of this agent in \a agents.
-         */
-
-        list<BaseAgent *>::iterator it_in_agents;
     };
 
     /**
@@ -231,8 +241,6 @@ namespace mm {
 
         void make_zombie()
         {
-            // TODO remove from active_agents
-        
             zombies.push_front( (A *)this );
         }
 

@@ -29,3 +29,9 @@ void BoolSymbol::post_parse(int pass)
     }
 }
 
+BoolSymbol *BoolSymbol::find()
+{
+    auto bs = dynamic_cast<BoolSymbol *>(get_symbol(token_to_string(token::TK_bool)));
+    assert(bs); // only called when valid
+    return bs;
+}

@@ -14,6 +14,7 @@
 #include "ExpressionAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
+#include "BoolSymbol.h"
 
 using namespace std;
 
@@ -31,9 +32,10 @@ void AgentSymbol::create_auxiliary_symbols()
 
     // TODO: Remove test - Create internal data members for this agent: allow_assignment
     if (!exists("allow_assignment", this))
-        new AgentInternalSymbol("allow_assignment", this, Symbol::get_symbol(Symbol::token_to_string(token::TK_bool)));
+        new AgentInternalSymbol("allow_assignment", this, BoolSymbol::find());
 
     // The age_agent() member function
+    // Used in the run-time support classes
     {
         auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");
         fn->doc_block = doxygen_short("Age the agent to the given time.");
@@ -232,8 +234,17 @@ void AgentSymbol::build_body_initialize_tables()
     CodeBlock& c = initialize_tables_fn->func_body;
 
     for (auto table : pp_agent_tables) {
+        c += "// " + table->name;
+        // If the table filter is false at initialization, do nothing
+        if (table->filter) {
+            c += "if (" + table->filter->name + ") {" ;
+        }
         c += table->update_cell_fn->name + "();" ;
         c += table->prepare_increment_fn->name + "();" ;
+        if (table->filter) {
+            c += "}" ;
+        }
+        c += "";
     }
 }
 
@@ -242,7 +253,16 @@ void AgentSymbol::build_body_finalize_tables()
     CodeBlock& c = finalize_tables_fn->func_body;
 
     for (auto table : pp_agent_tables) {
+        c += "// " + table->name;
+        // If the table filter is false at finalization, do nothing
+        if (table->filter) {
+            c += "if (" + table->filter->name + ") {" ;
+        }
         c += table->process_increment_fn->name + "();";
+        if (table->filter) {
+            c += "}" ;
+        }
+        c += "";
     }
 }
 

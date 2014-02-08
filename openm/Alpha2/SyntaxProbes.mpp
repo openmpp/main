@@ -202,4 +202,5 @@ table Person FilterTest
     {
         duration()
     }
+    * playing
 };

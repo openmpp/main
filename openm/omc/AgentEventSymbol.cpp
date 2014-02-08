@@ -55,17 +55,12 @@ void AgentEventSymbol::post_parse(int pass)
                 auto av = dynamic_cast<AgentVarSymbol *>(sym);
                 if (av) {
                     // dependency of time function on av detected
-                    // E.g. om_time_StartPlayingEvent.make_dirty();
-                    string line = name + ".make_dirty();";
-                    av->side_effects_fn->func_body += "// Recalculate time to event " + event_name;
-                    av->side_effects_fn->func_body += line;
+                    CodeBlock& c = av->side_effects_fn->func_body;
+                    c += "// Recalculate time to event " + event_name;
+                    c += "if (om_active) " + name + ".make_dirty();";
                 }
             }
         }
-        // add side-effect to time agentvar  TODO?  Or to understand?
-        AgentVarSymbol *av = pp_agent->pp_time;
-        // Eg. om_duration.advance( new_value - old_value );
-        //string line = name + ".make_dirty();";
     }
     break;
     default:

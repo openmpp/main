@@ -12,6 +12,7 @@
 #include "AgentInternalSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
+#include "ExpressionAgentVarSymbol.h"
 #include "NumericSymbol.h"
 #include "RangeSymbol.h"
 #include "TableAccumulatorSymbol.h"
@@ -112,9 +113,35 @@ void TableSymbol::post_parse(int pass)
             for (auto av : pp_dimension_list_agentvar) {
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += "// cell change in table " + name;
+                c += "if (om_active) {";
+                if (filter) {
+                    c += "if (" + filter->name + ") {";
+                }
                 c += process_increment_fn->name + "();";
                 c += update_cell_fn->name + "();";
                 c += prepare_increment_fn->name + "();";
+                if (filter) {
+                    c += "}";
+                }
+                c += "}";
+                c += "";
+            }
+
+            // Dependency on table filter
+            if (filter) {
+                CodeBlock& c = filter->side_effects_fn->func_body;
+                c += "// filter change in table " + name;
+                c += "if (om_active) {";
+                c += "if (new_value) {";
+                c += "// filter changed from false to true";
+                c += update_cell_fn->name + "();";
+                c += prepare_increment_fn->name + "();";
+                c += "}";
+                c += "else {";
+                c += "// filter changed from true to false";
+                c += process_increment_fn->name + "();";
+                c += "}";
+                c += "}";
                 c += "";
             }
         }
@@ -277,9 +304,6 @@ void TableSymbol::build_body_update_cell()
 void TableSymbol::build_body_prepare_increment()
 {
     CodeBlock& c = prepare_increment_fn->func_body;
-
-    c += "int cell = " + cell->name + ";" ;
-    c += "";
 
     for (auto table_agentvar : pp_table_agentvars) {
         if (table_agentvar->need_value_in)

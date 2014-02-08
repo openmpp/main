@@ -33,5 +33,14 @@ public:
     }
 
     void post_parse(int pass);
+
+
+    /**
+     * Gets the one and only bool type symbol.
+     *
+     * @return null if it fails, else a BoolSymbol*.
+     */
+
+    static BoolSymbol *find();
 };
 

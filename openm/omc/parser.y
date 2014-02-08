@@ -1141,7 +1141,7 @@ table_filter_opt:
                         {
                             TableSymbol *table = pc.get_table_context();
                             // create an expression agentvar for the filter
-                            auto eav = new ExpressionAgentVarSymbol("om_filter_" + table->name, table->agent, Symbol::get_symbol("bool"), $root, @root);
+                            auto eav = new ExpressionAgentVarSymbol("om_filter_" + table->name, table->agent, BoolSymbol::find(), $root, @root);
                             assert(eav); // out of memory check
                             // note expression agentvar in table
                             table->filter = eav;
