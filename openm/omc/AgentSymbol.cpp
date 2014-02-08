@@ -39,24 +39,29 @@ void AgentSymbol::create_auxiliary_symbols()
     {
         auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");
         fn->doc_block = doxygen_short("Age the agent to the given time.");
-        fn->func_body += "time.set(t);";
+        CodeBlock& c = fn->func_body;
+        c += "if (time < t) time.set(t);";
+        c += "else assert(false); // time running backwards?";
     }
 
     // The get_agent_id() member function
     {
         auto *fn = new AgentFuncSymbol("get_agent_id", this, "int", "");
         fn->doc_block = doxygen_short("Return unique agent_id of this agent.");
-        fn->func_body += "return agent_id.get();" ;
+        CodeBlock& c = fn->func_body;
+        c += "return agent_id.get();" ;
     }
 
     // The om_Start_custom() member function
     {
+        // no code generation for definition
         auto *fn = new AgentFuncSymbol("om_Start_custom", this, "void", "", true);
         fn->doc_block = doxygen_short("Model-specific customizations before simulating agent.");
     }
 
     // The om_Finish_custom() member function
     {
+        // no code generation for definition
         auto *fn = new AgentFuncSymbol("om_Finish_custom", this, "void", "", true);
         fn->doc_block = doxygen_short("Model-specific customizations after simulating agent.");
     }
@@ -67,6 +72,7 @@ void AgentSymbol::create_auxiliary_symbols()
         initialize_agentvar_offsets_fn = new AgentFuncSymbol("om_initialize_agentvar_offsets", this);
         assert(initialize_agentvar_offsets_fn); // out of memory check
         initialize_agentvar_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing agent.");
+        // function body is generated in post-parse phase
     }
 
     // The initialize_event_offsets member function
@@ -75,6 +81,7 @@ void AgentSymbol::create_auxiliary_symbols()
         initialize_event_offsets_fn = new AgentFuncSymbol("om_initialize_event_offsets", this);
         assert(initialize_event_offsets_fn); // out of memory check
         initialize_event_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of events in the containing agent.");
+        // function body is generated in post-parse phase
     }
 
     // The initialize_data_members member function
@@ -83,6 +90,7 @@ void AgentSymbol::create_auxiliary_symbols()
         initialize_data_members_fn = new AgentFuncSymbol("om_initialize_data_members", this);
         assert(initialize_data_members_fn); // out of memory check
         initialize_data_members_fn->doc_block = doxygen_short("Initialization of data members before the agent enters simulation.");
+        // function body is generated in post-parse phase
     }
 
     // The om_initialize_events member function
@@ -91,6 +99,7 @@ void AgentSymbol::create_auxiliary_symbols()
         initialize_events_fn = new AgentFuncSymbol("om_initialize_events", this);
         assert(initialize_events_fn); // out of memory check
         initialize_events_fn->doc_block = doxygen_short("Force event time calculation for each event in the agent when it enters simulation.");
+        // function body is generated in post-parse phase
     }
 
     // The om_finalize_events member function
@@ -99,6 +108,7 @@ void AgentSymbol::create_auxiliary_symbols()
         finalize_events_fn = new AgentFuncSymbol("om_finalize_events", this);
         assert(finalize_events_fn); // out of memory check
         finalize_events_fn->doc_block = doxygen_short("Remove each event in the agent from the event queue when it leaves the simulation.");
+        // function body is generated in post-parse phase
     }
 
     // The om_initialize_tables member function
@@ -107,6 +117,7 @@ void AgentSymbol::create_auxiliary_symbols()
         initialize_tables_fn = new AgentFuncSymbol("om_initialize_tables", this);
         assert(initialize_tables_fn); // out of memory check
         initialize_tables_fn->doc_block = doxygen_short("Initialize the agent's increments in each table when it enters the simulation.");
+        // function body is generated in post-parse phase
     }
 
     // The om_finalize_tables member function
@@ -115,6 +126,7 @@ void AgentSymbol::create_auxiliary_symbols()
         finalize_tables_fn = new AgentFuncSymbol("om_finalize_tables", this);
         assert(finalize_tables_fn); // out of memory check
         finalize_tables_fn->doc_block = doxygen_short("Finish the agent's pending increments in each table when it leaves the simulation.");
+        // function body is generated in post-parse phase
     }
 
     // The initialize_expression_agentvars member function
@@ -123,29 +135,30 @@ void AgentSymbol::create_auxiliary_symbols()
         initialize_expression_agentvars_fn = new AgentFuncSymbol("om_initialize_expression_agentvars", this);
         assert(initialize_expression_agentvars_fn); // out of memory check
         initialize_expression_agentvars_fn->doc_block = doxygen_short("Initialize each expression agentvar before the agent enters the simulation.");
+        // function body is generated in post-parse phase
     }
 
     // The Start() member function
     {
-        auto start_fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
-        if (!start_fn) start_fn = new AgentFuncSymbol("Start", this);
-        assert(start_fn);
-        start_fn->suppress_defn = false;
-        start_fn->doc_block = doxygen_short("Start simulating the agent.");
-        start_fn->func_body += "om_Start_begin();";
-        start_fn->func_body += "om_Start_custom();";
-        start_fn->func_body += "om_Start_end();";
+        auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
+        if (!fn) fn = new AgentFuncSymbol("Start", this);
+        assert(fn);
+        fn->doc_block = doxygen_short("Start simulating the agent.");
+        CodeBlock& c = fn->func_body;
+        c += "om_Start_begin();";
+        c += "om_Start_custom();";
+        c += "om_Start_end();";
     }
 
     // The Finish() member function
     {
-        auto finish_fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Finish", this));
-        if (!finish_fn) finish_fn = new AgentFuncSymbol("Finish", this);
-        assert(finish_fn);
-        finish_fn->suppress_defn = false;
-        finish_fn->doc_block = doxygen_short("Finish simulating the agent.");
-        finish_fn->func_body += "om_Finish_custom();";
-        finish_fn->func_body += "om_Finish_end();";
+        auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Finish", this));
+        if (!fn) fn = new AgentFuncSymbol("Finish", this);
+        assert(fn);
+        fn->doc_block = doxygen_short("Finish simulating the agent.");
+        CodeBlock& c = fn->func_body;
+        c += "om_Finish_custom();";
+        c += "om_Finish_end();";
     }
 }
 
