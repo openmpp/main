@@ -638,21 +638,28 @@ Symbol *Symbol::get_symbol(const string& unm)
 	auto it = symbols.find( unm );
     if ( it != symbols.end() ) 
         sym = it->second;
-
     return sym;
 }
 
 Symbol *Symbol::get_symbol( const string& member, const Symbol *agent )
 {
-    Symbol *sym = nullptr;
     string unm = Symbol::symbol_name( member, agent );
-	auto it = symbols.find( unm );
-	if (it != symbols.end() )
-        sym = it->second;
+    return Symbol::get_symbol(unm);
+}
 
+Symbol *Symbol::create_symbol(const string& unm)
+{
+    Symbol *sym = Symbol::get_symbol(unm);
+    if (!sym) sym = new Symbol(unm);
     return sym;
 }
 
+Symbol *Symbol::create_symbol( const string& member, const Symbol *agent )
+{
+    Symbol *sym = Symbol::get_symbol(member, agent);
+    if (!sym) sym = new Symbol(member, agent);
+    return sym;
+}
 
 Symbol *Symbol::find_a_symbol( const type_info& ti )
 {

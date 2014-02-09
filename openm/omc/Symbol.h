@@ -153,14 +153,14 @@ public:
      * 
      * If the symbol table does contain an entry with unique name @a unm the existing symbol is
      * morphed to a new base class Symbol. This is useful for replacing a default symbol by a symbol
-     * specified in the model source code. For example, a default @a NumericSymbol with name 'Time'
-     * and type 'double' is inserted into the symbol table at initialization.  If a time_type
-     * statement is encountered in model code, this symbol is replaced by a new symbol with the
-     * developer-specified type used for time.
+     * specified in the model source code. For example, a default NumericSymbol with name 'Time' and
+     * type 'double' is inserted into the symbol table at initialization.  If a time_type statement
+     * is encountered in model code, this symbol is replaced by a new symbol with the developer-
+     * specified type used for time.
      *
-     * @param unm The unique name for the symbol.
+     * @param unm      The unique name for the symbol.
+     * @param decl_loc (Optional) the declaration location.
      */
-
     Symbol(string unm, yy::location decl_loc = yy::location())
         : unique_name( unm )
         , name ( unm )
@@ -184,7 +184,6 @@ public:
         }
     }
 
-
     /**
      * Constructor.
      * 
@@ -197,10 +196,10 @@ public:
      * If the symbol table does contain a corresponding entry the existing symbol is morphed to a
      * new base class Symbol.
      *
-     * @param nm    The name.
-     * @param agent The agent qualifying the name.
+     * @param nm       The name.
+     * @param agent    The agent qualifying the name.
+     * @param decl_loc (Optional) the declaration location.
      */
-
     Symbol(const string nm, const Symbol *agent, yy::location decl_loc = yy::location())
         : unique_name(symbol_name(nm, agent))
         , name ( nm )
@@ -224,7 +223,6 @@ public:
         }
     }
 
-
     /**
      * Morph existing symbol to a new symbol.
      * 
@@ -233,8 +231,8 @@ public:
      * the symbol table entry is modified to refer to the new symbol.
      *
      * @param [in,out] sym [in,out] Original symbol to be morphed.
+     * @param decl_loc     (Optional) the declaration location.
      */
-
     Symbol(Symbol*& sym, yy::location decl_loc = yy::location())
         : unique_name(sym->unique_name)
         , name ( sym->name )
@@ -523,7 +521,6 @@ public:
 
     static string symbol_name(const string& nm, const Symbol *agent);
 
-
     /**
      * Gets a symbol for a unique name.
      *
@@ -531,9 +528,7 @@ public:
      *
      * @return The symbol, or nullptr if not found.
      */
-
     static Symbol *get_symbol(const string& unm);
-
 
     /**
      * Gets a symbol for a member name in an agent.
@@ -543,9 +538,26 @@ public:
      *
      * @return The symbol, or nullptr if not found.
      */
-
     static Symbol *get_symbol(const string& nm, const Symbol *agent);
 
+    /**
+     * Creates (or gets if exists) a symbol for a unique name.
+     *
+     * @param unm The unique name.
+     *
+     * @return The symbol.
+     */
+    static Symbol *create_symbol(const string& unm);
+
+    /**
+     * Creates (or gets if exists) a symbol for a member name in an agent.
+     *
+     * @param nm    The member name.
+     * @param agent The agent.
+     *
+     * @return The symbol.
+     */
+    static Symbol *create_symbol(const string& nm, const Symbol *agent);
 
     /**
      * Searches for the first symbol of the given class.
