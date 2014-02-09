@@ -198,7 +198,6 @@ int main(int argc, char * argv[])
         om_developer_cpp << "" << endl;
         om_developer_cpp << "#include \"omc/omSimulation.h\"" << endl;
 		om_developer_cpp << "using namespace openm;" << endl;
-        om_developer_cpp << "namespace mm {" << endl;
 
         // List of source file names with path.
         // On each call, drv.parse will be provided a pointer to a file name
@@ -242,8 +241,6 @@ int main(int argc, char * argv[])
                 // continue parsing any remaining source code modules to detect additional syntax errors (possibly non-spurious)
             }
         }
-
-        om_developer_cpp << "} //namespace mm" << endl;
 
         if ( pc.parse_errors > 0 ) {
             theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);

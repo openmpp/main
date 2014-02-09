@@ -124,7 +124,6 @@ namespace openm {
 } // namespace openm
 
 using namespace openm;
-using namespace mm;
 
 void RunModel(IModel * i_model)
 {
@@ -152,16 +151,16 @@ void RunModel(IModel * i_model)
     }
 
     // simulate the population
-    mm::StartSimulation(sample);
+    StartSimulation(sample);
     while ( true ) {
-        if (mm::BaseEvent::time_next_event() > simulation_end) {
+        if (BaseEvent::time_next_event() > simulation_end) {
             BaseAgent::age_all_agents(simulation_end);
             BaseAgent::finalize_all_agent_tables();
             break;
         }
-        if (! mm::BaseEvent::do_next_event() ) break;
+        if (! BaseEvent::do_next_event() ) break;
     }
-    mm::EndSimulation();
+    EndSimulation();
 
     //TODO Cleanup all lists, maybe...
 }

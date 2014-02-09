@@ -11,19 +11,17 @@
 #pragma once
 #include <cmath>
 
-namespace mm {
-    // fundamental types
-    typedef unsigned int uint;
-    typedef unsigned char uchar;
-    typedef unsigned short ushort;
-    typedef unsigned long ulong;
-    typedef int integer;
-    typedef int counter;
-    typedef double real;
-    #define REAL_MAX DBL_MAX
-    typedef double Time;
-    typedef double TIME; // For Modgen source compatibility
-    extern const Time time_infinite;
-    extern const Time TIME_INFINITE; // For Modgen source compatibility
+// fundamental types
+typedef unsigned int uint;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned long ulong;
+typedef int integer;
+typedef int counter;
+typedef double real;
+#define REAL_MAX DBL_MAX
+typedef double Time;
+typedef double TIME; // For Modgen source compatibility
+extern const Time time_infinite;
+extern const Time TIME_INFINITE; // For Modgen source compatibility
 
-} // namespace mm

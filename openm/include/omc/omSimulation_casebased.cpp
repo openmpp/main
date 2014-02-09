@@ -125,7 +125,6 @@ namespace openm {
 } // namespace openm
 
 using namespace openm;
-using namespace mm;
 
 void RunModel(IModel * i_model)
 {
@@ -156,11 +155,11 @@ void RunModel(IModel * i_model)
         }
 
         // simulate the case
-        mm::StartSimulation(thisCase);
-        while (mm::BaseEvent::do_next_event());
+        StartSimulation(thisCase);
+        while (BaseEvent::do_next_event());
         // Debug check for no left-over agents for which Finish was not called (model error)
-        assert(0 == mm::BaseAgent::om_active_agents());
-        mm::EndSimulation();
+        assert(0 == BaseAgent::om_active_agents());
+        EndSimulation();
 
         {
             // generate the case seed for the next case

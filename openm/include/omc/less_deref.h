@@ -8,22 +8,19 @@
 
 #pragma once
 
-namespace mm {
+/**
+    * Functor for operator< on dereferenced pointers
+    * For use as comparison function in std::set which stores pointers.
+    *
+    * @tparam  T   Generic type parameter.
+    */
 
-    /**
-     * Functor for operator< on dereferenced pointers
-     * For use as comparison function in std::set which stores pointers.
-     *
-     * @tparam  T   Generic type parameter.
-     */
+template<class T>
+struct less_deref
+{	
+    bool operator()(const T& lhs, const T& rhs) const
+    {
+        return ( *lhs < *rhs );
+    }
+};
 
-    template<class T>
-    struct less_deref
-    {	
-        bool operator()(const T& lhs, const T& rhs) const
-        {
-            return ( *lhs < *rhs );
-        }
-    };
-
-} // namespace mm

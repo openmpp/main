@@ -10,67 +10,64 @@
 #include "omc/Range.h"
 #include "omc/integer_counter.h"
 
-namespace mm {
+//range YEARS //EN Year
+//{
+//    -3,
+//     4
+//};
 
-    //range YEARS //EN Year
-    //{
-    //    -3,
-    //     4
-    //};
-
-    // omc-generated code fragments:
+// omc-generated code fragments:
     
-    // play with storage type for testing
-    typedef int storage;
+// play with storage type for testing
+typedef int storage;
 
-    typedef Range<storage, -3, 4> YEAR;
+typedef Range<storage, -3, 4> YEAR;
 
-    // Tests:
+// Tests:
 
-    void test_range()
-    {
-        // test of object creation/initialization
-        YEAR y1 = 0;
+void test_range()
+{
+    // test of object creation/initialization
+    YEAR y1 = 0;
 
-        // test of operator overloading
-        y1++;
-        assert(y1 == 1);
+    // test of operator overloading
+    y1++;
+    assert(y1 == 1);
 
-        // test of operator overloading & integrity
-        y1 = 42;
-        assert(y1 == 4);
-        y1 -= 100;
-        assert(y1 == -3);
+    // test of operator overloading & integrity
+    y1 = 42;
+    assert(y1 == 4);
+    y1 -= 100;
+    assert(y1 == -3);
 
-        // test of to_index
-        int n1 = y1.to_index();
-        assert(n1 == 0);
+    // test of to_index
+    int n1 = y1.to_index();
+    assert(n1 == 0);
 
-        int n2 = YEAR::to_index(0);
-        assert(n2 == 3);
+    int n2 = YEAR::to_index(0);
+    assert(n2 == 3);
 
-        int n3 = YEAR::to_value(5);
-        assert(n3 == 2);
+    int n3 = YEAR::to_value(5);
+    assert(n3 == 2);
 
-        // test of arithmetic
-        YEAR y2 = y1 + 2;
-        assert(y2 == -1);
+    // test of arithmetic
+    YEAR y2 = y1 + 2;
+    assert(y2 == -1);
 
-        // test of compile-time constant array limits for declarations
-        double income[YEAR::size] = { 100, 200, 300, 400, 500, 600, 700, 800 };
+    // test of compile-time constant array limits for declarations
+    double income[YEAR::size] = { 100, 200, 300, 400, 500, 600, 700, 800 };
 
-        // test of support for ranged-based for
-        double sum1 = 0;
-        for (int j : YEAR::indices()) {
-            sum1 += income[j];
-        }
-        assert(sum1 == 3600);
-
-        double sum2 = 0;
-        for (int y : YEAR::values()) {
-            size_t j = YEAR::to_index(y);
-            sum2 += income[j];
-        }
-        assert(sum2 == 3600);
+    // test of support for ranged-based for
+    double sum1 = 0;
+    for (int j : YEAR::indices()) {
+        sum1 += income[j];
     }
-} // namespace mm
+    assert(sum1 == 3600);
+
+    double sum2 = 0;
+    for (int y : YEAR::values()) {
+        size_t j = YEAR::to_index(y);
+        sum2 += income[j];
+    }
+    assert(sum2 == 3600);
+}

@@ -8,65 +8,61 @@
 
 #pragma once
 
-namespace mm {
+/**
+    * Template to use in range-based for to iterate over a range of integers
+    * 
+    * Example: for ( int i : integer_counter<-5, 5> ) { }
+    * will iterate over the 11 values {-5, -4, ..., 5 }
+    *
+    * @tparam min_val The minimum value of the range.
+    * @tparam max_val The maximum value of the range.
+    */
 
+template <typename T, T min_val, T max_val>
+class integer_counter {
+public:
+    // ctor
+    integer_counter()
+    {
+    }
 
-    /**
-     * Template to use in range-based for to iterate over a range of integers
-     * 
-     * Example: for ( int i : integer_counter<-5, 5> ) { }
-     * will iterate over the 11 values {-5, -4, ..., 5 }
-     *
-     * @tparam min_val The minimum value of the range.
-     * @tparam max_val The maximum value of the range.
-     */
+    // embed iterator for simplicity
+    class iterator {
+        friend class integer_counter;
 
-    template <typename T, T min_val, T max_val>
-    class integer_counter {
-    public:
         // ctor
-        integer_counter()
-        {
+        iterator(int start)
+            : current_val(start)
+        { }
+
+    public:
+        int operator *() const
+        { 
+            return current_val;
         }
 
-        // embed iterator for simplicity
-        class iterator {
-            friend class integer_counter;
-
-            // ctor
-            iterator(int start)
-                : current_val(start)
-            { }
-
-        public:
-            int operator *() const
-            { 
-                return current_val;
-            }
-
-            const iterator& operator ++()
-            {
-                ++current_val;
-                return *this;
-            }
-
-            bool operator !=(const iterator& other) const
-            {
-                return current_val != other.current_val;
-            }
-
-        private:
-            T current_val;
-        };
-
-        iterator begin() const
+        const iterator& operator ++()
         {
-            return iterator(min_val);
+            ++current_val;
+            return *this;
         }
 
-        iterator end() const
+        bool operator !=(const iterator& other) const
         {
-            return iterator(max_val + 1);
+            return current_val != other.current_val;
         }
+
+    private:
+        T current_val;
     };
-} // namespace mm
+
+    iterator begin() const
+    {
+        return iterator(min_val);
+    }
+
+    iterator end() const
+    {
+        return iterator(max_val + 1);
+    }
+};

@@ -5,21 +5,18 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-namespace mm
-{
-    extern void test_partition();
-    extern void test_range();
-    extern void test_classification();
-    extern void test_link();
-}
+extern void test_partition();
+extern void test_range();
+extern void test_classification();
+extern void test_link();
 
 
 int main(int argc, char * argv[])
 {
-    mm::test_partition();
-    mm::test_range();
-    mm::test_classification();
-    mm::test_link();
+    test_partition();
+    test_range();
+    test_classification();
+    test_link();
 
 	return 0;
 }

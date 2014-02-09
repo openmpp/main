@@ -10,35 +10,32 @@
 #include <forward_list>
 using std::forward_list;
 
-namespace mm {
+/**
+    * A forward_list with push_back()
+    *
+    * @tparam  T   Generic type parameter.
+    */
 
-    /**
-     * A forward_list with push_back()
-     *
-     * @tparam  T   Generic type parameter.
-     */
-
-    template<typename T>
-    class tailed_forward_list : public forward_list<T>
+template<typename T>
+class tailed_forward_list : public forward_list<T>
+{
+public:
+    tailed_forward_list()
     {
-    public:
-        tailed_forward_list()
-        {
+        tail = this->begin();
+    }
+
+    void push_back(const T& value)
+    {
+        if (this->empty()) {
+            this->push_front(value);
             tail = this->begin();
         }
-
-        void push_back(const T& value)
-        {
-            if (this->empty()) {
-                this->push_front(value);
-                tail = this->begin();
-            }
-            else {
-                tail = this->insert_after(tail, value);
-            }
+        else {
+            tail = this->insert_after(tail, value);
         }
+    }
 
-    private:
-        typename::forward_list<T>::iterator tail;
-    };
-} // namespace mm
+private:
+    typename::forward_list<T>::iterator tail;
+};

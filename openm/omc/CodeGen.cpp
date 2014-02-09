@@ -23,11 +23,6 @@ void CodeGen::do_all()
 
 	do_preamble();
 
-    t0 += "namespace mm {";
-    t1 += "namespace mm {";
-    h += "namespace mm {";
-    c += "namespace mm {" ;
-
 	do_types();
 	do_parameters();
 	do_tables();
@@ -36,11 +31,6 @@ void CodeGen::do_all()
 
     h += "void StartSimulation(int id);";
     h += "void EndSimulation();";
-
-	t0 += "} // namespace mm";
-    t1 += "} // namespace mm";
-    h += "} // namespace mm";
-	c += "} // namespace mm";
 
     do_ModelStartup();
     do_RunModel();
@@ -206,7 +196,6 @@ void CodeGen::do_ModelStartup()
     c += "// Model startup method: initialize parameters";
 	c += "void ModelStartup(IModel * i_model)";
 	c += "{";
-	c += "using namespace mm;";
     c += "";
     c += "// sanity type check of storage type and readParameters type argument";
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -226,7 +215,6 @@ void CodeGen::do_ModelShutdown()
 	c += "// Model shutdown method: write output tables";
 	c += "void ModelShutdown(IModel * i_model)";
 	c += "{";
-	c += "using namespace mm;";
 	c += "// write output result tables";
 	c += "theLog->logMsg(\"Writing Output Tables\");";
     for ( auto table : Symbol::pp_all_tables ) {
