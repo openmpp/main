@@ -10,6 +10,7 @@ namespace mm
     extern void test_partition();
     extern void test_range();
     extern void test_classification();
+    extern void test_link();
 }
 
 
@@ -18,6 +19,7 @@ int main(int argc, char * argv[])
     mm::test_partition();
     mm::test_range();
     mm::test_classification();
+    mm::test_link();
 
 	return 0;
 }

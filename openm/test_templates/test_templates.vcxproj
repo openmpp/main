@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test_classification.cpp" />
+    <ClCompile Include="test_link.cpp" />
     <ClCompile Include="test_partition.cpp" />
     <ClCompile Include="test_range.cpp" />
     <ClCompile Include="test_templates.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="..\include\omc\Event.h" />
     <ClInclude Include="..\include\omc\integer_counter.h" />
     <ClInclude Include="..\include\omc\less_deref.h" />
+    <ClInclude Include="..\include\omc\link.h" />
     <ClInclude Include="..\include\omc\Partition.h" />
     <ClInclude Include="..\include\omc\Range.h" />
     <ClInclude Include="..\include\omc\tailed_forward_list.h" />
