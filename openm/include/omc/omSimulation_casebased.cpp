@@ -7,6 +7,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "omc/omSimulation.h"
+#include <cassert>
 
 namespace openm {
 
@@ -157,6 +158,8 @@ void RunModel(IModel * i_model)
         // simulate the case
         mm::StartSimulation(thisCase);
         while (mm::BaseEvent::do_next_event());
+        // Debug check for no left-over agents for which Finish was not called (model error)
+        assert(0 == mm::BaseAgent::om_active_agents());
         mm::EndSimulation();
 
         {

@@ -181,6 +181,24 @@ namespace mm {
             make_zombie();
         }
 
+
+        /**
+         * Number of active agents
+         *
+         * @return An int.
+         */
+
+        static int om_active_agents()
+        {
+            return agents.size();
+        }
+
+        static int get_next_agent_id()
+        {
+            static int counter = -1;
+            return ++counter;
+        }
+
         /**
          * True if agent is active in the simulation.
          */
@@ -201,6 +219,8 @@ namespace mm {
          */
 
         static list<BaseAgent *> agents;
+
+
     };
 
     /**
@@ -245,6 +265,7 @@ namespace mm {
                 agent = available.front();
                 available.pop_front();
             }
+
             return agent;
         }
 

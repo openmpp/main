@@ -8,6 +8,7 @@
 
 #pragma once
 #include <set>
+#include <cassert>
 #include "omc/tailed_forward_list.h"
 #include "omc/less_deref.h"
 #include "omc/Agent.h"
@@ -150,6 +151,9 @@ namespace mm {
             // get the next event from front of the event queue
             auto *evt = *BaseEvent::event_queue.begin();
 
+            // debug check that event time is not infinite (model error)
+            assert(evt->event_time != time_infinite);
+
             if ( just_in_time ) {
                 // age the agent to the time of the event
                 evt->age_agent();
@@ -244,7 +248,6 @@ namespace mm {
         int get_agent_id()
         {
             return (agent()->get_agent_id)();
-            //return 0;
         }
 
         void implement_event()

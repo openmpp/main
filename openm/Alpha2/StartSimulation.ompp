@@ -12,9 +12,6 @@ void StartSimulation(int id)
     Person *thePerson = new Person;
 
     thePerson->Start();
-
-    // TODO need to initialize within Start, before tabulation, etc.
-    thePerson->agent_id.set(id);
 }
 
 void EndSimulation()

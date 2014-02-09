@@ -40,7 +40,7 @@ void AgentSymbol::create_auxiliary_symbols()
         auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");
         fn->doc_block = doxygen_short("Age the agent to the given time.");
         CodeBlock& c = fn->func_body;
-        c += "if (time < t) time.set(t);";
+        c += "if (time <= t) time.set(t);";
         c += "else assert(false); // time running backwards?";
     }
 
@@ -49,7 +49,7 @@ void AgentSymbol::create_auxiliary_symbols()
         auto *fn = new AgentFuncSymbol("get_agent_id", this, "int", "");
         fn->doc_block = doxygen_short("Return unique agent_id of this agent.");
         CodeBlock& c = fn->func_body;
-        c += "return agent_id.get();" ;
+        c += "return agent_id;" ;
     }
 
     // The om_Start_custom() member function
@@ -224,6 +224,10 @@ void AgentSymbol::build_body_initialize_data_members()
     for ( auto adm : pp_agent_data_members ) {
         c += adm->cxx_initialize_expression();
     }
+
+    c += "";
+    c += "// Set the built-in agentvar 'agent_id'";
+    c += "agent_id.set(get_next_agent_id());";
 }
 
 void AgentSymbol::build_body_initialize_events()

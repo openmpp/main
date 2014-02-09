@@ -1,0 +1,104 @@
+actor Person
+{
+	logical spawning_done = { FALSE } ;
+	event timeSpawnEvent, SpawnEvent;
+};
+
+TIME Person::timeSpawnEvent()
+{
+	return spawning_done ? TIME_INFINITE : WAIT(0);
+}
+
+void Person::SpawnEvent()
+{
+	// Create things and add to simulation
+	Thing *thing1 = new Thing;
+	thing1->Start();
+
+	Thing *thing2 = new Thing;
+	thing2->Start();
+
+	//// Link Person to thing1
+	//my_thing1 = thing1;
+	//my_thing2 = thing2;
+
+	//// link thing1 and thing2
+	//thing1->other_thing = thing2;
+
+	//// populate multi-link of things
+	//things->Add(thing1);
+	//things->Add(thing2);
+
+	spawning_done = TRUE;
+}
+
+actor Thing {
+	logical alive = {TRUE};
+	logical making_trouble = { TRUE };
+
+	void Start();
+	void Finish();
+
+	event timeBeingGoodEvent, BeingGoodEvent;
+	event timeMortalityEvent, MortalityEvent;
+};
+
+link Thing.other_thing;
+link Thing.spawner Person.things[];
+link Person.my_thing1 Thing.my_person1;
+link Person.my_thing2 Thing.my_person2;
+
+void Thing::Start()
+{
+}
+
+void Thing::Finish()
+{
+}
+
+TIME Thing::timeBeingGoodEvent()
+{
+	return making_trouble ? WAIT(10 * RandUniform(5)) : TIME_INFINITE;
+}
+
+void Thing::BeingGoodEvent()
+{
+	making_trouble = FALSE;
+}
+
+table Thing ThingTable1
+{
+	{
+		duration()
+	}
+	* making_trouble
+};
+
+TIME Thing::timeMortalityEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+	tEventTime = WAIT( - TIME( log( RandUniform(4) ) / MortalityHazard ) );
+	//tEventTime = WAIT( 50 );
+	return tEventTime;
+}
+
+void Thing::MortalityEvent()
+{
+	alive = FALSE;
+	Finish();
+}
+
+//actor Person
+//{
+//	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
+//	logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
+//};
+//
+//table Person Z01
+//{
+//	{
+//		duration()
+//	}
+//	* thing1_good
+//	* thing2_good
+//};

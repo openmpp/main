@@ -175,10 +175,12 @@
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha2_optional_views.sql" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\omc\integer_counter.h" />
     <ClInclude Include="..\include\omc\less_deref.h" />
     <ClInclude Include="..\include\omc\omSimulation.h" />
     <ClInclude Include="..\include\omc\Partition.h" />
     <ClInclude Include="..\include\omc\Range.h" />
+    <ClInclude Include="..\include\omc\tailed_forward_list.h" />
     <ClInclude Include="Happiness.mpp" />
     <ClInclude Include="PersonCore.mpp" />
     <ClInclude Include="Alpha2.mpp" />
@@ -187,6 +189,7 @@
     <None Include="Extensions.ompp" />
     <None Include="StartSimulation.ompp" />
     <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
