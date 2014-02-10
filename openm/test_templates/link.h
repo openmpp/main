@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <vector>
+
 using namespace std;
 
 template <class A>
@@ -35,7 +37,7 @@ public:
         }
         else {
             // link is nullptr, return reference to the 'null' agent
-            return A::om_nuull_agent;
+            return A::om_null_agent;
         }
     }
 
@@ -57,3 +59,9 @@ public:
 };
 
 
+template <class A>
+class multi_link
+{
+public:
+    vector<link<A>> list;
+};

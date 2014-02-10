@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include "om_types0.h"
-#include "omc/link.h"
+#include "link.h"
 
 class Person {
 public:
@@ -62,6 +62,16 @@ void test_link()
     person2.time = 2013.0;
     person2.income = 62000;
     person2.family_income = 0;
+
+    Person person3;
+    person3.time = 2013.0;
+    person3.income = 62000;
+    person3.family_income = 0;
+
+    Person person4;
+    person4.time = 2013.0;
+    person4.income = 62000;
+    person4.family_income = 0;
 
     person1.lSpouse = &person2;
     person2.lSpouse = &person1;

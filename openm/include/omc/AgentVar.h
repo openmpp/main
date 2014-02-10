@@ -10,6 +10,17 @@
 
 using namespace std;
 
+/**
+ * Base template for agentvars.
+ * 
+ * The return value casting operator is implemented in AgentVar, so C++ code can use the agentvar
+ * in expressions. No assignment operators are implemented, making agentvars declared using AgentVar
+ * read-only. Side-effects are evaluated if a call to set() changes the value.
+ *
+ * @tparam T            Generic type parameter.
+ * @tparam A            Type of containing agent.
+ * @tparam side_effects Function implementing assignment side effects (constant).
+ */
 template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
 class AgentVar 
 {
@@ -61,12 +72,26 @@ public:
 };
 
 /**
-* AgentVar offset in Agent (definition)
-*/
-
+ * AgentVar offset in Agent (static definition)
+ * 
+ * The offset is used within an instance of agentvar to gain access to the enclosing agent to
+ * call the side-effects function in the context of the agent and with access to all agentvars
+ * in the agent.  Agentvars do not contain a pointer to the continaing agent because the memory
+ * cost would be prohibitive for simulations with many agents containing many agentvars.
+ */
 template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value)>
 size_t AgentVar<T, A, side_effects>::offset_in_agent = 0;
 
+/**
+ * Template for simple agentvars.
+ * 
+ * All C++ assignment operators are implemented in SimpleAgentVar, allowing developer code to
+ * assign values.  Side-effects are performed if the assignment changes the value.
+ *
+ * @tparam T            Generic type parameter.
+ * @tparam A            Type of containing agent.
+ * @tparam side_effects Function implementing assignment side effects (constant).
+ */
 template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
 class SimpleAgentVar : public AgentVar<T, A, side_effects>
 {
@@ -192,22 +217,17 @@ public:
     }
 };
 
-// SimpleAgentVar bool specialization
-// remove invalid and deprecated assignment operators for bool, e.g. ++,+=, etc.
-template<typename A, void (A::*side_effects)(bool old_value, bool new_value)>
-class SimpleAgentVar<bool, A, side_effects> : public AgentVar<bool, A, side_effects>
-{
-public:
-
-    // operator: assignment
-    SimpleAgentVar& operator=( bool new_value )
-    {
-        this->set( new_value );
-        return *this;
-    }
-
-};
-
+/**
+ * Template for expression agentvars.
+ * 
+ * No assignment operators are implemented, making the agentvar read-only in C++ code.  A
+ * constant template argument holds the function used to evaluate the expression.
+ *
+ * @tparam T                  Generic type parameter.
+ * @tparam A                  Type of containing agent.
+ * @tparam side_effects       Function implementing assignment side effects (constant).
+ * @tparam expression         Function implementing expression evaluation (constant).
+ */
 template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value), T (A::*expression)()>
 class ExpressionAgentVar : public AgentVar<T, A, side_effects>
 {
@@ -220,7 +240,18 @@ public:
     }
 };
 
-
+/**
+ * Template for duration agentvars.
+ * 
+ * No assignment operators are implemented, making the agentvar read-only in C++ code.  A
+ * constant template argument holds the function used to evaluate the logical condition during
+ * which duration will be cumulated.
+ *
+ * @tparam T            Generic type parameter.
+ * @tparam A            Type of containing agent.
+ * @tparam side_effects Function implementing assignment side effects (constant).
+ * @tparam condition    Function implementing the condition (constant).
+ */
 template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr , bool (A::*condition)() = nullptr>
 class DurationAgentVar : public AgentVar<T, A, side_effects>
 {
@@ -240,3 +271,66 @@ public:
     }
 };
 
+/**
+ * Template for link agentvars.
+ * 
+ * A link agentvar is a smart pointer between agents.  Every link agentvar has a reciprocal link
+ * agentvar in another agent.  This makes all links two-way.  That allows side-effects of
+ * agentvar changes in an agent to propagate 'backwards' across agent links, to affect events,
+ * tables, and expression agentvars in other agents.
+ * 
+ * When used to retrieve the value of an agentvar in another agent, a link will first
+ * synchronize the time of the other agent if the just-in-time simulation option is activated.
+ * 
+ * To simplify their use in expression agentvars, the pointer and dereference operators can be
+ * used even if the link agentvar is nullptr.  In that case, a pre-constructed static 'null
+ * agent' whose agentvars are in a freshly initialized state (generally 0) is used for the
+ * operation.
+ *
+ * @tparam A            Type of containing agent.
+ * @tparam side_effects Function implementing assignment side effects (constant).
+ */
+template<typename A, void (A::*side_effects)(A *old_value, A *new_value) = nullptr>
+class LinkAgentVar : public AgentVar<A *, A, side_effects>
+{
+    // operator: direct assignment
+    LinkAgentVar& operator=( A *new_value )
+    {
+        this->set( new_value );
+        return *this;
+    }
+
+    // operator: pointer
+    A* operator->()
+    {
+        A *ptr = get();
+        if (ptr) {
+            // update time of target agent at *ptr
+            // using the global time (just-in-time algorithm)
+            ptr->time = A::global_time;
+            // return pointer to agent
+            return ptr;
+        }
+        else {
+            // link is nullptr, return pointer to the 'null' agent
+            return &A::om_null_agent;
+        }
+    }
+
+    // operator: dereference
+    A& operator*()
+    {
+        A *ptr = get();
+        if (ptr) {
+            // update time of target agent at *ptr
+            // using the global time (just-in-time algorithm)
+            ptr->time = A::global_time;
+            // return reference to agent
+            return *ptr;
+        }
+        else {
+            // link is nullptr, return reference to the 'null' agent
+            return A::om_null_agent;
+        }
+    }
+};
