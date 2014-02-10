@@ -14,7 +14,7 @@ class AgentEventSymbol;
 class AgentEventSymbol;
 class AgentFuncSymbol;
 class AgentVarSymbol;
-class ExpressionAgentVarSymbol;
+class IdentityAgentVarSymbol;
 class AgentInternalSymbol;
 class BuiltinAgentVarSymbol;
 
@@ -217,7 +217,7 @@ public:
      * Populated after parsing is complete.
      */
 
-    list<ExpressionAgentVarSymbol *> pp_expr_agentvars;
+    list<IdentityAgentVarSymbol *> pp_expr_agentvars;
 
 
     /**

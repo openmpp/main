@@ -12,7 +12,7 @@
 #include "AgentInternalSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
-#include "ExpressionAgentVarSymbol.h"
+#include "IdentityAgentVarSymbol.h"
 #include "NumericSymbol.h"
 #include "RangeSymbol.h"
 #include "TableAccumulatorSymbol.h"

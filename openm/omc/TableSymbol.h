@@ -16,7 +16,7 @@ class TableAnalysisAgentVarSymbol;
 class AgentFuncSymbol;
 class AgentInternalSymbol;
 class AgentVarSymbol;
-class ExpressionAgentVarSymbol;
+class IdentityAgentVarSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -146,7 +146,7 @@ public:
      * The expression agentvar of the table filter.
      */
 
-    ExpressionAgentVarSymbol *filter;
+    IdentityAgentVarSymbol *filter;
 
     /**
      * List of dimensions (parse phase references to pointers)

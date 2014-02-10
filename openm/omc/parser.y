@@ -939,7 +939,7 @@ decl_simple_agentvar:
 decl_expr_agentvar:
         decl_type_part[type_symbol] SYMBOL[agentvar] "=" expr_for_agentvar ";"
                         {
-                            auto *sym = new ExpressionAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
+                            auto *sym = new IdentityAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
                         }
     ;
 
@@ -1204,7 +1204,7 @@ table_filter_opt:
                         {
                             TableSymbol *table = pc.get_table_context();
                             // create an expression agentvar for the filter
-                            auto eav = new ExpressionAgentVarSymbol("om_filter_" + table->name, table->agent, BoolSymbol::find(), $root, @root);
+                            auto eav = new IdentityAgentVarSymbol("om_filter_" + table->name, table->agent, BoolSymbol::find(), $root, @root);
                             assert(eav); // out of memory check
                             // note expression agentvar in table
                             table->filter = eav;

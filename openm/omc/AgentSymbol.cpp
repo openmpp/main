@@ -11,7 +11,7 @@
 #include "AgentInternalSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "AgentEventSymbol.h"
-#include "ExpressionAgentVarSymbol.h"
+#include "IdentityAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
