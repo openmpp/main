@@ -96,7 +96,6 @@
     <ClInclude Include="AgentEventSymbol.h" />
     <ClInclude Include="AgentFuncSymbol.h" />
     <ClInclude Include="AgentInternalSymbol.h" />
-    <ClInclude Include="AgentLinkSymbol.h" />
     <ClInclude Include="AgentMemberSymbol.h" />
     <ClInclude Include="AgentSymbol.h" />
     <ClInclude Include="AgentVarSymbol.h" />
@@ -117,6 +116,7 @@
     <ClInclude Include="ExprForAgentVar.h" />
     <ClInclude Include="ExprForTable.h" />
     <ClInclude Include="LanguageSymbol.h" />
+    <ClInclude Include="LinkAgentVarSymbol.h" />
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
     <ClInclude Include="ModelSymbol.h" />
@@ -152,7 +152,6 @@
     <ClCompile Include="AgentEventSymbol.cpp" />
     <ClCompile Include="AgentFuncSymbol.cpp" />
     <ClCompile Include="AgentInternalSymbol.cpp" />
-    <ClCompile Include="AgentLinkSymbol.cpp" />
     <ClCompile Include="AgentMemberSymbol.cpp" />
     <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="AgentVarSymbol.cpp" />
@@ -169,6 +168,7 @@
     <ClCompile Include="ExpressionAgentVarSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
+    <ClCompile Include="LinkAgentVarSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="NumericSymbol.cpp" />

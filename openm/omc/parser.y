@@ -24,7 +24,7 @@ class CharacterLiteral;
 class FloatingPointLiteral;
 class StringLiteral;
 class Symbol;
-class AgentLinkSymbol;
+class LinkAgentVarSymbol;
 class ExprForAgentVar;
 class ExprForTable;
 
@@ -79,7 +79,7 @@ extern char *yytext;
     FloatingPointLiteral *pval_FloatingPointLiteral;
     StringLiteral        *pval_StringLiteral;
 	Symbol               *pval_Symbol;
-	AgentLinkSymbol      *pval_AgentLinkSymbol;
+	LinkAgentVarSymbol   *pval_LinkSymbol;
 	ExprForAgentVar      *pval_AgentVarExpr;
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
@@ -449,7 +449,7 @@ extern char *yytext;
 %type  <pval_Symbol>   agentvar
 %type  <pval_Symbol>   derived_agentvar
 
-%type  <pval_AgentLinkSymbol> link_symbol
+%type  <pval_LinkSymbol> link_symbol
 
 %type  <pval_TableExpr> expr_for_table
 %type  <pval_TableExpr> table_expression_list
@@ -1104,39 +1104,39 @@ decl_link:
                         {
                             // reciprocal one-to-one link
                             $ls->single = true;
-                            $ls->other_link = $ls;
+                            $ls->reciprocal_link = $ls;
                         }
         | "link" link_symbol[ls1] link_symbol[ls2] ";"
                         {
                             // one-to-one link (different agents and/or different link agentvars)
                             $ls1->single = true;
-                            $ls1->other_link = $ls2;
+                            $ls1->reciprocal_link = $ls2;
                             $ls2->single = true;
-                            $ls2->other_link = $ls1;
+                            $ls2->reciprocal_link = $ls1;
                         }
         | "link" link_symbol[ls1] link_symbol[ls2] "[" "]" ";"
                         {
                             // one-to-many link
                             $ls1->single = true;
-                            $ls1->other_link = $ls2;
+                            $ls1->reciprocal_link = $ls2;
                             $ls2->single = false;
-                            $ls2->other_link = $ls1;
+                            $ls2->reciprocal_link = $ls1;
                         }
         | "link" link_symbol[ls1] "[" "]" link_symbol[ls2] ";"
                         {
                             // many-to-one link (same semantics as above)
                             $ls1->single = false;
-                            $ls1->other_link = $ls2;
+                            $ls1->reciprocal_link = $ls2;
                             $ls2->single = true;
-                            $ls2->other_link = $ls1;
+                            $ls2->reciprocal_link = $ls1;
                         }
         | "link" link_symbol[ls1] "[" "]" link_symbol[ls2] "[" "]" ";"
                         {
                             // many-to-many link
                             $ls1->single = false;
-                            $ls1->other_link = $ls2;
+                            $ls1->reciprocal_link = $ls2;
                             $ls2->single = false;
-                            $ls2->other_link = $ls1;
+                            $ls2->reciprocal_link = $ls1;
                         }
         | "link" error ";"
         ;
@@ -1149,7 +1149,7 @@ link_symbol:
                         }
             "." SYMBOL[link]
                         {
-                            $link_symbol = new AgentLinkSymbol($link, $agent, @link);
+                            $link_symbol = new LinkAgentVarSymbol($link, $agent, @link);
                         }
         ;
 
