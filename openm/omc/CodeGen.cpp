@@ -229,10 +229,14 @@ void CodeGen::do_ModelShutdown()
 
 void CodeGen::do_agents()
 {
+	h += "// forward declarations of model agent classes (for links)";
+    for (auto agent : Symbol::pp_all_agents) {
+        h += "class " + agent->name + ";";
+    }
+    h += "";
     for ( auto agent : Symbol::pp_all_agents ) {
 
-	    // agents.h
-	    h += "// model agents";
+	    h += "// model agent classes";
         // e.g. class Person : public Agent<Person>
 	    h += "class " + agent->name + " : public Agent<" + agent->name + ">";
         h += "{";

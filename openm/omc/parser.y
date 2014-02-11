@@ -1100,24 +1100,38 @@ decl_type_part:
  */
 
 decl_link:
-          "link" link_symbol[ls] ";"
+          "link" link_symbol[link] ";"
                         {
                             // reciprocal one-to-one link
 
+                            // The containing agent of the link
+                            auto agent = $link->agent;
                             // get the type of the link
-                            auto type = LinkSymbol::get($ls->agent);
-                            // morph AgentMemberSymbol $ls to a LinkAgentVarSymbol
-                            auto lavs = new LinkAgentVarSymbol($ls, $ls->agent, type, $ls->decl_loc);
+                            auto type = LinkSymbol::get($link->agent);
+                            // morph AgentMemberSymbol $link to a LinkAgentVarSymbol
+                            auto lavs = new LinkAgentVarSymbol($link, agent, type, $link->decl_loc);
                             lavs->single = true;
-                            lavs->reciprocal_link = lavs;
+                            lavs->reciprocal_link = lavs; // special case
                         }
-        | "link" link_symbol[ls1] link_symbol[ls2] ";"
+        | "link" link_symbol[link1] link_symbol[link2] ";"
                         {
                             // one-to-one link (different agents and/or different link agentvars)
-                            //$ls1->single = true;
-                            //$ls1->reciprocal_link = $ls2;
-                            //$ls2->single = true;
-                            //$ls2->reciprocal_link = $ls1;
+
+                            // The containing agent of each link
+                            auto agent1 = $link1->agent;
+                            auto agent2 = $link2->agent;
+                            // The type of each link, e.g. the type of link1 will poin to agent2, like <link agent2>
+                            auto type1 = LinkSymbol::get(agent2);
+                            auto type2 = LinkSymbol::get(agent1);
+
+                            // morph AgentMemberSymbol's to LinkAgentVarSymbol's
+                            auto lavs1 = new LinkAgentVarSymbol($link1, agent1, type1, $link1->decl_loc);
+                            auto lavs2 = new LinkAgentVarSymbol($link2, agent2, type2, $link2->decl_loc);
+
+                            lavs1->single = true;
+                            lavs1->reciprocal_link = lavs2;
+                            lavs2->single = true;
+                            lavs2->reciprocal_link = lavs1;
                         }
         | "link" link_symbol[ls1] link_symbol[ls2] "[" "]" ";"
                         {

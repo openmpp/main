@@ -4,6 +4,11 @@ actor Person
 	event timeSpawnEvent, SpawnEvent;
 };
 
+link Thing.other_thing;
+//link Thing.spawner Person.things[];
+link Person.my_thing1 Thing.my_person1;
+link Person.my_thing2 Thing.my_person2;
+
 TIME Person::timeSpawnEvent()
 {
 	return spawning_done ? TIME_INFINITE : WAIT(0);
@@ -18,11 +23,11 @@ void Person::SpawnEvent()
 	Thing *thing2 = new Thing;
 	thing2->Start();
 
-	//// Link Person to thing1
+	// Link Person to thing1 and thing2
 	//my_thing1 = thing1;
 	//my_thing2 = thing2;
 
-	//// link thing1 and thing2
+	// link thing1 and thing2
 	//thing1->other_thing = thing2;
 
 	//// populate multi-link of things
@@ -43,10 +48,6 @@ actor Thing {
 	event timeMortalityEvent, MortalityEvent;
 };
 
-link Thing.other_thing;
-//link Thing.spawner Person.things[];
-//link Person.my_thing1 Thing.my_person1;
-//link Person.my_thing2 Thing.my_person2;
 
 void Thing::Start()
 {
