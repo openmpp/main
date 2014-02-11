@@ -1107,7 +1107,7 @@ decl_link:
                             // The containing agent of the link
                             auto agent = $link->agent;
                             // get the type of the link
-                            auto type = LinkSymbol::get($link->agent);
+                            auto type = TypeOfLinkSymbol::get($link->agent);
                             // morph AgentMemberSymbol $link to a LinkAgentVarSymbol
                             auto lavs = new LinkAgentVarSymbol($link, agent, type, $link->decl_loc);
                             lavs->single = true;
@@ -1121,8 +1121,8 @@ decl_link:
                             auto agent1 = $link1->agent;
                             auto agent2 = $link2->agent;
                             // The type of each link, e.g. the type of link1 will poin to agent2, like <link agent2>
-                            auto type1 = LinkSymbol::get(agent2);
-                            auto type2 = LinkSymbol::get(agent1);
+                            auto type1 = TypeOfLinkSymbol::get(agent2);
+                            auto type2 = TypeOfLinkSymbol::get(agent1);
 
                             // morph AgentMemberSymbol's to LinkAgentVarSymbol's
                             auto lavs1 = new LinkAgentVarSymbol($link1, agent1, type1, $link1->decl_loc);

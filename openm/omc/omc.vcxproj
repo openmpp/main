@@ -117,7 +117,6 @@
     <ClInclude Include="IdentityAgentVarSymbol.h" />
     <ClInclude Include="LanguageSymbol.h" />
     <ClInclude Include="LinkAgentVarSymbol.h" />
-    <ClInclude Include="LinkSymbol.h" />
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
     <ClInclude Include="ModelSymbol.h" />
@@ -138,6 +137,7 @@
     <ClInclude Include="TableExpressionSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
     <ClInclude Include="TimeSymbol.h" />
+    <ClInclude Include="TypeOfLinkSymbol.h" />
     <ClInclude Include="TypeSymbol.h" />
     <ClInclude Include="VersionSymbol.h" />
   </ItemGroup>
@@ -170,7 +170,6 @@
     <ClCompile Include="IdentityAgentVarSymbol.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAgentVarSymbol.cpp" />
-    <ClCompile Include="LinkSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="NumericSymbol.cpp" />
@@ -188,6 +187,7 @@
     <ClCompile Include="TableExpressionSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
     <ClCompile Include="TimeSymbol.cpp" />
+    <ClCompile Include="TypeOfLinkSymbol.cpp" />
     <ClCompile Include="TypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />
   </ItemGroup>

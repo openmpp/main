@@ -26,7 +26,7 @@
 #include "PartitionEnumeratorSymbol.h"
 #include "RangeSymbol.h"
 #include "RangeEnumeratorSymbol.h"
-#include "LinkSymbol.h"
+#include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentMemberSymbol.h"
 #include "AgentEventSymbol.h"

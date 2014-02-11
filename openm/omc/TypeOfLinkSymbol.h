@@ -1,6 +1,6 @@
 /**
-* @file    LinkSymbol.h
-* Declarations for the LinkSymbol class.
+* @file    TypeOfLinkSymbol.h
+* Declarations for the TypeOfLinkSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -9,10 +9,10 @@
 #include "TypeSymbol.h"
 
 /**
-* LinkSymbol.
+* TypeOfLinkSymbol.
 *
 */
-class LinkSymbol : public TypeSymbol
+class TypeOfLinkSymbol : public TypeSymbol
 {
 private:
     typedef TypeSymbol super;
@@ -25,7 +25,7 @@ public:
      *
      * @param agent The agent.
      */
-    LinkSymbol(const Symbol *agent)
+    TypeOfLinkSymbol(const Symbol *agent)
         : TypeSymbol("link<" + agent->name + ">")
     {
     }
@@ -40,15 +40,15 @@ public:
     };
 
     /**
-     * Gets the LinkSymbol object for the type which points to a given kind of agent.
+     * Gets the TypeOfLinkSymbol object for the type which points to a given kind of agent.
      * 
      * Created if it doesn't already exist.
      *
      * @param agent The agent pointed to by the link type.
      *
-     * @return Pointer to the LinkSymbol object requested.
+     * @return Pointer to the TypeOfLinkSymbol object requested.
      */
-    static LinkSymbol *get(const Symbol *agent);
+    static TypeOfLinkSymbol *get(const Symbol *agent);
 
 
 };

@@ -25,7 +25,7 @@
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
-#include "LinkSymbol.h"
+#include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"

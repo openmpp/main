@@ -171,13 +171,13 @@
     <ClInclude Include="ExprForAgentVar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExpressionAgentVarSymbol.h">
+    <ClInclude Include="IdentityAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentLinkSymbol.h">
+    <ClInclude Include="LinkAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentMultiLinkSymbol.h">
+    <ClInclude Include="TypeOfLinkSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -290,13 +290,13 @@
     <ClCompile Include="NumericSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ExpressionAgentVarSymbol.cpp">
+    <ClCompile Include="IdentityAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AgentLinkSymbol.cpp">
+    <ClCompile Include="LinkAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AgentMultiLinkSymbol.cpp">
+    <ClCompile Include="TypeOfLinkSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
