@@ -73,8 +73,17 @@ void test_link()
     person4.income = 62000;
     person4.family_income = 0;
 
+    // assignment of pointer to link
     person1.lSpouse = &person2;
     person2.lSpouse = &person1;
+
+    // assignment of link to link
+    person3.lSpouse = person2.lSpouse;
+
+    // link as a local variable
+    link<Person> p3;
+    p3 = person1.lSpouse;
+    person4.lSpouse = p3;
 
     // test automatic update of local time of person2
     // before referencing agentvars of person2 (just-in-time algorithm)

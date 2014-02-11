@@ -23,8 +23,17 @@ void Person::SpawnEvent()
 	Thing *thing2 = new Thing;
 	thing2->Start();
 
+    // retrieval test
+    link<Thing> a = thing1->other_thing;
+
+    // if the following worked, just-in-time would fail.
+    // We need to intercept pointer references, that's the whol idea.
+    // But tha means that mechanical changes in Modgne models may be required.
+    // 
+    //Thing *b = thing1->other_thing;
+
 	// Link Person to thing1 and thing2
-	//my_thing1 = thing1;
+	my_thing1 = thing1;
 	//my_thing2 = thing2;
 
 	// link thing1 and thing2

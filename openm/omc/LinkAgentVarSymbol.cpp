@@ -21,6 +21,16 @@ void LinkAgentVarSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         break;
+    case ePopulateDependencies:
+        {
+            // Dependency on agentvars in expression
+            CodeBlock& c = side_effects_fn->func_body;
+            c += "// Maintain reciprocal link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name;
+            c += "old_value->" + reciprocal_link->name + " = nullptr;";
+            c += "new_value->" + reciprocal_link->name + " = this;";
+            c += "";
+        }
+        break;
     default:
         break;
     }
@@ -33,23 +43,14 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
     h += "LinkAgentVar<" + pp_data_type->name + ", "
         + agent->name + ", "
-        + "&" + side_effects_fn->unique_name + "> "
-        + name + ";";
+        + reciprocal_link->agent->name + ", "
+        + "&" + side_effects_fn->unique_name + "> ";
+    h += name + ";";
 
     return h;
 }
 
 
-CodeBlock LinkAgentVarSymbol::cxx_definition_agent()
-{
-    // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-
-    return c;
-}
 

@@ -262,9 +262,21 @@ void CodeGen::do_agents()
             c += data_member->cxx_definition_agent();
         }
 
-	    h += "}; // class " + agent->name + "";
+        h += "// The declaration of the single static " + agent->name;
+        h += "// used to retrieve (zero) values when dereferencing nullptr link agentvars.";
+        h += "static " + agent->name + " " + "om_null_agent;";
+
+	    h += "}; // class " + agent->name;
 	    h += "";
+
+        c += "// The definition of the single static " + agent->name;
+        c += "// used to retrieve (zero) values when dereferencing nullptr link agentvars.";
+        c += agent->name + " " + agent->name + "::om_null_agent;";
     }
+
+    c += "// definition of global time (declaration in Agent.h)";
+    c += "Time BaseAgent::global_time;";
+    c += "";
 
     c += doxygen("Free all zombie agents");
     c += "void BaseAgent::free_all_zombies()";

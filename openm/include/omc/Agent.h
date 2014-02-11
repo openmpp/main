@@ -198,10 +198,14 @@ public:
     }
 
     /**
-        * True if agent is active in the simulation.
-        */
-
+     * True if agent is active in the simulation.
+     */
     bool om_active;
+
+    /**
+     * The global time.
+     */
+    static Time global_time;
 
 private:
 
@@ -256,6 +260,10 @@ public:
 				// instance of an agent of this type is created.
 				agent->om_initialize_agentvar_offsets();
 				agent->om_initialize_event_offsets();
+
+                // Initialize the single static agent used to retrieve (zero) values
+                // when dereferencing nullptr link agentvars.
+                A::om_null_agent.om_initialize_data_members();
 				first_invocation = false;
 			}
         }
@@ -288,7 +296,9 @@ public:
 
     static forward_list<A *> zombies;
     static forward_list<A *> available;
+
 };
+
 
 /**
 * Agent zombie list (definition)

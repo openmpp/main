@@ -177,6 +177,7 @@
   <ItemGroup>
     <ClInclude Include="..\include\omc\integer_counter.h" />
     <ClInclude Include="..\include\omc\less_deref.h" />
+    <ClInclude Include="..\include\omc\link.h" />
     <ClInclude Include="..\include\omc\omSimulation.h" />
     <ClInclude Include="..\include\omc\Partition.h" />
     <ClInclude Include="..\include\omc\Range.h" />

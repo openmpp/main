@@ -290,15 +290,23 @@ public:
  * @tparam A            Type of containing agent.
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
-template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
+template<typename T, typename A, typename B, void (A::*side_effects)(T old_value, T new_value) = nullptr>
 class LinkAgentVar : public AgentVar<T, A, side_effects>
 {
+public:
     // operator: direct assignment
-    LinkAgentVar& operator=( A *new_value )
+    LinkAgentVar& operator=( T new_value )
     {
         this->set( new_value );
         return *this;
     }
+
+    //// operator: assignment of pointer
+    //LinkAgentVar& operator=( B *new_value )
+    //{
+    //    this->set( new_value );
+    //    return *this;
+    //}
 
     // operator: pointer
     A* operator->()

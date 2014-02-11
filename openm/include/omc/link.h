@@ -25,13 +25,17 @@ public:
     {
     }
 
+    A *get() const
+    {
+        return ptr;
+    }
     // overload of dereference operator *
     A& operator*()
     {
         if (ptr) {
             // update time of target agent at *ptr
             // using the global time (just-in-time algorithm)
-            ptr->time = A::global_time;
+            ptr->time.set(A::global_time);
             // return reference to agent
             return *ptr;
         }
@@ -47,7 +51,7 @@ public:
         if (ptr) {
             // update time of target agent at *ptr
             // using the global time (just-in-time algorithm)
-            ptr->time = A::global_time;
+            ptr->time.set(A::global_time);
             // return pointer to agent
             return ptr;
         }
@@ -58,6 +62,11 @@ public:
     }
 };
 
+template <class A>
+inline bool operator==(const link<A>& lhs, const link<A>& rhs){ return lhs.get() == rhs.get(); }
+
+template <class A>
+inline bool operator!=(const link<A>& lhs, const link<A>& rhs){return !(lhs == rhs);}
 
 template <class A>
 class multi_link

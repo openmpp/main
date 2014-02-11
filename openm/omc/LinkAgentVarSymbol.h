@@ -37,8 +37,6 @@ public:
 
     CodeBlock cxx_declaration_agent();
 
-    CodeBlock cxx_definition_agent();
-
     /**
      * true if single link, false if multilink
      */
