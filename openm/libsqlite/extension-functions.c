@@ -109,14 +109,14 @@ Original code 2006 June 05 by relicoder.
 //#include "config.h"
 
 //#define COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE 1
-//#define HAVE_ACOSH 1
-//#define HAVE_ASINH 1
-//#define HAVE_ATANH 1
+#define HAVE_ACOSH 1
+#define HAVE_ASINH 1
+#define HAVE_ATANH 1
 #define HAVE_SINH 1
 #define HAVE_COSH 1
 #define HAVE_TANH 1
 #define HAVE_LOG10 1
-//#define HAVE_ISBLANK 1
+#define HAVE_ISBLANK 1
 #define SQLITE_SOUNDEX 1
 #define HAVE_TRIM 1		/* LMH 2007-03-25 if sqlite has trim functions */
 
@@ -620,7 +620,7 @@ static void ceilFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   assert( argc==1 );
   switch( sqlite3_value_type(argv[0]) ){
     case SQLITE_INTEGER: {
-      iVal = sqlite3_value_int64(argv[0]);
+      i64 iVal = sqlite3_value_int64(argv[0]);
       sqlite3_result_int64(context, iVal);
       break;
     }
@@ -645,7 +645,7 @@ static void floorFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   assert( argc==1 );
   switch( sqlite3_value_type(argv[0]) ){
     case SQLITE_INTEGER: {
-      iVal = sqlite3_value_int64(argv[0]);
+      i64 iVal = sqlite3_value_int64(argv[0]);
       sqlite3_result_int64(context, iVal);
       break;
     }
@@ -1844,8 +1844,8 @@ int sqlite3_extension_init(
 #else
 int sqlite3_extension_functions_init(sqlite3 *db)
 {
-  RegisterExtensionFunctions(db);
-  return 0;
+    RegisterExtensionFunctions(db);
+    return 0;
 }
 #endif /* COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE */
 

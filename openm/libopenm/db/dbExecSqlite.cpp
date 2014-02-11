@@ -937,7 +937,7 @@ void DbExecSqlite::bindDbl(int i_position, const DbValue & i_value)
 {
     double dVal = static_cast<double>(i_value.dVal);
 
-    if (isFinite(dVal)) {
+    if (isfinite(dVal)) {
         if (sqlite3_bind_double(theStmt, i_position, dVal) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
     }
     else {

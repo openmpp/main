@@ -18,14 +18,13 @@ const char openm:: helperUnknownErrorMessage[] = "unknown error in helper method
 // convert string to lower case
 void openm::toLower(string & io_str)
 {
-    //locale defaultLoc = locale("");
-    //transform(
-    //    io_str.begin(), 
-    //    io_str.end(), 
-    //    io_str.begin(), 
-    //    bind(ref(tolower<char>), placeholders::_1, ref(defaultLoc))
-    //    );
-	transform(io_str.begin(), io_str.end(), io_str.begin(), ptr_fun<int, int>(tolower));
+    locale defaultLoc = locale("");
+    transform(
+        io_str.begin(), 
+        io_str.end(), 
+        io_str.begin(), 
+        bind(tolower<char>, placeholders::_1, cref(defaultLoc))
+        );
 }
 
 // convert string to lower case
@@ -38,14 +37,13 @@ void openm::toLower(char * io_str)
 // convert string to upper case
 void openm::toUpper(string & io_str)
 {
-    //locale defaultLoc = locale("");
-    //transform(
-    //    io_str.begin(), 
-    //    io_str.end(), 
-    //    io_str.begin(), 
-    //    bind(ref(toupper<char>), placeholders::_1, ref(defaultLoc))
-    //    );
-	transform(io_str.begin(), io_str.end(), io_str.begin(), ptr_fun<int, int>(toupper));
+    locale defaultLoc = locale("");
+    transform(
+        io_str.begin(),
+        io_str.end(),
+        io_str.begin(),
+        bind(toupper<char>, placeholders::_1, cref(defaultLoc))
+        );
 }
 
 // convert string to upper case
@@ -254,16 +252,6 @@ void openm::sleepMilli(long i_sleepTime)
     ms.tv_sec = 0;
     ms.tv_nsec = i_sleepTime * 1000000L;
     nanosleep(&ms, NULL);
-#endif  // _WIN32
-}
-
-// return true if argumnet is finite value (exist only to fix VC2012 bug where isfinite not defined)
-bool openm::isFinite(double i_value)
-{
-#ifdef _WIN32
-    return _finite(i_value) != 0;
-#else
-    return isfinite(i_value);
 #endif  // _WIN32
 }
 

@@ -83,9 +83,6 @@ namespace openm
     /** sleep for specified number miliiseconds (exist only to fix gcc 4.4, it is fixed in gcc 4.8) */
     extern void sleepMilli(long i_sleepTime);
 
-    /** return true if argumnet is finite value (exist only to fix VC2012 bug where isfinite not defined) */
-    extern bool isFinite(double i_value);
-
     /** format message into supplied buffer using vsnprintf() */
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);
 

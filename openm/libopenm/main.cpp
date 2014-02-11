@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
             runCtrl.args().strOption(ArgKey::logFilePath).c_str(),
             runCtrl.args().boolOption(ArgKey::logUseTs),
             runCtrl.args().boolOption(ArgKey::logUsePid),
-            nullptr,
+            runCtrl.args().boolOption(ArgKey::noLogTime),
             runCtrl.args().boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Model", OM_MODEL_NAME);

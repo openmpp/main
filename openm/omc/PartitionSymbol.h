@@ -7,6 +7,7 @@
 
 #pragma once
 #include <list>
+#include <cfloat>
 #include "EnumerationSymbol.h"
 
 using namespace std;

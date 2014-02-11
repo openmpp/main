@@ -35,27 +35,25 @@ ILog::~ILog(void) throw() { }
 * create log instance.
 *
 * @param[in]   i_logToConsole  if true then log to console
-* @param[in]   i_basePath      path to "last" log file
+* @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-* @param[in]   i_forceSuffix   if not NULL then use it as suffix in "stamped" file name
-* @param[in]   i_isLogSql      if true then log SQL
 */
 Log::Log(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, const char * i_forceSuffix, bool i_isLogSql
+    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp
     ) :
     isConsoleEnabled(i_logToConsole),
+    isNoTimeLog(false),
     isSqlLog(false),
     isLastEnabled(false),
     isLastCreated(false),
     isStampedEnabled(false),
     isStampedCreated(false),
-    suffix_((i_forceSuffix != nullptr) ? i_forceSuffix : ""),
     lastPath_((i_basePath != nullptr) ? i_basePath : ""),
     stampedPath_("")
 {
     unique_lock<recursive_mutex> lck(theMutex);
-    init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_forceSuffix, i_isLogSql);
+    init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, isNoTimeLog, isSqlLog);
 }
 
 /** cleanup log resources */
@@ -72,14 +70,15 @@ Log::~Log(void) throw()
 * re-initialize log file name(s) and other log settings.
 *
 * @param[in]   i_logToConsole  if true then log to console
-* @param[in]   i_basePath      path to "last" log file
+* @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+* @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-* @param[in]   i_forceSuffix   if not NULL then use it as suffix in "stamped" file name
+* @param[in]   i_noLogTime     if true then not prefix log messgaes with date-time
 * @param[in]   i_isLogSql      if true then log SQL
 */
 void Log::init(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, const char * i_forceSuffix, bool i_isLogSql
+    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, bool i_noLogTime, bool i_isLogSql
     ) throw()
 {
     try {
@@ -88,7 +87,8 @@ void Log::init(
         isConsoleEnabled = i_logToConsole;
         if (tsSuffix_ == "") tsSuffix_ = makeTimeStamp(chrono::system_clock::now());
         if (pidSuffix_ == "") pidSuffix_ = '.' + to_string(getpid());
-        setLogPath(i_basePath, i_useTimeStamp, i_usePidStamp, i_forceSuffix);
+        setLogPath(i_basePath, i_useTimeStamp, i_usePidStamp);
+        isNoTimeLog = i_noLogTime;
         isSqlLog = i_isLogSql && isLastEnabled;
     }
     catch (...) { }
@@ -127,7 +127,7 @@ const string Log::timeStampSuffix(void) throw()
 // set log file names
 // "last" log file name, ie: /var/log/openm.log 
 // "stamped" log file name (with optional timestamp and pid suffixes): /var/log/openm_20120817_160459_0148.1234.log
-void Log::setLogPath(const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, const char * i_forceSuffix)
+void Log::setLogPath(const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp)
 {
     isLastEnabled = isLastCreated = isStampedEnabled = isStampedCreated = false;
 
@@ -138,10 +138,7 @@ void Log::setLogPath(const char * i_basePath, bool i_useTimeStamp, bool i_usePid
     lastPath_ = i_basePath;     // last log file name
 
     // stamped log file suffix: use supplied "forced" suffix or build timestamp and pid stamp suffix
-    suffix_ = 
-        i_forceSuffix != nullptr ? 
-        i_forceSuffix : 
-        ((i_useTimeStamp ? tsSuffix_ : "") + (i_usePidStamp ? pidSuffix_ : ""));
+    suffix_ = ((i_useTimeStamp ? tsSuffix_ : "") + (i_usePidStamp ? pidSuffix_ : ""));
 
     // if suffix not empty then make stamped log file name by inserting suffix before file extension
     if (!suffix_.empty()) {
@@ -167,18 +164,20 @@ void Log::logMsg(const char * i_msg, const char * i_extra) throw()
 {
     try {
         if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
-        chrono::system_clock::time_point now = chrono::system_clock::now();
+
+        chrono::system_clock::time_point msgTime = 
+            (!isNoTimeLog) ? chrono::system_clock::now() : chrono::system_clock::time_point::min();
 
         unique_lock<recursive_mutex> lck(theMutex);     // lock the log 
 
-        if (isConsoleEnabled) isConsoleEnabled = logToConsole(now, i_msg, i_extra);
+        if (isConsoleEnabled) isConsoleEnabled = logToConsole(msgTime, i_msg, i_extra);
         if (isLastEnabled) {
             if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath_);
-            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, now, i_msg, i_extra);
+            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, msgTime, i_msg, i_extra);
         }
         if (isStampedEnabled) {
             if (!isStampedCreated) isStampedEnabled = isStampedCreated = logFileCreate(stampedPath_);
-            if (isStampedEnabled) isStampedEnabled = logToFile(stampedPath_, now, i_msg, i_extra);
+            if (isStampedEnabled) isStampedEnabled = logToFile(stampedPath_, msgTime, i_msg, i_extra);
         }
     }
     catch (...) { }
@@ -218,13 +217,15 @@ void Log::logSql(const char * i_sql) throw()
 {
     try {
         if (i_sql == nullptr) return;  // nothing to log
-        chrono::system_clock::time_point now = chrono::system_clock::now();
+
+        chrono::system_clock::time_point msgTime =
+            (!isNoTimeLog) ? chrono::system_clock::now() : chrono::system_clock::time_point::min();
 
         unique_lock<recursive_mutex> lck(theMutex);     // lock the log 
 
         if (isSqlLog && isLastEnabled) {
             if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath_);
-            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, now, i_sql);
+            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, msgTime, i_sql);
         }
     }
     catch (...) { }
@@ -247,7 +248,9 @@ bool Log::logFileCreate(const string & i_path) throw()
 }
 
 // log to file, return false on error
-bool Log::logToFile(const string & i_path, chrono::system_clock::time_point i_now, const char * i_msg, const char * i_extra) throw()
+bool Log::logToFile(
+    const string & i_path, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
+    ) throw()
 {
     try {
         ofstream logSt;
@@ -256,7 +259,7 @@ bool Log::logToFile(const string & i_path, chrono::system_clock::time_point i_no
         logSt.open(i_path, ios_base::out | ios_base::app);
         bool isOk = !logSt.fail();
         if (isOk) {
-            writeToLog(logSt, i_now, i_msg, i_extra);
+            writeToLog(logSt, i_msgTime, i_msg, i_extra);
             isOk = !logSt.fail();
         }
         return isOk;
@@ -267,10 +270,12 @@ bool Log::logToFile(const string & i_path, chrono::system_clock::time_point i_no
 }
 
 // log to console
-bool Log::logToConsole(chrono::system_clock::time_point i_now, const char * i_msg, const char * i_extra) throw()
+bool Log::logToConsole(
+    const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
+    ) throw()
 {
     try {
-        writeToLog(cout, i_now, i_msg, i_extra);
+        writeToLog(cout, i_msgTime, i_msg, i_extra);
     }
     catch (...) { 
         return false;   // log failed
@@ -279,23 +284,31 @@ bool Log::logToConsole(chrono::system_clock::time_point i_now, const char * i_ms
 }
 
 // write date-time and message to output stream
-void Log::writeToLog(ostream & i_ost, chrono::system_clock::time_point i_now, const char * i_msg, const char * i_extra)
+void Log::writeToLog(
+    ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
+    )
 {
     if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
 
-    time_t now_time = chrono::system_clock::to_time_t(i_now);
-    tm * now_tm = localtime(&now_time);
+    // check is date-time prefix required
+    if (i_msgTime != chrono::system_clock::time_point::min()) {
 
-    i_ost << setfill('0') << 
-        setw(4) << now_tm->tm_year + 1900 << '-' << setw(2) << now_tm->tm_mon + 1 << '-' << setw(2) << now_tm->tm_mday << 
-        ' ' <<
-        setw(2) << now_tm->tm_hour << ':' << setw(2) << now_tm->tm_min << ':' << setw(2) << now_tm->tm_sec << 
-        '.' << 
-        setw(4) << chrono::duration_cast<chrono::milliseconds>(i_now.time_since_epoch()).count() % 1000LL;
+        time_t now_time = chrono::system_clock::to_time_t(i_msgTime);
+        tm * now_tm = localtime(&now_time);
 
-        if (i_msg != nullptr) i_ost << ' ' << i_msg;
-        if (i_msg != nullptr && i_extra != nullptr) i_ost << ':';
-        if (i_extra != nullptr) i_ost << ' ' << i_extra;
+        i_ost << setfill('0') <<
+            setw(4) << now_tm->tm_year + 1900 << '-' << setw(2) << now_tm->tm_mon + 1 << '-' << setw(2) << now_tm->tm_mday <<
+            ' ' <<
+            setw(2) << now_tm->tm_hour << ':' << setw(2) << now_tm->tm_min << ':' << setw(2) << now_tm->tm_sec <<
+            '.' <<
+            setw(4) << chrono::duration_cast<chrono::milliseconds>(i_msgTime.time_since_epoch()).count() % 1000LL <<
+            ' ';
+    }
+
+    // write message and extra info
+    if (i_msg != nullptr) i_ost << i_msg;
+    if (i_msg != nullptr && i_extra != nullptr) i_ost << ':';
+    if (i_extra != nullptr) i_ost << ' ' << i_extra;
     
-        i_ost << endl;
+    i_ost << endl;
 }

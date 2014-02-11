@@ -240,7 +240,7 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
             bool isAnyData = !isSparseTable;
 
             for (int k = 0; !isAnyData && k < accCount; k++) {
-                isAnyData |= isFinite(i_valueArr[k][cellOffset]) && fabs(i_valueArr[k][cellOffset]) > nullValue;
+                isAnyData |= isfinite(i_valueArr[k][cellOffset]) && fabs(i_valueArr[k][cellOffset]) > nullValue;
             }
 
             // set sql parameters and execute insert

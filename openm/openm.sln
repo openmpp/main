@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsqlite", "libsqlite\libsqlite.vcxproj", "{63DAF2CF-6423-42A3-A8C0-B5310E6FE1E9}"
 EndProject
@@ -44,6 +44,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Alpha2", "Alpha2\Alpha2.vcx
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WizardTimeBased", "WizardTimeBased\WizardTimeBased.vcxproj", "{93DE9507-8699-4BB8-A568-7F36C2F80D35}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5F4BEA41-A06D-4677-B4FE-9F1B5DE0BAB1} = {5F4BEA41-A06D-4677-B4FE-9F1B5DE0BAB1}
+		{83D56DD7-5547-4784-BCDB-CB704B670F1A} = {83D56DD7-5547-4784-BCDB-CB704B670F1A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_templates", "test_templates\test_templates.vcxproj", "{9A306F19-FF08-4100-AC19-DE26A53E92D8}"
 EndProject

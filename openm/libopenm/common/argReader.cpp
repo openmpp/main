@@ -34,6 +34,9 @@ namespace openm
     /** use pid-stamp in log "stamped" file name */
     const char * ArgKey::logUsePid = "OpenM.LogUsePidStamp";
 
+    /** do not prefix log messages with date-time */
+    const char * ArgKey::noLogTime = "OpenM.NoLogTime";
+
     /** log sql */
     const char * ArgKey::logSql = "OpenM.LogSql";
 }
@@ -66,8 +69,6 @@ ArgReader::ArgReader(
     // dependency in log options: if LogToFile is true then file name must be non-empty else must be empty
     adjustLogSettings(argc, argv);
 }
-
-
 
 /** return true if option with this key exist. */
 bool ArgReader::isOptionExist(const char * i_key) const throw()

@@ -97,6 +97,7 @@ namespace openm
         ArgKey::logToStamped,
         ArgKey::logUseTs,
         ArgKey::logUsePid,
+        ArgKey::noLogTime,
         ArgKey::logSql
     };
     static const size_t runArgKeySize = sizeof(runArgKeyArr) / sizeof(const char *);
@@ -137,7 +138,7 @@ int main(int argc, char * argv[])
             argStore.strOption(ArgKey::logFilePath).c_str(),
             argStore.boolOption(ArgKey::logUseTs),
             argStore.boolOption(ArgKey::logUsePid),
-            nullptr,
+            argStore.boolOption(ArgKey::noLogTime) || !argStore.isOptionExist(ArgKey::noLogTime),
             argStore.boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Start omc");
@@ -914,6 +915,7 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
     //io_metaRows.tableUnitTxt.push_back(tableUnitTxt);
 
     // group of parameters and output tables
+    /*
     GroupLstRow groupLst;
     groupLst.groupId = 1;                   // must be unique across parameter AND otput table groups
     groupLst.isParam = true;                // group of parameters
@@ -949,7 +951,7 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
     groupPc.leafId = 0;         // parameter id=0 is a leaf of group 2
     io_metaRows.groupPc.push_back(groupPc);
 
-    groupPc.groupId = 3;        // group 23as parent group
+    groupPc.groupId = 3;        // group 3 as parent group
     groupPc.childPos = 0;       // first child of group 3
     groupPc.childGroupId = -1;  // NULL as child of group id
     groupPc.leafId = 0;         // output table id=0 is a leaf of group 3
@@ -961,4 +963,5 @@ void addTestMetadata(openm::MetaModelHolder & io_metaRows)
     groupTxt.descr = "Group of parameters";
     groupTxt.note = "Group of parameters note";
     io_metaRows.groupTxt.push_back(groupTxt);
+    */
 }

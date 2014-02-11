@@ -36,11 +36,44 @@ OMC_EXE = omc
 
 OMC_CPPLIST = \
     omc.cpp \
-    CodeGen.cpp \
-    Driver.cpp \
-    ModelSpec.cpp \
-    parser_helper.cpp \
-    Symbol.cpp \
+	AgentDataMemberSymbol.cpp \
+	AgentEventSymbol.cpp \
+	AgentFuncSymbol.cpp \
+	AgentInternalSymbol.cpp \
+	AgentMemberSymbol.cpp \
+	AgentSymbol.cpp \
+	AgentVarSymbol.cpp \
+	BoolSymbol.cpp \
+	BuiltinAgentVarSymbol.cpp \
+	ClassificationSymbol.cpp \
+	CodeBlock.cpp \
+	CodeGen.cpp \
+	ConditionedDurationAgentVarSymbol.cpp \
+	Driver.cpp \
+	DurationAgentVarSymbol.cpp \
+	EnumerationSymbol.cpp \
+	EnumeratorSymbol.cpp \
+	HeaderCheck.cpp \
+	IdentityAgentVarSymbol.cpp \
+	LanguageSymbol.cpp \
+	LinkAgentVarSymbol.cpp \
+	ModelSymbol.cpp \
+	ModelTypeSymbol.cpp \
+	NumericSymbol.cpp \
+	ParameterSymbol.cpp \
+	PartitionSymbol.cpp \
+	RangeSymbol.cpp \
+	RealSymbol.cpp \
+	SimpleAgentVarSymbol.cpp \
+	Symbol.cpp \
+	TableAccumulatorSymbol.cpp \
+	TableAnalysisAgentVarSymbol.cpp \
+	TableExpressionSymbol.cpp \
+	TableSymbol.cpp \
+	TimeSymbol.cpp \
+	TypeOfLinkSymbol.cpp \
+	TypeSymbol.cpp \
+	VersionSymbol.cpp \
     $(BUILD_OMC_DIR)/parser.cpp \
     $(BUILD_OMC_DIR)/scanner.cpp 
 

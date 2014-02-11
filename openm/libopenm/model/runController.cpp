@@ -63,13 +63,13 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     ArgKey::optionsFile,
-    ArgKey::optionsFile,
     ArgKey::logToConsole,
     ArgKey::logToFile,
     ArgKey::logFilePath,
     ArgKey::logToStamped,
     ArgKey::logUseTs,
     ArgKey::logUsePid,
+    ArgKey::noLogTime,
     ArgKey::logSql
 };
 static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);

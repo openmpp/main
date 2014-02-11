@@ -41,19 +41,15 @@ namespace openm
          * create log instance.
          *
          * @param[in]   i_logToConsole  if true then log to console
-         * @param[in]   i_basePath      path to "last" log file
+         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-         * @param[in]   i_forceSuffix   if not NULL then use it as suffix in "stamped" file name
-         * @param[in]   i_isLogSql      if true then log SQL
          */
         Log(
             bool i_logToConsole = false,
             const char * i_basePath = "openm.log", 
-            bool i_useTimeStamp = false, 
-            bool i_usePidStamp = false, 
-            const char * i_forceSuffix = nullptr,
-            bool i_isLogSql = false
+            bool i_useTimeStamp = false,
+            bool i_usePidStamp = false
             );
         ~Log(void) throw();
 
@@ -61,18 +57,19 @@ namespace openm
          * re-initialize log file name(s) and other log settings.
          *
          * @param[in]   i_logToConsole  if true then log to console
-         * @param[in]   i_basePath      path to "last" log file
+         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+         * @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-         * @param[in]   i_forceSuffix   if not NULL then use it as suffix in "stamped" file name
+         * @param[in]   i_noLogTime     if true then not prefix log messgaes with date-time
          * @param[in]   i_isLogSql      if true then log SQL
          */
         void init(
             bool i_logToConsole,
             const char * i_basePath,
-            bool i_useTimeStamp = false, 
+            bool i_useTimeStamp = false,
             bool i_usePidStamp = false, 
-            const char * i_forceSuffix = nullptr,
+            bool i_noLogTime = false,
             bool i_isLogSql = false
             ) throw();
 
@@ -97,6 +94,7 @@ namespace openm
     private:
         recursive_mutex theMutex;   // mutex to lock for log operations
         bool isConsoleEnabled;      // if true then log to console
+        bool isNoTimeLog;           // if true then not prefix log messgaes with date-time
         bool isSqlLog;              // if true then log sql queries into last log
         bool isLastEnabled;         // if true then last log enabled
         bool isLastCreated;         // if true then last log file created
@@ -114,13 +112,12 @@ namespace openm
         void setLogPath(
             const char * i_basePath, 
             bool i_useTimeStamp = false, 
-            bool i_usePidStamp = false, 
-            const char * i_forceSuffix = nullptr
+            bool i_usePidStamp = false
             );
 
         // log to console
         static bool logToConsole(
-            chrono::system_clock::time_point i_now, const char * i_msg, const char * i_extra = nullptr
+            const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             ) throw();
 
         // create log file or truncate existing, return false on error
@@ -128,17 +125,17 @@ namespace openm
 
         // log to file, return false on error
         static bool logToFile(
-            const string & i_path, chrono::system_clock::time_point i_now, const char * i_msg, const char * i_extra = nullptr
+            const string & i_path, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             ) throw();
 
         // write date-time and message to output stream, return false on error
         static void writeToLog(
-            ostream & i_ost, chrono::system_clock::time_point i_now, const char * i_msg, const char * i_extra = nullptr
+            ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             );
 
     private:
-        Log(const Log & i_log);                 // = delete;
-        Log & operator=(const Log & i_log);     // = delete;
+        Log(const Log & i_log) = delete;
+        Log & operator=(const Log & i_log) = delete;
     };
 }
 

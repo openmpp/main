@@ -53,7 +53,7 @@ namespace openm
             const char * i_basePath,
             bool i_useTimeStamp = false, 
             bool i_usePidStamp = false, 
-            const char * i_forceSuffix = NULL,
+            bool i_noLogTime = false,
             bool i_isLogSql = false
             ) throw() = 0;
     };

@@ -82,7 +82,7 @@ namespace std {
             return (
                       (hash<unsigned int>()(k.begin.column))
                     ^ (hash<unsigned int>()(k.begin.line) << 7) // assume max 128 columns
-                    ^ (hash<unsigned int>()((unsigned char)k.begin.filename) << 10) // assume max 1024 lines 
+                    ^ (hash<unsigned int>()(*k.begin.filename->cbegin()) << 10) // assume max 1024 lines 
                    );
         }
     };
@@ -876,7 +876,7 @@ public:
      * @return The token string.
      */
 
-    static unordered_map<token_type, string, std::hash<int> > Symbol::token_string;
+    static unordered_map<token_type, string, std::hash<int> > token_string;
 
 
     /**
@@ -890,7 +890,7 @@ public:
      * token_string.
      */
 
-    static unordered_map<string, token_type> Symbol::string_token;
+    static unordered_map<string, token_type> string_token;
 
 
     /**
