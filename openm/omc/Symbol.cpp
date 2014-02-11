@@ -25,6 +25,7 @@
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
+#include "LinkSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentDataMemberSymbol.h"
@@ -564,8 +565,10 @@ void Symbol::populate_default_symbols()
     // grammar (parser.y).
     // 
     // N.B. If the number of TypedefTypeSymbols below is changed, a manifest constant
-    // in the API must also be changed.  That manifest constant is used to distinguish
-    // model-specific types (classifications, ranges, partitions) in the meta-data API.
+    // in the API must also be changed if it is not big enough.  That manifest constant
+    // is used to distinguish model-specific types (classifications, ranges, partitions)
+    // in the meta-data API.  An assert() statement at the end of this function will detect
+    // if this is necessary, but requires that the compiler be run in debug mode (of course).
 
     // C++ ambiguous integral type
     // (in C/C++, the signedness of char is not specified)

@@ -6,7 +6,8 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "LinkAgentVarSymbol.h"
-#include "AgentSymbol.h"
+#include "AgentFuncSymbol.h"
+#include "TypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -31,6 +32,12 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+
+    // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
+    h += "LinkAgentVar<" + pp_data_type->name + ", "
+        + agent->name + ", "
+        + "&" + side_effects_fn->unique_name + "> "
+        + name + ";";
 
     return h;
 }

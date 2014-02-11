@@ -26,8 +26,8 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    LinkAgentVarSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
-        : AgentVarSymbol(sym, agent, nullptr, decl_loc)
+    LinkAgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+        : AgentVarSymbol(sym, agent, type, decl_loc)
         , reciprocal_link(nullptr)
         , single(true)
     {

@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include "om_types0.h"
-#include "link.h"
+#include "omc/link.h"
 
 class Person {
 public:

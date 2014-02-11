@@ -43,7 +43,7 @@ actor Thing {
 	event timeMortalityEvent, MortalityEvent;
 };
 
-//link Thing.other_thing;
+link Thing.other_thing;
 //link Thing.spawner Person.things[];
 //link Person.my_thing1 Thing.my_person1;
 //link Person.my_thing2 Thing.my_person2;

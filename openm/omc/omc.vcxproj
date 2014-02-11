@@ -117,6 +117,7 @@
     <ClInclude Include="IdentityAgentVarSymbol.h" />
     <ClInclude Include="LanguageSymbol.h" />
     <ClInclude Include="LinkAgentVarSymbol.h" />
+    <ClInclude Include="LinkSymbol.h" />
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
     <ClInclude Include="ModelSymbol.h" />
@@ -169,6 +170,7 @@
     <ClCompile Include="IdentityAgentVarSymbol.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAgentVarSymbol.cpp" />
+    <ClCompile Include="LinkSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="NumericSymbol.cpp" />

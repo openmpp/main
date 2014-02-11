@@ -8,6 +8,7 @@
 #pragma once
 #include <cmath>
 #include "om_types0.h" // fundamental model types
+#include "omc/link.h"
 #include "omc/Range.h"
 #include "omc/Agent.h"
 #include "omc/AgentVar.h"
