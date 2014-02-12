@@ -34,10 +34,10 @@ void Person::SpawnEvent()
 
 	// Link Person to thing1 and thing2
 	my_thing1 = thing1;
-	//my_thing2 = thing2;
+	my_thing2 = thing2;
 
 	// link thing1 and thing2
-	//thing1->other_thing = thing2;
+	thing1->other_thing = thing2;
 
 	//// populate multi-link of things
 	//things->Add(thing1);
@@ -98,12 +98,12 @@ void Thing::MortalityEvent()
 	Finish();
 }
 
-//actor Person
-//{
-//	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
-//	logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
-//};
-//
+actor Person
+{
+	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
+	logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
+};
+
 //table Person Z01
 //{
 //	{

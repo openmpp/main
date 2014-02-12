@@ -403,6 +403,7 @@ extern char *yytext;
 %token <val_token>    TK_error         "error"
 
 %token <pval_Symbol>               SYMBOL
+%token <pval_string>               STRING
 %token <pval_Literal>              LITERAL
 %token <pval_IntegerLiteral>       INTEGER_LITERAL
 %token <pval_CharacterLiteral>     CHARACTER_LITERAL
@@ -448,6 +449,7 @@ extern char *yytext;
 %type  <pval_Symbol>    decl_type_part
 %type  <pval_Symbol>    agentvar
 %type  <pval_Symbol>    derived_agentvar
+%type  <pval_Symbol>    link_to_agentvar
 
 %type  <pval_AgentMemberSymbol> link_symbol
 
@@ -1470,7 +1472,25 @@ table_increment:
 agentvar:
       SYMBOL
     | derived_agentvar
+    | link_to_agentvar
 	;
+
+link_to_agentvar:
+      SYMBOL[link] "->"
+                        {
+                            // Tell the scanner not to apply agnet scope resolution to the following 'word'
+                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // depends on the nature of the symbol on the "->", whose declaration may not yet have been encountered.
+                            pc.next_word_is_string = true;
+                        }
+      STRING[agentvar]
+                        {
+                            // Create LinkToAgentVarSymbol.  Store the r.h.s of pointer operator as a string for
+                            // subsequent post-parse resolution.
+                            $link_to_agentvar = LinkToAgentVarSymbol::create_symbol(pc.get_agent_context(), $link, *$agentvar);
+                            delete $agentvar; // delete the string created using new in scanner
+                        }
+        ;
 
 /*
  * derived agentvars

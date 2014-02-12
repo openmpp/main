@@ -309,36 +309,18 @@ public:
     //}
 
     // operator: pointer
-    A* operator->()
+    // Pass it on the contained <link>
+    T operator->()
     {
-        A *ptr = this->get();
-        if (ptr) {
-            // update time of target agent at *ptr
-            // using the global time (just-in-time algorithm)
-            ptr->time = A::global_time;
-            // return pointer to agent
-            return ptr;
-        }
-        else {
-            // link is nullptr, return pointer to the 'null' agent
-            return &A::om_null_agent;
-        }
+        auto val = this->get();
+        return val;
     }
 
     // operator: dereference
-    A& operator*()
+    // Pass it on the contained <link>
+    T operator*()
     {
-        A *ptr = this->get();
-        if (ptr) {
-            // update time of target agent at *ptr
-            // using the global time (just-in-time algorithm)
-            ptr->time = A::global_time;
-            // return reference to agent
-            return *ptr;
-        }
-        else {
-            // link is nullptr, return reference to the 'null' agent
-            return A::om_null_agent;
-        }
+        auto val = this->get();
+        return *val;
     }
 };

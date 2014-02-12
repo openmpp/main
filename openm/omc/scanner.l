@@ -324,6 +324,13 @@ blank       [ \t\r]
                     yylval->val_token = tok;
                     return tok;
                 }
+                /* suppress name resolution if requested by parser */
+                if (pc.next_word_is_string) {
+                    yylval->pval_string = new string(yytext);
+                    pc.next_word_is_string = false;
+                    return token::STRING;
+                }
+
 				/* find existing symbol or create a new one */
                 Symbol *sym = nullptr;
                 Symbol *agent = pc.get_agent_context();

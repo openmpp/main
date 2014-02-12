@@ -29,21 +29,6 @@ public:
     {
         return ptr;
     }
-    // overload of dereference operator *
-    A& operator*()
-    {
-        if (ptr) {
-            // update time of target agent at *ptr
-            // using the global time (just-in-time algorithm)
-            ptr->time.set(A::global_time);
-            // return reference to agent
-            return *ptr;
-        }
-        else {
-            // link is nullptr, return reference to the 'null' agent
-            return A::om_null_agent;
-        }
-    }
 
     // overload of pointer operator ->
     A* operator->()
@@ -58,6 +43,22 @@ public:
         else {
             // link is nullptr, return pointer to the 'null' agent
             return &A::om_null_agent;
+        }
+    }
+
+    // overload of dereference operator *
+    A& operator*()
+    {
+        if (ptr) {
+            // update time of target agent at *ptr
+            // using the global time (just-in-time algorithm)
+            ptr->time.set(A::global_time);
+            // return reference to agent
+            return *ptr;
+        }
+        else {
+            // link is nullptr, return reference to the 'null' agent
+            return A::om_null_agent;
         }
     }
 };

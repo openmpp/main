@@ -180,6 +180,9 @@
     <ClInclude Include="TypeOfLinkSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LinkToAgentVarSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -297,6 +300,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TypeOfLinkSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkToAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

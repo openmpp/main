@@ -28,6 +28,7 @@ public:
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
+        , next_word_is_string(false)
         , redeclaration(false)
         , cxx_memfunc_gather (false)
         , cxx_memfunc_name ("")
@@ -136,6 +137,7 @@ public:
         counter2 = 0;
         counter3 = 0;
         redeclaration = false;
+        next_word_is_string = false;
         agent_context = nullptr;
         table_context = nullptr;
         classification_context = nullptr;
@@ -246,6 +248,15 @@ public:
 
 	int parse_errors;
 
+    /**
+     * Tells the scanner to treat the immediately following word as a string rather than a symbol.
+     * 
+     * Used by the parser to suppress symbol resolution by the scanner, for the next workd only.
+     * Used for parsing pointer (link)
+     * use in expressions, because the lhs of "->" is not known in general.  In this case, the
+     * nature of the rhs is resolved in a post-parse phase.
+     */
+    bool next_word_is_string;
 
     /**
      * Indicates if context is a redeclaration of an enclosing symbol.
