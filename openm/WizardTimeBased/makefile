@@ -57,8 +57,6 @@ MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_developer.cpp
 
 MODEL_CPPLIST = \
-  hard_coded.cpp \
-  simulation.cpp \
   $(MODEL_OMC_CPP)
 
 sources = $(MODEL_CPPLIST)

@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <cfloat>
 #include <cmath>
 #include "om_types0.h" // fundamental model types
 #include "omc/link.h"
