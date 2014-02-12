@@ -311,7 +311,7 @@ public:
     // operator: pointer
     A* operator->()
     {
-        A *ptr = get();
+        A *ptr = this->get();
         if (ptr) {
             // update time of target agent at *ptr
             // using the global time (just-in-time algorithm)
@@ -328,7 +328,7 @@ public:
     // operator: dereference
     A& operator*()
     {
-        A *ptr = get();
+        A *ptr = this->get();
         if (ptr) {
             // update time of target agent at *ptr
             // using the global time (just-in-time algorithm)
