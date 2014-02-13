@@ -84,6 +84,12 @@ public:
     set<AgentVarSymbol *> pp_agentvars_used;
  
     /**
+     * The links used in the expression.
+     */
+
+    set<LinkAgentVarSymbol *> pp_links_used;
+
+    /**
      * The linked agentvars used in the expression.
      */
 

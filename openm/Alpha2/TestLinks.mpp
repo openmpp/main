@@ -101,14 +101,22 @@ void Thing::MortalityEvent()
 actor Person
 {
 	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
-	logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
+	//logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
 };
 
-table Person Z01
+//table Person Z01
+//{
+//	{
+//		duration()
+//	}
+//	* thing1_good
+//	* thing2_good
+//};
+
+table Person Z02
 {
 	{
 		duration()
 	}
 	* thing1_good
-	* thing2_good
 };

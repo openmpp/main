@@ -294,6 +294,11 @@ template<typename T, typename A, typename B, void (A::*side_effects)(T old_value
 class LinkAgentVar : public AgentVar<T, A, side_effects>
 {
 public:
+
+    bool is_nullptr() const {
+        return nullptr == this->get().get();
+    }
+
     // operator: direct assignment
     LinkAgentVar& operator=( T new_value )
     {

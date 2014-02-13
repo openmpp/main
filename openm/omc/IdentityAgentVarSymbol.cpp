@@ -70,7 +70,15 @@ void IdentityAgentVarSymbol::post_parse(int pass)
 
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += "// Re-evaluate expression agentvar " + unique_name + " using reciprocal link";
-                c += rlav->name + "->" + expression_fn->name + "();";
+                c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
+                c += "";
+            }
+
+            // Dependency of all links used in expression
+            for (auto lav : pp_links_used) {
+                CodeBlock& c = lav->side_effects_fn->func_body;
+                c += "// Re-evaluate expression agentvar " + unique_name + " when link changed to different agent";
+                c += expression_fn->name + "();";
                 c += "";
             }
         }
@@ -100,6 +108,10 @@ void IdentityAgentVarSymbol::post_parse_traverse(ExprForAgentVar *node)
         if (lav) {
             // add to the set of all links to agentvars used in this expression
             pp_linked_agentvars_used.insert(lav);
+
+            // add to the set of all links used in this expression
+            assert(lav->pp_link);
+            pp_links_used.insert(lav->pp_link);
         }
     }
     else if (lit != nullptr) {
