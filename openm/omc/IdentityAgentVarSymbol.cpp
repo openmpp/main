@@ -8,6 +8,8 @@
 #include "IdentityAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "ExprForAgentVar.h"
+#include "LinkAgentVarSymbol.h"
+#include "LinkToAgentVarSymbol.h"
 #include "TypeSymbol.h"
 #include "CodeBlock.h"
 #include "Literal.h"
@@ -54,6 +56,23 @@ void IdentityAgentVarSymbol::post_parse(int pass)
                 c += expression_fn->name + "();";
                 c += "";
             }
+
+            // Dependency on linked agentvars in expression
+            for (auto ltav : pp_linked_agentvars_used) {
+                auto av = ltav->pp_agentvar; // agentvar being referenced across the link (rhs)
+                assert(av);
+
+                auto lav = ltav->pp_link; // the link agentvar
+                assert(lav);
+
+                auto rlav = lav->reciprocal_link; // the reciprocal link agentvar
+                assert(rlav);
+
+                CodeBlock& c = av->side_effects_fn->func_body;
+                c += "// Re-evaluate expression agentvar " + unique_name + " using reciprocal link";
+                c += rlav->name + "->" + expression_fn->name + "();";
+                c += "";
+            }
         }
         break;
     default:
@@ -76,6 +95,11 @@ void IdentityAgentVarSymbol::post_parse_traverse(ExprForAgentVar *node)
         if (av) {
             // add to the set of all agentvars used in this expression
             pp_agentvars_used.insert(av);
+        }
+        auto lav = dynamic_cast<LinkToAgentVarSymbol *>(sym->pp_symbol);
+        if (lav) {
+            // add to the set of all links to agentvars used in this expression
+            pp_linked_agentvars_used.insert(lav);
         }
     }
     else if (lit != nullptr) {

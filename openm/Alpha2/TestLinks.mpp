@@ -104,11 +104,11 @@ actor Person
 	logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
 };
 
-//table Person Z01
-//{
-//	{
-//		duration()
-//	}
-//	* thing1_good
-//	* thing2_good
-//};
+table Person Z01
+{
+	{
+		duration()
+	}
+	* thing1_good
+	* thing2_good
+};

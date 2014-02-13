@@ -48,13 +48,13 @@ public:
     void post_parse(int pass);
 
     /**
-     * The agent context of the link use.
+     * The agent context in code using the link (lhs of link).
      */
     Symbol*& agent_context;
     AgentSymbol *pp_agent_context;
 
     /**
-     * The link being used
+     * The link being used (a link agent var in agent_context)
      */
     Symbol*& link;
     LinkAgentVarSymbol *pp_link;

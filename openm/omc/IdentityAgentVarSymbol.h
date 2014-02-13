@@ -9,6 +9,7 @@
 #include <string>
 #include <set>
 #include "AgentVarSymbol.h"
+#include "LinkToAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 
 using namespace std;
@@ -81,6 +82,12 @@ public:
      */
 
     set<AgentVarSymbol *> pp_agentvars_used;
+ 
+    /**
+     * The linked agentvars used in the expression.
+     */
+
+    set<LinkToAgentVarSymbol *> pp_linked_agentvars_used;
  
 
     /** The expression function */
