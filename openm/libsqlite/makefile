@@ -3,6 +3,9 @@ CC = gcc
 CPP = $(CC)
 AR = ar
 
+# recognize dependency files
+SUFFIXES += .d
+
 BUILD_DIR = ../build
 OUT_PREFIX = ..
 
@@ -34,11 +37,12 @@ CPPFLAGS = $(CXXFLAGS)
 LIBSQLITE_NAME = libsqlite
 LIBSQLITE_A = $(LIBSQLITE_NAME).a
 
-LIBSQLITE_CLIST = \
+LIBSQLITE_CLIST := \
   sqlite3.c \
   extension-functions.c
 
-OBJ = $(foreach root,$(LIBSQLITE_CLIST:.c=.o),$(OBJ_DIR)/$(notdir $(root)))
+OBJS := $(foreach root,$(LIBSQLITE_CLIST:.c=.o),$(OBJ_DIR)/$(notdir $(root)))
+DEPS := $(foreach root,$(LIBSQLITE_CLIST:.c=.d),$(DEPS_DIR)/$(notdir $(root)))
     
 .PHONY : all
 all: libsqlite
@@ -46,22 +50,23 @@ all: libsqlite
 .PHONY : libsqlite
 libsqlite: prepare $(OUT_DIR)/$(LIBSQLITE_A)
 
+$(DEPS): | prepare
+$(OBJS): | prepare
+
 $(DEPS_DIR)/%.d : %.c
-	@set -e; rm -f $@; \
-	$(CPP) -MM $(CPPFLAGS) -c $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,$(OBJ_DIR)/\1.o $@ : ,g ' < $@.$$$$ > $(DEPS_DIR)/$(@F); \
-	rm -f $@.$$$$
+	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(OBJ_DIR)/%.o : %.c
 	$(CC) $(CCFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
 	
-$(OUT_DIR)/$(LIBSQLITE_A) : $(OBJ)
+$(OUT_DIR)/$(LIBSQLITE_A) : $(OBJS)
 	$(AR) rcs $@ $^
 
 .PHONY: clean
 clean:
 	rm -f $(OUT_DIR)/*.a
 	rm -f $(OBJ_DIR)/*.o
+	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
@@ -75,8 +80,9 @@ prepare:
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_DIR) ] ; then mkdir -p $(OUT_DIR) ; fi
 
-# This generates a dependency file for each .c file and includes it in the
-# current makefile.
-# $(DEPS_DIR) must exists before you run make
+# include dependencies for each .c file
+# if target is not clean or prepare
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+    -include $(DEPS)
+endif
 
-include $(foreach root,$(LIBSQLITE_CLIST:.c=.d),$(DEPS_DIR)/$(notdir $(root)))

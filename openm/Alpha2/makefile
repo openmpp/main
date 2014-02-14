@@ -10,20 +10,24 @@ endif
 CPP = $(CC)
 AR = ar
 
+# recognize dependency files
+SUFFIXES += .d
+
 BUILD_DIR = ../build
 OUT_PREFIX = ..
 INCLUDE_DIR = ../include
-DEPS_DIR = $(BUILD_DIR)/Alpha2/deps
-OMC_OUT_DIR = $(BUILD_DIR)/Alpha2/src
+MODEL_BUILD_DIR = $(BUILD_DIR)/Alpha2
+DEPS_DIR = $(MODEL_BUILD_DIR)/deps
+OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
-  OBJ_DIR = $(BUILD_DIR)/Alpha2/debug
+  OBJ_DIR = $(MODEL_BUILD_DIR)/debug
   OUT_BIN_DIR = $(OUT_PREFIX)/bin/debug
   OUT_LIB_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
-  OBJ_DIR = $(BUILD_DIR)/Alpha2/release
+  OBJ_DIR = $(MODEL_BUILD_DIR)/release
   OUT_BIN_DIR = $(OUT_PREFIX)/bin/release
   OUT_LIB_DIR = $(OUT_PREFIX)/lib/release
 endif
@@ -61,10 +65,11 @@ MODEL_CPPLIST = \
 
 sources = $(MODEL_CPPLIST)
 
-objects = $(foreach root,$(sources:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
+OBJS := $(foreach root,$(sources:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
+DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
     
-vpath %.cpp $(CURDIR)
-vpath %.cpp $(OMC_OUT_DIR)
+#vpath %.cpp $(CURDIR)
+#vpath %.cpp $(OMC_OUT_DIR)
      
 .PHONY : all
 all: model 
@@ -72,20 +77,19 @@ all: model
 .PHONY : model
 model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
 
-$(DEPS_DIR)/%.d : %.cpp
-	@set -e; rm -f $@; \
-	$(CPP) -MM $(CPPFLAGS) -c $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,$(OBJ_DIR)/\1.o $@ : ,g ' < $@.$$$$ > $(DEPS_DIR)/$(@F); \
-	rm -f $@.$$$$
+$(MODEL_OMC_CPP): | prepare
 
 $(MODEL_OMC_CPP) $(MODEL_OMC_SQL) : $(MODEL_MPP)
 	$(OMC_EXE) -i $(CURDIR) -o $(OMC_OUT_DIR)
 
-$(OBJ_DIR)/%.o : %.cpp
+$(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
+	$(CPP) -MM $(CPPFLAGS) $< -MF $@
+
+$(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
-$(OUT_BIN_DIR)/$(MODEL_EXE) : $(objects) $(OUT_LIB_DIR)/$(LIBOPENM_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OUT_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(objects)
+$(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIBOPENM_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
+	$(CXX) -L$(OUT_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
 model_sql : $(MODEL_OMC_SQL)
 	cp -pf $(OMC_OUT_DIR)/$(MODEL_SQL_PREFIX)*.sql $(OUT_BIN_DIR)
@@ -95,22 +99,22 @@ clean:
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)*.sql
 	rm -f $(OBJ_DIR)/*.o
+	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
-	rm -f $(DEPS_DIR)/*
-	rm -f $(OBJ_DIR)/*
-	rm -rf $(OUT_BIN_DIR)
+	rm -rf $(MODEL_BUILD_DIR)
 
 .PHONY: prepare
 prepare:
 	@if [ ! -d $(DEPS_DIR) ] ; then mkdir -p $(DEPS_DIR) ; fi
+	@if [ ! -d $(OMC_OUT_DIR) ] ; then mkdir -p $(OMC_OUT_DIR) ; fi
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_BIN_DIR) ] ; then mkdir -p $(OUT_BIN_DIR) ; fi
 
-# This generates a dependency file for each .cpp file and includes it in the
-# current makefile.
-# $(DEPS_DIR) must exists before you run make
-include $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
-
+# include dependencies for each .cpp file
+# if target is not clean or prepare
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+    -include $(DEPS)
+endif
 

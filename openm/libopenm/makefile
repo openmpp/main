@@ -10,6 +10,9 @@ endif
 CPP = $(CC)
 AR = ar
 
+# recognize dependency files
+SUFFIXES += .d
+
 BUILD_DIR = ../build
 OUT_PREFIX = ..
 
@@ -115,9 +118,12 @@ LIB_OMC_CPPLIST = \
   db/modelInsertSql.cpp \
   db/modelSqlBuilder.cpp
 
-RT_OBJ = $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
-OMC_OBJ = $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
-    
+RT_OBJS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
+RT_DEPS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
+
+OMC_OBJS := $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
+OMC_DEPS := $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
+
 vpath %.cpp $(CURDIR)
 vpath %.cpp $(CURDIR)/common
 vpath %.cpp $(CURDIR)/db
@@ -133,25 +139,29 @@ libopenm: prepare $(OUT_DIR)/$(LIBOPENM_A)
 .PHONY : lib_omc
 lib_omc: prepare $(OUT_DIR)/$(LIB_OMC_A)
 
+$(RT_DEPS): | prepare
+$(RT_OBJS): | prepare
+
+$(OMC_DEPS): | prepare
+$(OMC_OBJS): | prepare
+
 $(DEPS_DIR)/%.d : %.cpp
-	@set -e; rm -f $@; \
-	$(CPP) -MM $(CPPFLAGS) -c $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,$(OBJ_DIR)/\1.o $@ : ,g ' < $@.$$$$ > $(DEPS_DIR)/$(@F); \
-	rm -f $@.$$$$
+	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
 	
-$(OUT_DIR)/$(LIBOPENM_A) : $(RT_OBJ)
+$(OUT_DIR)/$(LIBOPENM_A) : $(RT_OBJS)
 	$(AR) rcs $@ $^
 
-$(OUT_DIR)/$(LIB_OMC_A) : $(OMC_OBJ)
+$(OUT_DIR)/$(LIB_OMC_A) : $(OMC_OBJS)
 	$(AR) rcs $@ $^
 
 .PHONY: clean
 clean:
 	rm -f $(OUT_DIR)/*.a
 	rm -f $(OBJ_DIR)/*.o
+	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
@@ -165,9 +175,10 @@ prepare:
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_DIR) ] ; then mkdir -p $(OUT_DIR) ; fi
 
-# This generates a dependency file for each .cpp file and includes it in the
-# current makefile.
-# $(DEPS_DIR) must exists before you run make
+# include dependencies for each .cpp file
+# if target is not clean or prepare
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+    -include $(RT_DEPS)
+    -include $(OMC_DEPS)
+endif
 
-include $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
-include $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
