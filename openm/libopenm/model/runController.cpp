@@ -69,7 +69,7 @@ static const char * runOptKeyArr[] = {
     ArgKey::logToStamped,
     ArgKey::logUseTs,
     ArgKey::logUsePid,
-    ArgKey::noLogTime,
+    ArgKey::logNoTimeConsole,
     ArgKey::logSql
 };
 static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);

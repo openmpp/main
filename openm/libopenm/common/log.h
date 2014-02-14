@@ -61,7 +61,7 @@ namespace openm
          * @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-         * @param[in]   i_noLogTime     if true then not prefix log messgaes with date-time
+         * @param[in]   i_noTimeConsole if true then not console prefix log messgaes with date-time
          * @param[in]   i_isLogSql      if true then log SQL
          */
         void init(
@@ -69,7 +69,7 @@ namespace openm
             const char * i_basePath,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false, 
-            bool i_noLogTime = false,
+            bool i_noTimeConsole = false,
             bool i_isLogSql = false
             ) throw();
 
@@ -94,7 +94,7 @@ namespace openm
     private:
         recursive_mutex theMutex;   // mutex to lock for log operations
         bool isConsoleEnabled;      // if true then log to console
-        bool isNoTimeLog;           // if true then not prefix log messgaes with date-time
+        bool isNoTimeConsole;       // if true then not prefix console messages with date-time
         bool isSqlLog;              // if true then log sql queries into last log
         bool isLastEnabled;         // if true then last log enabled
         bool isLastCreated;         // if true then last log file created

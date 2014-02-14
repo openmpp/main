@@ -43,7 +43,7 @@ Log::Log(
     bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp
     ) :
     isConsoleEnabled(i_logToConsole),
-    isNoTimeLog(false),
+    isNoTimeConsole(false),
     isSqlLog(false),
     isLastEnabled(false),
     isLastCreated(false),
@@ -53,7 +53,7 @@ Log::Log(
     stampedPath_("")
 {
     unique_lock<recursive_mutex> lck(theMutex);
-    init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, isNoTimeLog, isSqlLog);
+    init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, isNoTimeConsole, isSqlLog);
 }
 
 /** cleanup log resources */
@@ -74,11 +74,16 @@ Log::~Log(void) throw()
 * @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-* @param[in]   i_noLogTime     if true then not prefix log messgaes with date-time
+* @param[in]   i_noTimeConsole if true then not prefix console log messgaes with date-time
 * @param[in]   i_isLogSql      if true then log SQL
 */
 void Log::init(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, bool i_noLogTime, bool i_isLogSql
+    bool i_logToConsole, 
+    const char * i_basePath, 
+    bool i_useTimeStamp, 
+    bool i_usePidStamp, 
+    bool i_noTimeConsole, 
+    bool i_isLogSql
     ) throw()
 {
     try {
@@ -88,7 +93,7 @@ void Log::init(
         if (tsSuffix_ == "") tsSuffix_ = makeTimeStamp(chrono::system_clock::now());
         if (pidSuffix_ == "") pidSuffix_ = '.' + to_string(getpid());
         setLogPath(i_basePath, i_useTimeStamp, i_usePidStamp);
-        isNoTimeLog = i_noLogTime;
+        isNoTimeConsole = i_noTimeConsole;
         isSqlLog = i_isLogSql && isLastEnabled;
     }
     catch (...) { }
@@ -165,19 +170,23 @@ void Log::logMsg(const char * i_msg, const char * i_extra) throw()
     try {
         if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
 
-        chrono::system_clock::time_point msgTime = 
-            (!isNoTimeLog) ? chrono::system_clock::now() : chrono::system_clock::time_point::min();
+        chrono::system_clock::time_point now = chrono::system_clock::now();
 
         unique_lock<recursive_mutex> lck(theMutex);     // lock the log 
 
-        if (isConsoleEnabled) isConsoleEnabled = logToConsole(msgTime, i_msg, i_extra);
+        if (isConsoleEnabled) {
+            isConsoleEnabled = logToConsole(
+                (!isNoTimeConsole ? now : chrono::system_clock::time_point::min()),
+                i_msg,
+                i_extra);
+        }
         if (isLastEnabled) {
             if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath_);
-            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, msgTime, i_msg, i_extra);
+            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, now, i_msg, i_extra);
         }
         if (isStampedEnabled) {
             if (!isStampedCreated) isStampedEnabled = isStampedCreated = logFileCreate(stampedPath_);
-            if (isStampedEnabled) isStampedEnabled = logToFile(stampedPath_, msgTime, i_msg, i_extra);
+            if (isStampedEnabled) isStampedEnabled = logToFile(stampedPath_, now, i_msg, i_extra);
         }
     }
     catch (...) { }
@@ -218,14 +227,13 @@ void Log::logSql(const char * i_sql) throw()
     try {
         if (i_sql == nullptr) return;  // nothing to log
 
-        chrono::system_clock::time_point msgTime =
-            (!isNoTimeLog) ? chrono::system_clock::now() : chrono::system_clock::time_point::min();
+        chrono::system_clock::time_point now = chrono::system_clock::now();
 
         unique_lock<recursive_mutex> lck(theMutex);     // lock the log 
 
         if (isSqlLog && isLastEnabled) {
             if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath_);
-            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, msgTime, i_sql);
+            if (isLastEnabled) isLastEnabled = logToFile(lastPath_, now, i_sql);
         }
     }
     catch (...) { }

@@ -51,11 +51,11 @@
     <ClInclude Include="WizardCaseBasedFR.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AgentVar.h">
+    <ClInclude Include="..\include\omc\AgentVar.h">
       <Filter>Header Files\omc</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\include\omc\Agent.h">
       <Filter>Header Files\omc</Filter>
     </ClInclude>

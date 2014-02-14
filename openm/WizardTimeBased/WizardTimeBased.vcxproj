@@ -163,9 +163,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\omc\Agent.h" />
+    <ClInclude Include="..\include\omc\AgentVar.h" />
     <ClInclude Include="..\include\omc\Event.h" />
     <ClInclude Include="..\include\omc\omSimulation.h" />
-    <ClInclude Include="AgentVar.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_types.h" />
   </ItemGroup>

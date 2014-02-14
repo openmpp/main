@@ -97,7 +97,7 @@ namespace openm
         ArgKey::logToStamped,
         ArgKey::logUseTs,
         ArgKey::logUsePid,
-        ArgKey::noLogTime,
+        ArgKey::logNoTimeConsole,
         ArgKey::logSql
     };
     static const size_t runArgKeySize = sizeof(runArgKeyArr) / sizeof(const char *);
@@ -138,7 +138,7 @@ int main(int argc, char * argv[])
             argStore.strOption(ArgKey::logFilePath).c_str(),
             argStore.boolOption(ArgKey::logUseTs),
             argStore.boolOption(ArgKey::logUsePid),
-            argStore.boolOption(ArgKey::noLogTime) || !argStore.isOptionExist(ArgKey::noLogTime),
+            argStore.boolOption(ArgKey::logNoTimeConsole) || !argStore.isOptionExist(ArgKey::logNoTimeConsole),
             argStore.boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Start omc");

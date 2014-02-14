@@ -38,8 +38,8 @@ namespace openm
         /** use pid-stamp in log "stamped" file name */
         static const char * logUsePid;
 
-        /** do not prefix log messages with date-time */
-        static const char * noLogTime;
+        /** do not prefix console log messages with date-time */
+        static const char * logNoTimeConsole;
 
         /** log sql */
         static const char * logSql;
