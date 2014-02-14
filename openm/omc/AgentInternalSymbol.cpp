@@ -11,11 +11,11 @@
 
 using namespace std;
 
-CodeBlock AgentInternalSymbol::cxx_initialize_expression() const
+CodeBlock AgentInternalSymbol::cxx_initialize_expression(bool type_default) const
 {
     CodeBlock c;
     // example:              om_in_DurationOfLife_alive = false;\n
-    c += name + " = " + initial_value() + ";";
+    c += name + " = " + initialization_value(type_default) + ";";
     return c;
 }
 

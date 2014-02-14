@@ -63,7 +63,7 @@ public:
     * @return The initial value as a string.
     */
 
-    string initial_value() const
+    string initialization_value(bool type_default) const
     {
         return token_to_string(token::TK_time_infinite);
     }

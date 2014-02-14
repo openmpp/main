@@ -30,7 +30,7 @@ public:
     {
     }
 
-    CodeBlock cxx_initialize_expression() const;
+    CodeBlock cxx_initialize_expression(bool type_default) const;
 
     CodeBlock cxx_declaration_agent();
 

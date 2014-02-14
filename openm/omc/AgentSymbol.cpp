@@ -241,7 +241,7 @@ void AgentSymbol::build_body_initialize_data_members()
     CodeBlock& c = initialize_data_members_fn->func_body;
 
     for ( auto adm : pp_agent_data_members ) {
-        c += adm->cxx_initialize_expression();
+        c += adm->cxx_initialize_expression(false);
     }
 }
 

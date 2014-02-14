@@ -13,13 +13,16 @@
 
 using namespace std;
 
-string SimpleAgentVarSymbol::initial_value() const
+string SimpleAgentVarSymbol::initialization_value(bool type_default) const
 {
     string result;
-    if (initializer != nullptr)
+
+    if (!type_default && initializer != nullptr) {
         result = initializer->value();
-    else
-        result = AgentVarSymbol::initial_value();
+    }
+    else {
+        result = AgentVarSymbol::initialization_value(type_default);
+    }
 
     return result;
 }

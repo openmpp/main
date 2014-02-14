@@ -57,16 +57,23 @@ public:
         assert(data_type);  // grammar/initialization guarantee
     }
 
+    /**
+     * Gets the initial value for the data member.
+     *
+     * @param type_default True to force use of the default value of the type.
+     *
+     * @return The initial value as a string.
+     */
+    virtual string initialization_value(bool type_default) const;
 
     /**
-    * Gets the initial value for the data member.
-    *
-    * @return The initial value as a string.
-    */
-
-    virtual string initial_value() const;
-
-    virtual CodeBlock cxx_initialize_expression() const;
+     * C++ initialization expression.
+     *
+     * @param type_default True to force use of the default value of the type.
+     *
+     * @return A CodeBlock.
+     */
+    virtual CodeBlock cxx_initialize_expression(bool type_default) const;
 
 
     CodeBlock cxx_declaration_agent();

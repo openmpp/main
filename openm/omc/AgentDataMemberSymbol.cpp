@@ -37,7 +37,7 @@ void AgentDataMemberSymbol::post_parse(int pass)
     }
 }
 
-string AgentDataMemberSymbol::initial_value() const
+string AgentDataMemberSymbol::initialization_value(bool type_default) const
 {
     assert(pp_data_type);
 
@@ -45,11 +45,11 @@ string AgentDataMemberSymbol::initial_value() const
     return pp_data_type->default_initial_value();
 }
 
-CodeBlock AgentDataMemberSymbol::cxx_initialize_expression() const
+CodeBlock AgentDataMemberSymbol::cxx_initialize_expression(bool type_default) const
 {
     // example:              time.initialize(0);\n
     CodeBlock c;
-    c += name + ".initialize( " + initial_value() + " );";
+    c += name + ".initialize( " + initialization_value(type_default) + " );";
     return c;
 }
 
