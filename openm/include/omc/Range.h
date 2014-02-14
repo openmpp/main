@@ -21,110 +21,111 @@ using namespace std;
 
 template<
     typename T,
-    T T_min,
-    T T_max
+    int T_min,
+    int T_max
 >
 class Range
 {
 public:
     // ctors
     Range()
-        : value(min)
+        : range_value(min)
     {}
 
-    Range(T val)
-        : value((val < min) ? min : (val > max) ? max : val)
-    {}
-
-    // operator: cast to T (use in C++ expression)
-    operator T() const
+    Range(int val)
     {
-        return value;
+        set_value(val);
+    }
+
+    // operator: implicit conversion to int
+    operator int() const
+    {
+        return get();
     }
 
     // operator: direct assignment
-    Range& operator=(T new_value)
+    Range& operator=(int new_value)
     {
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by sum
-    Range& operator+=(T modify_value)
+    Range& operator+=(int modify_value)
     {
-        int new_value = (int)value + modify_value;
+        int new_value = get() + modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by difference
-    Range& operator-=(T modify_value)
+    Range& operator-=(int modify_value)
     {
-        int new_value = (int)value - modify_value;
+        int new_value = get() - modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by product
-    Range& operator*=(T modify_value)
+    Range& operator*=(int modify_value)
     {
-        int new_value = (int)value * modify_value;
+        int new_value = get() * modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by quotient
-    Range& operator/=(T modify_value)
+    Range& operator/=(int modify_value)
     {
-        int new_value = (int)value / modify_value;
+        int new_value = get() / modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by remainder
-    Range& operator%=(T modify_value)
+    Range& operator%=(int modify_value)
     {
-        int new_value = (int) value % modify_value;
+        int new_value = get() % modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by bitwise left shift
-    Range& operator<<=(T modify_value)
+    Range& operator<<=(int modify_value)
     {
-        int new_value = (int)value << modify_value;
+        int new_value = get() << modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by bitwise right shift
-    Range& operator>>=(T modify_value)
+    Range& operator>>=(int modify_value)
     {
-        int new_value = (int)value >> modify_value;
+        int new_value = get() >> modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by bitwise AND
-    Range& operator&=(T modify_value)
+    Range& operator&=(int modify_value)
     {
-        int new_value = (int)value & modify_value;
+        int new_value = get() & modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by bitwise XOR
-    Range& operator^=(T modify_value)
+    Range& operator^=(int modify_value)
     {
-        int new_value = (int)value ^ modify_value;
+        int new_value = get() ^ modify_value;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: assignment by bitwise OR
-    Range& operator|=(T modify_value)
+    Range& operator|=(int modify_value)
     {
-        int new_value = (int)value | modify_value;
+        int new_value = get() | modify_value;
         this->set_value(new_value);
         return *this;
     }
@@ -132,7 +133,7 @@ public:
     // operator: prefix increment
     Range& operator++()
     {
-        int new_value = (int)value + 1;
+        int new_value = get() + 1;
         this->set_value(new_value);
         return *this;
     }
@@ -140,29 +141,29 @@ public:
     // operator: prefix decrement
     Range& operator--()
     {
-        int new_value = (int)value - 1;
+        int new_value = get() - 1;
         this->set_value(new_value);
         return *this;
     }
 
     // operator: postfix increment
-    T operator++(int)
+    int operator++(int)
     {
-        int new_value = 1 + (int)value;
+        int new_value = 1 + get();
         return this->set_value(new_value);
     }
 
     // operator: postfix decrement
-    T operator--(int)
+    int operator--(int)
     {
-        int new_value = (int)value - 1;
+        int new_value = get() - 1;
         return this->set_value(new_value);
     }
 
     // 0-based index corresponding to value
     size_t to_index()
     {
-        return value - min;
+        return get() - min;
     }
 
     // test if value falls within range limits
@@ -190,30 +191,38 @@ public:
     }
 
     // convert given value to 0-based index
-    static size_t to_index(T value)
+    static size_t to_index(int value)
     {
         return value - min;
     }
 
     // convert given 0-based index to value
-    static T to_value(size_t index)
+    static int to_value(size_t index)
     {
-        return (T)(index + min);
+        return (int)(index + min);
     }
 
     // limits (static constants)
-    static const T min = T_min;
-    static const T max = T_max;
+    static const int min = T_min;
+    static const int max = T_max;
     static const size_t size = (int)T_max - (int)T_min + 1;
 
 private:
-    // assignment cover function
-    T set_value(int new_value)
+    // cover function to get value
+    int get() const
     {
-        return value = (T)((new_value < min) ? min : (new_value > max) ? max : new_value);
+        return range_value;
     }
 
-    // storage - the index of the interval in the partition
-    T value;
+    // assignment cover function
+    int set_value(int new_value)
+    {
+        int trunced_value = ((new_value < min) ? min : (new_value > max) ? max : new_value);
+        range_value = (T)trunced_value;
+        return trunced_value;
+    }
+
+    // storage - the value within the range
+    T range_value;
 };
 

@@ -27,17 +27,17 @@ class Classification
 public:
     // ctors
     Classification()
-        : value((T)0)
+        : enum_value((T)0)
     {}
 
     Classification(T val)
-        : value(val) // C++ compiler provides value protection through enum
+        : enum_value(val)
     {}
 
     // operator: cast to T (use in C++ expression)
     operator T() const
     {
-        return value;
+        return enum_value;
     }
 
     // operator: direct assignment
@@ -50,7 +50,7 @@ public:
     // operator: prefix increment
     Classification& operator++()
     {
-        int new_value = (int)value + 1;
+        int new_value = get() + 1;
         this->set_value(new_value);
         return *this;
     }
@@ -58,7 +58,7 @@ public:
     // operator: prefix decrement
     Classification& operator--()
     {
-        int new_value = (int)value - 1;
+        int new_value = get() - 1;
         this->set_value(new_value);
         return *this;
     }
@@ -66,14 +66,14 @@ public:
     // operator: postfix increment
     T operator++(int)
     {
-        int new_value = 1 + (int)value;
+        int new_value = 1 + get();
         return this->set_value(new_value);
     }
 
     // operator: postfix decrement
     T operator--(int)
     {
-        int new_value = (int)value - 1;
+        int new_value = get() - 1;
         return this->set_value(new_value);
     }
 
@@ -89,14 +89,21 @@ public:
     static const size_t size = T_size;
 
 private:
+    // cover function to get value
+    int get() const
+    {
+        return (int)enum_value;
+    }
+
     // assignment cover function
     T set_value(int new_value)
     {
-        return value = (T)((new_value < min) ? min : (new_value > max) ? max : new_value);
+        int trunced_value = ((new_value < min) ? min : (new_value > max) ? max : new_value);
+        return enum_value = (T)trunced_value;
     }
 
     // storage - the level in the classification
-    T value;
+    T enum_value;
 };
 
 

@@ -36,10 +36,17 @@ public:
         value = initial_value;
     }
 
-    // operator: cast to T (use agentvar in C++ expression)
+    // operator: cast to T (use agentvar containing fundamental type)
     operator T()
     {
         return get();
+    }
+
+    // member template to pass conversion inwards to the contained class to do the cast
+    template<typename T1>
+    operator T1()
+    {
+        return (T1)get();
     }
 
     // get pointer to containing agent

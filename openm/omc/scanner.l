@@ -324,9 +324,12 @@ blank       [ \t\r]
                     yylval->val_token = tok;
                     return tok;
                 }
+                string word = yytext;
+                /* special hack to silently interpret 'actor_id' as 'agent_id' */
+                if (word == "actor_id") word = "agent_id";
                 /* suppress name resolution if requested by parser */
                 if (pc.next_word_is_string) {
-                    yylval->pval_string = new string(yytext);
+                    yylval->pval_string = new string(word);
                     pc.next_word_is_string = false;
                     return token::STRING;
                 }
@@ -336,17 +339,17 @@ blank       [ \t\r]
                 Symbol *agent = pc.get_agent_context();
                 if (agent == nullptr) {
                     /* Currently in global context */
-                    sym = Symbol::get_symbol(yytext);
-                    if (!sym) sym = new Symbol(yytext, *yylloc);
+                    sym = Symbol::get_symbol(word);
+                    if (!sym) sym = new Symbol(word, *yylloc);
                 }
                 else {
                     /* Currently in agent context */
                     /* Attempt first to resolve the name in global context (global names have precedence) */
-                    sym = Symbol::get_symbol(yytext);
+                    sym = Symbol::get_symbol(word);
                     if (!sym) {
                         /* Resolve name in agent context */
-                        sym = Symbol::get_symbol(yytext, agent);
-                        if (!sym) sym = new Symbol(yytext, agent, *yylloc);
+                        sym = Symbol::get_symbol(word, agent);
+                        if (!sym) sym = new Symbol(word, agent, *yylloc);
                         /* Possibly this was a global name not yet encountered in the source code. */
                         /* This case is handled by fix-up in Symbol::post_parse(eCreateMissingSymbols) */
                     }

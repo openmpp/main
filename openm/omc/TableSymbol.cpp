@@ -296,7 +296,8 @@ void TableSymbol::build_body_update_cell()
         c += "cell += index;";
         ++dim;
     }
-
+    c += "";
+    c += "assert(cell >= 0 && cell < " + name + "::n_cells ); // logic guarantee";
     c += "";
     c += cell->name + " = cell;" ;
 }

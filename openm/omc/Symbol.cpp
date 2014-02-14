@@ -33,6 +33,8 @@
 #include "AgentEventSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "AgentVarSymbol.h"
+#include "LinkAgentVarSymbol.h"
+#include "IdentityAgentVarSymbol.h"
 #include "TableExpressionSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
@@ -105,7 +107,6 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_active_spell_delta, "active_spell_delta" },
     { token::TK_active_spell_duration, "active_spell_duration" },
     { token::TK_active_spell_weighted_duration, "active_spell_weighted_duration" },
-    { token::TK_agent_id, "agent_id" },
     { token::TK_aggregate, "aggregate" },
     { token::TK_all_base_states, "all_base_states" },
     { token::TK_all_derived_states, "all_derived_states" },
@@ -411,7 +412,6 @@ unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 unordered_map<string, token_type> Symbol::string_token =
 {
     { "actor", token::TK_agent },
-    { "actor_id", token::TK_agent_id },
     { "actor_set", token::TK_agent_set },
     { "logical", token::TK_bool },
     { "TRUE", token::TK_true },
@@ -778,9 +778,11 @@ void Symbol::post_parse_all()
     for ( auto agent : pp_all_agents ) {
         agent->pp_agent_data_members.sort( [] (AgentDataMemberSymbol *a, AgentDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_agentvars.sort( [] (AgentVarSymbol *a, AgentVarSymbol *b) { return a->name < b->name ; } );
+        agent->pp_identity_agentvars.sort( [] (IdentityAgentVarSymbol *a, IdentityAgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_events.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agent_funcs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+        agent->pp_link_agentvars.sort( [] (LinkAgentVarSymbol *a, LinkAgentVarSymbol *b) { return a->name < b->name ; } );
     }
 
     // Sort collections in tables

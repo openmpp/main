@@ -9,20 +9,53 @@
 #include "om_types0.h"
 #include "omc/link.h"
 
+class BaseEvent {
+public:
+    static bool just_in_time;
+};
+bool BaseEvent::just_in_time = true;
+
+
+class BaseAgent {
+public:
+    static Time global_time;
+};
+Time BaseAgent::global_time = 2013.5;
+
 class Person {
 public:
     void age_agent(Time t) {
         time = t;
     }
 
+    // local time of the Person
+    // Following is like an agentvar
+    struct time_av {
+        Time value;
+    public:
+        operator Time() const {
+            return value;
+        }
+
+        time_av& operator=(Time new_value) {
+            value = new_value;
+            return *this;
+        }
+
+        bool operator==(Time rhs_value) {
+            return value == rhs_value;
+        }
+
+        void set(Time t) {
+            value = t;
+        }
+    } time;
+
     // the 'simulated' call-back function which
     // implements the expression agentvar family_income
     void om_expression_family_income() {
         family_income = income + lSpouse->income;
     }
-
-    // local time of the Person
-    Time time;
 
     // a 'simulated' simple agent var
     real income;
@@ -37,14 +70,9 @@ public:
     link<Person> lSpouse;
 
     static Person om_null_agent;
-
-    // global time of the simulation
-    static Time global_time;
 };
 
 Person Person::om_null_agent;
-
-Time Person::global_time = 2013.5;
 
 void test_link()
 {
@@ -87,7 +115,7 @@ void test_link()
 
     // test automatic update of local time of person2
     // before referencing agentvars of person2 (just-in-time algorithm)
-    person1.age_agent(Person::global_time);
+    person1.age_agent(BaseAgent::global_time);
     person1.om_expression_family_income();
     assert(person2.time == 2013.5);
     assert(person1.family_income == 112000);

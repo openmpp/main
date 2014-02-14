@@ -38,7 +38,7 @@ void IdentityAgentVarSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // Add this expression agentvar symbol to the agent's list of all such symbols
-            pp_agent->pp_expr_agentvars.push_back(this);
+            pp_agent->pp_identity_agentvars.push_back(this);
         
             // Perform post-parse operations to each element in the expression tree
             post_parse_traverse(root);

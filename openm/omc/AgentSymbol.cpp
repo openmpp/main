@@ -12,6 +12,7 @@
 #include "AgentFuncSymbol.h"
 #include "AgentEventSymbol.h"
 #include "IdentityAgentVarSymbol.h"
+#include "LinkAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
@@ -50,6 +51,14 @@ void AgentSymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Return unique agent_id of this agent.");
         CodeBlock& c = fn->func_body;
         c += "return agent_id;" ;
+    }
+
+    // The om_set_agent_id() member function
+    {
+        auto *fn = new AgentFuncSymbol("om_set_agent_id", this, "void", "");
+        fn->doc_block = doxygen_short("Set the unique agent_id of this agent.");
+        CodeBlock& c = fn->func_body;
+        c += "agent_id.set(get_next_agent_id());" ;
     }
 
     // The om_Start_custom() member function
@@ -138,6 +147,15 @@ void AgentSymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The finalize_links member function
+    {
+        assert(nullptr == finalize_links_fn); // initialization guarantee
+        finalize_links_fn = new AgentFuncSymbol("om_finalize_links", this);
+        assert(finalize_links_fn); // out of memory check
+        finalize_links_fn->doc_block = doxygen_short("Set all links in agent to nullptr when the agent leaves the simulation.");
+        // function body is generated in post-parse phase
+    }
+
     // The Start() member function
     {
         auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
@@ -190,6 +208,7 @@ void AgentSymbol::post_parse(int pass)
             build_body_initialize_tables();
             build_body_finalize_tables();
             build_body_initialize_expression_agentvars();
+            build_body_finalize_links();
         }
         break;
     default:
@@ -224,10 +243,6 @@ void AgentSymbol::build_body_initialize_data_members()
     for ( auto adm : pp_agent_data_members ) {
         c += adm->cxx_initialize_expression();
     }
-
-    c += "";
-    c += "// Set the built-in agentvar 'agent_id'";
-    c += "agent_id.set(get_next_agent_id());";
 }
 
 void AgentSymbol::build_body_initialize_events()
@@ -289,7 +304,16 @@ void AgentSymbol::build_body_initialize_expression_agentvars()
 {
     CodeBlock& c = initialize_expression_agentvars_fn->func_body;
 
-    for ( auto eav : pp_expr_agentvars ) {
+    for ( auto eav : pp_identity_agentvars ) {
         c += eav->expression_fn->name + "();";
+    }
+}
+
+void AgentSymbol::build_body_finalize_links()
+{
+    CodeBlock& c = finalize_links_fn->func_body;
+
+    for ( auto lav : pp_link_agentvars ) {
+        c += lav->name + ".set(nullptr);";
     }
 }

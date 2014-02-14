@@ -57,10 +57,12 @@ parameters
     YEAR a_years;
 
     //EN a AGE_GROUP (partition)
-    AGE_GROUP a_age_group;
+    // supported in ompp, unsupported in Modgen
+    //AGE_GROUP a_age_group;
 
     //EN my first multi-dimensional parameter
-    real Something[SEX][AGE_GROUP] = {
+    // 'rel' is supported in ompp, not supported in Modgen
+    double Something[SEX][AGE_GROUP] = {
         1, 2, 3, 4, 5,
         6, 7, 8, 9, 10
     };
@@ -71,7 +73,7 @@ actor Person            //EN Individual
 {
     uint my_uint = { 0 };
 
-    Time my_first_happy_time;
+    TIME my_first_happy_time;
 
     YEAR year;
 
@@ -100,7 +102,7 @@ actor Person            //EN Individual
     //EN Eye colour
     EYE_COLOUR eye_colour;
 
-    bool eye_colour_definitive = { FALSE };
+    logical eye_colour_definitive = { FALSE };
 
     event timeEyeColourChangeEvent, EyeColourChangeEvent;
 
@@ -145,19 +147,22 @@ table Person ProbeOfHappiness2 //EN Probe of happiness #2
 };
 
 parameters{
-    bool i_bool = { true };
+    logical i_bool = { TRUE };
     SEX i_sex = { MALE };
-    AGE_GROUP i_age_group = { 2 };
+	// parameters of type partition not supported in Modgen
+    //AGE_GROUP i_age_group = { 2 };
     YEAR i_year = { -2 };
 
-    bool j_bool[REGION] = { true, false };
+    logical j_bool[REGION] = { TRUE, FALSE };
     SEX j_sex[REGION] = { MALE, FEMALE };
-    AGE_GROUP j_age_group[REGION] = { 2, 3 };
+	// parameters of type partition not supported in Modgen
+    //AGE_GROUP j_age_group[REGION] = { 2, 3 };
     YEAR j_year[REGION] = { -2, 0 };
 
-    bool k_bool[REGION][REGION] = { true, false, false, true };
+    logical k_bool[REGION][REGION] = { TRUE, FALSE, FALSE, TRUE };
     SEX k_sex[REGION][REGION] = { MALE, FEMALE, FEMALE, MALE };
-    AGE_GROUP k_age_group[REGION][REGION] = { 2, 3, 3, 2 };
+	// parameters of type partition not supported in Modgen
+    //AGE_GROUP k_age_group[REGION][REGION] = { 2, 3, 3, 2 };
     YEAR k_year[REGION][REGION] = { -2, 0, 1, 3 };
 
 };
@@ -203,4 +208,35 @@ table Person FilterTest
         duration()
     }
     * playing
+};
+
+range R0_30
+{
+    0, 30
+};
+
+actor Person
+{
+    R0_30 some_agent_ids = actor_id;
+};
+
+table Person AgentIdTest_Person
+{
+    some_agent_ids
+    * {
+        value_out(actor_id)
+    }
+};
+
+actor Thing
+{
+    R0_30 some_agent_ids = actor_id;
+};
+
+table Thing AgentIdTest_Thing
+{
+    some_agent_ids
+    * {
+        value_out(actor_id)
+    }
 };

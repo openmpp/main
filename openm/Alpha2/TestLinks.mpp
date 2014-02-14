@@ -24,7 +24,7 @@ void Person::SpawnEvent()
 	thing2->Start();
 
     // retrieval test
-    link<Thing> a = thing1->other_thing;
+    //link<Thing> a = thing1->other_thing;
 
     // if the following worked, just-in-time would fail.
     // We need to intercept pointer references, that's the whol idea.
@@ -98,11 +98,14 @@ void Thing::MortalityEvent()
 	Finish();
 }
 
+
 actor Person
 {
 	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
 	//logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
+
 };
+
 
 //table Person Z01
 //{
@@ -114,9 +117,10 @@ actor Person
 //};
 
 table Person Z02
+[ actor_id == 19 ]
 {
-	{
+    thing1_good
+	* {
 		duration()
 	}
-	* thing1_good
 };

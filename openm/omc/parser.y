@@ -134,7 +134,6 @@ extern char *yytext;
 %token <val_token>    TK_active_spell_delta        "active_spell_delta"
 %token <val_token>    TK_active_spell_duration     "active_spell_duration"
 %token <val_token>    TK_active_spell_weighted_duration  "active_spell_weighted_duration"
-%token <val_token>    TK_agent_id                  "agent_id"
 %token <val_token>    TK_aggregate                 "aggregate"
 %token <val_token>    TK_all_base_states           "all_base_states"
 %token <val_token>    TK_all_derived_states        "all_derived_states"

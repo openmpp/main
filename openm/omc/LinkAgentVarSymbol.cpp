@@ -7,6 +7,7 @@
 
 #include "LinkAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
+#include "AgentSymbol.h"
 #include "TypeSymbol.h"
 #include "CodeBlock.h"
 
@@ -20,14 +21,22 @@ void LinkAgentVarSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
+        {
+            // Add this link agentvar symbol to the agent's list of all such symbols
+            pp_agent->pp_link_agentvars.push_back(this);
+        }
         break;
     case ePopulateDependencies:
         {
             // Dependency on agentvars in expression
             CodeBlock& c = side_effects_fn->func_body;
-            c += "// Maintain reciprocal link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name;
+            c += "// Maintain reciprocal link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name + " - while avoiding stack overflow";
+            c += "if (old_value.get() != nullptr && old_value->" + reciprocal_link->name + ".get().get() == this) {";
             c += "old_value->" + reciprocal_link->name + " = nullptr;";
+            c += "}";
+            c += "if (new_value.get() == nullptr && new_value->" + reciprocal_link->name + ".get().get() != this) {";
             c += "new_value->" + reciprocal_link->name + " = this;";
+            c += "}";
             c += "";
         }
         break;

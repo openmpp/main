@@ -15,6 +15,7 @@ class AgentEventSymbol;
 class AgentFuncSymbol;
 class AgentVarSymbol;
 class IdentityAgentVarSymbol;
+class LinkAgentVarSymbol;
 class AgentInternalSymbol;
 class BuiltinAgentVarSymbol;
 
@@ -47,15 +48,14 @@ public:
         , initialize_tables_fn(nullptr)
         , finalize_tables_fn(nullptr)
         , initialize_expression_agentvars_fn(nullptr)
+        , finalize_links_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
 
-
     /**
      * Create auxiliary symbols associated with this agent.
      */
-
     void create_auxiliary_symbols();
 
     void post_parse(int pass);
@@ -63,56 +63,51 @@ public:
     /**
      * Builds the function body of the function.
      */
-
     void build_body_initialize_agentvar_offsets();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_initialize_event_offsets();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_initialize_data_members();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_initialize_events();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_finalize_events();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_initialize_tables();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_finalize_tables();
 
     /**
      * Builds the function body of the function.
      */
-
     void build_body_initialize_expression_agentvars();
 
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_finalize_links();
 
     /**
      * The built-in agentvar for time in the agent.
      */
-
     BuiltinAgentVarSymbol *pp_time;
 
 
@@ -184,15 +179,18 @@ public:
 
     AgentFuncSymbol *finalize_tables_fn;
 
-
     /**
      * The agent function which initializes all expression agentvars in the agent.
      * 
-     * This function has the fixed name om_initialize_expression_agentvars().  It is used in the run-time support
-     * class BaseAgent before the agent enters the simulation.
+     * This function has the fixed name om_initialize_expression_agentvars().  It is used in the run-
+     * time support class BaseAgent before the agent enters the simulation.
      */
-
     AgentFuncSymbol *initialize_expression_agentvars_fn;
+
+    /**
+     * The agent function which sets all links to nullptr when the agent finishes.
+     */
+    AgentFuncSymbol *finalize_links_fn;
 
     /**
     * The data members of this agent
@@ -217,7 +215,7 @@ public:
      * Populated after parsing is complete.
      */
 
-    list<IdentityAgentVarSymbol *> pp_expr_agentvars;
+    list<IdentityAgentVarSymbol *> pp_identity_agentvars;
 
 
     /**
@@ -237,11 +235,17 @@ public:
     list<AgentFuncSymbol *> pp_agent_funcs;
 
     /**
-    * The tables of this agent
-    *
-    *  Populated after parsing is complete.
-    */
-
+     * The tables of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
     list<TableSymbol *> pp_agent_tables;
+
+    /**
+     * The link agentvars of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
+    list<LinkAgentVarSymbol *> pp_link_agentvars;
 };
 
