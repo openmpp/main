@@ -8,6 +8,7 @@ link Thing.other_thing;
 //link Thing.spawner Person.things[];
 link Person.my_thing1 Thing.my_person1;
 link Person.my_thing2 Thing.my_person2;
+link Person.my_thing3 Thing.my_person3;
 
 TIME Person::timeSpawnEvent()
 {
@@ -103,11 +104,40 @@ actor Person
 {
 	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
 	//logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
+	logical thing3_good = ! my_thing3->making_trouble; //EN Thing3 good
+	logical thing3_bad = my_thing3->making_trouble; //EN Thing3 bad
 
 };
 
+table Person y01
+[ actor_id == 1 ]
+{
+	{
+		duration()
+	}
+    * thing3_good
+    * thing3_bad
+};
 
-//table Person Z01
+table Person z01
+{
+	{
+		duration()
+	}
+    * some_agent_ids
+    * thing1_good
+};
+
+table Person z02
+[ actor_id == 19 ]
+{
+    thing1_good
+	* {
+		duration()
+	}
+};
+
+//table Person z03
 //{
 //	{
 //		duration()
@@ -116,11 +146,3 @@ actor Person
 //	* thing2_good
 //};
 
-table Person Z02
-[ actor_id == 19 ]
-{
-    thing1_good
-	* {
-		duration()
-	}
-};

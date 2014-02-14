@@ -266,7 +266,7 @@ public:
 
                 // Initialize the single static agent used to retrieve (zero) values
                 // when dereferencing nullptr link agentvars.
-                A::om_null_agent.om_initialize_data_members();
+                A::om_null_agent.om_initialize_data_members0();
 				first_invocation = false;
 			}
         }

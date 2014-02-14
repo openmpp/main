@@ -11,7 +11,7 @@
 
 using namespace std;
 
-CodeBlock AgentInternalSymbol::cxx_initialize_expression(bool type_default) const
+CodeBlock AgentInternalSymbol::cxx_initialization_expression(bool type_default) const
 {
     CodeBlock c;
     // example:              om_in_DurationOfLife_alive = false;\n

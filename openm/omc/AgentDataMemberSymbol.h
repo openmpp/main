@@ -73,7 +73,7 @@ public:
      *
      * @return A CodeBlock.
      */
-    virtual CodeBlock cxx_initialize_expression(bool type_default) const;
+    virtual CodeBlock cxx_initialization_expression(bool type_default) const;
 
 
     CodeBlock cxx_declaration_agent();

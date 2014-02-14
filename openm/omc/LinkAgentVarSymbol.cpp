@@ -34,7 +34,7 @@ void LinkAgentVarSymbol::post_parse(int pass)
             c += "if (old_value.get() != nullptr && old_value->" + reciprocal_link->name + ".get().get() == this) {";
             c += "old_value->" + reciprocal_link->name + " = nullptr;";
             c += "}";
-            c += "if (new_value.get() == nullptr && new_value->" + reciprocal_link->name + ".get().get() != this) {";
+            c += "if (new_value.get() != nullptr && new_value->" + reciprocal_link->name + ".get().get() != this) {";
             c += "new_value->" + reciprocal_link->name + " = this;";
             c += "}";
             c += "";

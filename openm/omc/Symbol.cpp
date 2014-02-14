@@ -679,6 +679,7 @@ Symbol *Symbol::find_a_symbol( const type_info& ti )
         return nullptr;
 }
 
+// static
 Symbol *Symbol::pp_symbol(Symbol *& rp_sym)
 {
     Symbol *sym = rp_sym;

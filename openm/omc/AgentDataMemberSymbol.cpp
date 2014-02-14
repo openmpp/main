@@ -45,7 +45,7 @@ string AgentDataMemberSymbol::initialization_value(bool type_default) const
     return pp_data_type->default_initial_value();
 }
 
-CodeBlock AgentDataMemberSymbol::cxx_initialize_expression(bool type_default) const
+CodeBlock AgentDataMemberSymbol::cxx_initialization_expression(bool type_default) const
 {
     // example:              time.initialize(0);\n
     CodeBlock c;

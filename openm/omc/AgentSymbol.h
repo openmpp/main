@@ -43,6 +43,7 @@ public:
         , initialize_agentvar_offsets_fn(nullptr)
         , initialize_event_offsets_fn(nullptr)
         , initialize_data_members_fn(nullptr)
+        , initialize_data_members0_fn(nullptr)
         , initialize_events_fn(nullptr)
         , finalize_events_fn(nullptr)
         , initialize_tables_fn(nullptr)
@@ -74,6 +75,11 @@ public:
      * Builds the function body of the function.
      */
     void build_body_initialize_data_members();
+
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_initialize_data_members0();
 
     /**
      * Builds the function body of the function.
@@ -139,6 +145,16 @@ public:
      */
 
     AgentFuncSymbol *initialize_data_members_fn;
+
+
+    /**
+     * The agent function which initializes the values of all data members in the agent to type default values.
+     * 
+     * This function has the fixed name om_initialize_data_members().  It is called in the run-time support
+     * class BaseAgent before the agent enters the simulation.
+     */
+
+    AgentFuncSymbol *initialize_data_members0_fn;
 
 
     /**

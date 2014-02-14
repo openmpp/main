@@ -102,6 +102,15 @@ void AgentSymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The initialize_data_members0 member function
+    {
+        assert(!initialize_data_members0_fn); // initialization guarantee
+        initialize_data_members0_fn = new AgentFuncSymbol("om_initialize_data_members0", this);
+        assert(initialize_data_members0_fn); // out of memory check
+        initialize_data_members0_fn->doc_block = doxygen_short("Initialization of data members of the 'zero' agent to default values for the type (0).");
+        // function body is generated in post-parse phase
+    }
+
     // The om_initialize_events member function
     {
         assert(nullptr == initialize_events_fn); // initialization guarantee
@@ -203,6 +212,7 @@ void AgentSymbol::post_parse(int pass)
             build_body_initialize_agentvar_offsets();
             build_body_initialize_event_offsets();
             build_body_initialize_data_members();
+            build_body_initialize_data_members0();
             build_body_initialize_events();
             build_body_finalize_events();
             build_body_initialize_tables();
@@ -241,7 +251,16 @@ void AgentSymbol::build_body_initialize_data_members()
     CodeBlock& c = initialize_data_members_fn->func_body;
 
     for ( auto adm : pp_agent_data_members ) {
-        c += adm->cxx_initialize_expression(false);
+        c += adm->cxx_initialization_expression(false);
+    }
+}
+
+void AgentSymbol::build_body_initialize_data_members0()
+{
+    CodeBlock& c = initialize_data_members0_fn->func_body;
+
+    for ( auto adm : pp_agent_data_members ) {
+        c += adm->cxx_initialization_expression(true);
     }
 }
 

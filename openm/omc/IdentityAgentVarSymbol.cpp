@@ -104,14 +104,20 @@ void IdentityAgentVarSymbol::post_parse_traverse(ExprForAgentVar *node)
             // add to the set of all agentvars used in this expression
             pp_agentvars_used.insert(av);
         }
-        auto lav = dynamic_cast<LinkToAgentVarSymbol *>(sym->pp_symbol);
-        if (lav) {
+        auto ltav = dynamic_cast<LinkToAgentVarSymbol *>(sym->pp_symbol);
+        if (ltav) {
             // add to the set of all links to agentvars used in this expression
-            pp_linked_agentvars_used.insert(lav);
+            pp_linked_agentvars_used.insert(ltav);
 
-            // add to the set of all links used in this expression
-            assert(lav->pp_link);
-            pp_links_used.insert(lav->pp_link);
+            // add the link itself to the set of all links used in this expression
+            // ltav->pp_link is not yet valid in this post-parse pass,
+            // so go through ltav->link instead
+            assert(ltav->link);
+            auto temp_sym = pp_symbol(ltav->link);
+            assert(temp_sym);
+            auto lav = dynamic_cast<LinkAgentVarSymbol *>(temp_sym);
+            assert(lav);
+            pp_links_used.insert(lav);
         }
     }
     else if (lit != nullptr) {
