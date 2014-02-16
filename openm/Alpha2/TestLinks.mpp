@@ -103,7 +103,7 @@ void Thing::MortalityEvent()
 actor Person
 {
 	logical thing1_good = ! my_thing1->making_trouble; //EN Thing1 good
-	//logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
+	logical thing2_good = ! my_thing2->making_trouble; //EN Thing2 good
 	logical thing3_good = ! my_thing3->making_trouble; //EN Thing3 good
 	logical thing3_bad = my_thing3->making_trouble; //EN Thing3 bad
 
@@ -124,12 +124,38 @@ table Person z01
 	{
 		duration()
 	}
-    * some_agent_ids
+    * first_30_agent_ids
     * thing1_good
 };
 
+range RNG_M_N { 200, 300 };
+actor Person
+{
+    RNG_M_N some_agent_ids = actor_id;
+};
+actor Thing
+{
+    RNG_M_N some_agent_ids = actor_id;
+};
+table Person zzz
+[ actor_id >= 300 && actor_id <= 325 && !thing1_good ]
+{
+	{
+		duration()
+	}
+};
+
+table Person z01b
+[ !thing1_good ]
+{
+    some_agent_ids
+	* {
+		duration()
+	}
+};
+
 table Person z02
-[ actor_id == 19 ]
+[ actor_id == 322 ]
 {
     thing1_good
 	* {
@@ -137,12 +163,12 @@ table Person z02
 	}
 };
 
-//table Person z03
-//{
-//	{
-//		duration()
-//	}
-//	* thing1_good
-//	* thing2_good
-//};
+table Person z03
+{
+	{
+		duration()
+	}
+	* thing1_good
+	* thing2_good
+};
 

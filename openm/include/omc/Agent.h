@@ -168,9 +168,9 @@ public:
     {
         om_finalize_tables();
         om_finalize_events();
+        om_active = false;
         om_finalize_links();
         make_inactive();
-        om_active = false;
         make_zombie();
     }
 

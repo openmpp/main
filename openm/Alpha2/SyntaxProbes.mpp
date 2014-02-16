@@ -167,11 +167,15 @@ parameters{
 
 };
 
-range RNG20{ 0, 19 };
+range RNG_0_19 { 0, 19 };
+range RNG_0_20 { 0, 20 };
+range RNG_0_30 { 0, 30 };
+range RNG_0_100 { 0, 100 };
+range RNG_0_200 { 0, 200 };
 
 parameters
 {
-     int z20[RNG20] = {
+     int z20[RNG_0_19] = {
         (3) {1, (2) {2, 3}},
         (5) 42
         //1,2,3,4,5,6,7,8,9,10,
@@ -210,32 +214,33 @@ table Person FilterTest
     * playing
 };
 
-range R0_30
-{
-    0, 30
-};
-
-actor Person
-{
-    R0_30 some_agent_ids = actor_id;
-};
 
 table Person AgentIdTest_Person
 {
-    some_agent_ids
+    first_30_agent_ids
     * {
         value_out(actor_id)
     }
 };
 
+actor Person
+{
+    RNG_0_20 first_20_agent_ids = actor_id;
+    RNG_0_30 first_30_agent_ids = actor_id;
+    RNG_0_100 first_100_agent_ids = actor_id;
+    RNG_0_200 first_200_agent_ids = actor_id;
+};
 actor Thing
 {
-    R0_30 some_agent_ids = actor_id;
+    RNG_0_20 first_20_agent_ids = actor_id;
+    RNG_0_30 first_30_agent_ids = actor_id;
+    RNG_0_100 first_100_agent_ids = actor_id;
+    RNG_0_200 first_200_agent_ids = actor_id;
 };
 
 table Thing AgentIdTest_Thing
 {
-    some_agent_ids
+    first_30_agent_ids
     * {
         value_out(actor_id)
     }
