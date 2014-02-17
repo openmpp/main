@@ -154,6 +154,9 @@ void RunModel(IModel * i_model)
             }
         }
 
+        // Initialize default global time
+        BaseAgent::global_time = 0;
+
         // simulate the case
         StartSimulation(thisCase);
         while (BaseEvent::do_next_event());

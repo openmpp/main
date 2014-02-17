@@ -152,9 +152,10 @@ public:
         // debug check that event time is not infinite (model error)
         assert(evt->event_time != time_infinite);
 
+        // update global time
+        BaseAgent::global_time = evt->event_time;
+
         if ( just_in_time ) {
-            // update global time
-            BaseAgent::global_time = evt->event_time;
             // age the agent to the time of the event
             evt->age_agent();
         }

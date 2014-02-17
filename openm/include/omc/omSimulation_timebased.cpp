@@ -150,6 +150,9 @@ void RunModel(IModel * i_model)
         }
     }
 
+    // Initialize default global time
+    BaseAgent::global_time = -time_infinite;
+
     // simulate the population
     StartSimulation(sample);
     while ( true ) {

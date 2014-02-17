@@ -33,6 +33,11 @@ public:
     virtual void om_set_agent_id() = 0;
 
     /**
+     * Assign default value of time as part of initialization.
+     */
+    virtual void om_set_start_time() = 0;
+
+    /**
      * One-time initialization of the offset of each agentvar in each type of agent. This offset is
      * used to invoke side-effects when agentvar values change.
      */
@@ -145,6 +150,7 @@ public:
         om_active = false;
         om_initialize_data_members();
         om_set_agent_id();
+        om_set_start_time();
         om_initialize_expression_agentvars();
     }
 

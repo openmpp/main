@@ -61,6 +61,14 @@ void AgentSymbol::create_auxiliary_symbols()
         c += "agent_id.set(get_next_agent_id());" ;
     }
 
+    // The om_set_start_time() member function
+    {
+        auto *fn = new AgentFuncSymbol("om_set_start_time", this, "void", "");
+        fn->doc_block = doxygen_short("Set the default start time of this agent.");
+        CodeBlock& c = fn->func_body;
+        c += "time.set(global_time);" ;
+    }
+
     // The om_Start_custom() member function
     {
         // no code generation for definition
