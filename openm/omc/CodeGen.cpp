@@ -193,26 +193,44 @@ void CodeGen::do_parameters()
 
 void CodeGen::do_ModelStartup()
 {
-    c += "// Model startup method: initialize parameters";
+    c += "// Model startup method: initialization, inputs";
 	c += "void ModelStartup(IModel * i_model)";
 	c += "{";
+
+    c += "// Agent static initialization pass #1: Initialize agent member offsets & null agent data members";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "// Agent - " + agent->name;
+        c += agent->name + "::om_null_agent.om_initialize_agentvar_offsets();";
+        c += agent->name + "::om_null_agent.om_initialize_event_offsets();";
+        c += agent->name + "::om_null_agent.om_initialize_data_members0();";
+        c += "";
+    }
+
+    c += "// Agent static initialization pass #2: Initialize null agent dependent agentvars";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "// Agent - " + agent->name;
+        c += agent->name + "::om_null_agent.om_initialize_expression_agentvars();";
+    }
     c += "";
-    c += "// sanity type check of storage type and readParameters type argument";
+
+    c += "// Sanity type check of storage type and readParameters type argument";
     for (auto parameter : Symbol::pp_all_parameters) {
         c += parameter->cxx_assert_sanity();
     }
     c += "";
+
     c += "theLog->logMsg(\"Reading Parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         c += "i_model->" + parameter->cxx_read_parameter();
     }
+
 	c += "}";
 	c += "";
 }
 
 void CodeGen::do_ModelShutdown()
 {
-	c += "// Model shutdown method: write output tables";
+	c += "// Model shutdown method: outputs";
 	c += "void ModelShutdown(IModel * i_model)";
 	c += "{";
 	c += "// write output result tables";
@@ -319,8 +337,9 @@ void CodeGen::do_event_queue()
 void CodeGen::do_RunModel()
 {
 	// agents.cpp
-	c += "// Model simulation (implemented in simulation.cpp for prototype)";
+	c += "// Model simulation (implemented in omSimulation_casebased.cpp or omSimulation_timebased.cpp)";
 	c += "extern void RunModel(IModel * i_model);";
+    c += "";
 }
 
 

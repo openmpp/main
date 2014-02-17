@@ -253,22 +253,9 @@ public:
 
     void *operator new( size_t count )
     {
-		static bool first_invocation = true;
 		A *agent = nullptr;
         if ( available.empty() ) {
 			agent = ::new A;
-            if ( first_invocation ) {
-				// agentvar offsets and event offsets have fixed values,
-				// so compute them only once, when the very first
-				// instance of an agent of this type is created.
-				agent->om_initialize_agentvar_offsets();
-				agent->om_initialize_event_offsets();
-
-                // Initialize the single static agent used to retrieve (zero) values
-                // when dereferencing nullptr link agentvars.
-                A::om_null_agent.om_initialize_data_members0();
-				first_invocation = false;
-			}
         }
         else {
             agent = available.front();
