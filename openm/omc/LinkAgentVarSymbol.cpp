@@ -30,14 +30,39 @@ void LinkAgentVarSymbol::post_parse(int pass)
         {
             // Dependency on agentvars in expression
             CodeBlock& c = side_effects_fn->func_body;
-            c += "// Maintain reciprocal link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name + " - while avoiding stack overflow";
-            c += "if (old_value.get() != nullptr && old_value->" + reciprocal_link->name + ".get().get() == this) {";
-            c += "old_value->" + reciprocal_link->name + " = nullptr;";
-            c += "}";
-            c += "if (new_value.get() != nullptr && new_value->" + reciprocal_link->name + ".get().get() != this) {";
-            c += "new_value->" + reciprocal_link->name + " = this;";
-            c += "}";
-            c += "";
+            auto other = reciprocal_link;
+            if (single) {
+                // this link is single
+                if (other->single) {
+                    // reciprocal link is single
+                    c += "// Maintain reciprocal single link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name;
+                    c += "if (old_value.get() != nullptr && old_value->" + reciprocal_link->name + ".get().get() == this) {";
+                    c += "old_value->" + reciprocal_link->name + " = nullptr;";
+                    c += "}";
+                    c += "if (new_value.get() != nullptr && new_value->" + reciprocal_link->name + ".get().get() != this) {";
+                    c += "new_value->" + reciprocal_link->name + " = this;";
+                    c += "}";
+                    c += "";
+                }
+                else {
+                    // reciprocal link is multi
+                    c += "// Maintain reciprocal multi-link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name;
+                    c += "if (old_value.get() != nullptr) {";
+                    c += "old_value->" + reciprocal_link->name + ".erase(this);";
+                    c += "}";
+                    c += "if (new_value.get() != nullptr) {";
+                    c += "new_value->" + reciprocal_link->name + ".insert(this);";
+                    c += "}";
+                    c += "";
+                }
+            }
+            else {
+                // The link is multi
+
+                // Multi-links cannot be changed directly by assignment.
+                // Instead agents are added or removed from the multi-link using member functions.
+                // Those member functions take care of maintaining the reciprocal link.
+            }
         }
         break;
     default:
@@ -52,11 +77,20 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += "LinkAgentVar<" + pp_data_type->name + ", "
-        + agent->name + ", "
-        + reciprocal_link->agent->name + ", "
-        + "&" + side_effects_fn->unique_name + "> ";
-    h += name + ";";
+    if (single) {
+        h += "LinkAgentVar<" + pp_data_type->name + ", "
+            + agent->name + ", "
+            + reciprocal_link->agent->name + ", "
+            + "&" + side_effects_fn->unique_name + "> ";
+        h += name + ";";
+    }
+    else {
+        h += "MultiLinkAgentVar<" + pp_data_type->name + ", "
+            + agent->name + ", "
+            + reciprocal_link->agent->name + ", "
+            + "&" + side_effects_fn->unique_name + "> ";
+        h += name + ";";
+    }
 
     return h;
 }

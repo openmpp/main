@@ -73,5 +73,5 @@ template <class A>
 class multi_link
 {
 public:
-    vector<link<A>> list;
+    vector<link<A>> storage;
 };

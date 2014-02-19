@@ -25,8 +25,9 @@ public:
      *
      * @param agent The agent.
      */
-    TypeOfLinkSymbol(const Symbol *agent)
-        : TypeSymbol("link<" + agent->name + ">")
+    TypeOfLinkSymbol(const Symbol *agent, bool single)
+        : TypeSymbol((single ? "link<" : "multi_link<") + agent->name + ">")
+        , single(single)
     {
     }
 
@@ -36,11 +37,16 @@ public:
      * @return The default initial value as a string.
      */
     const string default_initial_value() const {
-        return "nullptr";
+        return single ? "nullptr" : "";
     };
 
     /**
-     * Gets the TypeOfLinkSymbol object for the type which points to a given kind of agent.
+     * true if this object is the type for a single link, false if for a multi-link.
+     */
+    bool single;
+
+    /**
+     * Gets the TypeOfLinkSymbol object for the type which points to a single given kind of agent.
      * 
      * Created if it doesn't already exist.
      *
@@ -48,7 +54,18 @@ public:
      *
      * @return Pointer to the TypeOfLinkSymbol object requested.
      */
-    static TypeOfLinkSymbol *get(const Symbol *agent);
+    static TypeOfLinkSymbol *get_single(const Symbol *agent);
+
+    /**
+     * Gets the TypeOfLinkSymbol object for the type which holds a set of pointers to a given kind of agent.
+     * 
+     * Created if it doesn't already exist.
+     *
+     * @param agent The agent pointed to by the link type.
+     *
+     * @return Pointer to the TypeOfLinkSymbol object requested.
+     */
+    static TypeOfLinkSymbol *get_multi(const Symbol *agent);
 
 
 };

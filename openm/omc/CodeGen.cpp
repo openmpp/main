@@ -262,7 +262,7 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
-	    h += "// function members in agent";
+	    h += "// function members in " + agent->name + " agent";
 	    h += "//";
 	    h += "";
         for ( auto func_member : agent->pp_agent_funcs ) {
@@ -272,7 +272,7 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
-	    h += "// data members in agent";
+	    h += "// data members in " + agent->name + " agent";
 	    h += "//";
 	    h += "";
         for ( auto data_member : agent->pp_agent_data_members ) {

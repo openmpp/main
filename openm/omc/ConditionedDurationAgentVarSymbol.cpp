@@ -92,8 +92,8 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent()
     h += "DurationAgentVar<" + pp_data_type->name + ", "
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name + ", "
-        + "&" + condition_fn->unique_name + "> "
-        + name + ";";
+        + "&" + condition_fn->unique_name + ">";
+    h += name + ";";
 
     return h;
 }

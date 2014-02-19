@@ -341,6 +341,11 @@ void AgentSymbol::build_body_finalize_links()
     CodeBlock& c = finalize_links_fn->func_body;
 
     for ( auto lav : pp_link_agentvars ) {
-        c += lav->name + ".set(nullptr);";
+        if (lav->single) {
+            c += lav->name + ".set(nullptr);";
+        }
+        else { // multi-link
+            c += lav->name + ".clear();";
+        }
     }
 }

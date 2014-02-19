@@ -47,9 +47,14 @@ string AgentDataMemberSymbol::initialization_value(bool type_default) const
 
 CodeBlock AgentDataMemberSymbol::cxx_initialization_expression(bool type_default) const
 {
-    // example:              time.initialize(0);\n
     CodeBlock c;
-    c += name + ".initialize( " + initialization_value(type_default) + " );";
+    string str = initialization_value(type_default);
+    // As a special case, skip initialization if initial value is an empty string.
+    // Useful for members which are self-initializing collects, e.g. std::set.
+    if (str.size() > 0) {
+        // example:              time.initialize(0);\n
+        c += name + ".initialize( " + initialization_value(type_default) + " );";
+    }
     return c;
 }
 

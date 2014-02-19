@@ -80,9 +80,8 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent()
         + to_string(event_id) + ", "
         + "0, " // TODO event priority
         + "&" + implement_func->unique_name + ", "
-        + "&" + time_func->unique_name + "> "
-        + name
-        + ";";
+        + "&" + time_func->unique_name + ">";
+    h += name + ";";
 
     return h;
 }
