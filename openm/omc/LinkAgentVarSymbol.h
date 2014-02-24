@@ -8,6 +8,8 @@
 #pragma once
 #include "AgentVarSymbol.h"
 
+class AgentMultilinkSymbol;
+
 using namespace std;
 
 /**
@@ -29,6 +31,7 @@ public:
     LinkAgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentVarSymbol(sym, agent, type, decl_loc)
         , reciprocal_link(nullptr)
+        , reciprocal_multilink(nullptr)
         , single(true)
     {
     }
@@ -43,9 +46,14 @@ public:
     bool single;
 
     /**
-     * The reciprocal link.
+     * The reciprocal link if one-to-one
      */
     LinkAgentVarSymbol *reciprocal_link;
+
+    /**
+     * The reciprocal multilink if one-to-many
+     */
+    AgentMultilinkSymbol *reciprocal_multilink;
 
 };
 

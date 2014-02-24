@@ -447,8 +447,22 @@ public:
         erase(lnk);
     }
 
-    B *GetNext(int start, int *)
+    link<B> GetNext(int start, int *next_pos)
     {
+        int	index;
+        link<B>	lnk;
+        link<B>	next_lnk = nullptr;
+
+        *next_pos = -1;
+        for ( index = start; index < storage.size(); ++index ) {
+            lnk = storage[index];
+            if ( lnk != nullptr ) {
+                next_lnk = lnk;
+                *next_pos = index;
+                break;
+            }
+        }
+        return next_lnk;
     }
 
     void RemoveAll()
