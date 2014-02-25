@@ -23,7 +23,7 @@ using namespace std;
  * @tparam B            Type of the agent in the multi-link set, e.g. Thing
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
-template<typename T, typename A, typename B, void (A::*side_effects)(T insert_link, T erase_link) = nullptr>
+template<typename T, typename A, typename B, void (A::*side_effects)(), void (A::*insert_reciprocal)(T lnk), void (A::*erase_reciprocal)(T lnk) >
 class Multilink
 {
 public:
@@ -46,19 +46,18 @@ public:
     }
 
     // standard member functions for std::set containers
-    void clear(bool call_finish = false)
+    void clear()
     {
         for (auto &item : storage) {
             auto lnk = item.get();
             if (lnk != nullptr) {
-                if (call_finish) item->Finish();
                 item = nullptr;
-                // maintain reciprocal link and other side-effects if any
-                (agent()->*side_effects)(nullptr, lnk);
+                // maintain reciprocal link
+                (agent()->*erase_reciprocal)(lnk);
             }
         }
-		//UpdateReferences();
-		storage.clear();
+		// process side-effects
+        (agent()->*side_effects)();
     }
 
     size_t size()
@@ -95,8 +94,10 @@ public:
                 // append the new element to the end of the array
 			    storage.push_back(lnk);
 		    }
-            // maintain reciprocal link and other side-effects if any
-            (agent()->*side_effects)(lnk, nullptr);
+    		// process side-effects
+            (agent()->*side_effects)();
+            // maintain reciprocal link
+            (agent()->*insert_reciprocal)(lnk);
 	    }
     }
 
@@ -105,8 +106,10 @@ public:
         for (auto &item : storage) {
             if (item == lnk) {
                 item = nullptr;
-                // maintain reciprocal link and other side-effects if any
-                (agent()->*side_effects)(nullptr, lnk);
+    		    // process side-effects
+                (agent()->*side_effects)();
+                // maintain reciprocal link
+                (agent()->*erase_reciprocal)(lnk);
                 break;
             }
         }
@@ -119,7 +122,7 @@ public:
     // whereas ompp stores a multilink as a member, so natural model code looks like this
     //     mlChildren.insert(newborn).;
     // The following overload of the pointer operator in effect translates the "->" to ".".
-    Multilink<T,A,B,side_effects>* operator->()
+    Multilink<T,A,B,side_effects,insert_reciprocal,erase_reciprocal>* operator->()
     {
         // return pointer to this agentvar
         return this;
@@ -161,7 +164,15 @@ public:
 
     void FinishAll()
     {
-        clear(true);
+        for (auto &item : storage) {
+            auto lnk = item.get();
+            if (lnk != nullptr) {
+                item->Finish();
+                item = nullptr;
+            }
+        }
+		// process side-effects
+        (agent()->*side_effects)();
     }
 
     // TODO provide access to embedded iterator in std::vector
@@ -181,5 +192,5 @@ public:
  * call the side-effects function in the context of the agent and with access to all agentvars
  * in the agent.
  */
-template<typename T, typename A, typename B, void (A::*side_effects)(T insert_link, T erase_link)>
-size_t Multilink<T, A, B, side_effects>::offset_in_agent = 0;
+template<typename T, typename A, typename B, void (A::*side_effects)(), void (A::*insert_reciprocal)(T lnk), void (A::*erase_reciprocal)(T lnk) >
+size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::offset_in_agent = 0;

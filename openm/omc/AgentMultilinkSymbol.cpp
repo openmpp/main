@@ -20,8 +20,7 @@ void AgentMultilinkSymbol::create_auxiliary_symbols()
     side_effects_fn = new AgentFuncSymbol("om_" + name + "_side_effects",
                                           agent,
                                           "void",
-                                          data_type->name + " insert_link, " +
-                                          data_type->name + " erase_link");
+                                          "");
     side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in agent " + agent->name + ".");
 
     assert(!insert_fn); // logic guarantee
@@ -57,42 +56,21 @@ void AgentMultilinkSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
-            // Maintain reciprocal link
-            CodeBlock& c = side_effects_fn->func_body;
+            // Create function bodies which maintain reciprocal link
             CodeBlock& c_insert = insert_fn->func_body;
             CodeBlock& c_erase = erase_fn->func_body;
             if (reciprocal_link) {
                 // reciprocal link is single
                 auto reciprocal = reciprocal_link;
-                c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
-                c += "if (insert_link.get() != nullptr) {";
-                c += "insert_link->" + reciprocal->name + " = this;";
-                c += "}";
-                c += "if (erase_link.get() != nullptr) {";
-                c += "if (erase_link->" + reciprocal->name + ".get().get() == this) {";
-                c += "erase_link->" + reciprocal->name + " = nullptr;";
-                c += "}";
-                c += "}";
-                c += "";
-
-                c_insert += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
                 c_insert += "if (lnk.get() != nullptr) lnk->" + reciprocal->name + " = this;";
-
-                c_erase += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
                 c_erase += "if (lnk->" + reciprocal->name + ".get().get() == this) lnk->" + reciprocal->name + " = nullptr;";
             }
             else {
                 // reciprocal link is multi
-                assert(reciprocal_multilink); // logic guarantee
+                assert(reciprocal_multilink); // grammar guarantee
                 auto reciprocal = reciprocal_multilink;
-                c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
-                c += "if (insert_link.get() != nullptr) {";
-                c += "// TODO";
-                c += "}";
-                c += "if (erase_link.get() != nullptr) {";
-                c += "// TODO";
-                c += "}";
-                c += "";
+                c_insert += "// TODO";
+                c_erase += "// TODO";
             }
         }
         break;
@@ -121,7 +99,9 @@ CodeBlock AgentMultilinkSymbol::cxx_declaration_agent()
         + data_type->name + ", "
         + agent->name + ", "
         + reciprocal_agent->name + ", "
-        + "&" + side_effects_fn->unique_name
+        + "&" + side_effects_fn->unique_name + ", "
+        + "&" + insert_fn->unique_name + ", "
+        + "&" + erase_fn->unique_name
         + "> ";
     h += name + ";";
 
