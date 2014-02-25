@@ -33,14 +33,16 @@ public:
         , event_name(ifs->name)
         , pp_event_id(0)
     {
-        // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
-        time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
-        time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
-
-        // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
-        implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
-        implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " agent (model code).");
+        create_auxiliary_symbols(tfs, ifs);
     }
+
+    /**
+     * Create auxiliary symbols associated with this agent event.
+     *
+     * @param tfs The time function symbol.
+     * @param ifs The implement function symbol.
+     */
+    void create_auxiliary_symbols(Symbol *tfs, Symbol *ifs);
 
     void post_parse(int pass);
 

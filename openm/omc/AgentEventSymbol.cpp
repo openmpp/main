@@ -19,6 +19,17 @@
 
 using namespace std;
 
+void AgentEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs)
+{
+    // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
+    time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
+    time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
+
+    // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
+    implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
+    implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " agent (model code).");
+}
+
 void AgentEventSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

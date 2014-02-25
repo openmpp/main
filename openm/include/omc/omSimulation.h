@@ -14,6 +14,7 @@
 #include "omc/Agent.h"
 #include "omc/AgentVar.h"
 #include "omc/Event.h"
+#include "omc/Multilink.h"
 #include "om_types1.h" // model-specific types
 #include "libopenm/omModel.h"
 #include "om_declarations.h" // model-specific classes

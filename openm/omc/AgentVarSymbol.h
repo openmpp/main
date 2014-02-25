@@ -37,16 +37,13 @@ public:
     /**
      * Create auxiliary symbols associated with this agentvar.
      */
-
     void create_auxiliary_symbols();
 
     void post_parse(int pass);
 
     /**
-     * The side effects function of the agentvar
-     *
+     * The side effects function of the agentvar.
      */
-
     AgentFuncSymbol *side_effects_fn;
 
 };

@@ -8,10 +8,22 @@
 #include "AgentMultilinkSymbol.h"
 #include "LinkAgentVarSymbol.h"
 #include "AgentSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "TypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
+
+void AgentMultilinkSymbol::create_auxiliary_symbols()
+{
+    assert(!side_effects_fn); // logic guarantee
+    side_effects_fn = new AgentFuncSymbol("om_side_effects_" + name,
+                                          agent,
+                                          "void",
+                                          "");
+    assert(side_effects_fn); // out of memory check
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in agent " + agent->name + ".");
+}
 
 void AgentMultilinkSymbol::post_parse(int pass)
 {
@@ -22,8 +34,11 @@ void AgentMultilinkSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
-            // Add this multilink agentvar symbol to the agent's list of all such symbols
+            // Add this multilink member symbol to the agent's list of all such symbols
             pp_agent->pp_multilink_members.push_back(this);
+
+            // Add this multilink member symbol to the agent's list of all callback members
+            pp_agent->pp_callback_members.push_back(this);
         }
         break;
     case ePopulateDependencies:
