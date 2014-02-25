@@ -296,7 +296,9 @@ public:
  * agent' whose agentvars are in a freshly initialized state (generally 0) is used for the
  * operation.
  *
- * @tparam A            Type of containing agent.
+ * @tparam T            Storage type, e.g. link<Thing>
+ * @tparam A            Type of containing agent, e.g. Person
+ * @tparam B            Type of the agent in the link, e.g. Thing
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
 template<typename T, typename A, typename B, void (A::*side_effects)(T old_value, T new_value) = nullptr>

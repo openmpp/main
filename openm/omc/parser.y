@@ -1111,7 +1111,6 @@ decl_link:
                             auto type = TypeOfLinkSymbol::get_single($link->agent);
                             // morph AgentMemberSymbol $link to a LinkAgentVarSymbol
                             auto lavs = new LinkAgentVarSymbol($link, agent, type, $link->decl_loc);
-                            lavs->single = true;
                             lavs->reciprocal_link = lavs; // special case
                         }
         | "link" link_symbol[link1] link_symbol[link2] ";"
@@ -1129,9 +1128,7 @@ decl_link:
                             auto lavs1 = new LinkAgentVarSymbol($link1, agent1, type1, $link1->decl_loc);
                             auto lavs2 = new LinkAgentVarSymbol($link2, agent2, type2, $link2->decl_loc);
 
-                            lavs1->single = true;
                             lavs1->reciprocal_link = lavs2;
-                            lavs2->single = true;
                             lavs2->reciprocal_link = lavs1;
                         }
         | "link" link_symbol[link_single] link_symbol[link_multi] "[" "]" ";"
@@ -1144,19 +1141,17 @@ decl_link:
                             auto type_single = TypeOfLinkSymbol::get_single(agent_multi);
                             auto type_multi = TypeOfLinkSymbol::get_multi(agent_single);
 
-                            // morph AgentMemberSymbol's to LinkAgentVarSymbol's
-                            auto lavs_single = new LinkAgentVarSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
-                            auto lavs_multi = new LinkAgentVarSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
+                            // morph AgentMemberSymbol's to appropriate link types
+                            auto single = new LinkAgentVarSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
+                            auto multi = new AgentMultilinkSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
 
                             // following for testing
-                            auto temp = new Symbol("om_test_" + lavs_multi->name);
-                            auto amls = new AgentMultilinkSymbol(temp, agent_multi, type_multi, $link_multi->decl_loc);
-                            amls->reciprocal_link = lavs_single;
+                            //auto temp = new Symbol("om_test_" + lavs_multi->name);
+                            //auto amls = new AgentMultilinkSymbol(temp, agent_multi, type_multi, $link_multi->decl_loc);
+                            //amls->reciprocal_link = lavs_single;
 
-                            lavs_single->single = true;
-                            lavs_single->reciprocal_link = lavs_multi;
-                            lavs_multi->single = false;
-                            lavs_multi->reciprocal_link = lavs_single;
+                            single->reciprocal_multilink = multi;
+                            multi->reciprocal_link = single;
                         }
         | "link" link_symbol[ls2] "[" "]" link_symbol[ls1] ";"
                         {

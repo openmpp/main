@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "LinkAgentVarSymbol.h"
+#include "AgentMultilinkSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "AgentSymbol.h"
 #include "TypeSymbol.h"
@@ -30,38 +31,30 @@ void LinkAgentVarSymbol::post_parse(int pass)
         {
             // Maintain reciprocal links
             CodeBlock& c = side_effects_fn->func_body;
-            auto other = reciprocal_link;
-            if (single) {
-                // this link is single
-                if (other->single) {
-                    // reciprocal link is single
-                    c += "// Maintain reciprocal single link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name;
-                    c += "if (old_value.get() != nullptr && old_value->" + reciprocal_link->name + ".get().get() == this) {";
-                    c += "old_value->" + reciprocal_link->name + " = nullptr;";
-                    c += "}";
-                    c += "if (new_value.get() != nullptr && new_value->" + reciprocal_link->name + ".get().get() != this) {";
-                    c += "new_value->" + reciprocal_link->name + " = this;";
-                    c += "}";
-                    c += "";
-                }
-                else {
-                    // reciprocal link is multi
-                    c += "// Maintain reciprocal multi-link: " + reciprocal_link->name + " in " + reciprocal_link->agent->name;
-                    c += "if (old_value.get() != nullptr) {";
-                    c += "old_value->" + reciprocal_link->name + ".erase(this);";
-                    c += "}";
-                    c += "if (new_value.get() != nullptr) {";
-                    c += "new_value->" + reciprocal_link->name + ".insert(this);";
-                    c += "}";
-                    c += "";
-                }
+            if (reciprocal_link) {
+                // reciprocal link is single
+                auto reciprocal = reciprocal_link;
+                c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
+                c += "if (old_value.get() != nullptr && old_value->" + reciprocal->name + ".get().get() == this) {";
+                c += "old_value->" + reciprocal->name + " = nullptr;";
+                c += "}";
+                c += "if (new_value.get() != nullptr && new_value->" + reciprocal->name + ".get().get() != this) {";
+                c += "new_value->" + reciprocal->name + " = this;";
+                c += "}";
+                c += "";
             }
             else {
-                // The link is multi
-
-                // Multi-links cannot be changed directly by assignment.
-                // Instead agents are added or removed from the multi-link using member functions.
-                // Those member functions take care of maintaining the reciprocal link.
+                // reciprocal link is multi
+                assert(reciprocal_multilink); // logic guarantee
+                auto reciprocal = reciprocal_multilink;
+                c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
+                c += "if (old_value.get() != nullptr) {";
+                c += "old_value->" + reciprocal->name + ".erase(this);";
+                c += "}";
+                c += "if (new_value.get() != nullptr) {";
+                c += "new_value->" + reciprocal->name + ".insert(this);";
+                c += "}";
+                c += "";
             }
         }
         break;
@@ -77,7 +70,7 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    if (single) {
+    if (reciprocal_link) {
         h += "LinkAgentVar<" + pp_data_type->name + ", "
             + agent->name + ", "
             + reciprocal_link->agent->name + ", "
@@ -85,9 +78,10 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
         h += name + ";";
     }
     else {
-        h += "MultiLinkAgentVar<" + pp_data_type->name + ", "
+        assert(reciprocal_multilink); // grammar guarantee
+        h += "LinkAgentVar<" + pp_data_type->name + ", "
             + agent->name + ", "
-            + reciprocal_link->agent->name + ", "
+            + reciprocal_multilink->agent->name + ", "
             + "&" + side_effects_fn->unique_name + "> ";
         h += name + ";";
     }

@@ -32,18 +32,12 @@ public:
         : AgentVarSymbol(sym, agent, type, decl_loc)
         , reciprocal_link(nullptr)
         , reciprocal_multilink(nullptr)
-        , single(true)
     {
     }
 
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_agent();
-
-    /**
-     * true if single link, false if multilink
-     */
-    bool single;
 
     /**
      * The reciprocal link if one-to-one

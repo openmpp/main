@@ -66,12 +66,23 @@ CodeBlock AgentMultilinkSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += "Multilink<"
-        + agent->name + ", "
-        + reciprocal_link->agent->name + ", "
-        + "&" + side_effects_fn->unique_name
-        + "> ";
-    h += name + ";";
+    if (reciprocal_link) {
+        h += "Multilink<"
+            + agent->name + ", "
+            + reciprocal_link->agent->name + ", "
+            + "&" + side_effects_fn->unique_name
+            + "> ";
+        h += name + ";";
+    }
+    else {
+        assert(reciprocal_multilink); // grammar guarantee
+        h += "Multilink<"
+            + agent->name + ", "
+            + reciprocal_multilink->agent->name + ", "
+            + "&" + side_effects_fn->unique_name
+            + "> ";
+        h += name + ";";
+    }
 
     return h;
 }
