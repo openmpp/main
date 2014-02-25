@@ -37,6 +37,8 @@ public:
         , reciprocal_link(nullptr)
         , reciprocal_multilink(nullptr)
         , side_effects_fn(nullptr)
+        , insert_fn(nullptr)
+        , erase_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -61,8 +63,18 @@ public:
     AgentMultilinkSymbol *reciprocal_multilink;
 
     /**
-     * The side effects function of the agentvar.
+     * The side effects function of the multilink.
      */
     AgentFuncSymbol *side_effects_fn;
+
+    /**
+     * Function which maintains reciprocal link on insert.
+     */
+    AgentFuncSymbol *insert_fn;
+
+    /**
+     * Function which maintains reciprocal link on erase.
+     */
+    AgentFuncSymbol *erase_fn;
 };
 

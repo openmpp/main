@@ -36,7 +36,7 @@ public:
     // initialization
     void initialize( T initial_value )
     {
-        // set is empty when constructed
+        // set is empty as part of agent construction
     }
 
     // get pointer to containing agent
@@ -46,14 +46,15 @@ public:
     }
 
     // standard member functions for std::set containers
-    void clear()
+    void clear(bool call_finish = false)
     {
         for (auto &item : storage) {
-            if (item.get() != nullptr) {
+            auto lnk = item.get();
+            if (lnk != nullptr) {
+                if (call_finish) item->Finish();
                 item = nullptr;
-			    //if ( prThing->spawner == prParentPerson ) {
-				   // prThing->Set_spawner( NULL );
-			    //}
+                // maintain reciprocal link and other side-effects if any
+                (agent()->*side_effects)(nullptr, lnk);
             }
         }
 		//UpdateReferences();
@@ -94,8 +95,8 @@ public:
                 // append the new element to the end of the array
 			    storage.push_back(lnk);
 		    }
-		    //UpdateReferences();
-		    //prThing->Set_spawner( prParentPerson );
+            // maintain reciprocal link and other side-effects if any
+            (agent()->*side_effects)(lnk, nullptr);
 	    }
     }
 
@@ -104,10 +105,8 @@ public:
         for (auto &item : storage) {
             if (item == lnk) {
                 item = nullptr;
-			    //UpdateReferences();
-			    //if ( prThing->spawner == prParentPerson ) {
-				   // prThing->Set_spawner( NULL );
-			    //}
+                // maintain reciprocal link and other side-effects if any
+                (agent()->*side_effects)(nullptr, lnk);
                 break;
             }
         }
@@ -117,7 +116,7 @@ public:
     // Modgen stores a multi-link as a pointer to a separately allocated object,
     // so model code looks like
     //     mlChildren->Add(newborn);
-    // Whereas ompp stores a multilink as a member, so natural model code looks like this
+    // whereas ompp stores a multilink as a member, so natural model code looks like this
     //     mlChildren.insert(newborn).;
     // The following overload of the pointer operator in effect translates the "->" to ".".
     Multilink<T,A,B,side_effects>* operator->()
@@ -162,6 +161,7 @@ public:
 
     void FinishAll()
     {
+        clear(true);
     }
 
     // TODO provide access to embedded iterator in std::vector

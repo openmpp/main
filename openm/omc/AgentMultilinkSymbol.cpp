@@ -17,13 +17,26 @@ using namespace std;
 void AgentMultilinkSymbol::create_auxiliary_symbols()
 {
     assert(!side_effects_fn); // logic guarantee
-    side_effects_fn = new AgentFuncSymbol("om_side_effects_" + name,
+    side_effects_fn = new AgentFuncSymbol("om_" + name + "_side_effects",
                                           agent,
                                           "void",
                                           data_type->name + " insert_link, " +
                                           data_type->name + " erase_link");
-    assert(side_effects_fn); // out of memory check
     side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in agent " + agent->name + ".");
+
+    assert(!insert_fn); // logic guarantee
+    insert_fn = new AgentFuncSymbol("om_" + name + "_insert",
+                                          agent,
+                                          "void",
+                                          data_type->name + " lnk");
+    insert_fn->doc_block = doxygen_short("Maintain reciprocal link on insert in multilink " + name + " in agent " + agent->name + ".");
+
+    assert(!erase_fn); // logic guarantee
+    erase_fn = new AgentFuncSymbol("om_" + name + "_erase",
+                                          agent,
+                                          "void",
+                                          data_type->name + " lnk" );
+    erase_fn->doc_block = doxygen_short("Maintain reciprocal link on erase in multilink " + name + " in agent " + agent->name + ".");
 }
 
 void AgentMultilinkSymbol::post_parse(int pass)
@@ -44,15 +57,43 @@ void AgentMultilinkSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
-            // Dependency on agentvars in expression
-            //CodeBlock& c = side_effects_fn->func_body;
-            //auto other = reciprocal_link;
+            // Maintain reciprocal link
+            CodeBlock& c = side_effects_fn->func_body;
+            CodeBlock& c_insert = insert_fn->func_body;
+            CodeBlock& c_erase = erase_fn->func_body;
+            if (reciprocal_link) {
+                // reciprocal link is single
+                auto reciprocal = reciprocal_link;
+                c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
+                c += "if (insert_link.get() != nullptr) {";
+                c += "insert_link->" + reciprocal->name + " = this;";
+                c += "}";
+                c += "if (erase_link.get() != nullptr) {";
+                c += "if (erase_link->" + reciprocal->name + ".get().get() == this) {";
+                c += "erase_link->" + reciprocal->name + " = nullptr;";
+                c += "}";
+                c += "}";
+                c += "";
 
-            // The link is multi
+                c_insert += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
+                c_insert += "if (lnk.get() != nullptr) lnk->" + reciprocal->name + " = this;";
 
-            // Multi-links cannot be changed directly by assignment.
-            // Instead agents are added or removed from the multi-link using member functions.
-            // Those member functions take care of maintaining the reciprocal link.
+                c_erase += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
+                c_erase += "if (lnk->" + reciprocal->name + ".get().get() == this) lnk->" + reciprocal->name + " = nullptr;";
+            }
+            else {
+                // reciprocal link is multi
+                assert(reciprocal_multilink); // logic guarantee
+                auto reciprocal = reciprocal_multilink;
+                c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
+                c += "if (insert_link.get() != nullptr) {";
+                c += "// TODO";
+                c += "}";
+                c += "if (erase_link.get() != nullptr) {";
+                c += "// TODO";
+                c += "}";
+                c += "";
+            }
         }
         break;
     default:

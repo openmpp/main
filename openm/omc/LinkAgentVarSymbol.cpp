@@ -29,7 +29,7 @@ void LinkAgentVarSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
-            // Maintain reciprocal links
+            // Maintain reciprocal link
             CodeBlock& c = side_effects_fn->func_body;
             if (reciprocal_link) {
                 // reciprocal link is single
@@ -70,21 +70,20 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    AgentSymbol *reciprocal_agent = nullptr;
     if (reciprocal_link) {
-        h += "LinkAgentVar<" + pp_data_type->name + ", "
-            + agent->name + ", "
-            + reciprocal_link->agent->name + ", "
-            + "&" + side_effects_fn->unique_name + "> ";
-        h += name + ";";
+        reciprocal_agent = reciprocal_link->pp_agent;
     }
     else {
         assert(reciprocal_multilink); // grammar guarantee
-        h += "LinkAgentVar<" + pp_data_type->name + ", "
-            + agent->name + ", "
-            + reciprocal_multilink->agent->name + ", "
-            + "&" + side_effects_fn->unique_name + "> ";
-        h += name + ";";
+        reciprocal_agent = reciprocal_multilink->pp_agent;
     }
+
+    h += "LinkAgentVar<" + pp_data_type->name + ", "
+        + agent->name + ", "
+        + reciprocal_agent->name + ", "
+        + "&" + side_effects_fn->unique_name + "> ";
+    h += name + ";";
 
     return h;
 }
