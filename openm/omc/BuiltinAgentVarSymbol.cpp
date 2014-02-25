@@ -49,6 +49,7 @@ CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name + ">";
     h += name + ";";
+    h += "";
 
     return h;
 }

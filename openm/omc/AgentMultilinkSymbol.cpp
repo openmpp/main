@@ -23,7 +23,7 @@ void AgentMultilinkSymbol::post_parse(int pass)
     case ePopulateCollections:
         {
             // Add this multilink agentvar symbol to the agent's list of all such symbols
-            //pp_agent->pp_link_agentvars.push_back(this);
+            pp_agent->pp_multilink_members.push_back(this);
         }
         break;
     case ePopulateDependencies:

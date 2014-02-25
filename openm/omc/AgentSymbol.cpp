@@ -13,6 +13,7 @@
 #include "AgentEventSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"
+#include "AgentMultilinkSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
@@ -173,6 +174,15 @@ void AgentSymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The finalize_multilinks member function
+    {
+        assert(nullptr == finalize_multilinks_fn); // initialization guarantee
+        finalize_multilinks_fn = new AgentFuncSymbol("om_finalize_multilinks", this);
+        assert(finalize_multilinks_fn); // out of memory check
+        finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in agent when the agent leaves the simulation.");
+        // function body is generated in post-parse phase
+    }
+
     // The Start() member function
     {
         auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
@@ -227,6 +237,7 @@ void AgentSymbol::post_parse(int pass)
             build_body_finalize_tables();
             build_body_initialize_expression_agentvars();
             build_body_finalize_links();
+            build_body_finalize_multilinks();
         }
         break;
     default:
@@ -349,3 +360,13 @@ void AgentSymbol::build_body_finalize_links()
         }
     }
 }
+
+void AgentSymbol::build_body_finalize_multilinks()
+{
+    CodeBlock& c = finalize_multilinks_fn->func_body;
+
+    for ( auto mlm : pp_multilink_members ) {
+        c += mlm->name + ".clear();";
+    }
+}
+

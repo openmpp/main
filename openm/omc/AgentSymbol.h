@@ -16,6 +16,7 @@ class AgentFuncSymbol;
 class AgentVarSymbol;
 class IdentityAgentVarSymbol;
 class LinkAgentVarSymbol;
+class AgentMultilinkSymbol;
 class AgentInternalSymbol;
 class BuiltinAgentVarSymbol;
 
@@ -50,6 +51,7 @@ public:
         , finalize_tables_fn(nullptr)
         , initialize_expression_agentvars_fn(nullptr)
         , finalize_links_fn(nullptr)
+        , finalize_multilinks_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -112,50 +114,47 @@ public:
     void build_body_finalize_links();
 
     /**
+     * Builds the function body of the function.
+     */
+    void build_body_finalize_multilinks();
+
+    /**
      * The built-in agentvar for time in the agent.
      */
     BuiltinAgentVarSymbol *pp_time;
 
-
     /**
      * The agent function which initializes the offsets of agentvars within the agent.
      * 
-     * This function has the fixed name om_initialize_agentvar_offsets().  It is called in the run-time support
-     * class BaseAgent exactly once for each kind of agent.
+     * This function has the fixed name om_initialize_agentvar_offsets().  It is called in the run-
+     * time support class BaseAgent exactly once for each kind of agent.
      */
-
     AgentFuncSymbol *initialize_agentvar_offsets_fn;
-
 
     /**
      * The agent function which initializes the offsets of events within the agent.
      * 
-     * This function has the fixed name om_initialize_event_offsets().  It is called in the run-time support
-     * class BaseAgent exactly once for each kind of agent.
+     * This function has the fixed name om_initialize_event_offsets().  It is called in the run-time
+     * support class BaseAgent exactly once for each kind of agent.
      */
-
     AgentFuncSymbol *initialize_event_offsets_fn;
-
 
     /**
      * The agent function which initializes the values of all data members in the agent.
      * 
-     * This function has the fixed name om_initialize_data_members().  It is called in the run-time support
-     * class BaseAgent before the agent enters the simulation.
+     * This function has the fixed name om_initialize_data_members().  It is called in the run-time
+     * support class BaseAgent before the agent enters the simulation.
      */
-
     AgentFuncSymbol *initialize_data_members_fn;
 
-
     /**
-     * The agent function which initializes the values of all data members in the agent to type default values.
+     * The agent function which initializes the values of all data members in the agent to type
+     * default values.
      * 
-     * This function has the fixed name om_initialize_data_members().  It is called in the run-time support
-     * class BaseAgent before the agent enters the simulation.
+     * This function has the fixed name om_initialize_data_members().  It is called in the run-time
+     * support class BaseAgent before the agent enters the simulation.
      */
-
     AgentFuncSymbol *initialize_data_members0_fn;
-
 
     /**
      * The agent function which initializes all events in the agent.
@@ -163,17 +162,14 @@ public:
      * This function has the fixed name om_initialize_events().  It is used in the run-time support
      * class BaseAgent before the agent enters the simulation.
      */
-
     AgentFuncSymbol *initialize_events_fn;
-
 
     /**
      * The agent function which finalizes all events in the agent.
      * 
-     * This function has the fixed name om_events_tables(). It is used in the run-time support
-     * class BaseAgent before the agent leaves the simulation.
+     * This function has the fixed name om_events_tables(). It is used in the run-time support class
+     * BaseAgent before the agent leaves the simulation.
      */
-
     AgentFuncSymbol *finalize_events_fn;
 
     /**
@@ -182,9 +178,7 @@ public:
      * This function has the fixed name om_initialize_tables().  It is used in the run-time support
      * class BaseAgent before the agent enters the simulation.
      */
-
     AgentFuncSymbol *initialize_tables_fn;
-
 
     /**
      * The agent function which finalizes all tables in the agent.
@@ -192,7 +186,6 @@ public:
      * This function has the fixed name om_finalize_tables(). It is used in the run-time support
      * class BaseAgent before the agent leaves the simulation.
      */
-
     AgentFuncSymbol *finalize_tables_fn;
 
     /**
@@ -209,45 +202,43 @@ public:
     AgentFuncSymbol *finalize_links_fn;
 
     /**
-    * The data members of this agent
-    *
-    *  Populated after parsing is complete.
-    */
+     * The agent function which empties all multilinks when the agent finishes.
+     */
+    AgentFuncSymbol *finalize_multilinks_fn;
 
+    /**
+     * The data members of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
     list<AgentDataMemberSymbol *> pp_agent_data_members;
 
     /**
-    * The agentvars of this agent
-    *
-    *  Populated after parsing is complete.
-    */
-
+     * The agentvars of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
     list<AgentVarSymbol *> pp_agentvars;
-
 
     /**
      * The expression agentvars of this agent.
      * 
      * Populated after parsing is complete.
      */
-
     list<IdentityAgentVarSymbol *> pp_identity_agentvars;
 
-
     /**
-    * The agent events of this agent
-    *
-    *  Populated after parsing is complete.
-    */
-
+     * The agent events of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
     list<AgentEventSymbol *> pp_agent_events;
 
     /**
-    * The agent funcs of this agent
-    *
-    *  Populated after parsing is complete.
-    */
-
+     * The agent funcs of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
     list<AgentFuncSymbol *> pp_agent_funcs;
 
     /**
@@ -263,5 +254,12 @@ public:
      *  Populated after parsing is complete.
      */
     list<LinkAgentVarSymbol *> pp_link_agentvars;
+
+    /**
+     * The multilink members of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
+    list<AgentMultilinkSymbol *> pp_multilink_members;
 };
 

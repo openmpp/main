@@ -34,6 +34,7 @@
 #include "AgentFuncSymbol.h"
 #include "AgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"
+#include "AgentMultilinkSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "TableExpressionSymbol.h"
 #include "TableAccumulatorSymbol.h"
@@ -784,6 +785,7 @@ void Symbol::post_parse_all()
         agent->pp_agent_funcs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
         agent->pp_link_agentvars.sort( [] (LinkAgentVarSymbol *a, LinkAgentVarSymbol *b) { return a->name < b->name ; } );
+        agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 
     // Sort collections in tables
