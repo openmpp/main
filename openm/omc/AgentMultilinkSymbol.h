@@ -24,6 +24,14 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
+    /**
+     * Constructor.
+     *
+     * @param [in,out] sym Symbol to be morphed.
+     * @param agent        The containing agent.
+     * @param type         The type of the link in the set, e.g. link<Thing>
+     * @param decl_loc     (Optional) the declaration location.
+     */
     AgentMultilinkSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(sym, agent, type, decl_loc)
         , reciprocal_link(nullptr)

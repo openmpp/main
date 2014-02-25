@@ -18,11 +18,12 @@ using namespace std;
  * A multilink is a set of links which form one side of a one-to-many or many-to-mnay
  * link among agents.
  *
+ * @tparam T            Type of the link in the collection, e.g. link<Thing>
  * @tparam A            Type of containing agent, e.g. Person
  * @tparam B            Type of the agent in the multi-link set, e.g. Thing
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
-template<typename A, typename B, void (A::*side_effects)() = nullptr>
+template<typename T, typename A, typename B, void (A::*side_effects)(T insert_link, T erase_link) = nullptr>
 class Multilink
 {
 public:
@@ -30,6 +31,12 @@ public:
     // ctor
     explicit Multilink()
     {
+    }
+
+    // initialization
+    void initialize( T initial_value )
+    {
+        // set is empty when constructed
     }
 
     // get pointer to containing agent
@@ -113,7 +120,7 @@ public:
     // Whereas ompp stores a multilink as a member, so natural model code looks like this
     //     mlChildren.insert(newborn).;
     // The following overload of the pointer operator in effect translates the "->" to ".".
-    Multilink<A,B,side_effects>* operator->()
+    Multilink<T,A,B,side_effects>* operator->()
     {
         // return pointer to this agentvar
         return this;
@@ -174,5 +181,5 @@ public:
  * call the side-effects function in the context of the agent and with access to all agentvars
  * in the agent.
  */
-template<typename A, typename B, void (A::*side_effects)()>
-size_t Multilink<A, B, side_effects>::offset_in_agent = 0;
+template<typename T, typename A, typename B, void (A::*side_effects)(T insert_link, T erase_link)>
+size_t Multilink<T, A, B, side_effects>::offset_in_agent = 0;

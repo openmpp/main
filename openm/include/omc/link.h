@@ -69,9 +69,3 @@ inline bool operator==(const link<A>& lhs, const link<A>& rhs){ return lhs.get()
 template <class A>
 inline bool operator!=(const link<A>& lhs, const link<A>& rhs){return !(lhs == rhs);}
 
-template <class A>
-class multi_link
-{
-public:
-    vector<link<A>> storage;
-};

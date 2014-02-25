@@ -1139,7 +1139,7 @@ decl_link:
                             auto agent_multi = $link_multi->agent;
                             // The type of each link
                             auto type_single = TypeOfLinkSymbol::get_single(agent_multi);
-                            auto type_multi = TypeOfLinkSymbol::get_multi(agent_single);
+                            auto type_multi = TypeOfLinkSymbol::get_single(agent_single);
 
                             // morph AgentMemberSymbol's to appropriate link types
                             auto single = new LinkAgentVarSymbol($link_single, agent_single, type_single, $link_single->decl_loc);

@@ -20,7 +20,8 @@ void AgentMultilinkSymbol::create_auxiliary_symbols()
     side_effects_fn = new AgentFuncSymbol("om_side_effects_" + name,
                                           agent,
                                           "void",
-                                          "");
+                                          data_type->name + " insert_link, " +
+                                          data_type->name + " erase_link");
     assert(side_effects_fn); // out of memory check
     side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in agent " + agent->name + ".");
 }
@@ -66,23 +67,22 @@ CodeBlock AgentMultilinkSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    AgentSymbol *reciprocal_agent = nullptr;
     if (reciprocal_link) {
-        h += "Multilink<"
-            + agent->name + ", "
-            + reciprocal_link->agent->name + ", "
-            + "&" + side_effects_fn->unique_name
-            + "> ";
-        h += name + ";";
+        reciprocal_agent = reciprocal_link->pp_agent;
     }
     else {
         assert(reciprocal_multilink); // grammar guarantee
-        h += "Multilink<"
-            + agent->name + ", "
-            + reciprocal_multilink->agent->name + ", "
-            + "&" + side_effects_fn->unique_name
-            + "> ";
-        h += name + ";";
+        reciprocal_agent = reciprocal_multilink->pp_agent;
     }
+
+    h += "Multilink<"
+        + data_type->name + ", "
+        + agent->name + ", "
+        + reciprocal_agent->name + ", "
+        + "&" + side_effects_fn->unique_name
+        + "> ";
+    h += name + ";";
 
     return h;
 }
