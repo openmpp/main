@@ -30,6 +30,9 @@ void AgentEventSymbol::post_parse(int pass)
     {
         // Add this agent event time symbol to the agent's list of all such symbols
         pp_agent->pp_agent_events.push_back(this);
+
+        // Add this agent event time symbol to the agent's list of all callback members
+        pp_agent->pp_callback_members.push_back(this);
     }
     break;
     case ePopulateDependencies:

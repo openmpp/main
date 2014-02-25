@@ -309,7 +309,7 @@ public:
      * 
      * Post-parse operations create derived information based on information obtained during the
      * parse phase. This information is stored in members of the Symbol class hierarchy which by
-     * convention have a 'pp_' prefix in their name. For example, the \ref pp_agentvars collection
+     * convention have a 'pp_' prefix in their name. For example, the \ref pp_callback_members collection
      * of the \ref AgentSymbol class contains a list of all agentvars of the agent after post-parse
      * processing.  These pp_ members are used subsequently in the code-generation phase.
      * 

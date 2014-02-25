@@ -84,21 +84,12 @@ void AgentSymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Model-specific customizations after simulating agent.");
     }
 
-    // The initialize_agentvar_offsets member function
+    // The initialize_callback_member_offsets member function
     {
-        assert(!initialize_agentvar_offsets_fn); // initialization guarantee
-        initialize_agentvar_offsets_fn = new AgentFuncSymbol("om_initialize_agentvar_offsets", this);
-        assert(initialize_agentvar_offsets_fn); // out of memory check
-        initialize_agentvar_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing agent.");
-        // function body is generated in post-parse phase
-    }
-
-    // The initialize_event_offsets member function
-    {
-        assert(!initialize_event_offsets_fn); // initialization guarantee
-        initialize_event_offsets_fn = new AgentFuncSymbol("om_initialize_event_offsets", this);
-        assert(initialize_event_offsets_fn); // out of memory check
-        initialize_event_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of events in the containing agent.");
+        assert(!initialize_callback_member_offsets_fn); // initialization guarantee
+        initialize_callback_member_offsets_fn = new AgentFuncSymbol("om_initialize_callback_member_offsets", this);
+        assert(initialize_callback_member_offsets_fn); // out of memory check
+        initialize_callback_member_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing agent.");
         // function body is generated in post-parse phase
     }
 
@@ -227,8 +218,7 @@ void AgentSymbol::post_parse(int pass)
     case ePopulateDependencies:
         {
             // construct function bodies.
-            build_body_initialize_agentvar_offsets();
-            build_body_initialize_event_offsets();
+            build_body_initialize_callback_member_offsets();
             build_body_initialize_data_members();
             build_body_initialize_data_members0();
             build_body_initialize_events();
@@ -245,25 +235,16 @@ void AgentSymbol::post_parse(int pass)
     }
 }
 
-void AgentSymbol::build_body_initialize_agentvar_offsets()
+void AgentSymbol::build_body_initialize_callback_member_offsets()
 {
-    CodeBlock& c = initialize_agentvar_offsets_fn->func_body;
+    CodeBlock& c = initialize_callback_member_offsets_fn->func_body;
 
-    for ( auto av : pp_agentvars ) {
+    for ( auto dm : pp_callback_members ) {
         // e.g. age.offset_in_agent = (char *)&(this->age) - (char *)this;
-        c += av->name + ".offset_in_agent = (char *)&(this->" + av->name + ") - (char *)this;" ;
+        c += dm->name + ".offset_in_agent = (char *)&(this->" + dm->name + ") - (char *)this;" ;
     }
 }
 
-void AgentSymbol::build_body_initialize_event_offsets()
-{
-    CodeBlock& c = initialize_event_offsets_fn->func_body;
-
-    for ( auto event : pp_agent_events ) {
-        // e.g. om_time_MortalityEvent.offset_in_agent = (char *)&(this->om_time_MortalityEvent) - (char *)this;
-        c += event->name + ".offset_in_agent = (char *)&(this->" + event->name + ") - (char *)this;";
-    }
-}
 
 void AgentSymbol::build_body_initialize_data_members()
 {

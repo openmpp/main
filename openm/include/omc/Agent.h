@@ -40,12 +40,7 @@ public:
      * One-time initialization of the offset of each agentvar in each type of agent. This offset is
      * used to invoke side-effects when agentvar values change.
      */
-    virtual void om_initialize_agentvar_offsets() = 0;
-
-    /**
-     * One-time initialization of the offset of each event in each type of agent.
-     */
-    virtual void om_initialize_event_offsets() = 0;
+    virtual void om_initialize_callback_member_offsets() = 0;
 
     /**
      * Initialize value_in values for agentvars used in tables. The function definition is specific

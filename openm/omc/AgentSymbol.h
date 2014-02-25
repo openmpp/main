@@ -41,8 +41,7 @@ public:
     AgentSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , pp_time(nullptr)
-        , initialize_agentvar_offsets_fn(nullptr)
-        , initialize_event_offsets_fn(nullptr)
+        , initialize_callback_member_offsets_fn(nullptr)
         , initialize_data_members_fn(nullptr)
         , initialize_data_members0_fn(nullptr)
         , initialize_events_fn(nullptr)
@@ -66,12 +65,7 @@ public:
     /**
      * Builds the function body of the function.
      */
-    void build_body_initialize_agentvar_offsets();
-
-    /**
-     * Builds the function body of the function.
-     */
-    void build_body_initialize_event_offsets();
+    void build_body_initialize_callback_member_offsets();
 
     /**
      * Builds the function body of the function.
@@ -126,18 +120,10 @@ public:
     /**
      * The agent function which initializes the offsets of agentvars within the agent.
      * 
-     * This function has the fixed name om_initialize_agentvar_offsets().  It is called in the run-
+     * This function has the fixed name om_initialize_callback_member_offsets().  It is called in the run-
      * time support class BaseAgent exactly once for each kind of agent.
      */
-    AgentFuncSymbol *initialize_agentvar_offsets_fn;
-
-    /**
-     * The agent function which initializes the offsets of events within the agent.
-     * 
-     * This function has the fixed name om_initialize_event_offsets().  It is called in the run-time
-     * support class BaseAgent exactly once for each kind of agent.
-     */
-    AgentFuncSymbol *initialize_event_offsets_fn;
+    AgentFuncSymbol *initialize_callback_member_offsets_fn;
 
     /**
      * The agent function which initializes the values of all data members in the agent.
@@ -214,11 +200,11 @@ public:
     list<AgentDataMemberSymbol *> pp_agent_data_members;
 
     /**
-     * The agentvars of this agent
+     * The data members of this agent which use callbacks to implement side-effects.
      * 
      *  Populated after parsing is complete.
      */
-    list<AgentVarSymbol *> pp_agentvars;
+    list<AgentDataMemberSymbol *> pp_callback_members;
 
     /**
      * The expression agentvars of this agent.

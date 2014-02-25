@@ -200,8 +200,7 @@ void CodeGen::do_ModelStartup()
     c += "// Agent static initialization pass #1: Initialize agent member offsets & null agent data members";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Agent - " + agent->name;
-        c += agent->name + "::om_null_agent.om_initialize_agentvar_offsets();";
-        c += agent->name + "::om_null_agent.om_initialize_event_offsets();";
+        c += agent->name + "::om_null_agent.om_initialize_callback_member_offsets();";
         c += agent->name + "::om_null_agent.om_initialize_data_members0();";
         c += "";
     }

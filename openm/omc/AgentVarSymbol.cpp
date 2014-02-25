@@ -37,8 +37,8 @@ void AgentVarSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
         {
-            // Add this agentvar to the agent's list of all agentvars
-            pp_agent->pp_agentvars.push_back(this);
+            // Add this agentvar to the agent's list of all callback members
+            pp_agent->pp_callback_members.push_back(this);
         }
         break;
     default:
