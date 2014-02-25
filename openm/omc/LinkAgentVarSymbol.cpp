@@ -28,7 +28,7 @@ void LinkAgentVarSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
-            // Dependency on agentvars in expression
+            // Maintain reciprocal links
             CodeBlock& c = side_effects_fn->func_body;
             auto other = reciprocal_link;
             if (single) {

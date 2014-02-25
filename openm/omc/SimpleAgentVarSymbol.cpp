@@ -36,9 +36,11 @@ CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent()
     // add declaration code specific to simple agentvars
 
     // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
-    h += "SimpleAgentVar<" + pp_data_type->name + ", "
+    h += "SimpleAgentVar<" 
+        + pp_data_type->name + ", "
         + agent->name + ", "
-        + "&" + side_effects_fn->unique_name + ">";
+        + "&" + side_effects_fn->unique_name 
+        + ">";
     h += name + ";";
 
     return h;

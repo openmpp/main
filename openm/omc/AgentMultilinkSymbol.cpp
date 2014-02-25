@@ -66,11 +66,12 @@ CodeBlock AgentMultilinkSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    //h += "MultiLinkAgentVar<" + pp_data_type->name + ", "
-    //    + agent->name + ", "
-    //    + reciprocal_link->agent->name + ", "
-    //    + "&" + "TODO" + "> ";
-    //h += name + ";";
+    h += "Multilink<"
+        + agent->name + ", "
+        + reciprocal_link->agent->name + ", "
+        + "&" + side_effects_fn->unique_name
+        + "> ";
+    h += name + ";";
 
     return h;
 }

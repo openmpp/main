@@ -1148,6 +1148,11 @@ decl_link:
                             auto lavs_single = new LinkAgentVarSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
                             auto lavs_multi = new LinkAgentVarSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
 
+                            // following for testing
+                            auto temp = new Symbol("om_test_" + lavs_multi->name);
+                            auto amls = new AgentMultilinkSymbol(temp, agent_multi, type_multi, $link_multi->decl_loc);
+                            amls->reciprocal_link = lavs_single;
+
                             lavs_single->single = true;
                             lavs_single->reciprocal_link = lavs_multi;
                             lavs_multi->single = false;
