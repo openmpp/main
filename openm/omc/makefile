@@ -98,11 +98,12 @@ omc: prepare $(OUT_BIN_DIR)/$(OMC_EXE)
 
 $(OBJS): | prepare
 $(DEPS): | prepare
+$(BUILD_SRC_DIR)/parser.cpp: | prepare
 
 $(BUILD_SRC_DIR)/parser.cpp : parser.y
 	$(BISON) -b parser -o $@ $<
 
-$(BUILD_SRC_DIR)/scanner.cpp : scanner.l parser.cpp
+$(BUILD_SRC_DIR)/scanner.cpp : scanner.l $(BUILD_SRC_DIR)/parser.cpp
 	$(FLEX) -Cem -o $@ scanner.l
 
 # $(BUILD_SRC_DIR)/scanner.cpp : scanner.l
