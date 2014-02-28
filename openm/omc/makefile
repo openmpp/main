@@ -45,6 +45,7 @@ AgentEventSymbol.cpp \
 AgentFuncSymbol.cpp \
 AgentInternalSymbol.cpp \
 AgentMemberSymbol.cpp \
+AgentMultilinkSymbol.cpp \
 AgentSymbol.cpp \
 AgentVarSymbol.cpp \
 BoolSymbol.cpp \
