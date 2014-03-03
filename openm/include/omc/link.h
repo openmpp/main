@@ -9,6 +9,8 @@
 #pragma once
 
 #include <vector>
+#include "omc/Agent.h"
+#include "omc/Event.h"
 
 using namespace std;
 
