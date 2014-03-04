@@ -710,6 +710,12 @@ bool TableUnitRow::keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_
         left->modelId == right->modelId && left->tableId == right->tableId && left->unitId == right->unitId;
 }
 
+// table_unit row equal comparator by model id
+bool TableUnitRow::modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+{
+    return dynamic_cast<TableUnitRow *>(i_left.get())->modelId == dynamic_cast<TableUnitRow *>(i_right.get())->modelId;
+}
+
 // table_unit row equal comparator by model id, table id
 bool TableUnitRow::modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
 {

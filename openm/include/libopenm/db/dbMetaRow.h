@@ -1511,6 +1511,9 @@ namespace openm
         /** equal comparator by primary key: model id, table id, unit id. */
         static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
 
+        /** table_unit row equal comparator by model id. */
+        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+
         /** table_unit row equal comparator by model id, table id. */
         static bool modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };

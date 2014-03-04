@@ -25,6 +25,9 @@ namespace openm
         // get list of all table rows
         vector<TableUnitRow> rows(void) const { return IMetaTable<TableUnitRow>::rows(rowVec); }
 
+        // get list of rows by model id
+        vector<TableUnitRow> byModelId(int i_modelId) const;
+
         // get list of rows by model id and table id
         vector<TableUnitRow> byModelIdTableId(int i_modelId, int i_tableId) const;
 
@@ -127,6 +130,13 @@ const TableUnitRow * TableUnitTable::byKey(int i_modelId, int i_tableId, int i_u
 {
     const IRowBaseUptr keyRow( new TableUnitRow(i_modelId, i_tableId, i_unitId) );
     return IMetaTable<TableUnitRow>::byKey(keyRow, rowVec);
+}
+
+// get list of rows by model id
+vector<TableUnitRow> TableUnitTable::byModelId(int i_modelId) const
+{
+    const IRowBaseUptr row(new TableUnitRow(i_modelId, 0, 0));
+    return IMetaTable<TableUnitRow>::findAll(row, rowVec, TableUnitRow::modelIdEqual);
 }
 
 // get list of rows by model id and table id

@@ -480,6 +480,7 @@ CREATE TABLE IF NOT EXISTS table_unit
   unit_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
   unit_expr     VARCHAR(4000) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
   PRIMARY KEY (model_id, table_id, unit_id),
+  CONSTRAINT table_unit_un UNIQUE (model_id, table_id, unit_name),
   CONSTRAINT table_unit_mk 
              FOREIGN KEY (model_id, table_id) REFERENCES table_dic (model_id, table_id)
 );

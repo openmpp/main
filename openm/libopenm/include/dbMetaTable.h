@@ -812,6 +812,9 @@ namespace openm
         /** get list of loaded table rows. */
         virtual vector<TableUnitRow> rows(void) const = 0;
 
+        /** get list of rows by model id. */
+        virtual vector<TableUnitRow> byModelId(int i_modelId) const = 0;
+
         /** get list of rows by model id and table id. */
         virtual vector<TableUnitRow> byModelIdTableId(int i_modelId, int i_tableId) const = 0;
 
