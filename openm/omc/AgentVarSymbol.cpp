@@ -26,6 +26,15 @@ void AgentVarSymbol::create_auxiliary_symbols()
     side_effects_fn->doc_block = doxygen_short("Implement side effects of setting " + name + " in agent " + agent->name + ".");
 }
 
+void AgentVarSymbol::change_data_type(TypeSymbol *new_type)
+{
+    // TODO Pass it upwards to AgentDataMemberSymbol rather than fiddling directly with members.
+    assert(new_type);
+    pp_data_type = new_type;
+    // Note that data_type remains as it was, since references cannot be reseated.
+    assert(side_effects_fn); // logic guarantee
+    side_effects_fn->arg_list_decl = pp_data_type->name + " old_value, " + pp_data_type->name + " new_value";
+}
 
 
 void AgentVarSymbol::post_parse(int pass)

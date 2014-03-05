@@ -142,6 +142,7 @@
     <ClInclude Include="TimeSymbol.h" />
     <ClInclude Include="TypeOfLinkSymbol.h" />
     <ClInclude Include="TypeSymbol.h" />
+    <ClInclude Include="UnknownTypeSymbol.h" />
     <ClInclude Include="VersionSymbol.h" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +196,7 @@
     <ClCompile Include="TimeSymbol.cpp" />
     <ClCompile Include="TypeOfLinkSymbol.cpp" />
     <ClCompile Include="TypeSymbol.cpp" />
+    <ClCompile Include="UnknownTypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

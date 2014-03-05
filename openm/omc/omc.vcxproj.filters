@@ -189,6 +189,9 @@
     <ClInclude Include="MultilinkAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UnknownTypeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -315,6 +318,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MultilinkAgentVarSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UnknownTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

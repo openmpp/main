@@ -300,6 +300,8 @@ public:
         eCreateMissingSymbols,
         ///< post-parse pass to populate pp_ collections
         ePopulateCollections,
+        ///< post-parse pass to resolve data types of derived agentvars
+        eResolveDataTypes,
         ///< post-parse pass to populate dependencies
         ePopulateDependencies
     };

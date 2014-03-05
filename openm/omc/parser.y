@@ -457,6 +457,8 @@ extern char *yytext;
 
 %type  <pval_AgentVarExpr> expr_for_agentvar
 
+%type  <val_token> aggregate_multilink_function
+
 %type  <val_token>      numeric_type
 %type  <val_token>      changeable_numeric_type
 %type  <val_token>      cxx_numeric_type
@@ -1494,7 +1496,7 @@ agentvar:
 link_to_agentvar:
       SYMBOL[link] "->"
                         {
-                            // Tell the scanner not to apply agnet scope resolution to the following 'word'
+                            // Tell the scanner not to apply agent scope resolution to the following 'word'
                             // in the input stream, but just return a STRING instead.  That's because the agent context
                             // depends on the nature of the symbol on the "->", whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
@@ -1542,21 +1544,20 @@ derived_agentvar:
      */
     | TK_count[function] "(" SYMBOL[multilink] ")"
                         {
-                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink );
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, "" );
                         }
-    | TK_sum_over[function] "(" SYMBOL[multilink] "," SYMBOL[agentvar] ")"
+    | aggregate_multilink_function[function] "(" SYMBOL[multilink] ","
                         {
-                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, $agentvar );
+                            // Tell the scanner not to apply agent scope resolution to the following 'word'
+                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // depends on the nature of the preceding multilink symbol, whose declaration may not yet have been encountered.
+                            pc.next_word_is_string = true;
                         }
-    | TK_min_over[function] "(" SYMBOL[multilink] "," SYMBOL[agentvar] ")"
+        STRING[agentvar] ")"
                         {
-                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, $agentvar );
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$agentvar );
+                            delete $agentvar; // delete the string created using new in scanner
                         }
-    | TK_max_over[function] "(" SYMBOL[multilink] "," SYMBOL[agentvar] ")"
-                        {
-                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, $agentvar );
-                        }
-
     /*
      * derived agentvars - transition occurrence family
      */
@@ -1634,6 +1635,12 @@ derived_agentvar:
     //TODO KW_self_scheduling_split - self_scheduling_split(time, partition)
 
 	;
+
+aggregate_multilink_function:
+      TK_sum_over
+    | TK_min_over
+    | TK_max_over
+    ;
 
 /*
  * Literals

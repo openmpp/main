@@ -211,3 +211,35 @@ table Person LinkTest5
         duration()
     }
 };
+
+actor Thing
+{
+    real real_actor_id = actor_id / 5000.0;
+};
+
+actor Person
+{
+    counter multilink1 = count(things);
+    counter multilink2 = min_over(things, actor_id);
+    counter multilink3 = max_over(things, actor_id);
+    counter multilink4 = sum_over(things, actor_id);
+    real    multilink5 = min_over(things, real_actor_id);
+    real    multilink6 = max_over(things, real_actor_id);
+    real    multilink7 = sum_over(things, real_actor_id);
+    logical multilink8 = min_over(things, making_trouble);
+};
+
+table Person LinkTest6
+[ alive == FALSE ]
+{
+    {
+        value_out(multilink1),
+        value_out(multilink2),
+        value_out(multilink3),
+        value_out(multilink4),
+        value_out(multilink5),
+        value_out(multilink6),
+        value_out(multilink7),
+        value_out(multilink8)
+    }
+};

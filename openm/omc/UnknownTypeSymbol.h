@@ -1,0 +1,47 @@
+/**
+* @file    UnknownTypeSymbol.h
+* Declarations for the UnknownTypeSymbol class.
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#pragma once
+#include "TypeSymbol.h"
+
+using namespace std;
+using namespace openm;
+
+/**
+* BoolSymbol.
+*/
+class UnknownTypeSymbol : public TypeSymbol
+{
+private:
+    typedef TypeSymbol super;
+
+public:
+    bool is_base_symbol() const { return false; }
+
+    /**
+    * Constructor for the unknown type symbol
+    */
+
+    UnknownTypeSymbol()
+        : TypeSymbol("om_unknown")
+    {
+    }
+
+    const string default_initial_value() const {
+        // no types of this kind shouljd be present in code generation phase
+        return "error";
+    };
+
+    /**
+     * Gets the one and only 'unknown type' symbol.
+     *
+     * @return the UnknownTypeSymbol*.
+     */
+
+    static UnknownTypeSymbol *find();
+};
+

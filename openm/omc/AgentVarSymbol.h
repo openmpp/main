@@ -39,6 +39,13 @@ public:
      */
     void create_auxiliary_symbols();
 
+    /**
+     * Change the data type in the post-parse phase
+     *
+     * @param type The new data type.
+     */
+    void change_data_type(TypeSymbol *new_type);
+
     void post_parse(int pass);
 
     /**

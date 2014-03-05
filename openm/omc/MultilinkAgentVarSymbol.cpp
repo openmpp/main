@@ -6,8 +6,9 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "MultilinkAgentVarSymbol.h"
-#include"AgentFuncSymbol.h"
+#include "AgentFuncSymbol.h"
 #include "AgentMultilinkSymbol.h"
+#include "LinkAgentVarSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -17,10 +18,50 @@ void MultilinkAgentVarSymbol::create_auxiliary_symbols()
     // Create an AgentFuncSymbol for the evaluation function
     evaluate_fn = new AgentFuncSymbol(name + "_evaluate", agent);
     evaluate_fn->doc_block = doxygen_short("Evaluate the multilink agentvar " + name + ".");
-    CodeBlock &c = evaluate_fn->func_body;
-    assert(multilink); // logic guarantee
-    c += name + ".set(" + multilink->name + ".size());";
 }
+
+void MultilinkAgentVarSymbol::build_body_evaluate()
+{
+    CodeBlock& c = evaluate_fn->func_body;
+
+    assert(multilink); // logic guarantee
+    if (func == token::TK_count) {
+        c += name + ".set(" + multilink->name + ".size());";
+    }
+    else if (func == token::TK_sum_over) {
+        assert(agentvar.size());  // grammar guarantee
+        c += pp_data_type->name + " val = 0;";
+        c += "for (auto &item : " + multilink->name + ".storage) {";
+        c += "if (item.get() != nullptr) {";
+        c += "val += item->" + agentvar + ";";
+        c += "}";
+        c += "}";
+        c += name + ".set(val);";
+    }
+    else if (func == token::TK_min_over || func == token::TK_max_over ) {
+        assert(agentvar.size());  // grammar guarantee
+        string op = (func == token::TK_min_over) ? " < " : " > ";
+        c += pp_data_type->name + " val = 0;";
+        c += "bool found = false;";
+        c += "for (auto &item : " + multilink->name + ".storage) {";
+        c += "if (item.get() != nullptr) {";
+        c += "if (!found) {";
+        c += "val = item->" + agentvar + ";";
+        c += "found = true;";
+        c += "}";
+        c += "else {";
+        c += "if (item->" + agentvar + op + "val) val = item->" + agentvar + ";";
+        c += "}";
+        c += "}";
+        c += "}";
+        c += name + ".set(val);";
+    }
+    else {
+        assert(false); // logic guarantee
+    }
+    
+}
+
 
 /**
  * Post-parse operations for the symbol.
@@ -35,30 +76,81 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // assign direct pointers for post-parse use
-            pp_multilink = dynamic_cast<AgentMultilinkSymbol *> (pp_symbol(multilink));
-            assert(pp_multilink); // syntax error
-            // assign direct pointers for post-parse use
-            if (agentvar) {
-                pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
-                assert(pp_agentvar); // syntax error
+    {
+        // assign direct pointers for post-parse use
+        pp_multilink = dynamic_cast<AgentMultilinkSymbol *> (pp_symbol(multilink));
+        assert(pp_multilink); // syntax error
+
+        // assign direct pointer to agentvar used in multilink
+        if (agentvar.size()) {
+            assert(func == token::TK_sum_over || func == token::TK_min_over || func == token::TK_max_over);
+            auto sym = Symbol::get_symbol(agentvar, pp_multilink->reciprocal_link->agent);
+            assert(sym); // parser / scanner guarantee
+            auto av = dynamic_cast<AgentVarSymbol *> (sym);
+            assert(av); // TODO possible model source code error
+            pp_agentvar = av;
+        }
+    }
+    break;
+
+    case eResolveDataTypes:
+    {
+        if (func == token::TK_count) {
+            // for count(), data type is always counter
+            change_data_type(NumericSymbol::find(token::TK_counter));
+        }
+        else { // sum_over, min_over, max_over
+            assert(pp_agentvar); // logic guarantee
+            assert(pp_agentvar->pp_data_type);  // TODO recursive logic for derived av's
+            auto dts = pp_agentvar->pp_data_type;
+
+            // set data_type of this multilink agentvar
+            if (func == token::TK_sum_over) {
+                // for sum_over, data type is either real or integer
+                if (dts == NumericSymbol::find(token::TK_float)
+                    || dts == NumericSymbol::find(token::TK_double)
+                    || dts == NumericSymbol::find(token::TK_real)) {
+                    change_data_type(NumericSymbol::find(token::TK_real));
+                }
+                else {
+                    change_data_type(NumericSymbol::find(token::TK_integer));
+                }
+            }
+            else {
+                // for min_over and max_over, data type is type of agentvar
+                assert(func == token::TK_min_over || func == token::TK_max_over);
+                change_data_type(dts);
             }
         }
-        break;
+    }
+    break;
+
     case ePopulateDependencies:
+    {
+        // Construct function body
+        build_body_evaluate();
+
+        // Dependency on multilink
         {
-            // Dependency on multilink
-            {
-                CodeBlock& c = pp_multilink->side_effects_fn->func_body;
-                c += "// Re-evaluate multilink agentvar " + name;
-                c += evaluate_fn->name + "();";
-                c += "";
-            }
+            CodeBlock& c = pp_multilink->side_effects_fn->func_body;
+            c += "// Re-evaluate multilink agentvar " + name;
+            c += evaluate_fn->name + "();";
+            c += "";
         }
-        break;
+
+        // Dependency on agentvar
+        if (pp_agentvar) {
+            string rlink = pp_multilink->reciprocal_link->name;
+            CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
+            c += "// Re-evaluate multilink agentvar " + name;
+            c += "if (!" + rlink + ".is_nullptr()) " + rlink + "->" + evaluate_fn->name + "();";
+            c += "";
+        }
+    }
+    break;
+
     default:
-        break;
+    break;
     }
 }
 
@@ -79,17 +171,17 @@ CodeBlock MultilinkAgentVarSymbol::cxx_declaration_agent()
 
 
 // static
-string MultilinkAgentVarSymbol::member_name(token_type func, const Symbol *multilink, const Symbol *agentvar)
+string MultilinkAgentVarSymbol::member_name(token_type func, const Symbol *multilink, const string agentvar)
 {
     string result = "om_" + multilink->name + "_" + token_to_string(func);
-    if (agentvar) {
-        result += "_" + agentvar->name;
+    if (agentvar.size()) {
+        result += "_" + agentvar;
     }
     return result;
 }
 
 // static
-string MultilinkAgentVarSymbol::symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const Symbol *agentvar)
+string MultilinkAgentVarSymbol::symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar)
 {
     string member = MultilinkAgentVarSymbol::member_name(func, multilink, agentvar);
     string result = Symbol::symbol_name(member, agent);
@@ -97,7 +189,7 @@ string MultilinkAgentVarSymbol::symbol_name(const Symbol *agent, token_type func
 }
 
 //static
-Symbol * MultilinkAgentVarSymbol::create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const Symbol *agentvar)
+Symbol * MultilinkAgentVarSymbol::create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar)
 {
     Symbol *sym = nullptr;
     string unm = MultilinkAgentVarSymbol::symbol_name(agent, func, multilink, agentvar);

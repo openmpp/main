@@ -8,6 +8,7 @@
 #pragma once
 #include "AgentVarSymbol.h"
 #include "NumericSymbol.h"
+#include "UnknownTypeSymbol.h"
 
 class AgentMultilinkSymbol;
 
@@ -27,23 +28,38 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    MultilinkAgentVarSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const Symbol *agentvar = nullptr)
+    /**
+     * Constructor.
+     *
+     * @param agent     The agent.
+     * @param func      The function, e.g. TK_min_over
+     * @param multilink The multilink, e.g. things
+     * @param agentvar  (Optional) the agentvar.
+     *                  
+     *  The 'data_type' argument to the AgentVarSymbol constructor is interim and
+     *  may be changed once the data type of agentvar is known.
+     */
+    MultilinkAgentVarSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar)
         : AgentVarSymbol(MultilinkAgentVarSymbol::member_name(func, multilink, agentvar),
                         agent,
-                        NumericSymbol::find(token::TK_integer) )
+                        UnknownTypeSymbol::find() )
         , func(func)
         , multilink(multilink->stable_rp())
         , pp_multilink(nullptr)
-        , agentvar(agentvar ? agentvar->stable_pp() : nullptr)
+        , agentvar(agentvar)
         , pp_agentvar(nullptr)
     {
-
         create_auxiliary_symbols();
     }
 
-    static string member_name(token_type func, const Symbol *multilink, const Symbol *agentvar = nullptr);
+    /**
+     * Builds the function body of the evaluate function.
+     */
+    void build_body_evaluate();
 
-    static string symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const Symbol *agentvar = nullptr);
+    static string member_name(token_type func, const Symbol *multilink, const string agentvar);
+
+    static string symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar);
 
     /**
      * Create a symbol for a multilink agentvar.
@@ -55,7 +71,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const Symbol *agentvar = nullptr);
+    static Symbol * create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar);
 
     /**
      * Create auxiliary symbols associated with this symbol.
@@ -65,11 +81,6 @@ public:
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_agent();
-
-    /**
-     * Builds the function body of the expression function.
-     */
-    void build_body_evaluate();
 
     /** The function which computes the current value of the agentvar from the multilink */
     AgentFuncSymbol *evaluate_fn;
@@ -92,17 +103,9 @@ public:
     AgentMultilinkSymbol *pp_multilink;
 
     /**
-     * The agentvar the aggregate function applies to.
-     * 
-     * For TK_count, is nullptr.
+     * The agentvar the aggregate function applies to.  Is empty for TK_count
      */
-    Symbol** agentvar;
-
-    /**
-     * The agentvar the aggregate function applies to.
-     * 
-     * For TK_count, is nullptr.
-     */
+    const string agentvar;
     AgentVarSymbol *pp_agentvar;
 
 };

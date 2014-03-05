@@ -25,6 +25,7 @@
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
 #include "AgentSymbol.h"
@@ -451,7 +452,7 @@ void Symbol::post_parse(int pass)
         {
             // Integrity check (debugging omc only)
             // A name can be mis-identified as agent context when it should be global.
-            // This situation is an instrinsic consequence of the 'distributed declaration' feature of the language.
+            // This situation is an intrinsic consequence of the 'distributed declaration' feature of the language.
             if (is_base_symbol()) {
                 // This Symbol was never declared.
                 if (name != unique_name) {
@@ -600,6 +601,7 @@ void Symbol::populate_default_symbols()
     sym = new RealSymbol(token::TK_double); // real
     sym = new NumericSymbol(token::TK_integer, token::TK_int, "0"); // integer
     sym = new NumericSymbol(token::TK_counter, token::TK_int, "0"); // counter
+    sym = new UnknownTypeSymbol();
 
     // Not implemented (a string)
     //sym = new NumericSymbol(token::TK_file, "");
@@ -754,6 +756,11 @@ void Symbol::post_parse_all()
         pr.second->post_parse( ePopulateCollections );
     }
 
+    // pass 2: resolve derived agentvar data types
+    for (auto pr : symbols) {
+        pr.second->post_parse( eResolveDataTypes );
+    }
+
     // invalidate the parse phase symbol table symbols
     invalidate_symbols();
 
@@ -822,7 +829,7 @@ void Symbol::post_parse_all()
         }
     }
 
-    // Pass 2: populate additional collections for subsequent code generation, e.g. for side_effect functions.
+    // Pass 3: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateDependencies );

@@ -1,0 +1,18 @@
+/**
+* @file    UnknownTypeSymbol.cpp
+* Definitions for the UnknownTypeSymbol class.
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#include "UnknownTypeSymbol.h"
+
+using namespace std;
+
+
+UnknownTypeSymbol *UnknownTypeSymbol::find()
+{
+    auto bs = dynamic_cast<UnknownTypeSymbol *>(get_symbol("om_unknown"));
+    assert(bs); // only called when valid
+    return bs;
+}

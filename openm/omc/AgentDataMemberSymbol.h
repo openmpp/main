@@ -83,19 +83,14 @@ public:
 
     void post_parse(int pass);
 
-
     /**
-    * The datatype of the agent member (reference to pointer)
-    *
-    */
-
+     * The datatype of the agent member (pointer to pointer)
+     */
     Symbol*& data_type;
 
     /**
-    * The datatype of the agent member (pointer)
-    *
-    */
-
+     * The datatype of the agent member (pointer)
+     */
     TypeSymbol *pp_data_type;
 
 };
