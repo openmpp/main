@@ -683,7 +683,14 @@ Symbol *Symbol::find_a_symbol( const type_info& ti )
 // static
 Symbol *Symbol::pp_symbol(Symbol *& rp_sym)
 {
-    Symbol *sym = rp_sym;
+    return Symbol::pp_symbol(&rp_sym);
+}
+
+// static
+Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
+{
+    assert(pp_sym);
+    Symbol *sym = *pp_sym;
     assert(sym);
 
     // Identify problem  cases where a name was mis-identified as agent context rather than global context.

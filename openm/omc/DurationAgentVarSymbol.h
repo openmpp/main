@@ -12,11 +12,10 @@
 using namespace std;
 
 /**
-* DurationAgentVarSymbol.
-*
-* Symbol for derived agentvars of the form duration().
-*/
-
+ * DurationAgentVarSymbol.
+ * 
+ * Symbol for derived agentvars of the form duration().
+ */
 class DurationAgentVarSymbol : public AgentVarSymbol
 {
 private:
@@ -38,13 +37,12 @@ public:
     static string symbol_name(const Symbol *agent);
 
     /**
-    * Create a symbol for a derived agentvar of form duration()
-    *
-    * @param   agent   The agent.
-    *
-    * @return  The symbol.
-    */
-
+     * Create a symbol for a derived agentvar of form duration()
+     *
+     * @param agent The agent.
+     *
+     * @return The symbol.
+     */
     static Symbol * create_symbol(const Symbol *agent);
 
     void post_parse(int pass);

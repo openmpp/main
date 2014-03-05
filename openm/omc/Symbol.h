@@ -569,23 +569,21 @@ public:
 
     static Symbol *find_a_symbol(const type_info& cls);
 
-
     /**
      * Gets post-parse direct pointer to a symbol
      * 
-     * During the parse phase, relationships between Symbols are stored as
-     * stable references to pointers to Symbols (the second element of the pair
-     * in the symbol table map Symbols::symbols).  That allows symbol morphing when
-     * generic Symbols created by the scanner (when it encounters new names)
+     * During the parse phase, relationships between Symbols are stored as stable references to
+     * pointers to Symbols (the second element of the pair in the symbol table map
+     * Symbols::symbols).  That allows symbol morphing when generic Symbols created by the scanner
+     * (when it encounters new names)
      * are resolved in the parser to specialized Symbols.
-     * 
-     * @param rp_symbol The reference to *Symbol stored in the symbol table
+     *
+     * @param [in,out] rp_symbol Symbol stored in the symbol table.
      *
      * @return null if it fails, else the pp symbol.
      */
-
     static Symbol *pp_symbol(Symbol *& rp_symbol);
-
+    static Symbol *pp_symbol(Symbol ** rp_symbol);
 
     /**
      * Get the string corresponding to a token.
@@ -594,7 +592,6 @@ public:
      *
      * @return The string representation of the token, e.g. "agent".
      */
-
     static const string token_to_string(const token_type& e);
 
 

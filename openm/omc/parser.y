@@ -1145,21 +1145,27 @@ decl_link:
                             auto single = new LinkAgentVarSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
                             auto multi = new AgentMultilinkSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
 
-                            // following for testing
-                            //auto temp = new Symbol("om_test_" + lavs_multi->name);
-                            //auto amls = new AgentMultilinkSymbol(temp, agent_multi, type_multi, $link_multi->decl_loc);
-                            //amls->reciprocal_link = lavs_single;
-
+                            // match them up
                             single->reciprocal_multilink = multi;
                             multi->reciprocal_link = single;
                         }
-        | "link" link_symbol[ls2] "[" "]" link_symbol[ls1] ";"
+        | "link" link_symbol[link_multi] "[" "]" link_symbol[link_single] ";"
                         {
-        //                    // many-to-one link (identical code to previous rule).
-        //                    //$ls1->single = false;
-        //                    //$ls1->reciprocal_link = $ls2;
-        //                    //$ls2->single = true;
-        //                    //$ls2->reciprocal_link = $ls1;
+                            // many-to-one link (identical code to previous rule).
+                            // The containing agent of each link
+                            auto agent_single = $link_single->agent;
+                            auto agent_multi = $link_multi->agent;
+                            // The type of each link
+                            auto type_single = TypeOfLinkSymbol::get_single(agent_multi);
+                            auto type_multi = TypeOfLinkSymbol::get_single(agent_single);
+
+                            // morph AgentMemberSymbol's to appropriate link types
+                            auto single = new LinkAgentVarSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
+                            auto multi = new AgentMultilinkSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
+
+                            // match them up
+                            single->reciprocal_multilink = multi;
+                            multi->reciprocal_link = single;
                         }
         | "link" link_symbol[ls1] "[" "]" link_symbol[ls2] "[" "]" ";"
                         {
@@ -1507,6 +1513,9 @@ link_to_agentvar:
  */
 
 derived_agentvar:
+    /*
+     * derived agentvars - duration family
+     */
       TK_duration "(" ")"
                         {
                             $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
@@ -1515,6 +1524,115 @@ derived_agentvar:
                         {
                             $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
                         }
+    // TODO TK_weighted_duration
+    // TODO TK_weighted_cumulation
+
+    /*
+     * derived agentvars - spell family
+     */
+    // TODO TK_active_spell_duration
+    // TODO TK_completed_spell_duration
+    // TODO TK_active_spell_weighted_duration
+    // TODO TK_completed_spell_weighted_duration
+    // TODO TK_active_spell_delta
+    // TODO TK_completed_spell_delta
+
+    /*
+     * derived agentvars - multilink family
+     */
+    | TK_count[function] "(" SYMBOL[multilink] ")"
+                        {
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink );
+                        }
+    | TK_sum_over[function] "(" SYMBOL[multilink] "," SYMBOL[agentvar] ")"
+                        {
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, $agentvar );
+                        }
+    | TK_min_over[function] "(" SYMBOL[multilink] "," SYMBOL[agentvar] ")"
+                        {
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, $agentvar );
+                        }
+    | TK_max_over[function] "(" SYMBOL[multilink] "," SYMBOL[agentvar] ")"
+                        {
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, $agentvar );
+                        }
+
+    /*
+     * derived agentvars - transition occurrence family
+     */
+    // TODO KW_undergone_entrance
+    // TODO KW_undergone_exit
+    // TODO KW_undergone_transition
+    // TODO KW_undergone_change
+
+    /*
+     * derived agentvars - transition count family
+     */
+    // TODO KW_entrances
+    // TODO KW_exits
+    // TODO KW_transitions
+    // TODO KW_changes
+
+    /*
+     * derived agentvars - transition observer family - value
+     */
+    //TODO KW_value_at_first_entrance
+    //TODO KW_value_at_latest_entrance
+    //TODO KW_value_at_first_exit
+    //TODO KW_value_at_latest_exit
+    //TODO KW_value_at_first_transition
+    //TODO KW_value_at_latest_transition
+    //TODO KW_value_at_first_change
+    //TODO KW_value_at_latest_change
+
+    /*
+     * derived agentvars - transition observer family - sum
+     */
+    //TODO KW_value_at_entrances
+    //TODO KW_value_at_exits
+    //TODO KW_value_at_transitions
+    //TODO KW_value_at_changes
+
+    /*
+     * derived agentvars - transformation family
+     */
+    // TODO KW_split
+    // TODO KW_aggregate
+
+    /*
+     * derived agentvars - trigger family
+     */
+    // TODO KW_trigger_entrances
+    // TODO KW_trigger_exits
+    // TODO KW_trigger_transitions
+    // TODO KW_trigger_changes
+
+    /*
+     * derived agentvars - self-scheduling family - duration counters
+     */
+    //TODO KW_duration_counter
+    //TODO KW_duration_trigger
+
+    /*
+     * derived agentvars - self-scheduling family - integer durations
+     */
+    //TODO KW_self_scheduling_int - self_scheduling_int(duration())
+    //TODO KW_self_scheduling_int - self_scheduling_int(active_spell_duration())
+    //TODO KW_self_scheduling_int - self_scheduling_int(duration(weighted_duration()))
+    //TODO KW_self_scheduling_int - self_scheduling_int(duration(active_spell_wegihted_duration()))
+    //TODO KW_self_scheduling_int - self_scheduling_int(age)
+    //TODO KW_self_scheduling_int - self_scheduling_int(time)
+
+    /*
+     * derived agentvars - self-scheduling family - split durations
+     */
+    //TODO KW_self_scheduling_split - self_scheduling_split(duration(), partition)
+    //TODO KW_self_scheduling_split - self_scheduling_split(active_spell_duration(), partition)
+    //TODO KW_self_scheduling_split - self_scheduling_split(duration(weighted_duration()), partition)
+    //TODO KW_self_scheduling_split - self_scheduling_split(duration(active_spell_wegihted_duration()), parition)
+    //TODO KW_self_scheduling_split - self_scheduling_split(age, partition)
+    //TODO KW_self_scheduling_split - self_scheduling_split(time, partition)
+
 	;
 
 /*

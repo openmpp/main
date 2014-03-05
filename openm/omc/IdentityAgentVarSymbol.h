@@ -43,9 +43,8 @@ public:
     }
 
     /**
-     * Create auxiliary symbols associated with this table.
+     * Create auxiliary symbols associated with this symbol.
      */
-
     void create_auxiliary_symbols();
 
     void post_parse(int pass);
@@ -57,46 +56,40 @@ public:
     /**
      * Builds the function body of the expression function.
      */
-
     void build_body_expression();
 
     /**
-     * Constructs the C++ expression from the parse tree
+     * Constructs the C++ expression from the parse tree.
      *
      * @param node The node.
      *
      * @return The expression.
      */
-
     string cxx_expression(const ExprForAgentVar *node);
 
     /**
-    * Root of the expression tree
-    */
-
+     * Root of the expression tree.
+     */
     ExprForAgentVar *root;
-
 
     /**
      * The agentvars used in the expression.
      */
-
     set<AgentVarSymbol *> pp_agentvars_used;
- 
+
     /**
      * The links used in the expression.
      */
-
     set<LinkAgentVarSymbol *> pp_links_used;
 
     /**
      * The linked agentvars used in the expression.
      */
-
     set<LinkToAgentVarSymbol *> pp_linked_agentvars_used;
- 
 
-    /** The expression function */
+    /**
+     * The expression function.
+     */
     AgentFuncSymbol *expression_fn;
 };
 

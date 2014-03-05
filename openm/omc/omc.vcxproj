@@ -124,6 +124,7 @@
     <ClInclude Include="ModelSymbol.h" />
     <ClInclude Include="ModelTypeSymbol.h" />
     <ClInclude Include="ModuleSymbol.h" />
+    <ClInclude Include="MultilinkAgentVarSymbol.h" />
     <ClInclude Include="NumericSymbol.h" />
     <ClInclude Include="ParameterSymbol.h" />
     <ClInclude Include="ParseContext.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="LinkToAgentVarSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
+    <ClCompile Include="MultilinkAgentVarSymbol.cpp" />
     <ClCompile Include="NumericSymbol.cpp" />
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />

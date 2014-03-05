@@ -42,6 +42,7 @@
 #include "AgentFuncSymbol.h"
 #include "LinkToAgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"
+#include "MultilinkAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "TableExpressionSymbol.h"
 #include "TableAccumulatorSymbol.h"
