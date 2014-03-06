@@ -69,8 +69,8 @@ void AgentMultilinkSymbol::post_parse(int pass)
                 // reciprocal link is multi
                 assert(reciprocal_multilink); // grammar guarantee
                 auto reciprocal = reciprocal_multilink;
-                c_insert += "// TODO";
-                c_erase += "// TODO";
+                c_insert += "lnk->" + reciprocal->name + ".insert(this);";
+                c_erase +=  "lnk->" + reciprocal->name + ".erase(this);";
             }
         }
         break;

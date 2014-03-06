@@ -79,6 +79,11 @@ actor Thing {
 
 void Thing::Start()
 {
+    for (int j=0; j<10; j++) {
+        Toy *my_toy = new Toy;
+        my_toy->Start();
+        toys->Add(my_toy);
+    }
 }
 
 void Thing::Finish()
@@ -241,5 +246,70 @@ table Person LinkTest6
         value_out(multilink6),
         value_out(multilink7),
         value_out(multilink8)
+    }
+};
+
+actor Toy
+{
+    real lifetime;
+    logical discarded = {FALSE};
+
+	void Start();
+	void Finish();
+
+    event timeDiscardEvent, DiscardEvent;
+};
+
+void Toy::Start()
+{
+    lifetime = 50 * RandUniform(6);
+}
+
+void Toy::Finish()
+{
+}
+
+TIME Toy::timeDiscardEvent()
+{
+	TIME tEventTime = WAIT( lifetime );
+	return tEventTime;
+}
+
+void Toy::DiscardEvent()
+{
+    discarded = TRUE;
+	Finish();
+}
+
+link Thing.toys[] Toy.things[];
+
+actor Toy {
+    counter manymany1 = sum_over(things, making_trouble);
+    logical manymany2 = min_over(things, making_trouble);
+    logical manymany3 = max_over(things, making_trouble);
+};
+
+table Toy LinkTest7
+[ discarded ]
+{
+    {
+        value_out(manymany1),
+        value_out(manymany2),
+        value_out(manymany3)
+    }
+};
+
+actor Thing {
+    real manymany4 = sum_over(toys, lifetime);
+    real manymany5 = min_over(toys, lifetime);
+    real manymany6 = max_over(toys, lifetime);
+};
+table Thing LinkTest8
+[ alive == FALSE ]
+{
+    {
+        value_out(manymany4),
+        value_out(manymany5),
+        value_out(manymany6)
     }
 };

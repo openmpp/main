@@ -1169,13 +1169,23 @@ decl_link:
                             single->reciprocal_multilink = multi;
                             multi->reciprocal_link = single;
                         }
-        | "link" link_symbol[ls1] "[" "]" link_symbol[ls2] "[" "]" ";"
+        | "link" link_symbol[link_multi1] "[" "]" link_symbol[link_multi2] "[" "]" ";"
                         {
-        //                    // many-to-many link
-        //                    //$ls1->single = false;
-        //                    //$ls1->reciprocal_link = $ls2;
-        //                    //$ls2->single = false;
-        //                    //$ls2->reciprocal_link = $ls1;
+                            // many-to-many link
+                            // The containing agent of each link
+                            auto agent_multi1 = $link_multi1->agent;
+                            auto agent_multi2 = $link_multi2->agent;
+                            // The type of each link
+                            auto type_multi1 = TypeOfLinkSymbol::get_single(agent_multi2);
+                            auto type_multi2 = TypeOfLinkSymbol::get_single(agent_multi1);
+
+                            // morph AgentMemberSymbol's to appropriate link types
+                            auto multi1 = new AgentMultilinkSymbol($link_multi1, agent_multi1, type_multi1, $link_multi1->decl_loc);
+                            auto multi2 = new AgentMultilinkSymbol($link_multi2, agent_multi2, type_multi2, $link_multi2->decl_loc);
+
+                            // match them up
+                            multi1->reciprocal_multilink = multi2;
+                            multi2->reciprocal_multilink = multi1;
                         }
         | "link" error ";"
         ;

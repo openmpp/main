@@ -84,7 +84,16 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
         // assign direct pointer to agentvar used in multilink
         if (agentvar.size()) {
             assert(func == token::TK_sum_over || func == token::TK_min_over || func == token::TK_max_over);
-            auto sym = Symbol::get_symbol(agentvar, pp_multilink->reciprocal_link->agent);
+            Symbol *as = nullptr;
+            if (pp_multilink->reciprocal_link) {
+                as = pp_multilink->reciprocal_link->agent;
+            }
+            else {
+                assert(pp_multilink->reciprocal_multilink); // logic guarantee
+                as = pp_multilink->reciprocal_multilink->agent;
+            }
+            assert(as); // logic guarantee
+            auto sym = Symbol::get_symbol(agentvar, as);
             assert(sym); // parser / scanner guarantee
             auto av = dynamic_cast<AgentVarSymbol *> (sym);
             assert(av); // TODO possible model source code error
@@ -140,11 +149,61 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
 
         // Dependency on agentvar
         if (pp_agentvar) {
-            string rlink = pp_multilink->reciprocal_link->name;
-            CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
-            c += "// Re-evaluate multilink agentvar " + name;
-            c += "if (!" + rlink + ".is_nullptr()) " + rlink + "->" + evaluate_fn->name + "();";
-            c += "";
+            if (pp_multilink->reciprocal_link) {
+                string rlink = pp_multilink->reciprocal_link->name;
+                CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
+                c += "// Incremental update of multilink agentvar " + name;
+                c += "{";
+                c += "auto &lnk = " + rlink + ".get();";
+                c += "if (lnk.get() != nullptr) {";
+                if (func == token::TK_sum_over) {
+                    c += "lnk->" + name + ".set(lnk->" + name + " + new_value - old_value);";
+                }
+                else if (func == token::TK_min_over) {
+                    c += "auto current = lnk->" + name + ";";
+                    c += "if (new_value < current) lnk->" + name +".set(new_value);";
+                    c += "else if (old_value == current && new_value > current) lnk->" + evaluate_fn->name + "();";
+                }
+                else if (func == token::TK_max_over) {
+                    c += "auto current = lnk->" + name + ";";
+                    c += "if (new_value > current) lnk->" + name +".set(new_value);";
+                    c += "else if (old_value == current && new_value < current) lnk->" + evaluate_fn->name + "();";
+                }
+                else {
+                    assert(false); // logic guarantee
+                }
+                c += "}";
+                c += "}";
+                //c += "if (!" + rlink + ".is_nullptr()) " + rlink + "->" + evaluate_fn->name + "();";
+                c += "";
+            }
+            else {
+                assert(pp_multilink->reciprocal_multilink);
+                string rlink = pp_multilink->reciprocal_multilink->name;
+                CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
+                c += "// Incremental update of multilink agentvar " + name + " for each agent of multilink";
+                c += "for (auto &lnk : " + rlink + ".storage) {";
+                c += "if (lnk.get() != nullptr) {";
+                if (func == token::TK_sum_over) {
+                    c += "lnk->" + name + ".set(lnk->" + name + " + new_value - old_value);";
+                }
+                else if (func == token::TK_min_over) {
+                    c += "auto current = lnk->" + name + ";";
+                    c += "if (new_value < current) lnk->" + name +".set(new_value);";
+                    c += "else if (old_value == current && new_value > current) lnk->" + evaluate_fn->name + "();";
+                }
+                else if (func == token::TK_max_over) {
+                    c += "auto current = lnk->" + name + ";";
+                    c += "if (new_value > current) lnk->" + name +".set(new_value);";
+                    c += "else if (old_value == current && new_value < current) lnk->" + evaluate_fn->name + "();";
+                }
+                else {
+                    assert(false); // logic guarantee
+                }
+                c += "}";
+                c += "}";
+                c += "";
+            }
         }
     }
     break;
