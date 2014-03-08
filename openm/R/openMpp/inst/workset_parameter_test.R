@@ -1,11 +1,32 @@
 #
 # To run this test you must have modelOne database m1.sqlite in your home directory
-# It must contain run_id = 16 (see runId usage below)
+# It must contain "modelOne" model and run_id = 11 (see runId usage below)
 #
 library("openMpp")
 
 #
-# model parameters:
+# open db connection
+#
+theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
+invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
+
+# find the model: get model definition from database
+#
+# model can be found by name and (optional) timestamp
+# timestamp is used to identify exact version of the model 
+# in case of multiple versions of the model with the same name
+# if timestamp is missing or NA or NULL and database has multiple model versions
+# then min(timestamp) is used to find first version of the model
+#
+
+# get model by name: use such call if you have only one version of the model
+defRs <- getModel(theDb, "modelOne")
+
+# use model timestamp to identify exact version of the model
+defRs <- getModel(theDb, "modelOne", "_201208171604590148_")
+
+#
+# "modelOne" model parameters:
 #   age by sex parameter double[4, 2] 
 #   salary by age parameter int[3, 4]
 #
@@ -59,82 +80,90 @@ paramSetTxt <- data.frame(
   stringsAsFactors = FALSE
 )
 
-#
-# open db connection
-#
-theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
-invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
-
 # 
 # create new working set of model parameters
-#   model defined by name and (optional) timestamp
-#   if timestamp is NA or NULL then use min(timestamp)
-# workset must include ALL model parameters 
-# (or create workset based on model run results to include only some parameters)
 #
-modelName <- "modelOne"
-
-setId <- createWorkset(theDb, modelName, NA, paramSetTxt, ageSex, salaryAge)
-if (setId <= 0L) stop("workset creation failed: ", modelName)
+# workset (working set of model parameters):
+#   it can be a full set, which include all model parameters 
+#   or subset and include only some parameters
+# each model must have "default" workset:
+#   default workset is a first workset of the model: id = min(set_id)
+#   default workset always include ALL model parameters (it is a full set)
+# if workset is a subset (does not include all model parameters)
+#   then it must be based on model run results, specified by run_id
+#
 
 # create new working set of model parameters
-# use model timestamp to identify exact version of the model
+# it is a full set and includes all "modelOne" parameters: "ageSex" and "salaryAge"
 #
-modelName <- "modelOne"
-modelTs <- "_201208171604590148_"
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
+# create another workset with different description and notes in English an French
+#
 paramSetTxt$descr <- c("other set of parameters", "FR other set of parameters")
 paramSetTxt$note <- NA
 
-setId <- createWorkset(theDb, modelName, modelTs, paramSetTxt, ageSex, salaryAge)
-if (setId <= 0L) stop("workset creation failed: ", modelName, modelTs)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
 # 
 # create new working set of model parameters based on existing model run results
 #
-runId <- 16L
+# that new workset is a subset and include only one model parameter: "salaryAge"
+# it is based on existing model run with run_id = 11 
+# and the rest of model parameters (i.e.: "ageSex")  would get values from that run
+#
+runId <- 11L
 
-setId <- createWorksetBasedOnRun(theDb, runId, NA, salaryAge)
-if (setId <= 0L) stop("workset creation failed for base run id: ", runId)
+setId <- createWorksetBasedOnRun(theDb, defRs, runId, NA, salaryAge)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
 #
-# update parameters working set with new values and value notes 
-# reset read-only status of workset before the update
-# and make workset read-only after update
+# update parameters working set (set_id=3) with new values and value notes 
+#   reset read-only status of workset before the update
+#   and make workset read-only after update
 #
 setId <- 3L
-if (setReadonlyWorkset(theDb, FALSE, setId) != setId) stop("workset not found: ", setId)
+if (setReadonlyWorkset(theDb, defRs, FALSE, setId) != setId) {
+  stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+}
 
-updateWorksetParameter(theDb, setId, ageSex)
-setReadonlyWorkset(theDb, TRUE, setId)
+updateWorksetParameter(theDb, defRs, setId, ageSex)
+setReadonlyWorkset(theDb, defRs, TRUE, setId)
 
 #
 # update default working set of model parameters
-#   default workset is a first workset: id = min(set_id)
-#   model defined by name and (optional) timestamp
-#   if timestamp missing then use min(timestamp)
+#   default workset is a first workset of the model: id = min(set_id)
+#   default workset always include ALL model parameters
 #
+setId <- setReadonlyDefaultWorkset(theDb, defRs, FALSE)
+if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
-# using model name only
-modelName <- "modelOne"
+updateWorksetParameter(theDb, defRs, setId, ageSex, salaryAge)
+setReadonlyDefaultWorkset(theDb, defRs, TRUE)
 
-setId <- setReadonlyDefaultWorkset(theDb, FALSE, modelName)
-if (setId <= 0L) stop("no any worksets exists for model: ", modelName)
+# 
+# get model run results with run_id = 11
+#
+runId <- 11L
 
-updateWorksetParameter(theDb, setId, ageSex, salaryAge)
-setReadonlyDefaultWorkset(theDb, TRUE, modelName)
+# select output table expression(s) values of "salarySex" from model run results with id = 11L
+#  
+expr2_ValueRs <- selectRunOutputValue(theDb, defRs, runId, "salarySex", "Expr2")
+allExprValueRs <- selectRunOutputValue(theDb, defRs, runId, "salarySex")
 
-# using model name and timestamp
-modelName <- "modelOne"
-modelTs <- "_201208171604590148_"
+# select accumulator values of "salarySex" from model run results with id = 11L
+#  
+allAccValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex")
+acc0_ValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0")
+acc0_ValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0", 0L)
+allAccValue_sub0_Rs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", NA, 0L)
 
-setId <- setReadonlyDefaultWorkset(theDb, FALSE, modelName, modelTs)
-if (setId <= 0L) stop("no any worksets exists for model: ", modelName, modelTs)
+# select parameter "ageSex" value from model run results with id = 11L
+#  
+paramValueRs <- selectRunParameter(theDb, defRs, runId, "ageSex")
 
-updateWorksetParameter(theDb, setId, ageSex, salaryAge)
-setReadonlyDefaultWorkset(theDb, TRUE, modelName, modelTs)
-
-# get model parameters definition
-defRs <- getParameterDefs(theDb, modelName, modelTs)
-
+# release database connection
+#
 dbDisconnect(theDb)

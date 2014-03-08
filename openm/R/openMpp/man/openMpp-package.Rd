@@ -6,14 +6,14 @@
 Read and write OpenM++ database from R
 }
 \description{ 
-  At the moment this package only insert or update input parameters for OpenM++ models.
+  Set input parameters and get output results of OpenM++ models using R.
 }
 \details{
 \tabular{ll}{
 Package: \tab openMpp\cr
 Type: \tab Package\cr
-Version: \tab 0.1\cr
-Date: \tab 2013-11-20\cr
+Version: \tab 0.2\cr
+Date: \tab 2014-02-28\cr
 License: \tab MIT license\cr
 }
   \describe{
@@ -23,8 +23,23 @@ License: \tab MIT license\cr
     \item{createWorksetBasedOnRun}{
       Create new working set of model parameters based on parameters from existing model run 
     }
-    \item{updateWorksetParameter}{
-      Update parameters working set with new values and value notes
+    \item{getLanguages}{
+      Return language rows from lang_lst table
+    }
+    \item{getModel}{
+      Find OpenM++ model definition in database
+    }
+    \item{getWorksetRunIds}{
+      Return ids of model run results for specified working set
+    }
+    \item{selectRunAccumulator}{
+      Select output table accumulator values from model run result
+    }
+    \item{selectRunOutputValue}{
+      Select output table expression values from model run result
+    }
+    \item{selectRunParameter}{
+      Select parameter values from model run result
     }
     \item{setReadonlyDefaultWorkset}{
       Set or clear read-only status of default working set
@@ -32,14 +47,11 @@ License: \tab MIT license\cr
     \item{setReadonlyWorkset}{
       Set or clear read-only status for default working set of model parameters
     }
-    \item{getLanguageRs}{
-      Return language rows from lang_lst table
-    }
-    \item{getParameterDefs}{
-      Return OpenM++ model parameters definition
-    }
     \item{toQuoted}{
       Return SQL-quoted string: O'Connor -> 'O''Connor'
+    }
+    \item{updateWorksetParameter}{
+      Update parameters working set with new values and value notes
     }
   }
 }
@@ -56,12 +68,16 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 \seealso{
   \code{\link{createWorkset}}
   \code{\link{createWorksetBasedOnRun}}
-  \code{\link{updateWorksetParameter}}
+  \code{\link{getLanguages}}
+  \code{\link{getModel}}
+  \code{\link{getWorksetRunIds}}
+  \code{\link{selectRunAccumulator}}
+  \code{\link{selectRunOutputValue}}
+  \code{\link{selectRunParameter}}
   \code{\link{setReadonlyDefaultWorkset}}
   \code{\link{setReadonlyWorkset}}
-  \code{\link{getLanguageRs}}
-  \code{\link{getParameterDefs}}
   \code{\link{toQuoted}}
+  \code{\link{updateWorksetParameter}}
 }
 \examples{
 }

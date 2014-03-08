@@ -7,12 +7,15 @@ Create new working set of model parameters
 Create new working set of model parameters
 }
 \usage{
-createWorksetBasedOnRun(dbCon, baseRunId, worksetTxt, ...)
+createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
 }
 
 \arguments{
   \item{dbCon}{
     database connection
+  }
+  \item{defRs}{
+    model definition: database rows describing model input parameters and output tables
   }
   \item{baseRunId}{
     id of model run results, must be positive integer
@@ -47,8 +50,27 @@ createWorksetBasedOnRun(dbCon, baseRunId, worksetTxt, ...)
 That call allow you to create new working set of model parameters as combination of 
 existing parameters from previous model run and some new parameters passed through \dots argument(s)
 
+Workset is a working set of model parameters and can be a full set, 
+which include values of all model parameters or subset and include only some parameters.
+
+Each model must have "default" workset. 
+Default workset is a first workset of the model with set_id = min(set_id) for that model. 
+Default workset always include ALL model parameters (it is a full set).
+
+If you want to create new workset as a full set of model parameters
+then you must pass ALL model parameters into \code{createWorkset} through \dots argument list. 
+
+If you already have result of model run in your database 
+and want to modify only some input parameters (subset) then call \code{\link{createWorksetBasedOnRun}} 
+in order to create workset using parameters from previous model run and supply some new values. 
+
+You can create subset of model parameters ONLY based on existing run results. 
+Otherwise you have to pass ALL (full set) of parameters in order to create workset.
+
 Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
 after \code{createWorksetBasedOnRun}.
+
+You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
   Return id of new working set or 0L if not found
@@ -65,9 +87,11 @@ It must contain run_id = 16 (see runId usage below)
 }
 
 \seealso{
+  \code{\link{getModel}}
   \code{\link{createWorkset}}
   \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
+  \code{\link{setReadonlyDefaultWorkset}}
 }
 \examples{
   #
@@ -78,9 +102,9 @@ It must contain run_id = 16 (see runId usage below)
   
   # salary by age parameter value and notes
   salaryAge <- list(
-
+    
     name = "salaryAge",
-
+    
     txt = data.frame(
       lang = c("EN", "FR"),
       note = c("salary by age value notes", "FR salary by age value notes"),
@@ -103,18 +127,22 @@ It must contain run_id = 16 (see runId usage below)
     note = "new set of parameters with updated salary by age",
     stringsAsFactors = FALSE
   )
-
+  
   theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
-
+  
+  # get model by name: use such call if you have only one version of the model
+  defRs <- getModel(theDb, "modelOne")
+  
   #
   # pass new value for salaryAge parameter
-  # for all other parameters use previous model run with id = 16 
+  # for all other parameters use previous model run with id = 11 
   #
-  setId <- createWorksetBasedOnRun(theDb, 16L, NA, salaryAge)
-  if (setId <= 0L) stop("workset creation failed: ", modelName)
+  setId <- createWorksetBasedOnRun(theDb, defRs, 11L, NA, salaryAge)
+  if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
   
-  setReadonlyWorkset(theDb, TRUE, setId)
+  # make workset read-only in order to run the model
+  setReadonlyWorkset(theDb, defRs, TRUE, setId)
   
   dbDisconnect(theDb)
   #

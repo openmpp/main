@@ -1,20 +1,21 @@
-\name{getLanguageRs}
-\alias{getLanguageRs}
+\name{getLanguages}
+\alias{getLanguages}
 \title{
-Return language rows from lang_lst table
+Return list of languages
 }
 \description{
-Return language rows from lang_lst table
+Return list of languages: rows from lang_lst table
 }
 \usage{
-getLanguageRs(dbCon)
+getLanguages(dbCon)
 }
 \arguments{
   \item{dbCon}{
     database connection
-}
+  }
 }
 \details{
+Read from database and return data frame of language list (lang_lst) table rows.
 }
 \value{
   Data frame with $lang_id, $lang_code, $lang_name columns of lang_lst table
@@ -30,12 +31,13 @@ To run examples you must have modelOne database m1.sqlite in your home directory
 }
 
 \seealso{
+  \code{\link{getModel}}
 }
 \examples{
   theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
 
-  langRs <- getLanguageRs(theDb)
+  langRs <- getLanguages(theDb)
 
   dbDisconnect(theDb)
 }

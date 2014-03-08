@@ -7,33 +7,32 @@ Set or clear read-only status for default working set of model parameters
 Set or clear read-only status for default working set of model parameters
 }
 \usage{
-setReadonlyDefaultWorkset(dbCon, isReadonly, modelName, modelTimestamp = NULL)
+setReadonlyDefaultWorkset(dbCon, defRs, isReadonly)
 }
 \arguments{
   \item{dbCon}{
     database connection
   }
+  \item{defRs}{
+    model definition: database rows describing model input parameters and output tables
+  }
   \item{isReadonly}{
     if TRUE then mark default working set as read-only else clear read-only status
   }
-  \item{modelName}{
-    model name, ie: "modelOne"
-  }
-  \item{modelTimestamp}{
-    model timestamp, ie: "_201208171604590148_"
-    if timestamp is NA or NULL then used MIN(timestamp)
-  }
 }
 \details{
-Working set must be not read-only in order to update parameters by \code{\link{updateWorksetParameter}}.
-And working set must be read-only to run the model, so, typically you want to wrap \code{\link{updateWorksetParameter}}
+Workset must be NOT read-only in order to update parameters by \code{\link{updateWorksetParameter}}.
+And workset must be read-only to run the model, so, typically you want to wrap \code{\link{updateWorksetParameter}}
 by \code{setReadonlyDefaultWorkset} or \code{setReadonlyWorkset} calls.
 
-Default working set of model parameters is a first working set, with MIN(set_id). It always contains all model parameters.
+Workset is a working set of model parameters and can be a full set, 
+which include values of all model parameters or subset and include only some parameters.
 
-Model can be identified by by name and model timestamp string, which serves as model version. 
-If you have only one version of the model in database then you can omit timestamp argument. 
-In that case MIN(timestamp) will be used.
+Each model must have "default" workset. 
+Default workset is a first workset of the model with set_id = min(set_id) for that model. 
+Default workset always include ALL model parameters (it is a full set).
+
+You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
   Return working set id of default workset or 0L if not found
@@ -49,21 +48,27 @@ To run examples you must have modelOne database m1.sqlite in your home directory
 }
 
 \seealso{
+  \code{\link{getModel}}
   \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
 }
 \examples{
   theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
-
-  setId <- setReadonlyDefaultWorkset(theDb, FALSE, "modelOne")
-  if (setId <= 0L) stop("no any worksets exists for modelOne")
+  
+  # get model by name: use such call if you have only one version of the model
+  defRs <- getModel(theDb, "modelOne")
+  
+  # reset read-only status of default workset  
+  setId <- setReadonlyDefaultWorkset(theDb, defRs, FALSE)
+  if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
   # you can update model parameters now:
   #
-  # updateWorksetParameter(theDb, setId, ageSex, salaryAge)
+  # updateWorksetParameter(theDb, defRs, setId, ageSex, salaryAge)
   
-  setReadonlyDefaultWorkset(theDb, TRUE, "modelOne")
+  # make workset read-only in order to run the model
+  setReadonlyDefaultWorkset(theDb, defRs, TRUE)
   
   dbDisconnect(theDb)
   #

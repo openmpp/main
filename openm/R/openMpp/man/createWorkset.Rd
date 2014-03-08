@@ -7,18 +7,14 @@ Create new working set of model parameters
 Create new working set of model parameters
 }
 \usage{
-createWorkset(dbCon, modelName, modelTimestamp, worksetTxt, ...)
+createWorkset(dbCon, defRs, worksetTxt, ...)
 }
 \arguments{
   \item{dbCon}{
     database connection
   }
-  \item{modelName}{
-    model name, ie: "modelOne"
-  }
-  \item{modelTimestamp}{
-    model timestamp, ie: "_201208171604590148_"
-    if timestamp is NA or NULL then used MIN(timestamp)
+  \item{defRs}{
+    model definition: database rows describing model input parameters and output tables
   }
   \item{worksetTxt}{
     if not NA then workset text data frame:
@@ -46,17 +42,29 @@ createWorkset(dbCon, modelName, modelTimestamp, worksetTxt, ...)
   }
 }
 \details{
-Model can be identified by by name and model timestamp string, which serves as model version. 
-If you have only one version of the model in database then you can omit timestamp argument. 
-In that case MIN(timestamp) will be used.
+That call allow you to create new working set of input parameters which contains ALL model parameters.
 
-Working set must contain ALL model parameters and you must pass it to \code{createWorkset} 
-through \dots argument list. If you already have result of model run in your database 
-and want to modify only few input parameters then call \code{\link{createWorksetBasedOnRun}} 
-to create working set using parameters from previous model run and supply some new values. 
+Workset is a working set of model parameters and can be a full set, 
+which include values of all model parameters or subset and include only some parameters.
+
+Each model must have "default" workset. 
+Default workset is a first workset of the model with set_id = min(set_id) for that model. 
+Default workset always include ALL model parameters (it is a full set).
+
+If you want to create new workset as a full set of model parameters
+then you must pass ALL model parameters into \code{createWorkset} through \dots argument list. 
+
+If you already have result of model run in your database 
+and want to modify only some input parameters (subset) then call \code{\link{createWorksetBasedOnRun}} 
+in order to create workset using parameters from previous model run and supply some new values. 
+
+You can create subset of model parameters ONLY based on existing run results. 
+Otherwise you have to pass ALL (full set) of parameters in order to create workset.
 
 Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
 after \code{createWorkset}.
+
+You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
   Return id of new working set or 0L if not found
@@ -72,6 +80,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
 }
 
 \seealso{
+  \code{\link{getModel}}
   \code{\link{createWorksetBasedOnRun}}
   \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
@@ -85,9 +94,9 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   
   # age by sex parameter value and notes
   ageSex <- list(
-  
+    
     name = "ageSex",  # parameter name
-  
+    
     txt = data.frame(
       lang = c("EN", "FR"),
       note = c(
@@ -106,9 +115,9 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   
   # salary by age parameter value and notes
   salaryAge <- list(
-
+    
     name = "salaryAge",
-
+    
     txt = data.frame(
       lang = c("EN", "FR"),
       note = c("salary by age value notes", "FR salary by age value notes"),
@@ -131,14 +140,19 @@ To run examples you must have modelOne database m1.sqlite in your home directory
     note = c("full set of parameters notes", NA),
     stringsAsFactors = FALSE
   )
-
+  
   theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
-
-  setId <- createWorkset(theDb, "modelOne", NA, paramSetTxt, ageSex, salaryAge)
-  if (setId <= 0L) stop("workset creation failed: ", modelName)
   
-  setReadonlyWorkset(theDb, TRUE, setId)
+  # get model by name: use such call if you have only one version of the model
+  defRs <- getModel(theDb, "modelOne")
+  
+  # create new workset with ALL model parameters
+  setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge)
+  if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  
+  # make workset read-only in order to run the model
+  setReadonlyWorkset(theDb, defRs, TRUE, setId)
   
   dbDisconnect(theDb)
   #

@@ -1,12 +1,11 @@
 Package: openMpp
 Type: Package
 Title: Read and write OpenM++ database from R
-Version: 0.1
-Date: 2013-11-20
+Version: 0.2
+Date: 2014-02-28
 Author: amc1999
 Maintainer: amc1999 <openmpp99@gmail.com>
-Description: Set input parameters for OpenM++ model from R.
-  More functionality coming soon.
+Description: Set input parameters and get output results of OpenM++ models using R.
 Depends: RSQLite
 Imports: 
 License: MIT + file LICENSE

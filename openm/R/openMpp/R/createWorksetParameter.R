@@ -1,19 +1,16 @@
 ##
-## Copyright (c) 2013 OpenM++
+## Copyright (c) 2014 OpenM++
 ## This is a free software licensed under MIT license
 ##
 
 # 
 # Create new working set of model parameters
 # workset must include ALL model parameters 
-#   model defined by name and (optional) timestamp
-#   if timestamp is NA or NULL then use min(timestamp)
+#
 # Return set id of new workset or <= 0 on error
 #
-# dbCon - database connection
-# modelName - model name, ie: "modelOne"
-# modelTimestamp - model timestamp, ie: "_201208171604590148_"
-#   if timestamp is NA or NULL then use min(timestamp)
+# dbCon      - database connection
+# defRs      - model definition database rows
 # worksetTxt - (optional) workset text data frame:
 #   $lang - language code
 #   $descr - working set description
@@ -30,20 +27,17 @@
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createWorkset <- function(dbCon, modelName, modelTimestamp, worksetTxt, ...)
+createWorkset <- function(dbCon, defRs, worksetTxt, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
   if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
 
-  if (missing(modelName)) stop("invalid (missing) model name")
-  if (is.null(modelName)) stop("invalid or empty  model name")
-  if (is.na(modelName) || !is.character(modelName) || length(modelName) <= 0) {
-    stop("invalid or empty  model name")
-  }
-
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
   # create new workset
-  setId <- createWorksetParameter(dbCon, modelName, modelTimestamp, FALSE, NA, worksetTxt, ...)
+  setId <- createWorksetParameter(dbCon, defRs, FALSE, NA, worksetTxt, ...)
   return(setId)
 }
 
@@ -53,10 +47,12 @@ createWorkset <- function(dbCon, modelName, modelTimestamp, worksetTxt, ...)
 # created workset will be combination of:
 #   new parameters passed through ... argument(s)
 #   and existing parameters from previous model run
+#
 # Return set id of new workset or <= 0 on error
 #
-# dbCon - database connection
-# baseRunId - id of model run results
+# dbCon      - database connection
+# defRs      - model definition database rows
+# baseRunId  - id of model run results
 # worksetTxt - (optional) workset text data frame:
 #   $lang - language code
 #   $descr - working set description
@@ -73,33 +69,35 @@ createWorkset <- function(dbCon, modelName, modelTimestamp, worksetTxt, ...)
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createWorksetBasedOnRun <- function(dbCon, baseRunId, worksetTxt, ...)
+createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
   if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
 
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
   if (missing(baseRunId)) stop("invalid (missing) base run id")
   if (is.null(baseRunId)) stop("invalid (missing) base run id")
   if (is.na(baseRunId) || !is.integer(baseRunId) || baseRunId <= 0L) {
     stop("invalid (missing) base run id: ", baseRunId)
   }
 
-  # find the model by run id
+  # check if base run id is belong to the model
   runRs <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT MD.model_id, MD.model_name, MD.model_ts, RL.run_id",
-      " FROM model_dic MD",
-      " INNER JOIN run_lst RL ON (RL.model_id = MD.model_id)",
-      " WHERE RL.run_id = ", baseRunId,
+      "SELECT run_id, model_id FROM run_lst WHERE run_id = ", baseRunId,
       sep = ""
     )
   )
-  if (nrow(runRs) <= 0) stop("base run id not found: ", baseRunId)
+  if (nrow(runRs) != 1L || runRs$model_id != defRs$modelDic$model_id) {
+    stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  }
 
   # create new workset
-  setId <- createWorksetParameter(dbCon, runRs$model_name, runRs$model_ts, TRUE, baseRunId, worksetTxt, ...)
+  setId <- createWorksetParameter(dbCon, defRs, TRUE, baseRunId, worksetTxt, ...)
   return(setId)
 }
 
@@ -109,14 +107,12 @@ createWorksetBasedOnRun <- function(dbCon, baseRunId, worksetTxt, ...)
 # Create new working set of model parameters
 # return set id of new workset or <= 0 on error
 #
-# dbCon - database connection
-# modelName - model name, ie: "modelOne"
-# modelTimestamp - model timestamp, ie: "_201208171604590148_"
-#   if timestamp is NA or NULL then use min(timestamp)
+# dbCon        - database connection
+# defRs      - model definition database rows
 # i_isRunBased - if true then use base run id 
 #   else all parameters must be supplied by ... argument(s)
-# i_baseRunId - id of model run results
-# worksetTxt - (optional) workset text data frame:
+# i_baseRunId  - id of model run results
+# worksetTxt   - (optional) workset text data frame:
 #   $lang - language code
 #   $descr - working set description
 #   $note - (optional) working set notes
@@ -132,31 +128,23 @@ createWorksetBasedOnRun <- function(dbCon, baseRunId, worksetTxt, ...)
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createWorksetParameter <- function(dbCon, i_modelName, i_modelTs, i_isRunBased, i_baseRunId, worksetTxt, ...)
+createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
   if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
 
-  if (missing(i_modelName)) stop("invalid (missing) model name")
-  if (is.null(i_modelName)) stop("invalid or empty  model name")
-  if (is.na(i_modelName) || !is.character(i_modelName) || length(i_modelName) <= 0) {
-    stop("invalid or empty  model name")
-  }
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
 
   # get list of languages and validate parameters data
   wsParamLst <- list(...)
   if (length(wsParamLst) <= 0) stop("invalid (missing) workset parameters list")
   
-  langRs <- getLanguageRs(dbCon)
-
-  if (!validateParameterValueLst(langRs, wsParamLst)) return(0L)
+  if (!validateParameterValueLst(defRs$langLst, wsParamLst)) return(0L)
 
   # validate workset text
-  isAnyWsTxt <- validateWorksetTxt(langRs, worksetTxt)
-  
-  # get model parameters definition
-  defRs <- getParameterDefs(dbCon, i_modelName, i_modelTs)
+  isAnyWsTxt <- validateWorksetTxt(defRs$langLst, worksetTxt)
 
   # check if supplied parameters are in model: parameter_name in parameter_dic table
   # if all parameters required then check if ALL parameters supplied
@@ -248,7 +236,7 @@ createWorksetParameter <- function(dbCon, i_modelName, i_modelTs, i_isRunBased, 
         )
       )
       
-      # combine parameter metadata to insert value and notes
+      # combine parameter definition to insert value and notes
       paramDef <- data.frame(
         setId = setId, 
         paramId = paramRow$parameter_id, 

@@ -4,10 +4,14 @@ import(RSQLite)
 export(
   createWorkset,
   createWorksetBasedOnRun,
-  updateWorksetParameter,
+  getLanguages,
+  getModel,
+  getWorksetRunIds,
+  selectRunAccumulator,
+  selectRunOutputValue,
+  selectRunParameter,
   setReadonlyDefaultWorkset,
   setReadonlyWorkset,
-  getLanguageRs,
-  getParameterDefs,
-  toQuoted
+  toQuoted,
+  updateWorksetParameter
 )

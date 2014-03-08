@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2013 OpenM++
+## Copyright (c) 2014 OpenM++
 ## This is a free software licensed under MIT license
 ##
 
@@ -7,9 +7,10 @@
 # Update parameters working set with new values and value notes
 #   return set id of updated workset or <= 0 on error
 #
-# dbCon - database connection
+# dbCon     - database connection
+# defRs     - model definition database rows
 # worksetId - id of parameters working set
-# ... - list of parameters value and (optional) value notes
+# ...       - list of parameters value and (optional) value notes
 #   each element is also a list of $name, $value and $txt
 #   $name - parameter name (character)
 #   $value - parameter value
@@ -21,12 +22,15 @@
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-updateWorksetParameter <- function(dbCon, worksetId, ...)
+updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
   if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
 
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
   if (missing(worksetId)) stop("invalid (missing) workset id")
   if (is.null(worksetId) || is.na(worksetId) || !is.integer(worksetId)) stop("invalid or empty workset id")
   if (worksetId <= 0L) stop("workset id must be positive: ", worksetId)
@@ -35,9 +39,7 @@ updateWorksetParameter <- function(dbCon, worksetId, ...)
   wsParamLst <- list(...)
   if (length(wsParamLst) <= 0) stop("invalid (missing) workset parameters list")
 
-  langRs <- getLanguageRs(dbCon)
-
-  if (!validateParameterValueLst(langRs, wsParamLst)) return(0L)
+  if (!validateParameterValueLst(defRs$langLst, wsParamLst)) return(0L)
 
   # execute in transaction scope
   isTrxCompleted <- FALSE;
@@ -45,14 +47,11 @@ updateWorksetParameter <- function(dbCon, worksetId, ...)
     dbBeginTransaction(dbCon)
     
     # find model by workset id, it must not be readonly workset
-    setRs <- lockWorksetUsingReadonly(dbCon, TRUE, worksetId, "", FALSE, "", TRUE, -1L)
+    setRs <- lockWorksetUsingReadonly(dbCon, defRs, TRUE, worksetId, TRUE, -1L)
     if (setRs$is_readonly != -1L) {
       stop("workset is read-only (or invalid): ", worksetId)
     }
     
-    # get model parameters definition
-    defRs <- getParameterDefs(dbCon, setRs$model_name, setRs$model_ts)
-
     # check if supplied parameters are in model: parameter_name in parameter_dic table
     # check if supplied parameters are in workset: parameter_id in workset_parameter table
     setParamRs <- dbGetQuery(
@@ -84,7 +83,7 @@ updateWorksetParameter <- function(dbCon, worksetId, ...)
       # get parameter row
       paramRow <- defRs$paramDic[which(defRs$paramDic$parameter_name == wsParam$name), ]
       
-      # combine parameter metadata to insert value and notes
+      # combine parameter definition to insert value and notes
       paramDef <- data.frame(
         setId = worksetId, 
         paramId = paramRow$parameter_id, 
@@ -268,6 +267,12 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
   # INSERT INTO param_tbl (set_id, dim0, dim1, value) 
   # VALUES (1234, :dim0, :dim1, :value)
   #
+  sqlDel <-
+    paste(
+      "DELETE FROM ", i_paramDef$paramTableName, 
+      " WHERE set_id = ", i_paramDef$setId,
+      sep = ""
+    )
   sqlIns <-
     ifelse(isScalar,
       paste(
@@ -287,12 +292,6 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
         " :value)",
         sep = ""
       )
-    )
-  sqlDel <-
-    paste(
-      "DELETE FROM ", i_paramDef$paramTableName, 
-      " WHERE set_id = ", i_paramDef$setId,
-      sep = ""
     )
 
   # execute delete and insert
