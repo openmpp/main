@@ -210,9 +210,6 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
     }
     sql += ")";
 
-    // begin update transaction
-    i_dbExec->beginTransaction();
-
     // set parameters type: dimensions and accumulators value
     vector<const type_info *> tv;
     for (int nDim = 0; nDim < dimCount; nDim++) {
@@ -223,6 +220,9 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
         tv.push_back(&typeid(double));
     }
     
+    // begin update transaction
+    i_dbExec->beginTransaction();
+
     // prepare statement
     {
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);

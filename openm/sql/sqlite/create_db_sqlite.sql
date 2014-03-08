@@ -1,4 +1,4 @@
---
+﻿--
 -- Copyright (c) 2013 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS run_option
 );
 
 -- 
--- Types dictionary for model partameters
+-- Types dictionary for model parameters
 -- 
 CREATE TABLE IF NOT EXISTS type_dic
 (
@@ -292,10 +292,16 @@ CREATE TABLE IF NOT EXISTS parameter_dims
 );
 
 --
--- Working set: 
--- full set or subset of model input parameters, editable or read-only
--- if this is subset then it must be based on specified run id (not NULL)
+-- Working set (workset): 
+--   working set is a full set or subset of values for model input parameters
+--   if this is a subset (not a full set) then it must be based on specified run id (not NULL)
+-- each model must have "default" workset
+--   default workset must include ALL model parameters (it is a full set)
+--   default workset is where set_id = min(set_id) for that model_id
 -- working set id must be different from run id (use id_lst to get it)
+-- working set can be editable or read-only
+--   always update parameter values inside of transaction
+--   before actual value update do is_readonly = is_readonly + 1 to lock workset
 --
 CREATE TABLE IF NOT EXISTS workset_lst
 (
