@@ -39,6 +39,8 @@
 // using freeware implementation of dirent.h for VisualStudio because MS stop including it
 // it must be replaced with std::filesystem as soon it comes into std
 #ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #include <Windows.h>
     #include "dirent/dirent.h"
 #else
     #include <dirent.h>
@@ -337,7 +339,7 @@ list<string> listSourceFiles(const string & i_srcPath)
 {
     using namespace openm;
     list<string> nameLst;
-
+    
     // open source directory or current directory if source path is empty
     string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
     DIR * dir = opendir(srcPath.c_str());
@@ -359,7 +361,7 @@ list<string> listSourceFiles(const string & i_srcPath)
         closedir(dir);  // close directory on error
         throw;
     }
-
+    
     // sort source files in alphabetical order for reproducibility
     nameLst.sort();
     return nameLst;

@@ -81,14 +81,31 @@ SELECT
 FROM id_lst RSL 
 WHERE RSL.id_key = 'run_set';
 
+INSERT INTO workset_parameter 
+  (set_id, model_id, parameter_id) 
+SELECT
+  RSL.id_value,
+  (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  1
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
 --
 -- default values for all input parameters
 --
 INSERT INTO ${OM_MODEL_PREFIX}w0_MortalityHazard
-  (set_id, Value) 
+  (set_id, value) 
 SELECT
   RSL.id_value, 
   0.014
+FROM id_lst RSL 
+WHERE RSL.id_key = 'run_set';
+
+INSERT INTO ${OM_MODEL_PREFIX}w1_StartingPopulationSize
+  (set_id, value) 
+SELECT
+  RSL.id_value, 
+  100
 FROM id_lst RSL 
 WHERE RSL.id_key = 'run_set';
 

@@ -85,7 +85,7 @@ WHERE RSL.id_key = 'run_set';
 -- default values for all input parameters
 --
 INSERT INTO ${OM_MODEL_PREFIX}w0_MortalityHazard
-  (set_id, Value) 
+  (set_id, value) 
 SELECT
   RSL.id_value, 
   0.014

@@ -42,10 +42,10 @@ namespace openm
     extern void toUpper(char * io_str);
 
     /** case neutral string comparison */
-    extern int compareNoCase(const char * i_left, const char * i_right, int i_length = 0);
+    extern int compareNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
 
     /** case neutral string equal comparison */
-    extern bool equalNoCase(const char * i_left, const char * i_right, int i_length = 0);
+    extern bool equalNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
 
     /** check if string end with i_end, using case neutral string comparison */
     extern bool endWithNoCase(const string & i_str, const char * i_end);

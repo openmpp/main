@@ -54,7 +54,7 @@ void openm::toUpper(char * io_str)
 }
 
 // case neutral string comparison
-int openm::compareNoCase(const char * i_left, const char * i_right, int i_length)
+int openm::compareNoCase(const char * i_left, const char * i_right, size_t i_length)
 {
     return (i_length <= 0) ?
         strcmpNoCase(i_left != NULL ? i_left : "", i_right != NULL ? i_right : "") :
@@ -62,7 +62,7 @@ int openm::compareNoCase(const char * i_left, const char * i_right, int i_length
 }
 
 // case neutral string equal comparison
-bool openm::equalNoCase(const char * i_left, const char * i_right, int i_length)
+bool openm::equalNoCase(const char * i_left, const char * i_right, size_t i_length)
 {
     return compareNoCase(i_left, i_right, i_length) == 0;
 }
