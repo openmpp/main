@@ -280,7 +280,7 @@ for (my $parm_id=0; $parm_id<=$#parm_name; $parm_id++) {
         else {
             $parm_value = $default_value;
         }
-	    print INSERT_PARAM_SQL "INSERT INTO ${parm_value_table} (set_id, ${dim_list}Value) VALUES (${set_id}, ${index_list}${parm_value});", "\n";
+	    print INSERT_PARAM_SQL "INSERT INTO ${parm_value_table} (set_id, ${dim_list}value) VALUES (${set_id}, ${index_list}${parm_value});", "\n";
 
         if ( $cell < $cells-1) {
             # more cells to come, so increment the @indices tuple
