@@ -13,67 +13,50 @@
       <UniqueIdentifier>{082983d8-b8b7-4726-87c5-4b43c5700182}</UniqueIdentifier>
       <Extensions>scex;dat</Extensions>
     </Filter>
-    <Filter Include="SqlScript">
-      <UniqueIdentifier>{1c64e892-d070-4b8d-ac88-e35c4322e461}</UniqueIdentifier>
-      <Extensions>sql</Extensions>
-    </Filter>
     <Filter Include="OmcOutput">
       <UniqueIdentifier>{cde252cf-1ec2-45f3-9e90-96803cd7895a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  
   <ItemGroup>
-    <ClInclude Include="..\include\omc\Agent.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\AgentVar.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\Event.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Event.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="Happiness.mpp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Alpha2.mpp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\omc\Range.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Range.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\omSimulation.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\build\Alpha2\src\om_types0.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="..\build\Alpha2\src\om_types1.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\omc\Partition.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Partition.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\Classification.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Classification.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\less_deref.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/less_deref.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\integer_counter.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/integer_counter.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\tailed_forward_list.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/tailed_forward_list.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\link.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/link.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\Multilink.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Multilink.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
   </ItemGroup>
+  
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
       <Filter>OmcOutput</Filter>
@@ -81,32 +64,40 @@
     <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp">
       <Filter>OmcOutput</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
+      <Filter>OmcOutput</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h">
+      <Filter>OmcOutput</Filter>
+    </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
   </ItemGroup>
+
+  
   <ItemGroup>
-    <SqlScript Include="$(OMC_OUT_DIR)/Alpha2_create_model.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
-    <SqlScript Include="$(OMC_OUT_DIR)/Alpha2_optional_views.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
+    <ClInclude Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extensions.ompp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Happiness.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StartSimulation.ompp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SyntaxProbes.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestLinks.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="StartSimulation.ompp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="SyntaxProbes.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="Extensions.ompp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="TestLinks.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-  </ItemGroup>
+  
 </Project>

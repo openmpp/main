@@ -13,24 +13,12 @@
       <UniqueIdentifier>{082983d8-b8b7-4726-87c5-4b43c5700182}</UniqueIdentifier>
       <Extensions>scex;dat</Extensions>
     </Filter>
-    <Filter Include="SqlScript">
-      <UniqueIdentifier>{1c64e892-d070-4b8d-ac88-e35c4322e461}</UniqueIdentifier>
-      <Extensions>sql</Extensions>
-    </Filter>
     <Filter Include="OmcOutput">
       <UniqueIdentifier>{cde252cf-1ec2-45f3-9e90-96803cd7895a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  
   <ItemGroup>
-    <ClInclude Include="..\include\omc\Agent.h">
-      <Filter>C++ Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\omc\AgentVar.h">
-      <Filter>C++ Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\omc\Event.h">
-      <Filter>C++ Files</Filter>
-    </ClInclude>
     <ClInclude Include="Happiness.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
@@ -40,13 +28,32 @@
     <ClInclude Include="Alpha1.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\Range.h">
-      <Filter>C++ Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\omc\Partition.h">
-      <Filter>C++ Files</Filter>
+    <ClInclude Include="StartSimulation.ompp">
+      <Filter>Model Source Files</Filter>
     </ClInclude>
   </ItemGroup>
+  
+    <ItemGroup>
+    <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_INC_DIR)/omc/Event.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_INC_DIR)/omc/Range.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_INC_DIR)/omc/Partition.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
+  </ItemGroup>
+
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
       <Filter>OmcOutput</Filter>
@@ -62,18 +69,5 @@
     <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_create_model.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
-    <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_optional_views.sql">
-      <Filter>SqlScript</Filter>
-    </SqlScript>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="StartSimulation.ompp">
-      <Filter>Model Source Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

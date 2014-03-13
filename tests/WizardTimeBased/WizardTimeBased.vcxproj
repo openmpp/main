@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{93DE9507-8699-4BB8-A568-7F36C2F80D35}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>WizardTimeBased</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  
+  <!-- Import common openM models project settings -->
+  <Import Project="$(SolutionDir)../model.1.build.props" />
+  <Import Project="$(SolutionDir)../model.2.cpp.props" />
+  
+  <ItemGroup>
+    <ClInclude Include="PersonCore.mpp" />
+    <ClInclude Include="WizardTimeBased.mpp" />
+    <ClInclude Include="StartSimulation.ompp" />
+    <ClInclude Include="TickerCore.mpp" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
+    <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h" />
+    <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h" />
+    <ClInclude Include="$(OM_INC_DIR)/omc/Event.h" />
+    <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h" />
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h" />
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardTimeBased_create_model.sql" />
+    <SqlScript Include="$(OMC_OUT_DIR)/WizardTimeBased_optional_views.sql" />
+  </ItemGroup>
+  
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  
+  <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
+    <Message Text="Delete omc compiler output" />
+    <RemoveDir Directories="$(OMC_OUT_DIR)" />
+  </Target>
+  
+  <Target Name="OmcCompile" BeforeTargets="PrepareForBuild" 
+    Inputs="PersonCore.mpp;WizardTimeBased.mpp;StartSimulation.ompp;TickerCore.mpp" 
+    Outputs="$(OMC_OUT_DIR)/om_declarations.h;$(OMC_OUT_DIR)/om_types0.h;$(OMC_OUT_DIR)/om_types1.h;$(OMC_OUT_DIR)/om_definitions.cpp;$(OMC_OUT_DIR)/om_developer.cpp;@(SqlScript)"
+    >
+    <MakeDir Directories="$(OMC_OUT_DIR)" />
+    <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
+    <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
+    <ItemGroup>
+      <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
+    </ItemGroup>
+    <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(OutDir)" />
+  </Target>
+  
+</Project>

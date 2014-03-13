@@ -66,59 +66,61 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
+  
   <PropertyGroup>
     <BUILD_OMC_SRC_DIR>$(BUILD_DIR)/$(ProjectName)/src</BUILD_OMC_SRC_DIR>
-    <OutDir>$(SolutionDir)$(Configuration)/$(Platform)/</OutDir>
-    <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <OutDir>$(OM_BIN_DIR)/</OutDir>
+    <TargetName>omc</TargetName>
   </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>omc</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>omc</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>omc</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>omc</TargetName>
   </PropertyGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OM_INC_DIR);$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OM_LIB_DIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OM_INC_DIR);$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OM_LIB_DIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -127,17 +129,18 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OM_INC_DIR);$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OM_LIB_DIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -146,21 +149,22 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OM_INC_DIR);$(SolutionDir)include;$(ProjectDir);$(BUILD_OMC_SRC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\$(Platform);</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OM_LIB_DIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemGroup>
-    <ClInclude Include="..\include\libopenm\db\metaModelHolder.h" />
-    <ClInclude Include="..\include\libopenm\db\modelBuilder.h" />
-    <ClInclude Include="..\include\libopenm\omCommon.h" />
+    <ClInclude Include="$(OM_INC_DIR)/libopenm/db/metaModelHolder.h" />
+    <ClInclude Include="$(OM_INC_DIR)/libopenm/db/modelBuilder.h" />
+    <ClInclude Include="$(OM_INC_DIR)/libopenm/omCommon.h" />
     <ClInclude Include="AgentDataMemberSymbol.h" />
     <ClInclude Include="AgentEventSymbol.h" />
     <ClInclude Include="AgentFuncSymbol.h" />
@@ -271,20 +275,26 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  
   <Target Name="CleanBisonFlex" BeforeTargets="PrepareForClean">
     <Message Text="Delete flex and bison output" />
     <RemoveDir Directories="$(BUILD_OMC_SRC_DIR)" />
   </Target>
+  
   <Target Name="MakeDirBisonFlex">
     <MakeDir Directories="$(BUILD_OMC_SRC_DIR)" />
   </Target>
+  
   <Target Name="DoFlex" DependsOnTargets="MakeDirBisonFlex" Inputs="scanner.l" Outputs="$(BUILD_OMC_SRC_DIR)/scanner.cpp">
-    <Message Text="$(WIN_BIN)/$(FLEX_EXE) scanner.l" />
-    <Exec Command="$(WIN_BIN)/$(FLEX_EXE) -Cem --wincompat -o $(BUILD_OMC_SRC_DIR)/scanner.cpp scanner.l" />
+    <Message Text="$(BISON_FLEX_DIR)/$(FLEX_EXE) scanner.l" />
+    <Exec Command="$(BISON_FLEX_DIR)/$(FLEX_EXE) -Cem --wincompat -o $(BUILD_OMC_SRC_DIR)/scanner.cpp scanner.l" />
   </Target>
+  
   <Target Name="DoBison" DependsOnTargets="MakeDirBisonFlex" Inputs="parser.y" Outputs="$(BUILD_OMC_SRC_DIR)/location.hh;$(BUILD_OMC_SRC_DIR)/parser.cpp;$(BUILD_OMC_SRC_DIR)/parser.hpp;$(BUILD_OMC_SRC_DIR)/position.hh;$(BUILD_OMC_SRC_DIR)/stack.hh">
-    <Message Text="$(WIN_BIN)/$(BISON_EXE) parser.y" />
-    <Exec Command="$(WIN_BIN)/$(BISON_EXE) -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
+    <Message Text="$(BISON_FLEX_DIR)/$(BISON_EXE) parser.y" />
+    <Exec Command="$(BISON_FLEX_DIR)/$(BISON_EXE) -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
   </Target>
+  
   <Target Name="BisonFlex" BeforeTargets="BeforeClCompile" DependsOnTargets="DoFlex;DoBison" />
+  
 </Project>

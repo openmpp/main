@@ -2,24 +2,15 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
-  Use this to specify additional build directories and tools, such as bison and flex
+  Use this to specify additional openM directories and tools, such as omc.exe
   -->
   <PropertyGroup>
-    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../include</OM_INC_DIR>
-    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../bin</OM_BIN_DIR>
-    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../lib/$(Platform)</OM_LIB_DIR>
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../../include</OM_INC_DIR>
+    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../../bin</OM_BIN_DIR>
+    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../lib/$(Platform)</OM_LIB_DIR>
     <BUILD_DIR>$(SolutionDir)../build</BUILD_DIR>
-    <BISON_FLEX_DIR Condition="'$(BISON_FLEX_DIR)'==''">$(SolutionDir)../bin</BISON_FLEX_DIR>
-    <BISON_EXE>win_bison.exe</BISON_EXE>
-    <FLEX_EXE>win_flex.exe</FLEX_EXE>
+    <OMC_OUT_DIR>$(BUILD_DIR)/$(ProjectName)/src</OMC_OUT_DIR>
     <OMC_EXE>omc.exe</OMC_EXE>
-  </PropertyGroup>
-
-  <!-- 
-  Override VS default properties
-  -->
-  <PropertyGroup>
-    <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
   
   <!-- 
@@ -32,9 +23,9 @@
 
   <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
     <OM_DB_DEF>OM_DB_SQLITE</OM_DB_DEF>
-    <OM_DB_INC>$(SolutionDir)libsqlite</OM_DB_INC>
+    <OM_DB_INC>$(OM_INC_DIR)/libsqlite</OM_DB_INC>
     <OM_DB_LIB>libsqlite.lib</OM_DB_LIB>
-    <OM_DB_LIB_DIR></OM_DB_LIB_DIR>
+    <OM_DB_LIB_DIR>$(OM_LIB_DIR)</OM_DB_LIB_DIR>
   </PropertyGroup>
 
   <!-- 

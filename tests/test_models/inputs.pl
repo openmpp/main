@@ -29,7 +29,7 @@ my $model_name = $ARGV[0];
 my $sqlite_exe = "../../bin/sqlite3.exe";
 
 # sql source to create fresh database
-my $create_db_sql = "../sql/sqlite/create_db_sqlite.sql";
+my $create_db_sql = "../../sql/sqlite/create_db_sqlite.sql";
 
 # model database
 my $model_db = $model_name . ".sqlite";

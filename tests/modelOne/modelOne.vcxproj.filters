@@ -31,4 +31,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="modelOne_create_model_sqlite.sql">
+      <Filter>SqlScript</Filter>
+    </None>
+    <None Include="modelOne_insert_param_sqlite.sql">
+      <Filter>SqlScript</Filter>
+    </None>
+    <None Include="modelOne_optional_views_sqlite.sql">
+      <Filter>SqlScript</Filter>
+    </None>
+  </ItemGroup>
 </Project>

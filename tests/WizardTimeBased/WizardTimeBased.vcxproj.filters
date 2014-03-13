@@ -23,9 +23,6 @@
     <Filter Include="OmcOutput">
       <UniqueIdentifier>{41dc53e1-737e-48b3-9886-481334d7443b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SqlScripts">
-      <UniqueIdentifier>{980b9fa7-f891-49b8-8db4-013a19403c0f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
@@ -48,31 +45,19 @@
     <ClInclude Include="WizardTimeBased.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\AgentVar.h">
-      <Filter>Header Files\omc</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\omc\Agent.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
       <Filter>Header Files\omc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\Event.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h">
       <Filter>Header Files\omc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\omc\omSimulation.h">
+    <ClInclude Include="$(OM_INC_DIR)/omc/Event.h">
       <Filter>Header Files\omc</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <SqlScript Include="$(OMC_OUT_DIR)/WizardTimeBased_create_model.sql" />
-    <SqlScript Include="$(OMC_OUT_DIR)/WizardTimeBased_optional_views.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="StartSimulation.ompp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="TickerCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
+    <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h">
+      <Filter>Header Files\omc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
