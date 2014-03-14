@@ -3,32 +3,38 @@ CC = gcc
 CPP = $(CC)
 AR = ar
 
-# recognize dependency files
-SUFFIXES += .d
+ifndef BUILD_DIR
+  BUILD_DIR = ../../build
+endif
 
-BUILD_DIR = ../build
-OUT_PREFIX = ..
+ifndef OUT_PREFIX
+  OUT_PREFIX = ../..
+endif
 
-# INCLUDE_DIR = .
-DEPS_DIR = $(BUILD_DIR)/libsqlite/deps
+BUILD_PROJ_DIR = $(BUILD_DIR)/libsqlite
+DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
-  OBJ_DIR = $(BUILD_DIR)/libsqlite/debug
-  OUT_DIR = $(OUT_PREFIX)/lib/debug
+  OUT_DIR = $(OUT_PREFIX)/lib
+  OBJ_DIR = $(BUILD_PROJ_DIR)/debug
+#  OUT_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
-  OBJ_DIR = $(BUILD_DIR)/libsqlite/release
-  OUT_DIR = $(OUT_PREFIX)/lib/release
+  OUT_DIR = $(OUT_PREFIX)/lib
+  OBJ_DIR = $(BUILD_PROJ_DIR)/release
+#  OUT_DIR = $(OUT_PREFIX)/lib/release
 endif
 
-ifndef OM_DB_DEF
-  OM_DB_DEF = OM_DB_SQLITE
-endif
+# libsqlite specific
+OM_DB_DEF = OM_DB_SQLITE
 
 ifndef OM_UCVT_DEF
   OM_UCVT_DEF = OM_UCVT_ICONV
 endif
+
+# recognize dependency files
+SUFFIXES += .d
 
 CXXFLAGS = -Wall -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD_EXTENSION $(BD_CFLAGS)
 CCFLAGS = $(CXXFLAGS)
@@ -64,15 +70,14 @@ $(OUT_DIR)/$(LIBSQLITE_A) : $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_DIR)/*.a
+	rm -f $(OUT_DIR)/libsqlite.a
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
-	rm -f $(DEPS_DIR)/*
-	rm -f $(OBJ_DIR)/*
-	rm -rf $(OUT_DIR)
+	rm -rf $(BUILD_PROJ_DIR)
+	# rm -rf $(OUT_DIR)
 
 .PHONY: prepare
 prepare:

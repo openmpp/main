@@ -9,29 +9,39 @@ ifndef FLEX
   FLEX = flex
 endif
 
-# recognize dependency files
-SUFFIXES += .d
+ifndef BUILD_DIR
+  BUILD_DIR = ../../build
+endif
 
-BUILD_DIR = ../build
-OUT_PREFIX = ..
+ifndef OUT_PREFIX
+  OUT_PREFIX = ../..
+endif
 
-INCLUDE_DIR = ../include
-OMC_BUILD_DIR = $(BUILD_DIR)/omc
-DEPS_DIR = $(OMC_BUILD_DIR)/deps
-BUILD_SRC_DIR = $(OMC_BUILD_DIR)/src
-LIB_OMC_A = libopenm_omc_db.a
+BUILD_PROJ_DIR = $(BUILD_DIR)/omc
+DEPS_DIR = $(BUILD_PROJ_DIR)/deps
+BUILD_SRC_DIR = $(BUILD_PROJ_DIR)/src
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
-  OBJ_DIR = $(OMC_BUILD_DIR)/debug
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin/debug
-  OUT_LIB_DIR = $(OUT_PREFIX)/lib/debug
+  OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  OUT_LIB_DIR = $(OUT_PREFIX)/lib
+  OBJ_DIR = $(BUILD_PROJ_DIR)/debug
+#  OUT_BIN_DIR = $(OUT_PREFIX)/bin/debug
+#  OUT_LIB_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
-  OBJ_DIR = $(OMC_BUILD_DIR)/release
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin/release
-  OUT_LIB_DIR = $(OUT_PREFIX)/lib/release
+  OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  OUT_LIB_DIR = $(OUT_PREFIX)/lib
+  OBJ_DIR = $(BUILD_PROJ_DIR)/release
+#  OUT_BIN_DIR = $(OUT_PREFIX)/bin/release
+#  OUT_LIB_DIR = $(OUT_PREFIX)/lib/release
 endif
+
+INCLUDE_DIR = ../../include
+LIB_OMC_A = libopenm_omc_db.a
+
+# recognize dependency files
+SUFFIXES += .d
 
 CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
@@ -132,10 +142,12 @@ clean:
 	rm -f $(OUT_BIN_DIR)/$(OMC_EXE)
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
+	rm -f $(BUILD_SRC_DIR)/*
 
 .PHONY: cleanall
 cleanall: clean
-	rm -rf $(OMC_BUILD_DIR)
+	rm -rf $(BUILD_PROJ_DIR)
+	# rm -rf $(OUT_BIN_DIR)
 
 .PHONY: prepare
 prepare:

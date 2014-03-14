@@ -10,25 +10,31 @@ endif
 CPP = $(CC)
 AR = ar
 
-# recognize dependency files
-SUFFIXES += .d
+ifndef BUILD_DIR
+  BUILD_DIR = ../../build
+endif
 
-BUILD_DIR = ../build
-OUT_PREFIX = ..
+ifndef OUT_PREFIX
+  OUT_PREFIX = ../..
+endif
 
-INCLUDE_G_DIR = ../include
-INCLUDE_L_DIR = include
-DEPS_DIR = $(BUILD_DIR)/libopenm/deps
+BUILD_PROJ_DIR = $(BUILD_DIR)/libopenm
+DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
-  OBJ_DIR = $(BUILD_DIR)/libopenm/debug
-  OUT_DIR = $(OUT_PREFIX)/lib/debug
+  OUT_DIR = $(OUT_PREFIX)/lib
+  OBJ_DIR = $(BUILD_PROJ_DIR)/debug
+#  OUT_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
-  OBJ_DIR = $(BUILD_DIR)/libopenm/release
-  OUT_DIR = $(OUT_PREFIX)/lib/release
+  OUT_DIR = $(OUT_PREFIX)/lib
+  OBJ_DIR = $(BUILD_PROJ_DIR)/release
+#  OUT_DIR = $(OUT_PREFIX)/lib/release
 endif
+
+INCLUDE_G_DIR = ../../include
+INCLUDE_L_DIR = include
 
 ifndef OM_DB_DEF
   OM_DB_DEF = OM_DB_SQLITE
@@ -38,6 +44,9 @@ endif
 ifndef OM_UCVT_DEF
   OM_UCVT_DEF = OM_UCVT_ICONV
 endif
+
+# recognize dependency files
+SUFFIXES += .d
 
 CXXFLAGS = -Wall -std=c++11 -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) -D_REENTRANT \
   -I$(INCLUDE_G_DIR) -I$(INCLUDE_L_DIR) $(OM_DB_CFLAGS) $(BD_CFLAGS)
@@ -159,15 +168,15 @@ $(OUT_DIR)/$(LIB_OMC_A) : $(OMC_OBJS)
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_DIR)/*.a
+	rm -f $(OUT_DIR)/$(LIBOPENM_A)
+	rm -f $(OUT_DIR)/$(LIB_OMC_A)
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
-	rm -f $(DEPS_DIR)/*
-	rm -f $(OBJ_DIR)/*
-	rm -rf $(OUT_DIR)
+	rm -rf $(BUILD_PROJ_DIR)
+	# rm -rf $(OUT_DIR)
 
 .PHONY: prepare
 prepare:

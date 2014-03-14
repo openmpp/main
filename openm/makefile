@@ -1,14 +1,15 @@
-BUILD_DIR = ./build
-OUT_PREFIX = .
+ifndef BUILD_DIR
+  BUILD_DIR = ../build
+endif
+
+ifndef OUT_PREFIX
+  OUT_PREFIX = ..
+endif
 
 LIBSQLITE_DIR = libsqlite
 LIBOPENM_DIR = libopenm
 OMC_DIR = omc
-MODEL_ONE_DIR = modelOne
-MODEL_WCB_DIR = wizardCaseBased
-MODEL_WTB_DIR = WizardTimeBased
-MODEL_A1_DIR = Alpha1
-MODEL_A2_DIR = Alpha2
+OMC_EXE = omc
 
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
@@ -23,7 +24,6 @@ endif
 
 .PHONY : all
 all: prepare libsqlite libopenm omc
-# all: prepare libsqlite libopenm model_one omc model_wcb model_wtb model_alpha1 model_alpha2
 
 libsqlite: prepare
 	$(MAKE) -C $(LIBSQLITE_DIR) 
@@ -37,21 +37,6 @@ lib_omc: prepare
 omc: lib_omc
 	$(MAKE) -C $(OMC_DIR) 
 
-model_one: libopenm
-	$(MAKE) -C $(MODEL_ONE_DIR) model
-
-model_wcb: libopenm omc
-	$(MAKE) -C $(MODEL_WCB_DIR) model
-    
-model_wtb: libopenm omc
-	$(MAKE) -C $(MODEL_WTB_DIR) model
-    
-model_alpha1: libopenm omc
-	$(MAKE) -C $(MODEL_A1_DIR) model
-    
-model_alpha2: libopenm omc
-	$(MAKE) -C $(MODEL_A2_DIR) model
-    
 .PHONY : prepare
 prepare:
 	@if [ ! -d $(BUILD_DIR) ] ; then mkdir -p $(BUILD_DIR) ; fi
@@ -59,18 +44,12 @@ prepare:
 
 .PHONY : clean
 clean:
-	$(MAKE) -C $(MODEL_A2_DIR) clean
-	$(MAKE) -C $(MODEL_A1_DIR) clean
-	$(MAKE) -C $(MODEL_WTB_DIR) clean
-	$(MAKE) -C $(MODEL_WCB_DIR) clean
-	$(MAKE) -C $(MODEL_ONE_DIR) clean
 	$(MAKE) -C $(OMC_DIR) clean
 	$(MAKE) -C $(LIBOPENM_DIR) clean
 	$(MAKE) -C $(LIBSQLITE_DIR) clean
 
 .PHONY : cleanall
 cleanall:
-	rm -rf $(OUT_PREFIX)/bin
+	$(MAKE) -C $(OMC_DIR) cleanall
 	rm -rf $(OUT_PREFIX)/lib
 	rm -rf $(BUILD_DIR)
-

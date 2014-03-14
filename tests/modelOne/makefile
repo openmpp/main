@@ -10,28 +10,37 @@ endif
 CPP = $(CC)
 AR = ar
 
-# recognize dependency files
-SUFFIXES += .d
+ifndef BUILD_DIR
+  BUILD_DIR = ../build
+endif
 
-BUILD_DIR = ../build
-OUT_PREFIX = ..
-INCLUDE_DIR = ../include
+ifndef OUT_PREFIX
+  OUT_PREFIX = ..
+endif
+
+ifndef OM_INC_DIR
+  OM_INC_DIR = ../../include
+endif
+
+ifndef OM_BIN_DIR
+  OM_BIN_DIR = ../../bin
+endif
+
+ifndef OM_LIB_DIR
+  OM_LIB_DIR = ../../lib
+endif
+
 MODEL_BUILD_DIR = $(BUILD_DIR)/modelOne
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
-
-LIBOPENM_A = libopenm.a
-LIBSQLITE_A = libsqlite.a
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug
   OUT_BIN_DIR = $(OUT_PREFIX)/bin/debug
-  OUT_LIB_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
   OBJ_DIR = $(MODEL_BUILD_DIR)/release
   OUT_BIN_DIR = $(OUT_PREFIX)/bin/release
-  OUT_LIB_DIR = $(OUT_PREFIX)/lib/release
 endif
 
 ifndef OM_DB_LIB
@@ -39,7 +48,13 @@ ifndef OM_DB_LIB
   OM_DB_LIB = sqlite
 endif
 
-CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(INCLUDE_DIR) $(BD_CFLAGS)
+LIBOPENM_A = libopenm.a
+LIBSQLITE_A = libsqlite.a
+
+# recognize dependency files
+SUFFIXES += .d
+
+CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 MODEL_EXE = modelOne
@@ -72,8 +87,8 @@ $(DEPS_DIR)/%.d : %.cpp
 $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
-$(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIBOPENM_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OUT_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
+$(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
+	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
 .PHONY : model_sql
 model_sql:
