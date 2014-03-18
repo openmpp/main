@@ -30,26 +30,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\libopenm\omCommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\metaModelHolder.h">
-      <Filter>Header Files\db</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\modelBuilder.h">
-      <Filter>Header Files\db</Filter>
-    </ClInclude>
     <ClInclude Include="include\modelSqlBuilder.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
     <ClInclude Include="common\log.h">
       <Filter>Source Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\dbCommon.h">
-      <Filter>Header Files\db</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\dbMetaRow.h">
-      <Filter>Header Files\db</Filter>
     </ClInclude>
     <ClInclude Include="include\modelInsertSql.h">
       <Filter>Source Files\include</Filter>
@@ -57,14 +42,29 @@
     <ClInclude Include="include\modelAggregationSql.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\common\argReader.h">
+    <ClInclude Include="..\..\include\libopenm\common\argReader.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\common\omHelper.h">
+    <ClInclude Include="..\..\include\libopenm\common\omFile.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\common\omFile.h">
+    <ClInclude Include="..\..\include\libopenm\common\omHelper.h">
       <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\db\dbCommon.h">
+      <Filter>Header Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h">
+      <Filter>Header Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\db\metaModelHolder.h">
+      <Filter>Header Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\db\modelBuilder.h">
+      <Filter>Header Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\omCommon.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

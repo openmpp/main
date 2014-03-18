@@ -67,14 +67,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-  
+
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
-  
+
   <PropertyGroup>
     <OutDir>$(OM_LIB_DIR)/</OutDir>
   </PropertyGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -89,7 +88,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -104,7 +103,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -123,7 +122,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  
+
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -142,16 +141,16 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  
+
   <ItemGroup>
-    <ClInclude Include="..\include\libopenm\common\argReader.h" />
-    <ClInclude Include="..\include\libopenm\common\omFile.h" />
-    <ClInclude Include="..\include\libopenm\common\omHelper.h" />
-    <ClInclude Include="..\include\libopenm\db\dbCommon.h" />
-    <ClInclude Include="..\include\libopenm\db\dbMetaRow.h" />
-    <ClInclude Include="..\include\libopenm\db\metaModelHolder.h" />
-    <ClInclude Include="..\include\libopenm\db\modelBuilder.h" />
-    <ClInclude Include="..\include\libopenm\omCommon.h" />
+    <ClInclude Include="..\..\include\libopenm\common\argReader.h" />
+    <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
+    <ClInclude Include="..\..\include\libopenm\common\omHelper.h" />
+    <ClInclude Include="..\..\include\libopenm\db\dbCommon.h" />
+    <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h" />
+    <ClInclude Include="..\..\include\libopenm\db\metaModelHolder.h" />
+    <ClInclude Include="..\..\include\libopenm\db\modelBuilder.h" />
+    <ClInclude Include="..\..\include\libopenm\omCommon.h" />
     <ClInclude Include="common\log.h" />
     <ClInclude Include="include\modelAggregationSql.h" />
     <ClInclude Include="include\modelInsertSql.h" />

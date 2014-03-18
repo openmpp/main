@@ -943,8 +943,10 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
                 if (equalNoCase(typeRow.name.c_str(), "integer")) tblInf.valueTypeName = "INT";
                 if (equalNoCase(typeRow.name.c_str(), "counter")) tblInf.valueTypeName = "INT";
 
-                // Not implemented (a string)
-                // if (equalNoCase(typeRow.name.c_str(), "file")) tblInf.valueTypeName = "INT";
+                // path to a file (a string)
+                if (equalNoCase(typeRow.name.c_str(), "file")) {
+                    tblInf.valueTypeName = "VARCHAR(" + to_string(OM_PATH_MAX) + ")";
+                }
 
                 // model specific types: it must be enum
                 if (typeRow.typeId > OM_MAX_BUILTIN_TYPE_ID) {
