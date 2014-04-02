@@ -83,22 +83,21 @@ namespace openm
         ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
 
         // create run options and save it in run_option table
-        vector<string> createRunOptions(IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore);
+        void createRunOptions(IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore);
 
         // copy input parameters from "base" run and working set into new run id
         void createRunParameters(
             bool i_isNewRunCreated, 
             IDbExec * i_dbExec, 
             const ModelDicRow * i_mdRow, 
-            const MetaRunHolder * i_metaStore,
-            const vector<string> & i_argParameterNameVec
+            const MetaRunHolder * i_metaStore
             );
 
         // read metadata tables from db, except of run_option table
-        void RunController::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
+        void readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
 
         // broadcast metadata tables from root to all modeling processes
-        void RunController::broadcastMetaTables(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
+        void broadcastMetaTables(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
         
         // broadcast meta table db rows
         template <class MetaTbl>

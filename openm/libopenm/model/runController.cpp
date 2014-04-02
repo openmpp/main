@@ -165,7 +165,7 @@ RunController::RunController(int argc, char ** argv) :
 *   if there is no input parameter with such name then exception raised. \n
 *   for example, if command line is: \n
 *       model.exe -Parameter.Population 1234 \n
-*   and model doe not have "Population" parameter then execution aborted.
+*   and model does not have "Population" parameter then execution aborted.
 *
 * (d) prepare model input parameters
 * ----------------------------------
@@ -174,8 +174,8 @@ RunController::RunController(int argc, char ** argv) :
 * search for input parameter value in following order: \n
 *   - use value of parameter specified as command line or ini-file argument
 *   - use value of parameter from working set of model parameters
-*   - if working set based on model run then search by base run id to get parameter value
 *   - use value of parameter from profile_option table or any other run options source
+*   - if working set based on model run then search by base run id to get parameter value
 *   - else raise an exception
 *
 *   any scalar parameter value can be overriden by model run option with "Parameter" prefix \n
@@ -291,10 +291,10 @@ MetaRunHolder * RunController::init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgEx
 
             // merge run options values from command line, ini-file and profile_option table
             // save run options in run_option table
-            vector<string> argParameterNameVec = createRunOptions(i_dbExec, mdRow, metaStore.get());
+            createRunOptions(i_dbExec, mdRow, metaStore.get());
 
             // copy input parameters from "base" run and working set into new run id
-            createRunParameters(isNewRunCreated, i_dbExec, mdRow, metaStore.get(), argParameterNameVec);
+            createRunParameters(isNewRunCreated, i_dbExec, mdRow, metaStore.get());
         }
 
         // completed: commit the results
@@ -321,7 +321,9 @@ MetaRunHolder * RunController::init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgEx
 //   if set id specified as run option then use such set id
 //   if set name specified as run option then find set id by name
 //   else use min(set id) as default set of model parameters
-vector<string> RunController::createRunOptions(IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore)
+void RunController::createRunOptions(
+    IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore
+    )
 {
     // hard-coded default run options
     RunOptions emptyOpts;
@@ -334,19 +336,6 @@ vector<string> RunController::createRunOptions(IDbExec * i_dbExec, const ModelDi
     string profileName = argStore.strOption(RunOptionsKey::profile, OM_MODEL_NAME);
     unique_ptr<IProfileOptionTable> profileTbl(
         IProfileOptionTable::create(i_dbExec, profileName)
-        );
-
-    // make list of "Parameter." options specified on command line or ini-file
-    string parPrefix = string(RunOptionsKey::parameterPrefix) + ".";
-    size_t nPrefix = parPrefix.length();
-    vector<string> argParameterNameVec;
-
-    std::for_each(
-        argStore.args.cbegin(), 
-        argStore.args.cend(),
-        [nPrefix, &parPrefix, &argParameterNameVec](const NoCaseMap::value_type & i_arg) -> void {
-            if (equalNoCase(i_arg.first.c_str(), parPrefix.c_str(), nPrefix)) argParameterNameVec.push_back(i_arg.first);
-        }
         );
 
     // update run options: merge command line and ini-file with profile and hard-coded default values
@@ -398,7 +387,7 @@ vector<string> RunController::createRunOptions(IDbExec * i_dbExec, const ModelDi
                 " AND set_name = " + toQuoted(setName), 
                 0);
             if (setId <= 0) 
-                throw DbException("model %s, id: %d does not contain working set with name: %s", i_mdRow->name.c_str(), i_mdRow->modelId, setName);
+                throw DbException("model %s, id: %d does not contain working set with name: %s", i_mdRow->name.c_str(), i_mdRow->modelId, setName.c_str());
         }
     }
 
@@ -413,6 +402,9 @@ vector<string> RunController::createRunOptions(IDbExec * i_dbExec, const ModelDi
     argStore.args[RunOptionsKey::setId] = to_string(setId);     // add set id to run options
 
     // validate "Parameter." options: it must be name of scalar input parameter
+    string parPrefix = string(RunOptionsKey::parameterPrefix) + ".";
+    size_t nPrefix = parPrefix.length();
+
     for (NoCaseMap::const_iterator propIt = argStore.args.cbegin(); propIt != argStore.args.cend(); propIt++) {
 
         if (!equalNoCase(propIt->first.c_str(), parPrefix.c_str(), nPrefix)) continue;  // it is not a "Parameter."
@@ -447,24 +439,17 @@ vector<string> RunController::createRunOptions(IDbExec * i_dbExec, const ModelDi
             to_string(runId) + ", " + toQuoted(propIt->first) + ", " + toQuoted(propIt->second) + ")"
             );
     }
-
-    // return model parameters specified on command line or ini-file
-    return argParameterNameVec;
 }
 
 // copy input parameters from working set and "base" run into new run id
 // search for input parameter value in following order:
 //   use value of parameter specified as command line or ini-file argument
+//   use value of parameter from profile_option table or any other run options source
 //   use value of parameter from working set of model parameters
 //   if working set based on model run then search by base run id to get parameter value
-//   use value of parameter from profile_option table or any other run options source
 //   else raise an exception
 void RunController::createRunParameters(
-    bool i_isNewRunCreated, 
-    IDbExec * i_dbExec, 
-    const ModelDicRow * i_mdRow, 
-    const MetaRunHolder * i_metaStore,
-    const vector<string> & i_argParameterNameVec
+    bool i_isNewRunCreated, IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore
     )
 {
     // find input parameters workset
@@ -514,11 +499,6 @@ void RunController::createRunParameters(
         // calculate parameter source: command line (or ini-file), workset, based run, run options
         bool isFromSet = WorksetParamRow::byKey(setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
         bool isArgOption = argStore.isOptionExist(argName.c_str());
-        bool isArgCmdIni = std::any_of(
-            i_argParameterNameVec.cbegin(),
-            i_argParameterNameVec.cend(),
-            [&argName](const string & i_arg) -> bool { return equalNoCase(i_arg.c_str(), argName.c_str()); }
-            );
 
         // get dimensions name
         int nRank = paramIt->rank;
@@ -541,7 +521,7 @@ void RunController::createRunParameters(
 
         // execute insert to copy parameter from run parameters, workset or base run
         bool isInserted = false;
-        if (isArgCmdIni) {
+        if (isArgOption) {
             i_dbExec->update(
                 "INSERT INTO " + paramTblName + " (run_id, value) VALUES (" + 
                 sRunId + ", " + 
@@ -563,15 +543,6 @@ void RunController::createRunParameters(
                 "INSERT INTO " + paramTblName + " (run_id, " + sDimLst + " value)" + 
                 " SELECT " + sRunId + ", " + sDimLst + " value" +
                 " FROM " + paramTblName + " WHERE run_id = " + to_string(baseRunId)
-                );
-            isInserted = true;
-        }
-        if (!isInserted && isArgOption) {
-            i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, value) VALUES (" + 
-                sRunId + ", " +
-                (isCharType ? toQuoted(argStore.strOption(argName.c_str())) : argStore.strOption(argName.c_str())) +
-                ")"
                 );
             isInserted = true;
         }

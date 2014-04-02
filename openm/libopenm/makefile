@@ -103,10 +103,8 @@ LIBOPENM_CPPLIST = \
   db/worksetParamTable.cpp \
   db/worksetParamTxtTable.cpp \
   db/worksetTxtTable.cpp \
-  model/caseModel.cpp \
   model/modelBase.cpp \
   model/runController.cpp \
-  model/timeModel.cpp \
   msg/msgCommon.cpp \
   msg/msgExecBase.cpp \
   msg/msgMpiExec.cpp \
