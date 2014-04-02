@@ -512,21 +512,22 @@ void RunController::createRunParameters(
             sDimLst += paramDimVec[nDim].name + ", ";
         }
 
-        // find parameter type 
-        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(modelId, paramIt->typeId);
-        if (typeRow == nullptr)
-            throw DbException("invalid (not found) type of parameter: %s", paramIt->paramName.c_str());
-
-        bool isCharType = equalNoCase(typeRow->name.c_str(), "file");   // "file" type is VARCHAR
-
         // execute insert to copy parameter from run parameters, workset or base run
         bool isInserted = false;
         if (isArgOption) {
+            
+            // find parameter type 
+            const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(modelId, paramIt->typeId);
+            if (typeRow == nullptr)
+                throw DbException("invalid (not found) type of parameter: %s", paramIt->paramName.c_str());
+
+            // get parameter value as sql string 
+            string sVal = argStore.strOption(argName.c_str());
+            if (equalNoCase(typeRow->name.c_str(), "file")) sVal = toQuoted(sVal);  // "file" type is VARCHAR
+
+            // insert the value
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, value) VALUES (" + 
-                sRunId + ", " + 
-                (isCharType ? toQuoted(argStore.strOption(argName.c_str())) : argStore.strOption(argName.c_str())) +
-                ")"
+                "INSERT INTO " + paramTblName + " (run_id, value) VALUES (" + sRunId + ", " + sVal + ")"
                 );
             isInserted = true;
         }
