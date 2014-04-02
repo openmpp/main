@@ -20,7 +20,7 @@ namespace openm
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack<int>((int)val->type, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->type)>(val->type, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->version, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->timestamp, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->modelPrefix, i_packedSize, io_packedData, io_packPos);
@@ -38,7 +38,7 @@ namespace openm
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->type = (ModelType)MpiPacked::unpack<int>(i_packedSize, i_packedData, io_packPos);
+        val->type = MpiPacked::unpack<decltype(val->type)>(i_packedSize, i_packedData, io_packPos);
         val->version = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->timestamp = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->modelPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);

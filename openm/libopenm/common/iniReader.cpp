@@ -7,6 +7,7 @@
 
 #include "libopenm/common/omFile.h"
 #include "log.h"
+#include "iniReader.h"
 
 using namespace std;
 using namespace openm;
@@ -92,7 +93,7 @@ IniFileReader::IniFileReader(const char * i_filePath) : is_loaded(false)
 // find index of section and key or -1 if not found
 ptrdiff_t IniFileReader::findIndex(const char * i_section, const char * i_key) const
 {
-    // invalid section or key of file is not loaded
+    // invalid section or key or file is not loaded
     if (!is_loaded || i_section == NULL || i_key == NULL) return -1;
 
     // search entry by section and key
@@ -111,7 +112,7 @@ ptrdiff_t IniFileReader::findIndex(const char * i_section, const char * i_key) c
 // find index of section.key or -1 if not found
 ptrdiff_t IniFileReader::findIndex(const char * i_sectionKey) const
 {
-    // invalid section or key of file is not loaded
+    // invalid section or key or file is not loaded
     if (!is_loaded || i_sectionKey == NULL || i_sectionKey[0] == '\0') return -1;
 
     // search entry by section.key
@@ -170,6 +171,33 @@ string IniFileReader::strValue(const char * i_sectionKey, const string & i_defau
     }
     catch (...) { 
         return i_default;
+    }
+}
+
+/**
+ * copy values of section into map.
+ *
+ * @param[in]     i_section             section name
+ * @param[in,out] io_dst                destination map to insert section values
+ * @param[in]     i_isOverrideExisting  if true then override already existing values of section.key
+ */
+void IniFileReader::copySection(const char * i_section, NoCaseMap & io_dst, bool i_isOverrideExisting) const throw()
+{ 
+    try {
+        // invalid section or file is not loaded
+        if (!is_loaded || i_section == NULL || i_section[0] == '\0') return;
+
+        for (const IniEntry & ent : entryVec) {
+            if (!equalNoCase(i_section, ent.section.c_str())) continue;     // skip other sections
+
+            // insert into map if override specified or section.key not already exists
+            string sectionKey = string(i_section) + "." + ent.keySource;
+
+            if (i_isOverrideExisting || io_dst.find(sectionKey) == io_dst.cend()) io_dst[sectionKey] = ent.val;
+        }
+    }
+    catch (...) {
+        return;
     }
 }
 

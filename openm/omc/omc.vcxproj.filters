@@ -48,13 +48,13 @@
     <ClInclude Include="Symbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\omCommon.h">
+    <ClInclude Include="$(OM_INC_DIR)/libopenm/omCommon.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\metaModelHolder.h">
+    <ClInclude Include="$(OM_INC_DIR)/libopenm/db/metaModelHolder.h">
       <Filter>Header Files\libopenm\db</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\modelBuilder.h">
+    <ClInclude Include="$(OM_INC_DIR)/libopenm/db/modelBuilder.h">
       <Filter>Header Files\libopenm\db</Filter>
     </ClInclude>
     <ClInclude Include="scanner.l">

@@ -10,6 +10,7 @@ static const int ageSize = 4;
 static const int sexSize = 2;
 static const int salarySize = 3;
 
+static int startSeed = 1;
 static double ageSex[ageSize][sexSize];
 static int salaryAge[salarySize][ageSize];
 
@@ -42,7 +43,8 @@ void ModelStartup(IModel * i_model)
 {
     // load model parameters
     theLog->logMsg("Reading Parameters");
-    i_model->readParameter("ageSex", typeid(double),  ageSize * sexSize,  ageSex);
+    i_model->readParameter("StartingSeed", typeid(int), 1, &startSeed);
+    i_model->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
     i_model->readParameter("salaryAge", typeid(int),  salarySize * ageSize, salaryAge);
 }
 

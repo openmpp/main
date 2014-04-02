@@ -9,33 +9,37 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 
 --
 -- list of ids: values < 10 reserved for development and testing
--- test: model id = 1 is ModelOne
--- test: set id = 2 is default set of parameters for ModelOne
--- test: set id = 3 is modified working set for ModelOne
+-- test: model id = 1 is modelOne
+-- test: set id = 2 is default set of parameters for modelOne
+-- test: set id = 3 is modified working set for modelOne
 --
 -- INSERT INTO id_lst (id_key, id_value) VALUES ('model_id', 10);
 -- INSERT INTO id_lst (id_key, id_value) VALUES ('run_set', 10);
 
 --
--- ModelOne default set of parameters
+-- modelOne default set of parameters: must include ALL model parameters
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, update_dt) VALUES (2, NULL, 1, 1, '2013-05-29 23:55:07.1234');
+INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt) VALUES (2, NULL, 1, 'modelOne', 1, '2013-05-29 23:55:07.1234');
 
-INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 0, 'ModelOne default set of parameters', NULL);
-INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) ModelOne default set of parameters', NULL);
+INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 0, 'Model One default set of parameters', NULL);
+INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) Model One default set of parameters', NULL);
 
 INSERT INTO workset_parameter (set_id, model_id, parameter_id) VALUES (2, 1, 0);
 INSERT INTO workset_parameter (set_id, model_id, parameter_id) VALUES (2, 1, 1);
+INSERT INTO workset_parameter (set_id, model_id, parameter_id) VALUES (2, 1, 2);
 
 INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note) VALUES (2, 1, 0, 0, 'Age by Sex default values');
 INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note) VALUES (2, 1, 0, 1, '(FR) Age by Sex default values');
 INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note) VALUES (2, 1, 1, 0, 'Salary by Age default values');
 INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note) VALUES (2, 1, 1, 1, '(FR) Salary by Age default values');
+INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note) VALUES (2, 1, 2, 0, 'Starting seed default value');
 
 --
 -- ModelOne modified set of parameters
+-- use this workset for test only: it is invalid 
+-- workset must either contain all parameters or have base run_id not null
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, update_dt) VALUES (3, NULL, 1, 0, '2013-05-30 23:55:07.1234');
+INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt) VALUES (3, NULL, 1, 'ModelOne_modified', 0, '2013-05-30 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (3, 1, 0, 'ModelOne modified set of parameters', NULL);
 
@@ -70,6 +74,9 @@ INSERT INTO modelone_201208171604590148_w1_salaryAge (set_id, dim0, dim1, value)
 INSERT INTO modelone_201208171604590148_w1_salaryAge (set_id, dim0, dim1, value) VALUES (2, 2, 20, 22);
 INSERT INTO modelone_201208171604590148_w1_salaryAge (set_id, dim0, dim1, value) VALUES (2, 2, 30, 32);
 INSERT INTO modelone_201208171604590148_w1_salaryAge (set_id, dim0, dim1, value) VALUES (2, 2, 40, 42);
+
+-- random values starting seed, set id = 2 
+INSERT INTO modelone_201208171604590148_w2_StartingSeed (set_id, value) VALUES (2, 8191);
 
 -- age by sex, set id = 3
 INSERT INTO modelone_201208171604590148_w0_ageSex (set_id, dim0, dim1, value) VALUES (3, 10, 0, 1.1);

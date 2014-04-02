@@ -7,6 +7,7 @@
 
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/argReader.h"
+#include "iniReader.h"
 
 using namespace std;
 using namespace openm;
@@ -140,12 +141,13 @@ double ArgReader::doubleOption(const char * i_key, double i_default) const throw
 *
 * @param[in] argc             number of command line arguments
 * @param[in] argv             array of command line arguments
-* @param[in] i_isThrowUnknown if true then throw exception when key is unknown
-* @param[in] i_isStoreUnknown if true then store unknown key values
+* @param[in] i_isThrowUnknown if true then throw exception when key is unknown (except i_prefixToCopy below)
+* @param[in] i_isStoreUnknown if true then store unknown key values (always stored i_prefixToCopy below)
 * @param[in] i_keyArrSize     size of i_keyArr, must be positive
 * @param[in] i_keyArr         array of allowed keys: full key names
 * @param[in] i_shortArrSize   size of i_shortPairArr, can be zero
 * @param[in] i_shortPairArr   array of short and full key names to remap from short to full name
+* @param[in] i_prefixToCopy   if not NULL then copy options started from "prefix." i.e.: "Parameter."
 */
 void ArgReader::parseCommandLine(
     int argc, 
@@ -155,7 +157,8 @@ void ArgReader::parseCommandLine(
     const size_t i_keyArrSize, 
     const char ** i_keyArr, 
     const size_t i_shortArrSize, 
-    const pair<const char *, const char *> * i_shortPairArr
+    const pair<const char *, const char *> * i_shortPairArr,
+    const char * i_prefixToCopy
     )
 {
     // if no command line arguments then return empty options
@@ -165,6 +168,11 @@ void ArgReader::parseCommandLine(
     if (argc < 1 || argv == nullptr) throw HelperException("Invalid (empty) list of command line arguments, expected at least one");
     if (i_keyArrSize <= 0 || i_keyArrSize > SHRT_MAX || i_keyArr == nullptr) throw HelperException("Invalid (or empty) list of option keys");
     if (i_shortArrSize < 0 || i_shortArrSize > SHRT_MAX || (i_shortArrSize != 0 && i_shortPairArr == nullptr)) throw HelperException("Invalid (or empty) list of option short keys");
+
+    // check if there prefix to copy specified, i.e.: "Parameter"
+    bool isCopyPrefix = i_prefixToCopy != nullptr && i_prefixToCopy[0] != '\0';
+    string copyPrefix = isCopyPrefix ? string(i_prefixToCopy) + "." : "";
+    size_t nPrefix = copyPrefix.length();
 
     // past the end of option names array
     const char ** endOfKeyArr = i_keyArr + i_keyArrSize;
@@ -199,8 +207,11 @@ void ArgReader::parseCommandLine(
             sKey = *keyIt;  // key found: use "standard" key representation, which may be in a different case
         }
         else {              // key not found: raise error, store or ignore unknown key
-            if (i_isThrowUnknown) throw HelperException("Invalid command line parameter %s", argv[nArg]);
-            if (!i_isStoreUnknown) continue;
+
+            if (!isCopyPrefix || !equalNoCase(sKey.c_str(), copyPrefix.c_str(), nPrefix)) {
+                if (i_isThrowUnknown) throw HelperException("Invalid command line parameter %s", argv[nArg]);
+                if (!i_isStoreUnknown) continue;
+            }
         }
         
         // get parameter value and save it in the run options map
@@ -217,11 +228,13 @@ void ArgReader::parseCommandLine(
 * @param[in] i_filePath       path to ini-file
 * @param[in] i_keyArrSize     size of i_keyArr, must be positive
 * @param[in] i_keyArr         array of allowed keys: full key names
+* @param[in] i_sectionToCopy  if not NULL then copy section from ini-file, i.e.: "Parameter"
 */
 void ArgReader::loadIniFile(
     const char * i_filePath,
     const size_t i_keyArrSize, 
-    const char ** i_keyArr
+    const char ** i_keyArr,
+    const char * i_sectionToCopy
     )
 {
     // load options from ini-file
@@ -236,6 +249,9 @@ void ArgReader::loadIniFile(
 
         args[i_keyArr[nKey]] = iniRd.strValue(i_keyArr[nKey]);      // add from ini-file to options map
     }
+
+    // copy pairs of (section.key, value) from section of ini-file if such section.key not already exists
+    if (i_sectionToCopy != nullptr && i_sectionToCopy[0] != '\0') iniRd.copySection(i_sectionToCopy, args);
 }
 
 /** adjust log file settings, ie: make default log file path if required. */

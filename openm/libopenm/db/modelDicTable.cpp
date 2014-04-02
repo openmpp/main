@@ -43,7 +43,7 @@ namespace openm
     static const type_info * typeModelDicRow[] = { 
         &typeid(decltype(ModelDicRow::modelId)), 
         &typeid(decltype(ModelDicRow::name)), 
-        &typeid(int), 
+        &typeid(decltype(ModelDicRow::type)),
         &typeid(decltype(ModelDicRow::version)),
         &typeid(decltype(ModelDicRow::timestamp)),
         &typeid(decltype(ModelDicRow::modelPrefix)),
@@ -76,7 +76,7 @@ namespace openm
                 dynamic_cast<ModelDicRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 2:
-                dynamic_cast<ModelDicRow *>(i_row)->type = (ModelType)(*((int *)i_value));
+                dynamic_cast<ModelDicRow *>(i_row)->type = (*((int *)i_value));
                 break;
             case 3:
                 dynamic_cast<ModelDicRow *>(i_row)->version = ((const char *)i_value);

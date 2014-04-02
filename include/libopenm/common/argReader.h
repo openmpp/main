@@ -94,14 +94,16 @@ namespace openm
             const size_t i_keyArrSize, 
             const char ** i_keyArr, 
             const size_t i_shortArrSize = 0, 
-            const pair<const char *, const char *> * i_shortPairArr = nullptr
+            const pair<const char *, const char *> * i_shortPairArr = nullptr,
+            const char * i_prefixToCopy = nullptr
             );
 
         /** read ini-file and merge command line arguments. */
         void loadIniFile(
             const char * i_filePath,
             const size_t i_keyArrSize, 
-            const char ** i_keyArr
+            const char ** i_keyArr,
+            const char * i_sectionToCopy = nullptr
             );
 
         /** adjust log file settings, ie: make default log file path if required. */

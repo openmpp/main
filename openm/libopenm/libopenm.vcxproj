@@ -67,14 +67,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
-
   <PropertyGroup>
     <OutDir>$(OM_LIB_DIR)/</OutDir>
   </PropertyGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -89,7 +86,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -104,7 +100,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -123,7 +118,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -142,16 +136,16 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
-    <ClInclude Include="..\include\libopenm\common\argReader.h" />
-    <ClInclude Include="..\include\libopenm\common\omFile.h" />
-    <ClInclude Include="..\include\libopenm\common\omHelper.h" />
-    <ClInclude Include="..\include\libopenm\db\dbCommon.h" />
-    <ClInclude Include="..\include\libopenm\db\dbMetaRow.h" />
-    <ClInclude Include="..\include\libopenm\omCommon.h" />
-    <ClInclude Include="..\include\libopenm\omModel.h" />
+    <ClInclude Include="..\..\include\libopenm\common\argReader.h" />
+    <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
+    <ClInclude Include="..\..\include\libopenm\common\omHelper.h" />
+    <ClInclude Include="..\..\include\libopenm\db\dbCommon.h" />
+    <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h" />
+    <ClInclude Include="..\..\include\libopenm\omCommon.h" />
+    <ClInclude Include="..\..\include\libopenm\omModel.h" />
     <ClInclude Include="common\log.h" />
+    <ClInclude Include="common\iniReader.h" />
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />
     <ClInclude Include="include\dbExec.h" />
@@ -215,10 +209,8 @@
     <ClCompile Include="db\worksetParamTxtTable.cpp" />
     <ClCompile Include="db\worksetTxtTable.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\caseModel.cpp" />
     <ClCompile Include="model\modelBase.cpp" />
     <ClCompile Include="model\runController.cpp" />
-    <ClCompile Include="model\timeModel.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />
     <ClCompile Include="msg\msgMpiExec.cpp" />

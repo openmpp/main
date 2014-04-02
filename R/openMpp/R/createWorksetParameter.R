@@ -183,11 +183,12 @@ createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, work
     dbGetQuery(
       dbCon, 
       paste(
-        "INSERT INTO workset_lst (set_id, run_id, model_id, is_readonly, update_dt)",
+        "INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt)",
         " VALUES (",
         setId, ", ",
         ifelse(i_isRunBased, i_baseRunId, "NULL"), ", ",
         defRs$modelDic$model_id, ", ",
+		toQuoted(paste("set_", setId, sep = "")), ", ",
         " 0, ",
         toQuoted(format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
         " )",

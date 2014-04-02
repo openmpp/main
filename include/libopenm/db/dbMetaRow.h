@@ -99,7 +99,7 @@ namespace openm
         string name;
 
         /** model_type     INT         NOT NULL */
-        ModelType type;
+        int type;
 
         /** model_ver      VARCHAR(255) NOT NULL */
         string version;
@@ -126,7 +126,7 @@ namespace openm
         ModelDicRow(void) : 
             modelId(0), 
             name(""), 
-            type(ModelType::caseBased),
+            type(0),
             version(""),
             timestamp(""),
             modelPrefix(""),
@@ -140,7 +140,7 @@ namespace openm
         ModelDicRow(int i_modelId) : 
             modelId(i_modelId), 
             name(""), 
-            type(ModelType::caseBased),
+            type(0),
             version(""),
             timestamp(""),
             modelPrefix(""),
@@ -888,29 +888,27 @@ namespace openm
         /** model_id    INT         NOT NULL */
         int modelId;
 
+        /** set_name    VARCHAR(64) NOT NULL */
+        string name;
+
         /** is_readonly SMALLINT    NOT NULL */
         bool isReadonly;
         
         /** update_dt   VARCHAR(32) NOT NULL */
         string updateDateTime;
 
-        /** create row with default empty field values. */
-        WorksetLstRow(void) : 
-            setId(0),
+        /** create row with supplied primary key field values. */
+        WorksetLstRow(int i_setId) :
+            setId(i_setId),
             runId(0),
             modelId(0),
+            name(""),
             isReadonly(false),
             updateDateTime("")
         { }
 
-        /** create row with supplied primary key field values. */
-        WorksetLstRow(int i_setId) : 
-            setId(i_setId),
-            runId(0),
-            modelId(0),
-            isReadonly(false),
-            updateDateTime("")
-        { }
+        /** create row with default empty field values. */
+        WorksetLstRow(void) : WorksetLstRow(0) { }
 
         ~WorksetLstRow(void) throw() { }
 

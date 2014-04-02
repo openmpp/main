@@ -36,6 +36,9 @@
     <ClInclude Include="common\log.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
+    <ClInclude Include="common\iniReader.h">
+      <Filter>Source Files\common</Filter>
+    </ClInclude>
     <ClInclude Include="include\modelInsertSql.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>

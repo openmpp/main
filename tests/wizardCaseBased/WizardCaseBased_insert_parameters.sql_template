@@ -1,4 +1,4 @@
---
+﻿--
 -- insert parameters for model: WizardCaseBased 
 -- model timestamp: ${OM_MODEL_TIMESTAMP}
 -- db names prefix: ${OM_MODEL_PREFIX}
@@ -15,11 +15,12 @@ BEGIN TRANSACTION;
 UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_set';
 
 INSERT INTO workset_lst 
-  (set_id, run_id, model_id, is_readonly, update_dt) 
+  (set_id, run_id, model_id, set_name, is_readonly, update_dt) 
 SELECT
   RSL.id_value,
   NULL, 
   (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
+  'WizardCaseBased',
   1, 
   '${OMC_COMPILE_TIME}'
 FROM id_lst RSL 

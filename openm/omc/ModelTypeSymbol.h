@@ -61,5 +61,16 @@ public:
      */
 
     bool just_in_time;
+private:
+
+    /** model type as db-integer */
+    enum class ModelType
+    {
+        /** case based model */
+        caseBased,
+
+        /** time based model */
+        timeBased
+    };
 };
 

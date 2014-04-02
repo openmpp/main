@@ -69,9 +69,6 @@
     <ClInclude Include="include\runController.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\omModel.h">
-      <Filter>Header Files\libopenm</Filter>
-    </ClInclude>
     <ClInclude Include="include\dbExec.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
@@ -87,16 +84,28 @@
     <ClInclude Include="include\metaRunHolder.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\omCommon.h">
+    <ClInclude Include="..\..\include\libopenm\omCommon.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\dbCommon.h">
+    <ClInclude Include="..\..\include\libopenm\common\argReader.h">
+      <Filter>Header Files\libopenm\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\common\omHelper.h">
+      <Filter>Header Files\libopenm\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\common\omFile.h">
+      <Filter>Header Files\libopenm\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\db\dbCommon.h">
       <Filter>Header Files\libopenm\db</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\db\dbMetaRow.h">
+    <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h">
       <Filter>Header Files\libopenm\db</Filter>
     </ClInclude>
     <ClInclude Include="common\log.h">
+      <Filter>Source Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\iniReader.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
     <ClInclude Include="db\dbExecBase.h">
@@ -105,27 +114,15 @@
     <ClInclude Include="db\dbExecSqlite.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\libopenm\common\argReader.h">
-      <Filter>Header Files\libopenm\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\libopenm\common\omHelper.h">
-      <Filter>Header Files\libopenm\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\libopenm\common\omFile.h">
-      <Filter>Header Files\libopenm\common</Filter>
+    <ClInclude Include="..\..\include\libopenm\omModel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="model\caseModel.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="model\modelBase.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
-    <ClCompile Include="model\timeModel.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="msg\msgCommon.cpp">

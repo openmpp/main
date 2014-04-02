@@ -63,12 +63,12 @@ int main(int argc, char ** argv)
 
         // adjust log file(s) with actual log settings specified in model run options file
         theLog->init(
-            runCtrl.args().boolOption(ArgKey::logToConsole) || !runCtrl.args().isOptionExist(ArgKey::logToConsole),
-            runCtrl.args().strOption(ArgKey::logFilePath).c_str(),
-            runCtrl.args().boolOption(ArgKey::logUseTs),
-            runCtrl.args().boolOption(ArgKey::logUsePid),
-            runCtrl.args().boolOption(ArgKey::logNoTimeConsole),
-            runCtrl.args().boolOption(ArgKey::logSql)
+            runCtrl.argOpts().boolOption(ArgKey::logToConsole) || !runCtrl.argOpts().isOptionExist(ArgKey::logToConsole),
+            runCtrl.argOpts().strOption(ArgKey::logFilePath).c_str(),
+            runCtrl.argOpts().boolOption(ArgKey::logUseTs),
+            runCtrl.argOpts().boolOption(ArgKey::logUsePid),
+            runCtrl.argOpts().boolOption(ArgKey::logNoTimeConsole),
+            runCtrl.argOpts().boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Model", OM_MODEL_NAME);
 
@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
         // do nested try to log the errors before MPI finalize
         try {
             // get db-connection string or use default if not specified
-            string connectionStr = runCtrl.args().strOption(
+            string connectionStr = runCtrl.argOpts().strOption(
                 RunOptionsKey::dbConnStr, 
                 string("Database=") + OM_MODEL_NAME + ".sqlite; Timeout=86400; OpenMode=ReadWrite;"
                 );
@@ -92,13 +92,11 @@ int main(int argc, char ** argv)
             // initialize run id and subsample number
             // store run options in database with new run id
             // copy input parameters to run the model
-            runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get());
+            // load metadata tables and broadcast it to all modeling processes
+            unique_ptr<MetaRunHolder> metaStore(runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get()));
 #ifdef _DEBUG
             theLog->logFormatted("Subsample %d", runCtrl.subSampleNumber);
-#endif            
-            //  load metadata tables and broadcast it to all modeling processes
-            unique_ptr<MetaRunHolder> metaStore(runCtrl.loadMetaTables(isMpiUsed, dbExec.get(), msgExec.get()));
-
+#endif      
             // create the model
             unique_ptr<IModel> model( ModelBase::create(
                 isMpiUsed, runCtrl.subSampleCount, runCtrl.subSampleNumber, dbExec.get(), msgExec.get(), metaStore.get()

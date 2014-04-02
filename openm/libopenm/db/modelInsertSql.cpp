@@ -67,7 +67,7 @@ template<> const string ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow
         " SELECT" \
         " IL.id_value, " +
         toQuoted(i_row.name) + ", " +
-        to_string((int)i_row.type) + ", " +
+        to_string(i_row.type) + ", " +
         toQuoted(i_row.version) + ", " +
         toQuoted(i_row.timestamp) + ", " +
         toQuoted(modelPrefix) + ", " +

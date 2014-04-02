@@ -297,17 +297,18 @@ CREATE TABLE IF NOT EXISTS parameter_dims
 --   if this is a subset (not a full set) then it must be based on specified run id (not NULL)
 -- each model must have "default" workset
 --   default workset must include ALL model parameters (it is a full set)
---   default workset is where set_id = min(set_id) for that model_id
+--   default workset is where set_id = min(set_id) for that model
 -- working set id must be different from run id (use id_lst to get it)
 -- working set can be editable or read-only
---   always update parameter values inside of transaction
---   before actual value update do is_readonly = is_readonly + 1 to lock workset
+-- always update parameter values inside of transaction scope
+-- before actual value update do is_readonly = is_readonly + 1 to lock workset
 --
 CREATE TABLE IF NOT EXISTS workset_lst
 (
   set_id      INT         NOT NULL, -- unique working set id
   run_id      INT         NULL,     -- if not NULL and positive then base run id (source run id)
   model_id    INT         NOT NULL, -- model id
+  set_name    VARCHAR(64) NOT NULL, -- working set name
   is_readonly SMALLINT    NOT NULL, -- if non-zero then working set is read-only
   update_dt   VARCHAR(32) NOT NULL, -- last update date-time
   PRIMARY KEY (set_id),

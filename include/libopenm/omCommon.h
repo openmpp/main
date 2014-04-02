@@ -14,16 +14,6 @@ using namespace std;
 
 namespace openm
 {
-    /** model types */
-    enum class ModelType
-    {
-        /** case based model */
-        caseBased,
-
-        /** time based model */
-        timeBased
-    };
-
     /** log public interface: log to console and into log files */
     struct ILog
     {

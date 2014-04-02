@@ -32,12 +32,10 @@ INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, 'First 
 --
 INSERT INTO profile_lst (profile_name) VALUES ('ModelOne');
 
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'General.Subsamples', '1');
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'General.StartingSeed', '16807');
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'General.Cases', '5000');
--- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'General.SimulationEnd', '100');
+INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'Parameter.StartingSeed', '4095');
 INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'OpenM.SparseOutput', 'true');
 -- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'OpenM.SparseNullValue', '');
+-- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'General.Subsamples', '1');
 
 -- 
 -- ModelOne simple types
@@ -126,11 +124,16 @@ INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
 VALUES
   (1, 1, '1_salaryAge', 'salaryAge', 2, 0, 0, 0, 0);
+INSERT INTO parameter_dic
+  (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
+VALUES
+  (1, 2, '2_StartingSeed', 'StartingSeed', 0, 0, 0, 0, 0);
 
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 1, 'Age by Sex (fr)', NULL);
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 1, 0, 'Salary by Age', 'Salary by Age note');
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 1, 1, 'Salary by Age (fr)', 'Salary by Age note (fr)');
+INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 2, 1, 'Starting Seed', 'Random numbers generator starting seed value');
 
 INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim0', 0, 21);
 INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim1', 1, 22);
@@ -228,6 +231,20 @@ CREATE TABLE modelone_201208171604590148_w1_salaryAge
   dim1   INT NOT NULL, 
   value  INT NOT NULL,
   PRIMARY KEY (set_id, dim0, dim1)
+);
+
+CREATE TABLE modelone_201208171604590148_p2_StartingSeed 
+(
+  run_id INT NOT NULL,
+  value  INT NOT NULL,
+  PRIMARY KEY (run_id)
+);
+
+CREATE TABLE modelone_201208171604590148_w2_StartingSeed
+(
+  set_id INT NOT NULL,
+  value  INT NOT NULL,
+  PRIMARY KEY (set_id)
 );
 
 --

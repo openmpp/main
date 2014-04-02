@@ -13,7 +13,13 @@ IModel::~IModel() throw() { }
 
 // base model class
 ModelBase::ModelBase(
-    bool i_isMpiUsed, int i_modelId, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
+    bool i_isMpiUsed,
+    int i_modelId,
+    int i_subCount,
+    int i_subNumber,
+    IDbExec * i_dbExec,
+    IMsgExec * i_msgExec,
+    const MetaRunHolder * i_metaStore
     ) : 
     modelId(i_modelId),
     isMpiUsed(i_isMpiUsed),
@@ -27,6 +33,12 @@ ModelBase::ModelBase(
 
     if ((!i_isMpiUsed || i_msgExec->isRoot()) && i_dbExec == NULL) 
         throw ModelException("database connection must be open at process %d", i_msgExec->rank());
+
+    // set model run options
+    runOpts.subSampleCount = i_subCount;
+    runOpts.subSampleNumber = i_subNumber;
+    runOpts.useSparse = metaStore->runOption->boolValue(metaStore->runId, RunOptionsKey::useSparse);
+    runOpts.nullValue = metaStore->runOption->doubleValue(metaStore->runId, RunOptionsKey::sparseNull, DBL_EPSILON);
 }
 
 ModelBase::~ModelBase(void) throw()
@@ -57,42 +69,9 @@ ModelBase * ModelBase::create(
     if (mdRow == NULL) throw ModelException("model not found in the database");
 
     // create the model
-    ModelBase * model  = (mdRow->type == ModelType::timeBased) ? 
-        static_cast<ModelBase *>(new TimeModel(i_isMpiUsed, mdRow->modelId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore)) : 
-        static_cast<ModelBase *>(new CaseModel(i_isMpiUsed, mdRow->modelId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore));
-
-    return model;
-}
-
-// set default values of run options common for all model types
-void ModelBase::defaultBaseOptions(RunOptions & io_options)
-{
-    io_options.startingSeed = 16807;
-    io_options.useSparse = false;
-    io_options.nullValue = DBL_EPSILON;
-}
-
-// get model default run options as list of (key, value) strings
-NoCaseMap ModelBase::defaultBaseOptions(const RunOptions & i_options)
-{
-    NoCaseMap optMap;
-    
-    optMap[RunOptionsKey::seed] = to_string(i_options.startingSeed);
-    optMap[RunOptionsKey::useSparse] = i_options.useSparse ? "true" : "false";
-    optMap[RunOptionsKey::sparseNull] = toString(i_options.nullValue);
-
-    return optMap;
-}
-
-// set run id and run options common for all model types
-void ModelBase::setBaseOptions(int i_subCount, int i_subNumber, RunOptions & io_options)
-{
-    io_options.subSampleCount = i_subCount;
-    io_options.subSampleNumber = i_subNumber;
-
-    io_options.startingSeed = (int)metaStore->runOption->longValue(metaStore->runId, RunOptionsKey::seed, io_options.startingSeed);
-    io_options.useSparse = metaStore->runOption->boolValue(metaStore->runId, RunOptionsKey::useSparse);
-    io_options.nullValue = metaStore->runOption->doubleValue(metaStore->runId, RunOptionsKey::sparseNull, io_options.nullValue);
+    return new ModelBase(
+        i_isMpiUsed, mdRow->modelId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore
+        );
 }
 
 /** model shutdown: save results and cleanup resources. */

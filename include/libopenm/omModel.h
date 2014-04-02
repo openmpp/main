@@ -24,9 +24,6 @@ namespace openm
         /** subsample number for current modeling process */
         int subSampleNumber;
 
-        /** starting seed for random number generator */
-        int startingSeed;
-
         /** if true then use sparse output to database */
         bool useSparse;
 
@@ -37,35 +34,10 @@ namespace openm
         RunOptions(void) :
             subSampleCount(1),
             subSampleNumber(0),
-            startingSeed(0),
             useSparse(false),
             nullValue(DBL_EPSILON)
         { }
         ~RunOptions(void) throw() { }
-    };
-
-    /** case-based model run options */
-    struct CaseRunOptions : public RunOptions
-    {
-        /** number of cases */
-        long long cases;
-
-        /** init case-based model run options */
-        CaseRunOptions(void) : cases(1)
-        { }
-        ~CaseRunOptions(void) throw() { }
-    };
-
-    /** time-based model run options */
-    struct TimeRunOptions : public RunOptions
-    {
-        /** simulation end time */
-        long long simulationEnd;
-
-        /** init time-based model run options */
-        TimeRunOptions(void) : simulationEnd(1)
-        { }
-        ~TimeRunOptions(void) throw() { }
     };
 
     /** model public interface */
@@ -93,24 +65,6 @@ namespace openm
 
         /** write output result table: subsample value */
         virtual void writeOutputTable(const char * i_name, int i_accCount, long long i_size, const double * i_valueArr[]) = 0;
-    };
-
-    /** case-based model public interface */
-    struct ICaseModel
-    {
-        virtual ~ICaseModel(void) throw() = 0;
-
-        /** return model run options */
-        virtual const CaseRunOptions * runOptions(void) const = 0;
-    };
-
-    /** time-based model public interface */
-    struct ITimeModel
-    {
-        virtual ~ITimeModel(void) throw() = 0;
-
-        /** return model run options */
-        virtual const TimeRunOptions * runOptions(void) const = 0;
     };
 }
 

@@ -27,7 +27,8 @@ namespace openm
         &typeid(decltype(WorksetLstRow::setId)), 
         &typeid(decltype(WorksetLstRow::runId)), 
         &typeid(decltype(WorksetLstRow::modelId)), 
-        &typeid(decltype(WorksetLstRow::isReadonly)), 
+        &typeid(decltype(WorksetLstRow::name)),
+        &typeid(decltype(WorksetLstRow::isReadonly)),
         &typeid(decltype(WorksetLstRow::updateDateTime))
     };
 
@@ -57,9 +58,12 @@ namespace openm
                 dynamic_cast<WorksetLstRow *>(i_row)->modelId = (*(int *)i_value);
                 break;
             case 3:
-                dynamic_cast<WorksetLstRow *>(i_row)->isReadonly = (*(bool *)i_value);
+                dynamic_cast<WorksetLstRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 4:
+                dynamic_cast<WorksetLstRow *>(i_row)->isReadonly = (*(bool *)i_value);
+                break;
+            case 5:
                 dynamic_cast<WorksetLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
                 break;
             default:
@@ -98,7 +102,7 @@ vector<WorksetLstRow> WorksetLstTable::select(IDbExec * i_dbExec, const string &
 
     const IRowAdapter & adp = WorksetLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT set_id, run_id, model_id, is_readonly, update_dt FROM workset_lst " + i_where + " ORDER BY 1", 
+        "SELECT set_id, run_id, model_id, set_name, is_readonly, update_dt FROM workset_lst " + i_where + " ORDER BY 1", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), WorksetLstRow::keyLess);

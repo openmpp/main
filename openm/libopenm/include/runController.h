@@ -21,15 +21,6 @@ namespace openm
         /** number of sub-samples */
         static const char * subSampleCount;
 
-        /** starting seed for random number generator */
-        static const char * seed;
-
-        /** number of cases */
-        static const char * cases;
-
-        /** simulation end time */
-        static const char * endTime;
-
         /** database connection string */
         static const char * dbConnStr;
 
@@ -39,6 +30,9 @@ namespace openm
         /** working set id to get input parameters */
         static const char * setId;
 
+        /** working set name to get input parameters */
+        static const char * setName;
+
         /** profile name to get run options, default is model name */
         static const char * profile;
 
@@ -47,6 +41,9 @@ namespace openm
 
         /** sparse null value */
         static const char * sparseNull;
+
+        /** parameters started with "Parameter." treated as value of model scalar input parameters */
+        static const char * parameterPrefix;
     };
 
     /** keys for model run options (short form) */
@@ -75,25 +72,34 @@ namespace openm
         /** subsample number for current modeling process */
         int subSampleNumber;
 
-        /** run options as key-value pairs */
-        const ArgReader & args(void) const { return argStore; }
+        /** arguments from command line and ini-file. */
+        const ArgReader & argOpts(void) const { return argStore; }
 
         /** complete model run initialization: create run and input parameters in database. */
-        void init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
-
-        /** load metadata tables from db and broadcast to all modeling processes. */
-        MetaRunHolder * loadMetaTables(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
+        MetaRunHolder * init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
 
     private:
-        ArgReader argStore;     // run options as key-value string pairs with case-neutral search
         bool isSubCountCmd;     // if true then sub-sample count specified on command line
+        ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
 
-        // save run options in run_option table
-        void saveRunOptions(IDbExec * i_dbExec, const ModelDicRow * i_mdRow);
+        // create run options and save it in run_option table
+        vector<string> createRunOptions(IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore);
 
         // copy input parameters from "base" run and working set into new run id
-        void createRunParameters(bool i_isNewRunCreated, IDbExec * i_dbExec, const ModelDicRow * i_mdRow);
+        void createRunParameters(
+            bool i_isNewRunCreated, 
+            IDbExec * i_dbExec, 
+            const ModelDicRow * i_mdRow, 
+            const MetaRunHolder * i_metaStore,
+            const vector<string> & i_argParameterNameVec
+            );
 
+        // read metadata tables from db, except of run_option table
+        void RunController::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
+
+        // broadcast metadata tables from root to all modeling processes
+        void RunController::broadcastMetaTables(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
+        
         // broadcast meta table db rows
         template <class MetaTbl>
         void broadcastTable(unique_ptr<MetaTbl> & i_tableUptr, IMsgExec * i_msgExec, MsgTag i_msgTag);

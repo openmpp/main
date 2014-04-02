@@ -49,12 +49,12 @@ void ModelTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
     if (value == token::TK_case_based) {
-        metaRows.modelDic.type = ModelType::caseBased;
+        metaRows.modelDic.type = static_cast<int>(ModelType::caseBased);
     }
     else
     {
         // compiler guarantee
         assert(value == token::TK_time_based);
-        metaRows.modelDic.type = ModelType::timeBased;
+        metaRows.modelDic.type = static_cast<int>(ModelType::timeBased);
     }
 };
