@@ -35,6 +35,45 @@ getLanguages <- function(dbCon)
 }
 
 #
+# Return working set id by name
+#   if model have no working set with that name then return is negative
+#   if model has multiple working sets with that name then return min(set id)
+#
+# dbCon       - database connection
+# defRs       - model definition database rows
+# worksetName - name parameters working set
+#
+# return: id of parameters working set
+#         positive integer on success, negative on error
+#
+getWorksetIdByName <- function(dbCon, defRs, worksetName) 
+{
+  # validate input parameters
+  if (missing(dbCon)) stop("invalid (missing) database connection")
+  if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
+
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
+  if (missing(worksetName)) stop("invalid (missing) workset id")
+  if (is.null(worksetName) || is.na(worksetName) || !is.character(worksetName)) stop("invalid or empty workset name")
+  
+  # get first set id with specified name for that model id
+  setRs <- dbGetQuery(
+    dbCon, 
+    paste(
+      "SELECT MIN(set_id) FROM workset_lst",
+      " WHERE model_id = ", defRs$modelDic$model_id,
+      " AND set_name = ", toQuoted(worksetName),
+      sep=""
+    )
+  )
+  if (nrow(setRs) <= 0) return(-1L)
+
+  return(ifelse(!is.na(setRs[1,1]), as.integer(setRs[1,1]), -1L))
+}
+
+#
 # Return ids of model run results (run_id) 
 # where input parameters are from specified working set
 #
@@ -166,7 +205,7 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["paramDic"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank",
+      "SELECT model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id",
       " FROM parameter_dic",
       " WHERE model_id = ", defRs$modelDic$model_id,
       " AND is_generated = 0",
@@ -192,13 +231,13 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   #   dimension must be in parameter_dims
   #   dimension type must be type_enum_lst
   if (!all(
-      defRs$paramDic[which(defRs$paramDic$parameter_rank > 0)]$parameter_id %in% 
+      defRs$paramDic[which(defRs$paramDic$parameter_rank > 0), ]$parameter_id %in% 
       defRs$paramDims$parameter_id
     )) {
     stop("parameter dimension(s) not found")
   }
   if (!all(defRs$paramDims$mod_type_id %in% defRs$typeEnum$mod_type_id)) {
-    stop("parameter dimension(s) not found")
+    stop("parameter dimension type(s) not found")
   }
   
   # model output tables rows: table_dic
@@ -230,7 +269,7 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   #   dimension must be in table_dims
   #   dimension type must be type_enum_lst
   if (!all(
-      defRs$tableDic[which(defRs$tableDic$table_rank > 0)]$table_id %in% 
+      defRs$tableDic[which(defRs$tableDic$table_rank > 0), ]$table_id %in% 
       defRs$tableDims$table_id
     )) {
     stop("output table dimension(s) not found")

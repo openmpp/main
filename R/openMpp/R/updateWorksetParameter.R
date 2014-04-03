@@ -307,9 +307,10 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
 #
 # i_langRs - lang_lst table rows
 # i_wsTxt - (optional) workset text data frame:
-#   $lang - language code
+#   $name  - working set name
+#   $lang  - language code
 #   $descr - working set description
-#   $note - (optional) working set notes
+#   $note  - (optional) working set notes
 #
 validateWorksetTxt <- function(i_langRs, i_wsTxt)
 {
@@ -319,9 +320,10 @@ validateWorksetTxt <- function(i_langRs, i_wsTxt)
   if (!is.data.frame(i_wsTxt)) stop("workset text must be a data frame")
   if (nrow(i_wsTxt) <= 0L) return(FALSE)
   
-  # workset text must have $lang, $descr, $note column
-  if (is.null(i_wsTxt$"lang") || is.null(i_wsTxt$"descr") || is.null(i_wsTxt$"note")) {
-    stop("workset text must have $lang, $descr, $note columns")
+  # workset text must have $name, $lang, $descr, $note column
+  if (is.null(i_wsTxt$"name") || is.null(i_wsTxt$"lang") || 
+      is.null(i_wsTxt$"descr") || is.null(i_wsTxt$"note")) {
+    stop("workset text must have $name, $lang, $descr, $note columns")
   }
   
   # workset text language code must NOT NULL and in the lang_lst table

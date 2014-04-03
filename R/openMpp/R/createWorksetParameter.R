@@ -12,12 +12,13 @@
 # dbCon      - database connection
 # defRs      - model definition database rows
 # worksetTxt - (optional) workset text data frame:
-#   $lang - language code
+#   $name  - working set name
+#   $lang  - language code
 #   $descr - working set description
-#   $note - (optional) working set notes
+#   $note  - (optional) working set notes
 # ... - list of parameters value and (optional) value notes
 #   each element is also a list of $name, $value and $txt
-#   $name - parameter name (character)
+#   $name  - parameter name (character)
 #   $value - parameter value
 #     it can be scalar value, vector or data frame
 #     size of $value must be equal to production of dimension sizes
@@ -54,12 +55,13 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
 # defRs      - model definition database rows
 # baseRunId  - id of model run results
 # worksetTxt - (optional) workset text data frame:
-#   $lang - language code
+#   $name  - working set name
+#   $lang  - language code
 #   $descr - working set description
-#   $note - (optional) working set notes
+#   $note  - (optional) working set notes
 # ... - list of parameters value and (optional) value notes
 #   each element is also a list of $name, $value and $txt
-#   $name - parameter name (character)
+#   $name  - parameter name (character)
 #   $value - parameter value
 #     it can be scalar value, vector or data frame
 #     size of $value must be equal to production of dimension sizes
@@ -108,17 +110,18 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
 # return set id of new workset or <= 0 on error
 #
 # dbCon        - database connection
-# defRs      - model definition database rows
+# defRs        - model definition database rows
 # i_isRunBased - if true then use base run id 
-#   else all parameters must be supplied by ... argument(s)
+#                else all parameters must be supplied by ... argument(s)
 # i_baseRunId  - id of model run results
 # worksetTxt   - (optional) workset text data frame:
-#   $lang - language code
+#   $name  - working set name
+#   $lang  - language code
 #   $descr - working set description
-#   $note - (optional) working set notes
+#   $note  - (optional) working set notes
 # ... - list of parameters value and (optional) value notes
 #   each element is also a list of $name, $value and $txt
-#   $name - parameter name (character)
+#   $name  - parameter name (character)
 #   $value - parameter value
 #     it can be scalar value, vector or data frame
 #     size of $value must be equal to production of dimension sizes
@@ -179,6 +182,10 @@ createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, work
     
     setId <- idRs$id_value
     
+    # workset name, make auto-name if empty
+    setName <- ifelse(isAnyWsTxt, worksetTxt$name, NA)
+    if (is.na(setName)) setName <- toQuoted(paste("set_", setId, sep = ""))
+  
     # create workset
     dbGetQuery(
       dbCon, 
@@ -188,7 +195,7 @@ createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, work
         setId, ", ",
         ifelse(i_isRunBased, i_baseRunId, "NULL"), ", ",
         defRs$modelDic$model_id, ", ",
-		toQuoted(paste("set_", setId, sep = "")), ", ",
+        toQuoted(setName), ", ",
         " 0, ",
         toQuoted(format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
         " )",

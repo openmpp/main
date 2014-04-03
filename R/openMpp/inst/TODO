@@ -1,1 +1,1 @@
-* Support not only SQLite but database providers: MySQL, PostgreSQL, Oracle, MSSQL, DB2
+* Support not only SQLite but also: MySQL, PostgreSQL, Oracle, MSSQL, DB2

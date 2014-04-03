@@ -29,6 +29,9 @@ License: \tab MIT license\cr
     \item{getModel}{
       Find OpenM++ model definition in database
     }
+    \item{getWorksetIdByName}{
+      Return working set id by name
+    }
     \item{getWorksetRunIds}{
       Return ids of model run results for specified working set
     }
@@ -70,6 +73,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
   \code{\link{createWorksetBasedOnRun}}
   \code{\link{getLanguages}}
   \code{\link{getModel}}
+  \code{\link{getWorksetIdByName}}
   \code{\link{getWorksetRunIds}}
   \code{\link{selectRunAccumulator}}
   \code{\link{selectRunOutputValue}}

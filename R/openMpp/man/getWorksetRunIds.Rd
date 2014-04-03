@@ -34,6 +34,8 @@ To run examples you must have modelOne database m1.sqlite in your home directory
 }
 
 \seealso{
+  \code{\link{getModel}}
+  \code{\link{getWorksetIdByName}}
 }
 \examples{
   theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)

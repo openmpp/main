@@ -19,6 +19,7 @@ createWorkset(dbCon, defRs, worksetTxt, ...)
   \item{worksetTxt}{
     if not NA then workset text data frame:
     \itemize{
+      \item \code{$name} (optional) working set name
       \item \code{$lang} language code 
       \item \code{$descr} working set description 
       \item \code{$note} (optional) working set notes 
@@ -61,6 +62,9 @@ in order to create workset using parameters from previous model run and supply s
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
 
+Each workset has unique set id (positive integer) and also may have a name. 
+To find set id by name use \code{\link{getWorksetIdByName}} call.
+
 Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
 after \code{createWorkset}.
 
@@ -81,6 +85,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getWorksetIdByName}}
   \code{\link{createWorksetBasedOnRun}}
   \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
@@ -90,6 +95,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   # model parameters:
   #   age by sex parameter double[4, 2] 
   #   salary by age parameter int[3, 4]
+  #   starting seed parameter integer value
   #
   
   # age by sex parameter value and notes
@@ -131,10 +137,24 @@ To run examples you must have modelOne database m1.sqlite in your home directory
     )
   )
   
+  # starting seed parameter value and notes
+  startingSeed <- list(
+
+    name = "StartingSeed",
+
+    txt = data.frame(
+      lang = c("EN"),
+      note = c("random generator starting seed"),
+      stringsAsFactors = FALSE
+    ),
+    value = 127L
+  )
+  
   #
-  # description and notes for this set of model parameters
+  # name, description and notes for this set of model parameters
   #
   paramSetTxt <- data.frame(
+    name = "myData",
     lang = c("EN", "FR"),
     descr = c("full set of parameters", "description in French"),
     note = c("full set of parameters notes", NA),
@@ -148,7 +168,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   defRs <- getModel(theDb, "modelOne")
   
   # create new workset with ALL model parameters
-  setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge)
+  setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
   if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
   
   # make workset read-only in order to run the model

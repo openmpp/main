@@ -56,6 +56,9 @@ in order to create workset using parameters from previous model run and supply s
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
 
+Each workset has unique set id (positive integer) and also may have a name. 
+To find set id by name use \code{\link{getWorksetIdByName}} call.
+
 Working set must be not read-only in order to update parameters by \code{\link{updateWorksetParameter}}.
 And working set must be read-only to run the model, so, typically you want to wrap \code{\link{updateWorksetParameter}}
 by \code{setReadonlyDefaultWorkset} or \code{setReadonlyWorkset} calls.
@@ -77,6 +80,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getWorksetIdByName}}
   \code{\link{createWorkset}}
   \code{\link{createWorksetBasedOnRun}}
   \code{\link{setReadonlyWorkset}}
@@ -87,6 +91,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   # model parameters:
   #   age by sex parameter double[4, 2] 
   #   salary by age parameter int[3, 4]
+  #   starting seed parameter integer value
   #
   
   # age by sex parameter value and notes

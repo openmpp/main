@@ -29,6 +29,7 @@ defRs <- getModel(theDb, "modelOne", "_201208171604590148_")
 # "modelOne" model parameters:
 #   age by sex parameter double[4, 2] 
 #   salary by age parameter int[3, 4]
+#   starting seed parameter integer value
 #
 
 # age by sex parameter value and notes
@@ -70,10 +71,24 @@ salaryAge <- list(
   )
 )
 
+# starting seed parameter value and notes
+startingSeed <- list(
+
+  name = "StartingSeed",
+
+  txt = data.frame(
+    lang = c("EN"),
+    note = c("random generator starting seed"),
+    stringsAsFactors = FALSE
+  ),
+  value = 127L
+)
+
 #
-# description and notes for this set of model parameters
+# name, description and notes for this set of model parameters
 #
 paramSetTxt <- data.frame(
+  name = "myData",
   lang = c("EN", "FR"),
   descr = c("default set of parameters", "FR default set of parameters"),
   note = c("default set of parameters notes", NA),
@@ -96,15 +111,22 @@ paramSetTxt <- data.frame(
 # create new working set of model parameters
 # it is a full set and includes all "modelOne" parameters: "ageSex" and "salaryAge"
 #
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
-# create another workset with different description and notes in English an French
+# find working set id by name
 #
+setId <- getWorksetIdByName(theDb, defRs, "myData")
+if (setId <= 0L) warning("workset not found: ", "myData")
+
+# create another workset with different description and notes in English an French
+# workset name will be generated automatically
+#
+paramSetTxt$name <- NA
 paramSetTxt$descr <- c("other set of parameters", "FR other set of parameters")
 paramSetTxt$note <- NA
 
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
 # 
@@ -112,7 +134,7 @@ if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " 
 #
 # that new workset is a subset and include only one model parameter: "salaryAge"
 # it is based on existing model run with run_id = 11 
-# and the rest of model parameters (i.e.: "ageSex")  would get values from that run
+# and the rest of model parameters (i.e.: "ageSex") would get values from that run
 #
 runId <- 11L
 
@@ -140,7 +162,7 @@ setReadonlyWorkset(theDb, defRs, TRUE, setId)
 setId <- setReadonlyDefaultWorkset(theDb, defRs, FALSE)
 if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
-updateWorksetParameter(theDb, defRs, setId, ageSex, salaryAge)
+updateWorksetParameter(theDb, defRs, setId, ageSex, startingSeed)
 setReadonlyDefaultWorkset(theDb, defRs, TRUE)
 
 # 
