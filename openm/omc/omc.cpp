@@ -4,7 +4,7 @@
 *  
 * @mainpage OpenM++ compiler (omc)
 * 
-* OpenM++ compiler produce c++ (.cpp and .h) files from .ompp or .mpp model files. \n
+* OpenM++ compiler produce c++ (.cpp and .h) files from .ompp, .mpp or .dat model files. \n
 *
 * Following command line arguments supported by omc:
 * * -Omc.InputDir  input/dir/to/find/source/files
@@ -114,7 +114,7 @@ namespace openm
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
 
-// get list of source (.mpp or .ompp) files from specified directory or current directory if source path is empty
+// get list of source (.mpp .ompp .dat) files from specified directory or current directory if source path is empty
 static list<string> listSourceFiles(const string & i_srcDir);
 
 // write string line into new output file
@@ -227,6 +227,10 @@ int main(int argc, char * argv[])
                     in_ext = ".ompp";
                     in_stem = name.substr(0, name.length() - 5);
                 }
+                if (endWithNoCase(name, ".dat")) {
+                    in_ext = ".dat";
+                    in_stem = name.substr(0, name.length() - 4);
+                }
 
                 source_files_long.push_back(inpDir + name);
 
@@ -327,7 +331,7 @@ int main(int argc, char * argv[])
     return EXIT_SUCCESS;
 }
 
-// get list of source (.mpp or .ompp) files from specified directory or current directory if source path is empty
+// get list of source (.mpp .ompp .dat) files from specified directory or current directory if source path is empty
 list<string> listSourceFiles(const string & i_srcPath)
 {
     using namespace openm;
@@ -338,7 +342,7 @@ list<string> listSourceFiles(const string & i_srcPath)
     DIR * dir = opendir(srcPath.c_str());
     if (dir == NULL) throw HelperException("Can not open source directory: %s", srcPath.c_str());
 
-    // collect list of .mpp or .ompp files
+    // collect list of .mpp, .ompp or .dat files
     try {
         dirent * ent;
 
@@ -347,7 +351,9 @@ list<string> listSourceFiles(const string & i_srcPath)
             if (ent->d_type != DT_REG || ent->d_name == NULL) continue; // skip directories, special files and file name errors
 
             string name = ent->d_name;
-            if (endWithNoCase(name, ".mpp") || endWithNoCase(name, ".ompp")) nameLst.push_back(name);
+            if (endWithNoCase(name, ".mpp") || endWithNoCase(name, ".ompp") || endWithNoCase(name, ".dat")) {
+                nameLst.push_back(name);
+            }
         }
     }
     catch(...) {

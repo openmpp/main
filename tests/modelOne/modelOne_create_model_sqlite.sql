@@ -40,42 +40,42 @@ INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('Mod
 -- 
 -- ModelOne simple types
 --
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 0,  'int', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 1,  'char', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 2,  'short', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 3,  'long', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 4,  'uint', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 5,  'uchar', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 6,  'ushort', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 7,  'ulong', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 8,  'integer', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 9,  'counter', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 10, 'real', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 11, 'float', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 12, 'double', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 13, 'TIME', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 14, 'rate', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 15, 'cumrate', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 16, 'haz1rate', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 17, 'haz2rate', 0, 1);
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 18, 'piece_linear', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 0, 'char', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 1, 'schar', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 2, 'short', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 3, 'int', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 4, 'long', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 6, 'bool', 1, 2);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 5, 'llong', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 7, 'uchar', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 8, 'ushort', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 9, 'uint', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 10, 'ulong', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 11, 'ullong', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 12, 'float', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 13, 'double', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 14, 'ldouble', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 15, 'Time', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 16, 'real', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 17, 'integer', 0, 1);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 18, 'counter', 0, 1);
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 19, 'file', 0, 1);
 
 -- 
 -- ModelOne logical type
 --
-INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 20, 'logical', 1, 2);
+INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 6, 'bool', 1, 2);
 
-INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 20, 0, 'logical type', NULL);
-INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 20, 1, 'logical type (fr)', NULL);
+INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 6, 0, 'logical type', NULL);
+INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 6, 1, 'logical type [no label (FR)]', NULL);
 
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 20, 0, 'FALSE');
-INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 20, 1, 'TRUE');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 6, 0, 'FALSE');
+INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 6, 1, 'TRUE');
 
-INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 0, 0, 'False', NULL);
-INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 0, 1, 'Faux', NULL);
-INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 1, 0, 'True', NULL);
-INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 1, 1, 'Vrai', NULL);
+INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 6, 0, 0, 'False', NULL);
+INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 6, 0, 1, 'Faux', NULL);
+INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 6, 1, 0, 'True', NULL);
+INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 6, 1, 1, 'Vrai', NULL);
 
 -- 
 -- ModelOne classifcation types
@@ -119,15 +119,15 @@ INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)
 INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
 VALUES
-  (1, 0, '0_ageSex', 'ageSex', 2, 12, 0, 0, 0);
+  (1, 0, '0_ageSex', 'ageSex', 2, 13, 0, 0, 0);
 INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
 VALUES
-  (1, 1, '1_salaryAge', 'salaryAge', 2, 0, 0, 0, 0);
+  (1, 1, '1_salaryAge', 'salaryAge', 2, 3, 0, 0, 0);
 INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
 VALUES
-  (1, 2, '2_StartingSeed', 'StartingSeed', 0, 0, 0, 0, 0);
+  (1, 2, '2_StartingSeed', 'StartingSeed', 0, 3, 0, 0, 0);
 
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 0, 1, 'Age by Sex (fr)', NULL);
@@ -270,3 +270,50 @@ CREATE TABLE modelone_201208171604590148_v0_salarySex
   value     FLOAT NULL,
   PRIMARY KEY (run_id, dim0, dim1, unit_id)
 );
+
+--
+-- lines below is for information only and used by OpenM++
+--
+
+--
+-- Simple types defined in Modgen-compatible way
+--
+
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 0,  'int', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 1,  'char', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 2,  'short', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 3,  'long', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 4,  'uint', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 5,  'uchar', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 6,  'ushort', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 7,  'ulong', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 8,  'integer', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 9,  'counter', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 10, 'real', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 11, 'float', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 12, 'double', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 13, 'TIME', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 14, 'rate', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 15, 'cumrate', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 16, 'haz1rate', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 17, 'haz2rate', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 18, 'piece_linear', 0, 1);
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 19, 'file', 0, 1);
+
+-- 
+-- Logical type defined in Modgen-compatible way
+--
+
+-- INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 20, 'logical', 1, 2);
+-- 
+-- INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 20, 0, 'logical type', NULL);
+-- INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note) VALUES (1, 20, 1, 'logical type (fr)', NULL);
+-- 
+-- INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 20, 0, 'FALSE');
+-- INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name) VALUES (1, 20, 1, 'TRUE');
+-- 
+-- INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 0, 0, 'False', NULL);
+-- INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 0, 1, 'Faux', NULL);
+-- INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 1, 0, 'True', NULL);
+-- INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 20, 1, 1, 'Vrai', NULL);
+
