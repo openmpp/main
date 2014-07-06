@@ -21,23 +21,12 @@ CodeBlock ModelTypeSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    if (value == token::TK_case_based ) {
-        c += "#include \"omc/omSimulation_casebased.cpp\" // Definitions for framework code for case-based model";
-    }
-    else
-    {
-        // compiler guarantee
-        assert(value == token::TK_time_based);
-        c += "#include \"omc/omSimulation_timebased.cpp\" // Definitions for framework code for time-based model";
-    }
-
     if ( just_in_time ) {
         c += "const bool BaseEvent::just_in_time = true;" ;
     }
     else {
         c += "const bool BaseEvent::just_in_time = false;" ;
     }
-
 
     return c;
 }

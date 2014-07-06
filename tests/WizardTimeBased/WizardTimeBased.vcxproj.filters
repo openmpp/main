@@ -36,14 +36,23 @@
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
     <ClInclude Include="PersonCore.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
     <ClInclude Include="WizardTimeBased.mpp">
       <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StartSimulation.ompp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TickerCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -59,5 +68,10 @@
     <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h">
       <Filter>Header Files\omc</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="time_based_modgen.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

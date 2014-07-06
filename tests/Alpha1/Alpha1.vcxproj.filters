@@ -17,7 +17,6 @@
       <UniqueIdentifier>{cde252cf-1ec2-45f3-9e90-96803cd7895a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  
   <ItemGroup>
     <ClInclude Include="Happiness.mpp">
       <Filter>Model Source Files</Filter>
@@ -31,29 +30,31 @@
     <ClInclude Include="StartSimulation.ompp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  
-    <ItemGroup>
     <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
-      <Filter>Header Files\omc</Filter>
+      <Filter>C++ Files</Filter>
     </ClInclude>
     <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h">
-      <Filter>Header Files\omc</Filter>
+      <Filter>C++ Files</Filter>
     </ClInclude>
     <ClInclude Include="$(OM_INC_DIR)/omc/Event.h">
-      <Filter>Header Files\omc</Filter>
+      <Filter>C++ Files</Filter>
     </ClInclude>
     <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h">
-      <Filter>Header Files\omc</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OM_INC_DIR)/omc/Range.h">
-      <Filter>Header Files\omc</Filter>
+      <Filter>C++ Files</Filter>
     </ClInclude>
     <ClInclude Include="$(OM_INC_DIR)/omc/Partition.h">
-      <Filter>Header Files\omc</Filter>
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_INC_DIR)/omc/Range.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h">
+      <Filter>C++ Files</Filter>
     </ClInclude>
   </ItemGroup>
-
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
       <Filter>OmcOutput</Filter>
@@ -66,8 +67,10 @@
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_types.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="case_based_modgen.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

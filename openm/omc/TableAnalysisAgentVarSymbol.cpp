@@ -20,7 +20,7 @@ using namespace openm;
 string TableAnalysisAgentVarSymbol::symbol_name(const Symbol *table, const Symbol *agentvar)
 {
     string result;
-    result = "om_taav_" + table->name + "_" + agentvar->name;
+    result = "om_" + table->name + "_taav_" + agentvar->name;
     return result;
 }
 
@@ -73,7 +73,7 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
 string TableAnalysisAgentVarSymbol::in_member_name() const
 {
     string result;
-    result = "om_in_" + table->name + "_" + agentvar->name;
+    result = "om_" + table->name + "_in_" + agentvar->name;
     return result;
 }
 

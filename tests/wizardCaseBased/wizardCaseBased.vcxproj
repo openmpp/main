@@ -66,54 +66,45 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  
   <!-- Import common openM models project settings -->
   <Import Project="$(SolutionDir)../model.1.build.props" />
   <Import Project="$(SolutionDir)../model.2.cpp.props" />
-  
   <ItemGroup>
     <ClInclude Include="PersonCore.mpp" />
     <ClInclude Include="WizardCaseBased.mpp" />
     <ClInclude Include="WizardCaseBasedFR.mpp" />
     <ClInclude Include="StartSimulation.ompp" />
   </ItemGroup>
-  
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp" />
   </ItemGroup>
-  
   <ItemGroup>
     <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h" />
     <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h" />
     <ClInclude Include="$(OM_INC_DIR)/omc/Event.h" />
     <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h" />
   </ItemGroup>
-  
   <ItemGroup>
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h" />
     <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h" />
   </ItemGroup>
-  
   <ItemGroup>
     <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_create_model.sql" />
     <SqlScript Include="$(OMC_OUT_DIR)/WizardCaseBased_optional_views.sql" />
   </ItemGroup>
-  
+  <ItemGroup>
+    <None Include="case_based_modgen.ompp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  
   <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
     <Message Text="Delete omc compiler output" />
     <RemoveDir Directories="$(OMC_OUT_DIR)" />
   </Target>
-  
-  <Target Name="OmcCompile" BeforeTargets="PrepareForBuild" 
-    Inputs="PersonCore.mpp;WizardCaseBased.mpp;WizardCaseBasedFR.mpp;StartSimulation.ompp" 
-    Outputs="$(OMC_OUT_DIR)/om_declarations.h;$(OMC_OUT_DIR)/om_types0.h;$(OMC_OUT_DIR)/om_types1.h;$(OMC_OUT_DIR)/om_definitions.cpp;$(OMC_OUT_DIR)/om_developer.cpp;@(SqlScript)"
-	>
+  <Target Name="OmcCompile" BeforeTargets="PrepareForBuild" Inputs="PersonCore.mpp;WizardCaseBased.mpp;WizardCaseBasedFR.mpp;StartSimulation.ompp" Outputs="$(OMC_OUT_DIR)/om_declarations.h;$(OMC_OUT_DIR)/om_types0.h;$(OMC_OUT_DIR)/om_types1.h;$(OMC_OUT_DIR)/om_definitions.cpp;$(OMC_OUT_DIR)/om_developer.cpp;@(SqlScript)">
     <MakeDir Directories="$(OMC_OUT_DIR)" />
     <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
     <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
@@ -122,5 +113,4 @@
     </ItemGroup>
     <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(OutDir)" />
   </Target>
-  
 </Project>

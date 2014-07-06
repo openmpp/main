@@ -13,7 +13,7 @@
 
 my $version = 1.0;
 
-my $debug = 0; # diagnostics level
+my $debug = 1; # diagnostics level
 
 
 if ( $#ARGV+1 != 1 ) {
@@ -193,9 +193,9 @@ print INSERT_PARAM_SQL "-- script created at: ${run_time_stamp_readable}", "\n";
 print INSERT_PARAM_SQL "--", "\n";
 
 print INSERT_PARAM_SQL "\nINSERT INTO workset_lst", "\n";
-print INSERT_PARAM_SQL "  (set_id, run_id, model_id, is_readonly, update_dt)", "\n";
+print INSERT_PARAM_SQL "  (set_id, run_id, model_id, set_name, is_readonly, update_dt)", "\n";
 print INSERT_PARAM_SQL "VALUES", "\n";
-print INSERT_PARAM_SQL "  (${set_id}, NULL, ${model_id}, 1, '${run_time_stamp_readable}');", "\n";
+print INSERT_PARAM_SQL "  (${set_id}, NULL, ${model_id}, 'Default', 1, '${run_time_stamp_readable}');", "\n";
 print INSERT_PARAM_SQL "\nINSERT INTO workset_txt (set_id, model_id, lang_id, descr, note)", "\n";
 print INSERT_PARAM_SQL "VALUES", "\n";
 print INSERT_PARAM_SQL "  (${set_id}, ${model_id}, 0, '${model_name} default parameters', '${model_name} default set of input parameters');", "\n";

@@ -89,18 +89,17 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
     h += doxygen("Partition: " + name);
 
     // lower bounds of intervals in partition
-    h += "extern const array<real, " + to_string(pp_size()) + "> om_lower_" + name + ";";
+    h += "extern const array<real, " + to_string(pp_size()) + "> om_" + name + "_lower;";
     // upper bounds of intervals in partition
-    h += "extern const array<real, " + to_string(pp_size()) + "> om_upper_" + name + ";";
+    h += "extern const array<real, " + to_string(pp_size()) + "> om_" + name + "_upper;";
     // splitter map for partition
-    h += "extern const map<real, " + token_to_string(storage_type) + "> om_splitter_" + name + ";";
+    h += "extern const map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter;";
 
-    // Ex. typedef Partition<int, 5, om_cutpoints_AGE_GROUP> AGE_GROUP;
     h += "typedef Partition<" + token_to_string(storage_type) + ", "
         + to_string(pp_size()) + ", "
-        + "om_lower_" + name + ", "
-        + "om_upper_" + name + ", "
-        + "om_splitter_" + name + "> " + name + ";" ;
+        + "om_" + name + "_lower, "
+        + "om_" + name + "_upper, "
+        + "om_" + name + "_splitter> " + name + ";" ;
 
     return h;
 }

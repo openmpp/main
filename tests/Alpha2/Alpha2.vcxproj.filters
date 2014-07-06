@@ -17,7 +17,6 @@
       <UniqueIdentifier>{cde252cf-1ec2-45f3-9e90-96803cd7895a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  
   <ItemGroup>
     <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
       <Filter>C++ Files</Filter>
@@ -56,7 +55,6 @@
       <Filter>C++ Files</Filter>
     </ClInclude>
   </ItemGroup>
-  
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
       <Filter>OmcOutput</Filter>
@@ -74,8 +72,6 @@
       <Filter>OmcOutput</Filter>
     </ClInclude>
   </ItemGroup>
-
-  
   <ItemGroup>
     <ClInclude Include="Alpha2.mpp">
       <Filter>Model Source Files</Filter>
@@ -99,5 +95,9 @@
       <Filter>Model Source Files</Filter>
     </ClInclude>
   </ItemGroup>
-  
+  <ItemGroup>
+    <None Include="case_based_modgen.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

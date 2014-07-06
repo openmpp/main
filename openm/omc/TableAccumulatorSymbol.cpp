@@ -16,7 +16,7 @@
 string TableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, const Symbol *agentvar)
 {
     string result;
-    result = "om_ta_" + table->name + "_" + token_to_string(accumulator) + "_" + token_to_string(increment) + "_" + agentvar->name;
+    result = "om_" + table->name + "_ta_" + token_to_string(accumulator) + "_" + token_to_string(increment) + "_" + agentvar->name;
     return result;
 }
 

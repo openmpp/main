@@ -32,29 +32,26 @@ void TableSymbol::create_auxiliary_symbols()
         // Set storage type to int. Can be changed in a subsequent pass to optimize storage based on array size.
         auto *typ = NumericSymbol::find(token::TK_int);
         assert(typ); // initialization guarantee
-        cell = new AgentInternalSymbol("om_cell_" + name, agent, typ);
+        cell = new AgentInternalSymbol("om_" + name + "_cell", agent, typ);
     }
 
     {
         assert(!update_cell_fn); // initialization guarantee
-        // Ex. "om_update_cell_DurationOfLife"
-        update_cell_fn = new AgentFuncSymbol("om_update_cell_" + name, agent);
+        update_cell_fn = new AgentFuncSymbol("om_" + name + "_update_cell", agent);
         assert(update_cell_fn); // out of memory check
         update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
     }
 
     {
         assert(!prepare_increments_fn); // initialization guarantee
-        // Ex. "om_prepare_increments_DurationOfLife"
-        prepare_increments_fn = new AgentFuncSymbol("om_prepare_increments_" + name, agent);
+        prepare_increments_fn = new AgentFuncSymbol("om_" + name + "_prepare_increments", agent);
         assert(prepare_increments_fn); // out of memory check
         prepare_increments_fn->doc_block = doxygen_short("Prepare the increments for the active table cell in " + name + ".");
     }
 
     {
         assert(!process_increments_fn); // initialization guarantee
-        // Ex. "om_process_increments_DurationOfLife"
-        process_increments_fn = new AgentFuncSymbol("om_process_increments_" + name, agent);
+        process_increments_fn = new AgentFuncSymbol("om_" + name + "_process_increments", agent);
         assert(process_increments_fn); // out of memory check
         process_increments_fn->doc_block = doxygen_short("Process the increments for the active table cell in " + name + ".");
     }

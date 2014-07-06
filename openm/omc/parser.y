@@ -963,7 +963,7 @@ decl_agent_event:
                             auto *agent = pc.get_agent_context();
                             // Create agent event symbol
                             // Ex. "om_time_BirthdayEvent"
-                            string event_name = "om_time_" + $implement_func->name;
+                            string event_name = "om_" + $implement_func->name + "_time";
                             auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, @decl_agent_event);
       }
     ;
@@ -1255,7 +1255,7 @@ table_filter_opt:
                         {
                             TableSymbol *table = pc.get_table_context();
                             // create an expression agentvar for the filter
-                            auto eav = new IdentityAgentVarSymbol("om_filter_" + table->name, table->agent, BoolSymbol::find(), $root, @root);
+                            auto eav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
                             assert(eav); // out of memory check
                             // note expression agentvar in table
                             table->filter = eav;

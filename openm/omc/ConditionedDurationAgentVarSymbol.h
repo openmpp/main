@@ -37,7 +37,7 @@ public:
         , pp_observed(nullptr)
     {
         // Create an AgentFuncSymbol for the condition function
-        condition_fn = new AgentFuncSymbol("om_condition_" + name, agent, "bool", "");
+        condition_fn = new AgentFuncSymbol(name + "_condition", agent, "bool", "");
         assert(condition_fn); // out of memory check
         condition_fn->func_body += "return (" + observed->name + " == " + constant->value() + ");" ;
         condition_fn->doc_block = doxygen_short("Evaluate condition for " + pretty_name() + ".");

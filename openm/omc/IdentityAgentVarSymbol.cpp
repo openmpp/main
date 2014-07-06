@@ -19,7 +19,7 @@ using namespace std;
 void IdentityAgentVarSymbol::create_auxiliary_symbols()
 {
     // Create an AgentFuncSymbol for the expression function
-    expression_fn = new AgentFuncSymbol("om_expression_" + name, agent);
+    expression_fn = new AgentFuncSymbol(name + "_identity", agent);
     assert(expression_fn); // out of memory check
     expression_fn->doc_block = doxygen_short("Evaluate and assign expression for " + name + ".");
 }
