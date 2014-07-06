@@ -45,6 +45,10 @@
 using namespace std;
 using namespace openm;
 
+string Symbol::use_folder;
+
+list<string> Symbol::all_source_files;
+
 symbol_map_type Symbol::symbols;
 
 list<symbol_map_value_type> Symbol::pp_symbols;
@@ -102,6 +106,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_table_group, "table_group" },
     { token::TK_time_type, "time_type" },
     { token::TK_track, "track" },
+    { token::TK_use, "use" },
     { token::TK_user_table, "user_table" },
     { token::TK_version, "version" },
 
@@ -378,8 +383,9 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 
 };
 
-// NB: There is a direct correspondence between the following lines and code in token.cpp
-// Maintain exactly the same order.
+// NB: There is a direct correspondence between the following lines
+// and code earlier in this module for the map Symbol::token_string,
+// and in parser.y. Maintain exactly the same order.
 unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 {
     token::TK_agent,
@@ -407,6 +413,7 @@ unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
     token::TK_table_group,
     token::TK_time_type,
     token::TK_track,
+    token::TK_use,
     token::TK_user_table,
     token::TK_version,
 };

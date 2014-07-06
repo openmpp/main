@@ -42,9 +42,6 @@
     <ClInclude Include="WizardTimeBased.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="StartSimulation.ompp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="TickerCore.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
@@ -70,7 +67,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="time_based_modgen.ompp">
+    <None Include="Framework.ompp">
       <Filter>Model Source Files</Filter>
     </None>
   </ItemGroup>

@@ -127,6 +127,7 @@ extern char *yytext;
 %token <val_token>    TK_table_group    "table_group"
 %token <val_token>    TK_time_type      "time_type"
 %token <val_token>    TK_track          "track"
+%token <val_token>    TK_use            "use"
 %token <val_token>    TK_user_table     "user_table"
 %token <val_token>    TK_version        "version"
 
@@ -495,7 +496,8 @@ ompp_declarative_islands ompp_declarative_island
 	;
 
 ompp_declarative_island:
-	  decl_languages        { pc.InitializeForCxx(); }
+	  decl_use              { pc.InitializeForCxx(); }
+	| decl_languages        { pc.InitializeForCxx(); }
 	| decl_model_type       { pc.InitializeForCxx(); }
 	| decl_time_type        { pc.InitializeForCxx(); }
 	| decl_real_type        { pc.InitializeForCxx(); }
@@ -510,6 +512,25 @@ ompp_declarative_island:
 	| decl_link             { pc.InitializeForCxx(); }
 	| decl_table            { pc.InitializeForCxx(); }
 	;
+
+/*
+ * use
+ */
+
+decl_use:
+          "use" STRING_LITERAL[path] ";"
+                        {
+                            // TODO check for existence in current directory, if not found, use standard 'use' directory (relative to compiler location)
+                            string use_file = $path->value();
+                            // remove leading and trailing double quote characters
+                            use_file = use_file.substr(1, use_file.length() - 2);
+                            // prepend the fixed 'use' folder location
+                            use_file = Symbol::use_folder + use_file;
+                            Symbol::all_source_files.push_back(use_file);
+                            delete $path;
+                        }
+        | "use" error ";"
+        ;
 
 /*
  * language

@@ -27,9 +27,6 @@
     <ClInclude Include="Alpha1.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="StartSimulation.ompp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
@@ -69,7 +66,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="case_based_modgen.ompp">
+    <None Include="Framework.ompp">
       <Filter>Model Source Files</Filter>
     </None>
   </ItemGroup>

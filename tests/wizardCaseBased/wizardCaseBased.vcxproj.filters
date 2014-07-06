@@ -45,9 +45,6 @@
     <ClInclude Include="WizardCaseBasedFR.mpp">
       <Filter>Model Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="StartSimulation.ompp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,7 +67,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="case_based_modgen.ompp">
+    <None Include="Framework.ompp">
       <Filter>Model Source Files</Filter>
     </None>
   </ItemGroup>

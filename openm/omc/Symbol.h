@@ -734,7 +734,6 @@ public:
 
     static bool is_om_outer_keyword(const token_type& tok);
 
-
     /**
      * Query if @a nm is an om developer-supplied function. These are functions with special names,
      * for example 'Simulation'.
@@ -743,9 +742,25 @@ public:
      *
      * @return true if om developer function, false if not.
      */
-
     static bool is_om_developer_function(const char* nm);
 
+    /**
+     * Pathname of the use folder.
+     * 
+     * Used to resolve 'use' statements to physical files. Set within omc.cpp relative to location
+     * of omc.exe executable.
+     */
+    static string use_folder;
+
+    /**
+     * Source files for the model.
+     * 
+     * Consists of all source files parsed by the compiler, in parse order. Source file names
+     * generally include a leading path portion, which may be absolute or relative to the compiler
+     * location. This includes files supplied on the command line as well as files specified with
+     * the 'use' statement from within model source code.
+     */
+    static list<string> all_source_files;
 
     /**
      * The symbol table.

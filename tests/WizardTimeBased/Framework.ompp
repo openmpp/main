@@ -1,13 +1,14 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-//LABEL(StartSimulation, EN) StartSimulation
+//LABEL(Framework, EN) Framework
 
-/* NOTE(StartSimulation, EN)
-	This module implements the framework functions StartSimulation and EndSimulation.
+/* NOTE(Framework, EN)
+	This module specifies the simulation framework
+    and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h"
+use "time_based/time_based_modgen.ompp";
 
 void StartSimulation(int id)
 {
@@ -22,4 +23,3 @@ void StartSimulation(int id)
 void EndSimulation()
 {
 }
-

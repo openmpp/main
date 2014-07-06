@@ -73,7 +73,6 @@
     <ClInclude Include="Happiness.mpp" />
     <ClInclude Include="PersonCore.mpp" />
     <ClInclude Include="Alpha1.mpp" />
-    <ClInclude Include="StartSimulation.ompp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
@@ -97,7 +96,7 @@
     <SqlScript Include="$(OMC_OUT_DIR)/Alpha1_optional_views.sql" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="case_based_modgen.ompp" />
+    <None Include="Framework.ompp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -106,7 +105,7 @@
     <Message Text="Delete omc compiler output" />
     <RemoveDir Directories="$(OMC_OUT_DIR)" />
   </Target>
-  <Target Name="OmcCompile" BeforeTargets="PrepareForBuild" Inputs="Happiness.mpp;PersonCore.mpp;Alpha1.mpp;StartSimulation.ompp" Outputs="$(OMC_OUT_DIR)/om_declarations.h;$(OMC_OUT_DIR)/om_types0.h;$(OMC_OUT_DIR)/om_types1.h;$(OMC_OUT_DIR)/om_definitions.cpp;$(OMC_OUT_DIR)/om_developer.cpp;@(SqlScript)">
+  <Target Name="OmcCompile" BeforeTargets="PrepareForBuild" Inputs="Happiness.mpp;PersonCore.mpp;Alpha1.mpp;Framework.ompp" Outputs="$(OMC_OUT_DIR)/om_declarations.h;$(OMC_OUT_DIR)/om_types0.h;$(OMC_OUT_DIR)/om_types1.h;$(OMC_OUT_DIR)/om_definitions.cpp;$(OMC_OUT_DIR)/om_developer.cpp;@(SqlScript)">
     <MakeDir Directories="$(OMC_OUT_DIR)" />
     <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
     <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
