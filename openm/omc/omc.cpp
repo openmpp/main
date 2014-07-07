@@ -312,11 +312,12 @@ int main(int argc, char * argv[])
         // collect model metadata during code generation
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create());
-        
+
         CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, builder->timeStamp(), metaRows);
         cg.do_all();
 
         // build model creation script and save it
+        theLog->logMsg("Meta-data processing");
         vector<string> scriptLines = builder->build(metaRows);
         writeLinesToFile(outDir + metaRows.modelDic.name + "_create_model.sql", scriptLines);
         

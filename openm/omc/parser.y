@@ -699,7 +699,7 @@ decl_partition:
                         {
                             // create PartitionEnumeratorSymbol for upper partition interval
                             Symbol *enum_symbol = pc.get_partition_context();
-                            string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
+                            string enumerator_name = enum_symbol->name + "_om_" + to_string(pc.counter1);
                             string upper_split_point = "max";
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @last);
 
@@ -714,7 +714,7 @@ partition_splitpoints:
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
-                            string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
+                            string enumerator_name = enum_symbol->name + "_om_" + to_string(pc.counter1);
                             string upper_split_point = $signed_numeric_literal->value();
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
                             pc.counter1++;  // counter for partition split points
@@ -723,7 +723,7 @@ partition_splitpoints:
                         {
                             // create PartitionEnumeratorSymbol for interval which ends at this split point
                             Symbol *enum_symbol = pc.get_partition_context();
-                            string enumerator_name = enum_symbol->name + "_" + to_string(pc.counter1);
+                            string enumerator_name = enum_symbol->name + "_om_" + to_string(pc.counter1);
                             string upper_split_point = $signed_numeric_literal->value();
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
                             pc.counter1++;  // counter for partition split points
@@ -789,7 +789,34 @@ decl_parameter:
                             // No valid parameter context
                             pc.set_parameter_context( nullptr );
                         }
-	| error ";"
+    |  "cumrate" SYMBOL[parm]
+                        {
+                            ParameterSymbol *parm = nullptr;
+
+                            if ($parm->is_base_symbol()) {
+                                // Morph Symbol to ParameterSymbol
+                                auto *type_symbol = Symbol::get_symbol("double");
+                                assert(type_symbol); // grammar/initialization guarantee
+                                parm = new ParameterSymbol( $parm, type_symbol, @parm );
+                                assert(parm);
+                                $parm = parm;
+                            }
+                            else {
+                                // parameter re-declaration
+                                pc.redeclaration = true;
+                                parm = dynamic_cast<ParameterSymbol *>($parm);
+                                assert(parm); // grammar/logic guarantee
+                            }
+                            // Set parameter context for gathering the dimension specification (if present)
+                            // and initializer (if present).
+                            pc.set_parameter_context( parm );
+                        }
+            decl_dim_list parameter_initializer_expr ";"
+                        {
+                            // No valid parameter context
+                            pc.set_parameter_context( nullptr );
+                        }
+    | error ";"
                         {
                             // Error recovery: Prepare to parse another parameter in the 'parameters' declarative island
                             pc.brace_level = 1;
