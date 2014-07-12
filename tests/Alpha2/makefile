@@ -67,7 +67,7 @@ MODEL_MPP = \
   Extensions.ompp \
   Happiness.mpp \
   PersonCore.mpp \
-  StartSimulation.ompp \
+  Framework.ompp \
   SyntaxProbes.mpp \
   TestLinks.mpp
 

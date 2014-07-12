@@ -66,7 +66,7 @@ MODEL_MPP = \
   Alpha1.mpp \
   Happiness.mpp \
   PersonCore.mpp \
-  StartSimulation.ompp
+  Framework.ompp
 
 MODEL_OMC_SQL = \
   $(OMC_OUT_DIR)/$(MODEL_SQL_PREFIX)_create_model.sql \

@@ -64,7 +64,7 @@ MODEL_SQL_PREFIX = WizardCaseBased
 
 MODEL_MPP = \
   PersonCore.mpp \
-  StartSimulation.ompp \
+  Framework.ompp \
   WizardCaseBased.mpp \
   WizardCaseBasedFR.mpp
 

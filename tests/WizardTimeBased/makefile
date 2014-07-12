@@ -64,7 +64,7 @@ MODEL_SQL_PREFIX = WizardTimeBased
 
 MODEL_MPP = \
   PersonCore.mpp \
-  StartSimulation.ompp \
+  Framework.ompp \
   TickerCore.mpp \
   WizardTimeBased.mpp
 
