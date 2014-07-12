@@ -122,11 +122,29 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 CodeBlock ParameterSymbol::cxx_initializer()
 {
     CodeBlock c;
-
     if (!initializer_list.empty()) {
+        int values_per_line = 1; // number of iniitalizer values to place on each line
+        if (rank() >= 1) {
+            // number of values per line is sizse of trailing dimension
+            auto es = pp_dimension_list.back();
+            values_per_line = es->pp_size();
+        }
         c += "{";
+        int values_in_line = 0;
+        string line;
         for (auto s : initializer_list) {
-            c += *s + ",";
+            // output line if values per line limit has been reached
+            if (values_in_line == values_per_line) {
+                c += line;
+                line = "";
+                values_in_line = 0;
+            }
+            line += *s + ",";
+            values_in_line++;
+        }
+        // output final partial line
+        if (values_in_line > 0) {
+            c += line;
         }
         c += "}";
     }

@@ -31,7 +31,7 @@ public:
      * @return The same CodeBlock, but with an increased indent for appended content.
      */
 
-    CodeBlock operator++(int);
+    CodeBlock & operator++(int);
 
 
     /**
@@ -42,7 +42,7 @@ public:
      * @return The same CodeBlock, but with a decreased indent for appended content.
      */
 
-    CodeBlock operator--(int);
+    CodeBlock & operator--(int);
 
 
     /**
@@ -54,7 +54,7 @@ public:
      * @return The CodeBlock with an additional appended line.
      */
 
-    CodeBlock operator+=(string line);
+    CodeBlock & operator+=(const string & line);
 
     /**
      * Assignment by sum operator - Append block of code at current indentation level.
@@ -66,7 +66,7 @@ public:
      * @return  The CodeBlock with an additional appended block of code lines.
      */
 
-    CodeBlock operator+=(CodeBlock append_block);
+    CodeBlock & operator+=(const CodeBlock & append_block);
 
     /**
      * Control smart indenting.

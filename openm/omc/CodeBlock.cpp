@@ -8,13 +8,13 @@
 #include <cassert>
 #include "CodeBlock.h"
 
-CodeBlock CodeBlock::operator++(int)
+CodeBlock & CodeBlock::operator++(int)
 {
     current_indent += one_indent;
     return *this;
 }
 
-CodeBlock CodeBlock::operator--(int)
+CodeBlock & CodeBlock::operator--(int)
 {
     if (current_indent.length() > 0)
         current_indent.resize(current_indent.length() - one_indent.length());
@@ -23,7 +23,7 @@ CodeBlock CodeBlock::operator--(int)
     return *this;
 }
 
-CodeBlock CodeBlock::operator += (string line)
+CodeBlock & CodeBlock::operator += (const string & line)
 {
     if (line.length() > 0) {
         if (raw_mode) {
@@ -54,7 +54,7 @@ CodeBlock CodeBlock::operator += (string line)
     return *this;
 }
 
-CodeBlock CodeBlock::operator += (CodeBlock append_block)
+CodeBlock & CodeBlock::operator += (const CodeBlock & append_block)
 {
     for (string line : append_block) {
         if (line.length() > 0) {
