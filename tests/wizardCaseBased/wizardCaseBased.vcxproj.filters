@@ -31,6 +31,9 @@
     <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp">
       <Filter>OmcOutput</Filter>
     </ClCompile>
+    <ClCompile Include="..\build\wizardCaseBased\src\om_initializers.cpp">
+      <Filter>OmcOutput</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
@@ -46,10 +49,10 @@
       <Filter>Model Source Files</Filter>
     </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
-      <Filter>Header Files</Filter>
+      <Filter>OmcOutput</Filter>
     </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h">
-      <Filter>Header Files</Filter>
+      <Filter>OmcOutput</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

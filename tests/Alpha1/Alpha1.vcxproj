@@ -77,6 +77,7 @@
   <ItemGroup>
     <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
     <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp" />
+    <ClCompile Include="..\build\Alpha1\src\om_initializers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h" />

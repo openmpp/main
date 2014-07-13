@@ -46,10 +46,10 @@
       <Filter>C++ Files</Filter>
     </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
-      <Filter>C++ Files</Filter>
+      <Filter>OmcOutput</Filter>
     </ClInclude>
     <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h">
-      <Filter>C++ Files</Filter>
+      <Filter>OmcOutput</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +57,9 @@
       <Filter>OmcOutput</Filter>
     </ClCompile>
     <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp">
+      <Filter>OmcOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="..\build\Alpha1\src\om_initializers.cpp">
       <Filter>OmcOutput</Filter>
     </ClCompile>
   </ItemGroup>

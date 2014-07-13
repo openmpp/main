@@ -71,6 +71,9 @@
     <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
       <Filter>OmcOutput</Filter>
     </ClInclude>
+    <ClCompile Include="..\build\Alpha2\src\om_initializers.cpp">
+      <Filter>OmcOutput</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Alpha2.mpp">

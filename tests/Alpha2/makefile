@@ -77,6 +77,7 @@ MODEL_OMC_SQL = \
 
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
+  $(OMC_OUT_DIR)/om_initializers.cpp \
   $(OMC_OUT_DIR)/om_developer.cpp
 
 MODEL_CPPLIST = \
