@@ -324,23 +324,23 @@ int main(int argc, char * argv[])
 
         // build model creation script and save it
         theLog->logMsg("Meta-data processing");
-        //vector<string> scriptLines = builder->build(metaRows);
-        //writeLinesToFile(outDir + metaRows.modelDic.name + "_create_model.sql", scriptLines);
-        //
-        //// build Modgen views creation script and save
-        //scriptLines = builder->buildCompatibilityViews(metaRows);
-        //writeLinesToFile(outDir + metaRows.modelDic.name + "_optional_views.sql", scriptLines);
+        vector<string> scriptLines = builder->build(metaRows);
+        writeLinesToFile(outDir + metaRows.modelDic.name + "_create_model.sql", scriptLines);
+        
+        // build Modgen views creation script and save
+        scriptLines = builder->buildCompatibilityViews(metaRows);
+        writeLinesToFile(outDir + metaRows.modelDic.name + "_optional_views.sql", scriptLines);
 
-        //// debug only: create model default parameters script from template
-        //string srcInsertParameters = metaRows.modelDic.name + "_insert_parameters.sql_template";
+        // debug only: create model default parameters script from template
+        string srcInsertParameters = metaRows.modelDic.name + "_insert_parameters.sql_template";
 
-        //string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
-        //if (!scriptContent.empty()) {
-        //    writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
-        //}
-        //else {
-        //    theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
-        //}
+        string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
+        if (!scriptContent.empty()) {
+            writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
+        }
+        else {
+            theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
+        }
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");

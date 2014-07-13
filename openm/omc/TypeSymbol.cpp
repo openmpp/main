@@ -28,4 +28,19 @@ bool TypeSymbol::numeric_or_bool()
     }
 }
 
+bool TypeSymbol::is_enumeration()
+{
+    if (dynamic_cast<NumericSymbol *>(this)) {
+        return false;
+    }
+    else {
+        assert(dynamic_cast<ClassificationSymbol *>(this)
+            || dynamic_cast<BoolSymbol *>(this)
+            || dynamic_cast<RangeSymbol *>(this)
+            || dynamic_cast<PartitionSymbol *>(this)); // grammar guarantee
+        return true;
+    }
+}
+
+
 int TypeSymbol::next_type_id = 0;

@@ -141,6 +141,12 @@ void TableSymbol::post_parse(int pass)
                 c += "}";
                 c += "";
             }
+
+            // Mark enumerations required for metadata support for this table
+            // The enumeration of each dimension is required
+            for (auto es : pp_dimension_list_enum) {
+                es->metadata_needed = true;
+            }
         }
         break;
     default:

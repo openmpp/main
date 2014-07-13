@@ -47,6 +47,10 @@ void EnumerationSymbol::post_parse(int pass)
 
 void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
+    // Only generate metadata if the enumeration has been mraked
+    // as being used in a table or external parameter
+    if (!metadata_needed) return;
+
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
 

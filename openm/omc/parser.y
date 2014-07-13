@@ -853,6 +853,7 @@ parameter_initializer_expr:
                             // add first (and only) element to the initializer list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
+                            parm->source = ParameterSymbol::internal_parameter;
                             parm->initializer_list.push_back($parameter_initializer_element);
                         }
     | "=" "{" parameter_initializer_list[wrk] "}"
@@ -860,6 +861,7 @@ parameter_initializer_expr:
                             // splice the gathered initializer list into the parameter's list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
+                            parm->source = ParameterSymbol::internal_parameter;
                             auto wrk = $wrk; // to see it in the debugger
                             parm->initializer_list.splice(parm->initializer_list.end(), *wrk);
                             delete wrk;

@@ -241,7 +241,9 @@ void CodeGen::do_ModelStartup()
 
     c += "theLog->logMsg(\"Reading Parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
-        c += "i_model->" + parameter->cxx_read_parameter();
+        if (parameter->source == ParameterSymbol::external_parameter) {
+            c += "i_model->" + parameter->cxx_read_parameter();
+        }
     }
 
 	c += "}";

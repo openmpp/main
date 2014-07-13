@@ -25,7 +25,6 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-
     /**
      * Constructor.
      *
@@ -34,14 +33,12 @@ public:
      * @param dicId        The kind of type.
      * @param decl_loc     (Optional) the declaration location.
      */
-
     EnumerationSymbol(Symbol *sym, token_type storage_type, int dicId, yy::location decl_loc = yy::location())
         : TypeSymbol(sym, decl_loc)
         , storage_type(storage_type)
         , dicId(dicId)
     {
     }
-
 
     /**
      * Constructor.
@@ -50,11 +47,11 @@ public:
      * @param storage_type Type of the storage.
      * @param dicId        The kind of type.
      */
-
     EnumerationSymbol(const string unm, token_type storage_type, int dicId)
         : TypeSymbol(unm)
         , storage_type(storage_type)
         , dicId(dicId)
+        , metadata_needed(false)
     {
     }
 
@@ -64,39 +61,42 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
-
     /**
-     * Gets the size of the enumeration
+     * Gets the size of the enumeration.
      *
      * @return An int.
      */
-
     int pp_size()
     {
         return pp_enumerators.size();
     }
 
     /**
-    * The enumerators of this enum
-    *
-    *  Populated after parsing is complete.
-    */
-
+     * The enumerators of this enum
+     * 
+     *  Populated after parsing is complete.
+     */
     list<EnumeratorSymbol *> pp_enumerators;
-
 
     /**
      * Type used to store enumerators of this enumeration.
      */
-
     token_type storage_type;
+
+    /**
+     * True if metadata needed.
+     * 
+     * Metadata for this enumeration is needed if the enumeration is used
+     * as a dimension of a table or a dimension of an external parameter,
+     * or the storage type of an external parameter.
+     */
+    bool metadata_needed;
 
     /**
      * Indicates the kind of type using enum kind_of_type.
      * 
      * Used to communicate with meta-data API.
      */
-
     int dicId;
 };
 

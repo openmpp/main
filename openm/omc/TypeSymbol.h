@@ -23,10 +23,8 @@ public:
     /**
      * Constructor.
      *
-     * @param unm The unique name of the symbol, e.g. "int"
-     *
+     * @param unm The unique name of the symbol, e.g. "int".
      */
-
     TypeSymbol(const string unm)
         : Symbol(unm)
     {
@@ -46,28 +44,30 @@ public:
         next_type_id++;
     }
 
-
     /**
-     * Gets the default initial value for a quantity of this type
+     * Gets the default initial value for a quantity of this type.
      *
-     * @return The default initial value as a string
+     * @return The default initial value as a string.
      */
-
     virtual const string default_initial_value() const = 0;
 
-
     /**
-     * Determines derived type
+     * Determines derived type.
      *
      * @return true if numeric or bool, false for classification, range, or partition.
      */
-
     bool numeric_or_bool();
+
+    /**
+     * Determines derived type.
+     *
+     * @return true if is enumeration (includes bool), false otherwise.
+     */
+    bool is_enumeration();
 
     /**
      * Identifier for the type.
      */
-
     int type_id;
 
 

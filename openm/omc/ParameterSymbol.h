@@ -24,6 +24,7 @@ public:
         : Symbol(sym, decl_loc)
         , datatype(datatype->stable_rp())
         , pp_datatype(nullptr)
+        , source(external_parameter)
     {
     }
 
@@ -34,15 +35,13 @@ public:
     CodeBlock cxx_definition_global();
 
     /**
-     * C++ initializer list containing default values of parameter
+     * C++ initializer list for parameter
      * 
-     * Output is like "= { ... }".
-     * Output is an empty CodeBlock if intializer_list is empty (which means that values were not supplied
-     * in the model srouce files).
+     * Return value looks like "= { ... }" if initial value supplied in model source. otherwise is
+     * an empty CodeBlock.
      *
      * @return A CodeBlock.
      */
-
     CodeBlock cxx_initializer();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
@@ -91,6 +90,23 @@ public:
      */
 
     string cxx_assert_sanity();
+
+    /**
+     * Enumeration indicating source of parameter value.
+     */
+    enum parameter_source {
+        ///< Parameter value invariant and stored internally.
+        internal_parameter,
+        ///< Parameter value from an external source.
+        external_parameter,
+        ///< Parameter value computed from other parameters.
+        derived_parameter
+    };
+
+    /**
+     * Source for the parameter value
+     */
+    parameter_source source;
 
     /**
     *  The data type of the parameter contents (parse phase reference to pointer)

@@ -83,6 +83,24 @@ void ParameterSymbol::post_parse(int pass)
             pp_all_parameters.push_back(this);
         }
         break;
+    case ePopulateDependencies:
+    {
+        // Mark enumerations required for metadata support for this parameter
+        if (source == external_parameter) {
+            // The storage type if an enumeration
+            if (pp_datatype->is_enumeration()) {
+                auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
+                assert(es); // compiler guarantee
+                es->metadata_needed = true;
+            }
+            // The enumeration of each dimension
+            for (auto es : pp_dimension_list) {
+                es->metadata_needed = true;
+            }
+        }
+    }
+    break;
+
     default:
         break;
     }
@@ -125,7 +143,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
     if (!initializer_list.empty()) {
         int values_per_line = 1; // number of iniitalizer values to place on each line
         if (rank() >= 1) {
-            // number of values per line is sizse of trailing dimension
+            // number of values per line is size of trailing dimension
             auto es = pp_dimension_list.back();
             values_per_line = es->pp_size();
         }
@@ -154,6 +172,9 @@ CodeBlock ParameterSymbol::cxx_initializer()
 
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
+    // Only external parameters have metadata
+    if (source != external_parameter) return;
+
     // Hook into the hierarchical calling chain
     super::populate_metadata( metaRows );
 
