@@ -769,6 +769,8 @@ decl_parameter:
                             ParameterSymbol *parm = nullptr;
 
                             if ($parm->is_base_symbol()) {
+                                // parameter declaration
+                                pc.redeclaration = false;
                                 // Morph Symbol to ParameterSymbol
                                 parm = new ParameterSymbol( $parm, $type_symbol, @parm );
                                 assert(parm);
@@ -786,7 +788,7 @@ decl_parameter:
                         }
             decl_dim_list parameter_initializer_expr ";"
                         {
-                            // No valid parameter context
+                            // No longer in parameter context
                             pc.set_parameter_context( nullptr );
                         }
     |  "cumrate" SYMBOL[parm]
@@ -794,6 +796,8 @@ decl_parameter:
                             ParameterSymbol *parm = nullptr;
 
                             if ($parm->is_base_symbol()) {
+                                // parameter declaration
+                                pc.redeclaration = false;
                                 // Morph Symbol to ParameterSymbol
                                 auto *type_symbol = Symbol::get_symbol("double");
                                 assert(type_symbol); // grammar/initialization guarantee
@@ -813,7 +817,7 @@ decl_parameter:
                         }
             decl_dim_list parameter_initializer_expr ";"
                         {
-                            // No valid parameter context
+                            // No longer in parameter context
                             pc.set_parameter_context( nullptr );
                         }
     | error ";"
@@ -876,6 +880,11 @@ parameter_initializer_list[result]:
                             $result = result;
                         }
       | "{" parameter_initializer_list[wrk] "}"
+                        {
+                            $result = $wrk;
+                        }
+      // Allow a superfluous trailing comma in comma-separated list of values
+      | parameter_initializer_list[wrk] ","
                         {
                             $result = $wrk;
                         }

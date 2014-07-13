@@ -22,6 +22,7 @@ public:
         ofstream *oat1_arg,
         ofstream *oah_arg,
         ofstream *oac_arg, 
+        ofstream *oaz_arg, 
         const string & i_timestamp, 
         openm::MetaModelHolder & io_metaRows 
         )
@@ -29,6 +30,7 @@ public:
         , oat1(oat1_arg)
         , oah(oah_arg)
 		, oac(oac_arg)
+		, oaz(oaz_arg)
         , time_stamp(i_timestamp)
         , metaRows(io_metaRows)
 
@@ -53,33 +55,30 @@ public:
 	void do_ModelShutdown();
     void do_API_entries();
 
-
     /**
-    * CodeBlock for om_types0.h
-    */
-
+     * CodeBlock for om_types0.h.
+     */
     CodeBlock t0;
 
-
     /**
-     * CodeBlock for om_types1.h
+     * CodeBlock for om_types1.h.
      */
-
     CodeBlock t1;
 
-
     /**
-    * CodeBlock for om_declarations.h
-    */
-
+     * CodeBlock for om_declarations.h.
+     */
     CodeBlock h;
 
+    /**
+     * CodeBlock for om_definitions.cpp.
+     */
+    CodeBlock c;
 
     /**
-    * CodeBlock for om_definitions.cpp
-    */
-
-    CodeBlock c;
+     * CodeBlock for om_initializers.cpp.
+     */
+    CodeBlock z;
 
     /** output stream for om_types0.h */
     ofstream *oat0;
@@ -92,6 +91,9 @@ public:
 
     /** output stream for om_definitions.cpp */
 	ofstream *oac;
+
+    /** output stream for om_initializers.cpp */
+	ofstream *oaz;
 
 private:
     const string time_stamp;        // model compilation timestamp

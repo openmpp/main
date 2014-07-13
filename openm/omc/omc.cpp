@@ -303,38 +303,44 @@ int main(int argc, char * argv[])
         exit_guard<ofstream> onExit_om_definitions_cpp(&om_definitions_cpp, &ofstream::close);   // close on exit
         if (om_definitions_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
 
+        ofstream om_initializers_cpp(outDir + "om_initializers.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_initializers_cpp(&om_initializers_cpp, &ofstream::close);   // close on exit
+        if (om_initializers_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_initializers.cpp");
+
 #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
         om_types0_h << "\xEF\xBB\xBF";
+        om_types1_h << "\xEF\xBB\xBF";
         om_declarations_h << "\xEF\xBB\xBF";
         om_definitions_cpp << "\xEF\xBB\xBF";
+        om_initializers_cpp << "\xEF\xBB\xBF";
 #endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create());
 
-        CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, builder->timeStamp(), metaRows);
+        CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, &om_initializers_cpp, builder->timeStamp(), metaRows);
         cg.do_all();
 
         // build model creation script and save it
         theLog->logMsg("Meta-data processing");
-        vector<string> scriptLines = builder->build(metaRows);
-        writeLinesToFile(outDir + metaRows.modelDic.name + "_create_model.sql", scriptLines);
-        
-        // build Modgen views creation script and save
-        scriptLines = builder->buildCompatibilityViews(metaRows);
-        writeLinesToFile(outDir + metaRows.modelDic.name + "_optional_views.sql", scriptLines);
+        //vector<string> scriptLines = builder->build(metaRows);
+        //writeLinesToFile(outDir + metaRows.modelDic.name + "_create_model.sql", scriptLines);
+        //
+        //// build Modgen views creation script and save
+        //scriptLines = builder->buildCompatibilityViews(metaRows);
+        //writeLinesToFile(outDir + metaRows.modelDic.name + "_optional_views.sql", scriptLines);
 
-        // debug only: create model default parameters script from template
-        string srcInsertParameters = metaRows.modelDic.name + "_insert_parameters.sql_template";
+        //// debug only: create model default parameters script from template
+        //string srcInsertParameters = metaRows.modelDic.name + "_insert_parameters.sql_template";
 
-        string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
-        if (!scriptContent.empty()) {
-            writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
-        }
-        else {
-            theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
-        }
+        //string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
+        //if (!scriptContent.empty()) {
+        //    writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
+        //}
+        //else {
+        //    theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
+        //}
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
