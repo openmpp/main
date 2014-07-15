@@ -1,77 +1,93 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{0e7866a6-65b3-41a1-b201-3b7d043e1098}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
     </Filter>
     <Filter Include="Model Source Files">
-      <UniqueIdentifier>{a9f0feb1-3c15-4153-8127-865fbc12a220}</UniqueIdentifier>
+      <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
       <Extensions>mpp;ompp</Extensions>
     </Filter>
-    <Filter Include="Header Files\omc">
-      <UniqueIdentifier>{a642d820-b296-41e5-9196-56b888534ac1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="OmcOutput">
-      <UniqueIdentifier>{41dc53e1-737e-48b3-9886-481334d7443b}</UniqueIdentifier>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{082983d8-b8b7-4726-87c5-4b43c5700182}</UniqueIdentifier>
+      <Extensions>scex;dat</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(OMC_OUT_DIR)/om_definitions.cpp">
-      <Filter>OmcOutput</Filter>
-    </ClCompile>
-    <ClCompile Include="$(OMC_OUT_DIR)/om_developer.cpp">
-      <Filter>OmcOutput</Filter>
-    </ClCompile>
-    <ClCompile Include="..\build\WizardTimeBased\src\om_initializers.cpp">
-      <Filter>OmcOutput</Filter>
-    </ClCompile>
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_declarations.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WizardTimeBased.mpp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TickerCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_types0.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OMC_OUT_DIR)/om_types1.h">
-      <Filter>OmcOutput</Filter>
-    </ClInclude>
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(OM_INC_DIR)/omc/Agent.h">
-      <Filter>Header Files\omc</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OM_INC_DIR)/omc/AgentVar.h">
-      <Filter>Header Files\omc</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OM_INC_DIR)/omc/Event.h">
-      <Filter>Header Files\omc</Filter>
-    </ClInclude>
-    <ClInclude Include="$(OM_INC_DIR)/omc/omSimulation.h">
-      <Filter>Header Files\omc</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Framework.ompp">
+    <None Include="Alpha2.mpp">
       <Filter>Model Source Files</Filter>
     </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="WizardCaseBased.mpp" />
+    <None Include="WizardCaseBasedFR.mpp" />
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="WizardCaseBased.mpp" />
+    <None Include="WizardCaseBasedFR.mpp" />
+    <None Include="*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="TickerCore.mpp" />
+    <None Include="WizardTimeBased.mpp" />
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="TickerCore.mpp" />
+    <None Include="WizardTimeBased.mpp" />
+    <None Include="PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="TickerCore.mpp" />
+    <None Include="WizardTimeBased.mpp" />
   </ItemGroup>
 </Project>

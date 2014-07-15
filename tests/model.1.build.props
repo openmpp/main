@@ -14,6 +14,49 @@
   </PropertyGroup>
   
   <!-- 
+  This setting forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
+  for the more complex dependencies involving omc in ompp model projects.  If this is not set
+  VS thinks things are up-to-date when they are not, and does not launch MSBuild.
+  -->
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <!-- 
+  This is one arbitrarily selected omc output file whose timestamp is compared
+  to each input model source module to determine if the omc target is to be run.
+  -->
+  <PropertyGroup>
+    <OMC_TIMESTAMP_OUTPUT_FILE>$(OMC_OUT_DIR)/om_types0.h</OMC_TIMESTAMP_OUTPUT_FILE>
+  </PropertyGroup>
+  
+  <!-- 
+  This lists all omc C++ header file outputs
+  -->
+  <ItemGroup>
+    <OMC_CXX_HEADER_OUTPUTS Include="$(OMC_OUT_DIR)/om_types0.h" />
+    <OMC_CXX_HEADER_OUTPUTS Include="$(OMC_OUT_DIR)/om_types1.h" />
+    <OMC_CXX_HEADER_OUTPUTS Include="$(OMC_OUT_DIR)/om_declarations.h" />
+  </ItemGroup>
+
+  <!-- 
+  This lists all omc C++ source module outputs
+  -->
+  <ItemGroup>
+    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
+    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_developer.cpp" />
+    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_initializers.cpp" />
+  </ItemGroup>
+
+  <!-- 
+  This lists all omc sql outputs
+  -->
+  <ItemGroup>
+    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(SolutionName)_create_model.sql" />
+    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(SolutionName)_optional_views.sql" />
+  </ItemGroup>
+
+  <!-- 
   Use this to choose database library provider, now only SQlite supported
     SQLITE - use SQlite version
   -->
