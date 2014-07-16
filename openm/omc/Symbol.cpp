@@ -942,7 +942,7 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
     typedef unsigned long ulong;
 
     token_type best_type = token::TK_long;
-    int best_size = sizeof(long);
+    size_t best_size = sizeof(long);
 
     if (min_value >= 0) {
         // start with the largest unsigned type in om

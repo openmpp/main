@@ -28,19 +28,15 @@ namespace openm
         /** lang_name VARCHAR(32) NOT NULL */
         string name;
         
-        /** create row with default empty field values. */
-        LangLstRow(void) : 
-            langId(0), 
-            code(""), 
-            name("")
-        { }
-
         /** create row with supplied primary key field values. */
         LangLstRow(int i_langId) : 
             langId(i_langId), 
             code(""), 
             name("")
         { }
+
+        /** create row with default empty field values. */
+        LangLstRow(void) : LangLstRow(0) { }
 
         ~LangLstRow(void) throw() { }
 
@@ -66,19 +62,15 @@ namespace openm
         /** word_value VARCHAR(32) NOT NULL */
         string value;
         
-        /** create row with default empty field values. */
-        LangWordRow(void) : 
-            langId(0), 
-            code(""), 
-            value("")
-        { }
-
         /** create row with supplied primary key field values. */
         LangWordRow(int i_langId, const string & i_code) : 
             langId(i_langId), 
             code(i_code), 
             value("")
         { }
+
+        /** create row with default empty field values. */
+        LangWordRow(void) : LangWordRow(0, "") { }
 
         ~LangWordRow(void) throw() { }
 
@@ -122,20 +114,6 @@ namespace openm
         /** value_prefix     VARCHAR(4)  NOT NULL, -- value tables prefix: v */
         string valuePrefix;
 
-        /** create row with default empty field values. */
-        ModelDicRow(void) : 
-            modelId(0), 
-            name(""), 
-            type(0),
-            version(""),
-            timestamp(""),
-            modelPrefix(""),
-            paramPrefix(""),
-            setPrefix(""),
-            subPrefix(""),
-            valuePrefix("")
-        { }
-
         /** create row with supplied primary key field values. */
         ModelDicRow(int i_modelId) : 
             modelId(i_modelId), 
@@ -149,6 +127,9 @@ namespace openm
             subPrefix(""),
             valuePrefix("")
         { }
+
+        /** create row with default empty field values. */
+        ModelDicRow(void) : ModelDicRow(0) { }
 
         ~ModelDicRow(void) throw() { }
 
@@ -177,14 +158,6 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
 
-        /** create row with default empty field values. */
-        ModelDicTxtRow(void) : 
-            modelId(0), 
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         ModelDicTxtRow(int i_modelId, int i_langId) : 
             modelId(i_modelId), 
@@ -192,6 +165,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        ModelDicTxtRow(void) : ModelDicTxtRow(0, 0) { }
 
         ~ModelDicTxtRow(void) throw() { }
 
@@ -236,17 +212,6 @@ namespace openm
         /** create_dt     VARCHAR(32) NOT NULL */
         string createDateTime;
 
-        /** create row with default empty field values. */
-        RunLstRow(void) : 
-            runId(0),
-            modelId(0),
-            name(""),
-            subCount(0),
-            subStarted(0),
-            subCompleted(0),
-            createDateTime("")
-        { }
-
         /** create row with supplied primary key field values. */
         RunLstRow(int i_runId) : 
             runId(i_runId),
@@ -257,6 +222,9 @@ namespace openm
             subCompleted(0),
             createDateTime("")
         { }
+
+        /** create row with default empty field values. */
+        RunLstRow(void) : RunLstRow(0) { }
 
         ~RunLstRow(void) throw() { }
 
@@ -295,15 +263,6 @@ namespace openm
         /** note     VARCHAR(32000)          */
         string note;
 
-        /** create row with default empty field values. */
-        RunTxtRow(void) : 
-            runId(0),
-            modelId(0),
-            langId(0),
-            descr(""),
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         RunTxtRow(int i_runId, int i_langId) : 
             runId(i_runId),
@@ -312,6 +271,9 @@ namespace openm
             descr(""),
             note("")
         { }
+
+        /** create row with default empty field values. */
+        RunTxtRow(void) : RunTxtRow(0, 0) { }
 
         ~RunTxtRow(void) throw() { }
 
@@ -341,11 +303,11 @@ namespace openm
         /** profile_name VARCHAR(32) NOT NULL */
         string name;
 
-        /** create row with default empty field values. */
-        ProfileLstRow(void) : name("") { }
-
         /** create row with supplied primary key field values. */
         ProfileLstRow(const string & i_name) : name(i_name) { }
+
+        /** create row with default empty field values. */
+        ProfileLstRow(void) : ProfileLstRow("") { }
 
         ~ProfileLstRow(void) throw() { }
 
@@ -368,19 +330,15 @@ namespace openm
         /** option_value VARCHAR(1024) NOT NULL */
         string value;
 
-        /** create row with default empty field values. */
-        ProfileOptionRow(void) : 
-            name(""), 
-            key(""),
-            value("")
-        { }
-
         /** create row with supplied primary key field values. */
         ProfileOptionRow(const string & i_name, const string & i_key) : 
             name(i_name), 
             key(i_key),
             value("")
         { }
+
+        /** create row with default empty field values. */
+        ProfileOptionRow(void) : ProfileOptionRow("", "") { }
 
         ~ProfileOptionRow(void) throw() { }
 
@@ -406,19 +364,15 @@ namespace openm
         /** option_value VARCHAR(1024) NOT NULL */
         string value;
 
-        /** create row with default empty field values. */
-        RunOptionRow(void) : 
-            runId(0), 
-            key(""),
-            value("")
-        { }
-
         /** create row with supplied primary key field values. */
         RunOptionRow(int i_runId, const string & i_key) : 
             runId(i_runId), 
             key(i_key),
             value("")
         { }
+
+        /** create row with default empty field values. */
+        RunOptionRow(void) : RunOptionRow(0, "") { }
 
         ~RunOptionRow(void) throw() { }
 
@@ -450,15 +404,6 @@ namespace openm
         /** total_enum_id INT NOT NULL, -- if total enabled this is enum_value of total item =max+1 */
         int totalEnumId;
 
-        /** create row with default empty field values. */
-        TypeDicRow(void) : 
-            modelId(0), 
-            typeId(0), 
-            name(""),
-            dicId(0), 
-            totalEnumId(0)
-        { }
-
         /** create row with supplied primary key field values. */
         TypeDicRow(int i_modelId, int i_typeId) : 
             modelId(i_modelId), 
@@ -467,6 +412,9 @@ namespace openm
             dicId(0), 
             totalEnumId(0)
         { }
+
+        /** create row with default empty field values. */
+        TypeDicRow(void) : TypeDicRow(0, 0) { }
 
         ~TypeDicRow(void) throw() { }
 
@@ -501,15 +449,6 @@ namespace openm
         /** note         VARCHAR(32000) */
         string note;
         
-        /** create row with default empty field values. */
-        TypeDicTxtRow(void) : 
-            modelId(0), 
-            typeId(0), 
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         TypeDicTxtRow(int i_modelId, int i_typeId, int i_langId) : 
             modelId(i_modelId), 
@@ -518,6 +457,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        TypeDicTxtRow(void) : TypeDicTxtRow(0, 0, 0) { }
 
         ~TypeDicTxtRow(void) throw() { }
 
@@ -553,14 +495,6 @@ namespace openm
         /** enum_name     VARCHAR(64) NOT NULL */
         string name;
 
-        /** create row with default empty field values. */
-        TypeEnumLstRow(void) : 
-            modelId(0), 
-            typeId(0), 
-            enumId(0), 
-            name("")
-        { }
-
         /** create row with supplied primary key field values. */
         TypeEnumLstRow(int i_modelId, int i_typeId, int i_enumId) : 
             modelId(i_modelId), 
@@ -568,6 +502,9 @@ namespace openm
             enumId(i_enumId), 
             name("")
         { }
+
+        /** create row with default empty field values. */
+        TypeEnumLstRow(void) : TypeEnumLstRow(0, 0, 0) { }
 
         ~TypeEnumLstRow(void) throw() { }
 
@@ -605,16 +542,6 @@ namespace openm
         /** note         VARCHAR(32000) */
         string note;
         
-        /** create row with default empty field values. */
-        TypeEnumTxtRow(void) : 
-            modelId(0), 
-            typeId(0), 
-            enumId(0),
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         TypeEnumTxtRow(int i_modelId, int i_typeId, int i_enumId, int i_langId) : 
             modelId(i_modelId), 
@@ -624,6 +551,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        TypeEnumTxtRow(void) : TypeEnumTxtRow(0, 0, 0, 0) { }
 
         ~TypeEnumTxtRow(void) throw() { }
 
@@ -677,19 +607,6 @@ namespace openm
         /** num_cumulated  INT         NOT NULL */
         int numCumulated;
 
-        /** create row with default empty field values. */
-        ParamDicRow(void) : 
-            modelId(0), 
-            paramId(0), 
-            dbNameSuffix(""),
-            paramName(""),
-            rank(0),
-            typeId(0),
-            isHidden(false),
-            isGenerated(false),
-            numCumulated(0)
-        { }
-
         /** create row with supplied primary key field values. */
         ParamDicRow(int i_modelId, int i_paramId) : 
             modelId(i_modelId), 
@@ -702,6 +619,9 @@ namespace openm
             isGenerated(false),
             numCumulated(0)
         { }
+
+        /** create row with default empty field values. */
+        ParamDicRow(void) : ParamDicRow(0, 0) { }
 
         ~ParamDicRow(void) throw() { }
 
@@ -736,15 +656,6 @@ namespace openm
         /** note         VARCHAR(32000) */
         string note;
         
-        /** create row with default empty field values. */
-        ParamDicTxtRow(void) : 
-            modelId(0), 
-            paramId(0), 
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         ParamDicTxtRow(int i_modelId, int i_paramId, int i_langId) : 
             modelId(i_modelId), 
@@ -753,6 +664,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        ParamDicTxtRow(void) : ParamDicTxtRow(0, 0, 0) { }
 
         ~ParamDicTxtRow(void) throw() { }
 
@@ -791,15 +705,6 @@ namespace openm
         /** note         VARCHAR(32000) */
         string note;
         
-        /** create row with default empty field values. */
-        ParamRunTxtRow(void) : 
-            runId(0), 
-            modelId(0), 
-            paramId(0), 
-            langId(0),
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         ParamRunTxtRow(int i_runId, int i_paramId, int i_langId) : 
             runId(i_runId), 
@@ -808,6 +713,9 @@ namespace openm
             langId(i_langId),
             note("")
         { }
+
+        /** create row with default empty field values. */
+        ParamRunTxtRow(void) : ParamRunTxtRow(0, 0, 0) { }
 
         ~ParamRunTxtRow(void) throw() { }
 
@@ -846,15 +754,6 @@ namespace openm
         /** mod_type_id  INT NOT NULL */
         int typeId;
         
-        /** create row with default empty field values. */
-        ParamDimsRow(void) : 
-            modelId(0), 
-            paramId(0), 
-            name(""),
-            pos(0),
-            typeId(0)
-        { }
-
         /** create row with supplied primary key field values. */
         ParamDimsRow(int i_modelId, int i_paramId, const string & i_name) : 
             modelId(i_modelId), 
@@ -863,6 +762,9 @@ namespace openm
             pos(0),
             typeId(0)
         { }
+
+        /** create row with default empty field values. */
+        ParamDimsRow(void) : ParamDimsRow(0, 0, "") { }
 
         ~ParamDimsRow(void) throw() { }
 
@@ -947,15 +849,6 @@ namespace openm
         /** note     VARCHAR(32000)          */
         string note;
 
-        /** create row with default empty field values. */
-        WorksetTxtRow(void) : 
-            setId(0),
-            modelId(0),
-            langId(0),
-            descr(""),
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         WorksetTxtRow(int i_setId, int i_langId) : 
             setId(i_setId),
@@ -964,6 +857,9 @@ namespace openm
             descr(""),
             note("")
         { }
+
+        /** create row with default empty field values. */
+        WorksetTxtRow(void) : WorksetTxtRow(0, 0) { }
 
         ~WorksetTxtRow(void) throw() { }
 
@@ -999,19 +895,15 @@ namespace openm
         /** parameter_id INT NOT NULL */
         int paramId;
 
-        /** create row with default empty field values. */
-        WorksetParamRow(void) : 
-            setId(0),
-            modelId(0),
-            paramId(0)
-        { }
-
         /** create row with supplied primary key field values. */
         WorksetParamRow(int i_setId, int i_paramId) : 
             setId(i_setId),
             modelId(0),
             paramId(i_paramId)
         { }
+
+        /** create row with default empty field values. */
+        WorksetParamRow(void) : WorksetParamRow(0, 0) { }
 
         ~WorksetParamRow(void) throw() { }
 
@@ -1050,15 +942,6 @@ namespace openm
         /** note     VARCHAR(32000)          */
         string note;
 
-        /** create row with default empty field values. */
-        WorksetParamTxtRow(void) : 
-            setId(0),
-            modelId(0),
-            paramId(0),
-            langId(0),
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         WorksetParamTxtRow(int i_setId, int i_langId, int i_paramId) : 
             setId(i_setId),
@@ -1067,6 +950,9 @@ namespace openm
             langId(i_langId),
             note("")
         { }
+
+        /** create row with default empty field values. */
+        WorksetParamTxtRow(void) : WorksetParamTxtRow(0, 0, 0) { }
 
         ~WorksetParamTxtRow(void) throw() { }
 
@@ -1122,18 +1008,6 @@ namespace openm
         /** is_hidden SMALLINT NOT NULL */
         bool isHidden;
 
-        /** create row with default empty field values. */
-        TableDicRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            dbNameSuffix(""),
-            tableName(""),
-            isUser(false),
-            rank(1),
-            isSparse(false),
-            isHidden(false)
-        { }
-
         /** create row with supplied primary key field values. */
         TableDicRow(int i_modelId, int i_tableId) : 
             modelId(i_modelId), 
@@ -1145,6 +1019,9 @@ namespace openm
             isSparse(false),
             isHidden(false)
         { }
+
+        /** create row with default empty field values. */
+        TableDicRow(void) : TableDicRow(0, 0) { }
 
         ~TableDicRow(void) throw() { }
 
@@ -1185,17 +1062,6 @@ namespace openm
         /** unit_note  VARCHAR(32000) */
         string unitNote;
         
-        /** create row with default empty field values. */
-        TableDicTxtRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            langId(0),
-            descr(""), 
-            note(""),
-            unitDescr(""),
-            unitNote("")
-        { }
-
         /** create row with supplied primary key field values. */
         TableDicTxtRow(int i_modelId, int i_tableId, int i_langId) : 
             modelId(i_modelId), 
@@ -1206,6 +1072,9 @@ namespace openm
             unitDescr(""),
             unitNote("")
         { }
+
+        /** create row with default empty field values. */
+        TableDicTxtRow(void) : TableDicTxtRow(0, 0, 0) { }
 
         ~TableDicTxtRow(void) throw() { }
 
@@ -1250,17 +1119,6 @@ namespace openm
         /** dim_size    INT NOT NULL */
         int dimSize;
         
-        /** create row with default empty field values. */
-        TableDimsRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            name(""),
-            pos(0),
-            typeId(0),
-            isTotal(false),
-            dimSize(1)
-        { }
-
         /** create row with supplied primary key field values. */
         TableDimsRow(int i_modelId, int i_tableId, const string & i_name) : 
             modelId(i_modelId), 
@@ -1271,6 +1129,9 @@ namespace openm
             isTotal(false),
             dimSize(1)
         { }
+
+        /** create row with default empty field values. */
+        TableDimsRow(void) : TableDimsRow(0, 0, "") { }
 
         ~TableDimsRow(void) throw() { }
 
@@ -1305,16 +1166,6 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
         
-        /** create row with default empty field values. */
-        TableDimsTxtRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            name(""),
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         TableDimsTxtRow(int i_modelId, int i_tableId, const string & i_name, int i_langId) : 
             modelId(i_modelId), 
@@ -1324,6 +1175,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        TableDimsTxtRow(void) : TableDimsTxtRow(0, 0, "", 0) { }
 
         ~TableDimsTxtRow(void) throw() { }
 
@@ -1362,15 +1216,6 @@ namespace openm
         /** acc_expr VARCHAR(255) NOT NULL */
         string expr;
         
-        /** create row with default empty field values. */
-        TableAccRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            accId(0), 
-            name(""),
-            expr("")
-        { }
-
         /** create row with supplied primary key field values. */
         TableAccRow(int i_modelId, int i_tableId, int i_accid) : 
             modelId(i_modelId), 
@@ -1379,6 +1224,9 @@ namespace openm
             name(""),
             expr("")
         { }
+
+        /** create row with default empty field values. */
+        TableAccRow(void) : TableAccRow(0, 0, 0) { }
 
         ~TableAccRow(void) throw() { }
 
@@ -1416,16 +1264,6 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
 
-        /** create row with default empty field values. */
-        TableAccTxtRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            accId(0),
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         TableAccTxtRow(int i_modelId, int i_tableId, int i_accId, int i_langId) : 
             modelId(i_modelId), 
@@ -1435,6 +1273,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        TableAccTxtRow(void) : TableAccTxtRow(0, 0, 0, 0) { }
 
         ~TableAccTxtRow(void) throw() { }
 
@@ -1479,17 +1320,6 @@ namespace openm
         /** unit_expr     VARCHAR(4000) NOT NULL */
         string expr;
 
-        /** create row with default empty field values. */
-        TableUnitRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            unitId(0), 
-            name(""),
-            decimals(0),
-            src(""),
-            expr("")
-        { }
-
         /** create row with supplied primary key field values. */
         TableUnitRow(int i_modelId, int i_tableId, int i_unitId) : 
             modelId(i_modelId), 
@@ -1500,6 +1330,9 @@ namespace openm
             src(""),
             expr("")
         { }
+
+        /** create row with default empty field values. */
+        TableUnitRow(void) : TableUnitRow(0, 0, 0) { }
 
         ~TableUnitRow(void) throw() { }
 
@@ -1537,16 +1370,6 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
 
-        /** create row with default empty field values. */
-        TableUnitTxtRow(void) : 
-            modelId(0), 
-            tableId(0), 
-            unitId(0),
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         TableUnitTxtRow(int i_modelId, int i_tableId, int i_unitId, int i_langId) : 
             modelId(i_modelId), 
@@ -1556,6 +1379,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        TableUnitTxtRow(void) : TableUnitTxtRow(0, 0, 0, 0) { }
 
         ~TableUnitTxtRow(void) throw() { }
 
@@ -1597,16 +1423,6 @@ namespace openm
         /** is_generated SMALLINT    NOT NULL */
         bool isGenerated;
 
-        /** create row with default empty field values. */
-        GroupLstRow(void) : 
-            modelId(0), 
-            groupId(0), 
-            isParam(false),
-            name(""),
-            isHidden(false),
-            isGenerated(false)
-        { }
-
         /** create row with supplied primary key field values. */
         GroupLstRow(int i_modelId, int i_groupId) : 
             modelId(i_modelId), 
@@ -1616,6 +1432,9 @@ namespace openm
             isHidden(false),
             isGenerated(false)
         { }
+
+        /** create row with default empty field values. */
+        GroupLstRow(void) : GroupLstRow(0, 0) { }
 
         ~GroupLstRow(void) throw() { }
 
@@ -1647,15 +1466,6 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
         
-        /** create row with default empty field values. */
-        GroupTxtRow(void) : 
-            modelId(0), 
-            groupId(0), 
-            langId(0),
-            descr(""), 
-            note("")
-        { }
-
         /** create row with supplied primary key field values. */
         GroupTxtRow(int i_modelId, int i_groupId, int i_langId) : 
             modelId(i_modelId), 
@@ -1664,6 +1474,9 @@ namespace openm
             descr(""), 
             note("")
         { }
+
+        /** create row with default empty field values. */
+        GroupTxtRow(void) : GroupTxtRow(0, 0, 0) { }
 
         ~GroupTxtRow(void) throw() { }
 
@@ -1702,15 +1515,6 @@ namespace openm
         /** leaf_id        INT NULL */
         int leafId;
 
-        /** create row with default empty field values. */
-        GroupPcRow(void) : 
-            modelId(0), 
-            groupId(0), 
-            childPos(0), 
-            childGroupId(-1), 
-            leafId(-1)
-        { }
-
         /** create row with supplied primary key field values. */
         GroupPcRow(int i_modelId, int i_groupId, int i_childPos) : 
             modelId(i_modelId), 
@@ -1719,6 +1523,9 @@ namespace openm
             childGroupId(-1), 
             leafId(-1)
         { }
+
+        /** create row with default empty field values. */
+        GroupPcRow(void) : GroupPcRow(0, 0, 0) { }
 
         ~GroupPcRow(void) throw() { }
 

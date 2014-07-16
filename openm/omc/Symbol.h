@@ -747,8 +747,9 @@ public:
     /**
      * Pathname of the use folder.
      * 
-     * Used to resolve 'use' statements to physical files. Set within omc.cpp relative to location
-     * of omc.exe executable.
+     * Used to resolve 'use' statements to physical files. 
+     * It can be specified in omc.ini or as command line argument.
+     * By default relative to location of omc.exe executable.
      */
     static string use_folder;
 

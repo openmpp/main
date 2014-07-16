@@ -50,8 +50,8 @@ public:
     EnumerationSymbol(const string unm, token_type storage_type, int dicId)
         : TypeSymbol(unm)
         , storage_type(storage_type)
-        , dicId(dicId)
         , metadata_needed(false)
+        , dicId(dicId)
     {
     }
 

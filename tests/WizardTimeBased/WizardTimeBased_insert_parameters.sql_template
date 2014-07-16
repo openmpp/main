@@ -1,4 +1,4 @@
-﻿--
+--
 -- insert parameters for model: WizardTimeBased 
 -- model timestamp: ${OM_MODEL_TIMESTAMP}
 -- db names prefix: ${OM_MODEL_PREFIX}

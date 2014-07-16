@@ -22,9 +22,9 @@ public:
 
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
+        , source(external_parameter)
         , datatype(datatype->stable_rp())
         , pp_datatype(nullptr)
-        , source(external_parameter)
     {
     }
 

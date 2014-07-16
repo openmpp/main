@@ -14,15 +14,6 @@
   </PropertyGroup>
   
   <!-- 
-  This setting forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
-  for the more complex dependencies involving omc in ompp model projects.  If this is not set
-  VS thinks things are up-to-date when they are not, and does not launch MSBuild.
-  -->
-  <PropertyGroup>
-    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-  </PropertyGroup>
-
-  <!-- 
   This is one arbitrarily selected omc output file whose timestamp is compared
   to each input model source module to determine if the omc target is to be run.
   -->

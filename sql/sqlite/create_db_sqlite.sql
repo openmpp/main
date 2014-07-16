@@ -1,4 +1,4 @@
---
+﻿--
 -- Copyright (c) 2013 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
@@ -300,8 +300,8 @@ CREATE TABLE IF NOT EXISTS parameter_dims
 --   default workset is where set_id = min(set_id) for that model
 -- working set id must be different from run id (use id_lst to get it)
 -- working set can be editable or read-only
--- always update parameter values inside of transaction scope
--- before actual value update do is_readonly = is_readonly + 1 to lock workset
+-- Important: always update parameter values inside of transaction scope
+-- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
 --
 CREATE TABLE IF NOT EXISTS workset_lst
 (

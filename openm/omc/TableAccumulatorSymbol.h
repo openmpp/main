@@ -29,14 +29,14 @@ public:
     TableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, Symbol *agentvar, Symbol *analysis_agentvar, int index)
         : Symbol(symbol_name(table, accumulator, increment, agentvar))
         , table(table->stable_rp())
+        , pp_table(nullptr)
         , accumulator(accumulator)
         , increment(increment)
         , agentvar(agentvar->stable_rp())
-        , analysis_agentvar(analysis_agentvar->stable_rp())
-        , index(index)
-        , pp_table(nullptr)
         , pp_agentvar(nullptr)
+        , analysis_agentvar(analysis_agentvar->stable_rp())
         , pp_analysis_agentvar(nullptr)
+        , index(index)
     {
         // grammar guarantee
         assert(accumulator == token::TK_sum
@@ -144,6 +144,5 @@ public:
     */
 
     int index;
-
 };
 

@@ -92,21 +92,27 @@ namespace openm
         DbValue(void) { clear(); }
 
         /** value initialized by supplied integer */
-        DbValue(int i_value) { 
-            clear(); 
-            llVal = i_value; 
-        }
+        DbValue(int i_value) : DbValue((long long)i_value) { }
+
+        /** value initialized by supplied unsigned integer */
+        DbValue(unsigned int i_value) : DbValue((unsigned long long)i_value) { }
 
         /** value initialized by supplied long */
-        DbValue(long long i_value) { 
-            clear(); 
-            llVal = i_value; 
+        DbValue(long i_value) : DbValue((long long)i_value) { }
+
+        /** value initialized by supplied unsigned long */
+        DbValue(unsigned long i_value) : DbValue((unsigned long long)i_value) { }
+
+        /** value initialized by supplied long */
+        DbValue(long long i_value) {
+            clear();
+            llVal = i_value;
         }
 
         /** value initialized by supplied unsigned long */
-        DbValue(unsigned long long i_value) { 
-            clear(); 
-            ullVal = i_value; 
+        DbValue(unsigned long long i_value) {
+            clear();
+            ullVal = i_value;
         }
 
         /** value initialized by supplied double */
@@ -125,6 +131,12 @@ namespace openm
         DbValue(bool i_value) { 
             clear(); 
             isVal = i_value; 
+        }
+
+        /** value initialized by supplied c-style string */
+        DbValue(char * i_value) {
+            clear();
+            szVal = i_value;
         }
 
         /** clear value with zeros */

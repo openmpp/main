@@ -9,11 +9,13 @@
 * Following command line arguments supported by omc:
 * * -Omc.InputDir  input/dir/to/find/source/files
 * * -Omc.OutputDir output/dir/to/place/compiled/cpp_and_h/files
+* * -Omc.UseDir    use/dir/with/ompp/files
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
 * Short form of command line arguments:
 * * -i short form of -Omc.inputDir
 * * -o short form of -Omc.outputDir
+* * -u short form of -Omc.useDir
 * * -s short form of -OpenM.OptionsFile
 * 
 * Also common OpenM log options supported: 
@@ -45,6 +47,7 @@
     #include "dirent/dirent.h"
 #else
     #include <dirent.h>
+    #include <sys/stat.h>
 #endif // _WIN32
 
 using namespace std;
@@ -59,6 +62,9 @@ namespace openm
 
         /** omc output directory for compiled files */
         static const char * outputDir;
+
+        /** omc use directory to resolve 'use' statements */
+        static const char * useDir;
     };
 
     /** keys for model run options (short form) */
@@ -72,6 +78,9 @@ namespace openm
 
         /** short name for omc output directory */
         static const char * outputDir;
+
+        /** short name for omc use directory */
+        static const char * useDir;
     };
 
     /** omc input directory with openM++ source files */
@@ -79,6 +88,9 @@ namespace openm
 
     /** omc output directory for compiled files */
     const char * OmcArgKey::outputDir = "Omc.OutputDir";
+
+    /** omc use directory to resolve 'use' statements */
+    const char * OmcArgKey::useDir = "Omc.UseDir";
 
     /** short name for options file name: -s fileName.ini */
     const char * OmcShortKey::optionsFile = "s";
@@ -89,10 +101,14 @@ namespace openm
     /** short name for omc output directory */
     const char * OmcShortKey::outputDir = "o";
 
+    /** short name for omc use directory */
+    const char * OmcShortKey::useDir = "u";
+
     /** array of model run option keys. */
     static const char * runArgKeyArr[] = {
         OmcArgKey::inputDir,
         OmcArgKey::outputDir,
+        OmcArgKey::useDir,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -110,7 +126,8 @@ namespace openm
     {
         make_pair(OmcShortKey::optionsFile, ArgKey::optionsFile),
         make_pair(OmcShortKey::inputDir, OmcArgKey::inputDir),
-        make_pair(OmcShortKey::outputDir, OmcArgKey::outputDir)
+        make_pair(OmcShortKey::outputDir, OmcArgKey::outputDir),
+        make_pair(OmcShortKey::useDir, OmcArgKey::useDir)
     };
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
@@ -180,8 +197,17 @@ int main(int argc, char * argv[])
         // TODO: normalize path when std::filesystem available, using
         //    boost::filesystem::system_complete(argv[0]);
         //    and split into components using std::filesystem.
-        string omc_exe = argv[0];
-        Symbol::use_folder = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
+        if (argStore.isOptionExist(OmcArgKey::useDir)) {
+            Symbol::use_folder = argStore.strOption(OmcArgKey::useDir);
+        }
+        else {
+            string omc_exe = argv[0];
+            Symbol::use_folder = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
+        }
+
+        if (!Symbol::use_folder.empty() && Symbol::use_folder.back() != '/' && Symbol::use_folder.back() != '\\') {
+            Symbol::use_folder += '/';
+        }
 
         // Populate symbol table with default symbols
         Symbol::populate_default_symbols();
@@ -209,10 +235,8 @@ int main(int argc, char * argv[])
         // Populate starting contents of the list of all source files to be parsed.
         // An additional file is appended to this list during parsing
         // each time a 'use' statement is encountered in a source code file.
-        for (const string & name : source_files) {
-            Symbol::all_source_files.push_back(inpDir + name);
-        }
-
+        Symbol::all_source_files.swap(source_files);
+        
         for (string & name : Symbol::all_source_files) {
             try {
                 theLog->logFormatted("Parsing %s", name.c_str());
@@ -230,21 +254,21 @@ int main(int argc, char * argv[])
                 // at some point use std::filesystem
                 
                 // length of optional path part, including final trailing slash
-                int in_path_len = name.find_last_of("/\\");
+                size_t in_path_len = name.find_last_of("/\\");
                 if (in_path_len > 0) in_path_len++;
 
                 // position of stem part
                 int in_stem_pos = in_path_len;
 
                 // position of extension (0 if no extension)
-                int in_ext_pos = name.find_last_of(".");
+                size_t in_ext_pos = name.find_last_of(".");
                 if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
 
                 // length of extension
-                int in_ext_len = (in_ext_pos == 0) ? 0 : name.length() - in_ext_pos;
+                size_t in_ext_len = (in_ext_pos == 0) ? 0 : name.length() - in_ext_pos;
 
                 // length of stem
-                int in_stem_len = name.length() - in_path_len - in_ext_len;
+                size_t in_stem_len = name.length() - in_path_len - in_ext_len;
 
                 string in_path = name.substr(0, in_path_len);
                 string in_stem = name.substr(in_stem_pos, in_stem_len);
@@ -355,11 +379,13 @@ int main(int argc, char * argv[])
     return EXIT_SUCCESS;
 }
 
-// get list of source (.mpp .ompp .dat) files from specified directory or current directory if source path is empty
+// get list of source files: *.mpp *.ompp *.dat
+// from specified directory or current directory if source path is empty
+// each file name in result is a relative path and include source directory
 list<string> listSourceFiles(const string & i_srcPath)
 {
     using namespace openm;
-    list<string> nameLst;
+    list<string> pathLst;
     
     // open source directory or current directory if source path is empty
     string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
@@ -369,14 +395,27 @@ list<string> listSourceFiles(const string & i_srcPath)
     // collect list of .mpp, .ompp or .dat files
     try {
         dirent * ent;
+        struct stat fileStat;
+        string path;
 
-        while ((ent = readdir (dir)) != NULL) {
+        string basePath = i_srcPath;
+        if (!basePath.empty() && basePath.back() != '/' && basePath.back() != '\\') basePath += '/';
 
-            if (ent->d_type != DT_REG || ent->d_name == NULL) continue; // skip directories, special files and file name errors
+        while ((ent = readdir(dir)) != NULL) {
 
-            string name = ent->d_name;
-            if (endWithNoCase(name, ".mpp") || endWithNoCase(name, ".ompp") || endWithNoCase(name, ".dat")) {
-                nameLst.push_back(name);
+            if (ent->d_name == NULL) continue;  // skip file name errors
+
+            path = basePath + ent->d_name;     // include directory into result
+
+            // skip directories and special files
+            if (ent->d_type != DT_REG) {
+                if (ent->d_type != DT_UNKNOWN) continue;            // skip directories and special files
+                if (stat(path.c_str(), &fileStat) != 0) continue;   // we can't get file type
+                if (!S_ISREG(fileStat.st_mode)) continue;           // skip directories and special files
+            }
+
+            if (endWithNoCase(path, ".mpp") || endWithNoCase(path, ".ompp") || endWithNoCase(path, ".dat")) {
+                pathLst.push_back(path);
             }
         }
     }
@@ -386,8 +425,8 @@ list<string> listSourceFiles(const string & i_srcPath)
     }
     
     // sort source files in alphabetical order for reproducibility
-    nameLst.sort();
-    return nameLst;
+    pathLst.sort();
+    return pathLst;
 }
 
 // write string line into new output file

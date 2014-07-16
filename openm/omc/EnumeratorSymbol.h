@@ -23,16 +23,16 @@ public:
     EnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , enumeration(enumeration->stable_rp())
-        , ordinal(ordinal)
         , pp_enumeration(nullptr)
+        , ordinal(ordinal)
     {
     }
 
     EnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
         : Symbol(unm, decl_loc)
         , enumeration(enumeration->stable_rp())
-        , ordinal(ordinal)
         , pp_enumeration(nullptr)
+        , ordinal(ordinal)
     {
     }
 

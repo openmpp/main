@@ -37,11 +37,11 @@ public:
     TableAnalysisAgentVarSymbol(Symbol *table, Symbol *agentvar, int index)
         : Symbol(symbol_name(table, agentvar))
         , table(table->stable_rp())
+        , pp_table(nullptr)
         , agentvar(agentvar->stable_rp())
+        , pp_agentvar(nullptr)
         , index(index)
         , need_value_in(false)
-        , pp_table(nullptr)
-        , pp_agentvar(nullptr)
     {
     }
 
@@ -131,8 +131,5 @@ public:
     */
 
     bool need_value_in;
-
-
-
 };
 

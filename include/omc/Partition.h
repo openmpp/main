@@ -9,8 +9,9 @@
 #pragma once
 #include <map>
 #include <array>
+#include <cfloat>       // for real
 #include "omc/integer_counter.h"
-#include "om_types0.h" // for real
+#include "om_types0.h"  // for real
 
 using namespace std;
 

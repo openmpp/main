@@ -28,16 +28,16 @@ public:
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
+        , cxx_memfunc_gather(false)
+        , cxx_memfunc_name("")
+        , parse_errors(0)
         , next_word_is_string(false)
         , redeclaration(false)
-        , cxx_memfunc_gather (false)
-        , cxx_memfunc_name ("")
         , agent_context (nullptr)
         , table_context (nullptr)
         , classification_context(nullptr)
         , partition_context(nullptr)
         , parameter_context(nullptr)
-        , parse_errors(0)
     {
         // The default location constructor for comment_location is fine.
     }

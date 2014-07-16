@@ -34,16 +34,16 @@ public:
     */
     AgentFuncSymbol(Symbol *sym, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(sym, agent, decl_loc)
-        , return_decl(return_decl)
         , arg_list_decl(arg_list_decl)
+        , return_decl(return_decl)
         , suppress_defn(suppress_defn)
     {
     }
 
     AgentFuncSymbol(const string name, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(name, agent, decl_loc)
-        , return_decl(return_decl)
         , arg_list_decl(arg_list_decl)
+        , return_decl(return_decl)
         , suppress_defn(suppress_defn)
     {
     }
@@ -91,6 +91,5 @@ public:
      */
 
     CodeBlock func_body;
-
 };
 

@@ -16,9 +16,9 @@
 using namespace std;
 
 Driver::Driver ( ParseContext& pc )
-	: pc ( pc )
-    , trace_scanning (false)
+	: trace_scanning (false)
 	, trace_parsing (false)
+    , pc(pc)
 {
 }
 

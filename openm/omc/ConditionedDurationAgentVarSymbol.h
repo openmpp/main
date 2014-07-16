@@ -33,8 +33,8 @@ public:
                         agent,
                         NumericSymbol::find(token::TK_Time) )
         , observed(observed->stable_rp())
-        , constant(constant)
         , pp_observed(nullptr)
+        , constant(constant)
     {
         // Create an AgentFuncSymbol for the condition function
         condition_fn = new AgentFuncSymbol(name + "_condition", agent, "bool", "");

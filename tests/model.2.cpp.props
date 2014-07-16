@@ -2,18 +2,25 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
   <!-- 
-  Override default VStudio cpp project settings to build openM models
-  Important changes are:
+  Override default VStudio cpp project settings to build openM models:
     AdditionalIncludeDirectories: OM_INC_DIR OMC_OUT_DIR
     AdditionalDependencies:       OM_MSG_LIB OM_DB_LIB libopenm.lib
     AdditionalLibraryDirectories: OM_MSG_LIB_DIR OM_DB_LIB_DIR OM_LIB_DIR
-  other changes are cosmetic
   -->
   <PropertyGroup>
     <OutDir>$(SolutionDir)../$(Configuration)/$(Platform)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
   
+  <!-- 
+  This setting forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
+  for the more complex dependencies involving omc in ompp model projects.  If this is not set
+  VS thinks things are up-to-date when they are not, and does not launch MSBuild.
+  -->
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
