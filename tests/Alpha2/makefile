@@ -30,7 +30,11 @@ ifndef OM_LIB_DIR
   OM_LIB_DIR = ../../lib
 endif
 
-MODEL_BUILD_DIR = $(BUILD_DIR)/Alpha2
+ifndef MODEL_EXE
+  MODEL_EXE = $(notdir $(CURDIR))
+endif
+
+MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
 OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
 
@@ -59,21 +63,7 @@ SUFFIXES += .d
 CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-MODEL_EXE = alpha2
-MODEL_SQL_PREFIX = Alpha2
-
-MODEL_MPP = \
-  Alpha2.mpp \
-  Extensions.ompp \
-  Happiness.mpp \
-  PersonCore.mpp \
-  Framework.ompp \
-  SyntaxProbes.mpp \
-  TestLinks.mpp
-
-MODEL_OMC_SQL = \
-  $(OMC_OUT_DIR)/$(MODEL_SQL_PREFIX)_create_model.sql \
-  $(OMC_OUT_DIR)/$(MODEL_SQL_PREFIX)_optional_views.sql
+MODEL_MPP = $(wildcard *.mpp *.ompp *.dat)
 
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
@@ -87,9 +77,6 @@ sources = $(MODEL_CPPLIST)
 
 OBJS := $(foreach root,$(sources:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
 DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
-    
-#vpath %.cpp $(CURDIR)
-#vpath %.cpp $(OMC_OUT_DIR)
      
 .PHONY : all
 all: model 
@@ -99,7 +86,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
 
 $(MODEL_OMC_CPP): | prepare
 
-$(MODEL_OMC_CPP) $(MODEL_OMC_SQL) : $(MODEL_MPP)
+$(MODEL_OMC_CPP) : $(MODEL_MPP)
 	$(OMC_EXE) -i $(CURDIR) -o $(OMC_OUT_DIR)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
@@ -111,13 +98,14 @@ $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
 	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
-model_sql : $(MODEL_OMC_SQL)
-	cp -pf $(OMC_OUT_DIR)/$(MODEL_SQL_PREFIX)*.sql $(OUT_BIN_DIR)
+.PHONY : model_sql
+model_sql :
+	cp -pf $(OMC_OUT_DIR)/*.sql $(OUT_BIN_DIR)
 
 .PHONY: clean
 clean:
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
-	rm -f $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)*.sql
+#	rm -f $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)*.sql
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(OMC_OUT_DIR)/*
