@@ -11,6 +11,7 @@
 #include "libopenm/db/dbCommon.h"
 #include "dbExec.h"
 #include "metaRunHolder.h"
+#include "metaSetHolder.h"
 
 namespace openm
 {
@@ -41,6 +42,36 @@ namespace openm
          */
         virtual void readParameter(
             IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * io_valueArr
+            ) = 0;
+    };
+
+    /** input parameter writer public interface */
+    struct IParameterWriter
+    {
+        virtual ~IParameterWriter() throw() = 0;
+
+        /** input parameter writer factory */
+        static IParameterWriter * create(
+            int i_modelId,
+            int i_setId,
+            const char * i_name,
+            IDbExec * i_dbExec,
+            const MetaSetHolder * i_metaSet
+            );
+
+        /** return input parameter size: total number of values in the table */
+        virtual long long sizeOf(void) const throw() = 0;
+
+        /**
+        * write input parameter values.
+        *
+        * @param[in]     i_dbExec   database connection
+        * @param[in]     i_type     parameter type
+        * @param[in]     i_size     parameter size (number of parameter values)
+        * @param[in,out] i_valueArr array of parameter values, size must be =i_size
+        */
+        virtual void writeParameter(
+            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr
             ) = 0;
     };
 }

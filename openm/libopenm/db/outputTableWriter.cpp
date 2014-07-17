@@ -228,10 +228,19 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
         i_dbExec->createStatement(sql, (int)tv.size(), tv.data());
 
-        // loop through all dimensions and store cell values
-        vector<int> cellArr(dimCount, 0);
-        vector<DbValue> valVec;
+        // storage for dimension items and db row values
+        unique_ptr<int> cellArrUptr(new int[dimCount]);
+        int * cellArr = cellArrUptr.get();
 
+        for (int k = 0; k < dimCount; k++) {
+            cellArr[k] = 0;
+        }
+
+        int rowSize = dimCount + accCount;
+        unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
+        DbValue * valVec = valVecUptr.get();
+
+        // loop through all dimensions and store cell values
         for (long long cellOffset = 0; cellOffset < i_size; cellOffset++) {
 
             // check if any data to insert into the row:
@@ -247,17 +256,16 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
             if (isAnyData) {
 
                 // set parameter values: dimension items and accumulators value
-                valVec.clear();
                 for (int k = 0; k < dimCount; k++) {
-                    valVec.push_back(DbValue(cellArr[k]));
+                    valVec[k] = DbValue(cellArr[k]);
                 }
 
                 for (int k = 0; k < accCount; k++) {
-                    valVec.push_back(DbValue(i_valueArr[k][cellOffset]));
+                    valVec[dimCount + k] = DbValue(i_valueArr[k][cellOffset]);
                 }
 
                 // insert cell value into output table
-                i_dbExec->executeStatement((int)valVec.size(), valVec.data());
+                i_dbExec->executeStatement(rowSize, valVec);
             }
 
             // get next cell indices

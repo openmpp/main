@@ -35,7 +35,7 @@ namespace openm
         int paramId;            // parameter id
         int dimCount;           // number of dimensions
         long long totalSize;    // total number of values in the table
-        string selectValueSql;	// sql to select value
+        string selectValueSql;  // sql to select value
 
     private:
         ParameterReader(const ParameterReader & i_reader);              // = delete;

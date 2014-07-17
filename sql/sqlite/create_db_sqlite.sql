@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS type_dic
   mod_type_id   INT         NOT NULL, -- unique type id
   mod_type_name VARCHAR(64) NOT NULL, -- type name: int, double...
   dic_id        INT         NOT NULL, -- dictionary id: 0=simple 1=logical 2=classification 3=range 4=partition 5=link
-  total_enum_id INT         NOT NULL, -- if total enabled this is enum_value of total item =max+1
+  total_enum_id INT         NOT NULL, -- if total enabled this is enum_id of "Total" item =max+1
   PRIMARY KEY (model_id, mod_type_id),
   CONSTRAINT type_dic_un UNIQUE (model_id, mod_type_name),
   CONSTRAINT type_dic_mk 

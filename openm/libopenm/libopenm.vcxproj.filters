@@ -84,6 +84,9 @@
     <ClInclude Include="include\metaRunHolder.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\metaSetHolder.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\omCommon.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
@@ -277,6 +280,9 @@
     </ClCompile>
     <ClCompile Include="common\argReader.cpp">
       <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="db\parameterWriter.cpp">
+      <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
