@@ -142,10 +142,10 @@ ParameterWriter::ParameterWriter(
 }
 
 // Parameter value conversion
-template<typename TValue> DbValue setDbValue(long long i_cellOffset, void * i_valueArr)
+template<typename TValue> void setDbValue(long long i_cellOffset, void * i_valueArr, DbValue & o_dbVal)
 {
     TValue val = static_cast<TValue *>(i_valueArr)[i_cellOffset];
-    return DbValue(val);
+    o_dbVal = DbValue(val);
 }
 
 // write parameter values
@@ -164,7 +164,7 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
     tv.push_back(&i_type);      // type of value
 
     // set parameter column conversion handler
-    function<DbValue(long long i_cellOffset, void * i_valueArr)> doSetValue = nullptr;
+    function<void (long long i_cellOffset, void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
 
     if (i_type == typeid(char)) doSetValue = setDbValue<char>;
     if (i_type == typeid(unsigned char)) doSetValue = setDbValue<unsigned char>;
@@ -224,7 +224,7 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
                 valVec[k] = DbValue(cellArr[k]);
             }
 
-            valVec[dimCount] = doSetValue(cellOffset, i_valueArr);  // set parameter value
+            doSetValue(cellOffset, i_valueArr, valVec[dimCount]);   // set parameter value
 
             // insert cell value into parameter table
             i_dbExec->executeStatement(rowSize, valVec);

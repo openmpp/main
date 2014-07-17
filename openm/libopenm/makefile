@@ -74,6 +74,7 @@ LIBOPENM_CPPLIST = \
   db/groupTxtTable.cpp \
   db/langLstTable.cpp \
   db/langWordTable.cpp \
+  db/modelAggregationSql.cpp \
   db/modelDicTable.cpp \
   db/modelDicTxtTable.cpp \
   db/outputTableWriter.cpp \
@@ -81,6 +82,7 @@ LIBOPENM_CPPLIST = \
   db/paramDicTxtTable.cpp \
   db/paramDimsTable.cpp \
   db/parameterReader.cpp \
+  db/parameterWriter.cpp \
   db/paramRunTxtTable.cpp \
   db/profileLstTable.cpp \
   db/profileOptionTable.cpp \
