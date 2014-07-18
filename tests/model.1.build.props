@@ -14,11 +14,22 @@
   </PropertyGroup>
   
   <!-- 
-  This is one arbitrarily selected omc output file whose timestamp is compared
-  to each input model source module to determine if the omc target is to be run.
+  This property group uses the model-specific developer interface property sheet "OpenM++.props"
+  to set properties used subsequently.
   -->
   <PropertyGroup>
-    <OMC_TIMESTAMP_OUTPUT_FILE>$(OMC_OUT_DIR)/om_types0.h</OMC_TIMESTAMP_OUTPUT_FILE>
+	<!-- omc -p option to publish scenario -->
+    <OMC_IN_SCENARIO_OPT Condition="'$(PUBLISH_SCENARIO)'=='1'">-p $(SCENARIO_PARMS_FOLDER)</OMC_IN_SCENARIO_OPT>
+	<!-- omc -f option to supply fixed parameter -->
+    <OMC_IN_FIXED_OPT Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'">-f $(FIXED_PARMS_FOLDER)</OMC_IN_FIXED_OPT>
+  </PropertyGroup>
+
+  <!-- 
+  This is one selected omc output file which is always output and whose timestamp is compared
+  to each input model source module to determine if the omc target needs to run.
+  -->
+  <PropertyGroup>
+    <OMC_TIMESTAMP_OUTPUT_FILE>$(OMC_OUT_DIR)/om_definitions.cpp</OMC_TIMESTAMP_OUTPUT_FILE>
   </PropertyGroup>
   
   <!-- 
@@ -36,7 +47,7 @@
   <ItemGroup>
     <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
     <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_developer.cpp" />
-    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_initializers.cpp" />
+    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_fixed_parms.cpp" Condition="'$(USE_FIXED_PARMS)'!=''" />
   </ItemGroup>
 
   <!-- 
