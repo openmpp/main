@@ -762,6 +762,8 @@ public:
      * the 'use' statement from within model source code.
      */
     static list<string> all_source_files;
+    static list<string> all_fixed_files;
+    static list<string> all_parm_files;
 
     /**
      * The symbol table.

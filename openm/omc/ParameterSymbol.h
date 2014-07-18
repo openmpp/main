@@ -22,7 +22,7 @@ public:
 
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , source(external_parameter)
+        , source(scenario_parameter)
         , datatype(datatype->stable_rp())
         , pp_datatype(nullptr)
     {
@@ -95,10 +95,10 @@ public:
      * Enumeration indicating source of parameter value.
      */
     enum parameter_source {
-        ///< Parameter value invariant and stored internally.
-        internal_parameter,
-        ///< Parameter value from an external source.
-        external_parameter,
+        ///< Parameter value fixed and stored in executable.
+        fixed_parameter,
+        ///< Parameter value from an external source, e.g. data store
+        scenario_parameter,
         ///< Parameter value computed from other parameters.
         derived_parameter
     };

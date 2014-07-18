@@ -86,7 +86,7 @@ void ParameterSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // Mark enumerations required for metadata support for this parameter
-        if (source == external_parameter) {
+        if (source == scenario_parameter) {
             // The storage type if an enumeration
             if (pp_datatype->is_enumeration()) {
                 auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
@@ -123,13 +123,13 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     
-    if (initializer_list.empty()) {
-        // No initializer present in model source.
-        // Just use the default value for a type of this kind.
+    if (source != fixed_parameter || initializer_list.empty()) {
+        // Parameter is not internal, or (if internal), no initializer was provided in the model source.
+        // For these situations, just use the default value for a type of this kind.
         c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
     }
     else {
-        // Initializer present in model source.
+        // Parameter is internal and an initializer was provided in the model source.
         c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = ";
         c += cxx_initializer();
         c += ";" ;
@@ -141,7 +141,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
 {
     CodeBlock c;
     if (!initializer_list.empty()) {
-        int values_per_line = 1; // number of iniitalizer values to place on each line
+        int values_per_line = 1; // number of initializer values to place on each line
         if (rank() >= 1) {
             // number of values per line is size of trailing dimension
             auto es = pp_dimension_list.back();
@@ -173,7 +173,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Only external parameters have metadata
-    if (source != external_parameter) return;
+    if (source != scenario_parameter) return;
 
     // Hook into the hierarchical calling chain
     super::populate_metadata( metaRows );

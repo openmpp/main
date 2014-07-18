@@ -520,7 +520,6 @@ ompp_declarative_island:
 decl_use:
           "use" STRING_LITERAL[path] ";"
                         {
-                            // TODO check for existence in current directory, if not found, use standard 'use' directory (relative to compiler location)
                             string use_file = $path->value();
                             // remove leading and trailing double quote characters
                             use_file = use_file.substr(1, use_file.length() - 2);
@@ -853,7 +852,15 @@ parameter_initializer_expr:
                             // add first (and only) element to the initializer list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
-                            parm->source = ParameterSymbol::internal_parameter;
+                            if (pc.is_scenario_parameter_value) {
+                                parm->source = ParameterSymbol::scenario_parameter;
+                            }
+                            if (pc.is_fixed_parameter_value) {
+                                parm->source = ParameterSymbol::fixed_parameter;
+                            }
+                            else {
+                                // error - parameter value specified in model source
+                            }
                             parm->initializer_list.push_back($parameter_initializer_element);
                         }
     | "=" "{" parameter_initializer_list[wrk] "}"
@@ -861,7 +868,16 @@ parameter_initializer_expr:
                             // splice the gathered initializer list into the parameter's list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
-                            parm->source = ParameterSymbol::internal_parameter;
+                            if (pc.is_scenario_parameter_value) {
+                                parm->source = ParameterSymbol::scenario_parameter;
+                            }
+                            else if (pc.is_fixed_parameter_value) {
+                                parm->source = ParameterSymbol::fixed_parameter;
+                            }
+                            else {
+                                // error - parameter value specified in model source
+                                assert(false); // model developer error
+                            }
                             auto wrk = $wrk; // to see it in the debugger
                             parm->initializer_list.splice(parm->initializer_list.end(), *wrk);
                             delete wrk;

@@ -10,12 +10,16 @@
 * * -Omc.InputDir  input/dir/to/find/source/files
 * * -Omc.OutputDir output/dir/to/place/compiled/cpp_and_h/files
 * * -Omc.UseDir    use/dir/with/ompp/files
+* * -Omc.ParmDir   input/dir/to/find/parameter/files/for/scenario
+* * -Omc.FixedDir  input/dir/to/find/fixed/parameter/files/
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
 * Short form of command line arguments:
-* * -i short form of -Omc.inputDir
-* * -o short form of -Omc.outputDir
-* * -u short form of -Omc.useDir
+* * -i short form of -Omc.InputDir
+* * -o short form of -Omc.OutputDir
+* * -u short form of -Omc.UseDir
+* * -p short form of -Omc.ParmDir
+* * -f short form of -Omc.FixedDir
 * * -s short form of -OpenM.OptionsFile
 * 
 * Also common OpenM log options supported: 
@@ -54,7 +58,7 @@ using namespace std;
 
 namespace openm
 {
-    /** keys for model run options */
+    /** keys for omc options */
     struct OmcArgKey
     {
         /** omc input directory with openM++ source files */
@@ -65,9 +69,15 @@ namespace openm
 
         /** omc use directory to resolve 'use' statements */
         static const char * useDir;
+
+        /** omc input directory with OpenM++ parameter files */
+        static const char * parmDir;
+
+        /** omc input directory with OpenM++ fixed parameter files */
+        static const char * fixedDir;
     };
 
-    /** keys for model run options (short form) */
+    /** keys for omc options (short form) */
     struct OmcShortKey
     {
         /** short name for options file name: -s fileName.ini */
@@ -81,6 +91,12 @@ namespace openm
 
         /** short name for omc use directory */
         static const char * useDir;
+
+        /** short name for omc parm directory */
+        static const char * parmDir;
+
+        /** short name for omc fixed directory */
+        static const char * fixedDir;
     };
 
     /** omc input directory with openM++ source files */
@@ -91,6 +107,12 @@ namespace openm
 
     /** omc use directory to resolve 'use' statements */
     const char * OmcArgKey::useDir = "Omc.UseDir";
+
+    /** omc input directory for OpenM++ parameter files */
+    const char * OmcArgKey::parmDir = "Omc.ParmDir";
+
+    /** omc input directory for OpenM++ fixed parameter files */
+    const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
     /** short name for options file name: -s fileName.ini */
     const char * OmcShortKey::optionsFile = "s";
@@ -104,11 +126,19 @@ namespace openm
     /** short name for omc use directory */
     const char * OmcShortKey::useDir = "u";
 
+    /** short name for omc parm directory */
+    const char * OmcShortKey::parmDir = "p";
+
+    /** short name for omc fixed directory */
+    const char * OmcShortKey::fixedDir = "f";
+
     /** array of model run option keys. */
     static const char * runArgKeyArr[] = {
         OmcArgKey::inputDir,
         OmcArgKey::outputDir,
         OmcArgKey::useDir,
+        OmcArgKey::parmDir,
+        OmcArgKey::fixedDir,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -127,19 +157,31 @@ namespace openm
         make_pair(OmcShortKey::optionsFile, ArgKey::optionsFile),
         make_pair(OmcShortKey::inputDir, OmcArgKey::inputDir),
         make_pair(OmcShortKey::outputDir, OmcArgKey::outputDir),
-        make_pair(OmcShortKey::useDir, OmcArgKey::useDir)
+        make_pair(OmcShortKey::useDir, OmcArgKey::useDir),
+        make_pair(OmcShortKey::parmDir, OmcArgKey::parmDir),
+        make_pair(OmcShortKey::fixedDir, OmcArgKey::fixedDir),
     };
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
 
-// get list of source (.mpp .ompp .dat) files from specified directory or current directory if source path is empty
-static list<string> listSourceFiles(const string & i_srcDir);
+// get list of files matching extension list from specified directory or current directory if source path is empty
+// each file name in result is a relative path and include source directory
+static list<string> listSourceFiles(const string & i_srcPath, const list<string> & i_extensions);
+
+// get extension of filename
+static string getFileNameExt(const string &file_name);
+
+// get stem of filename
+static string getFileNameStem(const string &file_name);
 
 // write string line into new output file
 static void writeLinesToFile(const string & i_filePath, const vector<string> & i_lineVec);
 
 // write text string into new output file
 static void writeToFile(const string & i_filePath, const string & i_fileContent);
+
+// Parse a list of files
+static void parseFiles(list<string> & files, ParseContext & pc, ofstream *markup_stream);
 
 int main(int argc, char * argv[])
 {
@@ -163,9 +205,10 @@ int main(int argc, char * argv[])
         string inpDir = argStore.strOption(OmcArgKey::inputDir);
         bool isFromCurrent = inpDir == "" || inpDir == ".";
 
-        if (!isFromCurrent) theLog->logFormatted("Compile from: %s", inpDir.c_str());
+        if (!isFromCurrent) theLog->logFormatted("Compile source from: %s", inpDir.c_str());
 
-        list<string> source_files = listSourceFiles(inpDir);     // list of source file names
+        list<string> source_extensions = { ".mpp", ".ompp" };
+        list<string> source_files = listSourceFiles(inpDir, source_extensions);
 
         if (source_files.empty()) {
             theLog->logMsg("No source files found, nothing to compile at current directory");
@@ -173,7 +216,7 @@ int main(int argc, char * argv[])
         }
 
         // "normalize" input and output directories: 
-        // use empty "" if it is current directory else make sure it is end with /
+        // use empty "" if it is current directory else make sure it ends with /
         if (isFromCurrent) {
             inpDir = "";
         }
@@ -184,7 +227,7 @@ int main(int argc, char * argv[])
         string outDir = argStore.strOption(OmcArgKey::outputDir);
         bool isToCurrent = outDir == "" || outDir == ".";
 
-        if (!isToCurrent) theLog->logFormatted("Compile into: %s", outDir.c_str());
+        if (!isToCurrent) theLog->logFormatted("Compile source into: %s", outDir.c_str());
 
         if (isToCurrent) {
             outDir = "";
@@ -193,10 +236,7 @@ int main(int argc, char * argv[])
             if (outDir.back() != '/' && outDir.back() != '\\') outDir += '/';
         }
 
-        // Obtain location of the 'use' folder.
-        // TODO: normalize path when std::filesystem available, using
-        //    boost::filesystem::system_complete(argv[0]);
-        //    and split into components using std::filesystem.
+        // Obtain location of the 'use' folder and make available to parser.
         if (argStore.isOptionExist(OmcArgKey::useDir)) {
             Symbol::use_folder = argStore.strOption(OmcArgKey::useDir);
         }
@@ -235,60 +275,49 @@ int main(int argc, char * argv[])
         // Populate starting contents of the list of all source files to be parsed.
         // An additional file is appended to this list during parsing
         // each time a 'use' statement is encountered in a source code file.
-        Symbol::all_source_files.swap(source_files);
-        
-        for (string & name : Symbol::all_source_files) {
-            try {
-                theLog->logFormatted("Parsing %s", name.c_str());
+        //Symbol::all_source_files.swap(source_files);
+        // deep copy required because file names must be maintained (code locations use pointer to file name)
+        Symbol::all_source_files = source_files;
+        parseFiles(Symbol::all_source_files, pc, &om_developer_cpp);
 
-                // create new instance of parser-scanner driver for each source file
-                Driver drv( pc );
-
-                // set to true to see detailed scanning actions
-                drv.trace_scanning = false;
-
-                // set to true to see detailed parsing actions
-                drv.trace_parsing = false;
-
-                // split source file name into path, stem, and extension (lower-case normalized)
-                // at some point use std::filesystem
-                
-                // length of optional path part, including final trailing slash
-                size_t in_path_len = name.find_last_of("/\\");
-                if (in_path_len > 0) in_path_len++;
-
-                // position of stem part
-                int in_stem_pos = in_path_len;
-
-                // position of extension (0 if no extension)
-                size_t in_ext_pos = name.find_last_of(".");
-                if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
-
-                // length of extension
-                size_t in_ext_len = (in_ext_pos == 0) ? 0 : name.length() - in_ext_pos;
-
-                // length of stem
-                size_t in_stem_len = name.length() - in_path_len - in_ext_len;
-
-                string in_path = name.substr(0, in_path_len);
-                string in_stem = name.substr(in_stem_pos, in_stem_len);
-                string in_ext = name.substr(in_ext_pos, in_ext_len);
-                openm::toLower(in_ext);
-
-                drv.parse(&name, in_stem + in_ext, in_stem, &om_developer_cpp);
+        // Parse parameter scenario directory if specified
+        if (argStore.isOptionExist(OmcArgKey::parmDir)) {
+            // -p scenario parameters specified
+            string parmDir = argStore.strOption(OmcArgKey::parmDir);
+            pc.is_scenario_parameter_value = true;
+            pc.is_fixed_parameter_value = false;
+            if (parmDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", parmDir.c_str());
+            if (parmDir.back() != '/' && parmDir.back() != '\\') parmDir += '/';
+            list<string> parm_extensions = { ".dat" };
+            list<string> parm_files = listSourceFiles(parmDir, parm_extensions);     // list of parameter file names
+            if (parm_files.empty()) {
+                theLog->logMsg("No parm files found, nothing to compile at current directory");
             }
-            catch(exception & ex) {
-                theLog->logErr(ex);
-                if ( pc.parse_errors == 0 ) {
-                    pc.parse_errors = 1;
-                }
-                // continue parsing any remaining source code modules to detect additional syntax errors (possibly non-spurious)
+            else {
+                // deep copy required because file names must be maintained (code locations use pointer to file name)
+                Symbol::all_parm_files = parm_files;
+                parseFiles(Symbol::all_parm_files, pc, &om_developer_cpp);
             }
         }
 
-        if ( pc.parse_errors > 0 ) {
-            theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);
-            throw HelperException("Finish omc");
+        // Parse fixed parameter directory if specified
+        if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
+            // -f fixed parameters specified
+            string fixedDir = argStore.strOption(OmcArgKey::fixedDir);
+            pc.is_scenario_parameter_value = false;
+            pc.is_fixed_parameter_value = true;
+            if (fixedDir != ".") theLog->logFormatted("Compile fixed parameters from: %s", fixedDir.c_str());
+            if (fixedDir.back() != '/' && fixedDir.back() != '\\') fixedDir += '/';
+            list<string> parm_extensions = { ".dat" };
+            list<string> parm_files = listSourceFiles(fixedDir, parm_extensions);     // list of parameter file names
+            if (parm_files.empty()) {
+                theLog->logMsg("No parm files found at current directory");
+            }
+            else {
+                // deep copy required because file names must be maintained (code locations use pointer to file name)
+                Symbol::all_fixed_files = parm_files;
+                parseFiles(Symbol::all_fixed_files, pc, &om_developer_cpp);
+            }
         }
 
         try {
@@ -327,9 +356,9 @@ int main(int argc, char * argv[])
         exit_guard<ofstream> onExit_om_definitions_cpp(&om_definitions_cpp, &ofstream::close);   // close on exit
         if (om_definitions_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
 
-        ofstream om_initializers_cpp(outDir + "om_initializers.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
-        exit_guard<ofstream> onExit_om_initializers_cpp(&om_initializers_cpp, &ofstream::close);   // close on exit
-        if (om_initializers_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_initializers.cpp");
+        ofstream om_fixed_parms_cpp(outDir + "om_fixed_parms.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        exit_guard<ofstream> onExit_om_fixed_parms_cpp(&om_fixed_parms_cpp, &ofstream::close);   // close on exit
+        if (om_fixed_parms_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_fixed_parms.cpp");
 
 #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
@@ -337,13 +366,13 @@ int main(int argc, char * argv[])
         om_types1_h << "\xEF\xBB\xBF";
         om_declarations_h << "\xEF\xBB\xBF";
         om_definitions_cpp << "\xEF\xBB\xBF";
-        om_initializers_cpp << "\xEF\xBB\xBF";
+        om_fixed_parms_cpp << "\xEF\xBB\xBF";
 #endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create());
 
-        CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, &om_initializers_cpp, builder->timeStamp(), metaRows);
+        CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, &om_fixed_parms_cpp, builder->timeStamp(), metaRows);
         cg.do_all();
 
         // build model creation script and save it
@@ -379,10 +408,39 @@ int main(int argc, char * argv[])
     return EXIT_SUCCESS;
 }
 
-// get list of source files: *.mpp *.ompp *.dat
-// from specified directory or current directory if source path is empty
+// Parse a list of files
+static void parseFiles(list<string> & files, ParseContext & pc, ofstream *markup_stream)
+{
+    using namespace openm;
+    for (string & full_name : files) {
+        try {
+            theLog->logFormatted("Parsing %s", full_name.c_str());
+            // create new instance of parser-scanner driver for each source file
+            Driver drv( pc );
+            drv.trace_scanning = false; // set to true to see detailed scanning actions
+            drv.trace_parsing = false; // set to true to see detailed parsing actions
+            string file_ext = getFileNameExt(full_name);
+            string file_stem = getFileNameStem(full_name);
+            string file_name = file_stem + file_ext;
+            drv.parse(&full_name, file_name, file_stem, markup_stream);
+        }
+        catch(exception & ex) {
+            theLog->logErr(ex);
+            if ( pc.parse_errors == 0 ) {
+                pc.parse_errors = 1;
+            }
+            // continue parsing any remaining source code modules to detect additional syntax errors (possibly non-spurious)
+        }
+    }
+    if ( pc.parse_errors > 0 ) {
+        theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);
+        throw HelperException("Finish omc");
+    }
+}
+
+// get list of files matching extension list from specified directory or current directory if source path is empty
 // each file name in result is a relative path and include source directory
-list<string> listSourceFiles(const string & i_srcPath)
+static list<string> listSourceFiles(const string & i_srcPath, const list<string> & i_extensions)
 {
     using namespace openm;
     list<string> pathLst;
@@ -414,8 +472,11 @@ list<string> listSourceFiles(const string & i_srcPath)
                 if (!S_ISREG(fileStat.st_mode)) continue;           // skip directories and special files
             }
 
-            if (endWithNoCase(path, ".mpp") || endWithNoCase(path, ".ompp") || endWithNoCase(path, ".dat")) {
-                pathLst.push_back(path);
+            for (auto ext : i_extensions) {
+                if (endWithNoCase(path, ext.c_str())) {
+                    pathLst.push_back(path);
+                    break;
+                }
             }
         }
     }
@@ -427,6 +488,64 @@ list<string> listSourceFiles(const string & i_srcPath)
     // sort source files in alphabetical order for reproducibility
     pathLst.sort();
     return pathLst;
+}
+
+// get extension of filename
+static string getFileNameExt(const string &file_name)
+{
+    // length of optional path part, including final trailing slash
+    int in_path_len = file_name.find_last_of("/\\");
+    if (in_path_len == -1) in_path_len = 0;
+    if (in_path_len > 0) in_path_len++;
+
+    // position of stem part
+    int in_stem_pos = in_path_len;
+
+    // position of extension (0 if no extension)
+    int in_ext_pos = file_name.find_last_of(".");
+    if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
+
+    // length of extension
+    int in_ext_len = (in_ext_pos == 0) ? 0 : file_name.length() - in_ext_pos;
+
+    // length of stem
+    int in_stem_len = file_name.length() - in_path_len - in_ext_len;
+
+    string in_path = file_name.substr(0, in_path_len);
+    string in_stem = file_name.substr(in_stem_pos, in_stem_len);
+    string in_ext = file_name.substr(in_ext_pos, in_ext_len);
+    openm::toLower(in_ext);
+
+    return in_ext;
+}
+
+// get stem of filename
+static string getFileNameStem(const string &file_name)
+{
+    // length of optional path part, including final trailing slash
+    int in_path_len = file_name.find_last_of("/\\");
+    if (in_path_len == -1) in_path_len = 0;
+    if (in_path_len > 0) in_path_len++;
+
+    // position of stem part
+    int in_stem_pos = in_path_len;
+
+    // position of extension (0 if no extension)
+    int in_ext_pos = file_name.find_last_of(".");
+    if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
+
+    // length of extension
+    int in_ext_len = (in_ext_pos == 0) ? 0 : file_name.length() - in_ext_pos;
+
+    // length of stem
+    int in_stem_len = file_name.length() - in_path_len - in_ext_len;
+
+    string in_path = file_name.substr(0, in_path_len);
+    string in_stem = file_name.substr(in_stem_pos, in_stem_len);
+    string in_ext = file_name.substr(in_ext_pos, in_ext_len);
+    openm::toLower(in_ext);
+
+    return in_stem;
 }
 
 // write string line into new output file
