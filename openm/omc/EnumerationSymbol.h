@@ -56,7 +56,7 @@ public:
     {
     }
 
-    const string default_initial_value() const;
+    virtual const string default_initial_value() const = 0;
 
     void post_parse(int pass);
 
@@ -67,17 +67,7 @@ public:
      *
      * @return An int.
      */
-    virtual int pp_size()
-    {
-        return pp_enumerators.size();
-    }
-
-    /**
-     * The enumerators of this enum
-     * 
-     *  Populated after parsing is complete.
-     */
-    list<EnumeratorSymbol *> pp_enumerators;
+    virtual int pp_size() = 0;
 
     /**
      * Type used to store enumerators of this enumeration.

@@ -7,7 +7,6 @@
 
 #include <cassert>
 #include "RangeSymbol.h"
-#include "RangeEnumeratorSymbol.h"
 #include "LanguageSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"

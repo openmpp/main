@@ -59,6 +59,8 @@ list<TypeSymbol *> Symbol::pp_all_types1;
 
 list<EnumerationSymbol *> Symbol::pp_all_enumerations;
 
+list<EnumerationWithEnumeratorsSymbol *> Symbol::pp_all_enumerations_with_enumerators;
+
 list<LanguageSymbol *> Symbol::pp_all_languages;
 
 list<AgentSymbol *> Symbol::pp_all_agents;
@@ -793,7 +795,7 @@ void Symbol::post_parse_all()
     }
 
     // Sort collection of enumerators in each enumeration in ordinal order
-    for (auto enumeration : pp_all_enumerations) {
+    for (auto enumeration : pp_all_enumerations_with_enumerators) {
         enumeration->pp_enumerators.sort([](EnumeratorSymbol *a, EnumeratorSymbol *b) { return a->ordinal < b->ordinal; });
     }
 

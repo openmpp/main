@@ -8,7 +8,7 @@
 #pragma once
 #include "Symbol.h"
 
-class EnumerationSymbol;
+class EnumerationWithEnumeratorsSymbol;
 
 using namespace std;
 
@@ -54,7 +54,7 @@ public:
      * Set during post-parse for convenience.
      */
 
-    EnumerationSymbol *pp_enumeration;
+    EnumerationWithEnumeratorsSymbol *pp_enumeration;
 
 
     /**

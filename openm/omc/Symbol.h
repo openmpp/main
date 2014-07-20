@@ -18,6 +18,7 @@
 class CodeBlock;
 class TypeSymbol;
 class EnumerationSymbol;
+class EnumerationWithEnumeratorsSymbol;
 class LanguageSymbol;
 class AgentSymbol;
 class ParameterSymbol;
@@ -816,15 +817,19 @@ public:
 
     static list<LanguageSymbol *> pp_all_languages;
 
-
     /**
-    * The enumerations in the model
-    *
-    * Populated after parsing is complete.
-    */
-
+     * The enumerations in the model
+     * 
+     * Populated after parsing is complete.
+     */
     static list<EnumerationSymbol *> pp_all_enumerations;
 
+    /**
+     * The enumerations with enumerators in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<EnumerationWithEnumeratorsSymbol *> pp_all_enumerations_with_enumerators;
 
     /**
     * The agents in the model

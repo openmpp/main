@@ -15,15 +15,6 @@
 using namespace std;
 using namespace openm;
 
-const string EnumerationSymbol::default_initial_value() const
-{
-    // enumerators have been populated
-    assert(pp_enumerators.size() > 0); // grammar guarnatee
-
-    // initial value is first enumerator
-    return pp_enumerators.front()->name;
-};
-
 void EnumerationSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
@@ -72,28 +63,6 @@ void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         typeTxt.descr = label(*lang);
         typeTxt.note = note(*lang);
         metaRows.typeTxt.push_back(typeTxt);
-    }
-
-    // Note that pp_enumerators is empty for ranges.
-    // Enumerator metadata for ranges is generated at the RangeSymbol level of the hierarchical calling chain.
-    for (auto enumerator : pp_enumerators) {
-        {
-            TypeEnumLstRow typeEnum;
-            typeEnum.typeId = type_id;
-            typeEnum.enumId = enumerator->ordinal;
-            typeEnum.name = enumerator->name;
-            metaRows.typeEnum.push_back(typeEnum);
-        }
-
-        for (auto lang : Symbol::pp_all_languages) {
-            TypeEnumTxtLangRow typeEnumTxt;
-            typeEnumTxt.typeId = type_id;
-            typeEnumTxt.enumId = enumerator->ordinal;
-            typeEnumTxt.langName = lang->name;
-            typeEnumTxt.descr = enumerator->label(*lang);
-            typeEnumTxt.note = enumerator->note(*lang);
-            metaRows.typeEnumTxt.push_back(typeEnumTxt);
-        }
     }
 }
 

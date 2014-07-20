@@ -66,16 +66,13 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
-  
   <PropertyGroup>
     <BUILD_OMC_SRC_DIR>$(BUILD_DIR)/$(ProjectName)/src</BUILD_OMC_SRC_DIR>
     <OutDir>$(OM_BIN_DIR)/</OutDir>
     <TargetName>omc</TargetName>
   </PropertyGroup>
-  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -88,7 +85,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -104,7 +100,6 @@
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -120,7 +115,6 @@
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -140,7 +134,6 @@
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -160,7 +153,6 @@
       <AdditionalDependencies>libopenm_omc_db.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemGroup>
     <ClInclude Include="$(OM_INC_DIR)/libopenm/omCommon.h" />
     <ClInclude Include="$(OM_INC_DIR)/libopenm/db/metaModelHolder.h" />
@@ -185,6 +177,7 @@
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DurationAgentVarSymbol.h" />
     <ClInclude Include="EnumerationSymbol.h" />
+    <ClInclude Include="EnumerationWithEnumeratorsSymbol.h" />
     <ClInclude Include="EnumeratorSymbol.h" />
     <ClInclude Include="ExprForAgentVar.h" />
     <ClInclude Include="ExprForTable.h" />
@@ -203,7 +196,6 @@
     <ClInclude Include="ParseContext.h" />
     <ClInclude Include="PartitionEnumeratorSymbol.h" />
     <ClInclude Include="PartitionSymbol.h" />
-    <ClInclude Include="RangeEnumeratorSymbol.h" />
     <ClInclude Include="RangeSymbol.h" />
     <ClInclude Include="RealSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
@@ -243,6 +235,7 @@
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
     <ClCompile Include="EnumerationSymbol.cpp" />
+    <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp" />
     <ClCompile Include="EnumeratorSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="IdentityAgentVarSymbol.cpp" />
@@ -275,26 +268,20 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  
   <Target Name="CleanBisonFlex" BeforeTargets="PrepareForClean">
     <Message Text="Delete flex and bison output" />
     <RemoveDir Directories="$(BUILD_OMC_SRC_DIR)" />
   </Target>
-  
   <Target Name="MakeDirBisonFlex">
     <MakeDir Directories="$(BUILD_OMC_SRC_DIR)" />
   </Target>
-  
   <Target Name="DoFlex" DependsOnTargets="MakeDirBisonFlex" Inputs="scanner.l" Outputs="$(BUILD_OMC_SRC_DIR)/scanner.cpp">
     <Message Text="$(BISON_FLEX_DIR)/$(FLEX_EXE) scanner.l" />
     <Exec Command="$(BISON_FLEX_DIR)/$(FLEX_EXE) -Cem --wincompat -o $(BUILD_OMC_SRC_DIR)/scanner.cpp scanner.l" />
   </Target>
-  
   <Target Name="DoBison" DependsOnTargets="MakeDirBisonFlex" Inputs="parser.y" Outputs="$(BUILD_OMC_SRC_DIR)/location.hh;$(BUILD_OMC_SRC_DIR)/parser.cpp;$(BUILD_OMC_SRC_DIR)/parser.hpp;$(BUILD_OMC_SRC_DIR)/position.hh;$(BUILD_OMC_SRC_DIR)/stack.hh">
     <Message Text="$(BISON_FLEX_DIR)/$(BISON_EXE) parser.y" />
     <Exec Command="$(BISON_FLEX_DIR)/$(BISON_EXE) -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
   </Target>
-  
   <Target Name="BisonFlex" BeforeTargets="BeforeClCompile" DependsOnTargets="DoFlex;DoBison" />
-  
 </Project>

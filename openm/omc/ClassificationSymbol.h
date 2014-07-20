@@ -7,7 +7,7 @@
 
 #pragma once
 #include <list>
-#include "EnumerationSymbol.h"
+#include "EnumerationWithEnumeratorsSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -16,10 +16,10 @@ using namespace openm;
 /**
 * ClassificationSymbol.
 */
-class ClassificationSymbol : public EnumerationSymbol
+class ClassificationSymbol : public EnumerationWithEnumeratorsSymbol
 {
 private:
-    typedef EnumerationSymbol super;
+    typedef EnumerationWithEnumeratorsSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -31,11 +31,9 @@ public:
      */
 
     ClassificationSymbol(Symbol *sym, yy::location decl_loc = yy::location())
-        : EnumerationSymbol(sym, token::TK_int, kind_of_type::classification_type, decl_loc)
+        : EnumerationWithEnumeratorsSymbol(sym, token::TK_int, kind_of_type::classification_type, decl_loc)
     {
     }
-
-    const string default_initial_value() const;
 
     void post_parse(int pass);
 
