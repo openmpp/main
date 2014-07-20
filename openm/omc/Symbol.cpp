@@ -48,8 +48,6 @@ using namespace openm;
 string Symbol::use_folder;
 
 list<string> Symbol::all_source_files;
-list<string> Symbol::all_fixed_files;
-list<string> Symbol::all_parm_files;
 
 symbol_map_type Symbol::symbols;
 

@@ -36,6 +36,7 @@ public:
     EnumerationSymbol(Symbol *sym, token_type storage_type, int dicId, yy::location decl_loc = yy::location())
         : TypeSymbol(sym, decl_loc)
         , storage_type(storage_type)
+        , metadata_needed(false)
         , dicId(dicId)
     {
     }

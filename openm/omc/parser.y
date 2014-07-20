@@ -855,11 +855,12 @@ parameter_initializer_expr:
                             if (pc.is_scenario_parameter_value) {
                                 parm->source = ParameterSymbol::scenario_parameter;
                             }
-                            if (pc.is_fixed_parameter_value) {
+                            else if (pc.is_fixed_parameter_value) {
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {
                                 // error - parameter value specified in model source
+                                assert(false); // model developer error
                             }
                             parm->initializer_list.push_back($parameter_initializer_element);
                         }

@@ -181,7 +181,7 @@ static void writeLinesToFile(const string & i_filePath, const vector<string> & i
 static void writeToFile(const string & i_filePath, const string & i_fileContent);
 
 // Parse a list of files
-static void parseFiles(list<string> & files, ParseContext & pc, ofstream *markup_stream);
+static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
 
 int main(int argc, char * argv[])
 {
@@ -278,7 +278,8 @@ int main(int argc, char * argv[])
         //Symbol::all_source_files.swap(source_files);
         // deep copy required because file names must be maintained (code locations use pointer to file name)
         Symbol::all_source_files = source_files;
-        parseFiles(Symbol::all_source_files, pc, &om_developer_cpp);
+        list<string>::iterator start_it = Symbol::all_source_files.begin();
+        parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
 
         // Parse parameter scenario directory if specified
         if (argStore.isOptionExist(OmcArgKey::parmDir)) {
@@ -288,15 +289,17 @@ int main(int argc, char * argv[])
             pc.is_fixed_parameter_value = false;
             if (parmDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", parmDir.c_str());
             if (parmDir.back() != '/' && parmDir.back() != '\\') parmDir += '/';
-            list<string> parm_extensions = { ".dat" };
+            list<string> parm_extensions = { ".dat", ".odat" };
             list<string> parm_files = listSourceFiles(parmDir, parm_extensions);     // list of parameter file names
             if (parm_files.empty()) {
-                theLog->logMsg("No parm files found, nothing to compile at current directory");
+                theLog->logMsg("No parameter files found, nothing to compile at current directory");
             }
             else {
-                // deep copy required because file names must be maintained (code locations use pointer to file name)
-                Symbol::all_parm_files = parm_files;
-                parseFiles(Symbol::all_parm_files, pc, &om_developer_cpp);
+                size_t count_prev = Symbol::all_source_files.size();
+                Symbol::all_source_files.splice(Symbol::all_source_files.end(), parm_files);
+                auto start_it = Symbol::all_source_files.begin();
+                advance(start_it, count_prev);
+                parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
             }
         }
 
@@ -308,15 +311,17 @@ int main(int argc, char * argv[])
             pc.is_fixed_parameter_value = true;
             if (fixedDir != ".") theLog->logFormatted("Compile fixed parameters from: %s", fixedDir.c_str());
             if (fixedDir.back() != '/' && fixedDir.back() != '\\') fixedDir += '/';
-            list<string> parm_extensions = { ".dat" };
+            list<string> parm_extensions = { ".dat", ".odat" };
             list<string> parm_files = listSourceFiles(fixedDir, parm_extensions);     // list of parameter file names
             if (parm_files.empty()) {
-                theLog->logMsg("No parm files found at current directory");
+                theLog->logMsg("No parameter files found at current directory");
             }
             else {
-                // deep copy required because file names must be maintained (code locations use pointer to file name)
-                Symbol::all_fixed_files = parm_files;
-                parseFiles(Symbol::all_fixed_files, pc, &om_developer_cpp);
+                size_t count_prev = Symbol::all_source_files.size();
+                Symbol::all_source_files.splice(Symbol::all_source_files.end(), parm_files);
+                auto start_it = Symbol::all_source_files.begin();
+                advance(start_it, count_prev);
+                parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
             }
         }
 
@@ -409,10 +414,11 @@ int main(int argc, char * argv[])
 }
 
 // Parse a list of files
-static void parseFiles(list<string> & files, ParseContext & pc, ofstream *markup_stream)
+static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream)
 {
     using namespace openm;
-    for (string & full_name : files) {
+    for (auto it = start_it; it != files.cend(); it++) {
+        string full_name = *it;
         try {
             theLog->logFormatted("Parsing %s", full_name.c_str());
             // create new instance of parser-scanner driver for each source file

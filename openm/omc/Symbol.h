@@ -757,13 +757,11 @@ public:
      * Source files for the model.
      * 
      * Consists of all source files parsed by the compiler, in parse order. Source file names
-     * generally include a leading path portion, which may be absolute or relative to the compiler
-     * location. This includes files supplied on the command line as well as files specified with
+     * generally include a leading path portion, which may be absolute or relative to the working
+     * directory. This includes files supplied on the command line as well as files specified with
      * the 'use' statement from within model source code.
      */
     static list<string> all_source_files;
-    static list<string> all_fixed_files;
-    static list<string> all_parm_files;
 
     /**
      * The symbol table.
