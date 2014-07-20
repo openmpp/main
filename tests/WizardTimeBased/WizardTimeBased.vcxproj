@@ -55,36 +55,48 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="OpenM++.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="OpenM++.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="OpenM++.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="OpenM++.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import common openM models project settings -->
   <Import Project="$(SolutionDir)../model.1.build.props" />
   <Import Project="$(SolutionDir)../model.2.cpp.props" />
-  <!-- For Cl -->
+  <!-- For Cl and Visual Studio IDE -->
   <ItemGroup>
     <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
   </ItemGroup>
-  <!-- Specifying the item group 'None' makes Solution Explorer show these in the IDE -->
   <ItemGroup>
     <None Include="*.mpp" />
     <None Include="*.ompp" />
+    <None Include="Fixed\*.dat" />
+    <None Include="Fixed\*.odat" />
+    <None Include="Base\*.dat" />
+    <None Include="Base\*.odat" />
   </ItemGroup>
-  <!-- Following groups are for OmcCompile target -->
+  <!-- Following groups are for OmcCompile target dependencies -->
   <ItemGroup>
     <OMC_INPUTS Include="*.mpp" />
     <OMC_INPUTS Include="*.ompp" />
+    <OMC_INPUTS Include="OpenM++.props" />
+    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" Condition="'$(PUBLISH_SCENARIO)'=='1'" />
+    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" Condition="'$(PUBLISH_SCENARIO)'=='1'" />
+    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'" />
+    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.odat" Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'" />
   </ItemGroup>
   <ItemGroup>
     <OMC_OUTPUTS Include="@(OMC_CXX_HEADER_OUTPUTS)" />
@@ -105,8 +117,8 @@
   -->
   <Target Name="OmcCompile" Inputs="@(OMC_INPUTS)" Outputs="@(OMC_INPUTS -> '$(OMC_TIMESTAMP_OUTPUT_FILE)')" Returns="@(OMC_OUTPUTS)">
     <MakeDir Directories="$(OMC_OUT_DIR)" />
-    <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
-    <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR)" />
+    <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
+    <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
     </ItemGroup>

@@ -10,6 +10,7 @@
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../lib/$(Platform)</OM_LIB_DIR>
     <BUILD_DIR>$(SolutionDir)../build</BUILD_DIR>
     <OMC_OUT_DIR>$(BUILD_DIR)/$(ProjectName)/src</OMC_OUT_DIR>
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(SolutionDir)../../use</OMC_USE_DIR>
     <OMC_EXE>omc.exe</OMC_EXE>
   </PropertyGroup>
   
@@ -47,7 +48,7 @@
   <ItemGroup>
     <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
     <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_developer.cpp" />
-    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_fixed_parms.cpp" Condition="'$(USE_FIXED_PARMS)'!=''" />
+    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_fixed_parms.cpp" Condition="'$(ACTIVATE_FIXED_PARMS)'!=''" />
   </ItemGroup>
 
   <!-- 

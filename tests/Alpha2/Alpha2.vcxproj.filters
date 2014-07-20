@@ -9,14 +9,15 @@
       <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
       <Extensions>mpp;ompp</Extensions>
     </Filter>
-    <Filter Include="Base Scenario">
+    <Filter Include="Parameter Files">
       <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
-      <Extensions>dat</Extensions>
+      <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
     <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
@@ -67,20 +68,23 @@
       <Filter>Model Source Files</Filter>
     </None>
     <None Include="Framework.ompp" />
-    <None Include="Base/Base%28Happiness%29.dat">
-      <Filter>Base Scenario</Filter>
+    <None Include="Base\Base%28Happiness%29.dat">
+      <Filter>Parameter Files</Filter>
     </None>
-    <None Include="Base/Base%28PersonCore%29.dat" />
-    <None Include="Base/Base%28SyntaxProbes%29.dat" />
-    <None Include="Base/Base%28Happiness%29.dat">
-      <Filter>Base Scenario</Filter>
+    <None Include="Base\Base%28PersonCore%29.dat" />
+    <None Include="Base\Base%28SyntaxProbes%29.dat" />
+    <None Include="Base\Base%28Happiness%29.dat">
+      <Filter>Parameter Files</Filter>
     </None>
-    <None Include="Base/Base%28PersonCore%29.dat" />
-    <None Include="Base/Base%28SyntaxProbes%29.dat" />
-    <None Include="Base/Base%28Happiness%29.dat">
-      <Filter>Base Scenario</Filter>
+    <None Include="Base\Base%28PersonCore%29.dat" />
+    <None Include="Base\Base%28SyntaxProbes%29.dat" />
+    <None Include="Base\Base%28Happiness%29.dat">
+      <Filter>Parameter Files</Filter>
     </None>
-    <None Include="Base/Base%28PersonCore%29.dat" />
-    <None Include="Base/Base%28SyntaxProbes%29.dat" />
+    <None Include="Base\Base%28PersonCore%29.dat" />
+    <None Include="Base\Base%28SyntaxProbes%29.dat" />
+    <None Include="Base\*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -9,85 +9,42 @@
       <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
       <Extensions>mpp;ompp</Extensions>
     </Filter>
-    <Filter Include="Scenarios">
-      <UniqueIdentifier>{082983d8-b8b7-4726-87c5-4b43c5700182}</UniqueIdentifier>
-      <Extensions>scex;dat</Extensions>
+    <Filter Include="Parameter Files">
+      <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
+      <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
     <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
     <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
     <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
     <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Alpha2.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="Happiness.mpp" />
-    <None Include="PersonCore.mpp" />
-    <None Include="SyntaxProbes.mpp" />
-    <None Include="TestLinks.mpp" />
-    <None Include="Alpha2.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="Happiness.mpp" />
-    <None Include="PersonCore.mpp" />
-    <None Include="SyntaxProbes.mpp" />
-    <None Include="TestLinks.mpp" />
-    <None Include="Alpha2.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="Happiness.mpp" />
-    <None Include="PersonCore.mpp" />
-    <None Include="SyntaxProbes.mpp" />
-    <None Include="TestLinks.mpp" />
     <None Include="PersonCore.mpp">
       <Filter>Model Source Files</Filter>
     </None>
+    <None Include="TickerCore.mpp" />
+    <None Include="WizardTimeBased.mpp" />
     <None Include="PersonCore.mpp">
       <Filter>Model Source Files</Filter>
     </None>
-    <None Include="WizardCaseBased.mpp" />
-    <None Include="WizardCaseBasedFR.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="WizardTimeBased.mpp" />
     <None Include="PersonCore.mpp">
       <Filter>Model Source Files</Filter>
     </None>
-    <None Include="WizardCaseBased.mpp" />
-    <None Include="WizardCaseBasedFR.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="WizardTimeBased.mpp" />
     <None Include="*.ompp">
       <Filter>Model Source Files</Filter>
     </None>
-    <None Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
+    <None Include="Base\*.dat">
+      <Filter>Parameter Files</Filter>
     </None>
-    <None Include="TickerCore.mpp" />
-    <None Include="WizardTimeBased.mpp" />
-    <None Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="TickerCore.mpp" />
-    <None Include="WizardTimeBased.mpp" />
-    <None Include="PersonCore.mpp">
-      <Filter>Model Source Files</Filter>
-    </None>
-    <None Include="TickerCore.mpp" />
-    <None Include="WizardTimeBased.mpp" />
   </ItemGroup>
 </Project>

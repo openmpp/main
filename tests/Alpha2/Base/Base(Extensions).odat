@@ -1,0 +1,19 @@
+parameters
+{
+    schar a_schar = -1;
+    llong a_llong = -5000000000;
+    ullong a_ullong = 5000000000;
+    ldouble a_ldouble = 3.14159;
+
+    signed char b_schar = -1;
+    long long b_llong = 57;
+    unsigned long long b_ullong = 58;
+    long double b_ldouble = 2.71828;
+
+    double c_double = 42.000001;
+
+    Time a_time = 2013.1234;
+    counter a_counter = 5;
+    integer a_integer = -5;
+    real a_real = 234.987;
+};
