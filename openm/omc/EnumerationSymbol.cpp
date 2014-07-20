@@ -47,14 +47,14 @@ void EnumerationSymbol::post_parse(int pass)
 
 void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
-    // Only generate metadata if the enumeration has been mraked
-    // as being used in a table or external parameter
-    if (!metadata_needed) return;
-
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
 
     // Perform operations specific to this level in the Symbol hierarchy.
+
+    // Only generate metadata if the enumeration has been marked
+    // as being used in a table or external parameter
+    if (!metadata_needed) return;
 
     {
         TypeDicRow typeDic;
@@ -74,6 +74,8 @@ void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.typeTxt.push_back(typeTxt);
     }
 
+    // Note that pp_enumerators is empty for ranges.
+    // Enumerator metadata for ranges is generated at the RangeSymbol level of the hierarchical calling chain.
     for (auto enumerator : pp_enumerators) {
         {
             TypeEnumLstRow typeEnum;

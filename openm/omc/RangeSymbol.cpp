@@ -8,7 +8,9 @@
 #include <cassert>
 #include "RangeSymbol.h"
 #include "RangeEnumeratorSymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
+#include "libopenm/db/metaModelHolder.h"
 
 #include "location.hh"
 #include "libopenm/omCommon.h"
@@ -30,12 +32,12 @@ void RangeSymbol::post_parse(int pass)
     case eCreateMissingSymbols:
         {
             // Create enumerators for each integer within range
-            for (int i=lower_bound, j=0; i<=upper_bound; ++i, ++j) {
-                string enumerator_name = name + "_";
-                if (i < 0) enumerator_name += "_" + to_string(-i);
-                else  enumerator_name += to_string(i);
-                auto sym = new RangeEnumeratorSymbol(enumerator_name, this, j, lower_bound);
-            }
+            //for (int i=lower_bound, j=0; i<=upper_bound; ++i, ++j) {
+            //    string enumerator_name = name + "_";
+            //    if (i < 0) enumerator_name += "_" + to_string(-i);
+            //    else  enumerator_name += to_string(i);
+            //    auto sym = new RangeEnumeratorSymbol(enumerator_name, this, j, lower_bound);
+            //}
 
             // Information to compute storage type is known in this pass
             storage_type = optimized_storage_type(lower_bound, upper_bound);
@@ -51,9 +53,6 @@ void RangeSymbol::post_parse(int pass)
     }
 }
 
-
-
-
 CodeBlock RangeSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
@@ -67,3 +66,43 @@ CodeBlock RangeSymbol::cxx_declaration_global()
     return h;
 }
 
+void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+{
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    // Only generate metadata if the enumeration has been marked
+    // as being used in a table or external parameter.
+
+    if (!metadata_needed) return;
+
+    // Range enumerations do not populate an associated collection of enumerators.
+    // Enumerator metadata for ranges is instead created directly at this level (RangeSymbol) 
+    // of the hierarchical calling chain.
+
+    for (int i = lower_bound, ordinal = 0; i <= upper_bound; ++i, ++ordinal) {
+        string enumerator_name = name + "_";
+        if (i < 0) enumerator_name += "_" + to_string(-i);
+        else  enumerator_name += to_string(i);
+
+        {
+            TypeEnumLstRow typeEnum;
+            typeEnum.typeId = type_id;
+            typeEnum.enumId = ordinal;
+            typeEnum.name = enumerator_name;
+            metaRows.typeEnum.push_back(typeEnum);
+        }
+
+        for (auto lang : Symbol::pp_all_languages) {
+            TypeEnumTxtLangRow typeEnumTxt;
+            typeEnumTxt.typeId = type_id;
+            typeEnumTxt.enumId = ordinal;
+            typeEnumTxt.langName = lang->name;
+            typeEnumTxt.descr = to_string(lower_bound + ordinal);
+            typeEnumTxt.note = "";
+            metaRows.typeEnumTxt.push_back(typeEnumTxt);
+        }
+    }
+}

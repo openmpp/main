@@ -67,7 +67,7 @@ public:
      *
      * @return An int.
      */
-    int pp_size()
+    virtual int pp_size()
     {
         return pp_enumerators.size();
     }
