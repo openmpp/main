@@ -1013,6 +1013,10 @@ decl_simple_agentvar:
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $signed_literal, @agentvar );
                         }
+      | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
+                        {
+                            auto *sym = new SimpleAgentVarEnumSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $enumerator, @agentvar );
+                        }
     ;
 
 decl_expr_agentvar:

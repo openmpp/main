@@ -192,6 +192,9 @@
     <ClInclude Include="EnumerationWithEnumeratorsSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SimpleAgentVarEnumSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -324,6 +327,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleAgentVarEnumSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

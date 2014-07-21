@@ -97,7 +97,7 @@ classification EYE_COLOUR
 actor Person            //EN Individual
 {
     //EN Eye colour
-    EYE_COLOUR eye_colour;
+    EYE_COLOUR eye_colour = { EC_BLUE };
 
     logical eye_colour_definitive = { FALSE };
 
