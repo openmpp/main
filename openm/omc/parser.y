@@ -42,6 +42,10 @@ class ExprForTable;
 // last item found by flex.  Used in grammar to provide error information
 // TODO check and eliminate use
 extern char *yytext;
+
+// Helper function to process terminal in table expressions
+static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_type acc, token_type incr, token_type op, ParseContext & pc);
+
 }
 
 // The parsing context.
@@ -440,6 +444,7 @@ extern char *yytext;
 %type  <val_token>      modgen_cumulation_operator
 %type  <val_token>      table_accumulator
 %type  <val_token>      table_increment
+%type  <val_token>      table_operator
 
 %type  <pval_Literal>   bool_literal
 %type  <pval_Literal>   numeric_literal
@@ -1477,133 +1482,70 @@ table_expression_list:
  */
 
 expr_for_table[result]:
+      // Ex. income
       agentvar
                         {
                             Symbol *agentvar = $agentvar;
-                            Symbol *table = pc.get_table_context();
-                            // The default accumulator is sum and the default increment is delta
+                            // Defaults are accumulator=sum, increment=delta, table operator=interval
                             token_type acc = token::TK_sum;
                             token_type incr = token::TK_delta;
-
-                            // Also create symbol for associated analysis agentvar if not already present
-                            TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-                            if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-                                string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-                                analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
-                                assert( analysis_agentvar );
-                            }
-                            else {
-                                analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
-                                pc.counter3++;
-                            }
-                            // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
-                            if ( analysis_agentvar->need_value_in == false ) {
-                                if (   incr == token::TK_delta
-                                    || incr == token::TK_delta2
-                                    || incr == token::TK_nz_delta
-                                    || incr == token::TK_value_in
-                                    || incr == token::TK_value_in2
-                                    || incr == token::TK_nz_value_in
-                                    ) analysis_agentvar->need_value_in = true;
-                            }
-                            // Also create symbol for associated accumulator if not already present
-                            TableAccumulatorSymbol *accumulator = nullptr;
-                            if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-                                string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
-                                accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
-                                assert( accumulator );
-                            }
-                            else {
-                                accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
-                                pc.counter2++;
-                            }
-	                        $result = new ExprForTableAccumulator( accumulator );
+                            token_type tabop = token::TK_interval;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. max_value_in(income)
     | modgen_cumulation_operator "(" agentvar ")"
                         {
                             Symbol *agentvar = $agentvar;
-                            Symbol *table = pc.get_table_context();
                             // Ex. token::TK_max
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
-
-                            // Also create symbol for associated analysis agentvar if not already present
-                            TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-                            if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-                                string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-                                analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
-                                assert( analysis_agentvar );
-                            }
-                            else {
-                                analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
-                                pc.counter3++;
-                            }
-                            // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
-                            if ( analysis_agentvar->need_value_in == false ) {
-                                if (   incr == token::TK_delta
-                                    || incr == token::TK_delta2
-                                    || incr == token::TK_nz_delta
-                                    || incr == token::TK_value_in
-                                    || incr == token::TK_value_in2
-                                    || incr == token::TK_nz_value_in
-                                    ) analysis_agentvar->need_value_in = true;
-                            }
-                            // Also create symbol for associated accumulator if not already present
-                            TableAccumulatorSymbol *accumulator = nullptr;
-                            if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-                                string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
-                                accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
-                                assert( accumulator );
-                            }
-                            else {
-                                accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
-                                pc.counter2++;
-                            }
-	                        $result = new ExprForTableAccumulator( accumulator );
+                            token_type tabop = token::TK_interval;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
-    // Ex. sum(delta(income))
+      // Ex. sum(delta(income))
     | table_accumulator[acc] "(" table_increment[incr] "(" agentvar ")" ")"
                         {
                             Symbol *agentvar = $agentvar;
-                            Symbol *table = pc.get_table_context();
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
-
-                            // Also create symbol for associated analysis agentvar if not already present
-                            TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-                            if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-                                string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-                                analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
-                                assert( analysis_agentvar );
-                            }
-                            else {
-                                analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
-                                pc.counter3++;
-                            }
-                            // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
-                            if ( analysis_agentvar->need_value_in == false ) {
-                                if (   incr == token::TK_delta
-                                    || incr == token::TK_delta2
-                                    || incr == token::TK_nz_delta
-                                    || incr == token::TK_value_in
-                                    || incr == token::TK_value_in2
-                                    || incr == token::TK_nz_value_in
-                                    ) analysis_agentvar->need_value_in = true;
-                            }
-                            // Also create symbol for associated accumulator if not already present
-                            TableAccumulatorSymbol *accumulator = nullptr;
-                            if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-                                string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
-                                accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
-                                assert( accumulator );
-                            }
-                            else {
-                                accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
-                                pc.counter2++;
-                            }
-	                        $result = new ExprForTableAccumulator( accumulator );
+                            token_type tabop = token::TK_interval;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                        }
+      // Ex. event(income)
+    | table_operator[tabop] "(" agentvar ")"
+                        {
+                            Symbol *agentvar = $agentvar;
+                            token_type acc = token::TK_sum;
+                            token_type incr = token::TK_delta;
+                            token_type tabop = (token_type) $tabop;
+                            // The following static helper function is defined in the final section of parser.y (below)
+                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                        }
+      // Ex. max_value_in(event(income))
+    | modgen_cumulation_operator "(" table_operator[tabop] "(" agentvar ")" ")"
+                        {
+                            Symbol *agentvar = $agentvar;
+                            // Ex. token::TK_max
+                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
+                            // Ex. token::TK_value_in
+                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
+                            token_type tabop = (token_type) $tabop;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                        }
+      // Ex. sum(delta(event(income)))
+    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" agentvar ")" ")" ")"
+                        {
+                            Symbol *agentvar = $agentvar;
+                            token_type acc = (token_type) $acc;
+                            token_type incr = (token_type) $incr;
+                            token_type tabop = (token_type) $tabop;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
     | numeric_literal
                         {
@@ -1673,6 +1615,11 @@ table_increment:
     | TK_value_out
     | TK_value_out2
     | TK_nz_value_out
+    ;
+
+table_operator:
+      TK_interval
+    | TK_event
     ;
 
 /*
@@ -2056,6 +2003,47 @@ ldouble_synonym:
     ;
 
 %%
+
+// Helper function to process terminal in table expressions
+static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_type acc, token_type incr, token_type op, ParseContext & pc)
+{
+    Symbol *table = pc.get_table_context();
+    // Also create symbol for associated analysis agentvar if not already present
+    TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
+    if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
+        string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
+        analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
+        assert( analysis_agentvar );
+    }
+    else {
+        analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
+        pc.counter3++;
+    }
+    // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
+    if ( analysis_agentvar->need_value_in == false ) {
+        if (   incr == token::TK_delta
+            || incr == token::TK_delta2
+            || incr == token::TK_nz_delta
+            || incr == token::TK_value_in
+            || incr == token::TK_value_in2
+            || incr == token::TK_nz_value_in
+            ) analysis_agentvar->need_value_in = true;
+    }
+    // Also create symbol for associated accumulator if not already present
+    TableAccumulatorSymbol *accumulator = nullptr;
+    if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
+        string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
+        accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
+        assert( accumulator );
+    }
+    else {
+        accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
+        pc.counter2++;
+    }
+	auto result = new ExprForTableAccumulator( accumulator );
+    assert(result);
+    return result;
+}
 
 void
 yy::parser::error (const yy::parser::location_type& l,
