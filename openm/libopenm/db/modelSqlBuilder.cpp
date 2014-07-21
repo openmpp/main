@@ -32,7 +32,7 @@ const vector<string> ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
 {
     try {
         // validate input rows: uniqueness and referential integrity
-        validate(i_metaRows);
+        prepare(i_metaRows);
 
         // set model_dic row field values: model prefix and db table prefixes
         setModelDicRow(i_metaRows.modelDic);
@@ -103,13 +103,17 @@ const vector<string> ModelSqlBuilder::buildCreateModel(MetaModelHolder & i_metaR
     }
     lineVec.push_back("");
 
+// TODO: work in progress
     for (const TypeEnumLstRow & row : i_metaRows.typeEnum) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+//        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        lineVec.push_back(ModelInsertSql::insertSql(row));
     }
     lineVec.push_back("");
 
+// TODO: work in progress
     for (const TypeEnumTxtLangRow & row : i_metaRows.typeEnumTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+//        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        lineVec.push_back(ModelInsertSql::insertSql(row));
     }
     lineVec.push_back("");
 
@@ -472,388 +476,464 @@ const string ModelSqlBuilder::outputCompatibilityViewBody(const MetaModelHolder 
     return sql;
 }
 
-// validate metadata rows: uniqueness and referential integrity
-void ModelSqlBuilder::validate(const MetaModelHolder & i_metaRows) const
+// sort and validate metadata rows for uniqueness and referential integrity
+void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 {
     // validate model timestamp: must be same as in model source code
-    if (i_metaRows.modelDic.timestamp != modelTs) 
-        throw DbException("invalid model timestamp: %s, expected: %s", i_metaRows.modelDic.timestamp.c_str(), modelTs.c_str());
+    if (io_metaRows.modelDic.timestamp != modelTs) 
+        throw DbException("invalid model timestamp: %s, expected: %s", io_metaRows.modelDic.timestamp.c_str(), modelTs.c_str());
 
-    int mId = i_metaRows.modelDic.modelId;
+    int mId = io_metaRows.modelDic.modelId;
         
     // model_dic_txt table
-    // unique: model id and language; master key: model id
-    for (vector<ModelDicTxtLangRow>::const_iterator rowIt = i_metaRows.modelTxt.cbegin(); rowIt != i_metaRows.modelTxt.cend(); ++rowIt) {
+    // unique: model id and language name; master key: model id
+    sort(io_metaRows.modelTxt.begin(), io_metaRows.modelTxt.end(), ModelDicTxtLangRow::uniqueLangKeyLess);
 
-        if (rowIt->modelId != mId) 
+    for (vector<ModelDicTxtLangRow>::const_iterator rowIt = io_metaRows.modelTxt.cbegin(); rowIt != io_metaRows.modelTxt.cend(); ++rowIt) {
+
+        if (rowIt->modelId != mId)
             throw DbException("in model_dic_txt invalid model id: %d, expected: %d in row with language id: %d and name: %s", rowIt->modelId, mId, rowIt->langId, rowIt->langName.c_str());
 
-        for (vector<ModelDicTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.modelTxt.cend(); ++otherIt) {
+        vector<ModelDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->langName == otherIt->langName) 
-                throw DbException("in model_dic_txt not unique model id: %d and language name: %s", rowIt->modelId, rowIt->langName.c_str());
-        }
+        if (nextIt != io_metaRows.modelTxt.cend() && ModelDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in model_dic_txt not unique model id: %d and language name: %s", rowIt->modelId, rowIt->langName.c_str());
     }
 
     // type_dic table
-    // unique: model id and type; master key: model id
-    for (vector<TypeDicRow>::const_iterator rowIt = i_metaRows.typeDic.cbegin(); rowIt != i_metaRows.typeDic.cend(); ++rowIt) {
+    // unique: model id and type id; unique: model id and type name; master key: model id
+    sort(io_metaRows.typeDic.begin(), io_metaRows.typeDic.end(), TypeDicRow::isKeyLess);
+
+    for (vector<TypeDicRow>::const_iterator rowIt = io_metaRows.typeDic.cbegin(); rowIt != io_metaRows.typeDic.cend(); ++rowIt) {
 
         if (rowIt->modelId != mId) 
             throw DbException("in type_dic invalid model id: %d, expected: %d in row with type id: %d", rowIt->modelId, mId, rowIt->typeId);
 
-        for (vector<TypeDicRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.typeDic.cend(); ++otherIt) {
-            
-            if (rowIt->modelId == otherIt->modelId && rowIt->typeId == otherIt->typeId) 
-                throw DbException("in type_dic not unique model id: %d and type id: %d", rowIt->modelId, rowIt->typeId);
+        vector<TypeDicRow>::const_iterator nextIt = rowIt + 1;
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->name == otherIt->name) 
-                throw DbException("in type_dic not unique model id: %d and type name: %s", rowIt->modelId, rowIt->name.c_str());
-        }
+        if (nextIt != io_metaRows.typeDic.cend() && TypeDicRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in type_dic not unique model id: %d and type id: %d", rowIt->modelId, rowIt->typeId);
+
+        if (std::any_of(
+            io_metaRows.typeDic.cbegin(), 
+            io_metaRows.typeDic.cend(),
+            [rowIt](const TypeDicRow & i_row) -> bool { 
+                return 
+                    i_row.modelId == rowIt->modelId && i_row.typeId != rowIt->typeId && i_row.name == rowIt->name;
+            }
+            ))
+            throw DbException("in type_dic not unique model id: %d and type name: %s", rowIt->modelId, rowIt->name.c_str());
     }
 
     // type_dic_txt table
-    // unique: model id, type id, language; master key: model id, type id
-    for (vector<TypeDicTxtLangRow>::const_iterator rowIt = i_metaRows.typeTxt.cbegin(); rowIt != i_metaRows.typeTxt.cend(); ++rowIt) {
+    // unique: model id, type id, language name; master key: model id, type id
+    sort(io_metaRows.typeTxt.begin(), io_metaRows.typeTxt.end(), TypeDicTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<TypeDicTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.typeTxt.cend(); ++otherIt) {
+    for (vector<TypeDicTxtLangRow>::const_iterator rowIt = io_metaRows.typeTxt.cbegin(); rowIt != io_metaRows.typeTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->typeId == otherIt->typeId && rowIt->langName == otherIt->langName) 
-                throw DbException("in type_dic_txt not unique model id: %d, type id: %d and language name: %s", rowIt->modelId, rowIt->typeId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.typeDic.cbegin(), 
-            i_metaRows.typeDic.cend(),
-            [rowIt](const TypeDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId; }
+        TypeDicRow mkRow(rowIt->modelId, rowIt->typeId);
+        if (!std::binary_search(
+            io_metaRows.typeDic.cbegin(),
+            io_metaRows.typeDic.cend(),
+            mkRow,
+            TypeDicRow::isKeyLess
             ))
             throw DbException("in type_dic_txt invalid model id: %d and type id: %d: not found in type_dic", rowIt->modelId, rowIt->typeId);
+
+        vector<TypeDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.typeTxt.cend() && TypeDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in type_dic_txt not unique model id: %d, type id: %d and language name: %s", rowIt->modelId, rowIt->typeId, rowIt->langName.c_str());
     }
 
     // type_enum_lst table
     // unique: model id, type id, enum id; master key: model id, type id
-    for (vector<TypeEnumLstRow>::const_iterator rowIt = i_metaRows.typeEnum.cbegin(); rowIt != i_metaRows.typeEnum.cend(); ++rowIt) {
+    sort(io_metaRows.typeEnum.begin(), io_metaRows.typeEnum.end(), TypeEnumLstRow::isKeyLess);
 
-        for (vector<TypeEnumLstRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.typeEnum.cend(); ++otherIt) {
+    for (vector<TypeEnumLstRow>::const_iterator rowIt = io_metaRows.typeEnum.cbegin(); rowIt != io_metaRows.typeEnum.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->typeId == otherIt->typeId && rowIt->enumId == otherIt->enumId) 
-                throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum id: %d", rowIt->modelId, rowIt->typeId, rowIt->enumId);
-        }
-
-        if (std::none_of(
-            i_metaRows.typeDic.cbegin(), 
-            i_metaRows.typeDic.cend(),
-            [rowIt](const TypeDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId; }
+        TypeDicRow mkRow(rowIt->modelId, rowIt->typeId);
+        if (!std::binary_search(
+            io_metaRows.typeDic.cbegin(),
+            io_metaRows.typeDic.cend(),
+            mkRow,
+            TypeDicRow::isKeyLess
             ))
             throw DbException("in type_enum_lst invalid model id: %d and type id: %d: not found in type_dic", rowIt->modelId, rowIt->typeId);
+
+        vector<TypeEnumLstRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.typeEnum.cend() && TypeEnumLstRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum id: %d", rowIt->modelId, rowIt->typeId, rowIt->enumId);
     }
 
     // type_enum_txt table
     // unique: model id, type id, enum id, language; master key: model id, type id, enum id
-    for (vector<TypeEnumTxtLangRow>::const_iterator rowIt = i_metaRows.typeEnumTxt.cbegin(); rowIt != i_metaRows.typeEnumTxt.cend(); ++rowIt) {
+    sort(io_metaRows.typeEnumTxt.begin(), io_metaRows.typeEnumTxt.end(), TypeEnumTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<TypeEnumTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.typeEnumTxt.cend(); ++otherIt) {
+    for (vector<TypeEnumTxtLangRow>::const_iterator rowIt = io_metaRows.typeEnumTxt.cbegin(); rowIt != io_metaRows.typeEnumTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->typeId == otherIt->typeId && rowIt->enumId == otherIt->enumId && rowIt->langName == otherIt->langName) 
-                throw DbException("in type_enum_txt not unique model id: %d, type id: %d enum id: %d and language name: %s", rowIt->modelId, rowIt->typeId, rowIt->enumId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.typeEnum.cbegin(), 
-            i_metaRows.typeEnum.cend(),
-            [rowIt](const TypeEnumLstRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId && i_row.enumId == rowIt->enumId; }
+        TypeEnumLstRow mkRow(rowIt->modelId, rowIt->typeId, rowIt->enumId);
+        if (!std::binary_search(
+            io_metaRows.typeEnum.cbegin(),
+            io_metaRows.typeEnum.cend(),
+            mkRow,
+            TypeEnumLstRow::isKeyLess
             ))
             throw DbException("in type_enum_txt invalid model id: %d, type id: %d and enum id: %d not found in type_enum_lst", rowIt->modelId, rowIt->typeId, rowIt->enumId);
+
+        vector<TypeEnumTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.typeEnumTxt.cend() && TypeEnumTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in type_enum_txt not unique model id: %d, type id: %d enum id: %d and language name: %s", rowIt->modelId, rowIt->typeId, rowIt->enumId, rowIt->langName.c_str());
     }
 
     // parameter_dic table
-    // unique: model id, parameter id and name; master key: model id; foreign key: model id, type id;
-    for (vector<ParamDicRow>::const_iterator rowIt = i_metaRows.paramDic.cbegin(); rowIt != i_metaRows.paramDic.cend(); ++rowIt) {
+    // unique: model id, parameter id; unique: model id, parameter name; 
+    // master key: model id; foreign key: model id, type id;
+    sort(io_metaRows.paramDic.begin(), io_metaRows.paramDic.end(), ParamDicRow::isKeyLess);
+
+    for (vector<ParamDicRow>::const_iterator rowIt = io_metaRows.paramDic.cbegin(); rowIt != io_metaRows.paramDic.cend(); ++rowIt) {
 
         if (rowIt->modelId != mId) 
             throw DbException("in parameter_dic invalid model id: %d, expected: %d in row with type id: %d", rowIt->modelId, mId, rowIt->typeId);
 
-        for (vector<ParamDicRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.paramDic.cend(); ++otherIt) {
-            
-            if (rowIt->modelId == otherIt->modelId && rowIt->paramId == otherIt->paramId) 
-                throw DbException("in parameter_dic not unique model id: %d and parameter id: %d", rowIt->modelId, rowIt->paramId);
-
-            if (rowIt->modelId == otherIt->modelId && rowIt->paramName == otherIt->paramName) 
-                throw DbException("in parameter_dic not unique model id: %d and parameter name: %s", rowIt->modelId, rowIt->paramName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.typeDic.cbegin(), 
-            i_metaRows.typeDic.cend(),
-            [rowIt](const TypeDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId; }
+        TypeDicRow fkRow(rowIt->modelId, rowIt->typeId);
+        if (!std::binary_search(
+            io_metaRows.typeDic.cbegin(),
+            io_metaRows.typeDic.cend(),
+            fkRow,
+            TypeDicRow::isKeyLess
             ))
             throw DbException("in parameter_dic invalid model id: %d and type id: %d: not found in type_dic", rowIt->modelId, rowIt->typeId);
+
+        vector<ParamDicRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.paramDic.cend() && ParamDicRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in parameter_dic not unique model id: %d and parameter id: %d", rowIt->modelId, rowIt->paramId);
+
+        if (std::any_of(
+            io_metaRows.paramDic.cbegin(),
+            io_metaRows.paramDic.cend(),
+            [rowIt](const ParamDicRow & i_row) -> bool {
+                return 
+                    i_row.modelId == rowIt->modelId && i_row.paramId != rowIt->paramId && i_row.paramName == rowIt->paramName;
+            }
+            ))
+            throw DbException("in parameter_dic not unique model id: %d and parameter name: %s", rowIt->modelId, rowIt->paramName.c_str());
     }
 
     // parameter_dic_txt table
     // unique: model id, parameter id, language; master key: model id, parameter id
-    for (vector<ParamDicTxtLangRow>::const_iterator rowIt = i_metaRows.paramTxt.cbegin(); rowIt != i_metaRows.paramTxt.cend(); ++rowIt) {
+    sort(io_metaRows.paramTxt.begin(), io_metaRows.paramTxt.end(), ParamDicTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<ParamDicTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.paramTxt.cend(); ++otherIt) {
+    for (vector<ParamDicTxtLangRow>::const_iterator rowIt = io_metaRows.paramTxt.cbegin(); rowIt != io_metaRows.paramTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->paramId == otherIt->paramId && rowIt->langName == otherIt->langName) 
-                throw DbException("in parameter_dic_txt not unique model id: %d, parameter id: %d and language name: %s", rowIt->modelId, rowIt->paramId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.paramDic.cbegin(), 
-            i_metaRows.paramDic.cend(),
-            [rowIt](const ParamDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.paramId == rowIt->paramId; }
+        ParamDicRow mkRow(rowIt->modelId, rowIt->paramId);
+        if (!std::binary_search(
+            io_metaRows.paramDic.cbegin(),
+            io_metaRows.paramDic.cend(),
+            mkRow,
+            ParamDicRow::isKeyLess
             ))
             throw DbException("in parameter_dic_txt invalid model id: %d and parameter id: %d: not found in parameter_dic", rowIt->modelId, rowIt->paramId);
+
+        vector<ParamDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.paramTxt.cend() && ParamDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in parameter_dic_txt not unique model id: %d, parameter id: %d and language name: %s", rowIt->modelId, rowIt->paramId, rowIt->langName.c_str());
     }
 
     // parameter_dims table
     // unique: model id, parameter id, dimension name; master key: model id, parameter id; foreign key: model id, type id;
-    for (vector<ParamDimsRow>::const_iterator rowIt = i_metaRows.paramDims.cbegin(); rowIt != i_metaRows.paramDims.cend(); ++rowIt) {
+    sort(io_metaRows.paramDims.begin(), io_metaRows.paramDims.end(), ParamDimsRow::isKeyLess);
 
-        for (vector<ParamDimsRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.paramDims.cend(); ++otherIt) {
+    for (vector<ParamDimsRow>::const_iterator rowIt = io_metaRows.paramDims.cbegin(); rowIt != io_metaRows.paramDims.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->paramId == otherIt->paramId && rowIt->name == otherIt->name) 
-                throw DbException("in parameter_dims not unique model id: %d, parameter id: %d and dimension name: %s", rowIt->modelId, rowIt->paramId, rowIt->name.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.paramDic.cbegin(), 
-            i_metaRows.paramDic.cend(),
-            [rowIt](const ParamDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.paramId == rowIt->paramId; }
+        ParamDicRow mkRow(rowIt->modelId, rowIt->paramId);
+        if (!std::binary_search(
+            io_metaRows.paramDic.cbegin(),
+            io_metaRows.paramDic.cend(),
+            mkRow,
+            ParamDicRow::isKeyLess
             ))
             throw DbException("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic", rowIt->modelId, rowIt->paramId);
 
-        if (std::none_of(
-            i_metaRows.typeDic.cbegin(), 
-            i_metaRows.typeDic.cend(),
-            [rowIt](const TypeDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId; }
+        TypeDicRow fkRow(rowIt->modelId, rowIt->typeId);
+        if (!std::binary_search(
+            io_metaRows.typeDic.cbegin(),
+            io_metaRows.typeDic.cend(),
+            fkRow,
+            TypeDicRow::isKeyLess
             ))
             throw DbException("in parameter_dims invalid model id: %d and type id: %d: not found in type_dic", rowIt->modelId, rowIt->typeId);
+
+        vector<ParamDimsRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.paramDims.cend() && ParamDimsRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in parameter_dims not unique model id: %d, parameter id: %d and dimension name: %s", rowIt->modelId, rowIt->paramId, rowIt->name.c_str());
     }
 
     // table_dic table
-    // unique: model id, table id and name; master key: model id
-    for (vector<TableDicRow>::const_iterator rowIt = i_metaRows.tableDic.cbegin(); rowIt != i_metaRows.tableDic.cend(); ++rowIt) {
+    // unique: model id, table id; unique: model id, table name; master key: model id
+    sort(io_metaRows.tableDic.begin(), io_metaRows.tableDic.end(), TableDicRow::isKeyLess);
+
+    for (vector<TableDicRow>::const_iterator rowIt = io_metaRows.tableDic.cbegin(); rowIt != io_metaRows.tableDic.cend(); ++rowIt) {
 
         if (rowIt->modelId != mId) 
             throw DbException("in table_dic invalid model id: %d, expected: %d in row with table id: %d, name: %s", rowIt->modelId, mId, rowIt->tableId, rowIt->tableName.c_str());
 
-        for (vector<TableDicRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableDic.cend(); ++otherIt) {
-            
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId) 
-                throw DbException("in table_dic not unique model id: %d and table id: %d", rowIt->modelId, rowIt->tableId);
+        vector<TableDicRow>::const_iterator nextIt = rowIt + 1;
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableName == otherIt->tableName) 
-                throw DbException("in table_dic not unique model id: %d and table name: %s", rowIt->modelId, rowIt->tableName.c_str());
-        }
+        if (nextIt != io_metaRows.tableDic.cend() && TableDicRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_dic not unique model id: %d and table id: %d", rowIt->modelId, rowIt->tableId);
+
+        if (std::any_of(
+            io_metaRows.tableDic.cbegin(),
+            io_metaRows.tableDic.cend(),
+            [rowIt](const TableDicRow & i_row) -> bool {
+                return
+                    i_row.modelId == rowIt->modelId && i_row.tableId != rowIt->tableId && i_row.tableName == rowIt->tableName;
+            }
+            ))
+            throw DbException("in table_dic not unique model id: %d and table name: %s", rowIt->modelId, rowIt->tableName.c_str());
     }
 
     // table_dic_txt table
     // unique: model id, table id, language; master key: model id, table id
-    for (vector<TableDicTxtLangRow>::const_iterator rowIt = i_metaRows.tableTxt.cbegin(); rowIt != i_metaRows.tableTxt.cend(); ++rowIt) {
+    sort(io_metaRows.tableTxt.begin(), io_metaRows.tableTxt.end(), TableDicTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<TableDicTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableTxt.cend(); ++otherIt) {
+    for (vector<TableDicTxtLangRow>::const_iterator rowIt = io_metaRows.tableTxt.cbegin(); rowIt != io_metaRows.tableTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->langName == otherIt->langName) 
-                throw DbException("in table_dic_txt not unique model id: %d, table id: %d and language name: %s", rowIt->modelId, rowIt->tableId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableDic.cbegin(), 
-            i_metaRows.tableDic.cend(),
-            [rowIt](const TableDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId; }
+        TableDicRow mkRow(rowIt->modelId, rowIt->tableId);
+        if (!std::binary_search(
+            io_metaRows.tableDic.cbegin(),
+            io_metaRows.tableDic.cend(),
+            mkRow,
+            TableDicRow::isKeyLess
             ))
             throw DbException("in table_dic_txt invalid model id: %d and table id: %d: not found in table_dic", rowIt->modelId, rowIt->tableId);
+
+        vector<TableDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableTxt.cend() && TableDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_dic_txt not unique model id: %d, table id: %d and language name: %s", rowIt->modelId, rowIt->tableId, rowIt->langName.c_str());
     }
 
     // table_dims table
     // unique: model id, table id, dimension name; master key: model id, table id; foreign key: model id, type id;
-    for (vector<TableDimsRow>::const_iterator rowIt = i_metaRows.tableDims.cbegin(); rowIt != i_metaRows.tableDims.cend(); ++rowIt) {
+    sort(io_metaRows.tableDims.begin(), io_metaRows.tableDims.end(), TableDimsRow::isKeyLess);
 
-        for (vector<TableDimsRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableDims.cend(); ++otherIt) {
+    for (vector<TableDimsRow>::const_iterator rowIt = io_metaRows.tableDims.cbegin(); rowIt != io_metaRows.tableDims.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->name == otherIt->name) 
-                throw DbException("in table_dims not unique model id: %d, table id: %d and dimension name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableDic.cbegin(), 
-            i_metaRows.tableDic.cend(),
-            [rowIt](const TableDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId; }
+        TableDicRow mkRow(rowIt->modelId, rowIt->tableId);
+        if (!std::binary_search(
+            io_metaRows.tableDic.cbegin(),
+            io_metaRows.tableDic.cend(),
+            mkRow,
+            TableDicRow::isKeyLess
             ))
             throw DbException("in table_dims invalid model id: %d and table id: %d: not found in table_dic", rowIt->modelId, rowIt->tableId);
 
-        if (std::none_of(
-            i_metaRows.typeDic.cbegin(), 
-            i_metaRows.typeDic.cend(),
-            [rowIt](const TypeDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId; }
+        TypeDicRow fkRow(rowIt->modelId, rowIt->typeId);
+        if (!std::binary_search(
+            io_metaRows.typeDic.cbegin(),
+            io_metaRows.typeDic.cend(),
+            fkRow,
+            TypeDicRow::isKeyLess
             ))
             throw DbException("in table_dims invalid model id: %d and type id: %d: not found in type_dic", rowIt->modelId, rowIt->typeId);
+
+        vector<TableDimsRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableDims.cend() && TableDimsRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_dims not unique model id: %d, table id: %d and dimension name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
     // table_dims_txt table
     // unique: model id, table id, dimension name, language; master key: model id, table id, dimension name;
-    for (vector<TableDimsTxtLangRow>::const_iterator rowIt = i_metaRows.tableDimsTxt.cbegin(); rowIt != i_metaRows.tableDimsTxt.cend(); ++rowIt) {
+    sort(io_metaRows.tableDimsTxt.begin(), io_metaRows.tableDimsTxt.end(), TableDimsTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<TableDimsTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableDimsTxt.cend(); ++otherIt) {
+    for (vector<TableDimsTxtLangRow>::const_iterator rowIt = io_metaRows.tableDimsTxt.cbegin(); rowIt != io_metaRows.tableDimsTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->name == otherIt->name && rowIt->langName == otherIt->langName) 
-                throw DbException("in table_dims_txt not unique model id: %d, table id: %d, dimension name: %s and language: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str(), rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableDims.cbegin(), 
-            i_metaRows.tableDims.cend(),
-            [rowIt](const TableDimsRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.name == rowIt->name; }
+        TableDimsRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->name);
+        if (!std::binary_search(
+            io_metaRows.tableDims.cbegin(),
+            io_metaRows.tableDims.cend(),
+            mkRow,
+            TableDimsRow::isKeyLess
             ))
             throw DbException("in table_dims_txt invalid model id: %d table id: %d and dimension name: %s: not found in table_dims", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
+
+        vector<TableDimsTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableDimsTxt.cend() && TableDimsTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_dims_txt not unique model id: %d, table id: %d, dimension name: %s and language: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str(), rowIt->langName.c_str());
     }
 
     // table_acc table
-    // unique: model id, table id, accumulator id and name; master key: model id, table id;
-    for (vector<TableAccRow>::const_iterator rowIt = i_metaRows.tableAcc.cbegin(); rowIt != i_metaRows.tableAcc.cend(); ++rowIt) {
+    // master key: model id, table id;
+    // unique: model id, table id, accumulator id; unique: model id, table id, accumulator name; 
+    sort(io_metaRows.tableAcc.begin(), io_metaRows.tableAcc.end(), TableAccRow::isKeyLess);
 
-        for (vector<TableAccRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableAcc.cend(); ++otherIt) {
+    for (vector<TableAccRow>::const_iterator rowIt = io_metaRows.tableAcc.cbegin(); rowIt != io_metaRows.tableAcc.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->accId == otherIt->accId) 
-                throw DbException("in table_acc not unique model id: %d, table id: %d and accumulator id: %d", rowIt->modelId, rowIt->tableId, rowIt->accId);
-
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->name == otherIt->name) 
-                throw DbException("in table_acc not unique model id: %d, table id: %d and accumulator name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableDic.cbegin(), 
-            i_metaRows.tableDic.cend(),
-            [rowIt](const TableDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId; }
+        TableDicRow mkRow(rowIt->modelId, rowIt->tableId);
+        if (!std::binary_search(
+            io_metaRows.tableDic.cbegin(),
+            io_metaRows.tableDic.cend(),
+            mkRow,
+            TableDicRow::isKeyLess
             ))
             throw DbException("in table_acc invalid model id: %d and table id: %d: not found in table_dic", rowIt->modelId, rowIt->tableId);
+
+        vector<TableAccRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableAcc.cend() && TableAccRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_acc not unique model id: %d, table id: %d and accumulator id: %d", rowIt->modelId, rowIt->tableId, rowIt->accId);
+
+        if (std::any_of(
+            io_metaRows.tableAcc.cbegin(),
+            io_metaRows.tableAcc.cend(),
+            [rowIt](const TableAccRow & i_row) -> bool {
+                return
+                    i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.accId != rowIt->accId &&
+                    i_row.name == rowIt->name;
+            }
+            ))
+            throw DbException("in table_acc not unique model id: %d, table id: %d and accumulator name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
     // table_acc_txt table
     // unique: model id, table id, accumulator id, language; master key: model id, table id, accumulator id;
-    for (vector<TableAccTxtLangRow>::const_iterator rowIt = i_metaRows.tableAccTxt.cbegin(); rowIt != i_metaRows.tableAccTxt.cend(); ++rowIt) {
+    sort(io_metaRows.tableAccTxt.begin(), io_metaRows.tableAccTxt.end(), TableAccTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<TableAccTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableAccTxt.cend(); ++otherIt) {
+    for (vector<TableAccTxtLangRow>::const_iterator rowIt = io_metaRows.tableAccTxt.cbegin(); rowIt != io_metaRows.tableAccTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->accId == otherIt->accId && rowIt->langName == otherIt->langName) 
-                throw DbException("in table_acc_txt not unique model id: %d, table id: %d, accumulator id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableAcc.cbegin(), 
-            i_metaRows.tableAcc.cend(),
-            [rowIt](const TableAccRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.accId == rowIt->accId; }
+        TableAccRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->accId);
+        if (!std::binary_search(
+            io_metaRows.tableAcc.cbegin(),
+            io_metaRows.tableAcc.cend(),
+            mkRow,
+            TableAccRow::isKeyLess
             ))
             throw DbException("in table_acc_txt invalid model id: %d table id: %d and accumulator id: %d: not found in table_acc", rowIt->modelId, rowIt->tableId, rowIt->accId);
+
+        vector<TableAccTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableAccTxt.cend() && TableAccTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_acc_txt not unique model id: %d, table id: %d, accumulator id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langName.c_str());
     }
 
     // table_unit table
-    // unique: model id, table id, unit id and name; master key: model id, table id;
-    for (vector<TableUnitRow>::const_iterator rowIt = i_metaRows.tableUnit.cbegin(); rowIt != i_metaRows.tableUnit.cend(); ++rowIt) {
+    // unique: model id, table id, unit id; unique: model id, table id, unit name;
+    // master key: model id, table id;
+    sort(io_metaRows.tableUnit.begin(), io_metaRows.tableUnit.end(), TableUnitRow::isKeyLess);
 
-        for (vector<TableUnitRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableUnit.cend(); ++otherIt) {
+    for (vector<TableUnitRow>::const_iterator rowIt = io_metaRows.tableUnit.cbegin(); rowIt != io_metaRows.tableUnit.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->unitId == otherIt->unitId) 
-                throw DbException("in table_unit not unique model id: %d, table id: %d and unit id: %d", rowIt->modelId, rowIt->tableId, rowIt->unitId);
-
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->name == otherIt->name) 
-                throw DbException("in table_unit not unique model id: %d, table id: %d and unit name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableDic.cbegin(), 
-            i_metaRows.tableDic.cend(),
-            [rowIt](const TableDicRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId; }
+        TableDicRow mkRow(rowIt->modelId, rowIt->tableId);
+        if (!std::binary_search(
+            io_metaRows.tableDic.cbegin(),
+            io_metaRows.tableDic.cend(),
+            mkRow,
+            TableDicRow::isKeyLess
             ))
             throw DbException("in table_unit invalid model id: %d and table id: %d: not found in table_dic", rowIt->modelId, rowIt->tableId);
+
+        vector<TableUnitRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableUnit.cend() && TableUnitRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_unit not unique model id: %d, table id: %d and unit id: %d", rowIt->modelId, rowIt->tableId, rowIt->unitId);
+
+        if (std::any_of(
+            io_metaRows.tableUnit.cbegin(),
+            io_metaRows.tableUnit.cend(),
+            [rowIt](const TableUnitRow & i_row) -> bool {
+                return
+                    i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.unitId != rowIt->unitId &&
+                    i_row.name == rowIt->name;
+            }
+            ))
+            throw DbException("in table_unit not unique model id: %d, table id: %d and unit name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
     // table_unit_txt table
     // unique: model id, table id, unit id, language; master key: model id, table id, unit id;
-    for (vector<TableUnitTxtLangRow>::const_iterator rowIt = i_metaRows.tableUnitTxt.cbegin(); rowIt != i_metaRows.tableUnitTxt.cend(); ++rowIt) {
+    sort(io_metaRows.tableUnitTxt.begin(), io_metaRows.tableUnitTxt.end(), TableUnitTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<TableUnitTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.tableUnitTxt.cend(); ++otherIt) {
+    for (vector<TableUnitTxtLangRow>::const_iterator rowIt = io_metaRows.tableUnitTxt.cbegin(); rowIt != io_metaRows.tableUnitTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->tableId == otherIt->tableId && rowIt->unitId == otherIt->unitId && rowIt->langName == otherIt->langName) 
-                throw DbException("in table_unit_txt not unique model id: %d, table id: %d, unit id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->unitId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.tableUnit.cbegin(), 
-            i_metaRows.tableUnit.cend(),
-            [rowIt](const TableUnitRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.unitId == rowIt->unitId; }
+        TableUnitRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->unitId);
+        if (!std::binary_search(
+            io_metaRows.tableUnit.cbegin(),
+            io_metaRows.tableUnit.cend(),
+            mkRow,
+            TableUnitRow::isKeyLess
             ))
             throw DbException("in table_unit_txt invalid model id: %d table id: %d and unit id: %d: not found in table_unit", rowIt->modelId, rowIt->tableId, rowIt->unitId);
+
+        vector<TableUnitTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.tableUnitTxt.cend() && TableUnitTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_unit_txt not unique model id: %d, table id: %d, unit id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->unitId, rowIt->langName.c_str());
     }
 
     // group_lst table
     // unique: model id, group id; master key: model id
-    for (vector<GroupLstRow>::const_iterator rowIt = i_metaRows.groupLst.cbegin(); rowIt != i_metaRows.groupLst.cend(); ++rowIt) {
+    sort(io_metaRows.groupLst.begin(), io_metaRows.groupLst.end(), GroupLstRow::isKeyLess);
+
+    for (vector<GroupLstRow>::const_iterator rowIt = io_metaRows.groupLst.cbegin(); rowIt != io_metaRows.groupLst.cend(); ++rowIt) {
 
         if (rowIt->modelId != mId) 
             throw DbException("in group_lst invalid model id: %d, expected: %d in row with group id: %d, name: %s", rowIt->modelId, mId, rowIt->groupId, rowIt->name.c_str());
 
-        for (vector<GroupLstRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.groupLst.cend(); ++otherIt) {
-            
-            if (rowIt->modelId == otherIt->modelId && rowIt->groupId == otherIt->groupId) 
-                throw DbException("in group_lst not unique model id: %d and group id: %d", rowIt->modelId, rowIt->groupId);
-        }
+        vector<GroupLstRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.groupLst.cend() && GroupLstRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in group_lst not unique model id: %d and group id: %d", rowIt->modelId, rowIt->groupId);
     }
 
     // group_txt table
     // unique: model id, group id, language; master key: model id, group id
-    for (vector<GroupTxtLangRow>::const_iterator rowIt = i_metaRows.groupTxt.cbegin(); rowIt != i_metaRows.groupTxt.cend(); ++rowIt) {
+    sort(io_metaRows.groupTxt.begin(), io_metaRows.groupTxt.end(), GroupTxtLangRow::uniqueLangKeyLess);
 
-        for (vector<GroupTxtLangRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.groupTxt.cend(); ++otherIt) {
+    for (vector<GroupTxtLangRow>::const_iterator rowIt = io_metaRows.groupTxt.cbegin(); rowIt != io_metaRows.groupTxt.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->groupId == otherIt->groupId && rowIt->langName == otherIt->langName) 
-                throw DbException("in group_txt not unique model id: %d, group id: %d and language name: %s", rowIt->modelId, rowIt->groupId, rowIt->langName.c_str());
-        }
-
-        if (std::none_of(
-            i_metaRows.groupLst.cbegin(), 
-            i_metaRows.groupLst.cend(),
-            [rowIt](const GroupLstRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.groupId == rowIt->groupId; }
+        GroupLstRow mkRow(rowIt->modelId, rowIt->groupId);
+        if (!std::binary_search(
+            io_metaRows.groupLst.cbegin(),
+            io_metaRows.groupLst.cend(),
+            mkRow,
+            GroupLstRow::isKeyLess
             ))
             throw DbException("in group_txt invalid model id: %d and group id: %d: not found in group_lst", rowIt->modelId, rowIt->groupId);
+
+        vector<GroupTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.groupTxt.cend() && GroupTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in group_txt not unique model id: %d, group id: %d and language name: %s", rowIt->modelId, rowIt->groupId, rowIt->langName.c_str());
     }
 
     // group_pc table
     // unique: model id, group id, child position; master key: model id, group id
-    for (vector<GroupPcRow>::const_iterator rowIt = i_metaRows.groupPc.cbegin(); rowIt != i_metaRows.groupPc.cend(); ++rowIt) {
+    sort(io_metaRows.groupPc.begin(), io_metaRows.groupPc.end(), GroupPcRow::isKeyLess);
 
-        for (vector<GroupPcRow>::const_iterator otherIt = rowIt + 1; otherIt != i_metaRows.groupPc.cend(); ++otherIt) {
+    for (vector<GroupPcRow>::const_iterator rowIt = io_metaRows.groupPc.cbegin(); rowIt != io_metaRows.groupPc.cend(); ++rowIt) {
 
-            if (rowIt->modelId == otherIt->modelId && rowIt->groupId == otherIt->groupId && rowIt->childPos == otherIt->childPos) 
-                throw DbException("in group_pc not unique model id: %d, group id: %d and child position: %d", rowIt->modelId, rowIt->groupId, rowIt->childPos);
-        }
-
-        if (std::none_of(
-            i_metaRows.groupLst.cbegin(), 
-            i_metaRows.groupLst.cend(),
-            [rowIt](const GroupLstRow & i_row) -> bool 
-                { return i_row.modelId == rowIt->modelId && i_row.groupId == rowIt->groupId; }
+        GroupLstRow mkRow(rowIt->modelId, rowIt->groupId);
+        if (!std::binary_search(
+            io_metaRows.groupLst.cbegin(),
+            io_metaRows.groupLst.cend(),
+            mkRow,
+            GroupLstRow::isKeyLess
             ))
             throw DbException("in group_pc invalid model id: %d and group id: %d: not found in group_lst", rowIt->modelId, rowIt->groupId);
+
+        vector<GroupPcRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.groupPc.cend() && GroupPcRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in group_pc not unique model id: %d, group id: %d and child position: %d", rowIt->modelId, rowIt->groupId, rowIt->childPos);
     }
 }
 

@@ -20,7 +20,7 @@ const string ModelInsertSql::makeModelPrefix(const string & i_name, const string
     // in model name use only [a-z,0-9] and _ underscore
     // make sure prefix size not longer than 32 
     string sPrefix = toAlphaNumeric(i_name, 32);
-    toLower(sPrefix);
+    // toLower(sPrefix);
 
     // make model prefix from model name and timestamp
     return 
@@ -146,6 +146,22 @@ template<> const string ModelInsertSql::insertSql<TypeDicTxtLangRow>(const TypeD
         " FROM id_lst IL WHERE IL.id_key = 'model_id'";
 }
 
+// TODO: work in progress
+// buffer to format sql statement
+static const size_t sqlBufferSize = 1024000;
+static char sqlBuffer[sqlBufferSize];
+
+// format sql statement into buffer using vsnprintf()
+static void formatSql(const char * i_format, ...)
+{
+    // format message
+    va_list args;
+    va_start(args, i_format);
+    formatTo(sqlBufferSize, sqlBuffer, i_format, args);
+    va_end(args);
+}
+
+// TODO: work in progress
 // return sql to insert into type_enum_lst table if new model created.
 template<> const string ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnumLstRow & i_row)
 {
@@ -158,16 +174,28 @@ template<> const string ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnum
     if (i_row.enumId < 0) throw DbException("invalid (negative) enum %s id: %d, type id: %d", i_row.name.c_str(), i_row.enumId, i_row.typeId);
 
     // make sql
-    return
+    formatSql(
         "INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name)" \
         " SELECT" \
-        " IL.id_value, " +
-        to_string(i_row.typeId) + ", " +
-        to_string(i_row.enumId) + ", " +
-        toQuoted(i_row.name) + 
-        " FROM id_lst IL WHERE IL.id_key = 'model_id'";
+        " IL.id_value, %d, %d, %s" \
+        " FROM id_lst IL WHERE IL.id_key = 'model_id';",
+        i_row.typeId,
+        i_row.enumId,
+        toQuoted(i_row.name).c_str()
+        );
+    return sqlBuffer;
+
+    //return
+    //    "INSERT INTO type_enum_lst (model_id, mod_type_id, enum_id, enum_name)" \
+    //    " SELECT" \
+    //    " IL.id_value, " +
+    //    to_string(i_row.typeId) + ", " +
+    //    to_string(i_row.enumId) + ", " +
+    //    toQuoted(i_row.name) + 
+    //    " FROM id_lst IL WHERE IL.id_key = 'model_id'";
 }
 
+// TODO: work in progress
 // return sql to insert into type_enum_txt table if new model created.
 // language name used to select language id
 template<> const string ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const TypeEnumTxtLangRow & i_row)
@@ -181,16 +209,32 @@ template<> const string ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const Type
     if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, type id: %d, enum id: %d", i_row.typeId, i_row.enumId);
 
     // make sql
-    return
+    formatSql(
         "INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)" \
         " SELECT" \
-        " IL.id_value, " +
-        to_string(i_row.typeId) + ", " +
-        to_string(i_row.enumId) + ", " +
-        " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = " + toQuoted(i_row.langName) + "), " +
-        toQuoted(i_row.descr) + ", " +
-        toQuoted(i_row.note) + 
-        " FROM id_lst IL WHERE IL.id_key = 'model_id'";
+        " IL.id_value," \
+        " %d, %d, " \
+        " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = %s), " \
+        " %s, %s"
+        " FROM id_lst IL WHERE IL.id_key = 'model_id';",
+        i_row.typeId,
+        i_row.enumId,
+        toQuoted(i_row.langName).c_str(),
+        toQuoted(i_row.descr).c_str(),
+        toQuoted(i_row.note).c_str()
+        );
+    return sqlBuffer;
+
+    //return
+    //    "INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)" \
+    //    " SELECT" \
+    //    " IL.id_value, " +
+    //    to_string(i_row.typeId) + ", " +
+    //    to_string(i_row.enumId) + ", " +
+    //    " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = " + toQuoted(i_row.langName) + "), " +
+    //    toQuoted(i_row.descr) + ", " +
+    //    toQuoted(i_row.note) + 
+    //    " FROM id_lst IL WHERE IL.id_key = 'model_id'";
 }
 
 // return sql to insert into parameter_dic table if new model created.

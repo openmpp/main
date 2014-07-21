@@ -16,8 +16,24 @@ using namespace std;
 
 namespace openm
 {
+    /** base class for model metadata db-rows */
+    template<class TRow> struct IMetaRow : public IRowBase
+    {
+        /** less comparator by row primary key. */
+        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+        {
+            return TRow::isKeyLess(*dynamic_cast<TRow *>(i_left.get()), *dynamic_cast<TRow *>(i_right.get()));
+        }
+
+        /** equal comparator by row primary key. */
+        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+        {
+            return TRow::isKeyEqual(*dynamic_cast<TRow *>(i_left.get()), *dynamic_cast<TRow *>(i_right.get()));
+        }
+    };
+
     /** lang_lst table row. */
-    struct LangLstRow : public IRowBase
+    struct LangLstRow : public IMetaRow<LangLstRow>
     {
         /** lang_id   INT         NOT NULL */
         int langId;
@@ -41,17 +57,17 @@ namespace openm
         ~LangLstRow(void) throw() { }
 
         /** less comparator by primary key: language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const LangLstRow & i_left, const LangLstRow & i_right);
 
         /** equal comparator by primary key: language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const LangLstRow & i_left, const LangLstRow & i_right);
 
         /** lang_lst row equal comparator by language code. */
         static bool codeEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** lang_word table row. */
-    struct LangWordRow : public IRowBase
+    struct LangWordRow : public IMetaRow<LangWordRow>
     {
         /** lang_id    INT         NOT NULL */
         int langId;
@@ -75,14 +91,14 @@ namespace openm
         ~LangWordRow(void) throw() { }
 
         /** less comparator by primary key: language id and word code. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const LangWordRow & i_left, const LangWordRow & i_right);
 
         /** equal comparator by primary key: language id and word code. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const LangWordRow & i_left, const LangWordRow & i_right);
     };
 
     /** model_dic table row. */
-    struct ModelDicRow : public IRowBase
+    struct ModelDicRow : public IMetaRow<ModelDicRow>
     {
         /** model_id       INT         NOT NULL */
         int modelId;
@@ -134,17 +150,17 @@ namespace openm
         ~ModelDicRow(void) throw() { }
 
         /** less comparator by primary key: model id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ModelDicRow & i_left, const ModelDicRow & i_right);
 
         /** equal comparator by primary key: model id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ModelDicRow & i_left, const ModelDicRow & i_right);
 
         /** model_dic row equal comparator by model name and timestamp. */
         static bool nameTimeStampEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** model_dic_txt table row. */
-    struct ModelDicTxtRow : public IRowBase
+    struct ModelDicTxtRow : public IMetaRow<ModelDicTxtRow>
     {
         /** model_id INT NOT NULL */
         int modelId;
@@ -172,10 +188,10 @@ namespace openm
         ~ModelDicTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id and language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ModelDicTxtRow & i_left, const ModelDicTxtRow & i_right);
 
-        /** equal comparator by primary key: model id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        /** equal comparator by primary key: model id and language id. */
+        static bool isKeyEqual(const ModelDicTxtRow & i_left, const ModelDicTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -186,10 +202,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id and language name. */
+        static bool uniqueLangKeyLess(const ModelDicTxtLangRow & i_left, const ModelDicTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id and language name. */
+        static bool uniqueLangKeyEqual(const ModelDicTxtLangRow & i_left, const ModelDicTxtLangRow & i_right);
     };
 
     /** run_lst table row. */
-    struct RunLstRow : public IRowBase
+    struct RunLstRow : public IMetaRow<RunLstRow>
     {
         /** run_id        INT         NOT NULL */
         int runId;
@@ -229,24 +251,17 @@ namespace openm
         ~RunLstRow(void) throw() { }
 
         /** less comparator by primary key: run id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const RunLstRow & i_left, const RunLstRow & i_right);
 
         /** equal comparator by primary key: run id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const RunLstRow & i_left, const RunLstRow & i_right);
 
         /** find row by primary key: run id. */
-        static vector<RunLstRow>::const_iterator byKey(int i_runId, const vector<RunLstRow> & i_rowVec)
-        {
-            return find_if(
-                i_rowVec.cbegin(), 
-                i_rowVec.cend(),
-                [i_runId](const RunLstRow & i_row) -> bool { return i_row.runId == i_runId; }
-                );
-        }
+        static vector<RunLstRow>::const_iterator byKey(int i_runId, const vector<RunLstRow> & i_rowVec);
     };
 
     /** run_txt table row. */
-    struct RunTxtRow : public IRowBase
+    struct RunTxtRow : public IMetaRow<RunTxtRow>
     {
         /** run_id   INT            NOT NULL */
         int runId;
@@ -278,27 +293,20 @@ namespace openm
         ~RunTxtRow(void) throw() { }
 
         /** less comparator by primary key: run id and language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const RunTxtRow & i_left, const RunTxtRow & i_right);
 
         /** equal comparator by primary key: run id and language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const RunTxtRow & i_left, const RunTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
 
         /** find row by primary key: run id and language id. */
-        static vector<RunTxtRow>::const_iterator byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec)
-        {
-            return find_if(
-                i_rowVec.cbegin(), 
-                i_rowVec.cend(),
-                [i_runId, i_langId](const RunTxtRow & i_row) -> bool { return i_row.runId == i_runId && i_row.langId == i_langId; }
-                );
-        }
+        static vector<RunTxtRow>::const_iterator byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec);
     };
 
     /** profile_lst table row. */
-    struct ProfileLstRow : public IRowBase
+    struct ProfileLstRow : public IMetaRow<ProfileLstRow>
     {
         /** profile_name VARCHAR(32) NOT NULL */
         string name;
@@ -312,14 +320,14 @@ namespace openm
         ~ProfileLstRow(void) throw() { }
 
         /** less comparator by primary key: profile name. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
 
         /** equal comparator by primary key: profile name. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
     };
 
     /** profile_option table row. */
-    struct ProfileOptionRow : public IRowBase
+    struct ProfileOptionRow : public IMetaRow<ProfileOptionRow>
     {
         /** profile_name VARCHAR(32) NOT NULL */
         string name;
@@ -343,17 +351,17 @@ namespace openm
         ~ProfileOptionRow(void) throw() { }
 
         /** less comparator by primary key: profile name, option key. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right); 
 
         /** equal comparator by primary key: profile name, option key. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right);
 
         /** equal comparator by profile name. */
         static bool nameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** run_option table row. */
-    struct RunOptionRow : public IRowBase
+    struct RunOptionRow : public IMetaRow<RunOptionRow>
     {
         /** run_id    INT NOT NULL */
         int runId;
@@ -377,17 +385,17 @@ namespace openm
         ~RunOptionRow(void) throw() { }
 
         /** less comparator by primary key: run id, option key. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right);
 
         /** equal comparator by primary key: run id, option key. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right);
 
         /** run_option row equal comparator by run id. */
         static bool runIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** type_dic table row. */
-    struct TypeDicRow : public IRowBase
+    struct TypeDicRow : public IMetaRow<TypeDicRow>
     {
         /** model_id      INT         NOT NULL */
         int modelId;
@@ -419,10 +427,10 @@ namespace openm
         ~TypeDicRow(void) throw() { }
 
         /** less comparator by primary key: model id, type id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TypeDicRow & i_left, const TypeDicRow & i_right);
 
         /** equal comparator by primary key: model id, type id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TypeDicRow & i_left, const TypeDicRow & i_right);
 
         /** equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -432,7 +440,7 @@ namespace openm
     };
 
     /** type_dic_txt table row. */
-    struct TypeDicTxtRow : public IRowBase
+    struct TypeDicTxtRow : public IMetaRow<TypeDicTxtRow>
     {
         /** model_id     INT NOT NULL */
         int modelId;
@@ -464,10 +472,10 @@ namespace openm
         ~TypeDicTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, type id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right);
 
         /** equal comparator by primary key: model id, type id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -478,10 +486,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, type id, language name. */
+        static bool uniqueLangKeyLess(const TypeDicTxtLangRow & i_left, const TypeDicTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, type id, language name. */
+        static bool uniqueLangKeyEqual(const TypeDicTxtLangRow & i_left, const TypeDicTxtLangRow & i_right);
     };
 
     /** type_enum_lst table row. */
-    struct TypeEnumLstRow : public IRowBase
+    struct TypeEnumLstRow : public IMetaRow<TypeEnumLstRow>
     {
         /** model_id      INT         NOT NULL */
         int modelId;
@@ -509,10 +523,10 @@ namespace openm
         ~TypeEnumLstRow(void) throw() { }
 
         /** less comparator by primary key: model id, type id, enum id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right);
 
         /** equal comparator by primary key: model id, type id, enum id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right);
 
         /** equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -522,7 +536,7 @@ namespace openm
     };
 
     /** type_enum_txt table row. */
-    struct TypeEnumTxtRow : public IRowBase
+    struct TypeEnumTxtRow : public IMetaRow<TypeEnumTxtRow>
     {
         /** model_id     INT NOT NULL */
         int modelId;
@@ -558,10 +572,10 @@ namespace openm
         ~TypeEnumTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, type id, enum id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right);
 
         /** equal comparator by primary key: model id, type id, enum id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -575,10 +589,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, type id, enum id, language name. */
+        static bool uniqueLangKeyLess(const TypeEnumTxtLangRow & i_left, const TypeEnumTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, type id, enum id, language name. */
+        static bool uniqueLangKeyEqual(const TypeEnumTxtLangRow & i_left, const TypeEnumTxtLangRow & i_right);
     };
 
     /** parameter_dic table row. */
-    struct ParamDicRow : public IRowBase
+    struct ParamDicRow : public IMetaRow<ParamDicRow>
     {
         /** model_id       INT         NOT NULL */
         int modelId;
@@ -626,10 +646,10 @@ namespace openm
         ~ParamDicRow(void) throw() { }
 
         /** less comparator by primary key: model id, parameter id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ParamDicRow & i_left, const ParamDicRow & i_right);
 
         /** equal comparator by primary key: model id, parameter id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ParamDicRow & i_left, const ParamDicRow & i_right);
 
         /** parameter_dic row equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -639,7 +659,7 @@ namespace openm
     };
 
     /** parameter_dic_txt table row. */
-    struct ParamDicTxtRow : public IRowBase
+    struct ParamDicTxtRow : public IMetaRow<ParamDicTxtRow>
     {
         /** model_id     INT NOT NULL */
         int modelId;
@@ -671,10 +691,10 @@ namespace openm
         ~ParamDicTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, parameter id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right);
 
         /** equal comparator by primary key: model id, parameter id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -685,10 +705,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, parameter id, language name. */
+        static bool uniqueLangKeyLess(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, parameter id, language name. */
+        static bool uniqueLangKeyEqual(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right);
     };
 
     /** parameter_run_txt table row. */
-    struct ParamRunTxtRow : public IRowBase
+    struct ParamRunTxtRow : public IMetaRow<ParamRunTxtRow>
     {
         /** run_id       INT NOT NULL */
         int runId;
@@ -720,10 +746,10 @@ namespace openm
         ~ParamRunTxtRow(void) throw() { }
 
         /** less comparator by primary key: run id, parameter id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right);
 
         /** equal comparator by primary key: run id, parameter id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -737,7 +763,7 @@ namespace openm
     };
 
     /** parameter_dims table row. */
-    struct ParamDimsRow : public IRowBase
+    struct ParamDimsRow : public IMetaRow<ParamDimsRow>
     {
         /** model_id     INT NOT NULL */
         int modelId;
@@ -769,17 +795,17 @@ namespace openm
         ~ParamDimsRow(void) throw() { }
 
         /** less comparator by primary key: model id, parameter id, dimension name. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
 
         /** equal comparator by primary key: model id, parameter id, dimension name. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
 
         /** table_dims row equal comparator by model id, parameter id. */
         static bool modelIdParamIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** workset_lst table row. */
-    struct WorksetLstRow : public IRowBase
+    struct WorksetLstRow : public IMetaRow<WorksetLstRow>
     {
         /** set_id      INT         NOT NULL */
         int setId;
@@ -815,24 +841,17 @@ namespace openm
         ~WorksetLstRow(void) throw() { }
 
         /** less comparator by primary key: set id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
 
         /** equal comparator by primary key: set id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
 
         /** find row by primary key: set id. */
-        static vector<WorksetLstRow>::const_iterator byKey(int i_setId, const vector<WorksetLstRow> & i_rowVec)
-        {
-            return find_if(
-                i_rowVec.cbegin(), 
-                i_rowVec.cend(),
-                [i_setId](const WorksetLstRow & i_row) -> bool { return i_row.setId == i_setId; }
-                );
-        }
+        static vector<WorksetLstRow>::const_iterator byKey(int i_setId, const vector<WorksetLstRow> & i_rowVec);
     };
 
     /** workset_txt table row. */
-    struct WorksetTxtRow : public IRowBase
+    struct WorksetTxtRow : public IMetaRow<WorksetTxtRow>
     {
         /** set_id   INT            NOT NULL */
         int setId;
@@ -864,27 +883,20 @@ namespace openm
         ~WorksetTxtRow(void) throw() { }
 
         /** less comparator by primary key: set id and language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
 
         /** equal comparator by primary key: set id and language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
 
         /** find row by primary key: set id and language id. */
-        static vector<WorksetTxtRow>::const_iterator byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec)
-        {
-            return find_if(
-                i_rowVec.cbegin(), 
-                i_rowVec.cend(),
-                [i_setId, i_langId](const WorksetTxtRow & i_row) -> bool { return i_row.setId == i_setId && i_row.langId == i_langId; }
-                );
-        }
+        static vector<WorksetTxtRow>::const_iterator byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec);
     };
 
     /** workset_parameter table row. */
-    struct WorksetParamRow : public IRowBase
+    struct WorksetParamRow : public IMetaRow<WorksetParamRow>
     {
         /** set_id       INT NOT NULL */
         int setId;
@@ -908,24 +920,17 @@ namespace openm
         ~WorksetParamRow(void) throw() { }
 
         /** less comparator by primary key: set id and parameter id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
 
         /** equal comparator by primary key: set id and parameter id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
 
         /** find row by primary key: set id and parameter id. */
-        static vector<WorksetParamRow>::const_iterator byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec)
-        {
-            return find_if(
-                i_rowVec.cbegin(), 
-                i_rowVec.cend(),
-                [i_setId, i_paramId](const WorksetParamRow & i_row) -> bool { return i_row.setId == i_setId && i_row.paramId == i_paramId; }
-                );
-        }
+        static vector<WorksetParamRow>::const_iterator byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec);
     };
 
     /** workset_parameter_txt table row. */
-    struct WorksetParamTxtRow : public IRowBase
+    struct WorksetParamTxtRow : public IMetaRow<WorksetParamTxtRow>
     {
         /** set_id   INT            NOT NULL */
         int setId;
@@ -957,10 +962,10 @@ namespace openm
         ~WorksetParamTxtRow(void) throw() { }
 
         /** less comparator by primary key: set id, parameter id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
 
         /** equal comparator by primary key: set id, parameter id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -968,21 +973,11 @@ namespace openm
         /** find row by primary key: set id, parameter id, language id. */
         static vector<WorksetParamTxtRow>::const_iterator byKey(
             int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
-            )
-        {
-            return find_if(
-                i_rowVec.cbegin(), 
-                i_rowVec.cend(),
-                [i_setId, i_paramId, i_langId](const WorksetParamTxtRow & i_row) -> bool 
-                { 
-                    return i_row.setId == i_setId && i_row.paramId == i_paramId && i_row.langId == i_langId; 
-                }
-                );
-        }
+            );
     };
 
     /** table_dic table row. */
-    struct TableDicRow : public IRowBase
+    struct TableDicRow : public IMetaRow<TableDicRow>
     {
         /** model_id INT NOT NULL */
         int modelId;
@@ -1026,10 +1021,10 @@ namespace openm
         ~TableDicRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableDicRow & i_left, const TableDicRow & i_right);
 
         /** equal comparator by primary key: model id, table id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableDicRow & i_left, const TableDicRow & i_right);
 
         /** table_dic row equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1039,7 +1034,7 @@ namespace openm
     };
 
     /** table_dic_txt table row. */
-    struct TableDicTxtRow : public IRowBase
+    struct TableDicTxtRow : public IMetaRow<TableDicTxtRow>
     {
         /** model_id       INT NOT NULL */
         int modelId;
@@ -1079,10 +1074,10 @@ namespace openm
         ~TableDicTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right);
 
         /** equal comparator by primary key: model id, table id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1093,10 +1088,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, table id, language name. */
+        static bool uniqueLangKeyLess(const TableDicTxtLangRow & i_left, const TableDicTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, table id, language name. */
+        static bool uniqueLangKeyEqual(const TableDicTxtLangRow & i_left, const TableDicTxtLangRow & i_right);
     };
 
     /** table_dims table row. */
-    struct TableDimsRow : public IRowBase
+    struct TableDimsRow : public IMetaRow<TableDimsRow>
     {
         /** model_id    INT NOT NULL */
         int modelId;
@@ -1136,17 +1137,17 @@ namespace openm
         ~TableDimsRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, dimension name. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
+        static bool isKeyLess(const TableDimsRow & i_left, const TableDimsRow & i_right);
+        
         /** equal comparator by primary key: model id, table id, dimension name. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right);
 
         /** table_dims row equal comparator by model id, table id. */
         static bool modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_dims_txt table row. */
-    struct TableDimsTxtRow : public IRowBase
+    struct TableDimsTxtRow : public IMetaRow<TableDimsTxtRow>
     {
         /** model_id INT NOT NULL */
         int modelId;
@@ -1182,10 +1183,10 @@ namespace openm
         ~TableDimsTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, dimension name, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
 
         /** equal comparator by primary key: model id, table id, dimension name, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1196,10 +1197,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, table id, dimension name, language name. */
+        static bool uniqueLangKeyLess(const TableDimsTxtLangRow & i_left, const TableDimsTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, table id, dimension name, language name. */
+        static bool uniqueLangKeyEqual(const TableDimsTxtLangRow & i_left, const TableDimsTxtLangRow & i_right);
     };
 
     /** table_acc table row. */
-    struct TableAccRow : public IRowBase
+    struct TableAccRow : public IMetaRow<TableAccRow>
     {
         /** model_id INT          NOT NULL */
         int modelId;
@@ -1231,10 +1238,10 @@ namespace openm
         ~TableAccRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, accumulator id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableAccRow & i_left, const TableAccRow & i_right);
 
         /** equal comparator by primary key: model id, table id, accumulator id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableAccRow & i_left, const TableAccRow & i_right);
 
         /** table_acc row equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1244,7 +1251,7 @@ namespace openm
     };
 
     /** table_acc_txt table row. */
-    struct TableAccTxtRow : public IRowBase
+    struct TableAccTxtRow : public IMetaRow<TableAccTxtRow>
     {
         /** model_id INT           NOT NULL */
         int modelId;
@@ -1280,10 +1287,10 @@ namespace openm
         ~TableAccTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, accumulator id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right);
 
         /** equal comparator by primary key: model id, table id, accumulator id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1294,10 +1301,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, table id, accumulator id, language name. */
+        static bool uniqueLangKeyLess(const TableAccTxtLangRow & i_left, const TableAccTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, table id, accumulator id, language name. */
+        static bool uniqueLangKeyEqual(const TableAccTxtLangRow & i_left, const TableAccTxtLangRow & i_right);
     };
 
     /** table_unit table row. */
-    struct TableUnitRow : public IRowBase
+    struct TableUnitRow : public IMetaRow<TableUnitRow>
     {
         /** model_id      INT NOT NULL */
         int modelId;
@@ -1337,10 +1350,10 @@ namespace openm
         ~TableUnitRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, unit id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableUnitRow & i_left, const TableUnitRow & i_right);
 
         /** equal comparator by primary key: model id, table id, unit id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableUnitRow & i_left, const TableUnitRow & i_right);
 
         /** table_unit row equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1350,7 +1363,7 @@ namespace openm
     };
 
     /** table_unit_txt table row. */
-    struct TableUnitTxtRow : public IRowBase
+    struct TableUnitTxtRow : public IMetaRow<TableUnitTxtRow>
     {
         /** model_id INT NOT NULL */
         int modelId;
@@ -1386,10 +1399,10 @@ namespace openm
         ~TableUnitTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, table id, unit id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const TableUnitTxtRow & i_left, const TableUnitTxtRow & i_right);
 
         /** equal comparator by primary key: model id, table id, unit id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const TableUnitTxtRow & i_left, const TableUnitTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1400,10 +1413,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, table id, unit id, language name. */
+        static bool uniqueLangKeyLess(const TableUnitTxtLangRow & i_left, const TableUnitTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, table id, unit id, language name. */
+        static bool uniqueLangKeyEqual(const TableUnitTxtLangRow & i_left, const TableUnitTxtLangRow & i_right);
     };
 
     /** group_lst table row. */
-    struct GroupLstRow : public IRowBase
+    struct GroupLstRow : public IMetaRow<GroupLstRow>
     {
         /** model_id     INT         NOT NULL */
         int modelId;
@@ -1439,17 +1458,17 @@ namespace openm
         ~GroupLstRow(void) throw() { }
 
         /** less comparator by primary key: model id, group id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const GroupLstRow & i_left, const GroupLstRow & i_right);
 
         /** equal comparator by primary key: model id, group id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const GroupLstRow & i_left, const GroupLstRow & i_right);
 
         /** equal comparator by model id and is parameter group flag. */
         static bool modelIdIsParamEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** group_txt table row. */
-    struct GroupTxtRow : public IRowBase
+    struct GroupTxtRow : public IMetaRow<GroupTxtRow>
     {
         /** model_id INT          NOT NULL */
         int modelId;
@@ -1481,10 +1500,10 @@ namespace openm
         ~GroupTxtRow(void) throw() { }
 
         /** less comparator by primary key: model id, group id, language id. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const GroupTxtRow & i_left, const GroupTxtRow & i_right);
 
         /** equal comparator by primary key: model id, group id, language id. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const GroupTxtRow & i_left, const GroupTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
@@ -1495,10 +1514,16 @@ namespace openm
     {
         /** language name */
         string langName;
+
+        /** less comparator by unique key: model id, group id, language name. */
+        static bool uniqueLangKeyLess(const GroupTxtLangRow & i_left, const GroupTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, group id, language name. */
+        static bool uniqueLangKeyEqual(const GroupTxtLangRow & i_left, const GroupTxtLangRow & i_right);
     };
 
     /** group_pc table row. */
-    struct GroupPcRow : public IRowBase
+    struct GroupPcRow : public IMetaRow<GroupPcRow>
     {
         /** model_id       INT NOT NULL */
         int modelId;
@@ -1530,10 +1555,10 @@ namespace openm
         ~GroupPcRow(void) throw() { }
 
         /** less comparator by primary key: model id, group id, child position. */
-        static bool keyLess(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyLess(const GroupPcRow & i_left, const GroupPcRow & i_right);
 
         /** equal comparator by primary key: model id, group id, child position. */
-        static bool keyEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+        static bool isKeyEqual(const GroupPcRow & i_left, const GroupPcRow & i_right);
 
         /** equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);

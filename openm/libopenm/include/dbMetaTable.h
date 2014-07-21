@@ -18,7 +18,7 @@ using namespace std;
 
 namespace openm
 {
-    /** base calss for model metadata db-tables */
+    /** base class for model metadata db-tables */
     template<class TRow> struct IMetaTable
     {
     public:

@@ -9,36 +9,36 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 
 --
 -- list of ids: values < 10 reserved for development and testing
--- test: model id = 1 is ModelOne
--- test: set id = 2 is default set of parameters for ModelOne
--- test: set id = 3 is modified working set for ModelOne
+-- test: model id = 1 is modelOne
+-- test: set id = 2 is default set of parameters for modelOne
+-- test: set id = 3 is modified working set for modelOne
 --
 -- INSERT INTO id_lst (id_key, id_value) VALUES ('model_id', 10);
--- INSERT INTO id_lst (id_key, id_value) VALUES ('run_set', 10);
+-- INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 10);
 
 --
--- ModelOne metadata: describe the model
+-- modelOne metadata: describe the model
 --
 INSERT INTO model_dic
   (model_id, model_name, model_type, model_ver, model_ts, model_prefix, parameter_prefix, workset_prefix, sub_prefix, value_prefix)
 VALUES
-  (1, 'modelOne', 0, '0.1', '_201208171604590148_', 'modelone_201208171604590148_', 'p', 'w', 's', 'v');
+  (1, 'modelOne', 0, '0.1', '_201208171604590148_', 'modelOne_201208171604590148_', 'p', 'w', 's', 'v');
 
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', NULL);
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, 'First model (fr)', NULL);
 
 -- 
--- ModelOne default profile: default run options
+-- modelOne default profile: default run options
 --
-INSERT INTO profile_lst (profile_name) VALUES ('ModelOne');
+INSERT INTO profile_lst (profile_name) VALUES ('modelOne');
 
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'Parameter.StartingSeed', '4095');
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'OpenM.SparseOutput', 'true');
--- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'OpenM.SparseNullValue', '');
--- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('ModelOne', 'General.Subsamples', '1');
+INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'Parameter.StartingSeed', '4095');
+INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'OpenM.SparseOutput', 'true');
+-- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'OpenM.SparseNullValue', '');
+-- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'General.Subsamples', '1');
 
 -- 
--- ModelOne simple types
+-- modelOne simple types
 --
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 0, 'char', 0, 1);
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 1, 'schar', 0, 1);
@@ -62,7 +62,7 @@ INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_i
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 19, 'file', 0, 1);
 
 -- 
--- ModelOne logical type
+-- modelOne logical type
 --
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 6, 'bool', 1, 2);
 
@@ -78,7 +78,7 @@ INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 6, 1, 1, 'Vrai', NULL);
 
 -- 
--- ModelOne classifcation types
+-- modelOne classifcation types
 --
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 21, 'age', 2, 4);
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 22, 'sex', 2, 2);
@@ -114,7 +114,7 @@ INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note)
 INSERT INTO type_enum_txt (model_id, mod_type_id, enum_id, lang_id, descr, note) VALUES (1, 23, 2, 0, 'High', NULL);
 
 -- 
--- ModelOne input parameters
+-- modelOne input parameters
 --
 INSERT INTO parameter_dic
   (model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated)
@@ -141,7 +141,7 @@ INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_
 INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 1, 'dim1', 1, 21);
 
 -- 
--- ModelOne output tables
+-- modelOne output tables
 --
 INSERT INTO table_dic 
   (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden) 
@@ -195,9 +195,9 @@ INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) V
 INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 3, 0, 'Average acc0 * acc1', NULL);
 
 --
--- ModelOne input parameters
+-- modelOne input parameters
 --
-CREATE TABLE modelone_201208171604590148_p0_ageSex 
+CREATE TABLE modelOne_201208171604590148_p0_ageSex 
 (
   run_id INT   NOT NULL,
   dim0   INT   NOT NULL, 
@@ -206,7 +206,7 @@ CREATE TABLE modelone_201208171604590148_p0_ageSex
   PRIMARY KEY (run_id, dim0, dim1)
 );
 
-CREATE TABLE modelone_201208171604590148_w0_ageSex
+CREATE TABLE modelOne_201208171604590148_w0_ageSex
 (
   set_id INT   NOT NULL,
   dim0   INT   NOT NULL, 
@@ -215,7 +215,7 @@ CREATE TABLE modelone_201208171604590148_w0_ageSex
   PRIMARY KEY (set_id, dim0, dim1)
 );
 
-CREATE TABLE modelone_201208171604590148_p1_salaryAge 
+CREATE TABLE modelOne_201208171604590148_p1_salaryAge 
 (
   run_id INT NOT NULL,
   dim0   INT NOT NULL, 
@@ -224,7 +224,7 @@ CREATE TABLE modelone_201208171604590148_p1_salaryAge
   PRIMARY KEY (run_id, dim0, dim1)
 );
 
-CREATE TABLE modelone_201208171604590148_w1_salaryAge
+CREATE TABLE modelOne_201208171604590148_w1_salaryAge
 (
   set_id INT NOT NULL,
   dim0   INT NOT NULL, 
@@ -233,14 +233,14 @@ CREATE TABLE modelone_201208171604590148_w1_salaryAge
   PRIMARY KEY (set_id, dim0, dim1)
 );
 
-CREATE TABLE modelone_201208171604590148_p2_StartingSeed 
+CREATE TABLE modelOne_201208171604590148_p2_StartingSeed 
 (
   run_id INT NOT NULL,
   value  INT NOT NULL,
   PRIMARY KEY (run_id)
 );
 
-CREATE TABLE modelone_201208171604590148_w2_StartingSeed
+CREATE TABLE modelOne_201208171604590148_w2_StartingSeed
 (
   set_id INT NOT NULL,
   value  INT NOT NULL,
@@ -248,9 +248,9 @@ CREATE TABLE modelone_201208171604590148_w2_StartingSeed
 );
 
 --
--- ModelOne output tables
+-- modelOne output tables
 --
-CREATE TABLE modelone_201208171604590148_s0_salarySex
+CREATE TABLE modelOne_201208171604590148_s0_salarySex
 (
   run_id    INT   NOT NULL,
   dim0      INT   NOT NULL, 
@@ -261,7 +261,7 @@ CREATE TABLE modelone_201208171604590148_s0_salarySex
   PRIMARY KEY (run_id, dim0, dim1, sub_id)
 );
 
-CREATE TABLE modelone_201208171604590148_v0_salarySex
+CREATE TABLE modelOne_201208171604590148_v0_salarySex
 (
   run_id    INT   NOT NULL,
   dim0      INT   NOT NULL, 

@@ -95,8 +95,8 @@ namespace openm
         /** vector of db subsample tables and value views info */
         vector<OutTblInfo> outInfoVec;
 
-        /** validate metadata rows: uniqueness and referential integrity */
-        void validate(const MetaModelHolder & i_metaRows) const;
+        /** sort and validate metadata rows for uniqueness and referential integrity */
+        void prepare(MetaModelHolder & io_metaRows) const;
 
         /** return sql script to create new model from supplied metadata rows */
         const vector<string> buildCreateModel(MetaModelHolder & i_metaRows) const;

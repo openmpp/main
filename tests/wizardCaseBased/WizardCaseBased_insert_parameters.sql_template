@@ -12,7 +12,7 @@
 -- create default set of parameters for new model
 --
 BEGIN TRANSACTION;
-UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_set';
+UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id';
 
 INSERT INTO workset_lst 
   (set_id, run_id, model_id, set_name, is_readonly, update_dt) 
@@ -24,7 +24,7 @@ SELECT
   1, 
   '${OMC_COMPILE_TIME}'
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 INSERT INTO workset_txt
   (set_id, model_id, lang_id, descr, note) 
@@ -35,7 +35,7 @@ SELECT
   'WizardCaseBased default set of parameters', 
   'WizardCaseBased default set of parameters notes'
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 INSERT INTO workset_txt
   (set_id, model_id, lang_id, descr, note) 
@@ -46,7 +46,7 @@ SELECT
   '(FR) WizardCaseBased default set of parameters', 
   '(FR) WizardCaseBased default set of parameters notes'
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 --
 -- all model parameters must be included in default set
@@ -58,7 +58,7 @@ SELECT
   (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = '${OM_MODEL_PREFIX}'),
   0
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 INSERT INTO workset_parameter_txt 
   (set_id, model_id, parameter_id, lang_id, note) 
@@ -69,7 +69,7 @@ SELECT
   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'), 
   'An arbitrarily selected value, chosen to produce a life expectancy of about 70 years'
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 INSERT INTO workset_parameter_txt 
   (set_id, model_id, parameter_id, lang_id, note) 
@@ -80,7 +80,7 @@ SELECT
   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'FR'), 
   'Une valeur sélectionnée arbitrairement, choisie pour produire une espérance de vie d''environ 70 ans.'
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 --
 -- default values for all input parameters
@@ -91,6 +91,6 @@ SELECT
   RSL.id_value, 
   0.014
 FROM id_lst RSL 
-WHERE RSL.id_key = 'run_set';
+WHERE RSL.id_key = 'run_id_set_id';
 
 COMMIT;

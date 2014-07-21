@@ -563,7 +563,7 @@ CREATE TABLE IF NOT EXISTS group_pc
 -- values < 10 reserved for development and testing
 --
 INSERT INTO id_lst (id_key, id_value) VALUES ('model_id', 10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('run_set', 10);
+INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id', 10);
 
 --

@@ -141,7 +141,7 @@ ParameterWriter::ParameterWriter(
     deleteValueSql = "DELETE FROM " + tblName + " WHERE set_id = " + to_string(setId);
 }
 
-// Parameter value conversion
+// Parameter value casting
 template<typename TValue> void setDbValue(long long i_cellOffset, void * i_valueArr, DbValue & o_dbVal)
 {
     TValue val = static_cast<TValue *>(i_valueArr)[i_cellOffset];
@@ -157,11 +157,11 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
     if (i_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
 
     // set parameter columns type: dimensions and value
-    vector<const type_info *> tv;
+    vector<const type_info *> typeArr;
     for (int nDim = 0; nDim < dimCount; nDim++) {
-        tv.push_back(&typeid(int));
+        typeArr.push_back(&typeid(int));
     }
-    tv.push_back(&i_type);      // type of value
+    typeArr.push_back(&i_type);         // type of value
 
     // set parameter column conversion handler
     function<void (long long i_cellOffset, void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
@@ -202,7 +202,7 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
     {
         // prepare insert statement
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
-        i_dbExec->createStatement(insertValueSql, (int)tv.size(), tv.data());
+        i_dbExec->createStatement(insertValueSql, (int)typeArr.size(), typeArr.data());
 
         // storage for dimension items and db row values
         unique_ptr<int> cellArrUptr(new int[dimCount]);

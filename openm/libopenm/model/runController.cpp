@@ -234,9 +234,9 @@ MetaRunHolder * RunController::init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgEx
         if ((i_isMpiUsed && i_msgExec->isRoot()) || (!i_isMpiUsed && runId <= 0)) {
 
             // get next run id
-            i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_set'");
+            i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'");
 
-            runId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'run_set'", 0);
+            runId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'run_id_set_id'", 0);
             if (runId <= 0) 
                 throw DbException("invalid run id: %d", runId);
 

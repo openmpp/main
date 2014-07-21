@@ -176,8 +176,8 @@ createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, work
     dbBeginTransaction(dbCon)
 
     # get next set id
-    dbGetQuery(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_set'")
-    idRs <- dbGetQuery(dbCon, "SELECT id_value FROM id_lst WHERE id_key = 'run_set'")
+    dbGetQuery(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'")
+    idRs <- dbGetQuery(dbCon, "SELECT id_value FROM id_lst WHERE id_key = 'run_id_set_id'")
     if (nrow(idRs) <= 0L || idRs$id_value <= 0L) stop("can not get new set id from id_lst table")
     
     setId <- idRs$id_value
