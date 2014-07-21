@@ -10,7 +10,7 @@
 * * -Omc.InputDir  input/dir/to/find/source/files
 * * -Omc.OutputDir output/dir/to/place/compiled/cpp_and_h/files
 * * -Omc.UseDir    use/dir/with/ompp/files
-* * -Omc.ParmDir   input/dir/to/find/parameter/files/for/scenario
+* * -Omc.ParamDir   input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir  input/dir/to/find/fixed/parameter/files/
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
@@ -18,7 +18,7 @@
 * * -i short form of -Omc.InputDir
 * * -o short form of -Omc.OutputDir
 * * -u short form of -Omc.UseDir
-* * -p short form of -Omc.ParmDir
+* * -p short form of -Omc.ParamDir
 * * -f short form of -Omc.FixedDir
 * * -s short form of -OpenM.OptionsFile
 * 
@@ -71,7 +71,7 @@ namespace openm
         static const char * useDir;
 
         /** omc input directory with OpenM++ parameter files */
-        static const char * parmDir;
+        static const char * paramDir;
 
         /** omc input directory with OpenM++ fixed parameter files */
         static const char * fixedDir;
@@ -92,8 +92,8 @@ namespace openm
         /** short name for omc use directory */
         static const char * useDir;
 
-        /** short name for omc parm directory */
-        static const char * parmDir;
+        /** short name for omc param directory */
+        static const char * paramDir;
 
         /** short name for omc fixed directory */
         static const char * fixedDir;
@@ -109,7 +109,7 @@ namespace openm
     const char * OmcArgKey::useDir = "Omc.UseDir";
 
     /** omc input directory for OpenM++ parameter files */
-    const char * OmcArgKey::parmDir = "Omc.ParmDir";
+    const char * OmcArgKey::paramDir = "Omc.ParamDir";
 
     /** omc input directory for OpenM++ fixed parameter files */
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
@@ -127,7 +127,7 @@ namespace openm
     const char * OmcShortKey::useDir = "u";
 
     /** short name for omc parm directory */
-    const char * OmcShortKey::parmDir = "p";
+    const char * OmcShortKey::paramDir = "p";
 
     /** short name for omc fixed directory */
     const char * OmcShortKey::fixedDir = "f";
@@ -137,7 +137,7 @@ namespace openm
         OmcArgKey::inputDir,
         OmcArgKey::outputDir,
         OmcArgKey::useDir,
-        OmcArgKey::parmDir,
+        OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
@@ -158,7 +158,7 @@ namespace openm
         make_pair(OmcShortKey::inputDir, OmcArgKey::inputDir),
         make_pair(OmcShortKey::outputDir, OmcArgKey::outputDir),
         make_pair(OmcShortKey::useDir, OmcArgKey::useDir),
-        make_pair(OmcShortKey::parmDir, OmcArgKey::parmDir),
+        make_pair(OmcShortKey::paramDir, OmcArgKey::paramDir),
         make_pair(OmcShortKey::fixedDir, OmcArgKey::fixedDir),
     };
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
@@ -282,21 +282,21 @@ int main(int argc, char * argv[])
         parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
 
         // Parse parameter scenario directory if specified
-        if (argStore.isOptionExist(OmcArgKey::parmDir)) {
+        if (argStore.isOptionExist(OmcArgKey::paramDir)) {
             // -p scenario parameters specified
-            string parmDir = argStore.strOption(OmcArgKey::parmDir);
+            string paramDir = argStore.strOption(OmcArgKey::paramDir);
             pc.is_scenario_parameter_value = true;
             pc.is_fixed_parameter_value = false;
-            if (parmDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", parmDir.c_str());
-            if (parmDir.back() != '/' && parmDir.back() != '\\') parmDir += '/';
-            list<string> parm_extensions = { ".dat", ".odat" };
-            list<string> parm_files = listSourceFiles(parmDir, parm_extensions);     // list of parameter file names
-            if (parm_files.empty()) {
+            if (paramDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", paramDir.c_str());
+            if (paramDir.back() != '/' && paramDir.back() != '\\') paramDir += '/';
+            list<string> param_extensions = { ".dat", ".odat" };
+            list<string> param_files = listSourceFiles(paramDir, param_extensions);     // list of parameter file names
+            if (param_files.empty()) {
                 theLog->logMsg("No parameter files found, nothing to compile at current directory");
             }
             else {
                 size_t count_prev = Symbol::all_source_files.size();
-                Symbol::all_source_files.splice(Symbol::all_source_files.end(), parm_files);
+                Symbol::all_source_files.splice(Symbol::all_source_files.end(), param_files);
                 auto start_it = Symbol::all_source_files.begin();
                 advance(start_it, count_prev);
                 parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
