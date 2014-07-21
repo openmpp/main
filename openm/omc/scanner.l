@@ -325,8 +325,8 @@ blank       [ \t\r]
                     return tok;
                 }
                 string word = yytext;
-                /* special hack to silently interpret 'actor_id' as 'agent_id' */
-                if (word == "actor_id") word = "agent_id";
+                /* special hack to silently interpret 'actor_id' as 'entity_id' */
+                if (word == "actor_id") word = "entity_id";
                 /* suppress name resolution if requested by parser */
                 if (pc.next_word_is_string) {
                     yylval->pval_string = new string(word);

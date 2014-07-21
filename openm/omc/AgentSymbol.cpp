@@ -22,15 +22,15 @@ using namespace std;
 
 void AgentSymbol::create_auxiliary_symbols()
 {
-    // Create builtin agentvars for this agent: time, age, events, agent_id
+    // Create builtin agentvars for this agent: time, age, events, entity_id
     if (!exists("time", this))
         new BuiltinAgentVarSymbol("time", this, NumericSymbol::find(token::TK_Time));
     if (!exists("age", this))
         new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
     if (!exists("events", this))
         new BuiltinAgentVarSymbol("events", this, NumericSymbol::find(token::TK_counter));
-    if (!exists("agent_id", this))
-        new BuiltinAgentVarSymbol("agent_id", this, NumericSymbol::find(token::TK_int));
+    if (!exists("entity_id", this))
+        new BuiltinAgentVarSymbol("entity_id", this, NumericSymbol::find(token::TK_int));
 
     // TODO: Remove test - Create internal data members for this agent: allow_assignment
     if (!exists("allow_assignment", this))
@@ -40,32 +40,32 @@ void AgentSymbol::create_auxiliary_symbols()
     // Used in the run-time support classes
     {
         auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");
-        fn->doc_block = doxygen_short("Age the agent to the given time.");
+        fn->doc_block = doxygen_short("Age the entity to the given time.");
         CodeBlock& c = fn->func_body;
         c += "if (time <= t) time.set(t);";
         c += "else assert(false); // time running backwards?";
     }
 
-    // The get_agent_id() member function
+    // The get_entity_id() member function
     {
-        auto *fn = new AgentFuncSymbol("get_agent_id", this, "int", "");
-        fn->doc_block = doxygen_short("Return unique agent_id of this agent.");
+        auto *fn = new AgentFuncSymbol("get_entity_id", this, "int", "");
+        fn->doc_block = doxygen_short("Return unique entity_id of this entity.");
         CodeBlock& c = fn->func_body;
-        c += "return agent_id;" ;
+        c += "return entity_id;" ;
     }
 
-    // The om_set_agent_id() member function
+    // The om_set_entity_id() member function
     {
-        auto *fn = new AgentFuncSymbol("om_set_agent_id", this, "void", "");
-        fn->doc_block = doxygen_short("Set the unique agent_id of this agent.");
+        auto *fn = new AgentFuncSymbol("om_set_entity_id", this, "void", "");
+        fn->doc_block = doxygen_short("Set the unique entity_id of this entity.");
         CodeBlock& c = fn->func_body;
-        c += "agent_id.set(get_next_agent_id());" ;
+        c += "entity_id.set(get_next_entity_id());" ;
     }
 
     // The om_set_start_time() member function
     {
         auto *fn = new AgentFuncSymbol("om_set_start_time", this, "void", "");
-        fn->doc_block = doxygen_short("Set the default start time of this agent.");
+        fn->doc_block = doxygen_short("Set the default start time of this entity.");
         CodeBlock& c = fn->func_body;
         c += "time.set(global_time);" ;
     }
@@ -74,14 +74,14 @@ void AgentSymbol::create_auxiliary_symbols()
     {
         // no code generation for definition
         auto *fn = new AgentFuncSymbol("om_Start_custom", this, "void", "", true);
-        fn->doc_block = doxygen_short("Model-specific customizations before simulating agent.");
+        fn->doc_block = doxygen_short("Model-specific customizations before simulating entity.");
     }
 
     // The om_Finish_custom() member function
     {
         // no code generation for definition
         auto *fn = new AgentFuncSymbol("om_Finish_custom", this, "void", "", true);
-        fn->doc_block = doxygen_short("Model-specific customizations after simulating agent.");
+        fn->doc_block = doxygen_short("Model-specific customizations after simulating entity.");
     }
 
     // The initialize_callback_member_offsets member function
@@ -89,7 +89,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(!initialize_callback_member_offsets_fn); // initialization guarantee
         initialize_callback_member_offsets_fn = new AgentFuncSymbol("om_initialize_callback_member_offsets", this);
         assert(initialize_callback_member_offsets_fn); // out of memory check
-        initialize_callback_member_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing agent.");
+        initialize_callback_member_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing entity.");
         // function body is generated in post-parse phase
     }
 
@@ -98,7 +98,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(!initialize_data_members_fn); // initialization guarantee
         initialize_data_members_fn = new AgentFuncSymbol("om_initialize_data_members", this);
         assert(initialize_data_members_fn); // out of memory check
-        initialize_data_members_fn->doc_block = doxygen_short("Initialization of data members before the agent enters simulation.");
+        initialize_data_members_fn->doc_block = doxygen_short("Initialization of data members before the entity enters simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -107,7 +107,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(!initialize_data_members0_fn); // initialization guarantee
         initialize_data_members0_fn = new AgentFuncSymbol("om_initialize_data_members0", this);
         assert(initialize_data_members0_fn); // out of memory check
-        initialize_data_members0_fn->doc_block = doxygen_short("Initialization of data members of the 'zero' agent to default values for the type (0).");
+        initialize_data_members0_fn->doc_block = doxygen_short("Initialization of data members of the 'zero' entity to default values for the type (0).");
         // function body is generated in post-parse phase
     }
 
@@ -116,7 +116,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == initialize_events_fn); // initialization guarantee
         initialize_events_fn = new AgentFuncSymbol("om_initialize_events", this);
         assert(initialize_events_fn); // out of memory check
-        initialize_events_fn->doc_block = doxygen_short("Force event time calculation for each event in the agent when it enters simulation.");
+        initialize_events_fn->doc_block = doxygen_short("Force event time calculation for each event in the entity when it enters simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -125,7 +125,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_events_fn); // initialization guarantee
         finalize_events_fn = new AgentFuncSymbol("om_finalize_events", this);
         assert(finalize_events_fn); // out of memory check
-        finalize_events_fn->doc_block = doxygen_short("Remove each event in the agent from the event queue when it leaves the simulation.");
+        finalize_events_fn->doc_block = doxygen_short("Remove each event in the entity from the event queue when it leaves the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -134,7 +134,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == initialize_tables_fn); // initialization guarantee
         initialize_tables_fn = new AgentFuncSymbol("om_initialize_tables", this);
         assert(initialize_tables_fn); // out of memory check
-        initialize_tables_fn->doc_block = doxygen_short("Initialize the agent's increments in each table when it enters the simulation.");
+        initialize_tables_fn->doc_block = doxygen_short("Initialize the entity's increments in each table when it enters the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -143,7 +143,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_tables_fn); // initialization guarantee
         finalize_tables_fn = new AgentFuncSymbol("om_finalize_tables", this);
         assert(finalize_tables_fn); // out of memory check
-        finalize_tables_fn->doc_block = doxygen_short("Finish the agent's pending increments in each table when it leaves the simulation.");
+        finalize_tables_fn->doc_block = doxygen_short("Finish the entity's pending increments in each table when it leaves the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -152,7 +152,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == initialize_expression_agentvars_fn); // initialization guarantee
         initialize_expression_agentvars_fn = new AgentFuncSymbol("om_initialize_expression_agentvars", this);
         assert(initialize_expression_agentvars_fn); // out of memory check
-        initialize_expression_agentvars_fn->doc_block = doxygen_short("Initialize each expression agentvar before the agent enters the simulation.");
+        initialize_expression_agentvars_fn->doc_block = doxygen_short("Initialize each expression agentvar before the entity enters the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -161,7 +161,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_links_fn); // initialization guarantee
         finalize_links_fn = new AgentFuncSymbol("om_finalize_links", this);
         assert(finalize_links_fn); // out of memory check
-        finalize_links_fn->doc_block = doxygen_short("Set all links in agent to nullptr when the agent leaves the simulation.");
+        finalize_links_fn->doc_block = doxygen_short("Set all links in agent to nullptr when the entity leaves the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -170,7 +170,7 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_multilinks_fn); // initialization guarantee
         finalize_multilinks_fn = new AgentFuncSymbol("om_finalize_multilinks", this);
         assert(finalize_multilinks_fn); // out of memory check
-        finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in agent when the agent leaves the simulation.");
+        finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in agent when the entity leaves the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -179,7 +179,7 @@ void AgentSymbol::create_auxiliary_symbols()
         auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
         if (!fn) fn = new AgentFuncSymbol("Start", this);
         assert(fn);
-        fn->doc_block = doxygen_short("Start simulating the agent.");
+        fn->doc_block = doxygen_short("Start simulating the entity.");
         CodeBlock& c = fn->func_body;
         c += "om_Start_begin();";
         c += "om_Start_custom();";
@@ -191,7 +191,7 @@ void AgentSymbol::create_auxiliary_symbols()
         auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Finish", this));
         if (!fn) fn = new AgentFuncSymbol("Finish", this);
         assert(fn);
-        fn->doc_block = doxygen_short("Finish simulating the agent.");
+        fn->doc_block = doxygen_short("Finish simulating the entity.");
         CodeBlock& c = fn->func_body;
         c += "om_Finish_custom();";
         c += "om_Finish_end();";

@@ -27,9 +27,9 @@ public:
     virtual void om_initialize_data_members() = 0;
 
     /**
-     * Assign unique agent_id to agent as part of initialization.
+     * Assign unique entity_id to agent as part of initialization.
      */
-    virtual void om_set_agent_id() = 0;
+    virtual void om_set_entity_id() = 0;
 
     /**
      * Assign default value of time as part of initialization.
@@ -143,7 +143,7 @@ public:
     {
         om_active = false;
         om_initialize_data_members();
-        om_set_agent_id();
+        om_set_entity_id();
         om_set_start_time();
         om_initialize_expression_agentvars();
     }
@@ -189,9 +189,9 @@ public:
      * Used to set agent_id as part of the initialization of each agent. Returns the value 1 on the
      * first call.
      *
-     * @return The next agent identifier.
+     * @return The next entity identifier.
      */
-    static int get_next_agent_id()
+    static int get_next_entity_id()
     {
         static int counter = 0;
         return ++counter;

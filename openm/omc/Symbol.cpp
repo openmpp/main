@@ -83,12 +83,12 @@ multimap<string, string> Symbol::memfunc_bodyids;
 unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 {
     // top level om keywords, in alphabetic order
-    { token::TK_agent, "agent" },
-    { token::TK_agent_set, "agent_set" },
     { token::TK_aggregation, "aggregation" },
     { token::TK_classification, "classification" },
     { token::TK_counter_type, "counter_type" },
     { token::TK_dependency, "dependency" },
+    { token::TK_entity, "entity" },
+    { token::TK_entity_set, "entity_set" },
     { token::TK_extend_parameter, "extend_parameter" },
     { token::TK_hide, "hide" },
     { token::TK_import, "import" },
@@ -390,12 +390,12 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 // and in parser.y. Maintain exactly the same order.
 unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 {
-    token::TK_agent,
-    token::TK_agent_set,
     token::TK_aggregation,
     token::TK_classification,
     token::TK_counter_type,
     token::TK_dependency,
+    token::TK_entity,
+    token::TK_entity_set,
     token::TK_extend_parameter,
     token::TK_hide,
     token::TK_import,
@@ -422,8 +422,8 @@ unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 
 unordered_map<string, token_type> Symbol::string_token =
 {
-    { "actor", token::TK_agent },
-    { "actor_set", token::TK_agent_set },
+    { "actor", token::TK_entity },
+    { "actor_set", token::TK_entity_set },
     { "logical", token::TK_bool },
     { "TRUE", token::TK_true },
     { "FALSE", token::TK_false },

@@ -248,7 +248,7 @@ public:
 
     int get_agent_id()
     {
-        return (agent()->get_agent_id)();
+        return (agent()->get_entity_id)();
     }
 
     void implement_event()

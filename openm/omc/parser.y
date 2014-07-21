@@ -103,12 +103,12 @@ extern char *yytext;
 // NB: There is an exact one-to-one correspondence with code in Symbol.cpp
 
 // top-level om keywords, in alphabetic order
-%token <val_token>    TK_agent          "agent"
-%token <val_token>    TK_agent_set      "agent_set"
 %token <val_token>    TK_aggregation    "aggregation"
 %token <val_token>    TK_classification "classification"
 %token <val_token>    TK_counter_type   "counter_type"
 %token <val_token>    TK_dependency     "dependency"
+%token <val_token>    TK_entity         "entity"
+%token <val_token>    TK_entity_set     "entity_set"
 %token <val_token>    TK_extend_parameter "extend_parameter"
 %token <val_token>    TK_hide           "hide"
 %token <val_token>    TK_import         "import"
@@ -502,6 +502,7 @@ ompp_declarative_islands ompp_declarative_island
 ompp_declarative_island:
 	  decl_use              { pc.InitializeForCxx(); }
 	| decl_languages        { pc.InitializeForCxx(); }
+	| decl_string           { pc.InitializeForCxx(); }
 	| decl_options          { pc.InitializeForCxx(); }
 	| decl_model_type       { pc.InitializeForCxx(); }
 	| decl_time_type        { pc.InitializeForCxx(); }
@@ -513,8 +514,9 @@ ompp_declarative_island:
     | decl_partition        { pc.InitializeForCxx(); }
     | decl_range            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
-	| decl_agent            { pc.InitializeForCxx(); }
+	| decl_entity           { pc.InitializeForCxx(); }
 	| decl_link             { pc.InitializeForCxx(); }
+	| decl_entity_set       { pc.InitializeForCxx(); }
 	| decl_table            { pc.InitializeForCxx(); }
 	;
 
@@ -558,6 +560,18 @@ language_list:
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
 	;
+
+/*
+ * string
+ */
+
+decl_string:
+          "string" SYMBOL[string] ";"
+                        {
+                            // TODO
+                        }
+        | "string" error ";"
+        ;
 
 /*
  * options
@@ -1014,11 +1028,11 @@ parameter_initializer_element:
 
 
 /*
- * agent
+ * entity
  */
 
-decl_agent:
-      "agent" SYMBOL[agent]
+decl_entity:
+      "entity" SYMBOL[agent]
                         {
                             if ($agent->is_base_symbol()) {
                                 // Morph Symbol to AgentSymbol
@@ -1336,6 +1350,41 @@ link_symbol:
                             $link_symbol = ams;
                         }
         ;
+
+/*
+ * entity_set
+ */
+
+decl_entity_set:
+      "entity_set" SYMBOL[agent] SYMBOL[entity_set]
+                        {
+                        }
+            entity_set_dimension_list_opt entity_set_filter_opt ";"
+    | "entity_set" error ";"
+    ;
+
+entity_set_dimension_list_opt:
+      entity_set_dimension_list
+    | /* nothing */
+    ;
+
+entity_set_dimension_list:
+      entity_set_dimension
+    | entity_set_dimension_list entity_set_dimension
+    ;
+
+entity_set_dimension:
+      "[" SYMBOL[agentvar] "]"
+                        {
+                        }
+    ;
+
+entity_set_filter_opt:
+    "filter" expr_for_agentvar[root]
+                        {
+                        }
+    | /* nothing */
+    ;
 
 /*
  * table
