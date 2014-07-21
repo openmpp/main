@@ -73,6 +73,7 @@ extern char *yytext;
 %union
 {
 	int                   val_token;
+    int                   val_int;
     Literal              *pval_Literal;
     IntegerLiteral       *pval_IntegerLiteral;
     CharacterLiteral     *pval_CharacterLiteral;
@@ -432,6 +433,9 @@ extern char *yytext;
 %left  POSTFIX_INCREMENT POSTFIX_DECREMENT FUNCTION_CALL ARRAY_SUBSCRIPTING "." "->"  // precedence 2
 %left  "::"              // precedence 1
 
+%type  <val_int>        option_value
+%type  <val_token>      option_keyword
+
 %type  <val_token>      model_type
 %type  <val_token>      modgen_cumulation_operator
 %type  <val_token>      table_accumulator
@@ -498,6 +502,7 @@ ompp_declarative_islands ompp_declarative_island
 ompp_declarative_island:
 	  decl_use              { pc.InitializeForCxx(); }
 	| decl_languages        { pc.InitializeForCxx(); }
+	| decl_options          { pc.InitializeForCxx(); }
 	| decl_model_type       { pc.InitializeForCxx(); }
 	| decl_time_type        { pc.InitializeForCxx(); }
 	| decl_real_type        { pc.InitializeForCxx(); }
@@ -532,7 +537,7 @@ decl_use:
         ;
 
 /*
- * language
+ * languages
  */
 
 decl_languages:
@@ -553,6 +558,54 @@ language_list:
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
                         }
 	;
+
+/*
+ * options
+ */
+
+decl_options:
+      "options" options_list ";"
+    | "options" error ";"
+    ;
+
+options_list:
+      option
+	| options_list option
+	;
+
+option:
+        option_keyword[kw] "=" option_value[value]
+                        {
+                            //TODO process option / value pair
+                            token_type kw = (token_type)$kw;
+                            int value = $value;
+                        }
+	;
+
+option_keyword:
+      "bounds_errors"
+    | "index_errors"
+    | "case_checksum"
+    | "event_trace"
+    | "fp_consistency"
+    | "packing_level"
+	;
+
+option_value[value]:
+      "on"
+                        {
+                            $value = 1;
+                        }
+    | "off"
+                        {
+                            $value = 0;
+                        }
+    | INTEGER_LITERAL[integer_value]
+                        {
+                            $value = stoi( $integer_value->value() );
+                            delete $integer_value;
+                        }
+    ;
 
 /*
  * changeable types
@@ -1591,7 +1644,7 @@ link_to_agentvar:
                             // depends on the nature of the symbol on the "->", whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
-      STRING[agentvar]
+            STRING[agentvar]
                         {
                             // Create LinkToAgentVarSymbol.  Store the r.h.s of pointer operator as a string for
                             // subsequent post-parse resolution.
