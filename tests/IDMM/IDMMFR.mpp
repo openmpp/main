@@ -1,0 +1,335 @@
+//LABEL ( IDMMFR, FR ) 
+
+
+
+//==============================/
+//                              /
+// classification               /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// classification DISEASE_PHASE /
+//==============================/
+
+
+//LABEL ( DISEASE_PHASE, FR ) Phase de la maladie
+
+     //LABEL ( DP_SUSCEPTIBLE, FR ) Susceptibilité
+     //LABEL ( DP_LATENT, FR ) Latence
+     //LABEL ( DP_INFECTIOUS, FR ) Contagion
+     //LABEL ( DP_IMMUNE, FR ) Immunisation
+
+
+//================================/
+// classification HOST_EVENT_TYPE /
+//================================/
+
+
+//LABEL ( HOST_EVENT_TYPE, FR ) Type d'événement de l'hôte
+
+     //LABEL ( HET_NONE, FR ) Aucun
+     //LABEL ( HET_CONTACT, FR ) Événement Contact
+     //LABEL ( HET_DISEASE_PROGRESSION, FR ) Événement progression de la maladie
+     //LABEL ( HET_CHANGE_CONTACTS, FR ) Événement changement de contacts
+
+
+//==================================/
+// classification TICKER_EVENT_TYPE /
+//==================================/
+
+
+//LABEL ( TICKER_EVENT_TYPE, FR ) Type d'événement du tic-tac
+
+     //LABEL ( TET_NONE, FR ) Aucun
+     //LABEL ( TET_TICK, FR ) Événement tic-tac
+
+
+//==============================/
+//                              /
+// range                        /
+//                              /
+//==============================/
+
+//LABEL ( REPORT_TIME, FR ) Temps de reportage
+
+
+//==============================/
+//                              /
+// partition                    /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// parameter group              /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// parameter                    /
+//                              /
+//==============================/
+
+//LABEL ( ContactsOutPerHost, FR ) Nombres de contacts partant de l'hôte
+//LABEL ( ContagiousPhaseDuration, FR ) Durée de la phase de contagion
+//LABEL ( DumpSickContactProbability, FR ) Prbabilité d'abadonner un contact malade
+//LABEL ( EnableChangeContactsEvent, FR ) Active l'événement de changement de contact
+//LABEL ( ImmunePhaseDuration, FR ) Durée de la phase d'immunisation
+//LABEL ( InitialDiseasePrevalence, FR ) Prévalence de la maladie au début de la simulation
+//LABEL ( LatentPhaseDuration, FR ) Durée de la phase de latence
+//LABEL ( MeanChangeContactsInterval, FR ) Temps moyen entre les changements de réseau social
+//LABEL ( MeanContactInterval, FR ) Temps moyen entre les interactions sociales
+//LABEL ( NumberOfHosts, FR ) Nombre d'hôtes
+//LABEL ( TransmissionEfficiency, FR ) Probabilité de transmettre la maladie lors d'un contact social
+
+
+//==============================/
+//                              /
+// actor                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// actor Host                   /
+//==============================/
+
+
+//LABEL ( Host, FR ) Hôte d'une maladie infectieuse
+
+
+
+     //==============================/
+     // state                        /
+     //==============================/
+
+
+     //LABEL ( Host.disease_next_phase, FR ) Prochaine phase de la maladie
+     //LABEL ( Host.disease_next_phase_time, FR ) Temps du prochain événement de progression de la maladie
+     //LABEL ( Host.disease_phase, FR ) Phase actuelle de la maladie
+     //LABEL ( Host.event_count, FR ) Nombre d'événements
+     //LABEL ( Host.event_type, FR ) Type d'événements
+     //LABEL ( Host.next_change_contacts, FR ) Temps du prochain changement de réseau social
+     //LABEL ( Host.next_contact, FR ) Temps du prochain événement d'interaction sociale
+     //LABEL ( Host.report_time, FR ) Temps de reportage
+
+
+     //==============================/
+     // event                        /
+     //==============================/
+
+
+     //LABEL ( Host.ChangeContactsEvent, FR ) Événement de changement de réseau social
+
+/* NOTE ( Host.ChangeContactsEvent, FR )	Cet événement force l'hôte à changer l'ensemble 
+	d'hôtes avec lesquels il interagit dans son réseau social.
+*/
+
+     //LABEL ( Host.ContactEvent, FR ) Événement d'interaction avec un autre hôte
+
+/* NOTE ( Host.ContactEvent, FR )	Cet événement simule une interaction entre l'hôte et 
+	d'autres hôtes de son réseau social.
+*/
+
+     //LABEL ( Host.DiseaseProgressionEvent, FR ) Événement de progression de la maladie
+
+/* NOTE ( Host.DiseaseProgressionEvent, FR )	Cet événement simule la progression de la maladie
+	à travers ces phases diverses.
+*/
+
+
+
+     //==============================/
+     // link                         /
+     //==============================/
+
+
+     //LABEL ( Host.mlContactsIn, FR ) Interactions sociales entrantes
+     //LABEL ( Host.mlContactsOut, FR ) Interactions sociales sortantes
+
+
+     //==============================/
+     // function                     /
+     //==============================/
+
+
+     //LABEL ( Host.Finish, FR ) Termine l'acteur
+
+/* NOTE ( Host.Finish, FR ) 
+	Performe des opérations additionnelles lors de la fin d'un hôte.
+*/
+
+     //LABEL ( Host.Infect, FR ) Démarre l'infection de cet hôte
+     //LABEL ( Host.Start, FR ) Initialise l'hôte au début de la simulation
+
+/* NOTE ( Host.Start, FR ) 
+	Initialises un nouvel hôte.
+*/
+
+
+
+//==============================/
+// actor Ticker                 /
+//==============================/
+
+
+//LABEL ( Ticker, FR ) Acteur pour synchroniser les activités au niveau de la population
+
+
+
+     //==============================/
+     // state                        /
+     //==============================/
+
+
+     //LABEL ( Ticker.event_count, FR ) Nombre d'événements
+     //LABEL ( Ticker.event_type, FR ) Type d'événement
+     //LABEL ( Ticker.next_tick, FR ) Temps du prochain événement tic-tac
+     //LABEL ( Ticker.report_time, FR ) Temps de reportage
+
+
+     //==============================/
+     // event                        /
+     //==============================/
+
+
+     //LABEL ( Ticker.TickEvent, FR ) Événement tic-tac
+
+/* NOTE ( Ticker.TickEvent, FR )	Incrémente l'horloge et synchronise les acteurs pour les rapports.
+*/
+
+
+
+     //==============================/
+     // function                     /
+     //==============================/
+
+
+     //LABEL ( Ticker.Finish, FR ) Termine l'acteur
+
+/* NOTE ( Ticker.Finish, FR ) 
+	Performe des opérations additionnelles lors de la fin d'un tic-tac.
+*/
+
+     //LABEL ( Ticker.Start, FR ) Démarre le tic-tac
+
+/* NOTE ( Ticker.Start, FR ) 
+	Initialises l'acteur tic-tac.
+*/
+
+
+
+//==============================/
+//                              /
+// table group                  /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// table                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// table X01_History            /
+//==============================/
+
+
+//LABEL ( X01_History, FR ) Historique de la maladie
+
+
+     //LABEL ( X01_History.Dim1, FR ) Temps de reportage
+     //LABEL ( X01_History.Dim2, FR ) Phase actuelle de la maladie
+
+     //LABEL ( X01_History.Expr0, FR ) Durée
+
+
+//==============================/
+// table X02_Host_Events        /
+//==============================/
+
+
+//LABEL ( X02_Host_Events, FR ) Événements pour les hôtes
+
+
+     //LABEL ( X02_Host_Events.Dim1, FR ) Temps de reportage
+     //LABEL ( X02_Host_Events.Dim2, FR ) Type d'événements
+
+     //LABEL ( X02_Host_Events.Expr0, FR ) Compte
+
+
+//==============================/
+// table X03_Ticker_Events      /
+//==============================/
+
+
+//LABEL ( X03_Ticker_Events, FR ) Événements pour le tic-tac
+
+
+     //LABEL ( X03_Ticker_Events.Dim1, FR ) Temps de reportage
+     //LABEL ( X03_Ticker_Events.Dim2, FR ) Type d'événements
+
+     //LABEL ( X03_Ticker_Events.Expr0, FR ) Compte
+
+
+//==============================/
+//                              /
+// user table                   /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// module                       /
+//                              /
+//==============================/
+
+//LABEL ( HostCore, FR ) Définition et initialisation d'un acteur Host
+
+/* NOTE ( HostCore, FR ) 
+	Ce module contient l'information de base reliée à un acteur de type Host.
+*/
+
+//LABEL ( IDMM, FR ) Fonctions de simulation de base
+
+/* NOTE ( IDMM, FR ) 
+	Ce module contient le noyau du modèle IDMM. Il contrôle le moteur de simulation. 
+*/
+
+//LABEL ( IDMMFR, FR ) 
+//LABEL ( ModelStrings, FR ) Chaînes de caractères spécifiques au modèle
+
+/* NOTE ( ModelStrings, FR )	Ce module contient les chaînes de caractères spécifiques au modèle affichées dans le 
+	dialogue de progrès.
+*/
+
+//LABEL ( TestTables, FR ) Tableaux pour tester le modèle
+
+/* NOTE ( TestTables, FR ) 
+	Ce fichier contient des tableaux tests. 
+*/
+
+//LABEL ( TickerCore, FR ) Définition et initialisation d'un acteur Ticker
+
+/* NOTE ( TickerCore, FR )	
+	Ce module contient les informations de base associées avec l'acteur « Ticker ».
+	Une seule instance de l'acteur « Ticker » est créée dans une simulation.  Il est utilisé pour synchroniser
+	le temps parmi tous les acteurs de la population afin d'assurer des rapports fidèles.
+*/
+

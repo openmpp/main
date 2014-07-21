@@ -17,6 +17,7 @@
 #include "CodeBlock.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
+#include "StringSymbol.h"
 #include "VersionSymbol.h"
 #include "ModelTypeSymbol.h"
 #include "NumericSymbol.h"
@@ -40,6 +41,7 @@
 #include "TableExpressionSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
+#include "EntitySetSymbol.h"
 #include "TableSymbol.h"
 
 using namespace std;
@@ -63,7 +65,11 @@ list<EnumerationWithEnumeratorsSymbol *> Symbol::pp_all_enumerations_with_enumer
 
 list<LanguageSymbol *> Symbol::pp_all_languages;
 
+list<StringSymbol *> Symbol::pp_all_strings;
+
 list<AgentSymbol *> Symbol::pp_all_agents;
+
+list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 
 list<TableSymbol *> Symbol::pp_all_tables;
 
@@ -775,10 +781,12 @@ void Symbol::post_parse_all()
 
     // Sort all global collections
     pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
+    pp_all_strings.sort([](StringSymbol *a, StringSymbol *b) { return a->name < b->name; });
     pp_all_types0.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_types1.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_agents.sort([](AgentSymbol *a, AgentSymbol *b) { return a->name < b->name; });
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
+    pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
 
     // Assign numeric identifiers to symbols in selected collections

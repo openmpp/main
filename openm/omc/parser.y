@@ -573,7 +573,8 @@ language_list:
 decl_string:
           "string" SYMBOL[string] ";"
                         {
-                            // TODO
+                            // morph existing symbol to StringSymbol
+                            auto *sym = new StringSymbol( $string, @string );
                         }
         | "string" error ";"
         ;
@@ -1363,6 +1364,8 @@ link_symbol:
 decl_entity_set:
       "entity_set" SYMBOL[agent] SYMBOL[entity_set]
                         {
+                            // morph existing symbol to EntitySetSymbol
+                            auto *sym = new EntitySetSymbol( $entity_set, @entity_set );
                         }
             entity_set_dimension_list_opt entity_set_filter_opt ";"
     | "entity_set" error ";"

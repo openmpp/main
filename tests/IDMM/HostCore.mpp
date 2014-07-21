@@ -1,0 +1,353 @@
+/*****************************************************************************
+*	IDMM™: Infectious Disease Microsimulation Model
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | SFG | 02/02/19 | Created                                                 |
+* | SFG | 03/11/28 | Cosmetic changes                                        |
+* +-----+----------+---------------------------------------------------------+
+*
+******************************************************************************/
+
+//LABEL (HostCore, EN) Definition and initialization of Host actor
+
+/*NOTE(HostCore, EN)
+	This module contains the basic information associated with a Host actor.
+*/
+
+
+classification HOST_EVENT_TYPE 	//EN Host Event Type
+{
+
+	//EN None
+	HET_NONE,
+
+	//EN Contact event
+	HET_CONTACT,
+
+	//EN Disease progression event
+	HET_DISEASE_PROGRESSION,
+
+	//EN Change contacts event
+	HET_CHANGE_CONTACTS
+};
+
+classification DISEASE_PHASE	//EN Disease phase
+{
+
+	//EN Susceptible
+	DP_SUSCEPTIBLE,
+
+	//EN Latent
+	DP_LATENT,
+
+	//EN Infectious
+	DP_INFECTIOUS,
+
+	//EN Immune
+	DP_IMMUNE
+};
+
+
+parameters 
+{
+	//EN Number of hosts
+	int		NumberOfHosts;
+
+	//EN Number of outgoing contacts per host
+	int		ContactsOutPerHost;
+
+	//EN Mean time between social interactions
+	double	MeanContactInterval;
+
+	//EN Mean time between changing social contact network
+	double	MeanChangeContactsInterval;
+
+	//EN Probability of dumping a sick contact
+	double	DumpSickContactProbability;
+
+	//EN Probability of transmitting disease during a social contact
+	double	TransmissionEfficiency;
+
+	//EN Disease prevalence at start of simulation
+	double	InitialDiseasePrevalence;
+
+	//EN Duration of latent phase
+	double	LatentPhaseDuration;
+
+	//EN Duration of contagious phase
+	double	ContagiousPhaseDuration;
+
+	//EN Duration of immune phase
+	double	ImmunePhaseDuration;
+
+	//EN Enable the change contacts event
+	logical	EnableChangeContactsEvent;
+};
+
+
+
+actor Host						//EN Host of an infectious disease
+{
+	//EN Event count
+	int event_count = { 0 };
+
+	//EN Event type
+	HOST_EVENT_TYPE event_type = { HET_NONE };
+
+	//EN Report time
+	REPORT_TIME report_time = { 0 };
+
+	//EN Time of next contact event
+	TIME	next_contact = { TIME_INFINITE };
+
+	//EN Time of next change social contacts event
+	TIME	next_change_contacts = { TIME_INFINITE };
+
+	//EN Current disease phase
+	DISEASE_PHASE	disease_phase = { DP_SUSCEPTIBLE };
+
+	//EN Next disease phase
+	DISEASE_PHASE	disease_next_phase;
+
+	//EN Time of next disease progression event
+	TIME	disease_next_phase_time = { TIME_INFINITE };
+
+	//EN Trigger infection of this host
+	void Infect();
+
+	void	Start();	//EN Starts the host
+	void	Finish();	//EN Finishes the actor
+
+	event	timeContactEvent, ContactEvent;	//EN Interaction with other host event
+	event	timeDiseaseProgressionEvent, DiseaseProgressionEvent;	//EN Disease progression event
+	event	timeChangeContactsEvent, ChangeContactsEvent;	//EN Social network change event
+};
+
+// Persistent links between Hosts
+link	Host.mlContactsOut[]		//EN Outgoing social contacts
+		Host.mlContactsIn[];		//EN Incoming social contacts
+
+
+
+// Trigger disease infection
+void Host::Infect()
+{
+	disease_next_phase = DP_LATENT;
+	disease_next_phase_time = time;
+}
+
+
+
+/* NOTE(Host.Start,EN) 
+	Initializes a new Host.
+*/
+void Host::Start()
+{
+	time = (TIME) 0;
+	age = 0;
+
+	// Infect a few Hosts
+	if ( InitialDiseasePrevalence > RandUniform(5) ) 
+	{
+		// Trigger the disease event right away.
+		Infect();
+	}
+
+	// Schedule the first social contact.
+	next_contact = time + (TIME) ( MeanContactInterval * ( 2.0 * RandUniform(1) ) );
+	
+	// Schedule the first change of contacts.
+	if ( EnableChangeContactsEvent == TRUE ) 
+	{
+		next_change_contacts = time + (TIME) ( MeanChangeContactsInterval * ( 2.0 * RandUniform(10) ) );
+	}
+	else 
+	{
+		// Disable the event.
+		// Because it's a self-perpetuating event, this is all we have to do to disable it.
+		next_change_contacts = (TIME) TIME_INFINITE;
+	}
+
+
+}
+
+
+/* NOTE(Host.Finish,EN) 
+	Performs additional processing when terminating a Host.
+*/
+void Host::Finish()
+{
+}
+
+
+/* NOTE(Host.ContactEvent,EN)
+	This event simulates an interaction between the Host and other 
+	Hosts in its social network.
+*/
+TIME Host::timeContactEvent()
+{
+	return next_contact;
+}
+
+void Host::ContactEvent()
+{
+	// For reporting on event counts
+	event_type = HET_NONE;
+	event_type = HET_CONTACT;
+	event_count++;
+
+
+	// Contact each host in outgoing list
+	int nIndex = {-1};
+	Host *prContact = {NULL};
+	while ( prContact = mlContactsOut->GetNext(nIndex + 1, &nIndex) ) 
+	{
+		if ( disease_phase == DP_INFECTIOUS && prContact->disease_phase == DP_SUSCEPTIBLE ) 
+		{
+			// a potential infection (forward direction)
+			if ( TransmissionEfficiency > RandUniform(4) ) 
+			{
+				// infect the contact
+				prContact->Infect();
+			}
+		}
+		else if ( prContact->disease_phase == DP_INFECTIOUS && disease_phase == DP_SUSCEPTIBLE ) 
+		{
+			// a potential infection (reverse direction)
+			if ( TransmissionEfficiency > RandUniform(6) ) 
+			{
+				// infect the Host
+				Infect();
+			}
+		}
+	}
+
+	// Schedule the next outgoing contact.
+	// Note that the waiting time is uniformly distributed  with mean MeanContactInterval
+	next_contact += (TIME) ( MeanContactInterval * ( 2.0 * RandUniform(2) ) );
+}
+
+
+/* NOTE(Host.DiseaseProgressionEvent,EN)
+	This event simulates the progression of the disease
+	through its various phases.
+*/
+TIME Host::timeDiseaseProgressionEvent()
+{
+	return disease_next_phase_time;
+}
+
+void Host::DiseaseProgressionEvent()
+{
+	// For reporting on event counts
+	event_type = HET_NONE;
+	event_type = HET_DISEASE_PROGRESSION;
+	event_count++;
+
+	// update the phase to reflect the beginning of a new phase
+	disease_phase = disease_next_phase;
+
+	// Handle things related to the beginning of the current phase
+	switch (disease_phase) 
+	{
+
+		case DP_LATENT:
+
+			{
+				// Schedule next phase
+				disease_next_phase = DP_INFECTIOUS;
+				disease_next_phase_time = WAIT( (TIME) LatentPhaseDuration );
+			}
+
+			break;
+
+		case DP_INFECTIOUS:
+
+			{
+				// Schedule next phase
+				disease_next_phase = DP_IMMUNE;
+				disease_next_phase_time = WAIT( (TIME) ContagiousPhaseDuration );
+			}
+
+			break;
+
+		case DP_IMMUNE:
+
+			{
+				// Schedule next phase
+				disease_next_phase = DP_SUSCEPTIBLE;
+				disease_next_phase_time = WAIT( (TIME) ImmunePhaseDuration );
+			}
+
+			break;
+
+		case DP_SUSCEPTIBLE:
+
+			{
+				// No next phase
+				disease_next_phase_time = TIME_INFINITE;
+			}
+
+			break;
+
+		default:
+			break;
+	}
+}
+
+
+
+/* NOTE(Host.ChangeContactsEvent,EN)
+	This event involves the host changing the set of other Hosts
+	with which it interacts in its social network.
+*/
+TIME Host::timeChangeContactsEvent()
+{
+	return next_change_contacts;
+}
+
+void Host::ChangeContactsEvent()
+{
+	// For reporting on event counts
+	event_type = HET_NONE;
+	event_type = HET_CHANGE_CONTACTS;
+	event_count++;
+
+	// Locate each host in outgoing list
+	int nIndex = {-1};
+	Host *prContact = {NULL};
+	while ( prContact = mlContactsOut->GetNext(nIndex + 1, &nIndex) ) 
+	{
+
+		// If this Host is healthy, and the contact is visibly sick,
+		// dump them with probability DumpSickContactProbability and replace them with a 
+		// new randomly chosen contact.
+		if ( ( disease_phase != DP_INFECTIOUS ) && ( prContact->disease_phase == DP_INFECTIOUS ) && ( DumpSickContactProbability > RandUniform(7) ) ) 
+		{
+
+			// Say goodbye.  Dump them.
+			mlContactsOut->Remove( prContact );
+
+			// Find somebody new.
+			// Choose a new contact randomly from all hosts.
+
+			prContact = asAllHosts->GetRandom( RandUniform(8) );
+
+			if ( prContact != NULL ) 
+			{
+				// Add the new contact to the outgoing contacts list.
+				mlContactsOut->Add( prContact );
+			}
+
+		}
+	}
+
+	// Schedule the next change contacts event.
+	// Note that the waiting time is uniformly distributed  with mean MeanChangeContactsInterval
+	next_change_contacts += (TIME) ( MeanChangeContactsInterval * ( 2.0 * RandUniform(9) ) );
+}
+
+

@@ -9,6 +9,7 @@
 #include "Literal.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
+#include "StringSymbol.h"
 #include "ModelSymbol.h"
 #include "ModuleSymbol.h"
 #include "VersionSymbol.h"
@@ -50,6 +51,7 @@
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableSymbol.h"
+#include "EntitySetSymbol.h"
 #include "ExprForTable.h"
 #include "ExprForAgentVar.h"
 

@@ -176,6 +176,7 @@
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DurationAgentVarSymbol.h" />
+    <ClInclude Include="EntitySetSymbol.h" />
     <ClInclude Include="EnumerationSymbol.h" />
     <ClInclude Include="EnumerationWithEnumeratorsSymbol.h" />
     <ClInclude Include="EnumeratorSymbol.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="RealSymbol.h" />
     <ClInclude Include="SimpleAgentVarEnumSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
+    <ClInclude Include="StringSymbol.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableAccumulatorSymbol.h" />
     <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
@@ -235,6 +237,7 @@
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
+    <ClCompile Include="EntitySetSymbol.cpp" />
     <ClCompile Include="EnumerationSymbol.cpp" />
     <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp" />
     <ClCompile Include="EnumeratorSymbol.cpp" />
@@ -256,6 +259,7 @@
     <ClCompile Include="RealSymbol.cpp" />
     <ClCompile Include="SimpleAgentVarEnumSymbol.cpp" />
     <ClCompile Include="SimpleAgentVarSymbol.cpp" />
+    <ClCompile Include="StringSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableAccumulatorSymbol.cpp" />
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />

@@ -195,6 +195,12 @@
     <ClInclude Include="SimpleAgentVarEnumSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StringSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitySetSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -330,6 +336,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SimpleAgentVarEnumSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntitySetSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

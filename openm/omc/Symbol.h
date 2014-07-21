@@ -20,9 +20,12 @@ class TypeSymbol;
 class EnumerationSymbol;
 class EnumerationWithEnumeratorsSymbol;
 class LanguageSymbol;
+class StringSymbol;
 class AgentSymbol;
 class ParameterSymbol;
+class EntitySetSymbol;
 class TableSymbol;
+
 namespace openm {
     struct MetaModelHolder;
 }
@@ -140,7 +143,6 @@ public:
      *
      * @return true if base symbol, false if not.
      */
-
     virtual bool is_base_symbol() const { return true; }
 
     /**
@@ -250,16 +252,14 @@ public:
         it->second = this;
     }
 
-
     /**
      * Get stable reference to pointer to symbol.
      * 
-     * The result is a double indirection and is stable to morphing, since unordered_map
-     * guarantees that references to existing map entries never change.
+     * The result is a double indirection and is stable to morphing, since unordered_map guarantees
+     * that references to existing map entries never change.
      *
      * @return Reference to pointer to this Symbol.
      */
-
 	Symbol*& stable_rp() const
     {
     	auto it = symbols.find( unique_name );
@@ -271,14 +271,13 @@ public:
     /**
      * Get stable pointer to pointer to symbol.
      * 
-     * The result is a double indirection and is stable to morphing, since unordered_map
-     * guarantees that pointers and references to existing map entries never change.
-     * It's better to use stable_rp() if possible, but sometimes pointers are needed instead,
-     * for example to store a double indirection to a Symbol in a list<>.
+     * The result is a double indirection and is stable to morphing, since unordered_map guarantees
+     * that pointers and references to existing map entries never change. It's better to use
+     * stable_rp() if possible, but sometimes pointers are needed instead, for example to store a
+     * double indirection to a Symbol in a list&lt;&gt;.
      *
      * @return pointer to pointer to this Symbol.
      */
-
 	Symbol** stable_pp() const
     {
     	auto it = symbols.find( unique_name );
@@ -312,23 +311,21 @@ public:
      * 
      * Post-parse operations create derived information based on information obtained during the
      * parse phase. This information is stored in members of the Symbol class hierarchy which by
-     * convention have a 'pp_' prefix in their name. For example, the \ref pp_callback_members collection
-     * of the \ref AgentSymbol class contains a list of all agentvars of the agent after post-parse
-     * processing.  These pp_ members are used subsequently in the code-generation phase.
+     * convention have a 'pp_' prefix in their name. For example, the \ref pp_callback_members
+     * collection of the \ref AgentSymbol class contains a list of all agentvars of the agent after
+     * post-parse processing.  These pp_ members are used subsequently in the code-generation phase.
      * 
      * When post_parse is called on an object in the \ref Symbol hierarchy, the call is first passed
      * upwards through the inheritance hierarchy so that post-parse operations are performed at all
      * hierarchical levels, and at higher levels before lower levels (for each @a pass).
      * 
      * Post-parse operations occur in a series of sequential passes, with the results of each pass
-     * usable by subsequent passes.  \ref post_parse is called on all symbols through the function
-     * \ref Symbol::post_parse_all.
+     * usable by subsequent passes.  \ref post_parse is called on all symbols through the function \
+     * ref Symbol::post_parse_all.
      *
      * @param pass The pass number.
      */
-
     virtual void post_parse(int pass);
-
 
     /**
      * Get the c++ declaration code (in agent scope) associated with the symbol.
@@ -341,64 +338,57 @@ public:
      *
      * @return A CodeBlock.
      */
-
     virtual CodeBlock cxx_declaration_agent();
-
 
     /**
      * Get the c++ definition code (for agent members) associated with the symbol.
      * 
      * The code fragment is qualified by the agent class.
-     *
+     * 
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all
      * hierarchical levels, and at higher levels before lower levels.
      *
      * @return A CodeBlock.
      */
-
     virtual CodeBlock cxx_definition_agent();
 
-    
     /**
-    * Get the c++ declaration code associated with the symbol.
-    *
-    * The code fragment is valid outside all class declarations.
-    *
-    * When this function is called on an object in the \ref Symbol hierarchy, the call is first
-    * passed upwards through the inheritance hierarchy so that operations are performed at all
-    * hierarchical levels, and at higher levels before lower levels.
-    *
-    * @return A CodeBlock.
-    */
-
+     * Get the c++ declaration code associated with the symbol.
+     * 
+     * The code fragment is valid outside all class declarations.
+     * 
+     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+     * passed upwards through the inheritance hierarchy so that operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels.
+     *
+     * @return A CodeBlock.
+     */
     virtual CodeBlock cxx_declaration_global();
 
-
     /**
-    * Get the c++ definition code associated with the symbol.
-    *
-    * The code fragment is not qualified by any agent class.
-    *
-    * When this function is called on an object in the \ref Symbol hierarchy, the call is first
-    * passed upwards through the inheritance hierarchy so that operations are performed at all
-    * hierarchical levels, and at higher levels before lower levels.
-    *
-    * @return A CodeBlock.
-    */
-
+     * Get the c++ definition code associated with the symbol.
+     * 
+     * The code fragment is not qualified by any agent class.
+     * 
+     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+     * passed upwards through the inheritance hierarchy so that operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels.
+     *
+     * @return A CodeBlock.
+     */
     virtual CodeBlock cxx_definition_global();
 
-
     /**
-    * Populate metadata associated with the symbol.
-    *
-    *
-    * When this function is called on an object in the \ref Symbol hierarchy, the call is first
-    * passed upwards through the inheritance hierarchy so that operations are performed at all
-    * hierarchical levels, and at higher levels before lower levels.
-    */
-
+     * Populate metadata associated with the symbol.
+     * 
+     * 
+     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+     * passed upwards through the inheritance hierarchy so that operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels.
+     *
+     * @param [in,out] metaRows The meta rows.
+     */
     virtual void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
@@ -408,16 +398,14 @@ public:
      *
      * @return The short pretty name as a string.
      */
-
     virtual string pretty_name();
-
 
     /**
      * Process a semantic error encounftered during the post-parse phase.
+     *
+     * @param msg The message.
      */
-
     void pp_error(const string& msg);
-
 
     /**
      * Get the symbol label in the given language.
@@ -428,16 +416,13 @@ public:
      *
      * @return A string.
      */
-
     virtual string label(const LanguageSymbol & language) const;
 
-
     /**
-     * Gets the symbol label in the default language
+     * Gets the symbol label in the default language.
      *
      * @return A string.
      */
-
     string label() const;
 
     /**
@@ -449,7 +434,6 @@ public:
      *
      * @return A string.
      */
-
     virtual string note(const LanguageSymbol & language) const;
 
     /**
@@ -459,18 +443,14 @@ public:
      * with the agent context to create a unique name for symbol table lookup,
      * e.g. 'time' becomes 'Person::time'.
      */
-
     string unique_name;
-
 
     /**
      * The identifier for the symbol (possibly non-unique)
      * 
      * E.g. 'time'.
      */
-
 	string name;
-
 
     /**
      * The declaration location.
@@ -478,28 +458,23 @@ public:
      * Set using location information of syntactic elements (from bison) on object creationduring
      * parsing.
      */
-
     yy::location decl_loc;
-
 
     /**
      * Number of references by other symbols to this Symbol
      * 
      * For debugging purposes.  Maintained by stable_rp() and maintained during symbol morphing.
      */
-
     int reference_count;
 
     /**
-    * Check for existence of symbol with this unique name.
-    *
-    * @param   unm The unique name.
-    *
-    * @return  true if found, else false.
-    */
-
+     * Check for existence of symbol with this unique name.
+     *
+     * @param unm The unique name.
+     *
+     * @return true if found, else false.
+     */
     static bool exists(const string& unm);
-
 
     /**
      * Check for existence of symbol with this member name in agent.
@@ -509,9 +484,7 @@ public:
      *
      * @return true if found, else false.
      */
-
     static bool exists(const string& nm, const Symbol *agent);
-
 
     /**
      * Agent member unique name.
@@ -521,7 +494,6 @@ public:
      *
      * @return The unique name, e.g. "Person::time".
      */
-
     static string symbol_name(const string& nm, const Symbol *agent);
 
     /**
@@ -569,7 +541,6 @@ public:
      *
      * @return null if it fails, else the found symbol.
      */
-
     static Symbol *find_a_symbol(const type_info& cls);
 
     /**
@@ -597,7 +568,6 @@ public:
      */
     static const string token_to_string(const token_type& e);
 
-
     /**
      * Get the token corresponding to a string.
      *
@@ -606,29 +576,26 @@ public:
      * @return The token associated with the string, e.g. token::TK:agent. If the string is not a
      *         token, the special value token::TK_error is returned.
      */
-
     static const token_type string_to_token(const char * s);
 
     /**
-    * Storage size of a fundamental C++ type
-    *
-    * @param tok The token representing the type, eg. token::TK_int
-    *
-    * @return A size_t
-    */
-
+     * Storage size of a fundamental C++ type.
+     *
+     * @param tok The token representing the type, eg. token::TK_int.
+     *
+     * @return A size_t.
+     */
     static const size_t storage_size(token_type tok);
 
-
     /**
-     * Determine fundamental integer storage type which can store a value within the specified limits
+     * Determine fundamental integer storage type which can store a value within the specified
+     * limits.
      *
      * @param min_value The minimum value.
      * @param max_value The maximum value.
      *
      * @return A token_type.
      */
-
     static const token_type optimized_storage_type( long long min_value, long long max_value );
 
     /**
@@ -638,9 +605,7 @@ public:
      *
      * @return The associated accumulator, e.g. token::TK_max.
      */
-
     static const token_type modgen_cumulation_operator_to_acc(const token_type& e);
-
 
     /**
      * Extract increment from Modgen cumulation operator.
@@ -649,9 +614,7 @@ public:
      *
      * @return The associated increment, e.g. token::TK_value_in.
      */
-
     static const token_type modgen_cumulation_operator_to_incr(const token_type& e);
-
 
     /**
      * Populate default symbols in symbol table
@@ -661,9 +624,7 @@ public:
      * with name 'Time'.  By default, the type is double, but this can be overridden by the model
      * developer using the time_type statement in the model source code.
      */
-
     static void populate_default_symbols();
-
 
     /**
      * Invalidate the parse phase symbol table.
@@ -678,10 +639,8 @@ public:
      * because the symbol table pair still exists.  The pointer stored in that reference, however,
      * will be nullptr.
      * 
-     * To examine any symbol by name when debugging the post_parse phase, use the list
-     * pp_symbols.
+     * To examine any symbol by name when debugging the post_parse phase, use the list pp_symbols.
      */
-
     static void invalidate_symbols();
 
     /**
@@ -689,50 +648,42 @@ public:
      * 
      * The pp_symbols list is useful for debugging.
      */
-
     static void populate_pp_symbols();
 
     /**
-    * Perform operations after the parser has parsed all input files.
-    *
-    * This includes validating each symbol and populating post-parse symbol members containing
-    * information on symbol relationships and pointer collections.
-    */
-
+     * Perform operations after the parser has parsed all input files.
+     * 
+     * This includes validating each symbol and populating post-parse symbol members containing
+     * information on symbol relationships and pointer collections.
+     */
     static void post_parse_all();
-
 
     /**
      * Store a C++ style single-line comment for later use.
      *
-     * @param cmt          The comment.
-     * @param [in,out] loc The source code location.
+     * @param cmt The comment.
+     * @param loc The source code location.
      */
-
     static void process_cxx_comment(string cmt, yy::location loc);
-
 
     /**
      * Store a C style comment for later use.
      *
-     * @param cmt          The comment.
-     * @param [in,out] loc The source code location.
+     * @param cmt The comment.
+     * @param loc The source code location.
      */
-
     static void process_c_comment(string cmt, yy::location loc);
-
 
     /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
-     *
-     * For example the tokens for 'agent' and 'table' are outer level keywords,
-     * but the token for 'int' is not.
      * 
+     * For example the tokens for 'agent' and 'table' are outer level keywords, but the token for
+     * 'int' is not.
+     *
      * @param tok The token.
      *
      * @return true if an om outer keyword, false if not.
      */
-
     static bool is_om_outer_keyword(const token_type& tok);
 
     /**
@@ -773,49 +724,44 @@ public:
      * not changed, but the pointer is. That means that references to the Symbol in other objects,
      * which are stored as Symbol &amp;* during parsing, remain valid.
      */
-
     static symbol_map_type symbols;
-
 
     /**
      * The post-parse symbol table.
      * 
-     * Populated after parsing is complete by populate_pp_symbols().
-     * Sorted in lexicographic order by unique_name.  Stored as pairs
-     * with unique_name in first to maek it easy to find a symbol
+     * Populated after parsing is complete by populate_pp_symbols(). Sorted in lexicographic order
+     * by unique_name.  Stored as pairs with unique_name in first to maek it easy to find a symbol
      * when debugging.
      */
-
     static list<symbol_map_value_type> pp_symbols;
 
-
     /**
-    * The fundamental types in the model
-    *
-    * Ex. Time, real
-    * Populated after parsing is complete.
-    */
-
+     * The fundamental types in the model
+     * 
+     * Ex. Time, real Populated after parsing is complete.
+     */
     static list<TypeSymbol *> pp_all_types0;
 
-
     /**
-    * The types in the model implemented using helper template classes
-    *
-    * Ex. classifications, ranges
-    * Populated after parsing is complete.
-    */
-
+     * The types in the model implemented using helper template classes
+     * 
+     * Ex. classifications, ranges Populated after parsing is complete.
+     */
     static list<TypeSymbol *> pp_all_types1;
 
+    /**
+     * The languages in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<LanguageSymbol *> pp_all_languages;
 
     /**
-    * The languages in the model
-    *
-    * Populated after parsing is complete.
-    */
-
-    static list<LanguageSymbol *> pp_all_languages;
+     * The strings in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<StringSymbol *> pp_all_strings;
 
     /**
      * The enumerations in the model
@@ -832,58 +778,53 @@ public:
     static list<EnumerationWithEnumeratorsSymbol *> pp_all_enumerations_with_enumerators;
 
     /**
-    * The agents in the model
-    *
-    * Populated after parsing is complete.
-    */
-
+     * The agents in the model
+     * 
+     * Populated after parsing is complete.
+     */
     static list<AgentSymbol *> pp_all_agents;
 
+    /**
+     * The entity sets in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<EntitySetSymbol *> pp_all_entity_sets;
 
     /**
      * The tables in the model
      * 
      * Populated after parsing is complete.
      */
-
     static list<TableSymbol *> pp_all_tables;
-
 
     /**
      * The parameters in the model
      * 
      * Populated after parsing is complete.
      */
-
     static list<ParameterSymbol *> pp_all_parameters;
-
 
     /**
      * Map of member function qualified names to all identifiers used in the body of the function.
      * 
      * An example entry might be "Person::Mortality" ==> "alive".
      */
-
     static multimap<string, string> memfunc_bodyids;
-
 
     /**
      * A map of all the C++ style single line comments in the model source code, indexed by location
      * 
      * This map is used with other collections to retrieve a comment based on its location.
      */
-
     static comment_map_type cxx_comments;
 
-
     /**
-    * A map of all the C style multi-line comments in the model source code, indexed by location
-    *
-    * This map is used with other collections to retrieve a comment based on its location.
-    */
-
+     * A map of all the C style multi-line comments in the model source code, indexed by location
+     * 
+     * This map is used with other collections to retrieve a comment based on its location.
+     */
     static comment_map_type c_comments;
-
 
     /**
      * Map from a token to the preferred string representation of that token.
@@ -895,9 +836,7 @@ public:
      *
      * @return The token string.
      */
-
     static unordered_map<token_type, string, std::hash<int> > token_string;
-
 
     /**
      * Map from a string to the token associated with that string.
@@ -909,9 +848,7 @@ public:
      * string_to_token, this map is populated using all entries in the reciprocal map @a
      * token_string.
      */
-
     static unordered_map<string, token_type> string_token;
-
 
     /**
      * The list of om outer keywords.
@@ -922,9 +859,7 @@ public:
      *
      * @return The om outer keywords.
      */
-
     static unordered_set<token_type, std::hash<int> > om_outer_keywords;
-
 
     /**
      * The list of om developer functions.
@@ -933,14 +868,11 @@ public:
      * are supplied by the om developer in the model source code.  An example is the 'Simulation'
      * function.
      */
-
     static unordered_set<string> om_developer_functions;
-
 
     /**
      * A count of errors identified during post-parse processing.
      */
-
     static int post_parse_errors;
 
 };
