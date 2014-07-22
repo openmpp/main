@@ -421,6 +421,9 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
         string full_name = *it;
         try {
             theLog->logFormatted("Parsing %s", full_name.c_str());
+            string normalized_full_name = replaceAll(full_name, "\\", "/");
+            *markup_stream << "#line 1 \"" << normalized_full_name << "\"" << endl;
+
             // create new instance of parser-scanner driver for each source file
             Driver drv( pc );
             drv.trace_scanning = false; // set to true to see detailed scanning actions

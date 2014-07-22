@@ -256,7 +256,7 @@ blank       [ \t\r]
                 pc.comment_body += yytext;
 
 				/* markup file - output newlines to maintain validity of #line directives */
-				if ( yy_top_state() == cxx_outside || yy_top_state() == cxx_inside ) *drv.outside << yytext;
+				*drv.outside << yytext;
 			}
 
 "*"+"/"     {
@@ -281,8 +281,8 @@ blank       [ \t\r]
 				/* step over blanks in location tracking */
 				yylloc->step();
 
-				/* mark-up file - output a single space for syntactic significance */
-				if ( YY_START == cxx_outside || YY_START == cxx_inside ) *drv.outside << " ";
+				/* mark-up file - output whitespace in C++ for syntactic significance */
+				if ( YY_START == cxx_outside || YY_START == cxx_inside ) *drv.outside << yytext;
 			}
 
 [\n]+       {
@@ -291,7 +291,7 @@ blank       [ \t\r]
 				yylloc->step();
 
                 /* mark-up file - output newlines to maintain validity of #line directives */
-				if ( YY_START == cxx_outside || YY_START == cxx_inside ) *drv.outside << yytext;
+				*drv.outside << yytext;
 			}
 
 "//".*\n    {
@@ -310,8 +310,8 @@ blank       [ \t\r]
 
                 Symbol::process_cxx_comment(pc.comment_body, pc.comment_location);
 
-				/* mark-up file - output newline to maintain validity of #line directives */
-				if ( YY_START == cxx_outside || YY_START == cxx_inside ) *drv.outside << "\n";
+				/* mark-up file - output newline to maintain validity of #line directives (remove comment) */
+				*drv.outside << "\n";
 			}
 }
 
