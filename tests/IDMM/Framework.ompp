@@ -13,11 +13,33 @@ use "time_based/time_based_modgen.ompp";
 void StartSimulation(int id)
 {
     BaseAgent::global_time = 0;
-    for (int nJ = 0; nJ < StartingPopulationSize; nJ++)
-    {
-        Person *paPerson = new Person();
-        paPerson->Start();
-    }
+
+	// Create the single ticker actor
+	Ticker *prTicker = new Ticker();
+	prTicker->Start();
+
+	// Create the Host actors
+	for ( int nJ = 0; nJ < NumberOfHosts; nJ++ ) 
+	{
+		Host *prHost = new Host();
+		prHost->Start();
+	}
+
+	int nHosts = asAllHosts->Count();
+	for ( int nJ = 0; nJ < nHosts; nJ++ ) 
+	{
+		Host *prHost = asAllHosts->Item( nJ );
+		for (int nK = 0; nK < ContactsOutPerHost; nK++ ) 
+		{
+			// Choose a host randomly from all hosts
+			Host *prContact = asAllHosts->GetRandom( RandUniform(3) );
+			// Add it to the outgoing contacts link.
+			// Note that if the contact happens to already be a contact, it will not be added.
+			// That's because Modgen links can contain no duplicates.
+			// Modgen links are like mathematical sets.
+			prHost->mlContactsOut->Add( prContact );
+		}
+	}
 }
 
 void EndSimulation()
