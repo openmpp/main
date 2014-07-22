@@ -87,7 +87,7 @@ void TableSymbol::post_parse(int pass)
                     pp_error("'" + sym->name + "' is not an agentvar in dimension of table '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
-                auto es = dynamic_cast<EnumerationSymbol *>(avs->data_type);
+                auto es = dynamic_cast<EnumerationSymbol *>(pp_symbol(avs->data_type));
                 if (!es) {
                     pp_error("The datatype of '" + avs->name + "' must be an enumeration type");
                     continue; // don't insert invalid type in dimension list
@@ -283,7 +283,7 @@ void TableSymbol::build_body_update_cell()
     // build an unwound loop of code
     int dim = 0;
     for (auto av : pp_dimension_list_agentvar ) {
-        auto es = dynamic_cast<EnumerationSymbol *>(av->data_type);
+        auto es = dynamic_cast<EnumerationSymbol *>(av->pp_data_type);
         assert(es); // integrity check guarantee
         c += "";
         c += "// dimension=" + to_string(dim) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
@@ -417,7 +417,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // dimensions for table
     int dim = 0;
     for (auto av : pp_dimension_list_agentvar ) {
-        auto es = dynamic_cast<EnumerationSymbol *>(av->data_type);
+        auto es = dynamic_cast<EnumerationSymbol *>(av->pp_data_type);
         assert(es); // integrity check guarantee
         TableDimsRow tableDims;
         tableDims.tableId = pp_table_id;

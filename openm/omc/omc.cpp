@@ -428,7 +428,8 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             string file_ext = getFileNameExt(full_name);
             string file_stem = getFileNameStem(full_name);
             string file_name = file_stem + file_ext;
-            drv.parse(&full_name, file_name, file_stem, markup_stream);
+            // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
+            drv.parse(&*it, file_name, file_stem, markup_stream);
         }
         catch(exception & ex) {
             theLog->logErr(ex);
