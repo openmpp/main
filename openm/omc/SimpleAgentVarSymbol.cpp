@@ -38,6 +38,7 @@ CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent()
     // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
     h += "SimpleAgentVar<" 
         + pp_data_type->name + ", "
+        + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name 
         + ">";

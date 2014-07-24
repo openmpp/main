@@ -11,7 +11,7 @@ parameters {
     int SimulationSeed;
 
     //EN Simulation end time
-    double SimulationEnd;
+    Time SimulationEnd;
 };
 
 #include "omc/omSimulation.h"
@@ -140,7 +140,7 @@ void RunModel(IModel * i_model)
     int samples = i_model->subSampleCount();
     int sample = i_model->subSampleNumber();
     int seed = SimulationSeed;
-    double simulation_end = SimulationEnd;
+    Time simulation_end = SimulationEnd;
 
     // for sample numbers greater than 40, re-use generators cyclically
     case_seed = seed + sample;

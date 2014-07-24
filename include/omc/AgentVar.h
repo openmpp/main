@@ -15,21 +15,29 @@ using namespace std;
 /**
  * Base template for agentvars.
  * 
- * The return value casting operator is implemented in AgentVar, so C++ code can use the agentvar
- * in expressions. No assignment operators are implemented, making agentvars declared using AgentVar
- * read-only. Side-effects are evaluated if a call to set() changes the value.
+ * The return value casting operator is implemented in AgentVar, so C++ code can use the
+ * agentvar in expressions. No assignment operators are implemented, making agentvars declared
+ * using AgentVar read-only. Side-effects are evaluated if a call to set() changes the value.
  *
- * @tparam T            Generic type parameter.
+ * @tparam T            Type being wrapped
+ * @tparam T2           Type of the type being wrapped (e.g. range has inner type int).
  * @tparam A            Type of containing agent.
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
-template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
+template<typename T, typename T2, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
 class AgentVar 
 {
 public:
     // ctor
-    explicit AgentVar()
+    AgentVar()
     {
+    }
+
+    // 1-argument ctor for creating r-values for assignment to 'real' AgentVar's in Agent
+    AgentVar(T assign_value)
+    {
+        // N.B. no side-effects
+        value = assign_value;
     }
 
     // initialization
@@ -41,15 +49,20 @@ public:
     // operator: cast to T (use agentvar containing fundamental type)
     operator T()
     {
-        return get();
+        return (T) get();
     }
 
-    // member template to pass conversion inwards to the contained class to do the cast
-    template<typename T1>
-    operator T1()
+    operator T2()
     {
-        return (T1)get();
+        return (T2) get();
     }
+
+    // member template to pass conversion inwards to the contained type to do the cast
+    //template<typename T1>
+    //operator T1()
+    //{
+    //    return (T1)get();
+    //}
 
     // get pointer to containing agent
     A *agent()
@@ -88,8 +101,8 @@ public:
  * in the agent.  Agentvars do not contain a pointer to the continaing agent because the memory
  * cost would be prohibitive for simulations with many agents containing many agentvars.
  */
-template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value)>
-size_t AgentVar<T, A, side_effects>::offset_in_agent = 0;
+template<typename T, typename T2, typename A, void (A::*side_effects)(T old_value, T new_value)>
+size_t AgentVar<T, T2, A, side_effects>::offset_in_agent = 0;
 
 /**
  * Template for simple agentvars.
@@ -101,12 +114,24 @@ size_t AgentVar<T, A, side_effects>::offset_in_agent = 0;
  * @tparam A            Type of containing agent.
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
-template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
-class SimpleAgentVar : public AgentVar<T, A, side_effects>
+template<typename T, typename T2, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
+class SimpleAgentVar : public AgentVar<T, T2, A, side_effects>
 {
 public:
 
-    // operator: direct assignment
+    // ctor
+    SimpleAgentVar()
+    {
+    }
+
+    // operator: copy assignment
+    SimpleAgentVar& operator=(const SimpleAgentVar & other)
+    {
+        this->set( other.get() );
+        return *this;
+    }
+
+    // operator: direct assignment of wrapped type
     SimpleAgentVar& operator=( T new_value )
     {
         this->set( new_value );
@@ -237,8 +262,8 @@ public:
  * @tparam side_effects       Function implementing assignment side effects (constant).
  * @tparam expression         Function implementing expression evaluation (constant).
  */
-template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value), T (A::*expression)()>
-class ExpressionAgentVar : public AgentVar<T, A, side_effects>
+template<typename T, typename T2, typename A, void (A::*side_effects)(T old_value, T new_value), T (A::*expression)()>
+class ExpressionAgentVar : public AgentVar<T, T2, A, side_effects>
 {
 public:
     // evaluate expression and update
@@ -261,8 +286,8 @@ public:
  * @tparam side_effects Function implementing assignment side effects (constant).
  * @tparam condition    Function implementing the condition (constant).
  */
-template<typename T, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr , bool (A::*condition)() = nullptr>
-class DurationAgentVar : public AgentVar<T, A, side_effects>
+template<typename T, typename T2, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr , bool (A::*condition)() = nullptr>
+class DurationAgentVar : public AgentVar<T, T2, A, side_effects>
 {
 public:
     // update duration 
@@ -301,8 +326,8 @@ public:
  * @tparam B            Type of the agent in the link, e.g. Thing
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
-template<typename T, typename A, typename B, void (A::*side_effects)(T old_value, T new_value) = nullptr>
-class LinkAgentVar : public AgentVar<T, A, side_effects>
+template<typename T, typename T2, typename A, typename B, void (A::*side_effects)(T old_value, T new_value) = nullptr>
+class LinkAgentVar : public AgentVar<T, T2, A, side_effects>
 {
 public:
 

@@ -27,6 +27,12 @@ public:
     {
     }
 
+    // conversion to pointer
+    operator A*() const
+    {
+        return get();
+    }
+
     A *get() const
     {
         return ptr;

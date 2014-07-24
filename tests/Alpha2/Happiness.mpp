@@ -20,6 +20,8 @@ actor Person            //EN Individual
 	//EN Happy
 	logical happy = { TRUE };
 
+    TIME my_first_happy_time = { TIME_INFINITE };
+
 	//EN Happiness reversal event
 	event timeHappinessReversalEvent, HappinessReversalEvent;	//EN Happiness reversal event
 
@@ -44,6 +46,9 @@ void Person::HappinessReversalEvent()
 		// stop playing if unhappy
 		playing = FALSE;
 	}
+    if (happy && my_first_happy_time == TIME_INFINITE) {
+        my_first_happy_time = time;
+    }
 }
 
 

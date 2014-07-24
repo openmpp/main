@@ -30,15 +30,28 @@ bool TypeSymbol::numeric_or_bool()
 
 bool TypeSymbol::is_enumeration()
 {
-    if (dynamic_cast<NumericSymbol *>(this)) {
-        return false;
+    if (dynamic_cast<ClassificationSymbol *>(this)
+     || dynamic_cast<BoolSymbol *>(this)
+     || dynamic_cast<RangeSymbol *>(this)
+     || dynamic_cast<PartitionSymbol *>(this)) {
+        return true;
     }
     else {
-        assert(dynamic_cast<ClassificationSymbol *>(this)
-            || dynamic_cast<BoolSymbol *>(this)
-            || dynamic_cast<RangeSymbol *>(this)
-            || dynamic_cast<PartitionSymbol *>(this)); // grammar guarantee
-        return true;
+        return false;
+    }
+}
+
+string TypeSymbol::wrapped_type()
+{
+    if (dynamic_cast<ClassificationSymbol *>(this)
+     || dynamic_cast<RangeSymbol *>(this)
+     || dynamic_cast<PartitionSymbol *>(this)) {
+        auto es = dynamic_cast<EnumerationSymbol *>(this);
+        assert(es);
+        return (Symbol::token_to_string(es->storage_type));
+    }
+    else {
+        return "void";
     }
 }
 

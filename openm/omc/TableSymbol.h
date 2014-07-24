@@ -49,9 +49,8 @@ public:
     }
 
     /**
-     * Create auxiliary symbols associated with this table.
+     * Create auxiliary symbols associated with this symbol.
      */
-
     void create_auxiliary_symbols();
 
     void post_parse(int pass);
@@ -63,30 +62,25 @@ public:
     /**
      * Builds the function body of the update_cell function.
      */
-
     void build_body_update_cell();
 
     /**
      * Builds the function body of the prepare_increment function.
      */
-
     void build_body_prepare_increments();
 
     /**
      * Builds the function body of the process_increment function.
      */
-
     void build_body_process_increments();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
-
 
     /**
      * The rank of the table.
      *
      * @return An int.
      */
-
     int rank();
 
     /**
@@ -94,101 +88,79 @@ public:
      *
      * @return An int.
      */
-
     int cell_count();
 
     /**
-    * Reference to pointer to agent.
-    *
-    * Stable to symbol morphing during parse phase.
-    */
-
+     * Reference to pointer to agent.
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
     Symbol*& agent;
 
-
     /**
-    * Direct pointer to agent.
-    *
-    * Set post-parse for convenience.
-    */
-
+     * Direct pointer to agent.
+     * 
+     * For use post-parse.
+     */
     AgentSymbol *pp_agent;
-
 
     /**
      * The agentvar which will hold the active index into the table.
      */
-
     AgentInternalSymbol *cell;
 
     /**
      * The agent function which updates the active cell index using agentvars.
      */
-
     AgentFuncSymbol *update_cell_fn;
-
 
     /**
      * The agent function which prepares the increment for the active table cell.
      */
-
     AgentFuncSymbol *prepare_increments_fn;
-
 
     /**
      * The agent function which processes the increment for the active table cell.
      */
-
     AgentFuncSymbol *process_increments_fn;
-
 
     /**
      * The expression agentvar of the table filter.
      */
-
     IdentityAgentVarSymbol *filter;
 
     /**
      * List of dimensions (parse phase references to pointers)
      */
-
     list<Symbol **> dimension_list;
 
     /**
      * List of dimensions (post-parse phase pointers)
      */
-
     list<AgentVarSymbol *> pp_dimension_list_agentvar;
-
 
     /**
      * List of dimensions (post-parse phase pointers)
      */
-
     list<EnumerationSymbol *> pp_dimension_list_enum;
 
     /**
-    * The expressions in the table
-    */
-
+     * The expressions in the table.
+     */
     list<TableExpressionSymbol *> pp_expressions;
 
     /**
-    * The agentvars used in all expressions in the table
-    */
-
+     * The agentvars used in all expressions in the table.
+     */
     list<TableAnalysisAgentVarSymbol *> pp_table_agentvars;
 
     /**
-    * The accumulators used in all expressions in the table
-    */
-
+     * The accumulators used in all expressions in the table.
+     */
     list<TableAccumulatorSymbol *> pp_accumulators;
 
     /**
-    * Numeric identifier.
-    * Used for communicating with metadata API.
-    */
-
+     * Numeric identifier. Used for communicating with metadata API.
+     */
     int pp_table_id;
 };

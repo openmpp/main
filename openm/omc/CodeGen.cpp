@@ -20,13 +20,13 @@ using namespace openm;
 
 void CodeGen::do_all()
 {
-
 	do_preamble();
 
 	do_types();
 	do_parameters();
 	do_tables();
 	do_agents();
+	do_entity_sets();
     do_event_queue();
 
     h += "void StartSimulation(int id);";
@@ -287,6 +287,14 @@ void CodeGen::do_agents()
 	    h += "// function members in " + agent->name + " agent";
 	    h += "//";
 	    h += "";
+
+	    h += "// operator overload for entity comparison based on entity_id";
+        h += "bool operator< ( " + agent->name + " & rhs )";
+        h += "{";
+        h += "return entity_id < rhs.entity_id;";
+        h += "}";
+	    h += "";
+
         for ( auto func_member : agent->pp_agent_funcs ) {
             h += func_member->cxx_declaration_agent();
             c += func_member->cxx_definition_agent();
@@ -329,6 +337,22 @@ void CodeGen::do_agents()
 
 }
 
+void CodeGen::do_entity_sets()
+{
+    if (Symbol::pp_all_entity_sets.size() > 0) {
+	    h += "// entity sets";
+	    c += "// entity sets";
+
+	    for ( auto es : Symbol::pp_all_entity_sets ) {
+            h += es->cxx_declaration_global();
+            c += es->cxx_definition_global();
+        }
+
+	    h += "";
+	    c += "";
+    }
+}
+
 void CodeGen::do_tables()
 {
 	h += "// model output tables";
@@ -359,7 +383,7 @@ void CodeGen::do_event_queue()
 void CodeGen::do_RunModel()
 {
 	// agents.cpp
-	c += "// Model simulation (implemented in omSimulation_casebased.cpp or omSimulation_timebased.cpp)";
+	c += "// Model simulation (implemented in framework module, usually from a 'use' instruction)";
 	c += "extern void RunModel(IModel * i_model);";
     c += "";
 }

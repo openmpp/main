@@ -116,6 +116,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_extend_parameter "extend_parameter"
 %token <val_token>    TK_hide           "hide"
 %token <val_token>    TK_import         "import"
+%token <val_token>    TK_index_type     "index_type"
 %token <val_token>    TK_integer_type   "integer_type"
 %token <val_token>    TK_languages      "languages"
 %token <val_token>    TK_link           "link"
@@ -514,6 +515,7 @@ ompp_declarative_island:
 	| decl_real_type        { pc.InitializeForCxx(); }
 	| decl_counter_type     { pc.InitializeForCxx(); }
 	| decl_integer_type     { pc.InitializeForCxx(); }
+	| decl_index_type       { pc.InitializeForCxx(); }
 	| decl_version          { pc.InitializeForCxx(); }
     | decl_classification   { pc.InitializeForCxx(); }
     | decl_partition        { pc.InitializeForCxx(); }
@@ -677,6 +679,14 @@ decl_integer_type:
                             sym->decl_loc = @$;
                         }
     | "integer_type" error ";"
+    ;
+
+decl_index_type:
+      "index_type" cxx_unsigned_integral_type[type_to_use] ";"
+                        {
+                            // Recognize in grammar but ignore
+                        }
+    | "index_type" error ";"
     ;
 
 decl_model_type:
@@ -1226,6 +1236,12 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarTernaryOp( $cond, $first, $second );
                         }
+    | decl_type_part[type] "("[op] expr_for_agentvar[arg] ")"
+                        {
+                            // function-style cast
+	                        auto type = new ExprForAgentVarSymbol( $type );
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, type, $arg );
+                        }
     | "(" expr_for_agentvar[expr] ")"
                         {
 	                        $result = $expr;
@@ -1365,7 +1381,7 @@ decl_entity_set:
       "entity_set" SYMBOL[agent] SYMBOL[entity_set]
                         {
                             // morph existing symbol to EntitySetSymbol
-                            auto *sym = new EntitySetSymbol( $entity_set, @entity_set );
+                            auto *sym = new EntitySetSymbol( $entity_set, $agent, @entity_set );
                         }
             entity_set_dimension_list_opt entity_set_filter_opt ";"
     | "entity_set" error ";"

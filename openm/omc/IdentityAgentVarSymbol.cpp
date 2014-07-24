@@ -171,11 +171,21 @@ string IdentityAgentVarSymbol::cxx_expression(const ExprForAgentVar *node)
     else if (binary_op != nullptr) {
         assert(binary_op->left); // grammar guarantee
         assert(binary_op->right); // grammar guarantee
-        result = "("
-            + cxx_expression(binary_op->left)
-            + " " + token_to_string(binary_op->op) + " "
-            + cxx_expression(binary_op->right)
-            + ")";
+        if (binary_op->op == token::TK_LEFT_PAREN) {
+            // function-style cast or call
+            result = cxx_expression(binary_op->left)
+                + "("
+                + cxx_expression(binary_op->right)
+                + ")";
+        }
+        else {
+            // infix binary operator
+            result = "("
+                + cxx_expression(binary_op->left)
+                + " " + token_to_string(binary_op->op) + " "
+                + cxx_expression(binary_op->right)
+                + ")";
+        }
     }
     else if (ternary_op != nullptr) {
         assert(ternary_op->cond); // grammar guarantee
@@ -198,7 +208,7 @@ void IdentityAgentVarSymbol::build_body_expression()
 {
     CodeBlock& c = expression_fn->func_body;
 
-    c += name + ".set( " + cxx_expression(root) + " );";
+    c += name + ".set(" + cxx_expression(root) + ");";
 }
 
 
@@ -210,7 +220,9 @@ CodeBlock IdentityAgentVarSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
-    h += "AgentVar<" + pp_data_type->name + ", "
+    h += "AgentVar<"
+        + pp_data_type->name + ", "
+        + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name + ">";
     h += name + ";";

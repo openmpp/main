@@ -89,7 +89,9 @@ CodeBlock ConditionedDurationAgentVarSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     // example:         DurationAgentVar<Time, Person, &om_duration_alive_true_offset, &Person::om_duration_alive_true_side_effects, &Person::om_duration_alive_true_condition> om_duration
-    h += "DurationAgentVar<" + pp_data_type->name + ", "
+    h += "DurationAgentVar<"
+        + pp_data_type->name + ", "
+        + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + "&" + condition_fn->unique_name + ">";

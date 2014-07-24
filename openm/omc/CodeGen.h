@@ -48,6 +48,7 @@ public:
 	void do_types();
 	void do_parameters();
 	void do_agents();
+	void do_entity_sets();
 	void do_tables();
 	void do_event_queue();
 	void do_ModelStartup();

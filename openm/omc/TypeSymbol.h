@@ -66,6 +66,13 @@ public:
     bool is_enumeration();
 
     /**
+     * Gets the wrapped type.
+     *
+     * @return The wrapped type, e.g. "int".  If none, returns "void"..
+     */
+    string wrapped_type();
+
+    /**
      * Identifier for the type.
      */
     int type_id;

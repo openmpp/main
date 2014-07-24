@@ -146,7 +146,7 @@ public:
         link<B>	next_lnk = nullptr;
 
         *next_pos = -1;
-        for ( index = start; index < storage.size(); ++index ) {
+        for ( index = start; index < (int)storage.size(); ++index ) {
             lnk = storage[index];
             if ( lnk != nullptr ) {
                 next_lnk = lnk;

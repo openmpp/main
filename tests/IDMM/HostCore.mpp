@@ -136,7 +136,7 @@ link	Host.mlContactsOut[]		//EN Outgoing social contacts
 void Host::Infect()
 {
 	disease_next_phase = DP_LATENT;
-	disease_next_phase_time = time;
+	disease_next_phase_time = 0 + time;
 }
 
 
@@ -146,8 +146,8 @@ void Host::Infect()
 */
 void Host::Start()
 {
-	time = (TIME) 0;
-	age = 0;
+	time = (Time) 0;
+	age = 0.0;
 
 	// Infect a few Hosts
 	if ( InitialDiseasePrevalence > RandUniform(5) ) 

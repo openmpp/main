@@ -79,7 +79,9 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
         reciprocal_agent = reciprocal_multilink->pp_agent;
     }
 
-    h += "LinkAgentVar<" + pp_data_type->name + ", "
+    h += "LinkAgentVar<"
+        + pp_data_type->name + ", "
+        + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "
         + reciprocal_agent->name + ", "
         + "&" + side_effects_fn->unique_name + "> ";

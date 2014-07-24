@@ -219,7 +219,9 @@ CodeBlock MultilinkAgentVarSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += "AgentVar<" + pp_data_type->name + ", "
+    h += "AgentVar<" 
+        + pp_data_type->name + ", "
+        + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "
         + "&" + side_effects_fn->unique_name + ">";
     h += name + ";";

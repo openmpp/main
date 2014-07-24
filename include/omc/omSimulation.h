@@ -15,6 +15,7 @@
 #include "omc/AgentVar.h"
 #include "omc/Event.h"
 #include "omc/Multilink.h"
+#include "omc/EntitySet.h"
 #include "om_types1.h" // model-specific types
 #include "libopenm/omModel.h"
 #include "om_declarations.h" // model-specific classes
@@ -46,6 +47,8 @@
 #define WriteDebugLogEntry printf
 #define GetCaseSample() 0
 #define case_id 0
+#define StartEventTrace() 0
+#define StopEventTrace() 0
 
 namespace openm {
 

@@ -8,6 +8,8 @@
 #pragma once
 #include "Symbol.h"
 
+class CodeBlock;
+
 /**
 * EntitySetSymbol.
 *
@@ -25,10 +27,29 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    EntitySetSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    EntitySetSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
+        , agent(agent->stable_rp())
     {
     }
 
     void post_parse(int pass);
+
+    CodeBlock cxx_declaration_global();
+
+    CodeBlock cxx_definition_global();
+
+    /**
+     * Reference to pointer to agent.
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
+    Symbol*& agent;
+
+    /**
+     * Direct pointer to agent.
+     * 
+     * For use post-parse.
+     */
+    AgentSymbol *pp_agent;
 };

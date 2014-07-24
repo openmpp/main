@@ -34,13 +34,11 @@ class ExprForAgentVarUnaryOp : public ExprForAgentVar {
 public:
 
     /**
-     * Constructor for a unary operator in a table expression tree.
+     * Constructor for a unary operator in an agentvar expression tree.
      *
-     * @param   op      The token for the binary operator, e.g. token::TK_PLUS.
-     * @param   left    The left argument.
+     * @param   op      The token for the unary operator, e.g. token::TK_MINUS.
      * @param   right   The right argument.
      */
-
 	ExprForAgentVarUnaryOp(token_type op, ExprForAgentVar *right)
 	    : op ( op )
 	    , right ( right )
@@ -55,13 +53,12 @@ class ExprForAgentVarBinaryOp : public ExprForAgentVar {
 public:
 
     /**
-     * Constructor for a binary operator in an agenvar expression tree.
+     * Constructor for a binary operator in an agentvar expression tree.
      *
      * @param   op      The token for the binary operator, e.g. token::TK_PLUS.
      * @param   left    The left argument.
      * @param   right   The right argument.
      */
-
 	ExprForAgentVarBinaryOp(token_type op, ExprForAgentVar *left, ExprForAgentVar *right)
 	    : op ( op )
 	    , left ( left )
@@ -80,11 +77,10 @@ public:
     /**
      * Constructor for the ternary operator in an agentvar expression tree.
      *
-     * @param op             The token for the binary operator, e.g. token::TK_PLUS.
-     * @param [in,out] left  The left argument.
-     * @param [in,out] right The right argument.
+     * @param [in,out] cond   The condition argumnet of the C ternary opertor.
+     * @param [in,out] first  The result if true.
+     * @param [in,out] second The result if false.
      */
-
 	ExprForAgentVarTernaryOp(ExprForAgentVar *cond, ExprForAgentVar *first, ExprForAgentVar *second)
 	    : cond ( cond )
 	    , first ( first )
@@ -104,7 +100,6 @@ public:
      * Constructor for a symbol (terminal) in an agentvar expression tree.
      *
      */
-
 	ExprForAgentVarSymbol(const Symbol *symbol)
 	    : symbol ( symbol->stable_rp() )
         , pp_symbol ( nullptr )
@@ -123,7 +118,6 @@ public:
      *
      * @param constant 
      */
-
 	ExprForAgentVarLiteral(const Literal *constant)
 	    : constant (constant)
     {
