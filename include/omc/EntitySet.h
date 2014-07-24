@@ -74,6 +74,16 @@ public:
     {
     }
 
+    void insert(T * entity)
+    {
+        entities.insert(entity);
+    }
+
+    void erase(T * entity)
+    {
+        entities.erase(entity);
+    }
+
 private:
     // storage - a set of entities, ordered by entity_id
     set<T *, less_deref<T *> > entities;

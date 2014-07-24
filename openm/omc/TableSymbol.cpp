@@ -76,6 +76,7 @@ void TableSymbol::post_parse(int pass)
             // Add this table to the agent's list of tables
             pp_agent->pp_agent_tables.push_back(this);
 
+            // The following block of code is identical in EntitySetSymbol and TableSymbol
             // validate dimension list
             // and populate the post-parse version
             for (auto psym : dimension_list) {
@@ -84,12 +85,12 @@ void TableSymbol::post_parse(int pass)
                 assert(sym); // grammar guarantee
                 auto avs = dynamic_cast<AgentVarSymbol *>(sym);
                 if (!avs) {
-                    pp_error("'" + sym->name + "' is not an agentvar in dimension of table '" + name + "'");
+                    pp_error("'" + sym->name + "' is not an agentvar in dimension of '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
                 auto es = dynamic_cast<EnumerationSymbol *>(pp_symbol(avs->data_type));
                 if (!es) {
-                    pp_error("The datatype of '" + avs->name + "' must be an enumeration type");
+                    pp_error("The datatype of '" + avs->name + "' must be an enumeration type in dimension of '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
                 pp_dimension_list_agentvar.push_back(avs);
@@ -101,12 +102,13 @@ void TableSymbol::post_parse(int pass)
         break;
     case ePopulateDependencies:
         {
+            // The following block of code is almost identical in EntitySetSymbol and TableSymbol
             // construct function bodies
             build_body_update_cell();
             build_body_prepare_increments();
             build_body_process_increments();
 
-            // Dependency on change in table index agentvars
+            // Dependency on change in index agentvars
             for (auto av : pp_dimension_list_agentvar) {
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += "// cell change in table " + name;
@@ -127,7 +129,7 @@ void TableSymbol::post_parse(int pass)
             // Dependency on table filter
             if (filter) {
                 CodeBlock& c = filter->side_effects_fn->func_body;
-                c += "// filter change in table " + name;
+                c += "// filter change in " + name;
                 c += "if (om_active) {";
                 c += "if (new_value) {";
                 c += "// filter changed from false to true";
@@ -264,6 +266,7 @@ CodeBlock TableSymbol::cxx_definition_global()
     return c;
 }
 
+// The following function definition is identical in EntitySetSymbol and TableSymbol
 void TableSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
@@ -271,8 +274,8 @@ void TableSymbol::build_body_update_cell()
     int rank = pp_dimension_list_enum.size();
 
     if (rank == 0) {
-        // short version for rank 0 tables
-        c += "// only a single cell in rank 0 tables";
+        // short version for rank 0
+        c += "// only a single cell if rank 0";
         c += cell->name + " = 0;" ;
         return;
     }
@@ -371,11 +374,13 @@ void TableSymbol::build_body_process_increments()
     }
 }
 
+// The following function definition is identical in EntitySetSymbol and TableSymbol
 int TableSymbol::rank()
 {
     return pp_dimension_list_agentvar.size();
 }
 
+// The following function definition is identical in EntitySetSymbol and TableSymbol
 int TableSymbol::cell_count()
 {
     int cells = 1;

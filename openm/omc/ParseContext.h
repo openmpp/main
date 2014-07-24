@@ -35,6 +35,7 @@ public:
         , redeclaration(false)
         , agent_context (nullptr)
         , table_context (nullptr)
+        , entity_set_context (nullptr)
         , classification_context(nullptr)
         , partition_context(nullptr)
         , parameter_context(nullptr)
@@ -73,6 +74,17 @@ public:
     {
         assert(table_context);  // grammar/logic guarantee that requests only occur in valid table context
         return table_context;
+    }
+
+    void set_entity_set_context( EntitySetSymbol *entity_set )
+    {
+        entity_set_context = entity_set;
+    }
+
+    EntitySetSymbol * get_entity_set_context( )
+    {
+        assert(entity_set_context);  // grammar/logic guarantee that requests only occur in valid entity set context
+        return entity_set_context;
     }
 
     void set_classification_context(Symbol *classification)
@@ -141,6 +153,7 @@ public:
         next_word_is_string = false;
         agent_context = nullptr;
         table_context = nullptr;
+        entity_set_context = nullptr;
         classification_context = nullptr;
         partition_context = nullptr;
         parameter_context = nullptr;
@@ -277,6 +290,14 @@ private:
      * the table has already been morphed to a TableSymbol if not already done.
      */
 	TableSymbol *table_context;
+
+    /**
+     * entity set context for symbols in entity set declaration
+     * 
+     * Safe to use direct pointers, since context guarantess that we are in an entity set declaration, so
+     * the entity set has already been morphed to a EntitySetSymbol if not already done.
+     */
+	EntitySetSymbol *entity_set_context;
 
     /**
      * classification context for contained symbols

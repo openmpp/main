@@ -1377,11 +1377,27 @@ link_symbol:
  * entity_set
  */
 
-decl_entity_set:
+decl_entity_set: // Some code for decl_entity_set and decl_table is nearly identical
       "entity_set" SYMBOL[agent] SYMBOL[entity_set]
                         {
-                            // morph existing symbol to EntitySetSymbol
-                            auto *sym = new EntitySetSymbol( $entity_set, $agent, @entity_set );
+                            EntitySetSymbol *entity_set = nullptr;
+
+                            if ($entity_set->is_base_symbol()) {
+                                // Morph Symbol to EntitySetSymbol
+                                entity_set = new EntitySetSymbol( $entity_set, $agent, @entity_set );
+                                assert(entity_set);
+                                $entity_set = entity_set;
+                            }
+                            else {
+                                // re-declaration
+                                pc.redeclaration = true;
+                                entity_set = dynamic_cast<EntitySetSymbol *>($entity_set);
+                                assert(entity_set); // grammar/logic guarantee
+                                // TODO Raise error?
+                            }
+                            // Set agent context and entity set context for body of entity set declaration
+                            pc.set_agent_context( $agent );
+                            pc.set_entity_set_context( entity_set );
                         }
             entity_set_dimension_list_opt entity_set_filter_opt ";"
     | "entity_set" error ";"
@@ -1400,12 +1416,20 @@ entity_set_dimension_list:
 entity_set_dimension:
       "[" SYMBOL[agentvar] "]"
                         {
+                            // add $agentvar to entity set's dimension_list
+                            pc.get_entity_set_context()->dimension_list.push_back($agentvar->stable_pp());
                         }
     ;
 
 entity_set_filter_opt:
     "filter" expr_for_agentvar[root]
                         {
+                            EntitySetSymbol *entity_set = pc.get_entity_set_context();
+                            // create an expression agentvar for the filter
+                            auto eav = new IdentityAgentVarSymbol("om_" + entity_set->name + "_filter", entity_set->agent, BoolSymbol::find(), $root, @root);
+                            assert(eav); // out of memory check
+                            // note expression agentvar in entity set
+                            entity_set->filter = eav;
                         }
     | /* nothing */
     ;
@@ -1414,7 +1438,7 @@ entity_set_filter_opt:
  * table
  */
 
-decl_table:
+decl_table: // Some code for decl_entity_set and decl_table is nearly identical
       "table" SYMBOL[agent] SYMBOL[table] // Note that the symbol 'table' is not created in agent context
                         {
                             TableSymbol *table = nullptr;
@@ -1426,7 +1450,7 @@ decl_table:
                                 $table = table;
                             }
                             else {
-                                // table re-declaration
+                                // re-declaration
                                 pc.redeclaration = true;
                                 table = dynamic_cast<TableSymbol *>($table);
                                 assert(table); // grammar/logic guarantee
