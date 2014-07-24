@@ -14,6 +14,7 @@
 #include "IdentityAgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"
 #include "AgentMultilinkSymbol.h"
+#include "EntitySetSymbol.h"
 #include "TableSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
@@ -129,6 +130,24 @@ void AgentSymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The om_initialize_entity_sets member function
+    {
+        assert(nullptr == initialize_entity_sets_fn); // initialization guarantee
+        initialize_entity_sets_fn = new AgentFuncSymbol("om_initialize_entity_sets", this);
+        assert(initialize_entity_sets_fn); // out of memory check
+        initialize_entity_sets_fn->doc_block = doxygen_short("Insert the entity in each entity set when it enters the simulation.");
+        // function body is generated in post-parse phase
+    }
+
+    // The om_finalize_entity_sets member function
+    {
+        assert(nullptr == finalize_entity_sets_fn); // initialization guarantee
+        finalize_entity_sets_fn = new AgentFuncSymbol("om_finalize_entity_sets", this);
+        assert(finalize_entity_sets_fn); // out of memory check
+        finalize_entity_sets_fn->doc_block = doxygen_short("Remove the entity in each entity set when it leaves the simulation.");
+        // function body is generated in post-parse phase
+    }
+
     // The om_initialize_tables member function
     {
         assert(nullptr == initialize_tables_fn); // initialization guarantee
@@ -223,6 +242,8 @@ void AgentSymbol::post_parse(int pass)
             build_body_initialize_data_members0();
             build_body_initialize_events();
             build_body_finalize_events();
+            build_body_initialize_entity_sets();
+            build_body_finalize_entity_sets();
             build_body_initialize_tables();
             build_body_finalize_tables();
             build_body_initialize_expression_agentvars();
@@ -279,6 +300,42 @@ void AgentSymbol::build_body_finalize_events()
 
     for ( auto event : pp_agent_events ) {
         c += event->name + ".make_zombie();";
+    }
+}
+
+void AgentSymbol::build_body_initialize_entity_sets()
+{
+    CodeBlock& c = initialize_entity_sets_fn->func_body;
+
+    for (auto entity_set : pp_agent_entity_sets) {
+        c += "// " + entity_set->name;
+        // If the entity set filter is false at initialization, do nothing
+        if (entity_set->filter) {
+            c += "if (" + entity_set->filter->name + ") {" ;
+        }
+        // TODO insert entity into entity set
+        if (entity_set->filter) {
+            c += "}" ;
+        }
+        c += "";
+    }
+}
+
+void AgentSymbol::build_body_finalize_entity_sets()
+{
+    CodeBlock& c = finalize_entity_sets_fn->func_body;
+
+    for (auto entity_set : pp_agent_entity_sets) {
+        c += "// " + entity_set->name;
+        // If the entity set filter is false at finalization, do nothing
+        if (entity_set->filter) {
+            c += "if (" + entity_set->filter->name + ") {" ;
+        }
+        // TODO remove entity from entity set
+        if (entity_set->filter) {
+            c += "}" ;
+        }
+        c += "";
     }
 }
 

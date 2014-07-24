@@ -8,6 +8,7 @@
 #pragma once
 #include "Symbol.h"
 
+class IdentityAgentVarSymbol;
 class CodeBlock;
 
 /**
@@ -30,6 +31,8 @@ public:
     EntitySetSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , agent(agent->stable_rp())
+        , pp_agent(nullptr)
+        , filter(nullptr)
     {
     }
 
@@ -51,5 +54,11 @@ public:
      * 
      * For use post-parse.
      */
+
     AgentSymbol *pp_agent;
+
+    /**
+     * The expression agentvar of the entity set filter.
+     */
+    IdentityAgentVarSymbol *filter;
 };

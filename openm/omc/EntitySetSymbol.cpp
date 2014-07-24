@@ -25,8 +25,11 @@ void EntitySetSymbol::post_parse(int pass)
             pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
             assert(pp_agent); // parser guarantee
 
-            // add this to the complete list of strings
+            // add this entity set to the complete list of entity sets
             pp_all_entity_sets.push_back(this);
+
+            // Add this entity set to the agent's list of entity sets
+            pp_agent->pp_agent_entity_sets.push_back(this);
         }
         break;
     default:

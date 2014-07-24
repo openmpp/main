@@ -46,6 +46,8 @@ public:
         , initialize_data_members0_fn(nullptr)
         , initialize_events_fn(nullptr)
         , finalize_events_fn(nullptr)
+        , initialize_entity_sets_fn(nullptr)
+        , finalize_entity_sets_fn(nullptr)
         , initialize_tables_fn(nullptr)
         , finalize_tables_fn(nullptr)
         , initialize_expression_agentvars_fn(nullptr)
@@ -86,6 +88,16 @@ public:
      * Builds the function body of the function.
      */
     void build_body_finalize_events();
+
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_initialize_entity_sets();
+
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_finalize_entity_sets();
 
     /**
      * Builds the function body of the function.
@@ -159,6 +171,22 @@ public:
     AgentFuncSymbol *finalize_events_fn;
 
     /**
+     * The agent function which initializes all entity sets in the agent.
+     * 
+     * This function has the fixed name om_initialize_entity_sets().  It is used in the run-time support
+     * class BaseAgent before the agent enters the simulation.
+     */
+    AgentFuncSymbol *initialize_entity_sets_fn;
+
+    /**
+     * The agent function which finalizes all entity sets in the agent.
+     * 
+     * This function has the fixed name om_finalize_entity_sets(). It is used in the run-time support
+     * class BaseAgent before the agent leaves the simulation.
+     */
+    AgentFuncSymbol *finalize_entity_sets_fn;
+
+    /**
      * The agent function which initializes all tables in the agent.
      * 
      * This function has the fixed name om_initialize_tables().  It is used in the run-time support
@@ -226,6 +254,13 @@ public:
      *  Populated after parsing is complete.
      */
     list<AgentFuncSymbol *> pp_agent_funcs;
+
+    /**
+     * The enity sets of this agent
+     * 
+     *  Populated after parsing is complete.
+     */
+    list<EntitySetSymbol *> pp_agent_entity_sets;
 
     /**
      * The tables of this agent
