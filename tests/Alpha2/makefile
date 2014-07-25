@@ -67,8 +67,8 @@ MODEL_MPP = $(wildcard *.mpp *.ompp *.dat)
 
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
-  $(OMC_OUT_DIR)/om_initializers.cpp \
-  $(OMC_OUT_DIR)/om_developer.cpp
+  $(OMC_OUT_DIR)/om_developer.cpp \
+  $(OMC_OUT_DIR)/om_fixed_parms.cpp
 
 MODEL_CPPLIST = \
   $(MODEL_OMC_CPP)
@@ -77,7 +77,7 @@ sources = $(MODEL_CPPLIST)
 
 OBJS := $(foreach root,$(sources:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
 DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
-     
+    
 .PHONY : all
 all: model 
 
