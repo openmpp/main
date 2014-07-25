@@ -13,6 +13,7 @@
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/db/metaModelHolder.h"
 #include "libopenm/db/modelBuilder.h"
+#include "modelSqlWriter.h"
 #include "modelInsertSql.h"
 #include "modelAggregationSql.h"
 
@@ -25,7 +26,7 @@ namespace openm
     {
     public:
         /** create new model builder. */
-        ModelSqlBuilder(void);
+        ModelSqlBuilder(const string & i_outputDir);
 
         /** release builder resources. */
         ~ModelSqlBuilder() throw() { }
@@ -33,17 +34,18 @@ namespace openm
         /** return timestamp string, ie: _201208171604590148_  result does not changed during object lifetime. */
         const string timeStamp(void) const { return modelTs; }
 
-        /** update metadata and return sql script to create new model from supplied metadata rows */
-        const vector<string> build(MetaModelHolder & i_metaRows);
+        /** update metadata and write sql script to create new model from supplied metadata rows */
+        void build(MetaModelHolder & i_metaRows);
 
-        /** return sql script to create backward compatibility views (Modgen compatibility) */
-        const vector<string> buildCompatibilityViews(const MetaModelHolder & i_metaRows) const;
+        /** write sql script to create backward compatibility views (Modgen compatibility) */
+        const void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const;
 
         /** return sql script to insert parameters if template file exists */
         const string buildInsertParameters(const MetaModelHolder & i_metaRows, const string & i_sqlTemplateFilePath) const;
 
     private:
         string modelTs;         // model timestamp string, ie: _201208171604590148_
+        string outputDir;       // output directory to write sql script files
 
         /** helper struct to collect info for db table */
         struct DbTblInfo
@@ -98,8 +100,8 @@ namespace openm
         /** sort and validate metadata rows for uniqueness and referential integrity */
         void prepare(MetaModelHolder & io_metaRows) const;
 
-        /** return sql script to create new model from supplied metadata rows */
-        const vector<string> buildCreateModel(MetaModelHolder & i_metaRows) const;
+        /** write sql script to create new model from supplied metadata rows */
+        const void buildCreateModel(MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const;
 
         /** set field values for model_dic table row */
         void setModelDicRow(ModelDicRow & io_mdRow);

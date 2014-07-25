@@ -22,16 +22,16 @@ namespace openm
         virtual ~IModelBuilder() throw() = 0;
 
         /** create new model builder. */
-        static IModelBuilder * create(void);
+        static IModelBuilder * create(const string & i_outputDir);
 
         /** return timestamp string, ie: _201208171604590148_  result does not changed during object lifetime. */
         virtual const string timeStamp(void) const = 0;
 
-        /** update metadata and return sql script to create new model from supplied metadata rows */
-        virtual const vector<string> build(MetaModelHolder & i_metaRows) = 0;
+        /** update metadata and write sql script to create new model from supplied metadata rows */
+        virtual void build(MetaModelHolder & i_metaRows) = 0;
 
-        /** return sql script to create backward compatibility views (Modgen compatibility) */
-        virtual const vector<string> buildCompatibilityViews(const MetaModelHolder & i_metaRows) const = 0;
+        /** write sql script to create backward compatibility views (Modgen compatibility) */
+        virtual const void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const = 0;
 
         /** return sql script to insert parameters if template file exists */
         virtual const string buildInsertParameters(const MetaModelHolder & i_metaRows, const string & i_sqlTemplateFilePath) const = 0;

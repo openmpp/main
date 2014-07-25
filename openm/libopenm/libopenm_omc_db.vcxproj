@@ -67,10 +67,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
-
   <PropertyGroup>
     <OutDir>$(OM_LIB_DIR)/</OutDir>
   </PropertyGroup>
@@ -88,7 +86,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -103,7 +100,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -122,7 +118,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -141,7 +136,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-
   <ItemGroup>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h" />
     <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
@@ -156,6 +150,7 @@
     <ClInclude Include="include\modelAggregationSql.h" />
     <ClInclude Include="include\modelInsertSql.h" />
     <ClInclude Include="include\modelSqlBuilder.h" />
+    <ClInclude Include="include\modelSqlWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\argReader.cpp" />
@@ -168,6 +163,7 @@
     <ClCompile Include="db\modelAggregationSql.cpp" />
     <ClCompile Include="db\modelInsertSql.cpp" />
     <ClCompile Include="db\modelSqlBuilder.cpp" />
+    <ClCompile Include="db\modelSqlWriter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

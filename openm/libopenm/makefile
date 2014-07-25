@@ -125,7 +125,8 @@ LIB_OMC_CPPLIST = \
   db/dbMetaRow.cpp \
   db/modelAggregationSql.cpp \
   db/modelInsertSql.cpp \
-  db/modelSqlBuilder.cpp
+  db/modelSqlBuilder.cpp \
+  db/modelSqlWriter.cpp
 
 RT_OBJS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
 RT_DEPS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))

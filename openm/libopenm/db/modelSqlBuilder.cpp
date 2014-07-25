@@ -8,16 +8,16 @@
 using namespace openm;
 
 // create new model builder
-IModelBuilder * IModelBuilder::create(void)
+IModelBuilder * IModelBuilder::create(const string & i_outputDir)
 {
-    return new ModelSqlBuilder();
+    return new ModelSqlBuilder(i_outputDir);
 }
 
 // release builder resources
 IModelBuilder::~IModelBuilder() throw() { }
 
 // create new model builder
-ModelSqlBuilder::ModelSqlBuilder(void)
+ModelSqlBuilder::ModelSqlBuilder(const string & i_outputDir) : outputDir(i_outputDir)
 {
     // convert log timestamp to model timestamp: _20120817_160459_0148 => _201208171604590148_
     modelTs = theLog->timeStampSuffix();
@@ -25,10 +25,16 @@ ModelSqlBuilder::ModelSqlBuilder(void)
     if (len < 16) throw DbException("invalid (too short) log timestamp");
 
     modelTs = "_" + modelTs.substr(1, 8) + modelTs.substr(10, 6) + ((len >= 18) ? modelTs.substr(17) : "") + "_";
+
+// to fix VC++ 2013 upd.2 strange debug behaviour
+#if defined(_WIN32) && defined(_DEBUG)
+    paramInfoVec = vector<ParamTblInfo>();
+    outInfoVec = vector<OutTblInfo>();
+#endif  // defined(_WIN32) && defined(_DEBUG)
 }
 
 // validate metadata and return sql script to create new model from supplied metadata rows
-const vector<string> ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
+void ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
 {
     try {
         // validate input rows: uniqueness and referential integrity
@@ -41,10 +47,12 @@ const vector<string> ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
         setParamTableInfo(i_metaRows);
         setOutTableInfo(i_metaRows);
 
-        // return sql script to create new model from supplied metadata rows
-        return buildCreateModel(i_metaRows);
+        // write into file sql script to create new model from supplied metadata rows
+        ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_create_model.sql");
+
+        buildCreateModel(i_metaRows, wr);
     }
-    catch(HelperException & ex) {
+    catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
         throw;
     }
@@ -58,226 +66,232 @@ const vector<string> ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
     }
 }
 
-// return sql script to create new model from supplied metadata rows
-const vector<string> ModelSqlBuilder::buildCreateModel(MetaModelHolder & i_metaRows) const
+
+// write sql script to create new model from supplied metadata rows 
+const void ModelSqlBuilder::buildCreateModel(MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const
 {
     // start transaction and get new model id
-    vector<string> lineVec;
+    io_wr.outFs << 
+        "--\n" <<
+        "-- create new model: " << i_metaRows.modelDic.name << '\n' <<
+        "-- model timestamp:  " << modelTs << '\n' <<
+        "-- db names prefix:  " << i_metaRows.modelDic.modelPrefix << '\n' <<
+        "-- script created:   " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+        "--\n";
+    io_wr.throwOnFail();
 
-    lineVec.push_back("--");
-    lineVec.push_back("-- create new model: " + i_metaRows.modelDic.name);
-    lineVec.push_back("-- model timestamp:  " + modelTs);
-    lineVec.push_back("-- db names prefix:  " + i_metaRows.modelDic.modelPrefix);
-    lineVec.push_back("-- script created:   " + toDateTimeString(theLog->timeStampSuffix()));
-    lineVec.push_back("--");
-
-    lineVec.push_back("BEGIN TRANSACTION;");
-    lineVec.push_back("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'model_id';");
-    lineVec.push_back("");
+    io_wr.write(
+        "BEGIN TRANSACTION;\n" \
+        "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'model_id';\n\n"
+        );
 
     // model header
-    lineVec.push_back("--");
-    lineVec.push_back("-- model description");
-    lineVec.push_back("--");
-
-    lineVec.push_back(ModelInsertSql::insertSql(i_metaRows.modelDic) + ";");
-    lineVec.push_back("");
+    io_wr.write(
+        "--\n" \
+        "-- model description\n" \
+        "--\n"
+        );
+    ModelInsertSql::insertSql(i_metaRows.modelDic, io_wr);
+    io_wr.write("\n");
 
     for (const ModelDicTxtLangRow & row : i_metaRows.modelTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     // model types
-    lineVec.push_back("--");
-    lineVec.push_back("-- model types");
-    lineVec.push_back("--");
-
+    io_wr.write(
+        "--\n" \
+        "-- model types\n" \
+        "--\n"
+        );
     for (const TypeDicRow & row : i_metaRows.typeDic) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TypeDicTxtLangRow & row : i_metaRows.typeTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
-// TODO: work in progress
     for (const TypeEnumLstRow & row : i_metaRows.typeEnum) {
-//        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
-        lineVec.push_back(ModelInsertSql::insertSql(row));
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
-// TODO: work in progress
     for (const TypeEnumTxtLangRow & row : i_metaRows.typeEnumTxt) {
-//        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
-        lineVec.push_back(ModelInsertSql::insertSql(row));
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     // model input parameters
-    lineVec.push_back("--");
-    lineVec.push_back("-- model input parameters");
-    lineVec.push_back("--");
-
+    io_wr.write(
+        "--\n" \
+        "-- model input parameters\n" \
+        "--\n"
+        );
     for (const ParamDicRow & row : i_metaRows.paramDic) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const ParamDicTxtLangRow & row : i_metaRows.paramTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const ParamDimsRow & row : i_metaRows.paramDims) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     // model output tables
-    lineVec.push_back("--");
-    lineVec.push_back("-- model output tables");
-    lineVec.push_back("--");
-
+    io_wr.write(
+        "--\n" \
+        "-- model output tables\n" \
+        "--\n"
+        );
     for (const TableDicRow & row : i_metaRows.tableDic) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableDicTxtLangRow & row : i_metaRows.tableTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableDimsRow & row : i_metaRows.tableDims) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableDimsTxtLangRow & row : i_metaRows.tableDimsTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableAccRow & row : i_metaRows.tableAcc) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableAccTxtLangRow & row : i_metaRows.tableAccTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableUnitRow & row : i_metaRows.tableUnit) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     for (const TableUnitTxtLangRow & row : i_metaRows.tableUnitTxt) {
-        lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+        ModelInsertSql::insertSql(row, io_wr);
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     // group of parameters or output tables
     if (i_metaRows.groupLst.size() > 0) {
-        lineVec.push_back("--");
-        lineVec.push_back("-- group of parameters or output tables");
-        lineVec.push_back("--");
 
+        io_wr.write(
+            "--\n" \
+            "-- group of parameters or output tables\n" \
+            "--\n"
+            );
         for (const GroupLstRow & row : i_metaRows.groupLst) {
-            lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+            ModelInsertSql::insertSql(row, io_wr);
         }
-        lineVec.push_back("");
+        io_wr.write("\n");
 
         for (const GroupTxtLangRow & row : i_metaRows.groupTxt) {
-            lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+            ModelInsertSql::insertSql(row, io_wr);
         }
-        lineVec.push_back("");
+        io_wr.write("\n");
 
         for (const GroupPcRow & row : i_metaRows.groupPc) {
-            lineVec.push_back(ModelInsertSql::insertSql(row) + ";");
+            ModelInsertSql::insertSql(row, io_wr);
         }
-        lineVec.push_back("");
+        io_wr.write("\n");
     }
 
     // create tables for model input parameters
-    lineVec.push_back("--");
-    lineVec.push_back("-- model input parameters");
-    lineVec.push_back("--");
-
+    io_wr.write(
+        "--\n" \
+        "-- model input parameters\n" \
+        "--\n"
+        );
     for (const ParamTblInfo & tblInfo : paramInfoVec) {
-        lineVec.push_back("CREATE TABLE " + tblInfo.paramTableName + " " + paramCreateTableBody("run_id", tblInfo) + ";");
-        lineVec.push_back("CREATE TABLE " + tblInfo.setTableName + " " + paramCreateTableBody("set_id", tblInfo) + ";");
+        io_wr.outFs <<
+            "CREATE TABLE " << tblInfo.paramTableName << " " << paramCreateTableBody("run_id", tblInfo) << ";\n" <<
+            "CREATE TABLE " << tblInfo.setTableName << " " << paramCreateTableBody("set_id", tblInfo) << ";\n";
+        io_wr.throwOnFail();
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
     // create tables for model output tables
-    lineVec.push_back("--");
-    lineVec.push_back("-- model output tables");
-    lineVec.push_back("--");
-
+    io_wr.write(
+        "--\n" \
+        "-- model output tables\n" \
+        "--\n"
+        );
     for (const OutTblInfo & tblInfo : outInfoVec) {
-
-        string body = subCreateTableBody(tblInfo);
-        lineVec.push_back("CREATE TABLE " + tblInfo.subTableName + " " + body + ";");
-
-        body = valueCreateTableBody(tblInfo);
-        lineVec.push_back("CREATE TABLE " + tblInfo.valueTableName + " " + body + ";");
+        io_wr.outFs <<
+            "CREATE TABLE " << tblInfo.subTableName << " " << subCreateTableBody(tblInfo) << ";\n" <<
+            "CREATE TABLE " << tblInfo.valueTableName << " " << valueCreateTableBody(tblInfo) << ";\n";
+        io_wr.throwOnFail();
     }
-    lineVec.push_back("");
+    io_wr.write("\n");
 
-    lineVec.push_back("COMMIT;");   // done
-    return lineVec;
+    io_wr.writeLine("COMMIT;\n");  // done
 }
 
-// return sql script to create backward compatibility views (Modgen compatibility)
-const vector<string> ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
+// write sql script to create backward compatibility views (Modgen compatibility)
+const void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
 {
     try {
         // put descriptive header
-        vector<string> lineVec;
+        ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_optional_views.sql");
 
-        lineVec.push_back("--");
-        lineVec.push_back("-- compatibility views for model: " + i_metaRows.modelDic.name);
-        lineVec.push_back("-- model timestamp:  " + modelTs);
-        lineVec.push_back("-- db names prefix:  " + i_metaRows.modelDic.modelPrefix);
-        lineVec.push_back("-- script created:   " + toDateTimeString(theLog->timeStampSuffix()));
-        lineVec.push_back("--");
-        lineVec.push_back("-- Dear user:");
-        lineVec.push_back("--   this part of database is optional and NOT used by openM++");
-        lineVec.push_back("--   if you want it for any reason please enjoy else just ignore it");
-        lineVec.push_back("-- Or other words:");
-        lineVec.push_back("--   if you don't know what is this then you don't need it");
-        lineVec.push_back("--");
-        lineVec.push_back("");
+        wr.outFs <<
+            "--\n" <<
+            "-- compatibility views for model: " << i_metaRows.modelDic.name << '\n' <<
+            "-- model timestamp:  " << modelTs << '\n' <<
+            "-- db names prefix:  " << i_metaRows.modelDic.modelPrefix << '\n' <<
+            "-- script created:   " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+            "--\n" <<
+            "-- Dear user:\n" <<
+            "--   this part of database is optional and NOT used by openM++\n" <<
+            "--   if you want it for any reason please enjoy else just ignore it\n" <<
+            "-- Or other words:\n" <<
+            "--   if you don't know what is this then you don't need it\n" <<
+            "--\n\n";
+        wr.throwOnFail();
 
         // input parameters compatibility views
-        lineVec.push_back("--");
-        lineVec.push_back("-- input parameters compatibility views");
-        lineVec.push_back("--");
-
+        wr.write(
+            "--\n" \
+            "-- input parameters compatibility views\n" \
+            "--\n"
+            );
         for (const ParamTblInfo & tblInfo : paramInfoVec) {
-            string body = paramCompatibilityViewBody(i_metaRows, tblInfo);
-            lineVec.push_back("CREATE VIEW " + tblInfo.name + " AS " + body + ";");
+            wr.outFs << "CREATE VIEW " << tblInfo.name << " AS " << paramCompatibilityViewBody(i_metaRows, tblInfo) << ";\n";
+            wr.throwOnFail();
         }
-        lineVec.push_back("");
-        
+        wr.write("\n");
+
         // output tables compatibility views
-        lineVec.push_back("--");
-        lineVec.push_back("-- output tables compatibility views");
-        lineVec.push_back("--");
-
+        wr.write(
+            "--\n" \
+            "-- output tables compatibility views\n" \
+            "--\n"
+            );
         for (const OutTblInfo & tblInfo : outInfoVec) {
-            string body = outputCompatibilityViewBody(i_metaRows, tblInfo);
-            lineVec.push_back("CREATE VIEW " + tblInfo.name + " AS " + body + ";");
+            wr.outFs << "CREATE VIEW " << tblInfo.name << " AS " << outputCompatibilityViewBody(i_metaRows, tblInfo) << ";\n";
+            wr.throwOnFail();
         }
-        lineVec.push_back("");
-
-        return lineVec;     // done
+        wr.write("\n");
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -943,7 +957,7 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow)
     // validate model timestamp: must be same as in model source code
     if (io_mdRow.timestamp != modelTs) throw DbException("invalid model timestamp: %s, expected: %s", io_mdRow.timestamp.c_str(), modelTs.c_str());
 
-    // make model prefix from model name and timestamp
+    // trim model name and make model prefix from model name and timestamp
     io_mdRow.modelPrefix = ModelInsertSql::makeModelPrefix(io_mdRow.name, io_mdRow.timestamp);
 
     // validate table prefixes: it must not exceed max size and must be unique

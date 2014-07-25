@@ -174,9 +174,6 @@ static string getFileNameExt(const string &file_name);
 // get stem of filename
 static string getFileNameStem(const string &file_name);
 
-// write string line into new output file
-static void writeLinesToFile(const string & i_filePath, const vector<string> & i_lineVec);
-
 // write text string into new output file
 static void writeToFile(const string & i_filePath, const string & i_fileContent);
 
@@ -375,19 +372,17 @@ int main(int argc, char * argv[])
 #endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
-        unique_ptr<IModelBuilder> builder(IModelBuilder::create());
+        unique_ptr<IModelBuilder> builder(IModelBuilder::create(outDir));
 
         CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, &om_fixed_parms_cpp, builder->timeStamp(), metaRows);
         cg.do_all();
 
         // build model creation script and save it
         theLog->logMsg("Meta-data processing");
-        vector<string> scriptLines = builder->build(metaRows);
-        writeLinesToFile(outDir + metaRows.modelDic.name + "_create_model.sql", scriptLines);
+        builder->build(metaRows);
         
         // build Modgen views creation script and save
-        scriptLines = builder->buildCompatibilityViews(metaRows);
-        writeLinesToFile(outDir + metaRows.modelDic.name + "_optional_views.sql", scriptLines);
+        builder->buildCompatibilityViews(metaRows);
 
         // debug only: create model default parameters script from template
         string srcInsertParameters = metaRows.modelDic.name + "_insert_parameters.sql_template";
@@ -556,23 +551,6 @@ static string getFileNameStem(const string &file_name)
     openm::toLower(in_ext);
 
     return in_stem;
-}
-
-// write string line into new output file
-void writeLinesToFile(const string & i_filePath, const vector<string> & i_lineVec)
-{
-    using namespace openm;
-
-    ofstream ost;
-    exit_guard<ofstream> onExit(&ost, &ofstream::close);   // close on exit
-
-    ost.open(i_filePath, ios_base::out | ios_base::trunc);
-    if(ost.fail()) throw HelperException("Failed to create file: %s", i_filePath.c_str());
-
-    for (const string & line : i_lineVec) {
-        ost << line << '\n';
-        if(ost.fail()) throw HelperException("Failed to write into file: %s", i_filePath.c_str());
-    }
 }
 
 // write text string into new output file
