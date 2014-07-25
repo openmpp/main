@@ -30,12 +30,12 @@
 #define FALSE false
 #define WAIT( delta_time ) (time + (delta_time))
 
-// Implementation of old-style Modgen macros related to classifications, ranges, nad partitions
+// Implementation of old-style Modgen macros related to classifications, ranges, and partitions
 #define MIN( symbol )				(symbol::min)
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
 #define RANGE_POS( rname, val )     (rname::to_index(val))
-#define COERCE( rname, val )        ((rname)val)
+#define COERCE( rname, val )        (static_cast<rname>(val))
 #define WITHIN( rname, val )        (rname::within(val))
 #define POINTS( symbol )		   	(symbol::upper_bounds())
 #define SPLIT( val, symbol )        (symbol::to_index(val))

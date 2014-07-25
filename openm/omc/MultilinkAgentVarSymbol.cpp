@@ -154,7 +154,7 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
                 CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
                 c += "// Incremental update of multilink agentvar " + name;
                 c += "{";
-                c += "auto &lnk = " + rlink + ".get();";
+                c += "auto lnk = " + rlink + ".get();";
                 c += "if (lnk.get() != nullptr) {";
                 if (func == token::TK_sum_over) {
                     c += "lnk->" + name + ".set(lnk->" + name + " + new_value - old_value);";
