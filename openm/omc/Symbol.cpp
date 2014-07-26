@@ -458,6 +458,8 @@ comment_map_type Symbol::c_comments;
 
 int Symbol::post_parse_errors = 0;
 
+bool Symbol::option_event_trace = false;
+
 void Symbol::post_parse(int pass)
 {
     // This class is the top of the post_parse hierarchical calling chain.

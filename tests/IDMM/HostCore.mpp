@@ -146,8 +146,8 @@ void Host::Infect()
 */
 void Host::Start()
 {
-	time = (Time) 0;
-	age = 0.0;
+	time = 0;
+	age = 0;
 
 	// Infect a few Hosts
 	if ( InitialDiseasePrevalence > RandUniform(5) ) 
@@ -202,8 +202,7 @@ void Host::ContactEvent()
 
 	// Contact each host in outgoing list
 	int nIndex = {-1};
-	Host *prContact = {NULL};
-	while ( prContact = mlContactsOut->GetNext(nIndex + 1, &nIndex) ) 
+	while ( auto prContact = mlContactsOut->GetNext(nIndex + 1, &nIndex) ) 
 	{
 		if ( disease_phase == DP_INFECTIOUS && prContact->disease_phase == DP_SUSCEPTIBLE ) 
 		{

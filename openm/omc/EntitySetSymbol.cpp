@@ -105,7 +105,7 @@ void EntitySetSymbol::post_parse(int pass)
             // Dependency on change in index agentvars
             for (auto av : pp_dimension_list_agentvar) {
                 CodeBlock& c = av->side_effects_fn->func_body;
-                c += "// cell change in table " + name;
+                c += "// cell change in " + name;
                 c += "if (om_active) {";
                 if (filter) {
                     c += "if (" + filter->name + ") {";
@@ -215,7 +215,7 @@ void EntitySetSymbol::build_body_update_cell()
         ++dim;
     }
     c += "";
-    c += "assert(cell >= 0 && cell < " + name + "::n_cells ); // logic guarantee";
+    c += "assert(cell >= 0 && cell < " + to_string(cell_count()) + "); // logic guarantee";
     c += "";
     c += cell->name + " = cell;" ;
 }
@@ -224,18 +224,28 @@ void EntitySetSymbol::build_body_insert()
 {
     CodeBlock& c = insert_fn->func_body;
 
-    c += "int cell = " + cell->name + ";" ;
-    c += "EntitySet<" + pp_agent->name + "> * flattened_array = &" + name + ";";
-    c += "flattened_array[cell]->insert(this);";
+    if (rank() == 0) {
+        c += name + ".insert(this);" ;
+    }
+    else {
+        c += "int cell = " + cell->name + ";" ;
+        c += "EntitySet<" + pp_agent->name + "> * flattened_array = " + name + ";";
+        c += "flattened_array[cell].insert(this);";
+    }
 }
 
 void EntitySetSymbol::build_body_erase()
 {
     CodeBlock& c = erase_fn->func_body;
 
-    c += "int cell = " + cell->name + ";" ;
-    c += "EntitySet<" + pp_agent->name + "> * flattened_array = &" + name + ";";
-    c += "flattened_array[cell]->erase(this);";
+    if (rank() == 0) {
+        c += name + ".erase(this);" ;
+    }
+    else {
+        c += "int cell = " + cell->name + ";";
+        c += "EntitySet<" + pp_agent->name + "> * flattened_array = " + name + ";";
+        c += "flattened_array[cell].erase(this);";
+    }
 }
 
 // The following function definition is identical in EntitySetSymbol and TableSymbol

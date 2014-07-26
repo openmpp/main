@@ -313,7 +313,8 @@ void AgentSymbol::build_body_initialize_entity_sets()
         if (entity_set->filter) {
             c += "if (" + entity_set->filter->name + ") {" ;
         }
-        // TODO insert entity into entity set
+        c += entity_set->update_cell_fn->name + "();" ;
+        c += entity_set->insert_fn->name + "();" ;
         if (entity_set->filter) {
             c += "}" ;
         }
@@ -331,7 +332,7 @@ void AgentSymbol::build_body_finalize_entity_sets()
         if (entity_set->filter) {
             c += "if (" + entity_set->filter->name + ") {" ;
         }
-        // TODO remove entity from entity set
+        c += entity_set->erase_fn->name + "();";
         if (entity_set->filter) {
             c += "}" ;
         }

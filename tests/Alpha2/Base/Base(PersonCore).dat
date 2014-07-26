@@ -4,6 +4,6 @@ parameters {
 		years.
 */
 
-	double	MortalityHazard = .013; //EN Annual hazard of death
+	double	MortalityHazard = .014; //EN Annual hazard of death
 };
 

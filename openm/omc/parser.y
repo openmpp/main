@@ -460,6 +460,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Symbol>    agentvar
 %type  <pval_Symbol>    derived_agentvar
 %type  <pval_Symbol>    link_to_agentvar
+%type  <pval_Literal>   event_priority_opt
 
 %type  <pval_AgentMemberSymbol> link_symbol
 
@@ -598,9 +599,13 @@ options_list:
 option:
         option_keyword[kw] "=" option_value[value]
                         {
-                            //TODO process option / value pair
+                            // process recognized option / value pair
                             token_type kw = (token_type)$kw;
                             int value = $value;
+
+                            if (kw == token::TK_event_trace) {
+                                Symbol::option_event_trace = (value == 1) ? true : false;
+                            }
                         }
 	;
 
@@ -1121,15 +1126,35 @@ decl_agent_function:
     ;
 
 decl_agent_event:
-      "event" SYMBOL[time_func] "," SYMBOL[implement_func] ";"
+      "event" SYMBOL[time_func] "," SYMBOL[implement_func] event_priority_opt[priority] ";"
                         {
+                            int event_priority = stoi($priority->value());
+                            delete $priority;
                             auto *agent = pc.get_agent_context();
                             // Create agent event symbol
                             // Ex. "om_time_BirthdayEvent"
                             string event_name = "om_" + $implement_func->name + "_time";
-                            auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, @decl_agent_event);
-      }
+                            auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, event_priority, @decl_agent_event);
+                        }
     ;
+
+event_priority_opt:
+      "," INTEGER_LITERAL
+                        {
+                            $event_priority_opt = $INTEGER_LITERAL;
+                        }
+    | "," "time_keeping"
+                        {
+                            // time keeping priority is just less than internal event for self-scheduling attributes
+                            $event_priority_opt = new IntegerLiteral( "254" );
+                        }
+    | /* nothing */
+                        {
+                            // default event priority is zero
+                            $event_priority_opt = new IntegerLiteral( "0" );
+                        }
+    ;
+
 
 /*
  * agentvar expression

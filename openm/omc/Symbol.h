@@ -401,7 +401,7 @@ public:
     virtual string pretty_name();
 
     /**
-     * Process a semantic error encounftered during the post-parse phase.
+     * Process a semantic error encountered during the post-parse phase.
      *
      * @param msg The message.
      */
@@ -875,6 +875,10 @@ public:
      */
     static int post_parse_errors;
 
+    /**
+     * true if event_trace activated in options statement.
+     */
+    static bool option_event_trace;
 };
 
 

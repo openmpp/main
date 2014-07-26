@@ -6,7 +6,7 @@
     SimulationSeed  => 16807,
 
     # PersonCore.mpp
-	MortalityHazard         =>  0.013  ,
+	MortalityHazard         =>  0.014  ,
 
     # Happiness.mpp
 	HappinessReversalHazard =>  0.10 ,

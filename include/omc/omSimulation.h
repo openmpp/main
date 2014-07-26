@@ -8,6 +8,9 @@
 #pragma once
 #include <cfloat>
 #include <cmath>
+#include <iostream> // for debug log only
+#include <fstream> // for debug log only
+#include <cstdarg> // for debug log only
 #include "om_types0.h" // fundamental model types
 #include "omc/link.h"
 #include "omc/Range.h"
@@ -18,6 +21,7 @@
 #include "omc/EntitySet.h"
 #include "om_types1.h" // model-specific types
 #include "libopenm/omModel.h"
+
 #include "om_declarations.h" // model-specific classes
 
 
@@ -43,12 +47,17 @@
 // map logical to bool (for local variable declarations in Modgen models)
 #define logical bool
 
-// The following are temporary kludges
-#define WriteDebugLogEntry printf
+// Implemented in all models through the statement:
+//   use "common.ompp";
+extern void WriteDebugLogEntry(const char * fmt, ...);
+extern void StartEventTrace();
+extern void StopEventTrace();
+void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time);
+
+
+// The following are temporary kludges to allow compilation
 #define GetCaseSample() 0
 #define case_id 0
-#define StartEventTrace() 0
-#define StopEventTrace() 0
 
 namespace openm {
 

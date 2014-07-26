@@ -111,7 +111,7 @@ void TableSymbol::post_parse(int pass)
             // Dependency on change in index agentvars
             for (auto av : pp_dimension_list_agentvar) {
                 CodeBlock& c = av->side_effects_fn->func_body;
-                c += "// cell change in table " + name;
+                c += "// cell change in " + name;
                 c += "if (om_active) {";
                 if (filter) {
                     c += "if (" + filter->name + ") {";

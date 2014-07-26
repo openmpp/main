@@ -5,6 +5,6 @@
     SimulationCases => 5000,
     SimulationSeed  => 16807,
 
-	MortalityHazard         => 0.013 ,
+	MortalityHazard         => 0.014 ,
 	HappinessReversalHazard => 0.10
 );

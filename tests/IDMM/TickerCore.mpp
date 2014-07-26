@@ -31,7 +31,7 @@ classification TICKER_EVENT_TYPE	//EN Ticker Event Type
 };
 
 
-range REPORT_TIME {0, 5000}; 		//EN Reporting intervals
+range REPORT_TIME {0, 20}; 		//EN Reporting intervals
 
 actor Ticker				 		//EN Actor for synchronising population-level activities
 {
@@ -50,7 +50,7 @@ actor Ticker				 		//EN Actor for synchronising population-level activities
 	void	Start();	//EN Starts the ticker
 	void	Finish();	//EN Finishes the actor
 
-	event	timeTickEvent, TickEvent;	//EN Tick event
+	event	timeTickEvent, TickEvent, time_keeping;	//EN Tick event
 };
 
 /* NOTE(Ticker.Start,EN) 
@@ -58,11 +58,9 @@ actor Ticker				 		//EN Actor for synchronising population-level activities
 */
 void Ticker::Start( )
 {
-	time = (TIME) 0;
+	time = 0;
 	age = 0;
 	next_tick = 0;
-
-
 }
 
 
@@ -105,7 +103,7 @@ void Ticker::TickEvent()
 	int nHosts = asAllHosts->Count();
 	for ( int nJ=0; nJ<nHosts; nJ++ ) 
 	{
-		Host *prHost = asAllHosts->Item( nJ );
+		auto prHost = asAllHosts->Item( nJ );
 		prHost->report_time = report_time;
 	}
 

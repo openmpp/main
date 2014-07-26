@@ -121,10 +121,11 @@ public:
     /**
      * Finishes all agents.
      */
-    static void finalize_all_agent_tables()
+    static void finalize_all_agents()
     {
         for (auto agent : agents) {
             agent->om_finalize_tables();
+            agent->om_finalize_entity_sets();
         }
     }
 

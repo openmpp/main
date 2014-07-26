@@ -62,15 +62,13 @@ public:
     virtual void age_agent() = 0;
 
     /**
-        * event comparison.
-        * This is a true observer function but is not declared as const
-        * due to issues with get_event_id().
-        *
-        * @param [in,out]  rhs The right hand side.
-        *
-        * @return  true if the right-hand side is less than the left-hand side (this object).
-        */
-
+     * event comparison. This is a true observer function but is not declared as const due to issues
+     * with get_event_id().
+     *
+     * @param [in,out] rhs The right hand side.
+     *
+     * @return true if the right-hand side is less than the left-hand side (this object).
+     */
     bool operator< ( BaseEvent& rhs )
     {
 		// earlier event time wins
@@ -97,9 +95,8 @@ public:
     }
 
     /**
-        * Cleans all events in the dirty list.
-        */
-
+     * Cleans all events in the dirty list.
+     */
     static void clean_all()
     {
         while ( ! dirty_events.empty() ) {
@@ -109,13 +106,11 @@ public:
         }
     }
 
-
     /**
-        * Time of next event
-        *
-        * @return Time of next event, time_infinite if none
-        */
-
+     * Time of next event.
+     *
+     * @return Time of next event, time_infinite if none.
+     */
     static Time time_next_event()
     {
         BaseEvent::clean_all();
@@ -132,11 +127,10 @@ public:
     }
 
     /**
-        * Advances time to the next event and implements it.
-        *
-        * @return  false if there are for certain no events in the queue, true otherwise.
-        */
-
+     * Advances time to the next event and implements it.
+     *
+     * @return false if there are for certain no events in the queue, true otherwise.
+     */
     static bool do_next_event()
     {
         BaseEvent::clean_all();
@@ -164,61 +158,59 @@ public:
             BaseAgent::age_all_agents( evt->event_time );
         }
 
-        // mark the event as requiring recalculation of occurrence time
-        evt->make_dirty();
-
         // implement the event
         evt->implement_event();
+
+        // mark the event as requiring recalculation of occurrence time
+        evt->make_dirty();
 
         return true;
     }
 
-
     /**
-        * Scheduled time of event.
-        */
-
+     * Scheduled time of event.
+     */
     Time event_time;
 
     /**
-        * Event is in \a event_queue.
-        */
-
+     * Event is in \a event_queue.
+     */
     bool in_queue : 1;
 
     /**
-        * Event needs calculation of \a event_time
-        */
-
+     * Event needs calculation of \a event_time.
+     */
     bool is_dirty : 1;
 
     /**
-        * Event is pending deletion.
-        */
-
+     * Event is pending deletion.
+     */
     bool is_zombie : 1;
 
     /**
-        * The event queue (declaration)
-        */
-
+     * The event queue (declaration)
+     *
+     * @return A Queue of events.
+     */
     static set<BaseEvent *, less_deref<BaseEvent *> > event_queue;
 
     /**
-        * The dirty event list (declaration)
-        * Contains events whose times require calculation.
-        */
-
+     * The dirty event list (declaration)
+     * Contains events whose times require calculation.
+     */
     static tailed_forward_list<BaseEvent *> dirty_events;
 
+    /**
+     * Value of just-in-time option
+     * 
+     * True if active, false if inactive.
+     */
+    static const bool just_in_time;
 
     /**
-    * Value of just-in-time option
-    *
-    * True if active, false if inactive
-    */
-
-    static const bool just_in_time;
+     * true to enable event logging (use API)
+     */
+    static bool trace_event_on;
 };
 
 template<typename A, const int event_id, const int event_priority, void (A::*implement_function)(), Time (A::*time_function)()>
@@ -259,10 +251,8 @@ public:
     }
 
     /**
-        * Cleans this event.
-        * Removes if zombie and updates event time if dirty.
-        */
-
+     * Cleans this event. Removes if zombie and updates event time if dirty.
+     */
     void clean()
     {
         if ( is_zombie && in_queue ) {
@@ -289,9 +279,8 @@ public:
     }
 
     /**
-        * Age the agent to the time of event occurrence
-        */
-
+     * Age the agent to the time of event occurrence.
+     */
     void age_agent()
     {
         agent()->age_agent( event_time );

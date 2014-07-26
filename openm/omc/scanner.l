@@ -275,7 +275,7 @@ blank       [ \t\r]
 			}
 }
 
-<*>{ /* whitespace and single-line comments */
+<om_decl,cxx_inside,cxx_outside>{ /* whitespace and single-line comments */
 
 {blank}+	{
 				/* step over blanks in location tracking */

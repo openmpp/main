@@ -9,16 +9,17 @@
 #pragma once
 #include <set>
 #include "omc/less_deref.h"
+#include "omc/link.h"
 
 using namespace std;
 
 /**
  * An EntitySet.
  *
- * @tparam T Entity type.
+ * @tparam E Entity type.
  */
 template<
-    typename T
+    typename E
 >
 class EntitySet
 {
@@ -34,7 +35,7 @@ public:
     // whereas ompp stores an entity set as a global, so natural model code looks like this
     //     asAllHosts.Count();
     // The following overload of the pointer operator in effect translates the "->" to ".".
-    EntitySet<T>* operator->()
+    EntitySet<E>* operator->()
     {
         // return pointer to this object
         return this;
@@ -46,7 +47,7 @@ public:
         return entities.size();
     }
 
-    T * Item(size_t index)
+    link<E> Item(size_t index)
     {
         // TODO temporary solution because std::set O(n) for random access, unfortunately
         if (entities.size() > 0) {
@@ -59,7 +60,7 @@ public:
         }
     }
 
-    T * GetRandom(double uniform_draw)
+    link<E> GetRandom(double uniform_draw)
     {
         if (entities.size() > 0) {
             size_t index = (size_t) (uniform_draw * entities.size());
@@ -70,22 +71,19 @@ public:
         }
     }
 
-    void Scramble()
-    {
-    }
-
-    void insert(T * entity)
+    void insert(E * entity)
     {
         entities.insert(entity);
     }
 
-    void erase(T * entity)
+    void erase(E * entity)
     {
         entities.erase(entity);
     }
 
 private:
-    // storage - a set of entities, ordered by entity_id
-    set<T *, less_deref<T *> > entities;
+    // storage - a set of entity links, ordered by entity_id
+    set<link<E>, less_deref< link<E> > > entities;
+    //set<link<E> > entities;
 };
 

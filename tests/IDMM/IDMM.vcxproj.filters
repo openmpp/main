@@ -14,4 +14,141 @@
       <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="Alpha2.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Happiness.mpp" />
+    <None Include="PersonCore.mpp" />
+    <None Include="SyntaxProbes.mpp" />
+    <None Include="TestLinks.mpp" />
+    <None Include="Extensions.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Framework.ompp" />
+    <None Include="Base\Base%28Happiness%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="Base\Base%28PersonCore%29.dat" />
+    <None Include="Base\Base%28SyntaxProbes%29.dat" />
+    <None Include="Base\Base%28Happiness%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="Base\Base%28PersonCore%29.dat" />
+    <None Include="Base\Base%28SyntaxProbes%29.dat" />
+    <None Include="Base\*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="HostCore.mpp" />
+    <None Include="IDMM.mpp" />
+    <None Include="IDMMFR.mpp" />
+    <None Include="ModelStrings.mpp" />
+    <None Include="TestTables.mpp" />
+    <None Include="TickerCore.mpp" />
+    <None Include="*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="Fixed\Base%28Framework%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="Fixed\Base%28IDMM%29.dat" />
+    <None Include="Fixed\Base%28Framework%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="Fixed\Base%28IDMM%29.dat" />
+  </ItemGroup>
 </Project>

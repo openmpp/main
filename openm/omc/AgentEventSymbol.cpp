@@ -24,6 +24,7 @@ void AgentEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs)
     // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
     time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
     time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
+    time_func_model_code = time_func;
 
     // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
     implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
@@ -37,6 +38,52 @@ void AgentEventSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        if (Symbol::option_event_trace) {
+            // The event_trace option is on, so create cover functions
+            // for the time and implement functions of the event,
+            // and use them instead of the developer-supplied functions.
+            // The cover functions will performl logging and then call
+            // the original developer functions.
+
+            // Create an AgentFuncSymbol for the time 'cover' function
+            string cover_time_func_name = "om_cover_" + time_func->name;
+            auto cover_time_func = new AgentFuncSymbol(cover_time_func_name, agent, "Time", "", false);
+            cover_time_func->doc_block = doxygen_short("Logging cover function: Return the time to the event " + event_name + " in the " + agent->name + " agent.");
+            CodeBlock & ct = cover_time_func->func_body;
+            ct += "Time event_time = " + time_func->name + "();";
+            ct += "if (BaseEvent::trace_event_on) "
+                "om_event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "0.0, " // TODO will be case_seed
+                "\"" + time_func->name + "\", "
+                " (double)event_time);"
+                ;
+            ct += "return event_time;";
+            // Plug it in
+            time_func = cover_time_func;
+
+            // Create an AgentFuncSymbol for the implement 'cover' function
+            string cover_implement_func_name = "om_cover_" + implement_func->name;
+            auto cover_implement_func = new AgentFuncSymbol(cover_implement_func_name, agent, "void", "", false);
+            cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " agent.");
+            CodeBlock & ci = cover_implement_func->func_body;
+            ci += "if (BaseEvent::trace_event_on) "
+                "om_event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "0.0, " // TODO will be case_seed
+                "\"" + agent->name + "." + event_name + "\", "
+                "time);"
+                ;
+            ci += implement_func->name + "();";
+            // Plug it in
+            implement_func = cover_implement_func;
+        }
+    }
+    break;
     case ePopulateCollections:
     {
         // Add this agent event time symbol to the agent's list of all such symbols
@@ -51,7 +98,7 @@ void AgentEventSymbol::post_parse(int pass)
         // E.g. Person
         string agent_name = pp_agent->name;
         // E.g. Person::timeMortalityEvent
-        string time_func_name = time_func->unique_name;
+        string time_func_name = time_func_model_code->unique_name;
         // create sorted unduplicated list of identifiers in body of event time function
         set<string> identifiers;
         auto rng = memfunc_bodyids.equal_range(time_func_name);
@@ -92,7 +139,7 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent()
     int event_id = pp_event_id;
     h += "Event<" + agent->name + ", "
         + to_string(event_id) + ", "
-        + "0, " // TODO event priority
+        + to_string(event_priority) + ", "
         + "&" + implement_func->unique_name + ", "
         + "&" + time_func->unique_name + ">";
     h += name + ";";

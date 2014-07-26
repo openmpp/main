@@ -28,9 +28,10 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, yy::location decl_loc = yy::location())
+    AgentEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, int event_priority, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
+        , event_priority(event_priority)
         , pp_event_id(0)
     {
         create_auxiliary_symbols(tfs, ifs);
@@ -46,7 +47,6 @@ public:
 
     void post_parse(int pass);
 
-
     /**
      * Name of the event.
      * 
@@ -54,17 +54,17 @@ public:
      * AgentEventSymbol is different - it has a om_time_ prefix.  That's also the name of the agent
      * member which holds the time of the event.
      */
-
     string event_name;
 
     /**
-    * Gets the initial value for the data member
-    *
-    * Events are disabled at initialization by setting the event_time to time_infinite.
-    *
-    * @return The initial value as a string.
-    */
-
+     * Gets the initial value for the data member
+     * 
+     * Events are disabled at initialization by setting the event_time to time_infinite.
+     *
+     * @param type_default true to type default.
+     *
+     * @return The initial value as a string.
+     */
     string initialization_value(bool type_default) const
     {
         return token_to_string(token::TK_time_infinite);
@@ -75,15 +75,30 @@ public:
     /** The time function of the event.*/
     AgentFuncSymbol *time_func;
 
+    /**
+     * The time function of the event (model code).
+     *
+     * A cover version of the time function is created for event logging if event_trace is activated.
+     * This member retains the original function in model code for dependency analysis.
+     */
+    AgentFuncSymbol *time_func_model_code;
+
     /** The implement function of the event.*/
     AgentFuncSymbol *implement_func;
 
     /**
-    * Numeric identifier for the event. The numeric identifier is the ordinal of the event name
-    * among all events in the model.  If two agents have an event with the same name, \a
-    * pp_event_id will be identical for those two events.
-    */
+     * The event priority.
+     * 
+     * Used to break ties if two events are scheduled to occur at the same time.
+     */
+    const int event_priority;
 
+    /**
+     * Numeric identifier for the event. The numeric identifier is the ordinal of the event name
+     * among all events in the model.  If two agents have an event with the same name, \a
+     * pp_event_id will be identical for those two events.  The event id participates in
+     * resolution of tied events, after event time and event priority.
+     */
     int pp_event_id;
 };
 

@@ -173,7 +173,7 @@ if ( $debug ) {
 do "${model_name}_inputs.pl" || die "error with parameter file" ;
 
 if ( $debug ) {
-	print "\nPARAMETER VALUES:\n";
+	print "\nSUPPLIED PARAMETER VALUES:\n";
 }
 
 while (my ($parameter, $value) = each %parameter_values) {
@@ -181,7 +181,7 @@ while (my ($parameter, $value) = each %parameter_values) {
 }
 
 # Create insert_param.sql script
-my $set_id = 5;
+my $set_id = 11;
 my $model_id = 11;
 my $run_name = lc("${model_name}_${run_time_stamp}_run_${set_id}");
 

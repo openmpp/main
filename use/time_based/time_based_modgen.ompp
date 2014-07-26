@@ -14,7 +14,7 @@ parameters {
     Time SimulationEnd;
 };
 
-#include "omc/omSimulation.h"
+use "common.ompp";
 
 namespace openm {
 
@@ -112,7 +112,7 @@ namespace openm {
         1096609123,
     };
 
-    const int model_streams = 10; // prototype only uses 1
+    const int model_streams = 15; // prototype only uses 1
     long model_stream_seeds[model_streams]; // seeds for stream generators
 
     long case_seed = 0; // the 'master seed' for the case
@@ -121,6 +121,7 @@ namespace openm {
 
     double RandUniform(int strm)
     {
+        assert(strm < model_streams);
         long seed = model_stream_seeds[strm];
         long long product = model_stream_generator;
         product *= seed;
@@ -166,7 +167,7 @@ void RunModel(IModel * i_model)
     while ( true ) {
         if (BaseEvent::time_next_event() > simulation_end) {
             BaseAgent::age_all_agents(simulation_end);
-            BaseAgent::finalize_all_agent_tables();
+            BaseAgent::finalize_all_agents();
             break;
         }
         if (! BaseEvent::do_next_event() ) break;
