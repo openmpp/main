@@ -44,7 +44,7 @@ class ExprForTable;
 extern char *yytext;
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_type acc, token_type incr, token_type op, ParseContext & pc);
+static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_type acc, token_type incr, token_type table_op, ParseContext & pc);
 
 }
 
@@ -2073,7 +2073,7 @@ ldouble_synonym:
 %%
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_type acc, token_type incr, token_type op, ParseContext & pc)
+static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
 {
     Symbol *table = pc.get_table_context();
     // Also create symbol for associated analysis agentvar if not already present
@@ -2087,7 +2087,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_ty
         analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
         pc.counter3++;
     }
-    // determine if the increment requires the creation & maintenance of an assoicated 'in' agent member.
+    // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
     if ( analysis_agentvar->need_value_in == false ) {
         if (   incr == token::TK_delta
             || incr == token::TK_delta2
@@ -2099,13 +2099,13 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_ty
     }
     // Also create symbol for associated accumulator if not already present
     TableAccumulatorSymbol *accumulator = nullptr;
-    if ( TableAccumulatorSymbol::exists( table, acc, incr, agentvar) ) {
-        string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, agentvar );
+    if ( TableAccumulatorSymbol::exists( table, acc, incr, table_op, agentvar) ) {
+        string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, agentvar );
         accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
         assert( accumulator );
     }
     else {
-        accumulator = new TableAccumulatorSymbol( table, acc, incr, agentvar, analysis_agentvar, pc.counter2);
+        accumulator = new TableAccumulatorSymbol( table, acc, incr, table_op, agentvar, analysis_agentvar, pc.counter2);
         pc.counter2++;
     }
 	auto result = new ExprForTableAccumulator( accumulator );

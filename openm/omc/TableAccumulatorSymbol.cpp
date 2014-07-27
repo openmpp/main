@@ -13,24 +13,24 @@
 
 
 // static
-string TableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, const Symbol *agentvar)
+string TableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
 {
     string result;
-    result = "om_" + table->name + "_ta_" + token_to_string(accumulator) + "_" + token_to_string(increment) + "_" + agentvar->name;
+    result = "om_" + table->name + "_ta_" + token_to_string(accumulator) + "_" + token_to_string(increment) + "_" + token_to_string(table_op) + "_" + agentvar->name;
     return result;
 }
 
 // static
-bool TableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator, token_type increment, const Symbol *agentvar)
+bool TableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
 {
-    string unm = symbol_name(table, accumulator, increment, agentvar);
+    string unm = symbol_name(table, accumulator, increment, table_op, agentvar);
     return symbols.count(unm) == 0 ? false : true;
 }
 
 string TableAccumulatorSymbol::pretty_name()
 {
-    // example:     accumulator 0: sum(delta(duration))
-    string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator) + "(" + token_to_string(increment) + "(" + agentvar->pretty_name() + "))";
+    // example:     accumulator 0: sum(delta(interval(duration)))
+    string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator) + "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + agentvar->pretty_name() + ")))";
     return result;
 }
 

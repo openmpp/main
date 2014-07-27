@@ -26,12 +26,13 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    TableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, Symbol *agentvar, Symbol *analysis_agentvar, int index)
-        : Symbol(symbol_name(table, accumulator, increment, agentvar))
+    TableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, token_type table_op, Symbol *agentvar, Symbol *analysis_agentvar, int index)
+        : Symbol(symbol_name(table, accumulator, increment, table_op, agentvar))
         , table(table->stable_rp())
         , pp_table(nullptr)
         , accumulator(accumulator)
         , increment(increment)
+        , table_op(table_op)
         , agentvar(agentvar->stable_rp())
         , pp_agentvar(nullptr)
         , analysis_agentvar(analysis_agentvar->stable_rp())
@@ -55,94 +56,103 @@ public:
             || increment == token::TK_value_out2
             || increment == token::TK_nz_value_out
             );
+
+        // grammar guarantee
+        assert(table_op == token::TK_interval
+            || table_op == token::TK_event
+            );
     }
 
     /**
-    * Get the unique name for this TableAccumulatorSymbol.
-    *
-    * @param   table       The table.
-    * @param   accumulator The accumulator, e.g. token::TK_sum
-    * @param   increment   The increment, e.g. token::TK_delta
-    * @param   agentvar    The agentvar.
-    *
-    * @return  The name, e.g. om_ta_DurationOfLife_sum_delta_om_duration.
-    */
-
-    static string symbol_name(const Symbol *table, token_type accumulator, token_type increment, const Symbol *agentvar);
+     * Get the unique name for this TableAccumulatorSymbol.
+     *
+     * @param table       The table.
+     * @param accumulator The accumulator, e.g. token::TK_sum.
+     * @param increment   The increment, e.g. token::TK_delta.
+     * @param table_op    The table operation: TK_interval or TK_event.
+     * @param agentvar    The agentvar.
+     *
+     * @return The name, e.g. om_ta_DurationOfLife_sum_delta_om_duration.
+     */
+    static string symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar);
 
     /**
-    * Check for existence of symbol with this unique name.
-    *
-    * @param   table       The table.
-    * @param   accumulator The accumulator, e.g. token::TK_sum.
-    * @param   increment   The increment, e.g. token::TK_delta.
-    * @param   agentvar    The agentvar.
-    *
-    * @return  true if found, else false.
-    */
-
-    static bool exists(const Symbol *table, token_type accumulator, token_type increment, const Symbol *agentvar);
+     * Check for existence of symbol with this unique name.
+     *
+     * @param table       The table.
+     * @param accumulator The accumulator, e.g. token::TK_sum.
+     * @param increment   The increment, e.g. token::TK_delta.
+     * @param table_op    The table operation: TK_interval or TK_event
+     * @param agentvar    The agentvar.
+     *
+     * @return true if found, else false.
+     */
+    static bool exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar);
 
     void post_parse(int pass);
 
     virtual string pretty_name();
 
     /**
-    * The table containing this accumulator (reference to pointer)
-    *
-    * Stable to symbol morphing during parse phase.
-    */
-
+     * The table containing this accumulator (reference to pointer)
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
     Symbol*& table;
 
     /**
-    * The table containing this accumulator (pointer)
-    *
-    * Only valid after post-parse phase 1.
-    */
-
+     * The table containing this accumulator (pointer)
+     * 
+     * Only valid after post-parse phase 1.
+     */
     TableSymbol* pp_table;
 
+    /**
+     * The accumulator, e.g. TK_SUM, TK_MIN, TK_MAX
+     */
     token_type accumulator;
 
+    /**
+     * The increment, e.g. TK_delta, TK_value_in
+     */
     token_type increment;
 
     /**
-    * The agentvar being accumulated (reference to pointer)
-    *
-    * Stable to symbol morphing during parse phase.
-    */
+     * The table operator: TK_interval or TK_event.
+     */
+    token_type table_op;
 
+    /**
+     * The agentvar being accumulated (reference to pointer)
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
     Symbol*& agentvar;
 
     /**
-    * The agentvar being accumulated (pointer)
-    *
-    * Only valid after post-parse phase 1.
-    */
-
+     * The agentvar being accumulated (pointer)
+     * 
+     * Only valid after post-parse phase 1.
+     */
     AgentVarSymbol* pp_agentvar;
 
     /**
-    * The analysis agentvar being accumulated (reference to pointer)
-    *
-    * Stable to symbol morphing during parse phase.
-    */
-
+     * The analysis agentvar being accumulated (reference to pointer)
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
     Symbol*& analysis_agentvar;
 
     /**
-    * The analysis agentvar being accumulated (pointer)
-    *
-    * Only valid after post-parse phase 1.
-    */
-
+     * The analysis agentvar being accumulated (pointer)
+     * 
+     * Only valid after post-parse phase 1.
+     */
     TableAnalysisAgentVarSymbol* pp_analysis_agentvar;
 
     /**
-    * Zero-based index of the accumulator within this table.
-    */
-
+     * Zero-based index of the accumulator within this table.
+     */
     int index;
 };
 
