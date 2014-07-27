@@ -27,12 +27,13 @@ public:
     {
     }
 
-    // conversion to pointer
-    operator A*() const
+    // conversion to bool (to check if nullptr)
+    operator bool() const
     {
-        return get();
+        return nullptr != ptr;
     }
 
+    // backdoor to wrapped pointer
     A *get() const
     {
         return ptr;
@@ -72,8 +73,14 @@ public:
 };
 
 template <class A>
-inline bool operator==(const link<A>& lhs, const link<A>& rhs){ return lhs.get() == rhs.get(); }
+inline bool operator==(const link<A>& lhs, const link<A>& rhs) { return lhs.get() == rhs.get(); }
 
 template <class A>
-inline bool operator!=(const link<A>& lhs, const link<A>& rhs){return !(lhs == rhs);}
+inline bool operator==(link<A>& lhs, link<A>& rhs) { return lhs.get() == rhs.get(); }
+
+template <class A>
+inline bool operator!=(const link<A>& lhs, const link<A>& rhs) { return !(lhs == rhs); }
+
+template <class A>
+inline bool operator!=(link<A>& lhs, link<A>& rhs) { return !(lhs == rhs); }
 

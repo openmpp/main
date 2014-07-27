@@ -148,7 +148,7 @@ public:
         *next_pos = -1;
         for ( index = start; index < (int)storage.size(); ++index ) {
             lnk = storage[index];
-            if ( lnk != nullptr ) {
+            if ( lnk ) {
                 next_lnk = lnk;
                 *next_pos = index;
                 break;

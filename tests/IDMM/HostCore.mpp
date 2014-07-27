@@ -317,8 +317,7 @@ void Host::ChangeContactsEvent()
 
 	// Locate each host in outgoing list
 	int nIndex = {-1};
-	Host *prContact = {NULL};
-	while ( prContact = mlContactsOut->GetNext(nIndex + 1, &nIndex) ) 
+	while ( auto prContact = mlContactsOut->GetNext(nIndex + 1, &nIndex) ) 
 	{
 
 		// If this Host is healthy, and the contact is visibly sick,

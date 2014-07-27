@@ -87,17 +87,7 @@ void Ticker::TickEvent()
 	event_type = TET_TICK;
 	event_count++;
 
-	// Increment report time
-	if (time > 2000)
-	{
-		StartEventTrace();
-	}
 	report_time = COERCE(REPORT_TIME, report_time + 1);
-	if (time > 3500)
-	{
-		StopEventTrace();
-	}
-
 
 	// Age all hosts to the current time.
 	int nHosts = asAllHosts->Count();
