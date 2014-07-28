@@ -217,11 +217,6 @@ public:
      */
     bool om_active;
 
-    /**
-     * The global time.
-     */
-    static Time global_time;
-
 private:
 
     /**

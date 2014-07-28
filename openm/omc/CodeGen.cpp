@@ -331,8 +331,11 @@ void CodeGen::do_agents()
         c += agent->name + " " + agent->name + "::om_null_agent;";
     }
 
-    c += "// definition of global time (declaration in Agent.h)";
-    c += "Time BaseAgent::global_time;";
+    c += "// definition of global time (declaration in Event.h)";
+    c += "Time BaseEvent::global_time;";
+    c += "";
+    c += "// definition of global event counter (declaration in Event.h)";
+    c += "big_counter BaseEvent::global_event_counter;";
     c += "";
 
     c += doxygen("Free all zombie agents");
@@ -391,7 +394,6 @@ void CodeGen::do_event_queue()
 
 void CodeGen::do_RunModel()
 {
-	// agents.cpp
 	c += "// Model simulation (implemented in framework module, usually from a 'use' instruction)";
 	c += "extern void RunModel(IModel * i_model);";
     c += "";
@@ -400,7 +402,6 @@ void CodeGen::do_RunModel()
 
 void CodeGen::do_API_entries()
 {
-	// agents.cpp
 	c.smart_indenting ( false );
 	c += "namespace openm";
 	c += "{";

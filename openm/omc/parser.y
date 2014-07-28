@@ -108,6 +108,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 
 // top-level om keywords, in alphabetic order
 %token <val_token>    TK_aggregation    "aggregation"
+%token <val_token>    TK_big_counter_type "big_counter_type"
 %token <val_token>    TK_classification "classification"
 %token <val_token>    TK_counter_type   "counter_type"
 %token <val_token>    TK_dependency     "dependency"
@@ -146,6 +147,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_all_derived_states        "all_derived_states"
 %token <val_token>    TK_all_internal_states       "all_internal_states"
 %token <val_token>    TK_all_links                 "all_links"
+%token <val_token>    TK_big_counter               "big_counter"
 %token <val_token>    TK_bounds_errors             "bounds_errors"
 %token <val_token>    TK_case_based                "case_based"
 %token <val_token>    TK_case_checksum             "case_checksum"
@@ -515,6 +517,7 @@ ompp_declarative_island:
 	| decl_time_type        { pc.InitializeForCxx(); }
 	| decl_real_type        { pc.InitializeForCxx(); }
 	| decl_counter_type     { pc.InitializeForCxx(); }
+	| decl_big_counter_type { pc.InitializeForCxx(); }
 	| decl_integer_type     { pc.InitializeForCxx(); }
 	| decl_index_type       { pc.InitializeForCxx(); }
 	| decl_version          { pc.InitializeForCxx(); }
@@ -672,6 +675,18 @@ decl_counter_type:
                             sym->decl_loc = @$;
                         }
     | "counter_type" error ";"
+    ;
+
+decl_big_counter_type:
+	  "big_counter_type" cxx_unsigned_integral_type[type_to_use] ";"
+						{
+                            // Change properties of existing NumericSymbol
+                            auto *sym = NumericSymbol::find(token::TK_big_counter);
+                            assert(sym);  // Initialization guarantee
+                            sym->Set_keywords((token_type)$type_to_use);
+                            sym->decl_loc = @$;
+                        }
+    | "big_counter_type" error ";"
     ;
 
 decl_integer_type:

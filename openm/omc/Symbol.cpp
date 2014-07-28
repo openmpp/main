@@ -90,6 +90,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 {
     // top level om keywords, in alphabetic order
     { token::TK_aggregation, "aggregation" },
+    { token::TK_big_counter_type, "big_counter_type" },
     { token::TK_classification, "classification" },
     { token::TK_counter_type, "counter_type" },
     { token::TK_dependency, "dependency" },
@@ -128,6 +129,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_all_derived_states, "all_derived_states" },
     { token::TK_all_internal_states, "all_internal_states" },
     { token::TK_all_links, "all_links" },
+    { token::TK_big_counter, "big_counter" },
     { token::TK_bounds_errors, "bounds_errors" },
     { token::TK_case_based, "case_based" },
     { token::TK_case_checksum, "case_checksum" },
@@ -398,6 +400,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 {
     token::TK_aggregation,
+    token::TK_big_counter_type,
     token::TK_classification,
     token::TK_counter_type,
     token::TK_dependency,
@@ -620,6 +623,7 @@ void Symbol::populate_default_symbols()
     sym = new RealSymbol(token::TK_double); // real
     sym = new NumericSymbol(token::TK_integer, token::TK_int, "0"); // integer
     sym = new NumericSymbol(token::TK_counter, token::TK_int, "0"); // counter
+    sym = new NumericSymbol(token::TK_big_counter, token::TK_unsigned, token::TK_long, token::TK_long, "0"); // counter
     sym = new UnknownTypeSymbol();
 
     // Not implemented (a string)
@@ -925,7 +929,7 @@ const size_t Symbol::storage_size(token_type tok)
     case token::TK_double:
         return sizeof(double);
     default:
-        // perhaps more complex logic here, for things like TK_Time, TK_counter, etc.
+        // perhaps more complex logic here, for things like TK_Time, TK_counter, TK_big_counter, etc.
         return sizeof(double);
     }
 }

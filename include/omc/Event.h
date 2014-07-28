@@ -147,7 +147,9 @@ public:
         assert(evt->event_time != time_infinite);
 
         // update global time
-        BaseAgent::global_time = evt->event_time;
+        global_time = evt->event_time;
+        // update global event counter
+        global_event_counter++;
 
         if ( just_in_time ) {
             // age the agent to the time of the event
@@ -211,6 +213,16 @@ public:
      * true to enable event logging (use API)
      */
     static bool trace_event_on;
+
+    /**
+     * The global time.
+     */
+    static Time global_time;
+
+    /**
+     * The global event counter.
+     */
+    static big_counter global_event_counter;
 };
 
 template<typename A, const int event_id, const int event_priority, void (A::*implement_function)(), Time (A::*time_function)()>

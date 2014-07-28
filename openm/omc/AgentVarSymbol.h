@@ -46,6 +46,33 @@ public:
      */
     void change_data_type(TypeSymbol *new_type);
 
+    /**
+     * Creates the lagged version of this agentvar.
+     * 
+     * The lagged version is an AgentInternalSymbol which holds
+     * the value of the agentvar at the end of the previous event.
+     * An additional AgentInternaalSymbol holds the value of the
+     * event counter at last update.
+     */
+    void create_lagged();
+
+    /**
+     * Gets the name of the lagged version of this agentvar.
+     *
+     * @return The symbol name.
+     */
+    string get_lagged_name();
+
+    /**
+     * Gets the name of the lagged event counter for this agentvar.
+     *
+     * Contains the value of the events counter when the lagged value
+     * was last updated.
+     * 
+     * @return The symbol name.
+     */
+    string get_lagged_event_counter_name();
+
     void post_parse(int pass);
 
     /**

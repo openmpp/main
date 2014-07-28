@@ -41,26 +41,36 @@ void TableAccumulatorSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            // assign direct pointer to table for post-parse use
-            pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
-            assert(pp_table); // parser guarantee
-
-            // assign direct pointer to agentvar for post-parse use
-            pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
-            assert(pp_agentvar); // parser guarantee
-
-            // assign direct pointer to TableAnalysisAgentVarSymbol for post-parse use
-            pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (pp_symbol(analysis_agentvar));
-            assert(pp_analysis_agentvar); // parser guarantee
-
-            // Add this table accumulator to the table's list of accumulators
-            pp_table->pp_accumulators.push_back(this);
+    case eCreateMissingSymbols:
+    {
+        // If agentvar is subject to event() tabulation operator create lagged version.
+        if (table_op == token::TK_event) {
+            auto av = dynamic_cast<AgentVarSymbol *>(pp_symbol(agentvar));
+            assert(av);
+            av->create_lagged();
         }
         break;
-    default:
+    }
+    case ePopulateCollections:
+    {
+        // assign direct pointer to table for post-parse use
+        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
+        assert(pp_table); // parser guarantee
+
+        // assign direct pointer to agentvar for post-parse use
+        pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
+        assert(pp_agentvar); // parser guarantee
+
+        // assign direct pointer to TableAnalysisAgentVarSymbol for post-parse use
+        pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (pp_symbol(analysis_agentvar));
+        assert(pp_analysis_agentvar); // parser guarantee
+
+        // Add this table accumulator to the table's list of accumulators
+        pp_table->pp_accumulators.push_back(this);
         break;
+    }
+    default:
+    break;
     }
 }
 

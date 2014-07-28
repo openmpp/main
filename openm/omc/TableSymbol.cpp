@@ -10,6 +10,7 @@
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentInternalSymbol.h"
+#include "AgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "IdentityAgentVarSymbol.h"
@@ -65,94 +66,96 @@ void TableSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // assign direct pointer to agent for use post-parse
-            pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
-            assert(pp_agent); // parser guarantee
+    {
+        // assign direct pointer to agent for use post-parse
+        pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
+        assert(pp_agent); // parser guarantee
 
-            // add this table to the complete list of tables
-            pp_all_tables.push_back(this);
+        // add this table to the complete list of tables
+        pp_all_tables.push_back(this);
 
-            // Add this table to the agent's list of tables
-            pp_agent->pp_agent_tables.push_back(this);
+        // Add this table to the agent's list of tables
+        pp_agent->pp_agent_tables.push_back(this);
 
-            // The following block of code is identical in EntitySetSymbol and TableSymbol
-            // validate dimension list
-            // and populate the post-parse version
-            for (auto psym : dimension_list) {
-                assert(psym); // logic guarantee
-                auto sym = *psym; // remove one level of indirection
-                assert(sym); // grammar guarantee
-                auto avs = dynamic_cast<AgentVarSymbol *>(sym);
-                if (!avs) {
-                    pp_error("'" + sym->name + "' is not an agentvar in dimension of '" + name + "'");
-                    continue; // don't insert invalid type in dimension list
-                }
-                auto es = dynamic_cast<EnumerationSymbol *>(pp_symbol(avs->data_type));
-                if (!es) {
-                    pp_error("The datatype of '" + avs->name + "' must be an enumeration type in dimension of '" + name + "'");
-                    continue; // don't insert invalid type in dimension list
-                }
-                pp_dimension_list_agentvar.push_back(avs);
-                pp_dimension_list_enum.push_back(es);
+        // The following block of code is identical in EntitySetSymbol and TableSymbol.
+        // Validate dimension list and populate the post-parse version.
+        for (auto psym : dimension_list) {
+            assert(psym); // logic guarantee
+            auto sym = *psym; // remove one level of indirection
+            assert(sym); // grammar guarantee
+            auto avs = dynamic_cast<AgentVarSymbol *>(sym);
+            if (!avs) {
+                pp_error("'" + sym->name + "' is not an agentvar in dimension of '" + name + "'");
+                continue; // don't insert invalid type in dimension list
             }
-            // clear the parse version to avoid inadvertant use post-parse
-            dimension_list.clear();
+            auto es = dynamic_cast<EnumerationSymbol *>(pp_symbol(avs->data_type));
+            if (!es) {
+                pp_error("The datatype of '" + avs->name + "' must be an enumeration type in dimension of '" + name + "'");
+                continue; // don't insert invalid type in dimension list
+            }
+            pp_dimension_list_agentvar.push_back(avs);
+            pp_dimension_list_enum.push_back(es);
         }
+        // clear the parse version to avoid inadvertant use post-parse
+        dimension_list.clear();
         break;
+    }
+
     case ePopulateDependencies:
-        {
-            // The following block of code is almost identical in EntitySetSymbol and TableSymbol
-            // construct function bodies
-            build_body_update_cell();
-            build_body_prepare_increments();
-            build_body_process_increments();
+    {
+        // The following block of code is almost identical in EntitySetSymbol and TableSymbol
+        // construct function bodies
+        build_body_update_cell();
+        build_body_prepare_increments();
+        build_body_process_increments();
 
-            // Dependency on change in index agentvars
-            for (auto av : pp_dimension_list_agentvar) {
-                CodeBlock& c = av->side_effects_fn->func_body;
-                c += "// cell change in " + name;
-                c += "if (om_active) {";
-                if (filter) {
-                    c += "if (" + filter->name + ") {";
-                }
-                c += process_increments_fn->name + "();";
-                c += update_cell_fn->name + "();";
-                c += prepare_increments_fn->name + "();";
-                if (filter) {
-                    c += "}";
-                }
-                c += "}";
-                c += "";
-            }
-
-            // Dependency on table filter
+        // Dependency on change in index agentvars
+        for (auto av : pp_dimension_list_agentvar) {
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += "// cell change in " + name;
+            c += "if (om_active) {";
             if (filter) {
-                CodeBlock& c = filter->side_effects_fn->func_body;
-                c += "// filter change in " + name;
-                c += "if (om_active) {";
-                c += "if (new_value) {";
-                c += "// filter changed from false to true";
-                c += update_cell_fn->name + "();";
-                c += prepare_increments_fn->name + "();";
-                c += "}";
-                c += "else {";
-                c += "// filter changed from true to false";
-                c += process_increments_fn->name + "();";
-                c += "}";
-                c += "}";
-                c += "";
+                c += "if (" + filter->name + ") {";
             }
-
-            // Mark enumerations required for metadata support for this table
-            // The enumeration of each dimension is required
-            for (auto es : pp_dimension_list_enum) {
-                es->metadata_needed = true;
+            c += process_increments_fn->name + "();";
+            c += update_cell_fn->name + "();";
+            c += prepare_increments_fn->name + "();";
+            if (filter) {
+                c += "}";
             }
+            c += "}";
+            c += "";
         }
+
+        // Dependency on table filter
+        if (filter) {
+            CodeBlock& c = filter->side_effects_fn->func_body;
+            c += "// filter change in " + name;
+            c += "if (om_active) {";
+            c += "if (new_value) {";
+            c += "// filter changed from false to true";
+            c += update_cell_fn->name + "();";
+            c += prepare_increments_fn->name + "();";
+            c += "}";
+            c += "else {";
+            c += "// filter changed from true to false";
+            c += process_increments_fn->name + "();";
+            c += "}";
+            c += "}";
+            c += "";
+        }
+
+        // Mark enumerations required for metadata support for this table
+        // The enumeration of each dimension is required
+        for (auto es : pp_dimension_list_enum) {
+            es->metadata_needed = true;
+        }
+
         break;
+    }
+
     default:
-        break;
+    break;
     }
 }
 

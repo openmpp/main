@@ -68,7 +68,7 @@ void AgentSymbol::create_auxiliary_symbols()
         auto *fn = new AgentFuncSymbol("om_set_start_time", this, "void", "");
         fn->doc_block = doxygen_short("Set the default start time of this entity.");
         CodeBlock& c = fn->func_body;
-        c += "time.set(global_time);" ;
+        c += "time.set(BaseEvent::global_time);" ;
     }
 
     // The om_Start_custom() member function

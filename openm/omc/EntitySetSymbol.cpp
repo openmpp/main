@@ -70,9 +70,8 @@ void EntitySetSymbol::post_parse(int pass)
             // Add this entity set to the agent's list of entity sets
             pp_agent->pp_agent_entity_sets.push_back(this);
 
-            // The following block of code is identical in EntitySetSymbol and TableSymbol
-            // validate dimension list
-            // and populate the post-parse version
+            // The following block of code is identical in EntitySetSymbol and TableSymbol.
+            // Validate dimension list and populate the post-parse version.
             for (auto psym : dimension_list) {
                 assert(psym); // logic guarantee
                 auto sym = *psym; // remove one level of indirection
