@@ -76,10 +76,10 @@ namespace openm {
         }
     };
 
-    // run-time support functions
-	double RandUniform(int strm);
 }
 
-extern void StartSimulation(int id);
+// run-time functions (from simulation framework modules)
+extern double RandUniform(int strm);
+extern void StartSimulation();
 extern void EndSimulation();
 

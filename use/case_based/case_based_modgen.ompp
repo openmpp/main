@@ -16,12 +16,19 @@ parameters {
 
 use "common.ompp";
 
-namespace openm {
+/**
+ * The fmk namespace is used within this module
+ * to protect the global namespace for model use.
+ */
+namespace fmk {
 
+    // Fixed number of randome number generators available in Modgen
     const int max_samples = 41;
 
+    // Fixed modulus used by all Modgen random number generators
     const long mg_modulus = 2147483647;
 
+    // Multiplier of generator used to generate the starting seeds for each case
     const long case_seed_generators[max_samples] = {
         470583131,
         1278375574,
@@ -66,8 +73,10 @@ namespace openm {
         914624015,
     };
 
+    // Multiplier of generator used to initialize the model stream seeds
     const long model_stream_seed_generator = 376740290;
 
+    // Multiplier of generator used for a given 'sample member'
     const long model_stream_generators[max_samples] = {
         16807,
         1826645050,
@@ -112,71 +121,84 @@ namespace openm {
         1096609123,
     };
 
-    const int model_streams = 100; // prototype only uses 1
-    long model_stream_seeds[model_streams]; // seeds for stream generators
+    // Maximum number of streams in the model (increase if insufficient)
+    const int model_streams = 100;
 
-    long case_seed = 0; // the 'master seed' for the case
-    long case_seed_generator = 0; // multiplier for the generator for the cases in the sample
-    long model_stream_generator = 0; // multiplier for the generator for the model streams
+    // Current seed for each stream generator in the model
+    long model_stream_seeds[model_streams];
 
-    double RandUniform(int strm)
-    {
-        assert(strm < model_streams);
-        long seed = model_stream_seeds[strm];
-        long long product = model_stream_generator;
-        product *= seed;
-        seed = product % mg_modulus;
-        model_stream_seeds[strm] = seed;
-        return (double)seed / (double)mg_modulus;
-    }
+    // Multiplier for the generator for the streams in the model (shared by all streams)
+    long model_stream_generator = 0;
 
-} // namespace openm
+} // fmk
 
-using namespace openm;
+double RandUniform(int strm)
+{
+    assert(strm < fmk::model_streams);
+    long seed = fmk::model_stream_seeds[strm];
+    long long product = fmk::model_stream_generator;
+    product *= seed;
+    seed = product % fmk::mg_modulus;
+    fmk::model_stream_seeds[strm] = seed;
+    return (double)seed / (double)fmk::mg_modulus;
+}
 
 void RunModel(IModel * i_model)
 {
     theLog->logMsg("Running Simulation");
 
-    int samples = i_model->subSampleCount();
-    int sample = i_model->subSampleNumber();
-    int seed = SimulationSeed;
-    long long cases = SimulationCases;
+    // The number of simulations in the sample of simulations (not used)
+    int sample_size = i_model->subSampleCount();
 
-    // for sample numbers greater than 40, re-use generators cyclically
+    // The member to simulate of the sample of simulations
+    int sample_member = i_model->subSampleNumber();
+
+    int seed = SimulationSeed; // framework input parameter
+    long long cases = SimulationCases; // framework input parameter
+
+    // for sample numbers greater than maximum, re-use generators cyclically
     // and increment the starting case_seed for the simulation of the sample
-    case_seed = seed + (int)sample / max_samples;
-    case_seed_generator = case_seed_generators[sample % max_samples];
-    model_stream_generator = model_stream_generators[sample % max_samples];
+    long case_seed = seed + (int)sample_member / fmk::max_samples;
+    long case_seed_generator = fmk::case_seed_generators[sample_member % fmk::max_samples];
+
+    // For sample_member numbers greater than limit, re-use generators cyclically.
+    fmk::model_stream_generator = fmk::model_stream_generators[sample_member % fmk::max_samples];
 
     for (long long thisCase = 0; thisCase < cases; thisCase++) {
 
         {
             // initialize the stream generators
             long seed = case_seed;
-            for (int model_stream = 0; model_stream < model_streams; model_stream++) {
-                model_stream_seeds[model_stream] = seed;
-                long long product = model_stream_seed_generator;
+            for (int model_stream = 0; model_stream < fmk::model_streams; model_stream++) {
+                fmk::model_stream_seeds[model_stream] = seed;
+                long long product = fmk::model_stream_seed_generator;
                 product *= seed;
-                seed = product % mg_modulus;
+                seed = product % fmk::mg_modulus;
             }
         }
 
-        // Initialize default global time
+        // Initialize global event counter for the case
+        BaseEvent::global_event_counter = 0;
+
+        // Initialize global time for the case  (can override in StartSimulation)
         BaseEvent::global_time = 0;
 
-        // simulate the case
-        StartSimulation(thisCase);
+        // Prepare the case for simulation
+        ::StartSimulation(); // Model-specific - normlly defined in Framework.ompp
+
+        // Simulate the case
         while (BaseEvent::do_next_event());
+
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
-        EndSimulation();
+
+        ::EndSimulation(); // Model-specific - normally defined in Framework.ompp
 
         {
             // generate the case seed for the next case
             long long product = case_seed_generator;
             product *= case_seed;
-            case_seed = product % mg_modulus;
+            case_seed = product % fmk::mg_modulus;
         }
     } // cases
 }

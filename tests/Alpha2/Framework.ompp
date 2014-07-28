@@ -10,7 +10,7 @@
 
 use "case_based/case_based_modgen.ompp";
 
-void StartSimulation(int id)
+void StartSimulation()
 {
     Person *thePerson = new Person;
 

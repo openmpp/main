@@ -13,7 +13,7 @@
 
 my $version = 1.0;
 
-my $debug = 1; # diagnostics level
+my $debug = 0; # diagnostics level
 
 
 if ( $#ARGV+1 != 1 ) {

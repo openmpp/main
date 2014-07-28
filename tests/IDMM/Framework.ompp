@@ -10,7 +10,7 @@
 
 use "time_based/time_based_modgen.ompp";
 
-void StartSimulation(int id)
+void StartSimulation()
 {
     BaseEvent::global_time = 0;
 
