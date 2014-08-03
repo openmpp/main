@@ -25,10 +25,13 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
             if (name == "age") {
                 // add side-effect to time agentvar
                 AgentVarSymbol *av = pp_agent->pp_time;
+                assert(av);
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += "// Advance time for the age agentvar";
-                string line = "age.set( age.get() + new_value - old_value );";
-                c += line;
+                c += "{";
+                c += "Time delta = new_value - old_value;";
+                c += "age.set(age.get() + delta);";
+                c += "}";
                 c += "";
             }
         }

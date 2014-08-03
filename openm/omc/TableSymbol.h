@@ -39,6 +39,7 @@ public:
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
         , cell(nullptr)
+        , previous_global_counter(nullptr)
         , update_cell_fn(nullptr)
         , prepare_increments_fn(nullptr)
         , process_increments_fn(nullptr)
@@ -108,6 +109,20 @@ public:
      * The agentvar which will hold the active index into the table.
      */
     AgentInternalSymbol *cell;
+
+    /**
+     * The agentvar which will hold the value of the global event counter at the previous table
+     * update.
+     * 
+     * Table updates are lagged so that simultaneous changes in multiple classificatory dimensions
+     * and/or filter are processed together as a single table update.  This agentvar together with
+     * the current value of the global event counter is used to detect that the previous table
+     * update is definitively finished and can be processed.
+     * 
+     * Because the global event counter is 1 for the first event, the default initialization value
+     * of zero for this agentvar works as intended.
+     */
+    AgentInternalSymbol *previous_global_counter;
 
     /**
      * The agent function which updates the active cell index using agentvars.

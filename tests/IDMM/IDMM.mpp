@@ -69,8 +69,6 @@ void Simulation()
 	// Note replicate number for progress reporting
 	int nReplicate = GetReplicate();
 
-	StopEventTrace();
-
 	// Create the starting population
 	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_START"));
 	ProgressMessage( szBuffer );

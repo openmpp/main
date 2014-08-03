@@ -37,6 +37,14 @@ void TableSymbol::create_auxiliary_symbols()
     }
 
     {
+        assert(!previous_global_counter); // initialization guarantee
+        // Set storage type to big_counter, which is the same type as the global event counter.
+        auto *typ = NumericSymbol::find(token::TK_big_counter);
+        assert(typ); // initialization guarantee
+        previous_global_counter = new AgentInternalSymbol("om_" + name + "_previous_global_counter", agent, typ);
+    }
+
+    {
         assert(!update_cell_fn); // initialization guarantee
         update_cell_fn = new AgentFuncSymbol("om_" + name + "_update_cell", agent);
         assert(update_cell_fn); // out of memory check
@@ -296,7 +304,8 @@ void TableSymbol::build_body_update_cell()
         if (dim > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
-        c += "index = " + av->unique_name + ".get();";
+        //c += "index = " + av->unique_name + ".get();";
+        c += "index = " + av->name + ";";
         auto rs = dynamic_cast<RangeSymbol *>(es);
         if (rs) {
             c += "// adjust range to zero-based" ;
