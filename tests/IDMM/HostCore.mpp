@@ -157,12 +157,12 @@ void Host::Start()
 	}
 
 	// Schedule the first social contact.
-	next_contact = time + (TIME) ( MeanContactInterval * ( 2.0 * RandUniform(1) ) );
+	next_contact = WAIT(MeanContactInterval * 2.0 * RandUniform(1));
 	
 	// Schedule the first change of contacts.
 	if ( EnableChangeContactsEvent == TRUE ) 
 	{
-		next_change_contacts = time + (TIME) ( MeanChangeContactsInterval * ( 2.0 * RandUniform(10) ) );
+		next_change_contacts = WAIT(MeanChangeContactsInterval * 2.0 * RandUniform(10));
 	}
 	else 
 	{
@@ -226,7 +226,7 @@ void Host::ContactEvent()
 
 	// Schedule the next outgoing contact.
 	// Note that the waiting time is uniformly distributed  with mean MeanContactInterval
-	next_contact += (TIME) ( MeanContactInterval * ( 2.0 * RandUniform(2) ) );
+	next_contact = WAIT(MeanContactInterval * 2.0 * RandUniform(2));
 }
 
 
@@ -258,7 +258,7 @@ void Host::DiseaseProgressionEvent()
 			{
 				// Schedule next phase
 				disease_next_phase = DP_INFECTIOUS;
-				disease_next_phase_time = WAIT( (TIME) LatentPhaseDuration );
+				disease_next_phase_time = WAIT(LatentPhaseDuration);
 			}
 
 			break;
@@ -268,7 +268,7 @@ void Host::DiseaseProgressionEvent()
 			{
 				// Schedule next phase
 				disease_next_phase = DP_IMMUNE;
-				disease_next_phase_time = WAIT( (TIME) ContagiousPhaseDuration );
+				disease_next_phase_time = WAIT(ContagiousPhaseDuration);
 			}
 
 			break;
@@ -278,7 +278,7 @@ void Host::DiseaseProgressionEvent()
 			{
 				// Schedule next phase
 				disease_next_phase = DP_SUSCEPTIBLE;
-				disease_next_phase_time = WAIT( (TIME) ImmunePhaseDuration );
+				disease_next_phase_time = WAIT(ImmunePhaseDuration);
 			}
 
 			break;
@@ -344,8 +344,8 @@ void Host::ChangeContactsEvent()
 	}
 
 	// Schedule the next change contacts event.
-	// Note that the waiting time is uniformly distributed  with mean MeanChangeContactsInterval
-	next_change_contacts += (TIME) ( MeanChangeContactsInterval * ( 2.0 * RandUniform(9) ) );
+	// Note that the waiting time is uniformly distributed with mean MeanChangeContactsInterval
+	next_change_contacts = WAIT(MeanChangeContactsInterval * 2.0 * RandUniform(9));
 }
 
 

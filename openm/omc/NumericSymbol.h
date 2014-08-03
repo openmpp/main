@@ -27,11 +27,11 @@ public:
     bool is_base_symbol() const { return false; }
 
     /**
-    * Constructor.
-    *
-    * @param type The token for the keyword of the type, e.g. token::KW_Time.
-    */
-
+     * Constructor.
+     *
+     * @param type          The token for the keyword of the type, e.g. token::KW_Time.
+     * @param initial_value The initial value.
+     */
     NumericSymbol(token_type type, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
@@ -41,12 +41,12 @@ public:
     }
 
     /**
-    * Constructor.
-    *
-    * @param type The token for the keyword of the type, e.g. token::KW_Time.
-    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_double.
-    */
-
+     * Constructor.
+     *
+     * @param type          The token for the keyword of the type, e.g. token::KW_Time.
+     * @param kw1           Keyword #1 for the associated typedef, e.g. token::KW_double.
+     * @param initial_value The initial value.
+     */
     NumericSymbol(token_type type, token_type kw1, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
@@ -56,13 +56,13 @@ public:
     }
 
     /**
-    * Constructor.
-    *
-    * @param type The token for the keyword of the type, e.g. token::KW_uint.
-    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_unsigned.
-    * @param kw2  Keyword #2 for the associated typedef, e.g. token::KW_int.
-    */
-
+     * Constructor.
+     *
+     * @param type          The token for the keyword of the type, e.g. token::KW_uint.
+     * @param kw1           Keyword #1 for the associated typedef, e.g. token::KW_unsigned.
+     * @param kw2           Keyword #2 for the associated typedef, e.g. token::KW_int.
+     * @param initial_value The initial value.
+     */
     NumericSymbol(token_type type, token_type kw1, token_type kw2, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
@@ -72,14 +72,14 @@ public:
     }
 
     /**
-    * Constructor.
-    *
-    * @param type The token for the keyword of the type, e.g. token::KW_ullong.
-    * @param kw1  Keyword #1 for the associated typedef, e.g. token::KW_unsigned.
-    * @param kw2  Keyword #2 for the associated typedef, e.g. token::KW_long.
-    * @param kw3  Keyword #3 for the associated typedef, e.g. token::KW_long.
-    */
-
+     * Constructor.
+     *
+     * @param type          The token for the keyword of the type, e.g. token::KW_ullong.
+     * @param kw1           Keyword #1 for the associated typedef, e.g. token::KW_unsigned.
+     * @param kw2           Keyword #2 for the associated typedef, e.g. token::KW_long.
+     * @param kw3           Keyword #3 for the associated typedef, e.g. token::KW_long.
+     * @param initial_value The initial value.
+     */
     NumericSymbol(token_type type, token_type kw1, token_type kw2, token_type kw3, const string & initial_value)
         : TypeSymbol(token_to_string(type))
         , type(type)
@@ -117,33 +117,29 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
-
     /**
-     * The type, e.g. TK_uint
+     * The type, e.g. TK_uint.
      */
-
     token_type type;
 
     /**
-    * The initial value for a quantity of this type.
-    */
-
+     * The initial value for a quantity of this type.
+     */
     const string initial_value;
 
     /**
-     * A list of keywords used to construct the typedef statement, e.g. TK_unsigned, TK_int
+     * A list of keywords used to construct the typedef statement, e.g. TK_unsigned, TK_int.
+     * 
+     * The Time type has specialized logic to construct the typedef, so keywords is left empty.
      */
-
     list<token_type> keywords;
 
-
     /**
-     * Gets the NumericSymbol for a given type
+     * Gets the NumericSymbol for a given type.
      *
      * @param type The type.
      *
-     * @return null if it fails, else the TypedefTypeymbol.
+     * @return null if it fails, else the NumericSymbol.
      */
-
     static NumericSymbol *find(token_type type);
 };

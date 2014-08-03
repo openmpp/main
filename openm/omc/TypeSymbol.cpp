@@ -12,6 +12,7 @@
 #include "ClassificationSymbol.h"
 #include "RangeSymbol.h"
 #include "PartitionSymbol.h"
+#include "TimeSymbol.h"
 
 using namespace std;
 
@@ -49,6 +50,16 @@ string TypeSymbol::wrapped_type()
         auto es = dynamic_cast<EnumerationSymbol *>(this);
         assert(es);
         return (Symbol::token_to_string(es->storage_type));
+    }
+    else if (dynamic_cast<TimeSymbol *>(this)) {
+        auto ts = dynamic_cast<TimeSymbol *>(this);
+        assert(ts);
+        if (ts->is_wrapped()) {
+            return (Symbol::token_to_string(ts->time_type));
+        }
+        else {
+            return "void";
+        }
     }
     else {
         return "void";

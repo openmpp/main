@@ -56,7 +56,7 @@ actor Ticker				 		//EN Actor for synchronising population-level activities
 /* NOTE(Ticker.Start,EN) 
 	Initializes the Ticker actor.
 */
-void Ticker::Start( )
+void Ticker::Start()
 {
 	time = 0;
 	age = 0;

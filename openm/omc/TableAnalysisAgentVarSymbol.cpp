@@ -83,7 +83,7 @@ CodeBlock TableAnalysisAgentVarSymbol::cxx_prepare_increment() const
     assert(pp_agentvar);  // only call post-parse
     CodeBlock c;
     // example:              DurationOfLife.value_in.alive = alive;\n
-    c += in_member_name() + " = " + pp_agentvar->name + ";";
+    c += in_member_name() + " = " + pp_agentvar->name + ".get();";
     return c;
 }
 

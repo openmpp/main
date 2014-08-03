@@ -35,8 +35,8 @@ CodeBlock SimpleAgentVarSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to simple agentvars
 
-    // example:         SimpleAgentVar<bool, Person, &Person::alive_side_effects> alive;
-    h += "SimpleAgentVar<" 
+    // example:         AssignableAgentVar<bool, Person, &Person::alive_side_effects> alive;
+    h += "AssignableAgentVar<" 
         + pp_data_type->name + ", "
         + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "

@@ -1,0 +1,47 @@
+/**
+* @file    common.ompp
+* Implementation of global functions for all models
+*
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+void SetMaxTime(double max_value)
+{
+    fixed_precision_float<Time::type>::set_max(max_value);
+}
+
+
+void StartEventTrace()
+{
+    BaseEvent::trace_event_on = true;
+}
+
+void StopEventTrace()
+{
+    BaseEvent::trace_event_on = false;
+}
+
+void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time)
+{
+    WriteDebugLogEntry("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f\n",
+                       entity_name,
+                       entity_id,
+                       case_seed,
+                       event_name,
+                       time);
+}
+
+void WriteDebugLogEntry(const char * fmt, ...)
+{
+    const size_t buf_size = 256;
+    static char buf[buf_size];
+
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, buf_size, fmt, args);
+    va_end(args);
+
+    om_debug_log << buf;
+}
+

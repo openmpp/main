@@ -644,10 +644,10 @@ option_value[value]:
 decl_time_type:
 	  "time_type" cxx_numeric_type[type_to_use] ";"
                         {
-                            // Change properties of existing NumericSymbol
-                            auto *sym = NumericSymbol::find(token::TK_Time);
+                            // Change properties of existing unitary TimeSymbol
+                            auto *sym = TimeSymbol::find();
                             assert(sym);  // Initialization guarantee
-                            sym->Set_keywords((token_type)$type_to_use);
+                            sym->time_type = (token_type)$type_to_use;
                             sym->decl_loc = @$;
                         }
     | "time_type" error ";"

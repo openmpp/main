@@ -10,6 +10,11 @@
 
 using namespace std;
 
+bool TimeSymbol::is_wrapped()
+{
+    return time_type == token::TK_float || time_type == token::TK_double || time_type == token::TK_ldouble;
+}
+
 CodeBlock TimeSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
@@ -17,9 +22,19 @@ CodeBlock TimeSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // only one keyword for Time
-    string typedef_string = token_to_string(keywords.front());
+    // The NumericSymbol upwards in the hierarchy does not generated a 
+    // typedef for Time, because it requires special treatment.
+    // 
+    string typedef_string;
+    if (is_wrapped()) {
+        // wrap the floating point type in the typedef
+        typedef_string = "fixed_precision_float<" + token_to_string(time_type) + ">";
+    }
+    else {
+        typedef_string = token_to_string(time_type);
+    }
 
+    h += "typedef " + typedef_string + " Time;";
     h += "typedef " + typedef_string + " TIME; // For Modgen source compatibility";
     // Time 'literals'
     h += "extern const Time time_infinite;";
@@ -43,3 +58,10 @@ CodeBlock TimeSymbol::cxx_definition_global()
     return c;
 }
 
+// static
+TimeSymbol * TimeSymbol::find()
+{
+    auto ts = dynamic_cast<TimeSymbol *>(get_symbol(token_to_string(token::TK_Time)));
+    assert(ts); // only called when valid
+    return ts;
+}

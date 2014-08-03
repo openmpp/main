@@ -32,7 +32,7 @@
 
 #define TRUE true
 #define FALSE false
-#define WAIT( delta_time ) (time + (delta_time))
+#define WAIT( delta_time ) static_cast<Time::type>((time + (delta_time)))
 
 // Implementation of old-style Modgen macros related to classifications, ranges, and partitions
 #define MIN( symbol )				(symbol::min)
@@ -46,14 +46,6 @@
 
 // map logical to bool (for local variable declarations in Modgen models)
 #define logical bool
-
-// Implemented in all models through the statement:
-//   use "common.ompp";
-extern void WriteDebugLogEntry(const char * fmt, ...);
-extern void StartEventTrace();
-extern void StopEventTrace();
-void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time);
-
 
 // The following are temporary kludges to allow compilation
 #define GetCaseSample() 0
@@ -78,7 +70,16 @@ namespace openm {
 
 }
 
-// run-time functions (from simulation framework modules)
+// Run-time functions defined in all models in the use module"common.ompp".
+// This module is made part of the model by a 'use' statement
+// in the model simulation framework module.
+extern void SetMaxTime(double max_value);
+extern void WriteDebugLogEntry(const char * fmt, ...);
+extern void StartEventTrace();
+extern void StopEventTrace();
+void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time);
+
+// Run-time functions defined in the simulation framework module.
 extern double RandUniform(int strm);
 extern void StartSimulation();
 extern void EndSimulation();

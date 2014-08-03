@@ -40,6 +40,13 @@ public:
         value = assign_value;
     }
 
+    // 1-argument ctor for creating r-values for assignment to 'real' AgentVar's in Agent, for wrapped types
+    //AgentVar(T2 assign_value)
+    //{
+    //    // N.B. no side-effects
+    //    value = assign_value;
+    //}
+
     // initialization
     void initialize( T initial_value )
     {
@@ -105,9 +112,9 @@ template<typename T, typename T2, typename A, void (A::*side_effects)(T old_valu
 size_t AgentVar<T, T2, A, side_effects>::offset_in_agent = 0;
 
 /**
- * Template for simple agentvars.
+ * Template for assignable agentvars.
  * 
- * All C++ assignment operators are implemented in SimpleAgentVar, allowing developer code to
+ * All C++ assignment operators are implemented in AssignableAgentVar, allowing developer code to
  * assign values.  Side-effects are performed if the assignment changes the value.
  *
  * @tparam T            Generic type parameter.
@@ -115,31 +122,31 @@ size_t AgentVar<T, T2, A, side_effects>::offset_in_agent = 0;
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
 template<typename T, typename T2, typename A, void (A::*side_effects)(T old_value, T new_value) = nullptr>
-class SimpleAgentVar : public AgentVar<T, T2, A, side_effects>
+class AssignableAgentVar : public AgentVar<T, T2, A, side_effects>
 {
 public:
 
     // ctor
-    SimpleAgentVar()
+    AssignableAgentVar()
     {
     }
 
     // operator: copy assignment
-    SimpleAgentVar& operator=(const SimpleAgentVar & other)
+    AssignableAgentVar& operator=(const AssignableAgentVar & other)
     {
         this->set( other.get() );
         return *this;
     }
 
     // operator: direct assignment of wrapped type
-    SimpleAgentVar& operator=( T new_value )
+    AssignableAgentVar& operator=( T new_value )
     {
         this->set( new_value );
         return *this;
     }
 
     // operator: assignment by sum
-    SimpleAgentVar& operator+=( T modify_value )
+    AssignableAgentVar& operator+=( T modify_value )
     {
         T new_value = this->get() + modify_value;
         this->set( new_value );
@@ -147,7 +154,7 @@ public:
     }
 
     // operator: assignment by difference
-    SimpleAgentVar& operator-=( T modify_value )
+    AssignableAgentVar& operator-=( T modify_value )
     {
         T new_value = this->get() - modify_value;
         this->set( new_value );
@@ -155,7 +162,7 @@ public:
     }
 
     // operator: assignment by product
-    SimpleAgentVar& operator*=( T modify_value )
+    AssignableAgentVar& operator*=( T modify_value )
     {
         T new_value = this->get() * modify_value;
         this->set( new_value );
@@ -163,7 +170,7 @@ public:
     }
 
     // operator: assignment by quotient
-    SimpleAgentVar& operator/=( T modify_value )
+    AssignableAgentVar& operator/=( T modify_value )
     {
         T new_value = this->get() / modify_value;
         this->set( new_value );
@@ -171,7 +178,7 @@ public:
     }
 
     // operator: assignment by remainder
-    SimpleAgentVar& operator%=( T modify_value )
+    AssignableAgentVar& operator%=( T modify_value )
     {
         T new_value = this->get() % modify_value;
         this->set( new_value );
@@ -179,7 +186,7 @@ public:
     }
 
     // operator: assignment by bitwise left shift
-    SimpleAgentVar& operator<<=( T modify_value )
+    AssignableAgentVar& operator<<=( T modify_value )
     {
         T new_value = this->get() << modify_value;
         this->set( new_value );
@@ -187,7 +194,7 @@ public:
     }
 
     // operator: assignment by bitwise right shift
-    SimpleAgentVar& operator>>=( T modify_value )
+    AssignableAgentVar& operator>>=( T modify_value )
     {
         T new_value = this->get() >> modify_value;
         this->set( new_value );
@@ -195,7 +202,7 @@ public:
     }
 
     // operator: assignment by bitwise AND
-    SimpleAgentVar& operator&=( T modify_value )
+    AssignableAgentVar& operator&=( T modify_value )
     {
         T new_value = this->get() & modify_value;
         this->set( new_value );
@@ -203,7 +210,7 @@ public:
     }
 
     // operator: assignment by bitwise XOR
-    SimpleAgentVar& operator^=( T modify_value )
+    AssignableAgentVar& operator^=( T modify_value )
     {
         T new_value = this->get() ^ modify_value;
         this->set( new_value );
@@ -211,7 +218,7 @@ public:
     }
 
     // operator: assignment by bitwise OR
-    SimpleAgentVar& operator|=( T modify_value )
+    AssignableAgentVar& operator|=( T modify_value )
     {
         T new_value = this->get() | modify_value;
         this->set( new_value );
@@ -219,7 +226,7 @@ public:
     }
 
     // operator: prefix increment
-    SimpleAgentVar& operator++()
+    AssignableAgentVar& operator++()
     {
         T new_value = this->get() + 1;
         this->set( new_value );
@@ -227,7 +234,7 @@ public:
     }
 
     // operator: prefix decrement
-    SimpleAgentVar& operator--()
+    AssignableAgentVar& operator--()
     {
         T new_value = this->get() - 1;
         this->set( new_value );

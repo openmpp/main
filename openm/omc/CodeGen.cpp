@@ -73,6 +73,7 @@ void CodeGen::do_preamble()
     t0 += "";
     t0 += "#pragma once";
     t0 += "#include <cmath>";
+    t0 += "#include \"omc/fixed_precision_float.h\"";
     t0 += "";
 
     // om_types1.h
@@ -318,6 +319,8 @@ void CodeGen::do_agents()
             h += data_member->cxx_declaration_agent();
             c += data_member->cxx_definition_agent();
         }
+	    h += "";
+	    c += "";
 
         h += "// The declaration of the single static " + agent->name;
         h += "// used to retrieve (zero) values when dereferencing nullptr link agentvars.";
