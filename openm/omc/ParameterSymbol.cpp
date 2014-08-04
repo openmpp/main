@@ -14,6 +14,7 @@
 #include "RangeSymbol.h"
 #include "PartitionSymbol.h"
 #include "EnumerationSymbol.h"
+#include "TimeSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -48,8 +49,8 @@ void ParameterSymbol::post_parse(int pass)
                     pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
-                if (es->numeric_or_bool()) {
-                    // really just checking for bool, but numeric_or_bool() works fine in this context
+                if (es->is_bool()) {
+                    // bool not allowed as parameter dimension
                     pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
@@ -69,8 +70,8 @@ void ParameterSymbol::post_parse(int pass)
                     pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
-                if (es->numeric_or_bool()) {
-                    // really just checking for bool, but numeric_or_bool() works fine in this context
+                if (es->is_bool()) {
+                    // bool not allowed as parameter dimension
                     pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
                     continue; // don't insert invalid type in dimension list
                 }
@@ -243,7 +244,13 @@ unsigned long ParameterSymbol::cells()
 string ParameterSymbol::cxx_read_parameter()
 {
     string typ; // storage type
-    if (pp_datatype->numeric_or_bool()) {
+    if (pp_datatype->is_time()) {
+        // For Time, the type is wrapped
+        auto ts = dynamic_cast<TimeSymbol *>(pp_datatype);
+        assert(ts); // grammar guarantee
+        typ = Symbol::token_to_string(ts->time_type);
+    }
+    else if (pp_datatype->is_numeric_or_bool()) {
         // For fundamental types (and bool), the name of the symbol is the name of the type
         typ = pp_datatype->name;
     }
@@ -262,7 +269,13 @@ string ParameterSymbol::cxx_read_parameter()
 string ParameterSymbol::cxx_assert_sanity()
 {
     string typ; // storage type
-    if (pp_datatype->numeric_or_bool()) {
+    if (pp_datatype->is_time()) {
+        // For Time, the type is wrapped
+        auto ts = dynamic_cast<TimeSymbol *>(pp_datatype);
+        assert(ts); // grammar guarantee
+        typ = Symbol::token_to_string(ts->time_type);
+    }
+    else if (pp_datatype->is_numeric_or_bool()) {
         // For fundamental types (and bool), the name of the symbol is the name of the type
         typ = pp_datatype->name;
     }

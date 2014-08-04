@@ -21,7 +21,7 @@ parameters
 
     double c_double;
 
-    //Time a_time;
+    Time a_time;
     counter a_counter;
     integer a_integer;
     real a_real;

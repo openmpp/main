@@ -16,7 +16,27 @@
 
 using namespace std;
 
-bool TypeSymbol::numeric_or_bool()
+bool TypeSymbol::is_bool()
+{
+    if (dynamic_cast<BoolSymbol *>(this)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool TypeSymbol::is_time()
+{
+    if (dynamic_cast<TimeSymbol *>(this)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool TypeSymbol::is_numeric_or_bool()
 {
     if (dynamic_cast<NumericSymbol *>(this) || dynamic_cast<BoolSymbol *>(this)) {
         return true;

@@ -54,9 +54,23 @@ public:
     /**
      * Determines derived type.
      *
-     * @return true if numeric or bool, false for classification, range, or partition.
+     * @return true if bool, else false.
      */
-    bool numeric_or_bool();
+    bool is_bool();
+
+    /**
+     * Determines derived type.
+     *
+     * @return true if time type, else false
+     */
+    bool is_time();
+
+    /**
+     * Determines derived type.
+     *
+     * @return true if numeric or bool, else false (classification, range, or partition).
+     */
+    bool is_numeric_or_bool();
 
     /**
      * Determines derived type.
