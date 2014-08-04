@@ -173,6 +173,7 @@
     <ClInclude Include="CodeBlock.h" />
     <ClInclude Include="CodeGen.h" />
     <ClInclude Include="ConditionedDurationAgentVarSymbol.h" />
+    <ClInclude Include="ConstantSymbol.h" />
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="DurationAgentVarSymbol.h" />
@@ -235,6 +236,7 @@
     <ClCompile Include="CodeBlock.cpp" />
     <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
+    <ClCompile Include="ConstantSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="DurationAgentVarSymbol.cpp" />
     <ClCompile Include="EntitySetSymbol.cpp" />

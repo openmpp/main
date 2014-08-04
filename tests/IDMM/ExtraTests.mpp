@@ -8,7 +8,7 @@ filter report_time >= 5;
 table Host MyTest
 {
     {
-        duration(disease_phase, 2) / duration() //EN Proportion infectious
+        duration(disease_phase, DP_INFECTIOUS) / duration() //EN Proportion infectious
     }
     * report_time
 };

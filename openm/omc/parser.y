@@ -25,6 +25,7 @@ class FloatingPointLiteral;
 class StringLiteral;
 class Symbol;
 class AgentMemberSymbol;
+class ConstantSymbol;
 class ExprForAgentVar;
 class ExprForTable;
 
@@ -85,6 +86,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
     StringLiteral        *pval_StringLiteral;
 	Symbol               *pval_Symbol;
 	AgentMemberSymbol    *pval_AgentMemberSymbol;
+	ConstantSymbol       *pval_ConstantSymbol;
 	ExprForAgentVar      *pval_AgentVarExpr;
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
@@ -97,6 +99,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %printer { yyoutput << "character literal " << $$->value(); } <pval_CharacterLiteral>
 %printer { yyoutput << "floating point literal " << $$->value(); } <pval_FloatingPointLiteral>
 %printer { yyoutput << "string literal " << $$->value(); } <pval_StringLiteral>
+%printer { yyoutput << "constant " << $$->is_literal ? $$->literal->value() : (*($$->enumerator))->name; } <pval_ConstantSymbol>
 %printer { yyoutput << "symbol " << '"' << $$->name << '"' << " type=" << typeid($$).name(); } <pval_Symbol>
 %printer { yyoutput << "table expr "; } <pval_TableExpr>
 %printer { yyoutput << "initial value type=" << Symbol::token_to_string($$->associated_token); } <pval_InitialValue>
@@ -463,6 +466,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Symbol>    derived_agentvar
 %type  <pval_Symbol>    link_to_agentvar
 %type  <pval_Literal>   event_priority_opt
+%type  <pval_ConstantSymbol>  constant
 
 %type  <pval_AgentMemberSymbol> link_symbol
 
@@ -1744,12 +1748,20 @@ derived_agentvar:
                         {
                             $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
                         }
-    | TK_duration "(" SYMBOL[agentvar] "," signed_literal[constant] ")"
+    | TK_duration "(" SYMBOL[agentvar] "," constant ")"
                         {
                             $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
                         }
-    // TODO TK_weighted_duration
-    // TODO TK_weighted_cumulation
+    | TK_weighted_duration[kw] "(" SYMBOL[agentvar] ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
+    | TK_weighted_cumulation[kw] "(" SYMBOL[agentvar1] "," SYMBOL[agentvar2] ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
 
     /*
      * derived agentvars - spell family
@@ -1865,8 +1877,26 @@ aggregate_multilink_function:
     ;
 
 /*
- * Literals
+ * Literals & constant
  */
+
+constant:
+      signed_literal[literal]
+                        {
+                            // Create a constant representing a literal
+                            auto cs = new ConstantSymbol($literal, @literal);
+                            assert(cs);
+                            $constant = cs;
+                        }
+    | SYMBOL[enumerator]
+                        {
+                            // Create a constant representing an enumerator
+                            auto cs = new ConstantSymbol($enumerator, @enumerator);
+                            assert(cs);
+                            $constant = cs;
+                        }
+    ;
+
 
 bool_literal:
       "true"[tok]

@@ -52,6 +52,7 @@
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableSymbol.h"
 #include "EntitySetSymbol.h"
+#include "ConstantSymbol.h"
 #include "ExprForTable.h"
 #include "ExprForAgentVar.h"
 

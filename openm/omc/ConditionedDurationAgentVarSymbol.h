@@ -8,6 +8,7 @@
 #pragma once
 #include "AgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
+#include "ConstantSymbol.h"
 #include "NumericSymbol.h"
 #include "Literal.h"
 
@@ -28,7 +29,14 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    ConditionedDurationAgentVarSymbol(const Symbol *agent, const Symbol *observed, const Literal *constant)
+    /**
+     * Constructor for literal second argument
+     *
+     * @param agent    The agent.
+     * @param observed The observed.
+     * @param constant The constant.
+     */
+    ConditionedDurationAgentVarSymbol(const Symbol *agent, const Symbol *observed, const ConstantSymbol *constant)
         : AgentVarSymbol(ConditionedDurationAgentVarSymbol::member_name(observed, constant),
                         agent,
                         NumericSymbol::find(token::TK_Time) )
@@ -44,41 +52,38 @@ public:
     }
 
     /**
-    * The member name for a specific symbol of this kind
-    *
-    * @param   observed    The observed agentvar
-    * @param   constant    The constant with which the agentvar is compared to condition the duration
-    *
-    * @return  The member namne as a string
-    */
+     * The member name for a specific symbol of this kind.
+     *
+     * @param observed The observed agentvar.
+     * @param constant The constant with which the agentvar is compared to condition the duration.
+     *
+     * @return The member namne as a string.
+     */
+    static string member_name(const Symbol *observed, const ConstantSymbol *constant);
 
-    static string member_name(const Symbol *observed, const Literal *constant);
+    static string symbol_name(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant);
 
-    static string symbol_name(const Symbol* agent, const Symbol* observed, const Literal* constant);
-
-    static Symbol * create_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant);
+    static Symbol * create_symbol(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant);
 
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_agent();
 
     /**
-    * agentvar observed (reference to pointer)
-    *
-    * Stable to symbol morphing during parse phase.
-    */
-
+     * agentvar observed (reference to pointer)
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
     Symbol*& observed;
 
     /**
-    * agentvar observed (pointer)
-    *
-    * Only valid after post-parse phase 1.
-    */
-
+     * agentvar observed (pointer)
+     * 
+     * Only valid after post-parse phase 1.
+     */
     AgentVarSymbol *pp_observed;
 
-    const Literal *constant;
+    const ConstantSymbol *constant;
 
     /** The condition function.*/
     AgentFuncSymbol *condition_fn;

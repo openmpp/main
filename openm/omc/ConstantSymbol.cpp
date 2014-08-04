@@ -1,0 +1,55 @@
+/**
+* @file    ConstantSymbol.cpp
+* Definitions for the ConstantSymbol class.
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#include <cassert>
+#include "ConstantSymbol.h"
+#include "EnumeratorSymbol.h"
+#include "Literal.h"
+
+using namespace std;
+
+const string ConstantSymbol::value() const
+{
+    if (is_literal) {
+        return literal->value();
+    }
+    else {
+        return (*enumerator)->name;
+    }
+}
+
+
+// static
+string ConstantSymbol::next_symbol_name()
+{
+    ++instance_counter;
+    return "om_constant_" + to_string(instance_counter);
+}
+
+// static
+int ConstantSymbol::instance_counter = 0;
+
+void ConstantSymbol::post_parse(int pass)
+{
+    // Hook into the post_parse hierarchical calling chain
+    super::post_parse(pass);
+
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    switch (pass) {
+    case ePopulateCollections:
+        {
+            if (is_enumerator) {
+                // assign direct pointer to enumerator for use post-parse
+                pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));
+                assert(pp_enumerator); // developer error
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}

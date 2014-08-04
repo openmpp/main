@@ -11,20 +11,21 @@
 #include "AgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
+#include "ConstantSymbol.h"
 #include "Literal.h"
 #include "CodeBlock.h"
 
 using namespace std;
 
 // static
-string ConditionedDurationAgentVarSymbol::member_name(const Symbol *observed, const Literal *constant)
+string ConditionedDurationAgentVarSymbol::member_name(const Symbol *observed, const ConstantSymbol *constant)
 {
     string result = "om_" + token_to_string(token::TK_duration) + "_" + observed->name + "_" + constant->value();
     return result;
 }
 
 // static
-string ConditionedDurationAgentVarSymbol::symbol_name(const Symbol* agent, const Symbol* observed, const Literal* constant)
+string ConditionedDurationAgentVarSymbol::symbol_name(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant)
 {
     string member = ConditionedDurationAgentVarSymbol::member_name(observed, constant);
     string result = Symbol::symbol_name(member, agent);
@@ -32,7 +33,7 @@ string ConditionedDurationAgentVarSymbol::symbol_name(const Symbol* agent, const
 }
 
 // static
-Symbol * ConditionedDurationAgentVarSymbol::create_symbol(const Symbol* agent, const Symbol* observed, const Literal* constant)
+Symbol * ConditionedDurationAgentVarSymbol::create_symbol(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant)
 {
     Symbol *sym = nullptr;
     string nm = ConditionedDurationAgentVarSymbol::symbol_name(agent, observed, constant);
