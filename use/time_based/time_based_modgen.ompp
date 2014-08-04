@@ -85,6 +85,12 @@ namespace fmk {
     // Multiplier for the generator for the streams in the model (shared by all streams)
     long model_stream_generator = 0;
 
+    // Is there a random normal in other_normal?
+    bool other_normal_valid = false;
+
+    // THe other normal draw
+    double other_normal;
+
 } // namespace fmk
 
 double RandUniform(int strm)
@@ -97,6 +103,33 @@ double RandUniform(int strm)
     fmk::model_stream_seeds[strm] = seed;
     return (double)seed / (double)fmk::mg_modulus;
 }
+
+double RandNormal(int strm)
+{
+    assert(strm < fmk::model_streams);
+
+    if (fmk::other_normal_valid) {
+        fmk::other_normal_valid = false;
+        return fmk::other_normal;
+    }
+    else {
+        double r2 = 1;
+        double x = 0;
+        double y = 0;
+        while (r2 >= 1) {
+            x = 2.0 * RandUniform(strm) - 1.0;
+            y = 2.0 * RandUniform(strm) - 1.0;
+            r2 = x * x + y * y;
+        }
+        double scale = sqrt(-2.0 * log(r2) / r2);
+        double n1 = scale * x;
+        double n2 = scale * y;
+        fmk::other_normal = n2;
+        fmk::other_normal_valid = true;
+        return n1;
+    }
+}
+
 
 void RunModel(IModel * i_model)
 {

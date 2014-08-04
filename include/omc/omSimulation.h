@@ -81,6 +81,7 @@ void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char
 
 // Run-time functions defined in the simulation framework module.
 extern double RandUniform(int strm);
+extern double RandNormal(int strm);
 extern void StartSimulation();
 extern void EndSimulation();
 

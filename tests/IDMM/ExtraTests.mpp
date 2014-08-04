@@ -1,0 +1,44 @@
+
+
+// Extra tests for ompp probing
+
+actor_set Host asAllHostsByPhase[disease_phase] //EN All Hosts by disease phase
+filter report_time >= 5;
+
+table Host MyTest
+{
+    {
+        duration(disease_phase, 2) / duration() //EN Proportion infectious
+    }
+    * report_time
+};
+
+
+actor Host
+{
+	logical one_time_done = { FALSE };
+	event OneTimetime, OneTime;
+    double thingee;
+};
+
+TIME Host::OneTimetime()
+{
+	if (one_time_done) return TIME_INFINITE;
+	else return 0.0;
+}
+void Host::OneTime()
+{
+    thingee = RandNormal(11);
+    one_time_done = TRUE;
+}
+
+table Host MyTest2
+{
+    {
+        value_out(thingee),
+        min_value_out(thingee),
+        max_value_out(thingee)
+    }
+};
+
+

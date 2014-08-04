@@ -12,7 +12,7 @@ parameters
 
     double c_double = 42.000001;
 
-    Time a_time = 2013.1234;
+    //Time a_time = 2013.1234;
     counter a_counter = 5;
     integer a_integer = -5;
     real a_real = 234.987;

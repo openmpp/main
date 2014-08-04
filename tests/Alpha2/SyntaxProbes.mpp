@@ -118,7 +118,7 @@ TIME Person::timeEyeColourChangeEvent()
 void Person::EyeColourChangeEvent()
 {
     // 70% of babies change eye colour to brown by 6 months of age
-    if (RandUniform(3) < 0.7) {
+    if (RandUniform(7) < 0.7) {
         eye_colour = EC_BLUE;
     }
     else {
