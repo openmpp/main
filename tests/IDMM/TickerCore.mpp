@@ -60,7 +60,7 @@ void Ticker::Start()
 {
 	time = 0;
 	age = 0;
-	next_tick = 0;
+	next_tick = 0; // Arrange that the first tick occurs at the beginning of the simulation
 }
 
 
@@ -87,15 +87,17 @@ void Ticker::TickEvent()
 	event_type = TET_TICK;
 	event_count++;
 
-	report_time = COERCE(REPORT_TIME, report_time + 1);
-
-	// Age all hosts to the current time.
-	int nHosts = asAllHosts->Count();
-	for ( int nJ=0; nJ<nHosts; nJ++ ) 
-	{
-		auto prHost = asAllHosts->Item( nJ );
-		prHost->report_time = report_time;
-	}
+    // Don't increment report_time or synchronize hosts at the start of the simulation.
+    if ( age > 0 ) {
+	    report_time = COERCE(REPORT_TIME, report_time + 1);
+	    // Synchronize all hosts to the current time for reporting purposes
+	    int nHosts = asAllHosts->Count();
+	    for ( int nJ=0; nJ<nHosts; nJ++ ) 
+	    {
+		    auto prHost = asAllHosts->Item( nJ );
+		    prHost->report_time = report_time;
+	    }
+    }
 
 	// Schedule the next tick.
 	// The next line spreads reporting times evenly over the simulation

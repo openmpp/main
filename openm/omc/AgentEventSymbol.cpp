@@ -44,7 +44,7 @@ void AgentEventSymbol::post_parse(int pass)
             // The event_trace option is on, so create cover functions
             // for the time and implement functions of the event,
             // and use them instead of the developer-supplied functions.
-            // The cover functions will performl logging and then call
+            // The cover functions will perform logging and then call
             // the original developer functions.
 
             // Create an AgentFuncSymbol for the time 'cover' function

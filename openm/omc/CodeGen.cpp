@@ -138,7 +138,15 @@ void CodeGen::do_preamble()
 
     c += "// Debug log file";
     c += "ofstream om_debug_log(\"debug_log.txt\", ios_base::out | ios_base::trunc);";
-    c += "bool BaseEvent::trace_event_on = false;";
+    if (Symbol::option_event_trace) {
+        // if event_trace option is on, tracing is active unless turned off
+        c += "bool BaseEvent::trace_event_on = true;";
+    }
+    else {
+        // independent of the event_trace option, this static member must be defined
+        c += "bool BaseEvent::trace_event_on = false;";
+    }
+
     c += "";
 
     // om_initializers.cpp

@@ -60,6 +60,12 @@ void PreSimulation()
 
 void Simulation()
 {
+    // Set the maximum time used in the simulation. This allows the simulation framework
+    // to use fixed precision arithmetic for time-related quantities for consistent results.
+    // A fixed value is used rather than Simulation End so that simulation results
+    // are not affected by a change of time horizon.
+    SetMaxTime(100.0);
+
 	// Buffer for reporting progress
 	const 	size_t nBufSize = {255};
 	char 	szBuffer[nBufSize];
