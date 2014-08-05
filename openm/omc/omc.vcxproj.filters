@@ -102,12 +102,6 @@
     <ClInclude Include="BuiltinAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ConditionedDurationAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DurationAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SimpleAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -255,12 +249,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BuiltinAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DurationAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SimpleAgentVarSymbol.cpp">

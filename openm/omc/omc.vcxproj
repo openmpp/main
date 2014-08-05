@@ -172,12 +172,10 @@
     <ClInclude Include="ClassificationSymbol.h" />
     <ClInclude Include="CodeBlock.h" />
     <ClInclude Include="CodeGen.h" />
-    <ClInclude Include="ConditionedDurationAgentVarSymbol.h" />
     <ClInclude Include="ConstantSymbol.h" />
     <ClInclude Include="DerivedAgentVarSymbol.h" />
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
-    <ClInclude Include="DurationAgentVarSymbol.h" />
     <ClInclude Include="EntitySetSymbol.h" />
     <ClInclude Include="EnumerationSymbol.h" />
     <ClInclude Include="EnumerationWithEnumeratorsSymbol.h" />
@@ -236,11 +234,9 @@
     <ClCompile Include="ClassificationSymbol.cpp" />
     <ClCompile Include="CodeBlock.cpp" />
     <ClCompile Include="CodeGen.cpp" />
-    <ClCompile Include="ConditionedDurationAgentVarSymbol.cpp" />
     <ClCompile Include="ConstantSymbol.cpp" />
     <ClCompile Include="DerivedAgentVarSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
-    <ClCompile Include="DurationAgentVarSymbol.cpp" />
     <ClCompile Include="EntitySetSymbol.cpp" />
     <ClCompile Include="EnumerationSymbol.cpp" />
     <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp" />

@@ -39,8 +39,6 @@
 #include "BuiltinAgentVarSymbol.h"
 #include "SimpleAgentVarSymbol.h"
 #include "SimpleAgentVarEnumSymbol.h"
-#include "DurationAgentVarSymbol.h"
-#include "ConditionedDurationAgentVarSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "DerivedAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
