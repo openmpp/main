@@ -90,6 +90,13 @@ public:
     const string value() const;
 
     /**
+     * Transform the constant value to a string which can be part of an identifier
+     *
+     * @return A string.
+     */
+    const string value_as_name() const;
+
+    /**
      * Generated name for the next instance of a ConstantSymbol
      *
      * @return A string.

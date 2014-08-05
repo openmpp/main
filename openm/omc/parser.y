@@ -1752,12 +1752,14 @@ derived_agentvar:
                         {
                             $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant, @kw );
                         }
-    | TK_weighted_duration[kw] "(" SYMBOL[agentvar] ")"
+    // TODO TK_weighted_duration
+    | TK_weighted_duration[kw] "(" SYMBOL[weight] ")"
                         {
                             error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
                             YYERROR;
                         }
-    | TK_weighted_cumulation[kw] "(" SYMBOL[agentvar1] "," SYMBOL[agentvar2] ")"
+    // TODO TK_weighted_cumulation
+    | TK_weighted_cumulation[kw] "(" SYMBOL[observed] "," SYMBOL[weight] ")"
                         {
                             error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
                             YYERROR;
@@ -1767,11 +1769,41 @@ derived_agentvar:
      * derived agentvars - spell family
      */
     // TODO TK_active_spell_duration
+    | TK_active_spell_duration[kw] "(" SYMBOL[spell] "," constant ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
     // TODO TK_completed_spell_duration
+    | TK_completed_spell_duration[kw] "(" SYMBOL[spell] "," constant ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
     // TODO TK_active_spell_weighted_duration
+    | TK_active_spell_weighted_duration[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[weight]  ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
     // TODO TK_completed_spell_weighted_duration
+    | TK_completed_spell_weighted_duration[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[weight]  ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
     // TODO TK_active_spell_delta
+    | TK_active_spell_delta[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[delta]  ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
     // TODO TK_completed_spell_delta
+    | TK_completed_spell_delta[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[delta]  ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
 
     /*
      * derived agentvars - multilink family
@@ -1795,18 +1827,38 @@ derived_agentvar:
     /*
      * derived agentvars - transition occurrence family
      */
-    // TODO KW_undergone_entrance
-    // TODO KW_undergone_exit
-    // TODO KW_undergone_transition
-    // TODO KW_undergone_change
+    // TODO TK_undergone_entrance
+    | TK_undergone_entrance[kw] "(" SYMBOL[observed] "," constant ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
+    // TODO TK_undergone_exit
+    | TK_undergone_exit[kw] "(" SYMBOL[observed] "," constant ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
+    // TODO TK_undergone_transition
+    | TK_undergone_transition[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
+    // TODO TK_undergone_change
+    | TK_undergone_change[kw] "(" SYMBOL[observed] "," constant ")"
+                        {
+                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
+                            YYERROR;
+                        }
 
     /*
      * derived agentvars - transition count family
      */
-    // TODO KW_entrances
-    // TODO KW_exits
-    // TODO KW_transitions
-    // TODO KW_changes
+    // TODO TK_entrances
+    // TODO TK_exits
+    // TODO TK_transitions
+    // TODO TK_changes
 
     /*
      * derived agentvars - transition observer family - value

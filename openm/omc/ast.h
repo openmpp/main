@@ -42,6 +42,7 @@
 #include "DurationAgentVarSymbol.h"
 #include "ConditionedDurationAgentVarSymbol.h"
 #include "IdentityAgentVarSymbol.h"
+#include "DerivedAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "LinkToAgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"

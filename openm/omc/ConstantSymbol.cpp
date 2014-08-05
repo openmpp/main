@@ -22,6 +22,21 @@ const string ConstantSymbol::value() const
     }
 }
 
+const string ConstantSymbol::value_as_name() const
+{
+    if (is_literal) {
+        string work = literal->value();
+        for (auto &ch : work) {
+            if (ch == '.') ch = 'o';
+            if (ch == '-') ch = 'm';
+        }
+        return work;
+    }
+    else {
+        return (*enumerator)->name;
+    }
+}
+
 
 // static
 string ConstantSymbol::next_symbol_name()
