@@ -40,10 +40,14 @@ void AgentVarSymbol::change_data_type(TypeSymbol *new_type)
 {
     // TODO Pass it upwards to AgentDataMemberSymbol rather than fiddling directly with members.
     assert(new_type);
-    pp_data_type = new_type;
-    // Note that data_type remains as it was, since references cannot be reseated.
-    assert(side_effects_fn); // logic guarantee
-    side_effects_fn->arg_list_decl = pp_data_type->name + " om_old, " + pp_data_type->name + " om_new";
+    if (pp_data_type != new_type) {
+        pp_data_type = new_type;
+        // Note that data_type remains as it was, since references cannot be reseated.
+        assert(side_effects_fn); // logic guarantee
+        side_effects_fn->arg_list_decl = pp_data_type->name + " om_old, " + pp_data_type->name + " om_new";
+        // maintain global counter of type changes
+        ++Symbol::type_changes;
+    }
 }
 
 string AgentVarSymbol::get_lagged_name()

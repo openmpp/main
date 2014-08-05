@@ -13,6 +13,7 @@
 #include "PartitionSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
+#include "TimeSymbol.h"
 #include "ExprForAgentVar.h"
 #include "Literal.h"
 #include "CodeBlock.h"
@@ -108,7 +109,16 @@ void DerivedAgentVarSymbol::post_parse(int pass)
     }
     case eResolveDataTypes:
     {
+        switch (tk1) {
+        case token::TK_duration:
+        {
+            change_data_type(TimeSymbol::find());
+            break;
+        }
+        default:
         break;
+        }
+    break;
     }
     case ePopulateDependencies:
     {

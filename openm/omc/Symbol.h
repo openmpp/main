@@ -880,6 +880,11 @@ public:
     static unordered_set<string> om_developer_functions;
 
     /**
+     * A count of type changes made in a sngle post-parse pass.
+     */
+    static int type_changes;
+
+    /**
      * A count of errors identified during post-parse processing.
      */
     static int post_parse_errors;

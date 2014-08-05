@@ -460,6 +460,8 @@ comment_map_type Symbol::cxx_comments;
 
 comment_map_type Symbol::c_comments;
 
+int Symbol::type_changes = 0;
+
 int Symbol::post_parse_errors = 0;
 
 bool Symbol::option_event_trace = false;
@@ -791,8 +793,12 @@ void Symbol::post_parse_all()
     }
 
     // pass 2: resolve derived agentvar data types
-    for (auto pr : symbols) {
-        pr.second->post_parse( eResolveDataTypes );
+    type_changes = 1;
+    while (type_changes != 0) {
+        type_changes = 0;
+        for (auto pr : symbols) {
+            pr.second->post_parse( eResolveDataTypes );
+        }
     }
 
     // invalidate the parse phase symbol table symbols

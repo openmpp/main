@@ -56,9 +56,9 @@ public:
     void create_auxiliary_symbols();
 
     /**
-     * Change the data type in the post-parse phase
+     * Change the data type in the post-parse phase.
      *
-     * @param type The new data type.
+     * @param [in,out] new_type The new data type.
      */
     void change_data_type(TypeSymbol *new_type);
 
