@@ -24,18 +24,30 @@ using namespace std;
 void AgentSymbol::create_auxiliary_symbols()
 {
     // Create builtin agentvars for this agent: time, age, events, entity_id
-    if (!exists("time", this))
-        new BuiltinAgentVarSymbol("time", this, NumericSymbol::find(token::TK_Time));
-    if (!exists("age", this))
+    if (!exists("time", this)) {
+        auto time_sym = new BuiltinAgentVarSymbol("time", this, NumericSymbol::find(token::TK_Time));
+        // declare the om_delta local variable for use in subsequently added code
+        auto fn = time_sym->side_effects_fn;
+        assert(fn);
+        CodeBlock& c = fn->func_body;
+        c += "// Amount of time increment";
+        c += "Time om_delta = om_new - om_old;";
+        c += "";
+    }
+    if (!exists("age", this)) {
         new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
-    if (!exists("events", this))
+    }
+    if (!exists("events", this)) {
         new BuiltinAgentVarSymbol("events", this, NumericSymbol::find(token::TK_counter));
-    if (!exists("entity_id", this))
+    }
+    if (!exists("entity_id", this)) {
         new BuiltinAgentVarSymbol("entity_id", this, NumericSymbol::find(token::TK_int));
+    }
 
     // TODO: Remove test - Create internal data members for this agent: allow_assignment
-    if (!exists("allow_assignment", this))
-        new AgentInternalSymbol("allow_assignment", this, BoolSymbol::find());
+    //if (!exists("allow_assignment", this)) {
+    //    new AgentInternalSymbol("allow_assignment", this, BoolSymbol::find());
+    //}
 
     // The age_agent() member function
     // Used in the run-time support classes

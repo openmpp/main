@@ -28,10 +28,7 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
                 assert(av);
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += "// Advance time for the age agentvar";
-                c += "{";
-                c += "Time delta = new_value - old_value;";
-                c += "age.set(age.get() + delta);";
-                c += "}";
+                c += "age.set(age.get() + om_delta);";
                 c += "";
             }
         }

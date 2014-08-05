@@ -35,11 +35,11 @@ void LinkAgentVarSymbol::post_parse(int pass)
                 // reciprocal link is single
                 auto reciprocal = reciprocal_link;
                 c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
-                c += "if (old_value.get() != nullptr && old_value->" + reciprocal->name + ".get().get() == this) {";
-                c += "old_value->" + reciprocal->name + " = nullptr;";
+                c += "if (om_old.get() != nullptr && om_old->" + reciprocal->name + ".get().get() == this) {";
+                c += "om_old->" + reciprocal->name + " = nullptr;";
                 c += "}";
-                c += "if (new_value.get() != nullptr && new_value->" + reciprocal->name + ".get().get() != this) {";
-                c += "new_value->" + reciprocal->name + " = this;";
+                c += "if (om_new.get() != nullptr && om_new->" + reciprocal->name + ".get().get() != this) {";
+                c += "om_new->" + reciprocal->name + " = this;";
                 c += "}";
                 c += "";
             }
@@ -48,11 +48,11 @@ void LinkAgentVarSymbol::post_parse(int pass)
                 assert(reciprocal_multilink); // logic guarantee
                 auto reciprocal = reciprocal_multilink;
                 c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
-                c += "if (old_value.get() != nullptr) {";
-                c += "old_value->" + reciprocal->name + ".erase(this);";
+                c += "if (om_old.get() != nullptr) {";
+                c += "om_old->" + reciprocal->name + ".erase(this);";
                 c += "}";
-                c += "if (new_value.get() != nullptr) {";
-                c += "new_value->" + reciprocal->name + ".insert(this);";
+                c += "if (om_new.get() != nullptr) {";
+                c += "om_new->" + reciprocal->name + ".insert(this);";
                 c += "}";
                 c += "";
             }

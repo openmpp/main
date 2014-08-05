@@ -30,7 +30,7 @@ void AgentVarSymbol::create_auxiliary_symbols()
     side_effects_fn = new AgentFuncSymbol("om_side_effects_" + name,
                                           agent,
                                           "void",
-                                          data_type->name + " old_value, " + data_type->name + " new_value");
+                                          data_type->name + " om_old, " + data_type->name + " om_new");
     assert(side_effects_fn); // out of memory check
 
     side_effects_fn->doc_block = doxygen_short("Implement side effects of setting " + name + " in agent " + agent->name + ".");
@@ -43,7 +43,7 @@ void AgentVarSymbol::change_data_type(TypeSymbol *new_type)
     pp_data_type = new_type;
     // Note that data_type remains as it was, since references cannot be reseated.
     assert(side_effects_fn); // logic guarantee
-    side_effects_fn->arg_list_decl = pp_data_type->name + " old_value, " + pp_data_type->name + " new_value";
+    side_effects_fn->arg_list_decl = pp_data_type->name + " om_old, " + pp_data_type->name + " om_new";
 }
 
 string AgentVarSymbol::get_lagged_name()
@@ -79,7 +79,7 @@ void AgentVarSymbol::create_lagged()
     CodeBlock & c = side_effects_fn->func_body;
     c += "// maintain lagged value";
     c += "if (BaseEvent::global_event_counter > " + lagged_counter_name + ") {";
-    c += lagged_name + " = old_value;";
+    c += lagged_name + " = om_old;";
     c += lagged_counter_name + " = BaseEvent::global_event_counter;";
     c += "}";
 }

@@ -391,6 +391,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 
 
     { token::TK_error, "error" },
+    { token::TK_unused, "unused" },
 
 };
 

@@ -11,6 +11,8 @@
 #include "LinkAgentVarSymbol.h"
 #include "LinkToAgentVarSymbol.h"
 #include "TypeSymbol.h"
+#include "BoolSymbol.h"
+#include "ConstantSymbol.h"
 #include "CodeBlock.h"
 #include "Literal.h"
 
@@ -227,4 +229,41 @@ CodeBlock IdentityAgentVarSymbol::cxx_declaration_agent()
     h += name + ";";
 
     return h;
+}
+
+//static
+IdentityAgentVarSymbol * IdentityAgentVarSymbol::CreateEqualityIdentitySymbol(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc)
+{
+    assert(agent);
+    assert(av);
+    assert(k);
+    IdentityAgentVarSymbol *iav = nullptr;
+    string mem_name = "om_identity_" + av->name + "_EQ_" + k->value_as_name();
+    string nm = Symbol::symbol_name(mem_name, agent);
+    auto it = symbols.find(nm);
+    if (it != symbols.end()) {
+        // already exists
+        auto sym = it->second;
+        iav = dynamic_cast<IdentityAgentVarSymbol * >(sym);
+        assert(iav);
+        return iav;
+    }
+    else {
+        // Create expression tree terminal node for lhs
+        auto lhs = new ExprForAgentVarSymbol(av);
+        // Create expression tree terminal node for rhs
+        ExprForAgentVar * rhs = nullptr;
+        if (k->is_literal) {
+            rhs = new ExprForAgentVarLiteral( k->literal );
+        }
+        else {
+            rhs = new ExprForAgentVarSymbol(*(k->enumerator));
+        }
+        // Create expression tree node for == binary operation
+	    auto expr = new ExprForAgentVarBinaryOp(token::TK_EQ, lhs, rhs);
+        // Create the identity agentvar to maintain the expression
+        iav = new IdentityAgentVarSymbol( mem_name, agent, BoolSymbol::find(), expr, decl_loc);
+        assert(iav);
+        return iav;
+    }
 }

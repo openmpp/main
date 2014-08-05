@@ -84,8 +84,8 @@ void ConditionedDurationAgentVarSymbol::post_parse(int pass)
         AgentVarSymbol *av = pp_agent->pp_time;
         CodeBlock& c = av->side_effects_fn->func_body;
         c += "// Advance time for " + pretty_name();
-        // Eg. om_duration.advance( new_value - old_value );
-        string line = name + ".advance( new_value - old_value );";
+        // Eg. om_duration.advance( om_new - om_old );
+        string line = name + ".advance( om_new - om_old );";
         c += line;
         c += "";
         break;

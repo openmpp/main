@@ -157,17 +157,17 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
                 c += "auto lnk = " + rlink + ".get();";
                 c += "if (lnk.get() != nullptr) {";
                 if (func == token::TK_sum_over) {
-                    c += "lnk->" + name + ".set(lnk->" + name + " + new_value - old_value);";
+                    c += "lnk->" + name + ".set(lnk->" + name + " + om_new - om_old);";
                 }
                 else if (func == token::TK_min_over) {
                     c += "auto current = lnk->" + name + ";";
-                    c += "if (new_value < current) lnk->" + name +".set(new_value);";
-                    c += "else if (old_value == current && new_value > current) lnk->" + evaluate_fn->name + "();";
+                    c += "if (om_new < current) lnk->" + name +".set(om_new);";
+                    c += "else if (om_old == current && om_new > current) lnk->" + evaluate_fn->name + "();";
                 }
                 else if (func == token::TK_max_over) {
                     c += "auto current = lnk->" + name + ";";
-                    c += "if (new_value > current) lnk->" + name +".set(new_value);";
-                    c += "else if (old_value == current && new_value < current) lnk->" + evaluate_fn->name + "();";
+                    c += "if (om_new > current) lnk->" + name +".set(om_new);";
+                    c += "else if (om_old == current && om_new < current) lnk->" + evaluate_fn->name + "();";
                 }
                 else {
                     assert(false); // logic guarantee
@@ -185,17 +185,17 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
                 c += "for (auto &lnk : " + rlink + ".storage) {";
                 c += "if (lnk.get() != nullptr) {";
                 if (func == token::TK_sum_over) {
-                    c += "lnk->" + name + ".set(lnk->" + name + " + new_value - old_value);";
+                    c += "lnk->" + name + ".set(lnk->" + name + " + om_new - om_old);";
                 }
                 else if (func == token::TK_min_over) {
                     c += "auto current = lnk->" + name + ";";
-                    c += "if (new_value < current) lnk->" + name +".set(new_value);";
-                    c += "else if (old_value == current && new_value > current) lnk->" + evaluate_fn->name + "();";
+                    c += "if (om_new < current) lnk->" + name +".set(om_new);";
+                    c += "else if (om_old == current && om_new > current) lnk->" + evaluate_fn->name + "();";
                 }
                 else if (func == token::TK_max_over) {
                     c += "auto current = lnk->" + name + ";";
-                    c += "if (new_value > current) lnk->" + name +".set(new_value);";
-                    c += "else if (old_value == current && new_value < current) lnk->" + evaluate_fn->name + "();";
+                    c += "if (om_new > current) lnk->" + name +".set(om_new);";
+                    c += "else if (om_old == current && om_new < current) lnk->" + evaluate_fn->name + "();";
                 }
                 else {
                     assert(false); // logic guarantee

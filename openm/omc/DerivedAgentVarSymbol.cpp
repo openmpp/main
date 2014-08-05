@@ -9,12 +9,11 @@
 #include "DerivedAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentVarSymbol.h"
-#include "AgentFuncSymbol.h"
-#include "BuiltinAgentVarSymbol.h"
 #include "ConstantSymbol.h"
-#include "EnumeratorSymbol.h"
-#include "EnumerationWithEnumeratorsSymbol.h"
 #include "PartitionSymbol.h"
+#include "IdentityAgentVarSymbol.h"
+#include "BuiltinAgentVarSymbol.h"
+#include "ExprForAgentVar.h"
 #include "Literal.h"
 #include "CodeBlock.h"
 
@@ -31,14 +30,14 @@ string DerivedAgentVarSymbol::member_name(token_type tk1,
                                           const ConstantSymbol *k3)
 {
     string result = "om";
-    if (tk1 != token::TK_error) result + "_" + token_to_string(tk1);
-    if (tk2 != token::TK_error) result + "_" + token_to_string(tk2);
-    if (av1 != nullptr) result + "_" + av1->name;
-    if (k1 != nullptr)  result + "_" + k1->value_as_name();
-    if (av2 != nullptr) result + "_" + av2->name;
-    if (prt != nullptr) result + "_" + prt->name;
-    if (k2 != nullptr)  result + "_" + k2->value_as_name();
-    if (k3 != nullptr)  result + "_" + k3->value_as_name();
+    if (tk1 != token::TK_unused) result += "_" + token_to_string(tk1);
+    if (tk2 != token::TK_unused) result += "_" + token_to_string(tk2);
+    if (av1 != nullptr) result += "_" + av1->name;
+    if (k1 != nullptr)  result += "_" + k1->value_as_name();
+    if (av2 != nullptr) result += "_" + av2->name;
+    if (prt != nullptr) result += "_" + prt->name;
+    if (k2 != nullptr)  result += "_" + k2->value_as_name();
+    if (k3 != nullptr)  result += "_" + k3->value_as_name();
 
     return result;
 }
@@ -59,18 +58,31 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
     string mem_name = member_name(tk1, tk2, av1, av2, prt, k1, k2, k3);
     string nm = Symbol::symbol_name(mem_name, agent);
     auto it = symbols.find(nm);
-    if (it != symbols.end())
+    if (it != symbols.end()) {
         sym = it->second;
-    else
+    }
+    else {
         sym = new DerivedAgentVarSymbol(agent, tk1, tk2, av1, av2, prt, k1, k2, k3, decl_loc);
-
+    }
     return sym;
 }
 
-
-/**
-* Post-parse operations for DerivedAgentVarSymbol
-*/
+void DerivedAgentVarSymbol::create_auxiliary_symbols()
+{
+    switch (tk1) {
+    case token::TK_duration:
+    {
+        if (av1 && k1) {
+            // Create identity agentvar to maintain av1 == k1
+            iav = IdentityAgentVarSymbol::CreateEqualityIdentitySymbol(agent, *av1, k1, decl_loc);
+            assert(iav);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
 
 void DerivedAgentVarSymbol::post_parse(int pass)
 {
@@ -79,6 +91,10 @@ void DerivedAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        break;
+    }
     case ePopulateCollections:
     {
         // assign direct pointers for post-parse use
@@ -96,6 +112,34 @@ void DerivedAgentVarSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
+        switch (tk1) {
+        case token::TK_duration:
+        {
+            if (!av1) {
+                // simple duration()
+                // add side-effect to time agentvar
+                auto *av = pp_agent->pp_time;
+                CodeBlock& c = av->side_effects_fn->func_body;
+                c += "// Advance time for " + pretty_name();
+                c += name + ".set(" + name + ".get() + om_delta);";
+                c += "";
+            }
+            else {
+                // conditioned duration(av, value)
+                // add side-effect to time agentvar
+                auto *av = pp_agent->pp_time;
+                CodeBlock& c = av->side_effects_fn->func_body;
+                c += "// Advance time for " + pretty_name();
+                c += "if (" + iav->name + ") {";
+                c += name + ".set(" + name + ".get() + om_delta);";
+                c += "}";
+                c += "";
+            }
+            break;
+        }
+        default:
+        break;
+        }
         break;
     }
     default:
@@ -110,9 +154,12 @@ CodeBlock DerivedAgentVarSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // example:         DurationAgentVar<Time, Person, &om_duration_alive_true_offset, &Person::om_duration_alive_true_side_effects, &Person::om_duration_alive_true_condition> om_duration
-    h += "// to follow";
-    h += "// " + name;
+    h += "AgentVar<"
+        + pp_data_type->name + ", "
+        + pp_data_type->wrapped_type() + ", "
+        + pp_agent->name + ", "
+        + "&" + side_effects_fn->unique_name + ">";
+    h += name + ";";
 
     return h;
 }

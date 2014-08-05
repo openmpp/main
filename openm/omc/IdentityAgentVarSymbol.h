@@ -28,6 +28,15 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
+    /**
+     * Morphing constructor
+     *
+     * @param [in,out] sym  If non-null, the symbol.
+     * @param agent         The agent.
+     * @param type          The type.
+     * @param [in,out] root If non-null, the root.
+     * @param decl_loc      (Optional) the declaration location.
+     */
     IdentityAgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, ExprForAgentVar *root, yy::location decl_loc = yy::location())
         : AgentVarSymbol(sym, agent, type, decl_loc)
         , root(root)
@@ -35,6 +44,15 @@ public:
         create_auxiliary_symbols();
     }
 
+    /**
+     * Constructor from name
+     *
+     * @param member_name   Name of the member.
+     * @param agent         The agent.
+     * @param type          The type.
+     * @param [in,out] root If non-null, the root.
+     * @param decl_loc      (Optional) the declaration location.
+     */
     IdentityAgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type, ExprForAgentVar *root, yy::location decl_loc = yy::location())
         : AgentVarSymbol(member_name, agent, type, decl_loc)
         , root(root)
@@ -66,6 +84,16 @@ public:
      * @return The expression.
      */
     string cxx_expression(const ExprForAgentVar *node);
+
+    /**
+     * Creates an identity symbol for an equality or returns it if already present.
+     *
+     * @param [in,out] av If non-null, the agentvar on the lhs
+     * @param k           The ConstantSymbol on the rhs.
+     *
+     * @return The new equality symbol.
+     */
+    static IdentityAgentVarSymbol * CreateEqualityIdentitySymbol(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc);
 
     /**
      * Root of the expression tree.

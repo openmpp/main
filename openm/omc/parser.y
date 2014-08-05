@@ -412,6 +412,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 
 
 %token <val_token>    TK_error         "error"
+%token <val_token>    TK_unused        "unused"
 
 %token <pval_Symbol>               SYMBOL
 %token <pval_string>               STRING
@@ -1746,11 +1747,13 @@ derived_agentvar:
      */
       TK_duration[kw] "(" ")"
                         {
-                            $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context(), @kw );
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, @kw );
+                            //$derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context(), @kw );
                         }
-    | TK_duration[kw] "(" SYMBOL[agentvar] "," constant ")"
+    | TK_duration[kw] "(" SYMBOL[observed] "," constant ")"
                         {
-                            $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant, @kw );
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
+                            //$derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $observed, $constant, @kw );
                         }
     // TODO TK_weighted_duration
     | TK_weighted_duration[kw] "(" SYMBOL[weight] ")"

@@ -124,7 +124,7 @@ void EntitySetSymbol::post_parse(int pass)
                 CodeBlock& c = filter->side_effects_fn->func_body;
                 c += "// filter change in " + name;
                 c += "if (om_active) {";
-                c += "if (new_value) {";
+                c += "if (om_new) {";
                 c += "// filter changed from false to true";
                 c += update_cell_fn->name + "();";
                 c += insert_fn->name + "();";
