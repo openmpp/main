@@ -496,14 +496,15 @@ void Symbol::post_parse(int pass)
                     else {
                         // The source code contained an agent-qualified name token which was never declared,
                         // and no global with the same name exists.
-                        // Report error and continue?  TODO
-                        assert(false);
+                        pp_error("Error - '" + name + "' was never declared");
+                        // OK to continue
                     }
                 }
                 else {
                     // I don't think we should get here.  All symbols should be derived symbols at this point.
                     // A syntax error should have been detected earlier.
-                    assert(false);
+                    pp_error("Unexpected error - symbol '" + name + "'");
+                    throw HelperException("Finish omc");
                 }
             }
         }
@@ -739,14 +740,15 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
             else {
                 // The source code contained an agent-qualified name token which was never declared,
                 // and no global with the same name exists.
-                // Report error and continue?  TODO
-                assert(false);
+                pp_error(sym->decl_loc, "Error - '" + sym->name + "' was never declared");
+                // OK to continue
             }
         }
         else {
             // I don't think we should get here.  All symbols should be derived symbols at this point.
             // A syntax error should have been detected earlier.
-            assert(false);
+            pp_error(sym->decl_loc, "Unexpected error - symbol '" + sym->name + "'");
+            throw HelperException("Finish omc");
         }
     }
     return sym;
@@ -759,6 +761,14 @@ void Symbol::populate_pp_symbols()
         pp_symbols.push_back(sym);
     }
     pp_symbols.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
+}
+
+// static
+void Symbol::pp_error(const yy::location& loc, const string& msg)
+{
+    post_parse_errors++;
+    yy::location l = loc;
+    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
 }
 
 void Symbol::post_parse_all()

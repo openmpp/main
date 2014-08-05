@@ -45,7 +45,11 @@ void ConstantSymbol::post_parse(int pass)
             if (is_enumerator) {
                 // assign direct pointer to enumerator for use post-parse
                 pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));
-                assert(pp_enumerator); // developer error
+                if (!pp_enumerator) {
+                    assert(*enumerator); // parser guarantee
+                    pp_error("Error - '" + (*enumerator)->name + "' is not an enumerator");
+                    // OK to continue
+                }
             }
         }
         break;

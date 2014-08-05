@@ -5,12 +5,20 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <cassert>
+#include <string> // for stoi
 #include "AgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "TypeSymbol.h"
 #include "NumericSymbol.h"
 #include "AgentInternalSymbol.h"
+#include "ConstantSymbol.h"
+#include "Literal.h"
+#include "EnumeratorSymbol.h"
+#include "EnumerationWithEnumeratorsSymbol.h"
+#include "RangeSymbol.h"
+#include "PartitionSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -74,6 +82,63 @@ void AgentVarSymbol::create_lagged()
     c += lagged_name + " = old_value;";
     c += lagged_counter_name + " = BaseEvent::global_event_counter;";
     c += "}";
+}
+
+bool AgentVarSymbol::is_valid_comparison(const ConstantSymbol * constant, string &err_msg)
+{
+    assert(constant);
+    assert(pp_data_type);
+    if (pp_data_type->is_bool()) {
+        if (constant->is_literal
+            && (constant->value() == "true" || constant->value() == "false")) {
+            // Valid
+        }
+        else {
+            err_msg = "Error - '" + constant->value() + "' is not a boolean constant";
+            return false;
+        }
+    }
+    else if (pp_data_type->is_classification()) {
+        if (constant->is_enumerator
+            && constant->pp_enumerator->pp_enumeration->name == pp_data_type->name) {
+            // Valid
+        }
+        else {
+            err_msg = "Error - '" + constant->value() + "' is not valid for the classification '" + pp_data_type->name + "'";
+            return false;
+        }
+    }
+    else if (pp_data_type->is_range() ) {
+        if (!constant->is_literal || !dynamic_cast<const IntegerLiteral *>(constant->literal)) {
+            err_msg = "Error - '" + constant->value() + "' is not valid for the range '" + pp_data_type->name + "'";
+            return false;
+        }
+        else {
+            auto rs = dynamic_cast<RangeSymbol *>(pp_data_type);
+            assert(rs);
+            int val = stoi(constant->value());
+            if (val < rs->lower_bound || val > rs->upper_bound) {
+                err_msg = "Error - '" + constant->value() + "' is not within the range '" + pp_data_type->name + "'";
+                return false;
+            }
+        }
+    }
+    else if (pp_data_type->is_partition() ) {
+        if (!constant->is_literal || !dynamic_cast<const IntegerLiteral *>(constant)) {
+            err_msg = "Error - '" + constant->value() + "' is not valid for the partition '" + pp_data_type->name + "'";
+            return false;
+        }
+        else {
+            auto ps = dynamic_cast<PartitionSymbol *>(pp_data_type);
+            assert(ps);
+            int val = stoi(constant->value());
+            if (val < 0 || (size_t) val >= ps->pp_enumerators.size()) {
+                err_msg = "Error - '" + constant->value() + "' is not within the partition '" + pp_data_type->name + "'";
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 

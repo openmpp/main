@@ -12,6 +12,8 @@
 #include "AgentFuncSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "ConstantSymbol.h"
+#include "EnumeratorSymbol.h"
+#include "EnumerationWithEnumeratorsSymbol.h"
 #include "Literal.h"
 #include "CodeBlock.h"
 
@@ -33,7 +35,7 @@ string ConditionedDurationAgentVarSymbol::symbol_name(const Symbol* agent, const
 }
 
 // static
-Symbol * ConditionedDurationAgentVarSymbol::create_symbol(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant)
+Symbol * ConditionedDurationAgentVarSymbol::create_symbol(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant, yy::location decl_loc)
 {
     Symbol *sym = nullptr;
     string nm = ConditionedDurationAgentVarSymbol::symbol_name(agent, observed, constant);
@@ -41,7 +43,7 @@ Symbol * ConditionedDurationAgentVarSymbol::create_symbol(const Symbol* agent, c
     if (it != symbols.end())
         sym = it->second;
     else
-        sym = new ConditionedDurationAgentVarSymbol(agent, observed, constant);
+        sym = new ConditionedDurationAgentVarSymbol(agent, observed, constant, decl_loc);
 
     return sym;
 }
@@ -59,24 +61,35 @@ void ConditionedDurationAgentVarSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // assign direct pointer for post-parse use
-            pp_observed = dynamic_cast<AgentVarSymbol *> (pp_symbol(observed));
-            assert(pp_observed); // syntax error
+    {
+        // assign direct pointer for post-parse use
+        pp_observed = dynamic_cast<AgentVarSymbol *> (pp_symbol(observed));
+        assert(pp_observed); // syntax error - not sure if we can get here through developer error
+        break;
+    }
+    case eResolveDataTypes:
+    {
+        // Check for type consistency between agentvar and constant
+        assert(pp_observed); // Parser guarantee
+        assert(constant); // Parser guarantee
+        string err_msg;
+        if (!pp_observed->is_valid_comparison(constant, err_msg)) {
+            pp_error(err_msg);
         }
         break;
+    }
     case ePopulateDependencies:
-        {
-            // add side-effect to time agentvar
-            AgentVarSymbol *av = pp_agent->pp_time;
-            CodeBlock& c = av->side_effects_fn->func_body;
-            c += "// Advance time for " + pretty_name();
-            // Eg. om_duration.advance( new_value - old_value );
-            string line = name + ".advance( new_value - old_value );";
-            c += line;
-            c += "";
-        }
+    {
+        // add side-effect to time agentvar
+        AgentVarSymbol *av = pp_agent->pp_time;
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Advance time for " + pretty_name();
+        // Eg. om_duration.advance( new_value - old_value );
+        string line = name + ".advance( new_value - old_value );";
+        c += line;
+        c += "";
         break;
+    }
     default:
         break;
     }

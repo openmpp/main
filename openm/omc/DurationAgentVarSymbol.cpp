@@ -50,7 +50,7 @@ CodeBlock DurationAgentVarSymbol::cxx_declaration_agent()
 }
 
 // static
-Symbol * DurationAgentVarSymbol::create_symbol(const Symbol *agent)
+Symbol * DurationAgentVarSymbol::create_symbol(const Symbol *agent, yy::location decl_loc)
 {
     Symbol *sym = nullptr;
     string nm = DurationAgentVarSymbol::symbol_name(agent);
@@ -58,7 +58,7 @@ Symbol * DurationAgentVarSymbol::create_symbol(const Symbol *agent)
     if (it != symbols.end())
         sym = it->second;
     else
-        sym = new DurationAgentVarSymbol(agent);
+        sym = new DurationAgentVarSymbol(agent, decl_loc);
 
     return sym;
 }

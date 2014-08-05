@@ -36,10 +36,12 @@ public:
      * @param observed The observed.
      * @param constant The constant.
      */
-    ConditionedDurationAgentVarSymbol(const Symbol *agent, const Symbol *observed, const ConstantSymbol *constant)
+    ConditionedDurationAgentVarSymbol(const Symbol *agent, const Symbol *observed, const ConstantSymbol *constant, yy::location decl_loc = yy::location())
         : AgentVarSymbol(ConditionedDurationAgentVarSymbol::member_name(observed, constant),
                         agent,
-                        NumericSymbol::find(token::TK_Time) )
+                        NumericSymbol::find(token::TK_Time),
+                        decl_loc
+                        )
         , observed(observed->stable_rp())
         , pp_observed(nullptr)
         , constant(constant)
@@ -63,7 +65,7 @@ public:
 
     static string symbol_name(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant);
 
-    static Symbol * create_symbol(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant);
+    static Symbol * create_symbol(const Symbol* agent, const Symbol* observed, const ConstantSymbol* constant, yy::location decl_loc);
 
     void post_parse(int pass);
 

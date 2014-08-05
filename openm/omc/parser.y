@@ -1744,13 +1744,13 @@ derived_agentvar:
     /*
      * derived agentvars - duration family
      */
-      TK_duration "(" ")"
+      TK_duration[kw] "(" ")"
                         {
-                            $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context() );
+                            $derived_agentvar = DurationAgentVarSymbol::create_symbol( pc.get_agent_context(), @kw );
                         }
-    | TK_duration "(" SYMBOL[agentvar] "," constant ")"
+    | TK_duration[kw] "(" SYMBOL[agentvar] "," constant ")"
                         {
-                            $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant );
+                            $derived_agentvar = ConditionedDurationAgentVarSymbol::create_symbol( pc.get_agent_context(), $agentvar, $constant, @kw );
                         }
     | TK_weighted_duration[kw] "(" SYMBOL[agentvar] ")"
                         {

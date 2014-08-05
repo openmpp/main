@@ -402,6 +402,8 @@ public:
 
     /**
      * Process a semantic error encountered during the post-parse phase.
+     * 
+     * Source code location is that of Symbol
      *
      * @param msg The message.
      */
@@ -649,6 +651,13 @@ public:
      * The pp_symbols list is useful for debugging.
      */
     static void populate_pp_symbols();
+
+    /**
+     * Process a semantic error encountered during the post-parse phase.
+     * 
+     * @param msg The message.
+     */
+    static void pp_error(const yy::location& loc, const string& msg);
 
     /**
      * Perform operations after the parser has parsed all input files.

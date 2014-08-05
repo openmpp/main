@@ -26,6 +26,36 @@ bool TypeSymbol::is_bool()
     }
 }
 
+bool TypeSymbol::is_classification()
+{
+    if (dynamic_cast<ClassificationSymbol *>(this)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool TypeSymbol::is_range()
+{
+    if (dynamic_cast<RangeSymbol *>(this)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool TypeSymbol::is_partition()
+{
+    if (dynamic_cast<PartitionSymbol *>(this)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 bool TypeSymbol::is_time()
 {
     if (dynamic_cast<TimeSymbol *>(this)) {

@@ -61,6 +61,27 @@ public:
     /**
      * Determines derived type.
      *
+     * @return true if classification, else false.
+     */
+    bool is_classification();
+
+    /**
+     * Determines derived type.
+     *
+     * @return true if range, else false.
+     */
+    bool is_range();
+
+    /**
+     * Determines derived type.
+     *
+     * @return true if partition, else false.
+     */
+    bool is_partition();
+
+    /**
+     * Determines derived type.
+     *
      * @return true if time type, else false
      */
     bool is_time();

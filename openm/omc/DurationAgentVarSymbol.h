@@ -25,10 +25,11 @@ public:
     bool is_base_symbol() const { return false; }
 
     // constructor for 0-argument derived agentvars, e.g. duration()
-    DurationAgentVarSymbol(const Symbol *agent)
+    DurationAgentVarSymbol(const Symbol *agent, yy::location decl_loc = yy::location())
         : AgentVarSymbol(DurationAgentVarSymbol::member_name(),
                         agent,
-                        NumericSymbol::find(token::TK_Time))
+                        NumericSymbol::find(token::TK_Time),
+                        decl_loc)
     {
     }
 
@@ -43,7 +44,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol *agent);
+    static Symbol * create_symbol(const Symbol *agent, yy::location decl_loc);
 
     void post_parse(int pass);
 

@@ -20,6 +20,14 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
+    /**
+     * Morphing constructor
+     *
+     * @param [in,out] sym If non-null, the symbol.
+     * @param agent        The agent.
+     * @param type         The type.
+     * @param decl_loc     (Optional) the declaration location.
+     */
     AgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(sym, agent, type, decl_loc)
         , side_effects_fn(nullptr)
@@ -27,6 +35,14 @@ public:
         create_auxiliary_symbols();
     }
 
+    /**
+     * Constructor by name
+     *
+     * @param member_name Name of the member.
+     * @param agent       The agent.
+     * @param type        The type.
+     * @param decl_loc    (Optional) the declaration location.
+     */
     AgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(member_name, agent, type, decl_loc)
         , side_effects_fn(nullptr)
@@ -51,7 +67,7 @@ public:
      * 
      * The lagged version is an AgentInternalSymbol which holds
      * the value of the agentvar at the end of the previous event.
-     * An additional AgentInternaalSymbol holds the value of the
+     * An additional AgentInternalSymbol holds the value of the
      * event counter at last update.
      */
     void create_lagged();
@@ -72,6 +88,16 @@ public:
      * @return The symbol name.
      */
     string get_lagged_event_counter_name();
+
+    /**
+     * Determines if agentvar can be validly compared to the specifiec constant.
+     *
+     * @param constant     The constant.
+     * @param [in,out] msg Generated error message
+     *
+     * @return true if valid comparison, false if not.
+     */
+    bool is_valid_comparison(const ConstantSymbol * constant, string &err_msg);
 
     void post_parse(int pass);
 
