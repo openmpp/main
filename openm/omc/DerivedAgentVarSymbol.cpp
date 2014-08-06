@@ -28,6 +28,7 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
                                           const Symbol *av1,
                                           const Symbol *av2,
                                           const Symbol *prt,
+                                          const Symbol *cls,
                                           const ConstantSymbol *k1,
                                           const ConstantSymbol *k2,
                                           const ConstantSymbol *k3)
@@ -38,6 +39,7 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
     if (k1 != nullptr)  result += "_" + k1->value_as_name();
     if (av2 != nullptr) result += "_" + av2->name;
     if (prt != nullptr) result += "_" + prt->name;
+    if (cls != nullptr) result += "_" + cls->name;
     if (k2 != nullptr)  result += "_" + k2->value_as_name();
     if (k3 != nullptr)  result += "_" + k3->value_as_name();
 
@@ -50,20 +52,21 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
                                               const Symbol *av1,
                                               const Symbol *av2,
                                               const Symbol *prt,
+                                              const Symbol *cls,
                                               const ConstantSymbol *k1,
                                               const ConstantSymbol *k2,
                                               const ConstantSymbol *k3,
                                               yy::location decl_loc)
 {
     Symbol *sym = nullptr;
-    string mem_name = member_name(tok, av1, av2, prt, k1, k2, k3);
+    string mem_name = member_name(tok, av1, av2, prt, cls, k1, k2, k3);
     string nm = Symbol::symbol_name(mem_name, agent);
     auto it = symbols.find(nm);
     if (it != symbols.end()) {
         sym = it->second;
     }
     else {
-        sym = new DerivedAgentVarSymbol(agent, tok, av1, av2, prt, k1, k2, k3, decl_loc);
+        sym = new DerivedAgentVarSymbol(agent, tok, av1, av2, prt, cls, k1, k2, k3, decl_loc);
     }
     return sym;
 }
@@ -128,6 +131,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1 || !av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(av1 ? (k1 != nullptr) : true); // constant
         assert(!k2);
         assert(!k3);
@@ -138,6 +142,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // weight
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -148,6 +153,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // weight
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -158,6 +164,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // spell
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -168,6 +175,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // spell
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -178,6 +186,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // spell
         assert(av2); // weight
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -188,6 +197,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // spell
         assert(av2); // weight
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -198,6 +208,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // spell
         assert(av2); // delta
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -208,6 +219,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // spell
         assert(av2); // delta
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -218,6 +230,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -228,6 +241,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -238,6 +252,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // from
         assert(k2); // to
         assert(!k3);
@@ -248,6 +263,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -258,6 +274,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -268,6 +285,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -278,6 +296,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(k1); // from
         assert(k2); // to
         assert(!k3);
@@ -288,6 +307,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -298,6 +318,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -308,6 +329,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -318,6 +340,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -328,6 +351,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -338,6 +362,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // from
         assert(k2); // to
         assert(!k3);
@@ -348,6 +373,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // from
         assert(k2); // to
         assert(!k3);
@@ -358,6 +384,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -368,6 +395,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -378,6 +406,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -388,6 +417,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // constant
         assert(!k2);
         assert(!k3);
@@ -398,6 +428,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(k1); // from
         assert(k2); // to
         assert(!k3);
@@ -408,6 +439,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -418,6 +450,7 @@ void DerivedAgentVarSymbol::validate()
         assert(av1); // observed
         assert(!av2);
         assert(prt);
+        assert(!cls);
         assert(!k1);
         assert(!k2);
         assert(!k3);
@@ -746,7 +779,7 @@ string DerivedAgentVarSymbol::pretty_name()
     switch (tok) {
     case token::TK_duration:
     {
-        if (!av1) {
+        if (!pp_av1) {
             result = token_to_string(tok) + "()";
         }
         else {
@@ -761,7 +794,7 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_entrances:
     case token::TK_exits:
     {
-        assert(av1);
+        assert(pp_av1);
         assert(k1);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
         break;
@@ -777,16 +810,16 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_value_at_entrances:
     case token::TK_value_at_exits:
     {
-        assert(av1);
+        assert(pp_av1);
         assert(k1);
-        assert(av2);
+        assert(pp_av2);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
         break;
     }
     case token::TK_undergone_transition:
     case token::TK_transitions:
     {
-        assert(av1);
+        assert(pp_av1);
         assert(k1);
         assert(k2);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ")";
@@ -796,10 +829,10 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_value_at_latest_transition:
     case token::TK_value_at_transitions:
     {
-        assert(av1);
+        assert(pp_av1);
         assert(k1);
         assert(k2);
-        assert(av2);
+        assert(pp_av2);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->name + ")";
         break;
     }
@@ -807,7 +840,7 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_undergone_change:
     case token::TK_changes:
     {
-        assert(av1);
+        assert(pp_av1);
         result = token_to_string(tok) + "(" + pp_av1->name + ")";
         break;
     }
@@ -816,14 +849,14 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_value_at_latest_change:
     case token::TK_value_at_changes:
     {
-        assert(av1);
-        assert(av2);
+        assert(pp_av1);
+        assert(pp_av2);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_av2->name + ")";
         break;
     }
     case token::TK_split:
     {
-        assert(av1);
+        assert(pp_av1);
         assert(pp_prt);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_prt->name + ")";
         break;
