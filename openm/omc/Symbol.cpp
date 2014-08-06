@@ -464,6 +464,8 @@ int Symbol::type_changes = 0;
 
 int Symbol::post_parse_errors = 0;
 
+int Symbol::post_parse_warnings = 0;
+
 bool Symbol::option_event_trace = false;
 
 void Symbol::post_parse(int pass)
@@ -557,6 +559,12 @@ void Symbol::pp_error(const string& msg)
     theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
 }
 
+void Symbol::pp_warning(const string& msg)
+{
+    post_parse_warnings++;
+    yy::location l = decl_loc;
+    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+}
 
 string Symbol::label(const LanguageSymbol & language) const
 {
@@ -794,10 +802,16 @@ void Symbol::post_parse_all()
 
     // pass 2: resolve derived agentvar data types
     type_changes = 1;
+    int type_change_passes = 0;
     while (type_changes != 0) {
         type_changes = 0;
         for (auto pr : symbols) {
             pr.second->post_parse( eResolveDataTypes );
+        }
+        ++type_change_passes;
+        if (type_change_passes > 20) {
+            theLog->logMsg("error - More than 20 post-parse type change passes.");
+            throw HelperException("Finish omc");
         }
     }
 

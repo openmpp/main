@@ -66,7 +66,7 @@ CodeBlock AgentDataMemberSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:         /// time
     h += "";
-    h += doxygen_short(name);
+    h += doxygen_short(pretty_name());
     return h;
 }
 

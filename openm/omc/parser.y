@@ -1756,8 +1756,7 @@ derived_agentvar:
     // TODO TK_weighted_duration
     | TK_weighted_duration[kw] "(" SYMBOL[weight] ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $weight, @kw );
                         }
     // TODO TK_weighted_cumulation
     | TK_weighted_cumulation[kw] "(" SYMBOL[observed] "," SYMBOL[weight] ")"
@@ -1806,25 +1805,6 @@ derived_agentvar:
                             YYERROR;
                         }
 
-    /*
-     * derived agentvars - multilink family
-     */
-    | TK_count[function] "(" SYMBOL[multilink] ")"
-                        {
-                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, "" );
-                        }
-    | aggregate_multilink_function[function] "(" SYMBOL[multilink] ","
-                        {
-                            // Tell the scanner not to apply agent scope resolution to the following 'word'
-                            // in the input stream, but just return a STRING instead.  That's because the agent context
-                            // depends on the nature of the preceding multilink symbol, whose declaration may not yet have been encountered.
-                            pc.next_word_is_string = true;
-                        }
-        STRING[agentvar] ")"
-                        {
-                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$agentvar );
-                            delete $agentvar; // delete the string created using new in scanner
-                        }
     /*
      * derived agentvars - transition occurrence family
      */
@@ -1921,6 +1901,25 @@ derived_agentvar:
     //TODO KW_self_scheduling_split - self_scheduling_split(age, partition)
     //TODO KW_self_scheduling_split - self_scheduling_split(time, partition)
 
+    /*
+     * derived agentvars - multilink family
+     */
+    | TK_count[function] "(" SYMBOL[multilink] ")"
+                        {
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, "" );
+                        }
+    | aggregate_multilink_function[function] "(" SYMBOL[multilink] ","
+                        {
+                            // Tell the scanner not to apply agent scope resolution to the following 'word'
+                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // depends on the nature of the preceding multilink symbol, whose declaration may not yet have been encountered.
+                            pc.next_word_is_string = true;
+                        }
+        STRING[agentvar] ")"
+                        {
+                            $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$agentvar );
+                            delete $agentvar; // delete the string created using new in scanner
+                        }
 	;
 
 aggregate_multilink_function:

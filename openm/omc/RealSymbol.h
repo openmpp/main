@@ -29,4 +29,10 @@ public:
 
     CodeBlock cxx_declaration_global();
 
+    /**
+     * Gets the unique RealSymbol.
+     *
+     * @return null if it fails, else the TimeSymbol.
+     */
+    static RealSymbol * find();
 };

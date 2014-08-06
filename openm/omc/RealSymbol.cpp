@@ -33,3 +33,10 @@ CodeBlock RealSymbol::cxx_declaration_global()
     return h;
 }
 
+// static
+RealSymbol * RealSymbol::find()
+{
+    auto rs = dynamic_cast<RealSymbol *>(get_symbol(token_to_string(token::TK_real)));
+    assert(rs); // only called when valid
+    return rs;
+}

@@ -30,7 +30,7 @@ public:
     bool is_base_symbol() const { return false; }
 
     /**
-     * Constructor for literal second argument
+     * Constructor with all arguments.
      *
      * @param agent    The agent.
      */
@@ -62,6 +62,7 @@ public:
         , k3(k3)
         , iav(nullptr)
     {
+        check_if_implemented();
         create_auxiliary_symbols();
     }
 
@@ -89,7 +90,7 @@ public:
                               const ConstantSymbol *k3);
 
     /**
-     * Create the given symbol, or return it if it already exists
+     * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
      * @param tk1      The first tk.
@@ -116,13 +117,13 @@ public:
                                   yy::location decl_loc);
 
     /**
-     * Create the given symbol, or return it if it already exists
+     * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The first tk.
+     * @param tk1      The token.
      * @param decl_loc The declaration location.
      *
-     * @return null if it fails, else the new symbol.
+     * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
                                   token_type tk1,
@@ -130,10 +131,20 @@ public:
     {
         // parser guarantees:
         assert(agent);
-        assert(tk1 == token::TK_duration);
         return create_symbol(agent, tk1, token::TK_unused, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
     }
 
+    /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param tk1      The token.
+     * @param av1      The agentvar.
+     * @param k1       The constant.
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
     static Symbol * create_symbol(const Symbol* agent,
                                   token_type tk1,
                                   const Symbol *av1,
@@ -142,18 +153,54 @@ public:
     {
         // parser guarantees:
         assert(agent);
-        assert(tk1 == token::TK_duration);
         assert(av1);
         assert(k1);
         return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, k1, nullptr, nullptr, decl_loc);
     }
 
     /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param av1      The agentvar.
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tk1,
+                                  const Symbol *av1,
+                                  yy::location decl_loc)
+    {
+        // parser guarantees:
+        assert(agent);
+        assert(av1);
+        return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
+    }
+
+    /**
+     * Check if the symbol is fully implemented, if not issue warning.
+     */
+    void check_if_implemented();
+
+    /**
      * Create auxiliary symbols associated with this symbol.
      */
     void create_auxiliary_symbols();
 
+    /**
+     * Assign the datatype of this symbol.
+     */
+    void assign_data_type();
+
+    /**
+     * Create side-effects to maintain this symbol.
+     */
+    void create_side_effects();
+
     void post_parse(int pass);
+
+    virtual string pretty_name();
 
     CodeBlock cxx_declaration_agent();
 

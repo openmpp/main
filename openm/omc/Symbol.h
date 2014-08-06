@@ -410,6 +410,15 @@ public:
     void pp_error(const string& msg);
 
     /**
+     * Process a semantic warning encountered during the post-parse phase.
+     * 
+     * Source code location is that of Symbol
+     *
+     * @param msg The message.
+     */
+    void pp_warning(const string& msg);
+
+    /**
      * Get the symbol label in the given language.
      * 
      * Language-specific symbol labels come from structured comments in the model source code.
@@ -888,6 +897,11 @@ public:
      * A count of errors identified during post-parse processing.
      */
     static int post_parse_errors;
+
+    /**
+     * A count of warnings identified during post-parse processing.
+     */
+    static int post_parse_warnings;
 
     /**
      * true if event_trace activated in options statement.

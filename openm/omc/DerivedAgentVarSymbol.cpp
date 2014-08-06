@@ -14,6 +14,7 @@
 #include "IdentityAgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "TimeSymbol.h"
+#include "RealSymbol.h"
 #include "ExprForAgentVar.h"
 #include "Literal.h"
 #include "CodeBlock.h"
@@ -68,6 +69,19 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
     return sym;
 }
 
+void DerivedAgentVarSymbol::check_if_implemented()
+{
+    switch (tk1) {
+
+    case token::TK_duration:
+    // Implemented
+    break;
+
+    default:
+        pp_warning("Warning - Not implemented (will always be 0) - " + Symbol::token_to_string(tk1) + "( ... )");
+    }
+}
+
 void DerivedAgentVarSymbol::create_auxiliary_symbols()
 {
     switch (tk1) {
@@ -81,9 +95,66 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         break;
     }
     default:
+    {
         break;
     }
+
+    }
 }
+
+void DerivedAgentVarSymbol::assign_data_type()
+{
+    switch (tk1) {
+    case token::TK_duration:
+    {
+        change_data_type(TimeSymbol::find());
+        break;
+    }
+    case token::TK_weighted_duration:
+    {
+        change_data_type(RealSymbol::find());
+        break;
+    }
+    default:
+    // leave at double
+    break;
+    }
+
+}
+
+void DerivedAgentVarSymbol::create_side_effects()
+{
+    switch (tk1) {
+    case token::TK_duration:
+    {
+        if (!av1) {
+            // simple duration()
+            // add side-effect to time
+            auto *av = pp_agent->pp_time;
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += "// Advance time for " + pretty_name();
+            c += name + ".set(" + name + ".get() + om_delta);";
+            c += "";
+        }
+        else {
+            // conditioned duration(av, value)
+            // add side-effect to time
+            auto *av = pp_agent->pp_time;
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += "// Advance time for " + pretty_name();
+            c += "if (" + iav->name + ") {";
+            c += name + ".set(" + name + ".get() + om_delta);";
+            c += "}";
+            c += "";
+        }
+        break;
+    }
+    default:
+    break;
+    }
+}
+
+
 
 void DerivedAgentVarSymbol::post_parse(int pass)
 {
@@ -109,52 +180,52 @@ void DerivedAgentVarSymbol::post_parse(int pass)
     }
     case eResolveDataTypes:
     {
-        switch (tk1) {
-        case token::TK_duration:
-        {
-            change_data_type(TimeSymbol::find());
-            break;
-        }
-        default:
+        assign_data_type();
         break;
-        }
-    break;
     }
     case ePopulateDependencies:
     {
-        switch (tk1) {
-        case token::TK_duration:
-        {
-            if (!av1) {
-                // simple duration()
-                // add side-effect to time agentvar
-                auto *av = pp_agent->pp_time;
-                CodeBlock& c = av->side_effects_fn->func_body;
-                c += "// Advance time for " + pretty_name();
-                c += name + ".set(" + name + ".get() + om_delta);";
-                c += "";
-            }
-            else {
-                // conditioned duration(av, value)
-                // add side-effect to time agentvar
-                auto *av = pp_agent->pp_time;
-                CodeBlock& c = av->side_effects_fn->func_body;
-                c += "// Advance time for " + pretty_name();
-                c += "if (" + iav->name + ") {";
-                c += name + ".set(" + name + ".get() + om_delta);";
-                c += "}";
-                c += "";
-            }
-            break;
-        }
-        default:
-        break;
-        }
+        create_side_effects();
         break;
     }
     default:
         break;
     }
+}
+
+string DerivedAgentVarSymbol::pretty_name()
+{
+    string result;
+
+    switch (tk1) {
+    case token::TK_duration:
+    {
+        if (!av1) {
+            result = token_to_string(tk1) + "()";
+        }
+        else {
+            result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ")";
+        }
+        break;
+    }
+    case token::TK_weighted_duration:
+    {
+        result = token_to_string(tk1) + "(" + pp_av1->name + ")";
+        break;
+    }
+    default:
+    {
+        if (tk2 == token::TK_unused) {
+            result = token_to_string(tk1) + "( ... )";
+        }
+        else {
+            result = token_to_string(tk1) + "(" + token_to_string(tk1) + "( ... ))";
+        }
+        break;
+    }
+
+    }
+    return result;
 }
 
 CodeBlock DerivedAgentVarSymbol::cxx_declaration_agent()

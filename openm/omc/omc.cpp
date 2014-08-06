@@ -334,8 +334,11 @@ int main(int argc, char * argv[])
             if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
         }
 
+        if (Symbol::post_parse_warnings > 0) {
+            theLog->logFormatted("%d warnings in post-parse phase", Symbol::post_parse_warnings);
+        }
         if (Symbol::post_parse_errors > 0) {
-            theLog->logFormatted("%d semantic errors in post-parse phase", Symbol::post_parse_errors);
+            theLog->logFormatted("%d errors in post-parse phase", Symbol::post_parse_errors);
             throw HelperException("Finish omc");
         }
 
