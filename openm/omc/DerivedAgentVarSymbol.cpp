@@ -523,6 +523,16 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_duration_trigger:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(k1); // constant
+        assert(k2); // delay
+        assert(!k3);
+        break;
+    }
     case token::TK_self_scheduling_int:
     case token::TK_self_scheduling_split:
     break; // TODO temporary remove after completion of list
@@ -593,6 +603,7 @@ void DerivedAgentVarSymbol::assign_data_type()
     case token::TK_trigger_exits:
     case token::TK_trigger_transitions:
     case token::TK_trigger_changes:
+    case token::TK_duration_trigger:
     {
         change_data_type(BoolSymbol::find());
         break;
@@ -869,6 +880,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         // TODO
         break;
     }
+    case token::TK_duration_trigger:
+    {
+        // TODO
+        break;
+    }
 
     default:
     break;
@@ -924,6 +940,7 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_undergone_transition:
     case token::TK_transitions:
     case token::TK_trigger_transitions:
+    case token::TK_duration_trigger:
     {
         assert(pp_av1);
         assert(k1);

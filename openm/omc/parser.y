@@ -1919,9 +1919,8 @@ derived_agentvar:
                         }
 
     /*
-     * derived agentvars - self-scheduling family - duration counters
+     * derived agentvars - self-scheduling family
      */
-    //TODO TK_duration_counter
     | TK_duration_counter[kw] "(" SYMBOL[observed] "," constant[constnt] "," constant[interval] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $interval, @kw );
@@ -1930,7 +1929,10 @@ derived_agentvar:
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $interval, $maxcount, @kw );
                         }
-    //TODO TK_duration_trigger
+    | TK_duration_trigger[kw] "(" SYMBOL[observed] "," constant[constnt] "," constant[delay] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $delay, @kw );
+                        }
 
     /*
      * derived agentvars - self-scheduling family - integer durations
