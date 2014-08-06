@@ -34,15 +34,14 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
                                           const ConstantSymbol *k2,
                                           const ConstantSymbol *k3)
 {
-    string result = "om";
-    result += "_" + token_to_string(tok) + "_FOR";
-    if (av1 != nullptr) result += "_" + av1->name;
-    if (k1 != nullptr)  result += "_" + k1->value_as_name();
-    if (av2 != nullptr) result += "_" + av2->name;
-    if (prt != nullptr) result += "_" + prt->name;
-    if (cls != nullptr) result += "_" + cls->name;
-    if (k2 != nullptr)  result += "_" + k2->value_as_name();
-    if (k3 != nullptr)  result += "_" + k3->value_as_name();
+    string result = "om_" + token_to_string(tok);
+    if (av1 != nullptr) result += "_FOR_" + av1->name;
+    if (k1 != nullptr)  result += "_X_" + k1->value_as_name();
+    if (av2 != nullptr) result += "_X_" + av2->name;
+    if (prt != nullptr) result += "_X_" + prt->name;
+    if (cls != nullptr) result += "_X_" + cls->name;
+    if (k2 != nullptr)  result += "_X_" + k2->value_as_name();
+    if (k3 != nullptr)  result += "_X_" + k3->value_as_name();
 
     return result;
 }
@@ -513,6 +512,16 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_duration_counter:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(k1); // constant
+        assert(k2); // interval
+        assert(k3 || !k3); // maxcount (optional)
+        break;
+    }
     case token::TK_duration_trigger:
     case token::TK_self_scheduling_int:
     case token::TK_self_scheduling_split:
@@ -594,6 +603,7 @@ void DerivedAgentVarSymbol::assign_data_type()
     case token::TK_exits:
     case token::TK_transitions:
     case token::TK_changes:
+    case token::TK_duration_counter:
     {
         auto *sym = NumericSymbol::find(token::TK_counter);
         assert(sym);  // Initialization guarantee
@@ -854,6 +864,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         // TODO
         break;
     }
+    case token::TK_duration_counter:
+    {
+        // TODO
+        break;
+    }
 
     default:
     break;
@@ -958,6 +973,15 @@ string DerivedAgentVarSymbol::pretty_name()
         assert(pp_av1);
         assert(pp_cls);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_cls->name + ")";
+        break;
+    }
+    case token::TK_duration_counter:
+    {
+        assert(pp_av1);
+        assert(k1);
+        assert(k2);
+        assert(k3 || !k3); // optional
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + (k3 ? (", " + k3->value()) : "") + ")";
         break;
     }
     default:

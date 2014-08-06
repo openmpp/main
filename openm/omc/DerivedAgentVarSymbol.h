@@ -191,6 +191,34 @@ public:
      *
      * @param agent    The agent.
      * @param tok      The token.
+     * @param av1      The agentvar.
+     * @param k1       The constant.
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tok,
+                                  const Symbol *av1,
+                                  const ConstantSymbol *k1,
+                                  const ConstantSymbol *k2,
+                                  const ConstantSymbol *k3,
+                                  yy::location decl_loc)
+    {
+        // signature conditions:
+        assert(agent);
+        assert(av1);
+        assert(k1);
+        assert(k2);
+        assert(k3);
+        return create_symbol(agent, tok, av1, nullptr, nullptr, nullptr, k1, k2, k3, decl_loc);
+    }
+
+    /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param tok      The token.
      * @param av1      The agentvar #1
      * @param k1       The constant #1
      * @param k2       The constant #2

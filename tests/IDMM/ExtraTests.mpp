@@ -67,6 +67,8 @@ actor Host
     logical v31 = trigger_exits(disease_phase, DP_INFECTIOUS);
     logical v32 = trigger_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE);
     logical v33 = trigger_changes(disease_phase);
+    counter v34 = duration_counter(disease_phase, DP_LATENT, 0.083333);
+    counter v35 = duration_counter(disease_phase, DP_LATENT, 0.083333, 12);
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;
