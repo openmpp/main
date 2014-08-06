@@ -1893,7 +1893,6 @@ derived_agentvar:
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
                         }
-    // TODO TK_aggregate
     | TK_aggregate[kw] "(" SYMBOL[observed] "," SYMBOL[classification] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), static_cast<Symbol *>(nullptr), $classification, @kw );
@@ -1903,9 +1902,25 @@ derived_agentvar:
      * derived agentvars - trigger family
      */
     // TODO TK_trigger_entrances
+    | TK_trigger_entrances[kw] "(" SYMBOL[observed] "," constant ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
+                        }
     // TODO TK_trigger_exits
+    | TK_trigger_exits[kw] "(" SYMBOL[observed] "," constant ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
+                        }
     // TODO TK_trigger_transitions
+    | TK_trigger_transitions[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, @kw );
+                        }
     // TODO TK_trigger_changes
+    | TK_trigger_changes[kw] "(" SYMBOL[observed] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, @kw );
+                        }
 
     /*
      * derived agentvars - self-scheduling family - duration counters

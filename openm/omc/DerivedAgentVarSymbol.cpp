@@ -35,7 +35,7 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
                                           const ConstantSymbol *k3)
 {
     string result = "om";
-    if (tok != token::TK_unused) result += "_" + token_to_string(tok);
+    result += "_" + token_to_string(tok) + "_FOR";
     if (av1 != nullptr) result += "_" + av1->name;
     if (k1 != nullptr)  result += "_" + k1->value_as_name();
     if (av2 != nullptr) result += "_" + av2->name;
@@ -469,9 +469,49 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_trigger_entrances:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_trigger_exits:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_trigger_transitions:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(k1); // from
+        assert(k2); // to
+        assert(!k3);
+        break;
+    }
     case token::TK_trigger_changes:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_duration_counter:
     case token::TK_duration_trigger:
     case token::TK_self_scheduling_int:
@@ -540,6 +580,10 @@ void DerivedAgentVarSymbol::assign_data_type()
     case token::TK_undergone_exit:
     case token::TK_undergone_transition:
     case token::TK_undergone_change:
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
     {
         change_data_type(BoolSymbol::find());
         break;
@@ -790,6 +834,26 @@ void DerivedAgentVarSymbol::create_side_effects()
         // TODO
         break;
     }
+    case token::TK_trigger_entrances:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_trigger_exits:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_trigger_transitions:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_trigger_changes:
+    {
+        // TODO
+        break;
+    }
 
     default:
     break;
@@ -817,6 +881,8 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_undergone_exit:
     case token::TK_entrances:
     case token::TK_exits:
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
     {
         assert(pp_av1);
         assert(k1);
@@ -842,6 +908,7 @@ string DerivedAgentVarSymbol::pretty_name()
     }
     case token::TK_undergone_transition:
     case token::TK_transitions:
+    case token::TK_trigger_transitions:
     {
         assert(pp_av1);
         assert(k1);
@@ -863,6 +930,7 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_weighted_duration:
     case token::TK_undergone_change:
     case token::TK_changes:
+    case token::TK_trigger_changes:
     {
         assert(pp_av1);
         result = token_to_string(tok) + "(" + pp_av1->name + ")";

@@ -63,6 +63,10 @@ actor Host
     double v27 = value_at_changes(disease_phase, age);
     double v28 = split(age, MY_PART);
     APPEARANCE v29 = aggregate(disease_phase, APPEARANCE);
+    logical v30 = trigger_entrances(disease_phase, DP_INFECTIOUS);
+    logical v31 = trigger_exits(disease_phase, DP_INFECTIOUS);
+    logical v32 = trigger_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE);
+    logical v33 = trigger_changes(disease_phase);
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;
