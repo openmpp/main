@@ -6,12 +6,12 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include "libopenm/common/omHelper.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "AgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
 #include "TableSymbol.h"
 #include "CodeBlock.h"
-#include "libopenm/common/omHelper.h"
 
 using namespace std;
 using namespace openm;

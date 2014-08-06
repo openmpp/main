@@ -35,8 +35,7 @@ public:
      * @param agent    The agent.
      */
     DerivedAgentVarSymbol(const Symbol *agent,
-                          token_type tk1,
-                          token_type tk2,
+                          token_type tok,
                           const Symbol *av1,
                           const Symbol *av2,
                           const Symbol *prt,
@@ -44,13 +43,12 @@ public:
                           const ConstantSymbol *k2,
                           const ConstantSymbol *k3,
                           yy::location decl_loc = yy::location())
-        : AgentVarSymbol(DerivedAgentVarSymbol::member_name(tk1, tk2, av1, av2, prt, k1, k2, k3),
+        : AgentVarSymbol(DerivedAgentVarSymbol::member_name(tok, av1, av2, prt, k1, k2, k3),
                         agent,
                         NumericSymbol::find(token::TK_double),// will be changed later
                         decl_loc
                         )
-        , tk1(tk1)
-        , tk2(tk2)
+        , tok(tok)
         , av1(av1 ? av1->stable_pp() : nullptr)
         , pp_av1(nullptr)
         , av2(av2 ? av2->stable_pp() : nullptr)
@@ -69,8 +67,7 @@ public:
     /**
      * The member name for a specific symbol of this kind.
      *
-     * @param tk1 The first tk.
-     * @param tk2 The second tk.
+     * @param tok The first tk.
      * @param av1 The first av.
      * @param av2 The second av.
      * @param prt The prt.
@@ -80,8 +77,7 @@ public:
      *
      * @return The member namne as a string.
      */
-    static string member_name(token_type tk1,
-                              token_type tk2,
+    static string member_name(token_type tok,
                               const Symbol *av1,
                               const Symbol *av2,
                               const Symbol *prt,
@@ -93,8 +89,7 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The first tk.
-     * @param tk2      The second tk.
+     * @param tok      The first tk.
      * @param av1      The first av.
      * @param av2      The second av.
      * @param prt      The prt.
@@ -106,8 +101,7 @@ public:
      * @return null if it fails, else the new symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
-                                  token_type tk2,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
                                   const Symbol *prt,
@@ -120,25 +114,25 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The token.
+     * @param tok      The token.
      * @param decl_loc The declaration location.
      *
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   yy::location decl_loc)
     {
         // signature conditions:
         assert(agent);
-        return create_symbol(agent, tk1, token::TK_unused, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
+        return create_symbol(agent, tok, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The token.
+     * @param tok      The token.
      * @param av1      The agentvar.
      * @param k1       The constant.
      * @param decl_loc The declaration location.
@@ -146,7 +140,7 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
                                   yy::location decl_loc)
@@ -155,14 +149,14 @@ public:
         assert(agent);
         assert(av1);
         assert(k1);
-        return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, k1, nullptr, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, nullptr, nullptr, k1, nullptr, nullptr, decl_loc);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The token.
+     * @param tok      The token.
      * @param av1      The agentvar.
      * @param k1       The constant.
      * @param decl_loc The declaration location.
@@ -170,7 +164,7 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
                                   const ConstantSymbol *k2,
@@ -181,14 +175,14 @@ public:
         assert(av1);
         assert(k1);
         assert(k2);
-        return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, k1, k2, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, nullptr, nullptr, k1, k2, nullptr, decl_loc);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The token.
+     * @param tok      The token.
      * @param av1      The agentvar #1
      * @param k1       The constant #1
      * @param k2       The constant #2
@@ -198,7 +192,7 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
                                   const ConstantSymbol *k2,
@@ -211,14 +205,14 @@ public:
         assert(k1);
         assert(k2);
         assert(av2);
-        return create_symbol(agent, tk1, token::TK_unused, av1, av2, nullptr, k1, k2, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, av2, nullptr, k1, k2, nullptr, decl_loc);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param tk1      The token.
+     * @param tok      The token.
      * @param av1      The agentvar #1
      * @param k1       The constant.
      * @param av2      The agentvar #2
@@ -227,7 +221,7 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
                                   const Symbol *av2,
@@ -238,7 +232,7 @@ public:
         assert(av1);
         assert(k1);
         assert(av2);
-        return create_symbol(agent, tk1, token::TK_unused, av1, av2, nullptr, k1, nullptr, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, av2, nullptr, k1, nullptr, nullptr, decl_loc);
     }
 
     /**
@@ -251,14 +245,14 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   yy::location decl_loc)
     {
         // signature conditions:
         assert(agent);
         assert(av1);
-        return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
     }
 
     /**
@@ -272,7 +266,7 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
                                   yy::location decl_loc)
@@ -281,7 +275,7 @@ public:
         assert(agent);
         assert(av1);
         assert(av2);
-        return create_symbol(agent, tk1, token::TK_unused, av1, av2, nullptr, nullptr, nullptr, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, av2, nullptr, nullptr, nullptr, nullptr, decl_loc);
     }
 
     /**
@@ -296,7 +290,7 @@ public:
      * @return The symbol.
      */
     static Symbol * create_symbol(const Symbol* agent,
-                                  token_type tk1,
+                                  token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
                                   const Symbol *prt,
@@ -307,7 +301,7 @@ public:
         assert(av1);
         assert(!av2); // placeholder only
         assert(prt);
-        return create_symbol(agent, tk1, token::TK_unused, av1, av2, prt, nullptr, nullptr, nullptr, decl_loc);
+        return create_symbol(agent, tok, av1, av2, prt, nullptr, nullptr, nullptr, decl_loc);
     }
 
     /**
@@ -337,14 +331,9 @@ public:
     CodeBlock cxx_declaration_agent();
 
     /**
-     * Token #1.
+     * The token for the derived attribute
      */
-    const token_type tk1;
-
-    /**
-     * Token #2.
-     */
-    const token_type tk2;
+    const token_type tok;
 
     /**
      * agentvar #1

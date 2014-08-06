@@ -24,8 +24,7 @@
 using namespace std;
 
 // static
-string DerivedAgentVarSymbol::member_name(token_type tk1,
-                                          token_type tk2,
+string DerivedAgentVarSymbol::member_name(token_type tok,
                                           const Symbol *av1,
                                           const Symbol *av2,
                                           const Symbol *prt,
@@ -34,8 +33,7 @@ string DerivedAgentVarSymbol::member_name(token_type tk1,
                                           const ConstantSymbol *k3)
 {
     string result = "om";
-    if (tk1 != token::TK_unused) result += "_" + token_to_string(tk1);
-    if (tk2 != token::TK_unused) result += "_" + token_to_string(tk2);
+    if (tok != token::TK_unused) result += "_" + token_to_string(tok);
     if (av1 != nullptr) result += "_" + av1->name;
     if (k1 != nullptr)  result += "_" + k1->value_as_name();
     if (av2 != nullptr) result += "_" + av2->name;
@@ -48,8 +46,7 @@ string DerivedAgentVarSymbol::member_name(token_type tk1,
 
 // static
 Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
-                                              token_type tk1,
-                                              token_type tk2,
+                                              token_type tok,
                                               const Symbol *av1,
                                               const Symbol *av2,
                                               const Symbol *prt,
@@ -59,14 +56,14 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
                                               yy::location decl_loc)
 {
     Symbol *sym = nullptr;
-    string mem_name = member_name(tk1, tk2, av1, av2, prt, k1, k2, k3);
+    string mem_name = member_name(tok, av1, av2, prt, k1, k2, k3);
     string nm = Symbol::symbol_name(mem_name, agent);
     auto it = symbols.find(nm);
     if (it != symbols.end()) {
         sym = it->second;
     }
     else {
-        sym = new DerivedAgentVarSymbol(agent, tk1, tk2, av1, av2, prt, k1, k2, k3, decl_loc);
+        sym = new DerivedAgentVarSymbol(agent, tok, av1, av2, prt, k1, k2, k3, decl_loc);
     }
     return sym;
 }
@@ -74,7 +71,7 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
 void DerivedAgentVarSymbol::validate()
 {
     // Check if implemented, and issue warning if not
-    switch (tk1) {
+    switch (tok) {
 
     // implemented
     case token::TK_duration:
@@ -120,15 +117,14 @@ void DerivedAgentVarSymbol::validate()
     case token::TK_self_scheduling_int:
     case token::TK_self_scheduling_split:
     default:
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tk1) + "( ... )");
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
     }
 
     // Check argument/member signature
-    switch (tk1) {
+    switch (tok) {
 
     case token::TK_duration:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1 || !av1); // observed
         assert(!av2);
         assert(!prt);
@@ -139,7 +135,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_weighted_duration:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // weight
         assert(!av2);
         assert(!prt);
@@ -150,7 +145,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_weighted_cumulation:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // weight
         assert(!prt);
@@ -161,7 +155,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_active_spell_duration:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // spell
         assert(!av2);
         assert(!prt);
@@ -172,7 +165,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_completed_spell_duration:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // spell
         assert(!av2);
         assert(!prt);
@@ -183,7 +175,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_active_spell_weighted_duration:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // spell
         assert(av2); // weight
         assert(!prt);
@@ -194,7 +185,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_completed_spell_weighted_duration:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // spell
         assert(av2); // weight
         assert(!prt);
@@ -205,7 +195,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_active_spell_delta:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // spell
         assert(av2); // delta
         assert(!prt);
@@ -216,7 +205,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_completed_spell_delta:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // spell
         assert(av2); // delta
         assert(!prt);
@@ -227,7 +215,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_undergone_entrance:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -238,7 +225,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_undergone_exit:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -249,7 +235,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_undergone_transition:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -260,7 +245,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_undergone_change:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -271,7 +255,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_entrances:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -282,7 +265,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_exits:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -293,7 +275,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_transitions:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -304,7 +285,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_changes:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(!prt);
@@ -315,7 +295,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_first_entrance:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -326,7 +305,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_latest_entrance:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -337,7 +315,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_first_exit:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -348,7 +325,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_latest_exit:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -359,7 +335,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_first_transition:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -370,7 +345,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_latest_transition:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -381,7 +355,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_first_change:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -392,7 +365,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_latest_change:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -403,7 +375,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_entrances:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -414,7 +385,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_exits:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -425,7 +395,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_transitions:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -436,7 +405,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_value_at_changes:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(av2); // value
         assert(!prt);
@@ -447,7 +415,6 @@ void DerivedAgentVarSymbol::validate()
     }
     case token::TK_split:
     {
-        assert(tk2 == token::TK_unused);
         assert(av1); // observed
         assert(!av2);
         assert(prt);
@@ -475,7 +442,7 @@ void DerivedAgentVarSymbol::validate()
 void DerivedAgentVarSymbol::create_auxiliary_symbols()
 {
     // Create identity agentvar monitoring av1 == k1
-    switch (tk1) {
+    switch (tok) {
     case token::TK_duration:
     {
         if (av1 && k1) {
@@ -503,7 +470,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
 
 void DerivedAgentVarSymbol::assign_data_type()
 {
-    switch (tk1) {
+    switch (tok) {
 
     // type is Time
     case token::TK_duration:
@@ -596,7 +563,7 @@ void DerivedAgentVarSymbol::assign_data_type()
 
 void DerivedAgentVarSymbol::create_side_effects()
 {
-    switch (tk1) {
+    switch (tok) {
     case token::TK_duration:
     {
         if (!av1) {
@@ -776,14 +743,14 @@ string DerivedAgentVarSymbol::pretty_name()
 {
     string result;
 
-    switch (tk1) {
+    switch (tok) {
     case token::TK_duration:
     {
         if (!av1) {
-            result = token_to_string(tk1) + "()";
+            result = token_to_string(tok) + "()";
         }
         else {
-            result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ")";
+            result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
         }
         break;
     }
@@ -796,7 +763,7 @@ string DerivedAgentVarSymbol::pretty_name()
     {
         assert(av1);
         assert(k1);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
         break;
     }
     case token::TK_active_spell_weighted_duration:
@@ -813,7 +780,7 @@ string DerivedAgentVarSymbol::pretty_name()
         assert(av1);
         assert(k1);
         assert(av2);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
         break;
     }
     case token::TK_undergone_transition:
@@ -822,7 +789,7 @@ string DerivedAgentVarSymbol::pretty_name()
         assert(av1);
         assert(k1);
         assert(k2);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ")";
         break;
     }
     case token::TK_value_at_first_transition:
@@ -833,7 +800,7 @@ string DerivedAgentVarSymbol::pretty_name()
         assert(k1);
         assert(k2);
         assert(av2);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->name + ")";
         break;
     }
     case token::TK_weighted_duration:
@@ -841,7 +808,7 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_changes:
     {
         assert(av1);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ")";
         break;
     }
     case token::TK_weighted_cumulation:
@@ -851,24 +818,19 @@ string DerivedAgentVarSymbol::pretty_name()
     {
         assert(av1);
         assert(av2);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + pp_av2->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_av2->name + ")";
         break;
     }
     case token::TK_split:
     {
         assert(av1);
         assert(pp_prt);
-        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + pp_prt->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_prt->name + ")";
         break;
     }
     default:
     {
-        if (tk2 == token::TK_unused) {
-            result = token_to_string(tk1) + "( ... )";
-        }
-        else {
-            result = token_to_string(tk1) + "(" + token_to_string(tk1) + "( ... ))";
-        }
+        result = token_to_string(tok) + "( ... )";
         break;
     }
 

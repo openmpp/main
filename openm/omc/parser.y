@@ -1889,7 +1889,6 @@ derived_agentvar:
     /*
      * derived agentvars - transformation family
      */
-    // TODO TK_split
     | TK_split[kw] "(" SYMBOL[observed] "," SYMBOL[partition] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
