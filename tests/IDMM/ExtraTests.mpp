@@ -27,6 +27,22 @@ actor Host
     real v05 = completed_spell_weighted_duration(disease_phase, DP_INFECTIOUS, hui);
     real v06 = active_spell_delta(disease_phase, DP_INFECTIOUS, age);
     real v07 = completed_spell_delta(disease_phase, DP_INFECTIOUS, age);
+    logical v08 = undergone_entrance(disease_phase, DP_INFECTIOUS);
+    logical v09 = undergone_exit(disease_phase, DP_INFECTIOUS);
+    logical v10 = undergone_transition(disease_phase, DP_INFECTIOUS, DP_IMMUNE);
+    logical v11 = undergone_change(disease_phase);
+    counter v12 = entrances(disease_phase, DP_INFECTIOUS);
+    counter v13 = exits(disease_phase, DP_INFECTIOUS);
+    counter v14 = transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE);
+    counter v15 = changes(disease_phase);
+    double v16 = value_at_first_entrance(disease_phase, DP_INFECTIOUS, age);
+    double v17 = value_at_latest_entrance(disease_phase, DP_INFECTIOUS, age);
+    double v18 = value_at_first_exit(disease_phase, DP_INFECTIOUS, age);
+    double v19 = value_at_latest_exit(disease_phase, DP_INFECTIOUS, age);
+    double v20 = value_at_first_transition(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
+    double v21 = value_at_latest_transition(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
+    double v22 = value_at_first_change(disease_phase, age);
+    double v23 = value_at_latest_change(disease_phase, age);
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;

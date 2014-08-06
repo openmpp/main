@@ -15,6 +15,7 @@
 #include "BuiltinAgentVarSymbol.h"
 #include "TimeSymbol.h"
 #include "RealSymbol.h"
+#include "BoolSymbol.h"
 #include "ExprForAgentVar.h"
 #include "Literal.h"
 #include "CodeBlock.h"
@@ -71,7 +72,7 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
 
 void DerivedAgentVarSymbol::validate()
 {
-    // Check if implemented, and if not issue warning
+    // Check if implemented, and issue warning if not
     switch (tk1) {
 
     // implemented
@@ -224,21 +225,181 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_undergone_entrance:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_undergone_exit:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_undergone_transition:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // from
+        assert(k2); // to
+        assert(!k3);
+        break;
+    }
     case token::TK_undergone_change:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_entrances:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_exits:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_transitions:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // from
+        assert(k2); // to
+        assert(!k3);
+        break;
+    }
     case token::TK_changes:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_first_entrance:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_latest_entrance:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_first_exit:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_latest_exit:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_first_transition:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // from
+        assert(k2); // to
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_latest_transition:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // from
+        assert(k2); // to
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_first_change:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_latest_change:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_entrances:
     case token::TK_value_at_exits:
     case token::TK_value_at_transitions:
@@ -293,6 +454,7 @@ void DerivedAgentVarSymbol::assign_data_type()
 {
     switch (tk1) {
 
+    // type is Time
     case token::TK_duration:
     case token::TK_active_spell_duration:
     case token::TK_completed_spell_duration:
@@ -301,12 +463,52 @@ void DerivedAgentVarSymbol::assign_data_type()
         break;
     }
 
+    // type is real
     case token::TK_weighted_duration:
     case token::TK_weighted_cumulation:
     case token::TK_active_spell_weighted_duration:
     case token::TK_completed_spell_weighted_duration:
     {
         change_data_type(RealSymbol::find());
+        break;
+    }
+
+    // type is bool
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    {
+        change_data_type(BoolSymbol::find());
+        break;
+    }
+
+    // type is counter
+    case token::TK_entrances:
+    case token::TK_exits:
+    case token::TK_transitions:
+    case token::TK_changes:
+    {
+        auto *sym = NumericSymbol::find(token::TK_counter);
+        assert(sym);  // Initialization guarantee
+        change_data_type(sym);
+        break;
+    }
+
+    // type is same as av2
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_latest_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_latest_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_latest_transition:
+    case token::TK_value_at_first_change:
+    case token::TK_value_at_latest_change:
+    {
+        assert(pp_av2);
+        auto typ = pp_av2->pp_data_type;
+        assert(typ);
+        change_data_type(typ);
         break;
     }
 
@@ -401,6 +603,86 @@ void DerivedAgentVarSymbol::create_side_effects()
         // TODO
         break;
     }
+    case token::TK_undergone_entrance:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_undergone_exit:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_undergone_transition:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_undergone_change:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_entrances:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_exits:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_transitions:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_changes:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_first_entrance:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_latest_entrance:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_first_exit:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_latest_exit:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_first_transition:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_latest_transition:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_first_change:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_latest_change:
+    {
+        // TODO
+        break;
+    }
 
     default:
     break;
@@ -424,6 +706,10 @@ string DerivedAgentVarSymbol::pretty_name()
     }
     case token::TK_active_spell_duration:
     case token::TK_completed_spell_duration:
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_entrances:
+    case token::TK_exits:
     {
         assert(av1);
         assert(k1);
@@ -434,6 +720,10 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_completed_spell_weighted_duration:
     case token::TK_active_spell_delta:
     case token::TK_completed_spell_delta:
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_latest_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_latest_exit:
     {
         assert(av1);
         assert(k1);
@@ -441,13 +731,36 @@ string DerivedAgentVarSymbol::pretty_name()
         result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
         break;
     }
+    case token::TK_undergone_transition:
+    case token::TK_transitions:
+    {
+        assert(av1);
+        assert(k1);
+        assert(k2);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ")";
+        break;
+    }
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_latest_transition:
+    {
+        assert(av1);
+        assert(k1);
+        assert(k2);
+        assert(av2);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->name + ")";
+        break;
+    }
     case token::TK_weighted_duration:
+    case token::TK_undergone_change:
+    case token::TK_changes:
     {
         assert(av1);
         result = token_to_string(tk1) + "(" + pp_av1->name + ")";
         break;
     }
     case token::TK_weighted_cumulation:
+    case token::TK_value_at_first_change:
+    case token::TK_value_at_latest_change:
     {
         assert(av1);
         assert(av2);

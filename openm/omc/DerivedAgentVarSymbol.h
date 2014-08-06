@@ -129,7 +129,7 @@ public:
                                   token_type tk1,
                                   yy::location decl_loc)
     {
-        // parser guarantees:
+        // signature conditions:
         assert(agent);
         return create_symbol(agent, tk1, token::TK_unused, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
     }
@@ -151,11 +151,67 @@ public:
                                   const ConstantSymbol *k1,
                                   yy::location decl_loc)
     {
-        // parser guarantees:
+        // signature conditions:
         assert(agent);
         assert(av1);
         assert(k1);
         return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, k1, nullptr, nullptr, decl_loc);
+    }
+
+    /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param tk1      The token.
+     * @param av1      The agentvar.
+     * @param k1       The constant.
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tk1,
+                                  const Symbol *av1,
+                                  const ConstantSymbol *k1,
+                                  const ConstantSymbol *k2,
+                                  yy::location decl_loc)
+    {
+        // signature conditions:
+        assert(agent);
+        assert(av1);
+        assert(k1);
+        assert(k2);
+        return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, k1, k2, nullptr, decl_loc);
+    }
+
+    /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param tk1      The token.
+     * @param av1      The agentvar #1
+     * @param k1       The constant #1
+     * @param k2       The constant #2
+     * @param av2      The agentvar #2
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tk1,
+                                  const Symbol *av1,
+                                  const ConstantSymbol *k1,
+                                  const ConstantSymbol *k2,
+                                  const Symbol *av2,
+                                  yy::location decl_loc)
+    {
+        // signature conditions:
+        assert(agent);
+        assert(av1);
+        assert(k1);
+        assert(k2);
+        assert(av2);
+        return create_symbol(agent, tk1, token::TK_unused, av1, av2, nullptr, k1, k2, nullptr, decl_loc);
     }
 
     /**
@@ -177,7 +233,7 @@ public:
                                   const Symbol *av2,
                                   yy::location decl_loc)
     {
-        // parser guarantees:
+        // signature conditions:
         assert(agent);
         assert(av1);
         assert(k1);
@@ -199,7 +255,7 @@ public:
                                   const Symbol *av1,
                                   yy::location decl_loc)
     {
-        // parser guarantees:
+        // signature conditions:
         assert(agent);
         assert(av1);
         return create_symbol(agent, tk1, token::TK_unused, av1, nullptr, nullptr, nullptr, nullptr, nullptr, decl_loc);
@@ -221,7 +277,7 @@ public:
                                   const Symbol *av2,
                                   yy::location decl_loc)
     {
-        // parser guarantees:
+        // signature conditions:
         assert(agent);
         assert(av1);
         assert(av2);
