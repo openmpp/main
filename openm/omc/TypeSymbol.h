@@ -101,6 +101,13 @@ public:
     bool is_enumeration();
 
     /**
+     * Determines derived type.
+     *
+     * @return true if the type is float or double (oe equivalent).
+     */
+    bool is_floating();
+
+    /**
      * Gets the wrapped type.
      *
      * @return The wrapped type, e.g. "int".  If none, returns "void"..

@@ -92,6 +92,22 @@ bool TypeSymbol::is_enumeration()
     }
 }
 
+bool TypeSymbol::is_floating()
+{
+    if (auto ns = dynamic_cast<NumericSymbol *>(this)) {
+        if (ns->name == "real" || ns->name == "float" || ns->name == "double" || ns->name == "ldouble") {
+            return true;
+        }
+        if (auto ts = dynamic_cast<TimeSymbol *>(this)) {
+            auto tt = ts->time_type;
+            if (tt == token::TK_float || tt == token::TK_double || tt == token::TK_ldouble ) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 string TypeSymbol::wrapped_type()
 {
     if (dynamic_cast<ClassificationSymbol *>(this)

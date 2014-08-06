@@ -69,54 +69,266 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
     return sym;
 }
 
-void DerivedAgentVarSymbol::check_if_implemented()
+void DerivedAgentVarSymbol::validate()
 {
+    // Check if implemented, and if not issue warning
     switch (tk1) {
 
+    // implemented
     case token::TK_duration:
-    // Implemented
     break;
 
+    // not implemented
+    case token::TK_weighted_duration:
+    case token::TK_weighted_cumulation:
+    case token::TK_active_spell_duration:
+    case token::TK_completed_spell_duration:
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_completed_spell_weighted_duration:
+    case token::TK_active_spell_delta:
+    case token::TK_completed_spell_delta:
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    case token::TK_entrances:
+    case token::TK_exits:
+    case token::TK_transitions:
+    case token::TK_changes:
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_latest_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_latest_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_latest_transition:
+    case token::TK_value_at_first_change:
+    case token::TK_value_at_latest_change:
+    case token::TK_value_at_entrances:
+    case token::TK_value_at_exits:
+    case token::TK_value_at_transitions:
+    case token::TK_value_at_changes:
+    case token::TK_split:
+    case token::TK_aggregate:
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
+    case token::TK_duration_counter:
+    case token::TK_duration_trigger:
+    case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
     default:
         pp_warning("Warning - Not implemented (will always be 0) - " + Symbol::token_to_string(tk1) + "( ... )");
     }
+
+    // Check argument/member signature
+    switch (tk1) {
+
+    case token::TK_duration:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1 || !av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(av1 ? (k1 != nullptr) : true); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_weighted_duration:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // weight
+        assert(!av2);
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_weighted_cumulation:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // weight
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_active_spell_duration:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // spell
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_completed_spell_duration:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // spell
+        assert(!av2);
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_active_spell_weighted_duration:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // spell
+        assert(av2); // weight
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_completed_spell_weighted_duration:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // spell
+        assert(av2); // weight
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_active_spell_delta:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // spell
+        assert(av2); // delta
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_completed_spell_delta:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // spell
+        assert(av2); // delta
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    case token::TK_entrances:
+    case token::TK_exits:
+    case token::TK_transitions:
+    case token::TK_changes:
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_latest_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_latest_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_latest_transition:
+    case token::TK_value_at_first_change:
+    case token::TK_value_at_latest_change:
+    case token::TK_value_at_entrances:
+    case token::TK_value_at_exits:
+    case token::TK_value_at_transitions:
+    case token::TK_value_at_changes:
+    case token::TK_split:
+    case token::TK_aggregate:
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
+    case token::TK_duration_counter:
+    case token::TK_duration_trigger:
+    case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
+    break; // TODO temporary remove after completion of list
+    default:
+        assert(false);
+    }
+
 }
 
 void DerivedAgentVarSymbol::create_auxiliary_symbols()
 {
+    // Create identity agentvar monitoring av1 == k1
     switch (tk1) {
     case token::TK_duration:
     {
         if (av1 && k1) {
-            // Create identity agentvar to maintain av1 == k1
+            // is a conditioned duration
             iav = IdentityAgentVarSymbol::CreateEqualityIdentitySymbol(agent, *av1, k1, decl_loc);
             assert(iav);
         }
         break;
     }
-    default:
+    case token::TK_active_spell_duration:
+    case token::TK_completed_spell_duration:
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_completed_spell_weighted_duration:
+    case token::TK_active_spell_delta:
+    case token::TK_completed_spell_delta:
     {
+        iav = IdentityAgentVarSymbol::CreateEqualityIdentitySymbol(agent, *av1, k1, decl_loc);
+        assert(iav);
         break;
     }
-
+    default:
+    break;
     }
 }
 
 void DerivedAgentVarSymbol::assign_data_type()
 {
     switch (tk1) {
+
     case token::TK_duration:
+    case token::TK_active_spell_duration:
+    case token::TK_completed_spell_duration:
     {
         change_data_type(TimeSymbol::find());
         break;
     }
+
     case token::TK_weighted_duration:
+    case token::TK_weighted_cumulation:
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_completed_spell_weighted_duration:
     {
         change_data_type(RealSymbol::find());
         break;
     }
+
+    case token::TK_active_spell_delta:
+    case token::TK_completed_spell_delta:
+    {
+        if (pp_av2->pp_data_type->is_floating()) {
+            // set type to real
+            change_data_type(RealSymbol::find());
+        }
+        else {
+            // set type to integer
+            auto *sym = NumericSymbol::find(token::TK_integer);
+            assert(sym);  // Initialization guarantee
+            change_data_type(sym);
+        }
+        break;
+    }
+
     default:
-    // leave at double
+    // TODO Leave at double, but once all are implemented,
+    //  assert(false);
     break;
     }
 
@@ -149,12 +361,113 @@ void DerivedAgentVarSymbol::create_side_effects()
         }
         break;
     }
+    case token::TK_weighted_duration:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_weighted_cumulation:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_active_spell_duration:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_completed_spell_duration:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_active_spell_weighted_duration:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_completed_spell_weighted_duration:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_active_spell_delta:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_completed_spell_delta:
+    {
+        // TODO
+        break;
+    }
+
     default:
     break;
     }
 }
 
+string DerivedAgentVarSymbol::pretty_name()
+{
+    string result;
 
+    switch (tk1) {
+    case token::TK_duration:
+    {
+        if (!av1) {
+            result = token_to_string(tk1) + "()";
+        }
+        else {
+            result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ")";
+        }
+        break;
+    }
+    case token::TK_active_spell_duration:
+    case token::TK_completed_spell_duration:
+    {
+        assert(av1);
+        assert(k1);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ")";
+        break;
+    }
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_completed_spell_weighted_duration:
+    case token::TK_active_spell_delta:
+    case token::TK_completed_spell_delta:
+    {
+        assert(av1);
+        assert(k1);
+        assert(av2);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
+        break;
+    }
+    case token::TK_weighted_duration:
+    {
+        assert(av1);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ")";
+        break;
+    }
+    case token::TK_weighted_cumulation:
+    {
+        assert(av1);
+        assert(av2);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + pp_av2->name + ")";
+        break;
+    }
+    default:
+    {
+        if (tk2 == token::TK_unused) {
+            result = token_to_string(tk1) + "( ... )";
+        }
+        else {
+            result = token_to_string(tk1) + "(" + token_to_string(tk1) + "( ... ))";
+        }
+        break;
+    }
+
+    }
+    return result;
+}
 
 void DerivedAgentVarSymbol::post_parse(int pass)
 {
@@ -191,41 +504,6 @@ void DerivedAgentVarSymbol::post_parse(int pass)
     default:
         break;
     }
-}
-
-string DerivedAgentVarSymbol::pretty_name()
-{
-    string result;
-
-    switch (tk1) {
-    case token::TK_duration:
-    {
-        if (!av1) {
-            result = token_to_string(tk1) + "()";
-        }
-        else {
-            result = token_to_string(tk1) + "(" + pp_av1->name + ", " + k1->value() + ")";
-        }
-        break;
-    }
-    case token::TK_weighted_duration:
-    {
-        result = token_to_string(tk1) + "(" + pp_av1->name + ")";
-        break;
-    }
-    default:
-    {
-        if (tk2 == token::TK_unused) {
-            result = token_to_string(tk1) + "( ... )";
-        }
-        else {
-            result = token_to_string(tk1) + "(" + token_to_string(tk1) + "( ... ))";
-        }
-        break;
-    }
-
-    }
-    return result;
 }
 
 CodeBlock DerivedAgentVarSymbol::cxx_declaration_agent()

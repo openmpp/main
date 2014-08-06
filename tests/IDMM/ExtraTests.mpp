@@ -16,6 +16,18 @@ table Host MyTest
 
 actor Host
 {
+    real hui = (disease_phase == DP_INFECTIOUS) ? 0.8f : 1.0f;
+
+
+    real qaly = weighted_duration(hui);
+    real v01 = weighted_cumulation(hui, hui);
+    real v02 = active_spell_duration(disease_phase, DP_INFECTIOUS);
+    real v03 = completed_spell_duration(disease_phase, DP_INFECTIOUS);
+    real v04 = active_spell_weighted_duration(disease_phase, DP_INFECTIOUS, hui);
+    real v05 = completed_spell_weighted_duration(disease_phase, DP_INFECTIOUS, hui);
+    real v06 = active_spell_delta(disease_phase, DP_INFECTIOUS, age);
+    real v07 = completed_spell_delta(disease_phase, DP_INFECTIOUS, age);
+
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;
     double thingee;

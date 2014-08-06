@@ -1753,56 +1753,43 @@ derived_agentvar:
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    // TODO TK_weighted_duration
     | TK_weighted_duration[kw] "(" SYMBOL[weight] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $weight, @kw );
                         }
-    // TODO TK_weighted_cumulation
     | TK_weighted_cumulation[kw] "(" SYMBOL[observed] "," SYMBOL[weight] ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $weight, @kw );
                         }
 
     /*
      * derived agentvars - spell family
      */
-    // TODO TK_active_spell_duration
     | TK_active_spell_duration[kw] "(" SYMBOL[spell] "," constant ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, @kw );
                         }
-    // TODO TK_completed_spell_duration
     | TK_completed_spell_duration[kw] "(" SYMBOL[spell] "," constant ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, @kw );
                         }
-    // TODO TK_active_spell_weighted_duration
     | TK_active_spell_weighted_duration[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[weight]  ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $weight, @kw );
                         }
-    // TODO TK_completed_spell_weighted_duration
     | TK_completed_spell_weighted_duration[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[weight]  ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $weight, @kw );
                         }
     // TODO TK_active_spell_delta
     | TK_active_spell_delta[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[delta]  ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $delta, @kw );
                         }
     // TODO TK_completed_spell_delta
     | TK_completed_spell_delta[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[delta]  ")"
                         {
-                            error(@kw, "Error: Unsupported use of " + Symbol::token_to_string((token_type)$kw));
-                            YYERROR;
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $delta, @kw );
                         }
 
     /*
@@ -1844,62 +1831,62 @@ derived_agentvar:
     /*
      * derived agentvars - transition observer family - value
      */
-    //TODO KW_value_at_first_entrance
-    //TODO KW_value_at_latest_entrance
-    //TODO KW_value_at_first_exit
-    //TODO KW_value_at_latest_exit
-    //TODO KW_value_at_first_transition
-    //TODO KW_value_at_latest_transition
-    //TODO KW_value_at_first_change
-    //TODO KW_value_at_latest_change
+    //TODO TK_value_at_first_entrance
+    //TODO TK_value_at_latest_entrance
+    //TODO TK_value_at_first_exit
+    //TODO TK_value_at_latest_exit
+    //TODO TK_value_at_first_transition
+    //TODO TK_value_at_latest_transition
+    //TODO TK_value_at_first_change
+    //TODO TK_value_at_latest_change
 
     /*
      * derived agentvars - transition observer family - sum
      */
-    //TODO KW_value_at_entrances
-    //TODO KW_value_at_exits
-    //TODO KW_value_at_transitions
-    //TODO KW_value_at_changes
+    //TODO TK_value_at_entrances
+    //TODO TK_value_at_exits
+    //TODO TK_value_at_transitions
+    //TODO TK_value_at_changes
 
     /*
      * derived agentvars - transformation family
      */
-    // TODO KW_split
-    // TODO KW_aggregate
+    // TODO TK_split
+    // TODO TK_aggregate
 
     /*
      * derived agentvars - trigger family
      */
-    // TODO KW_trigger_entrances
-    // TODO KW_trigger_exits
-    // TODO KW_trigger_transitions
-    // TODO KW_trigger_changes
+    // TODO TK_trigger_entrances
+    // TODO TK_trigger_exits
+    // TODO TK_trigger_transitions
+    // TODO TK_trigger_changes
 
     /*
      * derived agentvars - self-scheduling family - duration counters
      */
-    //TODO KW_duration_counter
-    //TODO KW_duration_trigger
+    //TODO TK_duration_counter
+    //TODO TK_duration_trigger
 
     /*
      * derived agentvars - self-scheduling family - integer durations
      */
-    //TODO KW_self_scheduling_int - self_scheduling_int(duration())
-    //TODO KW_self_scheduling_int - self_scheduling_int(active_spell_duration())
-    //TODO KW_self_scheduling_int - self_scheduling_int(duration(weighted_duration()))
-    //TODO KW_self_scheduling_int - self_scheduling_int(duration(active_spell_wegihted_duration()))
-    //TODO KW_self_scheduling_int - self_scheduling_int(age)
-    //TODO KW_self_scheduling_int - self_scheduling_int(time)
+    //TODO TK_self_scheduling_int - self_scheduling_int(duration())
+    //TODO TK_self_scheduling_int - self_scheduling_int(active_spell_duration())
+    //TODO TK_self_scheduling_int - self_scheduling_int(duration(weighted_duration()))
+    //TODO TK_self_scheduling_int - self_scheduling_int(duration(active_spell_weighted_duration()))
+    //TODO TK_self_scheduling_int - self_scheduling_int(age)
+    //TODO TK_self_scheduling_int - self_scheduling_int(time)
 
     /*
      * derived agentvars - self-scheduling family - split durations
      */
-    //TODO KW_self_scheduling_split - self_scheduling_split(duration(), partition)
-    //TODO KW_self_scheduling_split - self_scheduling_split(active_spell_duration(), partition)
-    //TODO KW_self_scheduling_split - self_scheduling_split(duration(weighted_duration()), partition)
-    //TODO KW_self_scheduling_split - self_scheduling_split(duration(active_spell_wegihted_duration()), parition)
-    //TODO KW_self_scheduling_split - self_scheduling_split(age, partition)
-    //TODO KW_self_scheduling_split - self_scheduling_split(time, partition)
+    //TODO TK_self_scheduling_split - self_scheduling_split(duration(), partition)
+    //TODO TK_self_scheduling_split - self_scheduling_split(active_spell_duration(), partition)
+    //TODO TK_self_scheduling_split - self_scheduling_split(duration(weighted_duration()), partition)
+    //TODO TK_self_scheduling_split - self_scheduling_split(duration(active_spell_wegihted_duration()), parition)
+    //TODO TK_self_scheduling_split - self_scheduling_split(age, partition)
+    //TODO TK_self_scheduling_split - self_scheduling_split(time, partition)
 
     /*
      * derived agentvars - multilink family

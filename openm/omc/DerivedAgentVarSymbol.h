@@ -62,7 +62,7 @@ public:
         , k3(k3)
         , iav(nullptr)
     {
-        check_if_implemented();
+        validate();
         create_auxiliary_symbols();
     }
 
@@ -162,6 +162,33 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
+     * @param tk1      The token.
+     * @param av1      The agentvar #1
+     * @param k1       The constant.
+     * @param av2      The agentvar #2
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tk1,
+                                  const Symbol *av1,
+                                  const ConstantSymbol *k1,
+                                  const Symbol *av2,
+                                  yy::location decl_loc)
+    {
+        // parser guarantees:
+        assert(agent);
+        assert(av1);
+        assert(k1);
+        assert(av2);
+        return create_symbol(agent, tk1, token::TK_unused, av1, av2, nullptr, k1, nullptr, nullptr, decl_loc);
+    }
+
+    /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
      * @param av1      The agentvar.
      * @param decl_loc The declaration location.
      *
@@ -179,9 +206,32 @@ public:
     }
 
     /**
-     * Check if the symbol is fully implemented, if not issue warning.
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param av1      The agentvar (#1)
+     * @param av2      The agentvar (#2)
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
      */
-    void check_if_implemented();
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tk1,
+                                  const Symbol *av1,
+                                  const Symbol *av2,
+                                  yy::location decl_loc)
+    {
+        // parser guarantees:
+        assert(agent);
+        assert(av1);
+        assert(av2);
+        return create_symbol(agent, tk1, token::TK_unused, av1, av2, nullptr, nullptr, nullptr, nullptr, decl_loc);
+    }
+
+    /**
+     * Validate argument signatures.
+     */
+    void validate();
 
     /**
      * Create auxiliary symbols associated with this symbol.
