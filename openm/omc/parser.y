@@ -1894,6 +1894,10 @@ derived_agentvar:
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
                         }
     // TODO TK_aggregate
+    | TK_aggregate[kw] "(" SYMBOL[observed] "," SYMBOL[classification] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), static_cast<Symbol *>(nullptr), $classification, @kw );
+                        }
 
     /*
      * derived agentvars - trigger family

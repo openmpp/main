@@ -19,6 +19,15 @@ partition MY_PART
     0.5, 2.1
 };
 
+classification APPEARANCE //EN Appearance
+{
+    //EN Looks fine
+    A_FINE,
+
+    //EN Looks sick
+    A_SICK
+};
+
 actor Host
 {
     real hui = (disease_phase == DP_INFECTIOUS) ? 0.8f : 1.0f;
@@ -53,6 +62,7 @@ actor Host
     double v26 = value_at_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
     double v27 = value_at_changes(disease_phase, age);
     double v28 = split(age, MY_PART);
+    APPEARANCE v29 = aggregate(disease_phase, APPEARANCE);
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;

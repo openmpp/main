@@ -12,6 +12,7 @@
 #include "AgentVarSymbol.h"
 #include "ConstantSymbol.h"
 #include "PartitionSymbol.h"
+#include "ClassificationSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "TimeSymbol.h"
@@ -457,6 +458,16 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_aggregate:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(cls);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_trigger_entrances:
     case token::TK_trigger_exits:
     case token::TK_trigger_transitions:
@@ -583,6 +594,14 @@ void DerivedAgentVarSymbol::assign_data_type()
     {
         assert(pp_prt);
         change_data_type(pp_prt);
+        break;
+    }
+
+    // type is the classification
+    case token::TK_aggregate:
+    {
+        assert(pp_cls);
+        change_data_type(pp_cls);
         break;
     }
 
@@ -766,6 +785,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         // TODO
         break;
     }
+    case token::TK_aggregate:
+    {
+        // TODO
+        break;
+    }
 
     default:
     break;
@@ -861,6 +885,13 @@ string DerivedAgentVarSymbol::pretty_name()
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_prt->name + ")";
         break;
     }
+    case token::TK_aggregate:
+    {
+        assert(pp_av1);
+        assert(pp_cls);
+        result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_cls->name + ")";
+        break;
+    }
     default:
     {
         result = token_to_string(tok) + "( ... )";
@@ -903,6 +934,13 @@ void DerivedAgentVarSymbol::post_parse(int pass)
             pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
             if (!pp_prt) {
                 pp_error("Error - '" + (*prt)->name + "' is not a partition");
+                throw HelperException("Stopping post parse processing");
+            }
+        }
+        if (cls) {
+            pp_cls = dynamic_cast<ClassificationSymbol *> (pp_symbol(cls));
+            if (!pp_cls) {
+                pp_error("Error - '" + (*cls)->name + "' is not a classification");
                 throw HelperException("Stopping post parse processing");
             }
         }
