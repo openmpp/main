@@ -33,6 +33,12 @@ CodeBlock RealSymbol::cxx_declaration_global()
     return h;
 }
 
+bool RealSymbol::is_float()
+{
+    return keywords.front() == token::TK_float;
+}
+
+
 // static
 RealSymbol * RealSymbol::find()
 {

@@ -103,9 +103,16 @@ public:
     /**
      * Determines derived type.
      *
-     * @return true if the type is float or double (oe equivalent).
+     * @return true if the type is float or double (or equivalent).
      */
     bool is_floating();
+
+    /**
+     * Determines appropriate type to use for sums or differences of this type.
+     *
+     * @return type smbol for integer or real.
+     */
+    TypeSymbol * summing_type();
 
     /**
      * Gets the wrapped type.

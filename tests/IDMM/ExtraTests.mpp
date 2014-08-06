@@ -14,6 +14,11 @@ table Host MyTest
 };
 
 
+partition MY_PART
+{
+    0.5, 2.1
+};
+
 actor Host
 {
     real hui = (disease_phase == DP_INFECTIOUS) ? 0.8f : 1.0f;
@@ -43,6 +48,11 @@ actor Host
     double v21 = value_at_latest_transition(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
     double v22 = value_at_first_change(disease_phase, age);
     double v23 = value_at_latest_change(disease_phase, age);
+    double v24 = value_at_entrances(disease_phase, DP_INFECTIOUS, age);
+    double v25 = value_at_exits(disease_phase, DP_INFECTIOUS, age);
+    double v26 = value_at_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
+    double v27 = value_at_changes(disease_phase, age);
+    double v28 = split(age, MY_PART);
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;

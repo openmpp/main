@@ -1869,15 +1869,31 @@ derived_agentvar:
     /*
      * derived agentvars - transition observer family - sum
      */
-    //TODO TK_value_at_entrances
-    //TODO TK_value_at_exits
-    //TODO TK_value_at_transitions
-    //TODO TK_value_at_changes
+    | TK_value_at_entrances[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
+                        }
+    | TK_value_at_exits[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
+                        }
+    | TK_value_at_transitions[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] "," SYMBOL[value]  ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value, @kw );
+                        }
+    | TK_value_at_changes[kw] "(" SYMBOL[observed] "," SYMBOL[value] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $value, @kw );
+                        }
 
     /*
      * derived agentvars - transformation family
      */
     // TODO TK_split
+    | TK_split[kw] "(" SYMBOL[observed] "," SYMBOL[partition] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
+                        }
     // TODO TK_aggregate
 
     /*

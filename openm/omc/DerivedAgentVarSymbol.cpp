@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include "libopenm/common/omHelper.h"
 #include "DerivedAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentVarSymbol.h"
@@ -119,7 +120,7 @@ void DerivedAgentVarSymbol::validate()
     case token::TK_self_scheduling_int:
     case token::TK_self_scheduling_split:
     default:
-        pp_warning("Warning - Not implemented (will always be 0) - " + Symbol::token_to_string(tk1) + "( ... )");
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tk1) + "( ... )");
     }
 
     // Check argument/member signature
@@ -401,10 +402,60 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_value_at_entrances:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_exits:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // constant
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_transitions:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(k1); // from
+        assert(k2); // to
+        assert(!k3);
+        break;
+    }
     case token::TK_value_at_changes:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(av2); // value
+        assert(!prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_split:
+    {
+        assert(tk2 == token::TK_unused);
+        assert(av1); // observed
+        assert(!av2);
+        assert(prt);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_aggregate:
     case token::TK_trigger_entrances:
     case token::TK_trigger_exits:
@@ -512,19 +563,26 @@ void DerivedAgentVarSymbol::assign_data_type()
         break;
     }
 
+    // type is the appropriate summing type for av2 (real or integer)
     case token::TK_active_spell_delta:
     case token::TK_completed_spell_delta:
+    case token::TK_value_at_entrances:
+    case token::TK_value_at_exits:
+    case token::TK_value_at_transitions:
+    case token::TK_value_at_changes:
     {
-        if (pp_av2->pp_data_type->is_floating()) {
-            // set type to real
-            change_data_type(RealSymbol::find());
-        }
-        else {
-            // set type to integer
-            auto *sym = NumericSymbol::find(token::TK_integer);
-            assert(sym);  // Initialization guarantee
-            change_data_type(sym);
-        }
+        assert(pp_av2);
+        auto typ = pp_av2->pp_data_type->summing_type();
+        assert(typ);
+        change_data_type(typ);
+        break;
+    }
+
+    // type is the partition
+    case token::TK_split:
+    {
+        assert(pp_prt);
+        change_data_type(pp_prt);
         break;
     }
 
@@ -683,6 +741,31 @@ void DerivedAgentVarSymbol::create_side_effects()
         // TODO
         break;
     }
+    case token::TK_value_at_entrances:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_exits:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_transitions:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_value_at_changes:
+    {
+        // TODO
+        break;
+    }
+    case token::TK_split:
+    {
+        // TODO
+        break;
+    }
 
     default:
     break;
@@ -724,6 +807,8 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_value_at_latest_entrance:
     case token::TK_value_at_first_exit:
     case token::TK_value_at_latest_exit:
+    case token::TK_value_at_entrances:
+    case token::TK_value_at_exits:
     {
         assert(av1);
         assert(k1);
@@ -742,6 +827,7 @@ string DerivedAgentVarSymbol::pretty_name()
     }
     case token::TK_value_at_first_transition:
     case token::TK_value_at_latest_transition:
+    case token::TK_value_at_transitions:
     {
         assert(av1);
         assert(k1);
@@ -761,10 +847,18 @@ string DerivedAgentVarSymbol::pretty_name()
     case token::TK_weighted_cumulation:
     case token::TK_value_at_first_change:
     case token::TK_value_at_latest_change:
+    case token::TK_value_at_changes:
     {
         assert(av1);
         assert(av2);
         result = token_to_string(tk1) + "(" + pp_av1->name + ", " + pp_av2->name + ")";
+        break;
+    }
+    case token::TK_split:
+    {
+        assert(av1);
+        assert(pp_prt);
+        result = token_to_string(tk1) + "(" + pp_av1->name + ", " + pp_prt->name + ")";
         break;
     }
     default:
@@ -796,12 +890,27 @@ void DerivedAgentVarSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // assign direct pointers for post-parse use
-        if (av1) pp_av1 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av1));
-        if (av1) assert(pp_av1);
-        if (av2) pp_av2 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av2));
-        if (av2) assert(pp_av2);
-        if (prt) pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
-        if (prt) assert(pp_prt);
+        if (av1) {
+            pp_av1 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av1));
+            if (!pp_av1) {
+                pp_error("Error - '" + (*av1)->name + "' is not an attribute of " + agent->name);
+                throw HelperException("Stopping post parse processing");
+            }
+        }
+        if (av2) {
+            pp_av2 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av2));
+            if (!pp_av2) {
+                pp_error("Error - '" + (*av2)->name + "' is not an attribute of " + agent->name);
+                throw HelperException("Stopping post parse processing");
+            }
+        }
+        if (prt) {
+            pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
+            if (!pp_prt) {
+                pp_error("Error - '" + (*prt)->name + "' is not a partition");
+                throw HelperException("Stopping post parse processing");
+            }
+        }
         break;
     }
     case eResolveDataTypes:

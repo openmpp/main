@@ -13,6 +13,7 @@
 #include "RangeSymbol.h"
 #include "PartitionSymbol.h"
 #include "TimeSymbol.h"
+#include "RealSymbol.h"
 
 using namespace std;
 
@@ -107,6 +108,22 @@ bool TypeSymbol::is_floating()
     }
     return false;
 }
+
+TypeSymbol * TypeSymbol::summing_type()
+{
+
+    if (is_floating()) {
+        // summing type is real
+        return RealSymbol::find();
+    }
+    else {
+        // summing type is integer
+        auto *sym = NumericSymbol::find(token::TK_integer);
+        assert(sym);  // Initialization guarantee
+        return sym;
+    }
+}
+
 
 string TypeSymbol::wrapped_type()
 {

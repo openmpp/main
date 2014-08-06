@@ -8,6 +8,7 @@
 #include <cassert>
 #include "PartitionSymbol.h"
 #include "PartitionEnumeratorSymbol.h"
+#include "RealSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -113,6 +114,10 @@ CodeBlock PartitionSymbol::cxx_definition_global()
 
     h += doxygen_short(name);
 
+    // Determine floating point literal suffix
+    // (required to avoid compiler warnings if real is float)
+    string literal_suffix = RealSymbol::find()->is_float() ? "f" : "";
+
     int index;  // index of interval in partition
 
     h += "// lower bounds of intervals in partition";
@@ -122,7 +127,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
         if (index > 0) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
-            h += pes->lower_split_point + ",";
+            h += pes->lower_split_point + literal_suffix + ",";
         }
         else {
             // special case for upper limit of last partition interval
@@ -139,7 +144,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
         if (index < (pp_size() - 1)) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
-            h += pes->upper_split_point + ",";
+            h += pes->upper_split_point + literal_suffix + ",";
         }
         else {
             // special case for upper limit of last partition interval
@@ -155,7 +160,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
         assert(pes); // grammar guarantee
-        h += "{ " + pes->upper_split_point + ", " + to_string(index) + " }," ;
+        h += "{ " + pes->upper_split_point + literal_suffix + ", " + to_string(index) + " }," ;
         ++index;
         if (index == (pp_size() - 1)) break;
     }

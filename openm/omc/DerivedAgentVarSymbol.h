@@ -285,6 +285,32 @@ public:
     }
 
     /**
+     * Creates the given symbol, or returns it if it already exists
+     *
+     * @param agent    The agent.
+     * @param av1      The agentvar
+     * @param av2      always nullptr
+     * @param prt      The partition
+     * @param decl_loc The declaration location.
+     *
+     * @return The symbol.
+     */
+    static Symbol * create_symbol(const Symbol* agent,
+                                  token_type tk1,
+                                  const Symbol *av1,
+                                  const Symbol *av2,
+                                  const Symbol *prt,
+                                  yy::location decl_loc)
+    {
+        // signature conditions:
+        assert(agent);
+        assert(av1);
+        assert(!av2); // placeholder only
+        assert(prt);
+        return create_symbol(agent, tk1, token::TK_unused, av1, av2, prt, nullptr, nullptr, nullptr, decl_loc);
+    }
+
+    /**
      * Validate argument signatures.
      */
     void validate();

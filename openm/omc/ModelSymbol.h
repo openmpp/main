@@ -11,10 +11,7 @@
 /**
 * Symbol for the model itself.
 *
-* A single instance of ModelSymbol exists in the symbol table
-* after parsing is complete.  It is constructed from the file name
-* of the module which contains the developer-supplied definition
-* of the C++ function Simulation().
+* A single instance of ModelSymbol exists in the symbol table.
 *
 */
 class ModelSymbol : public Symbol
