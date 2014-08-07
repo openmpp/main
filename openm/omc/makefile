@@ -50,52 +50,52 @@ OMC_EXE = omc
 
 OMC_CPPLIST = \
   omc.cpp \
-  AgentDataMemberSymbol.cpp \
-  AgentEventSymbol.cpp \
-  AgentFuncSymbol.cpp \
-  AgentInternalSymbol.cpp \
-  AgentMemberSymbol.cpp \
-  AgentMultilinkSymbol.cpp \
-  AgentSymbol.cpp \
-  AgentVarSymbol.cpp \
-  BoolSymbol.cpp \
-  BuiltinAgentVarSymbol.cpp \
-  ClassificationSymbol.cpp \
-  CodeBlock.cpp \
-  CodeGen.cpp \
-  ConditionedDurationAgentVarSymbol.cpp \
-  Driver.cpp \
-  DurationAgentVarSymbol.cpp \
-  EntitySetSymbol.cpp \
-  EnumerationSymbol.cpp \
-  EnumerationWithEnumeratorsSymbol.cpp \
-  EnumeratorSymbol.cpp \
-  HeaderCheck.cpp \
-  IdentityAgentVarSymbol.cpp \
-  LanguageSymbol.cpp \
-  LinkAgentVarSymbol.cpp \
-  LinkToAgentVarSymbol.cpp \
-  ModelSymbol.cpp \
-  ModelTypeSymbol.cpp \
-  MultilinkAgentVarSymbol.cpp \
-  NumericSymbol.cpp \
-  ParameterSymbol.cpp \
-  PartitionSymbol.cpp \
-  RangeSymbol.cpp \
-  RealSymbol.cpp \
-  SimpleAgentVarEnumSymbol.cpp \
-  SimpleAgentVarSymbol.cpp \
-  StringSymbol.cpp \
-  Symbol.cpp \
-  TableAccumulatorSymbol.cpp \
-  TableAnalysisAgentVarSymbol.cpp \
-  TableExpressionSymbol.cpp \
-  TableSymbol.cpp \
-  TimeSymbol.cpp \
-  TypeOfLinkSymbol.cpp \
-  TypeSymbol.cpp \
-  UnknownTypeSymbol.cpp \
-  VersionSymbol.cpp \
+AgentDataMemberSymbol.cpp \
+AgentEventSymbol.cpp \
+AgentFuncSymbol.cpp \
+AgentInternalSymbol.cpp \
+AgentMemberSymbol.cpp \
+AgentMultilinkSymbol.cpp \
+AgentSymbol.cpp \
+AgentVarSymbol.cpp \
+BoolSymbol.cpp \
+BuiltinAgentVarSymbol.cpp \
+ClassificationSymbol.cpp \
+CodeBlock.cpp \
+CodeGen.cpp \
+ConstantSymbol.cpp \
+DerivedAgentVarSymbol.cpp \
+Driver.cpp \
+EntitySetSymbol.cpp \
+EnumerationSymbol.cpp \
+EnumerationWithEnumeratorsSymbol.cpp \
+EnumeratorSymbol.cpp \
+HeaderCheck.cpp \
+IdentityAgentVarSymbol.cpp \
+LanguageSymbol.cpp \
+LinkAgentVarSymbol.cpp \
+LinkToAgentVarSymbol.cpp \
+ModelSymbol.cpp \
+ModelTypeSymbol.cpp \
+MultilinkAgentVarSymbol.cpp \
+NumericSymbol.cpp \
+ParameterSymbol.cpp \
+PartitionSymbol.cpp \
+RangeSymbol.cpp \
+RealSymbol.cpp \
+SimpleAgentVarEnumSymbol.cpp \
+SimpleAgentVarSymbol.cpp \
+StringSymbol.cpp \
+Symbol.cpp \
+TableAccumulatorSymbol.cpp \
+TableAnalysisAgentVarSymbol.cpp \
+TableExpressionSymbol.cpp \
+TableSymbol.cpp \
+TimeSymbol.cpp \
+TypeOfLinkSymbol.cpp \
+TypeSymbol.cpp \
+UnknownTypeSymbol.cpp \
+VersionSymbol.cpp \
   $(BUILD_SRC_DIR)/parser.cpp \
   $(BUILD_SRC_DIR)/scanner.cpp 
 
