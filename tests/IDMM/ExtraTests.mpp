@@ -7,10 +7,10 @@ filter report_time >= 5;
 
 table Host MyTest
 {
-    {
-        duration(disease_phase, DP_INFECTIOUS) / duration() //EN Proportion infectious
+    report_time
+    * {
+        duration(disease_phase, DP_INFECTIOUS) / duration() //EN Proportion infectious decimals=6
     }
-    * report_time
 };
 
 
@@ -28,10 +28,17 @@ classification APPEARANCE //EN Appearance
     A_SICK
 };
 
+aggregation APPEARANCE, DISEASE_PHASE
+{
+	A_FINE, DP_SUSCEPTIBLE,
+	A_FINE, DP_LATENT,
+	A_SICK, DP_INFECTIOUS,
+	A_FINE, DP_IMMUNE
+};
+
 actor Host
 {
-    real hui = (disease_phase == DP_INFECTIOUS) ? 0.8f : 1.0f;
-
+    real hui = (disease_phase == DP_INFECTIOUS) ? 0.8 : 1.0;
 
     real qaly = weighted_duration(hui);
     real v00 = weighted_duration(disease_phase, DP_IMMUNE, hui);
@@ -62,7 +69,7 @@ actor Host
     double v25 = value_at_exits(disease_phase, DP_INFECTIOUS, age);
     double v26 = value_at_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
     double v27 = value_at_changes(disease_phase, age);
-    MY_PART v28 = split(age, MY_PART);
+    counter v28 = split(age, MY_PART);
     APPEARANCE v29 = aggregate(disease_phase, APPEARANCE);
     logical v30 = trigger_entrances(disease_phase, DP_INFECTIOUS);
     logical v31 = trigger_exits(disease_phase, DP_INFECTIOUS);
@@ -72,7 +79,9 @@ actor Host
     counter v35 = duration_counter(disease_phase, DP_LATENT, 0.083333, 12);
     logical v36 = duration_trigger(disease_phase, DP_LATENT, 0.5);
     counter v37 = self_scheduling_int(age);
-    MY_PART v38 = self_scheduling_split(age, MY_PART);
+    counter v38 = self_scheduling_split(age, MY_PART);
+
+    logical year_le_5 = (report_time <= 5) ? TRUE : FALSE;
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;
@@ -93,10 +102,56 @@ void Host::OneTime()
 table Host MyTest2
 {
     {
+        1000000.0 * v00 / duration(), //EN v00
+        1000000.0 * v01 / duration(), //EN v01
+        1000000.0 * v02 / duration(), //EN v02
+        1000000.0 * v03 / duration(), //EN v03
+        1000000.0 * v04 / duration(), //EN v04
+        1000000.0 * v05 / duration(), //EN v05
+        1000000.0 * v06 / duration(), //EN v06
+        1000000.0 * v07 / duration(), //EN v07
+        1000000.0 * v08 / duration(), //EN v08
+        1000000.0 * v09 / duration(), //EN v09
+        1000000.0 * v10 / duration(), //EN v10
+        1000000.0 * v11 / duration(), //EN v11
+        1000000.0 * v12 / duration(), //EN v12
+        1000000.0 * v13 / duration(), //EN v13
+        1000000.0 * v14 / duration(), //EN v14
+        1000000.0 * v15 / duration(), //EN v15
+        1000000.0 * v16 / duration(), //EN v16
+        1000000.0 * v17 / duration(), //EN v17
+        1000000.0 * v18 / duration(), //EN v18
+        1000000.0 * v19 / duration(), //EN v19
+        1000000.0 * v20 / duration(), //EN v20
+        1000000.0 * v21 / duration(), //EN v21
+        1000000.0 * v22 / duration(), //EN v22
+        1000000.0 * v23 / duration(), //EN v23
+        1000000.0 * v24 / duration(), //EN v24
+        1000000.0 * v25 / duration(), //EN v25
+        1000000.0 * v26 / duration(), //EN v26
+        1000000.0 * v27 / duration(), //EN v27
+        1000000.0 * v28 / duration(), //EN v28
+        1000000.0 * v29 / duration(), //EN v29
+        1000000.0 * v30 / duration(), //EN v30
+        1000000.0 * v31 / duration(), //EN v31
+        1000000.0 * v32 / duration(), //EN v32
+        1000000.0 * v33 / duration(), //EN v33
+        1000000.0 * v34 / duration(), //EN v34
+        1000000.0 * v35 / duration(), //EN v35
+        1000000.0 * v36 / duration(), //EN v36
+        1000000.0 * v37 / duration(), //EN v37
+        1000000.0 * v38 / duration() //EN v38
+  }
+    * year_le_5
+};
+
+
+table Host MyTest3
+{
+    {
         value_out(thingee),
         min_value_out(thingee),
         max_value_out(thingee)
     }
 };
-
 

@@ -527,6 +527,7 @@ ompp_declarative_island:
 	| decl_index_type       { pc.InitializeForCxx(); }
 	| decl_version          { pc.InitializeForCxx(); }
     | decl_classification   { pc.InitializeForCxx(); }
+    | decl_aggregation      { pc.InitializeForCxx(); }
     | decl_partition        { pc.InitializeForCxx(); }
     | decl_range            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
@@ -784,6 +785,35 @@ classification_levels:
                         {
                             // morph existing symbol to EnumeratorSymbol
                             auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            pc.counter1++;  // counter for classification levels
+                        }
+	;
+
+/*
+ * aggregation
+ */
+
+decl_aggregation:
+      "aggregation" SYMBOL[class1] "," SYMBOL[class2]
+                        {
+                            // initialize working counter used for classification levels
+                            pc.counter1 = 0;
+                        }
+            "{" aggregation_levels "}" ";"
+                        {
+                            // No valid classification context
+                            pc.set_classification_context( nullptr );
+                        }
+            | "aggregation" "{" error "}" ";"
+            ;
+
+aggregation_levels:
+      SYMBOL
+                        {
+                            pc.counter1++;  // counter for classification levels
+                        }
+      | aggregation_levels "," SYMBOL
+                        {
                             pc.counter1++;  // counter for classification levels
                         }
 	;
