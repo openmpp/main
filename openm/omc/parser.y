@@ -1755,7 +1755,11 @@ derived_agentvar:
                         }
     | TK_weighted_duration[kw] "(" SYMBOL[weight] ")"
                         {
-                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $weight, @kw );
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, static_cast<Symbol *>(nullptr), static_cast<ConstantSymbol *>(nullptr), $weight, @kw );
+                        }
+    | TK_weighted_duration[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[weight] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $weight, @kw );
                         }
     | TK_weighted_cumulation[kw] "(" SYMBOL[observed] "," SYMBOL[weight] ")"
                         {
@@ -1932,6 +1936,14 @@ derived_agentvar:
     | TK_duration_trigger[kw] "(" SYMBOL[observed] "," constant[constnt] "," constant[delay] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $delay, @kw );
+                        }
+    | TK_self_scheduling_int[kw] "(" SYMBOL[observed] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, @kw );
+                        }
+    | TK_self_scheduling_split[kw] "(" SYMBOL[observed] "," SYMBOL[partition] ")"
+                        {
+                            $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
                         }
 
     /*

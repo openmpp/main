@@ -73,77 +73,27 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
 
 void DerivedAgentVarSymbol::validate()
 {
-    // Check if implemented, and issue warning if not
-    switch (tok) {
-
-    // implemented
-    case token::TK_duration:
-    break;
-
-    // not implemented
-    case token::TK_weighted_duration:
-    case token::TK_weighted_cumulation:
-    case token::TK_active_spell_duration:
-    case token::TK_completed_spell_duration:
-    case token::TK_active_spell_weighted_duration:
-    case token::TK_completed_spell_weighted_duration:
-    case token::TK_active_spell_delta:
-    case token::TK_completed_spell_delta:
-    case token::TK_undergone_entrance:
-    case token::TK_undergone_exit:
-    case token::TK_undergone_transition:
-    case token::TK_undergone_change:
-    case token::TK_entrances:
-    case token::TK_exits:
-    case token::TK_transitions:
-    case token::TK_changes:
-    case token::TK_value_at_first_entrance:
-    case token::TK_value_at_latest_entrance:
-    case token::TK_value_at_first_exit:
-    case token::TK_value_at_latest_exit:
-    case token::TK_value_at_first_transition:
-    case token::TK_value_at_latest_transition:
-    case token::TK_value_at_first_change:
-    case token::TK_value_at_latest_change:
-    case token::TK_value_at_entrances:
-    case token::TK_value_at_exits:
-    case token::TK_value_at_transitions:
-    case token::TK_value_at_changes:
-    case token::TK_split:
-    case token::TK_aggregate:
-    case token::TK_trigger_entrances:
-    case token::TK_trigger_exits:
-    case token::TK_trigger_transitions:
-    case token::TK_trigger_changes:
-    case token::TK_duration_counter:
-    case token::TK_duration_trigger:
-    case token::TK_self_scheduling_int:
-    case token::TK_self_scheduling_split:
-    default:
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
-    }
-
     // Check argument/member signature
     switch (tok) {
 
     case token::TK_duration:
     {
-        assert(av1 || !av1); // observed
+        assert(av1 || !av1); // observed (optional)
         assert(!av2);
         assert(!prt);
         assert(!cls);
-        assert(av1 ? (k1 != nullptr) : true); // constant
+        assert(av1 ? (k1 != nullptr) : true); // constant (required for observed)
         assert(!k2);
         assert(!k3);
         break;
     }
     case token::TK_weighted_duration:
     {
-        assert(av1); // weight
-        assert(!av2);
+        assert(av1 || !av1); // observed (optional)
+        assert(av2); // weight
         assert(!prt);
         assert(!cls);
-        assert(!k1);
+        assert(av1 ? (k1 != nullptr) : true); // constant (required for observed)
         assert(!k2);
         assert(!k3);
         break;
@@ -534,12 +484,30 @@ void DerivedAgentVarSymbol::validate()
         break;
     }
     case token::TK_self_scheduling_int:
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(!prt);
+        assert(!cls);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     case token::TK_self_scheduling_split:
-    break; // TODO temporary remove after completion of list
+    {
+        assert(av1); // observed
+        assert(!av2);
+        assert(prt);
+        assert(!cls);
+        assert(!k1);
+        assert(!k2);
+        assert(!k3);
+        break;
+    }
     default:
         assert(false);
     }
-
 }
 
 void DerivedAgentVarSymbol::create_auxiliary_symbols()
@@ -615,6 +583,7 @@ void DerivedAgentVarSymbol::assign_data_type()
     case token::TK_transitions:
     case token::TK_changes:
     case token::TK_duration_counter:
+    case token::TK_self_scheduling_int:
     {
         auto *sym = NumericSymbol::find(token::TK_counter);
         assert(sym);  // Initialization guarantee
@@ -656,6 +625,7 @@ void DerivedAgentVarSymbol::assign_data_type()
 
     // type is the partition
     case token::TK_split:
+    case token::TK_self_scheduling_split:
     {
         assert(pp_prt);
         change_data_type(pp_prt);
@@ -708,181 +678,229 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_weighted_duration:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_weighted_cumulation:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_active_spell_duration:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_completed_spell_duration:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_active_spell_weighted_duration:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_completed_spell_weighted_duration:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_active_spell_delta:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_completed_spell_delta:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_undergone_entrance:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_undergone_exit:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_undergone_transition:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_undergone_change:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_entrances:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_exits:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_transitions:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_changes:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_first_entrance:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_latest_entrance:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_first_exit:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_latest_exit:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_first_transition:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_latest_transition:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_first_change:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_latest_change:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_entrances:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_exits:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_transitions:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_value_at_changes:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_split:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_aggregate:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_trigger_entrances:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_trigger_exits:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_trigger_transitions:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_trigger_changes:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_duration_counter:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_duration_trigger:
     {
         // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        break;
+    }
+    case token::TK_self_scheduling_int:
+    {
+        // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        break;
+    }
+    case token::TK_self_scheduling_split:
+    {
+        // TODO
+        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
 
@@ -903,6 +921,17 @@ string DerivedAgentVarSymbol::pretty_name()
         }
         else {
             result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
+        }
+        break;
+    }
+    case token::TK_weighted_duration:
+    {
+        assert(pp_av2);
+        if (!pp_av1) {
+            result = token_to_string(tok) + "(" + pp_av2->name + ")";
+        }
+        else {
+            result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
         }
         break;
     }
@@ -959,7 +988,6 @@ string DerivedAgentVarSymbol::pretty_name()
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->name + ")";
         break;
     }
-    case token::TK_weighted_duration:
     case token::TK_undergone_change:
     case token::TK_changes:
     case token::TK_trigger_changes:
@@ -979,6 +1007,7 @@ string DerivedAgentVarSymbol::pretty_name()
         break;
     }
     case token::TK_split:
+    case token::TK_self_scheduling_split:
     {
         assert(pp_av1);
         assert(pp_prt);
@@ -999,6 +1028,12 @@ string DerivedAgentVarSymbol::pretty_name()
         assert(k2);
         assert(k3 || !k3); // optional
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + (k3 ? (", " + k3->value()) : "") + ")";
+        break;
+    }
+    case token::TK_self_scheduling_int:
+    {
+        assert(pp_av1);
+        result = token_to_string(tok) + "(" + pp_av1->name + ")";
         break;
     }
     default:

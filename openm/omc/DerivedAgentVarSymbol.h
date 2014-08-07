@@ -264,10 +264,20 @@ public:
                                   yy::location decl_loc)
     {
         // signature conditions:
-        assert(agent);
-        assert(av1);
-        assert(k1);
-        assert(av2);
+        if (tok == token::TK_weighted_duration) {
+            // special exception to store weight in av2 if av1 is nullptr
+            // (for subsequent code coherence for the two cases for weighted_duration)
+            assert(agent);
+            assert(av1 || !av1); // observed (optional)
+            assert(av1 ? (k1 != nullptr) : true); // constant (required for observed)
+            assert(av2);
+        }
+        else {
+            assert(agent);
+            assert(av1);
+            assert(k1);
+            assert(av2);
+        }
         return create_symbol(agent, tok, av1, av2, nullptr, nullptr, k1, nullptr, nullptr, decl_loc);
     }
 

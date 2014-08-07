@@ -34,6 +34,7 @@ actor Host
 
 
     real qaly = weighted_duration(hui);
+    real v00 = weighted_duration(disease_phase, DP_IMMUNE, hui);
     real v01 = weighted_cumulation(hui, hui);
     real v02 = active_spell_duration(disease_phase, DP_INFECTIOUS);
     real v03 = completed_spell_duration(disease_phase, DP_INFECTIOUS);
@@ -61,7 +62,7 @@ actor Host
     double v25 = value_at_exits(disease_phase, DP_INFECTIOUS, age);
     double v26 = value_at_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE, age);
     double v27 = value_at_changes(disease_phase, age);
-    double v28 = split(age, MY_PART);
+    MY_PART v28 = split(age, MY_PART);
     APPEARANCE v29 = aggregate(disease_phase, APPEARANCE);
     logical v30 = trigger_entrances(disease_phase, DP_INFECTIOUS);
     logical v31 = trigger_exits(disease_phase, DP_INFECTIOUS);
@@ -70,6 +71,8 @@ actor Host
     counter v34 = duration_counter(disease_phase, DP_LATENT, 0.083333);
     counter v35 = duration_counter(disease_phase, DP_LATENT, 0.083333, 12);
     logical v36 = duration_trigger(disease_phase, DP_LATENT, 0.5);
+    counter v37 = self_scheduling_int(age);
+    MY_PART v38 = self_scheduling_split(age, MY_PART);
 
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;
