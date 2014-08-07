@@ -63,6 +63,7 @@ public:
         , k2(k2)
         , k3(k3)
         , iav(nullptr)
+        , dav(nullptr)
     {
         validate();
         create_auxiliary_symbols();
@@ -107,7 +108,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
@@ -127,7 +128,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   yy::location decl_loc)
     {
@@ -147,7 +148,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -171,7 +172,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -197,7 +198,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -227,7 +228,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -256,7 +257,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -290,7 +291,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   yy::location decl_loc)
@@ -311,7 +312,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
@@ -335,7 +336,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
@@ -362,7 +363,7 @@ public:
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol* agent,
+    static DerivedAgentVarSymbol * create_symbol(const Symbol* agent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
@@ -482,8 +483,20 @@ public:
     const ConstantSymbol *k3;
 
     /**
-     * The identity agentvar symbol, used for conditions and spells
+     * The identity agentvar symbol
+     * 
+     * Used for conditions and spells
      */
     IdentityAgentVarSymbol *iav;
+
+    /**
+     * The derived agentvar symbol
+     * 
+     * Used for required associated derived agentvars, e.g. to implement
+     * value_at_first_entrance(disease_phase,DP_INFECTIOUS,age)
+     * need 
+     * undergone_entrance(disease_phase,DP_INFECTIOUS)
+     */
+    DerivedAgentVarSymbol *dav;
 };
 

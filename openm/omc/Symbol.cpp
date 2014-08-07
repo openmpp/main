@@ -788,24 +788,27 @@ void Symbol::post_parse_all()
     populate_pp_symbols();
 
     // pass 0: create support symbols not identified during parsing
-    for (auto pr : symbols) {
+    // symbols will be processed in lexicographical order
+    for (auto pr : pp_symbols) {
         pr.second->post_parse( eCreateMissingSymbols );
     }
 
-    // Recreate pp_symbols because symbols may have changed.
+    // Recreate pp_symbols because symbols may have changed or been added.
     populate_pp_symbols();
 
     // pass 1: create pp_ members and collections
-    for (auto pr : symbols) {
+    // Symbols will be processed in lexicographical order.
+    for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateCollections );
     }
 
     // pass 2: resolve derived agentvar data types
+    // Symbols will be processed in lexicographical order.
     type_changes = 1;
     int type_change_passes = 0;
     while (type_changes != 0) {
         type_changes = 0;
-        for (auto pr : symbols) {
+        for (auto pr : pp_symbols) {
             pr.second->post_parse( eResolveDataTypes );
         }
         ++type_change_passes;
@@ -887,6 +890,7 @@ void Symbol::post_parse_all()
 
     // Pass 3: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
+    // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateDependencies );
     }

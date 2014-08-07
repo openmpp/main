@@ -34,7 +34,39 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
                                           const ConstantSymbol *k2,
                                           const ConstantSymbol *k3)
 {
-    string result = "om_" + token_to_string(tok);
+    string result = "om_";
+
+    // Numeric prefix controls order of injection of side-effect code 
+    // for related derived agentvars with inter-dependencies.
+    // This works because post-parse passes respect lexicographical order of symbol names
+    switch (tok) {
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    {
+        // undergone_* are used by value_at_first_*
+        // so need to be updated after for the logic of 'first' detection to work.
+        result += "2_";
+        break;
+    }
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_first_change:
+    {
+        // will inject side-effect code after other derived agentvars
+        result += "1_";
+    }
+    default:
+    {
+        break;
+    }
+    }
+
+    result += token_to_string(tok);
+
+
     if (av1 != nullptr) result += "_FOR_" + av1->name;
     if (k1 != nullptr)  result += "_X_" + k1->value_as_name();
     if (av2 != nullptr) result += "_X_" + av2->name;
@@ -47,7 +79,7 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
 }
 
 // static
-Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
+DerivedAgentVarSymbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
                                               token_type tok,
                                               const Symbol *av1,
                                               const Symbol *av2,
@@ -58,12 +90,13 @@ Symbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent,
                                               const ConstantSymbol *k3,
                                               yy::location decl_loc)
 {
-    Symbol *sym = nullptr;
+    DerivedAgentVarSymbol *sym = nullptr;
     string mem_name = member_name(tok, av1, av2, prt, cls, k1, k2, k3);
     string nm = Symbol::symbol_name(mem_name, agent);
     auto it = symbols.find(nm);
     if (it != symbols.end()) {
-        sym = it->second;
+        sym = dynamic_cast<DerivedAgentVarSymbol *>(it->second);
+        assert(sym);
     }
     else {
         sym = new DerivedAgentVarSymbol(agent, tok, av1, av2, prt, cls, k1, k2, k3, decl_loc);
@@ -537,6 +570,21 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     default:
     break;
     }
+
+    // Create associated derived agentvar
+    switch (tok) {
+    case token::TK_value_at_first_entrance:
+    {
+        assert(av1);
+        assert(k1);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_entrance, *av1, k1, decl_loc);
+        assert(dav);
+        break;
+    }
+    default:
+    break;
+    }
+
 }
 
 void DerivedAgentVarSymbol::assign_data_type()
@@ -657,6 +705,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             // simple duration()
             // add side-effect to time
             auto *av = pp_agent->pp_time;
+            assert(av);
             CodeBlock& c = av->side_effects_fn->func_body;
             c += "// Advance time for " + pretty_name();
             c += name + ".set(" + name + ".get() + om_delta);";
@@ -666,6 +715,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             // conditioned duration(av, value)
             // add side-effect to time
             auto *av = pp_agent->pp_time;
+            assert(av);
             CodeBlock& c = av->side_effects_fn->func_body;
             c += "// Advance time for " + pretty_name();
             c += "if (" + iav->name + ") {";
@@ -725,62 +775,136 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_undergone_entrance:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + name + ".get() && om_new == " + k1->value() + ") {";
+        c += name + ".set(true);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_undergone_exit:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + name + ".get() && om_old == " + k1->value() + ") {";
+        c += name + ".set(true);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_undergone_transition:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        assert(k2);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + name + ".get() && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        c += name + ".set(true);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_undergone_change:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + name + ".get()) {";
+        c += name + ".set(true);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_entrances:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_new == " + k1->value() + ") {";
+        c += name + ".set(" + name + ".get() + 1);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_exits:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_old == " + k1->value() + ") {";
+        c += name + ".set(" + name + ".get() + 1);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_transitions:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        assert(k2);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        c += name + ".set(" + name + ".get() + 1);";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_changes:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += name + ".set(" + name + ".get() + 1);";
+        c += "";
         break;
     }
     case token::TK_value_at_first_entrance:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        auto undergone = dav;
+        assert(av);
+        assert(k1);
+        assert(noted);
+        assert(undergone);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + undergone->name + " && om_new == " + k1->value() + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_latest_entrance:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(k1);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_new == " + k1->value() + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_first_exit:
