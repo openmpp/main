@@ -581,6 +581,30 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         assert(dav);
         break;
     }
+    case token::TK_value_at_first_exit:
+    {
+        assert(av1);
+        assert(k1);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_exit, *av1, k1, decl_loc);
+        assert(dav);
+        break;
+    }
+    case token::TK_value_at_first_transition:
+    {
+        assert(av1);
+        assert(k1);
+        assert(k2);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_transition, *av1, k1, k2, decl_loc);
+        assert(dav);
+        break;
+    }
+    case token::TK_value_at_first_change:
+    {
+        assert(av1);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_change, *av1, decl_loc);
+        assert(dav);
+        break;
+    }
     default:
     break;
     }
@@ -909,62 +933,154 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_first_exit:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        auto undergone = dav;
+        assert(av);
+        assert(k1);
+        assert(noted);
+        assert(undergone);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + undergone->name + " && om_old == " + k1->value() + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_latest_exit:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(k1);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_old == " + k1->value() + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_first_transition:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        auto undergone = dav;
+        assert(av);
+        assert(k1);
+        assert(k2);
+        assert(noted);
+        assert(undergone);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + undergone->name + " && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_latest_transition:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(k1);
+        assert(k2);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_first_change:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        auto undergone = dav;
+        assert(av);
+        assert(noted);
+        assert(undergone);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (!" + undergone->name + ") {";
+        c += name + ".set(" + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_latest_change:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += name + ".set(" + noted->name + ".get());";
+        c += "";
         break;
     }
     case token::TK_value_at_entrances:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(k1);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_new == " + k1->value() + ") {";
+        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_exits:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(k1);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_old == " + k1->value() + ") {";
+        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_transitions:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(k1);
+        assert(k2);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        c += "}";
+        c += "";
         break;
     }
     case token::TK_value_at_changes:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        auto *noted = pp_av2;
+        assert(av);
+        assert(noted);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain " + pretty_name();
+        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        c += "";
         break;
     }
     case token::TK_split:
