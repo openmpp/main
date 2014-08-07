@@ -32,7 +32,7 @@
 
 #define TRUE true
 #define FALSE false
-#define WAIT( delta_time ) static_cast<Time::type>((time + (delta_time)))
+#define WAIT( delta_time ) static_cast<Time>((time + static_cast<Time::type>(delta_time)))
 
 // Implementation of old-style Modgen macros related to classifications, ranges, and partitions
 #define MIN( symbol )				(symbol::min)
