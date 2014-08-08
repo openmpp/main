@@ -44,9 +44,13 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
     case token::TK_undergone_exit:
     case token::TK_undergone_transition:
     case token::TK_undergone_change:
+    case token::TK_active_spell_duration:
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_active_spell_delta:
     {
         // undergone_* are used by value_at_first_*
-        // so need to be updated after for the logic of 'first' detection to work.
+        // active_spell_* are used by completed_spell_*
+        // so update them after.
         result += "2_";
         break;
     }
@@ -54,12 +58,16 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
     case token::TK_value_at_first_exit:
     case token::TK_value_at_first_transition:
     case token::TK_value_at_first_change:
+    case token::TK_completed_spell_duration:
+    case token::TK_completed_spell_weighted_duration:
+    case token::TK_completed_spell_delta:
     {
-        // will inject side-effect code after other derived agentvars
+        // will inject side-effect code before derived agentvars with prefix "2_"
         result += "1_";
     }
     default:
     {
+        // no need for special ordering prefix in name
         break;
     }
     }
@@ -548,6 +556,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     // Create identity agentvar monitoring av1 == k1
     switch (tok) {
     case token::TK_duration:
+    case token::TK_weighted_duration:
     {
         if (av1 && k1) {
             // is a conditioned duration
@@ -602,6 +611,32 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_change, *av1, decl_loc);
+        assert(dav);
+        break;
+    }
+    case token::TK_completed_spell_duration:
+    {
+        assert(av1);
+        assert(k1);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_duration, *av1, k1, decl_loc);
+        assert(dav);
+        break;
+    }
+    case token::TK_completed_spell_weighted_duration:
+    {
+        assert(av1);
+        assert(k1);
+        assert(av2); // weight
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_weighted_duration, *av1, k1, *av2, decl_loc);
+        assert(dav);
+        break;
+    }
+    case token::TK_completed_spell_delta:
+    {
+        assert(av1);
+        assert(k1);
+        assert(av2); // observed
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_delta, *av1, k1, *av2, decl_loc);
         assert(dav);
         break;
     }
@@ -713,8 +748,7 @@ void DerivedAgentVarSymbol::assign_data_type()
     }
 
     default:
-    // TODO Leave at double, but once all are implemented,
-    //  assert(false);
+        assert(false); // A type for each kind of derived agentvar should have been assigned above.
     break;
     }
 
@@ -726,7 +760,7 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_duration:
     {
         if (!av1) {
-            // simple duration()
+            // duration()
             // add side-effect to time
             auto *av = pp_agent->pp_time;
             assert(av);
@@ -736,10 +770,11 @@ void DerivedAgentVarSymbol::create_side_effects()
             c += "";
         }
         else {
-            // conditioned duration(av, value)
+            // duration(av, value)
             // add side-effect to time
             auto *av = pp_agent->pp_time;
             assert(av);
+            assert(iav);
             CodeBlock& c = av->side_effects_fn->func_body;
             c += "// Advance time for " + pretty_name();
             c += "if (" + iav->name + ") {";
@@ -751,26 +786,74 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_weighted_duration:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        if (!av1) {
+            // weighted_duration()
+            // add side-effect to time
+            auto *av = pp_agent->pp_time;
+            auto *wgt = pp_av2;
+            assert(av);
+            assert(wgt);
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += "// Advance time for " + pretty_name();
+            c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+            c += "";
+        }
+        else {
+            // weighted_duration(av, value)
+            // add side-effect to time
+            auto *av = pp_agent->pp_time;
+            auto *wgt = pp_av2;
+            assert(av);
+            assert(iav);
+            assert(wgt);
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += "// Advance time for " + pretty_name();
+            c += "if (" + iav->name + ") {";
+            c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+            c += "}";
+            c += "";
+        }
         break;
     }
     case token::TK_weighted_cumulation:
     {
-        // TODO
+        // TODO (or almost certainly not!)
         pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
         break;
     }
     case token::TK_active_spell_duration:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // add side-effect to time
+        auto *av = pp_agent->pp_time;
+        assert(av);
+        assert(iav);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Advance time for " + pretty_name();
+        c += "if (" + iav->name + ") {";
+        c += name + ".set(" + name + ".get() + om_delta);";
+        c += "}";
+        c += "";
+
+        // add side-effect to identity agentvar (condition)
+        CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += "// If spell ending, reset " + pretty_name();
+        c2 += "if (om_new == false) {";
+        c2 += name + ".set(0);";
+        c2 += "}";
+        c2 += "";
         break;
     }
     case token::TK_completed_spell_duration:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        assert(iav);
+        assert(dav);
+        // add side-effect to identity agentvar (condition)
+        CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += "// If spell ending, move active spell value to " + pretty_name();
+        c2 += "if (om_new == false) {";
+        c2 += name + ".set(" + dav->name + ");";
+        c2 += "}";
+        c2 += "";
         break;
     }
     case token::TK_active_spell_weighted_duration:

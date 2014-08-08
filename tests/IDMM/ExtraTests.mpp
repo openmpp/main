@@ -39,10 +39,10 @@ aggregation APPEARANCE, DISEASE_PHASE
 actor Host
 {
     real hui = (disease_phase == DP_INFECTIOUS) ? 0.8 : 1.0;
-
     real qaly = weighted_duration(hui);
-    real v00 = weighted_duration(disease_phase, DP_IMMUNE, hui);
-    real v01 = weighted_cumulation(hui, hui);
+
+    real v00 = weighted_duration(hui);
+    real v01 = weighted_duration(disease_phase, DP_IMMUNE, hui);
     real v02 = active_spell_duration(disease_phase, DP_INFECTIOUS);
     real v03 = completed_spell_duration(disease_phase, DP_INFECTIOUS);
     real v04 = active_spell_weighted_duration(disease_phase, DP_INFECTIOUS, hui);
@@ -141,8 +141,7 @@ table Host ZZZ_01
         v35, //EN v35
         v36, //EN v36
         v37, //EN v37
-        v38, //EN v38
-        qaly //EN qaly
+        v38 //EN v38
   }
     * year_ge_10
 };
