@@ -522,6 +522,7 @@ void DerivedAgentVarSymbol::assign_sorting_group()
     // Code injection is ordered by sorting group, then lexicographically by unqiue_name.
     // 
     // The ordering requirements are as follows:
+    // continuously-updated durations occur first (side-effect of 'time')
     // undergone_* (2) is used by value_at_first_* (1) in side-effect of condition
     // active_spell_* (2) is used by completed_spell_* (1)in side-effect of condition
     // active_spell_delta (2) occurs before identity condition (9) in side-effect of time
@@ -542,7 +543,7 @@ void DerivedAgentVarSymbol::assign_sorting_group()
     case token::TK_completed_spell_weighted_duration:
     case token::TK_completed_spell_delta:
     {
-        // occurs before undergone_* or active_spell_* updates the value
+        // Must occur before undergone_* or active_spell_* updates the value
         sorting_group = 2;
         break;
     }
@@ -1257,8 +1258,13 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_split:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        auto *av = pp_av1;
+        assert(av); // observed
+        assert(pp_prt);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Maintain " + pretty_name();
+        c += name + ".set(" + pp_prt->name + "(" + av->name + ".get()));";
         break;
     }
     case token::TK_aggregate:
