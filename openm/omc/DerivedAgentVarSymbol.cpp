@@ -858,14 +858,39 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_active_spell_weighted_duration:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // add side-effect to time
+        auto *av = pp_agent->pp_time;
+        auto *wgt = pp_av2;
+        assert(av);
+        assert(iav);
+        assert(wgt);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Advance time for " + pretty_name();
+        c += "if (" + iav->name + ") {";
+        c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+        c += "}";
+        c += "";
+
+        // add side-effect to identity agentvar (condition)
+        CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += "// If spell ending, reset " + pretty_name();
+        c2 += "if (om_new == false) {";
+        c2 += name + ".set(0);";
+        c2 += "}";
+        c2 += "";
         break;
     }
     case token::TK_completed_spell_weighted_duration:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        assert(iav);
+        assert(dav);
+        // add side-effect to identity agentvar (condition)
+        CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += "// If spell ending, move active spell value to " + pretty_name();
+        c2 += "if (om_new == false) {";
+        c2 += name + ".set(" + dav->name + ");";
+        c2 += "}";
+        c2 += "";
         break;
     }
     case token::TK_active_spell_delta:

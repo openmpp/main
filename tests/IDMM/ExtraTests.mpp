@@ -47,8 +47,8 @@ actor Host
     real v03 = completed_spell_duration(disease_phase, DP_INFECTIOUS);
     real v04 = active_spell_weighted_duration(disease_phase, DP_INFECTIOUS, hui);
     real v05 = completed_spell_weighted_duration(disease_phase, DP_INFECTIOUS, hui);
-    real v06 = active_spell_delta(disease_phase, DP_INFECTIOUS, qaly);
-    real v07 = completed_spell_delta(disease_phase, DP_INFECTIOUS, qaly);
+    real v06 = active_spell_delta(disease_phase, DP_INFECTIOUS, age);
+    real v07 = completed_spell_delta(disease_phase, DP_INFECTIOUS, age);
     logical v08 = undergone_entrance(disease_phase, DP_INFECTIOUS);
     logical v09 = undergone_exit(disease_phase, DP_INFECTIOUS);
     logical v10 = undergone_transition(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE);
