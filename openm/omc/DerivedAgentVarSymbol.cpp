@@ -553,7 +553,7 @@ void DerivedAgentVarSymbol::validate()
 
 void DerivedAgentVarSymbol::create_auxiliary_symbols()
 {
-    // Create identity agentvar monitoring av1 == k1
+    // Create associated identity agentvar for expression "av1 == k1"
     switch (tok) {
     case token::TK_duration:
     case token::TK_weighted_duration:
@@ -637,6 +637,23 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         assert(k1);
         assert(av2); // observed
         dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_delta, *av1, k1, *av2, decl_loc);
+        assert(dav);
+        break;
+    }
+    case token::TK_active_spell_delta:
+    {
+        // note that order of initialization of these statics is guaranteed by C++ standard
+        static auto true_lit = new BooleanLiteral("true");
+        static auto true_cnst = new ConstantSymbol(true_lit);
+
+        assert(true_lit);
+        assert(true_cnst);
+        assert(av1);
+        assert(k1);
+        assert(av2); // observed
+        assert(iav);
+        // create derived agentvar to hold value of observed agentvar at beginning of spell
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_value_at_latest_entrance, iav, true_cnst, *av2, decl_loc);
         assert(dav);
         break;
     }
@@ -846,7 +863,7 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_completed_spell_duration:
     {
         assert(iav);
-        assert(dav);
+        assert(dav); // active spell value
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
         c2 += "// If spell ending, move active spell value to " + pretty_name();
@@ -883,7 +900,7 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_completed_spell_weighted_duration:
     {
         assert(iav);
-        assert(dav);
+        assert(dav); // active spell value
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
         c2 += "// If spell ending, move active spell value to " + pretty_name();
@@ -895,14 +912,45 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_active_spell_delta:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // Cannot safely add side-effect to observed agentvar
+        // since the observed agentvar might change at same event as the spell condition goes false.
+        // If the spell condition goes false before the observed agentvar chagnes value in the event
+        // implementation, the active spell delta wouljd be in error.
+        // Instead, add side-effect to time, which is guaranteed to occur before
+        // the event is implemented.  But that might not handle all cases, since
+        // some agentvars are updated when time advances...
+        // So...
+        // add side-effect to time
+        auto *av = pp_agent->pp_time;
+        assert(iav);
+        assert(dav); // holds value of observed agentvar at beginning of spell
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += "// Maintain value for " + pretty_name();
+        c += "if (" + iav->name + ") {";
+        c += name + ".set(om_new - " + dav->name + ".get());";
+        c += "}";
+        c += "";
+
+        // add side-effect to identity agentvar (condition)
+        CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += "// If spell ending, reset " + pretty_name();
+        c2 += "if (om_new == false) {";
+        c2 += name + ".set(0);";
+        c2 += "}";
+        c2 += "";
         break;
     }
     case token::TK_completed_spell_delta:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        assert(iav);
+        assert(dav); // active spell value
+        // add side-effect to identity agentvar (condition)
+        CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += "// If spell ending, move active spell value to " + pretty_name();
+        c2 += "if (om_new == false) {";
+        c2 += name + ".set(" + dav->name + ");";
+        c2 += "}";
+        c2 += "";
         break;
     }
     case token::TK_undergone_entrance:
