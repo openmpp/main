@@ -552,6 +552,17 @@ string Symbol::pretty_name()
     return name;
 }
 
+CodeBlock Symbol::injection_description()
+{
+    CodeBlock c;
+    c += "";
+    c += "//";
+    c += "// Code Injection: group=" + to_string(sorting_group) + ", injector=" + pretty_name();
+    c += "//";
+    return c;
+}
+
+
 void Symbol::pp_error(const string& msg)
 {
     post_parse_errors++;
@@ -765,13 +776,26 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
     return sym;
 }
 
+/**
+ * Populate pp symbols
+ * 
+ * pp_symbols is a version of the symbol table sorted in a fixed known order, unlike the symbol table which is an unordered map.
+ * The order of pp_symbols is sorting_group, followed by unique_name.  The higher order sorting_group controls the order of code injection
+ * for derived agentvars with interdependencies.
+ */
 void Symbol::populate_pp_symbols()
 {
     pp_symbols.clear();
     for (auto sym : symbols) {
         pp_symbols.push_back(sym);
     }
-    pp_symbols.sort([](symbol_map_value_type a, symbol_map_value_type b) { return a.second->unique_name < b.second->unique_name; });
+    pp_symbols.sort(
+        [](symbol_map_value_type a, symbol_map_value_type b)
+        {
+            return a.second->sorting_group < b.second->sorting_group
+                || (a.second->sorting_group == b.second->sorting_group && a.second->unique_name < b.second->unique_name);
+        }
+    );
 }
 
 // static

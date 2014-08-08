@@ -27,9 +27,9 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
                 AgentVarSymbol *av = pp_agent->pp_time;
                 assert(av);
                 CodeBlock& c = av->side_effects_fn->func_body;
+                c += injection_description();
                 c += "// Advance time for the age agentvar";
                 c += "age.set(age.get() + om_delta);";
-                c += "";
             }
         }
         break;

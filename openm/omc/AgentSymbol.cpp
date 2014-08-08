@@ -30,12 +30,13 @@ void AgentSymbol::create_auxiliary_symbols()
         auto fn = time_sym->side_effects_fn;
         assert(fn);
         CodeBlock& c = fn->func_body;
+        // The local variable om_delta can be used by any code injected to 'time'.
         c += "// Amount of time increment";
         c += "Time om_delta = om_new - om_old;";
-        c += "";
     }
     if (!exists("age", this)) {
-        new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
+        auto age_sym = new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
+        age_sym->sorting_group = 1; // continuously-updated
     }
     if (!exists("events", this)) {
         new BuiltinAgentVarSymbol("events", this, NumericSymbol::find(token::TK_counter));

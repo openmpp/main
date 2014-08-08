@@ -34,46 +34,9 @@ string DerivedAgentVarSymbol::member_name(token_type tok,
                                           const ConstantSymbol *k2,
                                           const ConstantSymbol *k3)
 {
-    string result = "om_";
+    string result;
 
-    // Numeric prefix controls order of injection of side-effect code 
-    // for related derived agentvars with inter-dependencies.
-    // This works because post-parse passes respect lexicographical order of symbol names
-    switch (tok) {
-    case token::TK_undergone_entrance:
-    case token::TK_undergone_exit:
-    case token::TK_undergone_transition:
-    case token::TK_undergone_change:
-    case token::TK_active_spell_duration:
-    case token::TK_active_spell_weighted_duration:
-    case token::TK_active_spell_delta:
-    {
-        // undergone_* are used by value_at_first_*
-        // active_spell_* are used by completed_spell_*
-        // so update them after.
-        result += "2_";
-        break;
-    }
-    case token::TK_value_at_first_entrance:
-    case token::TK_value_at_first_exit:
-    case token::TK_value_at_first_transition:
-    case token::TK_value_at_first_change:
-    case token::TK_completed_spell_duration:
-    case token::TK_completed_spell_weighted_duration:
-    case token::TK_completed_spell_delta:
-    {
-        // will inject side-effect code before derived agentvars with prefix "2_"
-        result += "1_";
-    }
-    default:
-    {
-        // no need for special ordering prefix in name
-        break;
-    }
-    }
-
-    result += token_to_string(tok);
-
+    result = "om_" + token_to_string(tok);
 
     if (av1 != nullptr) result += "_FOR_" + av1->name;
     if (k1 != nullptr)  result += "_X_" + k1->value_as_name();
@@ -551,6 +514,57 @@ void DerivedAgentVarSymbol::validate()
     }
 }
 
+void DerivedAgentVarSymbol::assign_sorting_group()
+{
+
+    // The sorting_group affects the order of injection of side-effect code 
+    // for related derived agentvars with inter-dependencies (in a side-effect of the same agentvar).
+    // Code injection is ordered by sorting group, then lexicographically by unqiue_name.
+    // 
+    // The ordering requirements are as follows:
+    // undergone_* (2) is used by value_at_first_* (1) in side-effect of condition
+    // active_spell_* (2) is used by completed_spell_* (1)in side-effect of condition
+    // active_spell_delta (2) occurs before identity condition (9) in side-effect of time
+
+    switch (tok) {
+    case token::TK_duration:
+    case token::TK_weighted_duration:
+    {
+        // continuously-updated states occur first in 'time' side-effects.
+        sorting_group = 1;
+        break;
+    }
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_first_change:
+    case token::TK_completed_spell_duration:
+    case token::TK_completed_spell_weighted_duration:
+    case token::TK_completed_spell_delta:
+    {
+        // occurs before undergone_* or active_spell_* updates the value
+        sorting_group = 2;
+        break;
+    }
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    case token::TK_active_spell_duration:
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_active_spell_delta:
+    {
+        sorting_group = 3;
+        break;
+    }
+    default:
+    {
+        sorting_group = 4;
+        break;
+    }
+    }
+}
+
 void DerivedAgentVarSymbol::create_auxiliary_symbols()
 {
     // Create associated identity agentvar for expression "av1 == k1"
@@ -782,9 +796,9 @@ void DerivedAgentVarSymbol::create_side_effects()
             auto *av = pp_agent->pp_time;
             assert(av);
             CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
             c += "// Advance time for " + pretty_name();
             c += name + ".set(" + name + ".get() + om_delta);";
-            c += "";
         }
         else {
             // duration(av, value)
@@ -793,11 +807,11 @@ void DerivedAgentVarSymbol::create_side_effects()
             assert(av);
             assert(iav);
             CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
             c += "// Advance time for " + pretty_name();
             c += "if (" + iav->name + ") {";
             c += name + ".set(" + name + ".get() + om_delta);";
             c += "}";
-            c += "";
         }
         break;
     }
@@ -811,9 +825,9 @@ void DerivedAgentVarSymbol::create_side_effects()
             assert(av);
             assert(wgt);
             CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
             c += "// Advance time for " + pretty_name();
             c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
-            c += "";
         }
         else {
             // weighted_duration(av, value)
@@ -824,11 +838,11 @@ void DerivedAgentVarSymbol::create_side_effects()
             assert(iav);
             assert(wgt);
             CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
             c += "// Advance time for " + pretty_name();
             c += "if (" + iav->name + ") {";
             c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
             c += "}";
-            c += "";
         }
         break;
     }
@@ -845,19 +859,19 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(iav);
         CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
         c += "// Advance time for " + pretty_name();
         c += "if (" + iav->name + ") {";
         c += name + ".set(" + name + ".get() + om_delta);";
         c += "}";
-        c += "";
 
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += injection_description();
         c2 += "// If spell ending, reset " + pretty_name();
         c2 += "if (om_new == false) {";
         c2 += name + ".set(0);";
         c2 += "}";
-        c2 += "";
         break;
     }
     case token::TK_completed_spell_duration:
@@ -866,11 +880,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(dav); // active spell value
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += injection_description();
         c2 += "// If spell ending, move active spell value to " + pretty_name();
         c2 += "if (om_new == false) {";
         c2 += name + ".set(" + dav->name + ");";
         c2 += "}";
-        c2 += "";
         break;
     }
     case token::TK_active_spell_weighted_duration:
@@ -882,19 +896,19 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(iav);
         assert(wgt);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Advance time for " + pretty_name();
         c += "if (" + iav->name + ") {";
         c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
         c += "}";
-        c += "";
 
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += injection_description();
         c2 += "// If spell ending, reset " + pretty_name();
         c2 += "if (om_new == false) {";
         c2 += name + ".set(0);";
         c2 += "}";
-        c2 += "";
         break;
     }
     case token::TK_completed_spell_weighted_duration:
@@ -903,41 +917,43 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(dav); // active spell value
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += injection_description();
         c2 += "// If spell ending, move active spell value to " + pretty_name();
         c2 += "if (om_new == false) {";
         c2 += name + ".set(" + dav->name + ");";
         c2 += "}";
-        c2 += "";
         break;
     }
     case token::TK_active_spell_delta:
     {
-        // Cannot safely add side-effect to observed agentvar
-        // since the observed agentvar might change at same event as the spell condition goes false.
-        // If the spell condition goes false before the observed agentvar chagnes value in the event
-        // implementation, the active spell delta wouljd be in error.
-        // Instead, add side-effect to time, which is guaranteed to occur before
-        // the event is implemented.  But that might not handle all cases, since
-        // some agentvars are updated when time advances...
+        // Cannot safely inject side-effect to the observed agentvar
+        // since the observed agentvar might change and the spell condition go false in same event.
+        // If the spell condition goes false before the observed agentvar changes value in the event
+        // implementation, the active spell delta would be in error.
+        // Instead, the side-effect is added to time, which is guaranteed to invoke sidee-effects before
+        // the event is implemented.  But that doesn't handle all cases, since
+        // some agentvars are updated when time advances, including possible the spell condition.
+        // So active_sepll_delta is assigned a sorting_group which comes before identity agentvars.
         // So...
         // add side-effect to time
         auto *av = pp_agent->pp_time;
         assert(iav);
+        assert(pp_av2); // observed agentvar
         assert(dav); // holds value of observed agentvar at beginning of spell
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain value for " + pretty_name();
         c += "if (" + iav->name + ") {";
-        c += name + ".set(om_new - " + dav->name + ".get());";
+        c += name + ".set(" + pp_av2->name + ".get() - " + dav->name + ".get());";
         c += "}";
-        c += "";
 
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += injection_description();
         c2 += "// If spell ending, reset " + pretty_name();
         c2 += "if (om_new == false) {";
         c2 += name + ".set(0);";
         c2 += "}";
-        c2 += "";
         break;
     }
     case token::TK_completed_spell_delta:
@@ -946,11 +962,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(dav); // active spell value
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
+        c2 += injection_description();
         c2 += "// If spell ending, move active spell value to " + pretty_name();
         c2 += "if (om_new == false) {";
         c2 += name + ".set(" + dav->name + ");";
         c2 += "}";
-        c2 += "";
         break;
     }
     case token::TK_undergone_entrance:
@@ -959,11 +975,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(k1);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + name + ".get() && om_new == " + k1->value() + ") {";
         c += name + ".set(true);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_undergone_exit:
@@ -972,11 +988,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(k1);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + name + ".get() && om_old == " + k1->value() + ") {";
         c += name + ".set(true);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_undergone_transition:
@@ -986,11 +1002,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k1);
         assert(k2);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + name + ".get() && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
         c += name + ".set(true);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_undergone_change:
@@ -998,11 +1014,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + name + ".get()) {";
         c += name + ".set(true);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_entrances:
@@ -1011,11 +1027,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(k1);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_new == " + k1->value() + ") {";
         c += name + ".set(" + name + ".get() + 1);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_exits:
@@ -1024,11 +1040,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(k1);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_old == " + k1->value() + ") {";
         c += name + ".set(" + name + ".get() + 1);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_transitions:
@@ -1038,11 +1054,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k1);
         assert(k2);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
         c += name + ".set(" + name + ".get() + 1);";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_changes:
@@ -1050,9 +1066,9 @@ void DerivedAgentVarSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += name + ".set(" + name + ".get() + 1);";
-        c += "";
         break;
     }
     case token::TK_value_at_first_entrance:
@@ -1065,11 +1081,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(noted);
         assert(undergone);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + undergone->name + " && om_new == " + k1->value() + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_latest_entrance:
@@ -1080,11 +1096,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k1);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_new == " + k1->value() + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_first_exit:
@@ -1097,11 +1113,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(noted);
         assert(undergone);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + undergone->name + " && om_old == " + k1->value() + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_latest_exit:
@@ -1112,11 +1128,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k1);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_old == " + k1->value() + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_first_transition:
@@ -1130,11 +1146,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(noted);
         assert(undergone);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + undergone->name + " && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_latest_transition:
@@ -1146,11 +1162,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k2);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_first_change:
@@ -1162,11 +1178,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(noted);
         assert(undergone);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (!" + undergone->name + ") {";
         c += name + ".set(" + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_latest_change:
@@ -1176,9 +1192,9 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += name + ".set(" + noted->name + ".get());";
-        c += "";
         break;
     }
     case token::TK_value_at_entrances:
@@ -1189,11 +1205,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k1);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_new == " + k1->value() + ") {";
         c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_exits:
@@ -1204,11 +1220,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k1);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_old == " + k1->value() + ") {";
         c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_transitions:
@@ -1220,11 +1236,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(k2);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
         c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
         c += "}";
-        c += "";
         break;
     }
     case token::TK_value_at_changes:
@@ -1234,9 +1250,9 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(av);
         assert(noted);
         CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
         c += "// Maintain " + pretty_name();
         c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
-        c += "";
         break;
     }
     case token::TK_split:

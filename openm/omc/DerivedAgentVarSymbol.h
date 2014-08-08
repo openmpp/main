@@ -66,6 +66,7 @@ public:
         , dav(nullptr)
     {
         validate();
+        assign_sorting_group();
         create_auxiliary_symbols();
     }
 
@@ -384,6 +385,11 @@ public:
      * Validate argument signatures.
      */
     void validate();
+
+    /**
+     * Assign sorting group.
+     */
+    void assign_sorting_group();
 
     /**
      * Create auxiliary symbols associated with this symbol.

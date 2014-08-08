@@ -208,6 +208,7 @@ public:
         , name ( nm )
         , decl_loc(decl_loc)
         , reference_count(0)
+        , sorting_group(10)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -241,6 +242,7 @@ public:
         , name ( sym->name )
         , decl_loc(decl_loc)
         , reference_count(0)
+        , sorting_group(10)
     {
         // find symbol table entry for the existing symbol
         auto it = symbols.find( unique_name );
@@ -401,6 +403,15 @@ public:
     virtual string pretty_name();
 
     /**
+     * Description of code injection into side-effect function.
+     * 
+     * Used to insert a comment in generated code.
+     *
+     * @return A string.
+     */
+    CodeBlock injection_description();
+
+    /**
      * Process a semantic error encountered during the post-parse phase.
      * 
      * Source code location is that of Symbol
@@ -477,6 +488,14 @@ public:
      * For debugging purposes.  Maintained by stable_rp() and maintained during symbol morphing.
      */
     int reference_count;
+
+    /**
+     * The sorting group the Symbol belongs in.
+     * 
+     * Used to control the order in which code is injected into side-effect call-back functions
+     * to handle inderdependencies in derived agentvars.
+     */
+    int sorting_group;
 
     /**
      * Check for existence of symbol with this unique name.

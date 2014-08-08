@@ -21,7 +21,7 @@ using namespace std;
 void IdentityAgentVarSymbol::create_auxiliary_symbols()
 {
     // Create an AgentFuncSymbol for the expression function
-    expression_fn = new AgentFuncSymbol(name + "_identity", agent);
+    expression_fn = new AgentFuncSymbol(name + "_update_identity", agent);
     assert(expression_fn); // out of memory check
     expression_fn->doc_block = doxygen_short("Evaluate and assign expression for " + name + ".");
 }
@@ -54,9 +54,9 @@ void IdentityAgentVarSymbol::post_parse(int pass)
             // Dependency on agentvars in expression
             for (auto av : pp_agentvars_used) {
                 CodeBlock& c = av->side_effects_fn->func_body;
+                c += injection_description();
                 c += "// Maintain identity for '" + name + "'";
                 c += expression_fn->name + "();";
-                c += "";
             }
 
             // Dependency on linked agentvars in expression
@@ -71,17 +71,17 @@ void IdentityAgentVarSymbol::post_parse(int pass)
                 assert(rlav);
 
                 CodeBlock& c = av->side_effects_fn->func_body;
+                c += injection_description();
                 c += "// Maintain identity for '" + unique_name + "' using reciprocal link";
                 c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
-                c += "";
             }
 
             // Dependency of all links used in expression
             for (auto lav : pp_links_used) {
                 CodeBlock& c = lav->side_effects_fn->func_body;
+                c += injection_description();
                 c += "// Maintain identity for '" + unique_name + "' when link changed to different agent";
                 c += expression_fn->name + "();";
-                c += "";
             }
         }
         break;
@@ -238,7 +238,7 @@ IdentityAgentVarSymbol * IdentityAgentVarSymbol::CreateEqualityIdentitySymbol(Sy
     assert(av);
     assert(k);
     IdentityAgentVarSymbol *iav = nullptr;
-    string mem_name = "om_identity_" + av->name + "_EQ_" + k->value_as_name();
+    string mem_name = "om_equality_" + av->name + "_EQ_" + k->value_as_name();
     string nm = Symbol::symbol_name(mem_name, agent);
     auto it = symbols.find(nm);
     if (it != symbols.end()) {
@@ -264,6 +264,7 @@ IdentityAgentVarSymbol * IdentityAgentVarSymbol::CreateEqualityIdentitySymbol(Sy
         // Create the identity agentvar to maintain the expression
         iav = new IdentityAgentVarSymbol( mem_name, agent, BoolSymbol::find(), expr, decl_loc);
         assert(iav);
+
         return iav;
     }
 }

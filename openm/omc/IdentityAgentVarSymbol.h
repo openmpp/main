@@ -42,6 +42,13 @@ public:
         , root(root)
     {
         create_auxiliary_symbols();
+
+        // This sorting group ensures that side-effect code for the identity agentvar
+        // which might be injected into 'time' will execute after side-effect code injected by active_spell_delta (sorting group 2)
+        // (side-effect code is injected by sorting group then lexicographic order of the name of the injecting agentvar.)
+        // This ensures that logic to maintain active_spell_delta works correctly: the side-effect for active_spell_delta
+        // must execute before side-effect code which changes the condition.
+        sorting_group = 8;
     }
 
     /**
