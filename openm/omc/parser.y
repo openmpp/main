@@ -453,6 +453,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <val_token>      table_increment
 %type  <val_token>      table_operator
 %type  <val_token>      parameter_modifier_opt
+%type  <val_token>      table_margin_opt
 %type  <pval_IntegerLiteral> cumrate_dimensions_opt
 
 %type  <pval_Literal>   bool_literal
@@ -1673,11 +1674,26 @@ table_dimension_list:
   | table_dimension_list "*" table_dimension
   ;
 
+table_margin_opt:
+      "+"[kw]
+                        {
+                            $table_margin_opt = $kw;
+                        }
+    | /* nothing */
+                        {
+                            $table_margin_opt = token::TK_unused;
+                        }
+    ;
+
 table_dimension:
-    SYMBOL[agentvar]
+    SYMBOL[agentvar] table_margin_opt
                         {
                             // add $agentvar to table's dimension_list
                             pc.get_table_context()->dimension_list.push_back($agentvar->stable_pp());
+                            // add margin specifier to table's margin_list
+                            // (maintained in parallel with dimension_list)
+                            bool margin_opt = $table_margin_opt == token::TK_PLUS;
+                            pc.get_table_context()->margin_list.push_back(margin_opt);
                         }
     | "{" table_expression_list "}"
     ;
@@ -1704,6 +1720,7 @@ expr_for_table[result]:
       agentvar
                         {
                             Symbol *agentvar = $agentvar;
+                            assert(agentvar);
                             // Defaults are accumulator=sum, increment=delta, table operator=interval
                             token_type acc = token::TK_sum;
                             token_type incr = token::TK_delta;
@@ -1856,7 +1873,12 @@ agentvar:
                             if (table) {
                                 // get the name of the av used for the unit in this table
                                 auto name = "om_" + table->name + "_om_unit";
-                                if (!Symbol::exists(name, agent)) {
+                                if (Symbol::exists(name, agent)) {
+                                    auto av = Symbol::get_symbol(name, agent);
+                                    assert(av);
+                                    $agentvar = av;
+                                }
+                                else {
                                     auto bav = new BuiltinAgentVarSymbol(name, agent, NumericSymbol::find(token::TK_counter));
                                     assert(bav);
                                     // note unit agentvar in table

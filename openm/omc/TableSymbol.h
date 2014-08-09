@@ -157,6 +157,11 @@ public:
     list<Symbol **> dimension_list;
 
     /**
+     * List of margin indicators
+     */
+    list<bool> margin_list;
+
+    /**
      * List of dimensions (post-parse phase pointers)
      */
     list<AgentVarSymbol *> pp_dimension_list_agentvar;
