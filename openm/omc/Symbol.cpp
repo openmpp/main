@@ -1115,7 +1115,7 @@ const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
         result = token::TK_delta2;
         break;
     case token::TK_nz_delta:
-        result = token::TK_sum;
+        result = token::TK_nz_delta;
         break;
     case token::TK_value_in:
         result = token::TK_value_in;

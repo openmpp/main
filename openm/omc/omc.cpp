@@ -440,6 +440,9 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             // continue parsing any remaining source code modules to detect additional syntax errors (possibly non-spurious)
         }
     }
+    if ( pc.parse_warnings > 0 ) {
+        theLog->logFormatted("%d warnings in parse phase", pc.parse_warnings);
+    }
     if ( pc.parse_errors > 0 ) {
         theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);
         throw HelperException("Finish omc");
