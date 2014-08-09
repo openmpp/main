@@ -530,6 +530,8 @@ ompp_declarative_island:
     | decl_aggregation      { pc.InitializeForCxx(); }
     | decl_partition        { pc.InitializeForCxx(); }
     | decl_range            { pc.InitializeForCxx(); }
+    | decl_parameter_group  { pc.InitializeForCxx(); }
+    | decl_table_group      { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
 	| decl_entity           { pc.InitializeForCxx(); }
 	| decl_link             { pc.InitializeForCxx(); }
@@ -887,6 +889,38 @@ decl_range:
     ;
 
 /*
+ * parameter_group
+ */
+
+decl_parameter_group:
+	  "parameter_group" SYMBOL[group_name] "{" parameter_group_list "}" ";"
+	| "parameter_group" "{" error "}" ";"
+	| "parameter_group" error ";"
+      ;
+
+parameter_group_list:
+	  SYMBOL
+	| parameter_group_list "," SYMBOL
+	;
+
+
+/*
+ * table_group
+ */
+
+decl_table_group:
+	  "table_group" SYMBOL[group_name] "{" table_group_list "}" ";"
+	| "table_group" "{" error "}" ";"
+	| "table_group" error ";"
+      ;
+
+table_group_list:
+	  SYMBOL
+	| table_group_list "," SYMBOL
+	;
+
+
+/*
  * parameter
  */
 
@@ -900,8 +934,19 @@ parameter_list:
 	| parameter_list decl_parameter
 	;
 
+parameter_modifier_opt:
+      "model_generated"
+                        {
+                            //TODO
+                        }
+    | /* nothing */
+                        {
+                            //TODO
+                        }
+    ;
+
 decl_parameter:
-      decl_type_part[type_symbol] SYMBOL[parm]
+      parameter_modifier_opt decl_type_part[type_symbol] SYMBOL[parm]
                         {
                             ParameterSymbol *parm = nullptr;
 
@@ -1133,6 +1178,7 @@ agent_member:
 	| decl_expr_agentvar
 	| decl_agent_function
 	| decl_agent_event
+	| decl_hook
     | error ";"
                         {
                             // Error recovery: Prepare to parse another member in an agent declarative island
@@ -1185,6 +1231,13 @@ decl_agent_event:
                             // Ex. "om_time_BirthdayEvent"
                             string event_name = "om_" + $implement_func->name + "_time";
                             auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, event_priority, @decl_agent_event);
+                        }
+    ;
+
+decl_hook:
+      "hook" SYMBOL[from] "," SYMBOL[to] ";"
+                        {
+                            //TODO
                         }
     ;
 
@@ -1996,26 +2049,6 @@ derived_agentvar:
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
                         }
-
-    /*
-     * derived agentvars - self-scheduling family - integer durations
-     */
-    //TODO TK_self_scheduling_int - self_scheduling_int(duration())
-    //TODO TK_self_scheduling_int - self_scheduling_int(active_spell_duration())
-    //TODO TK_self_scheduling_int - self_scheduling_int(duration(weighted_duration()))
-    //TODO TK_self_scheduling_int - self_scheduling_int(duration(active_spell_weighted_duration()))
-    //TODO TK_self_scheduling_int - self_scheduling_int(age)
-    //TODO TK_self_scheduling_int - self_scheduling_int(time)
-
-    /*
-     * derived agentvars - self-scheduling family - split durations
-     */
-    //TODO TK_self_scheduling_split - self_scheduling_split(duration(), partition)
-    //TODO TK_self_scheduling_split - self_scheduling_split(active_spell_duration(), partition)
-    //TODO TK_self_scheduling_split - self_scheduling_split(duration(weighted_duration()), partition)
-    //TODO TK_self_scheduling_split - self_scheduling_split(duration(active_spell_wegihted_duration()), parition)
-    //TODO TK_self_scheduling_split - self_scheduling_split(age, partition)
-    //TODO TK_self_scheduling_split - self_scheduling_split(time, partition)
 
     /*
      * derived agentvars - multilink family
