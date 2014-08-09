@@ -87,6 +87,7 @@ actor Host
 	logical one_time_done = { FALSE };
 	event OneTimetime, OneTime;
     double thingee;
+    real one = { 1.0 };
 };
 
 TIME Host::OneTimetime()
@@ -99,6 +100,15 @@ void Host::OneTime()
     thingee = RandNormal(11);
     one_time_done = TRUE;
 }
+
+table Host MyTest3
+{
+    {
+        value_out(thingee),
+        min_value_out(thingee),
+        max_value_out(thingee)
+    }
+};
 
 table Host ZZZ_01
 {
@@ -147,12 +157,72 @@ table Host ZZZ_01
 };
 
 
-table Host MyTest3
+table Host ZZZ_30_trigger
+[ trigger_entrances(disease_phase, DP_INFECTIOUS) ]
 {
     {
-        value_out(thingee),
-        min_value_out(thingee),
-        max_value_out(thingee)
+        //EN average age at transition decimals=5
+        value_out(age) / value_out(one)
     }
 };
+
+table Host ZZZ_30_value_at
+{
+    {
+        //EN average age at transition decimals=5
+        value_at_entrances(disease_phase, DP_INFECTIOUS, age) / entrances(disease_phase, DP_INFECTIOUS)
+    }
+};
+
+table Host ZZZ_31_trigger
+[ trigger_exits(disease_phase, DP_INFECTIOUS) ]
+{
+    {
+        //EN average age at transition decimals=5
+        value_out(age) / value_out(one)
+    }
+};
+
+table Host ZZZ_31_value_at
+{
+    {
+        //EN average age at transition decimals=5
+        value_at_exits(disease_phase, DP_INFECTIOUS, age) / exits(disease_phase, DP_INFECTIOUS)
+    }
+};
+
+table Host ZZZ_32_trigger
+[ trigger_transitions(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE) ]
+{
+    {
+        //EN average age at transition decimals=5
+        value_out(age) / value_out(one)
+    }
+};
+
+table Host ZZZ_32_value_at
+{
+    {
+        //EN average age at transition decimals=5
+        value_at_transitions(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE, age) / transitions(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE)
+    }
+};
+
+table Host ZZZ_33_trigger
+[ trigger_changes(disease_phase) ]
+{
+    {
+        //EN average age at transition decimals=5
+        value_out(age) / value_out(one)
+    }
+};
+
+table Host ZZZ_33_value_at
+{
+    {
+        //EN average age at transition decimals=5
+        value_at_changes(disease_phase, age) / changes(disease_phase)
+    }
+};
+
 

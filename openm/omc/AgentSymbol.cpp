@@ -36,7 +36,7 @@ void AgentSymbol::create_auxiliary_symbols()
     }
     if (!exists("age", this)) {
         auto age_sym = new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
-        age_sym->sorting_group = 1; // continuously-updated
+        age_sym->sorting_group = 2; // continuously-updated
     }
     if (!exists("events", this)) {
         new BuiltinAgentVarSymbol("events", this, NumericSymbol::find(token::TK_counter));

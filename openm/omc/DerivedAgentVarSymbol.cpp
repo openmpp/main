@@ -528,11 +528,20 @@ void DerivedAgentVarSymbol::assign_sorting_group()
     // active_spell_delta (2) occurs before identity condition (9) in side-effect of time
 
     switch (tok) {
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
+    {
+        // trigger states are reset before anything else in 'time' side-effects.
+        sorting_group = 1;
+        break;
+    }
     case token::TK_duration:
     case token::TK_weighted_duration:
     {
-        // continuously-updated states occur first in 'time' side-effects.
-        sorting_group = 1;
+        // continuously-updated states occur next in 'time' side-effects.
+        sorting_group = 2;
         break;
     }
     case token::TK_value_at_first_entrance:
@@ -544,7 +553,7 @@ void DerivedAgentVarSymbol::assign_sorting_group()
     case token::TK_completed_spell_delta:
     {
         // Must occur before undergone_* or active_spell_* updates the value
-        sorting_group = 2;
+        sorting_group = 3;
         break;
     }
     case token::TK_undergone_entrance:
@@ -555,12 +564,12 @@ void DerivedAgentVarSymbol::assign_sorting_group()
     case token::TK_active_spell_weighted_duration:
     case token::TK_active_spell_delta:
     {
-        sorting_group = 3;
+        sorting_group = 4;
         break;
     }
     default:
     {
-        sorting_group = 4;
+        sorting_group = 5;
         break;
     }
     }
@@ -1275,26 +1284,96 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_trigger_entrances:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // Turn it on.
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Activate trigger " + pretty_name();
+        c += "if (om_new == " + k1->value() + ") {";
+        c += name + ".set(true);";
+        c += "}";
+
+        // Reset it as side-effect of time.
+        // This will occur at the next event, before anything else.
+        // (in sorting group #1)
+        av = pp_agent->pp_time;
+        assert(av);
+        CodeBlock& c2 = av->side_effects_fn->func_body;
+        c2 += injection_description();
+        c2 += "// Reset trigger " + pretty_name();
+        c2 += name + ".set(false);";
         break;
     }
     case token::TK_trigger_exits:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // Turn it on.
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Activate trigger " + pretty_name();
+        c += "if (om_old == " + k1->value() + ") {";
+        c += name + ".set(true);";
+        c += "}";
+
+        // Reset it as side-effect of time.
+        // This will occur at the next event, before anything else.
+        // (in sorting group #1)
+        av = pp_agent->pp_time;
+        assert(av);
+        CodeBlock& c2 = av->side_effects_fn->func_body;
+        c2 += injection_description();
+        c2 += "// Reset trigger " + pretty_name();
+        c2 += name + ".set(false);";
         break;
     }
     case token::TK_trigger_transitions:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // Turn it on.
+        auto *av = pp_av1;
+        assert(av);
+        assert(k1);
+        assert(k2);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Activate trigger " + pretty_name();
+        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        c += name + ".set(true);";
+        c += "}";
+
+        // Reset it as side-effect of time.
+        // This will occur at the next event, before anything else.
+        // (in sorting group #1)
+        av = pp_agent->pp_time;
+        assert(av);
+        CodeBlock& c2 = av->side_effects_fn->func_body;
+        c2 += injection_description();
+        c2 += "// Reset trigger " + pretty_name();
+        c2 += name + ".set(false);";
         break;
     }
     case token::TK_trigger_changes:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // Turn it on.
+        auto *av = pp_av1;
+        assert(av);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Activate trigger " + pretty_name();
+        c += name + ".set(true);";
+
+        // Reset it as side-effect of time.
+        // This will occur at the next event, before anything else.
+        // (in sorting group #1)
+        av = pp_agent->pp_time;
+        assert(av);
+        CodeBlock& c2 = av->side_effects_fn->func_body;
+        c2 += injection_description();
+        c2 += "// Reset trigger " + pretty_name();
+        c2 += name + ".set(false);";
         break;
     }
     case token::TK_duration_counter:
