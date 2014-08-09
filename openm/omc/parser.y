@@ -452,6 +452,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <val_token>      table_accumulator
 %type  <val_token>      table_increment
 %type  <val_token>      table_operator
+%type  <val_token>      parameter_modifier_opt
+%type  <pval_IntegerLiteral> cumrate_dimensions_opt
 
 %type  <pval_Literal>   bool_literal
 %type  <pval_Literal>   numeric_literal
@@ -532,6 +534,7 @@ ompp_declarative_island:
     | decl_range            { pc.InitializeForCxx(); }
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
+    | decl_hide             { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
 	| decl_entity           { pc.InitializeForCxx(); }
 	| decl_link             { pc.InitializeForCxx(); }
@@ -921,6 +924,22 @@ table_group_list:
 
 
 /*
+ * hide
+ */
+
+decl_hide:
+	  "hide" "(" hide_list ")" ";"
+	| "hide" "(" error ")" ";"
+	| "hide" error ";"
+      ;
+
+hide_list:
+	  SYMBOL
+	| hide_list "," SYMBOL
+	;
+
+
+/*
  * parameter
  */
 
@@ -935,18 +954,29 @@ parameter_list:
 	;
 
 parameter_modifier_opt:
-      "model_generated"
+"model_generated"[kw]
                         {
-                            //TODO
+                            $parameter_modifier_opt = $kw;
                         }
     | /* nothing */
                         {
-                            //TODO
+                            $parameter_modifier_opt = token::TK_unused;
+                        }
+    ;
+
+cumrate_dimensions_opt:
+      "[" INTEGER_LITERAL[dims] "]"
+                        {
+                            $cumrate_dimensions_opt = $dims;
+                        }
+    | /* nothing */
+                        {
+                            $cumrate_dimensions_opt = nullptr;
                         }
     ;
 
 decl_parameter:
-      parameter_modifier_opt decl_type_part[type_symbol] SYMBOL[parm]
+      parameter_modifier_opt[pm_opt] decl_type_part[type_symbol] SYMBOL[parm]
                         {
                             ParameterSymbol *parm = nullptr;
 
@@ -964,6 +994,10 @@ decl_parameter:
                                 parm = dynamic_cast<ParameterSymbol *>($parm);
                                 assert(parm); // grammar/logic guarantee
                             }
+                            // update provenance if model_generated
+                            if ($pm_opt == token::TK_model_generated) {
+                                parm->source = ParameterSymbol::parameter_source::derived_parameter;
+                            }
                             // Set parameter context for gathering the dimension specification (if present)
                             // and initializer (if present).
                             pc.set_parameter_context( parm );
@@ -973,16 +1007,17 @@ decl_parameter:
                             // No longer in parameter context
                             pc.set_parameter_context( nullptr );
                         }
-    |  "cumrate" SYMBOL[parm]
+    | parameter_modifier_opt[pm_opt] "cumrate" cumrate_dimensions_opt[cond_dims] SYMBOL[parm]
                         {
                             ParameterSymbol *parm = nullptr;
 
                             if ($parm->is_base_symbol()) {
                                 // parameter declaration
                                 pc.redeclaration = false;
-                                // Morph Symbol to ParameterSymbol
+                                // storage type of cumrate parameters is double
                                 auto *type_symbol = Symbol::get_symbol("double");
                                 assert(type_symbol); // grammar/initialization guarantee
+                                // Morph Symbol to ParameterSymbol
                                 parm = new ParameterSymbol( $parm, type_symbol, @parm );
                                 assert(parm);
                                 $parm = parm;
@@ -992,6 +1027,17 @@ decl_parameter:
                                 pc.redeclaration = true;
                                 parm = dynamic_cast<ParameterSymbol *>($parm);
                                 assert(parm); // grammar/logic guarantee
+                            }
+                            // update provenance if model_generated
+                            if ($pm_opt == token::TK_model_generated) {
+                                parm->source = ParameterSymbol::parameter_source::derived_parameter;
+                            }
+                            // record cumrate information in parameter
+                            parm->cumrate = true;
+                            if ($cond_dims) {
+                                // record number of conditioning dimensions
+                                parm->condition_dims = stoi($cond_dims->value());
+                                delete $cond_dims;
                             }
                             // Set parameter context for gathering the dimension specification (if present)
                             // and initializer (if present).
@@ -1235,9 +1281,10 @@ decl_agent_event:
     ;
 
 decl_hook:
-      "hook" SYMBOL[from] "," SYMBOL[to] ";"
+      "hook"[kw] SYMBOL[from] "," SYMBOL[to] ";"
                         {
-                            //TODO
+                            //drv.warning(@kw, "Warning - hook not implemented.");
+                            //TODO SFG
                         }
     ;
 
@@ -2365,5 +2412,6 @@ yy::parser::error (const yy::parser::location_type& l,
 {
     drv.error (l, m);
 }
+
 
 

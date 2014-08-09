@@ -23,6 +23,8 @@ public:
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , source(scenario_parameter)
+        , cumrate(false)
+        , condition_dims(0)
         , datatype(datatype->stable_rp())
         , pp_datatype(nullptr)
     {
@@ -107,6 +109,16 @@ public:
      * Source for the parameter value
      */
     parameter_source source;
+
+    /**
+     * True if parameter declared as cumrate
+     */
+    bool cumrate;
+
+    /**
+     * Number of conditioning dimensions for cumrate parameters
+     */
+    int condition_dims;
 
     /**
     *  The data type of the parameter contents (parse phase reference to pointer)

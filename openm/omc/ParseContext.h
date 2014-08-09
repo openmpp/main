@@ -31,6 +31,7 @@ public:
         , cxx_memfunc_gather (false)
         , cxx_memfunc_name ("")
         , parse_errors(0)
+        , parse_warnings(0)
         , next_word_is_string(false)
         , redeclaration(false)
         , agent_context (nullptr)
@@ -245,6 +246,11 @@ public:
      * A count of the number of omc parse errors in the model source files.
      */
 	int parse_errors;
+
+    /**
+     * A count of the number of omc parse warnings in the model source files.
+     */
+	int parse_warnings;
 
     /**
      * Tells the scanner to treat the immediately following word as a string rather than a symbol.

@@ -54,6 +54,13 @@ void Driver::error (const yy::location& l, const string& m)
     //cerr << l << ": " << m << endl;
 }
 
+void Driver::warning (const yy::location& l, const string& m)
+{
+    pc.parse_warnings++;
+    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    //cerr << l << ": " << m << endl;
+}
+
 void Driver::error (const string& m)
 {
     pc.parse_errors++;
