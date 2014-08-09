@@ -328,6 +328,11 @@ void TableSymbol::build_body_prepare_increments()
         if (table_agentvar->need_value_in)
             c += table_agentvar->cxx_prepare_increment();
     }
+    if (unit) {
+        c += "";
+        c += "// Increment table unit";
+        c += unit->name + ".set(" + unit->name + ".get() + 1);";
+    }
 }
 
 void TableSymbol::build_body_process_increments()

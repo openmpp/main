@@ -213,7 +213,7 @@ table Host ZZZ_33_trigger
 {
     {
         //EN average age at transition decimals=5
-        value_out(age) / value_out(one)
+        value_out(age) / unit
     }
 };
 

@@ -1560,10 +1560,10 @@ table_filter_opt:
                         {
                             TableSymbol *table = pc.get_table_context();
                             // create an expression agentvar for the filter
-                            auto eav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
-                            assert(eav); // out of memory check
+                            auto iav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
+                            assert(iav); // out of memory check
                             // note expression agentvar in table
-                            table->filter = eav;
+                            table->filter = iav;
                         }
     | /* nothing */
     ;
@@ -1748,6 +1748,27 @@ agentvar:
       SYMBOL
     | derived_agentvar
     | link_to_agentvar
+    | "unit"[kw]
+                        {
+                            Symbol *agent = pc.get_agent_context();
+                            assert(agent); // grammar guarantee
+                            TableSymbol *table = pc.get_table_context();
+                            if (table) {
+                                // get the name of the av used for the unit in this table
+                                auto name = "om_" + table->name + "_om_unit";
+                                if (!Symbol::exists(name, agent)) {
+                                    auto bav = new BuiltinAgentVarSymbol(name, agent, NumericSymbol::find(token::TK_counter));
+                                    assert(bav);
+                                    // note unit agentvar in table
+                                    table->unit = bav;
+                                    $agentvar = bav;
+                                }
+                            }
+                            else {
+                                error(@kw, "Invalid use of 'unit' outside of table");
+                                YYERROR;
+                            }
+                        }
 	;
 
 link_to_agentvar:

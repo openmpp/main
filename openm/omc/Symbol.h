@@ -537,11 +537,13 @@ public:
 
     /**
      * Gets a symbol for a member name in an agent.
+     * 
+     * If it doesn't already exist, create it.
      *
      * @param nm    The member name.
      * @param agent The agent.
      *
-     * @return The symbol, or nullptr if not found.
+     * @return The symbol.
      */
     static Symbol *get_symbol(const string& nm, const Symbol *agent);
 
