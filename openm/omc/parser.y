@@ -91,6 +91,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
     list<string *>       *pval_string_list;
+    list<Symbol *>       *pval_Symbol_list;
 };
 
 %printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
@@ -490,6 +491,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 
 %type <pval_string>      parameter_initializer_element
 %type <pval_string_list> parameter_initializer_list
+%type <pval_Symbol_list> dimension_list
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -1222,7 +1224,8 @@ agent_member_list:
 
 agent_member:
 	  decl_simple_agentvar
-	| decl_expr_agentvar
+	| decl_agent_array
+	| decl_identity_agentvar
 	| decl_agent_function
 	| decl_agent_event
 	| decl_hook
@@ -1250,7 +1253,43 @@ decl_simple_agentvar:
                         }
     ;
 
-decl_expr_agentvar:
+decl_agent_array:
+        decl_type_part[type_symbol] SYMBOL[agentvar] "[" SYMBOL[first_dim] "]" // The presence of a first dimension is what distinguishes this as an agent array symbol
+                        {
+                            //auto *das = new AgentArraySymbol( $agentvar, pc.get_agent_context(), $type_symbol, nullptr, @agentvar );
+                        }
+            dimension_list ";"
+                        {
+                            list<Symbol *> *pls = $dimension_list;
+                            if (pls != nullptr) {
+                                // Add the subsequent dimensions to the AgentArraySymbol
+                                // use 'swap' or splice... or whatever it is
+                                pls->clear();
+                                delete pls;
+                            }
+                        }
+    ;
+
+dimension_list: // A list of dimensions enclosed by [].  If no elements, is nullptr
+        "[" SYMBOL[dim] "]"
+                        {
+                            // start a new dimension list
+                            auto * pls = new list<Symbol *>;
+                            $$ = pls;
+                        }
+      | dimension_list[pls] "[" SYMBOL[dim] "]"
+                        {
+                            // append to existing dimension list
+                            $pls->push_back($dim);
+                            $$ = $pls;
+                        }
+      | /* nothing */
+                        {
+                            $$ = nullptr;
+                        }
+    ;
+
+decl_identity_agentvar:
         decl_type_part[type_symbol] SYMBOL[agentvar] "=" expr_for_agentvar ";"
                         {
                             auto *sym = new IdentityAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
