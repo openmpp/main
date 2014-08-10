@@ -1717,7 +1717,7 @@ table_margin_opt:
     ;
 
 table_dimension:
-    SYMBOL[agentvar] table_margin_opt
+    agentvar table_margin_opt
                         {
                             // add $agentvar to table's dimension_list
                             pc.get_table_context()->dimension_list.push_back($agentvar->stable_pp());
