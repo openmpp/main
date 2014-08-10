@@ -492,7 +492,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 
 %type <pval_string>      parameter_initializer_element
 %type <pval_string_list> parameter_initializer_list
-%type <pval_Symbol_list> dimension_list
+%type <pval_Symbol_list> array_decl_dimension_list
+%type <pval_Symbol_list> track_list
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -539,6 +540,7 @@ ompp_declarative_island:
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
     | decl_hide             { pc.InitializeForCxx(); }
+    | decl_track            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
 	| decl_entity           { pc.InitializeForCxx(); }
 	| decl_link             { pc.InitializeForCxx(); }
@@ -945,6 +947,69 @@ hide_list:
 
 
 /*
+ * track
+ */
+
+decl_track:
+	  "track" SYMBOL[agent] 
+                        {
+                            // Set agent context for body of track declaration
+                            pc.set_agent_context( $agent );
+                        }
+          track_filter_opt "{" track_list "}" ";"
+                        {
+                            list<Symbol *> *pls = $track_list;
+                            //TODO
+                            //  move track list to agent
+                            // use 'swap' or splice... or whatever it is
+                            pls->clear();
+                            delete pls;
+                            // Leaving agent context
+                            pc.set_agent_context( nullptr );
+                        }
+	| "track" error ";"
+      ;
+
+track_list:
+      SYMBOL[agentvar]
+                        {
+                            // start a new symbol list
+                            auto * pls = new list<Symbol *>;
+                            $$ = pls;
+                        }
+    | track_list[pls] "," SYMBOL[agentvar]
+                        {
+                            // append to existing symbol list
+                            $pls->push_back($agentvar);
+                            $$ = $pls;
+                        }
+	;
+
+track_filter_opt:
+	  "[" track_ongoing_filter_opt track_final_filter_opt "]"
+	| /* nothing */
+      ;
+
+track_ongoing_filter_opt:
+	  expr_for_agentvar[ongoing_root]
+                        {
+                            //TODO
+                            // store in AgentSymbol
+                        }
+	| /* nothing */
+      ;
+
+track_final_filter_opt:
+	  "," expr_for_agentvar[final_root]
+                        {
+                            //TODO
+                            // store in AgentSymbol
+                        }
+	| /* nothing */
+      ;
+
+
+/*
  * parameter
  */
 
@@ -1256,9 +1321,9 @@ decl_simple_agentvar:
     ;
 
 decl_agent_array:
-        decl_type_part[type_symbol] SYMBOL[agentvar] dimension_list ";"
+        decl_type_part[type_symbol] SYMBOL[agentvar] array_decl_dimension_list ";"
                         {
-                            list<Symbol *> *pls = $dimension_list;
+                            list<Symbol *> *pls = $array_decl_dimension_list;
                             // Add dimensions to the AgentArraySymbol
                             // use 'swap' or splice... or whatever it is
                             pls->clear();
@@ -1266,16 +1331,16 @@ decl_agent_array:
                         }
     ;
 
-dimension_list: // A non-empty list of dimensions enclosed by []
+array_decl_dimension_list: // A non-empty list of dimensions enclosed by []
         "[" SYMBOL[dim] "]"
                         {
-                            // start a new dimension list
+                            // start a new symbol list
                             auto * pls = new list<Symbol *>;
                             $$ = pls;
                         }
-      | dimension_list[pls] "[" SYMBOL[dim] "]"
+      | array_decl_dimension_list[pls] "[" SYMBOL[dim] "]"
                         {
-                            // append to existing dimension list
+                            // append to existing symbol list
                             $pls->push_back($dim);
                             $$ = $pls;
                         }
