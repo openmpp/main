@@ -116,6 +116,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_classification "classification"
 %token <val_token>    TK_counter_type   "counter_type"
 %token <val_token>    TK_dependency     "dependency"
+%token <val_token>    TK_developer_table "developer_table"
 %token <val_token>    TK_entity         "entity"
 %token <val_token>    TK_entity_set     "entity_set"
 %token <val_token>    TK_extend_parameter "extend_parameter"
@@ -543,6 +544,7 @@ ompp_declarative_island:
 	| decl_link             { pc.InitializeForCxx(); }
 	| decl_entity_set       { pc.InitializeForCxx(); }
 	| decl_table            { pc.InitializeForCxx(); }
+	| decl_developer_table  { pc.InitializeForCxx(); }
 	;
 
 /*
@@ -1254,23 +1256,17 @@ decl_simple_agentvar:
     ;
 
 decl_agent_array:
-        decl_type_part[type_symbol] SYMBOL[agentvar] "[" SYMBOL[first_dim] "]" // The presence of a first dimension is what distinguishes this as an agent array symbol
-                        {
-                            //auto *das = new AgentArraySymbol( $agentvar, pc.get_agent_context(), $type_symbol, nullptr, @agentvar );
-                        }
-            dimension_list ";"
+        decl_type_part[type_symbol] SYMBOL[agentvar] dimension_list ";"
                         {
                             list<Symbol *> *pls = $dimension_list;
-                            if (pls != nullptr) {
-                                // Add the subsequent dimensions to the AgentArraySymbol
-                                // use 'swap' or splice... or whatever it is
-                                pls->clear();
-                                delete pls;
-                            }
+                            // Add dimensions to the AgentArraySymbol
+                            // use 'swap' or splice... or whatever it is
+                            pls->clear();
+                            delete pls;
                         }
     ;
 
-dimension_list: // A list of dimensions enclosed by [].  If no elements, is nullptr
+dimension_list: // A non-empty list of dimensions enclosed by []
         "[" SYMBOL[dim] "]"
                         {
                             // start a new dimension list
@@ -1282,10 +1278,6 @@ dimension_list: // A list of dimensions enclosed by [].  If no elements, is null
                             // append to existing dimension list
                             $pls->push_back($dim);
                             $$ = $pls;
-                        }
-      | /* nothing */
-                        {
-                            $$ = nullptr;
                         }
     ;
 
@@ -1895,6 +1887,79 @@ table_operator:
       TK_interval
     | TK_event
     ;
+
+/*
+ * developer_table
+ */
+
+decl_developer_table:
+      "developer_table" SYMBOL[dev_table]
+                        {
+                            $dev_table;
+                            //TODO
+                            //DeveloperTableSymbol *dev_table = nullptr;
+
+                            //if ($dev_table->is_base_symbol()) {
+                            //    // Morph Symbol to TableSymbol
+                            //    dev_table = new TableSymbol( $dev_table, $agent, @table );
+                            //    assert(dev_table);
+                            //    $dev_table = dev_table;
+                            //}
+                            //else {
+                            //    // re-declaration
+                            //    pc.redeclaration = true;
+                            //    dev_table = dynamic_cast<DeveloperTableSymbol *>($dev_table);
+                            //    assert(dev_table); // grammar/logic guarantee
+                            //    // TODO Raise error?
+                            //}
+                            //// Set developer table context for body of table declaration
+                            //pc.set_developer_table_context( dev_table );
+                        }
+            "{" developer_table_dimension_list "}" ";"
+                        {
+                            // TODO
+                            //// No developer table context
+                            //pc.set_developer_table_context( nullptr );
+                        }
+    | "developer_table" error ";"
+    ;
+
+developer_table_dimension_list:
+    developer_table_dimension
+  | developer_table_dimension_list "*" developer_table_dimension
+  ;
+
+developer_table_dimension:
+    SYMBOL[enumeration] table_margin_opt
+                        {
+                            $table_margin_opt;
+                            // add $enumeration to developer table's dimension_list
+                            //pc.get_developer_table_context()->dimension_list.push_back($enumeration->stable_pp());
+                            // add margin specifier to developer table's margin_list
+                            // (maintained in parallel with dimension_list)
+                            //bool margin_opt = $table_margin_opt == token::TK_PLUS;
+                            //pc.get_developer_table_context()->margin_list.push_back(margin_opt);
+                        }
+    | "{" developer_table_analysis_list "}"
+    ;
+
+developer_table_analysis_list:
+      SYMBOL[analysis_symbol]
+                        {
+                            $analysis_symbol;
+                            // add $analysis_symbol to developer table's analysis_list
+                            // morph to DeveloperTableAnalysisSymbol
+                            //pc.get_developer_table_context()->analysis_list.push_back($analysis->stable_pp());
+                        }
+    | developer_table_analysis_list "," SYMBOL[analysis_symbol]
+                        {
+                            $analysis_symbol;
+                            // add $analysis_symbol to developer table's analysis_list
+                            // morph to DeveloperTableAnalysisSymbol
+                            //pc.get_developer_table_context()->analysis_list.push_back($analysis->stable_pp());
+                        }
+	;
+
 
 /*
  * agentvar in an expression
