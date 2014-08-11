@@ -443,7 +443,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %left  "*" "/" "%"        // precedence 5
 %left  ".*" "->*"         // precedence 4
 %right PREFIX_INCREMENT PREFIX_DECREMENT UNARY_PLUS UNARY_MINUS "!" "~" TYPE_CAST INDIRECTION ADDRESS_OF "sizeof" "new" "delete" // precedence 3
-%left  POSTFIX_INCREMENT POSTFIX_DECREMENT FUNCTION_CALL "[" ARRAY_SUBSCRIPTING "." "->"  // precedence 2
+%left  POSTFIX_INCREMENT POSTFIX_DECREMENT '(' FUNCTION_CALL "[" ARRAY_SUBSCRIPTING "." "->"  // precedence 2
 %left  "::"              // precedence 1
 
 %type  <val_int>        option_value
@@ -1397,6 +1397,9 @@ event_priority_opt:
  */
 
 expr_for_agentvar[result]:
+    //
+    // expression terminals
+    // 
       expr_symbol[sym]
                         {
 	                        $result = new ExprForAgentVarSymbol( $sym );
@@ -1528,13 +1531,25 @@ expr_for_agentvar[result]:
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
     //
-    // function-syle cast
+    // function-syle cast to numeric type
     //
-    | decl_type_part[type] "("[op] expr_for_agentvar[arg] ")"
+    | numeric_type "("[op] expr_for_agentvar[arg] ")"
                         {
-                            // function-style cast
-	                        auto type = new ExprForAgentVarSymbol( $type );
+                            // convert numeric_type from a token to a type symbol
+                            auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$numeric_type));
+                            assert(type_symbol); // grammar/initialization guarantee
+	                        auto type = new ExprForAgentVarSymbol( type_symbol );
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, type, $arg );
+                        }
+    //
+    // function call, or function-syle cast to a model-specific type, e.g. a classification
+    //
+    | SYMBOL[sym] "("[op] expr_for_agentvar[arg] ")"
+                        {
+                            // turn the function (or type) symbol into an expression terminal node
+	                        auto func = new ExprForAgentVarSymbol( $sym );
+                            // note that arg can be an argument list because the grammar recognizes ',' as an expression operator
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, func, $arg );
                         }
     //
     // grouping
@@ -1560,6 +1575,7 @@ decl_type_part:
                         }
     | SYMBOL[type_symbol]
                         {
+                            // will be disambiguated in post-parse phase
                             $decl_type_part = $type_symbol;
                         }
     ;
@@ -1711,9 +1727,9 @@ entity_set_dimension_list:
     ;
 
 entity_set_dimension:
-      "[" SYMBOL[agentvar] "]"
+      "[" expr_symbol[agentvar] "]"
                         {
-                            // add $agentvar to entity set's dimension_list
+                            // add agentvar to entity set's dimension_list
                             pc.get_entity_set_context()->dimension_list.push_back($agentvar->stable_pp());
                         }
     ;
