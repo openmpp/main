@@ -443,7 +443,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %left  "*" "/" "%"        // precedence 5
 %left  ".*" "->*"         // precedence 4
 %right PREFIX_INCREMENT PREFIX_DECREMENT UNARY_PLUS UNARY_MINUS "!" "~" TYPE_CAST INDIRECTION ADDRESS_OF "sizeof" "new" "delete" // precedence 3
-%left  POSTFIX_INCREMENT POSTFIX_DECREMENT FUNCTION_CALL ARRAY_SUBSCRIPTING "." "->"  // precedence 2
+%left  POSTFIX_INCREMENT POSTFIX_DECREMENT FUNCTION_CALL "[" ARRAY_SUBSCRIPTING "." "->"  // precedence 2
 %left  "::"              // precedence 1
 
 %type  <val_int>        option_value
@@ -1416,6 +1416,9 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarLiteral( $literal );
                         }
+    //
+    // arithmetic
+    // 
     | "+"[op] expr_for_agentvar[right] %prec UNARY_PLUS
                         {
 	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
@@ -1444,10 +1447,9 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "~"[op] expr_for_agentvar[right]
-                        {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
-                        }
+    //
+    // bit-wise operations
+    // 
     | expr_for_agentvar[left] "|"[op] expr_for_agentvar[right]
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
@@ -1460,6 +1462,10 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
+    | "~"[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+                        }
     | expr_for_agentvar[left] "<<"[op] expr_for_agentvar[right]
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
@@ -1468,6 +1474,9 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
+    //
+    // logical
+    // 
     | "!"[op] expr_for_agentvar[right]
                         {
 	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
@@ -1480,6 +1489,9 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
+    //
+    // comparison operations
+    // 
     | expr_for_agentvar[left] "=="[op] expr_for_agentvar[right]
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
@@ -1504,9 +1516,28 @@ expr_for_agentvar[result]:
                         {
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
+    //
+    // ternary conditional
+    // 
     | expr_for_agentvar[cond] "?" expr_for_agentvar[first] ":" expr_for_agentvar[second] 
                         {
 	                        $result = new ExprForAgentVarTernaryOp( $cond, $first, $second );
+                        }
+    //
+    // array subscripting
+    //
+
+    //| expr_symbol[sym] "["[op] expr_for_agentvar[right] "]" %prec ARRAY_SUBSCRIPTING
+    //                    {
+    //                        // array indexing (one pair of brackets only)
+    //	                    auto terminal = new ExprForAgentVarSymbol( $sym );
+    //                        assert(terminal);
+    //	                    $result = new ExprForAgentVarBinaryOp( (token_type) $op, terminal, $right );
+    //                    }
+    | expr_for_agentvar[left] "["[op] expr_for_agentvar[right] "]" %prec ARRAY_SUBSCRIPTING
+                        {
+                            // array indexing
+                            $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
     | decl_type_part[type] "("[op] expr_for_agentvar[arg] ")"
                         {
@@ -1514,6 +1545,9 @@ expr_for_agentvar[result]:
 	                        auto type = new ExprForAgentVarSymbol( $type );
 	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, type, $arg );
                         }
+    //
+    // grouping
+    //
     | "(" expr_for_agentvar[expr] ")"
                         {
 	                        $result = $expr;

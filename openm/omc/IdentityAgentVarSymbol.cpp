@@ -180,6 +180,13 @@ string IdentityAgentVarSymbol::cxx_expression(const ExprForAgentVar *node)
                 + cxx_expression(binary_op->right)
                 + ")";
         }
+        else if (binary_op->op == token::TK_LEFT_BRACKET) {
+            // array indexing
+            result = cxx_expression(binary_op->left)
+                + "["
+                + cxx_expression(binary_op->right)
+                + "]";
+        }
         else {
             // infix binary operator
             result = "("
