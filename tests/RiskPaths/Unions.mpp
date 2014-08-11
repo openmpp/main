@@ -1,0 +1,224 @@
+///////////////////////////////////////////////////////////////////////////
+// Union formation & dissolution events: unions.mpp                      //
+///////////////////////////////////////////////////////////////////////////
+
+/* NOTE(Unions, EN)
+	This module simulates first and second union formations and 
+	first and second union dissolutions.
+*/
+
+///////////////////////////////////////////////////////////////////////////
+// Parameter definitions
+
+partition UNION_DURATION		//EN Duration of current union
+{
+	1, 3, 5, 9, 13
+};
+
+partition DISSOLUTION_DURATION	//EN Duration since union dissolution
+{
+	2, 6, 10, 15
+};
+
+classification UNION_ORDER 		//EN Union order
+{
+	UO_FIRST,		//EN First union 				
+	UO_SECOND		//EN Second union 				
+};
+
+
+parameters 							
+{
+	//EN Age baseline for first union formation
+	double  AgeBaselineForm1[AGEINT_STATE];		
+
+	//EN Union Duration Baseline of Dissolution
+	double  UnionDurationBaseline[UNION_ORDER][UNION_DURATION];	
+
+	//EN Separation Duration Baseline of 2nd Formation
+	double  SeparationDurationBaseline[DISSOLUTION_DURATION];	
+};
+
+parameter_group P03_Unions 			//EN Union parameters 
+{
+	AgeBaselineForm1, UnionDurationBaseline, SeparationDurationBaseline
+};
+
+///////////////////////////////////////////////////////////////////////////
+// Actor states and event definitions
+
+actor Person 
+{
+	//EN Union counter
+	int unions = {0};	
+
+	//EN Union status
+	UNION_STATE	union_status = {US_NEVER_IN_UNION};            	
+
+	//EN Currently in an union 
+	logical	in_union = (union_status == US_FIRST_UNION_PERIOD1 
+						|| union_status == US_FIRST_UNION_PERIOD2
+						|| union_status == US_SECOND_UNION);
+
+	//EN Time interval since union formation
+	int		union_duration = self_scheduling_split( 
+				active_spell_duration( in_union, TRUE), UNION_DURATION);
+
+	//EN Time interval since union dissolution
+	int		dissolution_duration = self_scheduling_split (
+				active_spell_duration( 
+				union_status, US_AFTER_FIRST_UNION), DISSOLUTION_DURATION);
+	
+
+	//EN Time of union period change
+	TIME	union_period2_change = {TIME_INFINITE};			
+	
+	//EN First union formation event
+	event	timeUnion1FormationEvent, Union1FormationEvent;  	
+	
+	//EN First union dissolution event
+	event	timeUnion1DissolutionEvent, Union1DissolutionEvent; 
+	
+	//EN Second union dissolution event
+	event	timeUnion2DissolutionEvent, Union2DissolutionEvent; 
+	
+	//EN Second union formation event 
+	event	timeUnion2FormationEvent, Union2FormationEvent;  	
+	
+	//EN Union period change event 
+	event	timeUnionPeriod2Event, UnionPeriod2Event;			
+};  
+
+///////////////////////////////////////////////////////////////////////////
+// Clock event implementation
+
+
+/*NOTE(Person.UnionPeriod2Event, EN)
+	Clock event which changes the union duration state union_status from
+	US_FIRST_UNION_PERIOD1 to US_FIRST_UNION_PERIOD2. This event occurs 
+	after 3 years in 1st union. The clock is set at first union formation.
+*/
+TIME Person::timeUnionPeriod2Event()		
+{
+	return union_period2_change;
+}
+											
+void Person::UnionPeriod2Event()			
+{
+	if (union_status == US_FIRST_UNION_PERIOD1)
+	{
+		union_status = US_FIRST_UNION_PERIOD2; 
+	}
+	union_period2_change = TIME_INFINITE;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Event implementation
+
+/*NOTE(Person.Union1FormationEvent, EN)
+	The first union formation event. Union events are only simulated for 
+	childless women, as pregnancy censors the union career.
+*/
+TIME Person::timeUnion1FormationEvent()							
+{
+	double	dHazard = 0;
+	TIME 	event_time = TIME_INFINITE;
+
+	if (union_status == US_NEVER_IN_UNION && parity_status == PS_CHILDLESS)		
+	{
+		dHazard = AgeBaselineForm1[age_status];	
+		if (dHazard > 0)
+		{
+			event_time = WAIT(-log(RandUniform(4)) / dHazard);						
+		}
+	}
+	return event_time;											
+}
+
+void Person::Union1FormationEvent()								
+{
+	unions++;													
+	union_status = US_FIRST_UNION_PERIOD1;						
+	union_period2_change = WAIT(3);
+} 
+
+/*NOTE(Person.Union2FormationEvent, EN)
+	The second union formation event. Union events are only simulated for 
+	childless women, as pregnancy censors the union career.
+*/
+TIME Person::timeUnion2FormationEvent()							
+{
+	double	dRandDur = 0, dHazard = 0;
+	TIME 	event_time = TIME_INFINITE;
+
+	if (union_status == US_AFTER_FIRST_UNION && parity_status == PS_CHILDLESS) 		
+	{
+		dHazard = SeparationDurationBaseline[dissolution_duration];	
+		if (dHazard > 0)
+		{
+			dRandDur = -log(RandUniform(7)) / dHazard;			
+			event_time = WAIT(dRandDur);						
+		}
+	}
+	return event_time;											
+}
+
+
+void Person::Union2FormationEvent()								
+{
+	unions++;													
+	union_status = US_SECOND_UNION;								
+}
+
+/*NOTE(Person.Union1DissolutionEvent, EN)
+	The first union dissolution event. Union events are only simulated for 
+	childless women, as pregnancy censors the union career.
+*/
+TIME Person::timeUnion1DissolutionEvent()						
+{
+	double	dHazard = 0;
+	TIME	event_time = TIME_INFINITE;
+
+	if ((union_status == US_FIRST_UNION_PERIOD1 || 
+		union_status == US_FIRST_UNION_PERIOD2) && parity_status == PS_CHILDLESS)		
+	{
+		dHazard = UnionDurationBaseline[UO_FIRST][union_duration];	
+		if (dHazard > 0)
+		{
+			event_time = WAIT(-log(RandUniform(5)) / dHazard);						
+		}
+	}
+	return event_time;											
+}
+
+void Person::Union1DissolutionEvent()							
+{
+	union_status = US_AFTER_FIRST_UNION;						
+} 
+
+/*NOTE(Person.Union2DissolutionEvent, EN)
+	The second union dissolution event. Union events are only simulated for 
+	childless women, as pregnancy censors the union career.
+*/
+TIME Person::timeUnion2DissolutionEvent()						
+{
+	double	dHazard = 0;
+	TIME	event_time = TIME_INFINITE;
+
+	if (union_status == US_SECOND_UNION && parity_status == PS_CHILDLESS) 		
+	{
+		dHazard = UnionDurationBaseline[UO_SECOND][union_duration];	
+		if (dHazard > 0)
+		{
+			event_time = WAIT(-log(RandUniform(6)) / dHazard);						
+		}
+	}
+	return event_time;											
+}
+
+void Person::Union2DissolutionEvent()	
+{
+	union_status = US_AFTER_SECOND_UNION;
+} 
+
+

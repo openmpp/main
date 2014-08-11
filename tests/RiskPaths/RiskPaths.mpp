@@ -1,0 +1,79 @@
+///////////////////////////////////////////////////////////////////////////
+// Main simulation engine: RiskPaths.mpp	DO NOT CHANGE THIS FILE      //
+///////////////////////////////////////////////////////////////////////////
+
+/* NOTE(RiskPaths, EN)
+	This module carrying the same name as the model (RiskPaths)	contains 
+	some basic model settings and the model's simulation engine. When 
+	creating a new model, such a file is automatically created by the
+	Modgen model wizard. Usually no changes are necessary in its code.
+*/
+
+///////////////////////////////////////////////////////////////////////////
+// Model settings
+
+version 3, 0, 0, 0;							// Model version
+model_type case_based;					// Model type
+time_type double;						// Continuous time model
+
+languages								// Language options
+{
+	EN, // English						
+	FR	// Français
+};
+
+///////////////////////////////////////////////////////////////////////////
+// Simulation Engine
+
+
+// The CaseSimulation function simulates a single case,
+// and is called by the Simulation function declared later
+// in this module.
+
+void CaseSimulation()
+{
+	// Initialize the person actor
+	Person *prPerson = NULL;
+	prPerson = new Person();
+	prPerson->Start();
+
+	// Continue processing events until there are no more.
+	while (!gpoEventQueue->Empty())
+	{
+    	if (gbCancelled || gbErrors) 
+    	{
+			// Simulation cancelled by user, or run-time errors occurred.
+			// Terminate the case immediately.
+    		gpoEventQueue->FinishAllActors();
+    	}
+		else 
+		{
+			// Age actor to the time of the next event.
+			gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
+
+			// Implement the next event.
+			gpoEventQueue->Implement();
+		}
+	}
+}
+
+// The Simulation function is called by Modgen to simulate a set of cases.
+void Simulation()
+{
+	long  lCase = 0; 	// counter for cases simulated
+
+	// Loop through all cases.
+	for ( lCase = 0; lCase < CASES() && !gbInterrupted 
+		  && !gbCancelled && !gbErrors; lCase++ )
+	{
+		// Tell the Modgen run-time to prepare to simulate a new case.
+		StartCase(); 
+
+		// Call the CaseSimulation function defined earlier in this module.
+		CaseSimulation(); 
+
+		// Tell the Modgen run-time that the case has been completed.
+		SignalCase();
+	}
+}
+							

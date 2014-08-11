@@ -1,0 +1,77 @@
+///////////////////////////////////////////////////////////////////////////
+// Fertility.mpp                                                         //
+///////////////////////////////////////////////////////////////////////////
+
+/* NOTE(Fertility, EN)
+	This module simulates first pregnancy events.
+*/
+
+///////////////////////////////////////////////////////////////////////////
+// Parameter definitions
+
+parameters 														
+{
+	//EN Age baseline for first pregnancy 		
+	double  AgeBaselinePreg1[AGEINT_STATE];		
+
+	//EN Relative risks of union status on first pregnancy
+	double  UnionStatusPreg1[UNION_STATE];						
+};
+
+parameter_group P02_Ferility 			//EN Fertility  
+{
+	AgeBaselinePreg1, UnionStatusPreg1
+};
+
+///////////////////////////////////////////////////////////////////////////
+// Actor states and event definitions
+
+classification PARITY_STATE 			//EN Parity status
+{
+	PS_CHILDLESS,						//EN Childless
+	PS_PREGNANT							//EN Pregnant
+};
+
+actor Person									               
+{
+	//EN Parity status derived from the state parity
+	PARITY_STATE parity_status = {PS_CHILDLESS};	
+
+
+	//EN First pregnancy event 
+	event timeFirstPregEvent, FirstPregEvent;			 
+};  
+
+///////////////////////////////////////////////////////////////////////////
+// Event implementation
+
+/*NOTE(Person.FirstPregEvent, EN)
+	The first pregnancy event. This is the main event of analysis and
+	censures all future union events.
+*/
+
+TIME Person::timeFirstPregEvent()						
+{
+	double dHazard = 0;
+	TIME event_time = TIME_INFINITE;
+	if (parity_status == PS_CHILDLESS)  			
+	{														
+		dHazard = AgeBaselinePreg1[age_status]
+		  * UnionStatusPreg1[union_status];
+	    if (dHazard > 0)
+	    {											
+			event_time = WAIT(-log(RandUniform(1)) / dHazard);
+		}
+  }
+  return event_time;								
+}
+
+void Person::FirstPregEvent()						
+{													
+	parity_status = PS_PREGNANT;										 	
+} 
+
+
+
+
+

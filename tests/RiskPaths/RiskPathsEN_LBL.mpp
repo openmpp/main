@@ -1,0 +1,174 @@
+// English
+
+// (just Modgen-generated labels / Étiquettes générées par Modgen seulement)
+
+
+
+//==============================/
+//                              /
+// classification               /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// range                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// partition                    /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// parameter group              /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// parameter                    /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// actor                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// actor Person                 /
+//==============================/
+
+
+
+
+     //==============================/
+     // event                        /
+     //==============================/
+
+
+     //LABEL ( Person.FirstPregEvent, EN ) FirstPregEvent
+     //LABEL ( Person.Union1DissolutionEvent, EN ) Union1DissolutionEvent
+     //LABEL ( Person.Union1FormationEvent, EN ) Union1FormationEvent
+     //LABEL ( Person.Union2DissolutionEvent, EN ) Union2DissolutionEvent
+     //LABEL ( Person.Union2FormationEvent, EN ) Union2FormationEvent
+     //LABEL ( Person.UnionPeriod2Event, EN ) UnionPeriod2Event
+
+
+//==============================/
+//                              /
+// table group                  /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// table                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// table T01_LifeExpectancy     /
+//==============================/
+
+
+     //LABEL ( T01_LifeExpectancy.Dim0, EN ) Selected Quantities
+
+
+
+
+//=================================/
+// table T02_TotalPopulationByYear /
+//=================================/
+
+
+     //LABEL ( T02_TotalPopulationByYear.Dim1, EN ) Selected Quantities
+
+
+
+
+//==============================/
+// table T03_FertilityByAge     /
+//==============================/
+
+
+     //LABEL ( T03_FertilityByAge.Dim1, EN ) Selected Quantities
+
+
+
+
+//====================================/
+// table T04_FertilityRatesByAgeGroup /
+//====================================/
+
+
+     //LABEL ( T04_FertilityRatesByAgeGroup.Dim0, EN ) Fertility
+
+
+
+
+//==============================/
+// table T05_CohortFertility    /
+//==============================/
+
+
+     //LABEL ( T05_CohortFertility.Dim0, EN ) Selected Quantities
+
+
+
+
+//==============================/
+// table T06_BirthsByUnion      /
+//==============================/
+
+
+     //LABEL ( T06_BirthsByUnion.Dim0, EN ) Number of pregnancies
+
+
+
+
+//===============================/
+// table T07_FirstUnionFormation /
+//===============================/
+
+
+     //LABEL ( T07_FirstUnionFormation.Dim1, EN ) First union formation risk
+
+
+
+
+//==============================/
+//                              /
+// user table                   /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// module                       /
+//                              /
+//==============================/
+

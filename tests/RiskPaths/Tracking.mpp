@@ -1,0 +1,48 @@
+///////////////////////////////////////////////////////////////////////////
+// Tracking.mpp                                                          //
+///////////////////////////////////////////////////////////////////////////
+
+/* NOTE(Tracking, EN)
+	This module defines the states for BioBrowser tracking.
+	Hazard rates calculated in this module as derived states
+	are used for tracking purposes only.
+*/
+
+actor Person 
+{
+	//EN Pregnancy hazard
+	double preg_hazard = (parity_status == PS_CHILDLESS) ?  
+		AgeBaselinePreg1[age_status] * 
+		UnionStatusPreg1[union_status] : 0; 
+
+	//EN Union formation hazard
+	double formation_hazard = (union_status != US_NEVER_IN_UNION 
+		&& union_status != US_AFTER_FIRST_UNION) ? 0 : 
+		((union_status == US_NEVER_IN_UNION) ? 
+		AgeBaselineForm1[age_status] : 
+		SeparationDurationBaseline[dissolution_duration] );
+
+	//EN Union dissolution hazard
+	double dissolution_hazard = (union_status != US_FIRST_UNION_PERIOD1 && 
+		union_status != US_FIRST_UNION_PERIOD2 && 
+		union_status != US_SECOND_UNION) ? 0 : 
+		((union_status == US_SECOND_UNION) ? 
+		UnionDurationBaseline[UO_SECOND][union_duration] : 
+		UnionDurationBaseline[UO_FIRST][union_duration]);		
+};
+
+track Person
+{
+	integer_age,
+	life_status,
+	age_status,
+	union_duration,
+	dissolution_duration,
+	unions,
+	parity_status,
+	union_status,
+	preg_hazard,
+	formation_hazard,
+	dissolution_hazard
+};	
+
