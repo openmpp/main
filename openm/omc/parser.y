@@ -470,6 +470,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Symbol>    decl_type_part
 %type  <pval_Symbol>    expr_symbol
 %type  <pval_Symbol>    derived_agentvar
+%type  <pval_Symbol>    any_agentvar
 %type  <pval_Symbol>    link_to_agentvar
 %type  <pval_Literal>   event_priority_opt
 %type  <pval_ConstantSymbol>  constant
@@ -2008,8 +2009,8 @@ decl_developer_table:
                             //DeveloperTableSymbol *dev_table = nullptr;
 
                             //if ($dev_table->is_base_symbol()) {
-                            //    // Morph Symbol to TableSymbol
-                            //    dev_table = new TableSymbol( $dev_table, $agent, @table );
+                            //    // Morph Symbol to DeveloperTableSymbol
+                            //    dev_table = new DeveloperTableSymbol( $dev_table, $agent, @table );
                             //    assert(dev_table);
                             //    $dev_table = dev_table;
                             //}
@@ -2110,7 +2111,7 @@ link_to_agentvar:
                         {
                             // Tell the scanner not to apply agent scope resolution to the following 'word'
                             // in the input stream, but just return a STRING instead.  That's because the agent context
-                            // depends on the nature of the symbol on the "->", whose declaration may not yet have been encountered.
+                            // depends on the nature of the symbol on the left of "->", whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
             STRING[agentvar]
@@ -2126,6 +2127,11 @@ link_to_agentvar:
  * derived agentvars
  */
 
+any_agentvar:
+      SYMBOL
+    | derived_agentvar
+        ;
+
 derived_agentvar:
     /*
      * derived agentvars - duration family
@@ -2134,19 +2140,19 @@ derived_agentvar:
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, @kw );
                         }
-    | TK_duration[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_duration[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_weighted_duration[kw] "(" SYMBOL[weight] ")"
+    | TK_weighted_duration[kw] "(" any_agentvar[weight] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, static_cast<Symbol *>(nullptr), static_cast<ConstantSymbol *>(nullptr), $weight, @kw );
                         }
-    | TK_weighted_duration[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[weight] ")"
+    | TK_weighted_duration[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[weight] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $weight, @kw );
                         }
-    | TK_weighted_cumulation[kw] "(" SYMBOL[observed] "," SYMBOL[weight] ")"
+    | TK_weighted_cumulation[kw] "(" any_agentvar[observed] "," any_agentvar[weight] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $weight, @kw );
                         }
@@ -2154,27 +2160,27 @@ derived_agentvar:
     /*
      * derived agentvars - spell family
      */
-    | TK_active_spell_duration[kw] "(" SYMBOL[spell] "," constant ")"
+    | TK_active_spell_duration[kw] "(" any_agentvar[spell] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, @kw );
                         }
-    | TK_completed_spell_duration[kw] "(" SYMBOL[spell] "," constant ")"
+    | TK_completed_spell_duration[kw] "(" any_agentvar[spell] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, @kw );
                         }
-    | TK_active_spell_weighted_duration[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[weight]  ")"
+    | TK_active_spell_weighted_duration[kw] "(" any_agentvar[spell] "," constant "," any_agentvar[weight]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $weight, @kw );
                         }
-    | TK_completed_spell_weighted_duration[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[weight]  ")"
+    | TK_completed_spell_weighted_duration[kw] "(" any_agentvar[spell] "," constant "," any_agentvar[weight]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $weight, @kw );
                         }
-    | TK_active_spell_delta[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[delta]  ")"
+    | TK_active_spell_delta[kw] "(" any_agentvar[spell] "," constant "," any_agentvar[delta]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $delta, @kw );
                         }
-    | TK_completed_spell_delta[kw] "(" SYMBOL[spell] "," constant "," SYMBOL[delta]  ")"
+    | TK_completed_spell_delta[kw] "(" any_agentvar[spell] "," constant "," any_agentvar[delta]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $spell, $constant, $delta, @kw );
                         }
@@ -2182,19 +2188,19 @@ derived_agentvar:
     /*
      * derived agentvars - transition occurrence family
      */
-    | TK_undergone_entrance[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_undergone_entrance[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_undergone_exit[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_undergone_exit[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_undergone_transition[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] ")"
+    | TK_undergone_transition[kw] "(" any_agentvar[observed] "," constant[from] "," constant[to] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, @kw );
                         }
-    | TK_undergone_change[kw] "(" SYMBOL[observed] ")"
+    | TK_undergone_change[kw] "(" any_agentvar[observed] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, @kw );
                         }
@@ -2202,19 +2208,19 @@ derived_agentvar:
     /*
      * derived agentvars - transition count family
      */
-    | TK_entrances[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_entrances[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_exits[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_exits[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_transitions[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] ")"
+    | TK_transitions[kw] "(" any_agentvar[observed] "," constant[from] "," constant[to] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, @kw );
                         }
-    | TK_changes[kw] "(" SYMBOL[observed] ")"
+    | TK_changes[kw] "(" any_agentvar[observed] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, @kw );
                         }
@@ -2222,35 +2228,35 @@ derived_agentvar:
     /*
      * derived agentvars - transition observer family - value
      */
-    | TK_value_at_first_entrance[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+    | TK_value_at_first_entrance[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
                         }
-    | TK_value_at_latest_entrance[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+    | TK_value_at_latest_entrance[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
                         }
-    | TK_value_at_first_exit[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+    | TK_value_at_first_exit[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
                         }
-    | TK_value_at_latest_exit[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+    | TK_value_at_latest_exit[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
                         }
-    | TK_value_at_first_transition[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] "," SYMBOL[value]  ")"
+    | TK_value_at_first_transition[kw] "(" any_agentvar[observed] "," constant[from] "," constant[to] "," any_agentvar[value]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value, @kw );
                         }
-    | TK_value_at_latest_transition[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] "," SYMBOL[value]  ")"
+    | TK_value_at_latest_transition[kw] "(" any_agentvar[observed] "," constant[from] "," constant[to] "," any_agentvar[value]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value, @kw );
                         }
-    | TK_value_at_first_change[kw] "(" SYMBOL[observed] "," SYMBOL[value] ")"
+    | TK_value_at_first_change[kw] "(" any_agentvar[observed] "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $value, @kw );
                         }
-    | TK_value_at_latest_change[kw] "(" SYMBOL[observed] "," SYMBOL[value] ")"
+    | TK_value_at_latest_change[kw] "(" any_agentvar[observed] "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $value, @kw );
                         }
@@ -2258,19 +2264,19 @@ derived_agentvar:
     /*
      * derived agentvars - transition observer family - sum
      */
-    | TK_value_at_entrances[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+    | TK_value_at_entrances[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
                         }
-    | TK_value_at_exits[kw] "(" SYMBOL[observed] "," constant "," SYMBOL[value] ")"
+    | TK_value_at_exits[kw] "(" any_agentvar[observed] "," constant "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value, @kw );
                         }
-    | TK_value_at_transitions[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] "," SYMBOL[value]  ")"
+    | TK_value_at_transitions[kw] "(" any_agentvar[observed] "," constant[from] "," constant[to] "," any_agentvar[value]  ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value, @kw );
                         }
-    | TK_value_at_changes[kw] "(" SYMBOL[observed] "," SYMBOL[value] ")"
+    | TK_value_at_changes[kw] "(" any_agentvar[observed] "," any_agentvar[value] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $value, @kw );
                         }
@@ -2278,11 +2284,11 @@ derived_agentvar:
     /*
      * derived agentvars - transformation family
      */
-    | TK_split[kw] "(" SYMBOL[observed] "," SYMBOL[partition] ")"
+    | TK_split[kw] "(" any_agentvar[observed] "," SYMBOL[partition] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
                         }
-    | TK_aggregate[kw] "(" SYMBOL[observed] "," SYMBOL[classification] ")"
+    | TK_aggregate[kw] "(" any_agentvar[observed] "," SYMBOL[classification] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), static_cast<Symbol *>(nullptr), $classification, @kw );
                         }
@@ -2290,19 +2296,19 @@ derived_agentvar:
     /*
      * derived agentvars - trigger family
      */
-    | TK_trigger_entrances[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_trigger_entrances[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_trigger_exits[kw] "(" SYMBOL[observed] "," constant ")"
+    | TK_trigger_exits[kw] "(" any_agentvar[observed] "," constant ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constant, @kw );
                         }
-    | TK_trigger_transitions[kw] "(" SYMBOL[observed] "," constant[from] "," constant[to] ")"
+    | TK_trigger_transitions[kw] "(" any_agentvar[observed] "," constant[from] "," constant[to] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, @kw );
                         }
-    | TK_trigger_changes[kw] "(" SYMBOL[observed] ")"
+    | TK_trigger_changes[kw] "(" any_agentvar[observed] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, @kw );
                         }
@@ -2310,23 +2316,23 @@ derived_agentvar:
     /*
      * derived agentvars - self-scheduling family
      */
-    | TK_duration_counter[kw] "(" SYMBOL[observed] "," constant[constnt] "," constant[interval] ")"
+    | TK_duration_counter[kw] "(" any_agentvar[observed] "," constant[constnt] "," constant[interval] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $interval, @kw );
                         }
-    | TK_duration_counter[kw] "(" SYMBOL[observed] "," constant[constnt] "," constant[interval]  "," constant[maxcount] ")"
+    | TK_duration_counter[kw] "(" any_agentvar[observed] "," constant[constnt] "," constant[interval]  "," constant[maxcount] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $interval, $maxcount, @kw );
                         }
-    | TK_duration_trigger[kw] "(" SYMBOL[observed] "," constant[constnt] "," constant[delay] ")"
+    | TK_duration_trigger[kw] "(" any_agentvar[observed] "," constant[constnt] "," constant[delay] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $delay, @kw );
                         }
-    | TK_self_scheduling_int[kw] "(" SYMBOL[observed] ")"
+    | TK_self_scheduling_int[kw] "(" any_agentvar[observed] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, @kw );
                         }
-    | TK_self_scheduling_split[kw] "(" SYMBOL[observed] "," SYMBOL[partition] ")"
+    | TK_self_scheduling_split[kw] "(" any_agentvar[observed] "," SYMBOL[partition] ")"
                         {
                             $derived_agentvar = DerivedAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition, @kw );
                         }

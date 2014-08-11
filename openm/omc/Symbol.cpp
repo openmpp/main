@@ -511,7 +511,7 @@ void Symbol::post_parse(int pass)
                 else {
                     // I don't think we should get here.  All symbols should be derived symbols at this point.
                     // A syntax error should have been detected earlier.
-                    pp_error("Unexpected error - symbol '" + name + "'");
+                    pp_error("Error - unresolved symbol '" + name + "'");
                     throw HelperException("Finish omc");
                 }
             }
@@ -772,7 +772,7 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
         else {
             // I don't think we should get here.  All symbols should be derived symbols at this point.
             // A syntax error should have been detected earlier.
-            pp_error(sym->decl_loc, "Unexpected error - symbol '" + sym->name + "'");
+            pp_error(sym->decl_loc, "Error - unresolved symbol '" + sym->name + "'");
             throw HelperException("Finish omc");
         }
     }

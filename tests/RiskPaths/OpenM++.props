@@ -2,10 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <PUBLISH_SCENARIO>1</PUBLISH_SCENARIO>
+    <PUBLISH_SCENARIO>0</PUBLISH_SCENARIO>
     <SCENARIO>Base</SCENARIO>
     <SCENARIO_PARMS_FOLDER>$(ProjectDir)$(SCENARIO)</SCENARIO_PARMS_FOLDER>
-    <ACTIVATE_FIXED_PARMS>0</ACTIVATE_FIXED_PARMS>
+    <ACTIVATE_FIXED_PARMS>1</ACTIVATE_FIXED_PARMS>
     <FIXED_PARMS_FOLDER>$(ProjectDir)Fixed</FIXED_PARMS_FOLDER>
   </PropertyGroup>
   <PropertyGroup />
