@@ -468,7 +468,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Literal>   signed_literal
 
 %type  <pval_Symbol>    decl_type_part
-%type  <pval_Symbol>    agentvar
+%type  <pval_Symbol>    expr_symbol
 %type  <pval_Symbol>    derived_agentvar
 %type  <pval_Symbol>    link_to_agentvar
 %type  <pval_Literal>   event_priority_opt
@@ -1393,11 +1393,11 @@ event_priority_opt:
 
 
 /*
- * agentvar expression
+ * expression for identity agentvar
  */
 
 expr_for_agentvar[result]:
-      agentvar[sym]
+      expr_symbol[sym]
                         {
 	                        $result = new ExprForAgentVarSymbol( $sym );
                         }
@@ -1722,10 +1722,10 @@ entity_set_filter_opt:
     "filter" expr_for_agentvar[root]
                         {
                             EntitySetSymbol *entity_set = pc.get_entity_set_context();
-                            // create an expression agentvar for the filter
+                            // create an identity agentvar for the filter
                             auto eav = new IdentityAgentVarSymbol("om_" + entity_set->name + "_filter", entity_set->agent, BoolSymbol::find(), $root, @root);
                             assert(eav); // out of memory check
-                            // note expression agentvar in entity set
+                            // note identity agentvar in entity set
                             entity_set->filter = eav;
                         }
     | /* nothing */
@@ -1781,10 +1781,10 @@ table_filter_opt:
     "[" expr_for_agentvar[root] "]"
                         {
                             TableSymbol *table = pc.get_table_context();
-                            // create an expression agentvar for the filter
+                            // create an identity agentvar for the filter
                             auto iav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
                             assert(iav); // out of memory check
-                            // note expression agentvar in table
+                            // note identity agentvar in table
                             table->filter = iav;
                         }
     | /* nothing */
@@ -1807,10 +1807,12 @@ table_margin_opt:
     ;
 
 table_dimension:
-    agentvar table_margin_opt
+    expr_symbol table_margin_opt
                         {
-                            // add $agentvar to table's dimension_list
-                            pc.get_table_context()->dimension_list.push_back($agentvar->stable_pp());
+                            Symbol *agentvar = $expr_symbol;
+                            assert(agentvar);
+                            // add agentvar to table's dimension_list
+                            pc.get_table_context()->dimension_list.push_back(agentvar->stable_pp());
                             // add margin specifier to table's margin_list
                             // (maintained in parallel with dimension_list)
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
@@ -1838,9 +1840,9 @@ table_expression_list:
 
 expr_for_table[result]:
       // Ex. income
-      agentvar
+      expr_symbol
                         {
-                            Symbol *agentvar = $agentvar;
+                            Symbol *agentvar = $expr_symbol;
                             assert(agentvar);
                             // Defaults are accumulator=sum, increment=delta, table operator=interval
                             token_type acc = token::TK_sum;
@@ -1850,9 +1852,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. max_value_in(income)
-    | modgen_cumulation_operator "(" agentvar ")"
+    | modgen_cumulation_operator "(" expr_symbol ")"
                         {
-                            Symbol *agentvar = $agentvar;
+                            Symbol *agentvar = $expr_symbol;
                             // Ex. token::TK_max
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
@@ -1862,9 +1864,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. sum(delta(income))
-    | table_accumulator[acc] "(" table_increment[incr] "(" agentvar ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" expr_symbol ")" ")"
                         {
-                            Symbol *agentvar = $agentvar;
+                            Symbol *agentvar = $expr_symbol;
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
                             token_type tabop = token::TK_interval;
@@ -1872,9 +1874,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. event(income)
-    | table_operator[tabop] "(" agentvar ")"
+    | table_operator[tabop] "(" expr_symbol ")"
                         {
-                            Symbol *agentvar = $agentvar;
+                            Symbol *agentvar = $expr_symbol;
                             token_type acc = token::TK_sum;
                             token_type incr = token::TK_delta;
                             token_type tabop = (token_type) $tabop;
@@ -1882,9 +1884,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. max_value_in(event(income))
-    | modgen_cumulation_operator "(" table_operator[tabop] "(" agentvar ")" ")"
+    | modgen_cumulation_operator "(" table_operator[tabop] "(" expr_symbol ")" ")"
                         {
-                            Symbol *agentvar = $agentvar;
+                            Symbol *agentvar = $expr_symbol;
                             // Ex. token::TK_max
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
@@ -1894,9 +1896,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. sum(delta(event(income)))
-    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" agentvar ")" ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" expr_symbol ")" ")" ")"
                         {
-                            Symbol *agentvar = $agentvar;
+                            Symbol *agentvar = $expr_symbol;
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
                             token_type tabop = (token_type) $tabop;
@@ -2052,10 +2054,10 @@ developer_table_analysis_list:
 
 
 /*
- * agentvar in an expression
+ * expr_symbol in an expression
  */
 
-agentvar:
+expr_symbol:
       SYMBOL
     | derived_agentvar
     | link_to_agentvar
@@ -2070,14 +2072,14 @@ agentvar:
                                 if (Symbol::exists(name, agent)) {
                                     auto av = Symbol::get_symbol(name, agent);
                                     assert(av);
-                                    $agentvar = av;
+                                    $$ = av;
                                 }
                                 else {
                                     auto bav = new BuiltinAgentVarSymbol(name, agent, NumericSymbol::find(token::TK_counter));
                                     assert(bav);
                                     // note unit agentvar in table
                                     table->unit = bav;
-                                    $agentvar = bav;
+                                    $$ = bav;
                                 }
                             }
                             else {
