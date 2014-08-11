@@ -165,12 +165,12 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_just_in_time, "just_in_time" },
     { token::TK_ldouble, "ldouble" },
     { token::TK_llong, "llong" },
-    { token::TK_max, "max" },
+    { token::TK_maximum, "maximum" },
     { token::TK_max_delta, "max_delta" },
     { token::TK_max_over, "max_over" },
     { token::TK_max_value_in, "max_value_in" },
     { token::TK_max_value_out, "max_value_out" },
-    { token::TK_min, "min" },
+    { token::TK_minimum, "minimum" },
     { token::TK_min_delta, "min_delta" },
     { token::TK_min_over, "min_over" },
     { token::TK_min_value_in, "min_value_in" },
@@ -1081,22 +1081,22 @@ const token_type Symbol::modgen_cumulation_operator_to_acc(const token_type& e)
         result = token::TK_sum;
         break;
     case token::TK_max_delta:
-        result = token::TK_max;
+        result = token::TK_maximum;
         break;
     case token::TK_max_value_in:
-        result = token::TK_max;
+        result = token::TK_maximum;
         break;
     case token::TK_max_value_out:
-        result = token::TK_max;
+        result = token::TK_maximum;
         break;
     case token::TK_min_delta:
-        result = token::TK_min;
+        result = token::TK_minimum;
         break;
     case token::TK_min_value_in:
-        result = token::TK_min;
+        result = token::TK_minimum;
         break;
     case token::TK_min_value_out:
-        result = token::TK_min;
+        result = token::TK_minimum;
         break;
     default:
         assert(false);

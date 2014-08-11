@@ -635,7 +635,7 @@ public:
      *
      * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
      *
-     * @return The associated accumulator, e.g. token::TK_max.
+     * @return The associated accumulator, e.g. token::TK_maximum.
      */
     static const token_type modgen_cumulation_operator_to_acc(const token_type& e);
 

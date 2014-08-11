@@ -112,10 +112,10 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
                 case token::TK_sum:
                     agg_func = "OM_SUM";
                     break;
-                case token::TK_min:
+                case token::TK_minimum:
                     agg_func = "OM_MIN";
                     break;
-                case token::TK_max:
+                case token::TK_maximum:
                     agg_func = "OM_MAX";
                     break;
                 default:

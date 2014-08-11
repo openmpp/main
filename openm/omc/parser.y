@@ -187,12 +187,12 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_just_in_time              "just_in_time"
 %token <val_token>    TK_ldouble                   "ldouble"
 %token <val_token>    TK_llong                     "llong"
-%token <val_token>    TK_max                       "max"
+%token <val_token>    TK_maximum                   "maximum"
 %token <val_token>    TK_max_delta                 "max_delta"
 %token <val_token>    TK_max_over                  "max_over"
 %token <val_token>    TK_max_value_in              "max_value_in"
 %token <val_token>    TK_max_value_out             "max_value_out"
-%token <val_token>    TK_min                       "min"
+%token <val_token>    TK_minimum                   "minimum"
 %token <val_token>    TK_min_delta                 "min_delta"
 %token <val_token>    TK_min_over                  "min_over"
 %token <val_token>    TK_min_value_in              "min_value_in"
@@ -1871,7 +1871,7 @@ expr_for_table[result]:
     | modgen_cumulation_operator "(" expr_symbol ")"
                         {
                             Symbol *agentvar = $expr_symbol;
-                            // Ex. token::TK_max
+                            // Ex. token::TK_maximum
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
@@ -1903,7 +1903,7 @@ expr_for_table[result]:
     | modgen_cumulation_operator "(" table_operator[tabop] "(" expr_symbol ")" ")"
                         {
                             Symbol *agentvar = $expr_symbol;
-                            // Ex. token::TK_max
+                            // Ex. token::TK_maximum
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
@@ -1975,8 +1975,8 @@ modgen_cumulation_operator:
 
 table_accumulator:
       TK_sum
-    | TK_min
-    | TK_max
+    | TK_minimum
+    | TK_maximum
     ;
 
 table_increment:

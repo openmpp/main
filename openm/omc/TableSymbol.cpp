@@ -236,10 +236,10 @@ CodeBlock TableSymbol::cxx_definition_global()
         case token::TK_sum:
             initial_value = "  0.0";
             break;
-        case token::TK_min:
+        case token::TK_minimum:
             initial_value = " DBL_MAX";
             break;
-        case token::TK_max:
+        case token::TK_maximum:
             initial_value = "-DBL_MAX";
             break;
         default:
@@ -376,11 +376,11 @@ void TableSymbol::build_body_process_increments()
         case token::TK_sum:
             c += accumulator_expr + " += dIncrement;";
             break;
-        case token::TK_min:
+        case token::TK_minimum:
             c += "double dAccumulator = " + accumulator_expr + ";";
             c += "if ( dIncrement < dAccumulator ) " + accumulator_expr + " = dIncrement;";
             break;
-        case token::TK_max:
+        case token::TK_maximum:
             c += "double dAccumulator = " + accumulator_expr + ";";
             c += "if ( dIncrement > dAccumulator ) " + accumulator_expr + " = dIncrement;";
             break;

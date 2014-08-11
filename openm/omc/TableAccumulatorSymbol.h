@@ -41,8 +41,8 @@ public:
     {
         // grammar guarantee
         assert(accumulator == token::TK_sum
-            || accumulator == token::TK_min
-            || accumulator == token::TK_max
+            || accumulator == token::TK_minimum
+            || accumulator == token::TK_maximum
             );
 
         // grammar guarantee
