@@ -986,24 +986,13 @@ track_list:
 	;
 
 track_filter_opt:
-	  "[" track_ongoing_filter_opt track_final_filter_opt "]"
-	| /* nothing */
-      ;
-
-track_ongoing_filter_opt:
-	  expr_for_agentvar[ongoing_root]
+	  "[" expr_for_agentvar[root] "]"
                         {
                             //TODO
-                            // store in AgentSymbol
-                        }
-	| /* nothing */
-      ;
-
-track_final_filter_opt:
-	  "," expr_for_agentvar[final_root]
-                        {
-                            //TODO
-                            // store in AgentSymbol
+                            // if topmost $root node is comma-operator "," drill down a level to find 
+                            // the ongoing filter (left) and the final filter (right)
+                            // else $root is the ongoing filter and there is no final filter
+                            // store filter(s) in IdentityAgentVarSymbol members of AgentSymbol
                         }
 	| /* nothing */
       ;
@@ -1526,19 +1515,21 @@ expr_for_agentvar[result]:
     //
     // array subscripting
     //
-
-    //| expr_symbol[sym] "["[op] expr_for_agentvar[right] "]" %prec ARRAY_SUBSCRIPTING
-    //                    {
-    //                        // array indexing (one pair of brackets only)
-    //	                    auto terminal = new ExprForAgentVarSymbol( $sym );
-    //                        assert(terminal);
-    //	                    $result = new ExprForAgentVarBinaryOp( (token_type) $op, terminal, $right );
-    //                    }
-    | expr_for_agentvar[left] "["[op] expr_for_agentvar[right] "]" %prec ARRAY_SUBSCRIPTING
+    | expr_for_agentvar[left] "["[op] expr_for_agentvar[right] "]"
                         {
                             // array indexing
                             $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
                         }
+    //
+    // comma-separated list
+    //
+    | expr_for_agentvar[left] ","[op] expr_for_agentvar[right]
+                        {
+	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                        }
+    //
+    // function-syle cast
+    //
     | decl_type_part[type] "("[op] expr_for_agentvar[arg] ")"
                         {
                             // function-style cast
