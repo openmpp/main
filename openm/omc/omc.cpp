@@ -420,6 +420,7 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
         try {
             theLog->logFormatted("Parsing %s", full_name.c_str());
             string normalized_full_name = replaceAll(full_name, "\\", "/");
+            *markup_stream << endl; // required in case last line of previous file had no trailing newline
             *markup_stream << "#line 1 \"" << normalized_full_name << "\"" << endl;
 
             // create new instance of parser-scanner driver for each source file

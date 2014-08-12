@@ -243,6 +243,14 @@ string IdentityAgentVarSymbol::cxx_expression(const ExprForAgentVar *node)
                 + cxx_expression(binary_op->right)
                 + "]";
         }
+        else if (binary_op->op == token::TK_COMMA) {
+            // infix "," binary operator - do not enclose in parentheses 
+            result = 
+                  cxx_expression(binary_op->left)
+                + ", "
+                + cxx_expression(binary_op->right)
+                ;
+        }
         else {
             // infix binary operator
             result = "("
