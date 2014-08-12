@@ -1273,7 +1273,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         CodeBlock& c = av->side_effects_fn->func_body;
         c += injection_description();
         c += "// Maintain " + pretty_name();
-        c += name + ".set(" + pp_prt->name + "(" + av->name + ".get()));";
+        c += name + ".set(" + pp_prt->name + "::to_index(" + av->name + "));";
         break;
     }
     case token::TK_aggregate:

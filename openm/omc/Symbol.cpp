@@ -830,7 +830,7 @@ void Symbol::post_parse_all()
     // Create pp_symbols now to easily find Symbols while debugging.
     populate_pp_symbols();
 
-    // pass 0: create support symbols not identified during parsing
+    // pass 1: create additional symbols not created during parse phase
     // symbols will be processed in lexicographical order
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eCreateMissingSymbols );
@@ -839,19 +839,13 @@ void Symbol::post_parse_all()
     // Recreate pp_symbols because symbols may have changed or been added.
     populate_pp_symbols();
 
-    // pass 0: create pp_ members
+    // pass 2: create pp_ members
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignMembers );
     }
 
-    // pass 1: create pp_ collections
-    // Symbols will be processed in lexicographical order.
-    for (auto pr : pp_symbols) {
-        pr.second->post_parse( ePopulateCollections );
-    }
-
-    // pass 2: resolve derived agentvar data types
+    // pass 3: resolve derived agentvar data types
     // Symbols will be processed in lexicographical order.
     type_changes = 1;
     int type_change_passes = 0;
@@ -865,6 +859,12 @@ void Symbol::post_parse_all()
             theLog->logMsg("error - More than 20 post-parse type change passes.");
             throw HelperException("Finish omc");
         }
+    }
+
+    // pass 4: create pp_ collections
+    // Symbols will be processed in lexicographical order.
+    for (auto pr : pp_symbols) {
+        pr.second->post_parse( ePopulateCollections );
     }
 
     // invalidate the parse phase symbol table symbols
@@ -942,7 +942,7 @@ void Symbol::post_parse_all()
         }
     }
 
-    // Pass 3: populate additional collections for subsequent code generation, e.g. for side_effect functions.
+    // Pass 5: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {

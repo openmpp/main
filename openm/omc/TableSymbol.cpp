@@ -100,7 +100,7 @@ void TableSymbol::post_parse(int pass)
                 pp_error("'" + sym->name + "' is not an agentvar in dimension of '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
-            auto es = dynamic_cast<EnumerationSymbol *>(pp_symbol(avs->data_type));
+            auto es = dynamic_cast<EnumerationSymbol *>(avs->pp_data_type);
             if (!es) {
                 pp_error("The datatype of '" + avs->name + "' must be an enumeration type in dimension of '" + name + "'");
                 continue; // don't insert invalid type in dimension list
