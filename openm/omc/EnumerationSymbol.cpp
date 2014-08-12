@@ -23,14 +23,14 @@ void EnumerationSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // add this to the complete list of templated types
-            pp_all_types1.push_back(this);
+    {
+        // add this to the complete list of templated types
+        pp_all_types1.push_back(this);
 
-            // Add this enumeration to the complete list of enumerations.
-            pp_all_enumerations.push_back(this);
-        }
+        // Add this enumeration to the complete list of enumerations.
+        pp_all_enumerations.push_back(this);
         break;
+    }
     default:
         break;
     }

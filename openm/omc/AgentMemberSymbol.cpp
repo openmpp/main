@@ -18,7 +18,7 @@ void AgentMemberSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
+    case eAssignMembers:
         {
             // assign direct pointer to agent for use post-parse
             pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));

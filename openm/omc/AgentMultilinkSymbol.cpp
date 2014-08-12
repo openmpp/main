@@ -46,34 +46,34 @@ void AgentMultilinkSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // Add this multilink member symbol to the agent's list of all such symbols
-            pp_agent->pp_multilink_members.push_back(this);
+    {
+        // Add this multilink member symbol to the agent's list of all such symbols
+        pp_agent->pp_multilink_members.push_back(this);
 
-            // Add this multilink member symbol to the agent's list of all callback members
-            pp_agent->pp_callback_members.push_back(this);
-        }
+        // Add this multilink member symbol to the agent's list of all callback members
+        pp_agent->pp_callback_members.push_back(this);
         break;
+    }
     case ePopulateDependencies:
-        {
-            // Create function bodies which maintain reciprocal link
-            CodeBlock& c_insert = insert_fn->func_body;
-            CodeBlock& c_erase = erase_fn->func_body;
-            if (reciprocal_link) {
-                // reciprocal link is single
-                auto reciprocal = reciprocal_link;
-                c_insert += "if (lnk.get() != nullptr) lnk->" + reciprocal->name + " = this;";
-                c_erase += "if (lnk->" + reciprocal->name + ".get().get() == this) lnk->" + reciprocal->name + " = nullptr;";
-            }
-            else {
-                // reciprocal link is multi
-                assert(reciprocal_multilink); // grammar guarantee
-                auto reciprocal = reciprocal_multilink;
-                c_insert += "lnk->" + reciprocal->name + ".insert(this);";
-                c_erase +=  "lnk->" + reciprocal->name + ".erase(this);";
-            }
+    {
+        // Create function bodies which maintain reciprocal link
+        CodeBlock& c_insert = insert_fn->func_body;
+        CodeBlock& c_erase = erase_fn->func_body;
+        if (reciprocal_link) {
+            // reciprocal link is single
+            auto reciprocal = reciprocal_link;
+            c_insert += "if (lnk.get() != nullptr) lnk->" + reciprocal->name + " = this;";
+            c_erase += "if (lnk->" + reciprocal->name + ".get().get() == this) lnk->" + reciprocal->name + " = nullptr;";
+        }
+        else {
+            // reciprocal link is multi
+            assert(reciprocal_multilink); // grammar guarantee
+            auto reciprocal = reciprocal_multilink;
+            c_insert += "lnk->" + reciprocal->name + ".insert(this);";
+            c_erase +=  "lnk->" + reciprocal->name + ".erase(this);";
         }
         break;
+    }
     default:
         break;
     }

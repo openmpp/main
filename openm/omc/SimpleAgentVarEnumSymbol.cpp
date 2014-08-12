@@ -16,7 +16,7 @@ void SimpleAgentVarEnumSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
+    case eAssignMembers:
     {
         // assign direct pointer for use post-parse
         pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));

@@ -55,19 +55,19 @@ void ConstantSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            if (is_enumerator) {
-                // assign direct pointer to enumerator for use post-parse
-                pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));
-                if (!pp_enumerator) {
-                    assert(*enumerator); // parser guarantee
-                    pp_error("Error - '" + (*enumerator)->name + "' is not an enumerator");
-                    // OK to continue
-                }
+    case eAssignMembers:
+    {
+        if (is_enumerator) {
+            // assign direct pointer to enumerator for use post-parse
+            pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));
+            if (!pp_enumerator) {
+                assert(*enumerator); // parser guarantee
+                pp_error("Error - '" + (*enumerator)->name + "' is not an enumerator");
+                // OK to continue
             }
         }
         break;
+    }
     default:
         break;
     }

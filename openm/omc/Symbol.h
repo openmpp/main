@@ -305,6 +305,8 @@ public:
     enum post_parse_pass {
         ///< post-parse pass to create missing symbols
         eCreateMissingSymbols,
+        ///< post-parse pass to assign pp_ members
+        eAssignMembers,
         ///< post-parse pass to populate pp_ collections
         ePopulateCollections,
         ///< post-parse pass to resolve data types of derived agentvars

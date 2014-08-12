@@ -30,19 +30,19 @@ void TableExpressionSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            // assign direct pointer to table for post-parse use
-            pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
-            assert(pp_table); // parser guarantee
+    case eAssignMembers:
+    {
+        // assign direct pointer to table for post-parse use
+        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
+        assert(pp_table); // parser guarantee
 
-            // Add this table expression to the table's list of expressions
-            pp_table->pp_expressions.push_back(this);
+        // Add this table expression to the table's list of expressions
+        pp_table->pp_expressions.push_back(this);
 
-            // Perform post-parse operation to each element of the expression
-            post_parse_traverse(root);
-        }
+        // Perform post-parse operation to each element of the expression
+        post_parse_traverse(root);
         break;
+    }
     default:
         break;
     }

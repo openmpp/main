@@ -495,44 +495,44 @@ void Symbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case eCreateMissingSymbols:
-        {
-            // Integrity check (debugging omc only)
-            // A name can be mis-identified as agent context when it should be global.
-            // This situation is an intrinsic consequence of the 'distributed declaration' feature of the language.
-            if (is_base_symbol()) {
-                // This Symbol was never declared.
-                if (name != unique_name) {
-                    // Example: name is "SEX" and unique_name is "Person::SEX".
-                    // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
-                    // because no global symbol with that name existed in the symbol table at the time.
-                    // As it turned out, the source code contained no declared symbol with this name in agent context.
+    {
+        // Integrity check (debugging omc only)
+        // A name can be mis-identified as agent context when it should be global.
+        // This situation is an intrinsic consequence of the 'distributed declaration' feature of the language.
+        if (is_base_symbol()) {
+            // This Symbol was never declared.
+            if (name != unique_name) {
+                // Example: name is "SEX" and unique_name is "Person::SEX".
+                // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
+                // because no global symbol with that name existed in the symbol table at the time.
+                // As it turned out, the source code contained no declared symbol with this name in agent context.
  
-                    // Search the symbol table for a symbol with the same name in global context.
-                    auto it_global = symbols.find(name);
-                    if (it_global != symbols.end()) {
-                        // Global symbol table entry with this name exists.
+                // Search the symbol table for a symbol with the same name in global context.
+                auto it_global = symbols.find(name);
+                if (it_global != symbols.end()) {
+                    // Global symbol table entry with this name exists.
                         
-                        // Now get the symbol table entry for this symbol.
-                        auto it_this = symbols.find(unique_name);
-                        assert(it_this != symbols.end()); // logic guarantee
-                        // This is the symbol returned by pp_symbol()
-                    }
-                    else {
-                        // The source code contained an agent-qualified name token which was never declared,
-                        // and no global with the same name exists.
-                        pp_error("Error - '" + name + "' was never declared");
-                        // OK to continue
-                    }
+                    // Now get the symbol table entry for this symbol.
+                    auto it_this = symbols.find(unique_name);
+                    assert(it_this != symbols.end()); // logic guarantee
+                    // This is the symbol returned by pp_symbol()
                 }
                 else {
-                    // I don't think we should get here.  All symbols should be derived symbols at this point.
-                    // A syntax error should have been detected earlier.
-                    pp_error("Error - unresolved symbol '" + name + "'");
-                    throw HelperException("Finish omc");
+                    // The source code contained an agent-qualified name token which was never declared,
+                    // and no global with the same name exists.
+                    pp_error("Error - '" + name + "' was never declared");
+                    // OK to continue
                 }
+            }
+            else {
+                // I don't think we should get here.  All symbols should be derived symbols at this point.
+                // A syntax error should have been detected earlier.
+                pp_error("Error - unresolved symbol '" + name + "'");
+                throw HelperException("Finish omc");
             }
         }
         break;
+    }
     default:
         break;
     }
@@ -839,7 +839,13 @@ void Symbol::post_parse_all()
     // Recreate pp_symbols because symbols may have changed or been added.
     populate_pp_symbols();
 
-    // pass 1: create pp_ members and collections
+    // pass 0: create pp_ members
+    // Symbols will be processed in lexicographical order.
+    for (auto pr : pp_symbols) {
+        pr.second->post_parse( eAssignMembers );
+    }
+
+    // pass 1: create pp_ collections
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateCollections );

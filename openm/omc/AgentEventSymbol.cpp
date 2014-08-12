@@ -82,8 +82,8 @@ void AgentEventSymbol::post_parse(int pass)
             // Plug it in
             implement_func = cover_implement_func;
         }
+        break;
     }
-    break;
     case ePopulateCollections:
     {
         // Add this agent event time symbol to the agent's list of all such symbols
@@ -91,8 +91,8 @@ void AgentEventSymbol::post_parse(int pass)
 
         // Add this agent event time symbol to the agent's list of all callback members
         pp_agent->pp_callback_members.push_back(this);
+        break;
     }
-    break;
     case ePopulateDependencies:
     {
         // E.g. Person
@@ -122,8 +122,8 @@ void AgentEventSymbol::post_parse(int pass)
                 }
             }
         }
+        break;
     }
-    break;
     default:
     break;
     }

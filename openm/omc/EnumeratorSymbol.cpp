@@ -18,16 +18,19 @@ void EnumeratorSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            // assign direct pointer to enumeration for use post-parse
-            pp_enumeration = dynamic_cast<EnumerationWithEnumeratorsSymbol *> (pp_symbol(enumeration));
-            assert(pp_enumeration); // parser guarantee
-
-            // Add this enumerator to the enumeration's list of enumerators
-            pp_enumeration->pp_enumerators.push_back(this);
-        }
+    case eAssignMembers:
+    {
+        // assign direct pointer to enumeration for use post-parse
+        pp_enumeration = dynamic_cast<EnumerationWithEnumeratorsSymbol *> (pp_symbol(enumeration));
+        assert(pp_enumeration); // parser guarantee
         break;
+    }
+    case ePopulateCollections:
+    {
+        // Add this enumerator to the enumeration's list of enumerators
+        pp_enumeration->pp_enumerators.push_back(this);
+        break;
+    }
     default:
         break;
     }

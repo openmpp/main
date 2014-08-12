@@ -237,33 +237,36 @@ void AgentSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignMembers:
+    {
+        // assign direct pointer to builtin member 'time' for use post-parse
+        pp_time = dynamic_cast<BuiltinAgentVarSymbol *>(get_symbol("time", this));
+        assert(pp_time); // parser guarantee
+        break;
+    }
     case ePopulateCollections:
-        {
-            // Add this agent to the complete list of agents.
-            pp_all_agents.push_back(this);
-
-            // assign direct pointer to builtin member 'time' for use post-parse
-            pp_time = dynamic_cast<BuiltinAgentVarSymbol *>(get_symbol("time", this));
-            assert(pp_time); // parser guarantee
-        }
+    {
+        // Add this agent to the complete list of agents.
+        pp_all_agents.push_back(this);
         break;
+    }
     case ePopulateDependencies:
-        {
-            // construct function bodies.
-            build_body_initialize_callback_member_offsets();
-            build_body_initialize_data_members();
-            build_body_initialize_data_members0();
-            build_body_initialize_events();
-            build_body_finalize_events();
-            build_body_initialize_entity_sets();
-            build_body_finalize_entity_sets();
-            build_body_initialize_tables();
-            build_body_finalize_tables();
-            build_body_initialize_expression_agentvars();
-            build_body_finalize_links();
-            build_body_finalize_multilinks();
-        }
+    {
+        // construct function bodies.
+        build_body_initialize_callback_member_offsets();
+        build_body_initialize_data_members();
+        build_body_initialize_data_members0();
+        build_body_initialize_events();
+        build_body_finalize_events();
+        build_body_initialize_entity_sets();
+        build_body_finalize_entity_sets();
+        build_body_initialize_tables();
+        build_body_finalize_tables();
+        build_body_initialize_expression_agentvars();
+        build_body_finalize_links();
+        build_body_finalize_multilinks();
         break;
+    }
     default:
         break;
     }

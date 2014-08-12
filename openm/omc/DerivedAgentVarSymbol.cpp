@@ -1550,11 +1550,7 @@ void DerivedAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case eCreateMissingSymbols:
-    {
-        break;
-    }
-    case ePopulateCollections:
+    case eAssignMembers:
     {
         // assign direct pointers for post-parse use
         if (av1) {

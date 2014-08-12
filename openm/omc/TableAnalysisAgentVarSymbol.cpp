@@ -39,32 +39,36 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case eCreateMissingSymbols:
-        {
-            if ( need_value_in ) {
-                // Create symbol for the data member which will hold the 'in' value of the increment.
-                auto av = dynamic_cast<AgentVarSymbol *>(agentvar);
-                if (av == nullptr) {
-                    throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
-                }
-                string member_name = in_member_name();
-                auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
+    {
+        if ( need_value_in ) {
+            // Create symbol for the data member which will hold the 'in' value of the increment.
+            auto av = dynamic_cast<AgentVarSymbol *>(agentvar);
+            if (av == nullptr) {
+                throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
             }
+            string member_name = in_member_name();
+            auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
         }
         break;
+    }
+    case eAssignMembers:
+    {
+        // assign direct pointer to table for post-parse use
+        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
+        assert(pp_table); // parser guarantee
+
+        // assign direct pointer to agentvar for post-parse use
+        pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
+        assert(pp_agentvar); // parser guarantee
+
+        break;
+    }
     case ePopulateCollections:
-        {
-            // assign direct pointer to table for post-parse use
-            pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
-            assert(pp_table); // parser guarantee
-
-            // assign direct pointer to agentvar for post-parse use
-            pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
-            assert(pp_agentvar); // parser guarantee
-
-            // Add this TableAnalysisAgentVarSymbol to the table's list of agentvars
-            pp_table->pp_table_agentvars.push_back(this);
-        }
+    {
+        // Add this TableAnalysisAgentVarSymbol to the table's list of agentvars
+        pp_table->pp_table_agentvars.push_back(this);
         break;
+    }
     default:
         break;
     }

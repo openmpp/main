@@ -28,62 +28,66 @@ void ParameterSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            // assign direct pointer to type symbol for use post-parse
-            assert(datatype); // grammar guarantee
-            assert(!pp_datatype); // no use allowed in parse phase
-            pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
-            if (!pp_datatype) {
-                pp_error("'" + datatype->name + "' is not a datatype in parameter '" + name + "'");
-            }
-
-            // validate dimension list
-            // and populate the post-parse version
-            for (auto psym : dimension_list) {
-                assert(psym); // logic guarantee
-                auto sym = *psym; // remove one level of indirection
-                assert(sym); // grammar guarantee
-                auto es = dynamic_cast<EnumerationSymbol *>(sym);
-                if (!es) {
-                    pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
-                    continue; // don't insert invalid type in dimension list
-                }
-                if (es->is_bool()) {
-                    // bool not allowed as parameter dimension
-                    pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
-                    continue; // don't insert invalid type in dimension list
-                }
-                pp_dimension_list.push_back(es);
-            }
-            // clear the parse version to avoid inadvertant use post-parse
-            dimension_list.clear();
-
-            // validate dimension list (redeclaration)
-            // and populate the post-parse version (redeclaration version)
-            for (auto psym : dimension_list2) {
-                assert(psym); // logic guarantee
-                auto sym = *psym; // remove one level of indirection
-                assert(sym); // grammar guarantee
-                auto es = dynamic_cast<EnumerationSymbol *>(sym);
-                if (!es) {
-                    pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
-                    continue; // don't insert invalid type in dimension list
-                }
-                if (es->is_bool()) {
-                    // bool not allowed as parameter dimension
-                    pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
-                    continue; // don't insert invalid type in dimension list
-                }
-                pp_dimension_list2.push_back(es);
-            }
-            // clear the parse version to avoid inadvertant use post-parse
-            dimension_list2.clear();
-
-            // add this parameter to the complete list of parameters
-            pp_all_parameters.push_back(this);
+    case eAssignMembers:
+    {
+        // assign direct pointer to type symbol for use post-parse
+        assert(datatype); // grammar guarantee
+        assert(!pp_datatype); // no use allowed in parse phase
+        pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
+        if (!pp_datatype) {
+            pp_error("'" + datatype->name + "' is not a datatype in parameter '" + name + "'");
         }
+
         break;
+    }
+    case ePopulateCollections:
+    {
+        // validate dimension list
+        // and populate the post-parse version
+        for (auto psym : dimension_list) {
+            assert(psym); // logic guarantee
+            auto sym = *psym; // remove one level of indirection
+            assert(sym); // grammar guarantee
+            auto es = dynamic_cast<EnumerationSymbol *>(sym);
+            if (!es) {
+                pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                continue; // don't insert invalid type in dimension list
+            }
+            if (es->is_bool()) {
+                // bool not allowed as parameter dimension
+                pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                continue; // don't insert invalid type in dimension list
+            }
+            pp_dimension_list.push_back(es);
+        }
+        // clear the parse version to avoid inadvertant use post-parse
+        dimension_list.clear();
+
+        // validate dimension list (redeclaration)
+        // and populate the post-parse version (redeclaration version)
+        for (auto psym : dimension_list2) {
+            assert(psym); // logic guarantee
+            auto sym = *psym; // remove one level of indirection
+            assert(sym); // grammar guarantee
+            auto es = dynamic_cast<EnumerationSymbol *>(sym);
+            if (!es) {
+                pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                continue; // don't insert invalid type in dimension list
+            }
+            if (es->is_bool()) {
+                // bool not allowed as parameter dimension
+                pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                continue; // don't insert invalid type in dimension list
+            }
+            pp_dimension_list2.push_back(es);
+        }
+        // clear the parse version to avoid inadvertant use post-parse
+        dimension_list2.clear();
+
+        // add this parameter to the complete list of parameters
+        pp_all_parameters.push_back(this);
+        break;
+    }
     case ePopulateDependencies:
     {
         // Mark enumerations required for metadata support for this parameter
@@ -99,8 +103,8 @@ void ParameterSymbol::post_parse(int pass)
                 es->metadata_needed = true;
             }
         }
+        break;
     }
-    break;
 
     default:
         break;

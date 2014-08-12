@@ -22,42 +22,42 @@ void LinkAgentVarSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // Add this link agentvar symbol to the agent's list of all such symbols
-            pp_agent->pp_link_agentvars.push_back(this);
-        }
+    {
+        // Add this link agentvar symbol to the agent's list of all such symbols
+        pp_agent->pp_link_agentvars.push_back(this);
         break;
+    }
     case ePopulateDependencies:
-        {
-            // Maintain reciprocal link
-            CodeBlock& c = side_effects_fn->func_body;
-            if (reciprocal_link) {
-                // reciprocal link is single
-                auto reciprocal = reciprocal_link;
-                c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
-                c += "if (om_old.get() != nullptr && om_old->" + reciprocal->name + ".get().get() == this) {";
-                c += "om_old->" + reciprocal->name + " = nullptr;";
-                c += "}";
-                c += "if (om_new.get() != nullptr && om_new->" + reciprocal->name + ".get().get() != this) {";
-                c += "om_new->" + reciprocal->name + " = this;";
-                c += "}";
-                c += "";
-            }
-            else {
-                // reciprocal link is multi
-                assert(reciprocal_multilink); // logic guarantee
-                auto reciprocal = reciprocal_multilink;
-                c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
-                c += "if (om_old.get() != nullptr) {";
-                c += "om_old->" + reciprocal->name + ".erase(this);";
-                c += "}";
-                c += "if (om_new.get() != nullptr) {";
-                c += "om_new->" + reciprocal->name + ".insert(this);";
-                c += "}";
-                c += "";
-            }
+    {
+        // Maintain reciprocal link
+        CodeBlock& c = side_effects_fn->func_body;
+        if (reciprocal_link) {
+            // reciprocal link is single
+            auto reciprocal = reciprocal_link;
+            c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
+            c += "if (om_old.get() != nullptr && om_old->" + reciprocal->name + ".get().get() == this) {";
+            c += "om_old->" + reciprocal->name + " = nullptr;";
+            c += "}";
+            c += "if (om_new.get() != nullptr && om_new->" + reciprocal->name + ".get().get() != this) {";
+            c += "om_new->" + reciprocal->name + " = this;";
+            c += "}";
+            c += "";
+        }
+        else {
+            // reciprocal link is multi
+            assert(reciprocal_multilink); // logic guarantee
+            auto reciprocal = reciprocal_multilink;
+            c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
+            c += "if (om_old.get() != nullptr) {";
+            c += "om_old->" + reciprocal->name + ".erase(this);";
+            c += "}";
+            c += "if (om_new.get() != nullptr) {";
+            c += "om_new->" + reciprocal->name + ".insert(this);";
+            c += "}";
+            c += "";
         }
         break;
+    }
     default:
         break;
     }

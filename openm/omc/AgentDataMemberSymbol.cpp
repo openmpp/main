@@ -22,16 +22,19 @@ void AgentDataMemberSymbol::post_parse(int pass)
 
     // Perform operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            // assign direct pointer to type symbol for use post-parse
-            pp_data_type = dynamic_cast<TypeSymbol *> (pp_symbol(data_type));
-            assert(pp_data_type); // parser guarantee
-
-            // Add this agent data symbol to the agent's list of all such symbols
-            pp_agent->pp_agent_data_members.push_back(this);
-        }
+    case eAssignMembers:
+    {
+        // assign direct pointer to type symbol for use post-parse
+        pp_data_type = dynamic_cast<TypeSymbol *> (pp_symbol(data_type));
+        assert(pp_data_type); // parser guarantee
         break;
+    }
+    case ePopulateCollections:
+    {
+        // Add this agent data symbol to the agent's list of all such symbols
+        pp_agent->pp_agent_data_members.push_back(this);
+        break;
+    }
     default:
         break;
     }

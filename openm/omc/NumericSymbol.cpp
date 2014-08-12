@@ -20,11 +20,11 @@ void NumericSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // add this to the complete list of fundamental types
-            pp_all_types0.push_back(this);
-        }
+    {
+        // add this to the complete list of fundamental types
+        pp_all_types0.push_back(this);
         break;
+    }
     default:
         break;
     }

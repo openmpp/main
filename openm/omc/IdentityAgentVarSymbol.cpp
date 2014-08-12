@@ -40,13 +40,13 @@ void IdentityAgentVarSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
-        // do a post-parse traverse to identify global functions, and morph
+        // do a post-parse traverse to identify apparent use of global functions, and create a GlobalFuncSymbol for each
         post_parse_traverse1(root);
         break;
     }
     case ePopulateCollections:
     {
-        // Add this expression agentvar symbol to the agent's list of all such symbols
+        // Add this identity agentvar symbol to the agent's list of all such symbols
         pp_agent->pp_identity_agentvars.push_back(this);
         
         // Perform post-parse operations to each element in the expression tree

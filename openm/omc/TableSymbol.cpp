@@ -73,12 +73,16 @@ void TableSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
+    case eAssignMembers:
     {
         // assign direct pointer to agent for use post-parse
         pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
         assert(pp_agent); // parser guarantee
 
+        break;
+    }
+    case ePopulateCollections:
+    {
         // add this table to the complete list of tables
         pp_all_tables.push_back(this);
 

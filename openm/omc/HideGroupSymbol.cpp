@@ -18,11 +18,11 @@ void HideGroupSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // add this to the complete list of table groups
-            pp_all_hide_groups.push_back(this);
-        }
+    {
+        // add this to the complete list of table groups
+        pp_all_hide_groups.push_back(this);
         break;
+    }
     default:
         break;
     }

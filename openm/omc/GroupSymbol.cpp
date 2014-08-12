@@ -18,15 +18,15 @@ void GroupSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // create post-parse collection of groups and symbols
-            for (auto sym : symbol_list) {
-                auto pp_sym = pp_symbol(sym);
-                assert(pp_sym);
-                pp_symbol_list.push_back(pp_sym);
-            }
+    {
+        // create post-parse collection of groups and symbols
+        for (auto sym : symbol_list) {
+            auto pp_sym = pp_symbol(sym);
+            assert(pp_sym);
+            pp_symbol_list.push_back(pp_sym);
         }
         break;
+    }
     default:
         break;
     }

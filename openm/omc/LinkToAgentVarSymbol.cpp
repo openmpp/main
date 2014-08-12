@@ -50,26 +50,26 @@ void LinkToAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
-        {
-            // assign direct pointer to agent for use post-parse
-            pp_agent_context = dynamic_cast<AgentSymbol *> (pp_symbol(agent_context));
-            assert(pp_agent_context); // parser guarantee
+    case eAssignMembers:
+    {
+        // assign direct pointer to agent for use post-parse
+        pp_agent_context = dynamic_cast<AgentSymbol *> (pp_symbol(agent_context));
+        assert(pp_agent_context); // parser guarantee
 
-            // assign direct pointer to link for use post-parse
-            pp_link = dynamic_cast<LinkAgentVarSymbol *> (pp_symbol(link));
-            assert(pp_link); // TODO: possible model source code error
+        // assign direct pointer to link for use post-parse
+        pp_link = dynamic_cast<LinkAgentVarSymbol *> (pp_symbol(link));
+        assert(pp_link); // TODO: possible model source code error
 
-            // assign direct pointer to agentvar in agent at other end of link
-            assert(pp_link->reciprocal_link); // TODO: possible model coding error?
-            assert(pp_link->reciprocal_link->agent); // TODO: possible model coding error?
-            auto sym = Symbol::get_symbol(agentvar, pp_link->reciprocal_link->agent);
-            assert(sym); // parser / scanner guarantee
-            auto av = dynamic_cast<AgentVarSymbol *> (sym);
-            assert(av); // TODO possible model source code error
-            pp_agentvar = av;
-        }
+        // assign direct pointer to agentvar in agent at other end of link
+        assert(pp_link->reciprocal_link); // TODO: possible model coding error?
+        assert(pp_link->reciprocal_link->agent); // TODO: possible model coding error?
+        auto sym = Symbol::get_symbol(agentvar, pp_link->reciprocal_link->agent);
+        assert(sym); // parser / scanner guarantee
+        auto av = dynamic_cast<AgentVarSymbol *> (sym);
+        assert(av); // TODO possible model source code error
+        pp_agentvar = av;
         break;
+    }
     default:
         break;
     }

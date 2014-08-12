@@ -75,7 +75,7 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
+    case eAssignMembers:
     {
         // assign direct pointers for post-parse use
         pp_multilink = dynamic_cast<AgentMultilinkSymbol *> (pp_symbol(multilink));

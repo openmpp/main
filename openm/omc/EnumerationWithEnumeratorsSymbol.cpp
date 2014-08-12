@@ -32,11 +32,11 @@ void EnumerationWithEnumeratorsSymbol::post_parse(int pass)
     // Perform operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // Add this enumeration to the complete list of enumerations with enumerators.
-            pp_all_enumerations_with_enumerators.push_back(this);
-        }
+    {
+        // Add this enumeration to the complete list of enumerations with enumerators.
+        pp_all_enumerations_with_enumerators.push_back(this);
         break;
+    }
     default:
         break;
     }

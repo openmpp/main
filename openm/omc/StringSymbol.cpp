@@ -18,11 +18,11 @@ void StringSymbol::post_parse(int pass)
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case ePopulateCollections:
-        {
-            // add this to the complete list of strings
-            pp_all_strings.push_back(this);
-        }
+    {
+        // add this to the complete list of strings
+        pp_all_strings.push_back(this);
         break;
+    }
     default:
         break;
     }
