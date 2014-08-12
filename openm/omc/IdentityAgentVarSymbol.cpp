@@ -12,6 +12,7 @@
 #include "LinkToAgentVarSymbol.h"
 #include "TypeSymbol.h"
 #include "BoolSymbol.h"
+#include "GlobalFuncSymbol.h"
 #include "ConstantSymbol.h"
 #include "CodeBlock.h"
 #include "Literal.h"
@@ -37,60 +38,115 @@ void IdentityAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        // do a post-parse traverse to identify global functions, and morph
+        post_parse_traverse1(root);
+        break;
+    }
     case ePopulateCollections:
-        {
-            // Add this expression agentvar symbol to the agent's list of all such symbols
-            pp_agent->pp_identity_agentvars.push_back(this);
+    {
+        // Add this expression agentvar symbol to the agent's list of all such symbols
+        pp_agent->pp_identity_agentvars.push_back(this);
         
-            // Perform post-parse operations to each element in the expression tree
-            post_parse_traverse(root);
-        }
+        // Perform post-parse operations to each element in the expression tree
+        post_parse_traverse2(root);
         break;
+    }
     case ePopulateDependencies:
-        {
-            // construct function body
-            build_body_expression();
+    {
+        // construct function body
+        build_body_expression();
 
-            // Dependency on agentvars in expression
-            for (auto av : pp_agentvars_used) {
-                CodeBlock& c = av->side_effects_fn->func_body;
-                c += injection_description();
-                c += "// Maintain identity for '" + name + "'";
-                c += expression_fn->name + "();";
-            }
+        // Dependency on agentvars in expression
+        for (auto av : pp_agentvars_used) {
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
+            c += "// Maintain identity for '" + name + "'";
+            c += expression_fn->name + "();";
+        }
 
-            // Dependency on linked agentvars in expression
-            for (auto ltav : pp_linked_agentvars_used) {
-                auto av = ltav->pp_agentvar; // agentvar being referenced across the link (rhs)
-                assert(av);
+        // Dependency on linked agentvars in expression
+        for (auto ltav : pp_linked_agentvars_used) {
+            auto av = ltav->pp_agentvar; // agentvar being referenced across the link (rhs)
+            assert(av);
 
-                auto lav = ltav->pp_link; // the link agentvar
-                assert(lav);
+            auto lav = ltav->pp_link; // the link agentvar
+            assert(lav);
 
-                auto rlav = lav->reciprocal_link; // the reciprocal link agentvar
-                assert(rlav);
+            auto rlav = lav->reciprocal_link; // the reciprocal link agentvar
+            assert(rlav);
 
-                CodeBlock& c = av->side_effects_fn->func_body;
-                c += injection_description();
-                c += "// Maintain identity for '" + unique_name + "' using reciprocal link";
-                c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
-            }
+            CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
+            c += "// Maintain identity for '" + unique_name + "' using reciprocal link";
+            c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
+        }
 
-            // Dependency of all links used in expression
-            for (auto lav : pp_links_used) {
-                CodeBlock& c = lav->side_effects_fn->func_body;
-                c += injection_description();
-                c += "// Maintain identity for '" + unique_name + "' when link changed to different agent";
-                c += expression_fn->name + "();";
-            }
+        // Dependency of all links used in expression
+        for (auto lav : pp_links_used) {
+            CodeBlock& c = lav->side_effects_fn->func_body;
+            c += injection_description();
+            c += "// Maintain identity for '" + unique_name + "' when link changed to different agent";
+            c += expression_fn->name + "();";
         }
         break;
+    }
     default:
         break;
     }
 }
 
-void IdentityAgentVarSymbol::post_parse_traverse(ExprForAgentVar *node)
+void IdentityAgentVarSymbol::post_parse_traverse1(ExprForAgentVar *node)
+{
+    auto sym = dynamic_cast<ExprForAgentVarSymbol *>(node);
+    auto lit = dynamic_cast<ExprForAgentVarLiteral *>(node);
+    auto unary_op = dynamic_cast<ExprForAgentVarUnaryOp *>(node);
+    auto binary_op = dynamic_cast<ExprForAgentVarBinaryOp *>(node);
+    auto ternary_op = dynamic_cast<ExprForAgentVarTernaryOp *>(node);
+
+    if (sym != nullptr) {
+        // do nothing with symbol terminals
+    }
+    else if (lit != nullptr) {
+        // do nothing with Literal terminals
+    }
+    else if (unary_op != nullptr) {
+        assert(unary_op->right); // grammar guarantee
+        post_parse_traverse1(unary_op->right);
+    }
+    else if (binary_op != nullptr) {
+        assert(binary_op->left); // grammar guarantee
+        post_parse_traverse1(binary_op->left);
+        assert(binary_op->right); // grammar guarantee
+        post_parse_traverse1(binary_op->right);
+        // look for signature of a function call
+        if (binary_op->op == token::TK_LEFT_PAREN) {
+            auto node = binary_op->left;
+            if (auto efavs = dynamic_cast<ExprForAgentVarSymbol *>(node)) {
+                auto sym = efavs->symbol;
+                if (sym->is_base_symbol() && !Symbol::exists(sym->name)) {
+                    // an undeclared SYMBOL followed by a '('
+                    // create a GlobalFuncSymbol with that name
+                    auto gfs = new GlobalFuncSymbol(sym->name, sym->decl_loc);
+                }
+            }
+        }
+    }
+    else if (ternary_op != nullptr) {
+        assert(ternary_op->cond); // grammar guarantee
+        post_parse_traverse1(ternary_op->cond);
+        assert(ternary_op->first); // grammar guarantee
+        post_parse_traverse1(ternary_op->first);
+        assert(ternary_op->second); // grammar guarantee
+        post_parse_traverse1(ternary_op->second);
+    }
+    else {
+        assert(false); // not reached
+    }
+}
+
+void IdentityAgentVarSymbol::post_parse_traverse2(ExprForAgentVar *node)
 {
     auto sym = dynamic_cast<ExprForAgentVarSymbol *>(node);
     auto lit = dynamic_cast<ExprForAgentVarLiteral *>(node);
@@ -127,21 +183,21 @@ void IdentityAgentVarSymbol::post_parse_traverse(ExprForAgentVar *node)
     }
     else if (unary_op != nullptr) {
         assert(unary_op->right); // grammar guarantee
-        post_parse_traverse(unary_op->right);
+        post_parse_traverse2(unary_op->right);
     }
     else if (binary_op != nullptr) {
         assert(binary_op->left); // grammar guarantee
-        post_parse_traverse(binary_op->left);
+        post_parse_traverse2(binary_op->left);
         assert(binary_op->right); // grammar guarantee
-        post_parse_traverse(binary_op->right);
+        post_parse_traverse2(binary_op->right);
     }
     else if (ternary_op != nullptr) {
         assert(ternary_op->cond); // grammar guarantee
-        post_parse_traverse(ternary_op->cond);
+        post_parse_traverse2(ternary_op->cond);
         assert(ternary_op->first); // grammar guarantee
-        post_parse_traverse(ternary_op->first);
+        post_parse_traverse2(ternary_op->first);
         assert(ternary_op->second); // grammar guarantee
-        post_parse_traverse(ternary_op->second);
+        post_parse_traverse2(ternary_op->second);
     }
     else {
         assert(false); // not reached

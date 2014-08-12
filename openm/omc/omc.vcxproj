@@ -183,6 +183,7 @@
     <ClInclude Include="EnumeratorSymbol.h" />
     <ClInclude Include="ExprForAgentVar.h" />
     <ClInclude Include="ExprForTable.h" />
+    <ClInclude Include="GlobalFuncSymbol.h" />
     <ClInclude Include="GroupSymbol.h" />
     <ClInclude Include="HideGroupSymbol.h" />
     <ClInclude Include="IdentityAgentVarSymbol.h" />
@@ -247,6 +248,7 @@
     <ClCompile Include="EnumerationSymbol.cpp" />
     <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp" />
     <ClCompile Include="EnumeratorSymbol.cpp" />
+    <ClCompile Include="GlobalFuncSymbol.cpp" />
     <ClCompile Include="GroupSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="HideGroupSymbol.cpp" />

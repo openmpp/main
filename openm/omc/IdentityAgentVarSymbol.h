@@ -76,7 +76,9 @@ public:
 
     CodeBlock cxx_declaration_agent();
 
-    void post_parse_traverse(ExprForAgentVar *node);
+    void post_parse_traverse1(ExprForAgentVar *node);
+
+    void post_parse_traverse2(ExprForAgentVar *node);
 
     /**
      * Builds the function body of the expression function.

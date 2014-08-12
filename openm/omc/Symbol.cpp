@@ -48,6 +48,7 @@
 #include "TableGroupSymbol.h"
 #include "HideGroupSymbol.h"
 #include "DependencyGroupSymbol.h"
+#include "GlobalFuncSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -87,6 +88,8 @@ list<TableGroupSymbol *> Symbol::pp_all_table_groups;
 list<HideGroupSymbol *> Symbol::pp_all_hide_groups;
 
 list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
+
+list<GlobalFuncSymbol *> Symbol::pp_all_global_funcs;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
@@ -874,6 +877,7 @@ void Symbol::post_parse_all()
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
 
     // Assign numeric identifiers to symbols in selected collections
     // These numeric id's are used for communicating with the meta-data API.

@@ -216,6 +216,9 @@
     <ClInclude Include="DependencyGroupSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalFuncSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -372,6 +375,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DependencyGroupSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalFuncSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

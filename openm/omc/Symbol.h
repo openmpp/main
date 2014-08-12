@@ -29,6 +29,7 @@ class ParameterGroupSymbol;
 class TableGroupSymbol;
 class HideGroupSymbol;
 class DependencyGroupSymbol;
+class GlobalFuncSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -868,6 +869,13 @@ public:
      * Populated after parsing is complete.
      */
     static list<HideGroupSymbol *> pp_all_hide_groups;
+
+    /**
+     * The global funcs in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<GlobalFuncSymbol *> pp_all_global_funcs;
 
     /**
      * The dependency groups in the model
