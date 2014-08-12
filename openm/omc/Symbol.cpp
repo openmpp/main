@@ -43,6 +43,11 @@
 #include "TableAnalysisAgentVarSymbol.h"
 #include "EntitySetSymbol.h"
 #include "TableSymbol.h"
+#include "GroupSymbol.h"
+#include "ParameterGroupSymbol.h"
+#include "TableGroupSymbol.h"
+#include "HideGroupSymbol.h"
+#include "DependencyGroupSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -74,6 +79,14 @@ list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 list<TableSymbol *> Symbol::pp_all_tables;
 
 list<ParameterSymbol *> Symbol::pp_all_parameters;
+
+list<ParameterGroupSymbol *> Symbol::pp_all_parameter_groups;
+
+list<TableGroupSymbol *> Symbol::pp_all_table_groups;
+
+list<HideGroupSymbol *> Symbol::pp_all_hide_groups;
+
+list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
@@ -857,6 +870,10 @@ void Symbol::post_parse_all()
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+    pp_all_parameter_groups.sort( [] (ParameterGroupSymbol *a, ParameterGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
 
     // Assign numeric identifiers to symbols in selected collections
     // These numeric id's are used for communicating with the meta-data API.

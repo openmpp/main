@@ -494,7 +494,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type <pval_string>      parameter_initializer_element
 %type <pval_string_list> parameter_initializer_list
 %type <pval_Symbol_list> array_decl_dimension_list
-%type <pval_Symbol_list> track_list
+%type <pval_Symbol_list> symbol_list
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -904,14 +904,35 @@ decl_range:
  */
 
 decl_parameter_group:
-	  "parameter_group" SYMBOL[group_name] "{" parameter_group_list "}" ";"
+	  "parameter_group" SYMBOL[group] "{" symbol_list "}" ";"
+                        {
+                            // morph existing symbol to ParameterGroupSymbol
+                            auto *grp = new ParameterGroupSymbol( $group, @group );
+                            assert(grp);
+                            list<Symbol *> *pls = $symbol_list;
+                            // move symbol list to group
+                            grp->symbol_list.swap(*pls);
+                            delete pls;
+                        }
 	| "parameter_group" "{" error "}" ";"
 	| "parameter_group" error ";"
       ;
 
-parameter_group_list:
-	  SYMBOL
-	| parameter_group_list "," SYMBOL
+// A non-empty list of comma-separated symbols.
+symbol_list:
+      SYMBOL
+                        {
+                            // start a new symbol list
+                            auto * pls = new list<Symbol *>;
+                            pls->push_back($SYMBOL);
+                            $$ = pls;
+                        }
+    | symbol_list[pls] "," SYMBOL
+                        {
+                            // append to existing symbol list
+                            $pls->push_back($SYMBOL);
+                            $$ = $pls;
+                        }
 	;
 
 
@@ -920,15 +941,19 @@ parameter_group_list:
  */
 
 decl_table_group:
-	  "table_group" SYMBOL[group_name] "{" table_group_list "}" ";"
+	  "table_group" SYMBOL[group] "{" symbol_list "}" ";"
+                        {
+                            // morph existing symbol to TableGroupSymbol
+                            auto *grp = new TableGroupSymbol( $group, @group );
+                            assert(grp);
+                            list<Symbol *> *pls = $symbol_list;
+                            // move symbol list to group
+                            grp->symbol_list.swap(*pls);
+                            delete pls;
+                        }
 	| "table_group" "{" error "}" ";"
 	| "table_group" error ";"
       ;
-
-table_group_list:
-	  SYMBOL
-	| table_group_list "," SYMBOL
-	;
 
 
 /*
@@ -936,15 +961,19 @@ table_group_list:
  */
 
 decl_hide:
-	  "hide" "(" hide_list ")" ";"
+	  "hide"[tok] "(" symbol_list ")" ";"
+                        {
+                            // morph existing symbol to HideGroupSymbol
+                            auto *grp = new HideGroupSymbol(@tok );
+                            assert(grp);
+                            list<Symbol *> *pls = $symbol_list;
+                            // move symbol list to group
+                            grp->symbol_list.swap(*pls);
+                            delete pls;
+                        }
 	| "hide" "(" error ")" ";"
 	| "hide" error ";"
       ;
-
-hide_list:
-	  SYMBOL
-	| hide_list "," SYMBOL
-	;
 
 
 /*
@@ -957,9 +986,9 @@ decl_track:
                             // Set agent context for body of track declaration
                             pc.set_agent_context( $agent );
                         }
-          track_filter_opt "{" track_list "}" ";"
+          track_filter_opt "{" symbol_list "}" ";"
                         {
-                            list<Symbol *> *pls = $track_list;
+                            list<Symbol *> *pls = $symbol_list;
                             //TODO
                             //  move track list to agent
                             // use 'swap' or splice... or whatever it is
@@ -971,20 +1000,6 @@ decl_track:
 	| "track" error ";"
       ;
 
-track_list:
-      SYMBOL[agentvar]
-                        {
-                            // start a new symbol list
-                            auto * pls = new list<Symbol *>;
-                            $$ = pls;
-                        }
-    | track_list[pls] "," SYMBOL[agentvar]
-                        {
-                            // append to existing symbol list
-                            $pls->push_back($agentvar);
-                            $$ = $pls;
-                        }
-	;
 
 track_filter_opt:
 	  "[" expr_for_agentvar[root] "]"

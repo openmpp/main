@@ -25,6 +25,10 @@ class AgentSymbol;
 class ParameterSymbol;
 class EntitySetSymbol;
 class TableSymbol;
+class ParameterGroupSymbol;
+class TableGroupSymbol;
+class HideGroupSymbol;
+class DependencyGroupSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -843,6 +847,34 @@ public:
      * Populated after parsing is complete.
      */
     static list<ParameterSymbol *> pp_all_parameters;
+
+    /**
+     * The parameter groups in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<ParameterGroupSymbol *> pp_all_parameter_groups;
+
+    /**
+     * The table groups in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<TableGroupSymbol *> pp_all_table_groups;
+
+    /**
+     * The hide groups in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<HideGroupSymbol *> pp_all_hide_groups;
+
+    /**
+     * The dependency groups in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<DependencyGroupSymbol *> pp_all_dependency_groups;
 
     /**
      * Map of member function qualified names to all identifiers used in the body of the function.
