@@ -541,6 +541,7 @@ ompp_declarative_island:
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
     | decl_hide             { pc.InitializeForCxx(); }
+    | decl_dependency       { pc.InitializeForCxx(); }
     | decl_track            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
 	| decl_entity           { pc.InitializeForCxx(); }
@@ -973,6 +974,26 @@ decl_hide:
                         }
 	| "hide" "(" error ")" ";"
 	| "hide" error ";"
+      ;
+
+
+/*
+ * dependency
+ */
+
+decl_dependency:
+	  "dependency"[tok] "(" symbol_list ")" ";"
+                        {
+                            // morph existing symbol to DependencyGroupSymbol
+                            auto *grp = new DependencyGroupSymbol(@tok );
+                            assert(grp);
+                            list<Symbol *> *pls = $symbol_list;
+                            // move symbol list to group
+                            grp->symbol_list.swap(*pls);
+                            delete pls;
+                        }
+	| "dependency" "(" error ")" ";"
+	| "dependency" error ";"
       ;
 
 
