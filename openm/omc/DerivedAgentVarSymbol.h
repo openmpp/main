@@ -13,6 +13,7 @@
 class PartitionSymbol;
 class ClassificationSymbol;
 class IdentityAgentVarSymbol;
+class AgentInternalSymbol;
 
 using namespace std;
 
@@ -64,6 +65,7 @@ public:
         , k3(k3)
         , iav(nullptr)
         , dav(nullptr)
+        , ait(nullptr)
     {
         validate();
         assign_sorting_group();
@@ -516,5 +518,13 @@ public:
      * undergone_entrance(disease_phase,DP_INFECTIOUS)
      */
     DerivedAgentVarSymbol *dav;
+
+    /**
+     * The agent internal member for time
+     * 
+     * Used to record the internal symbol created to hold the nect time of occurrence of the self-
+     * scheduling derived agentvar.
+     */
+    AgentInternalSymbol *ait;
 };
 

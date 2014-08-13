@@ -19,16 +19,25 @@
 
 using namespace std;
 
-void AgentEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs)
+void AgentEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool is_developer_supplied)
 {
-    // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied)
-    time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
-    time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
-    time_func_model_code = time_func;
+    if (is_developer_supplied) {
+        // Create an AgentFuncSymbol for the time function ('true' means the definition is developer-supplied, so suppress definition)
+        time_func = new AgentFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
+        time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
+        time_func_model_code = time_func;
 
-    // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied)
-    implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
-    implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " agent (model code).");
+        // Create an AgentFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
+        implement_func = new AgentFuncSymbol(ifs, agent, "void", "", true, decl_loc);
+        implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " agent (model code).");
+    }
+    else {
+        // The functions are created internally (for the internally-generated self-scheduling event)
+        time_func = dynamic_cast<AgentFuncSymbol *>(tfs);
+        assert(time_func);
+        implement_func = dynamic_cast<AgentFuncSymbol *>(ifs);
+        assert(implement_func);
+    }
 }
 
 void AgentEventSymbol::post_parse(int pass)
@@ -95,6 +104,8 @@ void AgentEventSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
+        // Dependencies are generated directly if not developer-supplied.
+        if (!is_developer_supplied) break;
         // E.g. Person
         string agent_name = pp_agent->name;
         // E.g. Person::timeMortalityEvent
@@ -117,6 +128,7 @@ void AgentEventSymbol::post_parse(int pass)
                 if (av) {
                     // dependency of time function on av detected
                     CodeBlock& c = av->side_effects_fn->func_body;
+                    c += injection_description();
                     c += "// Recalculate time to event " + event_name;
                     c += "if (om_active) " + name + ".make_dirty();";
                 }

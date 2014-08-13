@@ -28,13 +28,14 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, int event_priority, yy::location decl_loc = yy::location())
+    AgentEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, bool is_developer_supplied, int event_priority, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
         , event_priority(event_priority)
+        , is_developer_supplied(is_developer_supplied)
         , pp_event_id(0)
     {
-        create_auxiliary_symbols(tfs, ifs);
+        create_auxiliary_symbols(tfs, ifs, is_developer_supplied);
     }
 
     /**
@@ -43,7 +44,7 @@ public:
      * @param tfs The time function symbol.
      * @param ifs The implement function symbol.
      */
-    void create_auxiliary_symbols(Symbol *tfs, Symbol *ifs);
+    void create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool is_developer_supplied);
 
     void post_parse(int pass);
 
@@ -92,6 +93,11 @@ public:
      * Used to break ties if two events are scheduled to occur at the same time.
      */
     const int event_priority;
+
+    /**
+     * true if this object is developer-supplied, rather than generated (self-scheduling event)
+     */
+    bool is_developer_supplied;
 
     /**
      * Numeric identifier for the event. The numeric identifier is the ordinal of the event name

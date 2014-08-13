@@ -1398,7 +1398,7 @@ decl_agent_event:
                             auto *agent = pc.get_agent_context();
                             // Create agent event symbol
                             string event_name = "om_" + $implement_func->name + "_om_event";
-                            auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, event_priority, @decl_agent_event);
+                            auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, true, event_priority, @decl_agent_event);
                         }
     ;
 

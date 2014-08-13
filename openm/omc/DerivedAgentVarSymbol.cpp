@@ -15,6 +15,7 @@
 #include "ClassificationSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
+#include "AgentInternalSymbol.h"
 #include "TimeSymbol.h"
 #include "RealSymbol.h"
 #include "BoolSymbol.h"
@@ -683,6 +684,12 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     }
     default:
     break;
+    }
+
+    // Create the internal symbol for the event time of the self-scheduling derived agentvar.
+    if (is_self_scheduling()) {
+        // create the internal symbol for the event time of the self-scheduling derived agentvar
+        ait = new AgentInternalSymbol("om_ss_time_" + name, agent, NumericSymbol::find(token::TK_Time));
     }
 }
 
@@ -1423,14 +1430,47 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_self_scheduling_int:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // Common variables and code for all self-scheduling agentvars
+        auto *av = pp_av1;
+        assert(av); // the agentvar of the first argument, e.g. "age"
+        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
+        assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
+        assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
+        CodeBlock& ctf = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
+        CodeBlock& cif = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+        ctf += injection_description();
+        // To the event time function, minimize the working variable et with the next time of this self-scheduling agentvar
+        ctf += "et = min(et, " + ait->name +");";
+
+        cif += injection_description();
+
+        // Code for specific variants of self_scheduling_int() agentvars
+        if (av->name == "age") {
+            // handle self_scheduling_int(age)
+            cif += "if (current_time == " + ait->name + ") {";
+            // TODO trace event message if event_trace activated
+            cif += "// Update the value";
+            cif += name + ".set(" + name + ".get() + 1);";
+            cif += "// Update the time of next change";
+            cif += ait->name + " += 1;";
+            cif += "}";
+            // TODO
+            pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
+        }
+        else if (av->name == "time") {
+            // TODO
+            pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
+        }
+        else {
+            // TODO, enumerated supported arguments, give warnign for those, error for anything else
+            pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
+        }
         break;
     }
     case token::TK_self_scheduling_split:
     {
         // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
         break;
     }
 
@@ -1537,7 +1577,6 @@ break;
         break;
     }
     case token::TK_split:
-    case token::TK_self_scheduling_split:
     {
         assert(pp_av1);
         assert(pp_prt);
@@ -1561,9 +1600,10 @@ break;
         break;
     }
     case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
     {
         assert(pp_av1);
-        result = token_to_string(tok) + "(" + pp_av1->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
         break;
     }
     default:
@@ -1609,8 +1649,6 @@ void DerivedAgentVarSymbol::post_parse(int pass)
             auto agnt = dynamic_cast<AgentSymbol *>(agent);
             assert(agnt);
             agnt->create_ss_event();
-            // create the internal symbol for the event time of the self-scheduling derived agentvar
-            // TODO
         }
         break;
     }
