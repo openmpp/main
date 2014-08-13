@@ -49,7 +49,6 @@ CPPFLAGS = $(CXXFLAGS)
 OMC_EXE = omc
 
 OMC_CPPLIST = \
-  omc.cpp \
 AgentDataMemberSymbol.cpp \
 AgentEventSymbol.cpp \
 AgentFuncSymbol.cpp \
@@ -64,13 +63,17 @@ ClassificationSymbol.cpp \
 CodeBlock.cpp \
 CodeGen.cpp \
 ConstantSymbol.cpp \
+DependencyGroupSymbol.cpp \
 DerivedAgentVarSymbol.cpp \
 Driver.cpp \
 EntitySetSymbol.cpp \
 EnumerationSymbol.cpp \
 EnumerationWithEnumeratorsSymbol.cpp \
 EnumeratorSymbol.cpp \
+GlobalFuncSymbol.cpp \
+GroupSymbol.cpp \
 HeaderCheck.cpp \
+HideGroupSymbol.cpp \
 IdentityAgentVarSymbol.cpp \
 LanguageSymbol.cpp \
 LinkAgentVarSymbol.cpp \
@@ -79,6 +82,8 @@ ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
 MultilinkAgentVarSymbol.cpp \
 NumericSymbol.cpp \
+omc.cpp \
+ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
 PartitionSymbol.cpp \
 RangeSymbol.cpp \
@@ -90,6 +95,7 @@ Symbol.cpp \
 TableAccumulatorSymbol.cpp \
 TableAnalysisAgentVarSymbol.cpp \
 TableExpressionSymbol.cpp \
+TableGroupSymbol.cpp \
 TableSymbol.cpp \
 TimeSymbol.cpp \
 TypeOfLinkSymbol.cpp \
