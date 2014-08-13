@@ -35,13 +35,13 @@ namespace openm
     /** lang_lst table row. */
     struct LangLstRow : public IMetaRow<LangLstRow>
     {
-        /** lang_id   INT         NOT NULL */
+        /** lang_id   INT          NOT NULL */
         int langId;
 
-        /** lang_code VARCHAR(32) NOT NULL */
+        /** lang_code VARCHAR(32)  NOT NULL */
         string code;
 
-        /** lang_name VARCHAR(32) NOT NULL */
+        /** lang_name VARCHAR(255) NOT NULL */
         string name;
         
         /** create row with supplied primary key field values. */
@@ -69,13 +69,13 @@ namespace openm
     /** lang_word table row. */
     struct LangWordRow : public IMetaRow<LangWordRow>
     {
-        /** lang_id    INT         NOT NULL */
+        /** lang_id    INT          NOT NULL */
         int langId;
 
-        /** word_code  VARCHAR(8)  NOT NULL */
+        /** word_code  VARCHAR(255) NOT NULL */
         string code;
 
-        /** word_value VARCHAR(32) NOT NULL */
+        /** word_value VARCHAR(255) NOT NULL */
         string value;
         
         /** create row with supplied primary key field values. */
@@ -100,34 +100,34 @@ namespace openm
     /** model_dic table row. */
     struct ModelDicRow : public IMetaRow<ModelDicRow>
     {
-        /** model_id       INT         NOT NULL */
+        /** model_id       INT          NOT NULL */
         int modelId;
 
-        /** model_name     VARCHAR(32) NOT NULL */
+        /** model_name     VARCHAR(255) NOT NULL */
         string name;
 
-        /** model_type     INT         NOT NULL */
+        /** model_type     INT          NOT NULL */
         int type;
 
         /** model_ver      VARCHAR(255) NOT NULL */
         string version;
 
-        /** model_ts       VARCHAR(32) NOT NULL */
+        /** model_ts       VARCHAR(32)  NOT NULL */
         string timestamp;
 
-        /** model_prefix   VARCHAR(32) NOT NULL */
+        /** model_prefix   VARCHAR(32)  NOT NULL */
         string modelPrefix;
 
-        /** parameter_prefix VARCHAR(4)  NOT NULL, -- parameter tables prefix: p */
+        /** parameter_prefix VARCHAR(4) NOT NULL, -- parameter tables prefix: p */
         string paramPrefix;
 
-        /** workset_prefix   VARCHAR(4)  NOT NULL, -- workset tables prefix: w */
+        /** workset_prefix   VARCHAR(4) NOT NULL, -- workset tables prefix: w */
         string setPrefix;
 
-        /** sub_prefix       VARCHAR(4)  NOT NULL, -- subsample tables prefix: s */
+        /** sub_prefix       VARCHAR(4) NOT NULL, -- subsample tables prefix: s */
         string subPrefix;
 
-        /** value_prefix     VARCHAR(4)  NOT NULL, -- value tables prefix: v */
+        /** value_prefix     VARCHAR(4) NOT NULL, -- value tables prefix: v */
         string valuePrefix;
 
         /** create row with supplied primary key field values. */
@@ -213,22 +213,22 @@ namespace openm
     /** run_lst table row. */
     struct RunLstRow : public IMetaRow<RunLstRow>
     {
-        /** run_id        INT         NOT NULL */
+        /** run_id        INT          NOT NULL */
         int runId;
 
-        /** model_id      INT         NOT NULL */
+        /** model_id      INT          NOT NULL */
         int modelId;
 
-        /** run_name      VARCHAR(64) NOT NULL */
+        /** run_name      VARCHAR(255) NOT NULL */
         string name;
 
-        /** sub_count     INT         NOT NULL */
+        /** sub_count     INT          NOT NULL */
         int subCount;
 
-        /** sub_started   INT         NOT NULL */
+        /** sub_started   INT          NOT NULL */
         int subStarted;
 
-        /** sub_completed INT         NOT NULL */
+        /** sub_completed INT          NOT NULL */
         int subCompleted;
 
         /** create_dt     VARCHAR(32) NOT NULL */
@@ -263,16 +263,16 @@ namespace openm
     /** run_txt table row. */
     struct RunTxtRow : public IMetaRow<RunTxtRow>
     {
-        /** run_id   INT            NOT NULL */
+        /** run_id   INT          NOT NULL */
         int runId;
 
-        /** model_id INT            NOT NULL */
+        /** model_id INT          NOT NULL */
         int modelId;
 
-        /** lang_id  INT            NOT NULL */
+        /** lang_id  INT          NOT NULL */
         int langId;
 
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
 
         /** note     VARCHAR(32000)          */
@@ -308,7 +308,7 @@ namespace openm
     /** profile_lst table row. */
     struct ProfileLstRow : public IMetaRow<ProfileLstRow>
     {
-        /** profile_name VARCHAR(32) NOT NULL */
+        /** profile_name VARCHAR(255) NOT NULL */
         string name;
 
         /** create row with supplied primary key field values. */
@@ -329,13 +329,13 @@ namespace openm
     /** profile_option table row. */
     struct ProfileOptionRow : public IMetaRow<ProfileOptionRow>
     {
-        /** profile_name VARCHAR(32) NOT NULL */
+        /** profile_name VARCHAR(255)  NOT NULL */
         string name;
 
         /** option_key   VARCHAR(255)  NOT NULL */
         string key;
 
-        /** option_value VARCHAR(1024) NOT NULL */
+        /** option_value VARCHAR(2048) NOT NULL */
         string value;
 
         /** create row with supplied primary key field values. */
@@ -363,13 +363,13 @@ namespace openm
     /** run_option table row. */
     struct RunOptionRow : public IMetaRow<RunOptionRow>
     {
-        /** run_id    INT NOT NULL */
+        /** run_id       INT NOT NULL */
         int runId;
 
         /** option_key   VARCHAR(255)  NOT NULL */
         string key;
 
-        /** option_value VARCHAR(1024) NOT NULL */
+        /** option_value VARCHAR(2048) NOT NULL */
         string value;
 
         /** create row with supplied primary key field values. */
@@ -397,13 +397,13 @@ namespace openm
     /** type_dic table row. */
     struct TypeDicRow : public IMetaRow<TypeDicRow>
     {
-        /** model_id      INT         NOT NULL */
+        /** model_id      INT          NOT NULL */
         int modelId;
 
-        /** mod_type_id   INT         NOT NULL */
+        /** mod_type_id   INT          NOT NULL */
         int typeId;
 
-        /** mod_type_name VARCHAR(64) NOT NULL, -- type name: int, double, etc. */
+        /** mod_type_name VARCHAR(255) NOT NULL, -- type name: int, double, etc. */
         string name;
 
         /** dic_id INT NOT NULL, -- dictionary id: 0=simple 1=logical 2=classification 3=range 4=partition 5=link */
@@ -442,19 +442,19 @@ namespace openm
     /** type_dic_txt table row. */
     struct TypeDicTxtRow : public IMetaRow<TypeDicTxtRow>
     {
-        /** model_id     INT NOT NULL */
+        /** model_id    INT NOT NULL */
         int modelId;
         
-        /** mod_type_id  INT NOT NULL */
+        /** mod_type_id INT NOT NULL */
         int typeId;
         
-        /** lang_id      INT NOT NULL */
+        /** lang_id     INT NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr       VARCHAR(255) NOT NULL */
         string descr;
         
-        /** note         VARCHAR(32000) */
+        /** note        VARCHAR(32000) */
         string note;
         
         /** create row with supplied primary key field values. */
@@ -497,16 +497,16 @@ namespace openm
     /** type_enum_lst table row. */
     struct TypeEnumLstRow : public IMetaRow<TypeEnumLstRow>
     {
-        /** model_id      INT         NOT NULL */
+        /** model_id    INT          NOT NULL */
         int modelId;
 
-        /** mod_type_id   INT         NOT NULL */
+        /** mod_type_id INT          NOT NULL */
         int typeId;
 
-        /** enum_id       INT         NOT NULL */
+        /** enum_id     INT          NOT NULL */
         int enumId;
 
-        /** enum_name     VARCHAR(64) NOT NULL */
+        /** enum_name   VARCHAR(255) NOT NULL */
         string name;
 
         /** create row with supplied primary key field values. */
@@ -538,22 +538,22 @@ namespace openm
     /** type_enum_txt table row. */
     struct TypeEnumTxtRow : public IMetaRow<TypeEnumTxtRow>
     {
-        /** model_id     INT NOT NULL */
+        /** model_id    INT NOT NULL */
         int modelId;
         
-        /** mod_type_id  INT NOT NULL */
+        /** mod_type_id INT NOT NULL */
         int typeId;
         
-        /** enum_id      INT NOT NULL */
+        /** enum_id     INT NOT NULL */
         int enumId;
         
-        /** lang_id      INT NOT NULL */
+        /** lang_id     INT NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr       VARCHAR(255) NOT NULL */
         string descr;
         
-        /** note         VARCHAR(32000) */
+        /** note        VARCHAR(32000) */
         string note;
         
         /** create row with supplied primary key field values. */
@@ -600,31 +600,31 @@ namespace openm
     /** parameter_dic table row. */
     struct ParamDicRow : public IMetaRow<ParamDicRow>
     {
-        /** model_id       INT         NOT NULL */
+        /** model_id       INT          NOT NULL */
         int modelId;
 
-        /** parameter_id   INT         NOT NULL */
+        /** parameter_id   INT          NOT NULL */
         int paramId;
 
-        /** db_name_suffix VARCHAR(32) NOT NULL */
+        /** db_name_suffix VARCHAR(32)  NOT NULL */
         string dbNameSuffix;
 
-        /** parameter_name VARCHAR(64) NOT NULL */
+        /** parameter_name VARCHAR(255) NOT NULL */
         string paramName;
 
-        /** parameter_rank INT         NOT NULL */
+        /** parameter_rank INT          NOT NULL */
         int rank;
 
-        /** mod_type_id    INT NOT NULL */
+        /** mod_type_id    INT          NOT NULL */
         int typeId;
 
-        /** is_hidden      SMALLINT    NOT NULL */
+        /** is_hidden      SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** is_generated   SMALLINT    NOT NULL */
+        /** is_generated   SMALLINT     NOT NULL */
         bool isGenerated;
 
-        /** num_cumulated  INT         NOT NULL */
+        /** num_cumulated  INT          NOT NULL */
         int numCumulated;
 
         /** create row with supplied primary key field values. */
@@ -670,7 +670,7 @@ namespace openm
         /** lang_id      INT NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr        VARCHAR(255) NOT NULL */
         string descr;
         
         /** note         VARCHAR(32000) */
@@ -807,22 +807,22 @@ namespace openm
     /** workset_lst table row. */
     struct WorksetLstRow : public IMetaRow<WorksetLstRow>
     {
-        /** set_id      INT         NOT NULL */
+        /** set_id      INT          NOT NULL */
         int setId;
 
-        /** run_id      INT         NULL */
+        /** run_id      INT          NULL */
         int runId;
 
-        /** model_id    INT         NOT NULL */
+        /** model_id    INT          NOT NULL */
         int modelId;
 
-        /** set_name    VARCHAR(64) NOT NULL */
+        /** set_name    VARCHAR(255) NOT NULL */
         string name;
 
-        /** is_readonly SMALLINT    NOT NULL */
+        /** is_readonly SMALLINT     NOT NULL */
         bool isReadonly;
         
-        /** update_dt   VARCHAR(32) NOT NULL */
+        /** update_dt   VARCHAR(32)  NOT NULL */
         string updateDateTime;
 
         /** create row with supplied primary key field values. */
@@ -853,16 +853,16 @@ namespace openm
     /** workset_txt table row. */
     struct WorksetTxtRow : public IMetaRow<WorksetTxtRow>
     {
-        /** set_id   INT            NOT NULL */
+        /** set_id   INT          NOT NULL */
         int setId;
 
-        /** model_id INT            NOT NULL */
+        /** model_id INT          NOT NULL */
         int modelId;
 
-        /** lang_id  INT            NOT NULL */
+        /** lang_id  INT          NOT NULL */
         int langId;
 
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
 
         /** note     VARCHAR(32000)          */
@@ -932,19 +932,19 @@ namespace openm
     /** workset_parameter_txt table row. */
     struct WorksetParamTxtRow : public IMetaRow<WorksetParamTxtRow>
     {
-        /** set_id   INT            NOT NULL */
+        /** set_id       INT        NOT NULL */
         int setId;
 
-        /** model_id INT            NOT NULL */
+        /** model_id     INT        NOT NULL */
         int modelId;
 
         /** parameter_id INT        NOT NULL */
         int paramId;
 
-        /** lang_id  INT            NOT NULL */
+        /** lang_id      INT        NOT NULL */
         int langId;
 
-        /** note     VARCHAR(32000)          */
+        /** note         VARCHAR(32000)      */
         string note;
 
         /** create row with supplied primary key field values. */
@@ -979,28 +979,28 @@ namespace openm
     /** table_dic table row. */
     struct TableDicRow : public IMetaRow<TableDicRow>
     {
-        /** model_id INT NOT NULL */
+        /** model_id       INT NOT NULL          */
         int modelId;
         
-        /** table_id INT NOT NULL */
+        /** table_id       INT NOT NULL          */
         int tableId;
         
-        /** db_name_suffix VARCHAR(64) NOT NULL */
+        /** db_name_suffix VARCHAR(64) NOT NULL  */
         string dbNameSuffix;
         
-        /** table_name VARCHAR(64) NOT NULL */
+        /** table_name     VARCHAR(255) NOT NULL */
         string tableName;
         
-        /** is_user SMALLINT NOT NULL */
+        /** is_user        SMALLINT NOT NULL     */
         bool isUser;
         
-        /** table_rank INT NOT NULL */
+        /** table_rank     INT NOT NULL          */
         int rank;
         
-        /** is_sparse SMALLINT NOT NULL */
+        /** is_sparse      SMALLINT NOT NULL     */
         bool isSparse;
         
-        /** is_hidden SMALLINT NOT NULL */
+        /** is_hidden      SMALLINT NOT NULL     */
         bool isHidden;
 
         /** create row with supplied primary key field values. */
@@ -1036,19 +1036,19 @@ namespace openm
     /** table_dic_txt table row. */
     struct TableDicTxtRow : public IMetaRow<TableDicTxtRow>
     {
-        /** model_id       INT NOT NULL */
+        /** model_id   INT NOT NULL */
         int modelId;
         
-        /** table_id       INT NOT NULL */
+        /** table_id   INT NOT NULL */
         int tableId;
         
-        /** lang_id        INT NOT NULL */
+        /** lang_id    INT NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr      VARCHAR(255) NOT NULL */
         string descr;
         
-        /** note           VARCHAR(32000) */
+        /** note       VARCHAR(32000)        */
         string note;
         
         /** unit_descr VARCHAR(255) NOT NULL */
@@ -1149,19 +1149,19 @@ namespace openm
     /** table_dims_txt table row. */
     struct TableDimsTxtRow : public IMetaRow<TableDimsTxtRow>
     {
-        /** model_id INT NOT NULL */
+        /** model_id INT          NOT NULL */
         int modelId;
         
-        /** table_id INT NOT NULL */
+        /** table_id INT          NOT NULL */
         int tableId;
         
-        /** dim_name VARCHAR(8) NOT NULL */
+        /** dim_name VARCHAR(8)   NOT NULL */
         string name;
         
-        /** lang_id  INT NOT NULL */
+        /** lang_id  INT          NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
         
         /** note     VARCHAR(32000) */
@@ -1253,19 +1253,19 @@ namespace openm
     /** table_acc_txt table row. */
     struct TableAccTxtRow : public IMetaRow<TableAccTxtRow>
     {
-        /** model_id INT           NOT NULL */
+        /** model_id INT          NOT NULL */
         int modelId;
         
-        /** TableID  INT           NOT NULL */
+        /** table_id INT          NOT NULL */
         int tableId;
         
-        /** acc_id INT             NOT NULL */
+        /** acc_id   INT          NOT NULL */
         int accId;
         
-        /** lang_id  INT           NOT NULL */
+        /** lang_id  INT          NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
         
         /** note     VARCHAR(32000) */
@@ -1312,25 +1312,25 @@ namespace openm
     /** table_unit table row. */
     struct TableUnitRow : public IMetaRow<TableUnitRow>
     {
-        /** model_id      INT NOT NULL */
+        /** model_id      INT           NOT NULL */
         int modelId;
         
-        /** table_id      INT NOT NULL */
+        /** table_id      INT           NOT NULL */
         int tableId;
         
-        /** unit_id       INT NOT NULL */
+        /** unit_id       INT           NOT NULL */
         int unitId;
         
-        /** unit_name     VARCHAR(8) NOT NULL */
+        /** unit_name     VARCHAR(8)    NOT NULL */
         string name;
         
-        /** unit_decimals INT NOT NULL */
+        /** unit_decimals INT           NOT NULL */
         int decimals;
         
-        /** unit_src      VARCHAR(255) NOT NULL */
+        /** unit_src      VARCHAR(255)  NOT NULL */
         string src;
 
-        /** unit_expr     VARCHAR(4000) NOT NULL */
+        /** unit_expr     VARCHAR(2048) NOT NULL */
         string expr;
 
         /** create row with supplied primary key field values. */
@@ -1365,19 +1365,19 @@ namespace openm
     /** table_unit_txt table row. */
     struct TableUnitTxtRow : public IMetaRow<TableUnitTxtRow>
     {
-        /** model_id INT NOT NULL */
+        /** model_id INT          NOT NULL */
         int modelId;
         
-        /** TableID  INT NOT NULL */
+        /** TableID  INT          NOT NULL */
         int tableId;
         
-        /** unit_id  INT NOT NULL */
+        /** unit_id  INT          NOT NULL */
         int unitId;
         
-        /** lang_id  INT NOT NULL */
+        /** lang_id  INT          NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
         
         /** note     VARCHAR(32000) */
@@ -1424,22 +1424,22 @@ namespace openm
     /** group_lst table row. */
     struct GroupLstRow : public IMetaRow<GroupLstRow>
     {
-        /** model_id     INT         NOT NULL */
+        /** model_id     INT          NOT NULL */
         int modelId;
 
-        /** group_id     INT         NOT NULL */
+        /** group_id     INT          NOT NULL */
         int groupId;
 
-        /** is_parameter SMALLINT    NOT NULL */
+        /** is_parameter SMALLINT     NOT NULL */
         bool isParam;
 
-        /** group_name   VARCHAR(64) NOT NULL */
+        /** group_name   VARCHAR(255) NOT NULL */
         string name;
 
-        /** is_hidden    SMALLINT    NOT NULL */
+        /** is_hidden    SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** is_generated SMALLINT    NOT NULL */
+        /** is_generated SMALLINT     NOT NULL */
         bool isGenerated;
 
         /** create row with supplied primary key field values. */
@@ -1479,7 +1479,7 @@ namespace openm
         /** lang_id  INT          NOT NULL */
         int langId;
         
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
         
         /** note     VARCHAR(32000) */

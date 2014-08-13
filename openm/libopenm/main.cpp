@@ -54,7 +54,7 @@ OM_EVENT_LOOP_HANDLER RunModelHandler;
 /** model shutdown method: save output results */
 OM_SHUTDOWN_HANDLER ModelShutdownHandler;
 
-/** main entry point */  
+/** main entry point */
 int main(int argc, char ** argv) 
 {
     try {
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
             runCtrl.argOpts().strOption(ArgKey::logFilePath).c_str(),
             runCtrl.argOpts().boolOption(ArgKey::logUseTs),
             runCtrl.argOpts().boolOption(ArgKey::logUsePid),
-            runCtrl.argOpts().boolOption(ArgKey::logNoTimeConsole),
+            runCtrl.argOpts().boolOption(ArgKey::logNoMsgTime),
             runCtrl.argOpts().boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Model", OM_MODEL_NAME);

@@ -35,8 +35,8 @@ namespace openm
     /** use pid-stamp in log "stamped" file name */
     const char * ArgKey::logUsePid = "OpenM.LogUsePidStamp";
 
-    /** do not prefix console log messages with date-time */
-    const char * ArgKey::logNoTimeConsole = "OpenM.LogNoTimeConsole";
+    /** do not prefix log messages with date-time */
+    const char * ArgKey::logNoMsgTime = "OpenM.LogNoMsgTime";
 
     /** log sql */
     const char * ArgKey::logSql = "OpenM.LogSql";

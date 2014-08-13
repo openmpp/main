@@ -14,7 +14,7 @@ const string ModelInsertSql::makeModelPrefix(const string & i_name, const string
     if (i_timestamp.empty() || trim(i_timestamp).length() < 16) throw DbException("invalid (too short) model timestamp");
 
     // validate model name and timestamp max size
-    if (i_name.length() > 32 || i_timestamp.length() > 32) 
+    if (i_name.length() > 255 || i_timestamp.length() > 32) 
         throw DbException("invalid (too long) model name: %s or timestamp: %s", i_name.c_str(), i_timestamp.c_str());
 
     // in model name use only [a-z,0-9] and _ underscore
@@ -43,7 +43,7 @@ const string ModelInsertSql::makeDbNameSuffix(int i_id, const string & i_src)
 template<> const void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
-    if (i_row.version.length() > 32) throw DbException("invalid (too long) model version: %s", i_row.version.c_str());
+    if (i_row.version.length() > 255) throw DbException("invalid (too long) model version: %s", i_row.version.c_str());
 
     if (i_row.paramPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) parameter tables prefix: %s", i_row.paramPrefix.c_str());
     if (i_row.setPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) workset tables prefix: %s", i_row.setPrefix.c_str());
@@ -105,7 +105,7 @@ template<> const void ModelInsertSql::insertSql<TypeDicRow>(const TypeDicRow & i
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
 
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) type name");
-    if (i_row.name.length() > 64) throw DbException("invalid (too long) type name: %s", i_row.name.c_str());
+    if (i_row.name.length() > 255) throw DbException("invalid (too long) type name: %s", i_row.name.c_str());
 
     if (i_row.dicId < 0) throw DbException("invalid (negative) dictionary id: %d, type: %s", i_row.dicId, i_row.name.c_str());
     if (i_row.dicId != 0 && i_row.totalEnumId <= 0) 
@@ -159,7 +159,7 @@ template<> const void ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnumLs
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
 
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) enum name, type id: %d", i_row.typeId);
-    if (i_row.name.length() > 64) throw DbException("invalid (too long) enum name: %s, type id: %d", i_row.name.c_str(), i_row.typeId);
+    if (i_row.name.length() > 255) throw DbException("invalid (too long) enum name: %s, type id: %d", i_row.name.c_str(), i_row.typeId);
 
     if (i_row.enumId < 0) throw DbException("invalid (negative) enum %s id: %d, type id: %d", i_row.name.c_str(), i_row.enumId, i_row.typeId);
 
@@ -210,7 +210,7 @@ template<> const void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow &
     if (i_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", i_row.paramId);
 
     if (i_row.paramName.empty() || i_row.paramName.length() < 1) throw DbException("invalid (empty) parameter name, id: %d", i_row.paramId);
-    if (i_row.paramName.length() > 64) throw DbException("invalid (too long) parameter name: %s", i_row.paramName.c_str());
+    if (i_row.paramName.length() > 255) throw DbException("invalid (too long) parameter name: %s", i_row.paramName.c_str());
     
     if (i_row.rank < 0) throw DbException("invalid (negative) parameter %s rank: %d", i_row.paramName.c_str(), i_row.rank);
     if (i_row.typeId < 0) throw DbException("invalid (negative) parameter %s type id: %d", i_row.paramName.c_str(), i_row.typeId);
@@ -301,7 +301,7 @@ template<> const void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow &
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
 
     if (i_row.tableName.empty() || i_row.tableName.length() < 1) throw DbException("invalid (empty) output table name, id: %d", i_row.tableId);
-    if (i_row.tableName.length() > 64) throw DbException("invalid (too long) output table name: %s", i_row.tableName.c_str());
+    if (i_row.tableName.length() > 255) throw DbException("invalid (too long) output table name: %s", i_row.tableName.c_str());
     
     if (i_row.rank < 0) throw DbException("invalid (negative) output table %s rank: %d", i_row.tableName.c_str(), i_row.rank);
 
@@ -497,7 +497,7 @@ template<> const void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow
     if (i_row.src.length() > 255) throw DbException("invalid (too long) source expression: %s, id: %d, output table id: %d", i_row.src.c_str(), i_row.unitId, i_row.tableId);
 
     if (i_row.expr.empty()) throw DbException("invalid (empty) output expression, id: %d, output table id: %d", i_row.unitId, i_row.tableId);
-    if (i_row.expr.length() > 4000) throw DbException("invalid (too long) output expression: %s, id: %d, output table id: %d", i_row.expr.c_str(), i_row.unitId, i_row.tableId);
+    if (i_row.expr.length() > 2048) throw DbException("invalid (too long) output expression: %s, id: %d, output table id: %d", i_row.expr.c_str(), i_row.unitId, i_row.tableId);
 
     if (i_row.decimals < 0 || i_row.decimals > DBL_DIG) 
         throw DbException("invalid output expression decimals: %d, id: %d, output table id: %d", i_row.decimals, i_row.unitId, i_row.tableId);
@@ -558,7 +558,7 @@ template<> const void ModelInsertSql::insertSql<GroupLstRow>(const GroupLstRow &
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
 
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) group name, id: %d", i_row.groupId);
-    if (i_row.name.length() > 64) throw DbException("invalid (too long) group name: %s", i_row.name.c_str());
+    if (i_row.name.length() > 255) throw DbException("invalid (too long) group name: %s", i_row.name.c_str());
     
     // make sql
     io_wr.outFs <<

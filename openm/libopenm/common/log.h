@@ -21,9 +21,108 @@ using namespace std;
 #include "libopenm/omCommon.h"
 #include "libopenm/common/omHelper.h"
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4250)
+#endif  // _WIN32
+
 namespace openm
 {
-    /**   
+    /** Log base class: log to console and into log files. */
+    class LogBase : public virtual ILogBase
+    {
+    public:
+        /**
+        * create log instance.
+        *
+        * @param[in]   i_logToConsole  if true then log to console
+        * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
+        * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
+        * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+        */
+        LogBase(
+            bool i_logToConsole,
+            const char * i_basePath,
+            bool i_useTimeStamp,
+            bool i_usePidStamp,
+            bool i_noMsgTime
+            );
+        ~LogBase(void) throw();
+
+        /** log message */
+        void logMsg(const char * i_msg, const char * i_extra = NULL) throw();
+
+        /** log message formatted with vsnprintf() */
+        void logFormatted(const char * i_format, ...) throw();
+
+        /** return timestamp suffix of log file name: _20120817_160459_0148.
+        *
+        * it is never return empty "" string, even no log enabled or timestamp disabled for log file
+        */
+        const string timeStampSuffix(void) throw();
+
+        /** return "stamped" log file name suffix which may include timestamp and pid. */
+        const string suffix(void) throw();
+
+        /** re-initialize log file name(s) and other log settings.
+        *
+        * @param[in]   i_logToConsole  if true then log to console
+        * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
+        * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
+        * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+        */
+        void init(
+            bool i_logToConsole,
+            const char * i_basePath,
+            bool i_useTimeStamp = false,
+            bool i_usePidStamp = false,
+            bool i_noMsgTime = false
+            ) throw();
+
+    protected:
+        recursive_mutex theMutex;   // mutex to lock for log operations
+        bool isConsoleEnabled;      // if true then log to console
+        bool isLastEnabled;         // if true then last log enabled
+        bool isLastCreated;         // if true then last log file created
+        bool isStampedEnabled;      // if true then last log enabled
+        bool isStampedCreated;      // if true then last log file created
+        string tsSuffix;            // log file name timestamp suffix: _20120817_160459_0148
+        string pidSuffix;           // log file name pid suffix: .1234
+        string fileSuffix;          // log file name timestamp and pid suffix: _20120817_160459_0148.1234
+        string lastPath;            // last log file path: /var/log/openm.log
+        string stampedPath;         // stamped log file path: /var/log/openm_20120817_160459_0148.1234.log
+        bool isNoMsgTime;           // if true then not prefix messages with date-time
+
+        static const size_t msgBufferSize = 32768;
+        char msgBuffer[msgBufferSize + 1];          // buffer to format message
+
+    protected:
+        // create log file or truncate existing, return false on error
+        bool logFileCreate(const string & i_path) throw();
+
+        // log to console
+        bool logToConsole(
+            const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+            ) throw();
+
+        // log to file, return false on error
+        virtual bool logToFile(
+            bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+            ) throw() = 0;
+
+        // write date-time and message to output stream, return false on error
+        void writeToLog(
+            ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+            );
+
+    private:
+        LogBase(const LogBase & i_log) = delete;
+        LogBase & operator=(const LogBase & i_log) = delete;
+    };
+
+    /**
     * log implementation class: log to console and into log files.
     *
     * log can be enabled/disabled for 3 independent streams: \n
@@ -34,7 +133,7 @@ namespace openm
     * "stamped" name produced from "last run" name by adding time-stamp and pid-stamp, i.e.: \n
     *  modelOne.log => modelOne_20120817_160459_0148.1234.log
     */
-    class Log : public ILog
+    class Log : public LogBase, public ILog
     {
     public:
         /**
@@ -61,7 +160,7 @@ namespace openm
          * @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
-         * @param[in]   i_noTimeConsole if true then not console prefix log messgaes with date-time
+         * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
          * @param[in]   i_isLogSql      if true then log SQL
          */
         void init(
@@ -69,15 +168,9 @@ namespace openm
             const char * i_basePath,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false, 
-            bool i_noTimeConsole = false,
+            bool i_noMsgTime = false,
             bool i_isLogSql = false
             ) throw();
-
-        /** log message */
-        void logMsg(const char * i_msg, const char * i_extra = nullptr) throw();
-
-        /** log message formatted with vsnprintf() */
-        void logFormatted(const char * i_format, ...) throw();
 
         /** log exception */
         void logErr(const exception & i_ex, const char * i_msg = nullptr) throw();
@@ -85,58 +178,88 @@ namespace openm
         /** log sql query */
         void logSql(const char * i_sql) throw();
 
-        /** return timestamp and pid suffix of log file name: _20120817_160459_0148\.1234 */
-        const string suffix(void) throw();
-
-        /** return timestamp suffix of log file name: _20120817_160459_0148 */
-        const string timeStampSuffix(void) throw();
-
     private:
-        recursive_mutex theMutex;   // mutex to lock for log operations
-        bool isConsoleEnabled;      // if true then log to console
-        bool isNoTimeConsole;       // if true then not prefix console messages with date-time
         bool isSqlLog;              // if true then log sql queries into last log
-        bool isLastEnabled;         // if true then last log enabled
-        bool isLastCreated;         // if true then last log file created
-        bool isStampedEnabled;      // if true then last log enabled
-        bool isStampedCreated;      // if true then last log file created
-        string tsSuffix_;           // log file name timestamp suffix: _20120817_160459_0148
-        string pidSuffix_;          // log file name pid suffix: .1234
-        string suffix_;             // log file name timestamp and pid suffix: _20120817_160459_0148.1234
-        string lastPath_;           // last log file path: /var/log/openm.log
-        string stampedPath_;        // stamped log file path: /var/log/openm_20120817_160459_0148.1234.log
-
-        // set log file names
-        // "last" log file name, ie: /var/log/openm.log 
-        // "stamped" log file name (with optional timestamp and pid suffixes): /var/log/openm_20120817_160459_0148.1234.log
-        void setLogPath(
-            const char * i_basePath, 
-            bool i_useTimeStamp = false, 
-            bool i_usePidStamp = false
-            );
-
-        // log to console
-        static bool logToConsole(
-            const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) throw();
-
-        // create log file or truncate existing, return false on error
-        static bool logFileCreate(const string & i_path) throw();
 
         // log to file, return false on error
-        static bool logToFile(
-            const string & i_path, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+        bool logToFile(
+            bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             ) throw();
-
-        // write date-time and message to output stream, return false on error
-        static void writeToLog(
-            ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            );
 
     private:
         Log(const Log & i_log) = delete;
         Log & operator=(const Log & i_log) = delete;
     };
+
+    /**
+    * trace log implementation class: model event log to console and into log files.
+    *
+    * trace log is faster than "regular" log but may not be flashed on runtime errors. \n
+    * 
+    * log can be enabled/disabled for 3 independent streams: \n
+    *  console         - cout stream \n
+    *  "last run" file - log file with specified name, truncated on every model run \n
+    *  "stamped" file  - log file with unique name, created for every model run
+    *
+    * "stamped" name produced from "last run" name by adding time-stamp and pid-stamp, i.e.: \n
+    *   trace.log => trace_20120817_160459_0148.1234.log
+    */
+    class TraceLog : public LogBase, public ITrace
+    {
+    public:
+        /**
+        * create log instance.
+        *
+        * @param[in]   i_logToConsole  if true then log to console
+        * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
+        * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
+        * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+        */
+        TraceLog(
+            bool i_logToConsole = false,
+            const char * i_basePath = "",
+            bool i_useTimeStamp = false,
+            bool i_usePidStamp = false,
+            bool i_noMsgTime = false
+            ) : LogBase(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_noMsgTime)
+        { }
+
+        ~TraceLog(void) throw();
+
+        /** re-initialize log file name(s) and other log settings.
+        *
+        * @param[in]   i_logToConsole  if true then log to console
+        * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
+        * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
+        * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+        */
+        void init(
+            bool i_logToConsole,
+            const char * i_basePath,
+            bool i_useTimeStamp = false,
+            bool i_usePidStamp = false,
+            bool i_noMsgTime = false
+            ) throw();
+
+    private:
+        ofstream lastSt;        // last log output stream
+        ofstream stampedSt;     // stamped log output stream
+
+        // log to file, return false on error
+        bool logToFile(
+            bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+            ) throw();
+
+    private:
+        TraceLog(const TraceLog & i_log) = delete;
+        TraceLog & operator=(const TraceLog & i_log) = delete;
+    };
 }
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif  // _WIN32
 
 #endif  // OM_LOG_H

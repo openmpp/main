@@ -74,7 +74,6 @@ namespace openm {
 // This module is made part of the model by a 'use' statement
 // in the model simulation framework module.
 extern void SetMaxTime(double max_value);
-extern void WriteDebugLogEntry(const char * fmt, ...);
 extern void StartEventTrace();
 extern void StopEventTrace();
 void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time);

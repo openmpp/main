@@ -22,9 +22,9 @@ CREATE TABLE IF NOT EXISTS id_lst
 -- 
 CREATE TABLE IF NOT EXISTS lang_lst
 (
-  lang_id   INT         NOT NULL, -- unique language id across all models
-  lang_code VARCHAR(32) NOT NULL, -- language code: en_US
-  lang_name VARCHAR(32) NOT NULL, -- language name
+  lang_id   INT          NOT NULL, -- unique language id across all models
+  lang_code VARCHAR(32)  NOT NULL, -- language code: en_US
+  lang_name VARCHAR(255) NOT NULL, -- language name
   PRIMARY KEY (lang_id),
   CONSTRAINT lang_un UNIQUE (lang_code)
 );
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS lang_lst
 -- 
 CREATE TABLE IF NOT EXISTS lang_word
 (
-  lang_id    INT         NOT NULL, -- master key
-  word_code  VARCHAR(8)  NOT NULL, -- word key: all, min, max
-  word_value VARCHAR(32) NOT NULL, -- actual word in that language
+  lang_id    INT          NOT NULL, -- master key
+  word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
+  word_value VARCHAR(255) NOT NULL, -- actual word in that language
   PRIMARY KEY (lang_id, word_code),
   CONSTRAINT lang_word_mk 
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
@@ -47,16 +47,16 @@ CREATE TABLE IF NOT EXISTS lang_word
 --
 CREATE TABLE IF NOT EXISTS model_dic 
 (
-  model_id         INT         NOT NULL, -- unique model id for each name and version
-  model_name       VARCHAR(32) NOT NULL, -- model name: ModelOne
-  model_type       INT         NOT NULL, -- model type: 0 = case based, 1 = time based
-  model_ver        VARCHAR(32) NOT NULL, -- model version
-  model_ts         VARCHAR(32) NOT NULL, -- compilation timestamp: _201208171604590148_
-  model_prefix     VARCHAR(32) NOT NULL, -- table name prefix: modelone_201208171604590148_
-  parameter_prefix VARCHAR(4)  NOT NULL, -- parameter tables prefix: p
-  workset_prefix   VARCHAR(4)  NOT NULL, -- workset tables prefix: w
-  sub_prefix       VARCHAR(4)  NOT NULL, -- subsample tables prefix: s
-  value_prefix     VARCHAR(4)  NOT NULL, -- value tables prefix: v
+  model_id         INT          NOT NULL, -- unique model id for each name and version
+  model_name       VARCHAR(255) NOT NULL, -- model name: modelOne
+  model_type       INT          NOT NULL, -- model type: 0 = case based, 1 = time based
+  model_ver        VARCHAR(255) NOT NULL, -- model version
+  model_ts         VARCHAR(32)  NOT NULL, -- compilation timestamp: _201208171604590148_
+  model_prefix     VARCHAR(32)  NOT NULL, -- table name prefix: modelOne_201208171604590148_
+  parameter_prefix VARCHAR(4)   NOT NULL, -- parameter tables prefix: p
+  workset_prefix   VARCHAR(4)   NOT NULL, -- workset tables prefix: w
+  sub_prefix       VARCHAR(4)   NOT NULL, -- subsample tables prefix: s
+  value_prefix     VARCHAR(4)   NOT NULL, -- value tables prefix: v
   PRIMARY KEY (model_id), 
   CONSTRAINT model_dic_un_1 UNIQUE (model_name, model_ts),
   CONSTRAINT model_dic_un_2 UNIQUE (model_prefix)
@@ -85,13 +85,13 @@ CREATE TABLE IF NOT EXISTS model_dic_txt
 --
 CREATE TABLE IF NOT EXISTS run_lst
 (
-  run_id        INT         NOT NULL, -- unique run id
-  model_id      INT         NOT NULL, -- model id
-  run_name      VARCHAR(64) NOT NULL, -- model run name
-  sub_count     INT         NOT NULL, -- subsamples count
-  sub_started   INT         NOT NULL, -- if <> 0 then number of subsamples started
-  sub_completed INT         NOT NULL, -- if <> 0 then number of subsamples completed
-  create_dt     VARCHAR(32) NOT NULL, -- creation date-time
+  run_id        INT          NOT NULL, -- unique run id
+  model_id      INT          NOT NULL, -- model id
+  run_name      VARCHAR(255) NOT NULL, -- model run name
+  sub_count     INT          NOT NULL, -- subsamples count
+  sub_started   INT          NOT NULL, -- if <> 0 then number of subsamples started
+  sub_completed INT          NOT NULL, -- if <> 0 then number of subsamples completed
+  create_dt     VARCHAR(32)  NOT NULL, -- creation date-time
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
@@ -120,7 +120,7 @@ CREATE TABLE run_txt
 --
 CREATE TABLE IF NOT EXISTS profile_lst
 (
-  profile_name VARCHAR(32) NOT NULL, -- unique profile name
+  profile_name VARCHAR(255) NOT NULL, -- unique profile name
   PRIMARY KEY (profile_name)
 );
 
@@ -129,9 +129,9 @@ CREATE TABLE IF NOT EXISTS profile_lst
 --
 CREATE TABLE IF NOT EXISTS profile_option
 (
-  profile_name VARCHAR(32)   NOT NULL, -- master key
+  profile_name VARCHAR(255)  NOT NULL, -- master key
   option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
-  option_value VARCHAR(1024) NOT NULL, -- option value
+  option_value VARCHAR(2048) NOT NULL, -- option value
   PRIMARY KEY (profile_name, option_key),
   CONSTRAINT profile_option_mk 
              FOREIGN KEY (profile_name) REFERENCES profile_lst(profile_name)
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS run_option
 (
   run_id       INT           NOT NULL, -- master key
   option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
-  option_value VARCHAR(1024) NOT NULL, -- option value
+  option_value VARCHAR(2048) NOT NULL, -- option value
   PRIMARY KEY (run_id, option_key),
   CONSTRAINT run_option_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst(run_id)
@@ -156,11 +156,11 @@ CREATE TABLE IF NOT EXISTS run_option
 -- 
 CREATE TABLE IF NOT EXISTS type_dic
 (
-  model_id      INT         NOT NULL, -- master key
-  mod_type_id   INT         NOT NULL, -- unique type id
-  mod_type_name VARCHAR(64) NOT NULL, -- type name: int, double...
-  dic_id        INT         NOT NULL, -- dictionary id: 0=simple 1=logical 2=classification 3=range 4=partition 5=link
-  total_enum_id INT         NOT NULL, -- if total enabled this is enum_id of "Total" item =max+1
+  model_id      INT          NOT NULL, -- master key
+  mod_type_id   INT          NOT NULL, -- unique type id
+  mod_type_name VARCHAR(255) NOT NULL, -- type name: int, double...
+  dic_id        INT          NOT NULL, -- dictionary id: 0=simple 1=logical 2=classification 3=range 4=partition 5=link
+  total_enum_id INT          NOT NULL, -- if total enabled this is enum_id of "Total" item =max+1
   PRIMARY KEY (model_id, mod_type_id),
   CONSTRAINT type_dic_un UNIQUE (model_id, mod_type_name),
   CONSTRAINT type_dic_mk 
@@ -189,10 +189,10 @@ CREATE TABLE IF NOT EXISTS type_dic_txt
 --
 CREATE TABLE IF NOT EXISTS type_enum_lst
 (
-  model_id    INT         NOT NULL, -- master key
-  mod_type_id INT         NOT NULL, -- master key
-  enum_id     INT         NOT NULL, -- unique enum id, zero-based
-  enum_name   VARCHAR(64) NOT NULL, -- enum name, ie: "true", "Ontario", "[90, max["
+  model_id    INT          NOT NULL, -- master key
+  mod_type_id INT          NOT NULL, -- master key
+  enum_id     INT          NOT NULL, -- unique enum id, zero-based
+  enum_name   VARCHAR(255) NOT NULL, -- enum name, ie: "true", "Ontario", "[90, max["
   PRIMARY KEY (model_id, mod_type_id, enum_id),
   CONSTRAINT type_enum_lst_mk
              FOREIGN KEY (model_id, mod_type_id) REFERENCES type_dic (model_id, mod_type_id)
@@ -221,15 +221,15 @@ CREATE TABLE IF NOT EXISTS type_enum_txt
 --
 CREATE TABLE IF NOT EXISTS parameter_dic
 (
-  model_id       INT         NOT NULL, -- master key
-  parameter_id   INT         NOT NULL, -- unique parameter id
-  db_name_suffix VARCHAR(32) NOT NULL, -- unique part for db table name: 1234_ageSex
-  parameter_name VARCHAR(64) NOT NULL, -- parameter name
-  parameter_rank INT         NOT NULL, -- parameter rank
-  mod_type_id    INT         NOT NULL, -- parameter type id
-  is_hidden      SMALLINT    NOT NULL, -- if <> 0 then parameter is hidden
-  is_generated   SMALLINT    NOT NULL, -- if <> 0 then parameter is model generated
-  num_cumulated  INT         NOT NULL, -- number of cumulated dimensions
+  model_id       INT          NOT NULL, -- master key
+  parameter_id   INT          NOT NULL, -- unique parameter id
+  db_name_suffix VARCHAR(32)  NOT NULL, -- unique part for db table name: 1234_ageSex
+  parameter_name VARCHAR(255) NOT NULL, -- parameter name
+  parameter_rank INT          NOT NULL, -- parameter rank
+  mod_type_id    INT          NOT NULL, -- parameter type id
+  is_hidden      SMALLINT     NOT NULL, -- if <> 0 then parameter is hidden
+  is_generated   SMALLINT     NOT NULL, -- if <> 0 then parameter is model generated
+  num_cumulated  INT          NOT NULL, -- number of cumulated dimensions
   PRIMARY KEY (model_id, parameter_id),
   CONSTRAINT parameter_dic_un UNIQUE (model_id, db_name_suffix),
   CONSTRAINT parameter_dic_mk 
@@ -305,12 +305,12 @@ CREATE TABLE IF NOT EXISTS parameter_dims
 --
 CREATE TABLE IF NOT EXISTS workset_lst
 (
-  set_id      INT         NOT NULL, -- unique working set id
-  run_id      INT         NULL,     -- if not NULL and positive then base run id (source run id)
-  model_id    INT         NOT NULL, -- model id
-  set_name    VARCHAR(64) NOT NULL, -- working set name
-  is_readonly SMALLINT    NOT NULL, -- if non-zero then working set is read-only
-  update_dt   VARCHAR(32) NOT NULL, -- last update date-time
+  set_id      INT          NOT NULL, -- unique working set id
+  run_id      INT          NULL,     -- if not NULL and positive then base run id (source run id)
+  model_id    INT          NOT NULL, -- model id
+  set_name    VARCHAR(255) NOT NULL, -- working set name
+  is_readonly SMALLINT     NOT NULL, -- if non-zero then working set is read-only
+  update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (set_id),
   CONSTRAINT workset_lst_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
@@ -370,14 +370,14 @@ CREATE TABLE IF NOT EXISTS workset_parameter_txt
 --
 CREATE TABLE IF NOT EXISTS table_dic 
 (
-  model_id       INT         NOT NULL, -- master key
-  table_id       INT         NOT NULL, -- unique table id
-  db_name_suffix VARCHAR(32) NOT NULL, -- unique part for db table name: 1234_salaryBySex
-  table_name     VARCHAR(64) NOT NULL, -- table name
-  is_user        SMALLINT    NOT NULL, -- if <> 0 then "user" table
-  table_rank     INT         NOT NULL, -- table rank
-  is_sparse      SMALLINT    NOT NULL, -- if <> 0 then table stored as sparse
-  is_hidden      SMALLINT    NOT NULL, -- if <> 0 then table is hidden
+  model_id       INT          NOT NULL, -- master key
+  table_id       INT          NOT NULL, -- unique table id
+  db_name_suffix VARCHAR(32)  NOT NULL, -- unique part for db table name: 1234_salaryBySex
+  table_name     VARCHAR(255) NOT NULL, -- table name
+  is_user        SMALLINT     NOT NULL, -- if <> 0 then "user" table
+  table_rank     INT          NOT NULL, -- table rank
+  is_sparse      SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
+  is_hidden      SMALLINT     NOT NULL, -- if <> 0 then table is hidden
   PRIMARY KEY (model_id, table_id),
   CONSTRAINT table_dic_un UNIQUE (model_id, db_name_suffix),
   CONSTRAINT table_dic_mk 
@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS table_unit
   unit_name     VARCHAR(8)    NOT NULL, -- item name: Expr2
   unit_decimals INT           NOT NULL, -- number of decimals for that item
   unit_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
-  unit_expr     VARCHAR(4000) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
+  unit_expr     VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
   PRIMARY KEY (model_id, table_id, unit_id),
   CONSTRAINT table_unit_un UNIQUE (model_id, table_id, unit_name),
   CONSTRAINT table_unit_mk 
@@ -515,12 +515,12 @@ CREATE TABLE IF NOT EXISTS table_unit_txt
 --
 CREATE TABLE IF NOT EXISTS group_lst
 (
-  model_id     INT         NOT NULL, -- master key
-  group_id     INT         NOT NULL, -- unique model group id
-  is_parameter SMALLINT    NOT NULL, -- if <> 0 then parameter group else output table group
-  group_name   VARCHAR(64) NOT NULL, -- group name
-  is_hidden    SMALLINT    NOT NULL, -- if <> 0 then group is hidden
-  is_generated SMALLINT    NOT NULL, -- if <> 0 then group is model generated
+  model_id     INT          NOT NULL, -- master key
+  group_id     INT          NOT NULL, -- unique model group id
+  is_parameter SMALLINT     NOT NULL, -- if <> 0 then parameter group else output table group
+  group_name   VARCHAR(255) NOT NULL, -- group name
+  is_hidden    SMALLINT     NOT NULL, -- if <> 0 then group is hidden
+  is_generated SMALLINT     NOT NULL, -- if <> 0 then group is model generated
   PRIMARY KEY (model_id, group_id),
   CONSTRAINT group_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_lst (model_id)

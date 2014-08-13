@@ -107,10 +107,6 @@ void CodeGen::do_preamble()
     h += "using namespace std;";
     h += "";
 
-    h += "// Debug log file";
-    h += "extern ofstream om_debug_log;";
-    h += "";
-
     // om_definitions.cpp
     c += doxygen(
                 "@file   om_definitions.cpp",
@@ -136,8 +132,6 @@ void CodeGen::do_preamble()
 	c += "using namespace openm;";
 	c += "";
 
-    c += "// Debug log file";
-    c += "ofstream om_debug_log(\"debug_log.txt\", ios_base::out | ios_base::trunc);";
     if (Symbol::option_event_trace) {
         // if event_trace option is on, tracing is active unless turned off
         c += "bool BaseEvent::trace_event_on = true;";

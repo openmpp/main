@@ -13,6 +13,15 @@ using namespace openm;
 
 namespace openm
 {
+    /** short name for options file name: -s fileName.ini */
+    const char * RunShortKey::optionsFile = "s";
+
+    /** compatibility short name for options file name: -sc fileName.ini */
+    const char * RunShortKey::optionsFileSc = "sc";
+
+    /** parameters started with "Parameter." treated as value of model scalar input parameters */
+    const char * RunOptionsKey::parameterPrefix = "Parameter";
+
     /** number of sub-samples */
     const char * RunOptionsKey::subSampleCount = "General.Subsamples";
 
@@ -37,14 +46,26 @@ namespace openm
     /** sparse null value */
     const char * RunOptionsKey::sparseNull = "OpenM.SparseNullValue";
 
-    /** short name for options file name: -s fileName.ini */
-    const char * RunShortKey::optionsFile = "s";
+    /** trace log to console */
+    const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
 
-    /** compatibility short name for options file name: -sc fileName.ini */
-    const char * RunShortKey::optionsFileSc = "sc";
+    /** trace log to file */
+    const char * RunOptionsKey::traceToFile = "OpenM.TraceToFile";
 
-    /** parameters started with "Parameter." treated as value of model scalar input parameters */
-    const char * RunOptionsKey::parameterPrefix = "Parameter";
+    /** trace log file path */
+    const char * RunOptionsKey::traceFilePath = "OpenM.TraceFilePath";
+
+    /** trace log to "stamped" file */
+    const char * RunOptionsKey::traceToStamped = "OpenM.TraceToStampedFile";
+
+    /** trace use time-stamp in log "stamped" file name */
+    const char * RunOptionsKey::traceUseTs = "OpenM.TraceUseTimeStamp";
+
+    /** trace use pid-stamp in log "stamped" file name */
+    const char * RunOptionsKey::traceUsePid = "OpenM.TraceUsePidStamp";
+
+    /** do not prefix trace log messages with date-time */
+    const char * RunOptionsKey::traceNoMsgTime = "OpenM.TraceNoMsgTime";
 }
 
 /** array of model run option keys. */
@@ -57,6 +78,13 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::profile,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
+    RunOptionsKey::traceToConsole,
+    RunOptionsKey::traceToFile,
+    RunOptionsKey::traceFilePath,
+    RunOptionsKey::traceToStamped,
+    RunOptionsKey::traceUseTs,
+    RunOptionsKey::traceUsePid,
+    RunOptionsKey::traceNoMsgTime,
     ArgKey::optionsFile,
     ArgKey::logToConsole,
     ArgKey::logToFile,
@@ -64,7 +92,7 @@ static const char * runOptKeyArr[] = {
     ArgKey::logToStamped,
     ArgKey::logUseTs,
     ArgKey::logUsePid,
-    ArgKey::logNoTimeConsole,
+    ArgKey::logNoMsgTime,
     ArgKey::logSql
 };
 static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);
@@ -372,6 +400,8 @@ void RunController::createRunOptions(
 
     // find set id of parameters workset, default is first set id for that model
     int setId = argStore.intOption(RunOptionsKey::setId, 0);
+    string setName = argStore.strOption(RunOptionsKey::setName);
+
     if (setId > 0) {
         int cnt = i_dbExec->selectToInt(
             "SELECT COUNT(*) FROM workset_lst WHERE set_id = " + to_string(setId), 0
@@ -379,7 +409,6 @@ void RunController::createRunOptions(
         if (cnt <= 0) throw DbException("working set id not found in database: %d", setId);
     }
     else {  // find set id by name, if setName option specified 
-        string setName = argStore.strOption(RunOptionsKey::setName);
 
         if (!setName.empty()) {
             setId = i_dbExec->selectToInt(
@@ -400,6 +429,14 @@ void RunController::createRunOptions(
     }
 
     argStore.args[RunOptionsKey::setId] = to_string(setId);     // add set id to run options
+
+    // get set name and store it as run option
+    if (setName.empty()) {
+        setName = i_dbExec->selectToStr(
+            "SELECT set_name FROM workset_lst WHERE set_id = " + to_string(setId)
+            );
+    }
+    argStore.args[RunOptionsKey::setName] = setName;            // add set name to run options
 
     // validate "Parameter." options: it must be name of scalar input parameter
     string parPrefix = string(RunOptionsKey::parameterPrefix) + ".";

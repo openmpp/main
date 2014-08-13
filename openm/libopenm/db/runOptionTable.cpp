@@ -28,6 +28,9 @@ namespace openm
         // get list of rows by run id
         vector<RunOptionRow> byRunId(int i_runId) const;
 
+        /** return true if primary key (run id, option key) found. */
+        bool isExist(int i_runId, const char * i_key) const throw();
+
         /** return string value by primary key (run id, option key) or default value if not found. */
         string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw();
 
@@ -128,6 +131,17 @@ vector<RunOptionRow> RunOptionTable::byRunId(int i_runId) const
 {
     const IRowBaseUptr row( new RunOptionRow(i_runId, "") );
     return IMetaTable<RunOptionRow>::findAll(row, rowVec, RunOptionRow::runIdEqual);
+}
+
+/** return true if primary key (run id, option key) found. */
+bool RunOptionTable::isExist(int i_runId, const char * i_key) const throw()
+{ 
+    try {
+        return i_key != NULL && byKey(i_runId, i_key) != NULL;
+    }
+    catch (...) { 
+        return false;
+    }
 }
 
 /** return string value by primary key (run id, option key) or default value if not found. */

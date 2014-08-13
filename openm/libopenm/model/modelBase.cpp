@@ -35,10 +35,28 @@ ModelBase::ModelBase(
         throw ModelException("database connection must be open at process %d", i_msgExec->rank());
 
     // set model run options
+    int runId = metaStore->runId;
+
     runOpts.subSampleCount = i_subCount;
     runOpts.subSampleNumber = i_subNumber;
-    runOpts.useSparse = metaStore->runOption->boolValue(metaStore->runId, RunOptionsKey::useSparse);
-    runOpts.nullValue = metaStore->runOption->doubleValue(metaStore->runId, RunOptionsKey::sparseNull, DBL_EPSILON);
+    runOpts.useSparse = metaStore->runOption->boolValue(runId, RunOptionsKey::useSparse);
+    runOpts.nullValue = metaStore->runOption->doubleValue(runId, RunOptionsKey::sparseNull, DBL_EPSILON);
+
+    // if trace log file enabled setup trace file name
+    string traceFilePath;
+    if (metaStore->runOption->boolValue(runId, RunOptionsKey::traceToFile)) {
+        traceFilePath = metaStore->runOption->strValue(runId, RunOptionsKey::traceFilePath);
+        if (traceFilePath.empty()) traceFilePath = metaStore->runOption->strValue(runId, RunOptionsKey::setName) + ".txt";
+    }
+
+    // adjust trace log with actual settings specified in model run options
+    theTrace->init(
+        metaStore->runOption->boolValue(runId, RunOptionsKey::traceToConsole),
+        traceFilePath.c_str(),
+        metaStore->runOption->boolValue(runId, RunOptionsKey::traceUseTs),
+        metaStore->runOption->boolValue(runId, RunOptionsKey::traceUsePid),
+        metaStore->runOption->boolValue(runId, RunOptionsKey::traceNoMsgTime) || !metaStore->runOption->isExist(runId, RunOptionsKey::traceNoMsgTime)
+        );
 }
 
 ModelBase::~ModelBase(void) throw()

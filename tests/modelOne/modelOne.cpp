@@ -36,6 +36,8 @@ void RunModel(IModel * i_model)
             }
         }
     }
+
+    theTrace->logMsg("Trace output: Event loop completed");
 }
 
 // Model startup method: initialize parameters

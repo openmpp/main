@@ -18,6 +18,9 @@ namespace openm
     /** keys for model run options */
     struct RunOptionsKey
     {
+        /** parameters started with "Parameter." treated as value of model scalar input parameters */
+        static const char * parameterPrefix;
+
         /** number of sub-samples */
         static const char * subSampleCount;
 
@@ -42,8 +45,26 @@ namespace openm
         /** sparse null value */
         static const char * sparseNull;
 
-        /** parameters started with "Parameter." treated as value of model scalar input parameters */
-        static const char * parameterPrefix;
+        /** trace log to console */
+        static const char * traceToConsole;
+
+        /** trace log to file */
+        static const char * traceToFile;
+
+        /** trace log file path */
+        static const char * traceFilePath;
+
+        /** trace log to "stamped" file */
+        static const char * traceToStamped;
+
+        /** trace use time-stamp in log "stamped" file name */
+        static const char * traceUseTs;
+
+        /** trace use pid-stamp in log "stamped" file name */
+        static const char * traceUsePid;
+
+        /** do not prefix trace log messages with date-time */
+        static const char * traceNoMsgTime;
     };
 
     /** keys for model run options (short form) */

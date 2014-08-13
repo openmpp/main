@@ -292,6 +292,9 @@ namespace openm
         /** get list of rows by run id. */
         virtual vector<RunOptionRow> byRunId(int i_runId) const = 0;
 
+        /** return true if primary key (run id, option key) found. */
+        virtual bool isExist(int i_runId, const char * i_key) const throw() = 0;
+
         /** return string value by primary key (run id, option key) or default value if not found. */
         virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw() = 0;
         
