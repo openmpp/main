@@ -53,6 +53,8 @@ public:
         , initialize_expression_agentvars_fn(nullptr)
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
+        , ss_time_fn(nullptr)
+        , ss_implement_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -282,5 +284,29 @@ public:
      *  Populated after parsing is complete.
      */
     list<AgentMultilinkSymbol *> pp_multilink_members;
+
+    /**
+     * Create event to support self-scheduling derived agentvars.
+     * 
+     * If not already created, create an event symbol and associated event time and event implement
+     * function symbols to support self-scheduling derived agentvars.  Self-scheduling derived
+     * agentvars will inject code into these functions to implement themselves.
+     */
+    void create_ss_event();
+
+    /**
+     * If the self-scheduling event exists, injects final code
+     */
+    void finish_ss_event();
+
+    /**
+     * The time function of the self-scheduling event.
+     */
+    AgentFuncSymbol *ss_time_fn;
+
+    /**
+     * The implement function of the self-scheduling event.
+     */
+    AgentFuncSymbol *ss_implement_fn;
 };
 

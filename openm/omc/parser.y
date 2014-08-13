@@ -1397,17 +1397,8 @@ decl_agent_event:
                             delete $priority;
                             auto *agent = pc.get_agent_context();
                             // Create agent event symbol
-                            // Ex. "om_time_BirthdayEvent"
-                            string event_name = "om_" + $implement_func->name + "_time";
+                            string event_name = "om_" + $implement_func->name + "_om_event";
                             auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, event_priority, @decl_agent_event);
-                        }
-    ;
-
-decl_hook:
-      "hook"[kw] SYMBOL[from] "," SYMBOL[to] ";"
-                        {
-                            //drv.warning(@kw, "Warning - hook not implemented.");
-                            //TODO SFG
                         }
     ;
 
@@ -1428,6 +1419,13 @@ event_priority_opt:
                         }
     ;
 
+decl_hook:
+      "hook"[kw] SYMBOL[from] "," SYMBOL[to] ";"
+                        {
+                            //drv.warning(@kw, "Warning - hook not implemented.");
+                            //TODO SFG
+                        }
+    ;
 
 /*
  * expression for identity agentvar

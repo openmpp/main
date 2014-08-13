@@ -402,13 +402,25 @@ public:
     void assign_data_type();
 
     /**
+     * Assign post-parse members of this symbol.
+     */
+    void assign_pp_members();
+
+    /**
      * Create side-effects to maintain this symbol.
      */
     void create_side_effects();
 
-    void post_parse(int pass);
-
     virtual string pretty_name();
+
+    /**
+     * Query if this derived agentvar is self-scheduling.
+     *
+     * @return true if self-scheduling, false if not.
+     */
+    bool is_self_scheduling();
+
+    void post_parse(int pass);
 
     CodeBlock cxx_declaration_agent();
 

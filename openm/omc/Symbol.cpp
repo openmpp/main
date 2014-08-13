@@ -948,6 +948,11 @@ void Symbol::post_parse_all()
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateDependencies );
     }
+
+    // Terminate the event time function body for the self-scheduling event (if present)
+    for (auto *agent : pp_all_agents) {
+        agent->finish_ss_event();
+    }
 }
 
 void Symbol::process_cxx_comment(string cmt, yy::location loc)

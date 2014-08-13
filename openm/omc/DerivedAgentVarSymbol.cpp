@@ -684,7 +684,6 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     default:
     break;
     }
-
 }
 
 void DerivedAgentVarSymbol::assign_data_type()
@@ -794,6 +793,40 @@ void DerivedAgentVarSymbol::assign_data_type()
     }
 
 }
+
+void DerivedAgentVarSymbol::assign_pp_members()
+{
+    // assign direct pointers for post-parse use
+    if (av1) {
+        pp_av1 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av1));
+        if (!pp_av1) {
+            pp_error("Error - '" + (*av1)->name + "' is not an attribute of " + agent->name);
+            throw HelperException("Stopping post parse processing");
+        }
+    }
+    if (av2) {
+        pp_av2 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av2));
+        if (!pp_av2) {
+            pp_error("Error - '" + (*av2)->name + "' is not an attribute of " + agent->name);
+            throw HelperException("Stopping post parse processing");
+        }
+    }
+    if (prt) {
+        pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
+        if (!pp_prt) {
+            pp_error("Error - '" + (*prt)->name + "' is not a partition");
+            throw HelperException("Stopping post parse processing");
+        }
+    }
+    if (cls) {
+        pp_cls = dynamic_cast<ClassificationSymbol *> (pp_symbol(cls));
+        if (!pp_cls) {
+            pp_error("Error - '" + (*cls)->name + "' is not a classification");
+            throw HelperException("Stopping post parse processing");
+        }
+    }
+}
+
 
 void DerivedAgentVarSymbol::create_side_effects()
 {
@@ -1444,7 +1477,7 @@ string DerivedAgentVarSymbol::pretty_name()
         assert(pp_av1);
         assert(k1);
         result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
-        break;
+break;
     }
     case token::TK_active_spell_weighted_duration:
     case token::TK_completed_spell_weighted_duration:
@@ -1543,6 +1576,25 @@ string DerivedAgentVarSymbol::pretty_name()
     return result;
 }
 
+bool DerivedAgentVarSymbol::is_self_scheduling()
+{
+    switch (tok) {
+    case token::TK_duration_counter:
+    case token::TK_duration_trigger:
+    case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
+    {
+        return true;
+        break;
+    }
+    default:
+    {
+        return false;
+        break;
+    }
+    }
+}
+
 void DerivedAgentVarSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
@@ -1550,37 +1602,21 @@ void DerivedAgentVarSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        if (is_self_scheduling()) {
+            // create the event to support self-scheduling states in the containing agent
+            auto agnt = dynamic_cast<AgentSymbol *>(agent);
+            assert(agnt);
+            agnt->create_ss_event();
+            // create the internal symbol for the event time of the self-scheduling derived agentvar
+            // TODO
+        }
+        break;
+    }
     case eAssignMembers:
     {
-        // assign direct pointers for post-parse use
-        if (av1) {
-            pp_av1 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av1));
-            if (!pp_av1) {
-                pp_error("Error - '" + (*av1)->name + "' is not an attribute of " + agent->name);
-                throw HelperException("Stopping post parse processing");
-            }
-        }
-        if (av2) {
-            pp_av2 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av2));
-            if (!pp_av2) {
-                pp_error("Error - '" + (*av2)->name + "' is not an attribute of " + agent->name);
-                throw HelperException("Stopping post parse processing");
-            }
-        }
-        if (prt) {
-            pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
-            if (!pp_prt) {
-                pp_error("Error - '" + (*prt)->name + "' is not a partition");
-                throw HelperException("Stopping post parse processing");
-            }
-        }
-        if (cls) {
-            pp_cls = dynamic_cast<ClassificationSymbol *> (pp_symbol(cls));
-            if (!pp_cls) {
-                pp_error("Error - '" + (*cls)->name + "' is not a classification");
-                throw HelperException("Stopping post parse processing");
-            }
-        }
+        assign_pp_members();
         break;
     }
     case eResolveDataTypes:
