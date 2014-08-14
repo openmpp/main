@@ -24,7 +24,7 @@ void StopEventTrace()
 
 void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time)
 {
-    theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f\n",
+    theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
                        entity_name,
                        entity_id,
                        case_seed,

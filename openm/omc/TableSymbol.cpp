@@ -124,6 +124,7 @@ void TableSymbol::post_parse(int pass)
         // Dependency on change in index agentvars
         for (auto av : pp_dimension_list_agentvar) {
             CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
             c += "// cell change in " + name;
             c += "if (om_active) {";
             if (filter) {
@@ -136,12 +137,12 @@ void TableSymbol::post_parse(int pass)
                 c += "}";
             }
             c += "}";
-            c += "";
         }
 
-        // Dependency on table filter
+        // Dependency on ilter
         if (filter) {
             CodeBlock& c = filter->side_effects_fn->func_body;
+            c += injection_description();
             c += "// filter change in " + name;
             c += "if (om_active) {";
             c += "if (om_new) {";
@@ -154,7 +155,6 @@ void TableSymbol::post_parse(int pass)
             c += process_increments_fn->name + "();";
             c += "}";
             c += "}";
-            c += "";
         }
 
         // Mark enumerations required for metadata support for this table

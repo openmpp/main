@@ -80,6 +80,8 @@ actor Host
     logical v36 = duration_trigger(disease_phase, DP_LATENT, 0.5);
     counter v37 = self_scheduling_int(age);
     counter v38 = self_scheduling_split(age, MY_PART);
+    counter v39 = self_scheduling_int(time);
+    counter v40 = self_scheduling_split(time, MY_PART);
 
     //EN 10+ years
     logical year_ge_10 = (report_time >= 10) ? TRUE : FALSE;
@@ -151,7 +153,9 @@ table Host ZZZ_01
         v35, //EN v35
         v36, //EN v36
         v37, //EN v37
-        v38 //EN v38
+        v38, //EN v38
+        v39, //EN v39
+        v40 //EN v40
   }
     * year_ge_10
 };
@@ -224,5 +228,4 @@ table Host ZZZ_33_value_at
         value_at_changes(disease_phase, age) / changes(disease_phase)
     }
 };
-
 

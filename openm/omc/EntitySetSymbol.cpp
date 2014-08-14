@@ -108,6 +108,7 @@ void EntitySetSymbol::post_parse(int pass)
         // Dependency on change in index agentvars
         for (auto av : pp_dimension_list_agentvar) {
             CodeBlock& c = av->side_effects_fn->func_body;
+            c += injection_description();
             c += "// cell change in " + name;
             c += "if (om_active) {";
             if (filter) {
@@ -120,12 +121,12 @@ void EntitySetSymbol::post_parse(int pass)
                 c += "}";
             }
             c += "}";
-            c += "";
         }
 
-        // Dependency on table filter
+        // Dependency on filter
         if (filter) {
             CodeBlock& c = filter->side_effects_fn->func_body;
+            c += injection_description();
             c += "// filter change in " + name;
             c += "if (om_active) {";
             c += "if (om_new) {";
@@ -138,7 +139,6 @@ void EntitySetSymbol::post_parse(int pass)
             c += erase_fn->name + "();";
             c += "}";
             c += "}";
-            c += "";
         }
         break;
     }

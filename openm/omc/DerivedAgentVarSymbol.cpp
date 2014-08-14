@@ -1319,7 +1319,7 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_aggregate:
     {
         // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         break;
     }
     case token::TK_trigger_entrances:
@@ -1419,20 +1419,20 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_duration_counter:
     {
         // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         break;
     }
     case token::TK_duration_trigger:
     {
         // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         break;
     }
     case token::TK_self_scheduling_int:
     {
         // Common variables and code for all self-scheduling agentvars
         auto *av = pp_av1;
-        assert(av); // the agentvar of the first argument, e.g. "age"
+        assert(av); // the agentvar being integerized, e.g. "age", "time", etc.
         assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
         assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
         assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
@@ -1445,32 +1445,58 @@ void DerivedAgentVarSymbol::create_side_effects()
         cif += injection_description();
 
         // Code for specific variants of self_scheduling_int() agentvars
-        if (av->name == "age") {
-            // handle self_scheduling_int(age)
+        if (av->name == "age" || av->name == "time") {
+
+            // Code injection: age side-effects, for use in Start
+            // find the symbol
+            auto sym = Symbol::get_symbol(av->name, agent);
+            assert(sym);
+            auto av = dynamic_cast<AgentVarSymbol *>(sym);
+            assert(av);
+            // get the call-back
+            assert(av->side_effects_fn);
+            CodeBlock& cse = av->side_effects_fn->func_body; // body of the C++ side-effect function for the argument attribute (e.g. "age")
+            // inject the code
+            cse += injection_description();
+            cse += "// Initialize value for self_scheduling_int";
+            cse += "if (!om_active) {";
+            cse += "// Execution gets here only in Start()";
+            cse += "// Initial value";
+            cse += name + ".set((int)om_new);";
+            cse += "// Time of next change (fraction of the unit of time remaining to next integer boundary)";
+            cse += ait->name + " = time + (1 - (om_new - (int)om_new));";
+            cse += "}";
+
+            // Code injection: self-scheduling event implement function
             cif += "if (current_time == " + ait->name + ") {";
-            // TODO trace event message if event_trace activated
             cif += "// Update the value";
             cif += name + ".set(" + name + ".get() + 1);";
             cif += "// Update the time of next change";
             cif += ait->name + " += 1;";
+            if (Symbol::option_event_trace) {
+                cif += "// Dump event time information to trace log";
+                string evt_name = "scheduled - " + to_string(numeric_id);
+                cif += "if (BaseEvent::trace_event_on) "
+                    "om_event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "0.0, " // TODO will be case_seed
+                    "\"" + evt_name + "\", "
+                    " (double)" + ait->name + ");"
+                    ;
+            }
             cif += "}";
-            // TODO
-            pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
-        }
-        else if (av->name == "time") {
-            // TODO
-            pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
         }
         else {
-            // TODO, enumerated supported arguments, give warnign for those, error for anything else
-            pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
+            // TODO, enumerated supported arguments, give warning for those, error for anything else
+            pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         }
         break;
     }
     case token::TK_self_scheduling_split:
     {
         // TODO
-        pp_warning("Warning - Not implemented (value never changes) - " + pretty_name());
+        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         break;
     }
 
@@ -1490,7 +1516,7 @@ string DerivedAgentVarSymbol::pretty_name()
             result = token_to_string(tok) + "()";
         }
         else {
-            result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ")";
         }
         break;
     }
@@ -1498,10 +1524,10 @@ string DerivedAgentVarSymbol::pretty_name()
     {
         assert(pp_av2);
         if (!pp_av1) {
-            result = token_to_string(tok) + "(" + pp_av2->name + ")";
+            result = token_to_string(tok) + "(" + pp_av2->pretty_name() + ")";
         }
         else {
-            result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + pp_av2->pretty_name() + ")";
         }
         break;
     }
@@ -1516,8 +1542,8 @@ string DerivedAgentVarSymbol::pretty_name()
     {
         assert(pp_av1);
         assert(k1);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ")";
-break;
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ")";
+        break;
     }
     case token::TK_active_spell_weighted_duration:
     case token::TK_completed_spell_weighted_duration:
@@ -1533,7 +1559,7 @@ break;
         assert(pp_av1);
         assert(k1);
         assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + pp_av2->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + pp_av2->pretty_name() + ")";
         break;
     }
     case token::TK_undergone_transition:
@@ -1544,7 +1570,7 @@ break;
         assert(pp_av1);
         assert(k1);
         assert(k2);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + k2->value() + ")";
         break;
     }
     case token::TK_value_at_first_transition:
@@ -1555,7 +1581,7 @@ break;
         assert(k1);
         assert(k2);
         assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->pretty_name() + ")";
         break;
     }
     case token::TK_undergone_change:
@@ -1563,7 +1589,7 @@ break;
     case token::TK_trigger_changes:
     {
         assert(pp_av1);
-        result = token_to_string(tok) + "(" + pp_av1->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
         break;
     }
     case token::TK_weighted_cumulation:
@@ -1573,21 +1599,22 @@ break;
     {
         assert(pp_av1);
         assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_av2->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + pp_av2->pretty_name() + ")";
         break;
     }
     case token::TK_split:
+    case token::TK_self_scheduling_split:
     {
         assert(pp_av1);
         assert(pp_prt);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_prt->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + pp_prt->name + ")";
         break;
     }
     case token::TK_aggregate:
     {
         assert(pp_av1);
         assert(pp_cls);
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + pp_cls->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + pp_cls->name + ")";
         break;
     }
     case token::TK_duration_counter:
@@ -1596,11 +1623,10 @@ break;
         assert(k1);
         assert(k2);
         assert(k3 || !k3); // optional
-        result = token_to_string(tok) + "(" + pp_av1->name + ", " + k1->value() + ", " + k2->value() + (k3 ? (", " + k3->value()) : "") + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + k2->value() + (k3 ? (", " + k3->value()) : "") + ")";
         break;
     }
     case token::TK_self_scheduling_int:
-    case token::TK_self_scheduling_split:
     {
         assert(pp_av1);
         result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
@@ -1608,6 +1634,8 @@ break;
     }
     default:
     {
+        //TODO raise error once list is complete
+        // assert(false);
         result = token_to_string(tok) + "( ... )";
         break;
     }

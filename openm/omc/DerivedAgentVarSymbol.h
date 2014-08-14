@@ -66,6 +66,7 @@ public:
         , iav(nullptr)
         , dav(nullptr)
         , ait(nullptr)
+        , numeric_id(0)
     {
         validate();
         assign_sorting_group();
@@ -526,5 +527,13 @@ public:
      * scheduling derived agentvar.
      */
     AgentInternalSymbol *ait;
+
+    /**
+     * Numeric identifier for the symbol.
+     * 
+     * Used to hold nuemric id for self-scheduling agentvars which appear in generated code and in
+     * event trace logs.
+     */
+    int numeric_id;
 };
 

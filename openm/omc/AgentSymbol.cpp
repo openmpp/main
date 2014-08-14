@@ -23,26 +23,88 @@ using namespace std;
 
 void AgentSymbol::create_auxiliary_symbols()
 {
-    // Create builtin agentvars for this agent: time, age, events, entity_id
-    if (!exists("time", this)) {
-        auto time_sym = new BuiltinAgentVarSymbol("time", this, NumericSymbol::find(token::TK_Time));
-        // declare the om_delta local variable for use in subsequently added code
-        auto fn = time_sym->side_effects_fn;
-        assert(fn);
-        CodeBlock& c = fn->func_body;
-        // The local variable om_delta can be used by any code injected into 'time'.
-        c += "// Amount of time increment";
-        c += "Time om_delta = om_new - om_old;";
+    // Create builtin agentvars for this agent: time, age, events, entity_id.
+    // Need to handle situation where the symbol exists but requires morphing.
+    // This can occur if the symbol has been used in a table before the agent was declared.
+
+    {
+        string nm = "time";
+        auto sym = Symbol::get_symbol(nm, this);
+        if (!sym || sym->is_base_symbol()) {
+            NumericSymbol *typ = NumericSymbol::find(token::TK_Time);
+            BuiltinAgentVarSymbol *biav = nullptr;
+            if (!sym) {
+                // create it
+                biav = new BuiltinAgentVarSymbol(nm, this, typ);
+            }
+            else {
+                // morph it
+                biav = new BuiltinAgentVarSymbol(sym, this, typ);
+            }
+            // initialize it
+            // declare the om_delta local variable for use in subsequently added code
+            auto fn = biav->side_effects_fn;
+            assert(fn);
+            CodeBlock& c = fn->func_body;
+            // The local variable om_delta can be used by any code injected into 'time'.
+            c += "// Amount of time increment";
+            c += "Time om_delta = om_new - om_old;";
+        }
     }
-    if (!exists("age", this)) {
-        auto age_sym = new BuiltinAgentVarSymbol("age", this, NumericSymbol::find(token::TK_Time));
-        age_sym->sorting_group = 2; // continuously-updated
+
+    {
+        string nm = "age";
+        auto sym = Symbol::get_symbol(nm, this);
+        if (!sym || sym->is_base_symbol()) {
+            NumericSymbol *typ = NumericSymbol::find(token::TK_Time);
+            BuiltinAgentVarSymbol *biav = nullptr;
+            if (!sym) {
+                // create it
+                biav = new BuiltinAgentVarSymbol(nm, this, typ);
+            }
+            else {
+                // morph it
+                biav = new BuiltinAgentVarSymbol(sym, this, typ);
+            }
+            // initialize it
+            biav->sorting_group = 2; // age is continuously-updated
+        }
     }
-    if (!exists("events", this)) {
-        new BuiltinAgentVarSymbol("events", this, NumericSymbol::find(token::TK_counter));
+
+    {
+        string nm = "events";
+        auto sym = Symbol::get_symbol(nm, this);
+        if (!sym || sym->is_base_symbol()) {
+            NumericSymbol *typ = NumericSymbol::find(token::TK_counter);
+            BuiltinAgentVarSymbol *biav = nullptr;
+            if (!sym) {
+                // create it
+                biav = new BuiltinAgentVarSymbol(nm, this, typ);
+            }
+            else {
+                // morph it
+                biav = new BuiltinAgentVarSymbol(sym, this, typ);
+            }
+            // initialize it
+        }
     }
-    if (!exists("entity_id", this)) {
-        new BuiltinAgentVarSymbol("entity_id", this, NumericSymbol::find(token::TK_int));
+
+    {
+        string nm = "entity_id";
+        auto sym = Symbol::get_symbol(nm, this);
+        if (!sym || sym->is_base_symbol()) {
+            NumericSymbol *typ = NumericSymbol::find(token::TK_int);
+            BuiltinAgentVarSymbol *biav = nullptr;
+            if (!sym) {
+                // create it
+                biav = new BuiltinAgentVarSymbol(nm, this, typ);
+            }
+            else {
+                // morph it
+                biav = new BuiltinAgentVarSymbol(sym, this, typ);
+            }
+            // initialize it
+        }
     }
 
     // The age_agent() member function

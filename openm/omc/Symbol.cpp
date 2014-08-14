@@ -35,6 +35,7 @@
 #include "AgentEventSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "AgentVarSymbol.h"
+#include "DerivedAgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"
 #include "AgentMultilinkSymbol.h"
 #include "IdentityAgentVarSymbol.h"
@@ -913,6 +914,19 @@ void Symbol::post_parse_all()
         agent->pp_agent_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
         agent->pp_link_agentvars.sort( [] (LinkAgentVarSymbol *a, LinkAgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
+    }
+
+    // Assign numeric identifier to self-scheduling derived agentvars
+    for (auto agent : pp_all_agents) {
+        int counter = 0;
+        for (auto acm : agent->pp_callback_members) {
+            if (auto dav = dynamic_cast<DerivedAgentVarSymbol *>(acm)) {
+                if (dav->is_self_scheduling()) {
+                    dav->numeric_id = counter;
+                    ++counter;
+                }
+            }
+        }
     }
 
     // Sort collections in tables

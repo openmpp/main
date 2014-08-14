@@ -86,6 +86,7 @@ public:
                 (agent()->*side_effects)(old_value, new_value);
             }
         }
+
     }
 
     T get() const
