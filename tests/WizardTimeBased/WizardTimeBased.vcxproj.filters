@@ -15,16 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="PersonCore.mpp">
       <Filter>Model Source Files</Filter>
     </None>

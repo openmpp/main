@@ -75,10 +75,10 @@
   <Import Project="$(SolutionDir)../model.2.cpp.props" />
   <!-- For Cl and Visual Studio IDE -->
   <ItemGroup>
-    <ClCompile Include="@(OMC_CXX_MODULE_OUTPUTS)" />
+    <ClCompile Include="src\*.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="@(OMC_CXX_HEADER_OUTPUTS)" />
+    <ClInclude Include="src\*.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="*.mpp" />
