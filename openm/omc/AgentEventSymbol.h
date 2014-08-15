@@ -9,6 +9,7 @@
 #include "AgentDataMemberSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "NumericSymbol.h"
+#include "omc/event_priorities.h" // for access to event priority constants by modules including this header
 
 class AgentFuncSymbol;
 

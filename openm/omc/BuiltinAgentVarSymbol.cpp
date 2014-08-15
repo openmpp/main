@@ -29,7 +29,7 @@ void BuiltinAgentVarSymbol::post_parse(int pass)
                 CodeBlock& c = av->side_effects_fn->func_body;
                 c += injection_description();
                 c += "// Advance time for the age agentvar";
-                c += "age.set(age.get() + om_delta);";
+                c += "if (om_active) age.set(age.get() + om_delta);";
             }
         }
         break;

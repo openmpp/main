@@ -135,9 +135,12 @@ void AgentSymbol::create_auxiliary_symbols()
     // The om_set_start_time() member function
     {
         auto *fn = new AgentFuncSymbol("om_set_start_time", this, "void", "");
-        fn->doc_block = doxygen_short("Set the default start time of this entity.");
+        fn->doc_block = doxygen_short("Set the default start time and age of this entity.");
         CodeBlock& c = fn->func_body;
-        c += "time.set(BaseEvent::global_time);" ;
+        c += "time.initialize(time_infinite); // will force side-effect call in time.set()";
+        c += "time.set(BaseEvent::global_time);";
+        c += "age.initialize(time_infinite); // will force side-effect call in age.set()";
+        c += "age.set(0);";
     }
 
     // The om_Start_custom() member function
@@ -512,7 +515,7 @@ void AgentSymbol::create_ss_event()
     
     // Create the event
     string evnt_name = "om_" + ss_implement_fn->name + "_om_event";
-    auto *sym = new AgentEventSymbol(evnt_name, this, ss_time_fn, ss_implement_fn, false, 251, decl_loc);
+    auto *sym = new AgentEventSymbol(evnt_name, this, ss_time_fn, ss_implement_fn, false, openm::event_priority_self_scheduling, decl_loc);
 
     // Add the dependency of the event on the flag
     CodeBlock& cse = av_ss_flag->side_effects_fn->func_body;

@@ -12,6 +12,7 @@
 #include "omc/tailed_forward_list.h"
 #include "omc/less_deref.h"
 #include "omc/Agent.h"
+#include "omc/event_priorities.h"
 #include "om_types0.h" // for Time
 
 using namespace std;

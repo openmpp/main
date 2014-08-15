@@ -1410,7 +1410,7 @@ event_priority_opt:
     | "," "time_keeping"
                         {
                             // time keeping priority is just less than internal event for self-scheduling attributes
-                            $event_priority_opt = new IntegerLiteral( "254" );
+                            $event_priority_opt = new IntegerLiteral( to_string(openm::event_priority_time_keeping) );
                         }
     | /* nothing */
                         {

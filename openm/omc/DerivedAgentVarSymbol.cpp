@@ -848,7 +848,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Advance time for " + pretty_name();
-            c += name + ".set(" + name + ".get() + om_delta);";
+            c += "if (om_active) " + name + ".set(" + name + ".get() + om_delta);";
         }
         else {
             // duration(av, value)
@@ -859,7 +859,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Advance time for " + pretty_name();
-            c += "if (" + iav->name + ") {";
+            c += "if (om_active && " + iav->name + ") {";
             c += name + ".set(" + name + ".get() + om_delta);";
             c += "}";
         }
@@ -877,7 +877,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Advance time for " + pretty_name();
-            c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+            c += "if (om_active) " + name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
         }
         else {
             // weighted_duration(av, value)
@@ -890,7 +890,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Advance time for " + pretty_name();
-            c += "if (" + iav->name + ") {";
+            c += "if (om_active && " + iav->name + ") {";
             c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
             c += "}";
         }
@@ -911,7 +911,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
         c += "// Advance time for " + pretty_name();
-        c += "if (" + iav->name + ") {";
+        c += "if (om_active && " + iav->name + ") {";
         c += name + ".set(" + name + ".get() + om_delta);";
         c += "}";
 
@@ -948,7 +948,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         CodeBlock& c = av->side_effects_fn->func_body;
         c += injection_description();
         c += "// Advance time for " + pretty_name();
-        c += "if (" + iav->name + ") {";
+        c += "if (om_active && " + iav->name + ") {";
         c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
         c += "}";
 
@@ -993,7 +993,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         CodeBlock& c = av->side_effects_fn->func_body;
         c += injection_description();
         c += "// Maintain value for " + pretty_name();
-        c += "if (" + iav->name + ") {";
+        c += "if (om_active && " + iav->name + ") {";
         c += name + ".set(" + pp_av2->name + ".get() - " + dav->name + ".get());";
         c += "}";
 
