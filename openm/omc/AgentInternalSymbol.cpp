@@ -19,6 +19,20 @@ CodeBlock AgentInternalSymbol::cxx_initialization_expression(bool type_default) 
     return c;
 }
 
+string AgentInternalSymbol::initialization_value(bool type_default) const
+{
+    string result;
+
+    if (!type_default && initializer != "") {
+        result = initializer;
+    }
+    else {
+        result = super::initialization_value(type_default);
+    }
+
+    return result;
+}
+
 CodeBlock AgentInternalSymbol::cxx_declaration_agent()
 {
     // Hook into the hierarchical calling chain

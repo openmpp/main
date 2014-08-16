@@ -689,7 +689,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     // Create the internal symbol for the event time of the self-scheduling derived agentvar.
     if (is_self_scheduling()) {
         // create the internal symbol for the event time of the self-scheduling derived agentvar
-        ait = new AgentInternalSymbol("om_ss_time_" + name, agent, NumericSymbol::find(token::TK_Time));
+        ait = new AgentInternalSymbol("om_ss_time_" + name, agent, NumericSymbol::find(token::TK_Time), "time_infinite");
     }
 }
 
@@ -980,11 +980,11 @@ void DerivedAgentVarSymbol::create_side_effects()
         // since the observed agentvar might change and the spell condition go false in same event.
         // If the spell condition goes false before the observed agentvar changes value in the event
         // implementation, the active spell delta would be in error.
-        // Instead, the side-effect is added to time, which is guaranteed to invoke sidee-effects before
+        // Instead, the side-effect is added to time, which is guaranteed to invoke side-effects before
         // the event is implemented.  But that doesn't handle all cases, since
-        // some agentvars are updated when time advances, including possible the spell condition.
+        // some agentvars are updated when time advances, including possibly the spell condition.
         // So active_sepll_delta is assigned a sorting_group which comes before identity agentvars.
-        // So...
+        // OK, so much for background, now...
         // add side-effect to time
         auto *av = pp_agent->pp_time;
         assert(iav);
@@ -1429,26 +1429,26 @@ void DerivedAgentVarSymbol::create_side_effects()
         break;
     }
     case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
     {
         // Common variables and code for all self-scheduling agentvars
         auto *av = pp_av1;
-        assert(av); // the agentvar being integerized, e.g. "age", "time", etc.
+        assert(av); // the agentvar being integerized or split, e.g. "age", "time", etc.
         assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
         assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
         assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
         CodeBlock& ctf = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
         CodeBlock& cif = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
         ctf += injection_description();
-        // To the event time function, minimize the working variable et with the next time of this self-scheduling agentvar
+        // Inject code to the event time function which minimizes the working variable et with the next time of this self-scheduling agentvar
         ctf += "et = min(et, " + ait->name +");";
 
         cif += injection_description();
-
-        // Code for specific variants of self_scheduling_int() agentvars
+        // Code for specific variants of self_scheduling_int() and self_scheduling_split() agentvars
         if (av->name == "age" || av->name == "time") {
 
-            // Code injection: age side-effects, for use in Start
-            // find the symbol
+            // Code injection: age/time side-effects, for use in Start
+            // find the symbol (age or time)
             auto sym = Symbol::get_symbol(av->name, agent);
             assert(sym);
             auto av = dynamic_cast<AgentVarSymbol *>(sym);
@@ -1458,21 +1458,48 @@ void DerivedAgentVarSymbol::create_side_effects()
             CodeBlock& cse = av->side_effects_fn->func_body; // body of the C++ side-effect function for the argument attribute (e.g. "age")
             // inject the code
             cse += injection_description();
-            cse += "// Initialize value for self_scheduling_int";
+            cse += "// Initialize value for self-scheduling attribute";
             cse += "if (!om_active) {";
             cse += "// Execution gets here only in Start()";
-            cse += "// Initial value";
-            cse += name + ".set((int)om_new);";
-            cse += "// Time of next change (fraction of the unit of time remaining to next integer boundary)";
-            cse += ait->name + " = time + (1 - (om_new - (int)om_new));";
+            if (tok == token::TK_self_scheduling_int) {
+                cse += "// Set initial value";
+                cse += name + ".set((int)om_new);";
+                cse += "// Time of next change (fraction of the unit of time remaining to next integer boundary)";
+                cse += ait->name + " = time + (1 - (om_new - (int)om_new));";
+            }
+            else { // tok == token::TK_self_scheduling_split
+                assert(pp_prt);
+                cse += "// Set initial value";
+                // 'part' in the next statement is a block-local variable with limited scope
+                cse += "auto part = "  + name + ".get();";
+                cse += "part.to_index(om_new);";
+                cse += name + ".set(part);";
+                cse += "// Time of next change - time remaining to get to upper bound of current interval in partition.";
+                cse += "if (part.upper() == REAL_MAX) " + ait->name + " = time_infinite;";
+                cse += "else " + ait->name + " = time + (part.upper() - om_new);";
+            }
             cse += "}";
 
             // Code injection: self-scheduling event implement function
             cif += "if (current_time == " + ait->name + ") {";
-            cif += "// Update the value";
-            cif += name + ".set(" + name + ".get() + 1);";
-            cif += "// Update the time of next change";
-            cif += ait->name + " += 1;";
+            if (tok == token::TK_self_scheduling_int) {
+                cif += "// Update the value";
+                cif += name + ".set(" + name + ".get() + 1);";
+                cif += "// Update the time of next change";
+                cif += ait->name + " += 1;";
+            }
+            else { // tok == token::TK_self_scheduling_split
+                assert(pp_prt);
+                cif += "// Update the value";
+                // 'part' in the next statement is a block-local variable with limited scope
+                cif += "auto part = "  + name + ".get();";
+                cif += "part++; // Advance to the next interval in the partition.";
+                cif += name + ".set(part);";
+                cif += "// Update the time of next change by the width of that new interval.";
+                cif += "if (part.upper() == REAL_MAX) " + ait->name + " = time_infinite;";
+                cif += "else " + ait->name + " += part.width();";
+                //cif += ait->name + " += " + name + ".width();";
+            }
             if (Symbol::option_event_trace) {
                 cif += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
@@ -1482,21 +1509,15 @@ void DerivedAgentVarSymbol::create_side_effects()
                     "(int)entity_id, "
                     "0.0, " // TODO will be case_seed
                     "\"" + evt_name + "\", "
-                    " (double)" + ait->name + ");"
+                    " (double) time);"
                     ;
             }
             cif += "}";
         }
         else {
-            // TODO, enumerated supported arguments, give warning for those, error for anything else
+            // TODO, enumerate those arguments which are supported using 'if' conditions, give warning for those, and finally and error in the 'else' for anything else
             pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         }
-        break;
-    }
-    case token::TK_self_scheduling_split:
-    {
-        // TODO
-        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
         break;
     }
 

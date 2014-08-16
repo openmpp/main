@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <string>
 #include "AgentDataMemberSymbol.h"
 
 using namespace std;
@@ -25,14 +26,18 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    AgentInternalSymbol(const string member_name, const Symbol *agent, const Symbol *type)
+    AgentInternalSymbol(const string member_name, const Symbol *agent, const Symbol *type, const string initializer = "")
         : AgentDataMemberSymbol(member_name, agent, type)
+        , initializer(initializer)
     {
     }
+
+    string initialization_value(bool type_default) const;
 
     CodeBlock cxx_initialization_expression(bool type_default) const;
 
     CodeBlock cxx_declaration_agent();
 
+    string initializer;
 };
 
