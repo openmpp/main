@@ -50,7 +50,7 @@ public:
         , finalize_entity_sets_fn(nullptr)
         , initialize_tables_fn(nullptr)
         , finalize_tables_fn(nullptr)
-        , initialize_expression_agentvars_fn(nullptr)
+        , initialize_declarative_attributes_fn(nullptr)
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
         , ss_time_fn(nullptr)
@@ -110,11 +110,6 @@ public:
      * Builds the function body of the function.
      */
     void build_body_finalize_tables();
-
-    /**
-     * Builds the function body of the function.
-     */
-    void build_body_initialize_expression_agentvars();
 
     /**
      * Builds the function body of the function.
@@ -205,12 +200,12 @@ public:
     AgentFuncSymbol *finalize_tables_fn;
 
     /**
-     * The agent function which initializes all expression agentvars in the agent.
+     * The agent function which initializes all declarative attributes in the agent.
      * 
-     * This function has the fixed name om_initialize_expression_agentvars().  It is used in the run-
+     * This function has the fixed name om_initialize_declarative_attributes().  It is used in the run-
      * time support class BaseAgent before the agent enters the simulation.
      */
-    AgentFuncSymbol *initialize_expression_agentvars_fn;
+    AgentFuncSymbol *initialize_declarative_attributes_fn;
 
     /**
      * The agent function which sets all links to nullptr when the agent finishes.

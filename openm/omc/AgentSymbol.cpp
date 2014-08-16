@@ -238,13 +238,13 @@ void AgentSymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
-    // The initialize_expression_agentvars member function
+    // The initialize_declarative_attributes_fn member function
     {
-        assert(nullptr == initialize_expression_agentvars_fn); // initialization guarantee
-        initialize_expression_agentvars_fn = new AgentFuncSymbol("om_initialize_expression_agentvars", this);
-        assert(initialize_expression_agentvars_fn); // out of memory check
-        initialize_expression_agentvars_fn->doc_block = doxygen_short("Initialize each expression agentvar before the entity enters the simulation.");
-        // function body is generated in post-parse phase
+        assert(nullptr == initialize_declarative_attributes_fn); // initialization guarantee
+        initialize_declarative_attributes_fn = new AgentFuncSymbol("om_initialize_declarative_attributes", this);
+        assert(initialize_declarative_attributes_fn); // out of memory check
+        initialize_declarative_attributes_fn->doc_block = doxygen_short("Initialize each declarative attribute before the entity enters the simulation.");
+        // function body is generated through code injection by attributes in post-parse phase
     }
 
     // The finalize_links member function
@@ -321,7 +321,6 @@ void AgentSymbol::post_parse(int pass)
         build_body_finalize_entity_sets();
         build_body_initialize_tables();
         build_body_finalize_tables();
-        build_body_initialize_expression_agentvars();
         build_body_finalize_links();
         build_body_finalize_multilinks();
         break;
@@ -449,15 +448,6 @@ void AgentSymbol::build_body_finalize_tables()
             c += "}" ;
         }
         c += "";
-    }
-}
-
-void AgentSymbol::build_body_initialize_expression_agentvars()
-{
-    CodeBlock& c = initialize_expression_agentvars_fn->func_body;
-
-    for ( auto eav : pp_identity_agentvars ) {
-        c += eav->expression_fn->name + "();";
     }
 }
 

@@ -90,6 +90,16 @@ void IdentityAgentVarSymbol::post_parse(int pass)
             c += "// Maintain identity for '" + unique_name + "' when link changed to different agent";
             c += expression_fn->name + "();";
         }
+
+        // Initialization before entity enters simulation
+        {
+            auto idaf = pp_agent->initialize_declarative_attributes_fn;
+            assert(idaf);
+            CodeBlock& c = idaf->func_body;
+            c += injection_description();
+            c += "// Maintain identity for '" + name + "' before entity enters simulation";
+            c += expression_fn->name + "();";
+        }
         break;
     }
     default:
