@@ -132,14 +132,20 @@ void AgentSymbol::create_auxiliary_symbols()
         c += "entity_id.set(get_next_entity_id());" ;
     }
 
-    // The om_set_start_time() member function
+    // The om_initialize_time_and_age() member function
     {
-        auto *fn = new AgentFuncSymbol("om_set_start_time", this, "void", "");
-        fn->doc_block = doxygen_short("Set the default start time and age of this entity.");
+        auto *fn = new AgentFuncSymbol("om_initialize_time_and_age", this, "void", "");
+        fn->doc_block = doxygen_short("Initialize time and age for this entity.");
         CodeBlock& c = fn->func_body;
-        c += "time.initialize(time_infinite); // will force side-effect call in time.set()";
+        c += "// Calling initialize() to set the values of time and age to time_infinite";
+        c += "// ensures that their associated side-effects functions will be invoked";
+        c += "// when set() is called immediately after.  This ensures that identity attributes";
+        c += "// and derived attributes which depend on time and age have correct values";
+        c += "// if they are used by model developer code in the Start() function before the";
+        c += "// entity enters the simulation.";
+        c += "time.initialize(time_infinite);";
         c += "time.set(BaseEvent::global_time);";
-        c += "age.initialize(time_infinite); // will force side-effect call in age.set()";
+        c += "age.initialize(time_infinite);";
         c += "age.set(0);";
     }
 

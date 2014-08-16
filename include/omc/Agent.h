@@ -32,9 +32,9 @@ public:
     virtual void om_set_entity_id() = 0;
 
     /**
-     * Assign default value of time as part of initialization.
+     * Initialize time and age as part of entity initialization.
      */
-    virtual void om_set_start_time() = 0;
+    virtual void om_initialize_time_and_age() = 0;
 
     /**
      * One-time initialization of the offset of each agentvar in each type of agent. This offset is
@@ -165,7 +165,7 @@ public:
         om_active = false;
         om_initialize_data_members();
         om_set_entity_id();
-        om_set_start_time();
+        om_initialize_time_and_age();
         om_initialize_identity_attributes();
         om_initialize_derived_attributes();
     }
@@ -175,6 +175,7 @@ public:
      */
     void om_Start_end()
     {
+        om_initialize_derived_attributes();
         om_initialize_entity_sets();
         om_initialize_tables();
         om_initialize_events();
