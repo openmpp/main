@@ -238,12 +238,21 @@ void AgentSymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
-    // The initialize_declarative_attributes_fn member function
+    // The initialize_identity_attributes_fn member function
     {
-        assert(nullptr == initialize_declarative_attributes_fn); // initialization guarantee
-        initialize_declarative_attributes_fn = new AgentFuncSymbol("om_initialize_declarative_attributes", this);
-        assert(initialize_declarative_attributes_fn); // out of memory check
-        initialize_declarative_attributes_fn->doc_block = doxygen_short("Initialize each declarative attribute before the entity enters the simulation.");
+        assert(nullptr == initialize_identity_attributes_fn); // initialization guarantee
+        initialize_identity_attributes_fn = new AgentFuncSymbol("om_initialize_identity_attributes", this);
+        assert(initialize_identity_attributes_fn); // out of memory check
+        initialize_identity_attributes_fn->doc_block = doxygen_short("Initialize each identity attribute before developer code in Start executes.");
+        // function body is generated through code injection by attributes in post-parse phase
+    }
+
+    // The initialize_derived_attributes_fn member function
+    {
+        assert(nullptr == initialize_derived_attributes_fn); // initialization guarantee
+        initialize_derived_attributes_fn = new AgentFuncSymbol("om_initialize_derived_attributes", this);
+        assert(initialize_derived_attributes_fn); // out of memory check
+        initialize_derived_attributes_fn->doc_block = doxygen_short("Initialize each derived attribute before entity enters the simulation.");
         // function body is generated through code injection by attributes in post-parse phase
     }
 

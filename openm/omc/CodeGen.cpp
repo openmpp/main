@@ -241,7 +241,8 @@ void CodeGen::do_ModelStartup()
     c += "// Agent static initialization pass #2: Initialize null agent dependent agentvars";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Agent - " + agent->name;
-        c += agent->name + "::om_null_agent.om_initialize_declarative_attributes();";
+        c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
+        c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
     }
     c += "";
 

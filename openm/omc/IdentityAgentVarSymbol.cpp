@@ -93,11 +93,11 @@ void IdentityAgentVarSymbol::post_parse(int pass)
 
         // Initialization before entity enters simulation
         {
-            auto idaf = pp_agent->initialize_declarative_attributes_fn;
-            assert(idaf);
-            CodeBlock& c = idaf->func_body;
+            auto fn = pp_agent->initialize_identity_attributes_fn;
+            assert(fn);
+            CodeBlock& c = fn->func_body;
             c += injection_description();
-            c += "// Maintain identity for '" + name + "' before entity enters simulation";
+            c += "// Initialize '" + name + "' to correct value based on expression.";
             c += expression_fn->name + "();";
         }
         break;
