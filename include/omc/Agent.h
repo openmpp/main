@@ -167,7 +167,6 @@ public:
         om_set_entity_id();
         om_initialize_time_and_age();
         om_initialize_identity_attributes();
-        om_initialize_derived_attributes();
     }
 
     /**

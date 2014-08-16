@@ -482,6 +482,19 @@ public:
 	string name;
 
     /**
+     * Unique name lexicographically-compatible with Modgen order for code generation comaptibility
+     * 
+     * Implemented as a virtual function to allow Modgen-compatible differences
+     * in lexicographical ordering where desired / necessary.
+     *
+     * @return A string.
+     */
+    virtual string pp_modgen_name() const
+    {
+        return unique_name;
+    }
+
+    /**
      * The declaration location.
      * 
      * Set using location information of syntactic elements (from bison) on object creationduring
@@ -683,11 +696,18 @@ public:
     static void invalidate_symbols();
 
     /**
-     * Populate the post parse symbol table pp_symbols.
+     * Populate pp symbols
      * 
-     * The pp_symbols list is useful for debugging.
+     * pp_symbols is a version of the symbol table sorted in a fixed known order, unlike the symbol table which is an unordered map.
+     * The order of pp_symbols is sorting_group, followed by unique_name.  The higher order sorting_group controls the order of code injection
+     * for derived agentvars with interdependencies.
      */
     static void populate_pp_symbols();
+
+    /**
+     * Sort pp_symbols for Modgen compatible code-generation.
+     */
+    static void modgen_sort_pp_symbols();
 
     /**
      * Process a semantic error encountered during the post-parse phase.
@@ -970,6 +990,14 @@ public:
      * true if event_trace activated in options statement.
      */
     static bool option_event_trace;
+
+    /**
+     * true to sort post-parse symbol table using Modgen name order where it matters.
+     * 
+     * For compatible event trace outputs between equivalent Modgen and ompp models,
+     * the lexicographical order of self-scheduling attributes must correspond.
+     */
+    static bool modgen_sort_option;
 };
 
 

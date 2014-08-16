@@ -837,6 +837,22 @@ void DerivedAgentVarSymbol::assign_pp_members()
 
 void DerivedAgentVarSymbol::create_side_effects()
 {
+    // Prepare the local variable init_cxx for subsequent code injection into the function initialize_derived_attributes().
+    // 
+    // That function is also after developer code in Start() to remove any side-effects which may have compromised
+    // the starting values of derived attributes.
+    // For example, changes(attr) must record the number of changes in 'attr' as a result of events
+    // in the simulation, and not side effects from assignment to 'attr' in developer code in Start() 
+    // before the entity enters the simulation.  So value of changes(attr) needs to be reset to 0 after 
+    // developer code in Start(), but before the entity enters the simulation.
+
+    assert(pp_agent->initialize_derived_attributes_fn);
+    CodeBlock& init_cxx = pp_agent->initialize_derived_attributes_fn->func_body;
+
+    init_cxx += injection_description();
+    init_cxx += "// Restore to original value.";
+    init_cxx += cxx_initialization_expression(false);
+
     switch (tok) {
     case token::TK_duration:
     {
@@ -1314,6 +1330,9 @@ void DerivedAgentVarSymbol::create_side_effects()
         c += injection_description();
         c += "// Maintain " + pretty_name();
         c += name + ".set(" + pp_prt->name + "::to_index(" + av->name + "));";
+
+        init_cxx += "// Initialize " + pretty_name();
+        init_cxx += name + ".set(" + pp_prt->name + "::to_index(" + av->name + "));";
         break;
     }
     case token::TK_aggregate:
@@ -1665,7 +1684,7 @@ string DerivedAgentVarSymbol::pretty_name()
     return result;
 }
 
-bool DerivedAgentVarSymbol::is_self_scheduling()
+bool DerivedAgentVarSymbol::is_self_scheduling() const
 {
     switch (tok) {
     case token::TK_duration_counter:
@@ -1682,6 +1701,74 @@ bool DerivedAgentVarSymbol::is_self_scheduling()
         break;
     }
     }
+}
+
+string DerivedAgentVarSymbol::pp_modgen_name() const
+{
+    if (!is_self_scheduling()) return unique_name;
+
+    // Construct a string which has the same sorting characteristics as Modgen
+    // names for self-scheduling attributes.  That ensures that the same numbering
+    // for self-scheduling attributes is used in event trace outputs in Modgen and ompp.
+
+    string result = pp_agent->name + "::om_modgen_";
+    switch (tok) {
+    case token::TK_duration_counter:
+    {
+        assert(pp_av1);
+        assert(k1);
+        assert(k2);
+        result += "duration_counter_" + pp_av1->name + "_" + k1->value_as_name() + "_" + k2->value_as_name();
+        if (k3) result += "_" + k3->value_as_name();
+        break;
+    }
+    case token::TK_duration_trigger:
+    {
+        assert(pp_av1);
+        assert(k1);
+        assert(k2);
+        result += "duration_trigger_" + pp_av1->name + "_" + k1->value_as_name() + "_" + k2->value_as_name();
+        break;
+    }
+    case token::TK_self_scheduling_int:
+    {
+        result += "ssint_";
+        assert(pp_av1);
+        if (pp_av1->name == "age" || pp_av1->name == "time") {
+            result += pp_av1->name;
+        }
+        else {
+            auto dav = dynamic_cast<DerivedAgentVarSymbol *>(pp_av1);
+            assert(dav);
+            result += "_" + token_to_string(dav->tok); // e.g. active_spell_duration
+            if (dav->pp_av1) result += "_" + dav->pp_av1->name;
+            if (dav->k1) result += "_" + dav->k1->value();
+        }
+        break;
+    }
+    case token::TK_self_scheduling_split:
+    {
+        result += "sssplit_";
+        assert(pp_av1);
+        if (pp_av1->name == "age" || pp_av1->name == "time") {
+            result += pp_av1->name;
+        }
+        else {
+            auto dav = dynamic_cast<DerivedAgentVarSymbol *>(pp_av1);
+            assert(dav);
+            result += "_" + token_to_string(dav->tok); // e.g. active_spell_duration
+            if (dav->pp_av1) result += "_" + dav->pp_av1->name;
+            if (dav->k1) result += "_" + dav->k1->value();
+        }
+        assert(pp_prt);
+        result += "_" + pp_prt->name;
+        break;
+    }
+    default:
+    assert(false); // logic guarantee
+    }
+
+    return result;
 }
 
 void DerivedAgentVarSymbol::post_parse(int pass)

@@ -488,6 +488,8 @@ int Symbol::post_parse_warnings = 0;
 
 bool Symbol::option_event_trace = false;
 
+bool Symbol::modgen_sort_option = true;
+
 void Symbol::post_parse(int pass)
 {
     // This class is the top of the post_parse hierarchical calling chain.
@@ -576,9 +578,7 @@ CodeBlock Symbol::injection_description()
 {
     CodeBlock c;
     c += "";
-    c += "//";
     c += "// Code Injection: group=" + to_string(sorting_group) + ", injector=" + pretty_name();
-    c += "//";
     return c;
 }
 
@@ -796,13 +796,6 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
     return sym;
 }
 
-/**
- * Populate pp symbols
- * 
- * pp_symbols is a version of the symbol table sorted in a fixed known order, unlike the symbol table which is an unordered map.
- * The order of pp_symbols is sorting_group, followed by unique_name.  The higher order sorting_group controls the order of code injection
- * for derived agentvars with interdependencies.
- */
 void Symbol::populate_pp_symbols()
 {
     pp_symbols.clear();
@@ -814,6 +807,17 @@ void Symbol::populate_pp_symbols()
         {
             return a.second->sorting_group < b.second->sorting_group
                 || (a.second->sorting_group == b.second->sorting_group && a.second->unique_name < b.second->unique_name);
+        }
+    );
+}
+
+void Symbol::modgen_sort_pp_symbols()
+{
+    pp_symbols.sort(
+        [](symbol_map_value_type a, symbol_map_value_type b)
+        {
+            return a.second->sorting_group < b.second->sorting_group
+                || (a.second->sorting_group == b.second->sorting_group && a.second->pp_modgen_name() < b.second->pp_modgen_name());
         }
     );
 }
@@ -916,19 +920,6 @@ void Symbol::post_parse_all()
         agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 
-    // Assign numeric identifier to self-scheduling derived agentvars
-    for (auto agent : pp_all_agents) {
-        int counter = 0;
-        for (auto acm : agent->pp_callback_members) {
-            if (auto dav = dynamic_cast<DerivedAgentVarSymbol *>(acm)) {
-                if (dav->is_self_scheduling()) {
-                    dav->numeric_id = counter;
-                    ++counter;
-                }
-            }
-        }
-    }
-
     // Sort collections in tables
     for ( auto table : pp_all_tables ) {
         // Sort expressions in sequence order
@@ -953,6 +944,23 @@ void Symbol::post_parse_all()
         for (auto *event : agent->pp_agent_events) {
             auto iter = all_event_names.find(event->event_name);
             event->pp_event_id = distance(all_event_names.begin(), iter);
+        }
+    }
+
+    // Optionally sort symbol table so that self-scheduled attributes have identical numbers
+    // and idnetical code injection order between ompp and Modgen.
+    if (modgen_sort_option) {
+        modgen_sort_pp_symbols();
+    }
+
+    // Assign numeric identifier to self-scheduling derived agentvars (used in trace output)
+    for (auto pr : pp_symbols) {
+        auto sym = pr.second;
+        if (auto dav = dynamic_cast<DerivedAgentVarSymbol *>(sym)) {
+            if (dav->is_self_scheduling()) {
+                dav->numeric_id = dav->pp_agent->next_ss_id;
+                ++(dav->pp_agent->next_ss_id);
+            }
         }
     }
 

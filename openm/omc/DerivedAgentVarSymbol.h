@@ -421,7 +421,9 @@ public:
      *
      * @return true if self-scheduling, false if not.
      */
-    bool is_self_scheduling();
+    bool is_self_scheduling() const;
+
+    string pp_modgen_name() const;
 
     void post_parse(int pass);
 
