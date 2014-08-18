@@ -934,8 +934,8 @@ void DerivedAgentVarSymbol::create_side_effects()
         // add side-effect to identity agentvar (condition)
         CodeBlock& c2 = iav->side_effects_fn->func_body;
         c2 += injection_description();
-        c2 += "// If spell ending, reset " + pretty_name();
         c2 += "if (om_new == false) {";
+        c2 += "// Active spell is ending, set " + pretty_name() + " to zero.";
         c2 += name + ".set(0);";
         c2 += "}";
         break;
@@ -1459,10 +1459,9 @@ void DerivedAgentVarSymbol::create_side_effects()
         CodeBlock& ctf = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
         CodeBlock& cif = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
         ctf += injection_description();
-        // Inject code to the event time function which minimizes the working variable et with the next time of this self-scheduling agentvar
+        // Inject code to the event time function which minimizes the working variable 'et' with the next time of this self-scheduling agentvar
         ctf += "et = min(et, " + ait->name +");";
 
-        cif += injection_description();
         // Code for specific variants of self_scheduling_int() and self_scheduling_split() agentvars
         if (av->name == "age" || av->name == "time") {
 
@@ -1500,6 +1499,7 @@ void DerivedAgentVarSymbol::create_side_effects()
             cse += "}";
 
             // Code injection: self-scheduling event implement function
+            cif += injection_description();
             cif += "if (current_time == " + ait->name + ") {";
             if (tok == token::TK_self_scheduling_int) {
                 cif += "// Update the value";
@@ -1534,8 +1534,103 @@ void DerivedAgentVarSymbol::create_side_effects()
             cif += "}";
         }
         else {
-            // TODO, enumerate those arguments which are supported using 'if' conditions, give warning for those, and finally and error in the 'else' for anything else
-            pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
+            // The argument of self_scheduling_XXX is a derived attribute, e.g. active_spell_duration()
+            auto dav = dynamic_cast<DerivedAgentVarSymbol *>(pp_av1);
+            assert(dav); // the argument, e.g. active_spell_duration
+
+            if (dav->tok == token::TK_active_spell_duration) {
+                assert(dav->iav); // the identity attribute which holds the spell condition
+                assert(dav->iav->side_effects_fn); // the side-effects function of the identity attribute which holds the spell condition
+                CodeBlock& cse = dav->iav->side_effects_fn->func_body; // the function body
+ 
+                // Inject code into the spell condition side-effects function.
+                cse += injection_description();
+                cse += "{";
+                cse += "// 'ss_attr' is a reference to the self-scheduling attribute affected by this active spell.";
+                cse += "auto & ss_attr = " + name + ";";
+                cse += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
+                cse += "auto & ss_time = " + ait->name + ";";
+                if (tok == token::TK_self_scheduling_split) {
+                    cse += "// 'part' is a working copy of the partition value of the self-scheduling attribute";
+                    cse += "auto part = ss_attr.get();";
+                }
+                cse += "if (om_new == true) {";
+                cse += "// Active spell is starting, initialize self-scheduling attribute";
+                if (tok == token::TK_self_scheduling_int) {
+                    cse += "// Set the integerized duration to zero.";
+                    cse += "ss_attr.set(0);";
+                    cse += "// The time to wait is one interval of time from current time.";
+                    cse += "ss_time = time + 1;";
+                }
+                else { // tok == token::TK_self_scheduling_split
+                    cse += "// Set the partitioned duration to the interval containing zero.";
+                    cse += "part.to_index(0);";
+                    cse += "ss_attr.set(part);";
+                    cse += "// The time to wait is the upper bound of the current interval in the partition.";
+                    cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                    cse += "else ss_time = time + part.upper();";
+                }
+                cse += "}";
+                cse += "else { // om_new == false";
+                cse += "// The active spell is ending, so reset self-scheduling attribute.";
+                if (tok == token::TK_self_scheduling_int) {
+                    cse += "// Set the integerized duration to zero.";
+                    cse += "ss_attr.set(0);";
+                }
+                else { // tok == token::TK_self_scheduling_split
+                    cse += "// Set the partitioned duration to the interval containing zero.";
+                    cse += "part.to_index(0);";
+                    cse += "ss_attr.set(part);";
+                }
+                cse += "// There is no next change scheduled.";
+                cse += "ss_time = time_infinite;";
+                cse += "}";
+                cse += "}";
+
+                // Code injection: self-scheduling event implement function
+                cif += injection_description();
+                cif += "if (current_time == " + ait->name + ") {";
+                cif += "// 'ss_attr' is a reference to the self-scheduling attribute.";
+                cif += "auto & ss_attr = " + name + ";";
+                cif += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
+                cif += "auto & ss_time = " + ait->name + ";";
+                cif += "";
+                if (tok == token::TK_self_scheduling_split) {
+                    cif += "// 'part' is a working copy of the partition value of the self-scheduling attribute";
+                    cif += "auto part = ss_attr.get();";
+                }
+                if (tok == token::TK_self_scheduling_int) {
+                    cif += "// Increment the integerized duration.";
+                    cif += "ss_attr.set(ss_attr.get() + 1);";
+                    cif += "// The time to wait is one interval of time.";
+                    cif += "ss_time = time + 1;";
+                }
+                else { // tok == token::TK_self_scheduling_split
+                    cif += "// Set the partitioned duration to the next interval.";
+                    cif += "part++;";
+                    cif += "ss_attr.set(part);";
+                    cif += "// The time to wait is the width of the current interval in the partition.";
+                    cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                    cif += "else ss_time = time + part.width();";
+                }
+                if (Symbol::option_event_trace) {
+                    cif += "// Dump event time information to trace log";
+                    string evt_name = "scheduled - " + to_string(numeric_id);
+                    cif += "if (BaseEvent::trace_event_on) "
+                        "om_event_trace_msg("
+                        "\"" + agent->name + "\", "
+                        "(int)entity_id, "
+                        "0.0, " // TODO will be case_seed
+                        "\"" + evt_name + "\", "
+                        " (double) time);"
+                        ;
+                }
+                cif += "}";
+            }
+            else {
+                // TODO, enumerate those arguments which are supported using 'if' conditions, give warning for those, and finally and error in the 'else' for anything else
+                pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
+            }
         }
         break;
     }
@@ -1766,6 +1861,13 @@ string DerivedAgentVarSymbol::pp_modgen_name() const
     }
     default:
     assert(false); // logic guarantee
+    }
+
+    // convert to lowercase to match MFC string comparison CompareNoCase.
+    // in stl, _ lies between lower and upper case, but is before any letter in COmpareNoCase
+    // which transforms letters to lowercase before performing the comparison using ASCII values.
+    for (auto & ch : result) {
+        ch = tolower(ch);
     }
 
     return result;

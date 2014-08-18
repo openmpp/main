@@ -1,4 +1,4 @@
-options event_trace = on;
+//options event_trace = on;
 
 
 table Person ZZZ_Debug
