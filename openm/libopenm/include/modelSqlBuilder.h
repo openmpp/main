@@ -10,8 +10,6 @@
 
 #include <fstream>
 #include <streambuf>
-#include "libopenm/db/dbMetaRow.h"
-#include "libopenm/db/metaModelHolder.h"
 #include "libopenm/db/modelBuilder.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
@@ -35,17 +33,29 @@ namespace openm
         const string timeStamp(void) const { return modelTs; }
 
         /** update metadata and write sql script to create new model from supplied metadata rows */
-        void build(MetaModelHolder & i_metaRows);
+        void build(MetaModelHolder & io_metaRows);
 
-        /** write sql script to create backward compatibility views (Modgen compatibility) */
-        const void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const;
+        /** start sql script to create new working set */
+        void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
 
-        /** return sql script to insert parameters if template file exists */
-        const string buildInsertParameters(const MetaModelHolder & i_metaRows, const string & i_sqlTemplateFilePath) const;
+        /** append scalar parameter value to sql script for new working set  creation */
+        void addWorksetParameter(const MetaModelHolder & i_metaRows, const char * i_name, const char * i_value);
+
+        /** append parameter values to sql script for new working set  creation */
+        void addWorksetParameter(
+            const MetaModelHolder & i_metaRows, const char * i_name, const vector<const char *> & i_valueVec
+            );
+
+        /** finish sql script to create new working set */
+        void endWorkset(void) const;
+
+        /** write sql script to create backward compatibility views */
+        void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const;
 
     private:
-        string modelTs;         // model timestamp string, ie: _201208171604590148_
-        string outputDir;       // output directory to write sql script files
+        string modelTs;                     // model timestamp string, ie: _201208171604590148_
+        string outputDir;                   // output directory to write sql script files
+        unique_ptr<ModelSqlWriter> setWr;   // workset sql writer
 
         /** helper struct to collect info for db table */
         struct DbTblInfo
@@ -76,6 +86,9 @@ namespace openm
 
             /** db type of value column to store parameter */
             string valueTypeName;
+
+            /** if true then parameter added to workset */
+            bool isAdded;
         };
 
         /** helper struct to collect info for db subsample table and value view */
@@ -101,10 +114,19 @@ namespace openm
         void prepare(MetaModelHolder & io_metaRows) const;
 
         /** write sql script to create new model from supplied metadata rows */
-        const void buildCreateModel(MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const;
+        void buildCreateModel(const MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const;
+
+        /** sort and validate workset metadata for uniqueness and referential integrity */
+        void prepareWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const;
+
+        /** create new workset and write workset metadata */
+        void createWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
 
         /** set field values for model_dic table row */
-        void setModelDicRow(ModelDicRow & io_mdRow);
+        void setModelDicRow(ModelDicRow & io_mdRow) const;
+
+        /** set field values for workset_lst table row */
+        void setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow & io_wsRow) const;
 
         /** collect info for db parameter tables */
         void setParamTableInfo(const MetaModelHolder & i_metaRows);

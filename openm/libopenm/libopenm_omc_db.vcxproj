@@ -143,6 +143,7 @@
     <ClInclude Include="..\..\include\libopenm\db\dbCommon.h" />
     <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h" />
     <ClInclude Include="..\..\include\libopenm\db\metaModelHolder.h" />
+    <ClInclude Include="..\..\include\libopenm\db\metaSetHolder.h" />
     <ClInclude Include="..\..\include\libopenm\db\modelBuilder.h" />
     <ClInclude Include="..\..\include\libopenm\omCommon.h" />
     <ClInclude Include="common\log.h" />

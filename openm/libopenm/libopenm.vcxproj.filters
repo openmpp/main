@@ -84,9 +84,6 @@
     <ClInclude Include="include\metaRunHolder.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\metaSetHolder.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\omCommon.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>

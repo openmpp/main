@@ -50,10 +50,10 @@ SELECT
   M.model_type AS "ModelType",
   -1           AS "FullReport",
   (
-    SELECT RO1.option_value FROM run_option RO1 WHERE RO1.run_id = R.run_id AND RO1.option_key = 'General.Cases'
+    SELECT RO1.option_value FROM run_option RO1 WHERE RO1.run_id = R.run_id AND RO1.option_key = 'Parameter.Cases'
   ) AS "Cases",
   (
-    SELECT RO2.option_value FROM run_option RO2 WHERE RO2.run_id = R.run_id AND RO2.option_key = 'General.Cases'
+    SELECT RO2.option_value FROM run_option RO2 WHERE RO2.run_id = R.run_id AND RO2.option_key = 'Parameter.Cases'
   ) AS "CasesRequested",
   RT.lang_id   AS "LanguageID" 
 FROM model_dic M
@@ -69,16 +69,16 @@ SELECT
   RT.note      AS "Note", 
   R.sub_count  AS "Subsamples",
   (
-    SELECT RO1.option_value FROM run_option RO1 WHERE RO1.run_id = R.run_id AND RO1.option_key = 'General.Cases'
+    SELECT RO1.option_value FROM run_option RO1 WHERE RO1.run_id = R.run_id AND RO1.option_key = 'Parameter.Cases'
   ) AS "Cases",
   (
-    SELECT RO2.option_value FROM run_option RO2 WHERE RO2.run_id = R.run_id AND RO2.option_key = 'General.Seed'
+    SELECT RO2.option_value FROM run_option RO2 WHERE RO2.run_id = R.run_id AND RO2.option_key = 'Parameter.Seed'
   ) AS "Seed",
   (
-    SELECT RO3.option_value FROM run_option RO3 WHERE RO3.run_id = R.run_id AND RO3.option_key = 'General.PopulationScaling'
+    SELECT RO3.option_value FROM run_option RO3 WHERE RO3.run_id = R.run_id AND RO3.option_key = 'Parameter.PopulationScaling'
   ) AS "PopulationScaling",
   (
-    SELECT RO4.option_value FROM run_option RO4 WHERE RO4.run_id = R.run_id AND RO4.option_key = 'General.Population'
+    SELECT RO4.option_value FROM run_option RO4 WHERE RO4.run_id = R.run_id AND RO4.option_key = 'Parameter.Population'
   ) AS "PopulationSize",
   1            AS "CopyParameters", 
   RT.lang_id   AS "LanguageID" 

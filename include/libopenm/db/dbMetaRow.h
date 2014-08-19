@@ -895,6 +895,19 @@ namespace openm
         static vector<WorksetTxtRow>::const_iterator byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec);
     };
 
+    /** workset_txt table row and language name. */
+    struct WorksetTxtLangRow : public WorksetTxtRow
+    {
+        /** language name */
+        string langName;
+
+        /** less comparator by unique key: set id, language name. */
+        static bool uniqueLangKeyLess(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
+
+        /** equal comparator by unique key: set id, language name. */
+        static bool uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
+    };
+
     /** workset_parameter table row. */
     struct WorksetParamRow : public IMetaRow<WorksetParamRow>
     {
@@ -974,6 +987,19 @@ namespace openm
         static vector<WorksetParamTxtRow>::const_iterator byKey(
             int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
             );
+    };
+
+    /** workset_parameter_txt table row and language name. */
+    struct WorksetParamTxtLangRow : public WorksetParamTxtRow
+    {
+        /** language name */
+        string langName;
+
+        /** less comparator by unique key: set id, parameter id, language name. */
+        static bool uniqueLangKeyLess(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right);
+
+        /** equal comparator by unique key: set id, parameter id, language name. */
+        static bool uniqueLangKeyEqual(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right);
     };
 
     /** table_dic table row. */

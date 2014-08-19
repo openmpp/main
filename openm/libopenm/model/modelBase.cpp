@@ -29,7 +29,7 @@ ModelBase::ModelBase(
     progressCount(0)
 {
     if (i_msgExec == NULL) throw ModelException("invalid (NULL) message passing interface");
-    if (i_metaStore == NULL) throw ModelException("invalid (NULL) metadata tables storage");
+    if (i_metaStore == NULL) throw ModelException("invalid (NULL) model metadata");
 
     if ((!i_isMpiUsed || i_msgExec->isRoot()) && i_dbExec == NULL) 
         throw ModelException("database connection must be open at process %d", i_msgExec->rank());
@@ -78,7 +78,7 @@ ModelBase * ModelBase::create(
     )
 {
     if (i_msgExec == NULL) throw MsgException("invalid (NULL) message passing interface");
-    if (i_metaStore == NULL) throw ModelException("invalid (NULL) metadata tables storage");
+    if (i_metaStore == NULL) throw ModelException("invalid (NULL) model metadata");
     if ((!i_isMpiUsed || i_msgExec->isRoot()) && i_dbExec == NULL) 
         throw ModelException("database connection must be open at process %d", i_msgExec->rank());
 

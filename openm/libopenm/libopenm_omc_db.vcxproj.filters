@@ -72,6 +72,9 @@
     <ClInclude Include="include\modelSqlWriter.h">
       <Filter>Header Files\db</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\db\metaSetHolder.h">
+      <Filter>Header Files\db</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\file.cpp">

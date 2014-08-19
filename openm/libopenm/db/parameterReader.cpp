@@ -65,7 +65,7 @@ ParameterReader::ParameterReader(
 { 
     // check parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) metadata tables storage");
+    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
     if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
     // find model in metadata tables

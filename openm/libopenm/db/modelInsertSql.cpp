@@ -39,8 +39,8 @@ const string ModelInsertSql::makeDbNameSuffix(int i_id, const string & i_src)
     return sId + sName.substr(0, 32 - (sId.length() + OM_DB_TABLE_TYPE_PREFIX_LEN));
 }
 
-// write sql to insert into model_dic table if new model created.
-template<> const void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into model_dic table.
+template<> void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.version.length() > 255) throw DbException("invalid (too long) model version: %s", i_row.version.c_str());
@@ -76,9 +76,9 @@ template<> const void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow &
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into model_dic_txt table if new model created.
+// write sql to insert into model_dic_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<ModelDicTxtLangRow>(const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<ModelDicTxtLangRow>(const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name");
@@ -98,8 +98,8 @@ template<> const void ModelInsertSql::insertSql<ModelDicTxtLangRow>(const ModelD
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into type_dic table if new model created.
-template<> const void ModelInsertSql::insertSql<TypeDicRow>(const TypeDicRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into type_dic table.
+template<> void ModelInsertSql::insertSql<TypeDicRow>(const TypeDicRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
@@ -126,9 +126,9 @@ template<> const void ModelInsertSql::insertSql<TypeDicRow>(const TypeDicRow & i
     io_wr.throwOnFail();
 }
 
-// write sql to insert into type_dic_txt table if new model created.
+// write sql to insert into type_dic_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<TypeDicTxtLangRow>(const TypeDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TypeDicTxtLangRow>(const TypeDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
@@ -152,8 +152,8 @@ template<> const void ModelInsertSql::insertSql<TypeDicTxtLangRow>(const TypeDic
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into type_enum_lst table if new model created.
-template<> const void ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnumLstRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into type_enum_lst table.
+template<> void ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnumLstRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
@@ -175,9 +175,9 @@ template<> const void ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnumLs
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into type_enum_txt table if new model created.
+// write sql to insert into type_enum_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const TypeEnumTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const TypeEnumTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
@@ -203,8 +203,8 @@ template<> const void ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const TypeEn
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into parameter_dic table if new model created.
-template<> const void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into parameter_dic table.
+template<> void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", i_row.paramId);
@@ -240,9 +240,9 @@ template<> const void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow &
     io_wr.throwOnFail();
 }
 
-// write sql to insert into parameter_dic_txt table if new model created.
+// write sql to insert into parameter_dic_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<ParamDicTxtLangRow>(const ParamDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<ParamDicTxtLangRow>(const ParamDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", i_row.paramId);
@@ -266,8 +266,8 @@ template<> const void ModelInsertSql::insertSql<ParamDicTxtLangRow>(const ParamD
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into parameter_dims table if new model created.
-template<> const void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into parameter_dims table.
+template<> void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", i_row.paramId);
@@ -294,8 +294,8 @@ template<> const void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow
     io_wr.throwOnFail();
 }
 
-// write sql to insert into table_dic table if new model created.
-template<> const void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into table_dic table.
+template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -327,9 +327,9 @@ template<> const void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow &
     io_wr.throwOnFail();
 }
 
-// write sql to insert into table_dic_txt table if new model created.
+// write sql to insert into table_dic_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableDicTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -359,8 +359,8 @@ template<> const void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableD
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_dims table if new model created.
-template<> const void ModelInsertSql::insertSql<TableDimsRow>(const TableDimsRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into table_dims table.
+template<> void ModelInsertSql::insertSql<TableDimsRow>(const TableDimsRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -389,9 +389,9 @@ template<> const void ModelInsertSql::insertSql<TableDimsRow>(const TableDimsRow
     io_wr.throwOnFail();
 }
 
-// write sql to insert into table_dims_txt table if new model created.
+// write sql to insert into table_dims_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<TableDimsTxtLangRow>(const TableDimsTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TableDimsTxtLangRow>(const TableDimsTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -424,8 +424,8 @@ template<> const void ModelInsertSql::insertSql<TableDimsTxtLangRow>(const Table
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_acc table if new model created.
-template<> const void ModelInsertSql::insertSql<TableAccRow>(const TableAccRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into table_acc table.
+template<> void ModelInsertSql::insertSql<TableAccRow>(const TableAccRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -450,9 +450,9 @@ template<> const void ModelInsertSql::insertSql<TableAccRow>(const TableAccRow &
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_acc_txt table if new model created.
+// write sql to insert into table_acc_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -483,8 +483,8 @@ template<> const void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableA
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_unit table if new model created.
-template<> const void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into table_unit table.
+template<> void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -518,9 +518,9 @@ template<> const void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_unit_txt table if new model created.
+// write sql to insert into table_unit_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<TableUnitTxtLangRow>(const TableUnitTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TableUnitTxtLangRow>(const TableUnitTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
@@ -551,8 +551,8 @@ template<> const void ModelInsertSql::insertSql<TableUnitTxtLangRow>(const Table
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into group_lst table if new model created.
-template<> const void ModelInsertSql::insertSql<GroupLstRow>(const GroupLstRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into group_lst table.
+template<> void ModelInsertSql::insertSql<GroupLstRow>(const GroupLstRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
@@ -576,9 +576,9 @@ template<> const void ModelInsertSql::insertSql<GroupLstRow>(const GroupLstRow &
     io_wr.throwOnFail();
 }
 
-// write sql to insert into group_txt table if new model created.
+// write sql to insert into group_txt table.
 // language name used to select language id
-template<> const void ModelInsertSql::insertSql<GroupTxtLangRow>(const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<GroupTxtLangRow>(const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
@@ -603,9 +603,9 @@ template<> const void ModelInsertSql::insertSql<GroupTxtLangRow>(const GroupTxtL
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into group_pc table if new model created.
+// write sql to insert into group_pc table.
 // negative value of i_row.childGroupId or i_row.leafId treated as db-NULL
-template<> const void ModelInsertSql::insertSql<GroupPcRow>(const GroupPcRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<GroupPcRow>(const GroupPcRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
@@ -622,4 +622,111 @@ template<> const void ModelInsertSql::insertSql<GroupPcRow>(const GroupPcRow & i
         (i_row.leafId < 0 ? "NULL" : to_string(i_row.leafId)) <<
         " FROM id_lst IL WHERE IL.id_key = 'model_id';\n";
     io_wr.throwOnFail();
+}
+
+// write sql to insert into workset_lst table. 
+// negative value of i_row.runId treated as db-NULL
+template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
+    const ModelDicRow & i_mdRow, const WorksetLstRow & i_row, ModelSqlWriter & io_wr
+    )
+{
+    // validate field values
+    if (i_row.updateDateTime.length() > 32) throw DbException("invalid (too long) workset update time: %s", i_row.updateDateTime.c_str());
+
+    // creating new workset: get new set id from id_lst
+    io_wr.write(
+        "INSERT INTO workset_lst" \
+        " (set_id, run_id, model_id, set_name, is_readonly, update_dt)" \
+        " SELECT" \
+        " RSL.id_value,");
+    io_wr.outFs << 
+        (i_row.runId < 0 ? "NULL" : to_string(i_row.runId)) << ", " <<
+        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ";
+    io_wr.throwOnFail();
+    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
+    io_wr.write("), ");
+    io_wr.writeQuoted(i_row.name, true);
+    io_wr.write((i_row.isReadonly ? "1, " : "0, "));
+    io_wr.writeQuoted(i_row.updateDateTime);
+    io_wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
+}
+
+// write sql to insert into workset_txt table. 
+// language name used to select language id
+template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
+    const ModelDicRow & i_mdRow, const WorksetTxtLangRow & i_row, ModelSqlWriter & io_wr
+    )
+{
+    // validate field values
+    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name for workset description and notes");
+    if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) workset description");
+    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) workset description or notes");
+
+    // make sql
+    io_wr.write(
+        "INSERT INTO workset_txt (set_id, model_id, lang_id, descr, note)" \
+        " SELECT" \
+        " RSL.id_value," \
+        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ");
+    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
+    io_wr.write("), " \
+        " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = "
+        );
+    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.write("), ");
+    io_wr.writeQuoted(i_row.descr, true);
+    io_wr.writeQuoted(i_row.note);
+    io_wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
+}
+
+// write sql to insert into workset_parameter table. 
+template<> void ModelInsertSql::insertSetSql<WorksetParamRow>(
+    const ModelDicRow & i_mdRow, const WorksetParamRow & i_row, ModelSqlWriter & io_wr
+    )
+{
+    // validate field values
+    if (i_row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", i_row.paramId);
+
+    // make sql
+    io_wr.write(
+        "INSERT INTO workset_parameter (set_id, model_id, parameter_id)" \
+        " SELECT" \
+        " RSL.id_value," \
+        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ");
+    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
+    io_wr.outFs << 
+        "), " <<
+        i_row.paramId <<
+        " FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n";
+    io_wr.throwOnFail();
+}
+
+// write sql to insert into workset_parameter_txt table. 
+// language name used to select language id
+template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
+    const ModelDicRow & i_mdRow, const WorksetParamTxtLangRow & i_row, ModelSqlWriter & io_wr
+    )
+{
+    // validate field values
+    if (i_row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", i_row.paramId);
+
+    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, workset parameter id: %d", i_row.paramId);
+    if (i_row.note.length() > 32000) throw DbException("invalid (too long) notes, workset parameter id: %d", i_row.paramId);
+
+    // make sql
+    io_wr.write(
+        "INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note)" \
+        " SELECT" \
+        " RSL.id_value," \
+        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ");
+    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
+    io_wr.outFs <<
+        "), " <<
+        i_row.paramId << ", " <<
+        " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
+    io_wr.throwOnFail();
+    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.write("), ");
+    io_wr.writeQuoted(i_row.note);
+    io_wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
 }

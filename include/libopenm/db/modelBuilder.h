@@ -10,6 +10,7 @@
 
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/db/metaModelHolder.h"
+#include "libopenm/db/metaSetHolder.h"
 
 using namespace std;
 
@@ -28,13 +29,24 @@ namespace openm
         virtual const string timeStamp(void) const = 0;
 
         /** update metadata and write sql script to create new model from supplied metadata rows */
-        virtual void build(MetaModelHolder & i_metaRows) = 0;
+        virtual void build(MetaModelHolder & io_metaRows) = 0;
 
-        /** write sql script to create backward compatibility views (Modgen compatibility) */
-        virtual const void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const = 0;
+        /** start sql script to create new working set */
+        virtual void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) = 0;
 
-        /** return sql script to insert parameters if template file exists */
-        virtual const string buildInsertParameters(const MetaModelHolder & i_metaRows, const string & i_sqlTemplateFilePath) const = 0;
+        /** append scalar parameter value to sql script for new working set  creation */
+        virtual void addWorksetParameter(const MetaModelHolder & i_metaRows, const char * i_name, const char * i_value) = 0;
+
+        /** append parameter values to sql script for new working set  creation */
+        virtual void addWorksetParameter(
+            const MetaModelHolder & i_metaRows, const char * i_name, const vector<const char *> & i_valueVec
+            ) = 0;
+
+        /** finish sql script to create new working set */
+        virtual void endWorkset(void) const = 0;
+
+        /** write sql script to create backward compatibility views */
+        virtual void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const = 0;
     };
 }
 

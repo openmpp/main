@@ -10,7 +10,7 @@
 * * -Omc.InputDir  input/dir/to/find/source/files
 * * -Omc.OutputDir output/dir/to/place/compiled/cpp_and_h/files
 * * -Omc.UseDir    use/dir/with/ompp/files
-* * -Omc.ParamDir   input/dir/to/find/parameter/files/for/scenario
+* * -Omc.ParamDir  input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir  input/dir/to/find/fixed/parameter/files/
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
@@ -173,9 +173,6 @@ static string getFileNameExt(const string &file_name);
 
 // get stem of filename
 static string getFileNameStem(const string &file_name);
-
-// write text string into new output file
-static void writeToFile(const string & i_filePath, const string & i_fileContent);
 
 // Parse a list of files
 static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
@@ -380,23 +377,121 @@ int main(int argc, char * argv[])
         CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, &om_fixed_parms_cpp, builder->timeStamp(), metaRows);
         cg.do_all();
 
-        // build model creation script and save it
+        // build model creation sql script
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);
         
-        // build Modgen views creation script and save
+        // create model default working set sql script
+//#define TEST_PARAMETERS_SCRIPT 
+#ifdef TEST_PARAMETERS_SCRIPT
+
+        MetaSetLangHolder metaSet;      // default working set metadata
+
+        metaSet.worksetRow.name = "default parameters";
+        metaSet.worksetRow.runId = -1;              // it is not based on any existing model run
+
+        // (optional) add description and notes for each model language
+        for (ModelDicTxtLangRow mTxtRow : metaRows.modelTxt) {
+            WorksetTxtLangRow wsTxt;
+            wsTxt.langName = mTxtRow.langName;
+            wsTxt.descr = mTxtRow.langName + " description";
+            wsTxt.note = mTxtRow.langName + " notes";
+
+            metaSet.worksetTxt.push_back(wsTxt);
+        }
+
+        // default workset must include ALL model parameters
+        for (ParamDicRow paramRow : metaRows.paramDic) {
+            WorksetParamRow wsParam;
+            wsParam.paramId = paramRow.paramId;
+
+            metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
+
+            // (optional) add workset parameter notes for each model language
+            for (ModelDicTxtLangRow mTxtRow : metaRows.modelTxt) {
+                WorksetParamTxtLangRow paramTxt;
+                paramTxt.paramId = paramRow.paramId;
+                paramTxt.langName = mTxtRow.langName;
+                paramTxt.note = mTxtRow.langName + " notes for parameter " + to_string(paramRow.paramId);
+
+                metaSet.worksetParamTxt.push_back(paramTxt);
+            }
+        }
+
+        // start model default working set sql script
+        builder->beginWorkset(metaRows, metaSet);
+
+        // add values for ALL model parameters into default working set
+        for (ParamDicRow paramRow : metaRows.paramDic) {
+        
+            // generate parameter test data:
+            // assuming it is coming as result of .dat files parsing
+            const char * parsedValue_10 = "10";
+            const char * parsedValue_20 = "20";
+            const char * parsedValue_30 = "30";
+            const char * parsedValue_99 = "99";
+            const char * parsedValue_file = "some/path/to/file.pa'ra'meter";
+
+            // generate parameter test data:
+            // calculte size of parameter
+            // code below is for test only, binary search used in production
+            size_t totalSize = 0;
+            for (ParamDimsRow dimRow : metaRows.paramDims) {
+                if (dimRow.paramId != paramRow.paramId) continue;
+
+                for (TypeEnumLstRow enumRow : metaRows.typeEnum) {
+                    if (enumRow.typeId == dimRow.typeId) totalSize++;
+                }
+            }
+
+            // generate parameter test data:
+            // check is this a file parameter
+            // code below is for test only, binary search used in production
+            bool isFileParam = false;
+            for (TypeDicRow typeRow : metaRows.typeDic) {
+                if (typeRow.typeId == paramRow.typeId) { 
+                    isFileParam = equalNoCase(typeRow.name.c_str(), "file");
+                    break;
+                }
+            }
+
+            // add parameter values to default workset
+            if (totalSize <= 0) {   // scalar parameter
+
+                // generate parameter test data:
+                const char * paramValue = isFileParam ? parsedValue_file : parsedValue_99;
+
+                // add scalar parameter value to default workset
+                builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), paramValue);
+            }
+            else {
+                // generate parameter test data:
+                vector<const char *> paramValueVec(totalSize);
+                for (size_t k = 0; k < totalSize; k++) {
+                    paramValueVec[k] = ((k % 3) ? ((k % 2) ? parsedValue_30 : parsedValue_20) : parsedValue_10);
+                }
+
+                // add array parameter value to default workset
+                builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), paramValueVec);
+            }
+        }
+
+        // complete model default working set sql script
+        builder->endWorkset();
+
+#endif  // TEST_PARAMETERS_SCRIPT
+
+
+        //string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
+        //if (!scriptContent.empty()) {
+        //    writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
+        //}
+        //else {
+        //    theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
+        //}
+
+        // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);
-
-        // debug only: create model default parameters script from template
-        string srcInsertParameters = metaRows.modelDic.name + "_insert_parameters.sql_template";
-
-        string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
-        if (!scriptContent.empty()) {
-            writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
-        }
-        else {
-            theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
-        }
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
@@ -558,19 +653,4 @@ static string getFileNameStem(const string &file_name)
     openm::toLower(in_ext);
 
     return in_stem;
-}
-
-// write text string into new output file
-void writeToFile(const string & i_filePath, const string & i_fileContent)
-{
-    using namespace openm;
-
-    ofstream ost;
-    exit_guard<ofstream> onExit(&ost, &ofstream::close);   // close on exit
-
-    ost.open(i_filePath, ios_base::out | ios_base::trunc | ios_base::binary);
-    if(ost.fail()) throw HelperException("Failed to create file: %s", i_filePath.c_str());
-
-    ost << i_fileContent;
-    if(ost.fail()) throw HelperException("Failed to write into file: %s", i_filePath.c_str());
 }

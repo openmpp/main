@@ -384,7 +384,6 @@ bool ParamDicTxtRow::langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr &
     return dynamic_cast<ParamDicTxtRow *>(i_left.get())->langId == dynamic_cast<ParamDicTxtRow *>(i_right.get())->langId;
 }
 
-
 // parameter_dic_txt row less comparator by unique key: model id, parameter id, language name.
 bool ParamDicTxtLangRow::uniqueLangKeyLess(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right)
 {
@@ -495,6 +494,20 @@ vector<WorksetTxtRow>::const_iterator WorksetTxtRow::byKey(int i_setId, int i_la
     );
 }
 
+// workset_txt row less comparator by unique key: set id, language name.
+bool WorksetTxtLangRow::uniqueLangKeyLess(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right)
+{
+    return
+        (i_left.setId < i_right.setId) ||
+        (i_left.setId == i_right.setId && i_left.langName < i_right.langName);
+}
+
+// workset_txt row equal comparator by unique key: set id, language name.
+bool WorksetTxtLangRow::uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.langName == i_right.langName;
+}
+
 // workset_parameter row less comparator by primary key: set id and parameter id.
 bool WorksetParamRow::isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right)
 {
@@ -551,6 +564,21 @@ vector<WorksetParamTxtRow>::const_iterator WorksetParamTxtRow::byKey(
         return i_row.setId == i_setId && i_row.paramId == i_paramId && i_row.langId == i_langId;
     }
     );
+}
+
+// workset_parameter_txt row less comparator by unique key: set id, parameter id, language name.
+bool WorksetParamTxtLangRow::uniqueLangKeyLess(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right)
+{
+    return
+        (i_left.setId < i_right.setId) ||
+        (i_left.setId == i_right.setId && i_left.paramId < i_right.paramId) ||
+        (i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langName < i_right.langName);
+}
+
+// workset_parameter_txt row equal comparator by unique key: set id, parameter id, language name.
+bool WorksetParamTxtLangRow::uniqueLangKeyEqual(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langName == i_right.langName;
 }
 
 // table_dic row less comparator by primary key: model id, table id.

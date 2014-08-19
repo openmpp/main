@@ -16,6 +16,7 @@ namespace openm
             int i_setId,
             const char * i_name,
             IDbExec * i_dbExec,
+            const MetaRunHolder * i_metaStore,
             const MetaSetHolder * i_metaSet
             );
 
@@ -52,10 +53,11 @@ IParameterWriter * IParameterWriter::create(
     int i_setId,
     const char * i_name,
     IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore,
     const MetaSetHolder * i_metaSet
     )
 {
-    return new ParameterWriter(i_modelId, i_setId, i_name, i_dbExec, i_metaSet);
+    return new ParameterWriter(i_modelId, i_setId, i_name, i_dbExec, i_metaStore, i_metaSet);
 }
 
 // New parameter writer
@@ -64,6 +66,7 @@ ParameterWriter::ParameterWriter(
     int i_setId,
     const char * i_name,
     IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore,
     const MetaSetHolder * i_metaSet
     ) :
     setId(i_setId),
@@ -73,44 +76,43 @@ ParameterWriter::ParameterWriter(
 {
     // check parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaSet == NULL) throw DbException("invalid (NULL) workset metadata");
+    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
+    if (i_metaSet == NULL) throw DbException("invalid (NULL) workset parameters metadata");
     if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
     // find model, parameter and parameter type in metadata tables
-    const ModelDicRow * mdRow = i_metaSet->modelDic->byKey(i_modelId);
+    const ModelDicRow * mdRow = i_metaStore->modelDic->byKey(i_modelId);
     if (mdRow == NULL) throw DbException("model not found in the database, id: %d", i_modelId);
 
-    const ParamDicRow * paramRow = i_metaSet->paramDic->byModelIdName(i_modelId, i_name);
+    const ParamDicRow * paramRow = i_metaStore->paramDic->byModelIdName(i_modelId, i_name);
     if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
     paramId = paramRow->paramId;
     dimCount = paramRow->rank;
 
     // check if workset belong to model and parameter is part of the workset
-    vector<WorksetLstRow>::const_iterator wsIt = WorksetLstRow::byKey(setId, i_metaSet->worksetVec);
-    if (wsIt == i_metaSet->worksetVec.cend()) throw DbException("workset not found in database, id: %d", setId);
+    if (i_metaSet->worksetRow.setId != setId) throw DbException("invalid workset id: %d, expected: %d", i_metaSet->worksetRow.setId, setId);
+    if (i_metaSet->worksetRow.modelId != i_modelId) throw DbException("workset %d does not belong to model: %s", setId, mdRow->name.c_str());
+    if (i_metaSet->worksetRow.isReadonly) throw DbException("workset %d is read-only", setId);
 
-    if (wsIt->modelId != i_modelId) throw DbException("workset %d does not belong to model: %s", setId, mdRow->name.c_str());
-    if (wsIt->isReadonly) throw DbException("workset %d is read-only", setId);
-
-    vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(setId, paramId, i_metaSet->worksetParamVec);
-    if (wsParamIt == i_metaSet->worksetParamVec.cend()) throw DbException("workset %d does not contain parameter %s", setId, i_name);
+    vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(setId, paramId, i_metaSet->worksetParam);
+    if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", setId, i_name);
 
     // get dimensions list
-    vector<ParamDimsRow> dimVec = i_metaSet->paramDims->byModelIdParamId(i_modelId, paramId);
+    vector<ParamDimsRow> dimVec = i_metaStore->paramDims->byModelIdParamId(i_modelId, paramId);
     if (dimCount < 0 || dimCount != (int)dimVec.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
-    const TypeDicRow * paramTypeRow = i_metaSet->typeDic->byKey(i_modelId, paramRow->typeId);
+    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(i_modelId, paramRow->typeId);
     if (paramTypeRow == NULL) throw DbException("type not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
     totalSize = 1;
     for (const ParamDimsRow & dim : dimVec) {
 
-        const TypeDicRow * typeRow = i_metaSet->typeDic->byKey(i_modelId, dim.typeId);
+        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(i_modelId, dim.typeId);
         if (typeRow == NULL) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
 
-        int dimSize = (int)i_metaSet->typeEnumLst->byModelIdTypeId(i_modelId, dim.typeId).size();
+        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(i_modelId, dim.typeId).size();
 
         if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
 
@@ -153,7 +155,7 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
 {
     // validate parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %ld for output table id: %d", i_size, paramId);
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for parameter, id: %d", i_size, paramId);
     if (i_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
 
     // set parameter columns type: dimensions and value

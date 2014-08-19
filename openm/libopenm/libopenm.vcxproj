@@ -153,7 +153,6 @@
     <ClInclude Include="include\dbOutputTable.h" />
     <ClInclude Include="include\dbParameter.h" />
     <ClInclude Include="include\metaRunHolder.h" />
-    <ClInclude Include="include\metaSetHolder.h" />
     <ClInclude Include="include\model.h" />
     <ClInclude Include="include\msg.h" />
     <ClInclude Include="include\runController.h" />

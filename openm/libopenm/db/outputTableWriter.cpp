@@ -107,7 +107,7 @@ OutputTableWriter::OutputTableWriter(
 { 
     // check parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) metadata tables storage");
+    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
     if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) output table name");
 
     // get table dimensions, accumulators and aggregation expressions
@@ -142,7 +142,7 @@ OutputTableWriter::OutputTableWriter(
 // calculate output table size: total number of values for each accumulator
 long long IOutputTableWriter::sizeOf(int i_modelId, const MetaRunHolder * i_metaStore, int i_tableId)
 { 
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) metadata tables storage");
+    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
 
     // get dimensions size, including unit dimension
     const TableDicRow * tblRow = i_metaStore->tableDic->byKey(i_modelId, i_tableId);
@@ -171,7 +171,7 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
     if (i_nSubSample < 0 || i_nSubSample >= numSubSamples) throw DbException("invalid sub-sample index: %d for output table: %s", i_nSubSample, tableRow->tableName.c_str());
     if (i_accCount <= 0 || i_accCount != accCount) throw DbException("invalid number of accumulators: %d for output table: %s", i_accCount, tableRow->tableName.c_str());
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %ld for output table: %s", i_size, tableRow->tableName.c_str());
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for output table: %s", i_size, tableRow->tableName.c_str());
 
     if (i_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for output table: %s", tableRow->tableName.c_str());
 

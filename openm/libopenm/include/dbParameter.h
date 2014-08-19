@@ -11,7 +11,7 @@
 #include "libopenm/db/dbCommon.h"
 #include "dbExec.h"
 #include "metaRunHolder.h"
-#include "metaSetHolder.h"
+#include "libopenm/db/metaSetHolder.h"
 
 namespace openm
 {
@@ -56,6 +56,7 @@ namespace openm
             int i_setId,
             const char * i_name,
             IDbExec * i_dbExec,
+            const MetaRunHolder * i_metaStore,
             const MetaSetHolder * i_metaSet
             );
 

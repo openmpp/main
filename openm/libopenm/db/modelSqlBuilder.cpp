@@ -2,7 +2,6 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include "libopenm/db/dbMetaRow.h"
 #include "modelSqlBuilder.h"
 
 using namespace openm;
@@ -34,23 +33,23 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_outputDir) : outputDir(i_outpu
 }
 
 // validate metadata and return sql script to create new model from supplied metadata rows
-void ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
+void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
 {
     try {
         // validate input rows: uniqueness and referential integrity
-        prepare(i_metaRows);
+        prepare(io_metaRows);
 
         // set model_dic row field values: model prefix and db table prefixes
-        setModelDicRow(i_metaRows.modelDic);
+        setModelDicRow(io_metaRows.modelDic);
 
         // collect info for db parameter tables, db subsample tables and value views
-        setParamTableInfo(i_metaRows);
-        setOutTableInfo(i_metaRows);
+        setParamTableInfo(io_metaRows);
+        setOutTableInfo(io_metaRows);
 
         // write into file sql script to create new model from supplied metadata rows
-        ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_create_model.sql");
+        ModelSqlWriter wr(outputDir + io_metaRows.modelDic.name + "_create_model.sql");
 
-        buildCreateModel(i_metaRows, wr);
+        buildCreateModel(io_metaRows, wr);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -66,9 +65,8 @@ void ModelSqlBuilder::build(MetaModelHolder & i_metaRows)
     }
 }
 
-
 // write sql script to create new model from supplied metadata rows 
-const void ModelSqlBuilder::buildCreateModel(MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const
+void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const
 {
     // start transaction and get new model id
     io_wr.outFs << 
@@ -247,8 +245,320 @@ const void ModelSqlBuilder::buildCreateModel(MetaModelHolder & i_metaRows, Model
     io_wr.writeLine("COMMIT;\n");  // done
 }
 
-// write sql script to create backward compatibility views (Modgen compatibility)
-const void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
+// start sql script to create new working set
+void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) 
+{
+    try {
+        // validate workset metadata: uniqueness and referential integrity
+        prepareWorkset(i_metaRows, io_metaSet);
+
+        // clear added flag for all model parameters
+        for (ParamTblInfo & tblInfo : paramInfoVec) {
+            tblInfo.isAdded = false;
+        }
+
+        // create sql script file
+        setWr.reset(new ModelSqlWriter(
+            outputDir + toAlphaNumeric(i_metaRows.modelDic.name) + "_" + toAlphaNumeric(io_metaSet.worksetRow.name) + ".sql"
+            ));
+
+        // write metadata into sql script file
+        createWorkset(i_metaRows, io_metaSet);
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+// create new workset and write workset metadata
+void ModelSqlBuilder::createWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const
+{
+    // start transaction and get new workset id
+    ModelSqlWriter & wr = *setWr.get();
+    wr.outFs <<
+        "--\n" <<
+        "-- create full working set of parameters\n" <<
+        "-- model name:      " << i_metaRows.modelDic.name << '\n' <<
+        "-- model timestamp: " << modelTs << '\n' <<
+        "-- db names prefix: " << i_metaRows.modelDic.modelPrefix << '\n' <<
+        "-- script created:  " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+        "--\n";
+    wr.throwOnFail();
+
+    wr.write(
+        "BEGIN TRANSACTION;\n" \
+        "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id';\n\n"
+        );
+
+    // workset header
+    wr.write(
+        "--\n" \
+        "-- working set description\n" \
+        "--\n"
+        );
+    ModelInsertSql::insertSetSql(i_metaRows.modelDic, i_metaSet.worksetRow, wr);
+    wr.write("\n");
+
+    for (const WorksetTxtLangRow & row : i_metaSet.worksetTxt) {
+        ModelInsertSql::insertSetSql(i_metaRows.modelDic, row, wr);
+    }
+    wr.write("\n");
+
+    // workset parameters
+    wr.write(
+        "--\n" \
+        "-- working set parameters\n" \
+        "--\n"
+        );
+    for (const WorksetParamRow & row : i_metaSet.worksetParam) {
+        ModelInsertSql::insertSetSql(i_metaRows.modelDic, row, wr);
+    }
+    wr.write("\n");
+
+    for (const WorksetParamTxtLangRow & row : i_metaSet.worksetParamTxt) {
+        ModelInsertSql::insertSetSql(i_metaRows.modelDic, row, wr);
+    }
+    wr.write("\n");
+}
+
+/** finish sql script to create new working set */
+void ModelSqlBuilder::endWorkset(void) const
+{
+    try {
+        // validate workset parameters: all parameters must be added to workset
+        for (const ParamTblInfo & tblInfo : paramInfoVec) {
+            if (!tblInfo.isAdded)
+                throw DbException("workset must include all model parameters, missing: %d: %s", tblInfo.id, tblInfo.name.c_str());
+        }
+
+        // mark workset as readonly
+        ModelSqlWriter & wr = *setWr.get();
+
+        wr.write(
+            "--\n" \
+            "-- mark working set as readonly\n" \
+            "--\n"
+            );
+        wr.write(
+            "UPDATE workset_lst SET is_readonly = 1" \
+            " WHERE set_id =" \
+            " (SELECT RSL.id_value FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id');\n"
+            );
+        wr.write("\n");
+
+        wr.writeLine("COMMIT;\n");  // done
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+// append scalar parameter value to sql script for new working set  creation 
+void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & i_metaRows, const char * i_name, const char * i_value)
+{
+    // check parameter name
+    if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
+
+    // find parameter row
+    int mId = i_metaRows.modelDic.modelId;
+
+    auto paramRow = std::find_if(
+        i_metaRows.paramDic.cbegin(), i_metaRows.paramDic.cend(), 
+        [mId, i_name](const ParamDicRow & i_row) -> bool { return i_row.modelId == mId && i_row.paramName == i_name; }
+        );
+    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+
+    // int paramId = paramRow->paramId;
+    int dimCount = paramRow->rank;
+    if (dimCount != 0) throw DbException("invalid parameter rank for scalar parameter: %s", i_name);
+
+    // get parameter type
+    const TypeDicRow tRow(mId, paramRow->typeId);
+    auto paramTypeRow = std::lower_bound(
+        i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
+        );
+    if (paramTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for parameter: %s", i_name);
+
+    bool isStrType = equalNoCase(paramTypeRow->name.c_str(), "file");
+
+    // make sql to insert parameter value
+    // INSERT INTO modelone_201208171604590148_w0_ageSex (set_id, value) 
+    // SELECT RSL.id_value, 0.014 
+    // FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';
+    ModelSqlWriter & wr = *setWr.get();
+    wr.outFs <<
+        "INSERT INTO " << i_metaRows.modelDic.modelPrefix << i_metaRows.modelDic.setPrefix << paramRow->dbNameSuffix <<
+        " (set_id, value)" <<
+        " SELECT RSL.id_value, ";
+    wr.throwOnFail();
+
+    // validate and write parameter value
+    if (i_value == nullptr) throw DbException("Invalid (empty) parameter value");
+    if (isStrType) {
+        wr.writeQuoted(i_value);
+    }
+    else {
+        if (i_value[0] == '\0') throw DbException("Invalid (empty) parameter value");
+        wr.write(i_value);
+    }
+
+    wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
+    wr.write("\n");
+}
+
+// append scalar parameter value to sql script for new working set  creation 
+void ModelSqlBuilder::addWorksetParameter(
+    const MetaModelHolder & i_metaRows, const char * i_name, const vector<const char *> & i_valueVec
+    )
+{
+    // check parameters
+    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
+
+    int mId = i_metaRows.modelDic.modelId;
+
+    // find parameter row
+    auto paramRow = std::find_if(
+        i_metaRows.paramDic.cbegin(), i_metaRows.paramDic.cend(),
+        [mId, i_name](const ParamDicRow & i_row) -> bool { return i_row.modelId == mId && i_row.paramName == i_name; }
+    );
+    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+
+    int paramId = paramRow->paramId;
+    int dimCount = paramRow->rank;
+    if (dimCount <= 0) throw DbException("invalid parameter rank for parameter: %s", i_name);
+
+    // get parameter type
+    TypeDicRow tRow(mId, paramRow->typeId);
+    auto paramTypeRow = std::lower_bound(
+        i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
+        );
+    if (paramTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for parameter: %s", i_name);
+
+    bool isStrType = equalNoCase(paramTypeRow->name.c_str(), "file");
+
+    // get dimensions list
+    const ParamDimsRow dRow(mId, paramId, "");
+    auto dimRange = std::equal_range(
+        i_metaRows.paramDims.cbegin(), i_metaRows.paramDims.cend(), dRow, ParamDimsRow::isKeyLess
+        );
+    if (dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend() || dimCount != (int)(dimRange.second - dimRange.first))
+        throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
+
+    // get dimensions type and size, calculate total size
+    size_t totalSize = 1;
+    vector<int> dimSizeVec;
+
+    for (vector<ParamDimsRow>::const_iterator dRow = dimRange.first; dRow != dimRange.second; dRow++) {
+
+        // find dimension type
+        tRow.typeId = dRow->typeId;
+        auto dimTypeRow = std::lower_bound(
+            i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
+            );
+        if (dimTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for dimension %s of parameter: %s", dRow->name.c_str(), i_name);
+
+        // find dimension size as number of enums in type_enum_lst table, if type is not simple type
+        int dimSize = 0;
+        if (dimTypeRow->typeId > OM_MAX_BUILTIN_TYPE_ID) {
+
+            TypeEnumLstRow eRow(mId, dimTypeRow->typeId, 0);
+            auto enumRange = std::equal_range(
+                i_metaRows.typeEnum.cbegin(), i_metaRows.typeEnum.cend(), eRow, TypeEnumLstRow::isKeyLess
+                );
+            if (enumRange.first == i_metaRows.typeEnum.cend())
+                throw DbException("invalid dimension size (no enums found), dimension: %s of parameter: %s", dRow->name.c_str(), i_name);
+
+            dimSize = (int)(enumRange.second - enumRange.first);
+        }
+
+        // store dimansion size and calculate total parameter size
+        dimSizeVec.push_back(dimSize);
+        if (dimSize > 0) totalSize *= dimSize;
+    }
+
+    if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
+    if (totalSize != i_valueVec.size()) throw DbException("invalid value array size: %ld for parameter: %s", i_valueVec.size(), i_name);
+
+    // make sql to insert parameter dimasion enums and parameter value
+    // INSERT INTO modelone_201208171604590148_w0_ageSex 
+    //   (set_id, dim0, dim1, value) 
+    // SELECT 
+    //   RSL.id_value, 1, 2, 0.014
+    // FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';
+    ModelSqlWriter & wr = *setWr.get();
+    {
+        // storage for dimension enum_id items
+        unique_ptr<int> cellArrUptr(new int[dimCount]);
+        int * cellArr = cellArrUptr.get();
+
+        for (int k = 0; k < dimCount; k++) {
+            cellArr[k] = 0;     // initial enum_id is zero for all enums
+        }
+
+        // loop through all enums for each dimension
+        for (size_t cellOffset = 0; cellOffset < totalSize; cellOffset++) {
+
+            wr.outFs <<
+                "INSERT INTO " << i_metaRows.modelDic.modelPrefix << i_metaRows.modelDic.setPrefix << paramRow->dbNameSuffix <<
+                " (set_id, value)" <<
+                " SELECT RSL.id_value, ";
+            wr.throwOnFail();
+
+            // write dimension enum_id items
+            for (int k = 0; k < dimCount; k++) {
+                wr.outFs << cellArr[k] << ", ";
+                wr.throwOnFail();
+            }
+
+            // validate and write parameter value
+            if (i_valueVec[cellOffset] == nullptr) throw DbException("Invalid (empty) parameter value");
+            if (isStrType) {
+                wr.writeQuoted(i_valueVec[cellOffset]);
+            }
+            else {
+                if (i_valueVec[cellOffset][0] == '\0') throw DbException("Invalid (empty) parameter value");
+                wr.write(i_valueVec[cellOffset]);
+            }
+
+            // end of insert statement
+            wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
+
+            // get next cell indices
+            for (int nDim = dimCount - 1; nDim >= 0; nDim--) {
+                if (nDim > 0 && cellArr[nDim] >= dimSizeVec[nDim] - 1) {
+                    cellArr[nDim] = 0;
+                }
+                else {
+                    cellArr[nDim]++;
+                    break;
+                }
+            }
+            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("Invalid value array size");
+        }
+    }
+    wr.write("\n");     // done with parameter insert
+}
+
+// write sql script to create backward compatibility views
+void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
 {
     try {
         // put descriptive header
@@ -305,28 +615,6 @@ const void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_me
         theLog->logErr(ex, OM_FILE_LINE);
         throw DbException(ex.what());
     }
-}
-
-// return sql script to insert parameters if template file exists
-const string ModelSqlBuilder::buildInsertParameters(const MetaModelHolder & i_metaRows, const string & i_sqlTemplateFilePath) const
-{
-    // check if template for sql default parametrs is exists
-    ifstream ist;
-    exit_guard<ifstream> onExit(&ist, &ifstream::close);  // close on exit
-
-    ist.open(i_sqlTemplateFilePath, ios_base::in | ios_base::binary);
-    if (ist.fail()) return "";                                                  // file not exists
-
-    // read until the end
-    string sql((istreambuf_iterator<char>(ist)), istreambuf_iterator<char>());
-    if (ist.fail()) return "";                                                  // read failed
-
-    // replace script parameters
-    sql = replaceAll(sql, "${OM_MODEL_TIMESTAMP}", modelTs.c_str());
-    sql = replaceAll(sql, "${OM_MODEL_PREFIX}", i_metaRows.modelDic.modelPrefix.c_str());
-    sql = replaceAll(sql, "${OMC_COMPILE_TIME}", toDateTimeString(theLog->timeStampSuffix()).c_str());
-
-    return sql;
 }
 
 // return body of create table sql for parameter:
@@ -951,8 +1239,89 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 }
 
+// validate workset metadata: uniqueness and referential integrity
+void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const
+{
+    // set workset_lst row field values: readonly status and creation date-time
+    // validate model_dic field values: model prefix and timestamp
+    setWorksetRow(i_metaRows.modelDic, io_metaSet.worksetRow);
+
+    int mId = i_metaRows.modelDic.modelId;
+    int setId = io_metaSet.worksetRow.setId;
+
+    // workset_lst table
+    // master key: model id
+    if (io_metaSet.worksetRow.modelId != mId)
+        throw DbException("in workset_lst invalid model id: %d, expected: %d", io_metaSet.worksetRow.modelId, mId);
+
+    // workset_txt table
+    // unique: set id and language name; master key: set id; 
+    // foreign key: model id
+    sort(io_metaSet.worksetTxt.begin(), io_metaSet.worksetTxt.end(), WorksetTxtLangRow::uniqueLangKeyLess);
+
+    for (vector<WorksetTxtLangRow>::const_iterator rowIt = io_metaSet.worksetTxt.cbegin(); rowIt != io_metaSet.worksetTxt.cend(); ++rowIt) {
+
+        if (rowIt->setId != setId)
+            throw DbException("in workset_txt invalid set id: %d, expected: %d in row with language id: %d and name: %s", rowIt-setId, setId, rowIt->langId, rowIt->langName.c_str());
+
+        if (rowIt->modelId != mId)
+            throw DbException("in workset_txt invalid model id: %d, expected: %d in row with language id: %d and name: %s", rowIt->modelId, mId, rowIt->langId, rowIt->langName.c_str());
+
+        vector<WorksetTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaSet.worksetTxt.cend() && WorksetTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in workset_txt not unique set id: %d and language name: %s", rowIt->setId, rowIt->langName.c_str());
+    }
+
+    // workset_parameter table
+    // unique: set id, parameter id; master key: set id; 
+    // foreign key: model id, parameter id;
+    sort(io_metaSet.worksetParam.begin(), io_metaSet.worksetParam.end(), WorksetParamRow::isKeyLess);
+
+    for (vector<WorksetParamRow>::const_iterator rowIt = io_metaSet.worksetParam.cbegin(); rowIt != io_metaSet.worksetParam.cend(); ++rowIt) {
+
+        if (rowIt->setId != setId)
+            throw DbException("in workset_parameter invalid set id: %d, expected: %d in row with parameter id: %d", rowIt->setId, setId, rowIt->paramId);
+
+        ParamDicRow fkRow(rowIt->modelId, rowIt->paramId);
+        if (!std::binary_search(
+            i_metaRows.paramDic.cbegin(),
+            i_metaRows.paramDic.cend(),
+            fkRow,
+            ParamDicRow::isKeyLess
+            ))
+            throw DbException("in workset_parameter invalid model id: %d and parameter id: %d: not found in parameter_dic", rowIt->modelId, rowIt->paramId);
+
+        vector<WorksetParamRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaSet.worksetParam.cend() && WorksetParamRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in workset_parameter not unique set id: %d and parameter id: %d", rowIt->setId, rowIt->paramId);
+    }
+
+    // workset_parameter_txt table
+    // unique: set id, parameter id, language; master key: set id, parameter id
+    sort(io_metaSet.worksetParamTxt.begin(), io_metaSet.worksetParamTxt.end(), WorksetParamTxtLangRow::uniqueLangKeyLess);
+
+    for (vector<WorksetParamTxtLangRow>::const_iterator rowIt = io_metaSet.worksetParamTxt.cbegin(); rowIt != io_metaSet.worksetParamTxt.cend(); ++rowIt) {
+
+        WorksetParamRow mkRow(rowIt->setId, rowIt->paramId);
+        if (!std::binary_search(
+            io_metaSet.worksetParam.cbegin(),
+            io_metaSet.worksetParam.cend(),
+            mkRow,
+            WorksetParamRow::isKeyLess
+            ))
+            throw DbException("in workset_parameter_txt invalid set id: %d and parameter id: %d: not found in workset_parameter", rowIt->setId, rowIt->paramId);
+
+        vector<WorksetParamTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaSet.worksetParamTxt.cend() && WorksetParamTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in workset_parameter_txt not unique set id: %d, parameter id: %d and language name: %s", rowIt->setId, rowIt->paramId, rowIt->langName.c_str());
+    }
+}
+
 // set field values for model_dic table row
-void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow)
+void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
 {
     // validate model timestamp: must be same as in model source code
     if (io_mdRow.timestamp != modelTs) throw DbException("invalid model timestamp: %s, expected: %s", io_mdRow.timestamp.c_str(), modelTs.c_str());
@@ -977,6 +1346,26 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow)
             "invalid (not unique) table prefixes: %s %s %s %s, model name: %s", 
             io_mdRow.paramPrefix.c_str(), io_mdRow.setPrefix.c_str(), io_mdRow.subPrefix.c_str(), io_mdRow.valuePrefix.c_str(), io_mdRow.name.c_str()
             );
+}
+
+// set workset_lst row field values: readonly status and creation date-time
+// validate model_dic field values: model prefix and timestamp
+void ModelSqlBuilder::setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow & io_wsRow) const
+{ 
+    // validate model timestamp
+    if (i_mdRow.timestamp.empty() || trim(i_mdRow.timestamp).length() < 16) throw DbException("invalid (or empty) model timestamp");
+    if (i_mdRow.timestamp.length() > 32) throw DbException("invalid (too long) model timestamp: %s", i_mdRow.timestamp.c_str());
+
+    // validate model timestamp: must be same as in model source code
+    if (i_mdRow.timestamp != modelTs) throw DbException("invalid model timestamp: %s, expected: %s", i_mdRow.timestamp.c_str(), modelTs.c_str());
+
+    // validate model prefix
+    if (i_mdRow.modelPrefix.empty() || trim(i_mdRow.modelPrefix).length() < 16) throw DbException("invalid (or empty) model prefix");
+    if (i_mdRow.modelPrefix.length() > 32) throw DbException("invalid (too long) model prefix: %s", i_mdRow.modelPrefix.c_str());
+
+    // mark workset as read-write and set workset creation date-time
+    io_wsRow.isReadonly = false;
+    io_wsRow.updateDateTime = toDateTimeString(theLog->timeStampSuffix());  // get log date-time as string
 }
 
 // collect info for db parameter tables

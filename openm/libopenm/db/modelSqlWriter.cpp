@@ -28,7 +28,7 @@ ModelSqlWriter::ModelSqlWriter(const string & i_filePath)
 /** close sql script file */
 ModelSqlWriter::~ModelSqlWriter() throw() 
 { 
-    try { outFs.close(); } catch (...) { } 
+    try { outFs.close(); } catch (...) { }
 }
 
 /** throw exception on output stream fail */
