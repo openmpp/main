@@ -7,38 +7,6 @@
 
 using namespace openm;
 
-// make model prefix from model name and timestamp
-const string ModelInsertSql::makeModelPrefix(const string & i_name, const string & i_timestamp)
-{
-    if (i_name.empty() || trim(i_name).length() < 1) throw DbException("invalid (empty) model name");
-    if (i_timestamp.empty() || trim(i_timestamp).length() < 16) throw DbException("invalid (too short) model timestamp");
-
-    // validate model name and timestamp max size
-    if (i_name.length() > 255 || i_timestamp.length() > 32) 
-        throw DbException("invalid (too long) model name: %s or timestamp: %s", i_name.c_str(), i_timestamp.c_str());
-
-    // in model name use only [a-z,0-9] and _ underscore
-    // make sure prefix size not longer than 32 
-    string sPrefix = toAlphaNumeric(i_name, 32);
-
-    // make model prefix from model name and timestamp
-    return 
-        sPrefix.substr(0, 32 - i_timestamp.length()) + i_timestamp;
-}
-
-// make unique part of db table name for parameter or output table, ie: 1234_ageSex
-const string ModelInsertSql::makeDbNameSuffix(int i_id, const string & i_src)
-{
-    if (i_src.empty() || trim(i_src).length() < 1) throw DbException("invalid (empty) source name, id: %d", i_id);
-
-    // in db table name use only [A-Z,a-z,0-9] and _ underscore
-    // make sure name size not longer than (32 - max prefix size)
-    string sId = to_string(i_id) + "_";
-    string sName = toAlphaNumeric(i_src, 32);
-
-    return sId + sName.substr(0, 32 - (sId.length() + OM_DB_TABLE_TYPE_PREFIX_LEN));
-}
-
 // write sql to insert into model_dic table.
 template<> void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr)
 {
@@ -89,7 +57,7 @@ template<> void ModelInsertSql::insertSql<ModelDicTxtLangRow>(const ModelDicTxtL
     io_wr.write(
         "INSERT INTO model_dic_txt (model_id, lang_id, descr, note)" \
         " SELECT" \
-        " IL.id_value, " \
+        " IL.id_value," \
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
     io_wr.writeTrimQuoted(i_row.langName);
     io_wr.write("), ");
@@ -142,7 +110,7 @@ template<> void ModelInsertSql::insertSql<TypeDicTxtLangRow>(const TypeDicTxtLan
         "INSERT INTO type_dic_txt (model_id, mod_type_id, lang_id, descr, note)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.typeId << ", ";
+        i_row.typeId << ",";
     io_wr.throwOnFail();
     io_wr.write(" (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
     io_wr.writeTrimQuoted(i_row.langName);
@@ -193,7 +161,7 @@ template<> void ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const TypeEnumTxtL
         " SELECT" \
         " IL.id_value, " <<
         i_row.typeId << ", " <<
-        i_row.enumId << ", " <<
+        i_row.enumId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName); 
@@ -217,9 +185,6 @@ template<> void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow & i_row
     if (i_row.numCumulated < 0) 
         throw DbException("invalid (negative) number of cumulated dimensions: %d, parameter: %s", i_row.numCumulated, i_row.paramName.c_str());
 
-    // make unique part of db table name from parameter name
-    string dbNameSuffix = makeDbNameSuffix(i_row.paramId, i_row.paramName);
-
     // make sql
     io_wr.outFs <<
         "INSERT INTO parameter_dic" \
@@ -228,7 +193,7 @@ template<> void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow & i_row
         " IL.id_value, " <<
         i_row.paramId << ", ";
     io_wr.throwOnFail();
-    io_wr.writeQuoted(dbNameSuffix, true);
+    io_wr.writeQuoted(i_row.dbNameSuffix, true);
     io_wr.writeTrimQuoted(i_row.paramName, true);
     io_wr.outFs <<
         i_row.rank << ", " <<
@@ -256,7 +221,7 @@ template<> void ModelInsertSql::insertSql<ParamDicTxtLangRow>(const ParamDicTxtL
         "INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.paramId << ", " <<
+        i_row.paramId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
@@ -305,9 +270,6 @@ template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row
     
     if (i_row.rank < 0) throw DbException("invalid (negative) output table %s rank: %d", i_row.tableName.c_str(), i_row.rank);
 
-    // make db table name from output table name:
-    string dbNameSuffix = makeDbNameSuffix(i_row.tableId, i_row.tableName);
-
     // make sql
     io_wr.outFs <<
         "INSERT INTO table_dic" \
@@ -316,7 +278,7 @@ template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row
         " IL.id_value, " <<
         i_row.tableId << ", ";
     io_wr.throwOnFail();
-    io_wr.writeQuoted(dbNameSuffix, true);
+    io_wr.writeQuoted(i_row.dbNameSuffix, true);
     io_wr.writeTrimQuoted(i_row.tableName, true);
     io_wr.outFs <<
         (i_row.isUser ? "1, " : "0, ") <<
@@ -347,7 +309,7 @@ template<> void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableDicTxtL
         "INSERT INTO table_dic_txt (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.tableId << ", " <<
+        i_row.tableId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
@@ -473,7 +435,7 @@ template<> void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableAccTxtL
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << ", " <<
-        i_row.accId << ", " <<
+        i_row.accId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
@@ -541,7 +503,7 @@ template<> void ModelInsertSql::insertSql<TableUnitTxtLangRow>(const TableUnitTx
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << ", " <<
-        i_row.unitId << ", " <<
+        i_row.unitId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
@@ -593,7 +555,7 @@ template<> void ModelInsertSql::insertSql<GroupTxtLangRow>(const GroupTxtLangRow
         "INSERT INTO group_txt (model_id, group_id, lang_id, descr, note)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.groupId << ", " <<
+        i_row.groupId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
@@ -638,12 +600,12 @@ template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
         "INSERT INTO workset_lst" \
         " (set_id, run_id, model_id, set_name, is_readonly, update_dt)" \
         " SELECT" \
-        " RSL.id_value,");
+        " RSL.id_value, ");
     io_wr.outFs << 
-        (i_row.runId < 0 ? "NULL" : to_string(i_row.runId)) << ", " <<
+        (i_row.runId < 0 ? "NULL" : to_string(i_row.runId)) << "," <<
         " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ";
     io_wr.throwOnFail();
-    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
+    io_wr.writeQuoted(i_mdRow.modelPrefix);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.name, true);
     io_wr.write((i_row.isReadonly ? "1, " : "0, "));
@@ -654,7 +616,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
 // write sql to insert into workset_txt table. 
 // language name used to select language id
 template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
-    const ModelDicRow & i_mdRow, const WorksetTxtLangRow & i_row, ModelSqlWriter & io_wr
+    const ModelDicRow & /*i_mdRow*/, const WorksetTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
@@ -667,44 +629,45 @@ template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
         "INSERT INTO workset_txt (set_id, model_id, lang_id, descr, note)" \
         " SELECT" \
         " RSL.id_value," \
-        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ");
-    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
-    io_wr.write("), " \
+        " W.model_id," \
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = "
         );
     io_wr.writeTrimQuoted(i_row.langName);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
-    io_wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
+    io_wr.write(
+        " FROM id_lst RSL" \
+        " INNER JOIN workset_lst W ON (W.set_id = RSL.id_value)" \
+        " WHERE RSL.id_key = 'run_id_set_id';\n"
+        );
 }
 
 // write sql to insert into workset_parameter table. 
 template<> void ModelInsertSql::insertSetSql<WorksetParamRow>(
-    const ModelDicRow & i_mdRow, const WorksetParamRow & i_row, ModelSqlWriter & io_wr
+    const ModelDicRow & /*i_mdRow*/, const WorksetParamRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
     if (i_row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", i_row.paramId);
 
     // make sql
-    io_wr.write(
+    io_wr.outFs <<
         "INSERT INTO workset_parameter (set_id, model_id, parameter_id)" \
         " SELECT" \
         " RSL.id_value," \
-        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ");
-    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
-    io_wr.outFs << 
-        "), " <<
+        " W.model_id," <<
         i_row.paramId <<
-        " FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n";
+        " FROM id_lst RSL" \
+        " INNER JOIN workset_lst W ON (W.set_id = RSL.id_value)" \
+        " WHERE RSL.id_key = 'run_id_set_id';\n";
     io_wr.throwOnFail();
 }
 
 // write sql to insert into workset_parameter_txt table. 
 // language name used to select language id
 template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
-    const ModelDicRow & i_mdRow, const WorksetParamTxtLangRow & i_row, ModelSqlWriter & io_wr
+    const ModelDicRow & /*i_mdRow*/, const WorksetParamTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
@@ -714,19 +677,20 @@ template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
     if (i_row.note.length() > 32000) throw DbException("invalid (too long) notes, workset parameter id: %d", i_row.paramId);
 
     // make sql
-    io_wr.write(
+    io_wr.outFs <<
         "INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note)" \
         " SELECT" \
         " RSL.id_value," \
-        " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ");
-    io_wr.writeQuoted(i_mdRow.modelPrefix, true);
-    io_wr.outFs <<
-        "), " <<
-        i_row.paramId << ", " <<
+        " W.model_id," <<
+        i_row.paramId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.note);
-    io_wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
+    io_wr.write(
+        " FROM id_lst RSL" \
+        " INNER JOIN workset_lst W ON (W.set_id = RSL.id_value)" \
+        " WHERE RSL.id_key = 'run_id_set_id';\n"
+        );
 }

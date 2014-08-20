@@ -66,9 +66,6 @@ namespace openm
             /** parameter name or output table name */
             string name;
 
-            /** db unique name suffix */
-            string suffix;
-
             /** dimension names */
             vector<string> dimNameVec;
 
@@ -122,18 +119,6 @@ namespace openm
         /** create new workset and write workset metadata */
         void createWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
 
-        /** set field values for model_dic table row */
-        void setModelDicRow(ModelDicRow & io_mdRow) const;
-
-        /** set field values for workset_lst table row */
-        void setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow & io_wsRow) const;
-
-        /** collect info for db parameter tables */
-        void setParamTableInfo(const MetaModelHolder & i_metaRows);
-
-        /** collect info for db subsample tables and value views */
-        void setOutTableInfo(MetaModelHolder & i_metaRows);
-
         /** return body of create table sql for parameter */
         const string paramCreateTableBody(const string & i_runSetId, const ParamTblInfo & i_tblInfo) const;
 
@@ -148,6 +133,24 @@ namespace openm
 
         /** return body of create view sql for output table compatibility view */
         const string outputCompatibilityViewBody(const MetaModelHolder & i_metaRows, const OutTblInfo & i_tblInfo) const;
+
+        /** set field values for model_dic table row */
+        void setModelDicRow(ModelDicRow & io_mdRow) const;
+
+        /** set field values for workset_lst table row */
+        void setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow & io_wsRow) const;
+
+        /** collect info for db parameter tables */
+        void setParamTableInfo(MetaModelHolder & io_metaRows);
+
+        /** collect info for db subsample tables and value views */
+        void setOutTableInfo(MetaModelHolder & io_metaRows);
+
+        /** make model prefix from model name and timestamp. */
+        static const string makeModelPrefix(const string & i_name, const string & i_timestamp);
+
+        /** make unique part of db table name for parameter or output table, ie: 1234_ageSex */
+        static const string makeDbNameSuffix(int i_id, const string & i_src);
     };
 }
 

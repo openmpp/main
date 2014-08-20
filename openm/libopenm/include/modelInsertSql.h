@@ -65,12 +65,6 @@ namespace openm
         template<class TRow> static void insertSetSql(
             const ModelDicRow & i_mdRow, const TRow & i_row, ModelSqlWriter & io_wr
             );
-
-        /** make model prefix from model name and timestamp. */
-        static const string makeModelPrefix(const string & i_name, const string & i_timestamp);
-
-        /** make unique part of db table name for parameter or output table, ie: 1234_ageSex */
-        static const string makeDbNameSuffix(int i_id, const string & i_src);
     };
 
     /** write sql to insert into model_dic table. */

@@ -286,8 +286,7 @@ void ModelSqlBuilder::createWorkset(const MetaModelHolder & i_metaRows, const Me
     ModelSqlWriter & wr = *setWr.get();
     wr.outFs <<
         "--\n" <<
-        "-- create full working set of parameters\n" <<
-        "-- model name:      " << i_metaRows.modelDic.name << '\n' <<
+        "-- create working set of parameters for model: " << i_metaRows.modelDic.name << '\n' <<
         "-- model timestamp: " << modelTs << '\n' <<
         "-- db names prefix: " << i_metaRows.modelDic.modelPrefix << '\n' <<
         "-- script created:  " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
@@ -372,32 +371,26 @@ void ModelSqlBuilder::endWorkset(void) const
 }
 
 // append scalar parameter value to sql script for new working set  creation 
-void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & i_metaRows, const char * i_name, const char * i_value)
+void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/, const char * i_name, const char * i_value)
 {
     // check parameter name
     if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
-    // find parameter row
-    int mId = i_metaRows.modelDic.modelId;
+    // find parameter table info
+    auto paramInfo = std::find_if(
+        paramInfoVec.begin(), 
+        paramInfoVec.end(),
+        [i_name](const ParamTblInfo & i_info) -> bool { return i_info.name == i_name; }
+    );
+    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
-    auto paramRow = std::find_if(
-        i_metaRows.paramDic.cbegin(), i_metaRows.paramDic.cend(), 
-        [mId, i_name](const ParamDicRow & i_row) -> bool { return i_row.modelId == mId && i_row.paramName == i_name; }
-        );
-    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+    int dimCount = paramInfo->dimNameVec.size();
+    if (dimCount != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name);
 
-    // int paramId = paramRow->paramId;
-    int dimCount = paramRow->rank;
-    if (dimCount != 0) throw DbException("invalid parameter rank for scalar parameter: %s", i_name);
-
-    // get parameter type
-    const TypeDicRow tRow(mId, paramRow->typeId);
-    auto paramTypeRow = std::lower_bound(
-        i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
-        );
-    if (paramTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for parameter: %s", i_name);
-
-    bool isStrType = equalNoCase(paramTypeRow->name.c_str(), "file");
+    // if parameter value is string type then it must be sql-quoted
+    bool isQuote = 
+        equalNoCase(paramInfo->valueTypeName.c_str(), "VARCHAR") ||
+        equalNoCase(paramInfo->valueTypeName.c_str(), "CHAR");
 
     // make sql to insert parameter value
     // INSERT INTO modelone_201208171604590148_w0_ageSex (set_id, value) 
@@ -405,23 +398,23 @@ void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & i_metaRows, co
     // FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';
     ModelSqlWriter & wr = *setWr.get();
     wr.outFs <<
-        "INSERT INTO " << i_metaRows.modelDic.modelPrefix << i_metaRows.modelDic.setPrefix << paramRow->dbNameSuffix <<
-        " (set_id, value)" <<
+        "INSERT INTO " << paramInfo->setTableName << " (set_id, value)" <<
         " SELECT RSL.id_value, ";
     wr.throwOnFail();
 
     // validate and write parameter value
-    if (i_value == nullptr) throw DbException("Invalid (empty) parameter value");
-    if (isStrType) {
+    if (i_value == nullptr) throw DbException("invalid (empty) parameter value");
+    if (isQuote) {
         wr.writeQuoted(i_value);
     }
     else {
-        if (i_value[0] == '\0') throw DbException("Invalid (empty) parameter value");
+        if (i_value[0] == '\0') throw DbException("invalid (empty) parameter value");
         wr.write(i_value);
     }
 
     wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
     wr.write("\n");
+    paramInfo->isAdded = true;  // done
 }
 
 // append scalar parameter value to sql script for new working set  creation 
@@ -432,32 +425,34 @@ void ModelSqlBuilder::addWorksetParameter(
     // check parameters
     if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
-    int mId = i_metaRows.modelDic.modelId;
-
-    // find parameter row
-    auto paramRow = std::find_if(
-        i_metaRows.paramDic.cbegin(), i_metaRows.paramDic.cend(),
-        [mId, i_name](const ParamDicRow & i_row) -> bool { return i_row.modelId == mId && i_row.paramName == i_name; }
+    // find parameter table info
+    auto paramInfo = std::find_if(
+        paramInfoVec.begin(),
+        paramInfoVec.end(),
+        [i_name](const ParamTblInfo & i_info) -> bool { return i_info.name == i_name; }
     );
-    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
-    int paramId = paramRow->paramId;
-    int dimCount = paramRow->rank;
+    int dimCount = paramInfo->dimNameVec.size();
     if (dimCount <= 0) throw DbException("invalid parameter rank for parameter: %s", i_name);
 
-    // get parameter type
-    TypeDicRow tRow(mId, paramRow->typeId);
-    auto paramTypeRow = std::lower_bound(
-        i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
-        );
-    if (paramTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for parameter: %s", i_name);
-
-    bool isStrType = equalNoCase(paramTypeRow->name.c_str(), "file");
+    // if parameter value is string type then it must be sql-quoted
+    bool isQuote =
+        equalNoCase(paramInfo->valueTypeName.c_str(), "VARCHAR") ||
+        equalNoCase(paramInfo->valueTypeName.c_str(), "CHAR");
 
     // get dimensions list
-    const ParamDimsRow dRow(mId, paramId, "");
+    int mId = i_metaRows.modelDic.modelId;
+    const ParamDimsRow dRow(mId, paramInfo->id, "");
     auto dimRange = std::equal_range(
-        i_metaRows.paramDims.cbegin(), i_metaRows.paramDims.cend(), dRow, ParamDimsRow::isKeyLess
+        i_metaRows.paramDims.cbegin(), 
+        i_metaRows.paramDims.cend(), 
+        dRow, 
+        [](const ParamDimsRow & i_left, const ParamDimsRow & i_right) -> bool { 
+            return
+                i_left.modelId < i_right.modelId || 
+                i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId;
+        }
         );
     if (dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend() || dimCount != (int)(dimRange.second - dimRange.first))
         throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
@@ -469,7 +464,7 @@ void ModelSqlBuilder::addWorksetParameter(
     for (vector<ParamDimsRow>::const_iterator dRow = dimRange.first; dRow != dimRange.second; dRow++) {
 
         // find dimension type
-        tRow.typeId = dRow->typeId;
+        TypeDicRow tRow(mId, dRow->typeId);
         auto dimTypeRow = std::lower_bound(
             i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
             );
@@ -481,7 +476,14 @@ void ModelSqlBuilder::addWorksetParameter(
 
             TypeEnumLstRow eRow(mId, dimTypeRow->typeId, 0);
             auto enumRange = std::equal_range(
-                i_metaRows.typeEnum.cbegin(), i_metaRows.typeEnum.cend(), eRow, TypeEnumLstRow::isKeyLess
+                i_metaRows.typeEnum.cbegin(), 
+                i_metaRows.typeEnum.cend(), 
+                eRow, 
+                [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
+                    return
+                        i_left.modelId < i_right.modelId ||
+                        i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId;
+                }
                 );
             if (enumRange.first == i_metaRows.typeEnum.cend())
                 throw DbException("invalid dimension size (no enums found), dimension: %s of parameter: %s", dRow->name.c_str(), i_name);
@@ -489,13 +491,13 @@ void ModelSqlBuilder::addWorksetParameter(
             dimSize = (int)(enumRange.second - enumRange.first);
         }
 
-        // store dimansion size and calculate total parameter size
+        // store dimension name, size and calculate total parameter size
         dimSizeVec.push_back(dimSize);
         if (dimSize > 0) totalSize *= dimSize;
     }
 
     if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
-    if (totalSize != i_valueVec.size()) throw DbException("invalid value array size: %ld for parameter: %s", i_valueVec.size(), i_name);
+    if (totalSize != i_valueVec.size()) throw DbException("invalid value array size: %ld, expected: %ld for parameter: %s", i_valueVec.size(), totalSize, i_name);
 
     // make sql to insert parameter dimasion enums and parameter value
     // INSERT INTO modelone_201208171604590148_w0_ageSex 
@@ -517,10 +519,16 @@ void ModelSqlBuilder::addWorksetParameter(
         for (size_t cellOffset = 0; cellOffset < totalSize; cellOffset++) {
 
             wr.outFs <<
-                "INSERT INTO " << i_metaRows.modelDic.modelPrefix << i_metaRows.modelDic.setPrefix << paramRow->dbNameSuffix <<
-                " (set_id, value)" <<
-                " SELECT RSL.id_value, ";
+                "INSERT INTO " << paramInfo->setTableName << " (set_id, ";
             wr.throwOnFail();
+
+            // add dimension column names
+            for (const string & dimName : paramInfo->dimNameVec) {
+                wr.outFs << dimName << ", ";
+                wr.throwOnFail();
+            }
+
+            wr.write("value) SELECT RSL.id_value, ");
 
             // write dimension enum_id items
             for (int k = 0; k < dimCount; k++) {
@@ -529,12 +537,12 @@ void ModelSqlBuilder::addWorksetParameter(
             }
 
             // validate and write parameter value
-            if (i_valueVec[cellOffset] == nullptr) throw DbException("Invalid (empty) parameter value");
-            if (isStrType) {
+            if (i_valueVec[cellOffset] == nullptr) throw DbException("invalid (empty) parameter value");
+            if (isQuote) {
                 wr.writeQuoted(i_valueVec[cellOffset]);
             }
             else {
-                if (i_valueVec[cellOffset][0] == '\0') throw DbException("Invalid (empty) parameter value");
+                if (i_valueVec[cellOffset][0] == '\0') throw DbException("invalid (empty) parameter value");
                 wr.write(i_valueVec[cellOffset]);
             }
 
@@ -551,10 +559,11 @@ void ModelSqlBuilder::addWorksetParameter(
                     break;
                 }
             }
-            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("Invalid value array size");
+            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("invalid value array size");
         }
     }
-    wr.write("\n");     // done with parameter insert
+    wr.write("\n");             // done with parameter insert
+    paramInfo->isAdded = true;
 }
 
 // write sql script to create backward compatibility views
@@ -1327,7 +1336,7 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
     if (io_mdRow.timestamp != modelTs) throw DbException("invalid model timestamp: %s, expected: %s", io_mdRow.timestamp.c_str(), modelTs.c_str());
 
     // trim model name and make model prefix from model name and timestamp
-    io_mdRow.modelPrefix = ModelInsertSql::makeModelPrefix(io_mdRow.name, io_mdRow.timestamp);
+    io_mdRow.modelPrefix = makeModelPrefix(io_mdRow.name, io_mdRow.timestamp);
 
     // validate table prefixes: it must not exceed max size and must be unique
     io_mdRow.paramPrefix = !io_mdRow.paramPrefix.empty() ? io_mdRow.paramPrefix : "p";
@@ -1369,28 +1378,30 @@ void ModelSqlBuilder::setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow &
 }
 
 // collect info for db parameter tables
-void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
+void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
 {
     // collect table information for all parameters
-    for (const ParamDicRow & paramRow : i_metaRows.paramDic) {
+    for (ParamDicRow & paramRow : io_metaRows.paramDic) {
 
-        // get id and convert name into db table suffix
+        // convert name into db table suffix
+        paramRow.dbNameSuffix = makeDbNameSuffix(paramRow.paramId, paramRow.paramName);
+
+        // make db table names
         ParamTblInfo tblInf;
         tblInf.id = paramRow.paramId;
         tblInf.name = paramRow.paramName;
-        tblInf.suffix = ModelInsertSql::makeDbNameSuffix(tblInf.id, tblInf.name);
-        tblInf.paramTableName = i_metaRows.modelDic.modelPrefix + i_metaRows.modelDic.paramPrefix + tblInf.suffix;
-        tblInf.setTableName = i_metaRows.modelDic.modelPrefix + i_metaRows.modelDic.setPrefix + tblInf.suffix;
+        tblInf.paramTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.paramPrefix + paramRow.dbNameSuffix;
+        tblInf.setTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.setPrefix + paramRow.dbNameSuffix;
 
         // collect dimension names
         tblInf.dimNameVec.clear();
-        for (const ParamDimsRow & dimRow : i_metaRows.paramDims) {
+        for (const ParamDimsRow & dimRow : io_metaRows.paramDims) {
             if (dimRow.paramId == tblInf.id) tblInf.dimNameVec.push_back(dimRow.name);
         }
 
         // set value column db type by parameter type
         tblInf.valueTypeName.clear();
-        for (const TypeDicRow & typeRow : i_metaRows.typeDic) {
+        for (const TypeDicRow & typeRow : io_metaRows.typeDic) {
 
             if (typeRow.typeId == paramRow.typeId) {
 
@@ -1446,28 +1457,30 @@ void ModelSqlBuilder::setParamTableInfo(const MetaModelHolder & i_metaRows)
 }    
 
 // collect info for db subsample tables and value views
-void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & i_metaRows)
+void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
 {
     // collect information for all output tables
-    for (const TableDicRow & tableRow : i_metaRows.tableDic) {
+    for (TableDicRow & tableRow : io_metaRows.tableDic) {
 
-        // get id and convert name into db table suffix, subsample table name and value view name
+        // convert name into db table suffix
+        tableRow.dbNameSuffix = makeDbNameSuffix(tableRow.tableId, tableRow.tableName);
+
+        // make db table names
         OutTblInfo tblInf;
         tblInf.id = tableRow.tableId;
         tblInf.name = tableRow.tableName;
-        tblInf.suffix = ModelInsertSql::makeDbNameSuffix(tblInf.id, tblInf.name);
-        tblInf.subTableName = i_metaRows.modelDic.modelPrefix + i_metaRows.modelDic.subPrefix + tblInf.suffix;
-        tblInf.valueTableName = i_metaRows.modelDic.modelPrefix + i_metaRows.modelDic.valuePrefix + tblInf.suffix;
+        tblInf.subTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.subPrefix + tableRow.dbNameSuffix;
+        tblInf.valueTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.valuePrefix + tableRow.dbNameSuffix;
 
         // collect dimension names
         tblInf.dimNameVec.clear();
-        for (const TableDimsRow & dimRow : i_metaRows.tableDims) {
+        for (const TableDimsRow & dimRow : io_metaRows.tableDims) {
             if (dimRow.tableId == tblInf.id) tblInf.dimNameVec.push_back(dimRow.name);
         }
 
         // collect accumulator names
         tblInf.accNameVec.clear();
-        for (const TableAccRow & accRow : i_metaRows.tableAcc) {
+        for (const TableAccRow & accRow : io_metaRows.tableAcc) {
             if (accRow.tableId == tblInf.id) tblInf.accNameVec.push_back(accRow.name);
         }
         if (tblInf.accNameVec.empty()) 
@@ -1476,7 +1489,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & i_metaRows)
         // translate expressions into sql
         ModelAggregationSql aggr(tblInf.subTableName, "S", tblInf.accNameVec, tblInf.dimNameVec);
 
-        for (TableUnitRow & unitRow : i_metaRows.tableUnit) {
+        for (TableUnitRow & unitRow : io_metaRows.tableUnit) {
             if (unitRow.tableId == tblInf.id) {
                 unitRow.expr = aggr.translateAggregationExpr(unitRow.src);  // translate expression to sql aggregation
             }
@@ -1487,3 +1500,36 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & i_metaRows)
         outInfoVec.push_back(tblInf);   // add to output tables info vector
     }
 }
+
+// make model prefix from model name and timestamp
+const string ModelSqlBuilder::makeModelPrefix(const string & i_name, const string & i_timestamp)
+{
+    if (i_name.empty() || trim(i_name).length() < 1) throw DbException("invalid (empty) model name");
+    if (i_timestamp.empty() || trim(i_timestamp).length() < 16) throw DbException("invalid (too short) model timestamp");
+
+    // validate model name and timestamp max size
+    if (i_name.length() > 255 || i_timestamp.length() > 32)
+        throw DbException("invalid (too long) model name: %s or timestamp: %s", i_name.c_str(), i_timestamp.c_str());
+
+    // in model name use only [a-z,0-9] and _ underscore
+    // make sure prefix size not longer than 32 
+    string sPrefix = toAlphaNumeric(i_name, 32);
+
+    // make model prefix from model name and timestamp
+    return
+        sPrefix.substr(0, 32 - i_timestamp.length()) + i_timestamp;
+}
+
+// make unique part of db table name for parameter or output table, ie: 1234_ageSex
+const string ModelSqlBuilder::makeDbNameSuffix(int i_id, const string & i_src)
+{
+    if (i_src.empty() || trim(i_src).length() < 1) throw DbException("invalid (empty) source name, id: %d", i_id);
+
+    // in db table name use only [A-Z,a-z,0-9] and _ underscore
+    // make sure name size not longer than (32 - max prefix size)
+    string sId = to_string(i_id) + "_";
+    string sName = toAlphaNumeric(i_src, 32);
+
+    return sId + sName.substr(0, 32 - (sId.length() + OM_DB_TABLE_TYPE_PREFIX_LEN));
+}
+

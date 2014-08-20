@@ -382,20 +382,36 @@ int main(int argc, char * argv[])
         builder->build(metaRows);
         
         // create model default working set sql script
+        // 
+        // builder->beginWorkset(metaRows, metaSet);
+        // 
+        // for (...all model parameters...) {
+        //     ...get parameter value(s) from .dat file...
+        //     if (isScalarParameter) {
+        //         builder->addWorksetParameter(metaRows, parameter_name, value_as_char_ptr);
+        //     }
+        //     else {
+        //         builder->addWorksetParameter(metaRows, parameter_name, values_vector_of_char_ptrs);
+        //     }
+        // }
+        // 
+        // builder->endWorkset();
+        // 
 //#define TEST_PARAMETERS_SCRIPT 
 #ifdef TEST_PARAMETERS_SCRIPT
 
         MetaSetLangHolder metaSet;      // default working set metadata
 
-        metaSet.worksetRow.name = "default parameters";
-        metaSet.worksetRow.runId = -1;              // it is not based on any existing model run
+        metaSet.worksetRow.name = "my set of default parameters";
+        metaSet.worksetRow.runId = -1;  // it is not based on any existing model run
 
-        // (optional) add description and notes for each model language
+        // optional:
+        // add description and notes for each model language
         for (ModelDicTxtLangRow mTxtRow : metaRows.modelTxt) {
             WorksetTxtLangRow wsTxt;
             wsTxt.langName = mTxtRow.langName;
-            wsTxt.descr = mTxtRow.langName + " description";
-            wsTxt.note = mTxtRow.langName + " notes";
+            wsTxt.descr = mTxtRow.langName + " some description";
+            wsTxt.note = mTxtRow.langName + " some notes";
 
             metaSet.worksetTxt.push_back(wsTxt);
         }
@@ -407,12 +423,13 @@ int main(int argc, char * argv[])
 
             metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
 
-            // (optional) add workset parameter notes for each model language
+            // optional:
+            // add workset parameter notes for each model language
             for (ModelDicTxtLangRow mTxtRow : metaRows.modelTxt) {
                 WorksetParamTxtLangRow paramTxt;
                 paramTxt.paramId = paramRow.paramId;
                 paramTxt.langName = mTxtRow.langName;
-                paramTxt.note = mTxtRow.langName + " notes for parameter " + to_string(paramRow.paramId);
+                paramTxt.note = mTxtRow.langName + " parameter value notes for parameter " + to_string(paramRow.paramId);
 
                 metaSet.worksetParamTxt.push_back(paramTxt);
             }
@@ -429,20 +446,8 @@ int main(int argc, char * argv[])
             const char * parsedValue_10 = "10";
             const char * parsedValue_20 = "20";
             const char * parsedValue_30 = "30";
-            const char * parsedValue_99 = "99";
+            const char * parsedValue_scalar = "1";
             const char * parsedValue_file = "some/path/to/file.pa'ra'meter";
-
-            // generate parameter test data:
-            // calculte size of parameter
-            // code below is for test only, binary search used in production
-            size_t totalSize = 0;
-            for (ParamDimsRow dimRow : metaRows.paramDims) {
-                if (dimRow.paramId != paramRow.paramId) continue;
-
-                for (TypeEnumLstRow enumRow : metaRows.typeEnum) {
-                    if (enumRow.typeId == dimRow.typeId) totalSize++;
-                }
-            }
 
             // generate parameter test data:
             // check is this a file parameter
@@ -456,19 +461,33 @@ int main(int argc, char * argv[])
             }
 
             // add parameter values to default workset
-            if (totalSize <= 0) {   // scalar parameter
+            if (paramRow.rank <= 0) {   // scalar parameter
 
                 // generate parameter test data:
-                const char * paramValue = isFileParam ? parsedValue_file : parsedValue_99;
+                const char * paramValue = isFileParam ? parsedValue_file : parsedValue_scalar;
 
                 // add scalar parameter value to default workset
                 builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), paramValue);
             }
             else {
                 // generate parameter test data:
+                // calculte size of parameter
+                // code below is for test only, binary search used in production
+                size_t totalSize = 1;
+                for (ParamDimsRow dimRow : metaRows.paramDims) {
+                    if (dimRow.paramId != paramRow.paramId) continue;
+
+                    size_t dimSize = 0;
+                    for (TypeEnumLstRow enumRow : metaRows.typeEnum) {
+                        if (enumRow.typeId == dimRow.typeId) dimSize++;
+                    }
+                    if (dimSize > 0) totalSize *= dimSize;
+                }
+
+                // generate parameter test data:
                 vector<const char *> paramValueVec(totalSize);
                 for (size_t k = 0; k < totalSize; k++) {
-                    paramValueVec[k] = ((k % 3) ? ((k % 2) ? parsedValue_30 : parsedValue_20) : parsedValue_10);
+                    paramValueVec[k] = ((k % 3) ? ((k % 2) ? parsedValue_10 : parsedValue_20) : parsedValue_30);
                 }
 
                 // add array parameter value to default workset
@@ -480,15 +499,6 @@ int main(int argc, char * argv[])
         builder->endWorkset();
 
 #endif  // TEST_PARAMETERS_SCRIPT
-
-
-        //string scriptContent = builder->buildInsertParameters(metaRows, inpDir + srcInsertParameters);
-        //if (!scriptContent.empty()) {
-        //    writeToFile(outDir + metaRows.modelDic.name + "_insert_parameters.sql", scriptContent);
-        //}
-        //else {
-        //    theLog->logFormatted("Insert parameters sql template file not found (or empty): %s", srcInsertParameters.c_str());
-        //}
 
         // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);
