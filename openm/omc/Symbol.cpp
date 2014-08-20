@@ -488,6 +488,8 @@ int Symbol::post_parse_warnings = 0;
 
 bool Symbol::option_event_trace = false;
 
+bool Symbol::option_case_checksum = false;
+
 bool Symbol::modgen_sort_option = true;
 
 void Symbol::post_parse(int pass)

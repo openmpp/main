@@ -56,6 +56,7 @@ public:
         , finalize_multilinks_fn(nullptr)
         , ss_time_fn(nullptr)
         , ss_implement_fn(nullptr)
+        , ss_event(nullptr)
         , next_ss_id(0)
     {
         create_auxiliary_symbols();
@@ -313,6 +314,11 @@ public:
      * The implement function of the self-scheduling event.
      */
     AgentFuncSymbol *ss_implement_fn;
+
+    /**
+     * The self-scheduling event.
+     */
+    AgentEventSymbol *ss_event;
 
     /**
      * Used to assign numeric identifiers to self-scheduling attributes in post-parse processing

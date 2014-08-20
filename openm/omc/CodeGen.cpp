@@ -141,6 +141,16 @@ void CodeGen::do_preamble()
         c += "bool BaseEvent::trace_event_on = false;";
     }
 
+    // Let the run-time know whether to generate a running checksum for events
+    if (Symbol::option_case_checksum) {
+        c += "const bool BaseEvent::event_checksum_on = true;";
+    }
+    else {
+        c += "const bool BaseEvent::event_checksum_on = false;";
+    }
+    // The checksum must be defined in any case
+    c += "double BaseEvent::event_checksum_value = 0.0;";
+
     c += "";
 
     // om_initializers.cpp

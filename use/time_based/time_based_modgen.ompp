@@ -88,8 +88,11 @@ namespace fmk {
     // Is there a random normal in other_normal?
     bool other_normal_valid = false;
 
-    // THe other normal draw
+    // The other normal draw
     double other_normal;
+
+    // The case ssed encoded, with high order bits containing the sample member id
+    double case_seed_encoded = 0.0;
 
 } // namespace fmk
 
@@ -147,6 +150,9 @@ void RunModel(IModel * i_model)
     // The master seed to simulate this member of the 'sample' of simulations
     long master_seed = seed + sample_member;
 
+    // record the encoded 'case' seed (master_seed + sample_member in high order bits)
+    fmk::case_seed_encoded = master_seed + sample_member * ((double)fmk::mg_modulus + 1);
+
     // For sample_member numbers greater than limit, re-use generators cyclically.
     fmk::model_stream_generator = fmk::model_stream_generators[sample_member % fmk::max_samples];
 
@@ -183,3 +189,7 @@ void RunModel(IModel * i_model)
     ::EndSimulation(); // Model-specific - normally defined in Framework.ompp
 }
 
+double GetCaseSeed()
+{
+    return fmk::case_seed_encoded;
+}

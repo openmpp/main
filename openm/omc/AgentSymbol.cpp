@@ -520,7 +520,7 @@ void AgentSymbol::create_ss_event()
     
     // Create the event
     string evnt_name = "om_" + ss_implement_fn->name + "_om_event";
-    auto *sym = new AgentEventSymbol(evnt_name, this, ss_time_fn, ss_implement_fn, false, openm::event_priority_self_scheduling, decl_loc);
+    ss_event = new AgentEventSymbol(evnt_name, this, ss_time_fn, ss_implement_fn, false, openm::event_priority_self_scheduling, decl_loc);
 
     // Add the dependency of the event on the flag
     CodeBlock& cse = av_ss_flag->side_effects_fn->func_body;

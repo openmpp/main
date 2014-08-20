@@ -1,10 +1,2 @@
 //options event_trace = on;
-
-
-table Person ZZZ_Debug
-{
-    {
-        value_out(age),
-        value_out(self_scheduling_int(age))
-    }
-};
+//options case_checksum = on;

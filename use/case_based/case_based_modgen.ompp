@@ -17,7 +17,7 @@ parameters {
 use "common.ompp";
 
 /**
- * The fmk namespace is used within this module
+ * The fmk namespace is used 
  * to protect the global namespace for model use.
  */
 namespace fmk {
@@ -25,7 +25,7 @@ namespace fmk {
     // Fixed number of randome number generators available in Modgen
     const int max_samples = 41;
 
-    // Fixed modulus used by all Modgen random number generators
+    // Fixed modulus used by all Modgen random number generators (2^31 - 1)
     const long mg_modulus = 2147483647;
 
     // Multiplier of generator used to generate the starting seeds for each case
@@ -133,8 +133,11 @@ namespace fmk {
     // Is there a random normal in other_normal?
     bool other_normal_valid = false;
 
-    // THe other normal draw
+    // The other normal draw
     double other_normal;
+
+    // The case ssed encoded, with high order bits containing the sample member id
+    double case_seed_encoded = 0.0;
 
 } // fmk
 
@@ -174,7 +177,6 @@ double RandNormal(int strm)
         return n1;
     }
 }
-
 
 void RunModel(IModel * i_model)
 {
@@ -216,16 +218,23 @@ void RunModel(IModel * i_model)
         // Initialize global time for the case  (can override in StartSimulation)
         BaseEvent::global_time = 0;
 
+        // record the encoded case seed (case_seed + sample_member in high order bits)
+        fmk::case_seed_encoded = case_seed + sample_member * ((double)fmk::mg_modulus + 1);
+
         // Prepare the case for simulation
-        ::StartSimulation(); // Model-specific - normlly defined in Framework.ompp
+        ::StartSimulation(); // Model-specific - normally defined in a module named Framework.ompp
+        BaseEvent::event_checksum_reset(); // Reset the running event checksum
 
         // Simulate the case
         while (BaseEvent::do_next_event());
 
+        // Log the case checksum if activated
+        if (BaseEvent::event_checksum_on) fmk::case_checksum_msg(case_seed, sample_member);
+
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
 
-        ::EndSimulation(); // Model-specific - normally defined in Framework.ompp
+        ::EndSimulation(); // Model-specific - normally defined in a module named Framework.ompp
 
         {
             // generate the case seed for the next case
@@ -236,3 +245,7 @@ void RunModel(IModel * i_model)
     } // cases
 }
 
+double GetCaseSeed()
+{
+    return fmk::case_seed_encoded;
+}

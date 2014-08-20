@@ -629,6 +629,10 @@ option:
                             if (kw == token::TK_event_trace) {
                                 Symbol::option_event_trace = (value == 1) ? true : false;
                             }
+
+                            if (kw == token::TK_case_checksum) {
+                                Symbol::option_case_checksum = (value == 1) ? true : false;
+                            }
                         }
 	;
 

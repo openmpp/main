@@ -63,10 +63,10 @@ void AgentEventSymbol::post_parse(int pass)
             CodeBlock & ct = cover_time_func->func_body;
             ct += "Time event_time = " + time_func->name + "();";
             ct += "if (BaseEvent::trace_event_on) "
-                "om_event_trace_msg("
+                "fmk::event_trace_msg("
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
-                "0.0, " // TODO will be case_seed
+                "GetCaseSeed(), "
                 "\"" + time_func->name + "\", "
                 " (double)event_time);"
                 ;
@@ -80,10 +80,10 @@ void AgentEventSymbol::post_parse(int pass)
             cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " agent.");
             CodeBlock & ci = cover_implement_func->func_body;
             ci += "if (BaseEvent::trace_event_on) "
-                "om_event_trace_msg("
+                "fmk::event_trace_msg("
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
-                "0.0, " // TODO will be case_seed
+                "GetCaseSeed(), "
                 "\"" + agent->name + "." + event_name + "\", "
                 "time);"
                 ;

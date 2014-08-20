@@ -15,6 +15,9 @@
 #include "omc/event_priorities.h"
 #include "om_types0.h" // for Time
 
+// TODO SFG DEBUG
+//#include "libopenm/omModel.h" // for theTrace
+
 using namespace std;
 
 class BaseEvent
@@ -144,7 +147,8 @@ public:
         // get the next event from front of the event queue
         auto *evt = *BaseEvent::event_queue.begin();
 
-        // debug check that event time is not infinite (model error)
+        // debug check that event time is not infinite
+        // TODO handle run-time error (model developer error)
         assert(evt->event_time != time_infinite);
 
         // update global time
@@ -160,6 +164,11 @@ public:
             // age all agents to the time of the event
             BaseAgent::age_all_agents( evt->event_time );
         }
+
+        // update the global event checksum
+        if (event_checksum_on) evt->event_checksum_update();
+        // TODO SFG DEBUG
+        //theTrace->logFormatted("CHKSUM time=%.15f, id=%d", evt->event_time, evt->get_event_id());
 
         // implement the event
         evt->implement_event();
@@ -224,6 +233,40 @@ public:
      * The global event counter.
      */
     static big_counter global_event_counter;
+
+    /**
+     * true if running event checksum is activated.
+     */
+    static const bool event_checksum_on;
+
+    /**
+     * The current value of the running event checksum.
+     */
+    static double event_checksum_value;
+
+    /**
+     * Reset the running event checksum.
+     */
+    static void event_checksum_reset()
+    {
+        event_checksum_value = 0.0;
+    }
+
+    /**
+     * Update the running event checksum using this event
+     */
+    void event_checksum_update()
+    {
+        event_checksum_value += event_time * (get_event_id() + 1);
+    }
+
+    /**
+     * Get the value of the running event checksum.
+     */
+    static double get_event_checksum()
+    {
+        return event_checksum_value;
+    }
 };
 
 template<typename A, const int event_id, const int event_priority, void (A::*implement_function)(), Time (A::*time_function)()>

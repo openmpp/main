@@ -16,6 +16,7 @@
 #include "IdentityAgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
+#include "AgentEventSymbol.h"
 #include "TimeSymbol.h"
 #include "RealSymbol.h"
 #include "BoolSymbol.h"
@@ -1329,10 +1330,10 @@ void DerivedAgentVarSymbol::create_side_effects()
         CodeBlock& c = av->side_effects_fn->func_body;
         c += injection_description();
         c += "// Maintain " + pretty_name();
-        c += name + ".set(" + pp_prt->name + "::to_index(" + av->name + "));";
+        c += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
 
         init_cxx += "// Initialize " + pretty_name();
-        init_cxx += name + ".set(" + pp_prt->name + "::to_index(" + av->name + "));";
+        init_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
         break;
     }
     case token::TK_aggregate:
@@ -1490,7 +1491,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                 cse += "// Set initial value";
                 // 'part' in the next statement is a block-local variable with limited scope
                 cse += "auto part = "  + name + ".get();";
-                cse += "part.to_index(om_new);";
+                cse += "part.set_from_value(om_new);";
                 cse += name + ".set(part);";
                 cse += "// Time of next change - time remaining to get to upper bound of current interval in partition.";
                 cse += "if (part.upper() == REAL_MAX) " + ait->name + " = time_infinite;";
@@ -1523,10 +1524,10 @@ void DerivedAgentVarSymbol::create_side_effects()
                 cif += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 cif += "if (BaseEvent::trace_event_on) "
-                    "om_event_trace_msg("
+                    "fmk::event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
-                    "0.0, " // TODO will be case_seed
+                    "GetCaseSeed(), "
                     "\"" + evt_name + "\", "
                     " (double) time);"
                     ;
@@ -1541,11 +1542,15 @@ void DerivedAgentVarSymbol::create_side_effects()
             if (dav->tok == token::TK_active_spell_duration) {
                 assert(dav->iav); // the identity attribute which holds the spell condition
                 assert(dav->iav->side_effects_fn); // the side-effects function of the identity attribute which holds the spell condition
-                CodeBlock& cse = dav->iav->side_effects_fn->func_body; // the function body
+                CodeBlock& cse = dav->iav->side_effects_fn->func_body; // the function body of that side-effects function
  
                 // Inject code into the spell condition side-effects function.
                 cse += injection_description();
                 cse += "{";
+                cse += "// The self-scheduling event will require recalculation";
+                assert(pp_agent->ss_event);
+                cse += pp_agent->ss_event->name + ".make_dirty();";
+                cse += "";
                 cse += "// 'ss_attr' is a reference to the self-scheduling attribute affected by this active spell.";
                 cse += "auto & ss_attr = " + name + ";";
                 cse += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
@@ -1564,7 +1569,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                 }
                 else { // tok == token::TK_self_scheduling_split
                     cse += "// Set the partitioned duration to the interval containing zero.";
-                    cse += "part.to_index(0);";
+                    cse += "part.set_from_value(0);";
                     cse += "ss_attr.set(part);";
                     cse += "// The time to wait is the upper bound of the current interval in the partition.";
                     cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
@@ -1579,7 +1584,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                 }
                 else { // tok == token::TK_self_scheduling_split
                     cse += "// Set the partitioned duration to the interval containing zero.";
-                    cse += "part.to_index(0);";
+                    cse += "part.set_from_value(0);";
                     cse += "ss_attr.set(part);";
                 }
                 cse += "// There is no next change scheduled.";
@@ -1617,10 +1622,10 @@ void DerivedAgentVarSymbol::create_side_effects()
                     cif += "// Dump event time information to trace log";
                     string evt_name = "scheduled - " + to_string(numeric_id);
                     cif += "if (BaseEvent::trace_event_on) "
-                        "om_event_trace_msg("
+                        "fmk::event_trace_msg("
                         "\"" + agent->name + "\", "
                         "(int)entity_id, "
-                        "0.0, " // TODO will be case_seed
+                        "GetCaseSeed(), "
                         "\"" + evt_name + "\", "
                         " (double) time);"
                         ;

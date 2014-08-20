@@ -228,11 +228,3 @@ table Host ZZZ_33_value_at
         value_at_changes(disease_phase, age) / changes(disease_phase)
     }
 };
-
-table Host ZZZ_99
-{
-    {
-        //EN Sick leave proportion
-        duration(disease_phase, DP_INFECTIOUS) / duration()
-    }
-};

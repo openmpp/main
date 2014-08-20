@@ -1,7 +1,9 @@
 /**
 * @file    common.ompp
 * Implementation of global functions for all models
-*
+* 
+* The global functions in this module are documented in the header file omSimulation.h
+* 
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -10,7 +12,6 @@ void SetMaxTime(double max_value)
 {
     fixed_precision_float<Time::type>::set_max(max_value);
 }
-
 
 void StartEventTrace()
 {
@@ -22,13 +23,27 @@ void StopEventTrace()
     BaseEvent::trace_event_on = false;
 }
 
-void om_event_trace_msg(char *entity_name, int entity_id, double case_seed, char *event_name, double time)
-{
-    theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
-                       entity_name,
-                       entity_id,
-                       case_seed,
-                       event_name,
-                       time);
+
+/**
+ * Model framework code uses the fmk namespace to protect the global namespace for use by the model developer.
+ */
+namespace fmk {
+    void event_trace_msg(const char *entity_name, int entity_id, double case_seed, const char *event_name, double time)
+        {
+            theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
+                               entity_name,
+                               entity_id,
+                               case_seed,
+                               event_name,
+                               time);
+        }
+
+    void case_checksum_msg(double case_seed, int case_sample)
+    {
+        theTrace->logFormatted("Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f",
+                           case_seed,
+                           case_sample,
+                           BaseEvent::get_event_checksum());
+    }
 }
 

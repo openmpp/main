@@ -992,6 +992,11 @@ public:
     static bool option_event_trace;
 
     /**
+     * true if case_checksum activated in options statement.
+     */
+    static bool option_case_checksum;
+
+    /**
      * true to sort post-parse symbol table using Modgen name order where it matters.
      * 
      * For compatible event trace outputs between equivalent Modgen and ompp models,

@@ -18,7 +18,7 @@ using namespace std;
 /**
     * A partition.
     *
-    * @tparam T     Storage type for partition value (index).  Must fall within limits of int.
+    * @tparam T     Storage type for partition value (interval, 0-based).  Must fall within limits of int.
     * @tparam T_size Number of intervals in partition
     * @tparam T_lower  Array containing lower limit of each interval in the partition.
     * @tparam T_upper  Array containing upper limit of each interval in the partition.
@@ -37,166 +37,121 @@ class Partition
 public:
     // ctors
     Partition()
-        : value(0)
+        : interval(0)
     {}
 
-    Partition(T val)
-        : value((val < 0 ) ? 0 : (val > max) ? max : val)
+    Partition(T interval)
+        : interval((interval < 0 ) ? 0 : (interval > max) ? max : interval)
     {}
 
     // operator: cast to T (use in C++ expression)
     operator T() const
     {
-        return value;
+        return interval;
     }
 
-    // operator: direct assignment
-    Partition& operator=(T new_value)
+    // operator: direct assignment (by interval, 0-based)
+    Partition& operator=(T new_interval)
     {
-        this->set_value(new_value);
+        this->set_interval(new_interval);
         return *this;
     }
 
-    // operator: assignment by sum
-    Partition& operator+=(T modify_value)
+    // operator: assignment by sum (jump intervals upwards)
+    Partition& operator+=(T delta_intervals)
     {
-        int new_value = (int)value + modify_value;
-        this->set_value(new_value);
+        int new_interval = (int)interval + delta_intervals;
+        this->set_interval(new_interval);
         return *this;
     }
 
     // operator: assignment by difference
-    Partition& operator-=(T modify_value)
+    Partition& operator-=(T delta_intervals)
     {
-        int new_value = (int)value - modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by product
-    Partition& operator*=(T modify_value)
-    {
-        int new_value = (int)value * modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by quotient
-    Partition& operator/=(T modify_value)
-    {
-        int new_value = (int)value / modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by remainder
-    Partition& operator%=(T modify_value)
-    {
-        int new_value = (int)value % modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by bitwise left shift
-    Partition& operator<<=(T modify_value)
-    {
-        int new_value = (int)value << modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by bitwise right shift
-    Partition& operator>>=(T modify_value)
-    {
-        int new_value = (int)value >> modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by bitwise AND
-    Partition& operator&=(T modify_value)
-    {
-        int new_value = (int)value & modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by bitwise XOR
-    Partition& operator^=(T modify_value)
-    {
-        int new_value = (int)value ^ modify_value;
-        this->set_value(new_value);
-        return *this;
-    }
-
-    // operator: assignment by bitwise OR
-    Partition& operator|=(T modify_value)
-    {
-        int new_value = (int)value | modify_value;
-        this->set_value(new_value);
+        int new_interval = (int)interval - delta_intervals;
+        this->set_interval(new_interval);
         return *this;
     }
 
     // operator: prefix increment
     Partition& operator++()
     {
-        int new_value = (int)value + 1;
-        this->set_value(new_value);
+        int new_interval = (int)interval + 1;
+        this->set_interval(new_interval);
         return *this;
     }
 
     // operator: prefix decrement
     Partition& operator--()
     {
-        int new_value = (int)value - 1;
-        this->set_value(new_value);
+        int new_interval = (int)interval - 1;
+        this->set_interval(new_interval);
         return *this;
     }
 
     // operator: postfix increment
     T operator++(int)
     {
-        int new_value = 1 + (int)value;
-        return this->set_value(new_value);
+        int new_interval = 1 + (int)interval;
+        return this->set_interval(new_interval);
     }
 
     // operator: postfix decrement
     T operator--(int)
     {
-        int new_value = (int)value - 1;
-        return this->set_value(new_value);
+        int new_interval = (int)interval - 1;
+        return this->set_interval(new_interval);
     }
-
-    // return lower limit of interval
-    real lower() {
-        return T_lower[value];
-    }
-
-    // return upper limit of interval
-    real upper() {
-        return T_upper[value];
-    }
-
 
     /**
-        * return width of interval.
-        *
-        * If the interval is unbounded on the left or the right,
-        * return the maximum representable value.
-        * 
-        * @return A T.
-        */
+     * return lower limit of this interval.
+     *
+     * @return A real.
+     */
+    real lower() {
+        return T_lower[interval];
+    }
 
+    /**
+     * return upper limit of this interval.
+     *
+     * @return A real.
+     */
+    real upper() {
+        return T_upper[interval];
+    }
+
+    /**
+     * return width of this interval.
+     * 
+     * If the interval is unbounded on the left or the right, return the maximum representable value.
+     *
+     * @return A T.
+     */
     real width() {
-        if (value == 0 && T_lower[0] == -REAL_MAX) {
+        if (interval == 0 && T_lower[0] == -REAL_MAX) {
             return REAL_MAX;
         }
-        else if (value == max && T_upper[max] == REAL_MAX) {
+        else if (interval == max && T_upper[max] == REAL_MAX) {
             return REAL_MAX;
         }
         else {
-            return T_upper[value] - T_lower[value];
+            return T_upper[interval] - T_lower[interval];
         }
+    }
+
+    /**
+     * Sets the partition of this interval based on a value.
+     * 
+     * Assigns the interval which contains the argument value.
+     *
+     * @param val The value.
+     *
+     * @return A T.
+     */
+    T set_from_value(real value)
+    {
+        return set_interval(value_to_interval(value));
     }
 
     // return an integer_counter object for iterating this partition
@@ -218,7 +173,7 @@ public:
     }
 
     // Find the interval within which a value falls.
-    static T to_index(real value)
+    static T value_to_interval(real value)
     {
         // find first interval whose upper bound exceeds value
         auto it = T_splitter.upper_bound(value);
@@ -232,13 +187,13 @@ public:
 
 private:
     // assignment cover function
-    T set_value(int new_value)
+    T set_interval(int new_interval)
     {
-        return value = (T) ((new_value < min) ? min : (new_value > max) ? max : new_value);
+        return interval = (T) ((new_interval < min) ? min : (new_interval > max) ? max : new_interval);
     }
 
-    // storage - the index of the interval in the partition
-    T value;
+    // storage - the interval in the partition (0-based)
+    T interval;
 };
 
 
