@@ -371,10 +371,10 @@ void ModelSqlBuilder::endWorkset(void) const
 }
 
 // append scalar parameter value to sql script for new working set  creation 
-void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/, const char * i_name, const char * i_value)
+void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/, const string & i_name, const string & i_value)
 {
     // check parameter name
-    if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
+    if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
 
     // find parameter table info
     auto paramInfo = std::find_if(
@@ -382,10 +382,10 @@ void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/
         paramInfoVec.end(),
         [i_name](const ParamTblInfo & i_info) -> bool { return i_info.name == i_name; }
     );
-    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
     int dimCount = paramInfo->dimNameVec.size();
-    if (dimCount != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name);
+    if (dimCount != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
 
     // if parameter value is string type then it must be sql-quoted
     bool isQuote = 
@@ -403,13 +403,12 @@ void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/
     wr.throwOnFail();
 
     // validate and write parameter value
-    if (i_value == nullptr) throw DbException("invalid (empty) parameter value");
     if (isQuote) {
         wr.writeQuoted(i_value);
     }
     else {
-        if (i_value[0] == '\0') throw DbException("invalid (empty) parameter value");
-        wr.write(i_value);
+        if (i_value.empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
+        wr.write(i_value.c_str());
     }
 
     wr.write(" FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';\n");
@@ -419,11 +418,11 @@ void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/
 
 // append scalar parameter value to sql script for new working set  creation 
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & i_metaRows, const char * i_name, const vector<const char *> & i_valueVec
+    const MetaModelHolder & i_metaRows, const string & i_name, const list<string *> & i_valueLst
     )
 {
     // check parameters
-    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
+    if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
 
     // find parameter table info
     auto paramInfo = std::find_if(
@@ -431,10 +430,10 @@ void ModelSqlBuilder::addWorksetParameter(
         paramInfoVec.end(),
         [i_name](const ParamTblInfo & i_info) -> bool { return i_info.name == i_name; }
     );
-    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
     int dimCount = paramInfo->dimNameVec.size();
-    if (dimCount <= 0) throw DbException("invalid parameter rank for parameter: %s", i_name);
+    if (dimCount <= 0) throw DbException("invalid parameter rank for parameter: %s", i_name.c_str());
 
     // if parameter value is string type then it must be sql-quoted
     bool isQuote =
@@ -455,7 +454,7 @@ void ModelSqlBuilder::addWorksetParameter(
         }
         );
     if (dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend() || dimCount != (int)(dimRange.second - dimRange.first))
-        throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
+        throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name.c_str());
 
     // get dimensions type and size, calculate total size
     size_t totalSize = 1;
@@ -468,7 +467,7 @@ void ModelSqlBuilder::addWorksetParameter(
         auto dimTypeRow = std::lower_bound(
             i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
             );
-        if (dimTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for dimension %s of parameter: %s", dRow->name.c_str(), i_name);
+        if (dimTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for dimension %s of parameter: %s", dRow->name.c_str(), i_name.c_str());
 
         // find dimension size as number of enums in type_enum_lst table, if type is not simple type
         int dimSize = 0;
@@ -486,7 +485,7 @@ void ModelSqlBuilder::addWorksetParameter(
                 }
                 );
             if (enumRange.first == i_metaRows.typeEnum.cend())
-                throw DbException("invalid dimension size (no enums found), dimension: %s of parameter: %s", dRow->name.c_str(), i_name);
+                throw DbException("invalid dimension size (no enums found), dimension: %s of parameter: %s", dRow->name.c_str(), i_name.c_str());
 
             dimSize = (int)(enumRange.second - enumRange.first);
         }
@@ -496,8 +495,8 @@ void ModelSqlBuilder::addWorksetParameter(
         if (dimSize > 0) totalSize *= dimSize;
     }
 
-    if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
-    if (totalSize != i_valueVec.size()) throw DbException("invalid value array size: %ld, expected: %ld for parameter: %s", i_valueVec.size(), totalSize, i_name);
+    if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name.c_str());
+    if (totalSize != i_valueLst.size()) throw DbException("invalid value array size: %ld, expected: %ld for parameter: %s", i_valueLst.size(), totalSize, i_name.c_str());
 
     // make sql to insert parameter dimasion enums and parameter value
     // INSERT INTO modelone_201208171604590148_w0_ageSex 
@@ -515,7 +514,9 @@ void ModelSqlBuilder::addWorksetParameter(
             cellArr[k] = 0;     // initial enum_id is zero for all enums
         }
 
-        // loop through all enums for each dimension
+        // loop through all enums for each dimension and write sql inserts
+        list<string *>::const_iterator valueIt = i_valueLst.cbegin();
+
         for (size_t cellOffset = 0; cellOffset < totalSize; cellOffset++) {
 
             wr.outFs <<
@@ -537,13 +538,14 @@ void ModelSqlBuilder::addWorksetParameter(
             }
 
             // validate and write parameter value
-            if (i_valueVec[cellOffset] == nullptr) throw DbException("invalid (empty) parameter value");
+            const string * valPtr = *valueIt;
+            if (valPtr == nullptr) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
             if (isQuote) {
-                wr.writeQuoted(i_valueVec[cellOffset]);
+                wr.writeQuoted(*valPtr);
             }
             else {
-                if (i_valueVec[cellOffset][0] == '\0') throw DbException("invalid (empty) parameter value");
-                wr.write(i_valueVec[cellOffset]);
+                if (valPtr->empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
+                wr.write(valPtr->c_str());
             }
 
             // end of insert statement
@@ -559,7 +561,9 @@ void ModelSqlBuilder::addWorksetParameter(
                     break;
                 }
             }
-            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("invalid value array size");
+            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("invalid value array size, parameter: %s", i_name.c_str());
+
+            valueIt++;     // next value
         }
     }
     wr.write("\n");             // done with parameter insert

@@ -132,7 +132,7 @@ namespace openm
 
     /** write sql to insert into workset_lst table.   
     * 
-    * negative value of i_row.runId treated as db-NULL
+    * if i_row.runId <= 0 then it treated as db-NULL
     */
     template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
         const ModelDicRow & i_mdRow, const WorksetLstRow & i_row, ModelSqlWriter & io_wr

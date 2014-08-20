@@ -587,7 +587,7 @@ template<> void ModelInsertSql::insertSql<GroupPcRow>(const GroupPcRow & i_row, 
 }
 
 // write sql to insert into workset_lst table. 
-// negative value of i_row.runId treated as db-NULL
+// if i_row.runId <= 0 then it treated as db-NULL
 template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
     const ModelDicRow & i_mdRow, const WorksetLstRow & i_row, ModelSqlWriter & io_wr
     )
@@ -602,7 +602,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
         " SELECT" \
         " RSL.id_value, ");
     io_wr.outFs << 
-        (i_row.runId < 0 ? "NULL" : to_string(i_row.runId)) << "," <<
+        (i_row.runId <= 0 ? "NULL" : to_string(i_row.runId)) << "," <<
         " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ";
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_mdRow.modelPrefix);
@@ -656,7 +656,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetParamRow>(
         "INSERT INTO workset_parameter (set_id, model_id, parameter_id)" \
         " SELECT" \
         " RSL.id_value," \
-        " W.model_id," <<
+        " W.model_id, " <<
         i_row.paramId <<
         " FROM id_lst RSL" \
         " INNER JOIN workset_lst W ON (W.set_id = RSL.id_value)" \
@@ -681,7 +681,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
         "INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note)" \
         " SELECT" \
         " RSL.id_value," \
-        " W.model_id," <<
+        " W.model_id, " <<
         i_row.paramId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();

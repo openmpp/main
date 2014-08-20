@@ -8,6 +8,7 @@
 #ifndef MODEL_BUILDER_H
 #define MODEL_BUILDER_H
 
+#include <list>
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/db/metaModelHolder.h"
 #include "libopenm/db/metaSetHolder.h"
@@ -35,11 +36,11 @@ namespace openm
         virtual void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) = 0;
 
         /** append scalar parameter value to sql script for new working set  creation */
-        virtual void addWorksetParameter(const MetaModelHolder & i_metaRows, const char * i_name, const char * i_value) = 0;
+        virtual void addWorksetParameter(const MetaModelHolder & i_metaRows, const string & i_name, const string & i_value) = 0;
 
         /** append parameter values to sql script for new working set  creation */
         virtual void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const char * i_name, const vector<const char *> & i_valueVec
+            const MetaModelHolder & i_metaRows, const string & i_name, const list<string *> & i_valueLst
             ) = 0;
 
         /** finish sql script to create new working set */

@@ -400,10 +400,9 @@ int main(int argc, char * argv[])
 //#define TEST_PARAMETERS_SCRIPT 
 #ifdef TEST_PARAMETERS_SCRIPT
 
-        MetaSetLangHolder metaSet;      // default working set metadata
+        MetaSetLangHolder metaSet;  // default working set metadata
 
         metaSet.worksetRow.name = "my set of default parameters";
-        metaSet.worksetRow.runId = -1;  // it is not based on any existing model run
 
         // optional:
         // add description and notes for each model language
@@ -443,11 +442,11 @@ int main(int argc, char * argv[])
         
             // generate parameter test data:
             // assuming it is coming as result of .dat files parsing
-            const char * parsedValue_10 = "10";
-            const char * parsedValue_20 = "20";
-            const char * parsedValue_30 = "30";
-            const char * parsedValue_scalar = "1";
-            const char * parsedValue_file = "some/path/to/file.pa'ra'meter";
+            string parsedValue_10("10");
+            string parsedValue_20("20");
+            string parsedValue_30("30");
+            string parsedValue_scalar("1");
+            string parsedValue_file("some/path/to/file.pa'ra'meter");
 
             // generate parameter test data:
             // check is this a file parameter
@@ -464,7 +463,7 @@ int main(int argc, char * argv[])
             if (paramRow.rank <= 0) {   // scalar parameter
 
                 // generate parameter test data:
-                const char * paramValue = isFileParam ? parsedValue_file : parsedValue_scalar;
+                const string & paramValue = isFileParam ? parsedValue_file : parsedValue_scalar;
 
                 // add scalar parameter value to default workset
                 builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), paramValue);
@@ -485,13 +484,15 @@ int main(int argc, char * argv[])
                 }
 
                 // generate parameter test data:
-                vector<const char *> paramValueVec(totalSize);
+                list<string *> valueLst;
                 for (size_t k = 0; k < totalSize; k++) {
-                    paramValueVec[k] = ((k % 3) ? ((k % 2) ? parsedValue_10 : parsedValue_20) : parsedValue_30);
+                    valueLst.push_back(
+                        (k % 3) ? ((k % 2) ? &parsedValue_10 : &parsedValue_20) : &parsedValue_30
+                        );
                 }
 
                 // add array parameter value to default workset
-                builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), paramValueVec);
+                builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), valueLst);
             }
         }
 

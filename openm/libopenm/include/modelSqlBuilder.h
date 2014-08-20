@@ -39,11 +39,11 @@ namespace openm
         void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
 
         /** append scalar parameter value to sql script for new working set  creation */
-        void addWorksetParameter(const MetaModelHolder & i_metaRows, const char * i_name, const char * i_value);
+        void addWorksetParameter(const MetaModelHolder & i_metaRows, const string & i_name, const string & i_value);
 
         /** append parameter values to sql script for new working set  creation */
         void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const char * i_name, const vector<const char *> & i_valueVec
+            const MetaModelHolder & i_metaRows, const string & i_name, const list<string *> & i_valueLst
             );
 
         /** finish sql script to create new working set */
