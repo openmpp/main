@@ -694,3 +694,94 @@ template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
         " WHERE RSL.id_key = 'run_id_set_id';\n"
         );
 }
+
+// write body of create view sql for parameter compatibility view:
+// CREATE VIEW ageSex AS
+// SELECT
+//  S.dim0 AS "Dim0",
+//  S.dim1 AS "Dim1",
+//  S.value AS "Value"
+// FROM modelone_201208171604590148_p0_ageSex S
+// WHERE S.run_id =
+// (
+//  SELECT MIN(RL.run_id)
+//  FROM run_lst RL
+//  INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)
+//  WHERE MD.model_name = 'modelOne' AND MD.model_ts = '_201208171604590148_'
+// );
+const void ModelInsertSql::paramCompatibilityViewBody(
+    const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+    )
+{
+
+    io_wr.outFs << "CREATE VIEW " << i_viewName << " AS SELECT";
+    io_wr.throwOnFail();
+
+    for (size_t k = 0; k < i_dimNames.size(); k++) {
+        io_wr.outFs << " S." << i_dimNames[k] << " AS \"Dim" << k << "\",";
+        io_wr.throwOnFail();
+    }
+    io_wr.write(" S.value AS \"Value\"");
+
+    // from subsample table where run id is first run of that model
+    io_wr.outFs <<
+        " FROM " << i_srcTableName << " S" <<
+        " WHERE S.run_id = (" \
+        " SELECT MIN(RL.run_id)" \
+        " FROM run_lst RL" \
+        " INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)" \
+        " WHERE MD.model_name = ";
+    io_wr.throwOnFail();
+    io_wr.writeQuoted(i_modelRow.name);
+    io_wr.write(" AND MD.model_ts = ");
+    io_wr.writeQuoted(i_modelRow.timestamp);
+    io_wr.write(");\n");
+}
+
+// return body of create view sql for output table compatibility view:
+// CREATE VIEW salarySex AS
+// SELECT
+//   S.dim0    AS "Dim0",
+//   S.dim1    AS "Dim1",
+//   S.unit_id AS "Dim2",
+//   S.value   AS "Value"
+// FROM modelone_201208171604590148_v0_salarySex S
+// WHERE S.run_id =
+// (
+//  SELECT MIN(RL.run_id)
+//  FROM run_lst RL
+//  INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)
+//  WHERE MD.model_name = 'modelOne' AND MD.model_ts = '_201208171604590148_'
+// );
+const void ModelInsertSql::outputCompatibilityViewBody(
+    const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+    )
+{
+    io_wr.outFs << "CREATE VIEW " << i_viewName << " AS SELECT";
+    io_wr.throwOnFail();
+
+    for (size_t k = 0; k < i_dimNames.size(); k++) {
+        io_wr.outFs << " S." << i_dimNames[k] << " AS \"Dim" << k << "\",";
+        io_wr.throwOnFail();
+    }
+    io_wr.outFs << 
+        " S.unit_id AS \"Dim" << i_dimNames.size() << "\"," << 
+        " S.value AS \"Value\"";
+    io_wr.throwOnFail();
+
+    // from value table where run id is first run of that model
+    io_wr.outFs <<
+        " FROM " << i_srcTableName << " S" <<
+        " WHERE S.run_id =" \
+        " (" \
+        " SELECT MIN(RL.run_id)" \
+        " FROM run_lst RL" \
+        " INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)" \
+        " WHERE MD.model_name = ";
+    io_wr.throwOnFail();
+    io_wr.writeQuoted(i_modelRow.name);
+    io_wr.write(" AND MD.model_ts = ");
+    io_wr.writeQuoted(i_modelRow.timestamp);
+    io_wr.write(");\n");
+}
+

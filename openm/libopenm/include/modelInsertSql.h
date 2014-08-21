@@ -65,6 +65,16 @@ namespace openm
         template<class TRow> static void insertSetSql(
             const ModelDicRow & i_mdRow, const TRow & i_row, ModelSqlWriter & io_wr
             );
+
+        /** create view sql for parameter compatibility view */
+        static const void paramCompatibilityViewBody(
+            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+            );
+
+        /** create view sql for output table compatibility view */
+        static const void outputCompatibilityViewBody(
+            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+            );
     };
 
     /** write sql to insert into model_dic table. */

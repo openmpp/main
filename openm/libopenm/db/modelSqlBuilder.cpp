@@ -221,10 +221,8 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
         "--\n"
         );
     for (const ParamTblInfo & tblInfo : paramInfoVec) {
-        io_wr.outFs <<
-            "CREATE TABLE " << tblInfo.paramTableName << " " << paramCreateTableBody("run_id", tblInfo) << ";\n" <<
-            "CREATE TABLE " << tblInfo.setTableName << " " << paramCreateTableBody("set_id", tblInfo) << ";\n";
-        io_wr.throwOnFail();
+        paramCreateTableBody(tblInfo.paramTableName, "run_id", tblInfo, io_wr);
+        paramCreateTableBody(tblInfo.setTableName, "set_id", tblInfo, io_wr);
     }
     io_wr.write("\n");
 
@@ -235,10 +233,8 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
         "--\n"
         );
     for (const OutTblInfo & tblInfo : outInfoVec) {
-        io_wr.outFs <<
-            "CREATE TABLE " << tblInfo.subTableName << " " << subCreateTableBody(tblInfo) << ";\n" <<
-            "CREATE TABLE " << tblInfo.valueTableName << " " << valueCreateTableBody(tblInfo) << ";\n";
-        io_wr.throwOnFail();
+        subCreateTableBody(tblInfo, io_wr);
+        valueCreateTableBody(tblInfo, io_wr);
     }
     io_wr.write("\n");
 
@@ -384,8 +380,7 @@ void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/
     );
     if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
-    int dimCount = paramInfo->dimNameVec.size();
-    if (dimCount != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
+    if (paramInfo->dimNameVec.size() != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
 
     // if parameter value is string type then it must be sql-quoted
     bool isQuote = 
@@ -432,7 +427,7 @@ void ModelSqlBuilder::addWorksetParameter(
     );
     if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
-    int dimCount = paramInfo->dimNameVec.size();
+    int dimCount = (int)paramInfo->dimNameVec.size();
     if (dimCount <= 0) throw DbException("invalid parameter rank for parameter: %s", i_name.c_str());
 
     // if parameter value is string type then it must be sql-quoted
@@ -498,7 +493,7 @@ void ModelSqlBuilder::addWorksetParameter(
     if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name.c_str());
     if (totalSize != i_valueLst.size()) throw DbException("invalid value array size: %ld, expected: %ld for parameter: %s", i_valueLst.size(), totalSize, i_name.c_str());
 
-    // make sql to insert parameter dimasion enums and parameter value
+    // make sql to insert parameter dimesion enums and parameter value
     // INSERT INTO modelone_201208171604590148_w0_ageSex 
     //   (set_id, dim0, dim1, value) 
     // SELECT 
@@ -514,22 +509,20 @@ void ModelSqlBuilder::addWorksetParameter(
             cellArr[k] = 0;     // initial enum_id is zero for all enums
         }
 
+        // make constant portion of insert
+        string insertPrefix = "INSERT INTO " + paramInfo->setTableName + " (set_id, ";
+
+        for (const string & dimName : paramInfo->dimNameVec) {
+            insertPrefix += dimName + ", ";
+        }
+        insertPrefix += "value) SELECT RSL.id_value, ";
+
         // loop through all enums for each dimension and write sql inserts
         list<string *>::const_iterator valueIt = i_valueLst.cbegin();
 
         for (size_t cellOffset = 0; cellOffset < totalSize; cellOffset++) {
 
-            wr.outFs <<
-                "INSERT INTO " << paramInfo->setTableName << " (set_id, ";
-            wr.throwOnFail();
-
-            // add dimension column names
-            for (const string & dimName : paramInfo->dimNameVec) {
-                wr.outFs << dimName << ", ";
-                wr.throwOnFail();
-            }
-
-            wr.write("value) SELECT RSL.id_value, ");
+            wr.write(insertPrefix.c_str());
 
             // write dimension enum_id items
             for (int k = 0; k < dimCount; k++) {
@@ -599,8 +592,9 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
             "--\n"
             );
         for (const ParamTblInfo & tblInfo : paramInfoVec) {
-            wr.outFs << "CREATE VIEW " << tblInfo.name << " AS " << paramCompatibilityViewBody(i_metaRows, tblInfo) << ";\n";
-            wr.throwOnFail();
+            ModelInsertSql::paramCompatibilityViewBody(
+                i_metaRows.modelDic, tblInfo.name, tblInfo.paramTableName, tblInfo.dimNameVec, wr
+                );
         }
         wr.write("\n");
 
@@ -611,8 +605,9 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
             "--\n"
             );
         for (const OutTblInfo & tblInfo : outInfoVec) {
-            wr.outFs << "CREATE VIEW " << tblInfo.name << " AS " << outputCompatibilityViewBody(i_metaRows, tblInfo) << ";\n";
-            wr.throwOnFail();
+            ModelInsertSql::outputCompatibilityViewBody(
+                i_metaRows.modelDic, tblInfo.name, tblInfo.valueTableName, tblInfo.dimNameVec, wr
+                );
         }
         wr.write("\n");
     }
@@ -630,35 +625,44 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
     }
 }
 
-// return body of create table sql for parameter:
+// create table sql for parameter run or worset:
+// CREATE TABLE modelOne_201208171604590148_p0_ageSex
 // (
-//  run_id INT   NOT NULL,
+//  run_id INT   NOT NULL,  -- set_id for worset parameter
 //  dim0   INT   NOT NULL,
 //  dim1   INT   NOT NULL,
 //  value  FLOAT NOT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1)
-// )
-const string ModelSqlBuilder::paramCreateTableBody(const string & i_runSetId, const ParamTblInfo & i_tblInfo) const
+//  PRIMARY KEY (run_id, dim0, dim1)  -- set_id for worset parameter
+// );
+const void ModelSqlBuilder::paramCreateTableBody(
+    const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+    ) const
 {
-    string sql = "(" + i_runSetId + " INT NOT NULL, ";
+    io_wr.outFs << 
+        "CREATE TABLE " << i_dbTableName <<
+        " (" << 
+        i_runSetId << " INT NOT NULL, ";
+    io_wr.throwOnFail();
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
-        sql += dimName + " INT NOT NULL, ";
+        io_wr.outFs << dimName << " INT NOT NULL, ";
+        io_wr.throwOnFail();
     }
 
-    sql += 
-        "value " + i_tblInfo.valueTypeName + " NOT NULL, " \
-        "PRIMARY KEY (" + i_runSetId;
+    io_wr.outFs <<
+        "value " << i_tblInfo.valueTypeName << " NOT NULL, " <<
+        "PRIMARY KEY (" << i_runSetId;
+    io_wr.throwOnFail();
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
-        sql += ", " + dimName;
+        io_wr.outFs << ", " << dimName;
+        io_wr.throwOnFail();
     }
-    sql += "))";
-
-    return sql;
+    io_wr.write("));\n");
 }
 
-// return body of create table sql for subsample table:
+// create table sql for subsample table:
+// CREATE TABLE modelOne_201208171604590148_s0_salarySex
 // (
 //  run_id    INT   NOT NULL,
 //  dim0      INT   NOT NULL,
@@ -667,32 +671,37 @@ const string ModelSqlBuilder::paramCreateTableBody(const string & i_runSetId, co
 //  acc0      FLOAT NULL,
 //  acc1      FLOAT NULL,
 //  PRIMARY KEY (run_id, dim0, dim1, sub_id)
-// )
-const string ModelSqlBuilder::subCreateTableBody(const OutTblInfo & i_tblInfo) const
+// );
+const void ModelSqlBuilder::subCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
-    string sql = "(run_id INT NOT NULL, ";
+    io_wr.outFs <<
+        "CREATE TABLE " << i_tblInfo.subTableName <<
+        " (run_id INT NOT NULL, ";
+    io_wr.throwOnFail();
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
-        sql += dimName + " INT NOT NULL, ";
+        io_wr.outFs << dimName << " INT NOT NULL, ";
+        io_wr.throwOnFail();
     }
 
-    sql += "sub_id INT NOT NULL, ";
+    io_wr.write("sub_id INT NOT NULL, ");
 
     for (const string & accName : i_tblInfo.accNameVec) {
-        sql += accName + " FLOAT NULL, ";
+        io_wr.outFs << accName << " FLOAT NULL, ";
+        io_wr.throwOnFail();
     }
 
-    sql += "PRIMARY KEY (run_id";
+    io_wr.write("PRIMARY KEY (run_id");
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
-        sql += ", " + dimName;
+        io_wr.outFs << ", " << dimName;
+        io_wr.throwOnFail();
     }
-    sql += ", sub_id))";
-
-    return sql;
+    io_wr.write(", sub_id));\n");
 }
 
-// return body of create table sql for value table:
+// create table sql for value table:
+// CREATE TABLE modelOne_201208171604590148_v0_salarySex
 // (
 //  run_id    INT   NOT NULL,
 //  dim0      INT   NOT NULL,
@@ -700,95 +709,29 @@ const string ModelSqlBuilder::subCreateTableBody(const OutTblInfo & i_tblInfo) c
 //  unit_id   INT   NOT NULL,
 //  value     FLOAT NULL,
 //  PRIMARY KEY (run_id, dim0, dim1, unit_id)
-// )
-const string ModelSqlBuilder::valueCreateTableBody(const OutTblInfo & i_tblInfo) const
+// );
+const void ModelSqlBuilder::valueCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
-    string sql = "(run_id INT NOT NULL, ";
+    io_wr.outFs <<
+        "CREATE TABLE " << i_tblInfo.valueTableName << 
+        " (run_id INT NOT NULL, ";
+    io_wr.throwOnFail();
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
-        sql += dimName + " INT NOT NULL, ";
+        io_wr.outFs << dimName << " INT NOT NULL, ";
+        io_wr.throwOnFail();
     }
 
-    sql += "unit_id INT NOT NULL, value FLOAT NULL, PRIMARY KEY (run_id";
-
+    io_wr.write(
+        "unit_id INT NOT NULL," \
+        " value FLOAT NULL," \
+        " PRIMARY KEY (run_id"
+        );
     for (const string & dimName : i_tblInfo.dimNameVec) {
-        sql += ", " + dimName;
+        io_wr.outFs << ", " << dimName;
+        io_wr.throwOnFail();
     }
-    sql += ", unit_id))";
-
-    return sql;
-}
-
-// return body of create view sql for parameter compatibility view:
-// SELECT
-//  S.dim0 AS "Dim0",
-//  S.dim1 AS "Dim1",
-//  S.value AS "Value"
-// FROM modelone_201208171604590148_p0_ageSex S
-// WHERE S.run_id =
-// (
-//  SELECT MIN(RL.run_id)
-//  FROM run_lst RL
-//  INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)
-//  WHERE MD.model_name = 'modelOne' AND MD.model_ts = '_201208171604590148_'
-// )
-const string ModelSqlBuilder::paramCompatibilityViewBody(const MetaModelHolder & i_metaRows, const ParamTblInfo & i_tblInfo) const
-{
-    string sql = "SELECT";
-
-    for (size_t k = 0; k < i_tblInfo.dimNameVec.size(); k++) {
-        sql += " S." + i_tblInfo.dimNameVec[k] + " AS \"Dim" + to_string(k) + "\",";
-    }
-    sql += " S.value AS \"Value\"";
-
-    // from subsample table where run id is first run of that model
-    sql += " FROM " + i_tblInfo.paramTableName + " S" +
-        " WHERE S.run_id = (" +
-        " SELECT MIN(RL.run_id)" +
-        " FROM run_lst RL" +
-        " INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)" +
-        " WHERE MD.model_name = " + toQuoted(i_metaRows.modelDic.name) + 
-        " AND MD.model_ts = " + toQuoted(i_metaRows.modelDic.timestamp) +
-        ")";
-    return sql;
-}
-
-// return body of create view sql for output table compatibility view:
-// SELECT
-//   S.dim0    AS "Dim0",
-//   S.dim1    AS "Dim1",
-//   S.unit_id AS "Dim2",
-//   S.value   AS "Value"
-// FROM modelone_201208171604590148_v0_salarySex S
-// WHERE S.run_id =
-// (
-//  SELECT MIN(RL.run_id)
-//  FROM run_lst RL
-//  INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)
-//  WHERE MD.model_name = 'modelOne' AND MD.model_ts = '_201208171604590148_'
-// )
-const string ModelSqlBuilder::outputCompatibilityViewBody(const MetaModelHolder & i_metaRows, const OutTblInfo & i_tblInfo) const
-{
-    string sql = "SELECT";
-
-    for (size_t k = 0; k < i_tblInfo.dimNameVec.size(); k++) {
-        sql += " S." + i_tblInfo.dimNameVec[k] + " AS \"Dim" + to_string(k) + "\",";
-    }
-    sql += " S.unit_id AS \"Dim" + to_string(i_tblInfo.dimNameVec.size()) + "\",";
-    sql += " S.value AS \"Value\"";
-
-    // from value table where run id is first run of that model
-    sql += " FROM " + i_tblInfo.valueTableName + " S" + 
-    " WHERE S.run_id =" +
-    " (" +
-    " SELECT MIN(RL.run_id)" +
-    " FROM run_lst RL" + 
-    " INNER JOIN model_dic MD ON (MD.model_id = RL.model_id)" +
-    " WHERE MD.model_name = " + toQuoted(i_metaRows.modelDic.name) + 
-    " AND MD.model_ts = " + toQuoted(i_metaRows.modelDic.timestamp) +
-    ")";
-
-    return sql;
+    io_wr.write(", unit_id));\n");
 }
 
 // sort and validate metadata rows for uniqueness and referential integrity

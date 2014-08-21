@@ -119,20 +119,16 @@ namespace openm
         /** create new workset and write workset metadata */
         void createWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
 
-        /** return body of create table sql for parameter */
-        const string paramCreateTableBody(const string & i_runSetId, const ParamTblInfo & i_tblInfo) const;
+        /** create table sql for parameter */
+        const void paramCreateTableBody(
+            const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+            ) const;
 
-        /** return body of create table sql for subsample table */
-        const string subCreateTableBody(const OutTblInfo & i_tblInfo) const;
+        /** create table sql for subsample table */
+        const void subCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
-        /** return body of create table sql for value table: aggregated table expressions */
-        const string valueCreateTableBody(const OutTblInfo & i_tblInfo) const;
-
-        /** return body of create view sql for parameter compatibility view */
-        const string paramCompatibilityViewBody(const MetaModelHolder & i_metaRows, const ParamTblInfo & i_tblInfo) const;
-
-        /** return body of create view sql for output table compatibility view */
-        const string outputCompatibilityViewBody(const MetaModelHolder & i_metaRows, const OutTblInfo & i_tblInfo) const;
+        /** create table sql for value table: aggregated table expressions */
+        const void valueCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
         /** set field values for model_dic table row */
         void setModelDicRow(ModelDicRow & io_mdRow) const;
