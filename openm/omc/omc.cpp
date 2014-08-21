@@ -438,6 +438,7 @@ int main(int argc, char * argv[])
         builder->beginWorkset(metaRows, metaSet);
 
         // add values for ALL model parameters into default working set
+        chrono::milliseconds msTotal = chrono::milliseconds(0);
         for (ParamDicRow paramRow : metaRows.paramDic) {
         
             // generate parameter test data:
@@ -491,10 +492,20 @@ int main(int argc, char * argv[])
                         );
                 }
 
+                chrono::system_clock::time_point tStart = chrono::system_clock::now();
+
                 // add array parameter value to default workset
                 builder->addWorksetParameter(metaRows, paramRow.paramName.c_str(), valueLst);
+                
+                chrono::system_clock::time_point tStop = chrono::system_clock::now();
+                chrono::seconds sec = chrono::duration_cast<chrono::seconds>(tStop - tStart);
+                chrono::milliseconds ms = chrono::duration_cast<chrono::milliseconds>(tStop - tStart);
+                msTotal = msTotal + ms;
+                theLog->logFormatted("%5d %40s %8ld %8lld : %5lld", paramRow.paramId, paramRow.paramName.c_str(), totalSize, ms.count(), sec.count());
             }
         }
+        chrono::seconds secTotal = chrono::duration_cast<chrono::seconds>(msTotal);
+        theLog->logFormatted("total: %5d = %20lld : %8lld seconds", metaRows.paramDic.size(), msTotal.count(), secTotal.count());
 
         // complete model default working set sql script
         builder->endWorkset();
