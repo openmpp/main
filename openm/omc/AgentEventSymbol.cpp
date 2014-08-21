@@ -120,7 +120,8 @@ void AgentEventSymbol::post_parse(int pass)
             identifiers.insert(vt.second);
         }
         );
-        // iterate through list looking for agentvars with name = identifier
+        // Iterate through list of identifiers in the body of the time function
+        // whose name matches an agentvar.
         for (auto identifier : identifiers) {
             if (exists(identifier, pp_agent)) {
                 auto sym = get_symbol(identifier, pp_agent);

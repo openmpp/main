@@ -456,6 +456,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <val_token>      table_operator
 %type  <val_token>      parameter_modifier_opt
 %type  <val_token>      table_margin_opt
+%type  <val_token>      decl_func_arg_token
 %type  <pval_IntegerLiteral> cumrate_dimensions_opt
 
 %type  <pval_Literal>   bool_literal
@@ -493,6 +494,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 
 %type <pval_string>      parameter_initializer_element
 %type <pval_string_list> parameter_initializer_list
+%type <pval_string>      decl_func_arg_element
+%type <pval_string>      decl_func_arg_string
 %type <pval_Symbol_list> array_decl_dimension_list
 %type <pval_Symbol_list> symbol_list
 
@@ -1384,15 +1387,74 @@ decl_identity_agentvar:
     ;
 
 decl_agent_function:
-      "void" SYMBOL "(" ")" ";"
+      decl_type_part[type] SYMBOL "(" decl_func_arg_string[args] ")" ";"
                         {
                             if ($SYMBOL->is_base_symbol()) {
-                                // silent suppress redeclaration, esp. of Start() and Finish()
+                                string return_type;
+                                if ($type == nullptr) {
+                                    return_type = "void";
+                                }
+                                else {
+                                    return_type = $type->name;
+                                }
+
+                                string arg_list;
+                                if ($args == nullptr) {
+                                    arg_list = "";
+                                }
+                                else {
+                                    arg_list = *$args;
+                                }
+
+                                auto args = $args;
                                 // argument 5 suppress_defn=true tells omc that the function definition is developer-supplied
-                                auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), "void", "", true, @SYMBOL );
+                                auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), return_type, arg_list, true, @SYMBOL );
+                                delete $args;
+                            }
+                            else {
+                                // redeclaration
+                                // silently ignore redeclaration, esp. of Start() and Finish()
                             }
                         }
     ;
+
+decl_func_arg_string[result]: // declaration of function arguments,as a string
+      decl_func_arg_string[current] decl_func_arg_element[element]
+                        {
+                            if ($current == nullptr) {
+                                // use the string for the element to start the argument string
+                                $result = $element; 
+                            }
+                            else {
+                                // append the syntactic element to the complete argument string
+                                *$current += " " + *$element;
+                                delete $element;
+                                $result = $current;
+                            }
+                        }
+    | /*nothing*/
+                        {
+                            $result = nullptr;
+                        }
+    ;
+
+// The contents of the argument list are of no interest to omc.  Any errors will be picked up by the C++ compiler
+decl_func_arg_element[result]: // a syntactic element of a function argument list declaration
+      SYMBOL[sym]
+                        {
+                            $result = new string($sym->name);
+                        }
+    | literal[lit]
+                        {
+                            $result = new string($lit->value());
+                        }
+    | decl_func_arg_token[tok]
+                        {
+                            $result = new string(Symbol::token_to_string((token_type)$tok));
+                        }
+    ;
+
+decl_func_arg_token: "," | "unsigned" | "int" | "long" | "float" | "double" | "=" ;
 
 decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] event_priority_opt[priority] ";"
@@ -1601,7 +1663,7 @@ expr_for_agentvar[result]:
 
 
 /*
- * the 'type' part of a parameter or agentvar declaration
+ * the 'type' part of a parameter, agentvarm or agent function declaration
  */
 
 decl_type_part:
@@ -1616,6 +1678,10 @@ decl_type_part:
                         {
                             // will be disambiguated in post-parse phase
                             $decl_type_part = $type_symbol;
+                        }
+    | "void"
+                        {
+                            $$ = nullptr;
                         }
     ;
 
@@ -2042,7 +2108,9 @@ table_operator:
 decl_developer_table:
       "developer_table" SYMBOL[dev_table]
                         {
-                            $dev_table;
+                            // morph existing symbol to DeveloperTableSymbol
+                            auto *sym = new DeveloperTableSymbol( $dev_table, @dev_table );
+
                             //TODO
                             //DeveloperTableSymbol *dev_table = nullptr;
 
@@ -2093,14 +2161,17 @@ developer_table_dimension:
 developer_table_analysis_list:
       SYMBOL[analysis_symbol]
                         {
-                            $analysis_symbol;
+                            // morph existing symbol to DeveloperTableAnalysisSymbol
+                            auto *sym = new DeveloperTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
+
                             // add $analysis_symbol to developer table's analysis_list
-                            // morph to DeveloperTableAnalysisSymbol
                             //pc.get_developer_table_context()->analysis_list.push_back($analysis->stable_pp());
                         }
     | developer_table_analysis_list "," SYMBOL[analysis_symbol]
                         {
-                            $analysis_symbol;
+                            // morph existing symbol to DeveloperTableAnalysisSymbol
+                            auto *sym = new DeveloperTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
+
                             // add $analysis_symbol to developer table's analysis_list
                             // morph to DeveloperTableAnalysisSymbol
                             //pc.get_developer_table_context()->analysis_list.push_back($analysis->stable_pp());

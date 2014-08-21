@@ -56,6 +56,8 @@
 #include "TableGroupSymbol.h"
 #include "HideGroupSymbol.h"
 #include "DependencyGroupSymbol.h"
+#include "DeveloperTableSymbol.h"
+#include "DeveloperTableAnalysisSymbol.h"
 #include "ConstantSymbol.h"
 #include "ExprForTable.h"
 #include "ExprForAgentVar.h"
