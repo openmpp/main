@@ -65,6 +65,8 @@ CodeGen.cpp \
 ConstantSymbol.cpp \
 DependencyGroupSymbol.cpp \
 DerivedAgentVarSymbol.cpp \
+DeveloperTableAnalysisSymbol.cpp \
+DeveloperTableSymbol.cpp \
 Driver.cpp \
 EntitySetSymbol.cpp \
 EnumerationSymbol.cpp \
