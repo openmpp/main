@@ -445,10 +445,10 @@ void ModelSqlBuilder::addWorksetParameter(
         [](const ParamDimsRow & i_left, const ParamDimsRow & i_right) -> bool { 
             return
                 i_left.modelId < i_right.modelId || 
-                i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId;
+                (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
         }
         );
-    if (dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend() || dimCount != (int)(dimRange.second - dimRange.first))
+    if ((dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend()) || dimCount != (int)(dimRange.second - dimRange.first))
         throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name.c_str());
 
     // get dimensions type and size, calculate total size
@@ -476,7 +476,7 @@ void ModelSqlBuilder::addWorksetParameter(
                 [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
                     return
                         i_left.modelId < i_right.modelId ||
-                        i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId;
+                        (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId);
                 }
                 );
             if (enumRange.first == i_metaRows.typeEnum.cend())
