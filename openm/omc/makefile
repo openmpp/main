@@ -49,6 +49,7 @@ CPPFLAGS = $(CXXFLAGS)
 OMC_EXE = omc
 
 OMC_CPPLIST = \
+AgentArrayMemberSymbol.cpp \
 AgentDataMemberSymbol.cpp \
 AgentEventSymbol.cpp \
 AgentFuncSymbol.cpp \
