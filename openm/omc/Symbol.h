@@ -305,6 +305,8 @@ public:
     enum post_parse_pass {
         ///< post-parse pass to create missing symbols
         eCreateMissingSymbols,
+        ///< post-parse pass to perform integrity check
+        eIntegrityCheck,
         ///< post-parse pass to assign pp_ members
         eAssignMembers,
         ///< post-parse pass to populate pp_ collections

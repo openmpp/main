@@ -499,7 +499,7 @@ void Symbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case eCreateMissingSymbols:
+    case eIntegrityCheck:
     {
         // Integrity check (debugging omc only)
         // A name can be mis-identified as agent context when it should be global.
@@ -846,13 +846,19 @@ void Symbol::post_parse_all()
     // Recreate pp_symbols because symbols may have changed or been added.
     populate_pp_symbols();
 
-    // pass 2: create pp_ members
+    // pass 2: perform integrity check
+    // Symbols will be processed in lexicographical order.
+    for (auto pr : pp_symbols) {
+        pr.second->post_parse( eIntegrityCheck );
+    }
+
+    // pass 3: create pp_ members
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignMembers );
     }
 
-    // pass 3: resolve derived agentvar data types
+    // pass 4: resolve derived agentvar data types
     // Symbols will be processed in lexicographical order.
     type_changes = 1;
     int type_change_passes = 0;
@@ -868,7 +874,7 @@ void Symbol::post_parse_all()
         }
     }
 
-    // pass 4: create pp_ collections
+    // pass 5: create pp_ collections
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateCollections );
@@ -966,7 +972,7 @@ void Symbol::post_parse_all()
         }
     }
 
-    // Pass 5: populate additional collections for subsequent code generation, e.g. for side_effect functions.
+    // Pass 6: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {

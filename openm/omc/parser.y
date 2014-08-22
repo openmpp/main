@@ -1415,6 +1415,8 @@ decl_agent_function:
                                 // redeclaration
                                 // silently ignore redeclaration, esp. of Start() and Finish()
                             }
+                            // Turn off suppression of SYMBOL recognition within the function argument declaration.
+                            pc.next_word_is_string = false;
                         }
     ;
 
@@ -1435,14 +1437,18 @@ decl_func_arg_string[result]: // declaration of function arguments,as a string
     | /*nothing*/
                         {
                             $result = nullptr;
+                            // Suppress SYMBOL recognition within the function argument declaration.
+                            pc.next_word_is_string = true;
                         }
     ;
 
-// The contents of the argument list are of no interest to omc.  Any errors will be picked up by the C++ compiler
+// The contents of the argument list are of no use to omc.  Leave any developer errors for the C++ compiler
 decl_func_arg_element[result]: // a syntactic element of a function argument list declaration
-      SYMBOL[sym]
+      STRING[sym]
                         {
-                            $result = new string($sym->name);
+                            $result = $sym;
+                            // Continue to suppress SYMBOL recognition within the function argument declaration.
+                            pc.next_word_is_string = true;
                         }
     | literal[lit]
                         {
@@ -1454,7 +1460,7 @@ decl_func_arg_element[result]: // a syntactic element of a function argument lis
                         }
     ;
 
-decl_func_arg_token: "," | "unsigned" | "int" | "long" | "float" | "double" | "=" ;
+decl_func_arg_token: "," | "unsigned" | "char" | "int" | "long" | "integer" | "counter" | "real" | "float" | "double" | "=" | "Time" ;
 
 decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] event_priority_opt[priority] ";"
