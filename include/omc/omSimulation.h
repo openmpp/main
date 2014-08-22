@@ -50,9 +50,6 @@
 // map logical to bool (for local variable declarations in Modgen models)
 #define logical bool
 
-// The following are temporary kludges to allow compilation
-#define case_id 0
-
 namespace openm {
 
     /**
