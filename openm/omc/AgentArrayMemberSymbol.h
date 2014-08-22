@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include "AgentDataMemberSymbol.h"
+#include "EnumerationSymbol.h"
 
 using namespace std;
 
@@ -40,6 +41,18 @@ public:
 
     CodeBlock cxx_initialization_expression(bool type_default) const;
 
+    void post_parse(int pass);
+
     CodeBlock cxx_declaration_agent();
+
+    /**
+     * List of dimensions.
+     */
+    list<Symbol **> dimension_list;
+
+    /**
+     * List of symbols (post-parse)
+     */
+    list<EnumerationSymbol *> pp_dimension_list;
 };
 

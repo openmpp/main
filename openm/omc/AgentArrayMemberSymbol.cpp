@@ -7,6 +7,7 @@
 
 #include "AgentArrayMemberSymbol.h"
 #include "TypeSymbol.h"
+#include "EnumerationSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -26,10 +27,40 @@ CodeBlock AgentArrayMemberSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += " // TODO";
-    //h += pp_data_type->name + " " + name + ";";
+    string dims;
+    for (auto es : pp_dimension_list) dims += "[" + es->name + "::size]";
+    h += pp_data_type->name + " " + name + dims + ";";
     return h;
 }
+
+void AgentArrayMemberSymbol::post_parse(int pass)
+{
+    // Hook into the post_parse hierarchical calling chain
+    super::post_parse(pass);
+
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    switch (pass) {
+    case ePopulateCollections:
+    {
+        // create post-parse list of dimensions
+        for (auto sym : dimension_list) {
+            auto pp_sym = pp_symbol(sym);
+            assert(pp_sym);
+            auto es = dynamic_cast<EnumerationSymbol *>(pp_sym);
+            if (!es) {
+                pp_error(decl_loc, "Error - invalid dimension '" + pp_sym->name + "' in '" + name + "'");
+            }
+            else {
+                pp_dimension_list.push_back(es);
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 
 
 

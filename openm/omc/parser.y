@@ -1360,11 +1360,10 @@ decl_agent_array:
         decl_type_part[type_symbol] SYMBOL[agentvar] array_decl_dimension_list ";"
                         {
                             // Morph symbol to agent array member symbol
-                            auto aa = new AgentArrayMemberSymbol($agentvar, pc.get_agent_context(), $type_symbol, @agentvar);
-                            // TODO put the pieces together
+                            auto aam = new AgentArrayMemberSymbol($agentvar, pc.get_agent_context(), $type_symbol, @agentvar);
                             list<Symbol *> *pls = $array_decl_dimension_list;
-                            // Add dimensions to the AgentArraySymbol
-                            // use 'swap' or splice... or whatever it is
+                            // Move dimension list to AgentArrayMemberSymbol (transform elements to stable **).
+                            for (auto sym : *pls) aam->dimension_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
                         }
@@ -1375,6 +1374,7 @@ array_decl_dimension_list: // A non-empty list of dimensions enclosed by []
                         {
                             // start a new symbol list
                             auto * pls = new list<Symbol *>;
+                            pls->push_back($dim);
                             $$ = pls;
                         }
       | array_decl_dimension_list[pls] "[" SYMBOL[dim] "]"
