@@ -356,20 +356,37 @@ void TableSymbol::build_body_process_increments()
         // expression for the accumulator as string
         string accumulator_expr = "the" + name + ".accumulators[" + accumulator_index + "][cell]";
 
-        // expression evaluating to value of increment
+        // expression which evaluates to the value of the increment
         string increment_expr;
         switch (acc->increment) {
         case token::TK_value_in:
             increment_expr = in_agentvar_name;
             break;
+        case token::TK_nz_value_in:
+            increment_expr = in_agentvar_name + " != 0 ? 1.0 : 0.0";
+            break;
+        case token::TK_value_in2:
+            increment_expr = in_agentvar_name + " * " + in_agentvar_name;
+            break;
         case token::TK_value_out:
             increment_expr = agentvar_name;
             break;
+        case token::TK_nz_value_out:
+            increment_expr = agentvar_name + " != 0 ? 1.0 : 0.0";
+            break;
+        case token::TK_value_out2:
+            increment_expr = agentvar_name + " * " + agentvar_name;
+            break;
         case token::TK_delta:
-            increment_expr = "( " + agentvar_name + " - " + in_agentvar_name + " )";
+            increment_expr = agentvar_name + " - " + in_agentvar_name;
+            break;
+        case token::TK_nz_delta:
+            increment_expr = "(" + agentvar_name + " - " + in_agentvar_name + ") != 0 ? 1.0 : 0.0";
+            break;
+        case token::TK_delta2:
+            increment_expr = "(" + agentvar_name + " - " + in_agentvar_name + ") * (" + agentvar_name + " - " + in_agentvar_name + ")";
             break;
         default:
-            // TODO - all other increment operators
             assert(0); // parser guarantee
         }
 

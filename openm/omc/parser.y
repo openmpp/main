@@ -918,8 +918,9 @@ decl_parameter_group:
                             auto *grp = new ParameterGroupSymbol( $group, @group );
                             assert(grp);
                             list<Symbol *> *pls = $symbol_list;
-                            // move symbol list to group
-                            grp->symbol_list.swap(*pls);
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
                             delete pls;
                         }
 	| "parameter_group" "{" error "}" ";"
@@ -955,8 +956,9 @@ decl_table_group:
                             auto *grp = new TableGroupSymbol( $group, @group );
                             assert(grp);
                             list<Symbol *> *pls = $symbol_list;
-                            // move symbol list to group
-                            grp->symbol_list.swap(*pls);
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
                             delete pls;
                         }
 	| "table_group" "{" error "}" ";"
@@ -975,10 +977,10 @@ decl_hide:
                             auto *grp = new HideGroupSymbol(@tok );
                             assert(grp);
                             list<Symbol *> *pls = $symbol_list;
-                            // move symbol list to group
-                            grp->symbol_list.swap(*pls);
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
                             delete pls;
-                            int foo = 1;
                         }
 	| "hide" "(" error ")" ";"
 	| "hide" error ";"
@@ -996,8 +998,9 @@ decl_dependency:
                             auto *grp = new DependencyGroupSymbol(@tok );
                             assert(grp);
                             list<Symbol *> *pls = $symbol_list;
-                            // move symbol list to group
-                            grp->symbol_list.swap(*pls);
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
                             delete pls;
                         }
 	| "dependency" "(" error ")" ";"
@@ -1018,9 +1021,8 @@ decl_track:
           track_filter_opt "{" symbol_list "}" ";"
                         {
                             list<Symbol *> *pls = $symbol_list;
-                            //TODO
-                            //  move track list to agent
-                            // use 'swap' or splice... or whatever it is
+                            // move symbol list to group (transform elements to stable **)
+                            //for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
                             // Leaving agent context

@@ -47,7 +47,7 @@ public:
     /**
      * List of symbols.
      */
-    list<Symbol *> symbol_list;
+    list<Symbol **> symbol_list;
 
     /**
      * List of symbols (post-parse)
