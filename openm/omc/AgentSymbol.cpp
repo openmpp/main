@@ -107,6 +107,42 @@ void AgentSymbol::create_auxiliary_symbols()
         }
     }
 
+    {
+        string nm = "case_id";
+        auto sym = Symbol::get_symbol(nm, this);
+        if (!sym || sym->is_base_symbol()) {
+            NumericSymbol *typ = NumericSymbol::find(token::TK_int);
+            BuiltinAgentVarSymbol *biav = nullptr;
+            if (!sym) {
+                // create it
+                biav = new BuiltinAgentVarSymbol(nm, this, typ);
+            }
+            else {
+                // morph it
+                biav = new BuiltinAgentVarSymbol(sym, this, typ);
+            }
+            // initialize it
+        }
+    }
+
+    {
+        string nm = "case_seed";
+        auto sym = Symbol::get_symbol(nm, this);
+        if (!sym || sym->is_base_symbol()) {
+            NumericSymbol *typ = NumericSymbol::find(token::TK_double);
+            BuiltinAgentVarSymbol *biav = nullptr;
+            if (!sym) {
+                // create it
+                biav = new BuiltinAgentVarSymbol(nm, this, typ);
+            }
+            else {
+                // morph it
+                biav = new BuiltinAgentVarSymbol(sym, this, typ);
+            }
+            // initialize it
+        }
+    }
+
     // The age_agent() member function
     {
         auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");

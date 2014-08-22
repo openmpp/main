@@ -978,6 +978,7 @@ decl_hide:
                             // move symbol list to group
                             grp->symbol_list.swap(*pls);
                             delete pls;
+                            int foo = 1;
                         }
 	| "hide" "(" error ")" ";"
 	| "hide" error ";"
@@ -1356,6 +1357,9 @@ decl_simple_agentvar:
 decl_agent_array:
         decl_type_part[type_symbol] SYMBOL[agentvar] array_decl_dimension_list ";"
                         {
+                            // Morph symbol to agent array member symbol
+                            auto aa = new AgentArrayMemberSymbol($agentvar, pc.get_agent_context(), $type_symbol, @agentvar);
+                            // TODO put the pieces together
                             list<Symbol *> *pls = $array_decl_dimension_list;
                             // Add dimensions to the AgentArraySymbol
                             // use 'swap' or splice... or whatever it is
