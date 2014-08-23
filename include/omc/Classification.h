@@ -25,14 +25,35 @@ template<
 class Classification
 {
 public:
-    // ctors
+
+    /**
+     * Default constructor.
+     */
     Classification()
         : enum_value((T)0)
     {}
 
+    /**
+     * Constructor from enum
+     *
+     * @param val The value.
+     */
     Classification(T val)
         : enum_value(val)
     {}
+
+    /**
+     * Constructor from integer
+     * 
+     * Not preferred, since type checking is bypassed.  For compatibility
+     * with older code.  Value is trunced to valid range of underlying enum.
+     *
+     * @param val The value.
+     */
+    Classification(int val)
+    {
+        set_value(val);
+    }
 
     // operator: cast to T (use in C++ expression)
     operator T() const
