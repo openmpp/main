@@ -139,6 +139,9 @@ namespace fmk {
     // The case ssed encoded, with high order bits containing the sample member id
     double case_seed_encoded = 0.0;
 
+    // The member to simulate of the sample of simulations
+    int sample_member = 0;
+
 } // fmk
 
 double RandUniform(int strm)
@@ -186,18 +189,18 @@ void RunModel(IModel * i_model)
     int sample_size = i_model->subSampleCount();
 
     // The member to simulate of the sample of simulations
-    int sample_member = i_model->subSampleNumber();
+    fmk::sample_member = i_model->subSampleNumber();
 
     int seed = SimulationSeed; // framework input parameter
     long long cases = SimulationCases; // framework input parameter
 
     // for sample numbers greater than maximum, re-use generators cyclically
     // and increment the starting case_seed for the simulation of the sample
-    long case_seed = seed + (int)sample_member / fmk::max_samples;
-    long case_seed_generator = fmk::case_seed_generators[sample_member % fmk::max_samples];
+    long case_seed = seed + (int)fmk::sample_member / fmk::max_samples;
+    long case_seed_generator = fmk::case_seed_generators[fmk::sample_member % fmk::max_samples];
 
     // For sample_member numbers greater than limit, re-use generators cyclically.
-    fmk::model_stream_generator = fmk::model_stream_generators[sample_member % fmk::max_samples];
+    fmk::model_stream_generator = fmk::model_stream_generators[fmk::sample_member % fmk::max_samples];
 
     for (long long thisCase = 0; thisCase < cases; thisCase++) {
 
@@ -219,7 +222,7 @@ void RunModel(IModel * i_model)
         BaseEvent::global_time = 0;
 
         // record the encoded case seed (case_seed + sample_member in high order bits)
-        fmk::case_seed_encoded = case_seed + sample_member * ((double)fmk::mg_modulus + 1);
+        fmk::case_seed_encoded = case_seed + fmk::sample_member * ((double)fmk::mg_modulus + 1);
 
         // Prepare the case for simulation
         ::StartSimulation(); // Model-specific - normally defined in a module named Framework.ompp
@@ -229,7 +232,7 @@ void RunModel(IModel * i_model)
         while (BaseEvent::do_next_event());
 
         // Log the case checksum if activated
-        if (BaseEvent::event_checksum_on) fmk::case_checksum_msg(case_seed, sample_member);
+        if (BaseEvent::event_checksum_on) fmk::case_checksum_msg(case_seed, fmk::sample_member);
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
@@ -248,4 +251,14 @@ void RunModel(IModel * i_model)
 double GetCaseSeed()
 {
     return fmk::case_seed_encoded;
+}
+
+int GetCaseSample()
+{
+    return fmk::sample_member;
+}
+
+int GetReplicate()
+{
+    return fmk::sample_member;
 }

@@ -94,6 +94,9 @@ namespace fmk {
     // The case ssed encoded, with high order bits containing the sample member id
     double case_seed_encoded = 0.0;
 
+    // The member to simulate of the sample of simulations
+    int sample_member = 0;
+
 } // namespace fmk
 
 double RandUniform(int strm)
@@ -142,19 +145,19 @@ void RunModel(IModel * i_model)
     int sample_size = i_model->subSampleCount();
 
     // The member to simulate of the sample of simulations
-    int sample_member = i_model->subSampleNumber();
+    fmk::sample_member = i_model->subSampleNumber();
 
     int seed = SimulationSeed; // framework input parameter
     Time simulation_end = SimulationEnd; // framework input parameter
 
     // The master seed to simulate this member of the 'sample' of simulations
-    long master_seed = seed + sample_member;
+    long master_seed = seed + fmk::sample_member;
 
     // record the encoded 'case' seed (master_seed + sample_member in high order bits)
-    fmk::case_seed_encoded = master_seed + sample_member * ((double)fmk::mg_modulus + 1);
+    fmk::case_seed_encoded = master_seed + fmk::sample_member * ((double)fmk::mg_modulus + 1);
 
     // For sample_member numbers greater than limit, re-use generators cyclically.
-    fmk::model_stream_generator = fmk::model_stream_generators[sample_member % fmk::max_samples];
+    fmk::model_stream_generator = fmk::model_stream_generators[fmk::sample_member % fmk::max_samples];
 
     {
         // initialize the stream generators
@@ -192,4 +195,14 @@ void RunModel(IModel * i_model)
 double GetCaseSeed()
 {
     return fmk::case_seed_encoded;
+}
+
+int GetCaseSample()
+{
+    return fmk::sample_member;
+}
+
+int GetReplicate()
+{
+    return fmk::sample_member;
 }

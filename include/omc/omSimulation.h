@@ -99,6 +99,8 @@ extern double RandNormal(int strm);
 extern void StartSimulation();
 extern void EndSimulation();
 extern double GetCaseSeed();
+extern int GetCaseSample();
+extern int GetReplicate();
 
 
 /**
