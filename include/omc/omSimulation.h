@@ -96,6 +96,7 @@ extern void StopEventTrace();
 // They are documented in the Modgen Developer's Guide
 extern double RandUniform(int strm);
 extern double RandNormal(int strm);
+extern double RandLogistic(int strm);
 extern void StartSimulation();
 extern void EndSimulation();
 extern double GetCaseSeed();

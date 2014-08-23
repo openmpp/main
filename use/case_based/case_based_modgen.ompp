@@ -181,6 +181,15 @@ double RandNormal(int strm)
     }
 }
 
+double RandLogistic(int strm)
+{
+    assert(strm < fmk::model_streams);
+    double p = RandUniform(strm);
+    double odds_ratio = p / (1.0 - p);
+    double x = log(odds_ratio);
+    return x;
+}
+
 void RunModel(IModel * i_model)
 {
     theLog->logMsg("Running Simulation");
