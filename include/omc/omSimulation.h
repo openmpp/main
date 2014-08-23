@@ -39,10 +39,20 @@
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
 #define RANGE_POS( rname, val )     (rname::to_index(val))
-#define COERCE( rname, val )        (static_cast<rname>(val))
+#define COERCE( rname, val )        (((val) > rname::max) ? rname::max : ((val) < rname::min) ? rname::min : (val))
 #define WITHIN( rname, val )        (rname::within(val))
 #define POINTS( symbol )		   	(symbol::upper_bounds())
 #define SPLIT( val, symbol )        (symbol::value_to_interval(val))
+
+// override std:min and std::max to enable type conversion of arguments
+#ifndef min
+#define min(a,b) (((a)< (b)) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a,b) (((a)> (b)) ? (a) : (b))
+#endif
+
 
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
