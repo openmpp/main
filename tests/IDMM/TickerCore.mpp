@@ -58,9 +58,15 @@ actor Ticker				 		//EN Actor for synchronising population-level activities
 */
 void Ticker::Start()
 {
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
 	time = 0;
 	age = 0;
 	next_tick = 0; // Arrange that the first tick occurs at the beginning of the simulation
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 
@@ -69,6 +75,8 @@ void Ticker::Start()
 */
 void Ticker::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
 }
 
 

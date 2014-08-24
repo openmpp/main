@@ -146,6 +146,9 @@ void Host::Infect()
 */
 void Host::Start()
 {
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
 	time = 0;
 	age = 0;
 
@@ -171,7 +174,8 @@ void Host::Start()
 		next_change_contacts = (TIME) TIME_INFINITE;
 	}
 
-
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 
@@ -180,6 +184,8 @@ void Host::Start()
 */
 void Host::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
 }
 
 

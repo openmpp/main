@@ -192,13 +192,6 @@ void AgentSymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Model-specific customizations before simulating entity.");
     }
 
-    // The om_Finish_custom() member function
-    {
-        // no code generation for definition
-        auto *fn = new AgentFuncSymbol("om_Finish_custom", this, "void", "", true);
-        fn->doc_block = doxygen_short("Model-specific customizations after simulating entity.");
-    }
-
     // The initialize_callback_member_offsets member function
     {
         assert(!initialize_callback_member_offsets_fn); // initialization guarantee
@@ -314,29 +307,6 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(finalize_multilinks_fn); // out of memory check
         finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in agent when the entity leaves the simulation.");
         // function body is generated in post-parse phase
-    }
-
-    // The Start() member function
-    {
-        auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Start", this));
-        if (!fn) fn = new AgentFuncSymbol("Start", this);
-        assert(fn);
-        fn->doc_block = doxygen_short("Start simulating the entity.");
-        CodeBlock& c = fn->func_body;
-        c += "om_Start_begin();";
-        c += "om_Start_custom();";
-        c += "om_Start_end();";
-    }
-
-    // The Finish() member function
-    {
-        auto fn = dynamic_cast<AgentFuncSymbol *>(get_symbol("Finish", this));
-        if (!fn) fn = new AgentFuncSymbol("Finish", this);
-        assert(fn);
-        fn->doc_block = doxygen_short("Finish simulating the entity.");
-        CodeBlock& c = fn->func_body;
-        c += "om_Finish_custom();";
-        c += "om_Finish_end();";
     }
 }
 

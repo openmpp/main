@@ -87,6 +87,12 @@ void Person::Start()
 	// Modgen initializes all actor variables
 	// before the code in this function is executed.
 
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+
 	// After the code in this function is executed,
 	// Modgen initializes events and tables for the actor.
 	// Modgen also outputs starting values to the tracking file if requested.
@@ -97,6 +103,9 @@ void Person::Start()
 */
 void Person::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+
 	// After the code in this function is executed,
 	// Modgen removes the actor from tables and from the simulation.
 	// Modgen also recuperates any memory used by the actor.

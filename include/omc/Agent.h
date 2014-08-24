@@ -160,7 +160,12 @@ public:
         agents.erase( iter_in_agents );
     }
 
-    void om_Start_begin()
+    /**
+     * Initialize all attributes of the entity.
+     * 
+     * Called by model developer code as part of the entity lifecycle.
+     */
+    void initialize_attributes()
     {
         om_active = false;
         om_initialize_data_members();
@@ -170,9 +175,11 @@ public:
     }
 
     /**
-     * Complete agent preparation for simulation.
+     * Have the entity enter the simulation.
+     * 
+     * Called by model developer code as part of the entity lifecycle.
      */
-    void om_Start_end()
+    void enter_simulation()
     {
         om_initialize_derived_attributes();
         om_initialize_entity_sets();
@@ -183,9 +190,11 @@ public:
     }
 
     /**
-     * Remove agent from simulation.
+     * Have the entity exit the simulation.
+     * 
+     * Called by model developer code as part of the entity lifecycle.
      */
-    void om_Finish_end()
+    void exit_simulation()
     {
         om_finalize_entity_sets();
         om_finalize_tables();

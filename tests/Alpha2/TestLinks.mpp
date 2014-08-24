@@ -79,15 +79,23 @@ actor Thing {
 
 void Thing::Start()
 {
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
     for (int j=0; j<10; j++) {
         Toy *my_toy = new Toy;
         my_toy->Start();
         toys->Add(my_toy);
     }
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 void Thing::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
 }
 
 TIME Thing::timeBeingGoodEvent()
@@ -262,11 +270,19 @@ actor Toy
 
 void Toy::Start()
 {
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
     lifetime = 50 * RandUniform(6);
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 void Toy::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
 }
 
 TIME Toy::timeDiscardEvent()

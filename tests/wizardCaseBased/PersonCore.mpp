@@ -1,6 +1,3 @@
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
-
 //LABEL(PersonCore, EN) Core functionality of the Person actor
 
 /* NOTE(PersonCore, EN)
@@ -87,8 +84,14 @@ void Person::Start()
 	// Modgen initializes all actor variables
 	// before the code in this function is executed.
 
-	//age = 0;
-	//time = 0;
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+	age = 0;
+	time = 0;
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 
 	// After the code in this function is executed,
 	// Modgen initializes events and tables for the actor.
@@ -100,6 +103,9 @@ void Person::Start()
 */
 void Person::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+
 	// After the code in this function is executed,
 	// Modgen removes the actor from tables and from the simulation.
 	// Modgen also recuperates any memory used by the actor.

@@ -56,10 +56,16 @@ actor Person 					//EN Individual
 */
 void Person::Start()
 {
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
 	// Age and time are variables automatically maintained by 
 	// Modgen. They can be set only in the Start function
 	age = 0;		 
 	time = 0;
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 /*NOTE(Person.Finish, EN)
@@ -67,6 +73,9 @@ void Person::Start()
 */
 void Person::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+
 	// After the code in this function (if any) is executed,
 	// Modgen removes the actor from tables and from the simulation.
 	// Modgen also recuperates any memory used by the actor.

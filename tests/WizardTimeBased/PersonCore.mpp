@@ -21,7 +21,7 @@ parameters
 };
 
 
-//actor_set Person asAllPerson; //EN All Person actors
+actor_set Person asAllPerson; //EN All Person actors
 
 
 actor Person            //EN Individual
@@ -42,7 +42,7 @@ actor Person            //EN Individual
 	*/
 
 	//EN Report time
-	//REPORT_TIME report_time = { 0 };
+	REPORT_TIME report_time = { 0 };
 
 	//EN Alive
 	logical alive = {TRUE};
@@ -97,6 +97,15 @@ void Person::Start()
 	// Modgen initializes all actor variables
 	// before the code in this function is executed.
 
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+    age = 0;
+	time = 0;
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+
 	// After the code in this function is executed,
 	// Modgen initializes events and tables for the actor.
 	// Modgen also outputs starting values to the tracking file if requested.
@@ -107,6 +116,9 @@ void Person::Start()
 */
 void Person::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+
 	// After the code in this function is executed,
 	// Modgen removes the actor from tables and from the simulation.
 	// Modgen also recuperates any memory used by the actor.

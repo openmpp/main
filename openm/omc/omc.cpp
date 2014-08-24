@@ -36,6 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <list>
+#include <cctype>
 #include "Symbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
@@ -535,6 +536,19 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
     for (auto it = start_it; it != files.cend(); it++) {
         string full_name = *it;
         try {
+            string file_ext = getFileNameExt(full_name);
+            string file_stem = getFileNameStem(full_name);
+            string file_name = file_stem + file_ext;
+            // As a special case, ignore a file named om_compatibilty.mpp.
+            // This mechanism allows a single model code base to support compilation
+            // by either the Modgen or OpenM++ compilers.
+            string file_name_lc;
+            for (auto ch : file_name) file_name_lc.push_back(tolower(ch));
+            if (file_name_lc == "om_compatibility.mpp") {
+                theLog->logFormatted("Skipping %s", full_name.c_str());
+                continue;
+            }
+
             theLog->logFormatted("Parsing %s", full_name.c_str());
             string normalized_full_name = replaceAll(full_name, "\\", "/");
             *markup_stream << endl; // required in case last line of previous file had no trailing newline
@@ -544,9 +558,6 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             Driver drv( pc );
             drv.trace_scanning = false; // set to true to see detailed scanning actions
             drv.trace_parsing = false; // set to true to see detailed parsing actions
-            string file_ext = getFileNameExt(full_name);
-            string file_stem = getFileNameStem(full_name);
-            string file_name = file_stem + file_ext;
             // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
             drv.parse(&*it, file_name, file_stem, markup_stream);
         }

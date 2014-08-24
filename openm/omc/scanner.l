@@ -460,16 +460,7 @@ blank       [ \t\r]
                 pc.cxx_memfunc_gather = true;
                 pc.cxx_memfunc_name = yytext;
 
-                /* special markup of Start and Finish agent member functions */
-                string word1 = yytext;
-                word1.resize(word1.find("::"));
-                string word2 = yytext;
-                word2.erase(0, 2 + word2.find("::"));
-                if ( word2 == "Start" || word2 == "Finish" ) {
-				    /* modify agent function name to distinguish function supplied by model developer from openM++ function */
-				    *drv.outside << word1 << "::om_" << word2 << "_custom" ;
-                }
-				else if ( ! pc.cxx_suppress ) *drv.outside << yytext;
+				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
             }
 
 {word}      {
@@ -483,21 +474,23 @@ blank       [ \t\r]
                     return tok;
     			}
 
-                /* create working string version of the word */
+                /* Create working string version of the word. */
                 string word ( yytext );
+
+				/* Special processing of Simulation and CaseSimulation to work with models coded for Modgen. */
                 if ( word == "Simulation" ) {
-				    /* default model name is stem of module defining Simulation function */
-                    /* supply if not already specified by model code */
+				    /* The default model name is the stem of the module which defines a function named Simulation. */
+                    /* Use it if a model name has not already been specified in model code. */
                     if ( ! Symbol::find_a_symbol( typeid(ModelSymbol) ) ) {
                         Symbol *sym = new ModelSymbol( drv.stem );
                     }
 
-				    /* suppress Modgen boilerplate of function body */
+				    /* Suppress pass-through of all content (Modgen boilerplate) in the function body. */
 				    pc.cxx_suppress = true;
 				    *drv.outside << yytext << "() {};" ;
                 }
                 else if ( word == "CaseSimulation" ) {
-				    /* suppress Modgen boilerplate of function body */
+				    /* Suppress pass-through of all content (Modgen boilerplate) in the function body. */
 				    pc.cxx_suppress = true;
 				    *drv.outside << yytext << "() {};" ;
                 }
