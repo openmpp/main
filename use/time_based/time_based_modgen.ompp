@@ -1,9 +1,11 @@
 /**
 * @file    time_based_modgen.ompp
 * Implementation of framework for time-based models
-*
+* 
+* The module modgen_common.ompp must be in a "use" statement
+* before this module, to define smbols used here. 
 */
-// Copyright (c) 2013 OpenM++
+// Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 parameters {
@@ -14,167 +16,74 @@ parameters {
     Time SimulationEnd;
 };
 
-use "common.ompp";
-
-/**
- * The fmk namespace is used within this module
- * to protect the global namespace for model use.
- */
 namespace fmk {
 
-    // Fixed number of randome number generators available in Modgen
-    const int max_samples = 41;
-
-    // Fixed modulus used by all Modgen random number generators
-    const long mg_modulus = 2147483647;
-
-    // Multiplier of generator used to initialize the model stream seeds
-    const long model_stream_seed_generator = 376740290;
-
-    // Multiplier of generator used for a given 'sample member'
-    const long model_stream_generators[max_samples] = {
-        16807,
-        1826645050,
-        519701294,
-        1912518406,
-        87921397,
-        755482893,
-        673205363,
-        727452832,
-        630360016,
-        1142281875,
-        219667202,
-        200558872,
-        1185331463,
-        573186566,
-        396907481,
-        1106264918,
-        1605529283,
-        1902548864,
-        1444095898,
-        1600915560,
-        1987505485,
-        1323051066,
-        1715488211,
-        1289290241,
-        967740346,
-        1644645313,
-        2142074246,
-        1397488348,
-        97473033,
-        1210640156,
-        990191797,
-        640039787,
-        1141672104,
-        2081478048,
-        1236995837,
-        1985494258,
-        84845685,
-        184528125,
-        1303680654,
-        61496220,
-        1096609123,
-    };
-
-    // Maximum number of streams in the model (increase if insufficient)
-    const int model_streams = 15;
-
-    // Current seed for each stream generator in the model
-    long model_stream_seeds[model_streams];
-
-    // Multiplier for the generator for the streams in the model (shared by all streams)
-    long model_stream_generator = 0;
-
-    // Is there a random normal in other_normal?
-    bool other_normal_valid = false;
-
-    // The other normal draw
-    double other_normal;
-
-    // The case ssed encoded, with high order bits containing the sample member id
+    // The case seed encoded, with high order bits containing the sample member id
     double case_seed_encoded = 0.0;
-
-    // The member to simulate of the sample of simulations
-    int sample_member = 0;
 
 } // namespace fmk
 
-double RandUniform(int strm)
+double GetCaseSeed()
 {
-    assert(strm < fmk::model_streams);
-    long seed = fmk::model_stream_seeds[strm];
-    long long product = fmk::model_stream_generator;
-    product *= seed;
-    seed = product % fmk::mg_modulus;
-    fmk::model_stream_seeds[strm] = seed;
-    return (double)seed / (double)fmk::mg_modulus;
+    return fmk::case_seed_encoded;
 }
 
-double RandNormal(int strm)
+/**
+ * Gets the replicate.
+ *
+ * See Modgen Developer's Guide.
+ *  
+ * @return The replicate.
+ */
+int GetReplicate()
 {
-    assert(strm < fmk::model_streams);
-
-    if (fmk::other_normal_valid) {
-        fmk::other_normal_valid = false;
-        return fmk::other_normal;
-    }
-    else {
-        double r2 = 1;
-        double x = 0;
-        double y = 0;
-        while (r2 >= 1) {
-            x = 2.0 * RandUniform(strm) - 1.0;
-            y = 2.0 * RandUniform(strm) - 1.0;
-            r2 = x * x + y * y;
-        }
-        double scale = sqrt(-2.0 * log(r2) / r2);
-        double n1 = scale * x;
-        double n2 = scale * y;
-        fmk::other_normal = n2;
-        fmk::other_normal_valid = true;
-        return n1;
-    }
+    return fmk::sample_member;
 }
 
-double RandLogistic(int strm)
+/**
+ * Gets the number of replicates.
+ *
+ * See Modgen Developer's Guide.
+ *  
+ * @return The number of replicates.
+ */
+int GetReplicates()
 {
-    assert(strm < fmk::model_streams);
-    double p = RandUniform(strm);
-    double odds_ratio = p / (1.0 - p);
-    double x = log(odds_ratio);
-    return x;
+    return fmk::sample_size;
 }
 
 void RunModel(IModel * i_model)
 {
+    using namespace fmk;
+
     theLog->logMsg("Running Simulation");
 
     // The number of simulations in the sample of simulations (not used)
-    int sample_size = i_model->subSampleCount();
+    sample_size = i_model->subSampleCount();
 
     // The member to simulate of the sample of simulations
-    fmk::sample_member = i_model->subSampleNumber();
+    sample_member = i_model->subSampleNumber();
 
     int seed = SimulationSeed; // framework input parameter
     Time simulation_end = SimulationEnd; // framework input parameter
 
     // The master seed to simulate this member of the 'sample' of simulations
-    long master_seed = seed + fmk::sample_member;
+    long master_seed = seed + sample_member;
 
     // record the encoded 'case' seed (master_seed + sample_member in high order bits)
-    fmk::case_seed_encoded = master_seed + fmk::sample_member * ((double)fmk::mg_modulus + 1);
+    case_seed_encoded = master_seed + sample_member * ((double)mg_modulus + 1);
 
     // For sample_member numbers greater than limit, re-use generators cyclically.
-    fmk::model_stream_generator = fmk::model_stream_generators[fmk::sample_member % fmk::max_samples];
+    model_stream_generator = model_stream_generators[sample_member % max_samples];
 
     {
         // initialize the stream generators
         long seed = master_seed;
-        for (int model_stream = 0; model_stream < fmk::model_streams; model_stream++) {
-            fmk::model_stream_seeds[model_stream] = seed;
-            long long product = fmk::model_stream_seed_generator;
+        for (int model_stream = 0; model_stream < model_streams; model_stream++) {
+            model_stream_seeds[model_stream] = seed;
+            long long product = model_stream_seed_generator;
             product *= seed;
-            seed = product % fmk::mg_modulus;
+            seed = product % mg_modulus;
         }
     }
 
@@ -200,17 +109,3 @@ void RunModel(IModel * i_model)
     ::EndSimulation(); // Model-specific - normally defined in Framework.ompp
 }
 
-double GetCaseSeed()
-{
-    return fmk::case_seed_encoded;
-}
-
-int GetCaseSample()
-{
-    return fmk::sample_member;
-}
-
-int GetReplicate()
-{
-    return fmk::sample_member;
-}

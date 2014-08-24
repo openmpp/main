@@ -1,0 +1,13 @@
+/**
+* @file    modgen_common.ompp
+* Functionality common to all kinds of Modgen models
+* 
+* The global functions in this module are documented in the header file omSimulation.h
+* 
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+namespace fmk {
+
+} // namespace fmk

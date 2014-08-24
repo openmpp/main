@@ -2,48 +2,54 @@
 * @file    common.ompp
 * Implementation of global functions for all models
 * 
-* The global functions in this module are documented in the header file omSimulation.h
+* The global functions in this module are declared in omSimulation.h.
 * 
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+namespace fmk {
+
+    /**
+     * The number of simulations in the sample of simulations (not used)
+     */
+    int sample_size = 0;
+
+    /**
+     * The member to simulate of the sample of simulations.
+     */
+    int sample_member = 0;
+}
+
+/**
+ * Set maximum time for fixed-precision time operations.
+ * 
+ * See Modgen Developer's Guide for more information.
+ */
 void SetMaxTime(double max_value)
 {
     fixed_precision_float<Time::type>::set_max(max_value);
 }
 
+/**
+ * Start event trace.
+ * 
+ * See Modgen Developer's Guide for more information.
+ */
 void StartEventTrace()
 {
     BaseEvent::trace_event_on = true;
 }
 
+/**
+ * Stop event trace.
+ * 
+ * See Modgen Developer's Guide for more information.
+ */
 void StopEventTrace()
 {
     BaseEvent::trace_event_on = false;
 }
 
 
-/**
- * Model framework code uses the fmk namespace to protect the global namespace for use by the model developer.
- */
-namespace fmk {
-    void event_trace_msg(const char *entity_name, int entity_id, double case_seed, const char *event_name, double time)
-        {
-            theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
-                               entity_name,
-                               entity_id,
-                               case_seed,
-                               event_name,
-                               time);
-        }
-
-    void case_checksum_msg(double case_seed, int case_sample)
-    {
-        theTrace->logFormatted("Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f",
-                           case_seed,
-                           case_sample,
-                           BaseEvent::get_event_checksum());
-    }
-}
 

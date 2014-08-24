@@ -1524,7 +1524,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                 cif += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 cif += "if (BaseEvent::trace_event_on) "
-                    "fmk::event_trace_msg("
+                    "BaseEvent::event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
@@ -1622,7 +1622,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                     cif += "// Dump event time information to trace log";
                     string evt_name = "scheduled - " + to_string(numeric_id);
                     cif += "if (BaseEvent::trace_event_on) "
-                        "fmk::event_trace_msg("
+                        "BaseEvent::event_trace_msg("
                         "\"" + agent->name + "\", "
                         "(int)entity_id, "
                         "GetCaseSeed(), "

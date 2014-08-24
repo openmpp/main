@@ -14,19 +14,10 @@ parameters {
     long long SimulationCases;
 };
 
-use "common.ompp";
-
 /**
- * The fmk namespace is used 
- * to protect the global namespace for model use.
+ * The fmk namespace protects the global namespace for model use.
  */
 namespace fmk {
-
-    // Fixed number of randome number generators available in Modgen
-    const int max_samples = 41;
-
-    // Fixed modulus used by all Modgen random number generators (2^31 - 1)
-    const long mg_modulus = 2147483647;
 
     // Multiplier of generator used to generate the starting seeds for each case
     const long case_seed_generators[max_samples] = {
@@ -73,154 +64,118 @@ namespace fmk {
         914624015,
     };
 
-    // Multiplier of generator used to initialize the model stream seeds
-    const long model_stream_seed_generator = 376740290;
+    /**
+     * Helper function to output a case checksum message to the trace log.
+     * 
+     * This function is used in framework code for the model, e.g. use/case_based_modegen.ompp. It
+     * is implemented in the module use/common.ompp, which is included by all models.
+     *
+     * @param case_seed     The case seed.
+     * @param case_sample   The case sample.
+     */
+    void case_checksum_msg(double case_seed, int case_sample)
+    {
+        theTrace->logFormatted("Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f",
+                           case_seed,
+                           case_sample,
+                           BaseEvent::get_event_checksum());
+    }
 
-    // Multiplier of generator used for a given 'sample member'
-    const long model_stream_generators[max_samples] = {
-        16807,
-        1826645050,
-        519701294,
-        1912518406,
-        87921397,
-        755482893,
-        673205363,
-        727452832,
-        630360016,
-        1142281875,
-        219667202,
-        200558872,
-        1185331463,
-        573186566,
-        396907481,
-        1106264918,
-        1605529283,
-        1902548864,
-        1444095898,
-        1600915560,
-        1987505485,
-        1323051066,
-        1715488211,
-        1289290241,
-        967740346,
-        1644645313,
-        2142074246,
-        1397488348,
-        97473033,
-        1210640156,
-        990191797,
-        640039787,
-        1141672104,
-        2081478048,
-        1236995837,
-        1985494258,
-        84845685,
-        184528125,
-        1303680654,
-        61496220,
-        1096609123,
-    };
+    /**
+     * The total number of cases to simulate, over all sample members.
+     */
+    long long all_cases = 0;
 
-    // Maximum number of streams in the model (increase if insufficient)
-    const int model_streams = 100;
-
-    // Current seed for each stream generator in the model
-    long model_stream_seeds[model_streams];
-
-    // Multiplier for the generator for the streams in the model (shared by all streams)
-    long model_stream_generator = 0;
-
-    // Is there a random normal in other_normal?
-    bool other_normal_valid = false;
-
-    // The other normal draw
-    double other_normal;
-
-    // The case ssed encoded, with high order bits containing the sample member id
+    /**
+     * The case seed encoded, with high order bits containing the sample member id.
+     */
     double case_seed_encoded = 0.0;
-
-    // The member to simulate of the sample of simulations
-    int sample_member = 0;
 
 } // fmk
 
-double RandUniform(int strm)
+/**
+ * Gets the case seed of the current case (encoded with sample number).
+ * 
+ * See Modgen Developer's Guide.
+ *
+ * @return The case seed.
+ */
+double GetCaseSeed()
 {
-    assert(strm < fmk::model_streams);
-    long seed = fmk::model_stream_seeds[strm];
-    long long product = fmk::model_stream_generator;
-    product *= seed;
-    seed = product % fmk::mg_modulus;
-    fmk::model_stream_seeds[strm] = seed;
-    return (double)seed / (double)fmk::mg_modulus;
+    return fmk::case_seed_encoded;
 }
 
-double RandNormal(int strm)
+/**
+ * Gets the sample number of the current case.
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return The case sample.
+ */
+int GetCaseSample()
 {
-    assert(strm < fmk::model_streams);
-
-    if (fmk::other_normal_valid) {
-        fmk::other_normal_valid = false;
-        return fmk::other_normal;
-    }
-    else {
-        double r2 = 1;
-        double x = 0;
-        double y = 0;
-        while (r2 >= 1) {
-            x = 2.0 * RandUniform(strm) - 1.0;
-            y = 2.0 * RandUniform(strm) - 1.0;
-            r2 = x * x + y * y;
-        }
-        double scale = sqrt(-2.0 * log(r2) / r2);
-        double n1 = scale * x;
-        double n2 = scale * y;
-        fmk::other_normal = n2;
-        fmk::other_normal_valid = true;
-        return n1;
-    }
+    return fmk::sample_member;
 }
 
-double RandLogistic(int strm)
+/**
+ * Gets the total number of cases, summed over all samples.
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return all cases.
+ */
+long long GetAllCases()
 {
-    assert(strm < fmk::model_streams);
-    double p = RandUniform(strm);
-    double odds_ratio = p / (1.0 - p);
-    double x = log(odds_ratio);
-    return x;
+    return fmk::all_cases;
 }
+
+/**
+ * Gets the number of "sub-samples" in the simulation.
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return The sub samples.
+ */
+int GetSubSamples()
+{
+    return fmk::sample_size;
+}
+
 
 void RunModel(IModel * i_model)
 {
+    using namespace fmk;
+
     theLog->logMsg("Running Simulation");
 
     // The number of simulations in the sample of simulations (not used)
-    int sample_size = i_model->subSampleCount();
+    sample_size = i_model->subSampleCount();
 
     // The member to simulate of the sample of simulations
-    fmk::sample_member = i_model->subSampleNumber();
+    sample_member = i_model->subSampleNumber();
 
     int seed = SimulationSeed; // framework input parameter
-    long long cases = SimulationCases; // framework input parameter
+    all_cases = SimulationCases; // framework input parameter
+    long long cases = all_cases; // cases to simulate for this sample member
 
     // for sample numbers greater than maximum, re-use generators cyclically
     // and increment the starting case_seed for the simulation of the sample
-    long case_seed = seed + (int)fmk::sample_member / fmk::max_samples;
-    long case_seed_generator = fmk::case_seed_generators[fmk::sample_member % fmk::max_samples];
+    long case_seed = seed + (int)sample_member / max_samples;
+    long case_seed_generator = case_seed_generators[sample_member % max_samples];
 
     // For sample_member numbers greater than limit, re-use generators cyclically.
-    fmk::model_stream_generator = fmk::model_stream_generators[fmk::sample_member % fmk::max_samples];
+    model_stream_generator = model_stream_generators[sample_member % max_samples];
 
     for (long long thisCase = 0; thisCase < cases; thisCase++) {
 
         {
             // initialize the stream generators
             long seed = case_seed;
-            for (int model_stream = 0; model_stream < fmk::model_streams; model_stream++) {
+            for (int model_stream = 0; model_stream < model_streams; model_stream++) {
                 fmk::model_stream_seeds[model_stream] = seed;
-                long long product = fmk::model_stream_seed_generator;
+                long long product = model_stream_seed_generator;
                 product *= seed;
-                seed = product % fmk::mg_modulus;
+                seed = product % mg_modulus;
             }
         }
 
@@ -231,7 +186,7 @@ void RunModel(IModel * i_model)
         BaseEvent::global_time = 0;
 
         // record the encoded case seed (case_seed + sample_member in high order bits)
-        fmk::case_seed_encoded = case_seed + fmk::sample_member * ((double)fmk::mg_modulus + 1);
+        case_seed_encoded = case_seed + sample_member * ((double)mg_modulus + 1);
 
         // Prepare the case for simulation
         ::StartSimulation(); // Model-specific - normally defined in a module named Framework.ompp
@@ -241,7 +196,7 @@ void RunModel(IModel * i_model)
         while (BaseEvent::do_next_event());
 
         // Log the case checksum if activated
-        if (BaseEvent::event_checksum_on) fmk::case_checksum_msg(case_seed, fmk::sample_member);
+        if (BaseEvent::event_checksum_on) case_checksum_msg(case_seed, sample_member);
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
@@ -252,22 +207,9 @@ void RunModel(IModel * i_model)
             // generate the case seed for the next case
             long long product = case_seed_generator;
             product *= case_seed;
-            case_seed = product % fmk::mg_modulus;
+            case_seed = product % mg_modulus;
         }
     } // cases
 }
 
-double GetCaseSeed()
-{
-    return fmk::case_seed_encoded;
-}
 
-int GetCaseSample()
-{
-    return fmk::sample_member;
-}
-
-int GetReplicate()
-{
-    return fmk::sample_member;
-}

@@ -1,0 +1,138 @@
+/**
+* @file    random_modgen.ompp
+* Implementation of framework for Modgen random number generation
+* 
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+namespace fmk {
+
+    /**
+     * The fixed number of random number generators available in Modgen.
+     */
+    const int max_samples = 41;
+
+    /**
+     * The fixed modulus used by all Modgen random number generators.
+     */
+    const long mg_modulus = 2147483647;
+
+    /**
+     * Multiplier of generator used to initialize the model stream seeds.
+     */
+    const long model_stream_seed_generator = 376740290;
+
+    /**
+     * Multiplier of generator used for a given 'sample member'.
+     */
+    const long model_stream_generators[max_samples] = {
+        16807,
+        1826645050,
+        519701294,
+        1912518406,
+        87921397,
+        755482893,
+        673205363,
+        727452832,
+        630360016,
+        1142281875,
+        219667202,
+        200558872,
+        1185331463,
+        573186566,
+        396907481,
+        1106264918,
+        1605529283,
+        1902548864,
+        1444095898,
+        1600915560,
+        1987505485,
+        1323051066,
+        1715488211,
+        1289290241,
+        967740346,
+        1644645313,
+        2142074246,
+        1397488348,
+        97473033,
+        1210640156,
+        990191797,
+        640039787,
+        1141672104,
+        2081478048,
+        1236995837,
+        1985494258,
+        84845685,
+        184528125,
+        1303680654,
+        61496220,
+        1096609123,
+    };
+
+    // Current seed for each stream generator in the model
+    long model_stream_seeds[model_streams];
+
+    // Multiplier for the generator for the streams in the model (shared by all streams)
+    long model_stream_generator = 0;
+
+    // Is there a random normal in other_normal?
+    bool other_normal_valid = false;
+
+    // The other normal draw
+    double other_normal;
+
+} // fmk
+
+double RandUniform(int strm)
+{
+    using namespace fmk;
+
+    assert(strm < model_streams);
+    long seed = model_stream_seeds[strm];
+    long long product = model_stream_generator;
+    product *= seed;
+    seed = product % mg_modulus;
+    model_stream_seeds[strm] = seed;
+    return (double)seed / (double)mg_modulus;
+}
+
+double RandNormal(int strm)
+{
+    using namespace fmk;
+
+    assert(strm < model_streams);
+
+    if (other_normal_valid) {
+        other_normal_valid = false;
+        return other_normal;
+    }
+    else {
+        double r2 = 1;
+        double x = 0;
+        double y = 0;
+        while (r2 >= 1) {
+            x = 2.0 * RandUniform(strm) - 1.0;
+            y = 2.0 * RandUniform(strm) - 1.0;
+            r2 = x * x + y * y;
+        }
+        double scale = sqrt(-2.0 * log(r2) / r2);
+        double n1 = scale * x;
+        double n2 = scale * y;
+        other_normal = n2;
+        other_normal_valid = true;
+        return n1;
+    }
+}
+
+double RandLogistic(int strm)
+{
+    using namespace fmk;
+
+    assert(strm < model_streams);
+    double p = RandUniform(strm);
+    double odds_ratio = p / (1.0 - p);
+    double x = log(odds_ratio);
+    return x;
+}
+
