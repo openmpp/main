@@ -44,6 +44,9 @@
 #define POINTS( symbol )		   	(symbol::upper_bounds())
 #define SPLIT( val, symbol )        (symbol::value_to_interval(val))
 
+// Ignore IMPLEMENT_HOOK 
+#define IMPLEMENT_HOOK()
+
 // override std:min and std::max to enable type conversion of arguments
 #ifndef min
 #define min(a,b) (((a)< (b)) ? (a) : (b))
@@ -53,6 +56,8 @@
 #define max(a,b) (((a)> (b)) ? (a) : (b))
 #endif
 
+// translate use of CString in model developer code to C++ string for portability
+#define CString string
 
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
