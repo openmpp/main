@@ -60,6 +60,7 @@
 #include "DeveloperTableSymbol.h"
 #include "DeveloperTableAnalysisSymbol.h"
 #include "ConstantSymbol.h"
+#include "GlobalFuncSymbol.h"
 #include "ExprForTable.h"
 #include "ExprForAgentVar.h"
 

@@ -28,7 +28,7 @@ public:
 
 
     /**
-    * Constructor.
+    * Morphing constructor.
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
@@ -40,6 +40,16 @@ public:
     {
     }
 
+    /**
+     * Constructor by name.
+     *
+     * @param name          The name.
+     * @param agent         The agent.
+     * @param return_decl   The return declaration.
+     * @param arg_list_decl The argument list declaration.
+     * @param suppress_defn (Optional) Suppress definition.
+     * @param decl_loc      (Optional) the declaration location.
+     */
     AgentFuncSymbol(const string name, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(name, agent, decl_loc)
         , arg_list_decl(arg_list_decl)
@@ -47,6 +57,13 @@ public:
         , suppress_defn(suppress_defn)
     {
     }
+
+    /**
+     * Constructor by name, with defaults.
+     *
+     * @param name  The name.
+     * @param agent The agent.
+     */
     AgentFuncSymbol(const string name, const Symbol *agent)
         : AgentFuncSymbol(name, agent, "void", "", false)
     {
@@ -58,38 +75,29 @@ public:
 
     CodeBlock cxx_definition_agent();
 
-
     /**
      * The comment block which immediately preceeds the function declaration.
      */
-
     CodeBlock doc_block;
-
 
     /**
      * The argument list portion of the function declaration.
      */
-
     string arg_list_decl;
-
 
     /**
      * The return value part of the function declaration.
      */
-
     string return_decl;
 
-
     /**
-     * Flag to suppress generation of function definition
+     * Flag to suppress generation of function definition.
      */
-
     bool suppress_defn;
 
     /**
      * The function body.
      */
-
     CodeBlock func_body;
 };
 

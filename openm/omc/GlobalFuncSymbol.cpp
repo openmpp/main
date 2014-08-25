@@ -27,3 +27,42 @@ void GlobalFuncSymbol::post_parse(int pass)
         break;
     }
 }
+
+CodeBlock GlobalFuncSymbol::cxx_declaration_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    if (doc_block.size() == 0) {
+        // use a default short doxygen comment
+        h += doxygen_short(label());
+    }
+    else {
+        // use documentation block of this symbol
+        h += doc_block;
+    }
+    h += return_decl + " " + name + "(" + arg_list_decl + ");";
+    h += "";
+
+    return h;
+}
+
+CodeBlock GlobalFuncSymbol::cxx_definition_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    if (!suppress_defn) {
+        c += return_decl + " " + name + "(" + arg_list_decl + ")";
+        c += "{";
+        c += func_body;
+        c += "}";
+    }
+
+    return c;
+}
+

@@ -1113,7 +1113,7 @@ decl_parameter:
                             // No longer in parameter context
                             pc.set_parameter_context( nullptr );
                         }
-    | parameter_modifier_opt[pm_opt] "cumrate" cumrate_dimensions_opt[cond_dims] SYMBOL[parm]
+    | parameter_modifier_opt[pm_opt] "cumrate" cumrate_dimensions_opt[cumrate_dims] SYMBOL[parm]
                         {
                             ParameterSymbol *parm = nullptr;
 
@@ -1140,10 +1140,14 @@ decl_parameter:
                             }
                             // record cumrate information in parameter
                             parm->cumrate = true;
-                            if ($cond_dims) {
-                                // record number of conditioning dimensions
-                                parm->condition_dims = stoi($cond_dims->value());
-                                delete $cond_dims;
+                            // record number of non-conditioning trailing dimensions
+                            if ($cumrate_dims) {
+                                parm->cumrate_dims = stoi($cumrate_dims->value());
+                                delete $cumrate_dims;
+                            }
+                            else {
+                                // default value if not specified explcitily
+                                parm->cumrate_dims = 1;
                             }
                             // Set parameter context for gathering the dimension specification (if present)
                             // and initializer (if present).

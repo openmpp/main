@@ -49,8 +49,6 @@ CodeBlock AgentFuncSymbol::cxx_declaration_agent()
     return h;
 }
 
-
-
 CodeBlock AgentFuncSymbol::cxx_definition_agent()
 {
     // Hook into the hierarchical calling chain

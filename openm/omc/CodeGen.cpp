@@ -211,6 +211,9 @@ void CodeGen::do_parameters()
 	h += "// model parameters";
     for ( auto parameter : Symbol::pp_all_parameters ) {
         h += parameter->cxx_declaration_global();
+        if (parameter->cumrate) {
+            h += parameter->lookup_fn->cxx_declaration_global();
+        }
     }
 	h += "";
 
@@ -224,6 +227,9 @@ void CodeGen::do_parameters()
         }
         else {
             c += parameter->cxx_definition_global();
+        }
+        if (parameter->cumrate) {
+            c += parameter->lookup_fn->cxx_definition_global();
         }
     }
 	c += "";

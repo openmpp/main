@@ -15,6 +15,7 @@
 #include "PartitionSymbol.h"
 #include "EnumerationSymbol.h"
 #include "TimeSymbol.h"
+#include "GlobalFuncSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -28,6 +29,31 @@ void ParameterSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        if (cumrate) {
+            // create lookup function for cumrate parameter
+            
+            // construct the argument list
+            string args = "double uniform";
+            int rank = dimension_list.size();
+            int conditional_dims = rank - cumrate_dims;
+            int lookup_dims = cumrate_dims;
+            for (int j = 0; j < conditional_dims; j++) {
+                args += ", int cond" + to_string(j);
+            }
+            for (int j = 0; j < lookup_dims; j++) {
+                args += ", int * draw" + to_string(j);
+            }
+
+            lookup_fn = new GlobalFuncSymbol("Lookup_" + name, "bool", args);
+            lookup_fn->doc_block = doxygen_short("Draw from discrete probability distribution - " + name);
+            CodeBlock& c = lookup_fn->func_body;
+            c += "// TODO";
+            c += "return true;";
+        }
+        break;
+    }
     case eAssignMembers:
     {
         // assign direct pointer to type symbol for use post-parse
@@ -37,7 +63,6 @@ void ParameterSymbol::post_parse(int pass)
         if (!pp_datatype) {
             pp_error("'" + datatype->name + "' is not a datatype in parameter '" + name + "'");
         }
-
         break;
     }
     case ePopulateCollections:
