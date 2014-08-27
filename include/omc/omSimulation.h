@@ -10,9 +10,7 @@
 #pragma once
 #include <cfloat>
 #include <cmath>
-#include <iostream> // for debug log only
-#include <fstream> // for debug log only
-#include <cstdarg> // for debug log only
+#include <cstdarg>
 #include "om_types0.h" // fundamental model types
 #include "omc/link.h"
 #include "omc/Range.h"
@@ -99,6 +97,8 @@ namespace openm {
 extern void SetMaxTime(double max_value);
 extern void StartEventTrace();
 extern void StopEventTrace();
+extern int GetThreadNumber();
+extern int GetThreads();
 
 // defined in use/random/random_modgen.ompp
 extern double RandUniform(int strm);
@@ -114,7 +114,3 @@ extern int GetSubSamples();
 // defined in use/time_based/time_based_modgen.ompp
 extern int GetReplicate();
 extern int GetReplicates();
-
-// defined in framework.ompp (model-specific)
-extern void StartSimulation();
-extern void EndSimulation();

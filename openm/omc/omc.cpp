@@ -41,6 +41,7 @@
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
+#include "libopenm/common/omHelper.h"
 #include "libopenm/common/argReader.h"
 #include "libopenm/db/modelBuilder.h"
 
@@ -539,12 +540,13 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             string file_ext = getFileNameExt(full_name);
             string file_stem = getFileNameStem(full_name);
             string file_name = file_stem + file_ext;
-            // As a special case, ignore a file named om_compatibilty.mpp.
+            // As a special case, ignore file starting with "modgen_".
             // This mechanism allows a single model code base to support compilation
             // by either the Modgen or OpenM++ compilers.
-            string file_name_lc;
-            for (auto ch : file_name) file_name_lc.push_back(tolower(ch));
-            if (file_name_lc == "om_compatibility.mpp") {
+            string file_name_lc = file_name;
+            openm::toLower(file_name_lc);
+
+            if (openm::equalNoCase(file_name.c_str(), "modgen_", 7)) {
                 theLog->logFormatted("Skipping %s", full_name.c_str());
                 continue;
             }

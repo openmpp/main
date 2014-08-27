@@ -51,5 +51,23 @@ void StopEventTrace()
     BaseEvent::trace_event_on = false;
 }
 
+/**
+ * Total number of threads used in simulation.
+ * 
+ * See Modgen Developer's Guide for more information.
+ */
+int GetThreads()
+{
+    return 1;
+}
 
+/**
+ * Numeric identifier of current thread for current simulation
+ * 
+ * See Modgen Developer's Guide for more information.
+ */
+int GetThreadNumber()
+{
+    return 1;
+}
 

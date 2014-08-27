@@ -1,17 +1,3 @@
-/*****************************************************************************
-*	IDMM™: Infectious Disease Microsimulation Model
-*
-*Revisions:
-* +-----+----------+---------------------------------------------------------+
-* | Who |   Date   | Description                                             |
-* +-----+----------+---------------------------------------------------------+
-* | SFG | 02/02/19 | Created                                                 |
-* | SFG | 03/11/28 | Cosmetic changes                                        |
-* | SFG | 04/12/27 | Use Modgen memory enhancements                          |
-* +-----+----------+---------------------------------------------------------+
-*
-******************************************************************************/
-
 //LABEL (IDMM, EN) Core simulation functions
 
 /* NOTE(IDMM, EN)
@@ -60,38 +46,33 @@ void PreSimulation()
 
 void Simulation()
 {
+    extern void LogSimulationStart(); // defined elsewhere
+    extern void SimulateEvents(); // defined elsewhere
+
+    // Write simulation start message to log
+    LogSimulationStart();
+
     // Set the maximum time used in the simulation. This allows the simulation framework
     // to use fixed precision arithmetic for time-related quantities for consistent results.
     // A fixed value is used rather than Simulation End so that simulation results
     // are not affected by a change of time horizon.
     SetMaxTime(100.0);
 
-	// Buffer for reporting progress
-	const 	size_t nBufSize = {255};
-	char 	szBuffer[nBufSize];
+	// Create the single Ticker entity.
+	auto paTicker = new Ticker();
+	// Enter it into the the simulation.
+	paTicker->Start();
 
-	int 	nJ = {0};
-
-	// Note replicate number for progress reporting
-	int nReplicate = GetReplicate();
-
-	// Create the starting population
-	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_START"));
-	ProgressMessage( szBuffer );
-
-	// Create the single ticker actor
-	auto prTicker = new Ticker();
-	prTicker->Start();
-
-	// Create the Host actors
-	for ( nJ = 0; nJ < NumberOfHosts; nJ++ ) 
+	// Create the initial population.
+	for ( int nJ = 0; nJ < NumberOfHosts; nJ++ ) 
 	{
 		auto prHost = new Host();
 		prHost->Start();
 	}
 
+    // Construct the initial social network.
 	int nHosts = asAllHosts->Count();
-	for ( nJ = 0; nJ < nHosts; nJ++ ) 
+	for ( int nJ = 0; nJ < nHosts; nJ++ ) 
 	{
 		auto prHost = asAllHosts->Item( nJ );
 		for (int nK = 0; nK < ContactsOutPerHost; nK++ ) 
@@ -109,61 +90,7 @@ void Simulation()
 		}
 	}
 
-
-	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_SIMULATION"));
-	ProgressMessage( szBuffer );
-
-	// event loop
-	double dCurrentTime = {TIME_INFINITE};
-	double dStartTime = {TIME_INFINITE};
-
-	int nLastProgressPercent = {-1};
-	int nThisProgressPercent = {-1};
-
-	while ( !gpoEventQueue->Empty() ) 
-	{
-
-		// get the time of next event, verify against the simulation end
-		dCurrentTime = gpoEventQueue->NextEvent();
-
-		// Note the start time (time of first event) for progress indicator
-		if ( dStartTime == TIME_INFINITE )
-		{
-			dStartTime = dCurrentTime;
-		}
-
-		if ( dCurrentTime > SIMULATION_END() || gbInterrupted || gbCancelled || gbErrors )
-		{
-			if (dCurrentTime > SIMULATION_END())
-			{
-				// age all actors to the simulation end time
-				gpoEventQueue->WaitUntilAllActors( SIMULATION_END() );
-			}
-
-			sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_FINISH"));
-			ProgressMessage( szBuffer );
-
-			gpoEventQueue->FinishAllActors();
-		}
-		else 
-		{
-			// age all actors to the time of next event
-			gpoEventQueue->WaitUntil( dCurrentTime );
-
-			// implement the next event
-			gpoEventQueue->Implement();
-		}
-
-		// Update progress indicator only if the integer percentage complete changes
-		// (updates to the progress bar at every event are expensive).
-		nThisProgressPercent = (int)( 100 * ( dCurrentTime - dStartTime ) /
-		                                    ( SIMULATION_END() - dStartTime ) );
-
-		if ( nThisProgressPercent > nLastProgressPercent )
-		{
-			TimeReport( dCurrentTime );	// update simulation progress
-			nLastProgressPercent = nThisProgressPercent;
-		}
-	}
+    // Simulate events until there are no more.
+    SimulateEvents();
 }
 

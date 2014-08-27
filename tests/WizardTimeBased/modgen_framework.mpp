@@ -1,0 +1,111 @@
+//LABEL(modgen_framework, EN) Simulation framework code for Modgen
+
+/* NOTE(modgen_framework, EN)
+    The OpenM++ compiler ignores source code files starting with "modgen_".
+    This allows the selective incorporation of code just for the Modgen compiler.
+
+	This module contains declarations and/or definitions of functions which differ
+    in OpenM++ and Modgen.  This allows the use of a single model code base
+    which can be used by either the Modgen compiler or the OpenM++ compiler.
+*/
+
+actor Person
+{
+    void initialize_attributes(); //EN Initialize all entity attributes (ompp)
+    void enter_simulation(); //EN Have the entity enter the simulation (ompp)
+    void exit_simulation(); //EN Have the entity exit the simulation (ompp)
+};
+
+void Person::initialize_attributes() { }
+void Person::enter_simulation() { }
+void Person::exit_simulation() { }
+
+actor Ticker
+{
+    void initialize_attributes(); //EN Initialize all entity attributes (ompp)
+    void enter_simulation(); //EN Have the entity enter the simulation (ompp)
+    void exit_simulation(); //EN Have the entity exit the simulation (ompp)
+};
+
+void Ticker::initialize_attributes() { }
+void Ticker::enter_simulation() { }
+void Ticker::exit_simulation() { }
+
+void LogSimulationStart()
+{
+	// Buffer for messages
+	const size_t nBufSize = 255;
+	char szBuffer[nBufSize];
+
+	// Replicate number for progress reporting
+	int nReplicate = GetReplicate();
+
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_START"));
+	ProgressMessage( szBuffer );
+}
+
+void SimulateEvents()
+{
+	// Buffer for messages
+	const size_t nBufSize = 255;
+	char szBuffer[nBufSize];
+
+	// Replicate number for progress reporting
+	int nReplicate = GetReplicate();
+
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_SIMULATION"));
+	ProgressMessage( szBuffer );
+
+	double dCurrentTime = TIME_INFINITE;
+	double dStartTime = TIME_INFINITE;
+
+	int nLastProgressPercent = -1;
+	int nThisProgressPercent = -1;
+
+	while ( !gpoEventQueue->Empty() ) 
+	{
+
+		// get the time of next event, verify against the simulation end
+		dCurrentTime = gpoEventQueue->NextEvent();
+
+		// Note the start time (time of first event) for progress indicator
+		if ( dStartTime == TIME_INFINITE )
+		{
+			dStartTime = dCurrentTime;
+		}
+
+		if ( dCurrentTime > SIMULATION_END() || gbInterrupted || gbCancelled || gbErrors )
+		{
+			if (dCurrentTime > SIMULATION_END())
+			{
+				// age all actors to the simulation end time
+				gpoEventQueue->WaitUntilAllActors( SIMULATION_END() );
+			}
+
+			sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_FINISH"));
+			ProgressMessage( szBuffer );
+
+			gpoEventQueue->FinishAllActors();
+		}
+		else 
+		{
+			// age all actors to the time of next event
+			gpoEventQueue->WaitUntil( dCurrentTime );
+
+			// implement the next event
+			gpoEventQueue->Implement();
+		}
+
+		// Update progress indicator only if the integer percentage complete changes
+		// (updates to the progress bar at every event are expensive).
+		nThisProgressPercent = (int)( 100 * ( dCurrentTime - dStartTime ) /
+		                                    ( SIMULATION_END() - dStartTime ) );
+
+		if ( nThisProgressPercent > nLastProgressPercent )
+		{
+			TimeReport( dCurrentTime );	// update simulation progress
+			nLastProgressPercent = nThisProgressPercent;
+		}
+	}
+}
+

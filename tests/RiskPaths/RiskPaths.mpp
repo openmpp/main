@@ -26,54 +26,18 @@ languages								// Language options
 // Simulation Engine
 
 
-// The CaseSimulation function simulates a single case,
-// and is called by the Simulation function declared later
-// in this module.
-
+/**
+ * The CaseSimulation function simulates a single case.
+ */
 void CaseSimulation()
 {
+    extern void SimulateEvents(); // defined elsewhere
+
 	// Initialize the person actor
-	Person *prPerson = NULL;
-	prPerson = new Person();
+	auto prPerson = new Person();
 	prPerson->Start();
 
-	// Continue processing events until there are no more.
-	while (!gpoEventQueue->Empty())
-	{
-    	if (gbCancelled || gbErrors) 
-    	{
-			// Simulation cancelled by user, or run-time errors occurred.
-			// Terminate the case immediately.
-    		gpoEventQueue->FinishAllActors();
-    	}
-		else 
-		{
-			// Age actor to the time of the next event.
-			gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
-
-			// Implement the next event.
-			gpoEventQueue->Implement();
-		}
-	}
+	// Simulate events until there are no more.
+    SimulateEvents();
 }
 
-// The Simulation function is called by Modgen to simulate a set of cases.
-void Simulation()
-{
-	long  lCase = 0; 	// counter for cases simulated
-
-	// Loop through all cases.
-	for ( lCase = 0; lCase < CASES() && !gbInterrupted 
-		  && !gbCancelled && !gbErrors; lCase++ )
-	{
-		// Tell the Modgen run-time to prepare to simulate a new case.
-		StartCase(); 
-
-		// Call the CaseSimulation function defined earlier in this module.
-		CaseSimulation(); 
-
-		// Tell the Modgen run-time that the case has been completed.
-		SignalCase();
-	}
-}
-							

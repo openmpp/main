@@ -1,0 +1,46 @@
+//LABEL (modgen_trigger_fix, EN) Module for fixing Modgen trigger tabulation anomaly
+
+/*NOTE(modgen_trigger_fix, EN)
+    This module contains an event added to the model to work around a Modgen bug.
+
+    This bug affects tables which use (directly or indirectly) a trigger state
+    in the filter of a table.  For such tables, the bug affects the values tabulated,
+    but only if the analysis variable being tabulated is a continuously-updated state
+    such as age or duration.  The bug does not affect other kinds of states used
+    in the analysis dimension of the table.
+
+    To implement the fix in a particular model, replace the code for 'any_trigger'
+    by a list of all of the trigger states used in the model, combined together
+    using the logical 'or' operator ||, and modify the name of the kind of actor
+    in the model, e.g. from 'Host' to 'Person'
+
+    If the model contains multiple kinds of actors, the fix needs to be applied
+    separately and independently to each kind of actor.
+*/
+
+actor Host
+{
+    //EN Any trigger used in the model
+    logical any_trigger = trigger_entrances(disease_phase, DP_INFECTIOUS)
+                       || trigger_exits(disease_phase, DP_INFECTIOUS)
+                       || trigger_transitions(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE)
+                       || trigger_changes(disease_phase)
+                       ;
+
+	event timeShadowTriggerEvent, ShadowTriggerEvent; //EN Occurs ASAP after any trigger
+};
+
+TIME Host::timeShadowTriggerEvent()
+{
+    if (any_trigger) return WAIT(GetMinimumTimeIncrement());
+    else return TIME_INFINITE;
+}
+
+void Host::ShadowTriggerEvent()
+{
+    // Nothing
+}
+
+
+
+

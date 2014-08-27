@@ -18,6 +18,11 @@ parameters {
 
 namespace fmk {
 
+    /**
+     * The simulation end.
+     */
+    Time simulation_end;
+
     // The case seed encoded, with high order bits containing the sample member id
     double case_seed_encoded = 0.0;
 
@@ -52,8 +57,31 @@ int GetReplicates()
     return fmk::sample_size;
 }
 
+void LogSimulationStart()
+{
+    // TODO
+    BaseEvent::global_time = 0;
+}
+
+void SimulateEvents()
+{
+    using namespace fmk;
+
+    // Simulate the population
+    while ( true ) {
+        if (BaseEvent::time_next_event() > simulation_end) {
+            BaseAgent::age_all_agents(simulation_end);
+            BaseAgent::finalize_all_agents();
+            break;
+        }
+        if (! BaseEvent::do_next_event() ) break;
+    }
+}
+
 void RunModel(IModel * i_model)
 {
+    extern void CaseSimulation(); // defined elsewhere
+
     using namespace fmk;
 
     theLog->logMsg("Running Simulation");
@@ -65,7 +93,7 @@ void RunModel(IModel * i_model)
     sample_member = i_model->subSampleNumber();
 
     int seed = SimulationSeed; // framework input parameter
-    Time simulation_end = SimulationEnd; // framework input parameter
+    simulation_end = SimulationEnd; // framework input parameter
 
     // The master seed to simulate this member of the 'sample' of simulations
     long master_seed = seed + sample_member;
@@ -92,20 +120,8 @@ void RunModel(IModel * i_model)
 
     // Initialize global time (can override in StartSimulation)
     BaseEvent::global_time = -time_infinite;
-
-    // Prepare the population for simulation
-    ::StartSimulation(); // Model-specific - normally defined in Framework.ompp
-
-    // Simulate the population
-    while ( true ) {
-        if (BaseEvent::time_next_event() > simulation_end) {
-            BaseAgent::age_all_agents(simulation_end);
-            BaseAgent::finalize_all_agents();
-            break;
-        }
-        if (! BaseEvent::do_next_event() ) break;
-    }
-
-    ::EndSimulation(); // Model-specific - normally defined in Framework.ompp
+     
+    // Model-specific
+    Simulation();
 }
 

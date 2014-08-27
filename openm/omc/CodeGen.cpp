@@ -398,7 +398,24 @@ void CodeGen::do_tables()
         table->populate_metadata(metaRows);
     }
 
-	h += "";
+	h += "// Model code interface to tables";
+	h += "double GetTableValue(const string name, ...);";
+	h += "void SetTableValue(const string name, double value, ...);";
+
+	c += "// Model code interface to tables";
+	c += "double GetTableValue(const string name, ...)";
+	c += "{";
+	c += "// TODO";
+    c += "return 0.0;";
+    c += "}";
+    c += "";
+
+	c += "void SetTableValue(const string name, double value, ...)";
+	c += "{";
+	c += "// TODO";
+    c += "}";
+
+    h += "";
 	c += "";
 }
 

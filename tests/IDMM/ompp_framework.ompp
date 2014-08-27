@@ -1,9 +1,9 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-//LABEL(Framework, EN) Framework
+//LABEL(ompp_framework, EN) OpenM++ simulation framework
 
-/* NOTE(Framework, EN)
+/* NOTE(ompp_framework, EN)
 	This module specifies the simulation framework
     and supplies function definitions required by the framework.
 */
@@ -24,18 +24,4 @@ namespace fmk {
      * Maximum number of random streams in the model (increase if insufficient)
      */
     const int model_streams = 15;
-}
-
-void StartSimulation()
-{
-    BaseEvent::global_time = 0;
-    for (int nJ = 0; nJ < StartingPopulationSize; nJ++)
-    {
-        Person *paPerson = new Person();
-        paPerson->Start();
-    }
-}
-
-void EndSimulation()
-{
 }

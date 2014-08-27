@@ -91,6 +91,11 @@ namespace fmk {
      */
     double case_seed_encoded = 0.0;
 
+    /**
+     * The case counter in thread.
+     */
+    long long case_counter_in_thread = 0;
+
 } // fmk
 
 /**
@@ -141,9 +146,27 @@ int GetSubSamples()
     return fmk::sample_size;
 }
 
+/**
+ * Gets case counter in thread.
+ *
+ * @return The case counter in thread.
+ */
+long long GetCaseCounterInThread()
+{
+    return fmk::case_counter_in_thread;
+}
+
+
+void SimulateEvents()
+{
+    // Simulate the case
+    while (BaseEvent::do_next_event());
+}
 
 void RunModel(IModel * i_model)
 {
+    extern void CaseSimulation(); // defined elsewhere
+
     using namespace fmk;
 
     theLog->logMsg("Running Simulation");
@@ -188,20 +211,20 @@ void RunModel(IModel * i_model)
         // record the encoded case seed (case_seed + sample_member in high order bits)
         case_seed_encoded = case_seed + sample_member * ((double)mg_modulus + 1);
 
-        // Prepare the case for simulation
-        ::StartSimulation(); // Model-specific - normally defined in a module named Framework.ompp
-        BaseEvent::event_checksum_reset(); // Reset the running event checksum
+        // record the case counter within the thread of execution
+        case_counter_in_thread = thisCase;
+
+        // Reset the running event checksum
+        BaseEvent::event_checksum_reset();
 
         // Simulate the case
-        while (BaseEvent::do_next_event());
+        CaseSimulation();
 
         // Log the case checksum if activated
         if (BaseEvent::event_checksum_on) case_checksum_msg(case_seed, sample_member);
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
-
-        ::EndSimulation(); // Model-specific - normally defined in a module named Framework.ompp
 
         {
             // generate the case seed for the next case
