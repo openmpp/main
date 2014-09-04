@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A1B4128C-28EE-4653-BFA3-3263CDF4C28B}</ProjectGuid>
+    <ProjectGuid>{2DEF7AC4-4EA5-4FF3-AA91-55D0B4A221DD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Alpha1</RootNamespace>
   </PropertyGroup>
@@ -78,7 +78,6 @@
     <ClCompile Include="src\*.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="custom.h" />
     <ClInclude Include="src\*.h" />
   </ItemGroup>
   <ItemGroup>

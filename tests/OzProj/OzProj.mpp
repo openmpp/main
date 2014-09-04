@@ -1,0 +1,78 @@
+//LABEL(OzProj, EN) Core simulation functions
+
+/* NOTE(OzProj, EN)
+	This module contains core simulation functions and definitions.
+*/
+
+// The model version number
+version 0, 19, 0, 0;
+
+// The model type
+model_type case_based;
+
+// The data type used to represent time
+time_type double;
+
+// Supported languages
+languages {
+	EN // English
+};
+
+/**
+ * The CaseSimulation function simulates a single case.
+ */
+void CaseSimulation( )
+{
+  extern void SimulateEvents(); // defined elsewhere
+
+  // Initialize the Observation entity for the record used in the current case
+  auto oeObservation = new Observation();
+  oeObservation->Start();
+
+  // The following works for undercount rates up to 50%
+  int nAge = oeObservation->o_age_group1;
+  int nSex = oeObservation->o_sex;
+  double dUndercountRate = UndercountRate[nAge][nSex]; // (true - observed) / true
+  double dCorrectionRate = 1.0 / ( 1.0 - dUndercountRate ) - 1.0; // (true / observed) - 1
+  double dRandom = RandUniform(2);
+  int nCopies = 1;
+  if ( dCorrectionRate > 0.0 && dRandom < dCorrectionRate ) nCopies = 2; // undercount
+  else if ( dCorrectionRate < 0.0 && dRandom < -dCorrectionRate ) nCopies = 0; // overcount
+
+  for (int nCopy = 0; nCopy < nCopies; nCopy++ ) {
+    // Initialize the Person entity in the case.
+    auto pePerson = new Person();
+    pePerson->Start(oeObservation, NULL, 0);
+
+    // Simulate events until there are no more.
+    SimulateEvents();
+  }
+
+  double dSimulationScaleFactor = GetAllCases() / (double) RealWorldStartPopulation;
+  bool bDonor = !oeObservation->o_native_born
+    && oeObservation->o_years_since_arrival <= MaxYearsForImmigrantDonor;
+  if ( bDonor ) {
+    for ( int nYear = 0; nYear < SIZE(YEAR); nYear++ ) {
+      // calculate the number of clones
+      double dImmigrantsScaled = dSimulationScaleFactor * Immigrants[nYear]; 
+      double dCloneRate = (double) dImmigrantsScaled / (double)ImmigrantDonors;
+      int nClones = (int) dCloneRate;
+      double dFraction = dCloneRate - nClones;
+      if ( RandUniform(7) < dFraction ) nClones++;
+      // calculate an exact time of arrival
+      double dArrivalTime = MIN(YEAR) + nYear + 0.5 - RandUniform(8);
+      for ( int nClone = 0; nClone < nClones; nClone++ ) {
+        auto pePerson = new Person();
+        pePerson->Start(oeObservation, NULL, dArrivalTime);
+        // Simulate events until there are no more.
+        SimulateEvents();
+      }
+    }
+  }
+
+  // Finish the Observation entity
+  oeObservation->Finish();
+}
+
+
+// The Simulation function is called by Modgen to simulate a set of cases.

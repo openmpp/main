@@ -103,6 +103,7 @@ void CodeGen::do_preamble()
     h += "" ;
 	h += "#pragma once";
 	h += "#include \"omc/omSimulation.h\"";
+	h += "#include \"custom.h\" // model-specific header file";
     h += "";
     h += "using namespace std;";
     h += "";

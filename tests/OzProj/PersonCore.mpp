@@ -1,0 +1,318 @@
+//LABEL(PersonCore, EN) Core functionality of the Person actor
+
+/* NOTE(PersonCore, EN)
+	This module contains the basic information which defines the Person case.
+*/
+
+parameters 
+{
+  //EN Simulation starting time
+  double SimulationStartTime;
+  /*NOTE(SimulationStartTime, EN)
+    This parameter can have a fractional part.
+    >For example, midnight, August 9, 2011 is 221 days into the year,
+    giving a fractional year part of 221/365 = 0.605479 and a value 2011.605479.
+  */
+
+  //EN Undercount rate
+  double UndercountRate[AGE_CLASS1][SEX];
+  /*NOTE(UndercountRate, EN)
+    This is the enumeration error (people missed) divided by the true population.
+  */
+
+  //EN Real world population count at start
+  int RealWorldStartPopulation;
+
+  //EN Future immigrants
+  int Immigrants[YEAR];
+
+  //EN Regional distribution of new arrivals
+  cumrate[1] ArrivalRegionDistn[SEX][RANGE_AGE][REGION];
+
+  //EN Maximum years since immigration immigration to be an immigrant donor
+  int MaxYearsForImmigrantDonor;
+
+  //EN Number of immigrant donors in initial population
+  model_generated int ImmigrantDonors;
+
+  //EN Native-born -> indigenous conversion hazard
+  double NativeToIndigenous;
+};
+
+void PreSimulation()
+{
+  // Open the microdata file
+  PersonOpenFile();
+
+  long lRecordCount = 0;
+  while ( PersonGetRecord(lRecordCount) ) {
+    lRecordCount++;
+    if ( PersonMicroData[PMC_NATIVE_BORN] == 0
+      && PersonMicroData[PMC_YEARS_SINCE_ARRIVAL] <= MaxYearsForImmigrantDonor ) {
+        ImmigrantDonors++;
+    }
+  }
+
+  // Close the microdata file
+  PersonCloseFile();
+}
+
+actor Person            //EN Individual
+{
+	// The variables time and age are automatically defined by Modgen.
+	// Model-specific labels and notes are supplied below.
+
+  /*NOTE(Person.time, EN)
+    Time is a continuous quantity in this model.
+
+    A unit of time is a year, i.e. a year lasts exactly 1.0 units of time.
+    The variation in year length due to leap years is ignored in this model.
+
+    Continuous time is the same as time in the real world in this version of the model.
+    E.g. on midnight December 31, 2012 the value of time is exactly 2013.0.
+  */
+
+	//LABEL(Person.age, EN) Age
+	/*NOTE(Person.age, EN)
+		Age is a continuous quantity in this model.
+		A unit of age is a year.
+	*/
+
+	//EN Alive
+	logical alive = {TRUE};
+	/*NOTE(Person.alive, EN)
+		Set to TRUE when the actor starts, and to FALSE just before the actor finishes.
+		Since the numeric value of TRUE is 1 and FALSE is 0, this variable
+		can also be used to count actors in tables.
+	*/
+
+  //EN Age
+  int integer_age = self_scheduling_int(age);
+
+  //EN Age
+  RANGE_AGE range_age = COERCE(RANGE_AGE, integer_age);
+
+  //EN Age
+  AGE_CLASS1 age_group1 = AGE_CLASS1(
+    ( integer_age < 55 ) ? (integer_age / 5) : 11
+                          );
+  //EN Age
+  RANGE_AGE_85 range_age_85 = COERCE(RANGE_AGE_85, integer_age);
+
+  //EN Sex
+  SEX sex;
+
+  //EN Region
+  REGION region;
+
+  //EN Origin of Person
+  PERSON_ORIGIN origin;
+
+  //EN Native-born
+  logical native_born;
+
+  //EN Year of arrival (calendar)
+  int calendar_year_of_arrival;
+
+  //EN Years since arrival
+  RANGE_AGE years_since_arrival = 
+    COERCE(RANGE_AGE, integer_calendar_year - calendar_year_of_arrival );
+
+  //EN Recent arrival (last 5 years)
+  logical recent_arrival = ( years_since_arrival < 5 );
+
+  //EN Indigenous
+  logical indigenous;
+
+  //EN Year (calendar)
+  int integer_calendar_year = self_scheduling_int(time);
+
+  //EN Year (calendar)
+  YEAR calendar_year = COERCE(YEAR, integer_calendar_year);
+
+  //EN Year (mid-year)
+  int integer_mid_year;
+  /*NOTE(Person.mid_year, EN)
+    The real world year number at the end of the current mid-year interval, e.g.
+    integer_mid_year = 2012 means real world time is in the interval [2011.5, 2012.5].
+  */
+
+  //EN Year (mid-year)
+  YEAR mid_year = COERCE(YEAR, integer_mid_year);
+  /*NOTE(Person.mid_year, EN)
+    The real world year number at the end of the current mid-year interval, e.g.
+    year = 2012 means real world time is in the interval [2011.5, 2012.5].
+  */
+
+  //EN Beginning of the simulation
+  logical simulation_begin = { TRUE };
+
+  //EN Simulation control event
+  event timeSimulationControlEvent, SimulationControlEvent;
+
+  //EN Mid-year event
+  event timeMidYearEvent, MidYearEvent;
+
+  //EN Identity change event
+  event timeIdentityChangeEvent, IdentityChangeEvent;
+
+  //LABEL(Person.Start, EN) Starts the actor
+  void Start(Observation *oeObs, Person *peMother, double dArrival);
+
+	//LABEL(Person.Finish, EN) Finishes the actor
+	void Finish();
+};
+
+// The time function of SimulationControlEvent
+TIME Person::timeSimulationControlEvent()
+{
+  if ( simulation_begin )
+    return WAIT(0);
+  else
+    // Simulation ends at the end of the final mid-year, e.g. 2061.5
+    return MAX(YEAR) + 0.5;
+}
+
+// The implement function of SimulationControlEvent
+void Person::SimulationControlEvent()
+{
+  if ( simulation_begin )
+    simulation_begin = FALSE;
+  else
+    Finish();
+}
+
+// The time function of MidYearEvent
+TIME Person::timeMidYearEvent()
+{
+  // E.g. If integer_mid_year is 2012,
+  // the next change in value will be at time 2012.5
+  return (TIME) ( integer_mid_year + 0.5 );
+}
+
+// The implement function of MidYearEvent
+void Person::MidYearEvent()
+{
+  integer_mid_year++;
+}
+
+// The time function of IdentityChangeEvent
+TIME Person::timeIdentityChangeEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+  if ( native_born && ! indigenous ) {
+    double dHazard = NativeToIndigenous;
+    if ( dHazard > 0.0 ) tEventTime = WAIT( - TIME( log( RandUniform(9) ) / dHazard ) );
+  }
+  return tEventTime;
+}
+
+// The implement function of IdentityChangeEvent
+void Person::IdentityChangeEvent()
+{
+  indigenous = TRUE;
+}
+
+/*NOTE(Person.Start, EN)
+	The Start function initializes actor variables before simulation
+	of the actor commences.
+*/
+void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
+{
+  // Initialize all attributes (OpenM++).
+  initialize_attributes();
+
+  if ( peMother == NULL ) {
+    if ( dArrival == 0 ) {
+      // Member of initial population
+      origin = PO_INITIAL_POP;
+      int nAge = oeObs->o_range_age;
+      age = nAge + RandUniform(3);
+      time = SimulationStartTime;
+      calendar_year_of_arrival = (int) SimulationStartTime - oeObs->o_years_since_arrival;
+      native_born = oeObs->o_native_born;
+      indigenous = oeObs->o_indigenous;
+      region = oeObs->o_region;
+    }
+    else {
+      // Future immigrant
+      origin = PO_IMMIGRANT;
+      int nAge = oeObs->o_range_age;
+      nAge -= oeObs->o_years_since_arrival;
+      age = nAge + RandUniform(6);
+      time = dArrival;
+      calendar_year_of_arrival = (int) dArrival;
+      native_born = FALSE;
+      indigenous = FALSE;
+      // Assign region of arrival
+      int nRegion = 0;
+      Lookup_ArrivalRegionDistn(RandUniform(11), sex, range_age, &nRegion);
+      region = (REGION) nRegion;
+    }
+
+    // Assign other attributes using the microdata observation
+    sex = oeObs->o_sex;
+  }
+  else {
+    // Newborn
+    origin = PO_BIRTH;
+    age = 0;
+    time = peMother->time;
+
+    generation = peMother->generation + 1;
+
+    double dProportionMale = SexRatioAtBirth / ( SexRatioAtBirth + 100.0 );
+    if ( RandUniform(5) < dProportionMale )
+      sex = MALE;
+    else
+      sex = FEMALE;
+
+    indigenous = peMother->indigenous;
+    region = peMother->region;
+  }
+
+  // Initialize the mid-year clock
+  double dFraction = time - integer_calendar_year;
+  if ( dFraction >= 0.5 )
+    // Start time fell after mid-year.
+    // e.g. Aug. 9, 2011 is in mid-year 2012
+    integer_mid_year = integer_calendar_year + 1;
+  else
+    integer_mid_year = integer_calendar_year;
+
+  // Have the entity enter the simulation (OpenM++).
+  enter_simulation();
+}
+
+/*NOTE(Person.Finish, EN)
+	The Finish function terminates the simulation of an actor.
+*/
+void Person::Finish()
+{
+	// After the code in this function is executed,
+	// Modgen removes the actor from tables and from the simulation.
+	// Modgen also recuperates any memory used by the actor.
+}
+
+table Person InitialPopCounts //EN Initial population counts
+[ simulation_begin ]
+{
+  {
+    unit
+  }
+  * range_age+
+  * sex+
+};
+
+track Person {
+  alive,
+  age,
+  integer_age,
+  sex,
+  simulation_begin,
+  integer_calendar_year,
+  calendar_year,
+  integer_mid_year,
+  mid_year,
+  births
+};

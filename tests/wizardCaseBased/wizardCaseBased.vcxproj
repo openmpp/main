@@ -78,6 +78,7 @@
     <ClCompile Include="src\*.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="custom.h" />
     <ClInclude Include="src\*.h" />
   </ItemGroup>
   <ItemGroup>

@@ -1158,6 +1158,10 @@ decl_parameter:
                             // No longer in parameter context
                             pc.set_parameter_context( nullptr );
                         }
+    | "file" SYMBOL[parm] ";"
+                        {
+                            // TODO
+                        }
     | error ";"
                         {
                             // Error recovery: Prepare to parse another parameter in the 'parameters' declarative island
@@ -1470,7 +1474,7 @@ decl_func_arg_element[result]: // a syntactic element of a function argument lis
                         }
     ;
 
-decl_func_arg_token: "," | "unsigned" | "char" | "int" | "long" | "integer" | "counter" | "real" | "float" | "double" | "=" | "Time" ;
+decl_func_arg_token: "," | "unsigned" | "char" | "int" | "long" | "integer" | "counter" | "real" | "float" | "double" | "=" | "*" | "Time" ;
 
 decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] event_priority_opt[priority] ";"
