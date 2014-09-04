@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <list>
+#include <map>
 #include "EnumerationSymbol.h"
 
 class EnumeratorSymbol;
@@ -56,6 +57,11 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+    /**
+     * Gets the number of enumerators in the enumeration.
+     *
+     * @return An int.
+     */
     int pp_size();
 
     /**
@@ -64,4 +70,11 @@ public:
      *  Populated after parsing is complete.
      */
     list<EnumeratorSymbol *> pp_enumerators;
+
+    /**
+     * Map from enumerator names to corresponding ordinal values.
+     * 
+     * Created after parsing is complete.
+     */
+    map<string, int> pp_name_to_int;
 };

@@ -29,6 +29,8 @@ void EnumeratorSymbol::post_parse(int pass)
     {
         // Add this enumerator to the enumeration's list of enumerators
         pp_enumeration->pp_enumerators.push_back(this);
+        // Add this enumerator to the enumeration's map of names to ordinal values
+        pp_enumeration->pp_name_to_int.emplace(name, ordinal);
         break;
     }
     default:
