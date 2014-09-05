@@ -31,8 +31,8 @@ void BoolSymbol::post_parse(int pass)
 
 bool BoolSymbol::is_valid_constant(const Constant &k) const
 {
-    // only named enumerators are valid for a bool
-    if (!k.is_enumerator) return false;
+    // only bool literals are valid for a bool
+    if (!k.is_literal) return false;
 
     // check that the enumerator value is in the enumeration's map of enumerators to ordinals
     if (pp_name_to_int.count(k.value()) == 0) return false;

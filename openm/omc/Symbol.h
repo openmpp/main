@@ -151,7 +151,7 @@ public:
     virtual bool is_base_symbol() const { return true; }
 
     /**
-     * Constructor for new Symbol.
+     * Name-based constructor.
      * 
      * If the symbol table does not contain an entry with unique name @a unm a new symbol table
      * entry is created with this unique name.
@@ -173,6 +173,7 @@ public:
         : unique_name( unm )
         , name ( unm )
         , decl_loc(decl_loc)
+        , redecl_loc(yy::location())
         , reference_count(0)
     {
         auto it = symbols.find( unique_name );
@@ -193,7 +194,7 @@ public:
     }
 
     /**
-     * Constructor.
+     * Name-based constructor in agent context.
      * 
      * This constructor creates a Symbol with unique name based on
      * @a nm in the context of @a agent, e.g. "Person::time"
@@ -212,6 +213,7 @@ public:
         : unique_name(symbol_name(nm, agent))
         , name ( nm )
         , decl_loc(decl_loc)
+        , redecl_loc(yy::location())
         , reference_count(0)
         , sorting_group(10)
     {
@@ -233,7 +235,7 @@ public:
     }
 
     /**
-     * Morph existing symbol to a new symbol.
+     * Morphing constructor.
      * 
      * This constructor is used to morph an existing symbol table entry to a new kind of symbol.  It
      * is called by constructors for derived Symbol classes. The existing Symbol is destroyed, and
@@ -246,6 +248,7 @@ public:
         : unique_name(sym->unique_name)
         , name ( sym->name )
         , decl_loc(decl_loc)
+        , redecl_loc(yy::location())
         , reference_count(0)
         , sorting_group(10)
     {
@@ -499,10 +502,16 @@ public:
     /**
      * The declaration location.
      * 
-     * Set using location information of syntactic elements (from bison) on object creationduring
-     * parsing.
+     * Set using location information of syntactic elements during parsing.
      */
     yy::location decl_loc;
+
+    /**
+     * The redeclaration location.
+     * 
+     * Set using location information of syntactic elements during parsing.
+     */
+    yy::location redecl_loc;
 
     /**
      * Number of references by other symbols to this Symbol
@@ -977,6 +986,11 @@ public:
      * A count of type changes made in a sngle post-parse pass.
      */
     static int type_changes;
+
+    /**
+     * Maximum errors before bailing.
+     */
+    static const int max_error_count = 50;
 
     /**
      * A count of errors identified during post-parse processing.

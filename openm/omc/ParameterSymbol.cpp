@@ -200,6 +200,31 @@ CodeBlock ParameterSymbol::cxx_initializer()
     return c;
 }
 
+void ParameterSymbol::validate_initializer()
+{
+    // Nothing to do for derived parameters
+    if (source == derived_parameter) return;
+
+    // Presence check
+    if (0 == initializer_list.size()) {
+        pp_error("error : missing initializer for parameter '" + name + "'");
+        return;
+    }
+
+    // Size check
+    if (cells() != initializer_list.size()) {
+        pp_error(redecl_loc, "error : initializer for parameter '" + name + "' has size " + to_string(initializer_list.size()) + " - should be " + to_string(cells()));
+    }
+
+    // Element check
+    for (auto iel : initializer_list) {
+        if (!iel->is_valid_constant(*pp_datatype)) {
+            string msg = "error : '" + iel->value() + "' is not a valid '" + pp_datatype->name + "' in initializer for parameter '" + name + "'";
+            pp_error(iel->decl_loc, msg);
+        }
+    }
+}
+
 
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {

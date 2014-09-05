@@ -589,14 +589,20 @@ void Symbol::pp_error(const string& msg)
 {
     post_parse_errors++;
     yy::location l = decl_loc;
-    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    assert(l.begin.filename);
+    theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    if (post_parse_errors >= max_error_count) {
+        string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
+        theLog->logFormatted(msg.c_str());
+        throw HelperException("fatal error: stopping post parse processing");
+    }
 }
 
 void Symbol::pp_warning(const string& msg)
 {
     post_parse_warnings++;
     yy::location l = decl_loc;
-    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
 }
 
 string Symbol::label(const LanguageSymbol & language) const
@@ -829,7 +835,13 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
 {
     post_parse_errors++;
     yy::location l = loc;
-    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    assert(l.begin.filename);
+    theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    if (post_parse_errors >= max_error_count) {
+        string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
+        theLog->logFormatted(msg.c_str());
+        throw HelperException("fatal error: stopping post parse processing");
+    }
 }
 
 void Symbol::post_parse_all()
@@ -956,7 +968,7 @@ void Symbol::post_parse_all()
     }
 
     // Optionally sort symbol table so that self-scheduled attributes have identical numbers
-    // and idnetical code injection order between ompp and Modgen.
+    // and identical code injection order between ompp and Modgen.
     if (modgen_sort_option) {
         modgen_sort_pp_symbols();
     }

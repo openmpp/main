@@ -809,28 +809,28 @@ void DerivedAgentVarSymbol::assign_pp_members()
         pp_av1 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av1));
         if (!pp_av1) {
             pp_error("Error - '" + (*av1)->name + "' is not an attribute of " + agent->name);
-            throw HelperException("Stopping post parse processing");
+            throw HelperException("fatal error: stopping post parse processing");
         }
     }
     if (av2) {
         pp_av2 = dynamic_cast<AgentVarSymbol *> (pp_symbol(av2));
         if (!pp_av2) {
             pp_error("Error - '" + (*av2)->name + "' is not an attribute of " + agent->name);
-            throw HelperException("Stopping post parse processing");
+            throw HelperException("fatal error: stopping post parse processing");
         }
     }
     if (prt) {
         pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
         if (!pp_prt) {
             pp_error("Error - '" + (*prt)->name + "' is not a partition");
-            throw HelperException("Stopping post parse processing");
+            throw HelperException("fatal error: stopping post parse processing");
         }
     }
     if (cls) {
         pp_cls = dynamic_cast<ClassificationSymbol *> (pp_symbol(cls));
         if (!pp_cls) {
             pp_error("Error - '" + (*cls)->name + "' is not a classification");
-            throw HelperException("Stopping post parse processing");
+            throw HelperException("fatal error: stopping post parse processing");
         }
     }
 }

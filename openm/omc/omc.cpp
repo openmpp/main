@@ -38,6 +38,7 @@
 #include <list>
 #include <cctype>
 #include "Symbol.h"
+#include "ParameterSymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -331,6 +332,11 @@ int main(int argc, char * argv[])
             // An error count of zero means something went seriously worng in the post-parse phase
             // and an exception was thrown without first incrementing the error count and log message.
             if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
+        }
+
+        // validate parameter initializers
+        for (auto param : Symbol::pp_all_parameters) {
+            param->validate_initializer();
         }
 
         if (Symbol::post_parse_warnings > 0) {

@@ -1103,6 +1103,7 @@ decl_parameter:
                                 pc.redeclaration = true;
                                 parm = dynamic_cast<ParameterSymbol *>($parm);
                                 assert(parm); // grammar/logic guarantee
+                                parm->redecl_loc = @parm; // note redeclaration location
                             }
                             // update provenance if model_generated
                             if ($pm_opt == token::TK_model_generated) {
@@ -1137,6 +1138,7 @@ decl_parameter:
                                 pc.redeclaration = true;
                                 parm = dynamic_cast<ParameterSymbol *>($parm);
                                 assert(parm); // grammar/logic guarantee
+                                parm->redecl_loc = @parm; // note redeclaration location
                             }
                             // update provenance if model_generated
                             if ($pm_opt == token::TK_model_generated) {

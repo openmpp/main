@@ -48,6 +48,14 @@ public:
      */
     CodeBlock cxx_initializer();
 
+    /**
+     * Validates the initializer.
+     * 
+     * This function validates the number of elements in the initializer and checks that each
+     * element meets the requirements of the parameter data type. It logs all errors.
+     */
+    void validate_initializer();
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

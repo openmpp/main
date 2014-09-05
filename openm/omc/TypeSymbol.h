@@ -26,7 +26,7 @@ public:
      *
      * @param unm The unique name of the symbol, e.g. "int".
      */
-    TypeSymbol(const string unm)
+    explicit TypeSymbol(const string unm)
         : Symbol(unm)
     {
         type_id = next_type_id;
@@ -38,7 +38,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TypeSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    explicit TypeSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
     {
         type_id = next_type_id;
