@@ -170,3 +170,17 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     return h;
 }
 
+bool PartitionSymbol::is_valid_constant(const Constant &k) const
+{
+    // named enumerators are invalid for a partition (only integers allowed)
+    if (k.is_enumerator) return false;
+
+    // floating point literals are invalid for partition
+    if (is_floating()) return false;
+
+    long value = stol(k.value());
+    // value must fall with allowed ordinal values
+    if (value < 0 || value > pp_size() - 1 ) return false;
+
+    return true;
+}

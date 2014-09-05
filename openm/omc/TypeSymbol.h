@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
+#include "Constant.h"
 
 /**
 * TypeSymbol.
@@ -105,7 +106,7 @@ public:
      *
      * @return true if the type is float or double (or equivalent).
      */
-    bool is_floating();
+    bool is_floating() const;
 
     /**
      * Determines appropriate type to use for sums or differences of this type.
@@ -122,17 +123,41 @@ public:
     string wrapped_type();
 
     /**
+     * Query if 'k' is valid constant for this type
+     *
+     * @param k The constant to verify.
+     *
+     * @return true if valid constant, false if not.
+     */
+    virtual bool is_valid_constant(const Constant &k) const
+    {
+        // Polymorphic overrides do the validation.
+        return false;
+    }
+
+    /**
+     * Formats the constant for the data store.
+     *
+     * @param k The constant to be formatted.
+     *
+     * @return The formatted for storage.
+     */
+    virtual string format_for_storage(const Constant &k) const
+    {
+        // Note presence of polymorphic overrides.
+        return k.value();
+    }
+
+    /**
      * Identifier for the type.
      */
     int type_id;
-
 
     /**
      * type_id for the next TypeSymbol
      * 
      * A shared counter used to assign sequentially increasing type_id to each TypeSymbol.
      */
-
     static int next_type_id;
 };
 

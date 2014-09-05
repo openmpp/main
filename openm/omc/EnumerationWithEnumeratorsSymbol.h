@@ -62,7 +62,7 @@ public:
      *
      * @return An int.
      */
-    int pp_size();
+    int pp_size() const;
 
     /**
      * The enumerators of this enumeration

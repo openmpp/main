@@ -29,6 +29,30 @@ void BoolSymbol::post_parse(int pass)
     }
 }
 
+bool BoolSymbol::is_valid_constant(const Constant &k) const
+{
+    // only named enumerators are valid for a bool
+    if (!k.is_enumerator) return false;
+
+    // check that the enumerator value is in the enumeration's map of enumerators to ordinals
+    if (pp_name_to_int.count(k.value()) == 0) return false;
+
+    return true;
+}
+
+string BoolSymbol::format_for_storage(const Constant &k) const
+{
+    // Get the ordinal corresponding to the enumerator name using 
+    // the enumeration's map of enumerators to ordinals
+    auto it = pp_name_to_int.find(k.value());
+    assert(it != pp_name_to_int.end()); // validity of initializers was already verified
+    auto ordinal = it->second;
+
+    string result = to_string(ordinal);
+    return result;
+}
+
+
 BoolSymbol *BoolSymbol::find()
 {
     auto bs = dynamic_cast<BoolSymbol *>(get_symbol(token_to_string(token::TK_bool)));

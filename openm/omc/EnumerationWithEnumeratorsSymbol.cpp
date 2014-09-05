@@ -75,7 +75,7 @@ void EnumerationWithEnumeratorsSymbol::populate_metadata(openm::MetaModelHolder 
     }
 }
 
-int EnumerationWithEnumeratorsSymbol::pp_size()
+int EnumerationWithEnumeratorsSymbol::pp_size() const
 {
     return pp_enumerators.size();
 }

@@ -7,6 +7,7 @@
 
 #pragma once
 #include "TypeSymbol.h"
+#include "Constant.h"
 
 /**
 * NumericSymbol.
@@ -142,4 +143,22 @@ public:
      * @return null if it fails, else the NumericSymbol.
      */
     static NumericSymbol *find(token_type type);
+
+    /**
+     * Query if 'k' is valid constant for this type
+     *
+     * @param k The constant to verify.
+     *
+     * @return true if valid constant, false if not.
+     */
+    bool is_valid_constant(const Constant &k) const;
+
+    /**
+     * Formats the constant for the data store.
+     *
+     * @param k The constant to be formatted.
+     *
+     * @return The formatted for storage.
+     */
+    string format_for_storage(const Constant &k) const;
 };

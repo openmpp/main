@@ -105,3 +105,29 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
     }
 }
+
+bool RangeSymbol::is_valid_constant(const Constant &k) const
+{
+    // named enumerators are invalid for a range (only integers allowed)
+    if (k.is_enumerator) return false;
+
+    // floating point literals are invalid for range
+    if (is_floating()) return false;
+
+    long value = stol(k.value());
+    // value must fall with range bounds
+    if (value < lower_bound || value > upper_bound) return false;
+
+    return true;
+}
+
+string RangeSymbol::format_for_storage(const Constant &k) const
+{
+    long value = stol(k.value());
+
+    // For storage, normalize range value to ordinal by subtracting lower bound
+    value -= lower_bound;
+
+    string result = to_string(value);
+    return result;
+}

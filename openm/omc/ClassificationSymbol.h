@@ -8,6 +8,7 @@
 #pragma once
 #include <list>
 #include "EnumerationWithEnumeratorsSymbol.h"
+#include "Constant.h"
 
 using namespace std;
 using namespace openm;
@@ -39,5 +40,8 @@ public:
 
     CodeBlock cxx_declaration_global();
 
+    bool is_valid_constant(const Constant &k) const;
+
+    string format_for_storage(const Constant &k) const;
 };
 

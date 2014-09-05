@@ -8,6 +8,7 @@
 #pragma once
 #include "EnumerationWithEnumeratorsSymbol.h"
 #include "TypeSymbol.h"
+#include "Constant.h"
 
 using namespace std;
 using namespace openm;
@@ -34,6 +35,9 @@ public:
 
     void post_parse(int pass);
 
+    bool is_valid_constant(const Constant &k) const;
+
+    string format_for_storage(const Constant &k) const;
 
     /**
      * Gets the one and only bool type symbol.

@@ -8,6 +8,7 @@
 #pragma once
 #include "Symbol.h"
 #include "NumericSymbol.h"
+#include "Constant.h"
 
 /**
 * ParameterSymbol.
@@ -147,7 +148,7 @@ public:
     /**
      * List of initializers.
      */
-    list<string *> initializer_list;
+    list<Constant *> initializer_list;
 
     /**
      * The lookup function for cumrate parameters

@@ -70,3 +70,29 @@ NumericSymbol *NumericSymbol::find(token_type type)
     assert(ns); // only called when valid
     return ns;
 }
+
+bool NumericSymbol::is_valid_constant(const Constant &k) const
+{
+    // enumerators are invalid for a numeric type
+    if (k.is_enumerator) return false;
+
+    // floating point constants are invalid for non-floating point type
+    if (!is_floating() && dynamic_cast<const FloatingPointLiteral *>(k.literal)) return false;
+
+    // TODO (some rainy day) check maximum and minimum values for the numeric type.
+
+    return true;
+}
+
+string NumericSymbol::format_for_storage(const Constant &k) const
+{
+    string result = k.value();
+
+    if (is_floating()) {
+        // trim optional floating point suffix if present
+        auto ch = tolower(result.back());
+        if (ch == 'f' || ch == 'l') result.pop_back();
+    }
+
+    return result;
+}

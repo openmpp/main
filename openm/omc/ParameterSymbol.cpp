@@ -16,6 +16,7 @@
 #include "EnumerationSymbol.h"
 #include "TimeSymbol.h"
 #include "GlobalFuncSymbol.h"
+#include "ConstantSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -180,14 +181,14 @@ CodeBlock ParameterSymbol::cxx_initializer()
         c += "{";
         int values_in_line = 0;
         string line;
-        for (auto s : initializer_list) {
+        for (auto k : initializer_list) {
             // output line if values per line limit has been reached
             if (values_in_line == values_per_line) {
                 c += line;
                 line = "";
                 values_in_line = 0;
             }
-            line += *s + ",";
+            line += k->value() + ",";
             values_in_line++;
         }
         // output final partial line

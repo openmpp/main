@@ -228,6 +228,9 @@
     <ClInclude Include="AgentArrayMemberSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Constant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -396,6 +399,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgentArrayMemberSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Constant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

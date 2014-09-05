@@ -19,6 +19,7 @@ using namespace std;
 class Driver;
 class ParseContext;
 class Literal;
+class Constant;
 class IntegerLiteral;
 class CharacterLiteral;
 class FloatingPointLiteral;
@@ -87,6 +88,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 	Symbol               *pval_Symbol;
 	AgentMemberSymbol    *pval_AgentMemberSymbol;
 	ConstantSymbol       *pval_ConstantSymbol;
+	Constant             *pval_Constant;
+    list<Constant *>     *pval_Constant_list;
 	ExprForAgentVar      *pval_AgentVarExpr;
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
@@ -475,6 +478,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Symbol>    link_to_agentvar
 %type  <pval_Literal>   event_priority_opt
 %type  <pval_ConstantSymbol>  constant
+%type  <pval_Constant>  initializer_constant
 
 %type  <pval_AgentMemberSymbol> link_symbol
 
@@ -492,8 +496,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <val_token>      cxx_unsigned_integral_type
 %type  <val_token>      cxx_floating_point_type
 
-%type <pval_string>      parameter_initializer_element
-%type <pval_string_list> parameter_initializer_list
+%type <pval_Constant>  parameter_initializer_element
+%type <pval_Constant_list> parameter_initializer_list
 %type <pval_string>      decl_func_arg_element
 %type <pval_string>      decl_func_arg_string
 %type <pval_Symbol_list> array_decl_dimension_list
@@ -1233,8 +1237,8 @@ parameter_initializer_expr:
 parameter_initializer_list[result]:
     parameter_initializer_element[elem]
                         {
-                            // create a new empty string list,
-                            auto result = new list<string *>;
+                            // create a new empty constant list,
+                            auto result = new list<Constant *>;
                             assert(result);
                             // and add the element to it
                             auto elem = $elem;
@@ -1253,8 +1257,8 @@ parameter_initializer_list[result]:
       // The %prec below makes the bracketed repeater bind tightly to what follows, taking precedence over any following ","
       | "(" INTEGER_LITERAL[rpt] ")" parameter_initializer_list[wrk] %prec UNARY_MINUS
                         {
-                            // create a new empty string list,
-                            auto result = new list<string *>;
+                            // create a new empty constant list,
+                            auto result = new list<Constant *>;
                             assert(result);
                             auto wrk = $wrk;
                             // and append the second list repeatedly to it
@@ -1277,28 +1281,10 @@ parameter_initializer_list[result]:
     ;
 
 parameter_initializer_element:
-      signed_literal
+      initializer_constant
                         {
-                            // Create a new string to hold the initializer element
-                            // TODO - reuse string storage using pointer
-                            string *pstr = new string();
-                            // The initializer is the literal, copy it
-                            *pstr = $signed_literal->value();
-                            // Rule returns a pointer to the string.
-                            $parameter_initializer_element = pstr;
-
-                            // delete the Literal object
-                            delete $signed_literal;
-                        }
-    | SYMBOL[enum]
-                        {
-                            // Create a new string to hold the initializer element
-                            // TODO - reuse string storage using pointer?  - not safe!
-                            string *pstr = new string();
-                            // The initializer is the enum name, copy it
-                            *pstr = $enum->name;
-                            // Rule returns a pointer to the string.
-                            $parameter_initializer_element = pstr;
+                            // Rule returns a pointer to the constant.
+                            $parameter_initializer_element = $initializer_constant;
                         }
     ;
 
@@ -2514,6 +2500,22 @@ constant:
                         }
     ;
 
+initializer_constant:
+      signed_literal[literal]
+                        {
+                            // Create a constant representing a literal
+                            auto cs = new Constant($literal, @literal);
+                            assert(cs);
+                            $initializer_constant = cs;
+                        }
+    | SYMBOL[enumerator]
+                        {
+                            // Create a constant representing an enumerator
+                            auto cs = new Constant($enumerator, @enumerator);
+                            assert(cs);
+                            $initializer_constant = cs;
+                        }
+    ;
 
 bool_literal:
       "true"[tok]

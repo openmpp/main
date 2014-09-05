@@ -9,6 +9,7 @@
 #include <list>
 #include <cfloat>
 #include "EnumerationWithEnumeratorsSymbol.h"
+#include "Constant.h"
 
 using namespace std;
 using namespace openm;
@@ -43,6 +44,8 @@ public:
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();
+
+    bool is_valid_constant(const Constant &k) const;
 
 };
 

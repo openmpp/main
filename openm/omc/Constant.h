@@ -1,55 +1,48 @@
 /**
-* @file    ConstantSymbol.h
-* Declarations for the ConstantSymbol class.
+* @file    Constant.h
+* Declarations for the Constant class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include "Symbol.h"
-
-class EnumeratorSymbol;
-
+#include "literal.h"
+#include "location.hh"
 
 /**
-* ConstantSymbol - Refers to either a Literal or an EnumeratorSymbol
+* Constant - Refers to either a Literal or an EnumeratorSymbol
 *
 */
-class ConstantSymbol : public Symbol
+class Constant
 {
-private:
-    typedef Symbol super;
-
 public:
-    bool is_base_symbol() const { return false; }
 
     /**
-    * Constructor for a ConstantSymbol representing an enumerator
+    * Constructor for a Constant representing an enumerator
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    ConstantSymbol(Symbol *enumerator, yy::location decl_loc = yy::location())
-        : Symbol(next_symbol_name(), decl_loc)
-        , is_enumerator(true)
+    Constant(Symbol *enumerator, yy::location decl_loc = yy::location())
+        : is_enumerator(true)
         , enumerator(enumerator->stable_pp())
-        , pp_enumerator(nullptr)
         , is_literal(false)
         , literal(nullptr)
+        , decl_loc(decl_loc)
     {
     }
 
     /**
-    * Constructor for a ConstantSymbol representing a Literal
+    * Constructor for a Constant representing a Literal
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    ConstantSymbol(Literal *literal, yy::location decl_loc = yy::location())
-        : Symbol(next_symbol_name(), decl_loc)
-        , is_enumerator(false)
+    Constant(Literal *literal, yy::location decl_loc = yy::location())
+        : is_enumerator(false)
         , enumerator(nullptr)
-        , pp_enumerator(nullptr)
         , is_literal(true)
         , literal(literal)
+        , decl_loc(decl_loc)
     {
     }
 
@@ -66,13 +59,6 @@ public:
      * Stable to symbol morphing during parse phase.
      */
     Symbol** enumerator;
-
-    /**
-     * Direct pointer to enumerator
-     * 
-     * For use post-parse.
-     */
-    EnumeratorSymbol *pp_enumerator;
 
     /**
      * true if this object represents a Literal.
@@ -101,16 +87,27 @@ public:
     const string value_as_name() const;
 
     /**
-     * Generated name for the next instance of a ConstantSymbol
+     * true if the constant is valid for the given type.
      *
-     * @return A string.
+     * @param type The type against which the constant is checked for validity.
+     *
+     * @return true if valid, else false.
      */
-    static string next_symbol_name();
-
-    void post_parse(int pass);
+    bool is_valid_constant(const TypeSymbol &type) const;
 
     /**
-     * Counter of instances used to generate unique names
+     * Formats the constant for the data store.
+     *
+     * @param type The type used to transform to a 
+     *
+     * @return true if valid, else false.
      */
-    static int instance_counter;
+    string format_for_storage(const TypeSymbol &type) const;
+
+    /**
+     * The declaration location.
+     * 
+     * Set to the source location of the constant during parsing.
+     */
+    yy::location decl_loc;
 };

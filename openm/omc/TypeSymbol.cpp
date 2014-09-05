@@ -93,13 +93,13 @@ bool TypeSymbol::is_enumeration()
     }
 }
 
-bool TypeSymbol::is_floating()
+bool TypeSymbol::is_floating() const
 {
-    if (auto ns = dynamic_cast<NumericSymbol *>(this)) {
+    if (auto ns = dynamic_cast<const NumericSymbol *>(this)) {
         if (ns->name == "real" || ns->name == "float" || ns->name == "double" || ns->name == "ldouble") {
             return true;
         }
-        if (auto ts = dynamic_cast<TimeSymbol *>(this)) {
+        if (auto ts = dynamic_cast<const TimeSymbol *>(this)) {
             auto tt = ts->time_type;
             if (tt == token::TK_float || tt == token::TK_double || tt == token::TK_ldouble ) {
                 return true;

@@ -67,7 +67,7 @@ public:
      *
      * @return An int.
      */
-    virtual int pp_size() = 0;
+    virtual int pp_size() const = 0;
 
     /**
      * Type used to store enumerators of this enumeration.

@@ -9,6 +9,7 @@
 #include <list>
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
+#include "Constant.h"
 
 using namespace std;
 using namespace openm;
@@ -48,12 +49,16 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+    bool is_valid_constant(const Constant &k) const;
+
+    string format_for_storage(const Constant &k) const;
+
     /**
      * Gets the size of the enumeration (specialization for RangeSymbol)
      *
      * @return An int.
      */
-    int pp_size()
+    int pp_size() const
     {
         return upper_bound - lower_bound + 1;
     }

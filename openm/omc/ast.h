@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Literal.h"
+#include "Constant.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
 #include "StringSymbol.h"
