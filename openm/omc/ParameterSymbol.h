@@ -82,11 +82,11 @@ public:
     unsigned long cells();
 
     /**
-     * readParameter C++ code fragment.
+     * C++ code to read parameter from data store.
      *
-     * @return A string.
+     * @return A block of code.
      */
-    string cxx_read_parameter();
+    CodeBlock cxx_read_parameter();
 
     /**
      * assert C++ code fragment to verify that storage type has the same size as the readParameter

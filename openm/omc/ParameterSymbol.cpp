@@ -296,8 +296,9 @@ unsigned long ParameterSymbol::cells()
     return result;
 }
 
-string ParameterSymbol::cxx_read_parameter()
+CodeBlock ParameterSymbol::cxx_read_parameter()
 {
+    CodeBlock c;
     string typ; // storage type
     if (pp_datatype->is_time()) {
         // For Time, the type is wrapped
@@ -317,8 +318,30 @@ string ParameterSymbol::cxx_read_parameter()
         typ = Symbol::token_to_string(ens->storage_type);
     }
 
-    string result = "readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(cells()) + ", &" + name + ");";
-    return result;
+    // i_model is an argument (local variable) of the global function ModelStartup
+    if (pp_datatype->is_range()) {
+        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
+        assert(rng);
+        if (rng->lower_bound != 0) {
+            string cell_count = to_string(cells());
+            c += "{";
+            c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
+            c += "long work[" + cell_count + "];";
+            c += "i_model->readParameter(\"" + name + "\", typeid(long), " + cell_count + ", &work);";
+            c += typ + " *parm = (" + typ + " *) &" + name + ";";
+            c += "for (size_t j = 0; j < " + cell_count + "; ++j) parm[j] = (" + typ + ") (work[j] + " + to_string(rng->lower_bound) + ");";
+            c += "}";
+        }
+        else {
+            // range starts at 0 so requires no transformation
+            c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(cells()) + ", &" + name + ");";
+        }
+    }
+    else {
+        c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(cells()) + ", &" + name + ");";
+    }
+
+    return c;
 }
 
 string ParameterSymbol::cxx_assert_sanity()

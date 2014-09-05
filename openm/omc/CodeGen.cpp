@@ -272,7 +272,7 @@ void CodeGen::do_ModelStartup()
     c += "theLog->logMsg(\"Reading Parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
-            c += "i_model->" + parameter->cxx_read_parameter();
+            c += parameter->cxx_read_parameter();
         }
     }
 
