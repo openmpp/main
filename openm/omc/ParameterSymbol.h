@@ -56,6 +56,15 @@ public:
      */
     void validate_initializer();
 
+    /**
+     * Initializer list for storage.
+     * 
+     * Builds a list of strings containing initializer values suitable for the data store.
+     *
+     * @return a list of strings;
+     */
+    list<string> initializer_for_storage();
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

@@ -389,6 +389,50 @@ int main(int argc, char * argv[])
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);
         
+        theLog->logMsg("Base scenario processing");
+
+        // Create default working set
+        MetaSetLangHolder metaSet;  // default working set metadata
+        metaSet.worksetRow.name = "Base";
+        // TODO Add Base scenario description and notes - pending addition of 'scenario' statement
+        int scenario_parameters_count = 0;
+        for (auto param : Symbol::pp_all_parameters) {
+            if (param->source == ParameterSymbol::scenario_parameter) {
+                ++scenario_parameters_count;
+                WorksetParamRow wsParam;
+                wsParam.paramId = param->pp_parameter_id;
+                metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
+                // TODO Add parameter value notes
+            }
+        }
+
+        // start model default working set sql script
+        builder->beginWorkset(metaRows, metaSet);
+
+        // add values for all scenario model parameters into default working set
+        int scenario_parameters_done = 0;
+        for (auto param : Symbol::pp_all_parameters) {
+            if (param->source == ParameterSymbol::scenario_parameter) {
+                auto lst = param->initializer_for_storage();
+                if (param->rank() == 0) {
+                    builder->addWorksetParameter(metaRows, param->name, lst.front());
+                }
+                else {
+                    builder->addWorksetParameter(metaRows, param->name, lst);
+                }
+            }
+            scenario_parameters_done++;
+            if (0 == scenario_parameters_done % 10) {
+                theLog->logFormatted("%d of %d parameters processed", scenario_parameters_done, scenario_parameters_count);
+            }
+        }
+        if (0 != scenario_parameters_count % 10) {
+            theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
+        }
+
+        // complete model default working set sql script
+        builder->endWorkset();
+
         // create model default working set sql script
         // 
         // builder->beginWorkset(metaRows, metaSet);
@@ -479,7 +523,7 @@ int main(int argc, char * argv[])
             }
             else {
                 // generate parameter test data:
-                // calculte size of parameter
+                // calculate size of parameter
                 // code below is for test only, binary search used in production
                 size_t totalSize = 1;
                 for (ParamDimsRow dimRow : metaRows.paramDims) {

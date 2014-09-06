@@ -225,6 +225,15 @@ void ParameterSymbol::validate_initializer()
     }
 }
 
+list<string> ParameterSymbol::initializer_for_storage()
+{
+    list<string> values;
+    for (auto k : initializer_list) {
+        values.push_back(k->format_for_storage(*pp_datatype));
+    }
+    return values;
+}
+
 
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
