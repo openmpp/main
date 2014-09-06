@@ -43,7 +43,7 @@ namespace openm
 
         /** append parameter values to sql script for new working set  creation */
         void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const string & i_name, const list<string *> & i_valueLst
+            const MetaModelHolder & i_metaRows, const string & i_name, const list<string> & i_valueLst
             );
 
         /** finish sql script to create new working set */

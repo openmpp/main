@@ -413,7 +413,7 @@ void ModelSqlBuilder::addWorksetParameter(const MetaModelHolder & /*i_metaRows*/
 
 // append scalar parameter value to sql script for new working set  creation 
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & i_metaRows, const string & i_name, const list<string *> & i_valueLst
+    const MetaModelHolder & i_metaRows, const string & i_name, const list<string> & i_valueLst
     )
 {
     // check parameters
@@ -518,7 +518,7 @@ void ModelSqlBuilder::addWorksetParameter(
         insertPrefix += "value) SELECT RSL.id_value, ";
 
         // loop through all enums for each dimension and write sql inserts
-        list<string *>::const_iterator valueIt = i_valueLst.cbegin();
+        list<string>::const_iterator valueIt = i_valueLst.cbegin();
 
         for (size_t cellOffset = 0; cellOffset < totalSize; cellOffset++) {
 
@@ -531,14 +531,13 @@ void ModelSqlBuilder::addWorksetParameter(
             }
 
             // validate and write parameter value
-            const string * valPtr = *valueIt;
-            if (valPtr == nullptr) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
+            const string val = *valueIt;
             if (isQuote) {
-                wr.writeQuoted(*valPtr);
+                wr.writeQuoted(val);
             }
             else {
-                if (valPtr->empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
-                wr.write(valPtr->c_str());
+                if (val.empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
+                wr.write(val.c_str());
             }
 
             // end of insert statement
