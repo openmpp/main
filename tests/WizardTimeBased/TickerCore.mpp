@@ -61,7 +61,7 @@ void Ticker::Finish()
 */
 TIME Ticker::timeTickEvent()
 {
-	return (TIME) next_tick;
+	return next_tick;
 }
 
 void Ticker::TickEvent()

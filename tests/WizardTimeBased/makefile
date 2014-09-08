@@ -30,10 +30,46 @@ ifndef OM_LIB_DIR
   OM_LIB_DIR = ../../lib
 endif
 
+ifndef OMC_USE_DIR
+  OMC_USE_DIR = ../../use
+endif
+
+#
+# model executable name: current dir name by default
+#
 ifndef MODEL_EXE
   MODEL_EXE = $(notdir $(CURDIR))
 endif
 
+#
+# model default parameters: if Base subdirectory exist the use it
+#
+ifndef OMC_BASE_PARAM_DIR
+  ifneq (,$(wildcard Base))
+    OMC_BASE_PARAM_DIR = Base
+  endif
+endif
+
+ifdef OMC_BASE_PARAM_DIR
+  OMC_BASE_OPT = -p $(OMC_BASE_PARAM_DIR)
+endif
+
+#
+# model fixed parameters: if Fixed subdirectory exist the use it
+#
+ifndef OMC_FIXED_PARAM_DIR
+  ifneq (,$(wildcard Fixed))
+    OMC_FIXED_PARAM_DIR = Fixed
+  endif
+endif
+
+ifdef OMC_FIXED_PARAM_DIR
+  OMC_FIXED_OPT = -f $(OMC_FIXED_PARAM_DIR)
+endif
+
+#
+#
+#
 MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
 OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
@@ -54,16 +90,17 @@ ifndef OM_DB_LIB
 endif
 
 OMC_EXE = $(OM_BIN_DIR)/omc
+
 LIBOPENM_A = libopenm.a
 LIBSQLITE_A = libsqlite.a
 
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I. $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-MODEL_MPP = $(wildcard *.mpp *.ompp *.dat)
+MODEL_MPP = $(wildcard *.mpp *.ompp *.dat *.odat)
 
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
@@ -87,7 +124,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
 $(MODEL_OMC_CPP): | prepare
 
 $(MODEL_OMC_CPP) : $(MODEL_MPP)
-	$(OMC_EXE) -i $(CURDIR) -o $(OMC_OUT_DIR)
+	$(OMC_EXE) -i $(CURDIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@

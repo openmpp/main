@@ -6,18 +6,6 @@ ifndef OUT_PREFIX
   OUT_PREFIX = .
 endif
 
-ifndef OM_INC_DIR
-  OM_INC_DIR = ../include
-endif
-
-ifndef OM_BIN_DIR
-  OM_BIN_DIR = ../bin
-endif
-
-ifndef OM_LIB_DIR
-  OM_LIB_DIR = ../lib
-endif
-
 MODEL_ONE_DIR = modelOne
 MODEL_WCB_DIR = wizardCaseBased
 MODEL_WTB_DIR = WizardTimeBased
