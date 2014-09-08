@@ -19,7 +19,12 @@
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
 #define RANGE_POS( rname, val )     (rname::to_index(val))
-#define COERCE( rname, val )        (((val) > rname::max) ? rname::max : ((val) < rname::min) ? rname::min : (val))
+#define COERCE( rname, val ) \
+    ( \
+        ((static_cast<rname::type>(val)) > rname::max) ? \
+            rname::max : \
+            ((static_cast<rname::type>(val)) < rname::min) ? rname::min : (static_cast<rname::type>(val)) \
+    )
 #define WITHIN( rname, val )        (rname::within(val))
 #define POINTS( symbol )		   	(symbol::upper_bounds())
 #define SPLIT( val, symbol )        (symbol::value_to_interval(val))

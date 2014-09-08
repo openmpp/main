@@ -25,6 +25,7 @@ template<
 class Classification
 {
 public:
+    typedef T type;
 
     /**
      * Default constructor.

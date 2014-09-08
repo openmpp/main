@@ -35,6 +35,8 @@ template<
 class Partition
 {
 public:
+    typedef T type;
+
     // ctors
     Partition()
         : interval(0)

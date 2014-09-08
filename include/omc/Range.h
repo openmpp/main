@@ -27,6 +27,8 @@ template<
 class Range
 {
 public:
+    typedef T type;
+
     // ctors
     Range()
         : range_value(min)
