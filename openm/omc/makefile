@@ -63,6 +63,7 @@ BuiltinAgentVarSymbol.cpp \
 ClassificationSymbol.cpp \
 CodeBlock.cpp \
 CodeGen.cpp \
+Constant.cpp \
 ConstantSymbol.cpp \
 DependencyGroupSymbol.cpp \
 DerivedAgentVarSymbol.cpp \

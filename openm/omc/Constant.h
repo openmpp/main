@@ -7,7 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
-#include "literal.h"
+#include "Literal.h"
 #include "location.hh"
 
 /**
