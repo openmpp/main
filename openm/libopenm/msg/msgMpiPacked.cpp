@@ -13,21 +13,6 @@ using namespace std;
 using namespace openm;
 
 /**
-* MPI_Pack bool value into data buffer at i_packPos position.   
-*
-* @param[in]     i_value       bool value to be packed
-* @param[in]     i_packedSize  total size in bytes of io_packedData buffer
-* @param[in,out] io_packedData destination buffer to pack MPI message
-* @param[in,out] io_packPos    current position in io_packedData buffer
-*/
-void MpiPacked::pack(bool i_value, int i_packedSize, void * io_packedData, int & io_packPos)
-{
-    int8_t val = i_value ? 1 : 0;
-    int mpiRet = MPI_Pack(&val, 1, MPI_INT8_T, io_packedData, i_packedSize, &io_packPos, MPI_COMM_WORLD);
-    if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
-}
-
-/**
  * MPI_Pack string into data buffer at i_packPos position.
  *
 * @param[in]     i_value       string to be packed
@@ -49,25 +34,6 @@ void MpiPacked::pack(const string & i_value, int i_packedSize, void * io_packedD
     }
     mpiRet = MPI_Pack(&zeroChar, 1, MPI_CHAR, io_packedData, i_packedSize, &io_packPos, MPI_COMM_WORLD);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
-}
-
-/**
-* MPI_Unpack bool value from data buffer at i_packPos position and return the value.
-*
-* @param[in]       i_packedSize  total size in bytes of i_packedData buffer
-* @param[in]       i_packedData  source MPI message buffer to unpack
-* @param[in,out]   io_packPos    current position in i_packedData buffer
-*/
-bool MpiPacked::unpackBool(int i_packedSize, void * i_packedData, int & io_packPos)
-{
-    if (io_packPos >= i_packedSize) 
-        throw MsgException("Unpack error: position=%d out of range=%d", io_packPos, i_packedSize);
-
-    int8_t val;
-    int mpiRet = MPI_Unpack(i_packedData, i_packedSize, &io_packPos, &val, 1, MPI_INT8_T, MPI_COMM_WORLD);
-    if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
-
-    return val != 0;
 }
 
 /**
@@ -106,16 +72,6 @@ int MpiPacked::packedSize(const type_info & i_type)
 {
     int nSize = 0;
     int mpiRet = MPI_Pack_size(1, toMpiType(i_type), MPI_COMM_WORLD, &nSize);
-    if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
-
-    return nSize;
-}
-
-/** return MPI pack size for bool value. */
-int MpiPacked::packedSize(bool /* i_value */)
-{
-    int nSize = 0;
-    int mpiRet = MPI_Pack_size(1, MPI_INT8_T, MPI_COMM_WORLD, &nSize);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
 
     return nSize;
@@ -167,7 +123,7 @@ MPI_Datatype MpiPacked::toMpiType(const type_info & i_type)
     if (i_type == typeid(uint32_t)) return MPI_UINT32_T;
     if (i_type == typeid(int64_t)) return MPI_INT64_T;
     if (i_type == typeid(uint64_t)) return MPI_UINT64_T;
-    // if (i_type == typeid(bool)) commented to pack/unpack errors return MPI_INT8_T; 
+    if (i_type == typeid(bool)) return MPI_C_BOOL; 
     if (i_type == typeid(float)) return MPI_FLOAT;
     if (i_type == typeid(double)) return MPI_DOUBLE;
     if (i_type == typeid(long double)) return MPI_LONG_DOUBLE;

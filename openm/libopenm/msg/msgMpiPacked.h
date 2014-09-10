@@ -34,9 +34,6 @@ namespace openm
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
         }
 
-        /** MPI_Pack bool value into data buffer at i_packPos position. */
-        static void pack(bool i_value, int i_packedSize, void * io_packedData, int & io_packPos);
-
         /** MPI_Pack string into data buffer at i_packPos position. */
         static void pack(const string & i_value, int i_packedSize, void * io_packedData, int & io_packPos);
 
@@ -58,17 +55,11 @@ namespace openm
             return val;
         }
 
-        /** MPI_Unpack bool value from data buffer at i_packPos position and return the value. */
-        static bool unpackBool(int i_packedSize, void * i_packedData, int & io_packPos);
-
         /** MPI_Unpack string from data buffer at i_packPos position and return the string. */
         static string unpackStr(int i_packedSize, void * i_packedData, int & io_packPos);
 
         /** return MPI pack size for specified primitive type. */
         static int packedSize(const type_info & i_type);
-
-        /** return MPI pack size for bool value. */
-        static int packedSize(bool /* i_value */);
 
         /** return MPI pack size for string value. */
         static int packedSize(const string & i_value);
