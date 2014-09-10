@@ -19,9 +19,9 @@
   to set properties used subsequently.
   -->
   <PropertyGroup>
-	<!-- omc -p option to publish scenario -->
+    <!-- omc -p option to publish scenario -->
     <OMC_IN_SCENARIO_OPT Condition="'$(PUBLISH_SCENARIO)'=='1'">-p $(SCENARIO_PARMS_FOLDER)</OMC_IN_SCENARIO_OPT>
-	<!-- omc -f option to supply fixed parameter -->
+    <!-- omc -f option to supply fixed parameter -->
     <OMC_IN_FIXED_OPT Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'">-f $(FIXED_PARMS_FOLDER)</OMC_IN_FIXED_OPT>
   </PropertyGroup>
 
