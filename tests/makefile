@@ -6,13 +6,14 @@ ifndef OUT_PREFIX
   OUT_PREFIX = .
 endif
 
-MODEL_ONE_DIR = modelOne
-MODEL_WCB_DIR = WizardCaseBased
-MODEL_WTB_DIR = WizardTimeBased
-MODEL_A1_DIR = Alpha1
-MODEL_A2_DIR = Alpha2
-MODEL_IDMM_DIR = IDMM
-MODEL_RP_DIR = RiskPaths
+MODEL_DIRS = \
+  modelOne \
+  WizardCaseBased \
+  WizardTimeBased \
+  Alpha1 \
+  Alpha2 \
+  IDMM \
+  RiskPaths
 
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
@@ -26,38 +27,14 @@ ifndef OM_MSG_USE
 endif
 
 .PHONY : all
-all: prepare model_one model_wcb model_wtb model_a1 model_a2 model_idmm model_rp
+.PHONY : $(MODEL_DIRS)
 
-model_one: prepare
-	$(MAKE) -C $(MODEL_ONE_DIR) model
+all : prepare $(MODEL_DIRS)
 
-model_wcb: prepare
-	$(MAKE) -C $(MODEL_WCB_DIR) model
-    
-model_wtb: prepare
-	$(MAKE) -C $(MODEL_WTB_DIR) model
-    
-model_a1: prepare
-	$(MAKE) -C $(MODEL_A1_DIR) model
-    
-model_a2: prepare
-	$(MAKE) -C $(MODEL_A2_DIR) model
+$(MODEL_DIRS) :
+	$(MAKE) -C $@
+	$(MAKE) -C $@ publish
 
-model_idmm: prepare
-	$(MAKE) -C $(MODEL_IDMM_DIR) model
-
-model_rp: prepare
-	$(MAKE) -C $(MODEL_RP_DIR) model
-
-publish: all
-	$(MAKE) -C $(MODEL_ONE_DIR) publish
-	$(MAKE) -C $(MODEL_WCB_DIR) publish
-	$(MAKE) -C $(MODEL_WTB_DIR) publish
-	$(MAKE) -C $(MODEL_A1_DIR) publish
-	$(MAKE) -C $(MODEL_A2_DIR) publish
-	$(MAKE) -C $(MODEL_IDMM_DIR) publish
-	$(MAKE) -C $(MODEL_RP_DIR) publish
-    
 .PHONY : prepare
 prepare:
 	@if [ ! -d $(BUILD_DIR) ] ; then mkdir -p $(BUILD_DIR) ; fi
@@ -65,11 +42,7 @@ prepare:
 
 .PHONY : clean
 clean:
-	$(MAKE) -C $(MODEL_A2_DIR) clean
-	$(MAKE) -C $(MODEL_A1_DIR) clean
-	$(MAKE) -C $(MODEL_WTB_DIR) clean
-	$(MAKE) -C $(MODEL_WCB_DIR) clean
-	$(MAKE) -C $(MODEL_ONE_DIR) clean
+	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) clean;)
 
 .PHONY : cleanall
 cleanall:

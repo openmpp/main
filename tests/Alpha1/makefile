@@ -144,10 +144,6 @@ $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
 	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
-.PHONY : model_sql
-model_sql :
-	cp -pf $(OMC_OUT_DIR)/*.sql $(OUT_BIN_DIR)
-
 #
 # create model SQLite database
 #
@@ -158,8 +154,16 @@ ifndef OM_SQLITE_DIR
   OMC_SQLITE_DIR = ../../sql/sqlite
 endif
 
+.PHONY : model_sql
+model_sql : $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
+
+$(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql :
+	cp -pf $(OMC_OUT_DIR)/*.sql $(OUT_BIN_DIR)
+
 .PHONY : publish
-publish :
+publish : model_sql $(MODEL_SQLITE)
+
+$(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
@@ -170,7 +174,7 @@ publish :
 .PHONY: clean
 clean:
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
-#	rm -f $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)*.sql
+	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME)*.sql
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(OMC_OUT_DIR)/*
@@ -178,6 +182,7 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
+	rm -f $(MODEL_SQLITE)
 
 .PHONY: prepare
 prepare:

@@ -57,8 +57,15 @@ SUFFIXES += .d
 CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
+#
+# model executable name and model name:
+# by default model name same as executable name
+#
 MODEL_EXE = modelOne
-MODEL_SQL_PREFIX = modelOne
+
+ifndef MODEL_NAME
+  MODEL_NAME = $(MODEL_EXE)
+endif
 
 #MODEL_PATH = $(CURDIR)
 MODEL_CPPLIST = \
@@ -90,34 +97,37 @@ $(OBJ_DIR)/%.o : %.cpp
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
 	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
-.PHONY : model_sql
-model_sql:
-	cp -pf $(MODEL_SQL_PREFIX)*.sql $(OUT_BIN_DIR)
-	cp -pf $(MODEL_EXE).ini $(OUT_BIN_DIR)
-
 #
 # create model SQLite database
 #
 SQLITE_EXE = sqlite3
-MODEL_SQLITE = $(OUT_BIN_DIR)/m1.sqlite
+MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
 ifndef OM_SQLITE_DIR
   OMC_SQLITE_DIR = ../../sql/sqlite
 endif
 
+.PHONY : model_sql
+model_sql : $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
+
+$(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql :
+	cp -pf *.sql $(OUT_BIN_DIR)
+
 .PHONY : publish
-publish :
+publish : model_sql $(MODEL_SQLITE)
+
+$(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)_create_model.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)_optional_views.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)_insert_param.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_insert_param.sql
 
 .PHONY: clean
 clean:
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
-	rm -f $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)*.sql
+	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME)*.sql
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE).ini
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
@@ -125,6 +135,7 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
+	rm -f $(MODEL_SQLITE)
 
 .PHONY: prepare
 prepare:
