@@ -93,11 +93,32 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 .PHONY : model_sql
 model_sql:
 	cp -pf $(MODEL_SQL_PREFIX)*.sql $(OUT_BIN_DIR)
+	cp -pf $(MODEL_EXE).ini $(OUT_BIN_DIR)
+
+#
+# create model SQLite database
+#
+SQLITE_EXE = sqlite3
+MODEL_SQLITE = $(OUT_BIN_DIR)/m1.sqlite
+
+ifndef OM_SQLITE_DIR
+  OMC_SQLITE_DIR = ../../sql/sqlite
+endif
+
+.PHONY : publish
+publish :
+	rm -f $(MODEL_SQLITE)
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)_create_model.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)_optional_views.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)_insert_param.sql
 
 .PHONY: clean
 clean:
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_SQL_PREFIX)*.sql
+	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE).ini
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 

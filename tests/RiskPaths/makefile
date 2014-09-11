@@ -36,17 +36,24 @@ endif
 
 #
 # model executable name: current dir name by default
+# model name: same as executable name by default
 #
 ifndef MODEL_EXE
   MODEL_EXE = $(notdir $(CURDIR))
 endif
 
+ifndef MODEL_NAME
+  MODEL_NAME = $(MODEL_EXE)
+endif
+
 #
 # model default parameters: if Base subdirectory exist the use it
 #
-ifndef OMC_BASE_PARAM_DIR
-  ifneq (,$(wildcard Base))
-    OMC_BASE_PARAM_DIR = Base
+ifndef OMC_DISABLE_AUTO_PARAM_DIR
+  ifndef OMC_BASE_PARAM_DIR
+    ifneq (,$(wildcard Base))
+      OMC_BASE_PARAM_DIR = Base
+    endif
   endif
 endif
 
@@ -57,9 +64,11 @@ endif
 #
 # model fixed parameters: if Fixed subdirectory exist the use it
 #
-ifndef OMC_FIXED_PARAM_DIR
-  ifneq (,$(wildcard Fixed))
-    OMC_FIXED_PARAM_DIR = Fixed
+ifndef OMC_DISABLE_AUTO_PARAM_DIR
+  ifndef OMC_FIXED_PARAM_DIR
+    ifneq (,$(wildcard Fixed))
+      OMC_FIXED_PARAM_DIR = Fixed
+    endif
   endif
 endif
 
@@ -68,7 +77,7 @@ ifdef OMC_FIXED_PARAM_DIR
 endif
 
 #
-#
+# build directories
 #
 MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
@@ -138,6 +147,25 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 .PHONY : model_sql
 model_sql :
 	cp -pf $(OMC_OUT_DIR)/*.sql $(OUT_BIN_DIR)
+
+#
+# create model SQLite database
+#
+SQLITE_EXE = sqlite3
+MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
+
+ifndef OM_SQLITE_DIR
+  OMC_SQLITE_DIR = ../../sql/sqlite
+endif
+
+.PHONY : publish
+publish :
+	rm -f $(MODEL_SQLITE)
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_$(OMC_BASE_PARAM_DIR).sql
 
 .PHONY: clean
 clean:
