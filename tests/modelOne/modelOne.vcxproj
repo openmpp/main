@@ -81,9 +81,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SqlScript Include="modelOne_create_model_sqlite.sql" />
-    <SqlScript Include="modelOne_insert_param_sqlite.sql" />
-    <SqlScript Include="modelOne_optional_views_sqlite.sql" />
+    <SqlScript Include="modelOne_create_model.sql" />
+    <SqlScript Include="modelOne_insert_param.sql" />
+    <SqlScript Include="modelOne_optional_views.sql" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
