@@ -133,7 +133,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
 $(MODEL_OMC_CPP): | prepare
 
 $(MODEL_OMC_CPP) : $(MODEL_MPP)
-	$(OMC_EXE) -i $(CURDIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
+	$(OMC_EXE) -m $(MODEL_NAME) -s Base -i $(CURDIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
