@@ -2,16 +2,18 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
-  Use this to specify additional openM directories and tools, such as omc.exe
+  Specify various openM directories and tools
   -->
   <PropertyGroup>
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../../include</OM_INC_DIR>
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../../bin</OM_BIN_DIR>
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../lib/$(Platform)</OM_LIB_DIR>
+    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(SolutionDir)../../sql</OM_SQL_DIR>
     <BUILD_DIR>$(SolutionDir)../build</BUILD_DIR>
-    <OMC_OUT_DIR>$(SolutionDir)/src</OMC_OUT_DIR>
+    <OMC_OUT_DIR>$(SolutionDir)src</OMC_OUT_DIR>
     <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(SolutionDir)../../use</OMC_USE_DIR>
     <OMC_EXE>omc.exe</OMC_EXE>
+    <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
   </PropertyGroup>
   
   <!-- 
@@ -19,10 +21,28 @@
   to set properties used subsequently.
   -->
   <PropertyGroup>
-    <!-- omc -p option to publish scenario -->
-    <OMC_IN_SCENARIO_OPT Condition="'$(PUBLISH_SCENARIO)'=='1'">-p $(SCENARIO_PARMS_FOLDER)</OMC_IN_SCENARIO_OPT>
+    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
+    <!-- omc -p option to supply parameters -->
+    <OMC_IN_SCENARIO_OPT Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'">-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
     <!-- omc -f option to supply fixed parameter -->
-    <OMC_IN_FIXED_OPT Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'">-f $(FIXED_PARMS_FOLDER)</OMC_IN_FIXED_OPT>
+    <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
+  </PropertyGroup>
+
+  <!-- 
+  This property group creates the default MODEL_NAME using the trailing directory
+  of the solution directory path (if MODEL_NAME is empty)
+  -->
+  <PropertyGroup Condition="'$(MODEL_NAME)' == ''">
+    <!-- Start with the full path of the directory containing the solution file -->
+    <MODEL_NAME>$(SolutionDir)</MODEL_NAME>
+    <!-- Trim off trailing slash -->
+    <MODEL_NAME>$(MODEL_NAME.TrimEnd('\'))</MODEL_NAME>
+    <!-- Index of last slash -->
+    <OM_TEMP1>$(MODEL_NAME.LastIndexOf('\'))</OM_TEMP1>
+    <!-- Index of start of last directory name -->
+    <OM_TEMP2>$([MSBuild]::Add($(OM_TEMP1), '1'))</OM_TEMP2>
+    <!-- Extract last directory name -->
+    <MODEL_NAME>$(MODEL_NAME.Substring($(OM_TEMP2)))</MODEL_NAME>
   </PropertyGroup>
 
   <!-- 
@@ -62,9 +82,11 @@
   <!-- 
   Use this to choose database library provider, now only SQlite supported
     SQLITE - use SQlite version
+	
+	Pass through the value from the User Macro DB_PROVIDER in OpenM++.props.
   -->
   <PropertyGroup>
-    <OM_DB_USE>SQLITE</OM_DB_USE>
+    <OM_DB_USE>$(DB_PROVIDER)</OM_DB_USE>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
@@ -77,13 +99,15 @@
   <!-- 
   Use this to choose message passing library provider
     MPI   - use MPI-based version (you must have MS-MPI installed)
-    EMPTY - use empty version of the library which does nothing
+    NONE - use empty version of the library which does nothing
+	
+	Pass through the value from the User Macro GRID_COMPUTING in OpenM++.props.
   -->
   <PropertyGroup>
-    <OM_MSG_USE>EMPTY</OM_MSG_USE>
+    <OM_MSG_USE>$(GRID_COMPUTING)</OM_MSG_USE>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(OM_MSG_USE)'=='EMPTY'">
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='NONE'">
     <OM_MSG_DEF>OM_MSG_EMPTY</OM_MSG_DEF>
     <OM_MSG_INC></OM_MSG_INC>
     <OM_MSG_LIB></OM_MSG_LIB>

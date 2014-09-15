@@ -19,9 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A1B4128C-28EE-4653-BFA3-3263CDF4C28B}</ProjectGuid>
+    <ProjectGuid>{DD9A3A8E-6D2F-4917-9B09-31F83E3770E4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Alpha1</RootNamespace>
+    <RootNamespace>Model</RootNamespace>
+    <ProjectName>Model</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -50,82 +51,35 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <!-- Import standard master properties for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="OpenM++.props" />
+    <Import Project="Model.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="OpenM++.props" />
+    <Import Project="Model.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="OpenM++.props" />
+    <Import Project="Model.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="OpenM++.props" />
+    <Import Project="Model.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <!-- Import common openM models project settings -->
+  <!-- Import openM properties for model projects -->
   <Import Project="$(SolutionDir)../model.1.build.props" />
   <Import Project="$(SolutionDir)../model.2.cpp.props" />
-  <!-- For Cl and Visual Studio IDE -->
-  <ItemGroup>
-    <ClCompile Include="src\*.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="custom.h" />
-    <ClInclude Include="src\*.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="*.mpp" />
-    <None Include="*.ompp" />
-    <None Include="Fixed\*.dat" />
-    <None Include="Fixed\*.odat" />
-    <None Include="Base\*.dat" />
-    <None Include="Base\*.odat" />
-  </ItemGroup>
-  <!-- Following groups are for OmcCompile target dependencies -->
-  <ItemGroup>
-    <OMC_INPUTS Include="*.mpp" />
-    <OMC_INPUTS Include="*.ompp" />
-    <OMC_INPUTS Include="OpenM++.props" />
-    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" Condition="'$(PUBLISH_SCENARIO)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" Condition="'$(PUBLISH_SCENARIO)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.odat" Condition="'$(ACTIVATE_FIXED_PARMS)'=='1'" />
-  </ItemGroup>
-  <ItemGroup>
-    <OMC_OUTPUTS Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <OMC_OUTPUTS Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <OMC_OUTPUTS Include="@(OMC_SQL_OUTPUTS)" />
-  </ItemGroup>
+  <Import Project="$(SolutionDir)../model.3.ide.props" />
+  <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
-    <Message Text="Delete omc compiler output" />
-    <RemoveDir Directories="$(OMC_OUT_DIR)" />
-  </Target>
-  <!--
-  'Outputs' is a Transform which just repeats the same reference time-stamp file from the last time omc ran.
-  This will cause the target to run if any of the model source files is more recent than the last omc run.
-  'Returns' contains a full list of omc outputs in case any are missing.
-  -->
-  <Target Name="OmcCompile" Inputs="@(OMC_INPUTS)" Outputs="@(OMC_INPUTS -> '$(OMC_TIMESTAMP_OUTPUT_FILE)')" Returns="@(OMC_OUTPUTS)">
-    <MakeDir Directories="$(OMC_OUT_DIR)" />
-    <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
-    <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -i $(ProjectDir) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
-    <ItemGroup>
-      <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
-    </ItemGroup>
-    <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(OutDir)" />
-  </Target>
-  <PropertyGroup>
-    <BuildDependsOn>OmcCompile;$(BuildDependsOn)</BuildDependsOn>
-  </PropertyGroup>
+  <!-- Import openM targets for model projects -->
+  <Import Project="$(SolutionDir)../model.4.build.targets" />
 </Project>

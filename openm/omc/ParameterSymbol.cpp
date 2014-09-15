@@ -153,6 +153,10 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+
+    if (source == missing_parameter) {
+        c += "// WARNING - No data supplied for the following parameter:";
+    }
     
     if (source != fixed_parameter || initializer_list.empty()) {
         // Parameter is not internal, or (if internal), no initializer was provided in the model source.
@@ -204,6 +208,12 @@ void ParameterSymbol::validate_initializer()
 {
     // Nothing to do for derived parameters
     if (source == derived_parameter) return;
+
+    // warn about parameters with missing values
+    if (source == missing_parameter) {
+        pp_warning("warning : missing value for parameter '" + name + "'");
+        return;
+    }
 
     // Presence check
     if (0 == initializer_list.size()) {

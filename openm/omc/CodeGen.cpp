@@ -219,7 +219,7 @@ void CodeGen::do_parameters()
 	h += "";
 
 	// parameter definitions & initializers
-	c += "// model parameters (external)";
+	c += "// model parameters (scenario, derived, missing)";
 	z += "// model parameters (fixed)";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::fixed_parameter) {
@@ -273,6 +273,9 @@ void CodeGen::do_ModelStartup()
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
             c += parameter->cxx_read_parameter();
+        }
+        else if (parameter->source == ParameterSymbol::missing_parameter) {
+            c += "theLog->logFormatted(\"warning - no values supplied for parameter " + parameter->name + "\");";
         }
     }
 

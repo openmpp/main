@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!-- 
+  Specify properties for the Visual Studio IDE 
+  -->
+
+  <ItemGroup>
+    <ClCompile Include="src\*.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="custom.h" />
+    <ClInclude Include="src\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="*.mpp" />
+    <None Include="*.ompp" />
+    <None Include="Fixed\*.dat" />
+    <None Include="Fixed\*.odat" />
+    <None Include="Base\*.dat" />
+    <None Include="Base\*.odat" />
+  </ItemGroup>
+
+</Project>

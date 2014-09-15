@@ -476,16 +476,6 @@ blank       [ \t\r]
 
                 /* Create working string version of the word. */
                 string word ( yytext );
-
-				/* Special processing of Simulation and CaseSimulation to idnetify model name with models coded for Modgen. */
-                if (word == "Simulation" || word == "CaseSimulation") {
-                    /* The default model name is the stem of the module which defines a function named Simulation or CaseSimulation. */
-                    /* Use it if a model name has not already been specified. */
-                    if (!Symbol::find_a_symbol(typeid(ModelSymbol))) {
-                        Symbol *sym = new ModelSymbol(drv.stem);
-                    }
-                }
-
     			if ( ! pc.cxx_suppress ) *drv.outside << yytext;
 			}
 

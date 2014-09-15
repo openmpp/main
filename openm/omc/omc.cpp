@@ -4,23 +4,28 @@
 *  
 * @mainpage OpenM++ compiler (omc)
 * 
-* OpenM++ compiler produce c++ (.cpp and .h) files from .ompp, .mpp or .dat model files. \n
+* The OpenM++ compiler produces c++ (.cpp and .h) files and SQL files (.sql) from model source files (.ompp, .mpp) and parameter value files (.dat, .odat). \n
+* 
 *
-* Following command line arguments supported by omc:
-* * -Omc.InputDir  input/dir/to/find/source/files
-* * -Omc.OutputDir output/dir/to/place/compiled/cpp_and_h/files
-* * -Omc.UseDir    use/dir/with/ompp/files
-* * -Omc.ParamDir  input/dir/to/find/parameter/files/for/scenario
-* * -Omc.FixedDir  input/dir/to/find/fixed/parameter/files/
+* The following command line arguments are supported by omc:
+* * -Omc.ModelName     Model
+* * -Omc.ScenarioName  Base
+* * -Omc.InputDir      input/dir/to/find/source/files
+* * -Omc.OutputDir     output/dir/to/place/compiled/cpp_and_h_and_sql/files
+* * -Omc.UseDir        use/dir/with/ompp/files
+* * -Omc.ParamDir      input/dir/to/find/parameter/files/for/scenario
+* * -Omc.FixedDir      input/dir/to/find/fixed/parameter/files/
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
 * Short form of command line arguments:
+* * -m short form of -Omc.ModelName
+* * -s short form of -Omc.ScenarioName
 * * -i short form of -Omc.InputDir
 * * -o short form of -Omc.OutputDir
 * * -u short form of -Omc.UseDir
 * * -p short form of -Omc.ParamDir
 * * -f short form of -Omc.FixedDir
-* * -s short form of -OpenM.OptionsFile
+* * -ini short form of -OpenM.OptionsFile
 * 
 * Also common OpenM log options supported: 
 *   OpenM.LogToConsole, OpenM.LogToFile, OpenM.LogFilePath, 
@@ -64,6 +69,12 @@ namespace openm
     /** keys for omc options */
     struct OmcArgKey
     {
+        /** omc model name */
+        static const char * modelName;
+
+        /** omc scenario name */
+        static const char * scenarioName;
+
         /** omc input directory with openM++ source files */
         static const char * inputDir;
 
@@ -73,7 +84,7 @@ namespace openm
         /** omc use directory to resolve 'use' statements */
         static const char * useDir;
 
-        /** omc input directory with OpenM++ parameter files */
+        /** omc input directory with OpenM++ scenario parameter files */
         static const char * paramDir;
 
         /** omc input directory with OpenM++ fixed parameter files */
@@ -85,6 +96,12 @@ namespace openm
     {
         /** short name for options file name: -s fileName.ini */
         static const char * optionsFile;
+
+        /** short name for omc model name */
+        static const char * modelName;
+
+        /** short name for omc scenario name */
+        static const char * scenarioName;
 
         /** short name for omc input directory  */
         static const char * inputDir;
@@ -102,6 +119,12 @@ namespace openm
         static const char * fixedDir;
     };
 
+    /** omc model name */
+    const char * OmcArgKey::modelName = "Omc.ModelName";
+
+    /** omc model name */
+    const char * OmcArgKey::scenarioName = "Omc.ScenarioName";
+
     /** omc input directory with openM++ source files */
     const char * OmcArgKey::inputDir = "Omc.InputDir";
 
@@ -118,7 +141,13 @@ namespace openm
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
     /** short name for options file name: -s fileName.ini */
-    const char * OmcShortKey::optionsFile = "s";
+    const char * OmcShortKey::optionsFile = "ini";
+
+    /** short name for omc model name  */
+    const char * OmcShortKey::modelName = "m";
+
+    /** short name for omc scenario name  */
+    const char * OmcShortKey::scenarioName = "s";
 
     /** short name for omc input directory  */
     const char * OmcShortKey::inputDir = "i";
@@ -137,6 +166,8 @@ namespace openm
 
     /** array of model run option keys. */
     static const char * runArgKeyArr[] = {
+        OmcArgKey::modelName,
+        OmcArgKey::scenarioName,
         OmcArgKey::inputDir,
         OmcArgKey::outputDir,
         OmcArgKey::useDir,
@@ -158,6 +189,8 @@ namespace openm
     static const pair<const char *, const char *> shortPairArr[] = 
     {
         make_pair(OmcShortKey::optionsFile, ArgKey::optionsFile),
+        make_pair(OmcShortKey::modelName, OmcArgKey::modelName),
+        make_pair(OmcShortKey::scenarioName, OmcArgKey::scenarioName),
         make_pair(OmcShortKey::inputDir, OmcArgKey::inputDir),
         make_pair(OmcShortKey::outputDir, OmcArgKey::outputDir),
         make_pair(OmcShortKey::useDir, OmcArgKey::useDir),
@@ -197,6 +230,20 @@ int main(int argc, char * argv[])
             argStore.boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Start omc");
+
+        // get model name
+        string model_name = argStore.strOption(OmcArgKey::modelName);
+        if (model_name.empty()) {
+            model_name = "Model";
+            theLog->logMsg("Model name not specified - using default name 'Model'.  Use -m option to specify model name.");
+        }
+
+        // get scenario name
+        string scenario_name = argStore.strOption(OmcArgKey::scenarioName);
+        if (scenario_name.empty()) {
+            scenario_name = "Base";
+            theLog->logMsg("Scenario name not specified - using default name 'Base'.  Use -s option to specify scenario name.");
+        }
 
         // get list of source file names in specified directory or current directory by default
         string inpDir = argStore.strOption(OmcArgKey::inputDir);
@@ -247,7 +294,7 @@ int main(int argc, char * argv[])
         }
 
         // Populate symbol table with default symbols
-        Symbol::populate_default_symbols();
+        Symbol::populate_default_symbols(model_name);
 
         // create unique instance of ParseContext
         ParseContext pc;
@@ -389,21 +436,20 @@ int main(int argc, char * argv[])
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);
         
-        theLog->logMsg("Base scenario processing");
+        theLog->logMsg("Scenario processing");
 
         // Create default working set
         MetaSetLangHolder metaSet;  // default working set metadata
-        metaSet.worksetRow.name = "Base";
-        // TODO Add Base scenario description and notes - pending addition of 'scenario' statement
+        metaSet.worksetRow.name = scenario_name;
+        // TODO Add Scenario description and notes - pending addition of 'scenario' statement
         int scenario_parameters_count = 0;
         for (auto param : Symbol::pp_all_parameters) {
-            if (param->source == ParameterSymbol::scenario_parameter) {
-                ++scenario_parameters_count;
-                WorksetParamRow wsParam;
-                wsParam.paramId = param->pp_parameter_id;
-                metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
-                // TODO Add parameter value notes
-            }
+            if (param->source != ParameterSymbol::scenario_parameter) continue;
+            scenario_parameters_count++;
+            WorksetParamRow wsParam;
+            wsParam.paramId = param->pp_parameter_id;
+            metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
+            // TODO Add parameter value notes
         }
 
         // start model default working set sql script
@@ -412,14 +458,13 @@ int main(int argc, char * argv[])
         // add values for all scenario model parameters into default working set
         int scenario_parameters_done = 0;
         for (auto param : Symbol::pp_all_parameters) {
-            if (param->source == ParameterSymbol::scenario_parameter) {
-                auto lst = param->initializer_for_storage();
-                if (param->rank() == 0) {
-                    builder->addWorksetParameter(metaRows, param->name, lst.front());
-                }
-                else {
-                    builder->addWorksetParameter(metaRows, param->name, lst);
-                }
+            if (param->source != ParameterSymbol::scenario_parameter) continue;
+            auto lst = param->initializer_for_storage();
+            if (param->rank() == 0) {
+                builder->addWorksetParameter(metaRows, param->name, lst.front());
+            }
+            else {
+                builder->addWorksetParameter(metaRows, param->name, lst);
             }
             scenario_parameters_done++;
             if (0 == scenario_parameters_done % 10) {

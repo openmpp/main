@@ -10,6 +10,7 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)../$(Configuration)/$(Platform)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+	<TargetName>$(MODEL_NAME)</TargetName>
   </PropertyGroup>
   
   <!-- 

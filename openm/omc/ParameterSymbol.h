@@ -23,7 +23,7 @@ public:
 
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , source(scenario_parameter)
+        , source(missing_parameter)
         , cumrate(false)
         , cumrate_dims(0)
         , datatype(datatype->stable_rp())
@@ -109,6 +109,8 @@ public:
      * Enumeration indicating source of parameter value.
      */
     enum parameter_source {
+        ///< Parameter value is missing.
+        missing_parameter,
         ///< Parameter value fixed and stored in executable.
         fixed_parameter,
         ///< Parameter value from an external source, e.g. data store

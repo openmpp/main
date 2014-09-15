@@ -50,6 +50,7 @@
 #include "HideGroupSymbol.h"
 #include "DependencyGroupSymbol.h"
 #include "GlobalFuncSymbol.h"
+#include "ModelSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -623,11 +624,13 @@ string Symbol::note(const LanguageSymbol & language) const
     return name + " note (" + language.name + ")";
 }
 
-void Symbol::populate_default_symbols()
+void Symbol::populate_default_symbols(const string &model_name)
 {
     Symbol *sym;
     sym = new VersionSymbol( 1, 0, 0, 0 );
     sym = new ModelTypeSymbol(token::TK_case_based, false);
+    sym = new ModelSymbol(model_name);
+
 
     // types
 
