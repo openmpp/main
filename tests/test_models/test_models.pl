@@ -6,9 +6,9 @@
 use strict;
 
 my @models = (
-	"WizardCaseBased",
+#	"WizardCaseBased",
 	"WizardTimeBased",
-	"Alpha1",
+#	"Alpha1",
 #	"Alpha2",
 #	"IDMM",
 #	"RiskPaths",
@@ -50,6 +50,8 @@ my $platform = "Win32";
 #my $platform = "x64";
 	
 my $version = "1.0";
+
+use File::Copy;
 
 # Create absolute directory paths
 use Cwd qw(getcwd);
@@ -97,14 +99,133 @@ for my $model (@models) {
 	# with the working directory in an unknown state.
 	chdir $test_models_dir;
 
-	logmsg info, "";
+	logmsg info, " ";
 
 	my $model_dir = "${tests_root}/${model}";
 	if (! -d $model_dir) {
 		logmsg error, "${model}: Missing model";
 		next MODEL;
 	}
+
+	##########
+	# Modgen 
+	##########
 	
+	my $modgen_model_dir = "${model_dir}/Modgen";
+	if ( ! -d "${modgen_model_dir}" ) {
+		logmsg error, ${model}, "Missing folder ${modgen_model_dir}";
+		next MODEL;
+	}
+
+	# Run Modgen
+	# Modgen.exe output files are written to the Modgen sub folder using the -D option
+	logmsg info, ${model}, "Modgen: Modgen compilation";
+	# Change working directory to model source directory for Modgen compilation.
+	chdir ${model_dir};
+	($merged, $retval) = capture_merged {
+		my @args = (
+			"${modgen_exe}",
+			"-D",
+			"${modgen_model_dir}",
+			"-EN",
+			);
+		system(@args);
+	};
+	if ($retval != 0) {
+		logmsg error, ${model}, "Modgen compile failed";
+		logerrors $merged;
+		next MODEL;
+	}
+
+	# Copy custom.h, etc. to Modgen folder
+	for my $file (glob "${model_dir}/*.h") {
+		copy "$file", "${modgen_model_dir}";
+	}
+	
+	# Build the model
+	logmsg info, ${model}, "Modgen: C++ compilation";
+	# Change working directory to Modgen sub-directory for C++ compilation.
+	chdir "${modgen_model_dir}";
+	($merged, $retval) = capture_merged {
+		my @args = (
+			"${modgen_devenv_exe}",
+			"${model}.sln",
+			"/BUILD",
+			"Debug",
+			);
+		system(@args);
+	};
+	if ($retval != 0) {
+		logmsg error, ${model}, "C++ compile failed";
+		logerrors $merged;
+		next MODEL;
+	}
+
+	my $modgen_model_exe = "${modgen_model_dir}/Debug/${model}.exe";
+	if ( ! -e $modgen_model_exe ) {
+		logmsg error, "${model}: Missing model executable: $modgen_model_exe";
+		exit 1;
+	}
+	
+	# Prepare the scenario
+	# Copy Base .dat files to Modgen folder
+	for my $file (glob "${model_dir}/Base/*.dat") {
+		copy "$file", "${modgen_model_dir}";
+	}
+
+	my $modgen_Base_scex = "${modgen_model_dir}/Base.scex";
+	if ( ! -e $modgen_Base_scex ) {
+		logmsg error, "${model}: Missing Base scenario file: $modgen_Base_scex";
+		exit 1;
+	}
+	
+	logmsg info, ${model}, "Modgen: Run Base scenario";
+	# Delete output database to enable check for success
+	my $modgen_Base_mdb = "${modgen_model_dir}/Base(tbl).mdb";
+	unlink $modgen_Base_mdb;
+	# Change working directory to Modgen sub-directory for running model.
+	chdir "${modgen_model_dir}";
+	($merged, $retval) = capture_merged {
+		my @args = (
+			"${modgen_model_exe}",
+			"-sc",
+			"${modgen_Base_scex}"
+			);
+		system(@args);
+	};
+	# Modgen models return a code of 1 to indicate success
+	#if ($retval != 1) {
+	#	logmsg error, ${model}, "Modgen: Run model failed - retval=${retval}";
+	#	logerrors $merged;
+	#	next MODEL;
+	#}
+	if ( ! -e $modgen_Base_mdb ) {
+		logmsg error, "${model}: Missing Base scenario database: ${modgen_Base_mdb}";
+		next MODEL;
+	}
+
+	logmsg info, "${model}: Modgen: Convert output tables to .csv";
+	# Prepare directory to hold results for model from this invocation of test_models
+	my $modgen_model_results_dir = "${test_models_dir}/${model}_Modgen_current";
+	if (! -d $modgen_model_results_dir) {
+		mkdir $modgen_model_results_dir;
+	}
+	else {
+		# Delete current contents
+		unlink glob "${modgen_model_results_dir}/*.*";
+	}
+	if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $modgen_model_results_dir)) {
+		next MODEL;
+	}
+	
+	
+	# TEMPORARY Just bail while developing Modgen stuff
+	next MODEL;
+	
+	################
+	# ompp version
+	################
+
 	# Folder for previously-known-good reference files
 	my $model_reference_dir = "${test_models_dir}/${model}_${configuration}_${platform}_reference";
 
@@ -141,63 +262,27 @@ for my $model (@models) {
 		next MODEL;
 	}
 
-	# Generated SQL to insert model meta-data
-	my $create_model_sql =  "${model_dir}/src/${model}_create_model.sql";
-	if ( ! -e $create_model_sql ) {
-		logmsg error, "${model}: Missing SQL output file for model metadata: $create_model_sql";
-		exit 1;
-	}
-
-	# Generated SQL to insert parameter and table views
-	my $optional_views_sql =  "${model_dir}/src/${model}_optional_views.sql";
-	if ( ! -e $optional_views_sql ) {
-		logmsg error, "${model}: Missing SQL output file for parameter and table views: $optional_views_sql";
-		exit 1;
-	}
-
-	# Generated SQL to insert model parameters for Base scenario
-	my $model_Base_sql = "${model_dir}/src/${model}_Base.sql";
-	if ( ! -e $model_Base_sql ) {
-		logmsg error, "${model}: Missing SQL output file for Base scenario: $model_Base_sql";
-		exit 1;
-	}
-	
-	my $model_sqlite = "${model_results_dir}/${model}.sqlite";
-	unlink $model_sqlite;
-	if ( -e $model_sqlite) {
-		logmsg error, "${model}: Unable to remove previous data store - check if open";
-		next MODEL;
-	}
-	
-	logmsg info, "${model}: ompp: Create data store";
-	run_sqlite_script $model_sqlite, $create_db_sqlite_sql, $retval;
-	next MODEL if $retval != 0;
-
-	logmsg info, "${model}: ompp: Write model metadata to data store";
-	run_sqlite_script $model_sqlite, $create_model_sql, $retval;
-	next MODEL if $retval != 0;
-
-	logmsg info, "${model}: ompp: Write parameter and table views to data store";
-	run_sqlite_script $model_sqlite, $optional_views_sql, $retval;
-	next MODEL if $retval != 0;
-
-	logmsg info, "${model}: ompp: Write Base scenario inputs to data store";
-	run_sqlite_script $model_sqlite, $model_Base_sql, $retval;
-	next MODEL if $retval != 0;
-
 	# Executable model generated by build
-	my $model_exe = "${tests_root}/${configuration}/${platform}/${model}.exe";
+	my $target_dir = "${tests_root}/${configuration}/${platform}";
+	my $model_exe = "${target_dir}/${model}.exe";
 	if ( ! -e $model_exe ) {
 		logmsg error, "${model}: Missing model executable: $model_exe";
 		exit 1;
 	}
 
+	# Data store generated by build
+	my $model_sqlite = "${target_dir}/${model}.sqlite";
+	if ( ! -e $model_sqlite ) {
+		logmsg error, "${model}: Missing data store: $model_sqlite";
+		exit 1;
+	}
+
 	logmsg info, "${model}: ompp: Run Base scenario";
 	
-	# Change working directory to model results directory where data store
-	# for model is located. This avoids having to specify the data connection string
+	# Change working directory to target_dir where where executable and data store
+	# are located. This avoids having to specify the data connection string
 	# explicitly when launching the model.
-	chdir "${model_results_dir}";
+	chdir "${target_dir}";
 	
 	($merged, $retval) = capture_merged {
 		my @args = (
@@ -220,9 +305,9 @@ for my $model (@models) {
 
 	# Create digests of tables
 	logmsg info, $model, "Create digests:\n";
+	chdir "${model_results_dir}";
 	logmsg info, $model, "digest", create_digest(glob "*.csv");
 
-	use File::Copy;
 	# Create Reference results by copying Current results if missing.
 	if (! -d $model_reference_dir) {
 		logmsg info, "${model}: ompp: No Reference results - populate using Current results.";
