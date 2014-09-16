@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{add17517-5e1b-470a-aa91-ba3218b6a425}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
+    </Filter>
+    <Filter Include="Modules %28mpp%29">
+      <UniqueIdentifier>{be6e142b-970f-48f6-92fd-18c02bdaa7ed}</UniqueIdentifier>
+      <Extensions>mpp</Extensions>
+    </Filter>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{d49a7d12-9978-45e9-be7a-4142ebda9a9d}</UniqueIdentifier>
+      <Extensions>scex;dat</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="parse.inf">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="Base.scex">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\ExtraTests.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Fertility.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\modgen_framework.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Mortality.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\PersonCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\RiskPaths.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\RiskPathsEN_LBL.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\RiskPathsFR.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\RiskPathsFR_NOTR.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Tables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Tracking.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Unions.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Base\Base(RiskPaths).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RiskPaths.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RiskPathsFR.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PersonCore.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actors.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tabinit.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtraTests.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Fertility.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modgen_framework.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mortality.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RiskPathsEN_LBL.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RiskPathsFR_NOTR.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tracking.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Unions.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Actors.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tabinit.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="model.rc">
+      <Filter>C++ Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{81b10ccb-cca7-420b-bf10-6d19702edf91}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
+    </Filter>
+    <Filter Include="Modules %28mpp%29">
+      <UniqueIdentifier>{d523d42f-39e2-4cf9-825d-df8efd7cae15}</UniqueIdentifier>
+      <Extensions>mpp</Extensions>
+    </Filter>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{b82b23f9-25ea-45fc-be2b-626d2d519b08}</UniqueIdentifier>
+      <Extensions>scex;dat</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="parse.inf">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="Base.scex">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\Alpha2.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Happiness.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\modgen_framework.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\PersonCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\SyntaxProbes.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\TestLinks.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Base\Base(Happiness).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\Base\Base(PersonCore).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\Base\Base(SyntaxProbes).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Alpha2.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PersonCore.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actors.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tabinit.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Happiness.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SyntaxProbes.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestLinks.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modgen_framework.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Actors.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tabinit.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="custom.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="model.rc">
+      <Filter>C++ Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -9,7 +9,7 @@ my @models = (
 	"Alpha1",
 	"Alpha2",
 	"IDMM",
-	"OzProj",
+#	"OzProj",
 	#"Pohem",
 	#"PohemParms",
 	"RiskPaths",
@@ -39,6 +39,7 @@ use common qw(
 				run_jet_statement
 				modgen_tables_to_csv
 				create_digest
+				modgen_create_scex
 		    );
 # Check for compile errors, and bail if any.
 if ($@) {
@@ -180,10 +181,13 @@ for my $model (@models) {
 		
 		# Build the model
 		logmsg info, $model, "modgen", "C++ compile, build executable";
-		my $modgen_devenv_log = "${modgen_model_dir}/devenv.log";
+		my $modgen_devenv_log = "devenv.log";
 		unlink $modgen_devenv_log;
-		# Change working directory to Modgen sub-directory for C++ compilation.
+
+		# Change working directory to Modgen sub-directory for C++ compilation
+		# running the model, and processing outputs.
 		chdir "${modgen_model_dir}";
+		
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${modgen_devenv_exe}",
@@ -199,39 +203,45 @@ for my $model (@models) {
 			last MODGEN;
 		}
 
-		my $modgen_model_exe = "${modgen_model_dir}/Debug/${model}.exe";
+		my $modgen_model_exe = "Debug/${model}.exe";
 		if ( ! -e $modgen_model_exe ) {
 			logmsg error, $model, "modgen", "Missing model executable: $modgen_model_exe";
 			exit 1;
 		}
+
+		# Prepare the Modgen version of the Base scenario
 		
-		# Prepare the scenario
-		# Copy Base .dat files to Modgen folder
-		for my $file (glob "${model_dir}/Base/*.dat") {
-			copy "$file", "${modgen_model_dir}";
+		# The name of the Modgen Base scenario file
+		# (will be created by this script)
+		my $modgen_Base_scex = "Base.scex";
+		unlink $modgen_Base_scex;
+
+		# The ompp Framework parameter file for the Base scenario.
+		# Parameters in that file will be transformed into scenario settings in the Base.scex file
+		my $ompp_Base_Framework_ompp = "../Base/Base(Framework).odat";
+		if ( ! -e $ompp_Base_Framework_ompp ) {
+			logmsg error, $model, "modgen", "Missing ompp Base Framework parameters: $ompp_Base_Framework_ompp";
+			exit 1;
 		}
-		# Copy Fixed .dat files to Modgen folder
-		for my $file (glob "${model_dir}/Fixed/*.dat") {
-			copy "$file", "${modgen_model_dir}";
-		}
-		# Copy the Base scenario file.
-		# TODO - create Base scenario file de novo using list of .dat files and Framework parameters
-		
-		
-		copy "${model_dir}/Base/Base.scex", "${modgen_model_dir}";
-		
-		my $modgen_Base_scex = "${modgen_model_dir}/Base.scex";
+
+		# List of all the .dat files in the Base scenario
+		# with relative paths.
+		my @modgen_Base_dats;
+		push @modgen_Base_dats, glob("../Base/*.dat");
+		push @modgen_Base_dats, glob("../Fixed/*.dat");
+
+		# Create the Modgen Base scenario file
+		modgen_create_scex($modgen_Base_scex, $ompp_Base_Framework_ompp, @modgen_Base_dats);
 		if ( ! -e $modgen_Base_scex ) {
-			logmsg error, "${model}: Missing Base scenario file: $modgen_Base_scex";
+			logmsg error, $model, "modgen", "Missing Base scenario file: $modgen_Base_scex";
 			last MODGEN;
 		}
 		
 		logmsg info, $model, "modgen", "Run Base scenario";
 		# Delete output database to enable check for success
-		my $modgen_Base_mdb = "${modgen_model_dir}/Base(tbl).mdb";
+		my $modgen_Base_mdb = "Base(tbl).mdb";
 		unlink $modgen_Base_mdb;
-		# Change working directory to Modgen sub-directory for running model.
-		chdir "${modgen_model_dir}";
+
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${modgen_model_exe}",
@@ -242,7 +252,7 @@ for my $model (@models) {
 		};
 		# Modgen models return a code of 1 to indicate success
 		# But the code from Perl on a successful run is 256, for some reason.
-		# So just shift the low order bits.
+		# So just shift out the low order bits.
 		$retval >>= 8;
 		if ($retval != 1) {
 			logmsg error, $model, "modgen", "Run model failed - retval=${retval}";

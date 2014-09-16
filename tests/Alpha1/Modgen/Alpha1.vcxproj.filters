@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{0e7866a6-65b3-41a1-b201-3b7d043e1098}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
+    </Filter>
+    <Filter Include="Modules %28mpp%29">
+      <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
+      <Extensions>mpp</Extensions>
+    </Filter>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{082983d8-b8b7-4726-87c5-4b43c5700182}</UniqueIdentifier>
+      <Extensions>scex;dat</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Alpha1.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="PersonCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="app.ico">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="parse.inf">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="Base.scex">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="Happiness.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="modgen_framework.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\Base\Base(Happiness).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\Base\Base(PersonCore).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Alpha1.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PersonCore.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actors.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tabinit.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Happiness.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modgen_framework.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Actors.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tabinit.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="model.rc">
+      <Filter>C++ Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -215,17 +215,17 @@ table Person AgentIdTest_Person
 
 actor Person
 {
-    RNG_0_20 first_20_agent_ids = RNG_0_20(actor_id);
-    RNG_0_30 first_30_agent_ids = RNG_0_30(actor_id);
-    RNG_0_100 first_100_agent_ids = RNG_0_100(actor_id);
-    RNG_0_200 first_200_agent_ids = RNG_0_200(actor_id);
+    RNG_0_20 first_20_agent_ids = COERCE(RNG_0_20, actor_id);
+    RNG_0_30 first_30_agent_ids = COERCE(RNG_0_30, actor_id);
+    RNG_0_100 first_100_agent_ids = COERCE(RNG_0_100, actor_id);
+    RNG_0_200 first_200_agent_ids = COERCE(RNG_0_200, actor_id);
 };
 actor Thing
 {
-    RNG_0_20 first_20_agent_ids = RNG_0_20(actor_id);
-    RNG_0_30 first_30_agent_ids = RNG_0_30(actor_id);
-    RNG_0_100 first_100_agent_ids = RNG_0_100(actor_id);
-    RNG_0_200 first_200_agent_ids = RNG_0_200(actor_id);
+    RNG_0_20 first_20_agent_ids = COERCE(RNG_0_20, actor_id);
+    RNG_0_30 first_30_agent_ids = COERCE(RNG_0_30, actor_id);
+    RNG_0_100 first_100_agent_ids = COERCE(RNG_0_100, actor_id);
+    RNG_0_200 first_200_agent_ids = COERCE(RNG_0_200, actor_id);
 };
 
 table Thing AgentIdTest_Thing

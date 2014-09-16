@@ -281,32 +281,27 @@ sub run_jet_statement {
 
 # Create a Modgen .scex file
 # arg0 - the output file name
-# arg1 - StartingSeed
-# arg2 - Subsamples (aka replicates for time-based models)
-# arg3 - Cases
-# arg4 - SimulationEnd
+# arg1 - the ompp Framework.odat file
 # argN - remaining arguments are .dat files
 # returns - 0 for success, otherwise non-zero
 sub modgen_create_scex
 {
-	my $scex_file     = shift(@_);
+	my $scex_file      = shift(@_);
+	my $framework_file = shift(@_);
 
-	my $StartingSeed  = shift(@_);
-	my $Subsamples    = shift(@_);
-	my $Cases         = shift(@_);
-	my $SimulationEnd = shift(@_);
+	my @dat_files = @_;
 
-	# Defaults
-	my %General_attributes = (
+	# Default values for scenario settings
+	my %General = (
 		# case-based
 		Cases => 5000,
 		# time-based
 		SimulationEnd => 100,
-		# common
+		# common to both
+		Subsamples => 1,
 		PopulationScaling => 0,
 		Population => 5000,
 		Threads => 1,
-		Subsamples => 1,
 		PartialReports => 0,
 		StartingSeed => 16807,
 		ComputationPriority => "THREAD_PRIORITY_BELOW_NORMAL",
@@ -322,11 +317,25 @@ sub modgen_create_scex
 		MemoryReports => 0,
 	);
 
-	# Replace defaults in hash using values supplied in arguments
-	$General_attributes{"StartingSeed"} = $StartingSeed;
-	$General_attributes{"Subsamples"} = $Subsamples;
-	$General_attributes{"Cases"} = $Cases;
-	$General_attributes{"SimulationEnd"} = $SimulationEnd;
+	# Extract framework parameters from ompp parameter file
+	if (!open FRAMEWORK, "<${framework_file}") {
+		logmsg error, "unable to open ${framework_file}";
+		return 1;
+	}
+	while (<FRAMEWORK>) {
+		chomp;
+		my $line = $_;
+		if ( $line =~ /SimulationSeed\s*=\s*(\d+)/ ) {
+			$General{"StartingSeed"} = $1;
+		}
+		if ( $line =~ /SimulationCases\s*=\s*(\d+)/ ) {
+			$General{"Cases"} = $1;
+		}
+		if ( $line =~ /SimulationEnd\s*=\s*(\d+[.]?\d+)/ ) {
+			$General{"SimulationEnd"} = $1;
+		}
+	}
+	close FRAMEWORK;
 
 	# The XML structure of the .scex file is simple,
 	# so the approach here is to generate it directly rather than use XML::Tiny or XML::LibXML, etc.
@@ -338,15 +347,16 @@ sub modgen_create_scex
 	print SCEX "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	print SCEX "<Scenario ScenarioVersion=\"1.8\">\n";
 	print SCEX "  <General\n";
-	# Iterate all General attributes
-	for my $key(keys %General_attributes){
-		print SCEX "    $key=\"".$General_attributes{$key}."\"\n";
+	# Iterate all General attributes (sort for output readability)
+	my @setting = sort keys %General;
+	for my $setting (@setting){
+		print SCEX "    $setting=\"".$General{$setting}."\"\n";
 	}
 	print SCEX "  >\n";
 	print SCEX "  </General>\n";
 	print SCEX "  <Inputs>\n";
 	# Iterate .dat files
-	for my $file (@_) {
+	for my $file (@dat_files) {
 		print SCEX "    <Input>${file}=</Input>\n";
 	}
 	print SCEX "  </Inputs>\n";
