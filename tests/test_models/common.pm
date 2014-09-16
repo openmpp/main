@@ -185,7 +185,7 @@ sub ompp_tables_to_csv
 	print TEMP_SQL ".mode csv\n";
 	print TEMP_SQL ".headers on\n";
 	for my $table (split(/\n/, $tables)) {
-		print TEMP_SQL ".output ${dir}/${table}.csv\n";
+		print TEMP_SQL ".output ${dir}/in_${table}.csv\n";
 		print TEMP_SQL "Select * From ${table};\n";
 	}
 	close TEMP_SQL;
@@ -199,6 +199,28 @@ sub ompp_tables_to_csv
 		print TEMP_SQL_LOG $merged;
 		close TEMP_SQL_LOG;
 		return $retval;
+	}
+
+	# Normalize the numeric value (last field in each line) for comparison purposes
+	for my $table (split(/\n/, $tables)) {
+		my $in_csv = "${dir}/in_${table}.csv";
+		if (!open IN_CSV, "<${in_csv}") {
+			logmsg error, "unable to open ${in_csv}";
+			return 1;
+		};
+		my $out_csv = "${dir}/${table}.csv";
+		if (!open OUT_CSV, ">${out_csv}") {
+			logmsg error, "unable to open ${out_csv}";
+			return 1;
+		};
+		while (<IN_CSV>) {
+			# trim redundant .0 at end of line if present
+			$_ =~ s/.0$//;
+			print OUT_CSV $_;
+		}
+		close IN_CSV;
+		close OUT_CSV;
+		unlink $in_csv;
 	}
 	
 	# Remove temporary file
@@ -229,13 +251,13 @@ sub run_jet_statement {
 	$ADO_Conn->Open($sConnect);
 	if (Win32::OLE->LastError()) {
 		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
-		exit(100);
+		return 1;
 	}
 
 	$ADO_RS = $ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
 		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
-		exit(100);
+		return 1;
 	}
 
 	my $fields = $ADO_RS->Fields->count;
@@ -254,6 +276,83 @@ sub run_jet_statement {
 	}
 	
 	return $result;
+}
+
+
+# Create a Modgen .scex file
+# arg0 - the output file name
+# arg1 - StartingSeed
+# arg2 - Subsamples (aka replicates for time-based models)
+# arg3 - Cases
+# arg4 - SimulationEnd
+# argN - remaining arguments are .dat files
+# returns - 0 for success, otherwise non-zero
+sub modgen_create_scex
+{
+	my $scex_file     = shift(@_);
+
+	my $StartingSeed  = shift(@_);
+	my $Subsamples    = shift(@_);
+	my $Cases         = shift(@_);
+	my $SimulationEnd = shift(@_);
+
+	# Defaults
+	my %General_attributes = (
+		# case-based
+		Cases => 5000,
+		# time-based
+		SimulationEnd => 100,
+		# common
+		PopulationScaling => 0,
+		Population => 5000,
+		Threads => 1,
+		Subsamples => 1,
+		PartialReports => 0,
+		StartingSeed => 16807,
+		ComputationPriority => "THREAD_PRIORITY_BELOW_NORMAL",
+		CancelPartialResults => "PARTIAL_NO",
+		BackgroundMode => 0,
+		SilentMode => 1,
+		DistributedExecution => 0,
+		DistributedSamples => 1,
+		AccessTracking => 0,
+		MaxTrackedCases => 50,
+		TextTracking => 0,
+		CopyParameters => 0,
+		MemoryReports => 0,
+	);
+
+	# Replace defaults in hash using values supplied in arguments
+	$General_attributes{"StartingSeed"} = $StartingSeed;
+	$General_attributes{"Subsamples"} = $Subsamples;
+	$General_attributes{"Cases"} = $Cases;
+	$General_attributes{"SimulationEnd"} = $SimulationEnd;
+
+	# The XML structure of the .scex file is simple,
+	# so the approach here is to generate it directly rather than use XML::Tiny or XML::LibXML, etc.
+
+	if (!open SCEX, ">${scex_file}") {
+		logmsg error, "unable to open ${scex_file}";
+		return 1;
+	}
+	print SCEX "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	print SCEX "<Scenario ScenarioVersion=\"1.8\">\n";
+	print SCEX "  <General\n";
+	# Iterate all General attributes
+	for my $key(keys %General_attributes){
+		print SCEX "    $key=\"".$General_attributes{$key}."\"\n";
+	}
+	print SCEX "  >\n";
+	print SCEX "  </General>\n";
+	print SCEX "  <Inputs>\n";
+	# Iterate .dat files
+	for my $file (@_) {
+		print SCEX "    <Input>${file}=</Input>\n";
+	}
+	print SCEX "  </Inputs>\n";
+	print SCEX "</Scenario>\n";
+	close SCEX;
+	return 0;
 }
 
 
@@ -323,7 +422,7 @@ sub modgen_tables_to_csv
 		# First output line contains field names
 		for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
 			my $value = $ADO_RS->Fields($field_ordinal)->name;
-			print CSV "\"${value}\"";
+			print CSV "${value}";
 			if ($field_ordinal < $fields - 1) {
 				print CSV ",";
 			}

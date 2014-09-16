@@ -6,14 +6,27 @@
 use strict;
 
 my @models = (
-#	"WizardCaseBased",
+	"Alpha1",
+	"Alpha2",
+	"IDMM",
+	"OzProj",
+	#"Pohem",
+	#"PohemParms",
+	"RiskPaths",
+	"WizardCaseBased",
 	"WizardTimeBased",
-#	"Alpha1",
-#	"Alpha2",
-#	"IDMM",
-#	"RiskPaths",
-#	"PohemParms",
 	);
+
+my $configuration = "Debug";
+#my $configuration = "Release";
+
+my $platform = "Win32";
+#my $platform = "x64";
+	
+my $do_modgen = 1;
+
+my $do_ompp = 1;
+
 	
 use common qw(
 				warning change error info
@@ -33,28 +46,22 @@ if ($@) {
 	exit;
 }
 	
-my @configurations = {
-	"Debug",
-#	"Release",
-};
-
-my @platforms = {
-	"Win32",
-#	"x64",
-};
-
-my $configuration = "Debug";
-#my $configuration = "Release";
-
-my $platform = "Win32";
-#my $platform = "x64";
-	
 my $version = "1.0";
 
 use File::Copy;
-
-# Create absolute directory paths
+use File::Path qw(make_path);
+use File::Compare;
 use Cwd qw(getcwd);
+
+# Steps to install Capture::Tiny (this method requires internet connectivity, there are other ways)
+# (1) open command prompt
+# (2) find and run vsvars32.bat (to get path to nmake into environment)
+#     Normally some place like
+#     "C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\Tools\vsvars32.bat"
+# (3) perl -MCPAN -e "install Capture::Tiny"
+use Capture::Tiny qw/capture tee capture_merged tee_merged/;
+
+
 my $test_models_dir = getcwd;
 chdir "..";
 my $tests_root = getcwd;
@@ -107,216 +114,300 @@ for my $model (@models) {
 		next MODEL;
 	}
 
+	my $modgen_reference_dir = "${test_models_dir}/reference/${model}/modgen";
+	my $modgen_current_dir = "${test_models_dir}/current/${model}/modgen";
+	my $ompp_reference_dir = "${test_models_dir}/reference/${model}/ompp";
+	my $ompp_current_dir = "${test_models_dir}/current/${model}/ompp";
+
 	##########
 	# Modgen 
 	##########
 	
-	my $modgen_model_dir = "${model_dir}/Modgen";
-	if ( ! -d "${modgen_model_dir}" ) {
-		logmsg error, ${model}, "Missing folder ${modgen_model_dir}";
-		next MODEL;
-	}
-
-	# Run Modgen
-	# Modgen.exe output files are written to the Modgen sub folder using the -D option
-	logmsg info, ${model}, "Modgen: Modgen compilation";
-	# Change working directory to model source directory for Modgen compilation.
-	chdir ${model_dir};
-	($merged, $retval) = capture_merged {
-		my @args = (
-			"${modgen_exe}",
-			"-D",
-			"${modgen_model_dir}",
-			"-EN",
-			);
-		system(@args);
-	};
-	if ($retval != 0) {
-		logmsg error, ${model}, "Modgen compile failed";
-		logerrors $merged;
-		next MODEL;
-	}
-
-	# Copy custom.h, etc. to Modgen folder
-	for my $file (glob "${model_dir}/*.h") {
-		copy "$file", "${modgen_model_dir}";
-	}
+	MODGEN: {
 	
-	# Build the model
-	logmsg info, ${model}, "Modgen: C++ compilation";
-	# Change working directory to Modgen sub-directory for C++ compilation.
-	chdir "${modgen_model_dir}";
-	($merged, $retval) = capture_merged {
-		my @args = (
-			"${modgen_devenv_exe}",
-			"${model}.sln",
-			"/BUILD",
-			"Debug",
-			);
-		system(@args);
-	};
-	if ($retval != 0) {
-		logmsg error, ${model}, "C++ compile failed";
-		logerrors $merged;
-		next MODEL;
+		if ($do_modgen != 1 ) {
+			last MODGEN;
+		}
+
+		my $modgen_model_dir = "${model_dir}/Modgen";
+		if ( ! -d "${modgen_model_dir}" ) {
+			logmsg error, $model, "modgen", "Missing folder ${modgen_model_dir}";
+			last MODGEN;
+		}
+
+		# Folder for reference results
+		my $reference_results_dir = $modgen_reference_dir;
+
+		# Folder for current results
+		my $current_results_dir = $modgen_current_dir;
+		if (! -d $current_results_dir) {
+			make_path $current_results_dir;
+		}
+		else {
+			# Delete current contents
+			unlink glob "${current_results_dir}/*.*";
+		}
+		
+		# Run Modgen
+		# Modgen.exe output files are written to the Modgen sub folder using the -D option
+		logmsg info, $model, "modgen", "Modgen compile";
+		my $modgen_log = "${modgen_model_dir}/modgen.log";
+		# Change working directory to model source directory for Modgen compilation.
+		# (This is actually the parent directory.)
+		chdir ${model_dir};
+		($merged, $retval) = capture_merged {
+			my @args = (
+				"${modgen_exe}",
+				"-D",
+				"${modgen_model_dir}",
+				"-EN",
+				);
+			system(@args);
+		};
+		open MODGEN_LOG, ">${modgen_log}";
+		print MODGEN_LOG $merged;
+		close MODGEN_LOG;
+		if ($retval != 0) {
+			logmsg error, $model, "modgen", "Modgen compile failed - see ModgenLog.htm or modgen.log";
+			logerrors $merged;
+			last MODGEN;
+		}
+
+		# Copy custom.h and any other developer header files to Modgen folder
+		for my $file (glob "${model_dir}/*.h") {
+			copy "$file", "${modgen_model_dir}";
+		}
+		
+		# Build the model
+		logmsg info, $model, "modgen", "C++ compile, build executable";
+		my $modgen_devenv_log = "${modgen_model_dir}/devenv.log";
+		unlink $modgen_devenv_log;
+		# Change working directory to Modgen sub-directory for C++ compilation.
+		chdir "${modgen_model_dir}";
+		($merged, $retval) = capture_merged {
+			my @args = (
+				"${modgen_devenv_exe}",
+				"${model}.sln",
+				"/Build", "Debug",
+				"/Out", "${modgen_devenv_log}",
+				);
+			system(@args);
+		};
+		if ($retval != 0) {
+			logmsg error, $model, "modgen", "C++ compile failed - see ${modgen_devenv_log}";
+			logerrors $merged;
+			last MODGEN;
+		}
+
+		my $modgen_model_exe = "${modgen_model_dir}/Debug/${model}.exe";
+		if ( ! -e $modgen_model_exe ) {
+			logmsg error, $model, "modgen", "Missing model executable: $modgen_model_exe";
+			exit 1;
+		}
+		
+		# Prepare the scenario
+		# Copy Base .dat files to Modgen folder
+		for my $file (glob "${model_dir}/Base/*.dat") {
+			copy "$file", "${modgen_model_dir}";
+		}
+		# Copy Fixed .dat files to Modgen folder
+		for my $file (glob "${model_dir}/Fixed/*.dat") {
+			copy "$file", "${modgen_model_dir}";
+		}
+		# Copy the Base scenario file.
+		# TODO - create Base scenario file de novo using list of .dat files and Framework parameters
+		
+		
+		copy "${model_dir}/Base/Base.scex", "${modgen_model_dir}";
+		
+		my $modgen_Base_scex = "${modgen_model_dir}/Base.scex";
+		if ( ! -e $modgen_Base_scex ) {
+			logmsg error, "${model}: Missing Base scenario file: $modgen_Base_scex";
+			last MODGEN;
+		}
+		
+		logmsg info, $model, "modgen", "Run Base scenario";
+		# Delete output database to enable check for success
+		my $modgen_Base_mdb = "${modgen_model_dir}/Base(tbl).mdb";
+		unlink $modgen_Base_mdb;
+		# Change working directory to Modgen sub-directory for running model.
+		chdir "${modgen_model_dir}";
+		($merged, $retval) = capture_merged {
+			my @args = (
+				"${modgen_model_exe}",
+				"-sc",
+				"${modgen_Base_scex}"
+				);
+			system(@args);
+		};
+		# Modgen models return a code of 1 to indicate success
+		# But the code from Perl on a successful run is 256, for some reason.
+		# So just shift the low order bits.
+		$retval >>= 8;
+		if ($retval != 1) {
+			logmsg error, $model, "modgen", "Run model failed - retval=${retval}";
+			logerrors $merged;
+			last MODGEN;
+		}
+		if ( ! -e $modgen_Base_mdb ) {
+			logmsg error, $model, "modgen", "Missing Base scenario database: ${modgen_Base_mdb}";
+			last MODGEN;
+		}
+
+		logmsg info, ${model}, "modgen", "Convert output tables to .csv";
+		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_results_dir)) {
+			last MODGEN;
+		}
+		
+		# Create digests of outputs
+		logmsg info, $model, "modgen", "Create digests of current outputs";
+		chdir "${current_results_dir}";
+		my $digests = create_digest(glob "*.csv");
+		open DIGESTS_TXT, ">digests.txt";
+		print DIGESTS_TXT $digests;
+		close DIGESTS_TXT;
+
+		# If no reference results, copy current results as a starting point
+		if (! -d $reference_results_dir) {
+			logmsg info, $model, "modgen", "No reference outputs - create using current outputs.";
+			make_path $reference_results_dir;
+			chdir $current_results_dir;
+			for (glob "*.*") {
+				copy "$_", "$reference_results_dir";
+			}
+		}
+		
+		# Check for differences between current and reference results
+        if (compare("${current_results_dir}/digests.txt","${reference_results_dir}/digests.txt") == 0) {
+			logmsg info, $model, "modgen", "Current outputs identical to reference outputs";
+        }
+		else {
+			logmsg warning, $model, "modgen", "Current outputs differ from reference outputs";
+		}
 	}
 
-	my $modgen_model_exe = "${modgen_model_dir}/Debug/${model}.exe";
-	if ( ! -e $modgen_model_exe ) {
-		logmsg error, "${model}: Missing model executable: $modgen_model_exe";
-		exit 1;
-	}
-	
-	# Prepare the scenario
-	# Copy Base .dat files to Modgen folder
-	for my $file (glob "${model_dir}/Base/*.dat") {
-		copy "$file", "${modgen_model_dir}";
-	}
+	########
+	# ompp 
+	########
+	OMPP: {
+		if ($do_ompp != 1) {
+			last OMPP;
+		}
 
-	my $modgen_Base_scex = "${modgen_model_dir}/Base.scex";
-	if ( ! -e $modgen_Base_scex ) {
-		logmsg error, "${model}: Missing Base scenario file: $modgen_Base_scex";
-		exit 1;
-	}
-	
-	logmsg info, ${model}, "Modgen: Run Base scenario";
-	# Delete output database to enable check for success
-	my $modgen_Base_mdb = "${modgen_model_dir}/Base(tbl).mdb";
-	unlink $modgen_Base_mdb;
-	# Change working directory to Modgen sub-directory for running model.
-	chdir "${modgen_model_dir}";
-	($merged, $retval) = capture_merged {
-		my @args = (
-			"${modgen_model_exe}",
-			"-sc",
-			"${modgen_Base_scex}"
-			);
-		system(@args);
-	};
-	# Modgen models return a code of 1 to indicate success
-	#if ($retval != 1) {
-	#	logmsg error, ${model}, "Modgen: Run model failed - retval=${retval}";
-	#	logerrors $merged;
-	#	next MODEL;
-	#}
-	if ( ! -e $modgen_Base_mdb ) {
-		logmsg error, "${model}: Missing Base scenario database: ${modgen_Base_mdb}";
-		next MODEL;
-	}
+		# Folder for reference results
+		my $reference_results_dir = $ompp_reference_dir;
 
-	logmsg info, "${model}: Modgen: Convert output tables to .csv";
-	# Prepare directory to hold results for model from this invocation of test_models
-	my $modgen_model_results_dir = "${test_models_dir}/${model}_Modgen_current";
-	if (! -d $modgen_model_results_dir) {
-		mkdir $modgen_model_results_dir;
-	}
-	else {
-		# Delete current contents
-		unlink glob "${modgen_model_results_dir}/*.*";
-	}
-	if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $modgen_model_results_dir)) {
-		next MODEL;
-	}
-	
-	
-	# TEMPORARY Just bail while developing Modgen stuff
-	next MODEL;
-	
-	################
-	# ompp version
-	################
+		# Folder for current results
+		my $current_results_dir = $ompp_current_dir;
+		if (! -d $current_results_dir) {
+			make_path $current_results_dir;
+		}
+		else {
+			# Delete current contents
+			unlink glob "${current_results_dir}/*.*";
+		}
+		
+		# Change working directory to model directory for compilation.
+		chdir ${model_dir};
 
-	# Folder for previously-known-good reference files
-	my $model_reference_dir = "${test_models_dir}/${model}_${configuration}_${platform}_reference";
+		logmsg info, $model, "ompp", "omc compile, C++ compile, build executable, publish model and Base scenario";
+		($merged, $retval) = capture_merged {
+			my @args = (
+				"${msbuild_exe}",
+				"${model}.sln",
+				"/nologo",
+				"/verbosity:normal",
+				"/clp:ForceNoAlign",
+				"/p:Configuration=${configuration}",
+				"/p:Platform=${platform}",
+				"/t:Rebuild"
+				);
+			system(@args);
+		};
+		if ($retval != 0) {
+			logmsg error, $model, "ompp", "build failed";
+			logerrors $merged;
+			last OMPP;
+		}
 
-	# Prepare directory to hold results for model from this invocation of test_models
-	my $model_results_dir = "${test_models_dir}/${model}_${configuration}_${platform}_current";
-	if (! -d $model_results_dir) {
-		mkdir $model_results_dir;
-	}
-	else {
-		# Delete current contents
-		unlink glob "${model_results_dir}/*.*";
-	}
-	
-	# Change working directory to model directory for compilation.
-	chdir ${model_dir};
+		# Executable model generated by build
+		my $target_dir = "${tests_root}/${configuration}/${platform}";
+		my $model_exe = "${target_dir}/${model}.exe";
+		if ( ! -e $model_exe ) {
+			logmsg error, $model, "ompp", "Missing model executable: $model_exe";
+			exit 1;
+		}
 
-	logmsg info, "${model}: ompp: Compile and build";
-	($merged, $retval) = capture_merged {
-		my @args = (
-			"${msbuild_exe}",
-			"${model}.sln",
-			"/nologo",
-			"/verbosity:normal",
-			"/clp:ForceNoAlign",
-			"/p:Configuration=${configuration}",
-			"/p:Platform=${platform}",
-			"/t:Rebuild"
-			);
-		system(@args);
-	};
-	if ($retval != 0) {
-		logmsg error, "${model}: build failed";
-		logerrors $merged;
-		next MODEL;
-	}
+		# Data store generated by build
+		my $model_sqlite = "${target_dir}/${model}.sqlite";
+		if ( ! -e $model_sqlite ) {
+			logmsg error, $model, "ompp", "Missing data store: $model_sqlite";
+			exit 1;
+		}
 
-	# Executable model generated by build
-	my $target_dir = "${tests_root}/${configuration}/${platform}";
-	my $model_exe = "${target_dir}/${model}.exe";
-	if ( ! -e $model_exe ) {
-		logmsg error, "${model}: Missing model executable: $model_exe";
-		exit 1;
-	}
+		logmsg info, $model, "ompp", "Run Base scenario";
+		
+		# Change working directory to target_dir where where executable and data store
+		# are located. This avoids having to specify the data connection string
+		# explicitly when launching the model.
+		chdir "${target_dir}";
+		
+		($merged, $retval) = capture_merged {
+			my @args = (
+				"${model_exe}",
+				"-Base.LogToConsole true",
+				"-Base.LogNoMsgTime true",
+				);
+			system(@args);
+		};
+		if ($retval != 0) {
+			logmsg error, $model, "ompp", "Run Base scenario failed";
+			logerrors $merged;
+			last OMPP;
+		}
 
-	# Data store generated by build
-	my $model_sqlite = "${target_dir}/${model}.sqlite";
-	if ( ! -e $model_sqlite ) {
-		logmsg error, "${model}: Missing data store: $model_sqlite";
-		exit 1;
-	}
+		logmsg info, $model, "ompp", "Convert output tables to .csv";
+		if ( 0 != ompp_tables_to_csv($model_sqlite, $current_results_dir)) {
+			last OMPP;
+		}
+		
+		# Create digests of outputs
+		logmsg info, $model, "ompp", "Create digests of current outputs";
+		chdir "${current_results_dir}";
+		my $digests = create_digest(glob "*.csv");
+		open DIGESTS_TXT, ">digests.txt";
+		print DIGESTS_TXT $digests;
+		close DIGESTS_TXT;
 
-	logmsg info, "${model}: ompp: Run Base scenario";
-	
-	# Change working directory to target_dir where where executable and data store
-	# are located. This avoids having to specify the data connection string
-	# explicitly when launching the model.
-	chdir "${target_dir}";
-	
-	($merged, $retval) = capture_merged {
-		my @args = (
-			"${model_exe}",
-			"-Base.LogToConsole true",
-			"-Base.LogNoMsgTime true",
-			);
-		system(@args);
-	};
-	if ($retval != 0) {
-		logmsg error, "ompp: Run Base scenario failed";
-		logerrors $merged;
-		next MODEL;
-	}
-
-	logmsg info, "${model}: ompp: Convert output tables to .csv";
-	if ( 0 != ompp_tables_to_csv($model_sqlite, $model_results_dir)) {
-		next MODEL;
-	}
-
-	# Create digests of tables
-	logmsg info, $model, "Create digests:\n";
-	chdir "${model_results_dir}";
-	logmsg info, $model, "digest", create_digest(glob "*.csv");
-
-	# Create Reference results by copying Current results if missing.
-	if (! -d $model_reference_dir) {
-		logmsg info, "${model}: ompp: No Reference results - populate using Current results.";
-		mkdir $model_reference_dir;
-		chdir $model_results_dir;
-		for (glob "*.*") {
-			my $f = $_;
-			copy "$model_results_dir/$f", "$model_reference_dir/$f";
+		# If no reference results, copy current results as a starting point
+		if (! -d $reference_results_dir) {
+			logmsg info, $model, "ompp", "No reference outputs - create using current outputs.";
+			make_path $reference_results_dir;
+			chdir $current_results_dir;
+			for (glob "*.*") {
+				copy "$_", "$reference_results_dir";
+			}
+		}
+		
+		# Check for differences between current and reference outputs
+        if (compare("${current_results_dir}/digests.txt","${reference_results_dir}/digests.txt") == 0) {
+			logmsg info, $model, "ompp", "Current outputs identical to reference outputs";
+        }
+		else {
+			logmsg warning, $model, "ompp", "Current outputs differ from reference outputs";
 		}
 	}
 	
+	# Check for differences in current outputs between Modgen and ompp
+	if (-e "${modgen_current_dir}/digests.txt" and -e "${ompp_current_dir}/digests.txt") {
+		if (compare("${modgen_current_dir}/digests.txt","${ompp_current_dir}/digests.txt") == 0) {
+			logmsg info, $model, "ompp", "Modgen comparison", "Outputs identical";
+		}
+		else {
+			logmsg warning, $model, "ompp", "Modgen comparison", "Outputs differ";
+		}
+	}
+	else {
+		logmsg warning, $model, "ompp", "Modgen comparison", "Outputs not compared due to missing digest";
+	}
 }
