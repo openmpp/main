@@ -46,7 +46,7 @@ public:
         , process_increments_fn(nullptr)
         , filter(nullptr)
         , unit(nullptr)
-        , analysis_dim_position(0)
+        , expr_dim_position(0)
         , pp_table_id(-1)
     {
         create_auxiliary_symbols();
@@ -188,12 +188,12 @@ public:
     list<TableAccumulatorSymbol *> pp_accumulators;
 
     /**
-     * The analysis display position.
+     * The expression dimension display position.
      * 
-     * The zero-based ordinal classification after which the analyis dimension will be displayed. If
-     * the analysis dimension is the first dimension displayed, the value is -1.
+     * The zero-based ordinal classification after which the expression dimension will be displayed.
+     * If the expression dimension is the first dimension displayed, the value is -1.
      */
-    int analysis_dim_position;
+    int expr_dim_position;
 
     /**
      * Numeric identifier. Used for communicating with metadata API.
