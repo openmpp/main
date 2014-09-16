@@ -1891,6 +1891,8 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             pc.counter2 = 0;
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
+                            // initialize working counter used for table classification dimensions
+                            pc.counter4 = 0;
                         }
             table_filter_opt
             "{" table_dimension_list "}" ";"
@@ -1902,6 +1904,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             pc.counter1 = 0;
                             pc.counter2 = 0;
                             pc.counter3 = 0;
+                            pc.counter4 = 0;
                         }
     | "table" error ";"
     ;
@@ -1946,8 +1949,16 @@ table_dimension:
                             // (maintained in parallel with dimension_list)
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             pc.get_table_context()->margin_list.push_back(margin_opt);
+                            // increment counter of number of classification dimensions
+                            // (or 0-based ordinal of next classification dimension)
+                            pc.counter4++;
                         }
     | "{" table_expression_list "}"
+                        {
+                            // record analysis dimension position which is the
+                            // 0-based ordinal of the immediately preceding classification dimension.
+                            pc.get_table_context()->analysis_dim_position = pc.counter4 - 1;
+                        }
     ;
 
 table_expression_list:

@@ -28,6 +28,7 @@ public:
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
+        , counter4 (0)
         , cxx_memfunc_gather (false)
         , cxx_memfunc_name ("")
         , parse_errors(0)
@@ -150,6 +151,7 @@ public:
         counter1 = 0;
         counter2 = 0;
         counter3 = 0;
+        counter4 = 0;
         redeclaration = false;
         next_word_is_string = false;
         agent_context = nullptr;
@@ -231,6 +233,11 @@ public:
      * working counter #3 for parsing.
      */
 	int counter3;
+
+    /**
+     * working counter #4 for parsing.
+     */
+	int counter4;
 
     /**
      * true to gather identifiers from C++ member function body.
