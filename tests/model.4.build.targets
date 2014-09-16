@@ -23,8 +23,8 @@
 	    Text="FIXED_PARAMETERS_FOLDER does not exist. Value is $(FIXED_PARAMETERS_FOLDER)"
         Condition=" ( '$(ENABLE_FIXED_PARAMETERS)' == '1' And ! Exists('$(FIXED_PARAMETERS_FOLDER)') )" />
     <Error
-	    Text="GRID_COMPUTING must be either NONE or MPI. Value is $(GRID_COMPUTING)"
-        Condition=" ! ( '$(GRID_COMPUTING)' == 'NONE' Or '$(GRID_COMPUTING)' == 'MPI' )" />
+	    Text="GRID_COMPUTING must be either EMPTY or MPI. Value is $(GRID_COMPUTING)"
+        Condition=" ! ( '$(GRID_COMPUTING)' == 'EMPTY' Or '$(GRID_COMPUTING)' == 'MPI' )" />
     <Error
 	    Text="DB_PROVIDER must be set to SQLITE. Value is $(DB_PROVIDER)"
         Condition=" ! ( '$(DB_PROVIDER)' == 'SQLITE' )" />

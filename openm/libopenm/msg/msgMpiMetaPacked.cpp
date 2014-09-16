@@ -278,6 +278,7 @@ namespace openm
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isSparse)>(val->isSparse, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->unitPos)>(val->unitPos, i_packedSize, io_packedData, io_packPos);
     }
 
     // table_dic: unpack MPI message into db row
@@ -294,6 +295,7 @@ namespace openm
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->isSparse = MpiPacked::unpack<decltype(val->isSparse)>(i_packedSize, i_packedData, io_packPos);
         val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
+        val->unitPos = MpiPacked::unpack<decltype(val->unitPos)>(i_packedSize, i_packedData, io_packPos);
     }
 
     // table_dic: return byte size to pack db row into MPI message
@@ -309,7 +311,8 @@ namespace openm
             MpiPacked::packedSize(typeid(val->isUser)) +
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->isSparse)) +
-            MpiPacked::packedSize(typeid(val->isHidden));
+            MpiPacked::packedSize(typeid(val->isHidden)) +
+            MpiPacked::packedSize(typeid(val->unitPos));
     }
 
     // table_dims: pack db row into MPI message

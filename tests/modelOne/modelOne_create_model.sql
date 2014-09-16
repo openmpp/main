@@ -144,9 +144,9 @@ INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_
 -- modelOne output tables
 --
 INSERT INTO table_dic 
-  (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden) 
+  (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, unit_dim_pos) 
 VALUES 
-  (1, 0, '0_salarySex', 'salarySex', 0, 2, 1, 0);
+  (1, 0, '0_salarySex', 'salarySex', 0, 2, 1, 0, 1);
 
 INSERT INTO table_dic_txt
   (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)

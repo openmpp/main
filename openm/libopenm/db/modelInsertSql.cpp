@@ -269,11 +269,12 @@ template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row
     if (i_row.tableName.length() > 255) throw DbException("invalid (too long) output table name: %s", i_row.tableName.c_str());
     
     if (i_row.rank < 0) throw DbException("invalid (negative) output table %s rank: %d", i_row.tableName.c_str(), i_row.rank);
+    if (i_row.unitPos < -1 || i_row.unitPos > i_row.rank - 1) throw DbException("invalid output table %s analysis dimension position: %d", i_row.tableName.c_str(), i_row.unitPos);
 
     // make sql
     io_wr.outFs <<
         "INSERT INTO table_dic" \
-        " (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden)" \
+        " (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, unit_dim_pos)" \
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << ", ";
@@ -284,7 +285,8 @@ template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row
         (i_row.isUser ? "1, " : "0, ") <<
         i_row.rank << ", " <<
         (i_row.isSparse ? "1, " : "0, ") <<
-        (i_row.isHidden ? "1" : "0") <<
+        (i_row.isHidden ? "1, " : "0, ") <<
+        i_row.unitPos <<
         " FROM id_lst IL WHERE IL.id_key = 'model_id';\n";
     io_wr.throwOnFail();
 }

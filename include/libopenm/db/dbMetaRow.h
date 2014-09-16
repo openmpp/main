@@ -1029,6 +1029,9 @@ namespace openm
         /** is_hidden      SMALLINT NOT NULL     */
         bool isHidden;
 
+        /** unit_dim_pos   INT      NOT NULL     */
+        int unitPos;
+
         /** create row with supplied primary key field values. */
         TableDicRow(int i_modelId, int i_tableId) : 
             modelId(i_modelId), 
@@ -1038,7 +1041,8 @@ namespace openm
             isUser(false),
             rank(1),
             isSparse(false),
-            isHidden(false)
+            isHidden(false),
+            unitPos(-1)
         { }
 
         /** create row with default empty field values. */

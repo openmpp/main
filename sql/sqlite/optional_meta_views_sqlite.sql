@@ -287,10 +287,7 @@ SELECT
   T.descr          AS "Description",
   T.note           AS "Note",
   M.table_rank     AS "Rank",
-  (
-    SELECT MAX(DM.dim_pos) + 1 FROM table_dims DM WHERE DM.model_id = M.model_id AND DM.table_id = M.table_id
-  )
-  AS "AnalysisDimensionPosition", 
+  M.unit_dim_pos   AS "AnalysisDimensionPosition", 
   M.table_name || '.DimA' AS "AnalysisDimensionName", 
   T.unit_descr     AS "AnalysisDimensionDescription",
   T.unit_note      AS "AnalysisDimensionNote",
@@ -309,10 +306,7 @@ SELECT
   T.descr          AS "Description",
   T.note           AS "Note",
   M.table_rank     AS "Rank",
-  (
-    SELECT MAX(DM.dim_pos) + 1 FROM table_dims DM WHERE DM.model_id = M.model_id AND DM.table_id = M.table_id
-  )
-  AS "AnalysisDimensionPosition", 
+  M.unit_dim_pos   AS "AnalysisDimensionPosition", 
   M.table_name || '.DimA' AS "AnalysisDimensionName", 
   T.unit_descr     AS "AnalysisDimensionDescription",
   T.unit_note      AS "AnalysisDimensionNote",

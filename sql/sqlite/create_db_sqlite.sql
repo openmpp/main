@@ -378,6 +378,7 @@ CREATE TABLE IF NOT EXISTS table_dic
   table_rank     INT          NOT NULL, -- table rank
   is_sparse      SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
   is_hidden      SMALLINT     NOT NULL, -- if <> 0 then table is hidden
+  unit_dim_pos   INT          NOT NULL, -- table expressions dimension (analysis dimension) position
   PRIMARY KEY (model_id, table_id),
   CONSTRAINT table_dic_un UNIQUE (model_id, db_name_suffix),
   CONSTRAINT table_dic_mk 

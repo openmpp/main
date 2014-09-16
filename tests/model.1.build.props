@@ -82,9 +82,12 @@
   <!-- 
   Use this to choose database library provider, now only SQlite supported
     SQLITE - use SQlite version
-	
-	Pass through the value from the User Macro DB_PROVIDER in OpenM++.props.
+  Pass through the value from the User Macro DB_PROVIDER in OpenM++.props.
   -->
+  <PropertyGroup Condition="'$(DB_PROVIDER)'==''">
+    <DB_PROVIDER>SQLITE</DB_PROVIDER>
+  </PropertyGroup>
+
   <PropertyGroup>
     <OM_DB_USE>$(DB_PROVIDER)</OM_DB_USE>
   </PropertyGroup>
@@ -99,15 +102,18 @@
   <!-- 
   Use this to choose message passing library provider
     MPI   - use MPI-based version (you must have MS-MPI installed)
-    NONE - use empty version of the library which does nothing
-	
-	Pass through the value from the User Macro GRID_COMPUTING in OpenM++.props.
+    EMPTY - use empty version of the library which does nothing
+  Pass through the value from the User Macro GRID_COMPUTING in OpenM++.props.
   -->
+  <PropertyGroup Condition="'$(GRID_COMPUTING)'==''">
+    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
+  </PropertyGroup>
+
   <PropertyGroup>
     <OM_MSG_USE>$(GRID_COMPUTING)</OM_MSG_USE>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(OM_MSG_USE)'=='NONE'">
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='EMPTY'">
     <OM_MSG_DEF>OM_MSG_EMPTY</OM_MSG_DEF>
     <OM_MSG_INC></OM_MSG_INC>
     <OM_MSG_LIB></OM_MSG_LIB>
