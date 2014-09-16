@@ -444,7 +444,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.rank = rank();
     tableDic.isSparse = true;   // do not store NULLs
     tableDic.isHidden = false;
-    tableDic.unitPos = rank() - 1;
+    tableDic.unitPos = expr_dim_position;
     metaRows.tableDic.push_back(tableDic);
 
     for (auto lang : Symbol::pp_all_languages) {
