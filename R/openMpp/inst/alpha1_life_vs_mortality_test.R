@@ -30,6 +30,9 @@ MortalityHazard <- list(
   )
 )
 
+SimulationCases <- list(name = "SimulationCases", value = 5000)
+SimulationSeed <- list(name = "SimulationSeed", value = 16807)
+
 #
 # name, description and notes for this set of model parameters
 #
@@ -49,7 +52,10 @@ invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
 
 defRs <- getModel(theDb, "Alpha1")      # find Alpha1 model in database
 
-setId <- createWorkset(theDb, defRs, paramSetTxt, MortalityHazard, HappinessReversalHazard)
+setId <- createWorkset(
+  theDb, defRs, paramSetTxt, 
+  MortalityHazard, HappinessReversalHazard, SimulationCases, SimulationSeed
+)
 if (setId <= 0L) stop("workset creation failed")
 
 setReadonlyWorkset(theDb, defRs, TRUE, setId)  # workset must be read-only to run the model
@@ -69,7 +75,7 @@ for (mortality in mortalityData$value)
   system2(
     "/mirror/omrun", 
     paste(
-      "-n 16 /mirror/alpha1",
+      "-n 16 /mirror/Alpha1",
       " -Parameter.MortalityHazard ", mortality,
       " -OpenM.SetId ", setId, 
       " -OpenM.LogToConsole false",
