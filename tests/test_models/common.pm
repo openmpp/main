@@ -397,7 +397,7 @@ sub modgen_tables_to_csv
 
 	# Get all of the output table names
 	my $ADO_RS = Win32::OLE->new('ADODB.Recordset');
-	my $sql = "Select Name, Rank From TableDic Where LanguageID = 0;";
+	my $sql = "Select Name, Rank, AnalysisDimensionPosition From TableDic Where LanguageID = 0;";
 	$ADO_RS = $ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
 		logmsg error, "OLE", Win32::OLE->LastError();
@@ -407,9 +407,11 @@ sub modgen_tables_to_csv
 	# Iterate the recordset and create lists of table names and ranks
 	my @tables;
 	my @ranks;
+	my @expr_positions;
 	while ( !$ADO_RS->EOF ) {
 		push @tables, $ADO_RS->Fields(0)->value;
 		push @ranks, $ADO_RS->Fields(1)->value;
+		push @expr_positions, $ADO_RS->Fields(2)->value;
 		$ADO_RS->MoveNext;
 	}
 	#logmsg info, "tables", join("\n", @tables);
@@ -418,26 +420,58 @@ sub modgen_tables_to_csv
 	for my $j (0..$#tables) {
 		my $table = @tables[$j];
 		my $rank = @ranks[$j];
+		my $expr_position = @expr_positions[$j];
+		
 		if (!open CSV, ">${dir}/${table}.csv") {
 			logmsg error, "error opening >${dir}/${table}.csv";
 		}
-		my $sql = "Select ";
+
+		# construct permuted dimension list which puts analysis dimension last
+		my $dim_list;
 		for (my $dim = 0; $dim < $rank; ++$dim) {
-			$sql .= "Dim${dim}, ";
+			if ($dim > 0) {
+				$dim_list .= ", ";
+			}
+			
+			my $permuted_dim;
+			if ($dim < $expr_position) {
+				# dimensions before the analysis dimension are unchanged for permuted order
+				$permuted_dim = $dim;
+			}
+			elsif ($dim == $rank - 1) {
+				# analysis dimension is last dimension for permuted order
+				$permuted_dim = $expr_position;
+			}
+			elsif ($dim >= $expr_position) {
+				# skip over the analysis dimension for permuted order
+				$permuted_dim = $dim + 1;
+			}
+
+			$dim_list .= "Dim${permuted_dim}";
 		}
-		$sql .= "Value From ${table};";
+		#logmsg info, "dim_list", $dim_list;
+		
+		my $sql = "Select ";
+		if ($rank > 0) {
+			$sql .= "${dim_list}, ";
+		}
+		$sql .= "Value From ${table}";
+		if ($rank > 0) {
+			$sql .= " Order By ${dim_list}";
+		}
+		$sql .= ";";
 		#logmsg info, "sql", $sql;
+		
 		$ADO_RS = $ADO_Conn->Execute($sql);
 		my $fields = $ADO_RS->Fields->count;
 		# First output line contains field names
-		for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
-			my $value = $ADO_RS->Fields($field_ordinal)->name;
-			print CSV "${value}";
-			if ($field_ordinal < $fields - 1) {
-				print CSV ",";
-			}
+		# Note that these are not the permuted names.
+		# This is to generate csv's which look like those form ompp,
+		# where the analysis dimension is always last.
+		for (my $dim = 0; $dim < $rank; ++$dim) {
+			print CSV "Dim${dim},";
 		}
-		print CSV "\n";
+		print CSV "Value\n";
 
 		# data lines
 		while ( !$ADO_RS->EOF ) {

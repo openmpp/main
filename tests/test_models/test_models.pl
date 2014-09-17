@@ -6,15 +6,15 @@
 use strict;
 
 my @models = (
-	"Alpha1",
-	"Alpha2",
-	"IDMM",
+#	"Alpha1",
+#	"Alpha2",
+#	"IDMM",
 #	"OzProj",
-	#"Pohem",
+	"Pohem",
 	#"PohemParms",
-	"RiskPaths",
-	"WizardCaseBased",
-	"WizardTimeBased",
+#	"RiskPaths",
+#	"WizardCaseBased",
+#	"WizardTimeBased",
 	);
 
 my $configuration = "Debug";
@@ -246,7 +246,8 @@ for my $model (@models) {
 			my @args = (
 				"${modgen_model_exe}",
 				"-sc",
-				"${modgen_Base_scex}"
+				"${modgen_Base_scex}",
+				"-s", # silent mode
 				);
 			system(@args);
 		};
@@ -264,6 +265,12 @@ for my $model (@models) {
 			last MODGEN;
 		}
 
+		# If present, copy event trace / case checksum file to results directory
+		my $modgen_Base_debug_txt = "Base(debug).txt";
+		if (-e $modgen_Base_debug_txt) {
+			copy $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
+		}
+
 		logmsg info, ${model}, "modgen", "Convert output tables to .csv";
 		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_results_dir)) {
 			last MODGEN;
@@ -272,7 +279,7 @@ for my $model (@models) {
 		# Create digests of outputs
 		logmsg info, $model, "modgen", "Create digests of current outputs";
 		chdir "${current_results_dir}";
-		my $digests = create_digest(glob "*.csv");
+		my $digests = create_digest(glob "*.csv *.txt");
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
@@ -357,16 +364,20 @@ for my $model (@models) {
 
 		logmsg info, $model, "ompp", "Run Base scenario";
 		
-		# Change working directory to target_dir where where executable and data store
+		# Change working directory to target_dir where the executable and data store
 		# are located. This avoids having to specify the data connection string
 		# explicitly when launching the model.
 		chdir "${target_dir}";
 		
+		my $ompp_trace_txt = "${model}_Base_trace.txt";
+		my $ompp_log_txt = "${model}_Base_log.txt";
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${model_exe}",
-				"-Base.LogToConsole true",
-				"-Base.LogNoMsgTime true",
+				"-OpenM.LogToFile", "true",
+				"-OpenM.LogFilePath", $ompp_log_txt,
+				"-OpenM.TraceToFile", "true",
+				"-OpenM.TraceFilePath", $ompp_trace_txt,
 				);
 			system(@args);
 		};
@@ -374,6 +385,11 @@ for my $model (@models) {
 			logmsg error, $model, "ompp", "Run Base scenario failed";
 			logerrors $merged;
 			last OMPP;
+		}
+
+		# If present and non-empty copy event trace / case checksum file to results directory
+		if (-s $ompp_trace_txt) {
+			copy $ompp_trace_txt, "${current_results_dir}/trace.txt";
 		}
 
 		logmsg info, $model, "ompp", "Convert output tables to .csv";
@@ -384,7 +400,7 @@ for my $model (@models) {
 		# Create digests of outputs
 		logmsg info, $model, "ompp", "Create digests of current outputs";
 		chdir "${current_results_dir}";
-		my $digests = create_digest(glob "*.csv");
+		my $digests = create_digest(glob "*.csv *.txt");
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
