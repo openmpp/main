@@ -155,7 +155,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     h += "};";
 
     h += "// splitter map for partition";
-    h += "extern const map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter = {";
+    h += "const map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter = {";
     index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);

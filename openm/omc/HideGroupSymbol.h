@@ -21,9 +21,9 @@ public:
     bool is_base_symbol() const { return false; }
 
     /**
-    * constructor
-    *
-    * @param [in,out]  sym The symbol to be morphed.
+    * Constructor.
+    * 
+    * A unique name is generated using a counter.
     */
     HideGroupSymbol(yy::location decl_loc = yy::location())
         : GroupSymbol("om_hide_" + to_string(++counter), decl_loc)

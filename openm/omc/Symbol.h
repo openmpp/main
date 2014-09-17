@@ -30,6 +30,7 @@ class TableGroupSymbol;
 class HideGroupSymbol;
 class DependencyGroupSymbol;
 class GlobalFuncSymbol;
+class AggregationSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -37,25 +38,20 @@ namespace openm {
 
 using namespace std;
 
-
 /**
  * Defines an alias used to reference bison-generated token values.
  * 
  * For example token::TK_agent is the value of the bison-generated token associated with the
  * openM++ keyword 'agent'.
  */
-
 typedef yy::parser::token token;
-
 
 /**
  * Defines an alias for the bison-generated enum holding token values.
  * 
  * Used to declare members, function arguments, and return values for token values.
  */
-
 typedef yy::parser::token_type token_type;
-
 
 /**
  * Defines an alias representing the type of the symbol table.
@@ -66,14 +62,11 @@ typedef yy::parser::token_type token_type;
  * instance of a derived class of Symbol.  Morphing requires that any persistent use of a Symbol
  * in another object must be through an additional level of indirection, i.e. Symbol **.
  */
-
 typedef unordered_map<string, Symbol *> symbol_map_type;
-
 
 /**
  * Defines an alias representing the type of a pair in the symbol table.
  */
-
 typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 
 
@@ -97,18 +90,14 @@ namespace std {
     };
 }
 
-
 /**
  * Defines an alias representing type of the comment map.
  */
-
 typedef unordered_map<yy::location, string> comment_map_type;
-
 
 /**
  * Defines an alias representing type of a pair in the comment map.
  */
-
 typedef unordered_map<yy::location, string>::value_type comment_map_value_type;
 
 
@@ -123,7 +112,6 @@ typedef unordered_map<yy::location, string>::value_type comment_map_value_type;
 // Actually, it's a reference to the second pair of the element for the symbol in the symbol table (the first element of the pair is the name)
 // The underlying collection std::unordered_map guarantees that references and pointers remain valid even if rehashing occurs.
 
-
 /**
  * A Symbol is a named syntactic entity in openM++.
  * 
@@ -135,7 +123,6 @@ typedef unordered_map<yy::location, string>::value_type comment_map_value_type;
  * The Symbol class also contains static members which provide all functionality associated with
  * the symbol table.
  */
-
 class Symbol {
 public:
 
@@ -909,6 +896,13 @@ public:
      * Populated after parsing is complete.
      */
     static list<GlobalFuncSymbol *> pp_all_global_funcs;
+
+    /**
+     * The aggregations in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<AggregationSymbol *> pp_all_aggregations;
 
     /**
      * The dependency groups in the model

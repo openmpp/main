@@ -166,6 +166,7 @@
     <ClInclude Include="AgentMultilinkSymbol.h" />
     <ClInclude Include="AgentSymbol.h" />
     <ClInclude Include="AgentVarSymbol.h" />
+    <ClInclude Include="AggregationSymbol.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="BoolEnumeratorSymbol.h" />
     <ClInclude Include="BoolSymbol.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="AgentMultilinkSymbol.cpp" />
     <ClCompile Include="AgentSymbol.cpp" />
     <ClCompile Include="AgentVarSymbol.cpp" />
+    <ClCompile Include="AggregationSymbol.cpp" />
     <ClCompile Include="BoolSymbol.cpp" />
     <ClCompile Include="BuiltinAgentVarSymbol.cpp" />
     <ClCompile Include="ClassificationSymbol.cpp" />

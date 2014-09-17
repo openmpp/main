@@ -20,6 +20,7 @@
 #include "TimeSymbol.h"
 #include "RealSymbol.h"
 #include "BoolSymbol.h"
+#include "AggregationSymbol.h"
 #include "ExprForAgentVar.h"
 #include "Literal.h"
 #include "CodeBlock.h"
@@ -1338,8 +1339,32 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_aggregate:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
+        auto *av = pp_av1;
+        assert(av); // observed
+        assert(pp_cls);
+        auto typ = av->pp_data_type;
+        if (!typ->is_classification()) {
+            pp_error("error - observed attribute '" + av->name + "' must be of type classification in " + pretty_name());
+            break;
+        }
+        auto from = dynamic_cast<ClassificationSymbol *>(typ);
+        assert(from); // logic guarantee
+        auto to = pp_cls;
+        // find the required aggregation
+        string aggregation_name = AggregationSymbol::symbol_name(from, to);
+        auto agg = dynamic_cast<AggregationSymbol *>(get_symbol(aggregation_name));
+        if (!agg) {
+            pp_error("error - required aggregation from '" + from->name + "' to '" + to->name + "' is missing for " + pretty_name());
+            break;
+        }
+
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Maintain " + pretty_name();
+        c += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
+
+        init_cxx += "// Initialize " + pretty_name();
+        init_cxx += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
         break;
     }
     case token::TK_trigger_entrances:

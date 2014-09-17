@@ -23,6 +23,7 @@ void CodeGen::do_all()
 	do_preamble();
 
 	do_types();
+	do_aggregations();
 	do_parameters();
 	do_tables();
 	do_agents();
@@ -204,6 +205,21 @@ void CodeGen::do_types()
     for (auto type : Symbol::pp_all_types1) {
         type->populate_metadata(metaRows);
     }
+}
+
+void CodeGen::do_aggregations()
+{
+    if (Symbol::pp_all_aggregations.empty()) return;
+
+    // parameter declarations
+	h += "// model aggregations";
+	c += "// model aggregations";
+    for ( auto aggregation : Symbol::pp_all_aggregations ) {
+        h += aggregation->cxx_declaration_global();
+        c += aggregation->cxx_definition_global();
+    }
+	h += "";
+	c += "";
 }
 
 void CodeGen::do_parameters()

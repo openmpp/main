@@ -46,6 +46,7 @@ public:
 	void do_model_name();
 	void do_time_stamp();
 	void do_types();
+	void do_aggregations();
 	void do_parameters();
 	void do_agents();
 	void do_entity_sets();

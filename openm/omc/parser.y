@@ -819,29 +819,25 @@ classification_levels:
  */
 
 decl_aggregation:
-      "aggregation" SYMBOL[class1] "," SYMBOL[class2]
+      "aggregation"[kw] SYMBOL[to_class] "," SYMBOL[from_class]
+            "{" symbol_list "}" ";"
                         {
-                            // initialize working counter used for classification levels
-                            pc.counter1 = 0;
+                            if (AggregationSymbol::exists($from_class, $to_class)) {
+                                // redeclaration not allowed
+                                error(@kw, "error: An aggregation from '" + $from_class->name + "' to '" + $to_class->name + "' already exists");
+                            }
+                            // create new AggregationSymbol
+                            auto *agg = new AggregationSymbol( $from_class, $to_class, @kw );
+                            assert(agg);
+                            list<Symbol *> *pls = $symbol_list;
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) agg->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
+                            delete pls;
                         }
-            "{" aggregation_levels "}" ";"
-                        {
-                            // No valid classification context
-                            pc.set_classification_context( nullptr );
-                        }
-            | "aggregation" "{" error "}" ";"
+    | "aggregation" "{" error "}" ";"
+	| "aggregation" error ";"
             ;
-
-aggregation_levels:
-      SYMBOL
-                        {
-                            pc.counter1++;  // counter for classification levels
-                        }
-      | aggregation_levels "," SYMBOL
-                        {
-                            pc.counter1++;  // counter for classification levels
-                        }
-	;
 
 /*
  * partition

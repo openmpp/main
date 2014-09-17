@@ -231,6 +231,9 @@
     <ClInclude Include="Constant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AggregationSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -402,6 +405,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Constant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AggregationSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

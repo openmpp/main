@@ -6,15 +6,15 @@
 use strict;
 
 my @models = (
-#	"Alpha1",
-#	"Alpha2",
-#	"IDMM",
+	"Alpha1",
+	"Alpha2",
+	"IDMM",
 #	"OzProj",
-	"Pohem",
+#	"Pohem",
 	#"PohemParms",
-#	"RiskPaths",
-#	"WizardCaseBased",
-#	"WizardTimeBased",
+	"RiskPaths",
+	"WizardCaseBased",
+	"WizardTimeBased",
 	);
 
 my $configuration = "Debug";
