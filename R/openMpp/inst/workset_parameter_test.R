@@ -1,6 +1,6 @@
 #
 # To run this test you must have modelOne database m1.sqlite in your home directory
-# It must contain "modelOne" model and run_id = 11 (see runId usage below)
+# It must contain "modelOne" model and run_id = 11 and 12 (see runId usage below)
 #
 library("openMpp")
 
@@ -140,6 +140,36 @@ runId <- 11L
 
 setId <- createWorksetBasedOnRun(theDb, defRs, runId, NA, salaryAge)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+
+# 
+# create new working set of model parameters based on existing model run results
+#
+# that new workset is a subset, which does not include any parameters yet
+# it is based on existing model run with run_id = 11 
+# and all model parameters (i.e.: "ageSex") would get values from that run
+#
+runId <- 11L
+otherRunId <- 12L
+
+paramSetTxt$name <- "otherSet"
+paramSetTxt$descr <- c("initially empty set of parameters")
+
+setId <- createWorksetBasedOnRun(theDb, defRs, runId, paramSetTxt)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+
+# copy ageSex parameter values from model run with run_id = 12
+ageSexCopy <- list(
+
+  name = "ageSex",  # parameter name
+
+  txt = data.frame(
+    lang = c("EN"),
+    note = c("age by sex value copy from other model run"),
+    stringsAsFactors = FALSE
+  )
+)
+
+copyWorksetParameterFromRun(theDb, defRs, setId, otherRunId, ageSexCopy)
 
 #
 # update parameters working set (set_id=3) with new values and value notes 

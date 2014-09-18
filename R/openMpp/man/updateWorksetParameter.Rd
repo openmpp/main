@@ -20,13 +20,13 @@ updateWorksetParameter(dbCon, defRs, worksetId, ...)
     id of parameters working set, must be positive integer
   }
   \item{\dots}{
-    list of parameters value and (optional) value notes.
+    list of parameters value and value notes.
     
     Each element is also a list of $name, $value and $txt:
     \itemize{
       \item \code{$name} parameter name (character) 
-      \item \code{$value} parameter value
-        it can be scalar value, vector or data frame
+      \item \code{$value} (optional) parameter value
+        it can be scalar value. vector or data frame
         size of $value must be equal to production of dimension sizes
         if data frame then 
           it must have $dim0, $dim1,..., $value columns
@@ -66,7 +66,7 @@ by \code{setReadonlyDefaultWorkset} or \code{setReadonlyWorkset} calls.
 You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
-  Return id of working set or 0L if not found
+  Return id of working set or 0L on error
 }
 \references{
 OpenM++ documentation: http://ompp.sourceforge.net/wiki/
@@ -75,7 +75,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 amc1999
 }
 \note{
-To run examples you must have modelOne database m1.sqlite in your home directory
+To run examples you must have modelOne database modelOne.sqlite in your home directory
 }
 
 \seealso{
@@ -83,6 +83,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   \code{\link{getWorksetIdByName}}
   \code{\link{createWorkset}}
   \code{\link{createWorksetBasedOnRun}}
+  \code{\link{copyWorksetParameterFromRun}}
   \code{\link{setReadonlyWorkset}}
   \code{\link{setReadonlyDefaultWorkset}}
 }
@@ -115,7 +116,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
     )
   )
   
-  theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
+  theDb <- dbConnect("SQLite", "~/modelOne.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
   
   # get model by name: use such call if you have only one version of the model

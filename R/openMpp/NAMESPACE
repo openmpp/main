@@ -4,6 +4,7 @@ import(RSQLite)
 export(
   createWorkset,
   createWorksetBasedOnRun,
+  copyWorksetParameterFromRun,
   getLanguages,
   getModel,
   getWorksetIdByName,

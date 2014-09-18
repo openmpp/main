@@ -1,15 +1,14 @@
-\name{createWorksetBasedOnRun}
-\alias{createWorksetBasedOnRun}
+\name{copyWorksetParameterFromRun}
+\alias{copyWorksetParameterFromRun}
 \title{
-Create new working set of model parameters
+Copy parameters to working set from existing model run
 }
 \description{
-Create new working set of model parameters
+Copy parameters to working set from existing model run with new value notes
 }
 \usage{
-createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
+copyWorksetParameterFromRun(dbCon, defRs, worksetId, baseRunId, ...)
 }
-
 \arguments{
   \item{dbCon}{
     database connection
@@ -17,39 +16,25 @@ createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
   \item{defRs}{
     model definition: database rows describing model input parameters and output tables
   }
+  \item{worksetId}{
+    id of parameters working set, must be positive integer
+  }
   \item{baseRunId}{
     id of model run results, must be positive integer
   }
-  \item{worksetTxt}{
-    if not NA then workset text data frame:
-    \itemize{
-      \item \code{$name} (optional) working set name
-      \item \code{$lang} language code 
-      \item \code{$descr} working set description 
-      \item \code{$note} (optional) working set notes 
-    }
-  }
   \item{\dots}{
-    list of parameters value and (optional) value notes.
+    list of parameters value and value notes.
     
-    Each element is also a list of $name, $value and $txt:
+    Each element is also a list of $name and $txt:
     \itemize{
       \item \code{$name} parameter name (character) 
-      \item \code{$value} parameter value
-        it can be scalar value, vector or data frame
-        size of $value must be equal to production of dimension sizes
-        if data frame then 
-          it must have $dim0, $dim1,..., $value columns
-          and each column length is equal to production of dimension sizes
       \item \code{$txt} (optional) workset parameter text:
         data frame with $lang = language code and $note = value notes
     }
   }
 }
-
 \details{
-That call allow you to create new working set of model parameters as combination of 
-existing parameters from previous model run and some new parameters passed through \dots argument(s)
+That call allow you to add a of copy input parameter value from existing model run into workset and update value notes.
 
 Workset is a working set of model parameters and can be a full set, 
 which include values of all model parameters or subset and include only some parameters.
@@ -71,13 +56,14 @@ Otherwise you have to pass ALL (full set) of parameters in order to create works
 Each workset has unique set id (positive integer) and also may have a name. 
 To find set id by name use \code{\link{getWorksetIdByName}} call.
 
-Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
-after \code{createWorksetBasedOnRun}.
+Working set must be not read-only in order to add parameters by \code{\link{copyWorksetParameterFromRun}}.
+And working set must be read-only to run the model, so, typically you want to wrap \code{\link{copyWorksetParameterFromRun}}
+by \code{setReadonlyDefaultWorkset} or \code{setReadonlyWorkset} calls.
 
 You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
-  Return id of new working set or 0L on error
+  Return id of working set or 0L on error
 }
 \references{
 OpenM++ documentation: http://ompp.sourceforge.net/wiki/
@@ -86,7 +72,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 amc1999
 }
 \note{
-To run examples you must have modelOne database modelOne.sqlite in your home directory.
+To run examples you must have modelOne database modelOne.sqlite in your home directory
 It must contain run_id = 11 and 12 (see runId usage below)
 }
 
@@ -94,7 +80,7 @@ It must contain run_id = 11 and 12 (see runId usage below)
   \code{\link{getModel}}
   \code{\link{getWorksetIdByName}}
   \code{\link{createWorkset}}
-  \code{\link{copyWorksetParameterFromRun}}
+  \code{\link{createWorksetBasedOnRun}}
   \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
   \code{\link{setReadonlyDefaultWorkset}}
@@ -107,24 +93,6 @@ It must contain run_id = 11 and 12 (see runId usage below)
   #   starting seed parameter integer value
   #
   
-  # salary by age parameter value and notes
-  salaryAge <- list(
-    
-    name = "salaryAge",
-    
-    txt = data.frame(
-      lang = c("EN", "FR"),
-      note = c("salary by age value notes", "FR salary by age value notes"),
-      stringsAsFactors = FALSE
-    ),
-    value = c(
-      100L,
-      rep(c(10L, 20L, 30L), times = 3),
-      200L,
-      300L
-    )
-  )
-  
   #
   # name, description and notes for this set of model parameters
   #
@@ -135,6 +103,21 @@ It must contain run_id = 11 and 12 (see runId usage below)
     note = "new set of parameters with updated salary by age",
     stringsAsFactors = FALSE
   )
+
+  # age by sex parameter value notes
+  ageSex <- list(
+    
+    name = "ageSex",  # parameter name
+    
+    txt = data.frame(
+      lang = c("EN", "FR"),
+      note = c(
+        "age by sex value notes", # EN value notes
+        NA                        # NA == no FR value notes 
+      ),
+      stringsAsFactors = FALSE
+    )
+  )
   
   theDb <- dbConnect("SQLite", "~/modelOne.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
@@ -143,23 +126,23 @@ It must contain run_id = 11 and 12 (see runId usage below)
   defRs <- getModel(theDb, "modelOne")
   
   #
-  # pass new value for salaryAge parameter
-  # for all other parameters use previous model run with id = 11 
+  # create new working set
+  # for all parameters use previous model run with id = 11 
   #
-  setId <- createWorksetBasedOnRun(theDb, defRs, 11L, paramSetTxt, salaryAge)
+  setId <- createWorksetBasedOnRun(theDb, defRs, 11L, paramSetTxt)
   if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
   
   #
   # copy ageSex parameter value from model run with id = 12
   #
-  copyWorksetParameterFromRun(theDb, defRs, setId, 12L, list(name = "ageSex"))
+  copyWorksetParameterFromRun(theDb, defRs, setId, 12L, ageSex)
   
   # make workset read-only in order to run the model
   setReadonlyWorkset(theDb, defRs, TRUE, setId)
   
   dbDisconnect(theDb)
   #
-  # you can run the model now with new salaryAge parameter value and ageSex value from other run results
+  # you can run the model now with new ageSex parameter value
   #
 }
 \keyword{ OpenM++ }

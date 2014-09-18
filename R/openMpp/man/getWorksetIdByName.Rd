@@ -35,7 +35,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 amc1999
 }
 \note{
-To run examples you must have modelOne database m1.sqlite in your home directory
+To run examples you must have modelOne database modelOne.sqlite in your home directory
 }
 
 \seealso{
@@ -43,7 +43,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   \code{\link{getWorksetRunIds}}
 }
 \examples{
-  theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
+  theDb <- dbConnect("SQLite", "~/modelOne.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
 
   # get model by name: use such call if you have only one version of the model

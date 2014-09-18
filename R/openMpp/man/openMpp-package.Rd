@@ -12,8 +12,8 @@ Read and write OpenM++ database from R
 \tabular{ll}{
 Package: \tab openMpp\cr
 Type: \tab Package\cr
-Version: \tab 0.2\cr
-Date: \tab 2014-02-28\cr
+Version: \tab 0.4\cr
+Date: \tab 2014-09-17\cr
 License: \tab MIT license\cr
 }
   \describe{
@@ -22,6 +22,9 @@ License: \tab MIT license\cr
     }
     \item{createWorksetBasedOnRun}{
       Create new working set of model parameters based on parameters from existing model run 
+    }
+    \item{copyWorksetParameterFromRun}{
+      Copy parameters to working set from existing model run
     }
     \item{getLanguages}{
       Return language rows from lang_lst table
@@ -71,6 +74,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 \seealso{
   \code{\link{createWorkset}}
   \code{\link{createWorksetBasedOnRun}}
+  \code{\link{copyWorksetParameterFromRun}}
   \code{\link{getLanguages}}
   \code{\link{getModel}}
   \code{\link{getWorksetIdByName}}

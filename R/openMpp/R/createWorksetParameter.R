@@ -38,7 +38,7 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
   if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
   
   # create new workset
-  setId <- createWorksetParameter(dbCon, defRs, FALSE, NA, worksetTxt, ...)
+  setId <- createNewWorkset(dbCon, defRs, FALSE, NA, worksetTxt, ...)
   return(setId)
 }
 
@@ -99,7 +99,7 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
   }
 
   # create new workset
-  setId <- createWorksetParameter(dbCon, defRs, TRUE, baseRunId, worksetTxt, ...)
+  setId <- createNewWorkset(dbCon, defRs, TRUE, baseRunId, worksetTxt, ...)
   return(setId)
 }
 
@@ -131,7 +131,7 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt, ...)
+createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -142,9 +142,9 @@ createWorksetParameter <- function(dbCon, defRs, i_isRunBased, i_baseRunId, work
 
   # get list of languages and validate parameters data
   wsParamLst <- list(...)
-  if (length(wsParamLst) <= 0) stop("invalid (missing) workset parameters list")
+  if (!i_isRunBased && length(wsParamLst) <= 0) stop("invalid (missing) workset parameters list")
   
-  if (!validateParameterValueLst(defRs$langLst, wsParamLst)) return(0L)
+  if (length(wsParamLst) > 0 && !validateParameterValueLst(defRs$langLst, TRUE, wsParamLst)) return(0L)
 
   # validate workset text
   isAnyWsTxt <- validateWorksetTxt(defRs$langLst, worksetTxt)

@@ -7,7 +7,7 @@ Return ids of model run results for specified working set
 Return ids of model run results where input parameters are from specified working set
 }
 \usage{
-getWorksetRunIds(dbCon)
+getWorksetRunIds(dbCon, worksetId)
 }
 \arguments{
   \item{dbCon}{
@@ -30,7 +30,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 amc1999
 }
 \note{
-To run examples you must have modelOne database m1.sqlite in your home directory
+To run examples you must have modelOne database modelOne.sqlite in your home directory
 }
 
 \seealso{
@@ -38,7 +38,7 @@ To run examples you must have modelOne database m1.sqlite in your home directory
   \code{\link{getWorksetIdByName}}
 }
 \examples{
-  theDb <- dbConnect("SQLite", "~/m1.sqlite", synchronous = 2)
+  theDb <- dbConnect("SQLite", "~/modelOne.sqlite", synchronous = 2)
   invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
 
   runIdRs <- getWorksetRunIds(theDb, 2L)

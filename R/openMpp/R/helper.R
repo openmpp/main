@@ -55,7 +55,7 @@ getWorksetIdByName <- function(dbCon, defRs, worksetName)
   if (missing(defRs)) stop("invalid (missing) model definition")
   if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
   
-  if (missing(worksetName)) stop("invalid (missing) workset id")
+  if (missing(worksetName)) stop("invalid (missing) workset name")
   if (is.null(worksetName) || is.na(worksetName) || !is.character(worksetName)) stop("invalid or empty workset name")
   
   # get first set id with specified name for that model id
