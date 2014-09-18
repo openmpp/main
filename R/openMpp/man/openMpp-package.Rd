@@ -29,6 +29,9 @@ License: \tab MIT license\cr
     \item{getLanguages}{
       Return language rows from lang_lst table
     }
+    \item{getDefaultWorksetId}{
+      Return default working set id
+    }
     \item{getModel}{
       Find OpenM++ model definition in database
     }

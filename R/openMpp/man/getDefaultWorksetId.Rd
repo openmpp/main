@@ -1,13 +1,13 @@
-\name{getWorksetIdByName}
-\alias{getWorksetIdByName}
+\name{getDefaultWorksetId}
+\alias{getDefaultWorksetId}
 \title{
-Return working set id by name
+Return default working set id
 }
 \description{
-Return working set id by name
+Return default working set id for the model
 }
 \usage{
-getWorksetIdByName(dbCon, defRs, worksetName)
+getDefaultWorksetId(dbCon, defRs)
 }
 \arguments{
   \item{dbCon}{
@@ -16,17 +16,17 @@ getWorksetIdByName(dbCon, defRs, worksetName)
   \item{defRs}{
     model definition: database rows describing model input parameters and output tables
   }
-  \item{worksetName}{
-    name of parameters working set
-  }
 }
 \details{
-Return working set id by name. 
-If model have no working set with that name then return is negative.
-If model has multiple working sets with that name then return min(set id) with such name.
+Return id of model "default" working set of parameters. 
+
+If model have no default working set then execution stops.
+
+Each model must have "default" workset. 
+Default workset is a first workset of the model with set_id = min(set_id) for that model. 
 }
 \value{
-  Working set id: positive integer on success or negative if not found.
+  Working set id: positive integer on success or negative on error. Stop if not found.
 }
 \references{
 OpenM++ documentation: http://ompp.sourceforge.net/wiki/
@@ -40,7 +40,7 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
 
 \seealso{
   \code{\link{getModel}}
-  \code{\link{getDefaultWorksetId}}
+  \code{\link{getWorksetIdByName}}
   \code{\link{getWorksetRunIds}}
 }
 \examples{
@@ -51,7 +51,7 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
   defRs <- getModel(theDb, "modelOne")
 
   # get default working set id by name, it expected to be exist
-  setId <- getWorksetIdByName(theDb, defRs, defRs$modelDic$model_name)
+  setId <- getDefaultWorksetId(theDb, defRs)
   
   # try to find "myData" working set id
   setId <- getWorksetIdByName(theDb, defRs, "myData")

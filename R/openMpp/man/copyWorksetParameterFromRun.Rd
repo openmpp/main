@@ -78,12 +78,13 @@ It must contain run_id = 11 and 12 (see runId usage below)
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getDefaultWorksetId}}
   \code{\link{getWorksetIdByName}}
   \code{\link{createWorkset}}
   \code{\link{createWorksetBasedOnRun}}
-  \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
   \code{\link{setReadonlyDefaultWorkset}}
+  \code{\link{updateWorksetParameter}}
 }
 \examples{
   #

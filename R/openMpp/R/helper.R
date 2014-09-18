@@ -74,6 +74,43 @@ getWorksetIdByName <- function(dbCon, defRs, worksetName)
 }
 
 #
+# Return default working set id for the model
+#   default workset is a first workset for the model
+#   each model must have default workset
+#
+# dbCon - database connection
+# defRs - model definition database rows
+#
+# return: id of parameters working set
+#         positive integer on success, stop if not found
+#
+getDefaultWorksetId <- function(dbCon, defRs) 
+{
+  # validate input parameters
+  if (missing(dbCon)) stop("invalid (missing) database connection")
+  if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
+
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
+  # get first set id with specified name for that model id
+  setRs <- dbGetQuery(
+    dbCon, 
+    paste(
+      "SELECT MIN(set_id) FROM workset_lst",
+      " WHERE model_id = ", defRs$modelDic$model_id,
+      sep=""
+    )
+  )
+  # one row expected else model id is invalid
+  if (is.null(setRs) || nrow(setRs) != 1) {
+    stop("no worksets not found for model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  }
+  
+  return(ifelse(!is.na(setRs[1,1]), as.integer(setRs[1,1]), -1L))
+}
+
+#
 # Return ids of model run results (run_id) 
 # where input parameters are from specified working set
 #

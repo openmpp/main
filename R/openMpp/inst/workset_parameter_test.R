@@ -1,5 +1,5 @@
 #
-# To run this test you must have modelOne database m1.sqlite in your home directory
+# To run this test you must have modelOne database modelOne.sqlite in your current directory
 # It must contain "modelOne" model and run_id = 11 and 12 (see runId usage below)
 #
 library("openMpp")
@@ -172,11 +172,13 @@ ageSexCopy <- list(
 copyWorksetParameterFromRun(theDb, defRs, setId, otherRunId, ageSexCopy)
 
 #
-# update parameters working set (set_id=3) with new values and value notes 
+# update parameters working set with new values and value notes 
 #   reset read-only status of workset before the update
 #   and make workset read-only after update
 #
-setId <- 3L
+setId <- getDefaultWorksetId(theDb, defRs)
+if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+
 if (setReadonlyWorkset(theDb, defRs, FALSE, setId) != setId) {
   stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 }

@@ -49,9 +49,11 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getDefaultWorksetId}}
+  \code{\link{getWorksetIdByName}}
   \code{\link{copyWorksetParameterFromRun}}
-  \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
+  \code{\link{updateWorksetParameter}}
 }
 \examples{
   theDb <- dbConnect("SQLite", "~/modelOne.sqlite", synchronous = 2)

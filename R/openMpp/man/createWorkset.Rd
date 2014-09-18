@@ -85,11 +85,13 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getDefaultWorksetId}}
   \code{\link{getWorksetIdByName}}
   \code{\link{createWorksetBasedOnRun}}
   \code{\link{copyWorksetParameterFromRun}}
-  \code{\link{updateWorksetParameter}}
   \code{\link{setReadonlyWorkset}}
+  \code{\link{setReadonlyDefaultWorkset}}
+  \code{\link{updateWorksetParameter}}
 }
 \examples{
   #
