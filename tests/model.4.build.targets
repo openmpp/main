@@ -39,6 +39,7 @@
   <ItemGroup>
     <OMC_INPUTS Include="*.mpp" />
     <OMC_INPUTS Include="*.ompp" />
+    <OMC_INPUTS Include="*.h" />
     <OMC_INPUTS Include="OpenM++.props" />
     <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
     <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />

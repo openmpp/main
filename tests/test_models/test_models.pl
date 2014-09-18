@@ -7,14 +7,14 @@ use strict;
 
 my @models = (
 	"Alpha1",
-	"Alpha2",
+#	"Alpha2",
 	"IDMM",
 #	"OzProj",
 #	"Pohem",
 	#"PohemParms",
-	"RiskPaths",
-	"WizardCaseBased",
-	"WizardTimeBased",
+#	"RiskPaths",
+#	"WizardCaseBased",
+#	"WizardTimeBased",
 	);
 
 my $configuration = "Debug";
@@ -71,6 +71,9 @@ my $tests_root = getcwd;
 logmsg info, "=========================";
 logmsg info, " test_models.pl ${version} ";
 logmsg info, "=========================";
+logmsg info, "";
+logmsg info, "Testing models: ".join(", ", @models);
+
 
 my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen 11\\Modgen.exe";
 if ( ! -e $modgen_exe ) {
