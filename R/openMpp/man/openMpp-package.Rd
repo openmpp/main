@@ -26,6 +26,9 @@ License: \tab MIT license\cr
     \item{copyWorksetParameterFromRun}{
       Copy parameters to working set from existing model run
     }
+    \item{getFirstRunId}{
+      Return id of first model run results
+    }
     \item{getLanguages}{
       Return language rows from lang_lst table
     }

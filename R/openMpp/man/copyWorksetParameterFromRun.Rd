@@ -78,6 +78,7 @@ It must contain run_id = 11 and 12 (see runId usage below)
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getFirstRunId}}
   \code{\link{getDefaultWorksetId}}
   \code{\link{getWorksetIdByName}}
   \code{\link{createWorkset}}

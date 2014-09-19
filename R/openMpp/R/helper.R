@@ -93,12 +93,11 @@ getDefaultWorksetId <- function(dbCon, defRs)
   if (missing(defRs)) stop("invalid (missing) model definition")
   if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
   
-  # get first set id with specified name for that model id
+  # get first set id for that model id
   setRs <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT MIN(set_id) FROM workset_lst",
-      " WHERE model_id = ", defRs$modelDic$model_id,
+      "SELECT MIN(set_id) FROM workset_lst WHERE model_id = ", defRs$modelDic$model_id,
       sep=""
     )
   )
@@ -146,6 +145,38 @@ getWorksetRunIds <- function(dbCon, worksetId)
   # it can be empty result with nrow() = 0
 
   return(runRs)
+}
+
+#
+# Return id of first run results for the model
+#
+# dbCon - database connection
+# defRs - model definition database rows
+#
+# return: id of model run results
+#         positive integer on success, negative if no run results found
+#
+getFirstRunId <- function(dbCon, defRs) 
+{
+  # validate input parameters
+  if (missing(dbCon)) stop("invalid (missing) database connection")
+  if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
+
+  if (missing(defRs)) stop("invalid (missing) model definition")
+  if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
+  # get first run id for that model id
+  runRs <- dbGetQuery(
+    dbCon, 
+    paste(
+      "SELECT MIN(run_id) FROM run_lst WHERE model_id = ", defRs$modelDic$model_id,
+      sep=""
+    )
+  )
+  # one row expected else model id is invalid
+  if (is.null(runRs) || nrow(runRs) != 1) return -1L
+  
+  return(ifelse(!is.na(runRs[1,1]), as.integer(runRs[1,1]), -1L))
 }
 
 #

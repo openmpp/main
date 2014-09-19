@@ -60,6 +60,7 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
 
 \seealso{
   \code{\link{getModel}}
+  \code{\link{getFirstRunId}}
   \code{\link{selectRunOutputValue}}
   \code{\link{selectRunParameter}}
 }

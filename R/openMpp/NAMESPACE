@@ -5,6 +5,7 @@ export(
   createWorkset,
   createWorksetBasedOnRun,
   copyWorksetParameterFromRun,
+  getFirstRunId,
   getLanguages,
   getModel,
   getDefaultWorksetId,
