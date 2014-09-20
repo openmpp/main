@@ -6,13 +6,13 @@
 use strict;
 
 my @models = (
-	"Alpha1",
+#	"Alpha1",
 #	"Alpha2",
-	"IDMM",
+#	"IDMM",
 #	"OzProj",
 #	"Pohem",
 	#"PohemParms",
-#	"RiskPaths",
+	"RiskPaths",
 #	"WizardCaseBased",
 #	"WizardTimeBased",
 	);
