@@ -612,13 +612,13 @@ void Symbol::pp_warning(const string& msg)
 string Symbol::label(const LanguageSymbol & language) const
 {
     // placeholder implementation
-    return name + " [no label (" + language.name + ")]";
+    return name;
 }
 
 string Symbol::label() const
 {
     // placeholder implementation
-    return name + " [no label]";
+    return name;
 }
 
 string Symbol::note(const LanguageSymbol & language) const
