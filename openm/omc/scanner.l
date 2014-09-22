@@ -474,9 +474,21 @@ blank       [ \t\r]
                     return tok;
     			}
 
-                /* Create working string version of the word. */
-                string word ( yytext );
-    			if ( ! pc.cxx_suppress ) *drv.outside << yytext;
+                /* Create working string version of the word to facilitate possible mark-up */
+                string word(yytext);
+
+                if (word == "PreSimulation") {
+                    /* Modgen allows multiple PreSimulation functions.  Append a distinguishing numeric suffix. */
+                    ++Symbol::pre_simulation_count;
+                    word = Symbol::pre_simulation_name(Symbol::pre_simulation_count - 1);
+                }
+                else if (word == "UserTables") {
+                    /* Modgen allows multiple UserTable functions.  Append a distinguishing numeric suffix. */
+                    ++Symbol::post_simulation_count;
+                    word = Symbol::post_simulation_name(Symbol::post_simulation_count - 1);
+                }
+
+    			if ( ! pc.cxx_suppress ) *drv.outside << word;
 			}
 
 .           {

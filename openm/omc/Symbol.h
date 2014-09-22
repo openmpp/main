@@ -977,7 +977,55 @@ public:
     static unordered_set<string> om_developer_functions;
 
     /**
-     * A count of type changes made in a sngle post-parse pass.
+     * A count of the number of PreSimulation functions encountered in the model source code.
+     * 
+     * Maintained dynamically during parsing of model source code.
+     */
+    static int pre_simulation_count;
+
+    /**
+     * Return the pre-simulation function name associated with a given numeric id.
+     *
+     * @param id The identifier.
+     *
+     * @return A string.
+     */
+    static string pre_simulation_name(int id)
+    {
+        string result = "pre_simulation_";
+        if (id < 10) {
+            result += "0";
+        }
+        result += to_string(id);
+        return result;
+    }
+
+    /**
+     * A count of the number of UserTables functions encountered in the model source code.
+     * 
+     * Maintained dynamically during parsing of model source code.
+     */
+    static int post_simulation_count;
+
+    /**
+     * Return the post-simulation function name associated with a given numeric id.
+     *
+     * @param id The identifier.
+     *
+     * @return A string.
+     */
+    static string post_simulation_name(int id)
+    {
+        string result = "post_simulation_";
+        if (id < 10) {
+            result += "0";
+        }
+        result += to_string(id);
+        return result;
+    }
+
+    /**
+     * A count of type changes made in a single post-parse pass.
      */
     static int type_changes;
 

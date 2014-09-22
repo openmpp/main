@@ -484,6 +484,10 @@ comment_map_type Symbol::cxx_comments;
 
 comment_map_type Symbol::c_comments;
 
+int Symbol::pre_simulation_count = 0;
+
+int Symbol::post_simulation_count = 0;
+
 int Symbol::type_changes = 0;
 
 int Symbol::post_parse_errors = 0;

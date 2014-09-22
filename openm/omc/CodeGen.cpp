@@ -109,6 +109,23 @@ void CodeGen::do_preamble()
     h += "using namespace std;";
     h += "";
 
+    if (Symbol::pre_simulation_count > 0) {
+        h += "// pre-simulation functions from model source code";
+        for (int id = 0; id < Symbol::pre_simulation_count; ++id) {
+            h += "extern void " + Symbol::pre_simulation_name(id) + "();";
+        }
+        h += "";
+    }
+
+    if (Symbol::post_simulation_count > 0) {
+        h += "// post-simulation functions from model source code";
+        for (int id = 0; id < Symbol::post_simulation_count; ++id) {
+            h += "extern void " + Symbol::post_simulation_name(id) + "();";
+        }
+        h += "";
+    }
+
+
     // om_definitions.cpp
     c += doxygen(
                 "@file   om_definitions.cpp",
@@ -294,6 +311,14 @@ void CodeGen::do_ModelStartup()
             c += "theLog->logFormatted(\"warning - no values supplied for parameter " + parameter->name + "\");";
         }
     }
+    c += "";
+
+    if (Symbol::pre_simulation_count > 0) {
+        c += "theLog->logMsg(\"Running pre-simulation\");";
+        for (int id = 0; id < Symbol::pre_simulation_count; ++id) {
+            c += Symbol::pre_simulation_name(id) + "();";
+        }
+    }
 
 	c += "}";
 	c += "";
@@ -304,14 +329,26 @@ void CodeGen::do_ModelShutdown()
 	c += "// Model shutdown method: outputs";
 	c += "void ModelShutdown(IModel * i_model)";
 	c += "{";
-	c += "// write output result tables";
-	c += "theLog->logMsg(\"Writing Output Tables\");";
+    c += "// compute table expressions using accumulators";
     for ( auto table : Symbol::pp_all_tables ) {
 	    c += "the" + table->name + ".compute_expressions();";
     }
+	c += "";
+
+    if (Symbol::post_simulation_count > 0) {
+        c += "theLog->logMsg(\"Running post-simulation\");";
+        for (int id = 0; id < Symbol::post_simulation_count; ++id) {
+            c += Symbol::post_simulation_name(id) + "();";
+        }
+    	c += "";
+    }
+
+    c += "// write output tables (accumulators)";
+	c += "theLog->logMsg(\"Writing Output Tables\");";
     for ( auto table : Symbol::pp_all_tables ) {
 	    c += "i_model->writeOutputTable( \"" + table->name + "\", the" + table->name + ".n_accumulators, " + to_string(table->cell_count()) + ", const_cast<const double **>(the" + table->name + ".accumulators) );";
     }
+
     c += "}";
 	c += "";
 }
