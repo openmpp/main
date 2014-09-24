@@ -4,6 +4,9 @@
 
 classification EYE_COLOUR
 {
+    //EN None
+    EC_NONE,
+
     //EN Blue
     EC_BLUE,
 
@@ -120,15 +123,22 @@ TIME Host::OneTimetime()
 }
 void Host::OneTime()
 {
-    one_time_done = TRUE;
-
     thingee = RandNormal(11);
 
     int ec = 0;
     Lookup_Discrete1(RandUniform(12), &ec);
     eye_colour = (EYE_COLOUR)ec;
 
+    one_time_done = TRUE;
 }
+
+table Host CumrateTest1
+{
+    {
+        duration()
+    }
+    *eye_colour
+};
 
 table Host MyTest3
 {
