@@ -9,6 +9,7 @@
 #pragma once
 #include <numeric>
 #include <algorithm>
+#include <functional>
 #include <array>
 
 using namespace std;
@@ -26,28 +27,8 @@ class cumrate_distribution
 {
 public:
     cumrate_distribution()
+        : is_degenerate(false)
     {}
-
-    /**
-     * Initialize the distribution
-     *
-     * @param freq The frequency of each value
-     */
-    void initialize(const array<double, N> freq)
-    {
-        // transform the frequencies to probabilities
-        double total = accumulate(freq.begin(), freq.end(), 0);
-        transform(freq.begin(),
-                  freq.end(),
-                  cumprob.begin(),
-                  [total](double &f) {
-            return (total == 0.0) ? 0.0 : f / total;
-        }
-        );
-
-        // continue initialization
-        initialize2();
-    }
 
     /**
      * Initialize the distribution
@@ -58,37 +39,77 @@ public:
     {
         assert(freq); // logic guarantee
 
+        array<size_t, N> index; // temporary permutation vector
+
+        // initialize the permutation vector
+        iota(index.begin(), index.end(), 0);
+
+        // deterine the permutation required to sort the frequencies in descending order, breaking ties using index
+        sort(
+                index.begin(),
+                index.end(),
+                [index, freq](size_t a, size_t b) {
+                    return (freq[a] == freq[b])
+                            ? (a > b)
+                            : (freq[a] > freq[b]);
+                }
+            );
+
+        // calculate the total of all frequencies
         double total = 0.0;
         for (int i = 0; i < N; ++i) {
             total += freq[i];
         }
-        for (int i = 0; i < N; ++i) {
-            cumprob[i] = (total == 0.0) ? 0.0 : freq[i] / total;
+ 
+        // Compute and store the cumulative probabilities
+        if (total != 0.0) {
+            double running_sum = 0.0;
+            for (int i = 0; i < N; ++i) {
+                running_sum += (total == 0.0) ? 0.0 : freq[index[i]] / total;
+                cumprob[i] = running_sum;
+            }
+        }
+        else {
+            // If the distribution is degnerate,
+            // set all cumulative probabilities 1.0, which will make draw() always return the first element.
+            cumprob.fill(1.0);
+            is_degenerate = true;
         }
 
-        // continue initialization
-        initialize2();
+        // Store the corresponding values
+        index.swap(value);
     }
 
     /**
      * Draws an element from the discrete probability distribution
      * 
-     * Note that the argument *this accesses the functor for the class, defined by overloading ().
-     *
      * @param uniform A random uniform on (0,1)
      *
      * @return The integer value in {0,...,N-1}
      */
     int draw(double uniform)
     {
+        if (cumprob.front() >= uniform) {
+            // check first element directly, for efficiency.
+            // Often there is a single dominating probability which occurs frequently
+            // and it will always be the first.  Modgen expanded this to do a linear search
+            // of a certain length, before falling back to a binary search on the entire distribution.
+            return value[0];
+        }
+
         auto it = lower_bound(
-                   index.begin(),
-                   index.end(),
-                   uniform,
-                   *this
+                   cumprob.begin(),
+                   cumprob.end(),
+                   uniform
         );
-        return *it;
+        size_t index = distance(cumprob.begin(), it);
+        return value[index];
     }
+
+    /**
+     * true if degenerate (all frequencies are zero)
+     */
+    bool is_degenerate;
 
     /**
      * Comparison function for std::sort and std::lower_bound
@@ -98,12 +119,32 @@ public:
      * be used to supply the comparison function to std::sort and std::lower_bound, which can then
      * access the class data.
      * 
-     * The comparison function sorts in decreasing order.  Ties in values are broken explicitly
-     * by comparing indices, in decreasing order.
+     * It would be preferable to use the appropriate comparison function directly somehow as the
+     * comparison argument to std::sort and std::lower_bound, rather than a run-time choice on every
+     * call, but it's unclear how to do that with tempated member comparison functions which need to
+     * access class data.
      *
      * @return The result of the operation.
      */
     bool operator()(const int &a, const int &b)
+    {
+        if (initialized) {
+            // use cmp_for_draw
+            return cmp_for_draw(a, b);
+        }
+        else {
+            // use cmp_for_sort
+            return cmp_for_sort(a, b);
+        }
+    }
+
+    /**
+     * Compare for sort.
+     *
+     * This comparison function compares like '>' to order from highest to lowest.  Ties in values are broken explicitly
+     * by comparing indices, in decreasing order.
+     */
+    bool cmp_for_sort(const int &a, const int &b)
     {
         return (cumprob[a] == cumprob[b])
                 ? (a > b)
@@ -111,29 +152,20 @@ public:
     }
 
     /**
-     * Initialize the distribution (part 2)
+     * Compare for draw
+     *
+     * This comparison function compares like '<', using partial sums (cumulated probabilities)
+     * There is a level of indirection to the values through the permutation vector.
      */
-    void initialize2() {
-
-        // initialize the permutation vector
-        iota(index.begin(), index.end(), 0);
-
-        // sort the probabilities in descending order, breaking ties using index
-        // *this accesses the functor for the class, defined by overloading ().
-        sort(index.begin(), index.end(), *this);
-
-        // cumulate the probabilities into partial sums
-        double sum = 0.0;
-        for(auto j : index) {
-            sum += cumprob[j];
-            cumprob[j] = sum;
-        }
+    bool cmp_for_draw(const int &a, const int &b)
+    {
+        return (cumprob[a] < cumprob[b]);
     }
 
     /**
-     * The permutation vector
+     * The value corresponding to each cumulated probability
      */
-    array<int,N> index;
+    array<size_t,N> value;
 
     /**
      * The cumulated probabilities (partial sums)
