@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include <string>
+#include <vector>
 #include "ParameterSymbol.h"
 #include "LanguageSymbol.h"
 #include "NumericSymbol.h"
@@ -49,9 +50,6 @@ void ParameterSymbol::post_parse(int pass)
 
             lookup_fn = new GlobalFuncSymbol("Lookup_" + name, "bool", args);
             lookup_fn->doc_block = doxygen_short("Draw from discrete probability distribution - " + name);
-            CodeBlock& c = lookup_fn->func_body;
-            c += "// TODO";
-            c += "return true;";
         }
         break;
     }
@@ -84,7 +82,20 @@ void ParameterSymbol::post_parse(int pass)
                 pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
+            // process the dimension into post-parse members
             pp_dimension_list.push_back(es);
+            pp_shape.push_back(es->pp_size());
+        }
+        // Create auxiliary lists for conditioning and distribution portions
+        for (auto es : pp_dimension_list) {
+            if (pp_conditioning_dimension_list.size() < conditioning_dims()) {
+                pp_conditioning_dimension_list.push_back(es);
+                pp_conditioning_shape.push_back(es->pp_size());
+            }
+            else {
+                pp_distribution_dimension_list.push_back(es);
+                pp_distribution_shape.push_back(es->pp_size());
+            }
         }
         // clear the parse version to avoid inadvertant use post-parse
         dimension_list.clear();
@@ -129,6 +140,40 @@ void ParameterSymbol::post_parse(int pass)
                 es->metadata_needed = true;
             }
         }
+
+        // Generate body of lookup function
+        if (cumrate) {
+            // Generate body of lookup function
+            CodeBlock& c = lookup_fn->func_body;
+            c += "// Calculate conditioning index";
+            c += "size_t conditioning_index = 0;";
+            int cond_index = 0;
+            for (auto cond_size : pp_conditioning_shape) {
+                if (cond_index > 0) {
+                    c += "conditioning_index *= " + to_string(cond_size) + ";";
+                }
+                c += "conditioning_index += cond" + to_string(cond_index) + ";";
+                cond_index++;
+            }
+            c += "// Obtain value from distribution";
+            c += "size_t distribution_index = " + cumrate_name() + ".draw(conditioning_index, uniform);";
+            c += "// Calculate values of distribution dimensions";
+            int distr_index = distribution_dims() - 1;
+            // reverse iterate through the distribution shape
+            for (auto it = pp_distribution_shape.rbegin(); it != pp_distribution_shape.rend(); ++it) {
+                if (distr_index > 0) {
+                    c += "*draw" + to_string(distr_index) + " = distribution_index % " + to_string(*it) + ";";
+                    c += "distribution_index /= " + to_string(*it) + ";";
+                }
+                else {
+                    c += "*draw" + to_string(distr_index) + " = distribution_index;";
+                }
+                distr_index--;
+            }
+         
+            c += "return true;";
+        }
+            
         break;
     }
 
@@ -144,6 +189,9 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += "extern " + datatype->name + " " + cxx_name_and_dimensions() + ";";
+    if (cumrate) {
+        h += "extern cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
+    }
     return h;
 }
 
@@ -168,6 +216,9 @@ CodeBlock ParameterSymbol::cxx_definition_global()
         c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = ";
         c += cxx_initializer();
         c += ";" ;
+    }
+    if (cumrate) {
+        c += "cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
     }
     return c;
 }
@@ -222,8 +273,8 @@ void ParameterSymbol::validate_initializer()
     }
 
     // Size check
-    if (cells() != initializer_list.size()) {
-        pp_error(redecl_loc, "error : initializer for parameter '" + name + "' has size " + to_string(initializer_list.size()) + " - should be " + to_string(cells()));
+    if (size() != initializer_list.size()) {
+        pp_error(redecl_loc, "error : initializer for parameter '" + name + "' has size " + to_string(initializer_list.size()) + " - should be " + to_string(size()));
     }
 
     // Element check
@@ -290,27 +341,11 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 }
 
-string ParameterSymbol::cxx_name_and_dimensions(bool use_zero)
+string ParameterSymbol::cxx_name_and_dimensions(bool use_zero) const
 {
     string result = name;
     for (auto es : pp_dimension_list) {
         result += "[" + (use_zero ? "0" : to_string(es->pp_size())) + "]";
-    }
-    return result;
-}
-
-unsigned long ParameterSymbol::rank()
-{
-    return (unsigned long)pp_dimension_list.size();
-}
-
-
-unsigned long ParameterSymbol::cells()
-{
-    unsigned long result = 1;
-
-    for (auto es : pp_dimension_list) {
-        result *= es->pp_size();
     }
     return result;
 }
@@ -342,7 +377,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
         assert(rng);
         if (rng->lower_bound != 0) {
-            string cell_count = to_string(cells());
+            string cell_count = to_string(size());
             c += "{";
             c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
             c += "long work[" + cell_count + "];";
@@ -353,14 +388,23 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         }
         else {
             // range starts at 0 so requires no transformation
-            c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(cells()) + ", &" + name + ");";
+            c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + name + ");";
         }
     }
     else {
-        c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(cells()) + ", &" + name + ");";
+        c += "i_model->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + name + ");";
     }
 
     return c;
+}
+
+string ParameterSymbol::cxx_initialize_cumrate()
+{
+    string result = "";
+    if (cumrate) {
+        result = cumrate_name() + ".initialize((double *)" + name + ");";
+    }
+    return result;
 }
 
 string ParameterSymbol::cxx_assert_sanity()

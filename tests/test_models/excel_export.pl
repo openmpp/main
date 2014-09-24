@@ -99,8 +99,8 @@ $Book->SaveAs($workbook_xlsx);
 ###############
 
 
-# Get model_id and model_name from table_dic
-logmsg info, $script_name, "Get model_id and model_name from table_dic" if $verbosity >= 1;
+# Get model_id and model_name from model_dic
+logmsg info, $script_name, "Get model_id and model_name from model_dic" if $verbosity >= 1;
 $sql = "
   Select model_id, model_name
   From model_dic
@@ -269,10 +269,29 @@ for my $table_id (@table_ids) {
 	$table_worksheet_names[$table_id] = $table_worksheet_name; 
 }
 
-# Get run_id and run_date_time from run_lst
-logmsg info, $script_name, "Get run_id and run_date_time from run_lst" if $verbosity >= 1;
+# Get parameter_ids, parameter_names from parameter_dic
+logmsg info, $script_name, "Get parameter_ids, parameter_names from parameter_dic" if $verbosity >= 1;
 $sql = "
-  Select run_id, create_dt As run_date_time
+  Select parameter_id, parameter_name
+  From parameter_dic
+  Where ( model_id = ${model_id} )
+  ;
+";
+logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
+$result = run_sqlite_statement $db, $sql, $failure;
+exit 1 if $failure;
+my @parameter_ids;
+my @parameter_names;
+for my $record (split(/\n/, $result)) {
+	(my $parameter_id, my $parameter_name) = split(/[|]/, $record);
+	push @parameter_ids, $parameter_id;
+	$parameter_names[$parameter_id] = $parameter_name;
+}
+
+# Get run_id, run_date_time, sub_count from run_lst
+logmsg info, $script_name, "Get run_id, run_date_time, pieces from run_lst" if $verbosity >= 1;
+$sql = "
+  Select run_id, create_dt As run_date_time, sub_count As pieces
   From run_lst
   Where model_id = ${model_id} And run_id = (Select Min(RL.run_id) From run_lst RL);
   ;
@@ -282,9 +301,10 @@ $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 my $run_id;
 my $run_date_time;
+my $pieces;
 chomp $result;
-(my $run_id, my $run_date_time) = split(/[|]/, $result);
-logmsg info, $script_name, "run_id=${run_id} run_date_time=${run_date_time}" if $verbosity >= 1;
+(my $run_id, my $run_date_time, my $pieces) = split(/[|]/, $result);
+logmsg info, $script_name, "run_id=${run_id} run_date_time=${run_date_time} pieces=${pieces}" if $verbosity >= 1;
 
 # Get set_id and set_name from workset_lst
 logmsg info, $script_name, "Get set_id and set_name from workset_lst" if $verbosity >= 1;
@@ -303,20 +323,52 @@ chomp $result;
 (my $set_id, my $set_name) = split(/[|]/, $result);
 logmsg info, $script_name, "set_id=${set_id} set_name=${set_name}" if $verbosity >= 1;
 
-# Get simulation_cases from SimulationCases compatibility view
-logmsg info, $script_name, "Get simulation_cases from SimulationCases compatibility view" if $verbosity >= 1;
-$sql = "
-  Select Value As simulatino_cases
-  From SimulationCases
-  ;
-";
-logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
-$result = run_sqlite_statement $db, $sql, $failure;
-exit 1 if $failure;
+# Determine time-based or case-based using presence of specific ompp foundational parameters
+my $time_based = 0;
+my $case_based = 0;
+for my $parameter_id (@parameter_ids) {
+	my $parameter_name = $parameter_names[$parameter_id];
+	$case_based = 1 if $parameter_name eq 'SimulationCases';
+	$time_based = 1 if $parameter_name eq 'SimulationEnd';
+}
+if (!$case_based && !$time_based) {
+	logmsg error, $script_name, "model is neither case-based nor time-based - unsupported";
+	exit 1;
+}
+
 my $simulation_cases;
-chomp $result;
-(my $simulation_cases) = split(/[|]/, $result);
-logmsg info, $script_name, "simulation_cases=${simulation_cases}" if $verbosity >= 1;
+if ($case_based) {
+	# Get simulation_cases from SimulationCases compatibility view
+	logmsg info, $script_name, "Get simulation_cases from SimulationCases compatibility view" if $verbosity >= 1;
+	$sql = "
+	  Select Value As simulation_cases
+	  From SimulationCases
+	  ;
+	";
+	logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
+	$result = run_sqlite_statement $db, $sql, $failure;
+	exit 1 if $failure;
+	chomp $result;
+	($simulation_cases) = split(/[|]/, $result);
+	logmsg info, $script_name, "simulation_cases=${simulation_cases}" if $verbosity >= 1;
+}
+
+my $simulation_end;
+if ($time_based) {
+	# Get simulation_end from SimulationEnd compatibility view
+	logmsg info, $script_name, "Get simulation_end from SimulationEnd compatibility view" if $verbosity >= 1;
+	$sql = "
+	  Select Value As simulation_end
+	  From SimulationEnd
+	  ;
+	";
+	logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
+	$result = run_sqlite_statement $db, $sql, $failure;
+	exit 1 if $failure;
+	chomp $result;
+	(my $simulation_end) = split(/[|]/, $result);
+	logmsg info, $script_name, "simulation_end=${simulation_end}" if $verbosity >= 1;
+}
 
 ###############
 # Excel write #
@@ -359,10 +411,10 @@ my $ContentsSheet;
 	$Sheet->Cells(2, 2)->{Value} = "${model_name}.exe -sc ${set_name}.scex -s";
 	$Sheet->Cells(3, 1)->{Value} = 'Full Report';
 	$Sheet->Cells(3, 2)->{Value} = 'TRUE';
-	$Sheet->Cells(4, 1)->{Value} = 'Cases';
-	$Sheet->Cells(4, 2)->{Value} = $simulation_cases; 
-	$Sheet->Cells(5, 1)->{Value} = 'Cases Requested';
-	$Sheet->Cells(5, 2)->{Value} = $simulation_cases;
+	$Sheet->Cells(4, 1)->{Value} = $case_based ? 'Cases' : 'Replicates';
+	$Sheet->Cells(4, 2)->{Value} = $case_based ? $simulation_cases : $pieces;
+	$Sheet->Cells(5, 1)->{Value} = $case_based ? 'Cases Requested' : 'Replicates Requested';
+	$Sheet->Cells(5, 2)->{Value} = $case_based ? $simulation_cases : $pieces;
 	$Sheet->Cells(6, 1)->{Value} = 'Language';
 	$Sheet->Cells(6, 2)->{Value} = $lang_code;
 	$Sheet->Cells(7, 1)->{Value} = 'coefficient of variation values (%)';
@@ -372,7 +424,7 @@ my $ContentsSheet;
 	$Sheet->Cells(9, 1)->{Value} = 'Simulation date and time';
 	$Sheet->Cells(9, 2)->{Value} = $run_date_time;
 	$Sheet->Cells(9, 2)->{NumberFormat} = 'yyyy/mm/dd h:mm:ss';
-	$Sheet->Cells(10, 1)->{Value} = 'Subsamples:';
+	$Sheet->Cells(10, 1)->{Value} = $case_based ? 'Subsamples:' : 'Replicates:';
 	#$Sheet->Cells(10, 2)->{Value} = ''; # Deliberately empty
 	$Sheet->Columns("A:B")->Autofit;
 }

@@ -19,6 +19,7 @@
 #include "omc/Event.h"
 #include "omc/Multilink.h"
 #include "omc/EntitySet.h"
+#include "omc/cumrate.h"
 #include "om_types1.h" // model-specific types
 #include "libopenm/omModel.h"
 

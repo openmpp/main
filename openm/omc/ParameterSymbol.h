@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <numeric>
 #include "Symbol.h"
 #include "NumericSymbol.h"
 #include "Constant.h"
@@ -74,21 +75,7 @@ public:
      *
      * @return A string.
      */
-    string cxx_name_and_dimensions(bool use_zero = false);
-
-    /**
-     * Gets the rank of the parameter.
-     *
-     * @return A long.
-     */
-    unsigned long rank();
-
-    /**
-     * Gets the total number of cells in the parameter.
-     *
-     * @return An unsigned long.
-     */
-    unsigned long cells();
+    string cxx_name_and_dimensions(bool use_zero = false) const;
 
     /**
      * C++ code to read parameter from data store.
@@ -96,6 +83,13 @@ public:
      * @return A block of code.
      */
     CodeBlock cxx_read_parameter();
+
+    /**
+     * C++ code to initialize cumrate for parameter.
+     *
+     * @return A string.
+     */
+    string cxx_initialize_cumrate();
 
     /**
      * assert C++ code fragment to verify that storage type has the same size as the readParameter
@@ -135,6 +129,14 @@ public:
     int cumrate_dims;
 
     /**
+     * Name of the cumrate object in generated code
+     */
+    string cumrate_name() const
+    {
+        return "om_cumrate_" + name;
+    }
+
+    /**
      * The data type of the parameter contents (parse phase reference to pointer)
      */
     Symbol*& datatype;
@@ -150,9 +152,90 @@ public:
     list<Symbol **> dimension_list;
 
     /**
-     * List of dimensions (post-parse phase pointers)
+     * Gets the rank of the parameter.
+     *
+     * @return A long.
+     */
+    size_t rank() const
+    {
+        return pp_dimension_list.size();
+    }
+
+    /**
+     * Dimensions
      */
     list<EnumerationSymbol *> pp_dimension_list;
+
+    /**
+     * Shape
+     */
+    list<size_t> pp_shape;
+
+    /**
+     * Gets the size (number of cells)
+     *
+     * @return A size_t.
+     */
+    size_t size() const
+    {
+        return accumulate(pp_shape.begin(), pp_shape.end(), 1, multiplies<size_t>());
+    }
+
+    /**
+     * Number of leading conditioning dimensions for cumrate parameters
+     *
+     * @return An int.
+     */
+    size_t conditioning_dims() const
+    {
+        return rank() - cumrate_dims;
+    }
+
+    /**
+     * List of conditioning dimensions (leading dimensions)
+     */
+    list<EnumerationSymbol *> pp_conditioning_dimension_list;
+
+    /**
+     * Shape of conditioning portion (leading dimensions)
+     */
+    list<size_t> pp_conditioning_shape;
+
+    /**
+     * Total size of conditioning portion (leading dimensions)
+     */
+    size_t conditioning_size()
+    {
+        return accumulate(pp_conditioning_shape.begin(), pp_conditioning_shape.end(), 1, multiplies<size_t>());
+    }
+
+    /**
+     * Number of trailing distribution dimensions for cumrate parameters
+     *
+     * @return An int.
+     */
+    int distribution_dims() const
+    {
+        return cumrate_dims;
+    }
+
+    /**
+     * List of distribution dimensions (trailing dimensions)
+     */
+    list<EnumerationSymbol *> pp_distribution_dimension_list;
+
+    /**
+     * Shape of distribution portion (trailing dimensions)
+     */
+    list<size_t> pp_distribution_shape;
+
+    /**
+     * Total size of distribution portion (trailing dimensions)
+     */
+    size_t distribution_size()
+    {
+        return accumulate(pp_distribution_shape.begin(), pp_distribution_shape.end(), 1, multiplies<size_t>());
+    }
 
     /**
      * List of dimensions - redeclaration (parse phase references to pointers)

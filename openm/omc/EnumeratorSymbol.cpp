@@ -23,10 +23,6 @@ void EnumeratorSymbol::post_parse(int pass)
         // assign direct pointer to enumeration for use post-parse
         pp_enumeration = dynamic_cast<EnumerationWithEnumeratorsSymbol *> (pp_symbol(enumeration));
         assert(pp_enumeration); // parser guarantee
-        break;
-    }
-    case ePopulateCollections:
-    {
         // Add this enumerator to the enumeration's list of enumerators
         pp_enumeration->pp_enumerators.push_back(this);
         // Add this enumerator to the enumeration's map of names to ordinal values

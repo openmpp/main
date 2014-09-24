@@ -2,6 +2,27 @@
 
 // Extra tests for ompp probing
 
+classification EYE_COLOUR
+{
+    //EN Blue
+    EC_BLUE,
+
+    //EN Brown
+    EC_BROWN,
+
+    //EN Red
+    EC_RED
+};
+
+actor Host
+{
+    EYE_COLOUR eye_colour;
+};
+
+parameters{
+    cumrate Discrete1[EYE_COLOUR];
+};
+
 actor_set Host asAllHostsByPhase[disease_phase] //EN All Hosts by disease phase
 filter report_time >= 5;
 
@@ -99,8 +120,14 @@ TIME Host::OneTimetime()
 }
 void Host::OneTime()
 {
-    thingee = RandNormal(11);
     one_time_done = TRUE;
+
+    thingee = RandNormal(11);
+
+    int ec = 0;
+    Lookup_Discrete1(RandUniform(12), &ec);
+    eye_colour = (EYE_COLOUR)ec;
+
 }
 
 table Host MyTest3

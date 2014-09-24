@@ -304,11 +304,16 @@ void CodeGen::do_ModelStartup()
 
     c += "theLog->logMsg(\"Reading Parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::derived_parameter) continue;
         if (parameter->source == ParameterSymbol::scenario_parameter) {
             c += parameter->cxx_read_parameter();
         }
         else if (parameter->source == ParameterSymbol::missing_parameter) {
             c += "theLog->logFormatted(\"warning - no values supplied for parameter " + parameter->name + "\");";
+        }
+        if (parameter->cumrate) {
+            // prepare cumrate for fixed, scenario, and missing parameters
+            c += parameter->cxx_initialize_cumrate();
         }
     }
     c += "";
@@ -317,6 +322,12 @@ void CodeGen::do_ModelStartup()
         c += "theLog->logMsg(\"Running pre-simulation\");";
         for (int id = 0; id < Symbol::pre_simulation_count; ++id) {
             c += Symbol::pre_simulation_name(id) + "();";
+        }
+        for (auto parameter : Symbol::pp_all_parameters) {
+            if (parameter->source == ParameterSymbol::derived_parameter && parameter->cumrate) {
+                // prepare cumrate for derived parameters after all pre-simulation code has executed
+                c += parameter->cxx_initialize_cumrate();
+            }
         }
     }
 
