@@ -39,16 +39,18 @@ public:
     {
         assert(freq); // logic guarantee
 
-        array<size_t, N> index; // temporary permutation vector
+        // temporary permutation vector
+        // create on the heap to avoid possible stack overflow (e.g POHEM)
+        //auto p_index = new array<size_t, N>;
 
         // initialize the permutation vector
-        iota(index.begin(), index.end(), 0);
+        iota(value.begin(), value.end(), 0);
 
-        // deterine the permutation required to sort the frequencies in descending order, breaking ties using index
+        // determine the permutation required to sort the frequencies in descending order, breaking ties using the value of the index
         sort(
-                index.begin(),
-                index.end(),
-                [index, freq](size_t a, size_t b) {
+                value.begin(),
+                value.end(),
+                [freq](size_t a, size_t b) {
                     return (freq[a] == freq[b])
                             ? (a > b)
                             : (freq[a] > freq[b]);
@@ -65,19 +67,16 @@ public:
         if (total != 0.0) {
             double running_sum = 0.0;
             for (int i = 0; i < N; ++i) {
-                running_sum += (total == 0.0) ? 0.0 : freq[index[i]] / total;
+                running_sum += (total == 0.0) ? 0.0 : freq[value[i]] / total;
                 cumprob[i] = running_sum;
             }
         }
         else {
-            // If the distribution is degnerate,
+            // If the distribution is degenerate,
             // set all cumulative probabilities 1.0, which will make draw() always return the first element.
             cumprob.fill(1.0);
             is_degenerate = true;
         }
-
-        // Store the corresponding values
-        index.swap(value);
     }
 
     /**
@@ -107,60 +106,9 @@ public:
     }
 
     /**
-     * true if degenerate (all frequencies are zero)
+     * true if distribution is degenerate (all frequencies are zero)
      */
     bool is_degenerate;
-
-    /**
-     * Comparison function for std::sort and std::lower_bound
-     * 
-     * The comparison function needs to access class data.  The solution used here is to overload (),
-     * which makes the comparison function a functor of the class itself. That means that *this can
-     * be used to supply the comparison function to std::sort and std::lower_bound, which can then
-     * access the class data.
-     * 
-     * It would be preferable to use the appropriate comparison function directly somehow as the
-     * comparison argument to std::sort and std::lower_bound, rather than a run-time choice on every
-     * call, but it's unclear how to do that with tempated member comparison functions which need to
-     * access class data.
-     *
-     * @return The result of the operation.
-     */
-    bool operator()(const int &a, const int &b)
-    {
-        if (initialized) {
-            // use cmp_for_draw
-            return cmp_for_draw(a, b);
-        }
-        else {
-            // use cmp_for_sort
-            return cmp_for_sort(a, b);
-        }
-    }
-
-    /**
-     * Compare for sort.
-     *
-     * This comparison function compares like '>' to order from highest to lowest.  Ties in values are broken explicitly
-     * by comparing indices, in decreasing order.
-     */
-    bool cmp_for_sort(const int &a, const int &b)
-    {
-        return (cumprob[a] == cumprob[b])
-                ? (a > b)
-                : (cumprob[a] > cumprob[b]);
-    }
-
-    /**
-     * Compare for draw
-     *
-     * This comparison function compares like '<', using partial sums (cumulated probabilities)
-     * There is a level of indirection to the values through the permutation vector.
-     */
-    bool cmp_for_draw(const int &a, const int &b)
-    {
-        return (cumprob[a] < cumprob[b]);
-    }
 
     /**
      * The value corresponding to each cumulated probability

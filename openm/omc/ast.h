@@ -44,6 +44,7 @@
 #include "DerivedAgentVarSymbol.h"
 #include "AgentFuncSymbol.h"
 #include "AgentArrayMemberSymbol.h"
+#include "AgentHookSymbol.h"
 #include "LinkToAgentVarSymbol.h"
 #include "LinkAgentVarSymbol.h"
 #include "MultilinkAgentVarSymbol.h"

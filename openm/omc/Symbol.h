@@ -549,7 +549,7 @@ public:
      *
      * @param unm The unique name.
      *
-     * @return The symbol, or nullptr if not found.
+     * @return The symbol, or nullptr if it doesn't exist.
      */
     static Symbol *get_symbol(const string& unm);
 
@@ -561,7 +561,7 @@ public:
      * @param nm    The member name.
      * @param agent The agent.
      *
-     * @return The symbol.
+     * @return The symbol, or nullptr if it doesn't exist.
      */
     static Symbol *get_symbol(const string& nm, const Symbol *agent);
 

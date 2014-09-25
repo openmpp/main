@@ -14,11 +14,15 @@ actor Host
     void initialize_attributes(); //EN Initialize all entity attributes (ompp)
     void enter_simulation(); //EN Have the entity enter the simulation (ompp)
     void exit_simulation(); //EN Have the entity exit the simulation (ompp)
+
+    void hook_OneTime(); //EN Call hooked functions (ompp)
 };
 
 void Host::initialize_attributes() { }
 void Host::enter_simulation() { }
 void Host::exit_simulation() { }
+
+void Host::hook_OneTime() { }
 
 actor Ticker
 {

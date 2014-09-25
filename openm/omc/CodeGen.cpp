@@ -181,6 +181,7 @@ void CodeGen::do_preamble()
                 " Time stamp = " + model_symbol->time_stamp
                 );
 	z += "";
+    z += "#include \"omc/cumrate.h\"";
     z += "#include \"om_types1.h\"";
 	z += "";
 

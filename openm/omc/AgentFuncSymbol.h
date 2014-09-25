@@ -99,5 +99,17 @@ public:
      * The function body.
      */
     CodeBlock func_body;
+
+    /**
+     * The name of the AgentFuncSymbol which implements hooks to the function.
+     *
+     * @param to_name Function being hooked to
+     *
+     * @return A string.
+     */
+    static string hook_implement_name(string to_name)
+    {
+        return "hook_" + to_name;
+    }
 };
 

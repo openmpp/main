@@ -1492,8 +1492,13 @@ event_priority_opt:
 decl_hook:
       "hook"[kw] SYMBOL[from] "," SYMBOL[to] ";"
                         {
-                            //drv.warning(@kw, "Warning - hook not implemented.");
-                            //TODO SFG
+                            auto *agent = pc.get_agent_context();
+
+                            if (!AgentHookSymbol::exists(agent, $from, $to)) {
+                                // ignore redeclaration - is benign
+                                // Create the agent hook symbol
+                                auto *sym = new AgentHookSymbol(agent, $from, $to, @kw);
+                            }
                         }
     ;
 
