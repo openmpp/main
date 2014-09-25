@@ -233,7 +233,8 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
         "--\n"
         );
     for (const OutTblInfo & tblInfo : outInfoVec) {
-        subCreateTableBody(tblInfo, io_wr);
+        accCreateTableBody(tblInfo, io_wr);
+        accFlatCreateViewBody(tblInfo, io_wr);
         valueCreateTableBody(tblInfo, io_wr);
     }
     io_wr.write("\n");
@@ -531,13 +532,12 @@ void ModelSqlBuilder::addWorksetParameter(
             }
 
             // validate and write parameter value
-            const string val = *valueIt;
             if (isQuote) {
-                wr.writeQuoted(val);
+                wr.writeQuoted(*valueIt);
             }
             else {
-                if (val.empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
-                wr.write(val.c_str());
+                if (valueIt->empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
+                wr.write(valueIt->c_str());
             }
 
             // end of insert statement
@@ -660,21 +660,21 @@ const void ModelSqlBuilder::paramCreateTableBody(
     io_wr.write("));\n");
 }
 
-// create table sql for subsample table:
-// CREATE TABLE modelOne_201208171604590148_s0_salarySex
+// create table sql for accumulator table:
+// CREATE TABLE modelOne_201208171604590148_a0_salarySex
 // (
 //  run_id    INT   NOT NULL,
 //  dim0      INT   NOT NULL,
 //  dim1      INT   NOT NULL,
+//  acc_id    INT   NOT NULL,
 //  sub_id    INT   NOT NULL,
-//  acc0      FLOAT NULL,
-//  acc1      FLOAT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1, sub_id)
+//  acc_value FLOAT NULL,
+//  PRIMARY KEY (run_id, dim0, dim1, acc_id, sub_id)
 // );
-const void ModelSqlBuilder::subCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
+const void ModelSqlBuilder::accCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
     io_wr.outFs <<
-        "CREATE TABLE " << i_tblInfo.subTableName <<
+        "CREATE TABLE " << i_tblInfo.accTableName <<
         " (run_id INT NOT NULL, ";
     io_wr.throwOnFail();
 
@@ -683,20 +683,90 @@ const void ModelSqlBuilder::subCreateTableBody(const OutTblInfo & i_tblInfo, Mod
         io_wr.throwOnFail();
     }
 
-    io_wr.write("sub_id INT NOT NULL, ");
-
-    for (const string & accName : i_tblInfo.accNameVec) {
-        io_wr.outFs << accName << " FLOAT NULL, ";
-        io_wr.throwOnFail();
-    }
-
-    io_wr.write("PRIMARY KEY (run_id");
+    io_wr.write(
+        "acc_id INT NOT NULL, " \
+        "sub_id INT NOT NULL, " \
+        "acc_value FLOAT NULL, " \
+        "PRIMARY KEY (run_id"
+        );
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         io_wr.outFs << ", " << dimName;
         io_wr.throwOnFail();
     }
-    io_wr.write(", sub_id));\n");
+    io_wr.write(", acc_id, sub_id));\n");
+}
+
+// create table sql for accumulator flatten view:
+// CREATE VIEW modelOne_201208171604590148_f0_salarySex
+// AS
+// SELECT 
+//   A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc0, A1.acc1
+// FROM
+// (
+//   SELECT 
+//     run_id, dim0, dim1, sub_id, acc_value AS acc0
+//   FROM modelOne_201208171604590148_a0_salarySex 
+//   WHERE acc_id = 0
+// ) A0
+// INNER JOIN
+// (
+//   SELECT 
+//     run_id, dim0, dim1, sub_id, acc_value AS acc1
+//   FROM modelOne_201208171604590148_a0_salarySex 
+//   WHERE acc_id = 1
+// ) A1
+// ON (A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id);
+const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
+{
+    io_wr.outFs <<
+        "CREATE VIEW " << i_tblInfo.accFlatViewName << " AS SELECT A0.run_id,";
+    io_wr.throwOnFail();
+
+    for (const string & dimName : i_tblInfo.dimNameVec) {
+        io_wr.outFs << " A0." << dimName << ",";
+        io_wr.throwOnFail();
+    }
+    io_wr.write(" A0.sub_id");
+
+    for (size_t nAcc = 0; nAcc < i_tblInfo.accNameVec.size(); nAcc++) {
+        io_wr.outFs << ", A" << nAcc << "." << i_tblInfo.accNameVec[nAcc];
+        io_wr.throwOnFail();
+    }
+
+    for (size_t nAcc = 0; nAcc < i_tblInfo.accNameVec.size(); nAcc++) {
+
+        io_wr.write((nAcc > 0) ? " INNER JOIN" : " FROM");
+
+        io_wr.write(" (SELECT run_id, ");
+
+        for (const string & dimName : i_tblInfo.dimNameVec) {
+            io_wr.outFs << dimName << ", ";
+            io_wr.throwOnFail();
+        }
+        io_wr.outFs <<
+            "sub_id," <<
+            " acc_value AS " << i_tblInfo.accNameVec[nAcc] <<
+            " FROM " << i_tblInfo.accTableName <<
+            " WHERE acc_id = " << nAcc <<
+            ") A" << nAcc;
+        io_wr.throwOnFail();
+
+        if (nAcc > 0) {
+            io_wr.outFs << " ON (A" << nAcc << ".run_id = A0.run_id";
+            io_wr.throwOnFail();
+
+            for (const string & dimName : i_tblInfo.dimNameVec) {
+                io_wr.outFs << " AND A" << nAcc << "." << dimName << " = A0." << dimName;
+                io_wr.throwOnFail();
+            }
+
+            io_wr.outFs << " AND A" << nAcc << ".sub_id = A0.sub_id)";
+            io_wr.throwOnFail();
+        }
+    }
+
+    io_wr.write(";\n");
 }
 
 // create table sql for value table:
@@ -1287,19 +1357,24 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
     // validate table prefixes: it must not exceed max size and must be unique
     io_mdRow.paramPrefix = !io_mdRow.paramPrefix.empty() ? io_mdRow.paramPrefix : "p";
     io_mdRow.setPrefix = !io_mdRow.setPrefix.empty() ? io_mdRow.setPrefix : "w";
-    io_mdRow.subPrefix = !io_mdRow.subPrefix.empty() ? io_mdRow.subPrefix : "s";
+    io_mdRow.accPrefix = !io_mdRow.accPrefix.empty() ? io_mdRow.accPrefix : "a";
+    io_mdRow.accFlatPrefix = !io_mdRow.accFlatPrefix.empty() ? io_mdRow.accFlatPrefix : "f";
     io_mdRow.valuePrefix = !io_mdRow.valuePrefix.empty() ? io_mdRow.valuePrefix : "v";
 
     if (io_mdRow.paramPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) parameter tables prefix: %s", io_mdRow.paramPrefix.c_str());
     if (io_mdRow.setPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) workset tables prefix: %s", io_mdRow.setPrefix.c_str());
-    if (io_mdRow.subPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) subsample tables prefix: %s", io_mdRow.subPrefix.c_str());
+    if (io_mdRow.accPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator tables prefix: %s", io_mdRow.accPrefix.c_str());
+    if (io_mdRow.accFlatPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator flatten view prefix: %s", io_mdRow.accFlatPrefix.c_str());
     if (io_mdRow.valuePrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) value tables prefix: %s", io_mdRow.valuePrefix.c_str());
 
-    if (io_mdRow.paramPrefix == io_mdRow.setPrefix || io_mdRow.paramPrefix == io_mdRow.subPrefix || io_mdRow.paramPrefix == io_mdRow.valuePrefix || 
-        io_mdRow.setPrefix == io_mdRow.subPrefix || io_mdRow.setPrefix == io_mdRow.valuePrefix || io_mdRow.subPrefix == io_mdRow.valuePrefix)
+    if (io_mdRow.paramPrefix == io_mdRow.setPrefix || io_mdRow.paramPrefix == io_mdRow.accPrefix || 
+        io_mdRow.paramPrefix == io_mdRow.accFlatPrefix || io_mdRow.paramPrefix == io_mdRow.valuePrefix || 
+        io_mdRow.setPrefix == io_mdRow.accPrefix || io_mdRow.setPrefix == io_mdRow.accFlatPrefix || io_mdRow.setPrefix == io_mdRow.valuePrefix || 
+        io_mdRow.accPrefix == io_mdRow.accFlatPrefix || io_mdRow.accPrefix == io_mdRow.valuePrefix || 
+        io_mdRow.accFlatPrefix == io_mdRow.valuePrefix)
         throw DbException(
-            "invalid (not unique) table prefixes: %s %s %s %s, model name: %s", 
-            io_mdRow.paramPrefix.c_str(), io_mdRow.setPrefix.c_str(), io_mdRow.subPrefix.c_str(), io_mdRow.valuePrefix.c_str(), io_mdRow.name.c_str()
+            "invalid (not unique) table prefixes: %s %s %s %s %s, model name: %s", 
+            io_mdRow.paramPrefix.c_str(), io_mdRow.setPrefix.c_str(), io_mdRow.accPrefix.c_str(), io_mdRow.accFlatPrefix.c_str(), io_mdRow.valuePrefix.c_str(), io_mdRow.name.c_str()
             );
 }
 
@@ -1415,7 +1490,8 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         OutTblInfo tblInf;
         tblInf.id = tableRow.tableId;
         tblInf.name = tableRow.tableName;
-        tblInf.subTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.subPrefix + tableRow.dbNameSuffix;
+        tblInf.accTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.accPrefix + tableRow.dbNameSuffix;
+        tblInf.accFlatViewName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.accFlatPrefix + tableRow.dbNameSuffix;
         tblInf.valueTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.valuePrefix + tableRow.dbNameSuffix;
 
         // collect dimension names
@@ -1433,11 +1509,11 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
             throw DbException("output table accumulators not found for table: %s", tableRow.tableName.c_str());
 
         // translate expressions into sql
-        ModelAggregationSql aggr(tblInf.subTableName, "S", tblInf.accNameVec, tblInf.dimNameVec);
+        ModelAggregationSql aggr(tblInf.accFlatViewName, tblInf.accNameVec, tblInf.dimNameVec);
 
         for (TableUnitRow & unitRow : io_metaRows.tableUnit) {
             if (unitRow.tableId == tblInf.id) {
-                unitRow.expr = aggr.translateAggregationExpr(unitRow.src);  // translate expression to sql aggregation
+                unitRow.expr = aggr.translateAggregationExpr(unitRow.name, unitRow.src);    // translate expression to sql aggregation
             }
         }
         // if (tblInf.exprVec.empty()) 

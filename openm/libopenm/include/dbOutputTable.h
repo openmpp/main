@@ -42,16 +42,16 @@ namespace openm
         virtual int expressionCount(void) const throw() = 0;
 
         /**
-         * write output table subsample: array of accumulator values
-         *
-         * @param[in] i_dbExec      database connection
-         * @param[in] i_nSubSample  subsample number
-         * @param[in] i_accCount    number of accumulators for the output table
-         * @param[in] i_size        number of values for each accumulator
-         * @param[in] i_valueArr    array of pointers to accumulator values
-         */
-        virtual void writeSubSample(
-            IDbExec * i_dbExec, int i_nSubSample, int i_accCount, long long i_size, const double * i_valueArr[]
+        * write output table accumulator values
+        *
+        * @param[in] i_dbExec      database connection
+        * @param[in] i_nSubSample  subsample number
+        * @param[in] i_size        number of values for each accumulator
+        * @param[in] i_accId       accumulator number for the output table (zero based)
+        * @param[in] i_valueArr    array of accumulator values
+        */
+        virtual void writeAccumulator(
+            IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr
             ) = 0;
 
         /** write all output table values: aggregate subsamples using table expressions */

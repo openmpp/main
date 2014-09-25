@@ -91,8 +91,11 @@ namespace openm
         /** helper struct to collect info for db subsample table and value view */
         struct OutTblInfo : DbTblInfo
         {
-            /** db name of subsample table */
-            string subTableName;
+            /** db name of accumulator table */
+            string accTableName;
+
+            /** db name of accumulator flat view */
+            string accFlatViewName;
 
             /** db name of aggregated value view: table expressions */
             string valueTableName;
@@ -124,8 +127,11 @@ namespace openm
             const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
             ) const;
 
-        /** create table sql for subsample table */
-        const void subCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        /** create table sql for accumulator table */
+        const void accCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+
+        /** create table sql for accumulator flatten view */
+        const void accFlatCreateViewBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
         /** create table sql for value table: aggregated table expressions */
         const void valueCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;

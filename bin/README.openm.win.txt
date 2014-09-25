@@ -9,3 +9,5 @@ Bison and flex: http://sourceforge.net/projects/winflexbison/
 
 You don't need bison and flex to build or run openM++ models.
 If you want to build omc (openM++ compiler) then you must have bison and flex.
+
+Copy of licences for above products can be found at ../openm/licences subfolder.

@@ -164,7 +164,7 @@ namespace openm
         );
 }
 
-/** max allowed size for table type prefix: parameter_prefix, workset_prefix, sub_prefix, value_prefix */
+/** max allowed size for table type prefix: parameter_prefix, workset_prefix, acc_prefix, value_prefix */
 #define OM_DB_TABLE_TYPE_PREFIX_LEN         1
 
 /** max type id for built-int types, ie: int, double, logical */

@@ -218,14 +218,20 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
                 runOptions()->useSparse, 
                 runOptions()->nullValue
                 ));
-            writer->writeSubSample(dbExec, subSampleNumber(), i_accCount, i_size, i_valueArr);
+            for (int nAcc = 0; nAcc < i_accCount; nAcc++) {
+                writer->writeAccumulator(dbExec, subSampleNumber(), nAcc, i_size, i_valueArr[nAcc]);
+            }
         }
         else {  // send subsample data to root process
 
-            // find starting index of table accumulators in db rows of accumulators
-            int tblId = metaStore->tableDic->byModelIdName(modelId, i_name)->tableId;
+            // find output table db row
+            const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
+            if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
+
+            int tblId = tblRow->tableId;
             const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
 
+            // find starting index of table accumulators in db rows of accumulators
             int accPos = 0;
             while (accPos < (int)accVec.size() && accVec[accPos].tableId != tblId) {
                 accPos++;
@@ -250,270 +256,103 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
 }
 
 // helper struct to receive output table values for each accumulator
-struct TblSizeRecv
+struct TblAccRecv
 {
+    int subId;              // subsample to receive: [1,...N-1]
     int tableId;            // output table id
-    int accStartPos;        // index of first accumulator in the list of accumulators
-    int accCount;           // number of accumulators 
+    int accId;              // accumulator id
+    int accMsgTag;          // message tag for that accumulator: index of accumulator in the list of accumulators
     long long valueSize;    // size of accumulator data
+    bool isReceived;        // if true then data received
 
-    TblSizeRecv(int i_tableId, int i_accStartPos, int i_accCount, long long i_valueSize) :
+    TblAccRecv(int i_subId, int i_tableId, int i_accId, int i_accMsgTag, long long i_valueSize) :
+        subId(i_subId),
         tableId(i_tableId),
-        accStartPos(i_accStartPos),
-        accCount(i_accCount),
-        valueSize(i_valueSize)
+        accId(i_accId),
+        accMsgTag(i_accMsgTag),
+        valueSize(i_valueSize),
+        isReceived(false)
     { }
-
-    // find by table id
-    static vector<TblSizeRecv>::const_iterator byTableId(int i_tableId, const vector<TblSizeRecv> & i_tblSizeVec)
-    {
-        vector<TblSizeRecv>::const_iterator tblSizeIt = std::find_if(
-            i_tblSizeVec.cbegin(), 
-            i_tblSizeVec.cend(), 
-            [i_tableId](const TblSizeRecv & i_tblSize) -> bool { return i_tblSize.tableId == i_tableId; }
-            );
-        if (tblSizeIt == i_tblSizeVec.cend()) throw ModelException("output table size info not found, id: %d", i_tableId);
-
-        return tblSizeIt;
-    }
 };
-
-// collect each table size and accumulators position
-static void collectTableSize(
-    int i_modelId, const MetaRunHolder * i_metaStore, const vector<TableAccRow> & i_accVec, vector<TblSizeRecv> & io_tblSizeVec
-    );
-
-// try to receive accumulator data for any subsample of any output table, return true if received
-static bool tryReceiveAccumulator(
-    int i_subSampleCount,
-    IMsgExec * i_msgExec,
-    const vector<TableAccRow> & i_accVec, 
-    const vector<TblSizeRecv> & i_tblSizeVec, 
-    vector<bool> & io_isRecvVec, 
-    vector<unique_ptr<double> > & io_valueVec
-    );
-
-
-// if there is a output table subsample where all accumulators received 
-// then save such table(s) in database and release accumulators data buffers
-// return true if any subsample saved
-static bool writeSubSamples(
-    int i_modelId, 
-    IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore,
-    const RunOptions * i_runOpt,
-    const vector<TableDicRow> & i_tblVec,
-    const vector<TableAccRow> & i_accVec, 
-    const vector<TblSizeRecv> & i_tblSizeVec, 
-    const vector<bool> & i_isRecvVec, 
-    vector<unique_ptr<double> > & io_valueVec,
-    vector<bool> & io_isSavedVec
-    );
 
 /** receive all output tables subsamples and write into database */
 void ModelBase::receiveSubSamples(void)
 {
     // receive output tables subsamples: [1,..N-1]
-    // receive all sabsamples except of zero subsample, which caculated localy at root process
+    // receive all subsamples except of zero subsample, which caculated localy at root process
     if (subSampleCount() <= 1) return;  // exit if only one subsample was produced by model
 
-    // collect tables and accumulators size and position
-    const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
+    // init list of accumulators to be received
+    vector<TblAccRecv> recvVec;
     const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
-    int tblSize = (int)tblVec.size();
-    int accSize = (int)accVec.size();
-    int subSize = subSampleCount() - 1;
 
-    vector<TblSizeRecv> tblSizeVec;
-    collectTableSize(modelId, metaStore, accVec, tblSizeVec);
-    if (tblSize != (int)tblSizeVec.size()) throw new DbException("invalid output tables accumulators list");
+    int tblId = -1;
+    for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
 
-    vector<bool> isRecvVec(subSize * accSize, false);           // received flags: if true then table accumulator data received
-    vector<unique_ptr<double> > valueVec(subSize * accSize);    // buffers to receive the data
-    vector<bool> isSavedVec(subSize * tblSize, false);          // saved flags: if true then table subsample already saved in database
+        // get accumulator data size
+        long long valSize = 0;
+        if (tblId != accVec[nAcc].tableId) {
+            tblId = accVec[nAcc].tableId;
+            valSize = IOutputTableWriter::sizeOf(modelId, metaStore, tblId);
+        }
 
-    // receive and save accumulators for all subsamples
+        for (int nSub = 1; nSub < subSampleCount(); nSub++) {
+            recvVec.push_back(TblAccRecv(nSub, tblId, accVec[nAcc].accId, nAcc, valSize));
+        }
+    }
+
+    // receive and save all accumulators
     bool isAnyToRecv = true;
     while (isAnyToRecv) {
 
-        // try to receive accumulator data for any subsample of any output table
-        bool isReceived = tryReceiveAccumulator(subSampleCount(), msgExec, accVec, tblSizeVec, isRecvVec, valueVec);
+        // try to receive accumulator data and save it into database
+        bool isReceived = false;
+        for (TblAccRecv & accRecv : recvVec) {
 
-        isAnyToRecv = std::any_of(
-            isRecvVec.cbegin(),
-            isRecvVec.cend(),
-            [](bool i_isRecv) -> bool { return !i_isRecv; }
-        );
-
-         // no data received: if any subsamples outstanding then sleep before try again
-        if (!isReceived) {
-            if (isAnyToRecv) sleepMilli(OM_RECV_SLEEP_TIME);
-            continue;
-        }
-
-        // if data received and there is some tables where all accumulators received 
-        // then save such tables and release accumulators data buffers
-        bool isAnySaved = false;
-        do {
-            isAnySaved = writeSubSamples(
-                modelId, dbExec, metaStore, runOptions(), tblVec, accVec, tblSizeVec, isRecvVec, valueVec, isSavedVec
-                );
-        } while (isAnySaved);
-    }    
-}
-
-// try to receive accumulator data for any subsample of any output table, return true if received
-bool tryReceiveAccumulator(
-    int i_subSampleCount,
-    IMsgExec * i_msgExec,
-    const vector<TableAccRow> & i_accVec, 
-    const vector<TblSizeRecv> & i_tblSizeVec, 
-    vector<bool> & io_isRecvVec, 
-    vector<unique_ptr<double> > & io_valueVec
-    )
-{
-    int subSize = i_subSampleCount - 1;     // receive [1, N-1] subsample, zero subsample produced by root process
-    int accSize = (int)i_accVec.size();
-    bool isReceived = false;
-
-    for (int nSub = 0; !isReceived && nSub < subSize; nSub++) {
-        for (int nAcc = 0; !isReceived && nAcc < accSize; nAcc++) {
-
-            int recvPos = nSub * accSize + nAcc;
-
-            if (!io_isRecvVec[recvPos]) {       // if this subsample not yet received
-
-                // find size of the accumulator for current table
-                long long valueSize = TblSizeRecv::byTableId(i_accVec[nAcc].tableId, i_tblSizeVec)->valueSize;
+            if (!accRecv.isReceived) {      // if accumulator not yet received
 
                 // allocate buffer to receive the data
-                unique_ptr<double> valueUptr(new double[(int)valueSize]);
+                unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
                 double * valueArr = valueUptr.get();
 
                 // try to received
-                isReceived = i_msgExec->tryReceive(
-                    nSub + 1, 
-                    (MsgTag)((int)MsgTag::outSubsampleBase + nAcc),
-                    typeid(double), 
-                    valueSize, 
+                isReceived = accRecv.isReceived = msgExec->tryReceive(
+                    accRecv.subId,
+                    (MsgTag)((int)MsgTag::outSubsampleBase + accRecv.accMsgTag),
+                    typeid(double),
+                    accRecv.valueSize,
                     valueArr
                     );
+                if (!isReceived) continue;
 
-                // if received move data to main vector of accumulator values
-                if (isReceived) {
-                    io_valueVec[recvPos].swap(valueUptr);
-                    io_isRecvVec[recvPos] = true;
-                }
-            }
-        }
-    }
+                // accumulator received: write it into database
+                const TableDicRow * tblRow = metaStore->tableDic->byKey(modelId, accRecv.tableId);
+                if (tblRow == nullptr) throw new DbException("output table not found in table dictionary, id: %d", accRecv.tableId);
 
-    return isReceived;
-}
-
-// if there is a output table subsample where all accumulators received 
-// then save such table(s) in database and release accumulators data buffers
-// return true if any subsample saved
-bool writeSubSamples(
-    int i_modelId, 
-    IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore,
-    const RunOptions * i_runOpt,
-    const vector<TableDicRow> & i_tblVec,
-    const vector<TableAccRow> & i_accVec, 
-    const vector<TblSizeRecv> & i_tblSizeVec, 
-    const vector<bool> & i_isRecvVec, 
-    vector<unique_ptr<double> > & io_valueVec,
-    vector<bool> & io_isSavedVec
-    )
-{
-    int subSize = i_runOpt->subSampleCount - 1;         // receive [1, N-1] subsample, zero subsample produced by root process
-    int tblSize = (int)i_tblVec.size();
-    int accSize = (int)i_accVec.size();
-
-    bool isAnySaved = false;
-
-    // find table subsample where all accumulators received and not yet saved
-    for (int nTbl = 0; nTbl < tblSize; nTbl++) {
-                        
-        vector<TblSizeRecv>::const_iterator tblSizeIt = TblSizeRecv::byTableId(i_tblVec[nTbl].tableId, i_tblSizeVec);
-
-        // check if all accumulators received 
-        for (int nSub = 0; nSub < subSize; nSub++) {
-                        
-            int savedPos = nSub * tblSize + nTbl;
-            if (io_isSavedVec[savedPos]) continue;      // output table subsample already saved
-
-            // check if all accumulators for the table subsample received
-            bool isAllRecv = true;
-            for (int nAcc = 0; isAllRecv && nAcc < tblSizeIt->accCount; nAcc++) {
-                isAllRecv &= i_isRecvVec[nSub * accSize + nAcc + tblSizeIt->accStartPos];
-            }
-            if (!isAllRecv) continue;       // accumultor(s) not yet received, skip to next table
-
-            // write subsample accumulators data in database
-            {
-                // get pointers to received accumulators data
-                unique_ptr<const double *> accUptr(new const double * [tblSizeIt->accCount]);
-                const double ** accArr = accUptr.get();
-
-                for (int nAcc = 0; nAcc < tblSizeIt->accCount; nAcc++) {
-                    accArr[nAcc] = io_valueVec[nSub * accSize + nAcc + tblSizeIt->accStartPos].get();
-                }
-
-                // save accumulators data in database
                 unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-                    i_modelId, 
-                    i_metaStore->runId,
-                    i_tblVec[nTbl].tableName.c_str(), 
-                    i_dbExec, 
-                    i_metaStore,
-                    i_runOpt->subSampleCount, 
-                    i_runOpt->useSparse, 
-                    i_runOpt->nullValue
+                    modelId,
+                    metaStore->runId,
+                    tblRow->tableName.c_str(),
+                    dbExec,
+                    metaStore,
+                    runOptions()->subSampleCount,
+                    runOptions()->useSparse,
+                    runOptions()->nullValue
                     ));
-                writer->writeSubSample(i_dbExec, nSub + 1, tblSizeIt->accCount, tblSizeIt->valueSize, accArr);
-            }
+                writer->writeAccumulator(dbExec, accRecv.subId, accRecv.accId, accRecv.valueSize, valueArr);
 
-            isAnySaved = io_isSavedVec[savedPos] = true;   // subsample accumulators saved
-
-            // release accumulators data bufferes
-            for (int nAcc = 0; nAcc < tblSizeIt->accCount; nAcc++) {
-                io_valueVec[nSub * accSize + nAcc + tblSizeIt->accStartPos].release();
+                break;  // data received
             }
         }
+
+        // check if anything left to receive
+        isAnyToRecv = std::any_of(
+            recvVec.cbegin(),
+            recvVec.cend(),
+            [](TblAccRecv i_recv) -> bool { return !i_recv.isReceived; }
+        );
+
+        // no data received: if any accumulators outstanding then sleep before try again
+        if (!isReceived && isAnyToRecv) sleepMilli(OM_RECV_SLEEP_TIME);
     }
-
-    return isAnySaved;
-}
-
-// collect each table size and  accumulators position
-void collectTableSize(
-    int i_modelId, const MetaRunHolder * i_metaStore, const vector<TableAccRow> & i_accVec, vector<TblSizeRecv> & io_tblSizeVec
-    )
-{
-    // for each table get accumulators count and size
-    int tblId = -1;
-    int accCount = 0;
-
-    for (int nAcc = 0; nAcc < (int)i_accVec.size(); nAcc++) {
-
-        if (i_accVec[nAcc].tableId != tblId) {
-
-            // update accumulators count for previous table
-            if (!io_tblSizeVec.empty()) io_tblSizeVec.back().accCount = accCount;
-
-            // add current table to the list with initial zero accumulators count
-            tblId = i_accVec[nAcc].tableId;
-            accCount = 0;
-            io_tblSizeVec.push_back(
-                TblSizeRecv(tblId, nAcc, accCount, IOutputTableWriter::sizeOf(i_modelId, i_metaStore, tblId))
-                );
-        }
-
-        accCount++;
-    }
-
-    // update last table accumulators count
-    if (!io_tblSizeVec.empty()) io_tblSizeVec.back().accCount = accCount;
 }

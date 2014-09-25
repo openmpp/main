@@ -78,6 +78,29 @@ namespace openm
         cv
     };
 
+    /** column aggregation expression */
+    struct AggregationColumnExpr
+    {
+        /** column name, ie: ex2 */
+        string colName;
+
+        /** source expression, ie: OM_AVG(acc0) */
+        string srcExpr;
+
+        /** sql expresiion, ie: AVG(M2.acc0) */
+        string sqlExpr;
+
+        /** number of aggregation epxpressions */
+        static int nextExprNumber;
+
+        AggregationColumnExpr(const string & i_colName, const string & i_srcExpr) :
+            colName(i_colName), srcExpr(i_srcExpr)
+        { }
+        AggregationColumnExpr(const string & i_srcExpr) :
+            AggregationColumnExpr("ex" + to_string(nextExprNumber++), i_srcExpr)
+        { }
+    };
+
     /** class to produce aggregation sql for otput table */
     class ModelAggregationSql
     {
@@ -85,17 +108,14 @@ namespace openm
         /**
          * create aggregation sql builder for output table.
          *
-         * @param[in] i_tableName subsamples table name in database
-         * @param[in] i_alias     subsample table alias, ie: S
-         * @param[in] i_accVec    name vector of table accumulators
-         * @param[in] i_dimVec    name vector of table dimensions
+         * @param[in] i_accFlatName accumulator flat view name in database
+         * @param[in] i_accVec      name vector of table accumulators
+         * @param[in] i_dimVec      name vector of table dimensions
          */
         ModelAggregationSql(
-            const string & i_tableName, const string & i_alias, const vector<string> & i_accVec, const vector<string> & i_dimVec
+            const string & i_accFlatName, const vector<string> & i_accVec, const vector<string> & i_dimVec
             ) :
-            joinCount(0),
-            tableName(i_tableName),
-            mainAlias(i_alias),
+            accFlatName(i_accFlatName),
             accNameVec(i_accVec),
             dimNameVec(i_dimVec)
         { }
@@ -103,18 +123,19 @@ namespace openm
         /** release sql builder resources. */
         ~ModelAggregationSql() throw() { }
 
-        /** translate output aggregation expression into sql */
-        const string translateAggregationExpr(const string & i_expr);
+        /**
+         * translate output aggregation expression into sql.
+         *
+         * @param   i_name  expression name, ie: expr2.
+         * @param   i_expr  source expression, ie: OM_AVG(acc2).
+         *
+         * @return  aggergation sql select query
+         */
+        const string translateAggregationExpr(const string & i_name, const string & i_expr);
 
     private:
-        /** join count: correlated subquery count */
-        int joinCount;
-
-        /** subsamples table name */
-        const string tableName;
-
-        /** subsample table alias for top most query */
-        const string mainAlias;
+        /** accunulator flat view name */
+        const string accFlatName;
 
         /** name vector of table accumulators */
         const vector<string> accNameVec;
@@ -122,47 +143,27 @@ namespace openm
         /** name vector of table dimensions */
         const vector<string> dimNameVec;
 
-        /** translate aggregation function into sql */
-        const string translateFnc(FncCode i_code, int i_level, const string & i_arg);
+        /** aggregation expressions for the next level */
+        vector<AggregationColumnExpr> nextExprArr;
 
-        /** translate function argument: decorate accumulator name with alias */
-        const string translateArg(const string & i_alias, const string & i_arg);
+        /** translate aggregation function into sql */
+        const string translateFnc(
+            FncCode i_code, const string & i_fromAlias, const string & i_innerAlias, const string & i_arg
+            );
+
+        /** translate function argument into sql argument */
+        const string translateArg(
+            const string & i_fromAlias, const string & i_innerAlias, const string & i_arg
+            );
 
         /** insert table alias in front of accumulator names */
         const string insertAliasAcc(const string & i_alias, const string & i_expr);
 
-        /** return join conditions for corelated subquery */
-        const string makeJoinCondition(const string & i_subAlias);
+        /** push OM_AVG functions to next aggregation level and return column name */
+        const string pushAvgToNextLevel(const string & i_arg) { return pushToNextLevel("OM_AVG(" + i_arg + ")"); }
 
-        /** build basic sql aggregation subquery, ie: AVG */
-        const string sqlSubquery(const string & i_sqlFncName, const string & i_arg);
-
-        /** return basic sql aggregation expression, ie: AVG(i_arg) */
-        const string sqlAggregation(const string & i_sqlFncName, const string & i_alias, const string & i_arg);
-
-        /** build sql variance aggregation as subquery */
-        const string sqlVarSubquery(const string & i_arg);
-
-        /** return sql variance aggregation as expression with argument */
-        const string sqlVarAggregation(const string & i_alias, const string & i_arg);
-
-        /** build sql SD aggregation as subquery */
-        const string sqlSdSubquery(const string & i_arg);
-
-        /** return sql SD aggregation as expression with argument */
-        const string sqlSdAggregation(const string & i_alias, const string & i_arg);
-
-        /** build sql SE aggregation as subquery */
-        const string sqlSeSubquery(const string & i_arg);
-
-        /** return sql SE aggregation as expression with argument */
-        const string sqlSeAggregation(const string & i_alias, const string & i_arg);
-
-        /** build sql CV aggregation as subquery */
-        const string sqlCvSubquery(const string & i_arg);
-
-        /** return sql CV aggregation as expression with argument */
-        const string sqlCvAggregation(const string & i_alias, const string & i_arg);
+        /** push OM_ function to next aggregation level and return column name */
+        const string pushToNextLevel(const string & i_fncExpr);
 
     private:
         ModelAggregationSql(const ModelAggregationSql & i_other);               // = delete;

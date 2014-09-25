@@ -31,8 +31,8 @@ namespace openm
         // return number of output aggregated expressions
         int expressionCount(void) const throw() { return unitCount; }
 
-        // write output result table: subsample value
-        void writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int i_accCount, long long i_size, const double * i_valueArr[]);
+        // write output table accumulator values
+        void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr);
 
         // write all output table values: aggregate subsamples using table expressions
         void writeAllExpressions(IDbExec * i_dbExec);
@@ -164,61 +164,42 @@ long long IOutputTableWriter::sizeOf(int i_modelId, const MetaRunHolder * i_meta
     return nTotal;
 }
 
-// write output table subsample: array of accumulator values
-void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int i_accCount, long long i_size, const double * i_valueArr[])
+// write output table accumulator values
+void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr)
 {
     // validate parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
     if (i_nSubSample < 0 || i_nSubSample >= numSubSamples) throw DbException("invalid sub-sample index: %d for output table: %s", i_nSubSample, tableRow->tableName.c_str());
-    if (i_accCount <= 0 || i_accCount != accCount) throw DbException("invalid number of accumulators: %d for output table: %s", i_accCount, tableRow->tableName.c_str());
+    if (i_accId < 0 || i_accId >= accCount) throw DbException("invalid accumulator number: %d for output table: %s", i_accId, tableRow->tableName.c_str());
     if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for output table: %s", i_size, tableRow->tableName.c_str());
 
     if (i_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for output table: %s", tableRow->tableName.c_str());
 
-    for (int nAcc = 0; nAcc < accCount; nAcc++) {
-        if (i_valueArr[nAcc] == NULL) 
-            throw DbException("invalid accumulator %d value array: it can not be NULL for output table: %s", nAcc, tableRow->tableName.c_str());
-    }
-
     // build sql:
-    // INSERT INTO modelone_201208171604590148_s0_salarySex
-    //   (run_id, dim0, dim1, sub_id, acc0, acc1) VALUES (2 , ?, ?, 15, ?, ?)
-    string sql = "INSERT INTO " + modelRow->modelPrefix + modelRow->subPrefix + tableRow->dbNameSuffix + " (run_id";
+    // INSERT INTO modelone_201208171604590148_a0_salarySex
+    //   (run_id, dim0, dim1, acc_id, sub_id, acc_value) VALUES (2 , ?, ?, 15, 4, ?)
+    string sql = "INSERT INTO " + modelRow->modelPrefix + modelRow->accPrefix + tableRow->dbNameSuffix + " (run_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", " + dim.name;
     }
 
-    sql += ", sub_id";
+    sql += ", acc_id, sub_id, acc_value) VALUES (" + to_string(runId);
 
-    for (const TableAccRow & acc : tableAcc) {
-        sql += ", " + acc.name;
-    }
-
-    sql += ") VALUES (" + to_string(runId);
-
-    // build sql, append: , ?, ?, 15, ?, ?)
-    // dimensions parameter placeholder(s), sub-sample index and accumulators parameter placeholder(s)
+    // build sql, append: , ?, ?, ?, 15, ?)
+    // dimensions parameter placeholder(s), sub-sample index, accumulator index placeholder, value placeholder
     for (int nDim = 0; nDim < dimCount; nDim++) {
         sql += ", ?";
     }
     
-    sql += ", " + to_string(i_nSubSample);
+    sql += ", " + to_string(i_accId) + ", " + to_string(i_nSubSample) + ", ?)";
 
-    for (int nAcc = 0; nAcc < accCount; nAcc++) {
-        sql += ", ?";
-    }
-    sql += ")";
-
-    // set parameters type: dimensions and accumulators value
+    // set parameters type: dimensions and accumulator value
     vector<const type_info *> tv;
     for (int nDim = 0; nDim < dimCount; nDim++) {
         tv.push_back(&typeid(int));
     }
-
-    for (int nAcc = 0; nAcc < accCount; nAcc++) {
-        tv.push_back(&typeid(double));
-    }
+    tv.push_back(&typeid(double));  // set parameters type: accumulator value
     
     // begin update transaction
     i_dbExec->beginTransaction();
@@ -236,33 +217,25 @@ void OutputTableWriter::writeSubSample(IDbExec * i_dbExec, int i_nSubSample, int
             cellArr[k] = 0;
         }
 
-        int rowSize = dimCount + accCount;
+        int rowSize = dimCount + 1;
         unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
         DbValue * valVec = valVecUptr.get();
 
         // loop through all dimensions and store cell values
         for (long long cellOffset = 0; cellOffset < i_size; cellOffset++) {
 
-            // check if any data to insert into the row:
-            // if "sparse" flag not set for that output table
-            // or is "sparse" table and at least one value is finite and greater than "sparse null"
-            bool isAnyData = !isSparseTable;
-
-            for (int k = 0; !isAnyData && k < accCount; k++) {
-                isAnyData |= isfinite(i_valueArr[k][cellOffset]) && fabs(i_valueArr[k][cellOffset]) > nullValue;
+            // set parameter values: dimension items
+            for (int k = 0; k < dimCount; k++) {
+                valVec[k] = DbValue(cellArr[k]);
             }
 
-            // set sql parameters and execute insert
-            if (isAnyData) {
+            // if table is not "sparse" then store NULL value rows:
+            // if no "sparse" flag set for that output table or value is finite and greater than "sparse null"
+            if (!isSparseTable ||
+                (isfinite(i_valueArr[cellOffset]) && fabs(i_valueArr[cellOffset]) > nullValue)) {
 
-                // set parameter values: dimension items and accumulators value
-                for (int k = 0; k < dimCount; k++) {
-                    valVec[k] = DbValue(cellArr[k]);
-                }
-
-                for (int k = 0; k < accCount; k++) {
-                    valVec[dimCount + k] = DbValue(i_valueArr[k][cellOffset]);
-                }
+                // set parameter value: accumulator value
+                valVec[dimCount] = DbValue(i_valueArr[cellOffset]);
 
                 // insert cell value into output table
                 i_dbExec->executeStatement(rowSize, valVec);
@@ -304,32 +277,36 @@ void OutputTableWriter::writeExpression(IDbExec * i_dbExec, int i_nExpression)
     // validate parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
     if (i_nExpression < 0 || i_nExpression >= unitCount) throw DbException("invalid expression index: %d for output table: %s", i_nExpression, tableRow->tableName.c_str());
-
+    
     // build sql:
-    // INSERT INTO modelone_201208171604590148_v0_salarySex (run_id, dim0, dim1, unit_id, value)
+    // INSERT INTO modelone_201208171604590148_v0_salarySex 
+    //  (run_id, dim0, dim1, unit_id, value)
     // SELECT
-    //  S.run_id, S.dim0, S.dim1, 2, AVG(S.acc2)
-    // FROM modelone_201208171604590148_s0_salarySex S
-    // WHERE S.run_id = 15
-    // GROUP BY S.run_id, S.dim0, S.dim1
+    //  F.run_id, F.dim0, F.dim1, 2, F.expr2
+    // FROM
+    // (
+    //  SELECT
+    //    M1.run_id, M1.dim0, M1.dim1, SUM(M1.acc0) AS expr2
+    //  FROM modelone_201208171604590148_f0_salarySex M1
+    //  GROUP BY M1.run_id, M1.dim0, M1.dim1
+    // ) F
+    // WHERE F.run_id = 15
+    // 
     string sql = "INSERT INTO " + modelRow->modelPrefix + modelRow->valuePrefix + tableRow->dbNameSuffix + " (run_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", " + dim.name;
     }
 
-    sql += ", unit_id, value)";
+    sql += ", unit_id, value) SELECT F.run_id";
 
-    string sDimLst;
     for (const TableDimsRow & dim : tableDims) {
-        sDimLst += ", S." + dim.name;
+        sql += ", F." + dim.name;
     }
-
-    sql += 
-        " SELECT S.run_id" + sDimLst + ", " + to_string(i_nExpression) + ", " + tableUnit[i_nExpression].expr + 
-        " FROM " + modelRow->modelPrefix + modelRow->subPrefix + tableRow->dbNameSuffix + " S" +
-        " WHERE S.run_id = " + to_string(runId) +
-        " GROUP BY S.run_id" + sDimLst;
+    sql += ", " + to_string(i_nExpression) + ", F." + tableUnit[i_nExpression].name +
+        " FROM (" +
+        tableUnit[i_nExpression].expr +
+        ") F WHERE F.run_id = " + to_string(runId);
 
     // do the insert
     i_dbExec->update(sql);

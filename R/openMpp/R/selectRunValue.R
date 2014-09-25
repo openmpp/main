@@ -158,7 +158,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA, s
   
   nRank <- tableRow$table_rank
   dbTableName <- paste(
-    defRs$modelDic$model_prefix, defRs$modelDic$sub_prefix, tableRow$db_name_suffix, 
+    defRs$modelDic$model_prefix, defRs$modelDic$acc_flat_prefix, tableRow$db_name_suffix, 
     sep = ""
   )
   
@@ -204,7 +204,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA, s
   }
   
   # SELECT dim0, dim1, sub_id, acc0, acc1 
-  # FROM modelone_201208171604590148_s0_salarySex
+  # FROM modelone_201208171604590148_f0_salarySex
   # WHERE run_id = 2
   # AND sub_id = 4
   # ORDER BY 1, 2, 3

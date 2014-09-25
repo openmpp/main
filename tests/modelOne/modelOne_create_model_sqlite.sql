@@ -20,9 +20,9 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 -- modelOne metadata: describe the model
 --
 INSERT INTO model_dic
-  (model_id, model_name, model_type, model_ver, model_ts, model_prefix, parameter_prefix, workset_prefix, sub_prefix, value_prefix)
+  (model_id, model_name, model_type, model_ver, model_ts, model_prefix, parameter_prefix, workset_prefix, acc_prefix, acc_flat_prefix, value_prefix)
 VALUES
-  (1, 'modelOne', 0, '0.1', '_201208171604590148_', 'modelOne_201208171604590148_', 'p', 'w', 's', 'v');
+  (1, 'modelOne', 0, '0.1', '_201208171604590148_', 'modelOne_201208171604590148_', 'p', 'w', 'a', 'f', 'v');
 
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', NULL);
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, 'First model (fr)', NULL);
@@ -174,19 +174,27 @@ INSERT INTO table_acc_txt (model_id, table_id, acc_id, lang_id, descr, note) VAL
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
-  (1, 0, 0, 'Expr0', 4, 'OM_AVG(acc0)', 'AVG(S.acc0)');
+  (1, 0, 0, 'expr0', 4, 'OM_AVG(acc0)', 
+  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc0) AS expr0 FROM modelOne_201208171604590148_f0_salarySex M1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+  );
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
-  (1, 0, 1, 'Expr1', 4, 'OM_SUM(acc1)', 'SUM(S.acc1)');
+  (1, 0, 1, 'expr1', 4, 'OM_SUM(acc1)', 
+  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc1) AS expr1 FROM modelOne_201208171604590148_f0_salarySex M1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+  );
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
-  (1, 0, 2, 'Expr2', 2, 'OM_MIN(acc0)', 'MIN(S.acc0)');
+  (1, 0, 2, 'expr2', 2, 'OM_MIN(acc0)', 
+  'SELECT M1.run_id, M1.dim0, M1.dim1, MIN(M1.acc0) AS expr2 FROM modelOne_201208171604590148_f0_salarySex M1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+  );
 INSERT INTO table_unit 
   (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
 VALUES 
-  (1, 0, 3, 'Expr3', 3, 'OM_AVG(acc0 * acc1)', 'AVG(S.acc0 * S.acc1)');
+  (1, 0, 3, 'expr3', 3, 'OM_AVG(acc0 * acc1)', 
+  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc0 * M1.acc1) AS expr3 FROM modelOne_201208171604590148_f0_salarySex M1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+);
   
 INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 0, 0, 'Average acc0', 'Average on acc0 notes');
 INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 0, 1, 'Average acc0 (fr)', 'Average on acc0 notes (fr)');
@@ -250,16 +258,36 @@ CREATE TABLE modelOne_201208171604590148_w2_StartingSeed
 --
 -- modelOne output tables
 --
-CREATE TABLE modelOne_201208171604590148_s0_salarySex
+CREATE TABLE modelOne_201208171604590148_a0_salarySex
 (
   run_id    INT   NOT NULL,
   dim0      INT   NOT NULL, 
   dim1      INT   NOT NULL, 
+  acc_id    INT   NOT NULL, 
   sub_id    INT   NOT NULL, 
-  acc0      FLOAT NULL,
-  acc1      FLOAT NULL,
-  PRIMARY KEY (run_id, dim0, dim1, sub_id)
+  acc_value FLOAT NULL,
+  PRIMARY KEY (run_id, dim0, dim1, acc_id, sub_id)
 );
+
+CREATE VIEW modelOne_201208171604590148_f0_salarySex
+AS
+SELECT 
+  A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc0, A1.acc1
+FROM
+(
+  SELECT 
+    run_id, dim0, dim1, sub_id, acc_value AS acc0
+  FROM modelOne_201208171604590148_a0_salarySex 
+  WHERE acc_id = 0
+) A0
+INNER JOIN
+(
+  SELECT 
+    run_id, dim0, dim1, sub_id, acc_value AS acc1
+  FROM modelOne_201208171604590148_a0_salarySex 
+  WHERE acc_id = 1
+) A1
+ON (A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id);
 
 CREATE TABLE modelOne_201208171604590148_v0_salarySex
 (

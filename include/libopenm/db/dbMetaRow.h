@@ -124,8 +124,11 @@ namespace openm
         /** workset_prefix   VARCHAR(4) NOT NULL, -- workset tables prefix: w */
         string setPrefix;
 
-        /** sub_prefix       VARCHAR(4) NOT NULL, -- subsample tables prefix: s */
-        string subPrefix;
+        /** acc_prefix       VARCHAR(4) NOT NULL, -- accumulator table prefix: a */
+        string accPrefix;
+
+        /** acc_flat_prefix  VARCHAR(4) NOT NULL, -- accumulator flatten view prefix: f */
+        string accFlatPrefix;
 
         /** value_prefix     VARCHAR(4) NOT NULL, -- value tables prefix: v */
         string valuePrefix;
@@ -140,7 +143,8 @@ namespace openm
             modelPrefix(""),
             paramPrefix(""),
             setPrefix(""),
-            subPrefix(""),
+            accPrefix(""),
+            accFlatPrefix(""),
             valuePrefix("")
         { }
 

@@ -216,7 +216,7 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
     paste(
       "SELECT",
       " model_id, model_name, model_ts, model_prefix,",
-      " parameter_prefix, workset_prefix, sub_prefix, value_prefix",
+      " parameter_prefix, workset_prefix, acc_prefix, acc_flat_prefix, value_prefix",
       " FROM model_dic",
       " WHERE model_name = ", toQuoted(modelName),
       " AND model_ts = ", toQuoted(modelTimestamp),
@@ -226,7 +226,7 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
     paste(
       "SELECT",
       " model_id, model_name, model_ts, model_prefix,",
-      " parameter_prefix, workset_prefix, sub_prefix, value_prefix",
+      " parameter_prefix, workset_prefix, acc_prefix, acc_flat_prefix, value_prefix",
       " FROM model_dic",
       " WHERE model_name = ", toQuoted(modelName),
       " AND model_ts = ",
