@@ -108,10 +108,10 @@ ifndef OM_SQLITE_DIR
 endif
 
 .PHONY : model_sql
-model_sql : $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
+model_sql : $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql
 
-$(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql :
-	cp -pf *.sql $(OUT_BIN_DIR)
+$(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql :
+	cp -pf *_sqlite.sql $(OUT_BIN_DIR)
 
 .PHONY : publish
 publish : model_sql $(MODEL_SQLITE)
@@ -120,9 +120,9 @@ $(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_insert_param.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_insert_param_sqlite.sql
 
 .PHONY: clean
 clean:
