@@ -1,11 +1,7 @@
-﻿--
--- Copyright (c) 2013 OpenM++
+--
+-- Copyright (c) 2014 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
--- keep dummy sql below to prevent sqlite3 failure due to UTF-8 BOM
--- it is typical problem if .sql saved by Windows text editors
---
-SELECT * FROM sqlite_master WHERE 0 = 1;
 
 --
 -- Id's source table
