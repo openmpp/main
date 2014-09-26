@@ -375,6 +375,8 @@ sub modgen_tables_to_csv
 	my $db = shift(@_);
 	my $dir = shift(@_);
 	my $retval;
+	
+	my $suppress_margins = 1;
 
 	if (! -d $dir) {
 		if (!mkdir $dir) {
@@ -397,7 +399,7 @@ sub modgen_tables_to_csv
 
 	# Get all of the output table names
 	my $ADO_RS = Win32::OLE->new('ADODB.Recordset');
-	my $sql = "Select Name, Rank, AnalysisDimensionPosition From TableDic Where LanguageID = 0;";
+	my $sql = "Select Name, Rank, AnalysisDimensionPosition, TableID From TableDic Where LanguageID = 0;";
 	$ADO_RS = $ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
 		logmsg error, "OLE", Win32::OLE->LastError();
@@ -408,10 +410,12 @@ sub modgen_tables_to_csv
 	my @tables;
 	my @ranks;
 	my @expr_positions;
+	my @table_ids;
 	while ( !$ADO_RS->EOF ) {
 		push @tables, $ADO_RS->Fields(0)->value;
 		push @ranks, $ADO_RS->Fields(1)->value;
 		push @expr_positions, $ADO_RS->Fields(2)->value;
+		push @table_ids, $ADO_RS->Fields(3)->value;
 		$ADO_RS->MoveNext;
 	}
 	#logmsg info, "tables", join("\n", @tables);
@@ -421,16 +425,39 @@ sub modgen_tables_to_csv
 		my $table = @tables[$j];
 		my $rank = @ranks[$j];
 		my $expr_position = @expr_positions[$j];
+		my $table_id = @table_ids[$j];
 		
 		if (!open CSV, ">${dir}/${table}.csv") {
 			logmsg error, "error opening >${dir}/${table}.csv";
 		}
 
+		# For each classification dimension of the table, determine if it has a margin
+		my $sql = "
+		  Select Totals
+		  From TableClassDimDic
+		  Where LanguageID = 0 And TableID = ${table_id}
+		  ;
+		";
+		$ADO_RS = $ADO_Conn->Execute($sql);
+		if (Win32::OLE->LastError()) {
+			logmsg error, "OLE", Win32::OLE->LastError();
+			return 1;
+		}
+		my @has_margin;
+		while ( !$ADO_RS->EOF ) {
+			push @has_margin, $ADO_RS->Fields(0)->value;
+			$ADO_RS->MoveNext;
+		}
+		#logmsg info, ${table}, "has_margin", join(",", @has_margin);
+
 		# construct permuted dimension list which puts analysis dimension last
+		# construct max index list at same time
 		my $dim_list;
+		my $max_dim_list;
 		for (my $dim = 0; $dim < $rank; ++$dim) {
 			if ($dim > 0) {
 				$dim_list .= ", ";
+				$max_dim_list .= ", ";
 			}
 			
 			my $permuted_dim;
@@ -448,8 +475,27 @@ sub modgen_tables_to_csv
 			}
 
 			$dim_list .= "Dim${permuted_dim}";
+			$max_dim_list .= "Max(Dim${permuted_dim})";
 		}
-		#logmsg info, "dim_list", $dim_list;
+		#logmsg info, ${table}, "dim_list", $dim_list;
+		#logmsg info, ${table}, "max_dim_list", $max_dim_list;
+
+		# Determine maximum value of each dimension (to identify margin index)
+		my @max_dims;
+		if ($rank > 0) {
+			my $sql = "Select ${max_dim_list} From ${table};";
+			$ADO_RS = $ADO_Conn->Execute($sql);
+			if (Win32::OLE->LastError()) {
+				logmsg error, "OLE", Win32::OLE->LastError();
+				return 1;
+			}
+			my $fields = $ADO_RS->Fields->count;
+			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
+				my $value = $ADO_RS->Fields($field_ordinal)->value;
+				push @max_dims, $value;
+			}
+		}
+		#logmsg info, ${table}, "max_dims", join(",", @max_dims);
 		
 		my $sql = "Select ";
 		if ($rank > 0) {
@@ -466,7 +512,7 @@ sub modgen_tables_to_csv
 		my $fields = $ADO_RS->Fields->count;
 		# First output line contains field names
 		# Note that these are not the permuted names.
-		# This is to generate csv's which look like those form ompp,
+		# This is to generate csv's which look like those from ompp,
 		# where the analysis dimension is always last.
 		for (my $dim = 0; $dim < $rank; ++$dim) {
 			print CSV "Dim${dim},";
@@ -475,14 +521,17 @@ sub modgen_tables_to_csv
 
 		# data lines
 		while ( !$ADO_RS->EOF ) {
+			my $out_line;
+			my $suppress_line = 0;
 			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
 				my $value = $ADO_RS->Fields($field_ordinal)->value;
-				print CSV "${value}";
+				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];
+				$out_line .= "${value}";
 				if ($field_ordinal < $fields - 1) {
-					print CSV ",";
+					$out_line .= ",";
 				}
 			}
-			print CSV "\n";
+			print CSV "${out_line}\n" if ! $suppress_line;
 			$ADO_RS->MoveNext;
 		}
 		close CSV;
