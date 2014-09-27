@@ -743,7 +743,7 @@ const void ModelInsertSql::paramCompatibilityViewBody(
     io_wr.writeQuoted(i_modelRow.name);
     io_wr.write(" AND MD.model_ts = ");
     io_wr.writeQuoted(i_modelRow.timestamp);
-    io_wr.write(");\n");
+    io_wr.write(")\n;\n");
 }
 
 // return body of create view sql for output table compatibility view:
@@ -790,6 +790,6 @@ const void ModelInsertSql::outputCompatibilityViewBody(
     io_wr.writeQuoted(i_modelRow.name);
     io_wr.write(" AND MD.model_ts = ");
     io_wr.writeQuoted(i_modelRow.timestamp);
-    io_wr.write(");\n");
+    io_wr.write(")\n;\n");
 }
 

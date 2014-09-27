@@ -657,7 +657,7 @@ const void ModelSqlBuilder::paramCreateTableBody(
         io_wr.outFs << ", " << dimName;
         io_wr.throwOnFail();
     }
-    io_wr.write("));\n");
+    io_wr.write("))\n;\n");
 }
 
 // create table sql for accumulator table:
@@ -694,7 +694,7 @@ const void ModelSqlBuilder::accCreateTableBody(const OutTblInfo & i_tblInfo, Mod
         io_wr.outFs << ", " << dimName;
         io_wr.throwOnFail();
     }
-    io_wr.write(", acc_id, sub_id));\n");
+    io_wr.write(", acc_id, sub_id))\n;\n");
 }
 
 // create table sql for accumulator flatten view:
@@ -766,7 +766,7 @@ const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, 
         }
     }
 
-    io_wr.write(";\n");
+    io_wr.write("\n;\n");
 }
 
 // create table sql for value table:
@@ -800,7 +800,7 @@ const void ModelSqlBuilder::valueCreateTableBody(const OutTblInfo & i_tblInfo, M
         io_wr.outFs << ", " << dimName;
         io_wr.throwOnFail();
     }
-    io_wr.write(", unit_id));\n");
+    io_wr.write(", unit_id))\n;\n");
 }
 
 // sort and validate metadata rows for uniqueness and referential integrity
