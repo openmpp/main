@@ -53,11 +53,13 @@ AgentArrayMemberSymbol.cpp \
 AgentDataMemberSymbol.cpp \
 AgentEventSymbol.cpp \
 AgentFuncSymbol.cpp \
+AgentHookSymbol.cpp \
 AgentInternalSymbol.cpp \
 AgentMemberSymbol.cpp \
 AgentMultilinkSymbol.cpp \
 AgentSymbol.cpp \
 AgentVarSymbol.cpp \
+AggregationSymbol.cpp \
 BoolSymbol.cpp \
 BuiltinAgentVarSymbol.cpp \
 ClassificationSymbol.cpp \

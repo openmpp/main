@@ -7,6 +7,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <cassert>
 #include <numeric>
 #include <algorithm>
 #include <functional>
