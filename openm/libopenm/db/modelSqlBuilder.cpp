@@ -700,25 +700,20 @@ const void ModelSqlBuilder::accCreateTableBody(const OutTblInfo & i_tblInfo, Mod
 // create table sql for accumulator flatten view:
 // CREATE VIEW modelOne_201208171604590148_f0_salarySex
 // AS
-// SELECT 
-//   A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc0, A1.acc1
-// FROM
-// (
-//   SELECT 
-//     run_id, dim0, dim1, sub_id, acc_value AS acc0
-//   FROM modelOne_201208171604590148_a0_salarySex 
-//   WHERE acc_id = 0
-// ) A0
-// INNER JOIN
-// (
-//   SELECT 
-//     run_id, dim0, dim1, sub_id, acc_value AS acc1
-//   FROM modelOne_201208171604590148_a0_salarySex 
-//   WHERE acc_id = 1
-// ) A1
-// ON (A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id);
+// SELECT
+//   A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc_value AS acc0,
+//   (
+//     SELECT acc_value FROM modelOne_201208171604590148_a0_salarySex A1
+//     WHERE A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id
+//     AND A1.acc_id = 1
+//   ) AS acc1
+// FROM modelOne_201208171604590148_a0_salarySex A0
+// WHERE A0.acc_id = 0;
+// 
 const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
+    size_t accCount = i_tblInfo.accNameVec.size();
+
     io_wr.outFs <<
         "CREATE VIEW " << i_tblInfo.accFlatViewName << " AS SELECT A0.run_id,";
     io_wr.throwOnFail();
@@ -727,44 +722,28 @@ const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, 
         io_wr.outFs << " A0." << dimName << ",";
         io_wr.throwOnFail();
     }
-    io_wr.write(" A0.sub_id");
+    io_wr.write(" A0.sub_id, A0.acc_value AS acc0");
 
-    for (size_t nAcc = 0; nAcc < i_tblInfo.accNameVec.size(); nAcc++) {
-        io_wr.outFs << ", A" << nAcc << "." << i_tblInfo.accNameVec[nAcc];
+    for (size_t nAcc = 1; nAcc < accCount; nAcc++) {
+        
+        string alias = "A" + to_string(nAcc);
+
+        io_wr.outFs << ", (SELECT " << alias << ".acc_value FROM " << i_tblInfo.accTableName << " " << alias <<
+            " WHERE " << alias << ".run_id = A0.run_id AND ";
         io_wr.throwOnFail();
-    }
-
-    for (size_t nAcc = 0; nAcc < i_tblInfo.accNameVec.size(); nAcc++) {
-
-        io_wr.write((nAcc > 0) ? " INNER JOIN" : " FROM");
-
-        io_wr.write(" (SELECT run_id, ");
 
         for (const string & dimName : i_tblInfo.dimNameVec) {
-            io_wr.outFs << dimName << ", ";
+            io_wr.outFs << alias << "." << dimName << " = A0." << dimName << " AND ";
             io_wr.throwOnFail();
         }
-        io_wr.outFs <<
-            "sub_id," <<
-            " acc_value AS " << i_tblInfo.accNameVec[nAcc] <<
-            " FROM " << i_tblInfo.accTableName <<
-            " WHERE acc_id = " << nAcc <<
-            ") A" << nAcc;
+        io_wr.outFs << alias << ".sub_id = A0.sub_id AND " << alias << ".acc_id = " << nAcc <<
+            ") AS " << i_tblInfo.accNameVec[nAcc];
         io_wr.throwOnFail();
-
-        if (nAcc > 0) {
-            io_wr.outFs << " ON (A" << nAcc << ".run_id = A0.run_id";
-            io_wr.throwOnFail();
-
-            for (const string & dimName : i_tblInfo.dimNameVec) {
-                io_wr.outFs << " AND A" << nAcc << "." << dimName << " = A0." << dimName;
-                io_wr.throwOnFail();
-            }
-
-            io_wr.outFs << " AND A" << nAcc << ".sub_id = A0.sub_id)";
-            io_wr.throwOnFail();
-        }
     }
+
+    io_wr.outFs << " FROM " << i_tblInfo.accTableName << " A0";
+    io_wr.throwOnFail();
+    if (accCount > 1) io_wr.write(" WHERE A0.acc_id = 0");
 
     io_wr.write("\n;\n");
 }

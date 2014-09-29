@@ -269,22 +269,14 @@ GO
 CREATE VIEW modelOne_201208171604590148_f0_salarySex
 AS
 SELECT 
-  A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc0, A1.acc1
-FROM
-(
-  SELECT 
-    run_id, dim0, dim1, sub_id, acc_value AS acc0
-  FROM modelOne_201208171604590148_a0_salarySex 
-  WHERE acc_id = 0
-) A0
-INNER JOIN
-(
-  SELECT 
-    run_id, dim0, dim1, sub_id, acc_value AS acc1
-  FROM modelOne_201208171604590148_a0_salarySex 
-  WHERE acc_id = 1
-) A1
-ON (A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id);
+  A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc_value AS acc0, 
+  (
+    SELECT acc_value FROM modelOne_201208171604590148_a0_salarySex A1
+    WHERE A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id
+    AND A1.acc_id = 1
+) AS acc1
+FROM modelOne_201208171604590148_a0_salarySex A0
+WHERE A0.acc_id = 0;
 GO
 
 CREATE TABLE modelOne_201208171604590148_v0_salarySex

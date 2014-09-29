@@ -22,13 +22,13 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 CREATE VIEW IF NOT EXISTS ageSex 
 AS 
 SELECT S.dim0, S.dim1, S.value
-FROM modelone_201208171604590148_p0_ageSex S
+FROM modelOne_201208171604590148_p0_ageSex S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
 
 CREATE VIEW IF NOT EXISTS salaryAge 
 AS 
 SELECT S.dim0, S.dim1, S.value
-FROM modelone_201208171604590148_p1_salaryAge S
+FROM modelOne_201208171604590148_p1_salaryAge S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
 
 --
@@ -41,5 +41,5 @@ SELECT
   S.dim1    AS "Dim1",
   S.unit_id AS "Dim2",
   S.value   AS "Value"
-FROM modelone_201208171604590148_v0_salarySex S
+FROM modelOne_201208171604590148_v0_salarySex S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
