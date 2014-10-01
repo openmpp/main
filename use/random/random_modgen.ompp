@@ -77,10 +77,10 @@ namespace fmk {
     long model_stream_generator = 0;
 
     // Is there a random normal in other_normal?
-    bool other_normal_valid = false;
+    bool other_normal_valid[model_streams] = { false };
 
     // The other normal draw
-    double other_normal;
+    double other_normal[model_streams];
 
 } // fmk
 
@@ -103,9 +103,9 @@ double RandNormal(int strm)
 
     assert(strm < model_streams);
 
-    if (other_normal_valid) {
-        other_normal_valid = false;
-        return other_normal;
+    if (other_normal_valid[strm]) {
+        other_normal_valid[strm] = false;
+        return other_normal[strm];
     }
     else {
         double r2 = 1;
@@ -119,8 +119,8 @@ double RandNormal(int strm)
         double scale = sqrt(-2.0 * log(r2) / r2);
         double n1 = scale * x;
         double n2 = scale * y;
-        other_normal = n2;
-        other_normal_valid = true;
+        other_normal[strm] = n2;
+        other_normal_valid[strm] = true;
         return n1;
     }
 }
