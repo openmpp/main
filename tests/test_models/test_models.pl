@@ -6,15 +6,16 @@
 use strict;
 
 my @models = (
-	"Alpha1",
-	"Alpha2",
-	"IDMM",
-	"OzProj",
-	"Pohem",
+#	"Alpha1",
+#	"Alpha2",
+	"IAPM",
+#	"IDMM",
+#	"OzProj",
+#	"Pohem",
 	#"PohemParms",
-	"RiskPaths",
-	"WizardCaseBased",
-	"WizardTimeBased",
+#	"RiskPaths",
+#	"WizardCaseBased",
+#	"WizardTimeBased",
 	);
 
 my $configuration = "Debug";
@@ -195,7 +196,7 @@ for my $model (@models) {
 			my @args = (
 				"${modgen_devenv_exe}",
 				"${model}.sln",
-				"/Build", "Debug",
+				"/Rebuild", "Debug",
 				"/Out", "${modgen_devenv_log}",
 				);
 			system(@args);
