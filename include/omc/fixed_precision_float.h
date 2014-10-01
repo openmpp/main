@@ -30,13 +30,6 @@ public:
         return value;
     }
 
-    // operator: direct assignment of wrapped type
-    fixed_precision_float& operator=( T new_value )
-    {
-        this->set( new_value );
-        return *this;
-    }
-
     // operator: assignment by sum
     fixed_precision_float& operator+=( T modify_value )
     {
