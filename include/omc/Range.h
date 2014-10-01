@@ -180,6 +180,23 @@ public:
         return (value >= min) && (value <= max);
     }
 
+    // bound a quantity to the limits of a range, with 'int' argument returning 'int' result
+    static int bound(int val)
+    {
+        if (val < min) return min;
+        if (val > max) return max;
+        else return val;
+    }
+
+    // bound a quantity to the limits of a range, with 'double' argument returning 'double' result
+    static double bound(double val)
+    {
+        if (val < min) return min;
+        if (val > max) return max;
+        else return val;
+    }
+
+
     // return a integer_counter object for iterating indices of this range
     static integer_counter<int, 0, T_max - T_min> indices()
     {
@@ -195,7 +212,9 @@ public:
     // convert given value to 0-based index
     static size_t to_index(int value)
     {
-        return value - min;
+        if (value < min) return 0;
+        else if (value > max) return max - min;
+        else return value - min;
     }
 
     // convert given 0-based index to value
