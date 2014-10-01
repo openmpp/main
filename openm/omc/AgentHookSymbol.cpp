@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include <algorithm>
 #include "Symbol.h"
 #include "AgentHookSymbol.h"
 #include "AgentSymbol.h"
@@ -80,6 +81,15 @@ void AgentHookSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         assert(hook_fn); // logic guarantee
+        string nm = hook_fn->name;
+        // verify that hook_fn is actually used somewhere in the body of the 'to' hook function
+        if (!any_of(
+                    pp_to->body_identifiers.begin(),
+                    pp_to->body_identifiers.end(),
+                    [nm](string id){ return nm == id; })) {
+            pp_error("error - the target function '" + pp_to->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
+        }
+
         CodeBlock & c = hook_fn->func_body;
         c += injection_description();
         c += pp_from->name + "();";
