@@ -106,23 +106,9 @@ void AgentEventSymbol::post_parse(int pass)
     {
         // Dependencies are generated directly if not developer-supplied.
         if (!is_developer_supplied) break;
-        // E.g. Person
-        string agent_name = pp_agent->name;
-        // E.g. Person::timeMortalityEvent
-        string time_func_name = time_func_model_code->unique_name;
-        // create sorted unduplicated list of identifiers in body of event time function
-        set<string> identifiers;
-        auto rng = memfunc_bodyids.equal_range(time_func_name);
-        for_each(rng.first,
-                rng.second,
-                [&](unordered_multimap<string, string>::value_type& vt)
-        {
-            identifiers.insert(vt.second);
-        }
-        );
         // Iterate through list of identifiers in the body of the time function
         // whose name matches an agentvar.
-        for (auto identifier : identifiers) {
+        for (auto identifier : time_func_model_code->body_identifiers) {
             if (exists(identifier, pp_agent)) {
                 auto sym = get_symbol(identifier, pp_agent);
                 auto av = dynamic_cast<AgentVarSymbol *>(sym);

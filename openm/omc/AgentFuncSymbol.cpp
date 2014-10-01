@@ -17,6 +17,22 @@ void AgentFuncSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignMembers:
+    {
+        if (suppress_defn) {
+            // For developer-supplied functions,
+            // construct the set of all identifiers used in the function body.
+            auto rng = memfunc_bodyids.equal_range(unique_name);
+            for_each(rng.first,
+                    rng.second,
+                    [&](unordered_multimap<string, string>::value_type& vt)
+            {
+                body_identifiers.insert(vt.second);
+            }
+            );
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // Add this agentfunc to the agent's list of agentfuncs

@@ -7,6 +7,7 @@
 
 #pragma once
 #include <string>
+#include <set>
 #include "AgentMemberSymbol.h"
 #include "CodeBlock.h"
 
@@ -92,13 +93,20 @@ public:
 
     /**
      * Flag to suppress generation of function definition.
+     * 
+     * True if developer-supplied, false if generated
      */
     bool suppress_defn;
 
     /**
-     * The function body.
+     * The function body (if generated)
      */
     CodeBlock func_body;
+
+    /**
+     * The identifiers in the function body (if developer-suppied)
+     */
+    set<string> body_identifiers;
 
     /**
      * The name of the AgentFuncSymbol which implements hooks to the function.
