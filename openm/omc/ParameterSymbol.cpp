@@ -171,7 +171,7 @@ void ParameterSymbol::post_parse(int pass)
                 distr_index--;
             }
          
-            c += "return true;";
+            c += "return !" + cumrate_name() + ".is_degenerate(conditioning_index);";
         }
             
         break;
