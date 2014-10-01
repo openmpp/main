@@ -525,7 +525,9 @@ void AgentSymbol::create_ss_event()
     // Subsequent code will be injected by each self-scheduling derived attribute.
     
     // Create the event
-    string evnt_name = "om_" + ss_implement_fn->name + "_om_event";
+    // The leading 'zzz' is a hack to make the self-scheduling event
+    // sort after other events, to generate (under some conditions) comparable case checksums as Modgen.
+    string evnt_name = "zzz_om_" + ss_implement_fn->name + "_om_event";
     ss_event = new AgentEventSymbol(evnt_name, this, ss_time_fn, ss_implement_fn, false, openm::event_priority_self_scheduling, decl_loc);
 
     // Add the dependency of the event on the flag
