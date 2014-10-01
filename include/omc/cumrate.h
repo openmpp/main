@@ -161,6 +161,18 @@ public:
         return distns[dist].draw(uniform);
     }
 
+    /**
+     * Query if 'dist' is degenerate (all frequencies are zero)
+     *
+     * @param dist The distance.
+     *
+     * @return true if degenerate, false if not.
+     */
+    bool is_degenerate(int dist)
+    {
+        return distns[dist].is_degenerate;
+    }
+
 private:
 
     /**
