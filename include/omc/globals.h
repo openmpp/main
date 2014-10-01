@@ -14,6 +14,7 @@ extern void StartEventTrace();
 extern void StopEventTrace();
 extern int GetThreadNumber();
 extern int GetThreads();
+extern void SetPopulation(long lPopulation);
 
 // defined in use/random/random_modgen.ompp
 extern double RandUniform(int strm);
