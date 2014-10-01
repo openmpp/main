@@ -1836,7 +1836,7 @@ string DerivedAgentVarSymbol::pp_modgen_name() const
     // names for self-scheduling attributes.  That ensures that the same numbering
     // for self-scheduling attributes is used in event trace outputs in Modgen and ompp.
 
-    string result = pp_agent->name + "::om_modgen_";
+    string result = pp_agent->name + "::";
     switch (tok) {
     case token::TK_duration_counter:
     {
@@ -1894,7 +1894,7 @@ string DerivedAgentVarSymbol::pp_modgen_name() const
     }
 
     // convert to lowercase to match MFC string comparison CompareNoCase.
-    // in stl, _ lies between lower and upper case, but is before any letter in COmpareNoCase
+    // in stl, '_' lies between lower and upper case, but is before any letter in CompareNoCase
     // which transforms letters to lowercase before performing the comparison using ASCII values.
     for (auto & ch : result) {
         ch = tolower(ch);
