@@ -127,6 +127,9 @@ actor Host
 	event OneTimetime, OneTime;
     double thingee;
     real one = { 1.0 };
+    double thingee2 = COERCE(REPORT_TIME, thingee);
+    int big_time = 9999;
+    REPORT_TIME thingee3 = COERCE(REPORT_TIME, big_time);
 };
 
 TIME Host::OneTimetime()
@@ -148,6 +151,20 @@ table Host CumrateTest1
         duration()
     }
     *eye_colour
+};
+
+actor Host
+{
+    APPEARANCE appearance = aggregate(disease_phase, APPEARANCE);
+};
+table Host MyTest2
+{
+    {
+        duration()
+    }
+    * eye_colour+
+    * appearance
+    * disease_phase+
 };
 
 table Host MyTest3
