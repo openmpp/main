@@ -966,14 +966,18 @@ void Symbol::post_parse_all()
     set<string> all_event_names;
     for ( auto *agent : pp_all_agents ) {
         for ( auto *event : agent->pp_agent_events ) {
-            all_event_names.insert( event->event_name );
+            //string str = event->event_name;
+            string str = event->pp_modgen_name();
+            all_event_names.insert( str );
         }
     }
 
     // For each event in the model, find the index in the sorted list, and assign it as event_id
     for (auto *agent : pp_all_agents) {
         for (auto *event : agent->pp_agent_events) {
-            auto iter = all_event_names.find(event->event_name);
+            //string str = event->event_name;
+            string str = event->pp_modgen_name();
+            auto iter = all_event_names.find(str);
             event->pp_event_id = distance(all_event_names.begin(), iter);
         }
     }

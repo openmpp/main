@@ -474,16 +474,23 @@ public:
 	string name;
 
     /**
-     * Unique name lexicographically-compatible with Modgen order for code generation comaptibility
+     * Unique name lexicographically-compatible with Modgen order for code generation compatibility
      * 
      * Implemented as a virtual function to allow Modgen-compatible differences
-     * in lexicographical ordering where desired / necessary.
+     * in lexicographical ordering where desired and/or necessary.
      *
      * @return A string.
      */
     virtual string pp_modgen_name() const
     {
-        return unique_name;
+        string result = unique_name;
+        // convert to lowercase to match MFC string comparison CompareNoCase.
+        // in stl, '_' lies between lower and upper case, but is before any letter in CompareNoCase
+        // which transforms letters to lowercase before performing the comparison using ASCII values.
+        for (auto & ch : result) {
+            ch = tolower(ch);
+        }
+        return result;
     }
 
     /**
