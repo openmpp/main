@@ -71,3 +71,9 @@ int GetThreadNumber()
     return 1;
 }
 
+extern void SetPopulation(long lPopulation)
+{
+    //TODO
+}
+
+
