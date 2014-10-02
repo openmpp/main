@@ -58,6 +58,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>..\code</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(Configuration)\$(ProjectName).exe</OutputFile>
