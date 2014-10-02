@@ -5,18 +5,27 @@
 
 use strict;
 
-my @models = (
-	"Alpha1",
-	"Alpha2",
-	"IAPM",
-	"IDMM",
-	"OzProj",
-	"Pohem",
-	#"PohemParms",
-	"RiskPaths",
-	"WizardCaseBased",
-	"WizardTimeBased",
-	);
+use File::Copy;
+use File::Path qw(make_path);
+use File::Compare;
+use Cwd qw(getcwd);
+
+chdir "../models" || die "Invoke test_models from Perl folder";
+my $models_root = getcwd;
+
+my @models;
+
+if ($#ARGV >= 0) {
+	@models = @ARGV;
+}
+else {
+	# Create model list by identifying all model subdirectories
+	my @paths = glob "*/Model.props";
+	for my $path (@paths) {
+		$path =~ s/\/.*//;
+		push @models, $path;
+	}
+}
 
 my $configuration = "Debug";
 #my $configuration = "Release";
@@ -28,7 +37,7 @@ my $do_modgen = 1;
 
 my $do_ompp = 1;
 
-	
+# use the common.pm module of shared functions	
 use common qw(
 				warning change error info
 				sqlite3_exe
@@ -50,10 +59,6 @@ if ($@) {
 	
 my $version = "1.0";
 
-use File::Copy;
-use File::Path qw(make_path);
-use File::Compare;
-use Cwd qw(getcwd);
 
 # Steps to install Capture::Tiny (this method requires internet connectivity, there are other ways)
 # (1) open command prompt
@@ -63,12 +68,7 @@ use Cwd qw(getcwd);
 # (3) perl -MCPAN -e "install Capture::Tiny"
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 
-
-my $test_models_dir = getcwd;
-chdir "..";
-my $tests_root = getcwd;
 	
-
 logmsg info, "=========================";
 logmsg info, " test_models.pl ${version} ";
 logmsg info, "=========================";
@@ -96,7 +96,7 @@ if ( ! -e $msbuild_exe ) {
 	exit 1;
 }
 
-my $create_db_sqlite_sql = "${tests_root}/../sql/sqlite/create_db_sqlite.sql";
+my $create_db_sqlite_sql = "${models_root}/../sql/sqlite/create_db_sqlite.sql";
 if ( ! -e $create_db_sqlite_sql ) {
 	logmsg error, "Missing SQL file used to create new data store for ompp: $create_db_sqlite_sql";
 	exit 1;
@@ -109,20 +109,20 @@ for my $model (@models) {
 	
 	# Specify working directory explicitly because errors can bail back to next model
 	# with the working directory in an unknown state.
-	chdir $test_models_dir;
+	chdir $models_root;
 
 	logmsg info, " ";
 
-	my $model_dir = "${tests_root}/${model}";
+	my $model_dir = "${models_root}/${model}";
 	if (! -d $model_dir) {
 		logmsg error, "${model}: Missing model";
 		next MODEL;
 	}
 
-	my $modgen_reference_dir = "${test_models_dir}/reference/${model}/modgen";
-	my $modgen_current_dir = "${test_models_dir}/current/${model}/modgen";
-	my $ompp_reference_dir = "${test_models_dir}/reference/${model}/ompp";
-	my $ompp_current_dir = "${test_models_dir}/current/${model}/ompp";
+	my $modgen_reference_dir = "${model_dir}/test_outputs/reference/modgen";
+	my $modgen_current_dir = "${model_dir}/test_outputs/current/modgen";
+	my $ompp_reference_dir = "${model_dir}/test_outputs/reference/ompp";
+	my $ompp_current_dir = "${model_dir}/test_outputs/current/ompp";
 
 	##########
 	# Modgen 
@@ -134,9 +134,10 @@ for my $model (@models) {
 			last MODGEN;
 		}
 
-		my $modgen_model_dir = "${model_dir}/Modgen";
-		if ( ! -d "${modgen_model_dir}" ) {
-			logmsg error, $model, "modgen", "Missing folder ${modgen_model_dir}";
+		# Project directory for Modgen version
+		my $project_dir = "${model_dir}/Modgen";
+		if ( ! -d "${project_dir}" ) {
+			logmsg error, $model, "modgen", "Missing folder ${project_dir}";
 			last MODGEN;
 		}
 
@@ -156,15 +157,15 @@ for my $model (@models) {
 		# Run Modgen
 		# Modgen.exe output files are written to the Modgen sub folder using the -D option
 		logmsg info, $model, "modgen", "Modgen compile";
-		my $modgen_log = "${modgen_model_dir}/modgen.log";
+		my $modgen_log = "${project_dir}/modgen.log";
 		# Change working directory to model source directory for Modgen compilation.
 		# (This is actually the parent directory.)
-		chdir ${model_dir};
+		chdir "${model_dir}/code";
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${modgen_exe}",
 				"-D",
-				"${modgen_model_dir}",
+				"${project_dir}",
 				"-EN",
 				);
 			system(@args);
@@ -178,36 +179,42 @@ for my $model (@models) {
 			last MODGEN;
 		}
 
-		# Copy custom.h and any other developer header files to Modgen folder
-		for my $file (glob "${model_dir}/*.h") {
-			copy "$file", "${modgen_model_dir}";
-		}
-		
 		# Build the model
 		logmsg info, $model, "modgen", "C++ compile, build executable";
-		my $modgen_devenv_log = "devenv.log";
-		unlink $modgen_devenv_log;
 
-		# Change working directory to Modgen sub-directory for C++ compilation
+		# Change working directory to Modgen project directory for C++ compilation
 		# running the model, and processing outputs.
-		chdir "${modgen_model_dir}";
+		chdir "${project_dir}";
+		#logmsg info, $model, "modgen", "project_dir=${project_dir}";
+
+		# Log file from build
+		my $build_log = "build.log";
+		unlink $build_log;
+
+		# There should be only one .sln file, we don't care about the name
+		my $model_sln = glob "*.sln";
+		if ( ! -e $model_sln ) {
+			logmsg error, $model, "modgen", "Missing solution file in ${project_dir}";
+			exit 1;
+		}
 		
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${modgen_devenv_exe}",
-				"${model}.sln",
+				"${model_sln}",
 				"/Rebuild", "Debug",
-				"/Out", "${modgen_devenv_log}",
+				"/Out", "${build_log}",
 				);
 			system(@args);
 		};
 		if ($retval != 0) {
-			logmsg error, $model, "modgen", "C++ compile failed - see ${modgen_devenv_log}";
+			logmsg error, $model, "modgen", "C++ compile failed - see ${build_log}";
 			logerrors $merged;
 			last MODGEN;
 		}
 
-		my $modgen_model_exe = "Debug/${model}.exe";
+		# Directory location and executable name may differ among versions of Modgen new model wizard
+		my $modgen_model_exe = glob "*.exe Debug/*.exe";
 		if ( ! -e $modgen_model_exe ) {
 			logmsg error, $model, "modgen", "Missing model executable: $modgen_model_exe";
 			exit 1;
@@ -222,7 +229,7 @@ for my $model (@models) {
 
 		# The ompp Framework parameter file for the Base scenario.
 		# Parameters in that file will be transformed into scenario settings in the Base.scex file
-		my $ompp_Base_Framework_ompp = "../Base/Base(Framework).odat";
+		my $ompp_Base_Framework_ompp = "../parameters/Base/Base(Framework).odat";
 		if ( ! -e $ompp_Base_Framework_ompp ) {
 			logmsg error, $model, "modgen", "Missing ompp Base Framework parameters: $ompp_Base_Framework_ompp";
 			exit 1;
@@ -231,8 +238,8 @@ for my $model (@models) {
 		# List of all the .dat files in the Base scenario
 		# with relative paths.
 		my @modgen_Base_dats;
-		push @modgen_Base_dats, glob("../Base/*.dat");
-		push @modgen_Base_dats, glob("../Fixed/*.dat");
+		push @modgen_Base_dats, glob("../parameters/Base/*.dat");
+		push @modgen_Base_dats, glob("../parameters/Fixed/*.dat");
 
 		# Create the Modgen Base scenario file
 		modgen_create_scex($modgen_Base_scex, $ompp_Base_Framework_ompp, @modgen_Base_dats);
@@ -242,7 +249,7 @@ for my $model (@models) {
 		}
 		
 		logmsg info, $model, "modgen", "Run Base scenario";
-		# Delete output database to enable check for success
+		# Delete output database to enable subsequent check for success
 		my $modgen_Base_mdb = "Base(tbl).mdb";
 		unlink $modgen_Base_mdb;
 
@@ -315,6 +322,13 @@ for my $model (@models) {
 			last OMPP;
 		}
 
+		# Project directory for ompp version
+		my $project_dir = "${model_dir}/ompp";
+		if ( ! -d "${project_dir}" ) {
+			logmsg error, $model, "ompp", "Missing folder ${project_dir}";
+			last MODGEN;
+		}
+
 		# Folder for reference results
 		my $reference_results_dir = $ompp_reference_dir;
 
@@ -328,14 +342,51 @@ for my $model (@models) {
 			unlink glob "${current_results_dir}/*.*";
 		}
 		
-		# Change working directory to model directory for compilation.
-		chdir ${model_dir};
+		# Change working directory to project directory for compilation.
+		chdir ${project_dir};
+
+		# The property sheet containing  user macros
+		my $model_props = "Model.props";
+		if ( ! -e $model_props ) {
+			logmsg error, $model, "ompp", "Missing property sheet contining user macros: $model_props";
+			last OMPP;
+		}
+		# Parse model property sheet and extract selected user macros
+		my $model_name;
+		my $scenario_name;
+		open MODEL_PROPS, "<${model_props}";
+		while (<MODEL_PROPS>) {
+			chomp;
+			my $line = $_;
+			if ($line =~ /<MODEL_NAME>(.*)<\/MODEL_NAME>/) {
+				$model_name = $1;
+			}
+			if ($line =~ /<SCENARIO_NAME>(.*)<\/SCENARIO_NAME>/) {
+				$scenario_name = $1;
+			}
+		}
+		close DIGESTS_TXT;
+		if ( $model_name eq '' ) {
+			logmsg error, $model, "ompp", "Missing model name in $model_props";
+			last OMPP;
+		}
+		if ( $scenario_name eq '' ) {
+			logmsg error, $model, "ompp", "Missing scenario name in $model_props";
+			last OMPP;
+		}
+		
+		# The solution file
+		my $model_sln = "Model.sln";
+		if ( ! -e $model_sln ) {
+			logmsg error, $model, "ompp", "Missing solution file: $model_sln";
+			last OMPP;
+		}
 
 		logmsg info, $model, "ompp", "omc compile, C++ compile, build executable, publish model and Base scenario";
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${msbuild_exe}",
-				"${model}.sln",
+				"${model_sln}",
 				"/nologo",
 				"/verbosity:normal",
 				"/clp:ForceNoAlign",
@@ -352,18 +403,18 @@ for my $model (@models) {
 		}
 
 		# Executable model generated by build
-		my $target_dir = "${tests_root}/${configuration}/${platform}";
-		my $model_exe = "${target_dir}/${model}.exe";
+		my $target_dir = "${project_dir}/${configuration}/${platform}";
+		my $model_exe = glob "${target_dir}/${model_name}.exe";
 		if ( ! -e $model_exe ) {
 			logmsg error, $model, "ompp", "Missing model executable: $model_exe";
-			exit 1;
+			last OMPP;
 		}
 
 		# Data store generated by build
-		my $model_sqlite = "${target_dir}/${model}.sqlite";
+		my $model_sqlite = "${target_dir}/${model_name}.sqlite";
 		if ( ! -e $model_sqlite ) {
 			logmsg error, $model, "ompp", "Missing data store: $model_sqlite";
-			exit 1;
+			last OMPP;
 		}
 
 		logmsg info, $model, "ompp", "Run Base scenario";
@@ -373,8 +424,8 @@ for my $model (@models) {
 		# explicitly when launching the model.
 		chdir "${target_dir}";
 		
-		my $ompp_trace_txt = "${model}_Base_trace.txt";
-		my $ompp_log_txt = "${model}_Base_log.txt";
+		my $ompp_trace_txt = "Base_trace.txt";
+		my $ompp_log_txt = "Base_log.txt";
 		($merged, $retval) = capture_merged {
 			my @args = (
 				"${model_exe}",

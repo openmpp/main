@@ -87,7 +87,7 @@ sub logerrors {
 # http://sqlite.org/cli.html
 
 # Global path to sqlite3 executable
-my $sqlite3_exe = "../../bin/sqlite3.exe";
+my $sqlite3_exe = "../bin/sqlite3.exe";
 if ( ! -e $sqlite3_exe ) {
 	logmsg error, "Missing SQLite: $sqlite3_exe";
 	exit 1;
