@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scenario ScenarioVersion="1.8">
+  <General
+    AccessTracking="0"
+    BackgroundMode="0"
+    CancelPartialResults="PARTIAL_NO"
+    Cases="5000"
+    ComputationPriority="THREAD_PRIORITY_BELOW_NORMAL"
+    CopyParameters="0"
+    DistributedExecution="0"
+    DistributedSamples="1"
+    MaxTrackedCases="50"
+    MemoryReports="0"
+    PartialReports="0"
+    Population="5000"
+    PopulationScaling="0"
+    SilentMode="1"
+    SimulationEnd="100"
+    StartingSeed="16807"
+    Subsamples="1"
+    TextTracking="0"
+    Threads="1"
+  >
+  </General>
+  <Inputs>
+    <Input>../parameters/Base/Base(PersonCore).dat=</Input>
+  </Inputs>
+</Scenario>
