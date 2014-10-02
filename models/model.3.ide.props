@@ -9,16 +9,16 @@
     <ClCompile Include="src\*.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="*.h" />
+    <ClInclude Include="..\code\*.h" />
     <ClInclude Include="src\*.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="*.mpp" />
-    <None Include="*.ompp" />
-    <None Include="Fixed\*.dat" />
-    <None Include="Fixed\*.odat" />
-    <None Include="Base\*.dat" />
-    <None Include="Base\*.odat" />
+    <None Include="..\code\*.mpp" />
+    <None Include="..\code\*.ompp" />
+    <None Include="..\parameters\Fixed\*.dat" />
+    <None Include="..\parameters\Fixed\*.odat" />
+    <None Include="..\parameters\Base\*.dat" />
+    <None Include="..\parameters\Base\*.odat" />
   </ItemGroup>
 
 </Project>

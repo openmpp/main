@@ -5,13 +5,14 @@
   Specify various openM directories and tools
   -->
   <PropertyGroup>
-    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../../include</OM_INC_DIR>
-    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../../bin</OM_BIN_DIR>
-    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../lib/$(Platform)</OM_LIB_DIR>
-    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(SolutionDir)../../sql</OM_SQL_DIR>
-    <BUILD_DIR>$(SolutionDir)../build</BUILD_DIR>
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../../../include</OM_INC_DIR>
+    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../../../bin</OM_BIN_DIR>
+    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../../lib/$(Platform)</OM_LIB_DIR>
+    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(SolutionDir)../../../sql</OM_SQL_DIR>
+    <BUILD_DIR>$(SolutionDir)build</BUILD_DIR>
+    <OMC_IN_DIR>$(SolutionDir)..\code</OMC_IN_DIR>
     <OMC_OUT_DIR>$(SolutionDir)src</OMC_OUT_DIR>
-    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(SolutionDir)../../use</OMC_USE_DIR>
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(SolutionDir)../../../use</OMC_USE_DIR>
     <OMC_EXE>omc.exe</OMC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
   </PropertyGroup>
@@ -26,23 +27,6 @@
     <OMC_IN_SCENARIO_OPT Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'">-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
     <!-- omc -f option to supply fixed parameter -->
     <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
-  </PropertyGroup>
-
-  <!-- 
-  This property group creates the default MODEL_NAME using the trailing directory
-  of the solution directory path (if MODEL_NAME is empty)
-  -->
-  <PropertyGroup Condition="'$(MODEL_NAME)' == ''">
-    <!-- Start with the full path of the directory containing the solution file -->
-    <MODEL_NAME>$(SolutionDir)</MODEL_NAME>
-    <!-- Trim off trailing slash -->
-    <MODEL_NAME>$(MODEL_NAME.TrimEnd('\'))</MODEL_NAME>
-    <!-- Index of last slash -->
-    <OM_TEMP1>$(MODEL_NAME.LastIndexOf('\'))</OM_TEMP1>
-    <!-- Index of start of last directory name -->
-    <OM_TEMP2>$([MSBuild]::Add($(OM_TEMP1), '1'))</OM_TEMP2>
-    <!-- Extract last directory name -->
-    <MODEL_NAME>$(MODEL_NAME.Substring($(OM_TEMP2)))</MODEL_NAME>
   </PropertyGroup>
 
   <!-- 

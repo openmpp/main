@@ -8,8 +8,8 @@
     AdditionalLibraryDirectories: OM_MSG_LIB_DIR OM_DB_LIB_DIR OM_LIB_DIR
   -->
   <PropertyGroup>
-    <OutDir>$(SolutionDir)../$(Configuration)/$(Platform)/</OutDir>
-    <IntDir>$(BUILD_DIR)/$(MODEL_NAME)/$(Configuration)/$(Platform)/</IntDir>
+    <OutDir>$(SolutionDir)$(Configuration)/$(Platform)/</OutDir>
+    <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
     <TargetName>$(MODEL_NAME)</TargetName>
   </PropertyGroup>
   
