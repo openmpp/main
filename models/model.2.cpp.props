@@ -3,7 +3,7 @@
   
   <!-- 
   Override default VStudio cpp project settings to build openM models:
-    AdditionalIncludeDirectories: OM_INC_DIR OMC_OUT_DIR
+    AdditionalIncludeDirectories: OMC_IN_DIR OM_INC_DIR OMC_OUT_DIR
     AdditionalDependencies:       OM_MSG_LIB OM_DB_LIB libopenm.lib
     AdditionalLibraryDirectories: OM_MSG_LIB_DIR OM_DB_LIB_DIR OM_LIB_DIR
   -->
@@ -42,7 +42,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
