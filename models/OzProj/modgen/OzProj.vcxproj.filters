@@ -21,59 +21,65 @@
     <None Include="parse.inf">
       <Filter>C++ Files</Filter>
     </None>
+    <None Include="..\code\Common.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Emigration.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Experimental.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Fertility.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Info.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\MicrodataFile.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Migration.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\modgen_framework.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Mortality.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ObservationCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ompp_framework.ompp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\OzProj.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\PersonCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(Emigration).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(Fertility).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(Framework).odat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(Migration).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(Mortality).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(PersonCore).dat">
+      <Filter>Scenarios</Filter>
+    </None>
     <None Include="Base.scex">
       <Filter>Scenarios</Filter>
-    </None>
-    <None Include="..\Base\Base(Emigration).dat">
-      <Filter>Scenarios</Filter>
-    </None>
-    <None Include="..\Base\Base(Fertility).dat">
-      <Filter>Scenarios</Filter>
-    </None>
-    <None Include="..\Base\Base(Migration).dat">
-      <Filter>Scenarios</Filter>
-    </None>
-    <None Include="..\Base\Base(Mortality).dat">
-      <Filter>Scenarios</Filter>
-    </None>
-    <None Include="..\Base\Base(PersonCore).dat">
-      <Filter>Scenarios</Filter>
-    </None>
-    <None Include="..\Common.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\Emigration.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\Experimental.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\Fertility.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\Info.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\MicrodataFile.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\Migration.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\modgen_framework.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\Mortality.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\ObservationCore.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\OzProj.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="..\PersonCore.mpp">
-      <Filter>Modules %28mpp%29</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -59,6 +59,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\code</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(Configuration)\$(ProjectName).exe</OutputFile>
@@ -81,6 +82,7 @@
       <StringPooling>true</StringPooling>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\code</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>.\$(ProjectName).exe</OutputFile>
@@ -93,23 +95,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Base\Base(Emigration).dat" />
-    <None Include="..\Base\Base(Fertility).dat" />
-    <None Include="..\Base\Base(Migration).dat" />
-    <None Include="..\Base\Base(Mortality).dat" />
-    <None Include="..\Base\Base(PersonCore).dat" />
-    <None Include="..\Common.mpp" />
-    <None Include="..\Emigration.mpp" />
-    <None Include="..\Experimental.mpp" />
-    <None Include="..\Fertility.mpp" />
-    <None Include="..\Info.mpp" />
-    <None Include="..\MicrodataFile.mpp" />
-    <None Include="..\Migration.mpp" />
-    <None Include="..\modgen_framework.mpp" />
-    <None Include="..\Mortality.mpp" />
-    <None Include="..\ObservationCore.mpp" />
-    <None Include="..\OzProj.mpp" />
-    <None Include="..\PersonCore.mpp" />
+    <None Include="..\code\Common.mpp" />
+    <None Include="..\code\Emigration.mpp" />
+    <None Include="..\code\Experimental.mpp" />
+    <None Include="..\code\Fertility.mpp" />
+    <None Include="..\code\Info.mpp" />
+    <None Include="..\code\MicrodataFile.mpp" />
+    <None Include="..\code\Migration.mpp" />
+    <None Include="..\code\modgen_framework.mpp" />
+    <None Include="..\code\Mortality.mpp" />
+    <None Include="..\code\ObservationCore.mpp" />
+    <None Include="..\code\ompp_framework.ompp" />
+    <None Include="..\code\OzProj.mpp" />
+    <None Include="..\code\PersonCore.mpp" />
+    <None Include="..\parameters\Base\Base(Emigration).dat" />
+    <None Include="..\parameters\Base\Base(Fertility).dat" />
+    <None Include="..\parameters\Base\Base(Framework).odat" />
+    <None Include="..\parameters\Base\Base(Migration).dat" />
+    <None Include="..\parameters\Base\Base(Mortality).dat" />
+    <None Include="..\parameters\Base\Base(PersonCore).dat" />
     <None Include="app.ico" />
     <None Include="Base.scex" />
     <None Include="parse.inf" />
