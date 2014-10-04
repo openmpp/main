@@ -75,10 +75,14 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
         "-- model timestamp:  " << modelTs << '\n' <<
         "-- db names prefix:  " << i_metaRows.modelDic.modelPrefix << '\n' <<
         "-- script created:   " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
-        "--\n";
+        "--\n\n";
     io_wr.throwOnFail();
 
+    io_wr.writeLine("--");
+    io_wr.writeLine("-- make sure all below is done inside of TRANSACTION");
+    io_wr.writeLine("--\n");
     io_wr.write(
+        "-- START TRANSACTION;\n" \
         "BEGIN TRANSACTION;\n" \
         "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'model_id';\n\n"
         );
@@ -234,12 +238,15 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
         );
     for (const OutTblInfo & tblInfo : outInfoVec) {
         accCreateTableBody(tblInfo, io_wr);
-        accFlatCreateViewBody(tblInfo, io_wr);
+//        accFlatCreateViewBody(tblInfo, io_wr);
         valueCreateTableBody(tblInfo, io_wr);
     }
     io_wr.write("\n");
 
-    io_wr.writeLine("COMMIT;\n");  // done
+    io_wr.writeLine("--");
+    io_wr.writeLine("-- make sure all above done inside of TRANSACTION");
+    io_wr.writeLine("--");
+    io_wr.writeLine("COMMIT;\n");    // done
 }
 
 // start sql script to create new working set
@@ -287,10 +294,14 @@ void ModelSqlBuilder::createWorkset(const MetaModelHolder & i_metaRows, const Me
         "-- model timestamp: " << modelTs << '\n' <<
         "-- db names prefix: " << i_metaRows.modelDic.modelPrefix << '\n' <<
         "-- script created:  " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
-        "--\n";
+        "--\n\n";
     wr.throwOnFail();
 
+    wr.writeLine("--");
+    wr.writeLine("-- make sure all below is done inside of TRANSACTION");
+    wr.writeLine("--");
     wr.write(
+        "-- START TRANSACTION;\n" \
         "BEGIN TRANSACTION;\n" \
         "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id';\n\n"
         );
@@ -351,7 +362,10 @@ void ModelSqlBuilder::endWorkset(void) const
             );
         wr.write("\n");
 
-        wr.writeLine("COMMIT;\n");  // done
+        wr.writeLine("--");
+        wr.writeLine("-- make sure all above done inside of TRANSACTION");
+        wr.writeLine("--");
+        wr.writeLine("COMMIT;\n");   // done
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -1482,13 +1496,16 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         // collect accumulator names
         tblInf.accNameVec.clear();
         for (const TableAccRow & accRow : io_metaRows.tableAcc) {
-            if (accRow.tableId == tblInf.id) tblInf.accNameVec.push_back(accRow.name);
+            if (accRow.tableId == tblInf.id) {
+                tblInf.accIdVec.push_back(accRow.accId);
+                tblInf.accNameVec.push_back(accRow.name);
+            }
         }
         if (tblInf.accNameVec.empty()) 
             throw DbException("output table accumulators not found for table: %s", tableRow.tableName.c_str());
 
         // translate expressions into sql
-        ModelAggregationSql aggr(tblInf.accFlatViewName, tblInf.accNameVec, tblInf.dimNameVec);
+        ModelAggregationSql aggr(tblInf.accTableName, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
 
         for (TableUnitRow & unitRow : io_metaRows.tableUnit) {
             if (unitRow.tableId == tblInf.id) {

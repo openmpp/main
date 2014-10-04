@@ -68,22 +68,26 @@
   <PropertyGroup Label="UserMacros" />
 
   <!-- Import common openM models project settings -->
-  <Import Project="$(SolutionDir)../model.1.build.props" />
-  <Import Project="$(SolutionDir)../model.2.cpp.props" />
+  <PropertyGroup>
+    <MODEL_NAME>$(ProjectName)</MODEL_NAME>
+  </PropertyGroup>
+
+  <Import Project="$(SolutionDir)../../model.1.build.props" />
+  <Import Project="$(SolutionDir)../../model.2.cpp.props" />
 
   <ItemGroup>
-    <ClCompile Include="modelOne.cpp" />
-    <ClCompile Include="modelOne_om.cpp" />
+    <ClCompile Include="$(SolutionDir)../modelOne.cpp" />
+    <ClCompile Include="$(SolutionDir)../modelOne_om.cpp" />
   </ItemGroup>
 
   <ItemGroup>
-    <ClInclude Include="modelOne_om.h" />
+    <ClInclude Include="$(SolutionDir)../modelOne_om.h" />
   </ItemGroup>
 
   <ItemGroup>
-    <SqlScript Include="modelOne_create_model_sqlite.sql" />
-    <SqlScript Include="modelOne_insert_param_sqlite.sql" />
-    <SqlScript Include="modelOne_optional_views_sqlite.sql" />
+    <SqlScript Include="$(SolutionDir)../modelOne_create_model_sqlite.sql" />
+    <SqlScript Include="$(SolutionDir)../modelOne_insert_param_sqlite.sql" />
+    <SqlScript Include="$(SolutionDir)../modelOne_optional_views_sqlite.sql" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

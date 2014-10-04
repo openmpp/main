@@ -108,16 +108,18 @@ namespace openm
         /**
          * create aggregation sql builder for output table.
          *
-         * @param[in] i_accFlatName accumulator flat view name in database
-         * @param[in] i_accVec      name vector of table accumulators
-         * @param[in] i_dimVec      name vector of table dimensions
+         * @param[in]   i_accTableName  accumulator table name in database
+         * @param[in]   i_accIdVec      ids of table accumulators
+         * @param[in]   i_accNameVec    names of table accumulators
+         * @param[in]   i_dimNameVec    names of table dimensions
          */
         ModelAggregationSql(
-            const string & i_accFlatName, const vector<string> & i_accVec, const vector<string> & i_dimVec
+            const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
             ) :
-            accFlatName(i_accFlatName),
-            accNameVec(i_accVec),
-            dimNameVec(i_dimVec)
+            accTableName(i_accTableName),
+            dimNameVec(i_dimNameVec),
+            accIdVec(i_accIdVec),
+            accNameVec(i_accNameVec)
         { }
 
         /** release sql builder resources. */
@@ -134,30 +136,35 @@ namespace openm
         const string translateAggregationExpr(const string & i_name, const string & i_expr);
 
     private:
-        /** accunulator flat view name */
-        const string accFlatName;
+        /** accumulator database table name */
+        const string accTableName;
 
-        /** name vector of table accumulators */
+        /** names of table dimensions */
+        const vector<string> dimNameVec;
+
+        /** ids of table accumulators */
+        const vector<int> accIdVec;
+
+        /** names of table accumulators */
         const vector<string> accNameVec;
 
-        /** name vector of table dimensions */
-        const vector<string> dimNameVec;
+        /** contains true if accumulator used at current level */
+        vector<bool> isAccUsedArr;
 
         /** aggregation expressions for the next level */
         vector<AggregationColumnExpr> nextExprArr;
 
         /** translate aggregation function into sql */
-        const string translateFnc(
-            FncCode i_code, const string & i_fromAlias, const string & i_innerAlias, const string & i_arg
-            );
+        const string translateFnc(FncCode i_code, const string & i_innerAlias, const string & i_arg);
 
         /** translate function argument into sql argument */
-        const string translateArg(
-            const string & i_fromAlias, const string & i_innerAlias, const string & i_arg
-            );
+        const string translateArg(const string & i_innerAlias, const string & i_arg);
+
+        /** collect accumulator name usage in expression */
+        const string processAccumulators(const string & i_expr);
 
         /** insert table alias in front of accumulator names */
-        const string insertAliasAcc(const string & i_alias, const string & i_expr);
+        const string processAccumulators(bool i_isTranslate, int i_level, const string & i_fromAlias, const string & i_expr);
 
         /** push OM_AVG functions to next aggregation level and return column name */
         const string pushAvgToNextLevel(const string & i_arg) { return pushToNextLevel("OM_AVG(" + i_arg + ")"); }

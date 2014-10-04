@@ -100,6 +100,9 @@ namespace openm
             /** db name of aggregated value view: table expressions */
             string valueTableName;
 
+            /** accumulator ids */
+            vector<int> accIdVec;
+
             /** accumulator names */
             vector<string> accNameVec;
         };

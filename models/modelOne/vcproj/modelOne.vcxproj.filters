@@ -19,26 +19,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="modelOne.cpp">
+    <ClCompile Include="$(SolutionDir)../modelOne.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="modelOne_om.cpp">
+    <ClCompile Include="$(SolutionDir)../modelOne_om.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="modelOne_om.h">
+    <ClInclude Include="$(SolutionDir)../modelOne_om.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="modelOne_create_model_sqlite.sql">
+    <None Include="$(SolutionDir)../modelOne_create_model_sqlite.sql">
       <Filter>SqlScript</Filter>
     </None>
-    <None Include="modelOne_insert_param_sqlite.sql">
+    <None Include="$(SolutionDir)../modelOne_insert_param_sqlite.sql">
       <Filter>SqlScript</Filter>
     </None>
-    <None Include="modelOne_optional_views_sqlite.sql">
+    <None Include="$(SolutionDir)../modelOne_optional_views_sqlite.sql">
       <Filter>SqlScript</Filter>
     </None>
   </ItemGroup>

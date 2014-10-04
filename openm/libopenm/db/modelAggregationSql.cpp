@@ -65,9 +65,6 @@ static const char rightDelimArr[] = {
 };
 static const size_t rightDelimSize = sizeof(rightDelimArr) / sizeof(char);
 
-/** if quote opens at current position then skip until the end of "quotes" or 'apostrophes' */
-static size_t skipIfQuoted(size_t i_pos, const string & i_str);
-
 /** aggregation function name and positions in input expression string */
 struct FncToken
 {
@@ -92,13 +89,18 @@ struct FncToken
     static const FncToken next(const string & i_expr);
 };
 
+static size_t skipIfQuoted(size_t i_pos, const string & i_str);
+static bool isFirstUsedAcc(int i_accPos, const vector<bool> & i_accUsage);
+static const string makeAccTableAlias(int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias);
+
 // Parsed aggregation expressions for each nesting level
 struct LevelDef
 {
-    int level = 0;              // nesting level
-    string fromAlias;           // from table alias
-    string innerAlias;          // inner join table alias
+    int level = 0;                          // nesting level
+    string fromAlias;                       // from table alias
+    string innerAlias;                      // inner join table alias
     vector<AggregationColumnExpr> exprArr;  // column names and expressions
+    vector<bool> accUsageArr;               // contains true if accumulator used at current level
 
     LevelDef(int i_level) : level(i_level)
     {
@@ -124,6 +126,8 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     // until any expressions to parse repeat translation
     bool isFound = false;
     do {
+        isAccUsedArr.assign(accNameVec.size(), false);  // clear accumulator usage flags
+
         for (AggregationColumnExpr & currExpr : currLevel.exprArr) {
 
             string expr = currExpr.srcExpr;
@@ -144,13 +148,20 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
 
                     // translate function into sql expression and append to output
                     currExpr.sqlExpr += translateFnc(
-                        fnc.code, currLevel.fromAlias, currLevel.innerAlias, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
+                        fnc.code, currLevel.innerAlias, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
                         );
 
                     // remove parsed function from expression
                     expr = (fnc.closePos + 1 < expr.length()) ? expr.substr(fnc.closePos + 1) : "";
                 }
             }
+        }
+
+        // second pass: translate accumulators for all sql expressions
+        currLevel.accUsageArr = isAccUsedArr;
+
+        for (AggregationColumnExpr & expr : currLevel.exprArr) {
+            expr.sqlExpr = processAccumulators(true, level, currLevel.fromAlias, expr.sqlExpr);
         }
 
         // if any expressions pushed to the next level then continue parsing
@@ -164,31 +175,47 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     }
     while (isFound);
 
-    // build output sql
-    //  SELECT
-    //    M1.run_id, M1.dim0, M1.dim1,
-    //    SUM(M1.acc0 - 0.5 * T2.ex2) AS ex1
-    //  FROM out8_flat M1
-    //  INNER JOIN
-    //  (
-    //    SELECT
-    //      M2.run_id, M2.dim0, M2.dim1,
-    //      AVG(M2.acc0 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
-    //    FROM out8_flat M2
-    //    INNER JOIN
-    //    (
-    //      SELECT
-    //        M3.run_id, M3.dim0, M3.dim1,
-    //        MAX(M3.acc0) AS ex31,
-    //        MIN(M3.acc0) AS ex32
-    //      FROM out8_flat M3
-    //      GROUP BY M3.run_id, M3.dim0, M3.dim1
-    //    ) T3
-    //    ON(T3.run_id = M2.run_id AND T3.dim0 = M2.dim0 AND T3.dim1 = M2.dim1)
-    //    GROUP BY M2.run_id, M2.dim0, M2.dim1
-    //  ) T2
-    //  ON(T2.run_id = M1.run_id AND T2.dim0 = M1.dim0 AND T2.dim1 = M1.dim1)
-    //  GROUP BY M1.run_id, M1.dim0, M1.dim1
+    // build output sql for expression:
+    // 
+    // OM_SUM(acc0 + 0.5 * OM_AVG(acc1 + acc4 + 0.1 * (OM_MAX(acc0) - OM_MIN(acc1)) ))
+    // =>
+    //   SELECT 
+    //     M1.run_id, M1.dim0, M1.dim1, 
+    //     SUM(M1.acc_value + 0.5 * T2.ex2) AS ex1
+    //   FROM out8_acc M1
+    //   INNER JOIN 
+    //   (
+    //     SELECT 
+    //       M2.run_id, M2.dim0, M2.dim1, 
+    //       AVG(M2.acc_value + A4.acc4 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
+    //     FROM out8_acc M2
+    //     INNER JOIN
+    //     (
+    //       SELECT run_id, dim0, dim1, sub_id, acc_value AS acc4 FROM out8_acc WHERE acc_id = 4
+    //     ) L2A4
+    //     ON (L2A4.run_id = M2.run_id AND L2A4.dim0 = M2.dim0 AND L2A4.dim1 = M2.dim1 AND L2A4.sub_id = M2.sub_id)
+    //     INNER JOIN 
+    //     (
+    //       SELECT 
+    //         M3.run_id, M3.dim0, M3.dim1, 
+    //         MAX(M3.acc_value) AS ex31, 
+    //         MIN(A3.acc1) AS ex32
+    //       FROM out8_acc M3
+    //       INNER JOIN
+    //       (
+    //         SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM out8_acc WHERE acc_id = 1
+    //       ) L3A1
+    //       ON (L3A1.run_id = M3.run_id AND L3A1.dim0 = M3.dim0 AND L3A1.dim1 = M3.dim1 AND L3A1.sub_id = M3.sub_id)
+    //       WHERE M3.acc_id = 0
+    //       GROUP BY M3.run_id, M3.dim0, M3.dim1
+    //     ) T3
+    //     ON (T3.run_id = M2.run_id AND T3.dim0 = M2.dim0 AND T3.dim1 = M2.dim1)
+    //     WHERE M2.acc_id = 1
+    //     GROUP BY M2.run_id, M2.dim0, M2.dim1
+    //   ) T2
+    //   ON (T2.run_id = M1.run_id AND T2.dim0 = M1.dim0 AND T2.dim1 = M1.dim1)
+    //   WHERE M1.acc_id = 0
+    //   GROUP BY M1.run_id, M1.dim0, M1.dim1
     //
     string sql;
     
@@ -200,16 +227,54 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
             sql += ", " + levelArr[nLev].fromAlias + "." + dimName;
         }
 
-        for (const AggregationColumnExpr expr : levelArr[nLev].exprArr) {
+        for (const AggregationColumnExpr & expr : levelArr[nLev].exprArr) {
             sql += ", " + expr.sqlExpr + " AS " + expr.colName;
         }
 
-        sql += " FROM " + accFlatName + " " + levelArr[nLev].fromAlias;
+        sql += " FROM " + accTableName + " " + levelArr[nLev].fromAlias;
+
+        for (int nAcc = 0; nAcc < (int)accNameVec.size(); nAcc++) {
+
+            if (!levelArr[nLev].accUsageArr[nAcc] || isFirstUsedAcc(nAcc, levelArr[nLev].accUsageArr)) continue;
+
+            string accAlias = makeAccTableAlias(
+                nAcc, levelArr[nLev].accUsageArr, levelArr[nLev].level, levelArr[nLev].fromAlias
+                );
+
+            sql += " INNER JOIN (SELECT run_id, ";
+
+            for (const string & dimName : dimNameVec) {
+                sql += dimName + ", ";
+            }
+
+            sql += "sub_id, acc_value AS " + accNameVec[nAcc] +
+                " FROM " + accTableName +
+                " WHERE acc_id = " + to_string(accIdVec[nAcc]) +
+                ") " + accAlias;
+
+            sql += " ON (" + accAlias + ".run_id = " + levelArr[nLev].fromAlias + ".run_id";
+
+            for (const string & dimName : dimNameVec) {
+                sql += " AND " + accAlias + "." + dimName + " = " + levelArr[nLev].fromAlias + "." + dimName;
+            }
+
+            sql += " AND " + accAlias + ".sub_id = " + levelArr[nLev].fromAlias + ".sub_id)";
+        }
 
         if (nLev < (int)levelArr.size() - 1) sql += " INNER JOIN (";
     }
 
     for (int nLev = (int)levelArr.size() - 1; nLev >= 0; nLev--) {
+
+        int firstAccId = -1;
+        for (int nAcc = 0; nAcc < (int)accIdVec.size(); nAcc++) {
+            if (levelArr[nLev].accUsageArr[nAcc]) {
+                firstAccId = accIdVec[nAcc];
+                break;
+            }
+        }
+
+        sql += " WHERE " + levelArr[nLev].fromAlias + ".acc_id = " + (firstAccId < 0 ? "0" : to_string(firstAccId));
 
         sql += " GROUP BY " + levelArr[nLev].fromAlias + ".run_id";
 
@@ -245,13 +310,13 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
 //  SUM((M1.acc0 - T2.ex2) * (M1.acc0 - T2.ex2)) / (COUNT(M1.acc0) – 1)
 //
 const string ModelAggregationSql::translateFnc(
-    FncCode i_code, const string & i_fromAlias, const string & i_innerAlias, const string & i_arg
+    FncCode i_code, const string & i_innerAlias, const string & i_arg
     )
 {
     // check arguments
     if (i_arg.length() < 1) throw DbException("Invalid (empty) function %d argument", i_code);
 
-    string sqlArg = translateArg(i_fromAlias, i_innerAlias, i_arg);
+    string sqlArg = translateArg(i_innerAlias, i_arg);
     string avgCol;
 
     // return aggregation sql expression
@@ -317,9 +382,7 @@ const string ModelAggregationSql::translateFnc(
 // translate function argument into sql argument:
 // push nested OM_ functions to next aggregation level
 // if accumulator outside of nested function then insert table alias in front of accumulator
-const string ModelAggregationSql::translateArg(
-    const string & i_fromAlias, const string & i_innerAlias, const string & i_arg
-    )
+const string ModelAggregationSql::translateArg(const string & i_innerAlias, const string & i_arg)
 {
     // parse until source expression not completed
     string outExpr;
@@ -330,13 +393,13 @@ const string ModelAggregationSql::translateArg(
         // find next function in source expression
         FncToken fnc = FncToken::next(expr);
         if (fnc.code == FncCode::undefined) {    // for entire source insert alias in front of accumulators and append to output
-            outExpr += insertAliasAcc(i_fromAlias, expr);
+            outExpr += processAccumulators(expr);
             expr.clear();
         }
         else {
             // if anything before the function then insert alias in front of accumulators and result to output
             if (fnc.namePos != 0) {
-                outExpr += insertAliasAcc(i_fromAlias, expr.substr(0, fnc.namePos));
+                outExpr += processAccumulators(expr.substr(0, fnc.namePos));
             }
 
             // push nested function to the next level, insert column name i.e.: T2.ex2 
@@ -358,8 +421,17 @@ const string ModelAggregationSql::pushToNextLevel(const string & i_fncExpr)
         nextExprArr.back().colName;
 }
 
-// insert table alias in fronrt of accumulator names: acc1 => S.acc1
-const string ModelAggregationSql::insertAliasAcc(const string & i_alias, const string & i_expr)
+// first pass: collect accumulator name usage in expression
+const string ModelAggregationSql::processAccumulators(const string & i_expr)
+{
+    return processAccumulators(false, 0, "", i_expr);
+}
+
+// first pass: collect accumulator name usage in expression
+// second pass: translate accumulator names by inserting table alias: acc1 => S.acc1
+const string ModelAggregationSql::processAccumulators(
+    bool i_isTranslate, int i_level, const string & i_fromAlias, const string & i_expr
+    )
 {
     // find accumulator in source expression
     string expr;
@@ -410,7 +482,17 @@ const string ModelAggregationSql::insertAliasAcc(const string & i_alias, const s
 
             // append alias and accumulator to output
             if (isAcc) {
-                expr += i_alias + "." + accNameVec[accPos];
+
+                if (!i_isTranslate) {
+                    expr += accNameVec[accPos];     // push accumulator to output "as is"
+                    isAccUsedArr[accPos] = true;    // collect accumulator usage
+                }
+                else {          // make accumulator db-column name
+                    expr += 
+                        makeAccTableAlias(accPos, isAccUsedArr, i_level, i_fromAlias) + 
+                        "." + 
+                        (isFirstUsedAcc(accPos, isAccUsedArr) ? "acc_value" : accNameVec[accPos]);
+                }
                 nPos += nLen - 1;
                 isLeftDelim = false;
                 continue;       // done with accumulator
@@ -546,169 +628,18 @@ size_t skipIfQuoted(size_t i_pos, const string & i_str)
     throw DbException("unbalanced \"quotes\" or 'apostrophes' in: %s", i_str.c_str());
 }
 
-/*
-// translate aggregation function into sql:
-//  OM_AVG(acc0) => AVG(S.acc0)
-// or:
-// OM_VAR(acc0) =>
-//  SUM(
-//    (S.acc0 - (SELECT AVG(VM1.acc0) FROM out4_sub VM1 WHERE VM1.run_id = S.run_id AND VM1.Dim0 = S.Dim0 AND VM1.Dim1 = S.Dim1) ) *
-//    (S.acc0 - (SELECT AVG(VM2.acc0) FROM out4_sub VM2 WHERE VM2.run_id = S.run_id AND VM2.Dim0 = S.Dim0 AND VM2.Dim1 = S.Dim1) )
-//  ) /
-//  ( (SELECT COUNT(VC1.acc0) FROM out4_sub VC1 WHERE VC1.run_id = S.run_id AND VC1.Dim0 = S.Dim0 AND VC1.Dim1 = S.Dim1) - 1)
-const string ModelAggregationSql::translateFnc(FncCode i_code, int i_level, const string & i_arg)
+// return true if this is first used accumulator
+bool isFirstUsedAcc(int i_accPos, const vector<bool> & i_accUsage)
 {
-    // check arguments
-    if (i_arg.length() < 1) throw DbException("Invalid (empty) function %d argument", i_code);
-
-    // return aggregation sql expression or subquery
-    switch (i_code) {
-    case FncCode::avg:
-        return (i_level <= 0) ? sqlAggregation("AVG", mainAlias, i_arg) : "(" + sqlSubquery("AVG", i_arg) + ")";
-
-    case FncCode::sum:
-        return (i_level <= 0) ? sqlAggregation("SUM", mainAlias, i_arg) : "(" + sqlSubquery("SUM", i_arg) + ")";
-
-    case FncCode::count:
-        return (i_level <= 0) ? sqlAggregation("COUNT", mainAlias, i_arg) : "(" + sqlSubquery("COUNT", i_arg) + ")";
-
-    case FncCode::min:
-        return (i_level <= 0) ? sqlAggregation("MIN", mainAlias, i_arg) : "(" + sqlSubquery("MIN", i_arg) + ")";
-
-    case FncCode::max:
-        return (i_level <= 0) ? sqlAggregation("MAX", mainAlias, i_arg) : "(" + sqlSubquery("MAX", i_arg) + ")";
-
-    case FncCode::var:
-        return (i_level <= 0) ? sqlVarAggregation(mainAlias, i_arg) : "(" + sqlVarSubquery(i_arg) + ")";
-
-    case FncCode::sd:
-        return (i_level <= 0) ? sqlSdAggregation(mainAlias, i_arg) : "(" + sqlSdSubquery(i_arg) + ")";
-
-    case FncCode::se:
-        return (i_level <= 0) ? sqlSeAggregation(mainAlias, i_arg) : "(" + sqlSeSubquery(i_arg) + ")";
-
-    case FncCode::cv:
-        return (i_level <= 0) ? sqlCvAggregation(mainAlias, i_arg) : "(" + sqlCvSubquery(i_arg) + ")";
-
-    default:
-        throw DbException("unknown aggregation function code: %d with arguments: %s", i_code, i_arg.c_str());
+    for (size_t nPos = 0; nPos < i_accUsage.size(); nPos++) {
+        if ((int)nPos == i_accPos) return true;
+        if (i_accUsage[nPos]) break;
     }
+    return false;
 }
-*/
 
-/*
-// return join conditions for correlated subquery:
-// T3.run_id = M2.run_id AND T3.dim0 = M2.dim0 AND T3.dim1 = M2.dim1
-const string ModelAggregationSql::makeJoinCondition(const string & i_fromAlias, const string & i_innerAlias) const
+// make accumulator table alias or return fromAlias for the first used accumulator
+const string makeAccTableAlias(int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias)
 {
-    string joinCond = i_innerAlias + ".run_id = " + i_fromAlias + ".run_id";
-
-    for (string dim : dimNameVec) {
-        joinCond += " AND " + i_innerAlias + "." + dim + " = " + i_fromAlias + "." + dim;
-    }
-    return joinCond;
+    return isFirstUsedAcc(i_accPos, i_accUsage) ? i_firstAlias : "L" + to_string(i_level) + "A" + to_string(i_accPos);
 }
-
-// build basic sql aggregation subquery:
-// SELECT AVG(VM1.acc0) FROM out4_sub VM1 WHERE VM1.run_id = S.run_id AND VM1.Dim0 = S.Dim0 AND VM1.Dim1 = S.Dim1
-const string ModelAggregationSql::sqlSubquery(const string & i_sqlFncName, const string & i_arg)
-{
-    string subAlias = "E" + to_string(++joinCount);
-    return
-        "SELECT " + sqlAggregation(i_sqlFncName, subAlias, i_arg) + 
-        " FROM " + accFlatName + " " + subAlias + " WHERE " + makeJoinCondition(subAlias);
-}
-
-// return basic sql aggregation expression with argument: AVG(S.acc0)
-const string ModelAggregationSql::sqlAggregation(const string & i_sqlFncName, const string & i_alias, const string & i_arg)
-{
-    return i_sqlFncName + "(" + translateArg(i_alias, i_arg) + ")";
-}
-
-// build sql variance aggregation as subquery:
-//  SELECT 
-//    SUM(
-//      (E4.acc0 - (SELECT AVG(VM1.acc0) FROM out4_sub VM1 WHERE VM1.run_id = S.run_id AND VM1.Dim0 = S.Dim0 AND VM1.Dim1 = S.Dim1) ) * 
-//      (E4.acc0 - (SELECT AVG(VM2.acc0) FROM out4_sub VM2 WHERE VM2.run_id = S.run_id AND VM2.Dim0 = S.Dim0 AND VM2.Dim1 = S.Dim1) )
-//    ) / 
-//    ( (SELECT COUNT(VC1.acc0) FROM out4_sub VC1 WHERE VC1.run_id = S.run_id AND VC1.Dim0 = S.Dim0 AND VC1.Dim1 = S.Dim1) - 1)
-//  FROM out4_sub E4 
-//  WHERE E4.run_id = S.run_id AND E4.Dim0 = S.Dim0 AND E4.Dim1 = S.Dim1
-const string ModelAggregationSql::sqlVarSubquery(const string & i_arg)
-{
-    string subAlias = "E" + to_string(++joinCount);
-    return
-        "SELECT " + sqlVarAggregation(subAlias, i_arg) + 
-        " FROM " + accFlatName + " " + subAlias + " WHERE " + makeJoinCondition(subAlias);
-}
-
-// return sql variance aggregation as expression with argument:
-//  SUM(
-//    (S.acc0 - (SELECT AVG(VM1.acc0) FROM out4_sub VM1 WHERE VM1.run_id = S.run_id AND VM1.Dim0 = S.Dim0 AND VM1.Dim1 = S.Dim1) ) * 
-//    (S.acc0 - (SELECT AVG(VM2.acc0) FROM out4_sub VM2 WHERE VM2.run_id = S.run_id AND VM2.Dim0 = S.Dim0 AND VM2.Dim1 = S.Dim1) )
-//  ) / 
-//  ( (SELECT COUNT(VC1.acc0) FROM out4_sub VC1 WHERE VC1.run_id = S.run_id AND VC1.Dim0 = S.Dim0 AND VC1.Dim1 = S.Dim1) - 1)
-const string ModelAggregationSql::sqlVarAggregation(const string & i_alias, const string & i_arg)
-{
-    return 
-        "SUM(" \
-        " (" + translateArg(i_alias, i_arg) + " - (" + sqlSubquery("AVG", i_arg) + ") ) *" +
-        " (" + translateArg(i_alias, i_arg) + " - (" + sqlSubquery("AVG", i_arg) + ") )" +
-        ") /" +
-        " ( (" + sqlSubquery("COUNT", i_arg) + ") - 1)";
-}
-
-// build sql SD aggregation as subquery:
-//  SELECT ....SD sql.... FROM out4_sub E4 
-//  WHERE E4.run_id = S.run_id AND E4.Dim0 = S.Dim0 AND E4.Dim1 = S.Dim1
-const string ModelAggregationSql::sqlSdSubquery(const string & i_arg)
-{
-    string subAlias = "E" + to_string(++joinCount);
-    return
-        "SELECT " + sqlSdAggregation(subAlias, i_arg) + 
-        " FROM " + accFlatName + " " + subAlias + " WHERE " + makeJoinCondition(subAlias);
-}
-
-// return sql SD aggregation as expression with argument:
-//  SQRT(....variance sql....)
-const string ModelAggregationSql::sqlSdAggregation(const string & i_alias, const string & i_arg)
-{
-    return "SQRT(" + sqlVarAggregation(i_alias, i_arg) + ")";
-}
-
-// build sql SE aggregation as subquery:
-//  SELECT ....SE sql.... FROM out4_sub E4 
-//  WHERE E4.run_id = S.run_id AND E4.Dim0 = S.Dim0 AND E4.Dim1 = S.Dim1
-const string ModelAggregationSql::sqlSeSubquery(const string & i_arg)
-{
-    string subAlias = "E" + to_string(++joinCount);
-    return
-        "SELECT " + sqlSeAggregation(subAlias, i_arg) + 
-        " FROM " + accFlatName + " " + subAlias + " WHERE " + makeJoinCondition(subAlias);
-}
-
-// return sql SE aggregation as expression with argument:
-//  SQRT(....variance sql.... / ....(COUNT subquery)....)
-const string ModelAggregationSql::sqlSeAggregation(const string & i_alias, const string & i_arg)
-{
-    return "SQRT( " + sqlVarAggregation(i_alias, i_arg) + " / (" + sqlSubquery("COUNT", i_arg) + ") )";
-}
-
-// build sql CV aggregation as subquery:
-//  SELECT ....CV sql.... FROM out4_sub E4 
-//  WHERE E4.run_id = S.run_id AND E4.Dim0 = S.Dim0 AND E4.Dim1 = S.Dim1
-const string ModelAggregationSql::sqlCvSubquery(const string & i_arg)
-{
-    string subAlias = "E" + to_string(++joinCount);
-    return
-        "SELECT " + sqlCvAggregation(subAlias, i_arg) + 
-        " FROM " + accFlatName + " " + subAlias + " WHERE " + makeJoinCondition(subAlias);
-}
-
-// return sql CV aggregation as expression with argument:
-//  100 * ( ....SD sql.... / ....(AVG subquery).... )
-const string ModelAggregationSql::sqlCvAggregation(const string & i_alias, const string & i_arg)
-{
-    return "100.0 * ( " + sqlSdAggregation(i_alias, i_arg) + " / (" + sqlSubquery("AVG", i_arg) + ") )";
-}
-*/
