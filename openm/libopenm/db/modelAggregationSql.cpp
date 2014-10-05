@@ -462,22 +462,24 @@ const string ModelAggregationSql::processAccumulators(
             size_t nLen = 0;
             size_t accPos;
             for (accPos = 0; accPos < accNameVec.size(); accPos++) {
+                
                 nLen = accNameVec[accPos].length();
                 isAcc = equalNoCase(accNameVec[accPos].c_str(), i_expr.c_str() + nPos, nLen);
-                if (isAcc) break;
-            }
 
-            // check if accumulator name end with right delimiter
-            if (isAcc && nPos + nLen < i_expr.length()) {
+                // check if accumulator name end with right delimiter
+                if (isAcc && nPos + nLen < i_expr.length()) {
 
-                char chEnd = i_expr[nPos + nLen];
-                isAcc = 
-                    isspace<char>(chEnd, locale::classic()) || 
-                    std::any_of(
-                        rightDelimArr, 
-                        rightDelimArr + rightDelimSize, 
+                    char chEnd = i_expr[nPos + nLen];
+                    isAcc =
+                        isspace<char>(chEnd, locale::classic()) ||
+                        std::any_of(
+                        rightDelimArr,
+                        rightDelimArr + rightDelimSize,
                         [chEnd](const char i_delim) -> bool { return chEnd == i_delim; }
                     );
+                }
+
+                if (isAcc) break;   // accumulator found
             }
 
             // append alias and accumulator to output

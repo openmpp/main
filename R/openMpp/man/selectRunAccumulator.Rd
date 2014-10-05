@@ -7,7 +7,7 @@ Select output table accumulator values from model run result
 Select output table accumulator values from model run result
 }
 \usage{
-selectRunAccumulator(dbCon, defRs, runId, tableName, accName = NA, subId = NA)
+selectRunAccumulator(dbCon, defRs, runId, tableName, accName = NA)
 }
 \arguments{
   \item{dbCon}{
@@ -26,10 +26,6 @@ selectRunAccumulator(dbCon, defRs, runId, tableName, accName = NA, subId = NA)
     (optional) output table accumulator name, i.e.: "acc0"
     if missing or NA then return all accumulators
   }
-  \item{subId}{
-    (optional) subsample number (zero based)
-    if missing or NA then return all subsamples
-  }
 }
 \details{
 That call return values of output table accumulators from model run results with id \code{runId}.
@@ -37,16 +33,14 @@ That call return values of output table accumulators from model run results with
 You can get either value of single accumulator by specifying it name, i.e.: \code{"acc2"} 
 or all accumulators if \code{accName} argument is missing.
 
-You can get either accumulator values of specific subsample number \code{subId} 
-or all subsamples if \code{subId} argument is missing.
-
 You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
   Data frame of database rows with output table accumulator(s) dimensions and values:
   \item{dim0,...,dimN}{ dimension items enum ids (not returned if rank is zero) }
+  \item{acc_id}{ accumulator number }
   \item{sub_id}{ subsample number }
-  \item{acc0,...,accM}{ accumulator(s) value }
+  \item{acc_value}{ accumulator value }
 }
 \references{
 OpenM++ documentation: http://ompp.sourceforge.net/wiki/
@@ -84,9 +78,7 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
   runId <- 11L
   
   allAccValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex")
-  acc0_ValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0")
-  acc0_ValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0", 0L)
-  allAccValue_sub0_Rs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", NA, 0L)
+  acc0_ValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0")
   
   dbDisconnect(theDb)
 }

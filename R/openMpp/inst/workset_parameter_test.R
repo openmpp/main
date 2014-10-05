@@ -210,9 +210,7 @@ allExprValueRs <- selectRunOutputValue(theDb, defRs, runId, "salarySex")
 # select accumulator values of "salarySex" from model run results with id = 11L
 #  
 allAccValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex")
-acc0_ValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0")
-acc0_ValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0", 0L)
-allAccValue_sub0_Rs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", NA, 0L)
+acc0_ValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0")
 
 # select parameter "ageSex" value from model run results with id = 11L
 #  

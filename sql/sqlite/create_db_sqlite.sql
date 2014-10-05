@@ -10,7 +10,7 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 --
 -- Id's source table
 --
-CREATE TABLE IF NOT EXISTS id_lst
+CREATE TABLE id_lst
 (
   id_key   VARCHAR(32) NOT NULL, -- id key (based on table)
   id_value INT         NOT NULL, -- current id value
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS id_lst
 -- 
 -- Language list
 -- 
-CREATE TABLE IF NOT EXISTS lang_lst
+CREATE TABLE lang_lst
 (
   lang_id   INT          NOT NULL, -- unique language id across all models
   lang_code VARCHAR(32)  NOT NULL, -- language code: en_US
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS lang_lst
 -- 
 -- Language: list of keywords in specific language: all, min, max
 -- 
-CREATE TABLE IF NOT EXISTS lang_word
+CREATE TABLE lang_word
 (
   lang_id    INT          NOT NULL, -- master key
   word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS lang_word
 --
 -- Model(s) list
 --
-CREATE TABLE IF NOT EXISTS model_dic 
+CREATE TABLE model_dic 
 (
   model_id         INT          NOT NULL, -- unique model id for each name and version
   model_name       VARCHAR(255) NOT NULL, -- model name: modelOne
@@ -56,7 +56,6 @@ CREATE TABLE IF NOT EXISTS model_dic
   parameter_prefix VARCHAR(4)   NOT NULL, -- parameter tables prefix: p
   workset_prefix   VARCHAR(4)   NOT NULL, -- workset tables prefix: w
   acc_prefix       VARCHAR(4)   NOT NULL, -- accumulator tables prefix: a
-  acc_flat_prefix  VARCHAR(4)   NOT NULL, -- accumulator flatten view prefix: f
   value_prefix     VARCHAR(4)   NOT NULL, -- value tables prefix: v
   PRIMARY KEY (model_id), 
   CONSTRAINT model_dic_un_1 UNIQUE (model_name, model_ts),
@@ -66,7 +65,7 @@ CREATE TABLE IF NOT EXISTS model_dic
 --
 -- Model(s) list text info
 --
-CREATE TABLE IF NOT EXISTS model_dic_txt 
+CREATE TABLE model_dic_txt 
 (
   model_id INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
@@ -84,7 +83,7 @@ CREATE TABLE IF NOT EXISTS model_dic_txt
 -- Run id must be different from working set id (use id_lst to get it)
 -- Model run is completed (all data saved in database) when sub_completed = sub_count
 --
-CREATE TABLE IF NOT EXISTS run_lst
+CREATE TABLE run_lst
 (
   run_id        INT          NOT NULL, -- unique run id
   model_id      INT          NOT NULL, -- model id
@@ -101,7 +100,7 @@ CREATE TABLE IF NOT EXISTS run_lst
 --
 -- Model run's text results
 --
-CREATE TABLE IF NOT EXISTS run_txt
+CREATE TABLE run_txt
 (
   run_id   INT             NOT NULL, -- master key
   model_id INT             NOT NULL, -- model id
@@ -119,7 +118,7 @@ CREATE TABLE IF NOT EXISTS run_txt
 -- Profile list: profile is a group of options
 -- default model options has profile_name = model_name
 --
-CREATE TABLE IF NOT EXISTS profile_lst
+CREATE TABLE profile_lst
 (
   profile_name VARCHAR(255) NOT NULL, -- unique profile name
   PRIMARY KEY (profile_name)
@@ -128,7 +127,7 @@ CREATE TABLE IF NOT EXISTS profile_lst
 --
 -- Profile options, ie: ini-style options
 --
-CREATE TABLE IF NOT EXISTS profile_option
+CREATE TABLE profile_option
 (
   profile_name VARCHAR(255)  NOT NULL, -- master key
   option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
@@ -142,7 +141,7 @@ CREATE TABLE IF NOT EXISTS profile_option
 -- Run options (in priority order):
 -- from command line, ini-file, profile_option or default values
 --
-CREATE TABLE IF NOT EXISTS run_option
+CREATE TABLE run_option
 (
   run_id       INT           NOT NULL, -- master key
   option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
@@ -155,7 +154,7 @@ CREATE TABLE IF NOT EXISTS run_option
 -- 
 -- Types dictionary for model parameters
 -- 
-CREATE TABLE IF NOT EXISTS type_dic
+CREATE TABLE type_dic
 (
   model_id      INT          NOT NULL, -- master key
   mod_type_id   INT          NOT NULL, -- unique type id
@@ -171,7 +170,7 @@ CREATE TABLE IF NOT EXISTS type_dic
 -- 
 -- Types dictionary text: description and notes for the type
 -- 
-CREATE TABLE IF NOT EXISTS type_dic_txt
+CREATE TABLE type_dic_txt
 (
   model_id    INT             NOT NULL, -- master key
   mod_type_id INT             NOT NULL, -- master key
@@ -188,7 +187,7 @@ CREATE TABLE IF NOT EXISTS type_dic_txt
 --
 -- List of values for enum types, i.e. enum values for classification dictionary
 --
-CREATE TABLE IF NOT EXISTS type_enum_lst
+CREATE TABLE type_enum_lst
 (
   model_id    INT          NOT NULL, -- master key
   mod_type_id INT          NOT NULL, -- master key
@@ -202,7 +201,7 @@ CREATE TABLE IF NOT EXISTS type_enum_lst
 -- 
 -- Enum value text: description and notes for type values
 -- 
-CREATE TABLE IF NOT EXISTS type_enum_txt
+CREATE TABLE type_enum_txt
 (
   model_id    INT             NOT NULL, -- master key
   mod_type_id INT             NOT NULL, -- master key
@@ -220,7 +219,7 @@ CREATE TABLE IF NOT EXISTS type_enum_txt
 --
 -- Parameter tables dictionary
 --
-CREATE TABLE IF NOT EXISTS parameter_dic
+CREATE TABLE parameter_dic
 (
   model_id       INT          NOT NULL, -- master key
   parameter_id   INT          NOT NULL, -- unique parameter id
@@ -242,7 +241,7 @@ CREATE TABLE IF NOT EXISTS parameter_dic
 --
 -- Parameter tables text info
 --
-CREATE TABLE IF NOT EXISTS parameter_dic_txt
+CREATE TABLE parameter_dic_txt
 (
   model_id     INT             NOT NULL, -- master key
   parameter_id INT             NOT NULL, -- master key
@@ -259,7 +258,7 @@ CREATE TABLE IF NOT EXISTS parameter_dic_txt
 --
 -- Parameter run text: parameter run value notes
 --
-CREATE TABLE IF NOT EXISTS parameter_run_txt
+CREATE TABLE parameter_run_txt
 (
   run_id       INT NOT NULL,   -- model run id
   model_id     INT NOT NULL,   -- master key
@@ -278,7 +277,7 @@ CREATE TABLE IF NOT EXISTS parameter_run_txt
 --
 -- Parameter dimension(s)
 --
-CREATE TABLE IF NOT EXISTS parameter_dims
+CREATE TABLE parameter_dims
 (
   model_id     INT        NOT NULL, -- master key
   parameter_id INT        NOT NULL, -- master key
@@ -304,7 +303,7 @@ CREATE TABLE IF NOT EXISTS parameter_dims
 -- Important: always update parameter values inside of transaction scope
 -- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
 --
-CREATE TABLE IF NOT EXISTS workset_lst
+CREATE TABLE workset_lst
 (
   set_id      INT          NOT NULL, -- unique working set id
   run_id      INT          NULL,     -- if not NULL and positive then base run id (source run id)
@@ -320,7 +319,7 @@ CREATE TABLE IF NOT EXISTS workset_lst
 --
 -- Working set text: description and notes
 --
-CREATE TABLE IF NOT EXISTS workset_txt
+CREATE TABLE workset_txt
 (
   set_id   INT             NOT NULL, -- master key
   model_id INT             NOT NULL, -- model id
@@ -337,7 +336,7 @@ CREATE TABLE IF NOT EXISTS workset_txt
 --
 -- Working set parameters list
 --
-CREATE TABLE IF NOT EXISTS workset_parameter
+CREATE TABLE workset_parameter
 (
   set_id       INT NOT NULL, -- master key
   model_id     INT NOT NULL, -- model id
@@ -352,7 +351,7 @@ CREATE TABLE IF NOT EXISTS workset_parameter
 --
 -- Working set parameter text: parameter value notes
 --
-CREATE TABLE IF NOT EXISTS workset_parameter_txt
+CREATE TABLE workset_parameter_txt
 (
   set_id       INT             NOT NULL, -- master key
   model_id     INT             NOT NULL, -- model id
@@ -369,7 +368,7 @@ CREATE TABLE IF NOT EXISTS workset_parameter_txt
 --
 -- Output result tables
 --
-CREATE TABLE IF NOT EXISTS table_dic 
+CREATE TABLE table_dic 
 (
   model_id       INT          NOT NULL, -- master key
   table_id       INT          NOT NULL, -- unique table id
@@ -389,7 +388,7 @@ CREATE TABLE IF NOT EXISTS table_dic
 --
 -- Output result tables text info
 --
-CREATE TABLE IF NOT EXISTS table_dic_txt 
+CREATE TABLE table_dic_txt 
 (
   model_id   INT             NOT NULL, -- master key
   table_id   INT             NOT NULL, -- master key
@@ -408,7 +407,7 @@ CREATE TABLE IF NOT EXISTS table_dic_txt
 --
 -- Dimensions for output tables
 --
-CREATE TABLE IF NOT EXISTS table_dims 
+CREATE TABLE table_dims 
 (
   model_id    INT        NOT NULL, -- master key
   table_id    INT        NOT NULL, -- master key
@@ -427,7 +426,7 @@ CREATE TABLE IF NOT EXISTS table_dims
 --
 -- Dimensions text info for output tables
 --
-CREATE TABLE IF NOT EXISTS table_dims_txt 
+CREATE TABLE table_dims_txt 
 (
   model_id INT             NOT NULL, -- master key
   table_id INT             NOT NULL, -- master key
@@ -445,7 +444,7 @@ CREATE TABLE IF NOT EXISTS table_dims_txt
 --
 -- Output table accumulators
 --
-CREATE TABLE IF NOT EXISTS table_acc 
+CREATE TABLE table_acc 
 (
   model_id INT          NOT NULL, -- master key
   table_id INT          NOT NULL, -- master key
@@ -461,7 +460,7 @@ CREATE TABLE IF NOT EXISTS table_acc
 --
 -- Output table accumulators text info
 --
-CREATE TABLE IF NOT EXISTS table_acc_txt 
+CREATE TABLE table_acc_txt 
 (
   model_id INT          NOT NULL, -- master key
   table_id INT          NOT NULL, -- master key
@@ -479,7 +478,7 @@ CREATE TABLE IF NOT EXISTS table_acc_txt
 --
 -- Output table expressions (analysis dimension items)
 --
-CREATE TABLE IF NOT EXISTS table_unit
+CREATE TABLE table_unit
 (
   model_id      INT           NOT NULL, -- master key
   table_id      INT           NOT NULL, -- master key
@@ -497,7 +496,7 @@ CREATE TABLE IF NOT EXISTS table_unit
 --
 -- Output table expressions text info
 --
-CREATE TABLE IF NOT EXISTS table_unit_txt 
+CREATE TABLE table_unit_txt 
 (
   model_id INT          NOT NULL, -- master key
   table_id INT          NOT NULL, -- master key
@@ -515,7 +514,7 @@ CREATE TABLE IF NOT EXISTS table_unit_txt
 --
 -- Groups: parameter or output table groups
 --
-CREATE TABLE IF NOT EXISTS group_lst
+CREATE TABLE group_lst
 (
   model_id     INT          NOT NULL, -- master key
   group_id     INT          NOT NULL, -- unique model group id
@@ -531,7 +530,7 @@ CREATE TABLE IF NOT EXISTS group_lst
 --
 -- Group text info for parameter or output table groups
 --
-CREATE TABLE IF NOT EXISTS group_txt
+CREATE TABLE group_txt
 (
   model_id INT             NOT NULL, -- master key
   group_id INT             NOT NULL, -- master key
@@ -548,7 +547,7 @@ CREATE TABLE IF NOT EXISTS group_txt
 --
 -- Groups parent-child: subgroup, parameter or output table
 --
-CREATE TABLE IF NOT EXISTS group_pc
+CREATE TABLE group_pc
 (
   model_id       INT NOT NULL, -- master key
   group_id       INT NOT NULL, -- master key

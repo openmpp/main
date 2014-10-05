@@ -16,24 +16,21 @@ template<> void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row
     if (i_row.paramPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) parameter tables prefix: %s", i_row.paramPrefix.c_str());
     if (i_row.setPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) workset tables prefix: %s", i_row.setPrefix.c_str());
     if (i_row.accPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator tables prefix: %s", i_row.accPrefix.c_str());
-    if (i_row.accFlatPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator flatten view prefix: %s", i_row.accFlatPrefix.c_str());
     if (i_row.valuePrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) value tables prefix: %s", i_row.valuePrefix.c_str());
 
-    if (i_row.paramPrefix == i_row.setPrefix || i_row.paramPrefix == i_row.accPrefix || 
-        i_row.paramPrefix == i_row.accFlatPrefix || i_row.paramPrefix == i_row.valuePrefix || 
-        i_row.setPrefix == i_row.accPrefix || i_row.setPrefix == i_row.accFlatPrefix || i_row.setPrefix == i_row.valuePrefix || 
-        i_row.accPrefix == i_row.accFlatPrefix || i_row.accPrefix == i_row.valuePrefix || 
-        i_row.accFlatPrefix == i_row.valuePrefix)
+    if (i_row.paramPrefix == i_row.setPrefix || i_row.paramPrefix == i_row.accPrefix || i_row.paramPrefix == i_row.valuePrefix || 
+        i_row.setPrefix == i_row.accPrefix || i_row.setPrefix == i_row.valuePrefix || 
+        i_row.accPrefix == i_row.valuePrefix)
         throw DbException(
-            "invalid (not unique) table prefixes: %s %s %s %s %s, model name: %s", 
-            i_row.paramPrefix.c_str(), i_row.setPrefix.c_str(), i_row.accPrefix.c_str(), i_row.accFlatPrefix.c_str(), i_row.valuePrefix.c_str(), i_row.name.c_str()
+            "invalid (not unique) table prefixes: %s %s %s %s, model name: %s", 
+            i_row.paramPrefix.c_str(), i_row.setPrefix.c_str(), i_row.accPrefix.c_str(), i_row.valuePrefix.c_str(), i_row.name.c_str()
             );
 
     // creating new model: get new model id from id_lst
     io_wr.write(
         "INSERT INTO model_dic" \
         " (model_id, model_name, model_type, model_ver, model_ts," \
-        " model_prefix, parameter_prefix, workset_prefix, acc_prefix, acc_flat_prefix, value_prefix)" \
+        " model_prefix, parameter_prefix, workset_prefix, acc_prefix, value_prefix)" \
         " SELECT" \
         " IL.id_value, ");
     io_wr.writeQuoted(i_row.name, true);
@@ -45,7 +42,6 @@ template<> void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row
     io_wr.writeQuoted(i_row.paramPrefix, true);
     io_wr.writeQuoted(i_row.setPrefix, true);
     io_wr.writeQuoted(i_row.accPrefix, true);
-    io_wr.writeQuoted(i_row.accFlatPrefix, true);
     io_wr.writeQuoted(i_row.valuePrefix);
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }

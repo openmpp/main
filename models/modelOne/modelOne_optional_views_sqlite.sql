@@ -19,13 +19,13 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 --
 -- Input parameters compatibility views
 --
-CREATE VIEW IF NOT EXISTS ageSex 
+CREATE VIEW ageSex 
 AS 
 SELECT S.dim0, S.dim1, S.value
 FROM modelOne_201208171604590148_p0_ageSex S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
 
-CREATE VIEW IF NOT EXISTS salaryAge 
+CREATE VIEW salaryAge 
 AS 
 SELECT S.dim0, S.dim1, S.value
 FROM modelOne_201208171604590148_p1_salaryAge S
@@ -34,7 +34,7 @@ WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
 --
 -- Output tables compatibility views
 --
-CREATE VIEW IF NOT EXISTS salarySex 
+CREATE VIEW salarySex 
 AS 
 SELECT
   S.dim0    AS "Dim0",

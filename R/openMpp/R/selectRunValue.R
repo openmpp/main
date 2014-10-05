@@ -123,15 +123,14 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
 # tableName - output table name, i.e.: "sexAge"
 # accName   - (optional) output table accumulator name, i.e.: "acc0"
 #             if missing or NA then return all accumulators
-# subId     - (optional) subsample number (zero based)
-#             if missing or NA then return all subsamples
 #
 # return data frame of output table rows:
 #   $dim0,... - dimension item enum ids (not returned if rank is zero)
+#   $acc_id   - output table accumulator id
 #   $sub_id   - subsample number
 #   $acc0,... - output table accumulator value(s)
 #
-selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA, subId = NA)
+selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -158,22 +157,23 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA, s
   
   nRank <- tableRow$table_rank
   dbTableName <- paste(
-    defRs$modelDic$model_prefix, defRs$modelDic$acc_flat_prefix, tableRow$db_name_suffix, 
+    defRs$modelDic$model_prefix, defRs$modelDic$acc_prefix, tableRow$db_name_suffix, 
     sep = ""
   )
   
   # find output accumulator id by name, if specified
-  accRs <- defRs$tableAcc[which(defRs$tableAcc$table_id == tableRow$table_id), ]
-  
-  isSingle <- FALSE
+  accId <- NA
   if (!missing(accName) && !is.na(accName)) {
     if (!is.character(accName) || length(accName) <= 0) {
       stop("invalid or empty output accumulator name")
     }
-    if (!accName %in% accRs$acc_name) {
+
+    accRow <- defRs$tableAcc[which(defRs$tableAcc$table_id == tableRow$table_id & defRs$tableAcc$acc_name == accName), ]
+    
+    if (nrow(uRow) != 1) {
       stop("output table ", tableName, " does not contain accumulator: ", accName)
     }
-    isSingle <- TRUE
+    accId <- accRow$acc_id
   }
   
   # check if run id is belong the model and completed
@@ -192,22 +192,11 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA, s
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # check if that run has required number of subsamples 
-  nSub <- NA
-  if (!missing(subId) && !is.na(subId)) {
-    if (!is.integer(subId) || subId < 0) stop("invalid subsample number")
-    
-    if (subId >= rlRow$sub_count) {
-      stop("model results with run id ", runId, " have only ", rlRow$sub_count, " subsamples")
-    }
-    nSub <- subId
-  }
-  
-  # SELECT dim0, dim1, sub_id, acc0, acc1 
+  # SELECT dim0, dim1, acc_id, sub_id, acc_value 
   # FROM modelone_201208171604590148_f0_salarySex
   # WHERE run_id = 2
-  # AND sub_id = 4
-  # ORDER BY 1, 2, 3
+  # AND acc_id = 4
+  # ORDER BY 1, 2, 3, 4
   #
   sqlSel <-
     paste(
@@ -219,18 +208,13 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA, s
         ),
         ""
       ),
-      " sub_id, ",
-      ifelse(!isSingle, 
-        paste(accRs$acc_name, sep = "", collapse = ", "),
-        accName 
-      ),
-      " FROM ", dbTableName, 
+      " acc_id, sub_id, acc_value FROM ", dbTableName, 
       " WHERE run_id = ", runId,
-      ifelse(!is.na(nSub), 
-        paste(" AND sub_id = ", nSub, sep = ""), 
+      ifelse(!is.na(accId), 
+        paste(" AND acc_id = ", accId, sep = ""), 
         ""
       ),
-      " ORDER BY 1",
+      " ORDER BY 1, 2",
       ifelse(nRank > 0L,
         paste(", ",
           paste(2L:(nRank + 1L), sep = "", collapse = ", "),

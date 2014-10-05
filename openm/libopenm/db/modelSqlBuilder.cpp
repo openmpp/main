@@ -723,7 +723,8 @@ const void ModelSqlBuilder::accCreateTableBody(const OutTblInfo & i_tblInfo, Mod
 //   ) AS acc1
 // FROM modelOne_201208171604590148_a0_salarySex A0
 // WHERE A0.acc_id = 0;
-// 
+//
+/*
 const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
     size_t accCount = i_tblInfo.accNameVec.size();
@@ -761,6 +762,7 @@ const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, 
 
     io_wr.write("\n;\n");
 }
+*/
 
 // create table sql for value table:
 // CREATE TABLE modelOne_201208171604590148_v0_salarySex
@@ -1351,23 +1353,19 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
     io_mdRow.paramPrefix = !io_mdRow.paramPrefix.empty() ? io_mdRow.paramPrefix : "p";
     io_mdRow.setPrefix = !io_mdRow.setPrefix.empty() ? io_mdRow.setPrefix : "w";
     io_mdRow.accPrefix = !io_mdRow.accPrefix.empty() ? io_mdRow.accPrefix : "a";
-    io_mdRow.accFlatPrefix = !io_mdRow.accFlatPrefix.empty() ? io_mdRow.accFlatPrefix : "f";
     io_mdRow.valuePrefix = !io_mdRow.valuePrefix.empty() ? io_mdRow.valuePrefix : "v";
 
     if (io_mdRow.paramPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) parameter tables prefix: %s", io_mdRow.paramPrefix.c_str());
     if (io_mdRow.setPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) workset tables prefix: %s", io_mdRow.setPrefix.c_str());
     if (io_mdRow.accPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator tables prefix: %s", io_mdRow.accPrefix.c_str());
-    if (io_mdRow.accFlatPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator flatten view prefix: %s", io_mdRow.accFlatPrefix.c_str());
     if (io_mdRow.valuePrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) value tables prefix: %s", io_mdRow.valuePrefix.c_str());
 
-    if (io_mdRow.paramPrefix == io_mdRow.setPrefix || io_mdRow.paramPrefix == io_mdRow.accPrefix || 
-        io_mdRow.paramPrefix == io_mdRow.accFlatPrefix || io_mdRow.paramPrefix == io_mdRow.valuePrefix || 
-        io_mdRow.setPrefix == io_mdRow.accPrefix || io_mdRow.setPrefix == io_mdRow.accFlatPrefix || io_mdRow.setPrefix == io_mdRow.valuePrefix || 
-        io_mdRow.accPrefix == io_mdRow.accFlatPrefix || io_mdRow.accPrefix == io_mdRow.valuePrefix || 
-        io_mdRow.accFlatPrefix == io_mdRow.valuePrefix)
+    if (io_mdRow.paramPrefix == io_mdRow.setPrefix || io_mdRow.paramPrefix == io_mdRow.accPrefix || io_mdRow.paramPrefix == io_mdRow.valuePrefix || 
+        io_mdRow.setPrefix == io_mdRow.accPrefix || io_mdRow.setPrefix == io_mdRow.valuePrefix || 
+        io_mdRow.accPrefix == io_mdRow.valuePrefix)
         throw DbException(
-            "invalid (not unique) table prefixes: %s %s %s %s %s, model name: %s", 
-            io_mdRow.paramPrefix.c_str(), io_mdRow.setPrefix.c_str(), io_mdRow.accPrefix.c_str(), io_mdRow.accFlatPrefix.c_str(), io_mdRow.valuePrefix.c_str(), io_mdRow.name.c_str()
+            "invalid (not unique) table prefixes: %s %s %s %s, model name: %s", 
+            io_mdRow.paramPrefix.c_str(), io_mdRow.setPrefix.c_str(), io_mdRow.accPrefix.c_str(), io_mdRow.valuePrefix.c_str(), io_mdRow.name.c_str()
             );
 }
 
@@ -1484,7 +1482,6 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         tblInf.id = tableRow.tableId;
         tblInf.name = tableRow.tableName;
         tblInf.accTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.accPrefix + tableRow.dbNameSuffix;
-        tblInf.accFlatViewName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.accFlatPrefix + tableRow.dbNameSuffix;
         tblInf.valueTableName = io_metaRows.modelDic.modelPrefix + io_metaRows.modelDic.valuePrefix + tableRow.dbNameSuffix;
 
         // collect dimension names

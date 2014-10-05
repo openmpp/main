@@ -27,7 +27,6 @@ namespace openm
         MpiPacked::pack(val->paramPrefix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->setPrefix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->accPrefix, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->accFlatPrefix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->valuePrefix, i_packedSize, io_packedData, io_packPos);
     }
     
@@ -46,7 +45,6 @@ namespace openm
         val->paramPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->setPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->accPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->accFlatPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->valuePrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
@@ -65,7 +63,6 @@ namespace openm
             MpiPacked::packedSize(val->paramPrefix) +
             MpiPacked::packedSize(val->setPrefix) +
             MpiPacked::packedSize(val->accPrefix) +
-            MpiPacked::packedSize(val->accFlatPrefix) +
             MpiPacked::packedSize(val->valuePrefix);
     }
 

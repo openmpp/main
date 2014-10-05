@@ -50,7 +50,6 @@ namespace openm
         &typeid(decltype(ModelDicRow::paramPrefix)),
         &typeid(decltype(ModelDicRow::setPrefix)),
         &typeid(decltype(ModelDicRow::accPrefix)),
-        &typeid(decltype(ModelDicRow::accFlatPrefix)),
         &typeid(decltype(ModelDicRow::valuePrefix))
     };
 
@@ -98,9 +97,6 @@ namespace openm
                 dynamic_cast<ModelDicRow *>(i_row)->accPrefix = ((const char *)i_value);
                 break;
             case 9:
-                dynamic_cast<ModelDicRow *>(i_row)->accFlatPrefix = ((const char *)i_value);
-                break;
-            case 10:
                 dynamic_cast<ModelDicRow *>(i_row)->valuePrefix = ((const char *)i_value);
                 break;
             default:
@@ -131,7 +127,7 @@ ModelDicTable::ModelDicTable(IDbExec * i_dbExec, const char * i_name, const char
     string sql = 
         "SELECT" \
         " model_id, model_name, model_type, model_ver, model_ts," \
-        " model_prefix, parameter_prefix, workset_prefix, acc_prefix, acc_flat_prefix, value_prefix" \
+        " model_prefix, parameter_prefix, workset_prefix, acc_prefix, value_prefix" \
         " FROM model_dic";
     if (i_name != NULL && i_timestamp == NULL) sql += " WHERE model_name = " + toQuoted(i_name);
     if (i_name == NULL && i_timestamp != NULL) sql += " WHERE model_ts = " + toQuoted(i_timestamp);

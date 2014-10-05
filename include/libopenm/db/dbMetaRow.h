@@ -127,9 +127,6 @@ namespace openm
         /** acc_prefix       VARCHAR(4) NOT NULL, -- accumulator table prefix: a */
         string accPrefix;
 
-        /** acc_flat_prefix  VARCHAR(4) NOT NULL, -- accumulator flatten view prefix: f */
-        string accFlatPrefix;
-
         /** value_prefix     VARCHAR(4) NOT NULL, -- value tables prefix: v */
         string valuePrefix;
 
@@ -144,7 +141,6 @@ namespace openm
             paramPrefix(""),
             setPrefix(""),
             accPrefix(""),
-            accFlatPrefix(""),
             valuePrefix("")
         { }
 

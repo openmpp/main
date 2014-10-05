@@ -52,7 +52,6 @@ CREATE TABLE model_dic
   parameter_prefix VARCHAR(4)   NOT NULL, -- parameter tables prefix: p
   workset_prefix   VARCHAR(4)   NOT NULL, -- workset tables prefix: w
   acc_prefix       VARCHAR(4)   NOT NULL, -- accumulator tables prefix: a
-  acc_flat_prefix  VARCHAR(4)   NOT NULL, -- accumulator flatten view prefix: f
   value_prefix     VARCHAR(4)   NOT NULL, -- value tables prefix: v
   PRIMARY KEY (model_id), 
   CONSTRAINT model_dic_un_1 UNIQUE (model_name, model_ts),
