@@ -51,14 +51,15 @@ endif
 #
 ifndef OMC_DISABLE_AUTO_PARAM_DIR
   ifndef OMC_BASE_PARAM_DIR
-    ifneq (,$(wildcard Base))
-      OMC_BASE_PARAM_DIR = Base
+    ifneq (,$(wildcard parameters/Base))
+      OMC_BASE_PARAM_DIR = parameters/Base
     endif
   endif
 endif
 
 ifdef OMC_BASE_PARAM_DIR
-  OMC_BASE_OPT = -p $(OMC_BASE_PARAM_DIR)
+  OMC_BASE_NAME = $(notdir $(OMC_BASE_PARAM_DIR))
+  OMC_BASE_OPT = -s $(OMC_BASE_NAME) -p $(OMC_BASE_PARAM_DIR)
 endif
 
 #
@@ -66,14 +67,21 @@ endif
 #
 ifndef OMC_DISABLE_AUTO_PARAM_DIR
   ifndef OMC_FIXED_PARAM_DIR
-    ifneq (,$(wildcard Fixed))
-      OMC_FIXED_PARAM_DIR = Fixed
+    ifneq (,$(wildcard parameters/Fixed))
+      OMC_FIXED_PARAM_DIR = parameters/Fixed
     endif
   endif
 endif
 
 ifdef OMC_FIXED_PARAM_DIR
   OMC_FIXED_OPT = -f $(OMC_FIXED_PARAM_DIR)
+endif
+
+#
+# source files subdirectory: .ompp .mpp .odat .dat
+#
+ifndef MODEL_CODE_SUB
+  MODEL_CODE_SUB = code
 endif
 
 #
@@ -106,10 +114,10 @@ LIBSQLITE_A = libsqlite.a
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I. $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_SUB) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-MODEL_MPP = $(wildcard *.mpp *.ompp *.dat *.odat)
+MODEL_MPP = $(wildcard $(MODEL_CODE_SUB)/*.mpp $(MODEL_CODE_SUB)/*.ompp $(MODEL_CODE_SUB)/*.dat $(MODEL_CODE_SUB)/*.odat)
 
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
@@ -133,7 +141,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
 $(MODEL_OMC_CPP): | prepare
 
 $(MODEL_OMC_CPP) : $(MODEL_MPP)
-	$(OMC_EXE) -m $(MODEL_NAME) -s Base -i $(CURDIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
+	$(OMC_EXE) -m $(MODEL_NAME) -i $(CURDIR)/$(MODEL_CODE_SUB) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
@@ -169,7 +177,7 @@ $(MODEL_SQLITE) :
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_$(OMC_BASE_PARAM_DIR).sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_$(OMC_BASE_NAME).sql
 
 .PHONY: clean
 clean:
