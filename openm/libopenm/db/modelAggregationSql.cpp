@@ -461,7 +461,7 @@ const string ModelAggregationSql::processAccumulators(
             bool isAcc = false;
             size_t nLen = 0;
             int accPos;
-            for (accPos = 0; accPos < accNameVec.size(); accPos++) {
+            for (accPos = 0; accPos < (int)accNameVec.size(); accPos++) {
                 
                 nLen = accNameVec[accPos].length();
                 isAcc = equalNoCase(accNameVec[accPos].c_str(), i_expr.c_str() + nPos, nLen);

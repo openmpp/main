@@ -287,10 +287,10 @@ void ModelBase::receiveSubSamples(void)
     const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
 
     int tblId = -1;
+    long long valSize = 0;
     for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
 
         // get accumulator data size
-        long long valSize = 0;
         if (tblId != accVec[nAcc].tableId) {
             tblId = accVec[nAcc].tableId;
             valSize = IOutputTableWriter::sizeOf(modelId, metaStore, tblId);
