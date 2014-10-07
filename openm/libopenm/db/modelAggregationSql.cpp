@@ -460,7 +460,7 @@ const string ModelAggregationSql::processAccumulators(
             // check for each accumulator name
             bool isAcc = false;
             size_t nLen = 0;
-            size_t accPos;
+            int accPos;
             for (accPos = 0; accPos < accNameVec.size(); accPos++) {
                 
                 nLen = accNameVec[accPos].length();
