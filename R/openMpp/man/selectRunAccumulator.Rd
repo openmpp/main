@@ -77,7 +77,7 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
   #  
   runId <- 11L
   
-  allAccValueAllSubRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex")
+  allAccValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex")
   acc0_ValueRs <- selectRunAccumulator(theDb, defRs, runId, "salarySex", "acc0")
   
   dbDisconnect(theDb)

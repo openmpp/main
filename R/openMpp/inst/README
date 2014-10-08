@@ -8,6 +8,7 @@ Following operations supported:
   - read model output tables expression values and accumulators
   - read model input parameters values
 
-In order to run examples or tests please create modelOne database m1.sqlite.
+Examples can be found in R/openMpp/inst subdirectory 
+and you can use models/bin/*.sqlite database files to run it.
 
 More information about OpenM++ at http://ompp.sourceforge.net/wiki/

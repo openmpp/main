@@ -170,7 +170,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
 
     accRow <- defRs$tableAcc[which(defRs$tableAcc$table_id == tableRow$table_id & defRs$tableAcc$acc_name == accName), ]
     
-    if (nrow(uRow) != 1) {
+    if (nrow(accRow) != 1) {
       stop("output table ", tableName, " does not contain accumulator: ", accName)
     }
     accId <- accRow$acc_id
