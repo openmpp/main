@@ -20,7 +20,7 @@ if ($#ARGV >= 0) {
 }
 else {
 	# Create model list by identifying all model subdirectories
-	my @paths = glob "*/Model.props";
+	my @paths = glob "*/ompp";
 	for my $path (@paths) {
 		$path =~ s/\/.*//;
 		push @models, $path;
@@ -74,7 +74,6 @@ logmsg info, " test_models.pl ${version} ";
 logmsg info, "=========================";
 logmsg info, "";
 logmsg info, "Testing models: ".join(", ", @models);
-
 
 my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen 11\\Modgen.exe";
 if ( ! -e $modgen_exe ) {
