@@ -49,8 +49,8 @@ namespace openm
         /** table_acc table rows */
         unique_ptr<ITableAccTable> tableAcc;
 
-        /** table_unit table rows */
-        unique_ptr<ITableUnitTable> tableUnit;
+        /** table_expr table rows */
+        unique_ptr<ITableExprTable> tableExpr;
     };
 }
 

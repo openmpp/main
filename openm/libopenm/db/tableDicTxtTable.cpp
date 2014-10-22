@@ -43,8 +43,8 @@ namespace openm
         &typeid(decltype(TableDicTxtRow::langId)), 
         &typeid(decltype(TableDicTxtRow::descr)), 
         &typeid(decltype(TableDicTxtRow::note)), 
-        &typeid(decltype(TableDicTxtRow::unitDescr)), 
-        &typeid(decltype(TableDicTxtRow::unitNote))
+        &typeid(decltype(TableDicTxtRow::exprDescr)), 
+        &typeid(decltype(TableDicTxtRow::exprNote))
     };
 
     // Size (number of columns) for table_dic_txt row
@@ -77,10 +77,10 @@ namespace openm
                 dynamic_cast<TableDicTxtRow *>(i_row)->note = ((const char *)i_value);
                 break;
             case 5:
-                dynamic_cast<TableDicTxtRow *>(i_row)->unitDescr = ((const char *)i_value);
+                dynamic_cast<TableDicTxtRow *>(i_row)->exprDescr = ((const char *)i_value);
                 break;
             case 6:
-                dynamic_cast<TableDicTxtRow *>(i_row)->unitNote = ((const char *)i_value);
+                dynamic_cast<TableDicTxtRow *>(i_row)->exprNote = ((const char *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -114,7 +114,7 @@ TableDicTxtTable::TableDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 
     const IRowAdapter & adp = TableDicTxtRowAdapter();
     rowVec = IMetaTable<TableDicTxtRow>::load(
-        "SELECT model_id, table_id, lang_id, descr, note, unit_descr, unit_note FROM table_dic_txt" +  sWhere + " ORDER BY 1, 2, 3", 
+        "SELECT model_id, table_id, lang_id, descr, note, expr_descr, expr_note FROM table_dic_txt" +  sWhere + " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
         );

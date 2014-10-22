@@ -140,16 +140,16 @@ INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_
 -- modelOne output tables
 --
 INSERT INTO table_dic 
-  (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, unit_dim_pos) 
+  (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, expr_dim_pos) 
 VALUES 
   (1, 0, '0_salarySex', 'salarySex', 0, 2, 1, 0, 1);
 
 INSERT INTO table_dic_txt
-  (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)
+  (model_id, table_id, lang_id, descr, note, expr_descr, expr_note)
 VALUES
   (1, 0, 0, 'Salary by Sex', 'Salary by Sex notes', 'Salary Dim', NULL);
 INSERT INTO table_dic_txt
-  (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)
+  (model_id, table_id, lang_id, descr, note, expr_descr, expr_note)
 VALUES
   (1, 0, 1, 'Salary by Sex (fr)', 'Salary by Sex notes (fr)', 'Salary Dim (fr)', NULL);
 
@@ -167,36 +167,36 @@ INSERT INTO table_acc (model_id, table_id, acc_id, acc_name, acc_expr) VALUES (1
 INSERT INTO table_acc_txt (model_id, table_id, acc_id, lang_id, descr, note) VALUES (1, 0, 0, 0, 'Sum of salary by sex', NULL);
 INSERT INTO table_acc_txt (model_id, table_id, acc_id, lang_id, descr, note) VALUES (1, 0, 1, 0, 'Count of salary by sex', NULL);
 
-INSERT INTO table_unit 
-  (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
+INSERT INTO table_expr 
+  (model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
   (1, 0, 0, 'expr0', 4, 'OM_AVG(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr0 FROM modelOne_201208171604590148_a0_salarySex M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
-INSERT INTO table_unit 
-  (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
+INSERT INTO table_expr 
+  (model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
   (1, 0, 1, 'expr1', 4, 'OM_SUM(acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr1 FROM modelOne_201208171604590148_a0_salarySex M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
-INSERT INTO table_unit 
-  (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
+INSERT INTO table_expr 
+  (model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
   (1, 0, 2, 'expr2', 2, 'OM_MIN(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, MIN(M1.acc_value) AS expr2 FROM modelOne_201208171604590148_a0_salarySex M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
-INSERT INTO table_unit 
-  (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr) 
+INSERT INTO table_expr 
+  (model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
   (1, 0, 3, 'expr3', 3, 'OM_AVG(acc0 * acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value * A1.acc1) AS expr3 FROM modelOne_201208171604590148_a0_salarySex M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM modelOne_201208171604590148_a0_salarySex WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
 );
   
-INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 0, 0, 'Average acc0', 'Average on acc0 notes');
-INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 0, 1, 'Average acc0 (fr)', 'Average on acc0 notes (fr)');
-INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 1, 0, 'Sum acc1', NULL);
-INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 2, 0, 'Min acc0', NULL);
-INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note) VALUES (1, 0, 3, 0, 'Average acc0 * acc1', NULL);
+INSERT INTO table_expr_txt (model_id, table_id, expr_id, lang_id, descr, note) VALUES (1, 0, 0, 0, 'Average acc0', 'Average on acc0 notes');
+INSERT INTO table_expr_txt (model_id, table_id, expr_id, lang_id, descr, note) VALUES (1, 0, 0, 1, 'Average acc0 (fr)', 'Average on acc0 notes (fr)');
+INSERT INTO table_expr_txt (model_id, table_id, expr_id, lang_id, descr, note) VALUES (1, 0, 1, 0, 'Sum acc1', NULL);
+INSERT INTO table_expr_txt (model_id, table_id, expr_id, lang_id, descr, note) VALUES (1, 0, 2, 0, 'Min acc0', NULL);
+INSERT INTO table_expr_txt (model_id, table_id, expr_id, lang_id, descr, note) VALUES (1, 0, 3, 0, 'Average acc0 * acc1', NULL);
 
 --
 -- modelOne input parameters
@@ -271,9 +271,9 @@ CREATE TABLE modelOne_201208171604590148_v0_salarySex
   run_id    INT   NOT NULL,
   dim0      INT   NOT NULL, 
   dim1      INT   NOT NULL, 
-  unit_id   INT   NOT NULL, 
+  expr_id   INT   NOT NULL, 
   value     FLOAT NULL,
-  PRIMARY KEY (run_id, dim0, dim1, unit_id)
+  PRIMARY KEY (run_id, dim0, dim1, expr_id)
 );
 
 --

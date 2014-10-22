@@ -6,8 +6,8 @@
 DROP TABLE group_pc;
 DROP TABLE group_txt;
 DROP TABLE group_lst;
-DROP TABLE table_unit_txt;
-DROP TABLE table_unit;
+DROP TABLE table_expr_txt;
+DROP TABLE table_expr;
 DROP TABLE table_acc_txt;
 DROP TABLE table_acc;
 DROP TABLE table_dims_txt;

@@ -303,10 +303,10 @@ SELECT
   T.descr          AS "Description",
   T.note           AS "Note",
   M.table_rank + 1 AS "Rank",
-  M.unit_dim_pos   AS "AnalysisDimensionPosition", 
+  M.expr_dim_pos   AS "AnalysisDimensionPosition", 
   M.table_name + '.DimA' AS "AnalysisDimensionName", 
-  T.unit_descr     AS "AnalysisDimensionDescription",
-  T.unit_note      AS "AnalysisDimensionNote",
+  T.expr_descr     AS "AnalysisDimensionDescription",
+  T.expr_note      AS "AnalysisDimensionNote",
   M.is_sparse      AS "Sparse",
   M.is_hidden      AS "Hidden",
   T.lang_id        AS "LanguageID" 
@@ -323,10 +323,10 @@ SELECT
   T.descr          AS "Description",
   T.note           AS "Note",
   M.table_rank + 1 AS "Rank",
-  M.unit_dim_pos   AS "AnalysisDimensionPosition", 
+  M.expr_dim_pos   AS "AnalysisDimensionPosition", 
   M.table_name + '.DimA' AS "AnalysisDimensionName", 
-  T.unit_descr     AS "AnalysisDimensionDescription",
-  T.unit_note      AS "AnalysisDimensionNote",
+  T.expr_descr     AS "AnalysisDimensionDescription",
+  T.expr_note      AS "AnalysisDimensionNote",
   M.is_sparse      AS "Sparse",
   M.is_hidden      AS "Hidden",
   T.lang_id        AS "LanguageID" 
@@ -355,15 +355,15 @@ GO
 CREATE VIEW TableExpressionDic AS
 SELECT
   M.table_id      AS "TableID", 
-  M.unit_id       AS "ExpressionID", 
-  TD.table_name + '.' + M.unit_name AS "Name", 
+  M.expr_id       AS "ExpressionID", 
+  TD.table_name + '.' + M.expr_name AS "Name", 
   T.descr         AS "Description",
   T.note          AS "Note",
-  M.unit_decimals AS "Decimals",
+  M.expr_decimals AS "Decimals",
   T.lang_id
-FROM table_unit M
+FROM table_expr M
 INNER JOIN table_dic TD ON (TD.model_id = M.model_id AND TD.table_id = M.table_id)
-INNER JOIN table_unit_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id AND T.unit_id = M.unit_id)
+INNER JOIN table_expr_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id AND T.expr_id = M.expr_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 GO
 

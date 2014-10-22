@@ -122,11 +122,11 @@ namespace openm
     /** write sql to insert into table_acc_txt table. */
     template<> void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr);
 
-    /** write sql to insert into table_unit table. */
-    template<> void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow & i_row, ModelSqlWriter & io_wr);
+    /** write sql to insert into table_expr table. */
+    template<> void ModelInsertSql::insertSql<TableExprRow>(const TableExprRow & i_row, ModelSqlWriter & io_wr);
 
-    /** write sql to insert into table_unit_txt table. */
-    template<> void ModelInsertSql::insertSql<TableUnitTxtLangRow>(const TableUnitTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    /** write sql to insert into table_expr_txt table. */
+    template<> void ModelInsertSql::insertSql<TableExprTxtLangRow>(const TableExprTxtLangRow & i_row, ModelSqlWriter & io_wr);
 
     /** write sql to insert into group_lst table. */
     template<> void ModelInsertSql::insertSql<GroupLstRow>(const GroupLstRow & i_row, ModelSqlWriter & io_wr);

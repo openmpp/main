@@ -278,7 +278,7 @@ namespace openm
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isSparse)>(val->isSparse, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack<decltype(val->unitPos)>(val->unitPos, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->exprPos)>(val->exprPos, i_packedSize, io_packedData, io_packPos);
     }
 
     // table_dic: unpack MPI message into db row
@@ -295,7 +295,7 @@ namespace openm
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->isSparse = MpiPacked::unpack<decltype(val->isSparse)>(i_packedSize, i_packedData, io_packPos);
         val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
-        val->unitPos = MpiPacked::unpack<decltype(val->unitPos)>(i_packedSize, i_packedData, io_packPos);
+        val->exprPos = MpiPacked::unpack<decltype(val->exprPos)>(i_packedSize, i_packedData, io_packPos);
     }
 
     // table_dic: return byte size to pack db row into MPI message
@@ -312,7 +312,7 @@ namespace openm
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->isSparse)) +
             MpiPacked::packedSize(typeid(val->isHidden)) +
-            MpiPacked::packedSize(typeid(val->unitPos));
+            MpiPacked::packedSize(typeid(val->exprPos));
     }
 
     // table_dims: pack db row into MPI message
@@ -399,45 +399,45 @@ namespace openm
             MpiPacked::packedSize(val->expr);
     }
 
-    // table_unit: pack db row into MPI message
+    // table_expr: pack db row into MPI message
     template<>
-    void RowMpiPackedAdapter<TableUnitRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
+    void RowMpiPackedAdapter<TableExprRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
     {
-        const TableUnitRow * val = dynamic_cast<const TableUnitRow *>(i_row.get());
+        const TableExprRow * val = dynamic_cast<const TableExprRow *>(i_row.get());
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->tableId)>(val->tableId, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack<decltype(val->unitId)>(val->unitId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->exprId)>(val->exprId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->decimals)>(val->decimals, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->src, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->expr, i_packedSize, io_packedData, io_packPos);
     }
 
-    // table_unit: unpack MPI message into db row
+    // table_expr: unpack MPI message into db row
     template<>
-    void RowMpiPackedAdapter<TableUnitRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
+    void RowMpiPackedAdapter<TableExprRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
     {
-        TableUnitRow * val = static_cast<TableUnitRow *>(io_row.get());
+        TableExprRow * val = static_cast<TableExprRow *>(io_row.get());
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->tableId = MpiPacked::unpack<decltype(val->tableId)>(i_packedSize, i_packedData, io_packPos);
-        val->unitId = MpiPacked::unpack<decltype(val->unitId)>(i_packedSize, i_packedData, io_packPos);
+        val->exprId = MpiPacked::unpack<decltype(val->exprId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->decimals = MpiPacked::unpack<decltype(val->decimals)>(i_packedSize, i_packedData, io_packPos);
         val->src = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->expr = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
-    // table_unit: return byte size to pack db row into MPI message
+    // table_expr: return byte size to pack db row into MPI message
     template<>
-    int RowMpiPackedAdapter<TableUnitRow>::packedSize(const IRowBaseUptr & i_row)
+    int RowMpiPackedAdapter<TableExprRow>::packedSize(const IRowBaseUptr & i_row)
     {
-        const TableUnitRow * val = dynamic_cast<const TableUnitRow *>(i_row.get());
+        const TableExprRow * val = dynamic_cast<const TableExprRow *>(i_row.get());
         return
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(typeid(val->tableId)) +
-            MpiPacked::packedSize(typeid(val->unitId)) +
+            MpiPacked::packedSize(typeid(val->exprId)) +
             MpiPacked::packedSize(val->name) +
             MpiPacked::packedSize(typeid(val->decimals)) +
             MpiPacked::packedSize(val->src) +
@@ -549,8 +549,8 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
         return new MetaMpiPackedAdapter<MsgTag::tableDims, TableDimsRow>();
     case MsgTag::tableAcc:
         return new MetaMpiPackedAdapter<MsgTag::tableAcc, TableAccRow>();
-    case MsgTag::tableUnit:
-        return new MetaMpiPackedAdapter<MsgTag::tableUnit, TableUnitRow>();
+    case MsgTag::tableExpr:
+        return new MetaMpiPackedAdapter<MsgTag::tableExpr, TableExprRow>();
     case MsgTag::groupLst:
         return new MetaMpiPackedAdapter<MsgTag::groupLst, GroupLstRow>();
     case MsgTag::groupPc:

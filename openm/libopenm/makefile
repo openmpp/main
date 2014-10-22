@@ -95,8 +95,8 @@ LIBOPENM_CPPLIST = \
   db/tableDicTxtTable.cpp \
   db/tableDimsTable.cpp \
   db/tableDimsTxtTable.cpp \
-  db/tableUnitTable.cpp \
-  db/tableUnitTxtTable.cpp \
+  db/tableExprTable.cpp \
+  db/tableExprTxtTable.cpp \
   db/typeDicTable.cpp \
   db/typeDicTxtTable.cpp \
   db/typeEnumLstTable.cpp \

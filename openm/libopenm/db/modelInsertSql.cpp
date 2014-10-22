@@ -271,12 +271,12 @@ template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row
     if (i_row.tableName.length() > 255) throw DbException("invalid (too long) output table name: %s", i_row.tableName.c_str());
     
     if (i_row.rank < 0) throw DbException("invalid (negative) output table %s rank: %d", i_row.tableName.c_str(), i_row.rank);
-    if (i_row.unitPos < -1 || i_row.unitPos > i_row.rank - 1) throw DbException("invalid output table %s analysis dimension position: %d", i_row.tableName.c_str(), i_row.unitPos);
+    if (i_row.exprPos < -1 || i_row.exprPos > i_row.rank - 1) throw DbException("invalid output table %s analysis dimension position: %d", i_row.tableName.c_str(), i_row.exprPos);
 
     // make sql
     io_wr.outFs <<
         "INSERT INTO table_dic" \
-        " (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, unit_dim_pos)" \
+        " (model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, expr_dim_pos)" \
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << ", ";
@@ -288,7 +288,7 @@ template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row
         i_row.rank << ", " <<
         (i_row.isSparse ? "1, " : "0, ") <<
         (i_row.isHidden ? "1, " : "0, ") <<
-        i_row.unitPos <<
+        i_row.exprPos <<
         " FROM id_lst IL WHERE IL.id_key = 'model_id';\n";
     io_wr.throwOnFail();
 }
@@ -305,12 +305,12 @@ template<> void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableDicTxtL
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, output table id: %d", i_row.tableId);
     if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, output table id: %d", i_row.tableId);
 
-    if (i_row.unitDescr.empty() || i_row.unitDescr.length() < 1) throw DbException("invalid (empty) analysis dimension description, output table id: %d", i_row.tableId);
-    if (i_row.unitDescr.length() > 255 || i_row.unitNote.length() > 32000) throw DbException("invalid (too long) analysis dimension description or notes, output table id: %d", i_row.tableId);
+    if (i_row.exprDescr.empty() || i_row.exprDescr.length() < 1) throw DbException("invalid (empty) analysis dimension description, output table id: %d", i_row.tableId);
+    if (i_row.exprDescr.length() > 255 || i_row.exprNote.length() > 32000) throw DbException("invalid (too long) analysis dimension description or notes, output table id: %d", i_row.tableId);
 
     // make sql
     io_wr.outFs <<
-        "INSERT INTO table_dic_txt (model_id, table_id, lang_id, descr, note, unit_descr, unit_note)" \
+        "INSERT INTO table_dic_txt (model_id, table_id, lang_id, descr, note, expr_descr, expr_note)" \
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << "," <<
@@ -320,8 +320,8 @@ template<> void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableDicTxtL
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note, true);
-    io_wr.writeQuoted(i_row.unitDescr, true);
-    io_wr.writeQuoted(i_row.unitNote);
+    io_wr.writeQuoted(i_row.exprDescr, true);
+    io_wr.writeQuoted(i_row.exprNote);
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
@@ -449,32 +449,32 @@ template<> void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableAccTxtL
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_unit table.
-template<> void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow & i_row, ModelSqlWriter & io_wr)
+// write sql to insert into table_expr table.
+template<> void ModelInsertSql::insertSql<TableExprRow>(const TableExprRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
-    if (i_row.unitId < 0) throw DbException("invalid (negative) output expression id: %d, output table id: %d", i_row.unitId, i_row.tableId);
+    if (i_row.exprId < 0) throw DbException("invalid (negative) output expression id: %d, output table id: %d", i_row.exprId, i_row.tableId);
 
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) output expression name, output table id: %d", i_row.tableId);
     if (i_row.name.length() > 8) throw DbException("invalid (too long) output expression name: %s, output table id: %d", i_row.name.c_str(), i_row.tableId);
 
-    if (i_row.src.empty()) throw DbException("invalid (empty) source expression, id: %d, output table id: %d", i_row.unitId, i_row.tableId);
-    if (i_row.src.length() > 255) throw DbException("invalid (too long) source expression: %s, id: %d, output table id: %d", i_row.src.c_str(), i_row.unitId, i_row.tableId);
+    if (i_row.src.empty()) throw DbException("invalid (empty) source expression, id: %d, output table id: %d", i_row.exprId, i_row.tableId);
+    if (i_row.src.length() > 255) throw DbException("invalid (too long) source expression: %s, id: %d, output table id: %d", i_row.src.c_str(), i_row.exprId, i_row.tableId);
 
-    if (i_row.expr.empty()) throw DbException("invalid (empty) output expression, id: %d, output table id: %d", i_row.unitId, i_row.tableId);
-    if (i_row.expr.length() > 2048) throw DbException("invalid (too long) output expression: %s, id: %d, output table id: %d", i_row.expr.c_str(), i_row.unitId, i_row.tableId);
+    if (i_row.expr.empty()) throw DbException("invalid (empty) output expression, id: %d, output table id: %d", i_row.exprId, i_row.tableId);
+    if (i_row.expr.length() > 2048) throw DbException("invalid (too long) output expression: %s, id: %d, output table id: %d", i_row.expr.c_str(), i_row.exprId, i_row.tableId);
 
     if (i_row.decimals < 0 || i_row.decimals > DBL_DIG) 
-        throw DbException("invalid output expression decimals: %d, id: %d, output table id: %d", i_row.decimals, i_row.unitId, i_row.tableId);
+        throw DbException("invalid output expression decimals: %d, id: %d, output table id: %d", i_row.decimals, i_row.exprId, i_row.tableId);
 
     // make sql
     io_wr.outFs <<
-        "INSERT INTO table_unit (model_id, table_id, unit_id, unit_name, unit_decimals, unit_src, unit_expr)" \
+        "INSERT INTO table_expr (model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql)" \
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << ", " <<
-        i_row.unitId << ", ";
+        i_row.exprId << ", ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.name, true);
     io_wr.outFs << i_row.decimals << ", ";
@@ -484,30 +484,30 @@ template<> void ModelInsertSql::insertSql<TableUnitRow>(const TableUnitRow & i_r
     io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
 }
 
-// write sql to insert into table_unit_txt table.
+// write sql to insert into table_expr_txt table.
 // language name used to select language id
-template<> void ModelInsertSql::insertSql<TableUnitTxtLangRow>(const TableUnitTxtLangRow & i_row, ModelSqlWriter & io_wr)
+template<> void ModelInsertSql::insertSql<TableExprTxtLangRow>(const TableExprTxtLangRow & i_row, ModelSqlWriter & io_wr)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
-    if (i_row.unitId < 0) throw DbException("invalid (negative) output expression id: %d, output table id: %d", i_row.unitId, i_row.tableId);
+    if (i_row.exprId < 0) throw DbException("invalid (negative) output expression id: %d, output table id: %d", i_row.exprId, i_row.tableId);
 
     if (i_row.langName.empty() || i_row.langName.length() < 1) 
-        throw DbException("invalid (empty) language name, expression id: %d, output table id: %d", i_row.unitId, i_row.tableId);
+        throw DbException("invalid (empty) language name, expression id: %d, output table id: %d", i_row.exprId, i_row.tableId);
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) 
-        throw DbException("invalid (empty) description, expression id: %d, output table id: %d", i_row.unitId, i_row.tableId);
+        throw DbException("invalid (empty) description, expression id: %d, output table id: %d", i_row.exprId, i_row.tableId);
 
     if (i_row.descr.length() > 255 || i_row.note.length() > 32000) 
-        throw DbException("invalid (too long) description or notes, expression id: %d, output table id: %d", i_row.unitId, i_row.tableId);
+        throw DbException("invalid (too long) description or notes, expression id: %d, output table id: %d", i_row.exprId, i_row.tableId);
 
     // make sql
     io_wr.outFs <<
-        "INSERT INTO table_unit_txt (model_id, table_id, unit_id, lang_id, descr, note)" \
+        "INSERT INTO table_expr_txt (model_id, table_id, expr_id, lang_id, descr, note)" \
         " SELECT" \
         " IL.id_value, " <<
         i_row.tableId << ", " <<
-        i_row.unitId << "," <<
+        i_row.exprId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);
@@ -747,7 +747,7 @@ const void ModelInsertSql::paramCompatibilityViewBody(
 // SELECT
 //   S.dim0    AS "Dim0",
 //   S.dim1    AS "Dim1",
-//   S.unit_id AS "Dim2",
+//   S.expr_id AS "Dim2",
 //   S.value   AS "Value"
 // FROM modelone_201208171604590148_v0_salarySex S
 // WHERE S.run_id =
@@ -769,7 +769,7 @@ const void ModelInsertSql::outputCompatibilityViewBody(
         io_wr.throwOnFail();
     }
     io_wr.outFs << 
-        " S.unit_id AS \"Dim" << i_dimNames.size() << "\"," << 
+        " S.expr_id AS \"Dim" << i_dimNames.size() << "\"," << 
         " S.value AS \"Value\"";
     io_wr.throwOnFail();
 

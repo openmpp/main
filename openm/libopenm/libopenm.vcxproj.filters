@@ -245,10 +245,10 @@
     <ClCompile Include="db\tableDimsTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\tableUnitTable.cpp">
+    <ClCompile Include="db\tableExprTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\tableUnitTxtTable.cpp">
+    <ClCompile Include="db\tableExprTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\typeDicTable.cpp">

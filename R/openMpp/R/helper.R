@@ -194,7 +194,7 @@ getFirstRunId <- function(dbCon, defRs)
 #   $tableDic  - table_dic rows of the model
 #   $tableDims - (optional) table_dims rows of the model
 #   $tableAcc  - table_acc rows of the model
-#   $tableUnit - table_unit rows of the model
+#   $tableExpr - table_expr rows of the model
 #
 # dbCon - database connection
 # modelName - model name, ie: "modelOne"
@@ -357,18 +357,18 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   )
   if (nrow(defRs$tableAcc) <= 0) stop("definition for output table(s) accumulators not found")
 
-  # output table expressions (analysis dimension items) rows: table_unit
-  defRs[["tableUnit"]] <- dbGetQuery(
+  # output table expressions (analysis dimension items) rows: table_expr
+  defRs[["tableExpr"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, table_id, unit_id, unit_name, unit_decimals",
-      " FROM table_unit",
+      "SELECT model_id, table_id, expr_id, expr_name, expr_decimals",
+      " FROM table_expr",
       " WHERE model_id = ", defRs$modelDic$model_id,
       " ORDER BY 1, 2, 3",
       sep = ""
     )
   )
-  if (nrow(defRs$tableUnit) <= 0) stop("definition for output table(s) expressions not found")
+  if (nrow(defRs$tableExpr) <= 0) stop("definition for output table(s) expressions not found")
 
   return(defRs)
 }

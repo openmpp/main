@@ -110,11 +110,11 @@ namespace openm
         /** table_acc_txt db rows */
         tableAccTxt,
 
-        /** table_unit db rows */
-        tableUnit,
+        /** table_expr db rows */
+        tableExpr,
 
-        /** table_unit_txt db rows */
-        tableUnitTxt,
+        /** table_expr_txt db rows */
+        tableExprTxt,
 
         /** group_lst db rows */
         groupLst,

@@ -378,7 +378,7 @@ CREATE TABLE table_dic
   table_rank     INT          NOT NULL, -- table rank
   is_sparse      SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
   is_hidden      SMALLINT     NOT NULL, -- if <> 0 then table is hidden
-  unit_dim_pos   INT          NOT NULL, -- table expressions dimension (analysis dimension) position
+  expr_dim_pos   INT          NOT NULL, -- table expressions dimension (analysis dimension) position
   PRIMARY KEY (model_id, table_id),
   CONSTRAINT table_dic_un UNIQUE (model_id, db_name_suffix),
   CONSTRAINT table_dic_mk 
@@ -395,8 +395,8 @@ CREATE TABLE table_dic_txt
   lang_id    INT             NOT NULL, -- language id
   descr      VARCHAR(255)    NOT NULL, -- table description
   note       VARCHAR(32000),           -- table notes
-  unit_descr VARCHAR(255)    NOT NULL, -- table expressions (analysis dimension) description
-  unit_note  VARCHAR(32000),           -- table expressions (analysis dimension) notes
+  expr_descr VARCHAR(255)    NOT NULL, -- table expressions (analysis dimension) description
+  expr_note  VARCHAR(32000),           -- table expressions (analysis dimension) notes
   PRIMARY KEY (model_id, table_id, lang_id),
   CONSTRAINT table_dic_txt_mk 
              FOREIGN KEY (model_id, table_id) REFERENCES table_dic (model_id, table_id),
@@ -478,36 +478,36 @@ CREATE TABLE table_acc_txt
 --
 -- Output table expressions (analysis dimension items)
 --
-CREATE TABLE table_unit
+CREATE TABLE table_expr
 (
   model_id      INT           NOT NULL, -- master key
   table_id      INT           NOT NULL, -- master key
-  unit_id       INT           NOT NULL, -- unique item id
-  unit_name     VARCHAR(8)    NOT NULL, -- item name: Expr2
-  unit_decimals INT           NOT NULL, -- number of decimals for that item
-  unit_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
-  unit_expr     VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
-  PRIMARY KEY (model_id, table_id, unit_id),
-  CONSTRAINT table_unit_un UNIQUE (model_id, table_id, unit_name),
-  CONSTRAINT table_unit_mk 
+  expr_id       INT           NOT NULL, -- unique item id
+  expr_name     VARCHAR(8)    NOT NULL, -- item name: Expr2
+  expr_decimals INT           NOT NULL, -- number of decimals for that item
+  expr_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
+  expr_sql      VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
+  PRIMARY KEY (model_id, table_id, expr_id),
+  CONSTRAINT table_expr_un UNIQUE (model_id, table_id, expr_name),
+  CONSTRAINT table_expr_mk 
              FOREIGN KEY (model_id, table_id) REFERENCES table_dic (model_id, table_id)
 );
 
 --
 -- Output table expressions text info
 --
-CREATE TABLE table_unit_txt 
+CREATE TABLE table_expr_txt 
 (
   model_id INT          NOT NULL, -- master key
   table_id INT          NOT NULL, -- master key
-  unit_id  INT          NOT NULL, -- master key
+  expr_id  INT          NOT NULL, -- master key
   lang_id  INT          NOT NULL, -- language id
   descr    VARCHAR(255) NOT NULL, -- item description
   note     VARCHAR(32000),        -- item notes
-  PRIMARY KEY (model_id, table_id, unit_id, lang_id),
-  CONSTRAINT table_unit_txt_mk 
-             FOREIGN KEY (model_id, table_id, unit_id) REFERENCES table_unit (model_id, table_id, unit_id),
-  CONSTRAINT table_unit_txt_lang_fk 
+  PRIMARY KEY (model_id, table_id, expr_id, lang_id),
+  CONSTRAINT table_expr_txt_mk 
+             FOREIGN KEY (model_id, table_id, expr_id) REFERENCES table_expr (model_id, table_id, expr_id),
+  CONSTRAINT table_expr_txt_lang_fk 
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 

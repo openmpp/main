@@ -199,8 +199,8 @@
     <ClCompile Include="db\tableDicTxtTable.cpp" />
     <ClCompile Include="db\tableDimsTable.cpp" />
     <ClCompile Include="db\tableDimsTxtTable.cpp" />
-    <ClCompile Include="db\tableUnitTable.cpp" />
-    <ClCompile Include="db\tableUnitTxtTable.cpp" />
+    <ClCompile Include="db\tableExprTable.cpp" />
+    <ClCompile Include="db\tableExprTxtTable.cpp" />
     <ClCompile Include="db\typeDicTable.cpp" />
     <ClCompile Include="db\typeDicTxtTable.cpp" />
     <ClCompile Include="db\typeEnumLstTable.cpp" />

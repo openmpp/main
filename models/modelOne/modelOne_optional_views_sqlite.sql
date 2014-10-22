@@ -39,7 +39,7 @@ AS
 SELECT
   S.dim0    AS "Dim0",
   S.dim1    AS "Dim1",
-  S.unit_id AS "Dim2",
+  S.expr_id AS "Dim2",
   S.value   AS "Value"
 FROM modelOne_201208171604590148_v0_salarySex S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);

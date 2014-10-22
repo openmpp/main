@@ -49,7 +49,7 @@ namespace openm
         &typeid(decltype(TableDicRow::rank)), 
         &typeid(decltype(TableDicRow::isSparse)),
         &typeid(decltype(TableDicRow::isHidden)),
-        &typeid(decltype(TableDicRow::unitPos))
+        &typeid(decltype(TableDicRow::exprPos))
     };
 
     // Size (number of columns) for table_dic row
@@ -91,7 +91,7 @@ namespace openm
                 dynamic_cast<TableDicRow *>(i_row)->isHidden = (*(bool *)i_value);
                 break;
             case 8:
-                dynamic_cast<TableDicRow *>(i_row)->unitPos = (*(int *)i_value);
+                dynamic_cast<TableDicRow *>(i_row)->exprPos = (*(int *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -121,7 +121,7 @@ TableDicTable::TableDicTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TableDicRowAdapter();
     rowVec = IMetaTable<TableDicRow>::load(
         "SELECT" \
-        " model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, unit_dim_pos" \
+        " model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, expr_dim_pos" \
         " FROM table_dic" + 
         ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2", 

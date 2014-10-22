@@ -39,7 +39,7 @@ In that case first version of the model with MIN(timestamp) will be used.
   \item{tableDic}{ table_dic rows of the model }
   \item{tableDims}{ table_dims rows of the model, optional, can be empty }
   \item{tableAcc}{ table_acc rows of the model }
-  \item{tableUnit}{ table_unit rows of the model }
+  \item{tableExpr}{ table_expr rows of the model }
 }
 \references{
 OpenM++ documentation: http://ompp.sourceforge.net/wiki/

@@ -63,11 +63,11 @@ namespace openm
         /** table_acc_txt table rows and language name */
         vector<TableAccTxtLangRow> tableAccTxt;
 
-        /** table_unit table rows */
-        vector<TableUnitRow> tableUnit;
+        /** table_expr table rows */
+        vector<TableExprRow> tableExpr;
 
-        /** table_unit_txt table rows and language name */
-        vector<TableUnitTxtLangRow> tableUnitTxt;
+        /** table_expr_txt table rows and language name */
+        vector<TableExprTxtLangRow> tableExprTxt;
 
         /** group_lst table rows */
         vector<GroupLstRow> groupLst;

@@ -15,7 +15,7 @@
 #
 # return data frame of output table rows:
 #   $dim0,... - dimension item enum ids (not returned if rank is zero)
-#   $unit_id  - output table expression id
+#   $expr_id  - output table expression id
 #   $value    - output table value
 #
 selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
@@ -50,16 +50,16 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
   )
   
   # find output expression id by name, if specified
-  unitId <- NA
+  exprId <- NA
   if (!missing(exprName) && !is.na(exprName)) {
     if (!is.character(exprName) || length(exprName) <= 0) stop("invalid or empty output expression name")
     
-    uRow <- defRs$tableUnit[which(defRs$tableUnit$table_id == tableRow$table_id & defRs$tableUnit$unit_name == exprName), ]
+    uRow <- defRs$tableExpr[which(defRs$tableExpr$table_id == tableRow$table_id & defRs$tableExpr$expr_name == exprName), ]
     
     if (nrow(uRow) != 1) {
       stop("output table ", tableName, " does not contain expression: ", exprName)
     }
-    unitId <- uRow$unit_id
+    exprId <- uRow$expr_id
   }
   
   # check if run id is belong the model and completed
@@ -77,9 +77,9 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # SELECT dim0, dim1, unit_id, value 
+  # SELECT dim0, dim1, expr_id, value 
   # FROM modelone_201208171604590148_v0_salarySex
-  # WHERE run_id = 2 AND unit_id = 3
+  # WHERE run_id = 2 AND expr_id = 3
   # ORDER BY 1, 2, 3
   #
   sqlSel <-
@@ -92,11 +92,11 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
         ),
         ""
       ),
-      " unit_id, value",
+      " expr_id, value",
       " FROM ", dbTableName, 
       " WHERE run_id = ", runId,
-      ifelse(!is.na(unitId), 
-        paste(" AND unit_id = ", unitId, sep = ""), 
+      ifelse(!is.na(exprId), 
+        paste(" AND expr_id = ", exprId, sep = ""), 
         ""
       ),
       " ORDER BY 1",

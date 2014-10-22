@@ -184,12 +184,12 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
     }
     io_wr.write("\n");
 
-    for (const TableUnitRow & row : i_metaRows.tableUnit) {
+    for (const TableExprRow & row : i_metaRows.tableExpr) {
         ModelInsertSql::insertSql(row, io_wr);
     }
     io_wr.write("\n");
 
-    for (const TableUnitTxtLangRow & row : i_metaRows.tableUnitTxt) {
+    for (const TableExprTxtLangRow & row : i_metaRows.tableExprTxt) {
         ModelInsertSql::insertSql(row, io_wr);
     }
     io_wr.write("\n");
@@ -770,9 +770,9 @@ const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, 
 //  run_id    INT   NOT NULL,
 //  dim0      INT   NOT NULL,
 //  dim1      INT   NOT NULL,
-//  unit_id   INT   NOT NULL,
+//  expr_id   INT   NOT NULL,
 //  value     FLOAT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1, unit_id)
+//  PRIMARY KEY (run_id, dim0, dim1, expr_id)
 // );
 const void ModelSqlBuilder::valueCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
@@ -787,7 +787,7 @@ const void ModelSqlBuilder::valueCreateTableBody(const OutTblInfo & i_tblInfo, M
     }
 
     io_wr.write(
-        "unit_id INT NOT NULL," \
+        "expr_id INT NOT NULL," \
         " value FLOAT NULL," \
         " PRIMARY KEY (run_id"
         );
@@ -795,7 +795,7 @@ const void ModelSqlBuilder::valueCreateTableBody(const OutTblInfo & i_tblInfo, M
         io_wr.outFs << ", " << dimName;
         io_wr.throwOnFail();
     }
-    io_wr.write(", unit_id))\n;\n");
+    io_wr.write(", expr_id))\n;\n");
 }
 
 // sort and validate metadata rows for uniqueness and referential integrity
@@ -1147,12 +1147,12 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             throw DbException("in table_acc_txt not unique model id: %d, table id: %d, accumulator id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langName.c_str());
     }
 
-    // table_unit table
-    // unique: model id, table id, unit id; unique: model id, table id, unit name;
+    // table_expr table
+    // unique: model id, table id, expr id; unique: model id, table id, expr name;
     // master key: model id, table id;
-    sort(io_metaRows.tableUnit.begin(), io_metaRows.tableUnit.end(), TableUnitRow::isKeyLess);
+    sort(io_metaRows.tableExpr.begin(), io_metaRows.tableExpr.end(), TableExprRow::isKeyLess);
 
-    for (vector<TableUnitRow>::const_iterator rowIt = io_metaRows.tableUnit.cbegin(); rowIt != io_metaRows.tableUnit.cend(); ++rowIt) {
+    for (vector<TableExprRow>::const_iterator rowIt = io_metaRows.tableExpr.cbegin(); rowIt != io_metaRows.tableExpr.cend(); ++rowIt) {
 
         TableDicRow mkRow(rowIt->modelId, rowIt->tableId);
         if (!std::binary_search(
@@ -1161,44 +1161,44 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             mkRow,
             TableDicRow::isKeyLess
             ))
-            throw DbException("in table_unit invalid model id: %d and table id: %d: not found in table_dic", rowIt->modelId, rowIt->tableId);
+            throw DbException("in table_expr invalid model id: %d and table id: %d: not found in table_dic", rowIt->modelId, rowIt->tableId);
 
-        vector<TableUnitRow>::const_iterator nextIt = rowIt + 1;
+        vector<TableExprRow>::const_iterator nextIt = rowIt + 1;
 
-        if (nextIt != io_metaRows.tableUnit.cend() && TableUnitRow::isKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_unit not unique model id: %d, table id: %d and unit id: %d", rowIt->modelId, rowIt->tableId, rowIt->unitId);
+        if (nextIt != io_metaRows.tableExpr.cend() && TableExprRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_expr not unique model id: %d, table id: %d and expr id: %d", rowIt->modelId, rowIt->tableId, rowIt->exprId);
 
         if (std::any_of(
-            io_metaRows.tableUnit.cbegin(),
-            io_metaRows.tableUnit.cend(),
-            [rowIt](const TableUnitRow & i_row) -> bool {
+            io_metaRows.tableExpr.cbegin(),
+            io_metaRows.tableExpr.cend(),
+            [rowIt](const TableExprRow & i_row) -> bool {
                 return
-                    i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.unitId != rowIt->unitId &&
+                    i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.exprId != rowIt->exprId &&
                     i_row.name == rowIt->name;
             }
             ))
-            throw DbException("in table_unit not unique model id: %d, table id: %d and unit name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
+            throw DbException("in table_expr not unique model id: %d, table id: %d and expr name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
-    // table_unit_txt table
-    // unique: model id, table id, unit id, language; master key: model id, table id, unit id;
-    sort(io_metaRows.tableUnitTxt.begin(), io_metaRows.tableUnitTxt.end(), TableUnitTxtLangRow::uniqueLangKeyLess);
+    // table_expr_txt table
+    // unique: model id, table id, expr id, language; master key: model id, table id, expr id;
+    sort(io_metaRows.tableExprTxt.begin(), io_metaRows.tableExprTxt.end(), TableExprTxtLangRow::uniqueLangKeyLess);
 
-    for (vector<TableUnitTxtLangRow>::const_iterator rowIt = io_metaRows.tableUnitTxt.cbegin(); rowIt != io_metaRows.tableUnitTxt.cend(); ++rowIt) {
+    for (vector<TableExprTxtLangRow>::const_iterator rowIt = io_metaRows.tableExprTxt.cbegin(); rowIt != io_metaRows.tableExprTxt.cend(); ++rowIt) {
 
-        TableUnitRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->unitId);
+        TableExprRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->exprId);
         if (!std::binary_search(
-            io_metaRows.tableUnit.cbegin(),
-            io_metaRows.tableUnit.cend(),
+            io_metaRows.tableExpr.cbegin(),
+            io_metaRows.tableExpr.cend(),
             mkRow,
-            TableUnitRow::isKeyLess
+            TableExprRow::isKeyLess
             ))
-            throw DbException("in table_unit_txt invalid model id: %d table id: %d and unit id: %d: not found in table_unit", rowIt->modelId, rowIt->tableId, rowIt->unitId);
+            throw DbException("in table_expr_txt invalid model id: %d table id: %d and expr id: %d: not found in table_expr", rowIt->modelId, rowIt->tableId, rowIt->exprId);
 
-        vector<TableUnitTxtLangRow>::const_iterator nextIt = rowIt + 1;
+        vector<TableExprTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
-        if (nextIt != io_metaRows.tableUnitTxt.cend() && TableUnitTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_unit_txt not unique model id: %d, table id: %d, unit id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->unitId, rowIt->langName.c_str());
+        if (nextIt != io_metaRows.tableExprTxt.cend() && TableExprTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_expr_txt not unique model id: %d, table id: %d, expr id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->exprId, rowIt->langName.c_str());
     }
 
     // group_lst table
@@ -1504,9 +1504,9 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         // translate expressions into sql
         ModelAggregationSql aggr(tblInf.accTableName, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
 
-        for (TableUnitRow & unitRow : io_metaRows.tableUnit) {
-            if (unitRow.tableId == tblInf.id) {
-                unitRow.expr = aggr.translateAggregationExpr(unitRow.name, unitRow.src);    // translate expression to sql aggregation
+        for (TableExprRow & exprRow : io_metaRows.tableExpr) {
+            if (exprRow.tableId == tblInf.id) {
+                exprRow.expr = aggr.translateAggregationExpr(exprRow.name, exprRow.src);    // translate expression to sql aggregation
             }
         }
         // if (tblInf.exprVec.empty()) 

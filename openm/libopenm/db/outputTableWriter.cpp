@@ -29,7 +29,7 @@ namespace openm
         long long sizeOf(void) const throw() { return totalSize; }
 
         // return number of output aggregated expressions
-        int expressionCount(void) const throw() { return unitCount; }
+        int expressionCount(void) const throw() { return exprCount; }
 
         // write output table accumulator values
         void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr);
@@ -46,7 +46,7 @@ namespace openm
         int numSubSamples;              // number of subsamples in model run
         int dimCount;                   // number of dimensions
         int accCount;                   // number of accumulators
-        int unitCount;                  // number of aggregated expressions
+        int exprCount;                  // number of aggregated expressions
         long long totalSize;            // total number of values in the table
         bool isSparseTable;             // if true then use sparse output to database
         double nullValue;               // if is sparse and abs(value) <= nullValue then value not stored
@@ -54,7 +54,7 @@ namespace openm
         const TableDicRow * tableRow;   // table db row
         vector<TableDimsRow> tableDims; // table dimensions
         vector<TableAccRow> tableAcc;   // table accumulators
-        vector<TableUnitRow> tableUnit; // table aggregation expressions
+        vector<TableExprRow> tableExpr; // table aggregation expressions
 
     private:
         OutputTableWriter(const OutputTableWriter & i_writer);              // = delete;
@@ -98,7 +98,7 @@ OutputTableWriter::OutputTableWriter(
     numSubSamples(i_numSubSamples),
     dimCount(0),
     accCount(0),
-    unitCount(0),
+    exprCount(0),
     totalSize(0),
     isSparseTable(i_isSparseGlobal),
     nullValue(i_nullValue >= 0.0 ? i_nullValue : DBL_EPSILON),
@@ -127,8 +127,8 @@ OutputTableWriter::OutputTableWriter(
     accCount = (int)tableAcc.size();
     if (accCount <= 0) throw DbException("output table accumulators not found for table: %s", i_name);
 
-    tableUnit = i_metaStore->tableUnit->byModelIdTableId(i_modelId, tableId);
-    unitCount = (int)tableUnit.size();
+    tableExpr = i_metaStore->tableExpr->byModelIdTableId(i_modelId, tableId);
+    exprCount = (int)tableExpr.size();
 
     // calculate total number of values for each accumulator
     totalSize = 1;
@@ -144,7 +144,7 @@ long long IOutputTableWriter::sizeOf(int i_modelId, const MetaRunHolder * i_meta
 { 
     if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
 
-    // get dimensions size, including unit dimension
+    // get dimensions size, including expr dimension
     const TableDicRow * tblRow = i_metaStore->tableDic->byKey(i_modelId, i_tableId);
     if (tblRow == NULL) throw DbException("table not found in table dictionary, id: %d", i_tableId);
 
@@ -265,7 +265,7 @@ void OutputTableWriter::writeAllExpressions(IDbExec * i_dbExec)
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     i_dbExec->beginTransaction();
-    for (int nExpr = 0; nExpr < unitCount; nExpr++) {
+    for (int nExpr = 0; nExpr < exprCount; nExpr++) {
         writeExpression(i_dbExec, nExpr);
     }
     i_dbExec->commit();
@@ -276,11 +276,11 @@ void OutputTableWriter::writeExpression(IDbExec * i_dbExec, int i_nExpression)
 {
     // validate parameters
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_nExpression < 0 || i_nExpression >= unitCount) throw DbException("invalid expression index: %d for output table: %s", i_nExpression, tableRow->tableName.c_str());
+    if (i_nExpression < 0 || i_nExpression >= exprCount) throw DbException("invalid expression index: %d for output table: %s", i_nExpression, tableRow->tableName.c_str());
     
     // build sql:
     // INSERT INTO modelone_201208171604590148_v0_salarySex 
-    //  (run_id, dim0, dim1, unit_id, value)
+    //  (run_id, dim0, dim1, expr_id, value)
     // SELECT
     //  F.run_id, F.dim0, F.dim1, 2, F.expr2
     // FROM
@@ -298,14 +298,14 @@ void OutputTableWriter::writeExpression(IDbExec * i_dbExec, int i_nExpression)
         sql += ", " + dim.name;
     }
 
-    sql += ", unit_id, value) SELECT F.run_id";
+    sql += ", expr_id, value) SELECT F.run_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", F." + dim.name;
     }
-    sql += ", " + to_string(i_nExpression) + ", F." + tableUnit[i_nExpression].name +
+    sql += ", " + to_string(i_nExpression) + ", F." + tableExpr[i_nExpression].name +
         " FROM (" +
-        tableUnit[i_nExpression].expr +
+        tableExpr[i_nExpression].expr +
         ") F WHERE F.run_id = " + to_string(runId);
 
     // do the insert

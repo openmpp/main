@@ -444,7 +444,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.rank = rank();
     tableDic.isSparse = true;   // do not store NULLs
     tableDic.isHidden = false;
-    tableDic.unitPos = expr_dim_position;
+    tableDic.exprPos = expr_dim_position;
     metaRows.tableDic.push_back(tableDic);
 
     for (auto lang : Symbol::pp_all_languages) {
@@ -453,8 +453,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableTxt.langName = lang->name;
         tableTxt.descr = label(*lang);
         tableTxt.note = note(*lang);
-        tableTxt.unitDescr = "Expressions (" + lang->name + ")"; // TODO
-        tableTxt.unitNote = "Expressions Note (" + lang->name + ")"; // TODO
+        tableTxt.exprDescr = "Expressions (" + lang->name + ")"; // TODO
+        tableTxt.exprNote = "Expressions Note (" + lang->name + ")"; // TODO
         metaRows.tableTxt.push_back(tableTxt);
     }
 
@@ -508,22 +508,22 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // expressions for table
     for (auto expr : pp_expressions) {
-        TableUnitRow tableUnit;
-        tableUnit.tableId = pp_table_id;
-        tableUnit.unitId = expr->index;
-        tableUnit.name = "expr" + to_string(expr->index);
-        tableUnit.src = expr->get_expression(expr->root, TableExpressionSymbol::expression_style::sql);
-        metaRows.tableUnit.push_back(tableUnit);
+        TableExprRow tableExpr;
+        tableExpr.tableId = pp_table_id;
+        tableExpr.exprId = expr->index;
+        tableExpr.name = "expr" + to_string(expr->index);
+        tableExpr.src = expr->get_expression(expr->root, TableExpressionSymbol::expression_style::sql);
+        metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {
-            TableUnitTxtLangRow tableUnitTxt;
-            tableUnitTxt.tableId = pp_table_id;
-            tableUnitTxt.unitId = expr->index;
+            TableExprTxtLangRow tableExprTxt;
+            tableExprTxt.tableId = pp_table_id;
+            tableExprTxt.exprId = expr->index;
 
-            tableUnitTxt.langName = lang->name;
-            tableUnitTxt.descr = expr->label(*lang);
-            tableUnitTxt.note = expr->note(*lang);
-            metaRows.tableUnitTxt.push_back(tableUnitTxt);
+            tableExprTxt.langName = lang->name;
+            tableExprTxt.descr = expr->label(*lang);
+            tableExprTxt.note = expr->note(*lang);
+            metaRows.tableExprTxt.push_back(tableExprTxt);
         }
     }
 }

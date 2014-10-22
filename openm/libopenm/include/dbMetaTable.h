@@ -797,61 +797,61 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
-    /** table_unit table public interface. */
-    struct ITableUnitTable : public IMetaTable<TableUnitRow>
+    /** table_expr table public interface. */
+    struct ITableExprTable : public IMetaTable<TableExprRow>
     {
-        virtual ~ITableUnitTable() throw() = 0;
+        virtual ~ITableExprTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, unit id.
+        * create new table object and load table rows sorted by primary key: model id, table id, expr id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
-        static ITableUnitTable * create(IDbExec * i_dbExec, int i_modelId = 0);
+        static ITableExprTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, table id, unit id; return NULL if not found. */
-        virtual const TableUnitRow * byKey(int i_modelId, int i_tableId, int i_unitId) const = 0;
+        /** binary search row by primary key: model id, table id, expr id; return NULL if not found. */
+        virtual const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const = 0;
 
         /** get list of loaded table rows. */
-        virtual vector<TableUnitRow> rows(void) const = 0;
+        virtual vector<TableExprRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
-        virtual vector<TableUnitRow> byModelId(int i_modelId) const = 0;
+        virtual vector<TableExprRow> byModelId(int i_modelId) const = 0;
 
         /** get list of rows by model id and table id. */
-        virtual vector<TableUnitRow> byModelIdTableId(int i_modelId, int i_tableId) const = 0;
+        virtual vector<TableExprRow> byModelIdTableId(int i_modelId, int i_tableId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static ITableUnitTable * create(IRowBaseVec & io_rowVec);
+        static ITableExprTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
-    /** table_unit_txt table public interface. */
-    struct ITableUnitTxtTable : public IMetaTable<TableUnitTxtRow>
+    /** table_expr_txt table public interface. */
+    struct ITableExprTxtTable : public IMetaTable<TableExprTxtRow>
     {
-        virtual ~ITableUnitTxtTable() throw() = 0;
+        virtual ~ITableExprTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, unit id, language id.
+        * create new table object and load table rows sorted by primary key: model id, table id, expr id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static ITableUnitTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+        static ITableExprTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, table id, unit id, language id; return NULL if not found. */
-        virtual const TableUnitTxtRow * byKey(int i_modelId, int i_tableId, int i_unitId, int i_langId) const = 0;
+        /** binary search row by primary key: model id, table id, expr id, language id; return NULL if not found. */
+        virtual const TableExprTxtRow * byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const = 0;
 
         /** get list of loaded table rows. */
-        virtual vector<TableUnitTxtRow> rows(void) const = 0;
+        virtual vector<TableExprTxtRow> rows(void) const = 0;
 
         /** get list of rows by language. */
-        virtual vector<TableUnitTxtRow> byLang(int i_langId) const = 0;
+        virtual vector<TableExprTxtRow> byLang(int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static ITableUnitTxtTable * create(IRowBaseVec & io_rowVec);
+        static ITableExprTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;

@@ -174,11 +174,11 @@ for my $record (split(/\n/, $result)) {
 	$table_labels[$table_id] = $table_description;
 }
 
-# Get table_expr_sizes from table_unit
-logmsg info, $script_name, "Get table_expr_sizes from table_unit" if $verbosity >= 1;
+# Get table_expr_sizes from table_expr
+logmsg info, $script_name, "Get table_expr_sizes from table_expr" if $verbosity >= 1;
 $sql = "
-  Select table_id, count(unit_id) As table_expr_size
-  From table_unit
+  Select table_id, count(expr_id) As table_expr_size
+  From table_expr
   Where ( model_id = ${model_id} )
   Group By table_id";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
@@ -190,11 +190,11 @@ for my $record (split(/\n/, $result)) {
 	$table_expr_sizes[$table_id] = $table_expr_size;
 }
 
-# Get table_expr_labels from table_unit_txt
-logmsg info, $script_name, "Get table_expr_descriptions from table_unit_txt" if $verbosity >= 1;
+# Get table_expr_labels from table_expr_txt
+logmsg info, $script_name, "Get table_expr_descriptions from table_expr_txt" if $verbosity >= 1;
 $sql = "
-  Select table_id, unit_id AS expr_id, descr As table_expr_label
-  From table_unit_txt
+  Select table_id, expr_id AS expr_id, descr As table_expr_label
+  From table_expr_txt
   Where (model_id = ${model_id} And lang_id = ${lang_id} )
   ;
 ";

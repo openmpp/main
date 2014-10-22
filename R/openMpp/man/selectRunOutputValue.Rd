@@ -38,7 +38,7 @@ You must use \code{getModel} function in order to find model definition \code{de
 \value{
   Data frame of database rows with output table expression(s) dimensions and values:
   \item{dim0,...,dimN}{ dimension items enum ids (not returned if rank is zero) }
-  \item{unit_id}{ expression number (zero based) }
+  \item{expr_id}{ expression number (zero based) }
   \item{value}{ output table expression(s) value }
 }
 \references{

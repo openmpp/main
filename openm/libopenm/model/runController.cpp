@@ -613,7 +613,7 @@ void RunController::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaSt
     io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mdRow->modelId));
     io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mdRow->modelId));
     io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableUnit.reset(ITableUnitTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mdRow->modelId));
 
     // set run id: initialized for root process
     io_metaStore->runId = runId;
@@ -637,7 +637,7 @@ void RunController::broadcastMetaTables(IMsgExec * i_msgExec, MetaRunHolder * io
     broadcastTable<ITableDicTable>(io_metaStore->tableDic, i_msgExec, MsgTag::tableDic);
     broadcastTable<ITableDimsTable>(io_metaStore->tableDims, i_msgExec, MsgTag::tableDims);
     broadcastTable<ITableAccTable>(io_metaStore->tableAcc, i_msgExec, MsgTag::tableAcc);
-    broadcastTable<ITableUnitTable>(io_metaStore->tableUnit, i_msgExec, MsgTag::tableUnit);
+    broadcastTable<ITableExprTable>(io_metaStore->tableExpr, i_msgExec, MsgTag::tableExpr);
 
     // set run id: it is broadcasted by MPI
     io_metaStore->runId = runId;

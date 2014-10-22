@@ -1029,8 +1029,8 @@ namespace openm
         /** is_hidden      SMALLINT NOT NULL     */
         bool isHidden;
 
-        /** unit_dim_pos   INT      NOT NULL     */
-        int unitPos;
+        /** expr_dim_pos   INT      NOT NULL     */
+        int exprPos;
 
         /** create row with supplied primary key field values. */
         TableDicRow(int i_modelId, int i_tableId) : 
@@ -1042,7 +1042,7 @@ namespace openm
             rank(1),
             isSparse(false),
             isHidden(false),
-            unitPos(-1)
+            exprPos(-1)
         { }
 
         /** create row with default empty field values. */
@@ -1081,11 +1081,11 @@ namespace openm
         /** note       VARCHAR(32000)        */
         string note;
         
-        /** unit_descr VARCHAR(255) NOT NULL */
-        string unitDescr;
+        /** expr_descr VARCHAR(255) NOT NULL */
+        string exprDescr;
         
-        /** unit_note  VARCHAR(32000) */
-        string unitNote;
+        /** expr_note  VARCHAR(32000) */
+        string exprNote;
         
         /** create row with supplied primary key field values. */
         TableDicTxtRow(int i_modelId, int i_tableId, int i_langId) : 
@@ -1094,8 +1094,8 @@ namespace openm
             langId(i_langId),
             descr(""), 
             note(""),
-            unitDescr(""),
-            unitNote("")
+            exprDescr(""),
+            exprNote("")
         { }
 
         /** create row with default empty field values. */
@@ -1339,8 +1339,8 @@ namespace openm
         static bool uniqueLangKeyEqual(const TableAccTxtLangRow & i_left, const TableAccTxtLangRow & i_right);
     };
 
-    /** table_unit table row. */
-    struct TableUnitRow : public IMetaRow<TableUnitRow>
+    /** table_expr table row. */
+    struct TableExprRow : public IMetaRow<TableExprRow>
     {
         /** model_id      INT           NOT NULL */
         int modelId;
@@ -1348,26 +1348,26 @@ namespace openm
         /** table_id      INT           NOT NULL */
         int tableId;
         
-        /** unit_id       INT           NOT NULL */
-        int unitId;
+        /** expr_id       INT           NOT NULL */
+        int exprId;
         
-        /** unit_name     VARCHAR(8)    NOT NULL */
+        /** expr_name     VARCHAR(8)    NOT NULL */
         string name;
         
-        /** unit_decimals INT           NOT NULL */
+        /** expr_decimals INT           NOT NULL */
         int decimals;
         
-        /** unit_src      VARCHAR(255)  NOT NULL */
+        /** expr_src      VARCHAR(255)  NOT NULL */
         string src;
 
-        /** unit_expr     VARCHAR(2048) NOT NULL */
+        /** expr_sql      VARCHAR(2048) NOT NULL */
         string expr;
 
         /** create row with supplied primary key field values. */
-        TableUnitRow(int i_modelId, int i_tableId, int i_unitId) : 
+        TableExprRow(int i_modelId, int i_tableId, int i_exprId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
-            unitId(i_unitId), 
+            exprId(i_exprId), 
             name(""),
             decimals(0),
             src(""),
@@ -1375,25 +1375,25 @@ namespace openm
         { }
 
         /** create row with default empty field values. */
-        TableUnitRow(void) : TableUnitRow(0, 0, 0) { }
+        TableExprRow(void) : TableExprRow(0, 0, 0) { }
 
-        ~TableUnitRow(void) throw() { }
+        ~TableExprRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, unit id. */
-        static bool isKeyLess(const TableUnitRow & i_left, const TableUnitRow & i_right);
+        /** less comparator by primary key: model id, table id, expr id. */
+        static bool isKeyLess(const TableExprRow & i_left, const TableExprRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, unit id. */
-        static bool isKeyEqual(const TableUnitRow & i_left, const TableUnitRow & i_right);
+        /** equal comparator by primary key: model id, table id, expr id. */
+        static bool isKeyEqual(const TableExprRow & i_left, const TableExprRow & i_right);
 
-        /** table_unit row equal comparator by model id. */
+        /** table_expr row equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
 
-        /** table_unit row equal comparator by model id, table id. */
+        /** table_expr row equal comparator by model id, table id. */
         static bool modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
-    /** table_unit_txt table row. */
-    struct TableUnitTxtRow : public IMetaRow<TableUnitTxtRow>
+    /** table_expr_txt table row. */
+    struct TableExprTxtRow : public IMetaRow<TableExprTxtRow>
     {
         /** model_id INT          NOT NULL */
         int modelId;
@@ -1401,8 +1401,8 @@ namespace openm
         /** TableID  INT          NOT NULL */
         int tableId;
         
-        /** unit_id  INT          NOT NULL */
-        int unitId;
+        /** expr_id  INT          NOT NULL */
+        int exprId;
         
         /** lang_id  INT          NOT NULL */
         int langId;
@@ -1414,41 +1414,41 @@ namespace openm
         string note;
 
         /** create row with supplied primary key field values. */
-        TableUnitTxtRow(int i_modelId, int i_tableId, int i_unitId, int i_langId) : 
+        TableExprTxtRow(int i_modelId, int i_tableId, int i_exprId, int i_langId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
-            unitId(i_unitId),
+            exprId(i_exprId),
             langId(i_langId),
             descr(""), 
             note("")
         { }
 
         /** create row with default empty field values. */
-        TableUnitTxtRow(void) : TableUnitTxtRow(0, 0, 0, 0) { }
+        TableExprTxtRow(void) : TableExprTxtRow(0, 0, 0, 0) { }
 
-        ~TableUnitTxtRow(void) throw() { }
+        ~TableExprTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, unit id, language id. */
-        static bool isKeyLess(const TableUnitTxtRow & i_left, const TableUnitTxtRow & i_right);
+        /** less comparator by primary key: model id, table id, expr id, language id. */
+        static bool isKeyLess(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, unit id, language id. */
-        static bool isKeyEqual(const TableUnitTxtRow & i_left, const TableUnitTxtRow & i_right);
+        /** equal comparator by primary key: model id, table id, expr id, language id. */
+        static bool isKeyEqual(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right);
 
         /** equal comparator by language id. */
         static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
-    /** table_unit_txt table row and language name. */
-    struct TableUnitTxtLangRow : public TableUnitTxtRow
+    /** table_expr_txt table row and language name. */
+    struct TableExprTxtLangRow : public TableExprTxtRow
     {
         /** language name */
         string langName;
 
-        /** less comparator by unique key: model id, table id, unit id, language name. */
-        static bool uniqueLangKeyLess(const TableUnitTxtLangRow & i_left, const TableUnitTxtLangRow & i_right);
+        /** less comparator by unique key: model id, table id, expr id, language name. */
+        static bool uniqueLangKeyLess(const TableExprTxtLangRow & i_left, const TableExprTxtLangRow & i_right);
 
-        /** equal comparator by unique key: model id, table id, unit id, language name. */
-        static bool uniqueLangKeyEqual(const TableUnitTxtLangRow & i_left, const TableUnitTxtLangRow & i_right);
+        /** equal comparator by unique key: model id, table id, expr id, language name. */
+        static bool uniqueLangKeyEqual(const TableExprTxtLangRow & i_left, const TableExprTxtLangRow & i_right);
     };
 
     /** group_lst table row. */
