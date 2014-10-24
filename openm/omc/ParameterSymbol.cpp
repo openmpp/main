@@ -155,8 +155,13 @@ void ParameterSymbol::post_parse(int pass)
                 c += "conditioning_index += cond" + to_string(cond_index) + ";";
                 cond_index++;
             }
+            c += "// Determine if distribution is empty";
+            c += "bool is_empty = " + cumrate_name() + ".is_degenerate(conditioning_index);";
+            c += "size_t distribution_index = 0;";
+            c += "if (!is_empty) {";
             c += "// Obtain value from distribution";
-            c += "size_t distribution_index = " + cumrate_name() + ".draw(conditioning_index, uniform);";
+            c += "distribution_index = " + cumrate_name() + ".draw(conditioning_index, uniform);";
+            c += "}";
             c += "// Calculate values of distribution dimensions";
             int distr_index = distribution_dims() - 1;
             // reverse iterate through the distribution shape
@@ -171,7 +176,7 @@ void ParameterSymbol::post_parse(int pass)
                 distr_index--;
             }
          
-            c += "return !" + cumrate_name() + ".is_degenerate(conditioning_index);";
+            c += "return !is_empty;";
         }
             
         break;

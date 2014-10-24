@@ -8,8 +8,8 @@
 * 
 *
 * The following command line arguments are supported by omc:
-* * -Omc.ModelName     Model
-* * -Omc.ScenarioName  Base
+* * -Omc.ModelName     name/of/model/executable, e.g. RiskPaths
+* * -Omc.ScenarioName  name/of/base/scenario, e.g. Base
 * * -Omc.InputDir      input/dir/to/find/source/files
 * * -Omc.OutputDir     output/dir/to/place/compiled/cpp_and_h_and_sql/files
 * * -Omc.UseDir        use/dir/with/ompp/files
