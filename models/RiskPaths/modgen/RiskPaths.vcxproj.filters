@@ -24,43 +24,43 @@
     <None Include="Base.scex">
       <Filter>Scenarios</Filter>
     </None>
-    <None Include="..\ExtraTests.mpp">
+    <None Include="..\code\ExtraTests.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Fertility.mpp">
+    <None Include="..\code\Fertility.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\modgen_framework.mpp">
+    <None Include="..\code\modgen_framework.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Mortality.mpp">
+    <None Include="..\code\Mortality.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\PersonCore.mpp">
+    <None Include="..\code\PersonCore.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\RiskPaths.mpp">
+    <None Include="..\code\RiskPaths.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\RiskPathsEN_LBL.mpp">
+    <None Include="..\code\RiskPathsEN_LBL.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\RiskPathsFR.mpp">
+    <None Include="..\code\RiskPathsFR.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\RiskPathsFR_NOTR.mpp">
+    <None Include="..\code\RiskPathsFR_NOTR.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Tables.mpp">
+    <None Include="..\code\Tables.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Tracking.mpp">
+    <None Include="..\code\Tracking.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Unions.mpp">
+    <None Include="..\code\Unions.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Base\Base(RiskPaths).dat">
+    <None Include="..\parameters\Base\Base(RiskPaths).dat">
       <Filter>Scenarios</Filter>
     </None>
   </ItemGroup>

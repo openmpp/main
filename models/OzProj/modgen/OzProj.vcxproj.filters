@@ -136,10 +136,10 @@
     <ClInclude Include="model.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\custom.h">
+    <ClInclude Include="..\MicrodataFile.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MicrodataFile.h">
+    <ClInclude Include="..\code\custom.h">
       <Filter>C++ Files</Filter>
     </ClInclude>
   </ItemGroup>

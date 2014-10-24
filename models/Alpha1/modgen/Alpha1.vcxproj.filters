@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Alpha1.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
-    <None Include="PersonCore.mpp">
-      <Filter>Modules %28mpp%29</Filter>
-    </None>
     <None Include="app.ico">
       <Filter>C++ Files</Filter>
     </None>
@@ -30,16 +24,22 @@
     <None Include="Base.scex">
       <Filter>Scenarios</Filter>
     </None>
-    <None Include="Happiness.mpp">
+    <None Include="..\code\Alpha1.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="modgen_framework.mpp">
+    <None Include="..\code\Happiness.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Base\Base(Happiness).dat">
+    <None Include="..\code\modgen_framework.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\PersonCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(Happiness).dat">
       <Filter>Scenarios</Filter>
     </None>
-    <None Include="..\Base\Base(PersonCore).dat">
+    <None Include="..\parameters\Base\Base(PersonCore).dat">
       <Filter>Scenarios</Filter>
     </None>
   </ItemGroup>

@@ -93,15 +93,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Base\Base(Happiness).dat" />
-    <None Include="..\Base\Base(PersonCore).dat" />
-    <None Include="Alpha1.mpp" />
+    <None Include="..\code\Alpha1.mpp" />
+    <None Include="..\code\Happiness.mpp" />
+    <None Include="..\code\modgen_framework.mpp" />
+    <None Include="..\code\PersonCore.mpp" />
+    <None Include="..\parameters\Base\Base(Happiness).dat" />
+    <None Include="..\parameters\Base\Base(PersonCore).dat" />
     <None Include="app.ico" />
     <None Include="Base.scex" />
-    <None Include="Happiness.mpp" />
-    <None Include="modgen_framework.mpp" />
     <None Include="parse.inf" />
-    <None Include="PersonCore.mpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Actors.cpp" />

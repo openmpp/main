@@ -10,6 +10,9 @@
     <FIXED_PARAMETERS_FOLDER>$(ProjectDir)..\parameters\Fixed</FIXED_PARAMETERS_FOLDER>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
+    <RUN_SCENARIO>1</RUN_SCENARIO>
+    <EXCEL_EXPORT_SCENARIO>1</EXCEL_EXPORT_SCENARIO>
+    <EXCEL_LAUNCH_SCENARIO>1</EXCEL_LAUNCH_SCENARIO>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -37,6 +40,15 @@
     </BuildMacro>
     <BuildMacro Include="DB_PROVIDER">
       <Value>$(DB_PROVIDER)</Value>
+    </BuildMacro>
+    <BuildMacro Include="RUN_SCENARIO">
+      <Value>$(RUN_SCENARIO)</Value>
+    </BuildMacro>
+    <BuildMacro Include="EXCEL_EXPORT_SCENARIO">
+      <Value>$(EXCEL_EXPORT_SCENARIO)</Value>
+    </BuildMacro>
+    <BuildMacro Include="EXCEL_LAUNCH_SCENARIO">
+      <Value>$(EXCEL_LAUNCH_SCENARIO)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

@@ -92,19 +92,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Base\Base(RiskPaths).dat" />
-    <None Include="..\ExtraTests.mpp" />
-    <None Include="..\Fertility.mpp" />
-    <None Include="..\modgen_framework.mpp" />
-    <None Include="..\Mortality.mpp" />
-    <None Include="..\PersonCore.mpp" />
-    <None Include="..\RiskPaths.mpp" />
-    <None Include="..\RiskPathsEN_LBL.mpp" />
-    <None Include="..\RiskPathsFR.mpp" />
-    <None Include="..\RiskPathsFR_NOTR.mpp" />
-    <None Include="..\Tables.mpp" />
-    <None Include="..\Tracking.mpp" />
-    <None Include="..\Unions.mpp" />
+    <None Include="..\code\ExtraTests.mpp" />
+    <None Include="..\code\Fertility.mpp" />
+    <None Include="..\code\modgen_framework.mpp" />
+    <None Include="..\code\Mortality.mpp" />
+    <None Include="..\code\PersonCore.mpp" />
+    <None Include="..\code\RiskPaths.mpp" />
+    <None Include="..\code\RiskPathsEN_LBL.mpp" />
+    <None Include="..\code\RiskPathsFR.mpp" />
+    <None Include="..\code\RiskPathsFR_NOTR.mpp" />
+    <None Include="..\code\Tables.mpp" />
+    <None Include="..\code\Tracking.mpp" />
+    <None Include="..\code\Unions.mpp" />
+    <None Include="..\parameters\Base\Base(RiskPaths).dat" />
     <None Include="app.ico" />
     <None Include="Base.scex" />
     <None Include="parse.inf" />

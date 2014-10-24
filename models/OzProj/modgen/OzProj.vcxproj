@@ -135,7 +135,7 @@
     <ClCompile Include="Tabinit.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\custom.h" />
+    <ClInclude Include="..\code\custom.h" />
     <ClInclude Include="..\MicrodataFile.h" />
     <ClInclude Include="Actors.h" />
     <ClInclude Include="model.h" />

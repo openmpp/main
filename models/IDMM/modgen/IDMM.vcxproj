@@ -92,16 +92,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Base\Base(IDMM).dat" />
-    <None Include="..\ExtraTests.mpp" />
-    <None Include="..\HostCore.mpp" />
-    <None Include="..\IDMM.mpp" />
-    <None Include="..\IDMMFR.mpp" />
-    <None Include="..\ModelStrings.mpp" />
-    <None Include="..\modgen_framework.mpp" />
-    <None Include="..\modgen_trigger_fix.mpp" />
-    <None Include="..\TestTables.mpp" />
-    <None Include="..\TickerCore.mpp" />
+    <None Include="..\code\ExtraTests.mpp" />
+    <None Include="..\code\HostCore.mpp" />
+    <None Include="..\code\IDMM.mpp" />
+    <None Include="..\code\IDMMFR.mpp" />
+    <None Include="..\code\ModelStrings.mpp" />
+    <None Include="..\code\modgen_framework.mpp" />
+    <None Include="..\code\modgen_trigger_fix.mpp" />
+    <None Include="..\code\TestTables.mpp" />
+    <None Include="..\code\TickerCore.mpp" />
+    <None Include="..\parameters\Base\Base(ExtraTests).dat" />
+    <None Include="..\parameters\Base\Base(IDMM).dat" />
     <None Include="app.ico" />
     <None Include="Base.scex" />
     <None Include="parse.inf" />

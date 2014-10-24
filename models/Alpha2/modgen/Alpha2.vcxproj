@@ -92,15 +92,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\Alpha2.mpp" />
-    <None Include="..\Base\Base(Happiness).dat" />
-    <None Include="..\Base\Base(PersonCore).dat" />
-    <None Include="..\Base\Base(SyntaxProbes).dat" />
-    <None Include="..\Happiness.mpp" />
-    <None Include="..\modgen_framework.mpp" />
-    <None Include="..\PersonCore.mpp" />
-    <None Include="..\SyntaxProbes.mpp" />
-    <None Include="..\TestLinks.mpp" />
+    <None Include="..\code\Alpha2.mpp" />
+    <None Include="..\code\Happiness.mpp" />
+    <None Include="..\code\modgen_framework.mpp" />
+    <None Include="..\code\PersonCore.mpp" />
+    <None Include="..\code\SyntaxProbes.mpp" />
+    <None Include="..\code\TestLinks.mpp" />
+    <None Include="..\parameters\Base\Base(Happiness).dat" />
+    <None Include="..\parameters\Base\Base(PersonCore).dat" />
+    <None Include="..\parameters\Base\Base(SyntaxProbes).dat" />
     <None Include="app.ico" />
     <None Include="Base.scex" />
     <None Include="parse.inf" />

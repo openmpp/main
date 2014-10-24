@@ -31,6 +31,15 @@
     <Error
 	    Text="DB_PROVIDER must be set to SQLITE. Value is $(DB_PROVIDER)"
         Condition=" ! ( '$(DB_PROVIDER)' == 'SQLITE' )" />
+    <Error
+	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
+        Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
+    <Error
+	    Text="EXCEL_EXPORT_SCENARIO must be either 0 or 1. Value is $(EXCEL_EXPORT_SCENARIO)"
+        Condition=" ! ( '$(EXCEL_EXPORT_SCENARIO)' == '0' Or '$(EXCEL_EXPORT_SCENARIO)' == '1' )" />
+    <Error
+	    Text="EXCEL_LAUNCH_SCENARIO must be either 0 or 1. Value is $(EXCEL_LAUNCH_SCENARIO)"
+        Condition=" ! ( '$(EXCEL_LAUNCH_SCENARIO)' == '0' Or '$(EXCEL_LAUNCH_SCENARIO)' == '1' )" />
   </Target>
 
   <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
@@ -93,6 +102,22 @@
     <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
     <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
+  </Target>
+
+  <Target Name="RunScenario" AfterTargets="SQLitePublish" Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" >
+    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="$(TargetPath)" />
+    <Exec Command="$(TargetPath)" WorkingDirectory="$(TargetDir)"/>
+  </Target>
+
+  <Target Name="ExcelExportScenario" AfterTargets="RunScenario" Condition="'$(EXCEL_EXPORT_SCENARIO)'=='1'" >
+    <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
+    <Exec Command="$(OM_BIN_DIR)/$(EXCEL_EXPORT_EXE) $(OutDir)$(MODEL_NAME).sqlite $(OutDir)$(SCENARIO_NAME)(tbl).xlsx" ContinueOnError="true"/>
+  </Target>
+
+  <Target Name="ExcelLaunchScenario" AfterTargets="ExcelExportScenario" Condition="'$(EXCEL_LAUNCH_SCENARIO)'=='1'" >
+    <Message Text="Launching Excel on scenario $(SCENARIO_NAME)..." />
+    <Exec Command="&quot;$(OutDir)$(SCENARIO_NAME)(tbl).xlsx&quot;" ContinueOnError="true"/>
   </Target>
 
   <PropertyGroup>

@@ -21,35 +21,40 @@
     <None Include="parse.inf">
       <Filter>C++ Files</Filter>
     </None>
-    <None Include="Base.scex" />
-    <None Include="..\ExtraTests.mpp">
+    <None Include="..\code\ExtraTests.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\HostCore.mpp">
+    <None Include="..\code\HostCore.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\IDMM.mpp">
+    <None Include="..\code\IDMM.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\IDMMFR.mpp">
+    <None Include="..\code\IDMMFR.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\ModelStrings.mpp">
+    <None Include="..\code\ModelStrings.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\modgen_framework.mpp">
+    <None Include="..\code\modgen_framework.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\modgen_trigger_fix.mpp">
+    <None Include="..\code\modgen_trigger_fix.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\TestTables.mpp">
+    <None Include="..\code\TestTables.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\TickerCore.mpp">
+    <None Include="..\code\TickerCore.mpp">
       <Filter>Modules %28mpp%29</Filter>
     </None>
-    <None Include="..\Base\Base(IDMM).dat">
+    <None Include="Base.scex">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(ExtraTests).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(IDMM).dat">
       <Filter>Scenarios</Filter>
     </None>
   </ItemGroup>
