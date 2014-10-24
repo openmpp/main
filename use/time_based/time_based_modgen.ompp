@@ -108,7 +108,7 @@ void RunModel(IModel * i_model)
         // initialize the stream generators
         long seed = master_seed;
         for (int model_stream = 0; model_stream < model_streams; model_stream++) {
-            model_stream_seeds[model_stream] = seed;
+            initialize_stream(model_stream, seed);
             long long product = model_stream_seed_generator;
             product *= seed;
             seed = product % mg_modulus;

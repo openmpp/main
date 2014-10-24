@@ -17,6 +17,7 @@ extern int GetThreads();
 extern void SetPopulation(long lPopulation);
 
 // defined in use/random/random_modgen.ompp
+extern void initialize_stream(int model_stream, long seed);
 extern double RandUniform(int strm);
 extern double RandNormal(int strm);
 extern double RandLogistic(int strm);

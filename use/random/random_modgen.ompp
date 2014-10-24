@@ -82,7 +82,15 @@ namespace fmk {
     // The other normal draw
     double other_normal[model_streams];
 
+
 } // fmk
+
+// Initialize a model stream
+void initialize_stream(int model_stream, long seed)
+{
+    fmk::model_stream_seeds[model_stream] = seed;
+    fmk::other_normal_valid[model_stream] = false;
+}
 
 double RandUniform(int strm)
 {
