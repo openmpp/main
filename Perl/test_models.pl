@@ -37,6 +37,9 @@ my $do_modgen = 1;
 
 my $do_ompp = 1;
 
+# Number of significant digits to retain in the output csv files
+my $significant_digits = 9;
+
 # use the common.pm module of shared functions	
 use common qw(
 				warning change error info
@@ -49,6 +52,7 @@ use common qw(
 				run_jet_statement
 				modgen_tables_to_csv
 				create_digest
+				digest_differences
 				modgen_create_scex
 		    );
 # Check for compile errors, and bail if any.
@@ -56,6 +60,7 @@ if ($@) {
 	print $@;
 	exit;
 }
+
 	
 my $version = "1.0";
 
@@ -128,11 +133,13 @@ for my $model (@models) {
 	##########
 	
 	MODGEN: {
-	
+
 		if ($do_modgen != 1 ) {
 			last MODGEN;
 		}
 
+		my $start_seconds = time;
+		
 		# Project directory for Modgen version
 		my $project_dir = "${model_dir}/modgen";
 		if ( ! -d "${project_dir}" ) {
@@ -287,8 +294,8 @@ for my $model (@models) {
 			copy $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
 		}
 
-		logmsg info, ${model}, "modgen", "Convert output tables to .csv";
-		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_results_dir)) {
+		logmsg info, $model, "modgen", "Convert output tables to .csv (${significant_digits} digits of precision)";
+		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_results_dir, $significant_digits)) {
 			last MODGEN;
 		}
 		
@@ -317,6 +324,11 @@ for my $model (@models) {
 		else {
 			logmsg warning, $model, "modgen", "Current outputs differ from reference outputs";
 		}
+		
+		my $elapsed_seconds = time - $start_seconds;
+		my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+		logmsg info, $model, "modgen", "Elapsed time = ${elapsed_formatted}";
+
 	}
 
 	########
@@ -327,6 +339,8 @@ for my $model (@models) {
 			last OMPP;
 		}
 
+		my $start_seconds = time;
+		
 		# Project directory for ompp version
 		my $project_dir = "${model_dir}/ompp";
 		if ( ! -d "${project_dir}" ) {
@@ -457,8 +471,8 @@ for my $model (@models) {
 			copy $ompp_trace_txt, "${current_results_dir}/trace.txt";
 		}
 
-		logmsg info, $model, "ompp", "Convert output tables to .csv";
-		if ( 0 != ompp_tables_to_csv($model_sqlite, $current_results_dir)) {
+		logmsg info, $model, "ompp", "Convert output tables to .csv (${significant_digits} digits of precision)";
+		if ( 0 != ompp_tables_to_csv($model_sqlite, $current_results_dir, $significant_digits)) {
 			last OMPP;
 		}
 		
@@ -494,11 +508,16 @@ for my $model (@models) {
 				logmsg info, $model, "ompp", "Modgen comparison", "Outputs identical";
 			}
 			else {
-				logmsg warning, $model, "ompp", "Modgen comparison", "Outputs differ";
+				my $different_files = digest_differences("${modgen_current_dir}/digests.txt","${ompp_current_dir}/digests.txt");
+				logmsg warning, $model, "ompp", "Modgen comparison", "Outputs differ: ${different_files}";
 			}
 		}
 		else {
 			logmsg warning, $model, "ompp", "Modgen comparison", "Outputs not compared due to missing digest";
 		}
+		
+		my $elapsed_seconds = time - $start_seconds;
+		my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+		logmsg info, $model, "ompp", "Elapsed time = ${elapsed_formatted}";
 	}
 }
