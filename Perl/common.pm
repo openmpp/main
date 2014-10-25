@@ -157,12 +157,21 @@ sub run_sqlite_statement {
 # Extract ompp output tables from a ompp SQLite database to a folder
 # arg0 - the SQLite database
 # arg1 - the destination folder
+# arg2 - the number of significant digits to output (optional)
 # returns - 0 for success, otherwise non-zero
 sub ompp_tables_to_csv
 {
 	my $db = shift(@_);
 	my $dir = shift(@_);
 	my $retval;
+	my $round_value = 0;
+	my $round_prec = 0;
+	if ($#_ == 0) {
+		$round_prec = shift(@_) - 1;
+		if ($round_prec > 0) {
+			$round_value = 1;
+		}
+	}
 
 	if (! -d $dir) {
 		if (!mkdir $dir) {
@@ -214,10 +223,28 @@ sub ompp_tables_to_csv
 			logmsg error, "unable to open ${out_csv}";
 			return 1;
 		};
+		my $header_line = 1;
 		while (<IN_CSV>) {
-			# trim redundant .0 at end of line if present
-			$_ =~ s/.0$//;
-			print OUT_CSV $_;
+			if ($header_line) {
+				print OUT_CSV;
+				$header_line = 0;
+				next;
+			}
+			chomp;
+			my $line = $_;
+			if (length($line) && substr($line, -1, 1) ne ',') {
+				# value field is not empty, process it
+				my @fields = split /,/, $line;
+				# get the last (value) field
+				my $value = pop @fields;
+				$value = $value + 0.0;
+				if ($round_value) {
+					$value = 0.0 + sprintf("%.${round_prec}e", $value);
+				}
+				push @fields, $value;
+				$line = join(',', @fields);
+			}
+			print OUT_CSV $line."\n";
 		}
 		close IN_CSV;
 		close OUT_CSV;
@@ -370,11 +397,20 @@ sub modgen_create_scex
 # Extract Modgen output tables from a mdb Modgen database to a folder
 # arg0 - the Modgen database
 # arg1 - the destination folder
+# arg2 - the number of significant digits to output (optional)
 # returns - 0 for success, otherwise non-zero
 sub modgen_tables_to_csv
 {
 	my $db = shift(@_);
 	my $dir = shift(@_);
+	my $round_value = 0;
+	my $round_prec = 0;
+	if ($#_ == 0) {
+		$round_prec = shift(@_) - 1;
+		if ($round_prec > 0) {
+			$round_value = 1;
+		}
+	}
 	my $retval;
 	
 	my $suppress_margins = 1;
@@ -526,6 +562,9 @@ sub modgen_tables_to_csv
 			my $suppress_line = 0;
 			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
 				my $value = $ADO_RS->Fields($field_ordinal)->value;
+				if (length($value) && $round_value && $field_ordinal == $fields - 1) {
+					$value = 0 + sprintf("%.${round_prec}e", $value);
+				}
 				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];
 				$out_line .= "${value}";
 				if ($field_ordinal < $fields - 1) {
