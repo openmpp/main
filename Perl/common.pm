@@ -602,3 +602,54 @@ sub create_digest
 	}
 	return $result;
 }
+
+# Report differences between two digest files
+# arg0 - digest file #1
+# arg0 - digest file #2
+# returns - comma-separated string of file names whose digests differ
+sub digest_differences {
+	my $in_digest1 = shift(@_);
+	my $in_digest2 = shift(@_);
+	my $result = '';
+	
+	# read the digest1 information into a map
+	my %digest1;
+	if (!open IN_DIGEST1, "<${in_digest1}") {
+		logmsg error, "unable to open ${in_digest1}";
+		return 1;
+	};
+	while (<IN_DIGEST1>) {
+		chomp;
+		(my $key, my $value) = split ', ';
+		$digest1{$key} = $value;
+	}
+	close IN_DIGEST1;
+	
+	# read the digest2 information into a map
+	my %digest2;
+	if (!open IN_DIGEST2, "<${in_digest2}") {
+		logmsg error, "unable to open ${in_digest2}";
+		return 1;
+	};
+	while (<IN_DIGEST2>) {
+		chomp;
+		(my $key, my $value) = split ', ';
+		$digest2{$key} = $value;
+	}
+	close IN_DIGEST2;
+
+	# Create amalgamated map of union of files in digest1 and digest2
+	my %all_files = (%digest1, %digest2);
+	
+	foreach my $file (sort(keys %all_files)) {
+		my $value1 = $digest1{$file};
+		my $value2 = $digest2{$file};
+		if ( $value1 ne $value2) {
+			$result .= ', ' if length($result);
+			$result .= $file;
+		}
+	}
+	
+	return $result;
+}
+
