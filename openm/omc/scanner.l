@@ -318,20 +318,24 @@ blank       [ \t\r]
 <om_decl>{ /* interior of openM++ declarative islands */
 	
 {word}      {
-			    token_type tok = Symbol::string_to_token( yytext );
-                if ( tok != token::TK_error ) {
-                    /* valid keyword */
-                    yylval->val_token = tok;
-                    return tok;
-                }
                 string word = yytext;
+
                 /* special hack to silently interpret 'actor_id' as 'entity_id' */
                 if (word == "actor_id") word = "entity_id";
+
                 /* suppress name resolution if requested by parser */
                 if (pc.next_word_is_string) {
                     yylval->pval_string = new string(word);
                     pc.next_word_is_string = false;
                     return token::STRING;
+                }
+
+                /* check if word is a recognized C++ or ompp keyword */
+			    token_type tok = Symbol::string_to_token( yytext );
+                if ( tok != token::TK_error ) {
+                    /* valid keyword */
+                    yylval->val_token = tok;
+                    return tok;
                 }
 
 				/* find existing symbol or create a new one */
