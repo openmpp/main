@@ -30,7 +30,9 @@ namespace fmk {
 
 double GetCaseSeed()
 {
-    return fmk::case_seed_encoded;
+    // Time-based models have no concept of case seed.
+    // Return 0 for compatibility with Modgen trace output.
+    return 0;
 }
 
 /**
