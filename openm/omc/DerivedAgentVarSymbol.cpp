@@ -1600,8 +1600,15 @@ void DerivedAgentVarSymbol::create_side_effects()
             if (tok == token::TK_self_scheduling_int) {
                 cse += "// Set initial value";
                 cse += name + ".set((int)om_new);";
-                cse += "// Time of next change (fraction of the unit of time remaining to next integer boundary)";
-                cse += ait->name + " = time + (1 - (om_new - (int)om_new));";
+                if (av->name == "age") {
+                    cse += "// Time of next change (fraction of the unit of time remaining to next integer boundary)";
+                    cse += ait->name + " = time + (1 - (om_new - (int)om_new));";
+                }
+                else {
+                    assert(av->name == "time");
+                    cse += "// Time of next change (next integer time)";
+                    cse += ait->name + " = 1 + (int)om_new;";
+                }
             }
             else { // tok == token::TK_self_scheduling_split
                 assert(pp_prt);
