@@ -1,0 +1,23 @@
+/**
+* @file    case_based_scaling_endogenous.ompp
+* Implementation of population scaling
+*
+*/
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+/**
+ * The population scaling factor to use for this member of the simulation.
+ * 
+ * This version scales the population to a value computed by the model.  The value is supplied
+ * through a call to SetPopulation().
+ * 
+ * In tables, the size of the population will be the number of cases scaled to the model-
+ * supplied total population.
+ *
+ * @return A double.
+ */
+double population_scaling_factor()
+{
+    return (double) fmk::set_population_value / (double) fmk::member_cases;
+}

@@ -31,3 +31,7 @@ extern int GetSubSamples();
 // defined in use/time_based/time_based_modgen.ompp
 extern int GetReplicate();
 extern int GetReplicates();
+
+// defined in use/case_based/scaling_*.ompp
+//        and use/time_based/scaling_*.ompp
+extern double population_scaling_factor();

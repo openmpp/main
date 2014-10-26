@@ -1,5 +1,5 @@
 /**
-* @file    omSimulation_case_based.cpp
+* @file    case_based_modgen.ompp
 * Implementation of framework for case-based models
 *
 */
@@ -87,6 +87,11 @@ namespace fmk {
     long long all_cases = 0;
 
     /**
+     * The number of cases to simulate in this member.
+     */
+    long long member_cases = 0;
+
+    /**
      * The case seed encoded, with high order bits containing the sample member id.
      */
     double case_seed_encoded = 0.0;
@@ -156,7 +161,6 @@ long long GetCaseCounterInThread()
     return fmk::case_counter_in_thread;
 }
 
-
 void SimulateEvents()
 {
     // Simulate the case
@@ -171,7 +175,7 @@ void RunModel(IModel * i_model)
 
     theLog->logMsg("Running Simulation");
 
-    // The number of simulations in the sample of simulations (not used)
+    // The number of member simulations in the sample of simulations
     sample_size = i_model->subSampleCount();
 
     // The member to simulate of the sample of simulations
@@ -179,9 +183,16 @@ void RunModel(IModel * i_model)
 
     int seed = SimulationSeed; // framework input parameter
     all_cases = SimulationCases; // framework input parameter
-    long long cases = all_cases; // cases to simulate for this sample member
 
-    // for sample numbers greater than maximum, re-use generators cyclically
+    // The number of cases to simulate for this sample member.
+    // Divide the total cases for the entire simulation by the number of members
+    // and spread any cases in the remainder among the first members (one extra case each)
+    member_cases = all_cases / sample_size;
+    if (sample_member < (all_cases % sample_size)) {
+        member_cases++;
+    };
+
+    // for sample numbers greater than the (Modgen) maximum, re-use generators cyclically
     // and increment the starting case_seed for the simulation of the sample
     long case_seed = seed + (int)sample_member / max_samples;
     long case_seed_generator = case_seed_generators[sample_member % max_samples];
@@ -189,7 +200,7 @@ void RunModel(IModel * i_model)
     // For sample_member numbers greater than limit, re-use generators cyclically.
     model_stream_generator = model_stream_generators[sample_member % max_samples];
 
-    for (long long thisCase = 0; thisCase < cases; thisCase++) {
+    for (long long thisCase = 0; thisCase < member_cases; thisCase++) {
 
         {
             // initialize the stream generators

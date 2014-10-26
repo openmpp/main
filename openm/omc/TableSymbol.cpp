@@ -185,6 +185,7 @@ CodeBlock TableSymbol::cxx_declaration_global()
     h += "class " + name + " {";
     h += "public:";
     h += "void initialize_accumulators();";
+    h += "void scale_accumulators();";
     h += "void compute_expressions();";
     // constructor
     // E.g. DurationOfLife() { initialize_accumulators();}
@@ -259,6 +260,24 @@ CodeBlock TableSymbol::cxx_definition_global()
         c += "";
 
     }
+    c += "}";
+    c += "";
+
+    // definition of scale_accumulators()
+    c += "void " + name + "::scale_accumulators()";
+    c += "{";
+    c += "double scale_factor = population_scaling_factor();";
+    c += "if (scale_factor != 1.0) {";
+    for (auto acc : pp_accumulators) {
+        if (acc->accumulator == token::TK_sum) {
+            // e.g.  sum(value_in(alive))
+            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
+            // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc0[cell] *= scale_factor;
+            c += "for ( int cell = 0; cell < n_cells; cell++ ) acc" + to_string(acc->index) + "[cell] *= scale_factor;";
+            // e.g. accumulators[0] = acc0;
+        }
+    }
+    c += "}";
     c += "}";
     c += "";
 

@@ -19,6 +19,13 @@ namespace fmk {
      * The member to simulate of the sample of simulations.
      */
     int sample_member = 0;
+
+    /**
+     * The value for population scaling.
+     * 
+     * Specified by model code through a call to SetPopulation().
+     */
+    long set_population_value = 0;
 }
 
 /**
@@ -71,9 +78,14 @@ int GetThreadNumber()
     return 1;
 }
 
+/**
+ * Sets the total population used for population scaling
+ *
+ * @param lPopulation The total population.
+ */
 extern void SetPopulation(long lPopulation)
 {
-    //TODO
+    fmk::set_population_value = lPopulation;
 }
 
 

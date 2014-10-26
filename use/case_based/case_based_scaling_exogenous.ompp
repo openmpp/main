@@ -1,0 +1,27 @@
+/**
+* @file    case_based_scaling_exogenous.ompp
+* Implementation of population scaling
+*
+*/
+// Copyright (c) 2013 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+parameters {
+    //EN Population
+    double SimulatedPopulation;
+};
+
+/**
+ * The population scaling factor to use for this member of the simulation.
+ * 
+ * This version scales the population to a value supplied through a parameter.
+ * 
+ * In tables, the size of the population will be the number of cases scaled to the value of
+ * SimulatedPopulation.
+ *
+ * @return A double.
+ */
+double population_scaling_factor()
+{
+    return (double) SimulatedPopulation / (double) fmk::member_cases;
+}
