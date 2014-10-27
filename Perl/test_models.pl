@@ -239,11 +239,19 @@ for my $model (@models) {
 		my $modgen_Base_scex = "Base.scex";
 		unlink $modgen_Base_scex;
 
-		# The ompp Framework parameter file for the Base scenario.
+		# The odat Framework parameter file for the Base scenario.
 		# Parameters in that file will be transformed into scenario settings in the Base.scex file
-		my $ompp_Base_Framework_ompp = "../parameters/Base/Base(Framework).odat";
-		if ( ! -e $ompp_Base_Framework_ompp ) {
-			logmsg error, $model, "modgen", "Missing ompp Base Framework parameters: $ompp_Base_Framework_ompp";
+		my $Base_Framework_odat = "../parameters/Base/Base(Framework).odat";
+		if ( ! -e $Base_Framework_odat ) {
+			logmsg error, $model, "modgen", "Missing ompp Base Framework parameters: $Base_Framework_odat";
+			last MODGEN;
+		}
+
+		# The ompp Framework model code file for the model
+		# use statements in that file are used to determine scenario settings in the Base.scex file
+		my $ompp_framework_ompp = "../code/ompp_framework.ompp";
+		if ( ! -e $ompp_framework_ompp ) {
+			logmsg error, $model, "modgen", "Missing ompp framework model code file: $ompp_framework_ompp";
 			last MODGEN;
 		}
 
@@ -254,7 +262,7 @@ for my $model (@models) {
 		push @modgen_Base_dats, glob("../parameters/Fixed/*.dat");
 
 		# Create the Modgen Base scenario file
-		modgen_create_scex($modgen_Base_scex, $ompp_Base_Framework_ompp, @modgen_Base_dats);
+		modgen_create_scex($modgen_Base_scex, $Base_Framework_odat, $ompp_framework_ompp, @modgen_Base_dats);
 		if ( ! -e $modgen_Base_scex ) {
 			logmsg error, $model, "modgen", "Missing Base scenario file: $modgen_Base_scex";
 			last MODGEN;

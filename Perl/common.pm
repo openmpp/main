@@ -309,13 +309,15 @@ sub run_jet_statement {
 
 # Create a Modgen .scex file
 # arg0 - the output file name
-# arg1 - the ompp Framework.odat file
+# arg1 - the ompp Base(Framework).odat file
+# arg2 - the ompp ompp_framework.ompp file
 # argN - remaining arguments are .dat files
 # returns - 0 for success, otherwise non-zero
 sub modgen_create_scex
 {
 	my $scex_file      = shift(@_);
-	my $framework_file = shift(@_);
+	my $framework_odat_file = shift(@_);
+	my $framework_ompp_file = shift(@_);
 
 	my @dat_files = @_;
 
@@ -345,12 +347,37 @@ sub modgen_create_scex
 		MemoryReports => 0,
 	);
 
-	# Extract framework parameters from ompp parameter file
-	if (!open FRAMEWORK, "<${framework_file}") {
-		logmsg error, "unable to open ${framework_file}";
+	# Parse Base ompp framework code file for .scex scenario information
+	if (!open FRAMEWORK_OMPP, "<${framework_ompp_file}") {
+		logmsg error, "unable to open ${framework_ompp_file}";
 		return 1;
 	}
-	while (<FRAMEWORK>) {
+	while (<FRAMEWORK_OMPP>) {
+		chomp;
+		my $line = $_;
+		# Look for which scaling module has been used
+		# Search pattern starts with 'use' to avoid picking up // commented lines
+		if ( $line =~ /^use.*scaling_none/ ) {
+			$General{"PopulationScaling"} = 0;
+			$General{"Population"} = 0;
+		}
+		if ( $line =~ /^use.*scaling_endogenous/ ) {
+			$General{"PopulationScaling"} = 1;
+			$General{"Population"} = 0;
+		}
+		if ( $line =~ /^use.*scaling_exogenous/ ) {
+			$General{"PopulationScaling"} = 1;
+			$General{"Population"} = 0; # Will be replaced using value of parameter 
+		}
+	}
+	close FRAMEWORK_OMPP;
+
+	# Parse Base Framework parameters for .scex scenario information
+	if (!open FRAMEWORK_ODAT, "<${framework_odat_file}") {
+		logmsg error, "unable to open ${framework_odat_file}";
+		return 1;
+	}
+	while (<FRAMEWORK_ODAT>) {
 		chomp;
 		my $line = $_;
 		if ( $line =~ /SimulationSeed\s*=\s*(\d+)/ ) {
@@ -359,11 +386,14 @@ sub modgen_create_scex
 		if ( $line =~ /SimulationCases\s*=\s*(\d+)/ ) {
 			$General{"Cases"} = $1;
 		}
+		if ( $line =~ /SimulatedPopulation\s*=\s*(\d+[.]?\d+)/ ) {
+			$General{"Population"} = $1;
+		}
 		if ( $line =~ /SimulationEnd\s*=\s*(\d+[.]?\d+)/ ) {
 			$General{"SimulationEnd"} = $1;
 		}
 	}
-	close FRAMEWORK;
+	close FRAMEWORK_ODAT;
 
 	# The XML structure of the .scex file is simple,
 	# so the approach here is to generate it directly rather than use XML::Tiny or XML::LibXML, etc.
