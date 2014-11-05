@@ -460,6 +460,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <val_token>      parameter_modifier_opt
 %type  <val_token>      table_margin_opt
 %type  <val_token>      decl_func_arg_token
+%type  <val_token>      parameter_group_token
 %type  <pval_IntegerLiteral> cumrate_dimensions_opt
 
 %type  <pval_Literal>   bool_literal
@@ -911,8 +912,13 @@ decl_range:
  * parameter_group
  */
 
+parameter_group_token:
+          "parameter_group"
+        | "model_generated_parameter_group"
+        ;
+
 decl_parameter_group:
-	  "parameter_group" SYMBOL[group] "{" symbol_list "}" ";"
+	  parameter_group_token SYMBOL[group] "{" symbol_list "}" ";"
                         {
                             // morph existing symbol to ParameterGroupSymbol
                             auto *grp = new ParameterGroupSymbol( $group, @group );
@@ -923,8 +929,8 @@ decl_parameter_group:
                             pls->clear();
                             delete pls;
                         }
-	| "parameter_group" "{" error "}" ";"
-	| "parameter_group" error ";"
+	| parameter_group_token "{" error "}" ";"
+	| parameter_group_token error ";"
       ;
 
 // A non-empty list of comma-separated symbols.
