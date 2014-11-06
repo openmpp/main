@@ -9,6 +9,7 @@
 #include "AgentSymbol.h"
 #include "ExprForAgentVar.h"
 #include "LinkAgentVarSymbol.h"
+#include "AgentMultilinkSymbol.h"
 #include "LinkToAgentVarSymbol.h"
 #include "TypeSymbol.h"
 #include "BoolSymbol.h"
@@ -74,13 +75,20 @@ void IdentityAgentVarSymbol::post_parse(int pass)
             auto lav = ltav->pp_link; // the link agentvar
             assert(lav);
 
-            auto rlav = lav->reciprocal_link; // the reciprocal link agentvar
-            assert(rlav);
-
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Maintain identity for '" + unique_name + "' using reciprocal link";
-            c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
+            if (lav->reciprocal_link) {
+                // is a one-to-one link
+                auto rlav = lav->reciprocal_link;
+                c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
+            }
+            else {
+                // is a one-to-many link
+                assert(lav->reciprocal_multilink); // grammar guarantee (must be either link or multilink)
+                auto rlav = lav->reciprocal_multilink;
+                c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
+            }
         }
 
         // Dependency of all links used in expression
