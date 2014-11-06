@@ -918,7 +918,7 @@ parameter_group_token:
         ;
 
 decl_parameter_group:
-	  parameter_group_token SYMBOL[group] "{" symbol_list "}" ";"
+	  parameter_group_token[tok] SYMBOL[group] "{" symbol_list "}" ";"
                         {
                             // morph existing symbol to ParameterGroupSymbol
                             auto *grp = new ParameterGroupSymbol( $group, @group );
@@ -1098,6 +1098,43 @@ decl_parameter:
                                 // Morph Symbol to ParameterSymbol
                                 parm = new ParameterSymbol( $parm, $type_symbol, @parm );
                                 assert(parm);
+                                $parm = parm;
+                            }
+                            else {
+                                // parameter re-declaration
+                                pc.redeclaration = true;
+                                parm = dynamic_cast<ParameterSymbol *>($parm);
+                                assert(parm); // grammar/logic guarantee
+                                parm->redecl_loc = @parm; // note redeclaration location
+                            }
+                            // update provenance if model_generated
+                            if ($pm_opt == token::TK_model_generated) {
+                                parm->source = ParameterSymbol::parameter_source::derived_parameter;
+                            }
+                            // Set parameter context for gathering the dimension specification (if present)
+                            // and initializer (if present).
+                            pc.set_parameter_context( parm );
+                        }
+            decl_dim_list parameter_initializer_expr ";"
+                        {
+                            // No longer in parameter context
+                            pc.set_parameter_context( nullptr );
+                        }
+    | parameter_modifier_opt[pm_opt] "haz1rate" SYMBOL[parm]
+                        {
+                            // haz1rate is deprecated and undocumented, but still present in older models, so support it, silently.
+                            ParameterSymbol *parm = nullptr;
+
+                            if ($parm->is_base_symbol()) {
+                                // parameter declaration
+                                pc.redeclaration = false;
+                                // storage type of haz1rate parameters is double
+                                auto *type_symbol = Symbol::get_symbol("double");
+                                assert(type_symbol); // grammar/initialization guarantee
+                                // Morph Symbol to ParameterSymbol
+                                parm = new ParameterSymbol( $parm, type_symbol, @parm );
+                                assert(parm);
+                                parm->haz1rate = true;
                                 $parm = parm;
                             }
                             else {

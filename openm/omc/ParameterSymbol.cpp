@@ -412,6 +412,21 @@ string ParameterSymbol::cxx_initialize_cumrate()
     return result;
 }
 
+CodeBlock ParameterSymbol::cxx_transform_haz1rate()
+{
+    CodeBlock cxx;
+    if (haz1rate) {
+        cxx += "{";
+        cxx += "// Perform haz1rate transformation on contents of " + name;
+        cxx += "double *pd = (double *)&" + name + ";";
+        cxx += "for (size_t j = 0; j < " + to_string(size()) + "; ++j) {";
+        cxx += "pd[j] = - log(1.0 - pd[j]);";
+        cxx += "}";
+        cxx += "}";
+    }
+    return cxx;
+}
+
 string ParameterSymbol::cxx_assert_sanity()
 {
     string typ; // storage type

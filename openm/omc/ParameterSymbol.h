@@ -30,6 +30,7 @@ public:
         , datatype(datatype->stable_rp())
         , pp_datatype(nullptr)
         , lookup_fn(nullptr)
+        , haz1rate(false)
     {
     }
 
@@ -92,6 +93,13 @@ public:
     string cxx_initialize_cumrate();
 
     /**
+     * C++ code to perform haz1rate transformation on parameter.
+     *
+     * @return A CodeBlock.
+     */
+    CodeBlock cxx_transform_haz1rate();
+
+    /**
      * assert C++ code fragment to verify that storage type has the same size as the readParameter
      * type.
      *
@@ -135,6 +143,11 @@ public:
     {
         return "om_cumrate_" + name;
     }
+
+    /**
+     * True if parameter declared as haz1rate
+     */
+    bool haz1rate;
 
     /**
      * The data type of the parameter contents (parse phase reference to pointer)
