@@ -534,6 +534,7 @@ ompp_declarative_island:
 	| decl_languages        { pc.InitializeForCxx(); }
 	| decl_string           { pc.InitializeForCxx(); }
 	| decl_options          { pc.InitializeForCxx(); }
+	| decl_import           { pc.InitializeForCxx(); }
 	| decl_model_type       { pc.InitializeForCxx(); }
 	| decl_time_type        { pc.InitializeForCxx(); }
 	| decl_real_type        { pc.InitializeForCxx(); }
@@ -668,6 +669,24 @@ option_value[value]:
                             delete $integer_value;
                         }
     ;
+
+/*
+ * import
+ */
+
+decl_import: // just parse old-style syntax, and assume a single table name, not a list
+          "import" SYMBOL[param]
+              "(" 
+                      {
+                            pc.next_word_is_string = true;
+                      }
+              STRING[model] "." 
+                      {
+                            pc.next_word_is_string = true;
+                      }
+            STRING[table] ")" ";"
+        | "import" error ";"
+        ;
 
 /*
  * changeable types
@@ -1461,7 +1480,7 @@ decl_agent_function:
                         }
     ;
 
-decl_func_arg_string[result]: // declaration of function arguments,as a string
+decl_func_arg_string[result]: // declaration of function arguments, as a string
       decl_func_arg_string[current] decl_func_arg_element[element]
                         {
                             if ($current == nullptr) {
