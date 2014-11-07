@@ -39,6 +39,8 @@ CodeBlock TimeSymbol::cxx_declaration_global()
     // Time 'literals'
     h += "extern const Time time_infinite;";
     h += "extern const Time TIME_INFINITE; // For Modgen source compatibility";
+    h += "extern const Time time_undef;";
+    h += "extern const Time TIME_UNDEF; // For Modgen source compatibility";
 
     return h;
 }
@@ -53,6 +55,8 @@ CodeBlock TimeSymbol::cxx_definition_global()
     // Time 'literals'
     c += "const Time time_infinite = 32767;";
     c += "const Time TIME_INFINITE = 32767; // for Modgen models";
+    c += "const Time time_undef = -1;";
+    c += "const Time TIME_UNDEF = -1; // for Modgen models";
     c += "";
 
     return c;
