@@ -23,10 +23,10 @@
 #include "om_types1.h" // model-specific types
 #include "libopenm/omModel.h"
 
-#include "om_declarations.h" // model-specific classes
-
 #include "omc/macros.h"
 #include "omc/globals.h"
+
+#include "om_declarations.h" // model-specific classes
 
 namespace openm {
 

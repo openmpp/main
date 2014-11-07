@@ -8,7 +8,7 @@
 // The following macro is not defined for Modgen models.
 // It can be used to exclude Modgen-specific C++ code during C++ compilation by openM++.
 // Both the Modgen compiler and omc ignore preprocessor directives in model source code.
-#define OPENM
+#define OPENM 1
 
 #define TRUE true
 #define FALSE false
@@ -43,6 +43,11 @@
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
 
+// Fixed precision time arithmetic is implemented using the wrapped Time typoe in ompp.
+#define CoarsenMantissa(x) Time(x)
+
 // map logical to bool (for local variable declarations in Modgen models)
 #define logical bool
 
+// map MFC BOOL to bool
+#define BOOL bool
