@@ -49,5 +49,5 @@
 // map logical to bool (for local variable declarations in Modgen models)
 #define logical bool
 
-// map MFC BOOL to bool
-#define BOOL bool
+// map MFC BOOL to int
+#define BOOL int

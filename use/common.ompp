@@ -83,9 +83,41 @@ int GetThreadNumber()
  *
  * @param lPopulation The total population.
  */
-extern void SetPopulation(long lPopulation)
+void SetPopulation(long lPopulation)
 {
     fmk::set_population_value = lPopulation;
 }
 
+/**
+ * Piece linear lookup.
+ *
+ * @param x  The x coordinate.
+ * @param ax The array of x coordinates of the points
+ * @param ay The array of y coordinates of the points
+ * @param n  The number of x-y points
+ *
+ * @return The y value corresponding to x
+ */
+double PieceLinearLookup(double x, const double *ax, const double *ay, int n)
+{
+    double y = 0.0;
+
+    if (x <= ax[0]) {
+        y = ay[0];
+    }
+    else if (x >= ax[n - 1]) {
+        y = ay[n - 1];
+    }
+    else {
+        // a simple linear search
+        for (int j = 1; j < n; ++j) {
+            if (x <= ax[j]) {
+                // interpolate
+                y = ay[j - 1] + (ay[j] - ay[j - 1]) / (ax[j] - ax[j - 1]) * (x - ax[j - 1]);
+                break;
+            }
+        }
+    }
+    return y;
+}
 
