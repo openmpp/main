@@ -48,6 +48,18 @@ int GetReplicate()
 }
 
 /**
+ * Gets the replicate.
+ *
+ * See Modgen Developer's Guide.
+ *  
+ * @return The replicate.
+ */
+int GetUserTableReplicate()
+{
+    return fmk::sample_member;
+}
+
+/**
  * Gets the number of replicates.
  *
  * See Modgen Developer's Guide.

@@ -48,11 +48,13 @@ double LeaplessCalendarToTime(int year, int month_in_year, int day_in_month);
 // defined in use/case_based/case_based_modgen.ompp
 extern double GetCaseSeed();
 extern int GetCaseSample();
+extern int GetUserTableSample();
 extern long long GetAllCases();
 extern int GetSubSamples();
 
 // defined in use/time_based/time_based_modgen.ompp
 extern int GetReplicate();
+extern int GetUserTableReplicate();
 extern int GetReplicates();
 
 // defined in use/case_based/scaling_*.ompp

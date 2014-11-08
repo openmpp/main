@@ -128,6 +128,18 @@ int GetCaseSample()
 }
 
 /**
+ * Gets the sample number of the current call to UserTable
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return The case sample.
+ */
+int GetUserTableSample()
+{
+    return fmk::sample_member;
+}
+
+/**
  * Gets the total number of cases, summed over all samples.
  *
  * See Modgen Developer's Guide.
