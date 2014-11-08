@@ -1,0 +1,132 @@
+/**
+* @file    leapless_modgen.ompp
+* Implementation of Mpdgen leapless calendar functions
+* 
+* The artifical leapless calendar has exactly 365 days, with no leap years.
+* Years have a fixed length of 1.0.
+*/
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+#if 0 // Hide from IDE
+use "calendar/leapless.ompp";
+#endif
+
+/**
+ * Leapless calendar: The unique day number of a calendar date.
+ *
+ * @param year          The year, e.g. 2025.
+ * @param month_in_year The month in the year, zero-based (0-11).
+ * @param day_in_month  The day in the month, zero-based (0-30).
+ *
+ * @return The unique day number.
+ */
+int LeaplessCalendarToDay(int year, int month_in_year, int day_in_month)
+{
+    return date_to_day(year, month_in_year, day_in_month);
+}
+
+/**
+ * Leapless calendar: The calendar date of a unique day number.
+ *
+ * @param day_number             The unique day number.
+ * @param [in,out] year          The year, e.g. 2025.
+ * @param [in,out] month_in_year The month in the year, zero-based (0-11).
+ * @param [in,out] day_in_month  The day in the month, zero-based (0-30).
+ * @param [in,out] day_in_week   The day in the week, zero-based (0-6)
+ */
+void LeaplessDayToCalendar(int day_number, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week)
+{
+    day_to_date(day_number, *p_year, *p_month_in_year, *p_day_in_month, *p_day_in_week);
+}
+
+/**
+ * Leapless calendar: The leap year status of a year.
+ *
+ * @param year The year, e.g. 2025.
+ *
+ * @return Always returns false
+ */
+bool LeaplessIsLeapYear(int year)
+{
+    return is_leap_year(year);
+}
+
+/**
+ * Leapless calendar: The unique day number of a time.
+ *
+ * @param exact_time exact time, e.g. 2025.1234.
+ *
+ * @return The unique day number.
+ */
+int LeaplessTimeToDay(double exact_time)
+{
+    return time_to_day(exact_time);
+}
+
+/**
+ * Leapless calendar: The unique day number of a time.
+ *
+ * @param time                  The exact time, e.g. 2025.1234.
+ * @param [in,out] day_boundary True if time is on an exact day boundary.
+ *
+ * @return The unique day number.
+ */
+int LeaplessTimeToDay(double exact_time, int *p_day_boundary) 
+{
+    bool day_boundary;
+    return time_to_day(exact_time, day_boundary);
+    *p_day_boundary = day_boundary;
+}
+
+/**
+ * Leapless calendar: The exact time of a unique day number.
+ *
+ * @param day_number The unique day number.
+ *
+ * @return The exact time, e.g. 2025.1234.
+ */
+double LeaplessDayToTime(int day_number)
+{
+    return day_to_time(day_number);
+}
+
+/**
+ * Leapless calendar: The exact time duration of a day.
+ * 
+ * It is mathematically impossible to exactly represent 1/365 in a binary floating point number.
+ *
+ * @return A double.
+ */
+double LeaplessDayLength()
+{
+    return day_length();
+}
+
+/**
+ * Leapless calendar: Leapless time to calendar.
+ *
+ * @param exact_time             The exact time.
+ * @param [in,out] year          The year, e.g. 2025.
+ * @param [in,out] month_in_year The month in the year, zero-based (0-11).
+ * @param [in,out] day_in_month  The day in the month, zero-based (0-30).
+ * @param [in,out] day_in_week   The day in the week, zero-based (0-6)
+ */
+void LeaplessTimeToCalendar(double exact_time, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week)
+{
+    time_to_date(exact_time, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week);
+}
+
+/**
+ * Leapless calendar: The exact time of a calendar date.
+ *
+ * @param year          The year, e.g. 2025.
+ * @param month_in_year The month in the year, zero-based (0-11).
+ * @param day_in_month  The day in the month, zero-based (0-30).
+ *
+ * @return The exact time.
+ */
+double LeaplessCalendarToTime(int year, int month_in_year, int day_in_month)
+{
+    return date_to_time(year, month_in_year, day_in_month);
+}
