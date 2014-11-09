@@ -101,16 +101,21 @@ private:
  * 
  * To force the creation of blank lines, use an argument with a single space like " ".
  *
- * @param   t1  The first string.
- * @param   t2  (Optional) the second  string.
- * @param   t3  (Optional) the third  string.
- * @param   t4  (Optional) the fourth  string.
- * @param   t5  (Optional) the fifth  string.
+ * @param   t0  Line #1.
+ * @param   t1  Line #2.
+ * @param   t2  Line #3.
+ * @param   t3  Line #4.
+ * @param   t4  Line #5.
+ * @param   t5  Line #6.
+ * @param   t6  Line #7.
+ * @param   t7  Line #8.
+ * @param   t8  Line #9.
+ * @param   t9  Line #10.
  *
  * @return  The result as a CodeBlock.
  */
 
-CodeBlock doxygen(string t1, string t2 = "", string t3 = "", string t4 = "", string t5 = "");
+CodeBlock doxygen(string t0, string t1 = "", string t2 = "", string t3 = "", string t4 = "", string t5 = "", string t6 = "", string t7 = "", string t8 = "", string t9 = "");
 
 
 /**

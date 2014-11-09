@@ -73,20 +73,23 @@ void CodeBlock::smart_indenting(bool val)
     raw_mode = !val;
 }
 
-CodeBlock doxygen(string t1, string t2, string t3, string t4, string t5)
+CodeBlock doxygen(string t0, string t1, string t2, string t3, string t4, string t5, string t6, string t7, string t8, string t9)
 {
-    // Perhaps this could be generalized in C++11 using a variadic template,
-    // but in any case don't use old-style var_args.
+    // TODO: Generalize using a variadic template
 
     CodeBlock result;
     result += "/**";
-    result += " * " + t1;
+    result += " * " + t0;
+    if (t1.length() > 0) result += " * " + t1;
     if (t2.length() > 0) result += " * " + t2;
     if (t3.length() > 0) result += " * " + t3;
     if (t4.length() > 0) result += " * " + t4;
     if (t5.length() > 0) result += " * " + t5;
+    if (t6.length() > 0) result += " * " + t6;
+    if (t7.length() > 0) result += " * " + t7;
+    if (t8.length() > 0) result += " * " + t8;
+    if (t9.length() > 0) result += " * " + t9;
     result += " */";
-    result += "";
     return result;
 }
 

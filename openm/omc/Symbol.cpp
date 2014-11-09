@@ -64,6 +64,8 @@ symbol_map_type Symbol::symbols;
 
 list<symbol_map_value_type> Symbol::pp_symbols;
 
+unordered_set<string> Symbol::identifiers_in_model_source;
+
 list<TypeSymbol *> Symbol::pp_all_types0;
 
 list<TypeSymbol *> Symbol::pp_all_types1;

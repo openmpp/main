@@ -26,6 +26,28 @@ void ClassificationSymbol::post_parse(int pass)
         {
             // Information to compute storage type is known in this pass
             storage_type = optimized_storage_type(0, pp_size() - 1);
+
+            // Determine which integer-classification transformation functions to emit
+
+            // Check for presence of a trailing digit in any of the classification enumerators
+            bool any_trailing_digits = 
+                any_of(
+                    pp_enumerators.cbegin(),
+                    pp_enumerators.cend(),
+                    [](EnumeratorSymbol *es){ return isdigit(es->name.back()); }
+                );
+            if (any_trailing_digits) {
+                // Only emit code for the function if it is actually used in developer code.
+                if (identifiers_in_model_source.end() != identifiers_in_model_source.find("IntIs_" + name)) {
+                    pp_generate_IntIs = true;
+                }
+                if (identifiers_in_model_source.end() != identifiers_in_model_source.find("IntTo_" + name)) {
+                    pp_generate_IntTo = true;
+                }
+                if (identifiers_in_model_source.end() != identifiers_in_model_source.find("IntFrom_" + name)) {
+                    pp_generate_IntFrom = true;
+                }
+            }
         }
         break;
     default:
@@ -58,8 +80,47 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     h += "};";
     h += "typedef Classification<om_enum_" + name + ", " + to_string(pp_size()) + "> " + name + ";" ;
 
-    if (candidate_for_integer_transforms()) {
+    if (pp_generate_IntIs) {
+        h += "";
+        h += doxygen(
+            "Check an integer value for membership in classification " + name + ".",
+            " ",
+            "Classification enumerators can have an associated integer value",
+            "based on the trailing digits of their name.",
+            " ",
+            "@param number The integer value to query.",
+            " ",
+            "@return true if there is a matching enumerator, false otherwise."
+            );
+        h += "bool IntIs_" + name + "(int number);";
+    }
+    if (pp_generate_IntTo) {
+        h += "";
+        h += doxygen(
+            "Transform an integer to the associated enumerator in the classification " + name + ".",
+            " ",
+            "Classification enumerators can have an associated integer value",
+            "based on the trailing digits of their name.",
+            " ",
+            "@param number The integer value to transform.",
+            " ",
+            "@return The corresponding enumerator, or the final enumerator if none matches."
+            );
         h += name + " IntTo_" + name + "(int number);";
+    }
+    if (pp_generate_IntFrom) {
+        h += "";
+        h += doxygen(
+            "Transform a classification enumerator to the associated integer in classification " + name + ".",
+            " ",
+            "Classification enumerators can have an associated integer value",
+            "based on the trailing digits of their name.",
+            " ",
+            "@param number The eumerator to transform.",
+            " ",
+            "@return The corresponding integer, or -1 if there is none."
+            );
+        h += "int IntFrom_" + name + "(" + name + " level);";
     }
 
     return h;
@@ -71,7 +132,87 @@ CodeBlock ClassificationSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += "";
+
+    if (pp_generate_IntIs) {
+        c += "";
+        c += "bool IntIs_" + name + "(int number)";
+        c += "{";
+        c += "switch (number) {";
+        unordered_set<string> numbers_used; // to check for duplicates
+        for (auto es : pp_enumerators) {
+            string name = es->name;
+            if (isdigit(name.back())) {
+                string number = name.substr(name.find_last_not_of("0123456789") + 1);
+                // Remove any leading zeros, since leading zero means octal in a C++ literal.
+                int j = number.find_first_not_of("0");
+                if (j == std::string::npos) {
+                    // if all 0's, leave the final '0' digit
+                    j = number.length() - 1;
+                }
+                number = number.substr(j);
+                if (numbers_used.end() == numbers_used.find(number)) {
+                    c += "case " + number + ": return true; // " + name;
+                    numbers_used.insert(number);
+                }
+            }
+        }
+        c += "default: return false;";
+        c += "}";
+        c += "}";
+    }
+    if (pp_generate_IntTo) {
+        c += "";
+        c += name + " IntTo_" + name + "(int number)";
+        c += "{";
+        c += "switch (number) {";
+        unordered_set<string> numbers_used; // to check for duplicates
+        for (auto es : pp_enumerators) {
+            string name = es->name;
+            if (isdigit(name.back())) {
+                string number = name.substr(name.find_last_not_of("0123456789") + 1);
+                // Remove any leading zeros, since leading zero means octal in a C++ literal.
+                int j = number.find_first_not_of("0");
+                if (j == std::string::npos) {
+                    // if all 0's, leave the final '0' digit
+                    j = number.length() - 1;
+                }
+                number = number.substr(j);
+                if (numbers_used.end() == numbers_used.find(number)) {
+                    c += "case " + number + ": return " + name + ";";
+                    numbers_used.insert(number);
+                }
+            }
+        }
+        c += "default: return " + pp_enumerators.back()->name + ";";
+        c += "}";
+        c += "}";
+    }
+    if (pp_generate_IntFrom) {
+        c += "";
+        c += "int IntFrom_" + name + "(" + name + " level)";
+        c += "{";
+        c += "switch (level) {";
+        for (auto es : pp_enumerators) {
+            string name = es->name;
+            if (isdigit(name.back())) {
+                string number = name.substr(name.find_last_not_of("0123456789") + 1);
+                // Remove any leading zeros, since leading zero means octal in a C++ literal.
+                int j = number.find_first_not_of("0");
+                if (j == std::string::npos) {
+                    // if all 0's, leave the final '0' digit
+                    j = number.length() - 1;
+                }
+                number = number.substr(j);
+                c += "case " + name + ": return " + number + ";";
+            }
+            else {
+                c += "case " + name + ": return -1;";
+            }
+        }
+        c += "default: return -1;";
+        c += "}";
+        c += "}";
+    }
 
     return c;
 }

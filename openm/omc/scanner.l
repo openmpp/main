@@ -338,6 +338,9 @@ blank       [ \t\r]
                     return tok;
                 }
 
+                /* Add the identifier to the set of all identifiers in the model source code. */
+                Symbol::identifiers_in_model_source.insert(word);
+
 				/* find existing symbol or create a new one */
                 Symbol *sym = nullptr;
                 Symbol *agent = pc.get_agent_context();
@@ -505,6 +508,10 @@ blank       [ \t\r]
 <cxx_inside>{ /* an inner level of C++ code, i.e. inside {} */
 
 {word}      {
+                string word = yytext;
+                /* Add the identifier to the set of all identifiers in the model source code. */
+                Symbol::identifiers_in_model_source.insert(word);
+
                 if ( pc.cxx_memfunc_gather ) {
 			        token_type tok = Symbol::string_to_token( yytext );
                     if ( tok == token::TK_error ) {

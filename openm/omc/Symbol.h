@@ -807,6 +807,13 @@ public:
     static list<symbol_map_value_type> pp_symbols;
 
     /**
+     * List of all identifiers in model source code.
+     * 
+     * Includes identifiers in both C++ code and in ompp declarative islands.
+     */
+    static unordered_set<string> identifiers_in_model_source;
+
+    /**
      * The fundamental types in the model
      * 
      * Ex. Time, real Populated after parsing is complete.

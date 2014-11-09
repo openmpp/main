@@ -33,6 +33,9 @@ public:
 
     ClassificationSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : EnumerationWithEnumeratorsSymbol(sym, token::TK_int, kind_of_type::classification_type, decl_loc)
+        , pp_generate_IntIs(false)
+        , pp_generate_IntTo(false)
+        , pp_generate_IntFrom(false)
     {
     }
 
@@ -54,5 +57,20 @@ public:
      * @return true if trailing digits, false if not.
      */
     bool candidate_for_integer_transforms();
+
+    /**
+     * true to generate the IntIs_ integer-classification transformation global function
+     */
+    bool pp_generate_IntIs;
+
+    /**
+     * true to generate the IntTo_ integer-classification transformation global function
+     */
+    bool pp_generate_IntTo;
+
+    /**
+     * true to generate the IntFrom_ integer-classification transformation global function
+     */
+    bool pp_generate_IntFrom;
 };
 
