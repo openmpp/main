@@ -15,7 +15,7 @@ extern void StopEventTrace();
 extern int GetThreadNumber();
 extern int GetThreads();
 extern void SetPopulation(long lPopulation);
-extern double PieceLinearLookup(double dNumber, double *pdRates, double *pdData, int nSize );
+double PieceLinearLookup(double x, const double *ax, const double *ay, int n);
 
 // defined in use/random/random_modgen.ompp
 extern void initialize_stream(int model_stream, long seed);

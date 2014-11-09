@@ -178,6 +178,6 @@ void time_to_date(double exact_time, int& year, int& month_in_year, int& day_in_
  */
 double date_to_time(int year, int month_in_year, int day_in_month)
 {
-	int day = date_to_time(year, month_in_year, day_in_month);
+	int day = date_to_day(year, month_in_year, day_in_month);
 	return day_to_time(day);
 }

@@ -114,7 +114,7 @@ double LeaplessDayLength()
  */
 void LeaplessTimeToCalendar(double exact_time, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week)
 {
-    time_to_date(exact_time, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week);
+    time_to_date(exact_time, *p_year, *p_month_in_year, *p_day_in_month, *p_day_in_week);
 }
 
 /**
