@@ -134,7 +134,7 @@ int GetCaseSample()
  *
  * @return The case sample.
  */
-int GetUserTableSample()
+int GetUserTableSubSample()
 {
     return fmk::sample_member;
 }
