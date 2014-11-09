@@ -5,6 +5,9 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#include <algorithm>
+#include <list>
+#include <cctype>
 #include "ClassificationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "CodeBlock.h"
@@ -37,6 +40,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    h += "";
     h += doxygen("Classification: " + name);
     h += "enum om_enum_" + name + " : " + token_to_string(storage_type) + " {";
     bool first = true;
@@ -54,7 +58,22 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     h += "};";
     h += "typedef Classification<om_enum_" + name + ", " + to_string(pp_size()) + "> " + name + ";" ;
 
+    if (candidate_for_integer_transforms()) {
+        h += name + " IntTo_" + name + "(int number);";
+    }
+
     return h;
+}
+
+CodeBlock ClassificationSymbol::cxx_definition_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    c += "";
+
+    return c;
 }
 
 bool ClassificationSymbol::is_valid_constant(const Constant &k) const
@@ -79,3 +98,9 @@ string ClassificationSymbol::format_for_storage(const Constant &k) const
     string result = to_string(ordinal);
     return result;
 }
+
+bool ClassificationSymbol::candidate_for_integer_transforms()
+{
+    return any_of(pp_enumerators.cbegin(), pp_enumerators.cend(), [](EnumeratorSymbol *es){ return isdigit(es->name.back()); });
+}
+

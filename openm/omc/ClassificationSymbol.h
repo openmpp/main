@@ -40,8 +40,19 @@ public:
 
     CodeBlock cxx_declaration_global();
 
+    CodeBlock cxx_definition_global();
+
     bool is_valid_constant(const Constant &k) const;
 
     string format_for_storage(const Constant &k) const;
+
+    /**
+     * Query if the classification is a cnadidate for integer transformations.
+     * 
+     * To be a candidate, at least one fo the enumerators must have trailing digits.
+     *
+     * @return true if trailing digits, false if not.
+     */
+    bool candidate_for_integer_transforms();
 };
 
