@@ -77,17 +77,22 @@ void IdentityAgentVarSymbol::post_parse(int pass)
 
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
-            c += "// Maintain identity for '" + unique_name + "' using reciprocal link";
             if (lav->reciprocal_link) {
                 // is a one-to-one link
+                c += "// Maintain identity for '" + unique_name + "' using reciprocal link";
                 auto rlav = lav->reciprocal_link;
                 c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
             }
             else {
                 // is a one-to-many link
+                c += "// Maintain identity for '" + unique_name + "' in all entities in reciprocal multilink";
                 assert(lav->reciprocal_multilink); // grammar guarantee (must be either link or multilink)
                 auto rlav = lav->reciprocal_multilink;
-                c += "if (!" + rlav->name + ".is_nullptr()) " + rlav->name + "->" + expression_fn->name + "();";
+                c += "for (auto &item : " + rlav->name + ".storage) {";
+                c += "if (item.get() != nullptr) {";
+                c += "item->" + expression_fn->name + "();";
+                c += "}";
+                c += "}";
             }
         }
 
