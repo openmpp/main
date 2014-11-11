@@ -1589,6 +1589,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         ctf += injection_description();
         // Inject code to the event time function which minimizes the working variable 'et' with the next time of this self-scheduling agentvar
         ctf += "et = min(et, " + ait->name +");";
+        // Note that the required 'return' statement of the body of the event time function is generated elsewhere, after all code injection is complete.
 
         // Code for specific variants of self_scheduling_int() and self_scheduling_split() agentvars
         if (av->name == "age" || av->name == "time") {
@@ -1674,13 +1675,38 @@ void DerivedAgentVarSymbol::create_side_effects()
             assert(dav); // the argument, e.g. active_spell_duration
 
             if (dav->tok == token::TK_active_spell_duration) {
+                // Inject code into the om_reset_derived_attributes function
+                // This code turns off the self-scheduling attribute/event, since there are no active spells
+                // when the entity enters the simulation.
+                reset_cxx += injection_description();
+                reset_cxx += "// There are no active spells when the entity enters the simulation";
+                reset_cxx += "{";
+                reset_cxx += "// 'ss_attr' is a reference to the self-scheduling attribute affected by this active spell.";
+                reset_cxx += "auto & ss_attr = " + name + ";";
+                reset_cxx += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
+                reset_cxx += "auto & ss_time = " + ait->name + ";";
+                reset_cxx += "ss_time = time_infinite;";
+                if (tok == token::TK_self_scheduling_int) {
+                    reset_cxx += "// Set the integerized duration to zero.";
+                    reset_cxx += "ss_attr.set(0);";
+                }
+                else { // tok == token::TK_self_scheduling_split
+                    reset_cxx += "// Set the partitioned duration to the interval containing zero.";
+                    reset_cxx += "// 'part' is a working copy of the partition value of the self-scheduling attribute";
+                    reset_cxx += "auto part = ss_attr.get();";
+                    reset_cxx += "part.set_from_value(0);";
+                    reset_cxx += "ss_attr.set(part);";
+                }
+                reset_cxx += "}";
+
+                // Inject code into the spell condition side-effects function.
                 assert(dav->iav); // the identity attribute which holds the spell condition
                 assert(dav->iav->side_effects_fn); // the side-effects function of the identity attribute which holds the spell condition
                 CodeBlock& cse = dav->iav->side_effects_fn->func_body; // the function body of that side-effects function
  
                 // Inject code into the spell condition side-effects function.
                 cse += injection_description();
-                cse += "{";
+                cse += "if (om_active) {";
                 cse += "// The self-scheduling event will require recalculation";
                 assert(pp_agent->ss_event);
                 cse += pp_agent->ss_event->name + ".make_dirty();";

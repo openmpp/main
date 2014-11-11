@@ -281,7 +281,7 @@ void CodeGen::do_ModelStartup()
 	c += "void ModelStartup(IModel * i_model)";
 	c += "{";
 
-    c += "// Agent static initialization pass #1: Initialize agent member offsets & null agent data members";
+    c += "// Agent static initialization part 1: Initialize agent member offsets & null agent data members";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Agent - " + agent->name;
         c += agent->name + "::om_null_agent.om_initialize_callback_member_offsets();";
@@ -289,11 +289,12 @@ void CodeGen::do_ModelStartup()
         c += "";
     }
 
-    c += "// Agent static initialization pass #2: Initialize null agent dependent agentvars";
+    c += "// Agent static initialization part 2: Initialize null agent dependent agentvars";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Agent - " + agent->name;
         c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
         c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
+        c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
     }
     c += "";
 
