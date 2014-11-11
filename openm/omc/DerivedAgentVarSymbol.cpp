@@ -839,7 +839,14 @@ void DerivedAgentVarSymbol::assign_pp_members()
 
 void DerivedAgentVarSymbol::create_side_effects()
 {
-    // The local variable init_cxx is used for code injection into the function initialize_derived_attributes().
+    // The local variable init_cxx is used to inject code into the function init_derived_attributes().
+    // That function is called as part of the entity lifecycle, before model developer initialization code
+    // for the entity, generally in a function named Start().
+
+    assert(pp_agent->initialize_derived_attributes_fn);
+    CodeBlock& init_cxx = pp_agent->initialize_derived_attributes_fn->func_body;
+
+    // The local variable reset_cxx is used to inject code into the function reset_derived_attributes().
     // That function is called after developer code in Start() to remove any side-effects which may have compromised
     // the starting values of a derived attribute.
     // For example, changes(attr) must record the number of changes in 'attr' as a result of events
@@ -848,8 +855,8 @@ void DerivedAgentVarSymbol::create_side_effects()
     // developer code in Start(), but before the entity enters the simulation.
     // This is done for most, but not all derived attributes.
 
-    assert(pp_agent->initialize_derived_attributes_fn);
-    CodeBlock& init_cxx = pp_agent->initialize_derived_attributes_fn->func_body;
+    assert(pp_agent->reset_derived_attributes_fn);
+    CodeBlock& reset_cxx = pp_agent->reset_derived_attributes_fn->func_body;
 
     switch (tok) {
     case token::TK_duration:
@@ -997,7 +1004,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         // Instead, the side-effect is added to time, which is guaranteed to invoke side-effects before
         // the event is implemented.  But that doesn't handle all cases, since
         // some agentvars are updated when time advances, including possibly the spell condition.
-        // So active_sepll_delta is assigned a sorting_group which comes before identity agentvars.
+        // So active_spell_delta is assigned a sorting_group which comes before identity agentvars.
         // OK, so much for background, now...
         // add side-effect to time
         auto *av = pp_agent->pp_time;
@@ -1035,9 +1042,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_undergone_entrance:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1052,9 +1059,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_undergone_exit:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1069,9 +1076,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_undergone_transition:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1087,9 +1094,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_undergone_change:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1103,9 +1110,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_entrances:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1120,9 +1127,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_exits:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1137,9 +1144,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_transitions:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1155,9 +1162,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_changes:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         assert(av);
@@ -1169,9 +1176,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_first_entrance:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1190,9 +1197,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_latest_entrance:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1209,9 +1216,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_first_exit:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1230,9 +1237,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_latest_exit:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1249,9 +1256,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_first_transition:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1271,9 +1278,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_latest_transition:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1291,9 +1298,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_first_change:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1311,9 +1318,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_latest_change:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1327,9 +1334,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_entrances:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1346,9 +1353,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_exits:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1365,9 +1372,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_transitions:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1385,9 +1392,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_value_at_changes:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
@@ -1404,13 +1411,15 @@ void DerivedAgentVarSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av); // observed
         assert(pp_prt);
+
+        init_cxx += injection_description();
+        init_cxx += "// Set initial value based on dependent attribute";
+        init_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";;
+
         CodeBlock& c = av->side_effects_fn->func_body;
         c += injection_description();
         c += "// Maintain " + pretty_name();
         c += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
-
-        init_cxx += "// Initialize " + pretty_name();
-        init_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
         break;
     }
     case token::TK_aggregate:
@@ -1434,20 +1443,21 @@ void DerivedAgentVarSymbol::create_side_effects()
             break;
         }
 
+        init_cxx += injection_description();
+        init_cxx += "// Set initial value based on dependent attribute";
+        init_cxx += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
+
         CodeBlock& c = av->side_effects_fn->func_body;
         c += injection_description();
         c += "// Maintain " + pretty_name();
         c += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
-
-        init_cxx += "// Initialize " + pretty_name();
-        init_cxx += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
         break;
     }
     case token::TK_trigger_entrances:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         // Turn it on.
         auto *av = pp_av1;
@@ -1473,9 +1483,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_trigger_exits:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         // Turn it on.
         auto *av = pp_av1;
@@ -1501,9 +1511,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_trigger_transitions:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         // Turn it on.
         auto *av = pp_av1;
@@ -1530,9 +1540,9 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_trigger_changes:
     {
-        init_cxx += injection_description();
-        init_cxx += "// Restore to starting value before entering simulation";
-        init_cxx += cxx_initialization_expression(false);
+        reset_cxx += injection_description();
+        reset_cxx += "// Re-assign starting value for simulation entry";
+        reset_cxx += cxx_initialization_expression(false);
 
         // Turn it on.
         auto *av = pp_av1;

@@ -52,6 +52,7 @@ public:
         , finalize_tables_fn(nullptr)
         , initialize_identity_attributes_fn(nullptr)
         , initialize_derived_attributes_fn(nullptr)
+        , reset_derived_attributes_fn(nullptr)
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
         , ss_time_fn(nullptr)
@@ -211,12 +212,20 @@ public:
     AgentFuncSymbol *initialize_identity_attributes_fn;
 
     /**
-     * The agent function which initializes all derived attributes in the agent.
+     * The agent function which initializes derived attributes in the agent.
      * 
      * This function has the fixed name om_initialize_derived_attributes().  It is used in the run-
-     * time support class BaseAgent before the agent enters the simulation.
+     * time support class BaseAgent to initialize values as part of the entity lifecycle.
      */
     AgentFuncSymbol *initialize_derived_attributes_fn;
+
+    /**
+     * The agent function which resets derived attributes in the agent.
+     * 
+     * This function has the fixed name om_reset_derived_attributes().  It is used in the run-
+     * time support class BaseAgent as part of the entity lifecycle.
+     */
+    AgentFuncSymbol *reset_derived_attributes_fn;
 
     /**
      * The agent function which sets all links to nullptr when the agent finishes.

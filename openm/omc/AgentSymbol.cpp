@@ -287,7 +287,16 @@ void AgentSymbol::create_auxiliary_symbols()
         assert(nullptr == initialize_derived_attributes_fn); // initialization guarantee
         initialize_derived_attributes_fn = new AgentFuncSymbol("om_initialize_derived_attributes", this);
         assert(initialize_derived_attributes_fn); // out of memory check
-        initialize_derived_attributes_fn->doc_block = doxygen_short("Initialize each derived attribute before entity enters the simulation.");
+        initialize_derived_attributes_fn->doc_block = doxygen_short("Initialize derived attributes before the entity enters the simulation.");
+        // function body is generated through code injection by attributes in post-parse phase
+    }
+
+    // The reset_derived_attributes_fn member function
+    {
+        assert(nullptr == reset_derived_attributes_fn); // initialization guarantee
+        reset_derived_attributes_fn = new AgentFuncSymbol("om_reset_derived_attributes", this);
+        assert(reset_derived_attributes_fn); // out of memory check
+        reset_derived_attributes_fn->doc_block = doxygen_short("Reset derived attributes before the entity enters the simulation.");
         // function body is generated through code injection by attributes in post-parse phase
     }
 

@@ -16,7 +16,7 @@ CodeBlock AgentArrayMemberSymbol::cxx_initialization_expression(bool type_defaul
 {
     CodeBlock c;
     // example:              om_in_DurationOfLife_alive = false;\n
-    c += " // TODO";
+    c += " // TODO AgentArrayMemberSymbol " + name;
     //c += name + " = " + initialization_value(type_default) + ";";
     return c;
 }
