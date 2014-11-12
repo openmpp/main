@@ -54,6 +54,7 @@ use common qw(
 				create_digest
 				digest_differences
 				modgen_create_scex
+				normalize_event_trace
 		    );
 # Check for compile errors, and bail if any.
 if ($@) {
@@ -299,7 +300,8 @@ for my $model (@models) {
 		# If present, copy event trace / case checksum file to results directory
 		my $modgen_Base_debug_txt = "Base(debug).txt";
 		if (-e $modgen_Base_debug_txt) {
-			copy $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
+			#copy $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
+			normalize_event_trace $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
 		}
 
 		logmsg info, $model, "modgen", "Convert output tables to .csv (${significant_digits} digits of precision)";
@@ -476,7 +478,8 @@ for my $model (@models) {
 
 		# If present and non-empty copy event trace / case checksum file to results directory
 		if (-s $ompp_trace_txt) {
-			copy $ompp_trace_txt, "${current_results_dir}/trace.txt";
+			#copy $ompp_trace_txt, "${current_results_dir}/trace.txt";
+			normalize_event_trace $ompp_trace_txt, "${current_results_dir}/trace.txt";
 		}
 
 		logmsg info, $model, "ompp", "Convert output tables to .csv (${significant_digits} digits of precision)";

@@ -683,3 +683,83 @@ sub digest_differences {
 	return $result;
 }
 
+# Normalise event trace for comparability
+# arg0 - the input event trace file
+# arg1 - the output normalized event trace file
+# returns - 0 for success, otherwise non-zero
+sub normalize_event_trace
+{
+	my $input_event_trace = shift(@_);
+	my $output_event_trace = shift(@_);
+	
+	my $round_value = 0;
+	my $round_prec = 0;
+	if ($#_ == 0) {
+		$round_prec = shift(@_) - 1;
+		if ($round_prec > 0) {
+			$round_value = 1;
+		}
+	}
+
+	if (!open IN, "<${input_event_trace}") {
+		logmsg error, "error opening >${input_event_trace}";
+		return 1;
+	}
+
+	if (!open OUT, ">${output_event_trace}") {
+		logmsg error, "error opening >${output_event_trace}";
+		return 1;
+	}
+
+	my %times;
+	my %entity_ids;
+	while (<IN>) {
+		chomp;
+		my $line = $_;
+		my $is_trace_line = ($line =~ /(\w+) - actor_id=(\d+) - case_seed=(\d+) -  : event=(.*) - time=([\d.]+)/);
+		if (! $is_trace_line ) {
+			printf OUT "${line}\n";
+			next;
+		}
+		my $entity_kind = $1;
+		my $entity_id = $2;
+		my $case_seed = $3;
+		my $function = $4;
+		my $time = $5;
+		
+		# Reformat time at lower precision
+		$time = sprintf("%13.6f", $time);
+		
+		my $is_event = 0;
+		if ($function =~ /(\w+)[.](\w+)/) {
+			$is_event = 1;
+			$function = $2;
+		}
+		
+		if ($is_event) {
+			# Dump future events sorted by name
+			foreach $function (sort keys(%times)) {
+				my $time = $times{$function};
+				my $entity_id = $entity_ids{$function};
+				print OUT "                 ${time} ${function} (${entity_id})\n";
+			}
+			%times = ();
+			%entity_ids = ();
+		}
+		else {
+			# Record time and id for future event
+			$times{$function} = $time;
+			$entity_ids{$function} = $entity_id;
+		}
+		
+		if ($is_event) {
+			print OUT "${time} ${function} (${entity_id})\n";
+		}
+		
+	}
+	
+	close IN;
+	close OUT;
+	
+	return 0;
+}
