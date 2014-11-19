@@ -12,7 +12,7 @@
     MaxTrackedCases="50"
     MemoryReports="0"
     PartialReports="0"
-    Population="5000"
+    Population="0"
     PopulationScaling="0"
     SilentMode="1"
     SimulationEnd="100.0"
