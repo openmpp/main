@@ -81,7 +81,7 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
 
     h += "LinkAgentVar<"
         + pp_data_type->name + ", "
-        + pp_data_type->wrapped_type() + ", "
+        + "bool, " // allow access to bool cast in wrapped link
         + agent->name + ", "
         + reciprocal_agent->name + ", "
         + "&" + side_effects_fn->unique_name + "> ";
