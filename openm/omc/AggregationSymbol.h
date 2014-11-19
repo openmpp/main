@@ -35,6 +35,7 @@ public:
         , to(to->stable_rp())
         , pp_from(nullptr)
         , pp_to(nullptr)
+        , pp_generate_To(false)
     {
     }
 
@@ -65,6 +66,13 @@ public:
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();
+
+    /**
+     * The name of the XXX_To_YYY function for developer use.
+     *
+     * @return A string.
+     */
+    string pp_helper_name() const;
 
     /**
      * Reference to pointer to the 'from' classification
@@ -106,4 +114,10 @@ public:
      * The enumerator map for the aggregation (post-parse)
      */
     map<EnumeratorSymbol *, EnumeratorSymbol *> pp_enumerator_map;
+
+    /**
+     * true to generate the XXX_To_YYY transformation global function
+     */
+    bool pp_generate_To;
+
 };

@@ -106,6 +106,11 @@ void AggregationSymbol::post_parse(int pass)
             }
         }
 
+        // Only emit code for the XXX_To_YYY function if it is actually used in developer code.
+        if (identifiers_in_model_source.end() != identifiers_in_model_source.find(pp_helper_name())) {
+            pp_generate_To = true;
+        }
+
         break;
     }
     default:
@@ -122,7 +127,12 @@ CodeBlock AggregationSymbol::cxx_declaration_global()
     h += "";
     string from_type = pp_from->name;
     string to_type = pp_to->name;
+    h += doxygen_short("Helper map to implement the aggregation from " + from_type + " to " + to_type);
     h += "extern const map<" + from_type +", " + to_type + "> " + name + ";";
+    if (pp_generate_To) {
+        h += doxygen_short("Map an enumerator in " + from_type + " to the corresponding enumerator in " + to_type);
+        h += to_type + " " + pp_helper_name() + "(" + from_type + " level);";
+    }
 
     return h;
 }
@@ -136,6 +146,7 @@ CodeBlock AggregationSymbol::cxx_definition_global()
     c += "";
     string from_type = pp_from->name;
     string to_type = pp_to->name;
+    string helper_name = from_type + "_To_" + to_type; // name of the generated XX_To_YY function
     c += "const map<" + from_type +", " + to_type + "> " + name + " = {";
     for (auto from_enumerator : pp_from->pp_enumerators) {
         auto element = pp_enumerator_map.find(from_enumerator);
@@ -146,5 +157,19 @@ CodeBlock AggregationSymbol::cxx_definition_global()
     }
     c += "};";
 
+    if (pp_generate_To) {
+        c += to_type + " " + pp_helper_name() + "(" + from_type + " level)";
+        c += "{";
+        c += "return " + name + ".find(level)->second;";
+        c += "}";
+    }
+
     return c;
+}
+
+string AggregationSymbol::pp_helper_name() const
+{
+    assert(pp_from);
+    assert(pp_to);
+    return pp_from->name + "_To_" + pp_to->name;
 }
