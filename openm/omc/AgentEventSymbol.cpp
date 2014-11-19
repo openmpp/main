@@ -136,9 +136,11 @@ CodeBlock AgentEventSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     int event_id = pp_event_id;
+    int modgen_event_num = pp_modgen_event_num;
     h += "Event<" + agent->name + ", "
         + to_string(event_id) + ", "
         + to_string(event_priority) + ", "
+        + to_string(modgen_event_num) + ", "
         + "&" + implement_func->unique_name + ", "
         + "&" + time_func->unique_name + ">";
     h += name + ";";

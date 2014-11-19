@@ -56,6 +56,8 @@ public:
 
     virtual int get_event_priority() const = 0;
 
+    virtual int get_modgen_event_num() const = 0;
+
     virtual int get_agent_id() = 0;
 
     virtual void implement_event() = 0;
@@ -256,7 +258,7 @@ public:
      */
     void event_checksum_update()
     {
-        event_checksum_value += event_time * (get_event_id() + 1);
+        event_checksum_value += event_time * (get_modgen_event_num() + 1);
     }
 
     /**
@@ -290,7 +292,17 @@ public:
     }
 };
 
-template<typename A, const int event_id, const int event_priority, void (A::*implement_function)(), Time (A::*time_function)()>
+/**
+ * An event.
+ *
+ * @tparam A                          The entity class.
+ * @tparam event_id                   The constant event identifier.
+ * @tparam event_priority             The constant event priority.
+ * @tparam modgen_event_num           The constant modgen event number.
+ * @tparam (A::*implement_function)() The constant implement function for the event.
+ * @tparam (A::*time_function)()      The constant time function for the event.
+ */
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(), Time (A::*time_function)()>
 class Event : public BaseEvent
 {
 public:
@@ -307,6 +319,13 @@ public:
         // Note that event_priority is not a class member.
         // It is a compile-time constant supplied as a template argument.
         return event_priority;
+    }
+
+    int get_modgen_event_num() const
+    {
+        // Note modgen_event_num is not a class member.
+        // It is a compile-time constant supplied as a template argument.
+        return modgen_event_num;
     }
 
     // get pointer to containing agent
@@ -370,6 +389,6 @@ public:
 /**
 * Event offset in Agent (definition)
 */
-template<typename A, const int event_id, const int event_priority, void (A::*implement_function)(), Time(A::*time_function)()>
-size_t Event<A, event_id, event_priority, implement_function, time_function>::offset_in_agent = 0;
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(), Time(A::*time_function)()>
+size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_agent = 0;
 

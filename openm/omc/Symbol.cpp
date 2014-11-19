@@ -963,24 +963,51 @@ void Symbol::post_parse_all()
         table->pp_table_agentvars.sort( [] (TableAnalysisAgentVarSymbol *a, TableAnalysisAgentVarSymbol *b) { return a->index < b->index; } );
     }
 
-    // Create an amalgamated set of event names, in all agents, sorted lexicographically.
-    // Note that the set contains no duplicates, but event names can be duplicates in different agents.
-    set<string> all_event_names;
-    for ( auto *agent : pp_all_agents ) {
-        for ( auto *event : agent->pp_agent_events ) {
-            //string str = event->event_name;
-            string str = event->pp_modgen_name();
-            all_event_names.insert( str );
+    {
+        // Create an amalgamated set of event names, in all agents, sorted lexicographically.
+        // Note that the set contains no duplicates, but event names can be duplicates in different agents.
+        set<string> all_event_names;
+        for (auto *agent : pp_all_agents) {
+            for (auto *event : agent->pp_agent_events) {
+                string str = event->event_name;
+                all_event_names.insert(str);
+            }
+        }
+
+        // For each event in the model, find the index in the sorted list, and assign it as event_id
+        for (auto *agent : pp_all_agents) {
+            for (auto *event : agent->pp_agent_events) {
+                string str = event->event_name;
+                auto iter = all_event_names.find(str);
+                event->pp_event_id = distance(all_event_names.begin(), iter);
+            }
         }
     }
 
-    // For each event in the model, find the index in the sorted list, and assign it as event_id
+    // For each event in the model, create the modgen-compatible event number for event checksum generation.
+    // Modgen event numbers are numbered sequentially starting at 0 within each actor
+    // by Modgen event name in lexicographic order.
+    // The event which implements self-scheduling events is assigned the last number
     for (auto *agent : pp_all_agents) {
-        for (auto *event : agent->pp_agent_events) {
-            //string str = event->event_name;
+        set<string> agent_event_names;
+        for ( auto *event : agent->pp_agent_events ) {
+            if (event == agent->ss_event) {
+                // do not insert self-scheduling event into the set of event names
+                continue;
+            }
             string str = event->pp_modgen_name();
-            auto iter = all_event_names.find(str);
-            event->pp_event_id = distance(all_event_names.begin(), iter);
+            agent_event_names.insert( str );
+        }
+        for (auto *event : agent->pp_agent_events) {
+            if (event == agent->ss_event) {
+                // special case for self-scheduling event: assign 1 greater
+                // than the highest numbered event
+                event->pp_modgen_event_num = agent_event_names.size();
+                continue;
+            }
+            string str = event->pp_modgen_name();
+            auto iter = agent_event_names.find(str);
+            event->pp_modgen_event_num = distance(agent_event_names.begin(), iter);
         }
     }
 

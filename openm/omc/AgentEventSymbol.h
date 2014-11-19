@@ -35,6 +35,7 @@ public:
         , event_priority(event_priority)
         , is_developer_supplied(is_developer_supplied)
         , pp_event_id(0)
+        , pp_modgen_event_num(0)
     {
         create_auxiliary_symbols(tfs, ifs, is_developer_supplied);
     }
@@ -107,5 +108,13 @@ public:
      * resolution of tied events, after event time and event priority.
      */
     int pp_event_id;
+
+    /**
+     * Modgen-compatible numeric identifier for the event. The numeric identifier is the ordinal of
+     * the event name among all events in the entity, ignoring the schedule event.  This identifier
+     * is used to generate event checksums compatible with Modgen, to allow exact checksum
+     * comparisons.
+     */
+    int pp_modgen_event_num;
 };
 
