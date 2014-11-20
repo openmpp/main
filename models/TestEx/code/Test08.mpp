@@ -1,0 +1,82 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2008 Minister of Industry. 
+*
+* Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | JGM	| 08/10/10 |                                                         |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+actor Person {
+	event timeTest08Event, 	Test08Event;
+	hook Test08Start, 		Start;
+	void Test08Start();
+
+	TIME next_test08 	= {0};
+	double counter08 	= {0}; // init to 0
+	logical dominant08 	= dominant; // local variable to track dominant
+
+	// All states init FALSE
+	logical testStartLogicalA08; 			// TRUE in Start()
+	logical testStartLogicalB08 = {FALSE}; 	// TRUE in first event
+};
+
+void Person::Test08Start()
+{
+	testStartLogicalA08 = 1;
+	next_test08 = time;
+}
+
+// -------------------------------
+// Event
+// -------------------------------
+TIME Person::timeTest08Event()
+{
+//	return WAIT(0.25);
+	return next_test08;
+}
+
+void Person::Test08Event()
+{
+	next_test08 += (TIME) 0.25;
+	if ( age > 0 ) { 	
+		counter08++;   // update for every event alive
+	}
+	if ( !testStartLogicalB08 && age > 3 ) {
+		testStartLogicalB08 = 1; // Update the logical state to true
+	}
+}
+
+// -------------------------------
+// Table definitions
+// -------------------------------
+
+//
+// Test1: How does testStartLogicalA08 display in entrances when it is set to 1
+// in Start()?
+// Expect: For it not to show up in entrances ??
+// Test2: How does testStartLogicalB08 display in entrances? It is set to 1
+// after age 3
+// Expect: For a 1 to appear under entrances just after age 3
+//
+table Person T08_TABLE01 //EN Test 8: Test entrances()
+[ dominant ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter08), 			// decimals=2
+		//CC. tenth test of entrances(observed_state, value)
+		entrances(testStartLogicalA08, TRUE),
+		//CC. eleventh test of entrances(observed_state, value)
+		entrances(testStartLogicalB08, TRUE),
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+

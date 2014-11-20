@@ -1,0 +1,90 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2009 Minister of Industry. 
+*
+* Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | JGM	| 09/10/10 |  User tables                                            |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+actor Person {
+	event timeTest09Event, 	Test09Event;
+	hook Test09Start, 		Start;
+	void Test09Start();
+
+	double valueHolder09 = {0};
+	double next_test09;
+
+
+};
+
+void Person::Test09Start()
+{
+	valueHolder09 = 0;
+	next_test09 = time;
+}
+
+// -------------------------------
+// Event
+// -------------------------------
+TIME Person::timeTest09Event()
+{
+	return (TIME) next_test09;
+}
+
+void Person::Test09Event()
+{
+	next_test09 += (TIME) 0.25;
+	valueHolder09++;
+}
+
+
+// -------------------------------
+// Create User table function
+// -------------------------------
+// Test: Copy the values from the regular table into the user_table
+// Expect: All values to be the same.
+void UserTables()
+{
+	int nYear;
+	int nCount = SIZE(SIMYEAR);
+
+	for ( nYear=0; nYear < nCount; nYear++ ) {
+		double dVH   	= GetTableValue( "T09_TABLE01.Expr0", 0, nYear );
+		double dAge 	= GetTableValue( "T09_TABLE01.Expr1", 0, nYear );
+		double dAgeUnit = GetTableValue( "T09_TABLE01.Expr2", 0, nYear );
+		SetTableValue( "TEST09.VALUE_HOLDER", 	dVH,  nYear );
+		SetTableValue( "TEST09.AGE", 			dAge, nYear );
+		SetTableValue( "TEST09.AGE_UNIT", 		dAgeUnit, nYear );
+	}
+}
+
+
+// -------------------------------
+// Table definitions
+// -------------------------------
+user_table TEST09 // Test 9B: User table. Get age and value from Test 9 table
+{
+	SIMYEAR *
+	{
+		VALUE_HOLDER, 	// decimals=2
+		AGE, 			// decimals=2
+		AGE_UNIT 		// decimals=2
+	}
+};
+
+table Person T09_TABLE01 //EN Test 9A: Holds user table data
+[ dominant ]
+{
+	myCase *
+	sim_year *
+	{
+		value_out(valueHolder09),		// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+	}
+};
+
+

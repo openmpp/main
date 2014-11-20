@@ -1,0 +1,205 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2007 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | JGM	| 07/10/10 |  Sub-actor tests                                        |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+link Person.ltestactor TestActor06.lperson;
+
+link Person.mlTestActors[] TestActor06.mlTest;
+
+actor Person {
+	event timeTest06Event, Test06Event;
+	hook Test06Start, Start;
+	void Test06Start();
+	void CreateLinks();
+	//CC. second test of count(link_name)
+	int numTestActors = count( mlTestActors ); // Count of TestActors
+
+	int foo = 4;
+	TIME next_test06 	 = {0};
+	int counter06 		 = {0};
+	// subactor 
+	//int Foobar.counter06 = 0;
+};
+
+void Person::CreateLinks()
+{
+	TestActor06* prTest;
+	for ( int i=0; i < 3; i++ ) { // create 2
+		prTest = new TestActor06();
+		prTest->Start(time, (time+age), FALSE);
+		mlTestActors->Add(prTest);
+	}
+}
+
+
+void Person::Test06Start()
+{
+	//CreateLinks(); // Keep off so simulations are slightly faster
+	next_test06 = time;
+}
+
+// -------------------------------
+// Event
+// -------------------------------
+TIME Person::timeTest06Event()
+{
+//	return WAIT(1);
+	return next_test06;
+}
+
+void Person::Test06Event()
+{
+	next_test06 += (TIME) 1;
+	//BUG
+	//Foobar.counter06++;
+
+	// Now access single link and update
+	if ( ltestactor ) { 
+		counter06++;
+
+		// -------------------------------
+		// Test 1 - Accessing and Setting States across links
+		// -------------------------------
+		// NEW BUG: Cannot increment, but can set the value directly (next line)
+		//ltestactor->nTestCounter06++; 	// Modgen gives: 
+											// Warning: Ignored assignment to calculated state(s): 
+											// Error:          'nTestCounter06' of actor 'TestActor06'
+
+		ltestactor->nTestCounter06  = counter06; 			// Works
+		ltestactor->nTestActor06Age = (int)ltestactor->age; //set with own age
+
+		// -------------------------------
+		// Test 2 - Access link operators across links
+		// -------------------------------
+	}
+}
+
+// -------------------------------
+// More actors for testing
+// -------------------------------
+actor TestActor06
+{
+	LIFE nTestActor06Age = {0};
+	int nTestCounter06 = {0};
+	// NEW BUG: The next line sets the sim_year in TestActor06 using the year from the Person
+	// Actor. The result is that the sim_year variable gets reset back to 1970
+	// (the lower bound its range) when Person is finished. Arguably, this is
+	// not a bug, BUT it would be nice to warn the user they are using a state
+	// variable that has changed because an actor has exited. (At least that's
+	// what I'm assuming the cause is.)
+	//SIMYEAR  sim_year = COERCE(SIMYEAR, lperson->year);  	// Using the year variable from the Person actor
+	SIMYEAR  sim_year = COERCE(SIMYEAR, year);  			// This uses a version of Clock that is tailored for the TestActor06
+
+	logical tadominant;
+
+	void Start(TIME tCurrent, TIME tBirth, logical isDom);
+	void StartClockHere2();
+	void Finish();
+};
+
+void TestActor06::Start( TIME tCurrent, TIME tBirth, logical isDom )
+{
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+	tadominant 		= isDom;
+	time 			= tCurrent;
+	age  			= tCurrent - tBirth; // Just = 0
+	nTestCounter06 	= 0;
+	nTestActor06Age = int(age);
+	StartClockHere2();
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+}
+
+void TestActor06::StartClockHere2()
+{
+    // hooked function call location (OpenM++)
+    hook_StartClockHere2();
+}
+
+void TestActor06::Finish()
+{
+    // hooked function call location (OpenM++)
+    hook_Finish();
+
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+}
+
+
+// -------------------------------
+// Table definitions
+// -------------------------------
+track TestActor06
+{
+	nTestCounter06,
+	tadominant,
+	nTestActor06Age,
+	age
+};
+
+table Person T06_TABLE01 //EN Test 6: Person
+[ dominant ]
+{
+	myCase *
+	//sim_year+ *
+	curtate_age *
+	{
+		value_out( sim_year ) / unit, 			// decimals=2
+		value_out( curtate_age ) / unit, 		// decimals=2
+		// BUG2: Project won't build if this is uncommented
+		// value_out( Foobar.counter06 ) 	 / unit, // decimals=2
+		value_out( counter06 ) 	 / unit, 	// decimals=2
+		value_out( numTestActors ), 	// decimals=2
+		age / unit
+
+	}
+};
+
+table TestActor06 T06_TABLE02 //EN Test 6: Dominant TestActor 
+[ tadominant == TRUE ]
+{
+	//sim_year+ *
+	nTestActor06Age *
+	{
+		value_out( sim_year ) / unit, 			// decimals=2
+		value_out( nTestActor06Age )	/ unit, // decimals=2
+		value_out( nTestCounter06 )	/ unit, 	// decimals=2
+		age	/ unit
+	}
+};
+
+// BUG: When this table is commented out, the table above displays nothing
+// When this exists, they are both non-empty
+table TestActor06 T06_TABLE03 //EN Test 6: Non-dominant TestActor
+[ tadominant == FALSE ]
+{
+	//sim_year+ *
+	nTestActor06Age *
+	{
+		value_out( sim_year ) / unit, 			// decimals=2
+		value_out( nTestActor06Age )	/ unit, // decimals=2
+		value_out( nTestCounter06 )	/ unit, 	// decimals=2
+		age	/ unit
+	}
+};
+/*
+*/
+
+
+
+
+
+
+
+
+

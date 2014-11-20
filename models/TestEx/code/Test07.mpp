@@ -1,0 +1,237 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2007 Minister of Industry. 
+*
+* Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | JGM	| 07/10/10 |                                                         |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+actor Person {
+	event timeTest07Event, 	Test07Event;
+	hook Test07Start, 		Start;
+	void Test07Start();
+
+	TIME next_test07 	= {0};
+	double counter07 	= {0}; // init to 0
+	logical dominant07 	= dominant; // local variable to track dominant
+
+	// All states init FALSE
+	logical testStartLogicalA07 	= {FALSE}; // TRUE in Start()
+	logical testStartLogicalB07 	= {FALSE}; // TRUE in first event
+	logical testStartLogicalC07 	= {FALSE}; // Never TRUE
+	logical testStartLogicalD07 	= {TRUE};  // Always TRUE
+};
+
+void Person::Test07Start()
+{
+	testStartLogicalA07 = TRUE;
+	next_test07 = time;
+}
+
+// -------------------------------
+// Event
+// -------------------------------
+TIME Person::timeTest07Event()
+{
+//	return WAIT(0.25);
+	return next_test07;
+}
+
+void Person::Test07Event()
+{
+	next_test07 += (TIME) 0.25;
+	if ( age > 0 ) { 	
+		counter07++;   // update for every event alive
+	}
+	if ( !testStartLogicalB07 ) {
+		testStartLogicalB07 = 1; // Update the logical state to true
+	}
+}
+
+// -------------------------------
+// Table definitions
+// -------------------------------
+
+table_group copy_tests {
+	T07_TABLE01,
+	T07_TABLE02,
+	T07_TABLE03,
+	T07_TABLE04,
+	T07_TABLE05,
+	T07_TABLE06
+};
+
+//
+// Test: Check to ensure the filter properly allows appropriate binary
+// classification variable
+// Expect: Dominant should be the same (1-3), non-dominant should look the same (4-6)
+//
+// Test: Expect the counter to increment based on the event()
+// Expect: Using event tabulation variables are tabulated in the cell AFTER the
+// event has occurred.
+//
+// Test: Expect the counter to increment based on the interval()
+// Expect: Using interval tabulation variables are tabulated in the cell BEFORE the
+// change occurred.
+//
+table Person T07_TABLE01 //EN Test 7: Table event(), interval() test
+[ dominant ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter07), 			// decimals=2
+		event(counter07), 				// decimals=2
+		value_out(event(counter07)), 	// decimals=2
+		interval(counter07), 			// decimals=2
+		value_out(interval(counter07)),// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+
+table Person T07_TABLE02 //EN Test 7: COPY 1 OF Table event(), interval() test
+[ dominant == TRUE ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter07), 			// decimals=2
+		event(counter07), 				// decimals=2
+		value_out(event(counter07)), 	// decimals=2
+		interval(counter07), 			// decimals=2
+		value_out(interval(counter07)),// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+table Person T07_TABLE03 //EN Test 7: COPY 2 OF Table event(), interval() test
+[ dominant07 ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter07), 			// decimals=2
+		event(counter07), 				// decimals=2
+		value_out(event(counter07)), 	// decimals=2
+		interval(counter07), 			// decimals=2
+		value_out(interval(counter07)),// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+table Person T07_TABLE04 //EN Test 7: NON-DOMINANT Table event(), interval() test
+[ dominant == FALSE ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter07), 			// decimals=2
+		event(counter07), 				// decimals=2
+		value_out(event(counter07)), 	// decimals=2
+		interval(counter07), 			// decimals=2
+		value_out(interval(counter07)),// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+table Person T07_TABLE05 //EN Test 7: Copy 1 of NON-DOMINANT Table event(), interval() test
+[ !dominant ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter07), 			// decimals=2
+		event(counter07), 				// decimals=2
+		value_out(event(counter07)), 	// decimals=2
+		interval(counter07), 			// decimals=2
+		value_out(interval(counter07)),// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+table Person T07_TABLE06 //EN Test 7: Copy 2 of NON-DOMINANT Table event(), interval() test
+[ !dominant07 ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out(counter07), 			// decimals=2
+		event(counter07), 				// decimals=2
+		value_out(event(counter07)), 	// decimals=2
+		interval(counter07), 			// decimals=2
+		value_out(interval(counter07)),// decimals=2
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+// -------------------------------
+// Test: Test that the entrances works as expected. 
+// Expect: The table below is expected. Note that 1 can be used in place of
+// TRUE as well
+// -------------------------------
+table Person T07_TABLE07 //EN Test 7: Derived State tests
+[ dominant ]
+{
+	myCase *
+	sim_year *
+	//curtate_age *
+	{
+		value_out( testStartLogicalA07 ), 	
+		value_out( testStartLogicalB07 ), 	
+		value_out( testStartLogicalC07 ), 	
+		value_out( testStartLogicalD07 ), 	
+
+		//CC. second test of entrances(observed_state, value)
+		entrances( testStartLogicalA07, TRUE), 	
+		//CC. third test of entrances(observed_state, value)
+		entrances( testStartLogicalB07, TRUE), 	
+		//CC. fourth test of entrances(observed_state, value)
+		entrances( testStartLogicalC07, TRUE), 	
+		//CC. fifth test of entrances(observed_state, value)
+		entrances( testStartLogicalD07, TRUE), 	
+
+		//CC. sixth test of entrances(observed_state, value)
+		entrances( testStartLogicalA07, FALSE), 	
+		//CC. seventh test of entrances(observed_state, value)
+		entrances( testStartLogicalB07, FALSE), 	
+		//CC. eigth test of entrances(observed_state, value)
+		entrances( testStartLogicalC07, FALSE), 	
+		//CC. ninth test of entrances(observed_state, value)
+		entrances( testStartLogicalD07, FALSE), 	
+
+		value_out(age),					// decimals=2
+		age / unit 						// decimals=2
+
+	}
+};
+
+
+
+
+
+
+
+
+
