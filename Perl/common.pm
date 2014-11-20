@@ -380,16 +380,16 @@ sub modgen_create_scex
 	while (<FRAMEWORK_ODAT>) {
 		chomp;
 		my $line = $_;
-		if ( $line =~ /SimulationSeed\s*=\s*(\d+)/ ) {
+		if ( $line =~ /^\s*SimulationSeed\s*=\s*(\d+)/ ) {
 			$General{"StartingSeed"} = $1;
 		}
-		if ( $line =~ /SimulationCases\s*=\s*(\d+)/ ) {
+		if ( $line =~ /^\s*SimulationCases\s*=\s*(\d+)/ ) {
 			$General{"Cases"} = $1;
 		}
-		if ( $line =~ /SimulatedPopulation\s*=\s*(\d+[.]?\d+)/ ) {
+		if ( $line =~ /^\s*SimulatedPopulation\s*=\s*(\d+[.]?\d+)/ ) {
 			$General{"Population"} = $1;
 		}
-		if ( $line =~ /SimulationEnd\s*=\s*(\d+[.]?\d+)/ ) {
+		if ( $line =~ /^\s*SimulationEnd\s*=\s*(\d+[.]?\d+)/ ) {
 			$General{"SimulationEnd"} = $1;
 		}
 	}
@@ -713,6 +713,7 @@ sub normalize_event_trace
 
 	my %times;
 	my %entity_ids;
+	my %entity_kinds;
 	while (<IN>) {
 		chomp;
 		my $line = $_;
@@ -741,19 +742,22 @@ sub normalize_event_trace
 			foreach $function (sort keys(%times)) {
 				my $time = $times{$function};
 				my $entity_id = $entity_ids{$function};
-				print OUT "                 ${time} ${function} (${entity_id})\n";
+				my $entity_kind = $entity_kinds{$function};
+				print OUT "                 ${time} ${function} (${entity_kind} ${entity_id})\n";
 			}
 			%times = ();
 			%entity_ids = ();
+			%entity_kinds = ();
 		}
 		else {
 			# Record time and id for future event
 			$times{$function} = $time;
 			$entity_ids{$function} = $entity_id;
+			$entity_kinds{$function} = $entity_kind;
 		}
 		
 		if ($is_event) {
-			print OUT "${time} ${function} (${entity_id})\n";
+			print OUT "${time} ${function} (${entity_kind} ${entity_id})\n";
 		}
 		
 	}
