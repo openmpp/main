@@ -149,7 +149,12 @@ double day_to_time(int day_number)
  */
 double day_length()
 {
-    return 1.0 / 365.0;
+    // The returned value is 1/365, with mantissa coarsened
+    // as in fixed_precision_float, using a value for the current epoch
+    // (something bigger than 2048, e.g. 2050).
+    // That drops 11 binary digits of precision, allowing
+    // exact arithmetic using day lengths.
+    return 0.0027397260273573920;
 }
 
 /**
