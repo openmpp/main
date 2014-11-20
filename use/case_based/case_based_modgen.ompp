@@ -176,7 +176,18 @@ long long GetCaseCounterInThread()
 void SimulateEvents()
 {
     // Simulate the case
-    while (BaseEvent::do_next_event());
+    while (true) {
+        if (fmk::do_exit_simulation_all) {
+            // The previous event signalled to end the case
+            BaseAgent::exit_simulation_all();
+            fmk::do_exit_simulation_all = false;
+            break;
+        }
+        if (!BaseEvent::do_next_event()) {
+            // no more events
+            break;
+        }
+    }
 }
 
 void RunModel(IModel * i_model)

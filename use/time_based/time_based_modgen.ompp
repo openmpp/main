@@ -83,12 +83,22 @@ void SimulateEvents()
 
     // Simulate the population
     while ( true ) {
-        if (BaseEvent::time_next_event() > simulation_end) {
-            BaseAgent::age_all_agents(simulation_end);
-            BaseAgent::finalize_all_agents();
+        if (fmk::do_exit_simulation_all) {
+            // The previous event signalled to end the simulation
+            BaseAgent::exit_simulation_all();
+            fmk::do_exit_simulation_all = false;
             break;
         }
-        if (! BaseEvent::do_next_event() ) break;
+        if (BaseEvent::time_next_event() > simulation_end) {
+            // The next event would exceed the maximum simulation time
+            BaseAgent::age_all_agents(simulation_end);
+            BaseAgent::exit_simulation_all();
+            break;
+        }
+        if (!BaseEvent::do_next_event()) {
+            // no more events
+            break;
+        }
     }
 }
 

@@ -26,6 +26,13 @@ namespace fmk {
      * Specified by model code through a call to SetPopulation().
      */
     long set_population_value = 0;
+
+    /**
+     * A signal flag to the framework to exit all entities from the simulation.
+     * 
+     * Set by model code through a call to signal_exit_simulation_all().
+     */
+    bool do_exit_simulation_all = false;
 }
 
 /**
@@ -87,6 +94,15 @@ void SetPopulation(long lPopulation)
 {
     fmk::set_population_value = lPopulation;
 }
+
+/**
+ * Tells the framework to exit all entities from the simulation after completion of the current event.
+ */
+void signal_exit_simulation_all()
+{
+    fmk::do_exit_simulation_all = true;
+}
+
 
 /**
  * Piece linear lookup.
