@@ -522,7 +522,7 @@ void DerivedAgentVarSymbol::assign_sorting_group()
 
     // The sorting_group affects the order of injection of side-effect code 
     // for related derived agentvars with inter-dependencies (in a side-effect of the same agentvar).
-    // Code injection is ordered by sorting group, then lexicographically by unqiue_name.
+    // Code injection is ordered by sorting group, then lexicographically by unique_name.
     // 
     // The ordering requirements are as follows:
     // continuously-updated durations occur first (side-effect of 'time')
@@ -1571,8 +1571,132 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_duration_trigger:
     {
-        // TODO
-        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
+        auto *av = pp_av1; // the triggering agentvar
+        assert(av);
+        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
+
+        {
+            // Code injection into the om_reset_derived_attributes function.
+
+            // This function runs after developer initialization just before the entity enters the simulation.
+            // The local variable reset_cxx is declared at the beginning of this function.
+            reset_cxx += injection_description();
+            reset_cxx += "{";
+            reset_cxx += "auto & ss_attr = " + name + ";";
+            reset_cxx += "auto & ss_time = " + ait->name + ";";
+
+            // attribute-specific code (begin)
+            switch (tok) {
+
+            case token::TK_duration_trigger:
+            reset_cxx += "// There is no change in the triggering condition when the entity enters the simulation.";
+            reset_cxx += "ss_time = time_infinite;";
+            reset_cxx += "ss_attr.set(false);";
+            break;
+
+            default:
+            assert(false);
+            }
+            // attribute-specific code (end)
+
+            reset_cxx += "}";
+        }
+
+        {
+            // Code injection into the side-effect function of the triggering agentvar
+
+            CodeBlock& cxx = av->side_effects_fn->func_body;
+            assert(pp_agent->ss_event);
+            cxx += injection_description();
+            cxx += "if (om_active) {";
+            cxx += "auto & ss_attr = " + name + ";";
+            cxx += "auto & ss_time = " + ait->name + ";";
+            cxx += "auto & ss_event = " + pp_agent->ss_event->name + ";";
+
+            // attribute-specific code (begin)
+            switch (tok) {
+
+            case token::TK_duration_trigger:
+            cxx += "if (om_new == " + k1->value() + ") {";
+            cxx += "// Start the timer for " + pretty_name();
+            cxx += "ss_time = time + " + k2->value() + ";";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            cxx += "else if (om_old == " + k1->value() + ") {";
+            cxx += "// The condition is no longer satisfied for " + pretty_name();
+            cxx += "ss_attr.set(false);";
+            cxx += "ss_time = time_infinite;";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            break;
+
+            default:
+            assert(false);
+            }
+            // attribute-specific code (end)
+
+            cxx += "}";
+        }
+
+        {
+            // Code injection into the implement function of self-scheduling events
+
+            assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
+            CodeBlock& cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+            cxx += injection_description();
+            cxx += "{";
+            cxx += "// Maintain " + pretty_name();
+            cxx += "auto & ss_attr = " + name + ";";
+            cxx += "auto & ss_time = " + ait->name + ";";
+            cxx += "if (current_time == ss_time) {";
+
+            // attribute-specific code (begin)
+            switch (tok) {
+
+            case token::TK_duration_trigger:
+            cxx += "ss_attr.set(true);";
+            cxx += "ss_time = time_infinite;";
+            break;
+
+            default:
+            assert(false);
+            }
+            // attribute-specific code (end)
+
+            if (Symbol::option_event_trace) {
+                cxx += "// Dump event time information to trace log";
+                string evt_name = "scheduled - " + to_string(numeric_id);
+                cxx += "if (BaseEvent::trace_event_on) "
+                    "BaseEvent::event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"" + evt_name + "\", "
+                    " (double) time);"
+                    ;
+            }
+            cxx += "}";  // end of the block started at "if (current_time == ..."
+            cxx += "}";  // end of the block for this code injection
+        }
+
+        {
+            // Code injection into the time function of self-scheduling events
+
+            assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
+            CodeBlock& cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
+            // The generated code minimizes the working variable 'et' with the next time of this self-scheduling agentvar
+            // The required 'return et;' statement in the body of the event time function is generated elsewhere
+            // after all code injection to this function is complete.
+            cxx += injection_description();
+            cxx += "{";
+            cxx += "// Check scheduled time for " + pretty_name();
+            cxx += "auto & ss_time = " + ait->name + ";";
+            cxx += "if (ss_time < et) et = ss_time;";
+            cxx += "}";
+        }
+
         break;
     }
     case token::TK_self_scheduling_int:
