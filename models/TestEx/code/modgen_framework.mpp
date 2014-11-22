@@ -58,7 +58,6 @@ void signal_exit_simulation_all()
     do_exit_simulation_all = true;
 }
 
-
 /**
  * Simulate all events for all entities in the simulation.
  */

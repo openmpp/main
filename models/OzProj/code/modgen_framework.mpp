@@ -31,6 +31,15 @@ void Observation::initialize_attributes() { }
 void Observation::enter_simulation() { }
 void Observation::exit_simulation() { }
 
+bool do_exit_simulation_all = false;
+/**
+ * Tells the framework to exit all entities from the simulation after completion of the current event.
+ */
+void signal_exit_simulation_all()
+{
+    do_exit_simulation_all = true;
+}
+
 /**
  * Simulate all events for all entities in the simulation.
  */
@@ -38,10 +47,10 @@ void SimulateEvents()
 {
 	while (!gpoEventQueue->Empty())
 	{
-    	if (gbCancelled || gbErrors) 
+    	if (do_exit_simulation_all || gbCancelled || gbErrors) 
     	{
-			// Simulation cancelled by user, or run-time errors occurred.
-			// Terminate the case immediately.
+            do_exit_simulation_all = false;
+			// Terminate the case.
     		gpoEventQueue->FinishAllActors();
     	}
 		else 

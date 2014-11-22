@@ -48,6 +48,18 @@ void LogSimulationStart()
 	ProgressMessage( szBuffer );
 }
 
+bool do_exit_simulation_all = false;
+/**
+ * Tells the framework to exit all entities from the simulation after completion of the current event.
+ */
+void signal_exit_simulation_all()
+{
+    do_exit_simulation_all = true;
+}
+
+/**
+ * Simulate all events for all entities in the simulation.
+ */
 void SimulateEvents()
 {
 	// Buffer for messages
@@ -78,8 +90,9 @@ void SimulateEvents()
 			dStartTime = dCurrentTime;
 		}
 
-		if ( dCurrentTime > SIMULATION_END() || gbInterrupted || gbCancelled || gbErrors )
+		if ( dCurrentTime > SIMULATION_END() || do_exit_simulation_all || gbInterrupted || gbCancelled || gbErrors )
 		{
+            do_exit_simulation_all = false;
 			if (dCurrentTime > SIMULATION_END())
 			{
 				// age all actors to the simulation end time
