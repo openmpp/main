@@ -1563,13 +1563,8 @@ void DerivedAgentVarSymbol::create_side_effects()
         c2 += name + ".set(false);";
         break;
     }
-    case token::TK_duration_counter:
-    {
-        // TODO
-        pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
-        break;
-    }
     case token::TK_duration_trigger:
+    case token::TK_duration_counter:
     {
         auto *av = pp_av1; // the triggering agentvar
         assert(av);
@@ -1592,6 +1587,12 @@ void DerivedAgentVarSymbol::create_side_effects()
             reset_cxx += "// There is no change in the triggering condition when the entity enters the simulation.";
             reset_cxx += "ss_time = time_infinite;";
             reset_cxx += "ss_attr.set(false);";
+            break;
+
+            case token::TK_duration_counter:
+            reset_cxx += "// There is no change in the triggering condition when the entity enters the simulation.";
+            reset_cxx += "ss_time = time_infinite;";
+            reset_cxx += "ss_attr.set(0);";
             break;
 
             default:
@@ -1632,6 +1633,22 @@ void DerivedAgentVarSymbol::create_side_effects()
             cxx += "}";
             break;
 
+            case token::TK_duration_counter:
+            cxx += "if (om_new == " + k1->value() + ") {";
+            cxx += "// Start the timer for " + pretty_name();
+            cxx += "ss_time = time + " + k2->value() + ";";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            cxx += "else if (om_old == " + k1->value() + ") {";
+            cxx += "// The condition is no longer satisfied for " + pretty_name();
+            cxx += "ss_attr.set(0);";
+            cxx += "ss_time = time_infinite;";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            break;
+
             default:
             assert(false);
             }
@@ -1658,6 +1675,24 @@ void DerivedAgentVarSymbol::create_side_effects()
             case token::TK_duration_trigger:
             cxx += "ss_attr.set(true);";
             cxx += "ss_time = time_infinite;";
+            break;
+
+            case token::TK_duration_counter:
+            if (k3) {
+                // variant with counter limit
+                cxx += "if (ss_attr.get() < " + k3->value() + ") {";
+                cxx += "ss_attr.set(1 + ss_attr.get());";
+                cxx += "ss_time = time + " + k2->value() + ";";
+                cxx += "}";
+                cxx += "else {";
+                cxx += "ss_time = time_infinite;";
+                cxx += "}";
+            }
+            else {
+                // variant with no counter limit
+                cxx += "ss_attr.set(1 + ss_attr.get());";
+                cxx += "ss_time = time + " + k2->value() + ";";
+            }
             break;
 
             default:
