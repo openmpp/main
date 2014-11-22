@@ -380,16 +380,16 @@ sub modgen_create_scex
 	while (<FRAMEWORK_ODAT>) {
 		chomp;
 		my $line = $_;
-		if ( $line =~ /^\s*SimulationSeed\s*=\s*(\d+)/ ) {
+		if ( $line =~ /^\s*int\s+SimulationSeed\s*=\s*(\d+)/ ) {
 			$General{"StartingSeed"} = $1;
 		}
-		if ( $line =~ /^\s*SimulationCases\s*=\s*(\d+)/ ) {
+		if ( $line =~ /^\s*long\s+long\s+SimulationCases\s*=\s*(\d+)/ ) {
 			$General{"Cases"} = $1;
 		}
-		if ( $line =~ /^\s*SimulatedPopulation\s*=\s*(\d+[.]?\d+)/ ) {
+		if ( $line =~ /^\s*double\s+SimulatedPopulation\s*=\s*(\d+[.]?\d+)/ ) {
 			$General{"Population"} = $1;
 		}
-		if ( $line =~ /^\s*SimulationEnd\s*=\s*(\d+[.]?\d+)/ ) {
+		if ( $line =~ /^\s*Time\s+SimulationEnd\s*=\s*(\d+[.]?\d+)/ ) {
 			$General{"SimulationEnd"} = $1;
 		}
 	}
@@ -735,6 +735,10 @@ sub normalize_event_trace
 		if ($function =~ /(\w+)[.](\w+)/) {
 			$is_event = 1;
 			$function = $2;
+		}
+		elsif ($function =~ /scheduled - (\d+)/) {
+			$is_event = 1;
+			$function = "self-scheduling event - attribute $1";
 		}
 		
 		if ($is_event) {

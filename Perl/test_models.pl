@@ -421,6 +421,8 @@ for my $model (@models) {
 				"/clp:ForceNoAlign",
 				"/p:Configuration=${configuration}",
 				"/p:Platform=${platform}",
+				"/p:ENABLE_SCENARIO_PARAMETERS=1",
+				"/p:ENABLE_FIXED_PARAMETERS=1",
 				"/p:GRID_COMPUTING=EMPTY",
 				"/p:RUN_SCENARIO=0",
 				"/p:EXCEL_EXPORT_SCENARIO=0",

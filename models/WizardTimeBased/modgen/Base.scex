@@ -15,7 +15,7 @@
     Population="0"
     PopulationScaling="0"
     SilentMode="1"
-    SimulationEnd="100.0"
+    SimulationEnd="100"
     StartingSeed="16807"
     Subsamples="1"
     TextTracking="0"
