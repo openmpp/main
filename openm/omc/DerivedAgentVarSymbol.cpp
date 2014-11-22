@@ -1851,6 +1851,9 @@ void DerivedAgentVarSymbol::create_side_effects()
             reset_cxx += "{";
             reset_cxx += "auto & ss_attr = " + name + ";";
             reset_cxx += "auto & ss_time = " + ait->name + ";";
+            if (dav->tok == token::TK_duration && dav->iav) {
+                reset_cxx += "auto & ss_cond = " + dav->iav->name + ";";
+            }
             if (tok == token::TK_self_scheduling_split) {
                 reset_cxx += "auto part = ss_attr.get(); // working copy of partition";
             }
@@ -1863,10 +1866,26 @@ void DerivedAgentVarSymbol::create_side_effects()
                 reset_cxx += "ss_attr.set(0);";
             }
             else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && dav->iav) {
-                //TODO
+                reset_cxx += "// Initialize the integerized duration to zero.";
+                reset_cxx += "ss_attr.set(0);";
+                // condition is true
+                reset_cxx += "if (ss_cond) {";
+                reset_cxx += "// Condition is true at simulation entry";
+                reset_cxx += "// The time to wait is one interval of time from the current time.";
+                reset_cxx += "ss_time = time + 1;";
+                reset_cxx += "}";
+                // condition is false
+                reset_cxx += "else {";
+                reset_cxx += "// Condition is false at simulation entry";
+                reset_cxx += "// There is no next change scheduled.";
+                reset_cxx += "ss_time = time_infinite;";
+                reset_cxx += "}";
             }
             else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && !dav->iav) {
-                //TODO
+                reset_cxx += "// Initialize the integerized duration to zero.";
+                reset_cxx += "ss_attr.set(0);";
+                reset_cxx += "// The time to wait is one interval of time from the current time.";
+                reset_cxx += "ss_time = time + 1;";
             }
             else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
                 reset_cxx += "// No spells are active at simulation entry";
@@ -1876,10 +1895,30 @@ void DerivedAgentVarSymbol::create_side_effects()
                 reset_cxx += "ss_attr.set(part);";
             }
             else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && dav->iav) {
-                //TODO
+                reset_cxx += "// Set the partitioned duration to the interval containing zero.";
+                reset_cxx += "part.set_from_value(0);";
+                reset_cxx += "ss_attr.set(part);";
+                // condition is true
+                reset_cxx += "if (ss_cond) {";
+                reset_cxx += "// Condition is true at simulation entry";
+                reset_cxx += "// The time to wait is the upper bound of the current interval in the partition.";
+                reset_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                reset_cxx += "else ss_time = time + part.upper();";
+                reset_cxx += "}";
+                // condition is false
+                reset_cxx += "else {";
+                reset_cxx += "// Condition is false at simulation entry";
+                reset_cxx += "// There is no next change scheduled.";
+                reset_cxx += "ss_time = time_infinite;";
+                reset_cxx += "}";
             }
             else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && !dav->iav) {
-                //TODO
+                reset_cxx += "// Set the partitioned duration to the interval containing zero.";
+                reset_cxx += "part.set_from_value(0);";
+                reset_cxx += "ss_attr.set(part);";
+                reset_cxx += "// The time to wait is the upper bound of the current interval in the partition.";
+                reset_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                reset_cxx += "else ss_time = time + part.upper();";
             }
             else {
                 assert(false);
@@ -1926,7 +1965,18 @@ void DerivedAgentVarSymbol::create_side_effects()
                     cse += "}";
                 }
                 else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration) {
-                    //TODO
+                    // spell start
+                    cse += "if (om_new == true) {";
+                    cse += "// Spell is starting.";
+                    cse += "// The time to wait is the time remaining to the next integer boundary of duration.";
+                    cse += "ss_time = time + (1 - (ss_time - (int)ss_time));";
+                    cse += "}";
+                    // spell end
+                    cse += "else {";
+                    cse += "// Spell is ending.";
+                    cse += "// There is no next change scheduled.";
+                    cse += "ss_time = time_infinite;";
+                    cse += "}";
                 }
                 else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
                     // spell start
@@ -1940,7 +1990,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                     cse += "else ss_time = time + part.upper();";
                     cse += "}";
                     // spell end
-                    cse += "else { // om_new == false";
+                    cse += "else {";
                     cse += "// The active spell is ending, so reset self-scheduling attribute.";
                     cse += "// Set the partitioned duration to the interval containing zero.";
                     cse += "part.set_from_value(0);";
@@ -1950,7 +2000,19 @@ void DerivedAgentVarSymbol::create_side_effects()
                     cse += "}";
                 }
                 else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration) {
-                    //TODO
+                    // spell start
+                    cse += "if (om_new == true) {";
+                    cse += "// Spell is starting";
+                    cse += "// The time to wait is the upper bound of the current interval in the partition.";
+                    cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                    cse += "else ss_time = time + part.upper();";
+                    cse += "}";
+                    // spell end
+                    cse += "else {";
+                    cse += "// Spell is ending.";
+                    cse += "// There is no next change scheduled.";
+                    cse += "ss_time = time_infinite;";
+                    cse += "}";
                 }
                 else {
                     assert(false);
@@ -1968,32 +2030,20 @@ void DerivedAgentVarSymbol::create_side_effects()
             }
             cif += "";
 
-            // There are 6 distinct cases to handle
-            if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_active_spell_duration) {
+            // There are 2 distinct cases to handle
+            if (tok == token::TK_self_scheduling_int) {
                 cif += "// Increment the integerized duration.";
                 cif += "ss_attr.set(ss_attr.get() + 1);";
                 cif += "// The time to wait is one interval of time.";
                 cif += "ss_time = time + 1;";
             }
-            else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && dav->iav) {
-                //TODO
-            }
-            else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && !dav->iav) {
-                //TODO
-            }
-            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
+            else if (tok == token::TK_self_scheduling_split) {
                 cif += "// Set the partitioned duration to the next interval.";
                 cif += "part++;";
                 cif += "ss_attr.set(part);";
                 cif += "// The time to wait is the width of the current interval in the partition.";
                 cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
                 cif += "else ss_time = time + part.width();";
-            }
-            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && dav->iav) {
-                //TODO
-            }
-            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && !dav->iav) {
-                //TODO
             }
             else {
                 assert(false);
