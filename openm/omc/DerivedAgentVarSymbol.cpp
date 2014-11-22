@@ -842,18 +842,19 @@ void DerivedAgentVarSymbol::create_side_effects()
     // The local variable init_cxx is used to inject code into the function init_derived_attributes().
     // That function is called as part of the entity lifecycle, before model developer initialization code
     // for the entity, generally in a function named Start().
+    // It is needed to handle situations where the initial value of a derived attribute is not zero.
+    // For example, this can occur for aggregate() as well as for split().
 
     assert(pp_agent->initialize_derived_attributes_fn);
     CodeBlock& init_cxx = pp_agent->initialize_derived_attributes_fn->func_body;
 
     // The local variable reset_cxx is used to inject code into the function reset_derived_attributes().
     // That function is called after developer code in Start() to remove any side-effects which may have compromised
-    // the starting values of a derived attribute.
+    // the initial value of a derived attribute.
     // For example, changes(attr) must record the number of changes in 'attr' as a result of events
     // in the simulation, and not side effects from assignment to 'attr' in developer code in Start() 
     // before the entity enters the simulation.  So value of changes(attr) needs to be reset to 0 after 
     // developer code in Start(), but before the entity enters the simulation.
-    // This is done for most, but not all derived attributes.
 
     assert(pp_agent->reset_derived_attributes_fn);
     CodeBlock& reset_cxx = pp_agent->reset_derived_attributes_fn->func_body;
@@ -1566,7 +1567,7 @@ void DerivedAgentVarSymbol::create_side_effects()
     case token::TK_duration_trigger:
     case token::TK_duration_counter:
     {
-        auto *av = pp_av1; // the triggering agentvar
+        auto *av = pp_av1; // the triggering attribute
         assert(av);
         assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
 
@@ -1741,6 +1742,7 @@ void DerivedAgentVarSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av); // the agentvar being integerized or split, e.g. "age", "time", etc.
         assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
+        assert(pp_agent->ss_event); // the event for self-scheduling attributes
         assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
         assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
         CodeBlock& ctf = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
@@ -1754,66 +1756,75 @@ void DerivedAgentVarSymbol::create_side_effects()
         if (av->name == "age" || av->name == "time") {
 
             // Code injection: age/time side-effects, for use in Start
-            // find the symbol (age or time)
-            auto sym = Symbol::get_symbol(av->name, agent);
-            assert(sym);
-            auto av = dynamic_cast<AgentVarSymbol *>(sym);
-            assert(av);
-            // get the call-back
+            // get the side-effect call-back function for age / time
             assert(av->side_effects_fn);
             CodeBlock& cse = av->side_effects_fn->func_body; // body of the C++ side-effect function for the argument attribute (e.g. "age")
             // inject the code
             cse += injection_description();
-            cse += "// Initialize value for self-scheduling attribute";
             cse += "if (!om_active) {";
-            cse += "// Execution gets here only in Start()";
-            if (tok == token::TK_self_scheduling_int) {
-                cse += "// Set initial value";
-                cse += name + ".set((int)om_new);";
-                if (av->name == "age") {
-                    cse += "// Time of next change (fraction of the unit of time remaining to next integer boundary)";
-                    cse += ait->name + " = time + (1 - (om_new - (int)om_new));";
-                }
-                else {
-                    assert(av->name == "time");
-                    cse += "// Time of next change (next integer time)";
-                    cse += ait->name + " = 1 + (int)om_new;";
-                }
+            cse += "// Initial value of " + av->name + " is being assigned.";
+            cse += "auto & ss_attr = " + name + ";";
+            cse += "auto & ss_time = " + ait->name + ";";
+            if (tok == token::TK_self_scheduling_split) {
+                cse += "auto part = ss_attr.get(); // working copy of partition";
             }
-            else { // tok == token::TK_self_scheduling_split
-                assert(pp_prt);
-                cse += "// Set initial value";
-                // 'part' in the next statement is a block-local variable with limited scope
-                cse += "auto part = "  + name + ".get();";
+
+            // There are 3 distinct cases to handle
+            if (tok == token::TK_self_scheduling_int && av->name == "age") {
+                cse += "// Initial value is the integer part of age.";
+                cse += "ss_attr.set((int)om_new);";
+                cse += "// Time to wait for next change is the fraction of time remaining to next integer boundary";
+                cse += "ss_time = time + (1 - (om_new - (int)om_new));";
+            }
+            else if (tok == token::TK_self_scheduling_int && av->name == "time") {
+                cse += "// Initial value is the integer part of time.";
+                cse += "ss_attr.set((int)om_new);";
+                cse += "// Time of next change is next integer time";
+                cse += "ss_time = 1 + (int)om_new;";
+            }
+            else if (tok == token::TK_self_scheduling_split) {
+                cse += "// Initial value is the corresponding partition interval.";
                 cse += "part.set_from_value(om_new);";
-                cse += name + ".set(part);";
-                cse += "// Time of next change - time remaining to get to upper bound of current interval in partition.";
-                cse += "if (part.upper() == REAL_MAX) " + ait->name + " = time_infinite;";
-                cse += "else " + ait->name + " = time + (part.upper() - om_new);";
+                cse += "ss_attr.set(part);";
+                cse += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
+                cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                cse += "else ss_time = time + (part.upper() - om_new);";
             }
+            else {
+                assert(false);
+            }
+
             cse += "}";
 
             // Code injection: self-scheduling event implement function
             cif += injection_description();
             cif += "if (current_time == " + ait->name + ") {";
+            cif += "auto & ss_attr = " + name + ";";
+            cif += "auto & ss_time = " + ait->name + ";";
+            if (tok == token::TK_self_scheduling_split) {
+                cif += "auto part = ss_attr.get(); // working copy of partition";
+            }
+            cif += "";
+
+            // There are 2 distinct cases to handle
             if (tok == token::TK_self_scheduling_int) {
                 cif += "// Update the value";
-                cif += name + ".set(" + name + ".get() + 1);";
+                cif += "ss_attr.set(ss_attr.get() + 1);";
                 cif += "// Update the time of next change";
-                cif += ait->name + " += 1;";
+                cif += "ss_time += 1;";
             }
-            else { // tok == token::TK_self_scheduling_split
-                assert(pp_prt);
+            else if (tok == token::TK_self_scheduling_split) {
                 cif += "// Update the value";
-                // 'part' in the next statement is a block-local variable with limited scope
-                cif += "auto part = "  + name + ".get();";
                 cif += "part++; // Advance to the next interval in the partition.";
-                cif += name + ".set(part);";
+                cif += "ss_attr.set(part);";
                 cif += "// Update the time of next change by the width of that new interval.";
-                cif += "if (part.upper() == REAL_MAX) " + ait->name + " = time_infinite;";
-                cif += "else " + ait->name + " += part.width();";
-                //cif += ait->name + " += " + name + ".width();";
+                cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                cif += "else ss_time += part.width();";
             }
+            else {
+                assert(false);
+            }
+
             if (Symbol::option_event_trace) {
                 cif += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
@@ -1829,36 +1840,55 @@ void DerivedAgentVarSymbol::create_side_effects()
             cif += "}";
         }
         else {
-            // The argument of self_scheduling_XXX is a derived attribute, e.g. active_spell_duration()
+            // The argument of self_scheduling_XXX is a derived attribute, either active_spell_duration(attr,val), duration(), or duration(attr,val)
             auto dav = dynamic_cast<DerivedAgentVarSymbol *>(pp_av1);
             assert(dav); // the argument, e.g. active_spell_duration
+            // TODO raise syntax error if following assert is not true
+            assert(dav->tok == token::TK_active_spell_duration || dav->tok == token::TK_duration);
 
-            if (dav->tok == token::TK_active_spell_duration) {
-                // Inject code into the om_reset_derived_attributes function
-                // This code turns off the self-scheduling attribute/event, since there are no active spells
-                // when the entity enters the simulation.
-                reset_cxx += injection_description();
-                reset_cxx += "// There are no active spells when the entity enters the simulation";
-                reset_cxx += "{";
-                reset_cxx += "// 'ss_attr' is a reference to the self-scheduling attribute affected by this active spell.";
-                reset_cxx += "auto & ss_attr = " + name + ";";
-                reset_cxx += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
-                reset_cxx += "auto & ss_time = " + ait->name + ";";
+            // Inject code into the om_reset_derived_attributes function
+            reset_cxx += injection_description();
+            reset_cxx += "{";
+            reset_cxx += "auto & ss_attr = " + name + ";";
+            reset_cxx += "auto & ss_time = " + ait->name + ";";
+            if (tok == token::TK_self_scheduling_split) {
+                reset_cxx += "auto part = ss_attr.get(); // working copy of partition";
+            }
+
+            // There are 6 distinct cases to handle
+            if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_active_spell_duration) {
+                reset_cxx += "// No spells are active at simulation entry";
                 reset_cxx += "ss_time = time_infinite;";
-                if (tok == token::TK_self_scheduling_int) {
-                    reset_cxx += "// Set the integerized duration to zero.";
-                    reset_cxx += "ss_attr.set(0);";
-                }
-                else { // tok == token::TK_self_scheduling_split
-                    reset_cxx += "// Set the partitioned duration to the interval containing zero.";
-                    reset_cxx += "// 'part' is a working copy of the partition value of the self-scheduling attribute";
-                    reset_cxx += "auto part = ss_attr.get();";
-                    reset_cxx += "part.set_from_value(0);";
-                    reset_cxx += "ss_attr.set(part);";
-                }
-                reset_cxx += "}";
+                reset_cxx += "// Set the integerized duration to zero.";
+                reset_cxx += "ss_attr.set(0);";
+            }
+            else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && dav->iav) {
+                //TODO
+            }
+            else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && !dav->iav) {
+                //TODO
+            }
+            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
+                reset_cxx += "// No spells are active at simulation entry";
+                reset_cxx += "ss_time = time_infinite;";
+                reset_cxx += "// Set the partitioned duration to the interval containing zero.";
+                reset_cxx += "part.set_from_value(0);";
+                reset_cxx += "ss_attr.set(part);";
+            }
+            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && dav->iav) {
+                //TODO
+            }
+            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && !dav->iav) {
+                //TODO
+            }
+            else {
+                assert(false);
+            }
+            reset_cxx += "}";
 
-                // Inject code into the spell condition side-effects function.
+            // Inject code into the spell condition side-effects function.
+            if (dav->iav) {
+                // We're here except if a self_scheduling of unconditioned duration
                 assert(dav->iav); // the identity attribute which holds the spell condition
                 assert(dav->iav->side_effects_fn); // the side-effects function of the identity attribute which holds the spell condition
                 CodeBlock& cse = dav->iav->side_effects_fn->func_body; // the function body of that side-effects function
@@ -1866,95 +1896,122 @@ void DerivedAgentVarSymbol::create_side_effects()
                 // Inject code into the spell condition side-effects function.
                 cse += injection_description();
                 cse += "if (om_active) {";
-                cse += "// The self-scheduling event will require recalculation";
-                assert(pp_agent->ss_event);
-                cse += pp_agent->ss_event->name + ".make_dirty();";
-                cse += "";
-                cse += "// 'ss_attr' is a reference to the self-scheduling attribute affected by this active spell.";
                 cse += "auto & ss_attr = " + name + ";";
-                cse += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
                 cse += "auto & ss_time = " + ait->name + ";";
+                cse += "auto & ss_event = " + pp_agent->ss_event->name + ";";
                 if (tok == token::TK_self_scheduling_split) {
-                    cse += "// 'part' is a working copy of the partition value of the self-scheduling attribute";
-                    cse += "auto part = ss_attr.get();";
+                    cse += "auto part = ss_attr.get(); // working copy of partition";
                 }
-                cse += "if (om_new == true) {";
-                cse += "// Active spell is starting, initialize self-scheduling attribute";
-                if (tok == token::TK_self_scheduling_int) {
+                cse += "// The self-scheduling event will require recalculation";
+                cse += "ss_event.make_dirty();";
+                cse += "";
+
+                // There are 4 distinct cases to handle
+                if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_active_spell_duration) {
+                    // spell start
+                    cse += "if (om_new == true) {";
+                    cse += "// Active spell is starting, initialize self-scheduling attribute";
                     cse += "// Set the integerized duration to zero.";
                     cse += "ss_attr.set(0);";
                     cse += "// The time to wait is one interval of time from current time.";
                     cse += "ss_time = time + 1;";
+                    cse += "}";
+                    // spell end
+                    cse += "else { // om_new == false";
+                    cse += "// The active spell is ending, so reset self-scheduling attribute.";
+                    cse += "// Set the integerized duration to zero.";
+                    cse += "ss_attr.set(0);";
+                    cse += "// There is no next change scheduled.";
+                    cse += "ss_time = time_infinite;";
+                    cse += "}";
                 }
-                else { // tok == token::TK_self_scheduling_split
+                else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration) {
+                    //TODO
+                }
+                else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
+                    // spell start
+                    cse += "if (om_new == true) {";
+                    cse += "// Active spell is starting, initialize self-scheduling attribute";
                     cse += "// Set the partitioned duration to the interval containing zero.";
                     cse += "part.set_from_value(0);";
                     cse += "ss_attr.set(part);";
                     cse += "// The time to wait is the upper bound of the current interval in the partition.";
                     cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
                     cse += "else ss_time = time + part.upper();";
-                }
-                cse += "}";
-                cse += "else { // om_new == false";
-                cse += "// The active spell is ending, so reset self-scheduling attribute.";
-                if (tok == token::TK_self_scheduling_int) {
-                    cse += "// Set the integerized duration to zero.";
-                    cse += "ss_attr.set(0);";
-                }
-                else { // tok == token::TK_self_scheduling_split
+                    cse += "}";
+                    // spell end
+                    cse += "else { // om_new == false";
+                    cse += "// The active spell is ending, so reset self-scheduling attribute.";
                     cse += "// Set the partitioned duration to the interval containing zero.";
                     cse += "part.set_from_value(0);";
                     cse += "ss_attr.set(part);";
+                    cse += "// There is no next change scheduled.";
+                    cse += "ss_time = time_infinite;";
+                    cse += "}";
                 }
-                cse += "// There is no next change scheduled.";
-                cse += "ss_time = time_infinite;";
-                cse += "}";
-                cse += "}";
+                else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration) {
+                    //TODO
+                }
+                else {
+                    assert(false);
+                }
+                cse += "} // if (om_active)";
+            }
 
-                // Code injection: self-scheduling event implement function
-                cif += injection_description();
-                cif += "if (current_time == " + ait->name + ") {";
-                cif += "// 'ss_attr' is a reference to the self-scheduling attribute.";
-                cif += "auto & ss_attr = " + name + ";";
-                cif += "// 'ss_time' is a reference to the event time of the self-scheduling attribute";
-                cif += "auto & ss_time = " + ait->name + ";";
-                cif += "";
-                if (tok == token::TK_self_scheduling_split) {
-                    cif += "// 'part' is a working copy of the partition value of the self-scheduling attribute";
-                    cif += "auto part = ss_attr.get();";
-                }
-                if (tok == token::TK_self_scheduling_int) {
-                    cif += "// Increment the integerized duration.";
-                    cif += "ss_attr.set(ss_attr.get() + 1);";
-                    cif += "// The time to wait is one interval of time.";
-                    cif += "ss_time = time + 1;";
-                }
-                else { // tok == token::TK_self_scheduling_split
-                    cif += "// Set the partitioned duration to the next interval.";
-                    cif += "part++;";
-                    cif += "ss_attr.set(part);";
-                    cif += "// The time to wait is the width of the current interval in the partition.";
-                    cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                    cif += "else ss_time = time + part.width();";
-                }
-                if (Symbol::option_event_trace) {
-                    cif += "// Dump event time information to trace log";
-                    string evt_name = "scheduled - " + to_string(numeric_id);
-                    cif += "if (BaseEvent::trace_event_on) "
-                        "BaseEvent::event_trace_msg("
-                        "\"" + agent->name + "\", "
-                        "(int)entity_id, "
-                        "GetCaseSeed(), "
-                        "\"" + evt_name + "\", "
-                        " (double) time);"
-                        ;
-                }
-                cif += "}";
+            // Code injection: self-scheduling event implement function
+            cif += injection_description();
+            cif += "if (current_time == " + ait->name + ") {";
+            cif += "auto & ss_attr = " + name + ";";
+            cif += "auto & ss_time = " + ait->name + ";";
+            if (tok == token::TK_self_scheduling_split) {
+                cif += "auto part = ss_attr.get(); // working copy of partition";
+            }
+            cif += "";
+
+            // There are 6 distinct cases to handle
+            if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_active_spell_duration) {
+                cif += "// Increment the integerized duration.";
+                cif += "ss_attr.set(ss_attr.get() + 1);";
+                cif += "// The time to wait is one interval of time.";
+                cif += "ss_time = time + 1;";
+            }
+            else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && dav->iav) {
+                //TODO
+            }
+            else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration && !dav->iav) {
+                //TODO
+            }
+            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
+                cif += "// Set the partitioned duration to the next interval.";
+                cif += "part++;";
+                cif += "ss_attr.set(part);";
+                cif += "// The time to wait is the width of the current interval in the partition.";
+                cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                cif += "else ss_time = time + part.width();";
+            }
+            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && dav->iav) {
+                //TODO
+            }
+            else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration && !dav->iav) {
+                //TODO
             }
             else {
-                // TODO, enumerate those arguments which are supported using 'if' conditions, give warning for those, and finally and error in the 'else' for anything else
-                pp_warning("Warning - Not implemented (value not maintained) - " + pretty_name());
+                assert(false);
             }
+
+            if (Symbol::option_event_trace) {
+                cif += "// Dump event time information to trace log";
+                string evt_name = "scheduled - " + to_string(numeric_id);
+                cif += "if (BaseEvent::trace_event_on) "
+                    "BaseEvent::event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"" + evt_name + "\", "
+                    " (double) time);"
+                    ;
+            }
+            cif += "}";
         }
         break;
     }
