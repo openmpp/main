@@ -119,6 +119,12 @@ actor Host
     counter v38 = self_scheduling_split(age, MY_PART);
     counter v39 = self_scheduling_int(time);
     counter v40 = self_scheduling_split(time, MY_PART);
+    counter v41 = self_scheduling_int(active_spell_duration(disease_phase, DP_LATENT));
+    counter v42 = self_scheduling_split(active_spell_duration(disease_phase, DP_LATENT), MY_PART);
+    counter v43 = self_scheduling_int(duration(disease_phase, DP_LATENT));
+    counter v44 = self_scheduling_split(duration(disease_phase, DP_LATENT), MY_PART);
+    counter v45 = self_scheduling_int(duration());
+    counter v46 = self_scheduling_split(duration(), MY_PART);
 
     //EN 10+ years
     logical year_ge_10 = (report_time >= 10) ? TRUE : FALSE;
@@ -219,7 +225,13 @@ table Host ZZZ_01
         v37, //EN v37
         v38, //EN v38
         v39, //EN v39
-        v40 //EN v40
+        v40, //EN v40
+        v41, //EN v41
+        v42, //EN v42
+        v43, //EN v43
+        v44, //EN v44
+        v45, //EN v45
+        v46 //EN v46
   }
     * year_ge_10
 };
