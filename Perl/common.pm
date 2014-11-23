@@ -712,6 +712,7 @@ sub normalize_event_trace
 	}
 
 	my %times;
+	my %functions;
 	my %entity_ids;
 	my %entity_kinds;
 	while (<IN>) {
@@ -727,6 +728,7 @@ sub normalize_event_trace
 		my $case_seed = $3;
 		my $function = $4;
 		my $time = $5;
+		my $key = sprintf("%s %10d", $function, $entity_id);
 		
 		# Reformat time at lower precision
 		$time = sprintf("%13.6f", $time);
@@ -742,22 +744,25 @@ sub normalize_event_trace
 		}
 		
 		if ($is_event) {
-			# Dump future events sorted by name
-			foreach $function (sort keys(%times)) {
-				my $time = $times{$function};
-				my $entity_id = $entity_ids{$function};
-				my $entity_kind = $entity_kinds{$function};
+			# Dump future events sorted by key (function + entity_id)
+			foreach $key (sort keys(%times)) {
+				my $time = $times{$key};
+				my $function = $functions{$key};
+				my $entity_id = $entity_ids{$key};
+				my $entity_kind = $entity_kinds{$key};
 				print OUT "                 ${time} ${function} (${entity_kind} ${entity_id})\n";
 			}
 			%times = ();
+			%functions = ();
 			%entity_ids = ();
 			%entity_kinds = ();
 		}
 		else {
-			# Record time and id for future event
-			$times{$function} = $time;
-			$entity_ids{$function} = $entity_id;
-			$entity_kinds{$function} = $entity_kind;
+			# Record information for future event in maps
+			$times{$key} = $time;
+			$functions{$key} = $function;
+			$entity_ids{$key} = $entity_id;
+			$entity_kinds{$key} = $entity_kind;
 		}
 		
 		if ($is_event) {
