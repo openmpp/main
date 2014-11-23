@@ -1681,8 +1681,8 @@ void DerivedAgentVarSymbol::create_side_effects()
             case token::TK_duration_counter:
             if (k3) {
                 // variant with counter limit
-                cxx += "if (ss_attr.get() < " + k3->value() + ") {";
                 cxx += "ss_attr.set(1 + ss_attr.get());";
+                cxx += "if (ss_attr.get() < " + k3->value() + ") {";
                 cxx += "ss_time = time + " + k2->value() + ";";
                 cxx += "}";
                 cxx += "else {";
@@ -1747,10 +1747,17 @@ void DerivedAgentVarSymbol::create_side_effects()
         assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
         CodeBlock& ctf = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
         CodeBlock& cif = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+
+        // The generated code minimizes the working variable 'et' with the next time of this self-scheduling agentvar
+        // The required 'return et;' statement in the body of the event time function is generated elsewhere
+        // after all code injection to this function is complete.
         ctf += injection_description();
         // Inject code to the event time function which minimizes the working variable 'et' with the next time of this self-scheduling agentvar
-        ctf += "et = min(et, " + ait->name +");";
-        // Note that the required 'return' statement of the body of the event time function is generated elsewhere, after all code injection is complete.
+        ctf += "{";
+        ctf += "// Check scheduled time for " + pretty_name();
+        ctf += "auto & ss_time = " + ait->name + ";";
+        ctf += "if (ss_time < et) et = ss_time;";
+        ctf += "}";
 
         // Code for specific variants of self_scheduling_int() and self_scheduling_split() agentvars
         if (av->name == "age" || av->name == "time") {
@@ -1938,6 +1945,9 @@ void DerivedAgentVarSymbol::create_side_effects()
                 cse += "auto & ss_attr = " + name + ";";
                 cse += "auto & ss_time = " + ait->name + ";";
                 cse += "auto & ss_event = " + pp_agent->ss_event->name + ";";
+                if (dav->tok == token::TK_duration) {
+                    cse += "auto & ss_dur = " + dav->name + ";";
+                }
                 if (tok == token::TK_self_scheduling_split) {
                     cse += "auto part = ss_attr.get(); // working copy of partition";
                 }
@@ -1969,7 +1979,7 @@ void DerivedAgentVarSymbol::create_side_effects()
                     cse += "if (om_new == true) {";
                     cse += "// Spell is starting.";
                     cse += "// The time to wait is the time remaining to the next integer boundary of duration.";
-                    cse += "ss_time = time + (1 - (ss_time - (int)ss_time));";
+                    cse += "ss_time = time + (1 - (ss_dur - (int)ss_dur));";
                     cse += "}";
                     // spell end
                     cse += "else {";
@@ -2003,9 +2013,9 @@ void DerivedAgentVarSymbol::create_side_effects()
                     // spell start
                     cse += "if (om_new == true) {";
                     cse += "// Spell is starting";
-                    cse += "// The time to wait is the upper bound of the current interval in the partition.";
+                    cse += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
                     cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                    cse += "else ss_time = time + part.upper();";
+                    cse += "else ss_time = time + part.upper() - ss_dur;";
                     cse += "}";
                     // spell end
                     cse += "else {";
