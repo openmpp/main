@@ -185,7 +185,7 @@ public:
     // limits (static constants)
     static const T min = 0;
     static const T max = T_size - 1;
-    static const size_t size = T_size;
+    static const int size = T_size;
 
 private:
     // assignment cover function

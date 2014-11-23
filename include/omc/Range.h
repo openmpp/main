@@ -226,7 +226,7 @@ public:
     // limits (static constants)
     static const int min = T_min;
     static const int max = T_max;
-    static const size_t size = (int)T_max - (int)T_min + 1;
+    static const int size = (int)T_max - (int)T_min + 1;
 
 private:
     // cover function to get value
