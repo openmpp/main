@@ -692,15 +692,6 @@ sub normalize_event_trace
 	my $input_event_trace = shift(@_);
 	my $output_event_trace = shift(@_);
 	
-	my $round_value = 0;
-	my $round_prec = 0;
-	if ($#_ == 0) {
-		$round_prec = shift(@_) - 1;
-		if ($round_prec > 0) {
-			$round_value = 1;
-		}
-	}
-
 	if (!open IN, "<${input_event_trace}") {
 		logmsg error, "error opening >${input_event_trace}";
 		return 1;
@@ -718,11 +709,23 @@ sub normalize_event_trace
 	while (<IN>) {
 		chomp;
 		my $line = $_;
-		my $is_trace_line = ($line =~ /(\w+) - actor_id=(\d+) - case_seed=(\d+) -  : event=(.*) - time=([\d.]+)/);
-		if (! $is_trace_line ) {
+		my $is_checksum_line = ($line =~ /^Case seed : ([\d.]+)\t-\tCase sample: (\d+)\t-\tCheckSum : ([\d.]+)$/);
+		if ($is_checksum_line) {
+			my $case_seed = $1;
+			my $case_sample = $2;
+			my $checksum = $3;
+			# retain 11 digits of precision in the checksum
+			$checksum = 0 + sprintf("%.10e", $checksum);
+			printf OUT "Seed: %15d Sample: %2d Checksum: %20.5f\n", $case_seed, $case_sample, $checksum;
+			next;
+		}
+		my $is_trace_line = ($line =~ /^(\w+) - actor_id=(\d+) - case_seed=(\d+) -  : event=(.*) - time=([\d.]+)$/);
+		if (!$is_trace_line) {
+			# pass through anything unrecognised
 			printf OUT "${line}\n";
 			next;
 		}
+		# is trace line
 		my $entity_kind = $1;
 		my $entity_id = $2;
 		my $case_seed = $3;
