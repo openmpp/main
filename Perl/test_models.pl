@@ -15,7 +15,14 @@ my $models_root = getcwd;
 
 my @models;
 
+my $do_modgen = 1;
+my $do_ompp = 1;
+
 if ($#ARGV >= 0) {
+	if ( $ARGV[0] eq "-nomodgen") {
+		shift @ARGV;
+		$do_modgen = 0;
+	}
 	@models = @ARGV;
 }
 else {
@@ -33,12 +40,9 @@ my $configuration = "Debug";
 my $platform = "Win32";
 #my $platform = "x64";
 	
-my $do_modgen = 1;
-
-my $do_ompp = 1;
 
 # Number of significant digits to retain in the output csv files
-my $significant_digits = 9;
+my $significant_digits = 8;
 
 # use the common.pm module of shared functions	
 use common qw(
