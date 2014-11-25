@@ -77,6 +77,12 @@ void LogSimulationStart()
     BaseEvent::global_time = 0;
 }
 
+double SIMULATION_END()
+{
+    return (double) SimulationEnd;
+}
+
+
 void SimulateEvents()
 {
     using namespace fmk;

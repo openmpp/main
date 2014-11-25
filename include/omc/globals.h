@@ -57,6 +57,7 @@ extern int GetSubSamples();
 extern int GetReplicate();
 extern int GetUserTableReplicate();
 extern int GetReplicates();
+extern double SIMULATION_END();
 
 // defined in use/case_based/scaling_*.ompp
 //         or use/time_based/scaling_*.ompp
