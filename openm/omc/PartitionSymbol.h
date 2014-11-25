@@ -47,5 +47,19 @@ public:
 
     bool is_valid_constant(const Constant &k) const;
 
+    /**
+     * Format a number to a valid literal for a real
+     * 
+     * A double literal requires no transformation, but if real_type if float, a trailing 'f' needs
+     * to be appended to avoid compiler warnings. Also, if a trailing f is appended, the number must
+     * contain a '.'.
+     *
+     * @param num           Number to be converted (string)
+     * @param real_is_float true if real is float.
+     *
+     * @return The formatted float.
+     */
+    static string real_literal(string num, bool real_is_float);
+
 };
 

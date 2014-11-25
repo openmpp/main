@@ -114,9 +114,8 @@ CodeBlock PartitionSymbol::cxx_definition_global()
 
     h += doxygen_short(name);
 
-    // Determine floating point literal suffix
-    // (required to avoid compiler warnings if real is float)
-    string literal_suffix = RealSymbol::find()->is_float() ? "f" : "";
+    // Used below as argument to real_literal() to avoid compiler warnings if real is float
+    bool real_is_float = RealSymbol::find()->is_float();
 
     int index;  // index of interval in partition
 
@@ -127,7 +126,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
         if (index > 0) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
-            h += pes->lower_split_point + literal_suffix + ",";
+            h += real_literal(pes->lower_split_point, real_is_float) + ",";
         }
         else {
             // special case for upper limit of last partition interval
@@ -144,7 +143,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
         if (index < (pp_size() - 1)) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
-            h += pes->upper_split_point + literal_suffix + ",";
+            h += real_literal(pes->upper_split_point, real_is_float) + ",";
         }
         else {
             // special case for upper limit of last partition interval
@@ -160,7 +159,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
         assert(pes); // grammar guarantee
-        h += "{ " + pes->upper_split_point + literal_suffix + ", " + to_string(index) + " }," ;
+        h += "{ " + real_literal(pes->upper_split_point, real_is_float) + ", " + to_string(index) + " }," ;
         ++index;
         if (index == (pp_size() - 1)) break;
     }
@@ -183,4 +182,22 @@ bool PartitionSymbol::is_valid_constant(const Constant &k) const
     if (value < 0 || value > pp_size() - 1 ) return false;
 
     return true;
+}
+
+//static
+string PartitionSymbol::real_literal(string num, bool real_is_float)
+{
+    if (real_is_float) {
+        // decimal point is required in value for a float literal
+        // // e.g. 4.0f is valid but 4f is invalid.
+        if (string::npos == num.find('.')) {
+            return num + ".0f";
+        }
+        else {
+            return num + "f";
+        }
+    }
+    else {
+        return num;
+    }
 }
