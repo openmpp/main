@@ -1,0 +1,87 @@
+//LABEL(EducationTables, EN) Education tables
+
+/* NOTE(EducationTables, EN)
+	Contains optional tables associated with the Education module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+////////////////////
+// Summary tables //
+////////////////////
+
+table_group EducationSummaryTables //EN Education summary tables
+{
+	EdistByNbhdDec, 
+	EdistByIncDec, 
+	EavgByAgeDec,
+	EParToChld,
+	EParToChldAlt
+};
+
+table_group SummaryTables //EN Summary tables
+{
+	EducationSummaryTables
+};
+
+table Person EavgByAgeDec //EN EavgByAgeDec
+[ ( decade_flash ) ] 
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	* {
+			value_in(education) / unit, //EN mean education decimals=2
+			unit //EN Count
+	}
+	* decade
+};
+
+
+table Person EdistByIncDec //EN EdistByIncDec
+[ decade_flash && is_adult ] 
+{
+	split(income, INCOME_GROUP_20)
+	* {
+		value_in(education) / unit, //EN mean education decimals=2
+		unit						//EN Count
+	}
+	* decade
+}; 
+
+table Person EdistByNbhdDec	//EN EdistByNbhdDec
+[ decade_flash && is_adult ]
+{
+	{
+		value_in(education) / unit,	//EN Average Education
+		unit                        //EN Count
+	}
+	* neighborhood
+	* decade
+};
+
+actor Person
+{
+    real parent_education = lParent->education; //EN parent's education
+};
+
+table Person EParToChld //EN EParToChld
+[ ( decade_flash ) && lParent && integer_age <= 25 && integer_age <= 35 ]
+{
+	split(education, EDUCATION_GROUP_20) //EN child education
+	* {
+		 unit //EN Count
+	}
+	* split(parent_education, EDUCATION_GROUP_20) //EN parent education
+	* decade
+};
+
+table Person EParToChldAlt //EN EParToChldAlt
+[ ( decade_flash ) && lParent && integer_age <= 25 && integer_age <= 35 ]
+{
+	split(education, EDUCATION_GROUP_5) //EN child education
+	* {
+		 unit //EN Count
+	}
+	* split(parent_education, EDUCATION_GROUP_5) //EN parent education
+	* decade
+};

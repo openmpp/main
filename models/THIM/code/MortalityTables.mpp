@@ -1,0 +1,167 @@
+//LABEL(MortalityTables, EN) Mortality tables
+
+
+/* NOTE(MortalityTables, EN)
+	Contains optional tables associated with the Mortality module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+/////////////////////////
+// Verification tables //
+/////////////////////////
+
+table_group MortalityVerificationTables //EN Mortality verification tables
+{
+	LifeExpectancy,
+	HAvgByYByAgeDec, //HAvgByYByAgeDec
+	DeathsByAgeDec, //DeathsByAgeDec
+	PdistByAgeDec, //AgeDistributionByDecade
+	PdistByAgeDecNbhd, //AgeDistributionByNeighborhood
+	BaseYEduc,			//BaseIncomevsEducation
+	BaseYAvgY,			//BaseIncomeVsAvgLifetimeIncome
+	LAvgYLavgHByLLDec,			//LifetimeAverageIncomeLifeLength
+	LAvgYLAvgH,		//LifetimeAverageIncomeLifetimeAvgHealth
+	LAvgY,			//LifetimeAverageIncome
+	LAvgH			//LifetimeAverageHealth
+};
+
+table_group VerificationTables //EN Verification tables
+{
+	MortalityVerificationTables
+};
+
+table Person HAvgByYByAgeDec //EN HAvgByYByAgeDec
+[ decade_flash && is_adult ] 
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	* {
+		value_in(health) / unit, //EN mean health decimals=2
+		unit //EN Count 
+	}
+	*split(income, INCOME_GROUP_20 )
+	* decade
+};
+
+table Person DeathsByAgeDec //EN DeathsByAgeDec
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	* {
+		entrances (alive, FALSE), //EN Deaths during decade
+		value_at_entrances (alive, FALSE, age) //EN Average Age at Death decimals=2 
+		/ entrances (alive, FALSE)
+	}
+	* decade
+};
+
+
+actor Person {
+	double le_at_death = value_at_exits( alive, TRUE, age ); //EN years lived (at death)
+	double hale_at_death = value_at_exits( alive, TRUE, weighted_duration( health )); //EN health-adjusted years lived (at death)
+};
+table Person LifeExpectancy //EN Life Expectancy
+{
+	decade //EN Decade
+	* { 
+		//EN Life Expectancy decimals=2
+		value_at_exits( alive, TRUE, age ) / exits(alive, TRUE),
+
+		//EN HALE decimals=2
+		value_at_exits( alive, TRUE, weighted_duration( health ) ) / exits(alive, TRUE)
+	}
+};
+
+table Person PdistByAgeDec //EN PdistByAgeDec
+[ decade_flash ] 
+{
+	{ 
+		unit //EN Count
+	}
+	* range_age //EN Age
+	* decade //EN Decade
+};
+
+table Person PdistByAgeDecNbhd //EN PdistByAgeDecNbhd
+[ decade_flash ] 
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	*{
+		unit
+	} 
+	* neighborhood
+	* decade
+}; 
+
+table Person BaseYAvgY //EN BaseYAvgY
+[ alive == FALSE ] 
+{
+	split(baseIncome, BASE_INCOME_GROUP)
+	*{
+		unit
+	}
+	*split(cumYcumA, INCOME_GROUP_20)
+	*decade
+
+};
+
+table Person BaseYEduc //EN BaseYEduc
+[ alive == FALSE ] 
+{
+	split(baseIncome, BASE_INCOME_GROUP)
+	*{
+		unit
+	}
+	*split(education, EDUCATION_GROUP_5)
+	*decade
+}; 
+
+
+table Person LAvgYLavgHByLLDec //EN LAvgYLavgHByLLDec
+[ alive == FALSE && has_income ]
+{
+        split(cumYcumA, INCOME_GROUP_20) //EN AvgLY
+        *{
+			unit
+        }
+		*split(cumHcumA, UNIT_INTERVAL_20)
+        *split(integer_age, LIFE_LENGTH_GROUP ) //EN Age at death
+        *decade
+};
+
+table Person LAvgYLAvgH //EN LAvgYLAvgH 
+[ alive == FALSE && has_income]
+{
+	
+	split(cumYcumA, INCOME_GROUP_20) //EN AvgLY
+	*{
+		unit
+	}
+	*split(cumHcumA, UNIT_INTERVAL_20 )
+    *split(integer_age, LIFE_LENGTH_GROUP) 
+	*decade
+};
+
+
+table Person LAvgY //EN LavgY
+[ alive == FALSE && has_income ] 
+{
+	split(cumYcumA, INCOME_GROUP_20)
+	*{
+		unit
+	}
+	*split(integer_age, LIFE_LENGTH_GROUP)
+	*decade
+};
+
+
+table Person LAvgH //EN LavgH
+[ alive == FALSE && has_income ] 
+{
+	split(cumHcumA, UNIT_INTERVAL_20)
+	*{
+		unit
+	}
+	*split(integer_age, LIFE_LENGTH_GROUP)
+	*decade
+};

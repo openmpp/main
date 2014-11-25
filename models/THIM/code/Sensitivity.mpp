@@ -1,0 +1,79 @@
+//LABEL(Sensitivity, EN) Sensitivity
+
+/* NOTE(Sensitivity, EN)
+	This module contains parameters, state variables, and events associated with sensitivity.
+*/
+
+parameters
+{
+	//EN Maximum age at which sensitivity can change
+	model_generated int SensitivityChangeMaxAge;
+};
+
+void PreSimulation()
+{
+	// Hard-code value pending removal
+	SensitivityChangeMaxAge = 0;
+}
+
+actor Person
+{
+	//EN person's sensitivity in [0,1]
+	real sensitivity;
+
+	//EN Set sensitivity for newborn
+	void Start_Newborn_Sensitivity();
+	hook Start_Newborn_Sensitivity, Start_Newborn;
+
+	//EN Set sensitivity for Person in starting population
+	void Start_StartPop_Sensitivity();
+	hook Start_StartPop_Sensitivity, Start_StartPop;
+
+	//EN Change sensitivity on birthday
+	void ChangeSensitivity();
+	hook ChangeSensitivity, ChangeHealth;   // ultimately hooked to BirthdayEvent through a chain
+
+};
+
+
+
+void Person::Start_Newborn_Sensitivity()
+{
+	sensitivity = 1.0 - gs;
+}
+
+
+void Person::Start_StartPop_Sensitivity()
+{
+	sensitivity = 1.0 - gs;
+
+	//SFG TODO incorporate code in TIM-NetLogo initialize-sensitivity 
+	//SFG but wouljd need to compute aggregates and pass through a second time
+	//SFG before starting simulation.
+}
+
+void Person::ChangeSensitivity()
+{
+	// see TIM-NetLogo procedure change-agent-sensitivity-A
+
+	if ( integer_age < SensitivityChangeMaxAge )
+	{
+		// Get the Ticker actor
+		auto paTicker = asAllTicker->Item(0);
+
+		// get average income for this age
+		double dIncomeNearAge = paTicker->average_income_near_age[range_age];
+
+		if ( income > 0 && dIncomeNearAge > 0 ) 
+		{
+			double dIncomeFactor = income / dIncomeNearAge;
+			dIncomeFactor = ( dIncomeFactor >= 1 ) ? dIncomeFactor - 1 : 1 - dIncomeFactor;
+			double dNewS = sensitivity * ( 1.0 + dIncomeFactor );
+			dNewS = (dNewS < 0) ? 0 : dNewS;
+			dNewS = (dNewS > 1) ? 1 : dNewS;
+			sensitivity = dNewS;
+		}
+	}
+}
+
+

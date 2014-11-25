@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <MODEL_NAME>THIM</MODEL_NAME>
+    <SCENARIO_NAME>Base</SCENARIO_NAME>
+    <ENABLE_SCENARIO_PARAMETERS>1</ENABLE_SCENARIO_PARAMETERS>
+    <SCENARIO_PARAMETERS_FOLDER>$(ProjectDir)..\parameters\$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
+    <ENABLE_FIXED_PARAMETERS>0</ENABLE_FIXED_PARAMETERS>
+    <FIXED_PARAMETERS_FOLDER>$(ProjectDir)..\parameters\Fixed</FIXED_PARAMETERS_FOLDER>
+    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
+    <DB_PROVIDER>SQLITE</DB_PROVIDER>
+    <RUN_SCENARIO>0</RUN_SCENARIO>
+    <EXCEL_EXPORT_SCENARIO>0</EXCEL_EXPORT_SCENARIO>
+    <EXCEL_LAUNCH_SCENARIO>0</EXCEL_LAUNCH_SCENARIO>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="MODEL_NAME">
+      <Value>$(MODEL_NAME)</Value>
+    </BuildMacro>
+    <BuildMacro Include="SCENARIO_NAME">
+      <Value>$(SCENARIO_NAME)</Value>
+    </BuildMacro>
+    <BuildMacro Include="ENABLE_SCENARIO_PARAMETERS">
+      <Value>$(ENABLE_SCENARIO_PARAMETERS)</Value>
+    </BuildMacro>
+    <BuildMacro Include="SCENARIO_PARAMETERS_FOLDER">
+      <Value>$(SCENARIO_PARAMETERS_FOLDER)</Value>
+    </BuildMacro>
+    <BuildMacro Include="ENABLE_FIXED_PARAMETERS">
+      <Value>$(ENABLE_FIXED_PARAMETERS)</Value>
+    </BuildMacro>
+    <BuildMacro Include="FIXED_PARAMETERS_FOLDER">
+      <Value>$(FIXED_PARAMETERS_FOLDER)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GRID_COMPUTING">
+      <Value>$(GRID_COMPUTING)</Value>
+    </BuildMacro>
+    <BuildMacro Include="DB_PROVIDER">
+      <Value>$(DB_PROVIDER)</Value>
+    </BuildMacro>
+    <BuildMacro Include="RUN_SCENARIO">
+      <Value>$(RUN_SCENARIO)</Value>
+    </BuildMacro>
+    <BuildMacro Include="EXCEL_EXPORT_SCENARIO">
+      <Value>$(EXCEL_EXPORT_SCENARIO)</Value>
+    </BuildMacro>
+    <BuildMacro Include="EXCEL_LAUNCH_SCENARIO">
+      <Value>$(EXCEL_LAUNCH_SCENARIO)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

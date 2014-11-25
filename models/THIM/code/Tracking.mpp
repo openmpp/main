@@ -1,0 +1,77 @@
+//LABEL(Tracking, EN) Actor tracking
+
+/* NOTE(Tracking, EN)
+	This module contains the tracking statement used to output 
+	longitudinal microdata for subsequent visualization using BioBrowser.
+
+	Different state variables and filters are in comment form.
+	Un comment appropriately to select desired actors.
+*/
+
+actor Person
+{
+	real random_key = RandUniform(19);
+};
+
+track Person
+
+// filter to track roughly 1% of all Persons born in the year 100
+//[ ( 0.01 > random_key) && ( year_of_start == 100 ) ]
+[ ( 0.001 > random_key) && ( year_of_start >= 0 ) ]
+
+{
+	//all_base_states
+
+	neighborhood,
+	gs,
+	education,
+	sensitivity,
+	income,
+	health,
+	avgIncomeNearAge,
+	HIncomeEffect,
+	hDel,
+	dEducationEffect,
+	dPIncomeEffect,
+	dNbhdIncomeEffect,
+	dF,
+	perturb,
+	healthRatio,
+	incomeRatio,
+	mRateA,
+	relRisk,
+	baseIncome,
+	dY,
+	dAgeFactor,
+	dPerturbationFactor,
+	cumY,
+	cumH,
+	cumA,
+	cumYcumA,
+	cumHcumA,
+	le_at_death,
+	hale_at_death
+
+};
+
+
+track Neighborhood
+{
+	nbrhd_occupancy_factor,
+	nbrhd_avg_education,
+	nbrhd_avg_income,
+	nbrhd_avg_health, 
+	nbrhd_adult_count,
+	nbrhd_child_count
+};
+
+track Ticker
+{
+	average_education,
+	average_income,
+	average_health,
+	average_sensitivity,
+	average_gs
+};
+
+

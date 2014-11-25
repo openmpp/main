@@ -1,0 +1,2 @@
+options event_trace = on;
+options case_checksum = on;

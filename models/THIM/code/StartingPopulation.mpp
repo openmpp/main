@@ -1,0 +1,149 @@
+//LABEL(StartingPopulation, EN) Create the starting population
+
+/* NOTE(StartingPopulation, EN)
+	Contains functionality associated with the creation of the starting population
+	of Person actors.
+*/
+
+
+parameters
+{
+	//EN Age distribution of adult starting population
+	model_generated cumrate StationaryAdultPopulationDistribution[RANGE_AGE];
+	/* NOTE(StationaryAdultPopulationDistribution, EN)
+		This is the age distribution of a stationary population,
+		but with no children.
+	*/
+
+	//EN Probability of surviving to given age
+	model_generated double Survivorship[RANGE_AGE];
+
+	//EN Starting reproductive adult population size
+	model_generated int StationaryReproductivePopulationSize;
+	/* NOTE(StationaryReproductivePopulationSize, EN)
+		This is the number of persons at or above minimum reproductive age
+		in the stationary population.
+	*/
+
+	//EN Starting reproductive adult population size
+	model_generated int StationaryAdultPopulationSize;
+	/* NOTE(StationaryAdultPopulationSize, EN)
+		This is the number of persons at or above AdultAge
+		in the stationary population.
+	*/
+};
+
+
+void PreSimulation()
+{
+
+	double dSurvivorship = 1.0;
+	double dChildren = 0.0;
+	double dReproductiveAdults = 0.0;
+	double dAdults = 0.0;
+	for ( int nA=0; nA < MAX(RANGE_AGE); nA++ )
+	{
+		Survivorship[nA] = dSurvivorship;
+		if ( nA < MinAgeToReproduce )
+		{
+			StationaryAdultPopulationDistribution[nA] = 0.0;
+			dChildren += dSurvivorship;
+		}
+		else
+		{
+			StationaryAdultPopulationDistribution[nA] = dSurvivorship;
+			dReproductiveAdults += dSurvivorship;
+		}
+
+		if ( nA >= AdultAge )
+		{
+			dAdults += dSurvivorship;
+		}
+		
+		dSurvivorship *= 1.0 - DeathRate[nA];
+
+	}
+	double dTotalPopulation = dReproductiveAdults + dChildren;
+
+	StationaryReproductivePopulationSize = (int) StartingPopulationSize * ( dReproductiveAdults / dTotalPopulation );
+
+	StationaryAdultPopulationSize = (int) StartingPopulationSize * ( dAdults / dTotalPopulation );
+
+	// compute this here instead of in Movement.mpp due to dependencies on other model_generated parameters
+	MaxAdultsInNeighborhood = (int) ( MaxOccupancyFactor * StationaryAdultPopulationSize / SimulatedNeighborhoods );
+}
+
+
+void CreateStartingPopulation(void)
+{
+	// Create starting Person actors
+	for ( int nP = 0; nP < StationaryReproductivePopulationSize; nP++ )
+	{
+
+		// create a person of reproductive age or older in the starting population
+
+		Person *paPerson = new Person();
+
+		// integer age is drawn randomly from the (discrete) stationary population distribution
+		int nAge;
+		Lookup_StationaryAdultPopulationDistribution( RandUniform(3), &nAge );
+
+		// draw fractional part of age uniformly
+		double dAge = nAge + RandUniform(4);
+		// starting time is 0
+		double dTime = 0.0;
+
+		// include the new person in the simulation
+		paPerson->Start(dAge, dTime, NULL);
+
+		// Create children for this Person by passing through those reproductive ages
+		// which could have produced a child whose current age is less than reproductive age.
+
+		// copy nAge under a different name to make subsequent code a bit easier to follow.
+		int nAgeOfMother = nAge;
+
+		// minimum age at which this mother could have given birth
+		int nMinAgeOfMotherAtChildbirth = max(MinAgeToReproduce, nAgeOfMother - MinAgeToReproduce + 1); 
+
+		// maximum age at which this mother could have given birth
+		int nMaxAgeOfMotherAtChildbirth = min(MaxAgeToReproduce, nAgeOfMother);
+
+		// Iterate through all reproductive ages for this mother
+		// excluding those for which the resulting child is currently reproductive age or older.
+		for (	int nAgeOfMotherAtChildbirth = nMinAgeOfMotherAtChildbirth;
+				nAgeOfMotherAtChildbirth <= nMaxAgeOfMotherAtChildbirth;
+				nAgeOfMotherAtChildbirth++ )
+		{
+			// age of possible child born when parent age was nAgeMotherAtChildbirth
+			int nAgeOfChild = nAgeOfMother - nAgeOfMotherAtChildbirth;
+
+			// Probability that a child of this age is an orphan,
+			// i.e. that mother died between age at childbirth (nAgeMotherAtChildbirth) and current age (nAgeOfMother)
+			double dOrphanProbability = 1.0 - Survivorship[nAgeOfMother] / Survivorship[nAgeOfMotherAtChildbirth];
+
+			// Adjust birthrate upwards to have this mother adopt orphans
+			// of other mothers of the same age.
+			// If this is not done, the number of children in the simulation would be too small.
+			double dAdjustedBirthRate = BirthRate / ( 1.0 - dOrphanProbability );
+
+			if ( RandUniform(6) < dAdjustedBirthRate )
+			{
+
+				// has the child survived to the present?
+				if ( RandUniform(7) < Survivorship[nAgeOfChild] )
+				{
+					// create child
+					Person *paChild = new Person();
+					double dAge_child = nAgeOfChild + RandUniform(8);
+					bool bHome_child = true;
+
+					// several arguments are identical to that of parent
+					paChild->Start(dAge_child, dTime, paPerson);
+					paChild->lParent = paPerson;
+				}
+			}
+		}
+	}
+}
+
+

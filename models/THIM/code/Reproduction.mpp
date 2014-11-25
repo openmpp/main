@@ -1,0 +1,186 @@
+//LABEL(Reproduction, EN) Reproduction of the Person actor
+
+/* NOTE(Reproduction, EN)
+	This module contains parameters, state variables, and events associated with reproduction
+	and genetics
+*/
+
+parameter_group ReproductionParameters //EN Reproduction parameters
+{
+	MinAgeToReproduce,
+	MaxAgeToReproduce
+};
+
+parameters 
+{
+	//EN Minimum age to reproduce
+	int MinAgeToReproduce;
+
+	//EN Maximum age to reproduce
+	int MaxAgeToReproduce;
+
+	//EN Annual birth rate
+	model_generated double BirthRate;
+	/* NOTE(BirthRate, EN)
+		BirthRate is a parameter which is generated rather than input by the user.
+		The value is exactly what's required to maintain a stationary population,
+		i.e. one which neither increases nor decreases over time.
+	*/
+
+	//EN The mean gs gene value for initial population
+	model_generated double G_Mean;
+
+	//EN Standard deviation of the gs gene during initialization
+	model_generated double G_Sd;
+
+	//EN std dev of "mutation" of parents gs gene inherited by child
+	model_generated double G_MutSd;
+
+};
+
+void PreSimulation()
+{
+	// Hard-code values pending removal
+	G_Mean = 1;
+	G_Sd = 0;
+	G_MutSd = 0;
+}
+
+void PreSimulation()
+{
+	// Set the birth rate to that of a stationary population
+	double dSurvivorship = 1.0;
+	double dPersonYearsFertile = 0.0;
+	for ( int nA=0; nA < MAX(RANGE_AGE); nA++ )
+	{
+
+		if ( nA >= MinAgeToReproduce && nA <= MaxAgeToReproduce )
+		{
+			dPersonYearsFertile += dSurvivorship;
+		}
+
+		dSurvivorship *= 1.0 - DeathRate[nA];
+	}
+	BirthRate = 1.0 / dPersonYearsFertile;
+}
+
+
+actor Person
+{
+	//EN Fertile
+	logical is_fertile = ( integer_age >= MinAgeToReproduce ) && ( integer_age <= MaxAgeToReproduce );
+	/*NOTE(Person.is_fertile, EN)
+		The value is TRUE if the Person is fertile, i.e. at risk of the Reproduction event,
+		and FALSE if not.
+	*/
+
+	//EN true if still living with birth parent
+	logical at_home;
+
+	//EN person's sensitivity related gene  [ 0, 1 ]
+	real gs;
+
+	//EN Set gs for newborn
+	void Start_Newborn_Heredity();
+	hook Start_Newborn_Heredity, Start_Newborn; 
+
+	//EN Set gs for the starting adult population
+	void Start_StartPop_Heredity();
+	hook Start_StartPop_Heredity, Start_StartPop; 
+
+	event timeReproductionEvent, ReproductionEvent;	//EN Reproduction event
+};
+
+
+// link between children and parent
+link Person.mlChildren[]			 //EN Children
+		Person.lParent;				 //EN Parent
+
+/*NOTE(Person.mlChildren, EN)
+	For simplicitly, children have only one parent in this model.
+	The link between children and parent is thus a one-to-many link.
+	Note that Modgen automatically maintains the reciprocal side of links,
+	so changes to  one side of the link are automatically propagated
+	to the other side of the link.
+*/
+/*NOTE(Person.lParent, EN)
+	For simplicitly, children have only one parent in this model.
+	The link between children and parent is thus a one-to-many link.
+	Note that Modgen automatically maintains the reciprocal side of links,
+	so changes to  one side of the link are automatically propagated
+	to the other side of the link.
+*/
+
+
+void Person::Start_Newborn_Heredity(void)
+{
+	assert(lParent != NULL);
+
+	// sensitivity gene is mutated version of parental gene
+	double dGs = -1;
+	while ( dGs < 0 || dGs > 1 )
+	{
+		// gs is the value of the parental gene
+		// dGs is the mutated value passed to the child (this Person)
+		dGs = lParent->gs + G_MutSd * RandNormal(10);
+	}
+	gs = dGs;
+}
+
+void Person::Start_StartPop_Heredity()
+{
+	double dGs = -1;
+	while ( dGs < 0 || dGs > 1 )
+	{
+		dGs = G_Mean + G_Sd * RandNormal(9);
+	}
+	gs = dGs;
+}
+
+
+
+/* NOTE(Person.ReproductionEvent, EN)
+	Reproduction occurs at rate BirthRate for Persons falling within 
+	the age range [MinAgeToReproduce, MaxAgeToReproduce], inclusive.
+*/
+// The time function of ReproductionEvent
+TIME Person::timeReproductionEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+
+	if ( is_fertile )
+	{
+		if (BirthRate > 0.0)
+		{
+			double dHazard = BirthRate;
+
+			// Draw a random waiting time to reproduction from an exponential distribution.
+			tEventTime = WAIT( - TIME( log( RandUniform(2) ) / dHazard ) );
+		}
+	}
+
+	return tEventTime;
+}
+
+// The implement function of ReproductionEvent
+void Person::ReproductionEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_REPRODUCTION;
+	event_count++;
+
+	// Create child
+	Person *paChild = new Person();
+	double dAge = 0;
+	double dTime = time;
+	logical bAt_home = true;
+
+
+	paChild->Start(dAge, dTime, this);
+
+	// Add to parents collection of children
+	mlChildren->Add(paChild);
+}
+
+

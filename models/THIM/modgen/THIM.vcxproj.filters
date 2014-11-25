@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{eb1ba18c-5924-4c9d-8cc2-57895d816189}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
+    </Filter>
+    <Filter Include="Modules %28mpp%29">
+      <UniqueIdentifier>{7746be45-a944-4122-9da7-416236bcce42}</UniqueIdentifier>
+      <Extensions>mpp</Extensions>
+    </Filter>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{3c80a0c5-b170-43ed-a12f-26f788b1bfb7}</UniqueIdentifier>
+      <Extensions>sce;dat</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="parse.inf">
+      <Filter>C++ Files</Filter>
+    </None>
+    <None Include="Base.scex">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\parameters\Base\Base(PersonCore).dat">
+      <Filter>Scenarios</Filter>
+    </None>
+    <None Include="..\code\Aggregates.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\AggregatesTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Common.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\CommonTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Education.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\EducationTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Health.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\HealthTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Income.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\IncomeTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ModelComparison.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ModelStrings.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\modgen_framework.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Mortality.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\MortalityTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Movement.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\MovementTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\NeighborhoodCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ompp_framework.ompp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ParameterVerification.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\PersonCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Reproduction.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ReproductionTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Sensitivity.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\SensitivityTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\StartingPopulation.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\THIMn.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\TickerCore.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\Tracking.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+    <None Include="..\code\ZZZUserTables.mpp">
+      <Filter>Modules %28mpp%29</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PersonCore.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TickerCore.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelStrings.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actors.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tabinit.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modgen_framework.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Aggregates.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AggregatesTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Common.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommonTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Education.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EducationTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Health.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HealthTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Income.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IncomeTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelComparison.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mortality.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MortalityTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Movement.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MovementTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NeighborhoodCore.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParameterVerification.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Reproduction.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReproductionTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sensitivity.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SensitivityTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StartingPopulation.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="THIMn.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tracking.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ZZZUserTables.CPP">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Actors.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tabinit.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\custom.h">
+      <Filter>Modules %28mpp%29</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="model.rc">
+      <Filter>C++ Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

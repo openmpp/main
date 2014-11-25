@@ -1,0 +1,94 @@
+//LABEL(AggregatesTables, EN) Aggregates tables
+
+/* NOTE(AggregatesTables, EN)
+	Contains optional tables associated with the Aggregates module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+
+/////////////////////////
+// Verification tables //
+/////////////////////////
+
+
+table_group AggregatesVerificationTables //EN Aggregates verification tables
+{
+	AvgsByYr,					
+	NbhdAvgsByYr,
+	NbhdAvgsByDec,
+	IndsByYr					
+};
+
+table_group VerificationTables //EN Verification tables
+{
+	AggregatesVerificationTables
+};
+
+table Ticker AvgsByYr //EN AvgsByYr
+{
+	{
+		value_in(average_education),		//EN Average education decimals=2       
+		value_in(average_income),			//EN Average income
+		value_in(average_health),			//EN Average health decimals=2
+		value_in(average_gs),				//EN Average gs decimals=2
+		value_in(average_sensitivity),		//EN Average sensitivity decimals=2
+		value_in(adultCount),  			    //EN Adult Population
+		value_in(childCount)                //EN Child Population
+	}
+	* year0
+};
+
+
+table Neighborhood NbhdAvgsByYr //EN NbhdAvgsByYr
+{
+	{
+		value_in(nbrhd_occupancy_factor),		//EN Occupancy factor decimals=2
+		value_in(normalized_avg_education),		//EN Normalized average education decimals=2
+		value_in(nbrhd_avg_education),          //EN Average education decimals=2
+		value_in(normalized_avg_income),		//EN Normalized average income decimals=2
+		value_in(nbrhd_avg_income),             //EN Average income decimals=2
+		value_in(normalized_avg_health),		//EN Normalized average health decimals=2
+		value_in(nbrhd_avg_health),             //EN Average health decimals=2
+		value_in(nbrhd_adult_count),			//EN Adult count
+		value_in(nbrhd_child_count),			//EN Child count
+		value_in(nbrhd_avg_age)					//EN Average Age
+	}
+	* year0
+	* nbrhd_id
+};
+
+table Neighborhood NbhdAvgsByDec //EN NbhdAvgsByDec
+[ decade_flash ] 
+
+{
+	{
+		value_in(nbrhd_occupancy_factor),		//EN Occupancy factor decimals=2
+		value_in(normalized_avg_education),		//EN Normalized average education decimals=2
+		value_in(nbrhd_avg_education),          //EN Average education decimals=2
+		value_in(normalized_avg_income),		//EN Normalized average income decimals=2
+		value_in(nbrhd_avg_income),             //EN Average income decimals=2
+		value_in(normalized_avg_health),		//EN Normalized average health decimals=2
+		value_in(nbrhd_avg_health),             //EN Average health decimals=2
+		value_in(nbrhd_adult_count),			//EN Adult count
+		value_in(nbrhd_child_count),			//EN Child count
+		value_in(nbrhd_avg_age)					//EN Average Age
+	}
+	* decade
+	* nbrhd_id
+};
+
+table Ticker IndsByYr //EN IndsByYr
+{
+	{
+		value_in(average_education) / value_in(average_education_init),			//EN Average education index decimals=2
+		value_in(average_income) / value_in(average_income_init),				//EN Average income index decimals=2
+		value_in(adultCount) / value_in(adultCount_init),			//EN Adult count index decimals=2
+		value_in(childCount) / value_in(childCount_init),				//EN Child count index decimals=2
+		value_in(average_health),				//EN Average health decimals=2
+		value_in(average_gs),						//EN Average gs decimals=2
+		value_in(average_sensitivity)		//EN Average sensitivity decimals=2
+	}
+	* year0
+};

@@ -1,0 +1,36 @@
+//LABEL(MovementTables, EN) Movement tables
+
+/* NOTE(MovementTables, EN)
+	Contains optional tables associated with the Movement module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+
+////////////////////
+// Summary tables //
+////////////////////
+//
+//table_group MovementSummaryTables //EN Movement summary tables
+//{
+//	PdistByYrNbhd //PersonsByNeighborhoodByYear,
+//	//MovesByYear
+//};
+//
+//table_group SummaryTables //EN Summary tables
+//{
+//	MovementSummaryTables
+//};
+//
+//
+
+//table Person PdistByYrNbhd //EN YrNb-Pop
+//[ year_flash ]
+//{
+//	{
+//		unit	//EN Count
+//	}
+//	* year0
+//	* neighborhood
+//};

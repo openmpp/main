@@ -1,0 +1,313 @@
+//LABEL(IncomeTables, EN) Income tables
+
+/* NOTE(IncomeTables, EN)
+	Contains optional tables associated with the Income module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+actor Person
+{
+	//EN starting income
+	double start_income = value_at_first_entrance(has_income, TRUE, income);
+
+	//EN income relative to starting income
+	double income_relative_to_start = ( start_income > 0.0 ) ? income / start_income : 0;
+};
+
+
+////////////////////
+// Summary tables //
+////////////////////
+
+table_group IncomeSummaryTables //EN Income summary tables
+{
+	//AverageIncomeByYear,
+	//IncomeDistributionAtStartEnd,
+	YdistByDecNbhd, //IncomeDistributionByDecadeAndNeighborhood,
+	YdistByAgeDec, //IncomeDistributionByAgeDecade,
+	YstatsByDecNbhd, 
+	YByDecNbhd,
+	YavgByAgeDec,  //AgeIncomeProfile,
+	YdistByPtoC    //ParentToChildIncome
+};
+table_group SummaryTables //EN Summary tables
+{
+	IncomeSummaryTables
+};
+
+table Person YdistByAgeDec //EN YDistByAgeDec
+[ decade_flash ] 
+{
+	is_adult
+	* split(income, INCOME_GROUP_20 )
+	* {
+		unit					//EN Count
+	}
+	*split(integer_age, AGE_GROUP_20)
+	*decade
+};
+
+table Person YavgByAgeDec //EN YavgByAgeDec
+[ decade_flash ] 
+{
+	is_adult
+	* split(integer_age, AGE_GROUP_20)
+	* {
+		value_in(income) / unit, //EN Mean income (000's) scale=-3
+		unit					//EN Count
+	}
+	*decade
+}; 
+
+table Person YdistByDecNbhd //EN YdistByDecNbhd
+[ decade_flash && is_adult ] 
+{
+	{
+		unit //EN Count
+	 }
+	* neighborhood
+	* split(income, INCOME_GROUP_20) //EN Income group
+	* decade
+}; 
+
+table Person YByDecNbhd //EN YByDecNbhd
+[ decade_flash && is_adult ] 
+{
+	{
+		value_in(income) / unit //EN Average Income
+	 }
+	* neighborhood
+	* split(income, INCOME_GROUP_20) //EN Income group
+	* decade
+}; 
+
+partition INCOME_GROUP_FINE
+{
+	1,
+  1000,
+  2000,
+  3000,
+  4000,
+  5000,
+  6000,
+  7000,
+  8000,
+  9000,
+  10000,
+  11000,
+  12000,
+  13000,
+  14000,
+  15000,
+  16000,
+  17000,
+  18000,
+  19000,
+  20000,
+  21000,
+  22000,
+  23000,
+  24000,
+  25000,
+  26000,
+  27000,
+  28000,
+  29000,
+  30000,
+  31000,
+  32000,
+  33000,
+  34000,
+  35000,
+  36000,
+  37000,
+  38000,
+  39000,
+  40000,
+  41000,
+  42000,
+  43000,
+  44000,
+  45000,
+  46000,
+  47000,
+  48000,
+  49000,
+  50000,
+  51000,
+  52000,
+  53000,
+  54000,
+  55000,
+  56000,
+  57000,
+  58000,
+  59000,
+  60000,
+  61000,
+  62000,
+  63000,
+  64000,
+  65000,
+  66000,
+  67000,
+  68000,
+  69000,
+  70000,
+  71000,
+  72000,
+  73000,
+  74000,
+  75000,
+  76000,
+  77000,
+  78000,
+  79000,
+  80000,
+	90000,
+	100000,
+	110000,
+	120000,
+	130000,
+	140000,
+	150000,
+	175000,
+	200000,
+	250000,
+	300000,
+	350000
+};
+
+table Person YdistByDecNbhd_Fine //EN YdistByDecNbhd_Fine
+[ decade_flash && is_adult ] 
+{
+	{
+		unit //EN Count
+	 }
+	* neighborhood
+	* split(income, INCOME_GROUP_FINE) //EN Income group
+	* decade
+}; 
+
+table Person YByDecNbhd_Fine //EN YByDecNbhd_Fine
+[ decade_flash && is_adult ] 
+{
+	{
+		value_in(income) / unit //EN Average Income
+	 }
+	* neighborhood
+	* split(income, INCOME_GROUP_FINE) //EN Income group
+	* decade
+}; 
+
+dependency(YstatsByDecNbhd, YByDecNbhd_Fine, YdistByDecNbhd_Fine);
+user_table YstatsByDecNbhd //EN YstatsByDecNbhd
+{
+	{
+		TOTAL_PERSONS,     //EN Persons
+		TOTAL_INCOME,     //EN Total Income
+		MEDIAN_N,  //EN Income group containing median
+		MEDIAN_INCOME,    //EN Median Income
+		TOTAL_INCOME_LT_MEDIAN, //EN Total Income less than median
+		MEDIAN_Y_SHARE //EN Median income share decimals=4
+	}
+	* RANGE_NEIGHBORHOOD
+	* DECADE
+};
+void UserTables()
+{
+	const int nNeighbourhoods = SimulatedNeighborhoods;
+	const int nDecades = SIZE(DECADE);
+	const int nIncomeGroups = SIZE(INCOME_GROUP_FINE);
+
+	for ( int nN = 0; nN < nNeighbourhoods; nN++ )
+	{
+		for ( int nT = 0; nT < nDecades; nT++ )
+		{
+			// Income pass #1: total persons and total income
+			double dTotalPersons = 0;
+			double dTotalIncome = 0;
+			for ( int nY = 0; nY < nIncomeGroups; nY++ )
+			{
+				double dPersons = GetTableValue("YdistByDecNbhd_Fine.Expr0", nN, nY, nT);
+				double dAvgIncome = GetTableValue("YByDecNbhd_Fine.Expr0", nN, nY, nT);
+				double dIncome = dAvgIncome * dPersons;
+				if ( dPersons > 0 ) {
+					dTotalPersons += dPersons;
+					dTotalIncome += dIncome;
+				}
+			}
+			SetTableValue("YstatsByDecNbhd.TOTAL_PERSONS", dTotalPersons, nN, nT);
+			SetTableValue("YstatsByDecNbhd.TOTAL_INCOME", dTotalIncome, nN, nT);
+
+			// Income pass #2: compute median-related quantities
+			
+			// Do nothing if no observations in this group
+			if ( dTotalPersons > 0 ) {
+				double dMedianPersons = dTotalPersons / 2;
+				double dCumPersons = 0;
+				double dCumIncome = 0;
+				for ( int nY = 0; nY < nIncomeGroups; nY++ )
+				{
+					double dPersons = GetTableValue("YdistByDecNbhd_Fine.Expr0", nN, nY, nT);
+					double dAvgIncome = GetTableValue("YByDecNbhd_Fine.Expr0", nN, nY, nT);
+					double dIncome = dAvgIncome * dPersons;
+					if ( dPersons > 0 ) {
+						if ( dCumPersons + dPersons > dMedianPersons ) {
+							// this is the interval containing the median, write that info to the table
+							SetTableValue("YstatsByDecNbhd.MEDIAN_N", (double)nY, nN, nT);
+							// cannot estimate median if in first or last interval, since interval is unbounded.
+							if ( nY > 0 && nY < nIncomeGroups - 1 ) {
+								// Determine the lower and upper limits of this interval
+								double dLower = POINTS(INCOME_GROUP_FINE)[nY - 1];
+								double dUpper = POINTS(INCOME_GROUP_FINE)[nY];
+
+								// Proportion of population in this interval required to get exactly to median.
+								double dProportion = ( dMedianPersons - dCumPersons ) / dPersons;
+
+								// The following formula is the value of the median,
+								// under the assumption that income varies linearly with rank within the interval.
+								double dMedian = dLower + dProportion * ( dUpper - dLower);
+								SetTableValue("YstatsByDecNbhd.MEDIAN_INCOME", dMedian, nN, nT);
+
+								// The following formula is total income less than dMedian within the interval,
+								// under the assumption that income varies linearly with rank within the interval.
+								// This formula can be derived by integration, or geometrically as the area of a trapezoid.
+								double dIncomeLTMedian_interval = dPersons * (dLower * dProportion + 0.5 * (dUpper - dLower) * dProportion * dProportion);
+								double dIncomeLTMedian = dCumIncome + dIncomeLTMedian_interval;
+								SetTableValue("YstatsByDecNbhd.TOTAL_INCOME_LT_MEDIAN", dIncomeLTMedian, nN, nT);
+
+								double dMedianYShare = dIncomeLTMedian / dTotalIncome;
+								SetTableValue("YstatsByDecNbhd.MEDIAN_Y_SHARE", dMedianYShare, nN, nT);
+							}
+							// break out of income loop
+							break;
+						}
+						else {
+							// this is an interval lower than the median
+							dCumPersons += dPersons;
+							dCumIncome += dIncome;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+actor Person
+{
+    real parent_income = lParent->income; //EN parent's income
+};
+
+table Person YdistByPtoC //EN YdistByPtoC
+[ decade_flash && is_adult && lParent ]
+{
+	split(income, INCOME_GROUP_20) //EN child income
+	* {
+		unit	//EN Count
+	}  
+	* split(parent_income, INCOME_GROUP_20)   //EN parent income
+	* decade
+};  

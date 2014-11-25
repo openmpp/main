@@ -1,0 +1,48 @@
+//LABEL(ReproductionTables, EN) Reproduction tables
+
+/* NOTE(ReproductionTables, EN)
+	Contains optional tables associated with the Reproduction module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+
+////////////////////
+// Summary tables //
+////////////////////
+
+/*
+table_group GeneticsSummaryTables //EN Genetics summary tables
+{
+	GParToChldByDec,	//ParentChildGeneticsByDecade,
+	GdistByDec			//GeneticsDistributionAtStartEnd
+};
+table_group SummaryTables //EN Summary tables
+{
+	GeneticsSummaryTables
+};
+
+
+table Person GdistByDec	//EN GdistByDec
+[ decade_flash ]
+{
+	{
+		unit	//EN Count
+	} 
+	* split(gs, UNIT_INTERVAL_20)	//EN gs
+	* decade
+};
+
+
+table Person GParToChldByDec	//EN GParToChldByDec
+[ decade_flash && lParent != NULL ]
+{
+	split(gs, UNIT_INTERVAL_10)           //EN child gs
+	*{
+		unit	//EN Count
+	}   
+	* split(lParent->gs, UNIT_INTERVAL_10)  //EN parent gs
+	* decade
+};
+*/
