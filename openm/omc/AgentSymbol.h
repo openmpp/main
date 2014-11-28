@@ -7,6 +7,7 @@
 
 #pragma once
 #include <list>
+#include <map>
 #include "Symbol.h"
 
 class AgentDataMemberSymbol;
@@ -299,6 +300,14 @@ public:
      *  Populated after parsing is complete.
      */
     list<AgentMultilinkSymbol *> pp_multilink_members;
+
+    /**
+     * The hooks in the agent.
+     * 
+     * The key of the multimap is the 'to' function of the hook.  The value of the multimap is the
+     * 'from' function.
+     */
+    multimap<string,string> pp_hooks;
 
     /**
      * Create event to support self-scheduling derived agentvars.

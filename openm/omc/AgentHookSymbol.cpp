@@ -76,6 +76,8 @@ void AgentHookSymbol::post_parse(int pass)
             pp_error("error: '" + from->name + "' must be a function member of agent '" + pp_agent->name + "'");
             break;
         }
+        // create entry in agent multimap of all hooks
+        pp_agent->pp_hooks.emplace(pp_to->name, pp_from->name);
         break;
     }
     case ePopulateDependencies:
@@ -88,6 +90,10 @@ void AgentHookSymbol::post_parse(int pass)
                     pp_to->body_identifiers.end(),
                     [nm](string id){ return nm == id; })) {
             pp_error("error - the target function '" + pp_to->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
+        }
+        // test for ambiguous hook order and emit warning
+        if (pp_agent->pp_hooks.count(pp_to->name) > 1) {
+            pp_warning("Warning: One or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
         }
 
         CodeBlock & c = hook_fn->func_body;
