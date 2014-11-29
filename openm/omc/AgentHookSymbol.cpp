@@ -76,8 +76,16 @@ void AgentHookSymbol::post_parse(int pass)
             pp_error("error: '" + from->name + "' must be a function member of agent '" + pp_agent->name + "'");
             break;
         }
-        // create entry in agent multimap of all hooks
+
+        // Create entry in agent multimap of all hooks.
+        // The key is the name of the 'to' function.
         pp_agent->pp_hooks.emplace(pp_to->name, pp_from->name);
+
+        // Create entry in agent multimap of all hooks (additionally distinguished by order).
+        // The key is constructed using two parts to allow subsequent testing for 
+        // ties in hook order.
+        string key = pp_to->name + "_om_" + to_string(order);
+        pp_agent->pp_hooks_with_order.emplace(key, pp_from->name);
         break;
     }
     case ePopulateDependencies:
@@ -91,9 +99,20 @@ void AgentHookSymbol::post_parse(int pass)
                     [nm](string id){ return nm == id; })) {
             pp_error("error - the target function '" + pp_to->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
         }
-        // test for ambiguous hook order and emit warning
-        if (pp_agent->pp_hooks.count(pp_to->name) > 1) {
+
+        // Test for ambiguous hook order and emit warning if found.
+        // 
+        // First test if the hook has no explicit order, but other hooks are present.
+        if (order == 0 && pp_agent->pp_hooks.count(pp_to->name) > 1) {
             pp_warning("Warning: One or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
+        }
+        else {
+            // Second test is if the hook has an explicit order, but is tied to one or more other hooks.
+            // See comment for 'key' above
+            string key = pp_to->name + "_om_" + to_string(order);
+            if (pp_agent->pp_hooks_with_order.count(key) > 1) {
+                pp_warning("Warning: One or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
+            }
         }
 
         CodeBlock & c = hook_fn->func_body;

@@ -19,7 +19,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    explicit AgentHookSymbol(const Symbol *agent, const Symbol *from, const Symbol *to, yy::location decl_loc = yy::location())
+    explicit AgentHookSymbol(const Symbol *agent, const Symbol *from, const Symbol *to, int order = 0, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(from, to), agent, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
@@ -28,6 +28,7 @@ public:
         , to(to->stable_rp())
         , pp_to(nullptr)
         , hook_fn(nullptr)
+        , order(order)
     {
         create_auxiliary_symbols();
     }
@@ -89,6 +90,15 @@ public:
      * The 'to' function for the hook (stable to morphing)
      */
     Symbol*& to;
+
+    /**
+     * The hook order.
+     * 
+     * This is the optional third argument of the hook declaration in model code.  It specifies an
+     * optional calling order to handle the situation where more than one function is hooked to
+     * another.
+     */
+    int order;
 
     /**
      * The 'from' function for the hook (typed pointer)

@@ -478,6 +478,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Symbol>    any_agentvar
 %type  <pval_Symbol>    link_to_agentvar
 %type  <pval_Literal>   event_priority_opt
+%type  <pval_Literal>   hook_order_opt
 %type  <pval_ConstantSymbol>  constant
 %type  <pval_Constant>  initializer_constant
 
@@ -1552,15 +1553,45 @@ event_priority_opt:
     ;
 
 decl_hook:
-      "hook"[kw] SYMBOL[from] "," SYMBOL[to] ";"
+      "hook"[kw] SYMBOL[from] "," SYMBOL[to] hook_order_opt[order_lit] ";"
                         {
                             auto *agent = pc.get_agent_context();
+                            int order = stoi($order_lit->value());
+                            free($order_lit);
+                            if (order <= 0) {
+                                error(@kw, "error: hook order must be positive");
+                            }
 
                             if (!AgentHookSymbol::exists(agent, $from, $to)) {
-                                // ignore redeclaration - is benign
                                 // Create the agent hook symbol
-                                auto *sym = new AgentHookSymbol(agent, $from, $to, @kw);
+                                auto *sym = new AgentHookSymbol(agent, $from, $to, order, @kw);
+                                // Use high-level sorting order to control calling order in generated code.
+                                sym->sorting_group = order;
                             }
+                            else {
+                                // redeclaration
+                                string name = AgentHookSymbol::symbol_name( $from , $to);
+                                auto hook_sym = dynamic_cast<AgentHookSymbol *>(Symbol::get_symbol(name, agent));
+                                assert(hook_sym);
+                                if (hook_sym->order == order) {
+                                    // redeclaration is benign if hook order is identical in the two declarations
+                                }
+                                else {
+                                    error(@kw, "error: invalid redeclaration of hook (order differs)");
+                                }
+                            }
+                        }
+    ;
+
+hook_order_opt:
+      "," INTEGER_LITERAL
+                        {
+                            $hook_order_opt = $INTEGER_LITERAL;
+                        }
+    | /* nothing */
+                        {
+                            // default event priority is zero
+                            $hook_order_opt = new IntegerLiteral( "0" );
                         }
     ;
 

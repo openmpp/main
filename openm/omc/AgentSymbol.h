@@ -304,10 +304,18 @@ public:
     /**
      * The hooks in the agent.
      * 
-     * The key of the multimap is the 'to' function of the hook.  The value of the multimap is the
-     * 'from' function.
+     * The key of the multimap is the name of the 'to' function of the hook.  The value of the multimap is the
+     * name of the 'from' function.
      */
     multimap<string,string> pp_hooks;
+
+    /**
+     * The hooks in the agent, indexed by name and order
+     * 
+     * The key of the multimap is the name of the 'to' function of the hook, followed by the order.
+     * The value of the multimap is the name of the 'from' function.
+     */
+    multimap<string,string> pp_hooks_with_order;
 
     /**
      * Create event to support self-scheduling derived agentvars.
