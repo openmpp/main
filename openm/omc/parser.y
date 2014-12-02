@@ -1558,9 +1558,6 @@ decl_hook:
                             auto *agent = pc.get_agent_context();
                             int order = stoi($order_lit->value());
                             free($order_lit);
-                            if (order <= 0) {
-                                error(@kw, "error: hook order must be positive");
-                            }
 
                             if (!AgentHookSymbol::exists(agent, $from, $to)) {
                                 // Create the agent hook symbol
