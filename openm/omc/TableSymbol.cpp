@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include <regex>
 #include "TableSymbol.h"
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
@@ -527,7 +528,13 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableExprTxt.exprId = expr->index;
 
             tableExprTxt.langName = lang->name;
-            tableExprTxt.descr = expr->label(*lang);
+
+            // construct label by removing decimals=nnn from string if present
+            string lab = expr->label(*lang);
+            regex pat("\\s+decimals=\\d+");
+            lab = regex_replace(lab, pat, "");
+            tableExprTxt.descr = lab;
+
             tableExprTxt.note = expr->note(*lang);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
