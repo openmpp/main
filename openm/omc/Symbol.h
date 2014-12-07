@@ -295,15 +295,15 @@ public:
     enum post_parse_pass {
         ///< post-parse pass to create missing symbols
         eCreateMissingSymbols,
-        ///< post-parse pass to perform integrity check
+        ///< post-parse pass to assign labels, etc.
         eAssignLabel,
-        ///< post-parse pass to assign pp_ members
+        ///< post-parse pass to assign pp_ members, etc.
         eAssignMembers,
-        ///< post-parse pass to populate pp_ collections
-        ePopulateCollections,
-        ///< post-parse pass to resolve data types of derived agentvars
+        ///< post-parse pass to resolve data types of derived agentvars, etc.
         eResolveDataTypes,
-        ///< post-parse pass to populate dependencies
+        ///< post-parse pass to populate pp_ collections, etc.
+        ePopulateCollections,
+        ///< post-parse pass to populate dependencies, etc.
         ePopulateDependencies,
     };
 

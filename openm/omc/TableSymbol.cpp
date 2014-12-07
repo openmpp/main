@@ -16,6 +16,7 @@
 #include "IdentityAgentVarSymbol.h"
 #include "NumericSymbol.h"
 #include "RangeSymbol.h"
+#include "DimensionSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "TableExpressionSymbol.h"
@@ -89,27 +90,6 @@ void TableSymbol::post_parse(int pass)
         // Add this table to the agent's list of tables
         pp_agent->pp_agent_tables.push_back(this);
 
-        // The following block of code is identical in EntitySetSymbol and TableSymbol.
-        // Validate dimension list and populate the post-parse version.
-        for (auto psym : dimension_list_agentvar) {
-            assert(psym); // logic guarantee
-            auto sym = *psym; // remove one level of indirection
-            assert(sym); // grammar guarantee
-            auto avs = dynamic_cast<AgentVarSymbol *>(sym);
-            if (!avs) {
-                pp_error("'" + sym->name + "' is not an agentvar in dimension of '" + name + "'");
-                continue; // don't insert invalid type in dimension list
-            }
-            auto es = dynamic_cast<EnumerationSymbol *>(avs->pp_data_type);
-            if (!es) {
-                pp_error("The datatype of '" + avs->name + "' must be an enumeration type in dimension of '" + name + "'");
-                continue; // don't insert invalid type in dimension list
-            }
-            pp_dimension_list_agentvar.push_back(avs);
-            pp_dimension_list_enum.push_back(es);
-        }
-        // clear the parse version to avoid inadvertant use post-parse
-        dimension_list_agentvar.clear();
         break;
     }
 
@@ -122,7 +102,8 @@ void TableSymbol::post_parse(int pass)
         build_body_process_increments();
 
         // Dependency on change in index agentvars
-        for (auto av : pp_dimension_list_agentvar) {
+        for (auto dim : dimension_list) {
+            auto av = dim->pp_attribute;
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// cell change in " + name;
@@ -139,7 +120,7 @@ void TableSymbol::post_parse(int pass)
             c += "}";
         }
 
-        // Dependency on ilter
+        // Dependency on filter
         if (filter) {
             CodeBlock& c = filter->side_effects_fn->func_body;
             c += injection_description();
@@ -159,7 +140,10 @@ void TableSymbol::post_parse(int pass)
 
         // Mark enumerations required for metadata support for this table
         // The enumeration of each dimension is required
-        for (auto es : pp_dimension_list_enum) {
+        for (auto dim : dimension_list) {
+            assert(dim->pp_attribute); // previously verified
+            auto es = dynamic_cast<EnumerationSymbol *>(dim->pp_attribute->pp_data_type);
+            assert(es); // previously verified
             es->metadata_needed = true;
         }
 
@@ -305,7 +289,7 @@ void TableSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
 
-    int rank = pp_dimension_list_enum.size();
+    int rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0
@@ -318,12 +302,16 @@ void TableSymbol::build_body_update_cell()
     c += "int index = 0;" ;
 
     // build an unwound loop of code
-    int dim = 0;
-    for (auto av : pp_dimension_list_agentvar ) {
-        auto es = dynamic_cast<EnumerationSymbol *>(av->pp_data_type);
+    for (auto dim : dimension_list ) {
+        auto av = dim->pp_attribute;
+        auto es = dim->pp_enumeration;
+        // bail if dimension erroneous (error already reported)
+        if (!av || !es) {
+            break;
+        }
         assert(es); // integrity check guarantee
         c += "";
-        c += "// dimension=" + to_string(dim) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
+        c += "// dimension=" + to_string(dim->index) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
         if (dim > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
@@ -335,7 +323,6 @@ void TableSymbol::build_body_update_cell()
             c += "index -= " + to_string(rs->lower_bound) + ";";
         }
         c += "cell += index;";
-        ++dim;
     }
     c += "";
     c += "assert(cell >= 0 && cell < " + name + "::n_cells ); // logic guarantee";
@@ -434,14 +421,15 @@ void TableSymbol::build_body_process_increments()
 // The following function definition is identical in EntitySetSymbol and TableSymbol
 int TableSymbol::rank()
 {
-    return pp_dimension_list_agentvar.size();
+    return dimension_list.size();
 }
 
 // The following function definition is identical in EntitySetSymbol and TableSymbol
 int TableSymbol::cell_count()
 {
     int cells = 1;
-    for (auto es : pp_dimension_list_enum) {
+    for (auto dim : dimension_list) {
+        auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
         cells *= es->pp_size();
     }
@@ -478,14 +466,16 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // dimensions for table
-    int dim = 0;
-    for (auto av : pp_dimension_list_agentvar ) {
-        auto es = dynamic_cast<EnumerationSymbol *>(av->pp_data_type);
-        assert(es); // integrity check guarantee
+    for (auto dim : dimension_list ) {
+        auto av = dim->pp_attribute;
+        assert(av); // logic guarantee
+        auto es = dim->pp_enumeration;
+
+        assert(es); // logic guarantee
         TableDimsRow tableDims;
         tableDims.tableId = pp_table_id;
-        tableDims.name = "dim" + to_string(dim);
-        tableDims.pos = dim;
+        tableDims.name = "dim" + to_string(dim->index);
+        tableDims.pos = dim->index;
         tableDims.typeId = es->type_id;
         tableDims.isTotal = false;
         tableDims.dimSize = es->pp_size();
@@ -494,15 +484,13 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         for (auto lang : Symbol::pp_all_languages) {
             TableDimsTxtLangRow tableDimsTxt;
             tableDimsTxt.tableId = pp_table_id;
-            tableDimsTxt.name = "dim" + to_string(dim);
+            tableDimsTxt.name = "dim" + to_string(dim->index);
             tableDimsTxt.langName = lang->name;
             tableDimsTxt.descr = av->label(*lang);
             tableDimsTxt.note = av->note(*lang);
             metaRows.tableDimsTxt.push_back(tableDimsTxt);
         }
-        ++dim;
     }
-
 
     // accumulators for table
     for (auto acc : pp_accumulators) {

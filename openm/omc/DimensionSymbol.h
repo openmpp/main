@@ -10,6 +10,7 @@
 #include "Symbol.h"
 
 class AgentVarSymbol;
+class EunumerationSymbol;
 
 using namespace std;
 
@@ -59,10 +60,17 @@ public:
     Symbol*& attribute;
 
     /**
-     * The attribute for the dimension (pointer)
+     * The attribute for the dimension
      * 
      * Only valid after post-parse.
      */
     AgentVarSymbol* pp_attribute;
+
+    /**
+     * The enumeration for the dimension
+     * 
+     * Only valid after post-parse.
+     */
+    EnumerationSymbol* pp_enumeration;
 };
 

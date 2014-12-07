@@ -2051,12 +2051,7 @@ table_dimension:
                         {
                             Symbol *attribute = $symbol_in_expr;
                             assert(attribute);
-                            // add attribute to table's dimension_list
-                            pc.get_table_context()->dimension_list_agentvar.push_back(attribute->stable_pp());
-                            // add margin specifier to table's margin_list
-                            // (maintained in parallel with dimension_list)
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
-                            pc.get_table_context()->margin_list.push_back(margin_opt);
 
                             auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, attribute, margin_opt, @symbol_in_expr);
                             // add dimension to table's dimension_list

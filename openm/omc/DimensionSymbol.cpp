@@ -8,6 +8,7 @@
 #include <cassert>
 #include "DimensionSymbol.h"
 #include "AgentVarSymbol.h"
+#include "EnumerationSymbol.h"
 
 // static
 string DimensionSymbol::symbol_name(const Symbol* table_or_entity_set, int index)
@@ -27,7 +28,20 @@ void DimensionSymbol::post_parse(int pass)
     {
         // assign direct pointer to attribute for post-parse use
         pp_attribute = dynamic_cast<AgentVarSymbol *> (pp_symbol(attribute));
-        assert(pp_attribute); // parser guarantee
+        if (!pp_attribute) {
+            pp_error("'" + attribute->name + "' must be an attribute to be used as a dimension");
+        }
+        break;
+    }
+    case ePopulateCollections:
+    {
+        if (pp_attribute) {
+            // Assign direct pointer to enumeration for post-parse use
+            pp_enumeration = dynamic_cast<EnumerationSymbol *>(pp_attribute->pp_data_type);
+            if (!pp_enumeration) {
+                pp_error("The datatype of '" + pp_attribute->name + "' must be an enumeration to be used as a dimension");
+            }
+        }
         break;
     }
     default:

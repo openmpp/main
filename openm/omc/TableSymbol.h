@@ -159,26 +159,6 @@ public:
     list<DimensionSymbol *> dimension_list;
 
     /**
-     * List of dimensions (parse phase references to pointers)
-     */
-    list<Symbol **> dimension_list_agentvar;
-
-    /**
-     * List of margin indicators
-     */
-    list<bool> margin_list;
-
-    /**
-     * List of dimensions (post-parse phase pointers)
-     */
-    list<AgentVarSymbol *> pp_dimension_list_agentvar;
-
-    /**
-     * List of dimensions (post-parse phase pointers)
-     */
-    list<EnumerationSymbol *> pp_dimension_list_enum;
-
-    /**
      * The expressions in the table.
      */
     list<TableExpressionSymbol *> pp_expressions;
