@@ -27,7 +27,7 @@ bool TableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator,
     return symbols.count(unm) == 0 ? false : true;
 }
 
-string TableAccumulatorSymbol::pretty_name()
+string TableAccumulatorSymbol::pretty_name() const
 {
     // example:     accumulator 0: sum(delta(interval(duration)))
     string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator) + "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + agentvar->pretty_name() + ")))";

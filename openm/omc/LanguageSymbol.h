@@ -29,34 +29,52 @@ public:
 
 
     /**
-    * Constructor.
+    * Morphing constructor.
     *
     * @param [in,out]  sym Symbol to be morphed
     * @param   deflang     true if this is the model's default language.
     */
-    LanguageSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    explicit LanguageSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
     {
         language_id = next_language_id;
         next_language_id++;
+        name_to_id.emplace(name, language_id);
+        id_to_sym.push_back(this);
     }
 
     void post_parse(int pass);
 
+    /**
+     * Number of languages in the model
+     *
+     * @return An int.
+     */
+    static int number_of_languages()
+    {
+        return next_language_id;
+    }
 
     /**
-    * Identifier for the language.
-    */
-
+     * Identifier for the language.
+     */
     int language_id;
 
+    /**
+     * language_id for the next LanguageSymbol
+     * 
+     * A shared counter used to assign sequentially increasing identifier to each LanguageSymbol.
+     */
+    static int next_language_id;
 
     /**
-    * language_id for the next LanguageSymbol
-    *
-    * A shared counter used to assign sequentially increasing type_id to each LanguageSymbol.
-    */
+     * Map from language name to language id
+     */
+    static map<string, int> name_to_id;
 
-    static int next_language_id;
+    /**
+     * Vector from language id to language symbol
+     */
+    static vector<LanguageSymbol *> id_to_sym;
 };
 

@@ -28,4 +28,8 @@ void LanguageSymbol::post_parse(int pass)
 }
 
 
+// static members
 int LanguageSymbol::next_language_id = 0;
+map<string, int> LanguageSymbol::name_to_id;
+vector<LanguageSymbol *> LanguageSymbol::id_to_sym;
+

@@ -61,8 +61,7 @@ DerivedAgentVarSymbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent
                                               const Symbol *cls,
                                               const ConstantSymbol *k1,
                                               const ConstantSymbol *k2,
-                                              const ConstantSymbol *k3,
-                                              yy::location decl_loc)
+                                              const ConstantSymbol *k3)
 {
     DerivedAgentVarSymbol *sym = nullptr;
     string mem_name = member_name(tok, av1, av2, prt, cls, k1, k2, k3);
@@ -73,7 +72,7 @@ DerivedAgentVarSymbol * DerivedAgentVarSymbol::create_symbol(const Symbol* agent
         assert(sym);
     }
     else {
-        sym = new DerivedAgentVarSymbol(agent, tok, av1, av2, prt, cls, k1, k2, k3, decl_loc);
+        sym = new DerivedAgentVarSymbol(agent, tok, av1, av2, prt, cls, k1, k2, k3);
     }
     return sym;
 }
@@ -613,7 +612,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         assert(k1);
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_entrance, *av1, k1, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_entrance, *av1, k1);
         assert(dav);
         break;
     }
@@ -621,7 +620,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         assert(k1);
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_exit, *av1, k1, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_exit, *av1, k1);
         assert(dav);
         break;
     }
@@ -630,14 +629,14 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         assert(av1);
         assert(k1);
         assert(k2);
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_transition, *av1, k1, k2, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_transition, *av1, k1, k2);
         assert(dav);
         break;
     }
     case token::TK_value_at_first_change:
     {
         assert(av1);
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_change, *av1, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_undergone_change, *av1);
         assert(dav);
         break;
     }
@@ -645,7 +644,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         assert(k1);
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_duration, *av1, k1, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_duration, *av1, k1);
         assert(dav);
         break;
     }
@@ -654,7 +653,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         assert(av1);
         assert(k1);
         assert(av2); // weight
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_weighted_duration, *av1, k1, *av2, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_weighted_duration, *av1, k1, *av2);
         assert(dav);
         break;
     }
@@ -663,7 +662,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         assert(av1);
         assert(k1);
         assert(av2); // observed
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_delta, *av1, k1, *av2, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_active_spell_delta, *av1, k1, *av2);
         assert(dav);
         break;
     }
@@ -680,7 +679,7 @@ void DerivedAgentVarSymbol::create_auxiliary_symbols()
         assert(av2); // observed
         assert(iav);
         // create derived agentvar to hold value of observed agentvar at beginning of spell
-        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_value_at_latest_entrance, iav, true_cnst, *av2, decl_loc);
+        dav = DerivedAgentVarSymbol::create_symbol(agent, token::TK_value_at_latest_entrance, iav, true_cnst, *av2);
         assert(dav);
         break;
     }
@@ -2081,7 +2080,7 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
 }
 
-string DerivedAgentVarSymbol::pretty_name()
+string DerivedAgentVarSymbol::pretty_name() const
 {
     string result;
 

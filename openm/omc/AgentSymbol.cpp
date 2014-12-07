@@ -504,16 +504,10 @@ void AgentSymbol::create_ss_event()
     // check if the self-scheduling event has already been created
     if (ss_time_fn) return;
 
-    // Create a bool state used to trigger the recalculation of the event time
-    auto av_ss_flag = new BuiltinAgentVarSymbol("om_ss_flag", this, BoolSymbol::find());
-
     // create the associated event time function
     ss_time_fn = new AgentFuncSymbol("om_ss_time", this, "Time", "");
     ss_time_fn->doc_block = doxygen_short("Time function for the self-scheduling event.");
     CodeBlock& ct = ss_time_fn->func_body;
-    ct += "// Make clear the dependence of event time on the flag." ;
-    ct += av_ss_flag->name + ";" ;
-    ct += "" ;
     ct += "// Compute the minimum next time of all of the self-scheduling derived attributes." ;
     ct += "Time et = time_infinite;" ;
     // Subsequent code injected by each self-scheduling derived attribute
@@ -524,8 +518,6 @@ void AgentSymbol::create_ss_event()
     ss_implement_fn = new AgentFuncSymbol("om_ss_event", this, "void", "");
     ss_implement_fn->doc_block = doxygen_short("Implement function for the self-scheduling event.");
     CodeBlock& ci = ss_implement_fn->func_body;
-    ci += "// Change the flag to trigger event time recalculation." ;
-    ci += av_ss_flag->name + " = !" + av_ss_flag->name + ";";
     ci += "// Working local variable" ;
     ci += "Time current_time = time.get();";
     ci += "" ;
@@ -538,12 +530,6 @@ void AgentSymbol::create_ss_event()
     // sort after other events, to generate (under some conditions) comparable case checksums as Modgen.
     string evnt_name = "zzz_om_" + ss_implement_fn->name + "_om_event";
     ss_event = new AgentEventSymbol(evnt_name, this, ss_time_fn, ss_implement_fn, false, openm::event_priority_self_scheduling, decl_loc);
-
-    // Add the dependency of the event on the flag
-    CodeBlock& cse = av_ss_flag->side_effects_fn->func_body;
-    cse += injection_description();
-    cse += "// Recalculate time to the self-scheduling event";
-    cse += "if (om_active) " + evnt_name + ".make_dirty();";
 }
 
 void AgentSymbol::finish_ss_event()

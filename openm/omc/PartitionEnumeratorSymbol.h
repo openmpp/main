@@ -20,15 +20,14 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point, yy::location decl_loc = yy::location())
+    explicit PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point, yy::location decl_loc = yy::location())
         : EnumeratorSymbol(unm, enumeration, ordinal, decl_loc)
         , upper_split_point(upper_split_point)
     {
     }
 
-
     /**
-     * Gets the label for the interval in the partition.
+     * Gets the fixed label for the interval in the partition.
      * 
      * This specialization is language-independent.
      *
@@ -36,7 +35,6 @@ public:
      *
      * @return A string.
      */
-
     string label(const LanguageSymbol & language) const
     {
         return "["
@@ -46,38 +44,32 @@ public:
             + ( (upper_split_point == "max") ? "]" : ")" );
     }
 
-
     /**
-    * Gets the (always empty) note for the interval in the partition.
-    *
-    * This specialization is language-independent.
-    *
-    * @param language The language.
-    *
-    * @return A string.
-    */
-
+     * Gets the (always empty) note for the interval in the partition.
+     * 
+     * This specialization is language-independent.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
     string note(const LanguageSymbol & language) const
     {
         return "";
     }
 
-
     /**
-    * The lower split point of the partition interval
-    *
-    * The lower value is supplied in the post-parse phase.
-    */
-
+     * The lower split point of the partition interval
+     * 
+     * The lower value is supplied in the post-parse phase.
+     */
     string lower_split_point;
-
 
     /**
      * The upper split point of the partition interval
      * 
      * The upper value is supplied at parse time throught the constructor.
      */
-
     string upper_split_point;
 };
 

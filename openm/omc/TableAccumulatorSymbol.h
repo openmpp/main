@@ -91,7 +91,7 @@ public:
 
     void post_parse(int pass);
 
-    virtual string pretty_name();
+    virtual string pretty_name() const;
 
     /**
      * The table containing this accumulator (reference to pointer)

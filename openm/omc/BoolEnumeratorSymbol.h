@@ -22,20 +22,18 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    BoolEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal)
+    explicit BoolEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal)
         : EnumeratorSymbol(unm, enumeration, ordinal)
     {
     }
 
-
     /**
-    * Gets the label for the enumerator in bool.
-    *
-    * @param language The language.
-    *
-    * @return A string.
-    */
-
+     * Gets the fixed label for the enumerator in bool.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
     string label(const LanguageSymbol & language) const
     {
         string result("");
@@ -53,17 +51,15 @@ public:
         return result;
     }
 
-
     /**
-    * Gets the (always empty) note.
-    *
-    * This specialization is language-independent.
-    *
-    * @param language The language.
-    *
-    * @return A string.
-    */
-
+     * Gets the (always empty) note.
+     * 
+     * This specialization is language-independent.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
     string note(const LanguageSymbol & language) const
     {
         return "";

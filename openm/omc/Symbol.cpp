@@ -509,8 +509,27 @@ void Symbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case eIntegrityCheck:
+    case eAssignLabel:
     {
+        // Create default values of symbol labels and notes for all languages
+        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+            auto lang_sym = LanguageSymbol::id_to_sym[j];
+            pp_labels.push_back(default_label(*lang_sym));
+            pp_notes.push_back("");
+        }
+
+        // Check for presence of a comment label on the same lines as the symbol declaration.
+        if (decl_loc != yy::location()) {
+            // This symbol has a declaration location.
+            // Check all lines of the declaration for a valid comment label
+            int line_count = decl_loc.end.line - decl_loc.begin.line + 1;
+            for (int j = 0; j < line_count; ++j) {
+                // Construct key for lookup in map of all // comments
+                yy::position pos(decl_loc.begin.filename, decl_loc.begin.line + j, 0);
+                process_symbol_label(pos);
+            }
+        }
+
         // Integrity check (debugging omc only)
         // A name can be mis-identified as agent context when it should be global.
         // This situation is an intrinsic consequence of the 'distributed declaration' feature of the language.
@@ -548,6 +567,17 @@ void Symbol::post_parse(int pass)
         }
         break;
     }
+    case eAssignMembers:
+    {
+        // Check for presence of a comment label on the previous line of the symbol declaration.
+        if (decl_loc != yy::location() && decl_loc.begin.line > 0) {
+            // This symbol has a declaration location.
+            // Construct key for lookup in map of all // comments
+            yy::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
+            process_symbol_label(pos);
+        }
+        break;
+    }
     default:
         break;
     }
@@ -581,7 +611,7 @@ void Symbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
 }
 
-string Symbol::pretty_name()
+string Symbol::pretty_name() const
 {
     return name;
 }
@@ -615,16 +645,48 @@ void Symbol::pp_warning(const string& msg)
     theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
 }
 
-string Symbol::label(const LanguageSymbol & language) const
+bool Symbol::process_symbol_label(const yy::position& pos)
 {
-    // placeholder implementation
+    auto cmt_search = cxx_comments.find(pos);
+    if (cmt_search != cxx_comments.end()) {
+        // There was a comment on the source line.
+        string cmt = cmt_search->second;
+        // Extract a possible leading language code.
+        string lang_code;
+        for (auto ch : cmt) {
+            if (isspace(ch)) break;
+            lang_code += ch;
+        }
+        if (lang_code.size() > 0) {
+            auto lang_search = LanguageSymbol::name_to_id.find(lang_code);
+            if (lang_search != LanguageSymbol::name_to_id.end()) {
+                // The comment starts with a valid language code
+                // TODO skip white space, handle corner condition of no text
+                pp_labels[lang_search->second] = cmt.substr(lang_code.size() + 1);
+                // Remove matched label comment from map to allow subsequent
+                // identification of dangling lables on line immediately preceding a declaration.
+                cxx_comments.erase(cmt_search);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+string Symbol::default_label(const LanguageSymbol& language) const
+{
     return name;
+}
+
+
+string Symbol::label(const LanguageSymbol& language) const
+{
+    return pp_labels[language.language_id];
 }
 
 string Symbol::label() const
 {
-    // placeholder implementation
-    return name;
+    return pp_labels[0];
 }
 
 string Symbol::note(const LanguageSymbol & language) const
@@ -847,8 +909,12 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
 {
     post_parse_errors++;
     yy::location l = loc;
-    assert(l.begin.filename);
-    theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    if (l.begin.filename) {
+        theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    }
+    else {
+        theLog->logFormatted("%s", msg.c_str());
+    }
     if (post_parse_errors >= max_error_count) {
         string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
         theLog->logFormatted(msg.c_str());
@@ -858,6 +924,10 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
 
 void Symbol::post_parse_all()
 {
+    if (LanguageSymbol::number_of_languages() == 0) {
+        pp_error(yy::location(), "error - no languages specified");
+    }
+
     // Create pp_symbols now to easily find Symbols while debugging.
     populate_pp_symbols();
 
@@ -870,10 +940,10 @@ void Symbol::post_parse_all()
     // Recreate pp_symbols because symbols may have changed or been added.
     populate_pp_symbols();
 
-    // pass 2: perform integrity check
+    // pass 2: assign label using default or from comment on same lines as symbol declaration
     // Symbols will be processed in lexicographical order.
     for (auto pr : pp_symbols) {
-        pr.second->post_parse( eIntegrityCheck );
+        pr.second->post_parse( eAssignLabel );
     }
 
     // pass 3: create pp_ members
@@ -1047,15 +1117,19 @@ void Symbol::post_parse_all()
     }
 }
 
-void Symbol::process_cxx_comment(string cmt, yy::location loc)
+void Symbol::process_cxx_comment(const string& cmt, const yy::location& loc)
 {
-    comment_map_value_type element(loc, cmt);
+    // Construct key based on the beginning of the line containing the comment.
+    yy::position pos(loc.begin.filename, loc.begin.line, 0);
+    comment_map_value_type element(pos, cmt);
     cxx_comments.insert(element);
 }
 
-void Symbol::process_c_comment(string cmt, yy::location loc)
+void Symbol::process_c_comment(const string& cmt, const yy::location& loc)
 {
-    comment_map_value_type element(loc, cmt);
+    // Construct key based on the start position of the comment.
+    yy::position pos(loc.begin);
+    comment_map_value_type element(pos, cmt);
     c_comments.insert(element);
 }
 

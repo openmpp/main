@@ -70,21 +70,21 @@ typedef unordered_map<string, Symbol *> symbol_map_type;
 typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 
 
-// Specialization of std::hash for yy::location.
+// Specialization of std::hash for yy::position.
 // Required for creating unordered_map for lookup of comment
-// text by location.
+// text by start position.
 
 namespace std {
     template <>
-    struct hash<yy::location>
+    struct hash<yy::position>
     {
-        size_t operator()(const yy::location& k) const
+        size_t operator()(const yy::position& k) const
         {
             // Comments are uniquely determined by first position in location
             return (
-                      (hash<unsigned int>()(k.begin.column))
-                    ^ (hash<unsigned int>()(k.begin.line) << 7) // assume max 128 columns
-                    ^ (hash<unsigned int>()(*k.begin.filename->cbegin()) << 10) // assume max 1024 lines 
+                      (hash<unsigned int>()(k.column))
+                    ^ (hash<unsigned int>()(k.line) << 7) // assume max 128 columns
+                    ^ (hash<unsigned int>()(*k.filename->cbegin()) << 10) // assume max 1024 lines 
                    );
         }
     };
@@ -93,12 +93,12 @@ namespace std {
 /**
  * Defines an alias representing type of the comment map.
  */
-typedef unordered_map<yy::location, string> comment_map_type;
+typedef unordered_map<yy::position, string> comment_map_type;
 
 /**
  * Defines an alias representing type of a pair in the comment map.
  */
-typedef unordered_map<yy::location, string>::value_type comment_map_value_type;
+typedef unordered_map<yy::position, string>::value_type comment_map_value_type;
 
 
 // ======================================================
@@ -156,7 +156,7 @@ public:
      * @param unm      The unique name for the symbol.
      * @param decl_loc (Optional) the declaration location.
      */
-    Symbol(string unm, yy::location decl_loc = yy::location())
+    explicit Symbol(string unm, yy::location decl_loc = yy::location())
         : unique_name( unm )
         , name ( unm )
         , decl_loc(decl_loc)
@@ -196,7 +196,7 @@ public:
      * @param agent    The agent qualifying the name.
      * @param decl_loc (Optional) the declaration location.
      */
-    Symbol(const string nm, const Symbol *agent, yy::location decl_loc = yy::location())
+    explicit Symbol(const string nm, const Symbol *agent, yy::location decl_loc = yy::location())
         : unique_name(symbol_name(nm, agent))
         , name ( nm )
         , decl_loc(decl_loc)
@@ -231,7 +231,7 @@ public:
      * @param [in,out] sym [in,out] Original symbol to be morphed.
      * @param decl_loc     (Optional) the declaration location.
      */
-    Symbol(Symbol*& sym, yy::location decl_loc = yy::location())
+    explicit Symbol(Symbol*& sym, yy::location decl_loc = yy::location())
         : unique_name(sym->unique_name)
         , name ( sym->name )
         , decl_loc(decl_loc)
@@ -296,7 +296,7 @@ public:
         ///< post-parse pass to create missing symbols
         eCreateMissingSymbols,
         ///< post-parse pass to perform integrity check
-        eIntegrityCheck,
+        eAssignLabel,
         ///< post-parse pass to assign pp_ members
         eAssignMembers,
         ///< post-parse pass to populate pp_ collections
@@ -304,7 +304,7 @@ public:
         ///< post-parse pass to resolve data types of derived agentvars
         eResolveDataTypes,
         ///< post-parse pass to populate dependencies
-        ePopulateDependencies
+        ePopulateDependencies,
     };
 
     /**
@@ -399,7 +399,7 @@ public:
      *
      * @return The short pretty name as a string.
      */
-    virtual string pretty_name();
+    virtual string pretty_name() const;
 
     /**
      * Description of code injection into side-effect function.
@@ -431,13 +431,23 @@ public:
     /**
      * Get the symbol label in the given language.
      * 
-     * Language-specific symbol labels come from structured comments in the model source code.
+     * Language-specific symbol labels come from structured comments in the model source code
+     * or from a symbol-specific value.
      *
      * @param language The language.
      *
      * @return A string.
      */
-    virtual string label(const LanguageSymbol & language) const;
+    virtual string label(const LanguageSymbol& language) const;
+
+    /**
+     * Get the default symbol label for the given language.
+     * 
+     * @param language The language.
+     *
+     * @return A string.
+     */
+    virtual string default_label(const LanguageSymbol& language) const;
 
     /**
      * Gets the symbol label in the default language.
@@ -472,6 +482,25 @@ public:
      * E.g. 'time'.
      */
 	string name;
+
+    /**
+     * The symbol label for each language.
+     */
+    vector<string> pp_labels;
+
+    /**
+     * Search for and process a comment label at a source line.
+     *
+     * @param pos The position.
+     *
+     * @return true if it a valid comment line was foudn and processed, else false.
+     */
+    bool process_symbol_label(const yy::position& pos);
+
+    /**
+     * The symbol notes for each language.
+     */
+    vector<string> pp_notes;
 
     /**
      * Unique name lexicographically-compatible with Modgen order for code generation compatibility
@@ -735,7 +764,7 @@ public:
      * @param cmt The comment.
      * @param loc The source code location.
      */
-    static void process_cxx_comment(string cmt, yy::location loc);
+    static void process_cxx_comment(const string& cmt, const yy::location& loc);
 
     /**
      * Store a C style comment for later use.
@@ -743,7 +772,7 @@ public:
      * @param cmt The comment.
      * @param loc The source code location.
      */
-    static void process_c_comment(string cmt, yy::location loc);
+    static void process_c_comment(const string& cmt, const yy::location& loc);
 
     /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
