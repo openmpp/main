@@ -470,7 +470,6 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         auto av = dim->pp_attribute;
         assert(av); // logic guarantee
         auto es = dim->pp_enumeration;
-
         assert(es); // logic guarantee
         TableDimsRow tableDims;
         tableDims.tableId = pp_table_id;
@@ -486,8 +485,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableDimsTxt.tableId = pp_table_id;
             tableDimsTxt.name = "dim" + to_string(dim->index);
             tableDimsTxt.langName = lang->name;
-            tableDimsTxt.descr = av->label(*lang);
-            tableDimsTxt.note = av->note(*lang);
+            tableDimsTxt.descr = dim->label(*lang);
+            tableDimsTxt.note = dim->note(*lang);
             metaRows.tableDimsTxt.push_back(tableDimsTxt);
         }
     }

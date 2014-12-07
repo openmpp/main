@@ -129,20 +129,4 @@ public:
      * List of dimensions
      */
     list<DimensionSymbol *> dimension_list;
-
-    /**
-     * List of dimensions (parse phase references to pointers)
-     */
-    list<Symbol **> dimension_list_agentvar;
-
-    /**
-     * List of dimensions (post-parse phase pointers)
-     */
-    list<AgentVarSymbol *> pp_dimension_list_agentvar;
-
-    /**
-     * List of dimensions (post-parse phase pointers)
-     */
-    list<EnumerationSymbol *> pp_dimension_list_enum;
-
 };

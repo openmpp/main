@@ -1944,8 +1944,6 @@ entity_set_dimension:
                         {
                             Symbol *attribute = $symbol_in_expr;
                             assert(attribute);
-                            // add attribute to entity set's dimension_list
-                            pc.get_entity_set_context()->dimension_list_agentvar.push_back(attribute->stable_pp());
 
                             auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, attribute, false, @symbol_in_expr);
                             // add dimension to entity set's dimension_list

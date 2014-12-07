@@ -12,6 +12,7 @@
 #include "AgentFuncSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "RangeSymbol.h"
+#include "DimensionSymbol.h"
 #include "AgentVarSymbol.h"
 #include "NumericSymbol.h"
 #include "EnumerationSymbol.h"
@@ -74,28 +75,6 @@ void EntitySetSymbol::post_parse(int pass)
         // Add this entity set to the agent's list of entity sets
         pp_agent->pp_agent_entity_sets.push_back(this);
 
-        // TODO REMOVE
-        // The following block of code is identical in EntitySetSymbol and TableSymbol.
-        // Validate dimension list and populate the post-parse version.
-        for (auto psym : dimension_list_agentvar) {
-            assert(psym); // logic guarantee
-            auto sym = *psym; // remove one level of indirection
-            assert(sym); // grammar guarantee
-            auto avs = dynamic_cast<AgentVarSymbol *>(sym);
-            if (!avs) {
-                pp_error("'" + sym->name + "' is not an agentvar in dimension of '" + name + "'");
-                continue; // don't insert invalid type in dimension list
-            }
-            auto es = dynamic_cast<EnumerationSymbol *>(pp_symbol(avs->data_type));
-            if (!es) {
-                pp_error("The datatype of '" + avs->name + "' must be an enumeration type in dimension of '" + name + "'");
-                continue; // don't insert invalid type in dimension list
-            }
-            pp_dimension_list_agentvar.push_back(avs);
-            pp_dimension_list_enum.push_back(es);
-        }
-        // clear the parse version to avoid inadvertant use post-parse
-        dimension_list_agentvar.clear();
         break;
     }
     case ePopulateDependencies:
@@ -107,7 +86,8 @@ void EntitySetSymbol::post_parse(int pass)
         build_body_erase();
 
         // Dependency on change in index agentvars
-        for (auto av : pp_dimension_list_agentvar) {
+        for (auto dim : dimension_list) {
+            auto av = dim->pp_attribute;
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// cell change in " + name;
@@ -155,7 +135,8 @@ CodeBlock EntitySetSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     string dims = "";
-    for (auto es : pp_dimension_list_enum) {
+    for (auto dim : dimension_list) {
+        auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
         dims += "[" + to_string(es->pp_size()) + "]";
     }
@@ -172,7 +153,8 @@ CodeBlock EntitySetSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     string dims = "";
-    for (auto es : pp_dimension_list_enum) {
+    for (auto dim : dimension_list) {
+        auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
         dims += "[" + to_string(es->pp_size()) + "]";
     }
@@ -187,7 +169,7 @@ void EntitySetSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
 
-    int rank = pp_dimension_list_enum.size();
+    int rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0
@@ -200,12 +182,16 @@ void EntitySetSymbol::build_body_update_cell()
     c += "int index = 0;" ;
 
     // build an unwound loop of code
-    int dim = 0;
-    for (auto av : pp_dimension_list_agentvar ) {
-        auto es = dynamic_cast<EnumerationSymbol *>(av->pp_data_type);
+    for (auto dim : dimension_list ) {
+        auto av = dim->pp_attribute;
+        auto es = dim->pp_enumeration;
+        // bail if dimension erroneous (error already reported)
+        if (!av || !es) {
+            break;
+        }
         assert(es); // integrity check guarantee
         c += "";
-        c += "// dimension=" + to_string(dim) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
+        c += "// dimension=" + to_string(dim->index) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
         if (dim > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
@@ -216,7 +202,6 @@ void EntitySetSymbol::build_body_update_cell()
             c += "index -= " + to_string(rs->lower_bound) + ";";
         }
         c += "cell += index;";
-        ++dim;
     }
     c += "";
     c += "assert(cell >= 0 && cell < " + to_string(cell_count()) + "); // logic guarantee";
@@ -255,14 +240,15 @@ void EntitySetSymbol::build_body_erase()
 // The following function definition is identical in EntitySetSymbol and TableSymbol
 int EntitySetSymbol::rank()
 {
-    return pp_dimension_list_agentvar.size();
+    return dimension_list.size();
 }
 
 // The following function definition is identical in EntitySetSymbol and TableSymbol
 int EntitySetSymbol::cell_count()
 {
     int cells = 1;
-    for (auto es : pp_dimension_list_enum) {
+    for (auto dim : dimension_list) {
+        auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
         cells *= es->pp_size();
     }
