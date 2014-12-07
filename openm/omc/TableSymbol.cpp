@@ -242,10 +242,10 @@ CodeBlock TableSymbol::cxx_definition_global()
             initial_value = "  0.0";
             break;
         case token::TK_minimum:
-            initial_value = " DBL_MAX";
+            initial_value = " std::numeric_limits<double>::infinity()";
             break;
         case token::TK_maximum:
-            initial_value = "-DBL_MAX";
+            initial_value = "-std::numeric_limits<double>::infinity()";
             break;
         default:
             // not reached
