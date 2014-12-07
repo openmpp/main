@@ -1915,8 +1915,17 @@ decl_entity_set: // Some code for decl_entity_set and decl_table is nearly ident
                             // Set agent context and entity set context for body of entity set declaration
                             pc.set_agent_context( $agent );
                             pc.set_entity_set_context( entity_set );
+                            // initialize working counter used for table dimensions
+                            pc.counter4 = 0;
                         }
             entity_set_dimension_list_opt entity_set_filter_opt ";"
+                        {
+                            // No valid agent or entity_set context
+                            pc.set_entity_set_context( nullptr );
+                            pc.set_agent_context( nullptr );
+                            // Reset working counters
+                            pc.counter4 = 0;
+                        }
     | "entity_set" error ";"
     ;
 
@@ -1931,10 +1940,19 @@ entity_set_dimension_list:
     ;
 
 entity_set_dimension:
-      "[" symbol_in_expr[agentvar] "]"
+      "[" symbol_in_expr "]"
                         {
-                            // add agentvar to entity set's dimension_list
-                            pc.get_entity_set_context()->dimension_list_agentvar.push_back($agentvar->stable_pp());
+                            Symbol *attribute = $symbol_in_expr;
+                            assert(attribute);
+                            // add attribute to entity set's dimension_list
+                            pc.get_entity_set_context()->dimension_list_agentvar.push_back(attribute->stable_pp());
+
+                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, attribute, false, @symbol_in_expr);
+                            // add dimension to entity set's dimension_list
+                            pc.get_entity_set_context()->dimension_list.push_back(sym);
+                            // Increment the counter used for the number of dimensions.
+                            // This is the same as as the 0-based ordinal of the next dimension in the declaration.
+                            pc.counter4++;
                         }
     ;
 
@@ -1982,7 +2000,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             pc.counter2 = 0;
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
-                            // initialize working counter used for table classification dimensions
+                            // initialize working counter used for table dimensions
                             pc.counter4 = 0;
                         }
             table_filter_opt

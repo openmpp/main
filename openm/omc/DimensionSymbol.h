@@ -26,20 +26,18 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    DimensionSymbol(Symbol *table, int index, Symbol *attribute, bool has_margin, yy::location decl_loc = yy::location())
-        : Symbol(symbol_name(table, index), decl_loc)
+    DimensionSymbol(Symbol *table_or_entity_set, int index, Symbol *attribute, bool has_margin, yy::location decl_loc = yy::location())
+        : Symbol(symbol_name(table_or_entity_set, index), decl_loc)
         , index(index)
         , has_margin(has_margin)
         , attribute(attribute->stable_rp())
         , pp_attribute(nullptr)
-        , table(table->stable_rp())
-        , pp_table(nullptr)
     {
     }
 
-    // Construct symbol name for the table expression symbol.
+    // Construct symbol name for the dimension symbol.
     // Example: BasicDemography.Dim0
-    static string symbol_name(const Symbol* table, int index);
+    static string symbol_name(const Symbol* table_or_entity_set, int index);
 
     void post_parse(int pass);
 
@@ -66,19 +64,5 @@ public:
      * Only valid after post-parse.
      */
     AgentVarSymbol* pp_attribute;
-
-    /**
-     * The containing table (reference to pointer)
-     * 
-     * Stable to symbol morphing during parse phase.
-     */
-    Symbol*& table;
-
-    /**
-     * The containing table (pointer)
-     * 
-     * Only valid after post-parse.
-     */
-    TableSymbol* pp_table;
 };
 

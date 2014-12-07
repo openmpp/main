@@ -12,6 +12,7 @@ class AgentFuncSymbol;
 class AgentInternalSymbol;
 class AgentVarSymbol;
 class IdentityAgentVarSymbol;
+class DimensionSymbol;
 class CodeBlock;
 
 /**
@@ -123,6 +124,11 @@ public:
      * The expression agentvar of the entity set filter.
      */
     IdentityAgentVarSymbol *filter;
+
+    /**
+     * List of dimensions
+     */
+    list<DimensionSymbol *> dimension_list;
 
     /**
      * List of dimensions (parse phase references to pointers)

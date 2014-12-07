@@ -7,14 +7,13 @@
 
 #include <cassert>
 #include "DimensionSymbol.h"
-#include "TableSymbol.h"
 #include "AgentVarSymbol.h"
 
 // static
-string DimensionSymbol::symbol_name(const Symbol* table, int index)
+string DimensionSymbol::symbol_name(const Symbol* table_or_entity_set, int index)
 {
-    assert(table);
-    return table->name + ".Dim" + to_string(index);
+    assert(table_or_entity_set);
+    return table_or_entity_set->name + ".Dim" + to_string(index);
 }
 
 void DimensionSymbol::post_parse(int pass)
@@ -26,16 +25,9 @@ void DimensionSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to table for post-parse use
-        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
-        assert(pp_table); // parser guarantee
-
         // assign direct pointer to attribute for post-parse use
         pp_attribute = dynamic_cast<AgentVarSymbol *> (pp_symbol(attribute));
         assert(pp_attribute); // parser guarantee
-
-        // Add this table dimension to the table's list of dimensions
-        //pp_table->pp_dimensions.push_back(this);
         break;
     }
     default:
