@@ -10,22 +10,27 @@ use File::Path qw(make_path);
 use File::Compare;
 use Cwd qw(getcwd);
 
-chdir "../models" || die "Invoke test_models from Perl folder";
-my $models_root = getcwd;
-
-my @models;
-
 my $do_modgen = 1;
 my $do_ompp = 1;
 
+# Check for and process -nomodgen flag
 if ($#ARGV >= 0) {
 	if ( $ARGV[0] eq "-nomodgen") {
 		shift @ARGV;
 		$do_modgen = 0;
 	}
+}
+
+chdir "../models" || die "Invoke test_models from Perl folder";
+my $models_root = getcwd;
+my @models;
+
+if ($#ARGV >= 0) {
+	# models listed explicitly on command line
 	@models = @ARGV;
 }
 else {
+	# no models listed on command line
 	# Create model list by identifying all model subdirectories
 	my @paths = glob "*/ompp";
 	for my $path (@paths) {
