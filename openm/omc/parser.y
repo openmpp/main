@@ -2006,7 +2006,6 @@ table_filter_opt:
                             TableSymbol *table = pc.get_table_context();
                             // create an identity agentvar for the filter
                             auto iav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
-                            assert(iav); // out of memory check
                             // note identity agentvar in table
                             table->filter = iav;
                         }
@@ -2040,8 +2039,10 @@ table_dimension:
                             // (maintained in parallel with dimension_list)
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             pc.get_table_context()->margin_list.push_back(margin_opt);
-                            // increment counter of number of classification dimensions
-                            // (or 0-based ordinal of next classification dimension)
+
+                            auto sym = new TableDimensionSymbol( pc.get_table_context(), pc.counter4, @expr_symbol );
+                            // Increment the counter used for the number of dimensions (excluding analysis dimension).
+                            // This is the same as as the 0-based ordinal of the next dimension in the declaration.
                             pc.counter4++;
                         }
     | "{" table_expression_list "}"

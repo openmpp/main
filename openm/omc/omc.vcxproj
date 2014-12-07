@@ -216,6 +216,7 @@
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableAccumulatorSymbol.h" />
     <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
+    <ClInclude Include="TableDimensionSymbol.h" />
     <ClInclude Include="TableExpressionSymbol.h" />
     <ClInclude Include="TableGroupSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
@@ -286,6 +287,7 @@
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableAccumulatorSymbol.cpp" />
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
+    <ClCompile Include="TableDimensionSymbol.cpp" />
     <ClCompile Include="TableExpressionSymbol.cpp" />
     <ClCompile Include="TableGroupSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
