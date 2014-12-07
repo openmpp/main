@@ -473,7 +473,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Literal>   signed_literal
 
 %type  <pval_Symbol>    decl_type_part
-%type  <pval_Symbol>    expr_symbol
+%type  <pval_Symbol>    symbol_in_expr
 %type  <pval_Symbol>    derived_agentvar
 %type  <pval_Symbol>    any_agentvar
 %type  <pval_Symbol>    link_to_agentvar
@@ -1600,7 +1600,7 @@ expr_for_agentvar[result]:
     //
     // expression terminals
     // 
-      expr_symbol[sym]
+      symbol_in_expr[sym]
                         {
 	                        $result = new ExprForAgentVarSymbol( $sym );
                         }
@@ -1931,10 +1931,10 @@ entity_set_dimension_list:
     ;
 
 entity_set_dimension:
-      "[" expr_symbol[agentvar] "]"
+      "[" symbol_in_expr[agentvar] "]"
                         {
                             // add agentvar to entity set's dimension_list
-                            pc.get_entity_set_context()->dimension_list.push_back($agentvar->stable_pp());
+                            pc.get_entity_set_context()->dimension_list_agentvar.push_back($agentvar->stable_pp());
                         }
     ;
 
@@ -2029,18 +2029,20 @@ table_margin_opt:
     ;
 
 table_dimension:
-    expr_symbol table_margin_opt
+    symbol_in_expr table_margin_opt
                         {
-                            Symbol *agentvar = $expr_symbol;
-                            assert(agentvar);
-                            // add agentvar to table's dimension_list
-                            pc.get_table_context()->dimension_list.push_back(agentvar->stable_pp());
+                            Symbol *attribute = $symbol_in_expr;
+                            assert(attribute);
+                            // add attribute to table's dimension_list
+                            pc.get_table_context()->dimension_list_agentvar.push_back(attribute->stable_pp());
                             // add margin specifier to table's margin_list
                             // (maintained in parallel with dimension_list)
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             pc.get_table_context()->margin_list.push_back(margin_opt);
 
-                            auto sym = new TableDimensionSymbol( pc.get_table_context(), pc.counter4, @expr_symbol );
+                            auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, attribute, margin_opt, @symbol_in_expr);
+                            // add dimension to table's dimension_list
+                            pc.get_table_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions (excluding analysis dimension).
                             // This is the same as as the 0-based ordinal of the next dimension in the declaration.
                             pc.counter4++;
@@ -2056,12 +2058,12 @@ table_dimension:
 table_expression_list:
       expr_for_table[root]
                         {
-                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
+                            auto sym = new TableExpressionSymbol(pc.get_table_context(), $root, pc.counter1, @root);
                             pc.counter1++;  // counter for expressions
                         }
     | table_expression_list "," expr_for_table[root]
                         {
-                            auto sym = new TableExpressionSymbol( pc.get_table_context(), $root, pc.counter1, @root );
+                            auto sym = new TableExpressionSymbol(pc.get_table_context(), $root, pc.counter1, @root);
                             pc.counter1++;  // counter for expressions
                         }
 	;
@@ -2072,9 +2074,9 @@ table_expression_list:
 
 expr_for_table[result]:
       // Ex. income
-      expr_symbol
+      symbol_in_expr
                         {
-                            Symbol *agentvar = $expr_symbol;
+                            Symbol *agentvar = $symbol_in_expr;
                             assert(agentvar);
                             // Defaults are accumulator=sum, increment=delta, table operator=interval
                             token_type acc = token::TK_sum;
@@ -2084,9 +2086,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. max_value_in(income)
-    | modgen_cumulation_operator "(" expr_symbol ")"
+    | modgen_cumulation_operator "(" symbol_in_expr ")"
                         {
-                            Symbol *agentvar = $expr_symbol;
+                            Symbol *agentvar = $symbol_in_expr;
                             // Ex. token::TK_maximum
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
@@ -2096,9 +2098,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. sum(delta(income))
-    | table_accumulator[acc] "(" table_increment[incr] "(" expr_symbol ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" symbol_in_expr ")" ")"
                         {
-                            Symbol *agentvar = $expr_symbol;
+                            Symbol *agentvar = $symbol_in_expr;
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
                             token_type tabop = token::TK_interval;
@@ -2106,9 +2108,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. event(income)
-    | table_operator[tabop] "(" expr_symbol ")"
+    | table_operator[tabop] "(" symbol_in_expr ")"
                         {
-                            Symbol *agentvar = $expr_symbol;
+                            Symbol *agentvar = $symbol_in_expr;
                             token_type acc = token::TK_sum;
                             token_type incr = token::TK_delta;
                             token_type tabop = (token_type) $tabop;
@@ -2116,9 +2118,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. max_value_in(event(income))
-    | modgen_cumulation_operator "(" table_operator[tabop] "(" expr_symbol ")" ")"
+    | modgen_cumulation_operator "(" table_operator[tabop] "(" symbol_in_expr ")" ")"
                         {
-                            Symbol *agentvar = $expr_symbol;
+                            Symbol *agentvar = $symbol_in_expr;
                             // Ex. token::TK_maximum
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
@@ -2128,9 +2130,9 @@ expr_for_table[result]:
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
       // Ex. sum(delta(event(income)))
-    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" expr_symbol ")" ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_expr ")" ")" ")"
                         {
-                            Symbol *agentvar = $expr_symbol;
+                            Symbol *agentvar = $symbol_in_expr;
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
                             token_type tabop = (token_type) $tabop;
@@ -2291,10 +2293,10 @@ developer_table_analysis_list:
 
 
 /*
- * expr_symbol in an expression
+ * symbol in an expression
  */
 
-expr_symbol:
+symbol_in_expr:
       SYMBOL
     | derived_agentvar
     | link_to_agentvar

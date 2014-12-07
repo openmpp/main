@@ -237,7 +237,7 @@
     <ClInclude Include="AgentHookSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TableDimensionSymbol.h">
+    <ClInclude Include="DimensionSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -419,7 +419,7 @@
     <ClCompile Include="AgentHookSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TableDimensionSymbol.cpp">
+    <ClCompile Include="DimensionSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

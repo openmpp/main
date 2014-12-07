@@ -49,7 +49,7 @@
 #include "LinkAgentVarSymbol.h"
 #include "MultilinkAgentVarSymbol.h"
 #include "AgentSymbol.h"
-#include "TableDimensionSymbol.h"
+#include "DimensionSymbol.h"
 #include "TableExpressionSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"

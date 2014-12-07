@@ -10,6 +10,7 @@
 #include <list>
 #include "Symbol.h"
 
+class DimensionSymbol;
 class TableExpressionSymbol;
 class TableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
@@ -153,9 +154,14 @@ public:
     BuiltinAgentVarSymbol *unit;
 
     /**
+     * List of dimensions
+     */
+    list<DimensionSymbol *> dimension_list;
+
+    /**
      * List of dimensions (parse phase references to pointers)
      */
-    list<Symbol **> dimension_list;
+    list<Symbol **> dimension_list_agentvar;
 
     /**
      * List of margin indicators

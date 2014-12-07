@@ -127,7 +127,7 @@ public:
     /**
      * List of dimensions (parse phase references to pointers)
      */
-    list<Symbol **> dimension_list;
+    list<Symbol **> dimension_list_agentvar;
 
     /**
      * List of dimensions (post-parse phase pointers)

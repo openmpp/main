@@ -91,7 +91,7 @@ void TableSymbol::post_parse(int pass)
 
         // The following block of code is identical in EntitySetSymbol and TableSymbol.
         // Validate dimension list and populate the post-parse version.
-        for (auto psym : dimension_list) {
+        for (auto psym : dimension_list_agentvar) {
             assert(psym); // logic guarantee
             auto sym = *psym; // remove one level of indirection
             assert(sym); // grammar guarantee
@@ -109,7 +109,7 @@ void TableSymbol::post_parse(int pass)
             pp_dimension_list_enum.push_back(es);
         }
         // clear the parse version to avoid inadvertant use post-parse
-        dimension_list.clear();
+        dimension_list_agentvar.clear();
         break;
     }
 
