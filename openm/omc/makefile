@@ -71,6 +71,7 @@ DependencyGroupSymbol.cpp \
 DerivedAgentVarSymbol.cpp \
 DeveloperTableAnalysisSymbol.cpp \
 DeveloperTableSymbol.cpp \
+DimensionSymbol.cpp \
 Driver.cpp \
 EntitySetSymbol.cpp \
 EnumerationSymbol.cpp \

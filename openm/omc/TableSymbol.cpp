@@ -514,6 +514,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // expressions for table
+    regex pat("\\s+decimals=\\d+");
+    string empty_str;
     for (auto expr : pp_expressions) {
         TableExprRow tableExpr;
         tableExpr.tableId = pp_table_id;
@@ -530,11 +532,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableExprTxt.langName = lang->name;
 
             // construct label by removing decimals=nnn from string if present
-            string lab = expr->label(*lang);
-            regex pat("\\s+decimals=\\d+");
-            lab = regex_replace(lab, pat, "");
-            tableExprTxt.descr = lab;
-
+            tableExprTxt.descr = regex_replace(expr->label(*lang), pat, empty_str);
+            
             tableExprTxt.note = expr->note(*lang);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
