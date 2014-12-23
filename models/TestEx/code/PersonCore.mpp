@@ -137,7 +137,7 @@ void Person::Start( long lCase, logical bDominant, TIME tBirth, TIME tDeath, TIM
 	month_of_birth 	= month_of_year;
 	day_of_birth 	= day_of_month;
 
-	next_birthday 	 = (tCurrent == tBirth) ? tCurrent : tCurrent + (1- fmod(age, 1));
+	next_birthday 	 = (tCurrent == tBirth) ? tCurrent : TIME(tCurrent + (1- fmod(age, 1)));
 	clone_number 	 = nCloneNumber;
 	clones_requested = nClonesRequested;
 

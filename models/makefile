@@ -13,7 +13,9 @@ MODEL_DIRS = \
   Alpha1 \
   Alpha2 \
   IDMM \
-  RiskPaths
+  RiskPaths \
+  THIM \
+  TestEx
 
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
