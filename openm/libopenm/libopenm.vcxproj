@@ -159,6 +159,7 @@
     <ClInclude Include="msg\msgCommon.h" />
     <ClInclude Include="msg\msgEmpty.h" />
     <ClInclude Include="msg\msgExecBase.h" />
+    <ClInclude Include="msg\msgMpi.h" />
     <ClInclude Include="msg\msgMpiExec.h" />
     <ClInclude Include="msg\msgMpiPacked.h" />
     <ClInclude Include="msg\msgMpiRecv.h" />

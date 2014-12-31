@@ -65,6 +65,11 @@ namespace openm
     };
 }
 
+// VC++ 2013: define thread_local to comply with c++11 standard
+#ifdef _WIN32
+    #define thread_local __declspec(thread)
+#endif  // _WIN32
+
 //
 // modeling library export
 //

@@ -122,6 +122,8 @@ namespace openm
          */
         const vector<char> pack(const IRowBaseVec & i_rowVec) const
         {
+            lock_guard<recursive_mutex> lck(msgMutex);
+
             int packSize = packedSize(i_rowVec);
             vector<char> packedData(packSize);
 
@@ -144,6 +146,8 @@ namespace openm
          */
         void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const
         {
+            lock_guard<recursive_mutex> lck(msgMutex);
+
             int packPos = 0;
             int rowCount = MpiPacked::unpack<int>(i_packSize, i_packedData, packPos);
 

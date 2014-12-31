@@ -27,6 +27,7 @@ namespace openm
         /** pack vector of db rows into char vector: return empty vector. */
         const vector<char> pack(const IRowBaseVec & /* i_rowVec */) const 
         { 
+            lock_guard<recursive_mutex> lck(msgMutex);
             vector<char> packedData;
             return packedData;
         }
@@ -56,7 +57,7 @@ namespace openm
         ~MsgEmptyExec(void) throw() { }
 
         /** return current process rank: always = 0. */
-        int rank(void) const throw() { return MsgExecBase::rank(); }
+        int rank(void) const throw() { return 0; }
 
         /** return total number of processes in world communicator: always = 1. */
         int worldSize(void) const throw() { return 1; }
@@ -73,19 +74,22 @@ namespace openm
         /** start non-blocking send of value array to i_sendTo process. */
         void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr)
         {
-             return MsgExecBase::startSend(i_sendTo, i_msgTag, i_type, i_size, i_valueArr);
+            lock_guard<recursive_mutex> lck(msgMutex);
+            return MsgExecBase::startSend(i_sendTo, i_msgTag, i_type, i_size, i_valueArr);
         }
 
         /** pack and start non-blocking send of vector of db rows to i_sendTo process. */
         void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter)
         {
-             return MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter);
+            lock_guard<recursive_mutex> lck(msgMutex);
+            return MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter);
         }
 
         /** initiate non-blocking recveive of value array into io_valueArr. */
         void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr)
         {
-             return MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
+            lock_guard<recursive_mutex> lck(msgMutex);
+            return MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
         }
 
         /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
@@ -97,7 +101,8 @@ namespace openm
         /** try to non-blocking receive value array, return return true if received. */
         bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const
         {
-             return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
+            lock_guard<recursive_mutex> lck(msgMutex);
+            return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
         }
 
         /** try to non-blocking receive and unpack vector of db rows, return return true if received. */
@@ -107,10 +112,18 @@ namespace openm
         }
 
         /** wait for all non-blocking send to be completed. */
-        void waitSendAll(void) { return MsgExecBase::waitSendAll(); }
+        void waitSendAll(void) 
+        { 
+            lock_guard<recursive_mutex> lck(msgMutex);
+            return MsgExecBase::waitSendAll();
+        }
 
         /** wait for all non-blocking receive to be completed. */
-        void waitRecvAll(void) { return MsgExecBase::waitRecvAll(); }
+        void waitRecvAll(void) 
+        { 
+            lock_guard<recursive_mutex> lck(msgMutex);
+            return MsgExecBase::waitRecvAll();
+        }
 
     private:
         MsgEmptyExec(const MsgEmptyExec & i_exec);              // = delete;

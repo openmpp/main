@@ -15,15 +15,15 @@ static double ageSex[ageSize][sexSize];
 static int salaryAge[salarySize][ageSize];
 
 // model output tables: subsample accumulators
-static double salarySexSum[salarySize][sexSize];
-static double salarySexCount[salarySize][sexSize];
+static thread_local double salarySexSum[salarySize][sexSize];
+static thread_local double salarySexCount[salarySize][sexSize];
 
 // Model event loop: user code
 void RunModel(IModel * i_model)
 {
     theLog->logMsg("Running Simulation");
 
-    // prototype only
+    // calculate output accumulators for each sub-sample
     for (int nSalary = 0; nSalary < salarySize; nSalary++) {
         for (int nSex = 0; nSex < sexSize; nSex++) {
 
@@ -37,7 +37,8 @@ void RunModel(IModel * i_model)
         }
     }
 
-    theTrace->logMsg("Trace output: Event loop completed");
+    // trace output: disabled by default, use command-line or model.ini to enable it
+    theTrace->logMsg("Event loop completed");
 }
 
 // Model startup method: initialize parameters

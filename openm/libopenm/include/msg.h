@@ -18,7 +18,7 @@ using namespace std;
 namespace openm
 {
     /** messaging library default error message: "unknown messaging error" */
-    extern const char msgUnknownErrorMessage[];   
+    extern const char msgUnknownErrorMessage[];
 
     /** messaging library exception */
     typedef OpenmException<4000, msgUnknownErrorMessage> MsgException;
@@ -255,112 +255,6 @@ namespace openm
 
         /** wait for all non-blocking receive to be completed. */
         virtual void waitRecvAll(void) = 0;
-    };
-
-    /** public interface for message sender */
-    class IMsgSend
-    {
-    public:
-        /** cleanup message sender resources. */
-        virtual ~IMsgSend(void) throw() = 0;
-
-        /** check is send completed. */
-        virtual bool isCompleted(void) = 0;
-    };
-
-    /** public interface to send value array */
-    class IMsgSendArray : public IMsgSend
-    {
-    public:
-        /** cleanup message sender resources. */
-        virtual ~IMsgSendArray(void) throw() = 0;
-
-        /**
-         * create new value array sender.
-         *
-         * @param[in] i_selfRank sender proccess rank (current process rank)
-         * @param[in] i_sendTo   receiver proccess rank
-         * @param[in] i_msgTag   tag to identify message content (parameter or output data)
-         * @param[in] i_type     type of value array
-         * @param[in] i_size     size of value array
-         * @param[in] i_valueArr value array to send (should not be deallocated until send compled)
-         */
-        static IMsgSendArray * create(
-            int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
-            );
-    };
-
-    /** public interface to send packed data. */
-    class IMsgSendPacked : public IMsgSend
-    {
-    public:
-        /** cleanup message sender resources. */
-        virtual ~IMsgSendPacked(void) throw() = 0;
-
-        /**
-         * create new sender for packed data.
-         *
-         * @param[in] i_selfRank sender proccess rank (current process rank)
-         * @param[in] i_sendTo   receiver proccess rank
-         * @param[in] i_rowVec   vector of db rows to send
-         * @param[in] i_adapter  adapter to pack db rows
-         */
-        static IMsgSendPacked * create(
-            int i_selfRank, int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter
-            );
-    };
-
-    /** public interface for message receiver */
-    class IMsgRecv
-    {
-    public:
-        /** cleanup message receiver resources. */
-        virtual ~IMsgRecv(void) throw() = 0;
-
-        /** try to receive the data, return return true if received. */
-        virtual bool tryReceive(void) = 0;
-    };
-
-    /** public interface to receive value array */
-    class IMsgRecvArray : public IMsgRecv
-    {
-    public:
-        /** cleanup value array receiver resources. */
-        virtual ~IMsgRecvArray(void) throw()= 0;
-
-        /**
-         * create new receiver for value array.
-         *
-         * @param[in]     i_selfRank  receiver (current process rank)
-         * @param[in]     i_recvFrom  sender proccess rank
-         * @param[in]     i_msgTag    tag to identify message content (parameter or output data)
-         * @param[in]     i_type      type of value array
-         * @param[in]     i_size      size of value array
-         * @param[in,out] io_valueArr allocated buffer to recieve value array
-         */
-        static IMsgRecvArray * create(
-            int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
-            );
-    };
-
-    /** public interface to receive packed data */
-    class IMsgRecvPacked : public IMsgRecv
-    {
-    public:
-        /** cleanup message receiver resources. */
-        virtual ~IMsgRecvPacked(void) throw() = 0;
-
-        /**
-         * create new receiver for packed data.
-         *
-         * @param[in]     i_selfRank      receiver (current process rank)
-         * @param[in]     i_recvFrom      sender proccess rank
-         * @param[in,out] io_resultRowVec vector to push back received db rows
-         * @param[in]     i_adapter       adapter to unpack db rows
-         */
-        static IMsgRecvPacked * create(
-            int i_selfRank, int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter
-            );
     };
 }
 

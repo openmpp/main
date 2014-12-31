@@ -8,7 +8,7 @@
 * - main() model entry point  
 * - model initialization:    
 *   * read model input parameters  
-*   * create model.exe process for each subsample
+*   * create modeling threads for each subsample
 * - run model event loop (do the simulation)  
 * - model shutdown:  
 *   * get output results for each subsample  
@@ -103,7 +103,7 @@ int main(int argc, char ** argv)
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<MetaRunHolder> metaStore(runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get()));
 
-        // create and run model threads
+        // create and run modeling threads
         vector<future<bool> > futureVec;
         for (int nTh = 0; nTh < runCtrl.threadCount; nTh++) {
 

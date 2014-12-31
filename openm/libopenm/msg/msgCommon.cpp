@@ -10,6 +10,9 @@ using namespace openm;
 // messaging library default error message
 const char openm::msgUnknownErrorMessage[] = "unknown messaging error";
 
+// mutex to lock message passing
+recursive_mutex openm::msgMutex;
+
 // cleanup message passing resources.
 IMsgExec::~IMsgExec(void) throw() { }
 
@@ -28,6 +31,7 @@ IMsgRecvPacked::~IMsgRecvPacked(void) throw() { }
 // create new message passing interface.
 IMsgExec * IMsgExec::create(int argc, char **argv)
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MpiExec(argc, argv);
 }
 
@@ -105,12 +109,14 @@ const string MpiException::makeErrorMsg(int i_mpiReturn)
 // create new pack and unpack adapter for metadata table db rows
 IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag) 
 { 
-    return new EmptyPackedAdapter(i_msgTag); 
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return new EmptyPackedAdapter(i_msgTag);
 }
 
 // create new message passing interface.
 IMsgExec * IMsgExec::create(int argc, char **argv)
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MsgEmptyExec(argc, argv);
 }
 

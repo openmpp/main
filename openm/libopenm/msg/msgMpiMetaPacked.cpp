@@ -529,6 +529,8 @@ namespace openm
 // create new pack and unpack adapter for metadata table db rows
 IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
+
     switch (i_msgTag)
     {
     case MsgTag::modelDic:

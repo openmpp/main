@@ -138,14 +138,6 @@ RunController::RunController(int argc, char ** argv) :
 
 /** complete model run initialization: create run and input parameters in database. 
 *
-* - (c) determine run options
-* - (a) determine task id, run id, set id, number of subsamples, process subsample number and run option
-* - (b) create new "run" in database (if required)
-* - (c) save run options in database (if required)
-* - (e) prepare model input parameters
-* - (f) load metadata tables from db
-*
-*
 * - (a) determine run id, number of subsamples and process subsample number
 * - (b) create new "run" in database (if required)
 * - (c) determine run options and save it in database (if required)

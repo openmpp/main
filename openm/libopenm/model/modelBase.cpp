@@ -191,12 +191,14 @@ void ModelBase::readParameter(const char * i_name, const type_info & i_type, lon
         const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
         if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
-        // check if parameter read already completed
+        // check if parameter read already done
         int paramId = paramRow->paramId;
         bool isDone = std::any_of(
-            paramReadVec.cbegin(), paramReadVec.cend(), [paramId](const int i_id) -> bool { return paramId == i_id; }
+            paramReadVec.cbegin(), 
+            paramReadVec.cend(), 
+            [paramId](const int i_id) -> bool { return paramId == i_id; }
         );
-        if (isDone) return;     // read parameter already completed
+        if (isDone) return;     // parameter read already done
 
         // read parameter from db
         if (!isMpiUsed || msgExec->isRoot()) {

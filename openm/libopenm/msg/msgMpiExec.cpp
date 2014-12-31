@@ -26,6 +26,8 @@ MpiExec::MpiExec(int & argc, char ** & argv) :
 
     // initialize MPI
     try {
+        lock_guard<recursive_mutex> lck(msgMutex);
+
         int mpiRet = MPI_Init(&argc, &argv);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
 
@@ -56,6 +58,7 @@ MpiExec::MpiExec(int & argc, char ** & argv) :
 MpiExec::~MpiExec(void) throw()
 {
     try {
+        lock_guard<recursive_mutex> lck(msgMutex);
         cleanup();
     }
     catch (...) { }
@@ -70,10 +73,26 @@ void MpiExec::cleanup(void) throw()
     catch (...) { }
 }
 
+/** return current process MPI rank. */
+int MpiExec::rank(void) const throw() 
+{ 
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::rank();
+}
+
+/** return total number of processes in MPI world communicator. */
+int MpiExec::worldSize(void) const throw() 
+{ 
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::worldSize();
+}
+
 /** wait until all processes come to the barrier. */
 void MpiExec::waitOnBarrier(void) const 
 { 
     try {
+        lock_guard<recursive_mutex> lck(msgMutex);
+
         int mpiRet = MPI_Barrier(MPI_COMM_WORLD);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, selfRank);
     }
@@ -98,6 +117,8 @@ void MpiExec::waitOnBarrier(void) const
 void MpiExec::bcast(int i_sendFrom, const type_info & i_type, long long i_size, void * io_valueArr)
 {
     try {
+        lock_guard<recursive_mutex> lck(msgMutex);
+
         // if this is a sender then send it by broadcast
         if (selfRank == i_sendFrom) {
 
@@ -147,6 +168,8 @@ void MpiExec::bcast(int i_sendFrom, const type_info & i_type, long long i_size, 
 void MpiExec::bcastPacked(int i_sendFrom, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter)
 {
     try {
+        lock_guard<recursive_mutex> lck(msgMutex);
+
         // if this is a sender then pack db rows and send it by broadcast
         if (selfRank == i_sendFrom) {
 
@@ -191,6 +214,62 @@ void MpiExec::bcastPacked(int i_sendFrom, IRowBaseVec & io_rowVec, const IPacked
         theLog->logErr(ex, OM_FILE_LINE);
         throw MsgException(ex.what());
     }
+}
+
+/** start non-blocking send of value array to i_sendTo process. */
+void MpiExec::startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::startSend(i_sendTo, i_msgTag, i_type, i_size, i_valueArr);
+}
+
+/** pack and start non-blocking send of vector of db rows to i_sendTo process. */
+void MpiExec::startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter);
+}
+
+/** initiate non-blocking recveive of value array into io_valueArr. */
+void MpiExec::startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
+}
+
+/** initiate non-blocking recveive of vector of db rows into io_rowVec. */
+void MpiExec::startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter);
+}
+
+/** try to non-blocking receive value array, return true if completed. */
+bool MpiExec::tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter);
+}
+
+/** try to non-blocking receive and unpack vector of db rows, return true if completed. */
+bool MpiExec::tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
+}
+
+/** wait for all non-blocking send to be completed. */
+void MpiExec::waitSendAll(void)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::waitSendAll();
+}
+
+/** wait for all non-blocking receive to be completed. */
+void MpiExec::waitRecvAll(void)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MsgExecBase::waitRecvAll();
 }
 
 #endif  // OM_MSG_MPI
