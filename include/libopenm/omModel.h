@@ -45,9 +45,6 @@ namespace openm
     {
         virtual ~IModel(void) throw() = 0;
 
-        /** model shutdown: save results and cleanup resources. */
-        virtual void shutdown(void) = 0;
-
         /** number of subsamples */
         virtual int subSampleCount(void) const throw() = 0;
         

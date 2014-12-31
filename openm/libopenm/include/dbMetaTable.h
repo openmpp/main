@@ -222,98 +222,6 @@ namespace openm
         static vector<RunTxtRow> byKey(IDbExec * i_dbExec, int i_runId, int i_langId);
     };
 
-    /** profile_lst table public interface. */
-    struct IProfileLstTable : public IMetaTable<ProfileLstRow>
-    {
-        virtual ~IProfileLstTable() throw() = 0;
-
-        /** create new table object and load table rows sorted by primary key: profile name. */
-        static IProfileLstTable * create(IDbExec * i_dbExec);
-
-        /** binary search row by primary key: profile name, return NULL if not found. */
-        virtual const ProfileLstRow * byKey(const string & i_name) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<ProfileLstRow> rows(void) const = 0;
-
-        /** create new table rows by swap with supplied vector of rows. */
-        static IProfileLstTable * create(IRowBaseVec & io_rowVec);
-
-        /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) = 0;
-    };
-
-    /** profile_option table public interface. */
-    struct IProfileOptionTable : public IMetaTable<ProfileOptionRow>
-    {
-        virtual ~IProfileOptionTable() throw() = 0;
-
-        /** 
-        * create new table object and load table rows sorted by primary key: profile name and option key.
-        * 
-        * if i_name != "" then select only rows where profile_name = i_name
-        */
-        static IProfileOptionTable * create(IDbExec * i_dbExec, const string & i_name = "");
-
-        /** binary search row by primary key: profile name and option key, return NULL if not found. */
-        virtual const ProfileOptionRow * byKey(const string & i_name, const string & i_key) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<ProfileOptionRow> rows(void) const = 0;
-
-        /** get list of rows by profile name. */
-        virtual vector<ProfileOptionRow> byName(const string & i_name) const = 0;
-
-        /** create new table rows by swap with supplied vector of rows. */
-        static IProfileOptionTable * create(IRowBaseVec & io_rowVec);
-
-        /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) = 0;
-    };
-
-    /** run_option table public interface. */
-    struct IRunOptionTable : public IMetaTable<RunOptionRow>
-    {
-        virtual ~IRunOptionTable() throw() = 0;
-
-        /** 
-        * create new table object and load table rows sorted by primary key: run id and option key.
-        * 
-        * if i_runId > 0 then select only rows where run_id = i_runId
-        */
-        static IRunOptionTable * create(IDbExec * i_dbExec, int i_runId = 0);
-
-        /** binary search row by primary key: run id and option key, return NULL if not found. */
-        virtual const RunOptionRow * byKey(int i_runId, const string & i_key) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<RunOptionRow> rows(void) const = 0;
-
-        /** get list of rows by run id. */
-        virtual vector<RunOptionRow> byRunId(int i_runId) const = 0;
-
-        /** return true if primary key (run id, option key) found. */
-        virtual bool isExist(int i_runId, const char * i_key) const throw() = 0;
-
-        /** return string value by primary key (run id, option key) or default value if not found. */
-        virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw() = 0;
-        
-        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
-        virtual bool boolValue(int i_runId, const char * i_key) const throw() = 0;
-
-        /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
-        virtual long long longValue(int i_runId, const char * i_key, long long i_default) const throw() = 0;
-
-        /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
-        virtual double doubleValue(int i_runId, const char * i_key, double i_default) const throw() = 0;
-
-        /** create new table rows by swap with supplied vector of rows. */
-        static IRunOptionTable * create(IRowBaseVec & io_rowVec);
-
-        /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) = 0;
-    };
-
     /** type_dic table public interface. */
     struct ITypeDicTable : public IMetaTable<TypeDicRow>
     {
@@ -552,72 +460,6 @@ namespace openm
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;
-    };
-
-    /** workset_lst table public interface. */
-    struct IWorksetLstTable : public IMetaTable<WorksetLstRow>
-    {
-        virtual ~IWorksetLstTable() throw() = 0;
-
-        /** 
-        * select table rows sorted by primary key: set id.
-        * 
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
-        */
-        static vector<WorksetLstRow> select(IDbExec * i_dbExec, int i_modelId = 0);
-
-        /** select table row by primary key: set id. */
-        static vector<WorksetLstRow> byKey(IDbExec * i_dbExec, int i_setId);
-    };
-
-    /** workset_txt table public interface. */
-    struct IWorksetTxtTable : public IMetaTable<WorksetTxtRow>
-    {
-        virtual ~IWorksetTxtTable() throw() = 0;
-
-        /** 
-        * select table rows and sorted by primary key: set id and language id.
-        * 
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
-        * if i_langId >= 0 then select only rows where lang_id = i_langId
-        */
-        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
-
-        /** select table row by primary key: set id and language id. */
-        static vector<WorksetTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_langId);
-    };
-
-    /** workset_parameter table public interface. */
-    struct IWorksetParamTable : public IMetaTable<WorksetParamRow>
-    {
-        virtual ~IWorksetParamTable() throw() = 0;
-
-        /** 
-        * select table rows sorted by primary key: set id and parameter id.
-        * 
-        * if i_setId > 0 then select only rows where set_id = i_setId
-        */
-        static vector<WorksetParamRow> select(IDbExec * i_dbExec, int i_setId = 0);
-
-        /** select table row by primary key: set id and parameter id. */
-        static vector<WorksetParamRow> byKey(IDbExec * i_dbExec, int i_setId, int i_paramId);
-    };
-
-    /** workset_parameter_txt table public interface. */
-    struct IWorksetParamTxtTable : public IMetaTable<WorksetParamTxtRow>
-    {
-        virtual ~IWorksetParamTxtTable() throw() = 0;
-
-        /** 
-        * select table rows and sorted by primary key: set id, parameter id, language id.
-        * 
-        * if i_setId > 0 then select only rows where set_id = i_setId
-        * if i_langId >= 0 then select only rows where lang_id = i_langId
-        */
-        static vector<WorksetParamTxtRow> select(IDbExec * i_dbExec, int i_setId = 0, int i_langId = -1);
-
-        /** select table row by primary key: set id, parameter id, language id. */
-        static vector<WorksetParamTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_paramId, int i_langId);
     };
 
     /** table_dic table public interface. */
@@ -940,6 +782,229 @@ namespace openm
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** profile_lst table public interface. */
+    struct IProfileLstTable : public IMetaTable<ProfileLstRow>
+    {
+        virtual ~IProfileLstTable() throw() = 0;
+
+        /** create new table object and load table rows sorted by primary key: profile name. */
+        static IProfileLstTable * create(IDbExec * i_dbExec);
+
+        /** binary search row by primary key: profile name, return NULL if not found. */
+        virtual const ProfileLstRow * byKey(const string & i_name) const = 0;
+
+        /** get list of loaded table rows. */
+        virtual vector<ProfileLstRow> rows(void) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IProfileLstTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** profile_option table public interface. */
+    struct IProfileOptionTable : public IMetaTable<ProfileOptionRow>
+    {
+        virtual ~IProfileOptionTable() throw() = 0;
+
+        /**
+        * create new table object and load table rows sorted by primary key: profile name and option key.
+        *
+        * if i_name != "" then select only rows where profile_name = i_name
+        */
+        static IProfileOptionTable * create(IDbExec * i_dbExec, const string & i_name = "");
+
+        /** binary search row by primary key: profile name and option key, return NULL if not found. */
+        virtual const ProfileOptionRow * byKey(const string & i_name, const string & i_key) const = 0;
+
+        /** get list of loaded table rows. */
+        virtual vector<ProfileOptionRow> rows(void) const = 0;
+
+        /** get list of rows by profile name. */
+        virtual vector<ProfileOptionRow> byName(const string & i_name) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IProfileOptionTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** run_option table public interface. */
+    struct IRunOptionTable : public IMetaTable<RunOptionRow>
+    {
+        virtual ~IRunOptionTable() throw() = 0;
+
+        /**
+        * create new table object and load table rows sorted by primary key: run id and option key.
+        *
+        * if i_runId > 0 then select only rows where run_id = i_runId
+        */
+        static IRunOptionTable * create(IDbExec * i_dbExec, int i_runId = 0);
+
+        /** binary search row by primary key: run id and option key, return NULL if not found. */
+        virtual const RunOptionRow * byKey(int i_runId, const string & i_key) const = 0;
+
+        /** get list of loaded table rows. */
+        virtual vector<RunOptionRow> rows(void) const = 0;
+
+        /** get list of rows by run id. */
+        virtual vector<RunOptionRow> byRunId(int i_runId) const = 0;
+
+        /** return true if primary key (run id, option key) found. */
+        virtual bool isExist(int i_runId, const char * i_key) const throw() = 0;
+
+        /** return true if option key found. */
+        virtual bool isExist(const char * i_key) const throw() = 0;
+
+        /** return string value by primary key (run id, option key) or default value if not found. */
+        virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw() = 0;
+
+        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
+        virtual bool boolValue(int i_runId, const char * i_key) const throw() = 0;
+
+        /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
+        virtual long long longValue(int i_runId, const char * i_key, long long i_default) const throw() = 0;
+
+        /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
+        virtual double doubleValue(int i_runId, const char * i_key, double i_default) const throw() = 0;
+
+        /** return string value by option key (first found) or default value if not found. */
+        virtual string strValue(const char * i_key, const string & i_default = "") const throw() = 0;
+
+        /** return booleanvalue by option key (first found) or false if not found or value not "yes", "1", "true". */
+        virtual bool boolValue(const char * i_key) const throw() = 0;
+
+        /** return long value by option key (first found) or default if not found or can not be converted to long. */
+        virtual long long longValue(const char * i_key, long long i_default) const throw() = 0;
+
+        /** return double value by option key (first found) or default if not found or can not be converted to double. */
+        virtual double doubleValue(const char * i_key, double i_default) const throw() = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IRunOptionTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** workset_lst table public interface. */
+    struct IWorksetLstTable : public IMetaTable<WorksetLstRow>
+    {
+        virtual ~IWorksetLstTable() throw() = 0;
+
+        /**
+        * select table rows sorted by primary key: set id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static vector<WorksetLstRow> select(IDbExec * i_dbExec, int i_modelId = 0);
+
+        /** select table row by primary key: set id. */
+        static vector<WorksetLstRow> byKey(IDbExec * i_dbExec, int i_setId);
+    };
+
+    /** workset_txt table public interface. */
+    struct IWorksetTxtTable : public IMetaTable<WorksetTxtRow>
+    {
+        virtual ~IWorksetTxtTable() throw() = 0;
+
+        /**
+        * select table rows and sorted by primary key: set id and language id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** select table row by primary key: set id and language id. */
+        static vector<WorksetTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_langId);
+    };
+
+    /** workset_parameter table public interface. */
+    struct IWorksetParamTable : public IMetaTable<WorksetParamRow>
+    {
+        virtual ~IWorksetParamTable() throw() = 0;
+
+        /**
+        * select table rows sorted by primary key: set id and parameter id.
+        *
+        * if i_setId > 0 then select only rows where set_id = i_setId
+        */
+        static vector<WorksetParamRow> select(IDbExec * i_dbExec, int i_setId = 0);
+
+        /** select table row by primary key: set id and parameter id. */
+        static vector<WorksetParamRow> byKey(IDbExec * i_dbExec, int i_setId, int i_paramId);
+    };
+
+    /** workset_parameter_txt table public interface. */
+    struct IWorksetParamTxtTable : public IMetaTable<WorksetParamTxtRow>
+    {
+        virtual ~IWorksetParamTxtTable() throw() = 0;
+
+        /**
+        * select table rows and sorted by primary key: set id, parameter id, language id.
+        *
+        * if i_setId > 0 then select only rows where set_id = i_setId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static vector<WorksetParamTxtRow> select(IDbExec * i_dbExec, int i_setId = 0, int i_langId = -1);
+
+        /** select table row by primary key: set id, parameter id, language id. */
+        static vector<WorksetParamTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_paramId, int i_langId);
+    };
+
+
+    /** task_lst table public interface. */
+    struct ITaskLstTable : public IMetaTable<TaskLstRow>
+    {
+        virtual ~ITaskLstTable() throw() = 0;
+
+        /**
+        * select table rows sorted by primary key: task id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static vector<TaskLstRow> select(IDbExec * i_dbExec, int i_modelId = 0);
+
+        /** select table row by primary key: task id. */
+        static vector<TaskLstRow> byKey(IDbExec * i_dbExec, int i_taskId);
+    };
+
+    /** task_txt table public interface. */
+    struct ITaskTxtTable : public IMetaTable<TaskTxtRow>
+    {
+        virtual ~ITaskTxtTable() throw() = 0;
+
+        /**
+        * select table rows and sorted by primary key: task id and language id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static vector<TaskTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** select table row by primary key: task id and language id. */
+        static vector<TaskTxtRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_langId);
+    };
+
+    /** task_run table public interface. */
+    struct ITaskRunTable : public IMetaTable<TaskRunRow>
+    {
+        virtual ~ITaskRunTable() throw() = 0;
+
+        /**
+        * select table rows sorted by primary key: task id and set id.
+        *
+        * if i_taskId > 0 then select only rows where task_id = i_taskId
+        */
+        static vector<TaskRunRow> select(IDbExec * i_dbExec, int i_taskId = 0);
+
+        /** select table row by primary key: task id and set id. */
+        static vector<TaskRunRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId);
     };
 }
 

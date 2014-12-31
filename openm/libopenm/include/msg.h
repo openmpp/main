@@ -41,21 +41,6 @@ namespace openm
         /** model_dic_txt db rows */
         modelDicTxt,
 
-        /** run_lst db rows */
-        runLst,
-
-        /** run_txt db rows */
-        runTxt,
-
-        /** profile_lst db rows */
-        profileLst,
-
-        /** model_dic db rows */
-        profileOption,
-
-        /** run_option db rows */
-        runOption,
-
         /** type_dic db rows */
         typeDic,
 
@@ -79,18 +64,6 @@ namespace openm
 
         /** parameter_dims db rows */
         parameterDims,
-
-        /** workset_lst db rows */
-        worksetLst,
-
-        /** workset_txt db rows */
-        worksetTxt,
-
-        /** workset_parameter db rows */
-        worksetParameter,
-
-        /** workset_parameter_txt db rows */
-        worksetParameterTxt,
 
         /** table_dic db rows */
         tableDic,
@@ -125,8 +98,11 @@ namespace openm
         /** group_pc db rows */
         groupPc,
 
+        /** run_option db rows */
+        runOption,
+
         /** input parameter */
-        inParam,
+        //inParam,
 
         /** output table subsample base */
         outSubsampleBase = 128

@@ -13,17 +13,20 @@ using namespace openm;
 
 namespace openm
 {
-    /** short name for options file name: -s fileName.ini */
+    /** compatibility short name for options file name: -s fileName.ini */
     const char * RunShortKey::optionsFile = "s";
 
-    /** compatibility short name for options file name: -sc fileName.ini */
-    const char * RunShortKey::optionsFileSc = "sc";
+    /** short name for options file name: -ini fileName.ini */
+    const char * RunShortKey::optionsFileIni = "ini";
 
     /** parameters started with "Parameter." treated as value of model scalar input parameters */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
     /** number of sub-samples */
     const char * RunOptionsKey::subSampleCount = "General.Subsamples";
+
+    /** number of modeling threads */
+    const char * RunOptionsKey::threadCount = "General.Threads";
 
     /** database connection string */
     const char * RunOptionsKey::dbConnStr = "OpenM.Database";
@@ -37,13 +40,19 @@ namespace openm
     /** working set name to get input parameters */
     const char * RunOptionsKey::setName = "OpenM.SetName";
 
+    /** modelling task id */
+    const char * RunOptionsKey::taskId = "OpenM.TaskId";
+
+    /** modelling task name */
+    const char * RunOptionsKey::taskName = "OpenM.TaskName";
+
     /** profile name to get run options, default is model name */
     const char * RunOptionsKey::profile = "OpenM.OptionsProfile";
 
     /** use sparse output tables */
     const char * RunOptionsKey::useSparse = "OpenM.SparseOutput";
 
-    /** sparse null value */
+    /** sparse NULL value */
     const char * RunOptionsKey::sparseNull = "OpenM.SparseNullValue";
 
     /** trace log to console */
@@ -71,10 +80,13 @@ namespace openm
 /** array of model run option keys. */
 static const char * runOptKeyArr[] = {
     RunOptionsKey::subSampleCount,
+    RunOptionsKey::threadCount,
     RunOptionsKey::dbConnStr,
     RunOptionsKey::runId,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
+    RunOptionsKey::taskId,
+    RunOptionsKey::taskName,
     RunOptionsKey::profile,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
@@ -101,7 +113,7 @@ static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);
 static const pair<const char *, const char *> shortPairArr[] = 
 {
     make_pair(RunShortKey::optionsFile, ArgKey::optionsFile),
-    make_pair(RunShortKey::optionsFileSc, ArgKey::optionsFile)
+    make_pair(RunShortKey::optionsFileIni, ArgKey::optionsFile)
 };
 static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 
@@ -109,14 +121,11 @@ static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<con
 RunController::RunController(int argc, char ** argv) :
     runId(0),
     subSampleCount(0),
-    subSampleNumber(0),
-    isSubCountCmd(false)
+    threadCount(1),
+    subBaseNumber(0)
 {
     // get command line options
     argStore.parseCommandLine(argc, argv, false, true, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr);
-
-    // is sub-samples count specified on command line
-    isSubCountCmd = argStore.isOptionExist(RunOptionsKey::subSampleCount);
 
     // load options from ini-file and append parameters section
     argStore.loadIniFile(
@@ -129,11 +138,20 @@ RunController::RunController(int argc, char ** argv) :
 
 /** complete model run initialization: create run and input parameters in database. 
 *
+* - (c) determine run options
+* - (a) determine task id, run id, set id, number of subsamples, process subsample number and run option
+* - (b) create new "run" in database (if required)
+* - (c) save run options in database (if required)
+* - (e) prepare model input parameters
+* - (f) load metadata tables from db
+*
+*
 * - (a) determine run id, number of subsamples and process subsample number
 * - (b) create new "run" in database (if required)
 * - (c) determine run options and save it in database (if required)
-* - (d) prepare model input parameters
-* - (e) load metadata tables from db
+* - (d) find id of source working set for input parameters
+* - (e) prepare model input parameters
+* - (f) load metadata tables from db
 *
 * (a) determine run id, number of subsamples and process subsample number
 * -----------------------------------------------------------------------
@@ -181,12 +199,7 @@ RunController::RunController(int argc, char ** argv) :
 *     profile name also can be command line argument or ini-file entry, i.e.: \n
 *       model.exe -OpenM.OptionsProfile TestProfile
 *
-*   - some options have hard default values which used if nothing above is specified
-*
-*   - find id of source working set for input parameters: \n
-*     - if set id specified as run option then use such set id \n
-*     - if set name specified as run option then find set id by name \n
-*     - else use min(set id) as default set of model parameters
+*   - some options have hard coded default values which used if nothing above is specified
 *
 *   run options which name starts with "Parameter." are treated as
 *   value of scalar input parameter (see below). \n
@@ -195,7 +208,15 @@ RunController::RunController(int argc, char ** argv) :
 *       model.exe -Parameter.Population 1234 \n
 *   and model does not have "Population" parameter then execution aborted.
 *
-* (d) prepare model input parameters
+* (d) find id of source working set for input parameters
+* ------------------------------------------------------
+* use following to find input parameters set id: \n
+*   - if task id or task name specified then find set id in task_run \n
+*   - if set id specified as run option then use such set id \n
+*   - if set name specified as run option then find set id by name \n
+*   - else use min(set id) as default set of model parameters
+*
+* (e) prepare model input parameters
 * ----------------------------------
 * it creates a copy of input paramters from source working set under destination run_id
 * 
@@ -213,131 +234,154 @@ RunController::RunController(int argc, char ** argv) :
 *   in that case working set value of "Population" input parameter ignored \n
 *   because command line options have higher priority than database values.
 * 
-* (e) load metadata tables from db
+* (f) load metadata tables from db
 * ------------------------------------------------------------------------
 * read all model metadata from database and (if required) broadcast it to all subsample processes.
 */
 MetaRunHolder * RunController::init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
 {
-    // get run id, number of subsamples and process subsample number
-    bool isNewRunCreated = false;
-    runId = i_isMpiUsed ? 0 : argStore.intOption(RunOptionsKey::runId, 0);  // if not MPI then run id must exist in database
-    int nSubCount = argStore.intOption(RunOptionsKey::subSampleCount, 1);   // number of subsamples specified as run option
-    subSampleCount = i_isMpiUsed ? i_msgExec->worldSize() : nSubCount;      // actual number of subsamples: MPI world size or run option or =1 by default
-    subSampleNumber = i_isMpiUsed ? i_msgExec->rank() : 0;                  // subsample number: MPI rank or =0 in all other cases
+    // get main run control values: run id, number of subsamples, threads, processes, etc.
+    runId = argStore.intOption(RunOptionsKey::runId, 0);                    // "custom run": run id must exist in database
+    threadCount = argStore.intOption(RunOptionsKey::threadCount, 1);        // number of modeling threads
+    int nProc = i_isMpiUsed ? i_msgExec->worldSize() : 1;                   // number of processes: MPI world size
+    subSampleCount = argStore.intOption(RunOptionsKey::subSampleCount, 1);  // number of subsamples from command line or ini-file
+    subBaseNumber = i_isMpiUsed ? i_msgExec->rank() * threadCount : 0;      // first subsample number
 
-    // validate number of subsamples and check for command line options conflict 
-    if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
-    if (subSampleNumber < 0) throw ModelException("Invalid subsample number: %d", subSampleNumber);
+    // basic validation
+    if (subSampleCount <= 0 || threadCount <= 0 || nProc <= 0) 
+        throw ModelException("Invalid number of subsamples: %d or threads: %d or processes: %d", subSampleCount, threadCount, nProc);
+    if (runId < 0) throw ModelException("Invalid run id: %d", runId);
+    if (subBaseNumber < 0) throw ModelException("Invalid subsample number: %d", subBaseNumber);
 
-    if (i_isMpiUsed && isSubCountCmd && nSubCount != subSampleCount) 
-        throw ModelException("Invalid number of subsamples: %d, expected to be: %d", nSubCount, subSampleCount);
-
-    // if MPI not used then it must be one of:
-    //   expliictly specified run id > 0 and any number of subsamples specified in run_lst table
-    //   or "debug" case scenario: run id = 0 and number of subsamples = 1
-    //   in "debug" case new run id will be created
-    if (!i_isMpiUsed && (runId < 0 || (runId >= 0 && subSampleCount != 1))) 
-        throw ModelException("Invalid run id %d or number of subsamples: %d", runId, subSampleCount);
+    // if run id not specified then
+    //   number of subsamples must be = number of processes * number of threads
+    // else (custom run) thread count must be 1
+    if (runId <= 0) {
+        if (subSampleCount != nProc * threadCount)
+            throw ModelException("Invalid number of subsamples: %d, expected: %d", subSampleCount, nProc * threadCount);
+    }
+    else {
+        if (nProc != 1 || threadCount != 1)
+            throw ModelException("Invalid run id %d or number of threads: %d or processes: %d", runId, threadCount, nProc);
+    }
 
     // create new metadata rows storage
     unique_ptr<MetaRunHolder> metaStore(new MetaRunHolder);
 
-    // direct database connection: non-MPI or at root MPI process
     if (!i_isMpiUsed || i_msgExec->isRoot()) {
+
+        // it must be direct database connection: non-MPI or at root MPI process
+        if (i_dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
         // load metadata table rows, except of run_option, which is may not created yet
         readMetaTables(i_dbExec, metaStore.get());
-        
-        const ModelDicRow * mdRow = metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
-        if (mdRow == NULL) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
-        int modelId = mdRow->modelId;
+        // create new run or next subsample for existing run
+        createRunSubsample(i_isMpiUsed, i_dbExec, i_msgExec, metaStore.get());
 
-        // update in transaction scope
-        i_dbExec->beginTransaction();
-
-        // create new run:
-        // it must be done for root MPI process or if MPI not used and run id not specified
-        if ((i_isMpiUsed && i_msgExec->isRoot()) || (!i_isMpiUsed && runId <= 0)) {
-
-            // get next run id
-            i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'");
-
-            runId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'run_id_set_id'", 0);
-            if (runId <= 0) 
-                throw DbException("invalid run id: %d", runId);
-
-            string dtStr = toDateTimeString(theLog->timeStampSuffix()); // get log date-time as string
-
-            // create new run
-            i_dbExec->update(
-                "INSERT INTO run_lst (run_id, model_id, run_name, sub_count, sub_started, sub_completed, create_dt) VALUES (" + 
-                to_string(runId) + ", " + 
-                to_string(modelId) + ", " + 
-                toQuoted(string(OM_MODEL_NAME) + " " + dtStr) + ", " + 
-                to_string(subSampleCount) + ", " + 
-                to_string(subSampleCount) + ", " + 
-                "0, " + 
-                toQuoted(dtStr) + ")"
-                );
-            isNewRunCreated = true;
-        }
-        else { // create next subsample: if MPI is not used and number of subsamples >1 then run id must already exist in database
-
-            if (runId <= 0)  throw DbException("invalid run id: %d", runId);
-
-            // actual subsample number: get next subsample number from database
-            i_dbExec->update(
-                "UPDATE run_lst SET sub_started = sub_started + 1 WHERE run_id = " + to_string(runId)
-                );
-
-            subSampleNumber = i_dbExec->selectToInt("SELECT sub_started FROM run_lst WHERE run_id = " + to_string(runId), 0);
-            if (subSampleNumber <= 0) 
-                throw DbException("invalid run id: %d", runId);     // run id not found
-
-            subSampleNumber--;    // subsample number is zero-based
-
-            subSampleCount = i_dbExec->selectToInt("SELECT sub_count FROM run_lst WHERE run_id = " + to_string(runId), 0);
-            if (subSampleNumber >= subSampleCount) 
-                throw DbException("invalid sub-sample number: %d, it must be less than %d (run id: %d)", subSampleNumber, subSampleCount, runId);
-        }
-
-        // "root" process: process where subsampe number =0 (ie: MPI root process)
-        // validate destination run: it must be new run or empty run
-        // save run options in run_option table
-        // copy input parameters from working set and "base" run into new run id
-        if (subSampleNumber == 0) {
-
-            // validate destination run: it must be new run or empty run
-            string sRunId = to_string(runId);
-            if (!isNewRunCreated) {
-                int nCompleted = i_dbExec->selectToInt("SELECT sub_completed FROM run_lst WHERE run_id = " + sRunId, 0);
-                if (nCompleted != 0) 
-                    throw DbException("destination run must be empty, but it already have %d completed subsamples (run id: %d)", nCompleted, runId);
-            }
-
-            // merge run options values from command line, ini-file and profile_option table
-            // save run options in run_option table
-            createRunOptions(i_dbExec, mdRow, metaStore.get());
-
-            // copy input parameters from "base" run and working set into new run id
-            createRunParameters(isNewRunCreated, i_dbExec, mdRow, metaStore.get());
-        }
-
-        // completed: commit the results
-        i_dbExec->commit();
-
-        // set run id (if new created) and load run_option table rows
-        metaStore->runId = runId;
+        // load run_option table rows
         metaStore->runOption.reset(IRunOptionTable::create(i_dbExec, runId));
     }
 
-    // broadcast metadata rows from root to all other processes
+    // broadcast metadata: run id, subsample count, subsample number and meta tables from root to all other processes
     if (i_isMpiUsed) {
-        broadcastMetaTables(i_msgExec, metaStore.get());
+        broadcastMetaData(i_msgExec, metaStore.get());
     }
     return metaStore.release();
+}
+
+// create new run or next subsample for existing run
+// create input parameters and run options for all input working sets
+void RunController::createRunSubsample(
+    bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore
+    )
+{
+    // get model info
+    const ModelDicRow * mdRow = io_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
+    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+
+    int modelId = mdRow->modelId;
+
+    // update in transaction scope
+    i_dbExec->beginTransaction();
+
+    // create new run:
+    // it must be done for root MPI process or if MPI not used and run id not specified
+    bool isNewRunCreated = false;
+
+    if ((i_isMpiUsed && i_msgExec->isRoot()) || (!i_isMpiUsed && runId <= 0)) {
+
+        // get next run id
+        i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'");
+
+        runId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'run_id_set_id'", 0);
+        if (runId <= 0)
+            throw DbException("invalid run id: %d", runId);
+
+        string dtStr = toDateTimeString(theLog->timeStampSuffix()); // get log date-time as string
+
+        // create new run
+        i_dbExec->update(
+            "INSERT INTO run_lst (run_id, model_id, run_name, sub_count, sub_started, sub_completed, create_dt, status, update_dt)" \
+            " VALUES (" +
+            to_string(runId) + ", " +
+            to_string(modelId) + ", " +
+            toQuoted(string(OM_MODEL_NAME) + " " + dtStr) + ", " +
+            to_string(subSampleCount) + ", " +
+            to_string(subSampleCount) + ", " +
+            "0, " +
+            toQuoted(dtStr) + ", "
+            "'p', " +
+            toQuoted(dtStr) + ")"
+            );
+        isNewRunCreated = true;
+    }
+    else { // create next subsample: if MPI is not used and number of subsamples >1 then run id must already exist in database
+
+        if (runId <= 0)  throw DbException("invalid run id: %d", runId);
+
+        // actual subsample number: get next subsample number from database
+        string sRunId = to_string(runId);
+        i_dbExec->update(
+            "UPDATE run_lst SET status = 'p', sub_started = sub_started + 1 WHERE run_id = " + sRunId
+            );
+
+        subBaseNumber = i_dbExec->selectToInt("SELECT sub_started - 1 FROM run_lst WHERE run_id = " + sRunId, -1);
+        if (subBaseNumber < 0)
+            throw DbException("invalid run id: %d", runId);     // run id not found
+
+        int nSubCount = i_dbExec->selectToInt("SELECT sub_count FROM run_lst WHERE run_id = " + sRunId, 0);
+        if (subSampleCount > 1 && nSubCount != subSampleCount)
+            throw DbException("invalid number of sub-samples: %d, it must be %d (run id: %d)", subSampleCount, nSubCount, runId);
+
+        subSampleCount = nSubCount;     // actual number of subsamples
+
+        if (subBaseNumber >= subSampleCount)
+            throw DbException("invalid sub-sample number: %d, it must be less than %d (run id: %d)", subBaseNumber, subSampleCount, runId);
+
+        // validate destination run: it must be new run or empty run
+        if (subBaseNumber == 0) {
+            int nCompleted = i_dbExec->selectToInt("SELECT sub_completed FROM run_lst WHERE run_id = " + sRunId, 0);
+            if (nCompleted != 0)
+                throw DbException("destination run must be empty, but it already have %d completed subsamples (run id: %d)", nCompleted, runId);
+        }
+    }
+
+    // first subsample number =0 (ie: MPI root process)
+    // save run options in run_option table
+    // copy input parameters from working set and "base" run into new run id
+    if (subBaseNumber == 0) {
+
+        // merge run options values from command line, ini-file and profile_option table
+        // save run options in run_option table
+        createRunOptions(i_dbExec, mdRow, io_metaStore);
+
+        // copy input parameters from "base" run and working set into new run id
+        createRunParameters(isNewRunCreated, i_dbExec, mdRow, io_metaStore);
+    }
+
+    // completed: commit the results
+    i_dbExec->commit();
 }
 
 // create run options and save it in run_option table:
@@ -373,7 +417,7 @@ void RunController::createRunOptions(
 
         // find option in profile_option table
         const ProfileOptionRow * optRow = profileTbl->byKey(profileName, runOptKeyArr[nOpt]);
-        if (optRow != NULL) {
+        if (optRow != nullptr) {
             argStore.args[runOptKeyArr[nOpt]] = optRow->value;      // add option from database
         }
         else {  // no database value for that option key, use hard-coded default
@@ -393,7 +437,7 @@ void RunController::createRunOptions(
 
         // find option in profile_option table
         const ProfileOptionRow * optRow = profileTbl->byKey(profileName, argName.c_str());
-        if (optRow != NULL) {
+        if (optRow != nullptr) {
             argStore.args[argName] = optRow->value;             // add option from database
         }
     }
@@ -452,7 +496,7 @@ void RunController::createRunOptions(
         string sName = propIt->first.substr(nPrefix);
 
         const ParamDicRow * paramRow = i_metaStore->paramDic->byModelIdName(i_mdRow->modelId, sName);
-        if (paramRow == NULL) 
+        if (paramRow == nullptr) 
             throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), i_mdRow->name.c_str(), i_mdRow->modelId);
 
         // check the rank: it must scalar
@@ -599,12 +643,10 @@ void RunController::createRunParameters(
 // read metadata tables from db, except of run_option table
 void RunController::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
 {
-    if (i_dbExec == NULL) throw ModelException("invalid (NULL) database connection");
-
     io_metaStore->modelDic.reset(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_TIMESTAMP));
 
     const ModelDicRow * mdRow = io_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
-    if (mdRow == NULL) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
     io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, mdRow->modelId));
     io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mdRow->modelId));
@@ -614,38 +656,38 @@ void RunController::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaSt
     io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mdRow->modelId));
     io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mdRow->modelId));
     io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mdRow->modelId));
-
-    // set run id: initialized for root process
-    io_metaStore->runId = runId;
 }
 
-// broadcast metadata tables from root to all modeling processes
-void RunController::broadcastMetaTables(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
+// broadcast metadata: run id, subsample count, subsample number and meta tables from root to all modelling processes
+void RunController::broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
 {
-    if (i_msgExec == NULL) throw ModelException("invalid (NULL) message passing interface");
+    if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    // broadcast run id
+    // broadcast run id, subsample count and thread from root to all model processes
     i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &runId);
+    i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &subSampleCount);
+    i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &threadCount);
+
+    // set actual run id and subsample number
+    //runId = runIdByRank(i_msgExec->rank(), subSampleCount, runId);
+    //subBaseNumber = subNumberByRank(i_msgExec->rank(), subSampleCount);
 
     // broadcast metadata tables
-    broadcastTable<IModelDicTable>(io_metaStore->modelDic, i_msgExec, MsgTag::modelDic);
-    broadcastTable<IRunOptionTable>(io_metaStore->runOption, i_msgExec, MsgTag::runOption);
-    broadcastTable<ITypeDicTable>(io_metaStore->typeDic, i_msgExec, MsgTag::typeDic);
-    broadcastTable<ITypeEnumLstTable>(io_metaStore->typeEnumLst, i_msgExec, MsgTag::typeEnumLst);
-    broadcastTable<IParamDicTable>(io_metaStore->paramDic, i_msgExec, MsgTag::parameterDic);
-    broadcastTable<IParamDimsTable>(io_metaStore->paramDims, i_msgExec, MsgTag::parameterDims);
-    broadcastTable<ITableDicTable>(io_metaStore->tableDic, i_msgExec, MsgTag::tableDic);
-    broadcastTable<ITableDimsTable>(io_metaStore->tableDims, i_msgExec, MsgTag::tableDims);
-    broadcastTable<ITableAccTable>(io_metaStore->tableAcc, i_msgExec, MsgTag::tableAcc);
-    broadcastTable<ITableExprTable>(io_metaStore->tableExpr, i_msgExec, MsgTag::tableExpr);
-
-    // set run id: it is broadcasted by MPI
-    io_metaStore->runId = runId;
+    broadcastMetaTable<IModelDicTable>(io_metaStore->modelDic, i_msgExec, MsgTag::modelDic);
+    broadcastMetaTable<ITypeDicTable>(io_metaStore->typeDic, i_msgExec, MsgTag::typeDic);
+    broadcastMetaTable<ITypeEnumLstTable>(io_metaStore->typeEnumLst, i_msgExec, MsgTag::typeEnumLst);
+    broadcastMetaTable<IParamDicTable>(io_metaStore->paramDic, i_msgExec, MsgTag::parameterDic);
+    broadcastMetaTable<IParamDimsTable>(io_metaStore->paramDims, i_msgExec, MsgTag::parameterDims);
+    broadcastMetaTable<ITableDicTable>(io_metaStore->tableDic, i_msgExec, MsgTag::tableDic);
+    broadcastMetaTable<ITableDimsTable>(io_metaStore->tableDims, i_msgExec, MsgTag::tableDims);
+    broadcastMetaTable<ITableAccTable>(io_metaStore->tableAcc, i_msgExec, MsgTag::tableAcc);
+    broadcastMetaTable<ITableExprTable>(io_metaStore->tableExpr, i_msgExec, MsgTag::tableExpr);
+    broadcastMetaTable<IRunOptionTable>(io_metaStore->runOption, i_msgExec, MsgTag::runOption);
 }
 
 // broadcast meta table db rows
 template <typename MetaTbl>
-void RunController::broadcastTable(unique_ptr<MetaTbl> & i_tableUptr, IMsgExec * i_msgExec, MsgTag i_msgTag)
+void RunController::broadcastMetaTable(unique_ptr<MetaTbl> & i_tableUptr, IMsgExec * i_msgExec, MsgTag i_msgTag)
 {
     unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(i_msgTag));
 

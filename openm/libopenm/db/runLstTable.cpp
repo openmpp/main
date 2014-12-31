@@ -30,7 +30,9 @@ namespace openm
         &typeid(decltype(RunLstRow::subCount)),
         &typeid(decltype(RunLstRow::subStarted)),
         &typeid(decltype(RunLstRow::subCompleted)),
-        &typeid(decltype(RunLstRow::createDateTime))
+        &typeid(decltype(RunLstRow::createDateTime)),
+        &typeid(decltype(RunLstRow::status)),
+        &typeid(decltype(RunLstRow::updateDateTime))
     };
 
     // Size (number of columns) for run_lst row
@@ -70,6 +72,12 @@ namespace openm
             case 6:
                 dynamic_cast<RunLstRow *>(i_row)->createDateTime = ((const char *)i_value);
                 break;
+            case 7:
+                dynamic_cast<RunLstRow *>(i_row)->status = ((const char *)i_value);
+                break;
+            case 8:
+                dynamic_cast<RunLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -106,7 +114,8 @@ vector<RunLstRow> RunLstTable::select(IDbExec * i_dbExec, const string & i_where
 
     const IRowAdapter & adp = RunLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT run_id, model_id, run_name, sub_count, sub_started, sub_completed, create_dt FROM run_lst " + i_where + " ORDER BY 1", 
+        "SELECT run_id, model_id, run_name, sub_count, sub_started, sub_completed, create_dt, status, update_dt" \
+        " FROM run_lst " + i_where + " ORDER BY 1", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), RunLstRow::keyLess);

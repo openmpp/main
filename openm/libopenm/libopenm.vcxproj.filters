@@ -281,5 +281,14 @@
     <ClCompile Include="db\parameterWriter.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
+    <ClCompile Include="db\taskLstTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\taskTxtTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\taskRunTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

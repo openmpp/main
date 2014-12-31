@@ -234,6 +234,12 @@ namespace openm
         /** create_dt     VARCHAR(32) NOT NULL */
         string createDateTime;
 
+        /** run status: i=init p=progress s=success e=failed */
+        string status;
+
+        /** update_dt     VARCHAR(32)  NOT NULL */
+        string updateDateTime;
+
         /** create row with supplied primary key field values. */
         RunLstRow(int i_runId) : 
             runId(i_runId),
@@ -242,7 +248,9 @@ namespace openm
             subCount(0),
             subStarted(0),
             subCompleted(0),
-            createDateTime("")
+            createDateTime(""),
+            status(""),
+            updateDateTime("")
         { }
 
         /** create row with default empty field values. */
@@ -303,95 +311,6 @@ namespace openm
 
         /** find row by primary key: run id and language id. */
         static vector<RunTxtRow>::const_iterator byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec);
-    };
-
-    /** profile_lst table row. */
-    struct ProfileLstRow : public IMetaRow<ProfileLstRow>
-    {
-        /** profile_name VARCHAR(255) NOT NULL */
-        string name;
-
-        /** create row with supplied primary key field values. */
-        ProfileLstRow(const string & i_name) : name(i_name) { }
-
-        /** create row with default empty field values. */
-        ProfileLstRow(void) : ProfileLstRow("") { }
-
-        ~ProfileLstRow(void) throw() { }
-
-        /** less comparator by primary key: profile name. */
-        static bool isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
-
-        /** equal comparator by primary key: profile name. */
-        static bool isKeyEqual(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
-    };
-
-    /** profile_option table row. */
-    struct ProfileOptionRow : public IMetaRow<ProfileOptionRow>
-    {
-        /** profile_name VARCHAR(255)  NOT NULL */
-        string name;
-
-        /** option_key   VARCHAR(255)  NOT NULL */
-        string key;
-
-        /** option_value VARCHAR(2048) NOT NULL */
-        string value;
-
-        /** create row with supplied primary key field values. */
-        ProfileOptionRow(const string & i_name, const string & i_key) : 
-            name(i_name), 
-            key(i_key),
-            value("")
-        { }
-
-        /** create row with default empty field values. */
-        ProfileOptionRow(void) : ProfileOptionRow("", "") { }
-
-        ~ProfileOptionRow(void) throw() { }
-
-        /** less comparator by primary key: profile name, option key. */
-        static bool isKeyLess(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right); 
-
-        /** equal comparator by primary key: profile name, option key. */
-        static bool isKeyEqual(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right);
-
-        /** equal comparator by profile name. */
-        static bool nameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-    };
-
-    /** run_option table row. */
-    struct RunOptionRow : public IMetaRow<RunOptionRow>
-    {
-        /** run_id       INT NOT NULL */
-        int runId;
-
-        /** option_key   VARCHAR(255)  NOT NULL */
-        string key;
-
-        /** option_value VARCHAR(2048) NOT NULL */
-        string value;
-
-        /** create row with supplied primary key field values. */
-        RunOptionRow(int i_runId, const string & i_key) : 
-            runId(i_runId), 
-            key(i_key),
-            value("")
-        { }
-
-        /** create row with default empty field values. */
-        RunOptionRow(void) : RunOptionRow(0, "") { }
-
-        ~RunOptionRow(void) throw() { }
-
-        /** less comparator by primary key: run id, option key. */
-        static bool isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right);
-
-        /** equal comparator by primary key: run id, option key. */
-        static bool isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right);
-
-        /** run_option row equal comparator by run id. */
-        static bool runIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** type_dic table row. */
@@ -802,204 +721,6 @@ namespace openm
 
         /** table_dims row equal comparator by model id, parameter id. */
         static bool modelIdParamIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-    };
-
-    /** workset_lst table row. */
-    struct WorksetLstRow : public IMetaRow<WorksetLstRow>
-    {
-        /** set_id      INT          NOT NULL */
-        int setId;
-
-        /** run_id      INT          NULL */
-        int runId;
-
-        /** model_id    INT          NOT NULL */
-        int modelId;
-
-        /** set_name    VARCHAR(255) NOT NULL */
-        string name;
-
-        /** is_readonly SMALLINT     NOT NULL */
-        bool isReadonly;
-        
-        /** update_dt   VARCHAR(32)  NOT NULL */
-        string updateDateTime;
-
-        /** create row with supplied primary key field values. */
-        WorksetLstRow(int i_setId) :
-            setId(i_setId),
-            runId(0),
-            modelId(0),
-            name(""),
-            isReadonly(false),
-            updateDateTime("")
-        { }
-
-        /** create row with default empty field values. */
-        WorksetLstRow(void) : WorksetLstRow(0) { }
-
-        ~WorksetLstRow(void) throw() { }
-
-        /** less comparator by primary key: set id. */
-        static bool isKeyLess(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
-
-        /** equal comparator by primary key: set id. */
-        static bool isKeyEqual(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
-
-        /** find row by primary key: set id. */
-        static vector<WorksetLstRow>::const_iterator byKey(int i_setId, const vector<WorksetLstRow> & i_rowVec);
-    };
-
-    /** workset_txt table row. */
-    struct WorksetTxtRow : public IMetaRow<WorksetTxtRow>
-    {
-        /** set_id   INT          NOT NULL */
-        int setId;
-
-        /** model_id INT          NOT NULL */
-        int modelId;
-
-        /** lang_id  INT          NOT NULL */
-        int langId;
-
-        /** descr    VARCHAR(255) NOT NULL */
-        string descr;
-
-        /** note     VARCHAR(32000)          */
-        string note;
-
-        /** create row with supplied primary key field values. */
-        WorksetTxtRow(int i_setId, int i_langId) : 
-            setId(i_setId),
-            modelId(0),
-            langId(i_langId),
-            descr(""),
-            note("")
-        { }
-
-        /** create row with default empty field values. */
-        WorksetTxtRow(void) : WorksetTxtRow(0, 0) { }
-
-        ~WorksetTxtRow(void) throw() { }
-
-        /** less comparator by primary key: set id and language id. */
-        static bool isKeyLess(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
-
-        /** equal comparator by primary key: set id and language id. */
-        static bool isKeyEqual(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** find row by primary key: set id and language id. */
-        static vector<WorksetTxtRow>::const_iterator byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec);
-    };
-
-    /** workset_txt table row and language name. */
-    struct WorksetTxtLangRow : public WorksetTxtRow
-    {
-        /** language name */
-        string langName;
-
-        /** less comparator by unique key: set id, language name. */
-        static bool uniqueLangKeyLess(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
-
-        /** equal comparator by unique key: set id, language name. */
-        static bool uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
-    };
-
-    /** workset_parameter table row. */
-    struct WorksetParamRow : public IMetaRow<WorksetParamRow>
-    {
-        /** set_id       INT NOT NULL */
-        int setId;
-
-        /** model_id     INT NOT NULL */
-        int modelId;
-
-        /** parameter_id INT NOT NULL */
-        int paramId;
-
-        /** create row with supplied primary key field values. */
-        WorksetParamRow(int i_setId, int i_paramId) : 
-            setId(i_setId),
-            modelId(0),
-            paramId(i_paramId)
-        { }
-
-        /** create row with default empty field values. */
-        WorksetParamRow(void) : WorksetParamRow(0, 0) { }
-
-        ~WorksetParamRow(void) throw() { }
-
-        /** less comparator by primary key: set id and parameter id. */
-        static bool isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
-
-        /** equal comparator by primary key: set id and parameter id. */
-        static bool isKeyEqual(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
-
-        /** find row by primary key: set id and parameter id. */
-        static vector<WorksetParamRow>::const_iterator byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec);
-    };
-
-    /** workset_parameter_txt table row. */
-    struct WorksetParamTxtRow : public IMetaRow<WorksetParamTxtRow>
-    {
-        /** set_id       INT        NOT NULL */
-        int setId;
-
-        /** model_id     INT        NOT NULL */
-        int modelId;
-
-        /** parameter_id INT        NOT NULL */
-        int paramId;
-
-        /** lang_id      INT        NOT NULL */
-        int langId;
-
-        /** note         VARCHAR(32000)      */
-        string note;
-
-        /** create row with supplied primary key field values. */
-        WorksetParamTxtRow(int i_setId, int i_langId, int i_paramId) : 
-            setId(i_setId),
-            modelId(0),
-            paramId(i_paramId),
-            langId(i_langId),
-            note("")
-        { }
-
-        /** create row with default empty field values. */
-        WorksetParamTxtRow(void) : WorksetParamTxtRow(0, 0, 0) { }
-
-        ~WorksetParamTxtRow(void) throw() { }
-
-        /** less comparator by primary key: set id, parameter id, language id. */
-        static bool isKeyLess(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
-
-        /** equal comparator by primary key: set id, parameter id, language id. */
-        static bool isKeyEqual(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** find row by primary key: set id, parameter id, language id. */
-        static vector<WorksetParamTxtRow>::const_iterator byKey(
-            int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
-            );
-    };
-
-    /** workset_parameter_txt table row and language name. */
-    struct WorksetParamTxtLangRow : public WorksetParamTxtRow
-    {
-        /** language name */
-        string langName;
-
-        /** less comparator by unique key: set id, parameter id, language name. */
-        static bool uniqueLangKeyLess(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right);
-
-        /** equal comparator by unique key: set id, parameter id, language name. */
-        static bool uniqueLangKeyEqual(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right);
     };
 
     /** table_dic table row. */
@@ -1592,6 +1313,419 @@ namespace openm
 
         /** equal comparator by model id. */
         static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+    };
+
+    /** profile_lst table row. */
+    struct ProfileLstRow : public IMetaRow<ProfileLstRow>
+    {
+        /** profile_name VARCHAR(255) NOT NULL */
+        string name;
+
+        /** create row with supplied primary key field values. */
+        ProfileLstRow(const string & i_name) : name(i_name) { }
+
+        /** create row with default empty field values. */
+        ProfileLstRow(void) : ProfileLstRow("") { }
+
+        ~ProfileLstRow(void) throw() { }
+
+        /** less comparator by primary key: profile name. */
+        static bool isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
+
+        /** equal comparator by primary key: profile name. */
+        static bool isKeyEqual(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
+    };
+
+    /** profile_option table row. */
+    struct ProfileOptionRow : public IMetaRow<ProfileOptionRow>
+    {
+        /** profile_name VARCHAR(255)  NOT NULL */
+        string name;
+
+        /** option_key   VARCHAR(255)  NOT NULL */
+        string key;
+
+        /** option_value VARCHAR(2048) NOT NULL */
+        string value;
+
+        /** create row with supplied primary key field values. */
+        ProfileOptionRow(const string & i_name, const string & i_key) :
+            name(i_name),
+            key(i_key),
+            value("")
+        { }
+
+        /** create row with default empty field values. */
+        ProfileOptionRow(void) : ProfileOptionRow("", "") { }
+
+        ~ProfileOptionRow(void) throw() { }
+
+        /** less comparator by primary key: profile name, option key. */
+        static bool isKeyLess(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right);
+
+        /** equal comparator by primary key: profile name, option key. */
+        static bool isKeyEqual(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right);
+
+        /** equal comparator by profile name. */
+        static bool nameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+    };
+
+    /** run_option table row. */
+    struct RunOptionRow : public IMetaRow<RunOptionRow>
+    {
+        /** run_id       INT NOT NULL */
+        int runId;
+
+        /** option_key   VARCHAR(255)  NOT NULL */
+        string key;
+
+        /** option_value VARCHAR(2048) NOT NULL */
+        string value;
+
+        /** create row with supplied primary key field values. */
+        RunOptionRow(int i_runId, const string & i_key) :
+            runId(i_runId),
+            key(i_key),
+            value("")
+        { }
+
+        /** create row with default empty field values. */
+        RunOptionRow(void) : RunOptionRow(0, "") { }
+
+        ~RunOptionRow(void) throw() { }
+
+        /** less comparator by primary key: run id, option key. */
+        static bool isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right);
+
+        /** equal comparator by primary key: run id, option key. */
+        static bool isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right);
+
+        /** run_option row equal comparator by run id. */
+        static bool runIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+    };
+
+    /** workset_lst table row. */
+    struct WorksetLstRow : public IMetaRow<WorksetLstRow>
+    {
+        /** set_id      INT          NOT NULL */
+        int setId;
+
+        /** run_id      INT          NULL */
+        int runId;
+
+        /** model_id    INT          NOT NULL */
+        int modelId;
+
+        /** set_name    VARCHAR(255) NOT NULL */
+        string name;
+
+        /** is_readonly SMALLINT     NOT NULL */
+        bool isReadonly;
+
+        /** update_dt   VARCHAR(32)  NOT NULL */
+        string updateDateTime;
+
+        /** create row with supplied primary key field values. */
+        WorksetLstRow(int i_setId) :
+            setId(i_setId),
+            runId(0),
+            modelId(0),
+            name(""),
+            isReadonly(false),
+            updateDateTime("")
+        { }
+
+        /** create row with default empty field values. */
+        WorksetLstRow(void) : WorksetLstRow(0) { }
+
+        ~WorksetLstRow(void) throw() { }
+
+        /** less comparator by primary key: set id. */
+        static bool isKeyLess(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
+
+        /** equal comparator by primary key: set id. */
+        static bool isKeyEqual(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
+
+        /** find row by primary key: set id. */
+        static vector<WorksetLstRow>::const_iterator byKey(int i_setId, const vector<WorksetLstRow> & i_rowVec);
+    };
+
+    /** workset_txt table row. */
+    struct WorksetTxtRow : public IMetaRow<WorksetTxtRow>
+    {
+        /** set_id   INT          NOT NULL */
+        int setId;
+
+        /** model_id INT          NOT NULL */
+        int modelId;
+
+        /** lang_id  INT          NOT NULL */
+        int langId;
+
+        /** descr    VARCHAR(255) NOT NULL */
+        string descr;
+
+        /** note     VARCHAR(32000)          */
+        string note;
+
+        /** create row with supplied primary key field values. */
+        WorksetTxtRow(int i_setId, int i_langId) :
+            setId(i_setId),
+            modelId(0),
+            langId(i_langId),
+            descr(""),
+            note("")
+        { }
+
+        /** create row with default empty field values. */
+        WorksetTxtRow(void) : WorksetTxtRow(0, 0) { }
+
+        ~WorksetTxtRow(void) throw() { }
+
+        /** less comparator by primary key: set id and language id. */
+        static bool isKeyLess(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
+
+        /** equal comparator by primary key: set id and language id. */
+        static bool isKeyEqual(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
+
+        /** equal comparator by language id. */
+        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+
+        /** find row by primary key: set id and language id. */
+        static vector<WorksetTxtRow>::const_iterator byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec);
+    };
+
+    /** workset_txt table row and language name. */
+    struct WorksetTxtLangRow : public WorksetTxtRow
+    {
+        /** language name */
+        string langName;
+
+        /** less comparator by unique key: set id, language name. */
+        static bool uniqueLangKeyLess(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
+
+        /** equal comparator by unique key: set id, language name. */
+        static bool uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
+    };
+
+    /** workset_parameter table row. */
+    struct WorksetParamRow : public IMetaRow<WorksetParamRow>
+    {
+        /** set_id       INT NOT NULL */
+        int setId;
+
+        /** model_id     INT NOT NULL */
+        int modelId;
+
+        /** parameter_id INT NOT NULL */
+        int paramId;
+
+        /** create row with supplied primary key field values. */
+        WorksetParamRow(int i_setId, int i_paramId) :
+            setId(i_setId),
+            modelId(0),
+            paramId(i_paramId)
+        { }
+
+        /** create row with default empty field values. */
+        WorksetParamRow(void) : WorksetParamRow(0, 0) { }
+
+        ~WorksetParamRow(void) throw() { }
+
+        /** less comparator by primary key: set id and parameter id. */
+        static bool isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
+
+        /** equal comparator by primary key: set id and parameter id. */
+        static bool isKeyEqual(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
+
+        /** find row by primary key: set id and parameter id. */
+        static vector<WorksetParamRow>::const_iterator byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec);
+    };
+
+    /** workset_parameter_txt table row. */
+    struct WorksetParamTxtRow : public IMetaRow<WorksetParamTxtRow>
+    {
+        /** set_id       INT        NOT NULL */
+        int setId;
+
+        /** model_id     INT        NOT NULL */
+        int modelId;
+
+        /** parameter_id INT        NOT NULL */
+        int paramId;
+
+        /** lang_id      INT        NOT NULL */
+        int langId;
+
+        /** note         VARCHAR(32000)      */
+        string note;
+
+        /** create row with supplied primary key field values. */
+        WorksetParamTxtRow(int i_setId, int i_langId, int i_paramId) :
+            setId(i_setId),
+            modelId(0),
+            paramId(i_paramId),
+            langId(i_langId),
+            note("")
+        { }
+
+        /** create row with default empty field values. */
+        WorksetParamTxtRow(void) : WorksetParamTxtRow(0, 0, 0) { }
+
+        ~WorksetParamTxtRow(void) throw() { }
+
+        /** less comparator by primary key: set id, parameter id, language id. */
+        static bool isKeyLess(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
+
+        /** equal comparator by primary key: set id, parameter id, language id. */
+        static bool isKeyEqual(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
+
+        /** equal comparator by language id. */
+        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+
+        /** find row by primary key: set id, parameter id, language id. */
+        static vector<WorksetParamTxtRow>::const_iterator byKey(
+            int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
+            );
+    };
+
+    /** workset_parameter_txt table row and language name. */
+    struct WorksetParamTxtLangRow : public WorksetParamTxtRow
+    {
+        /** language name */
+        string langName;
+
+        /** less comparator by unique key: set id, parameter id, language name. */
+        static bool uniqueLangKeyLess(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right);
+
+        /** equal comparator by unique key: set id, parameter id, language name. */
+        static bool uniqueLangKeyEqual(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right);
+    };
+
+    /** task_lst table row. */
+    struct TaskLstRow : public IMetaRow<TaskLstRow>
+    {
+        /** task_id   INT          NOT NULL */
+        int taskId;
+
+        /** model_id  INT          NOT NULL */
+        int modelId;
+
+        /** task_name VARCHAR(255) NOT NULL */
+        string name;
+
+        /** sub_count INT          NOT NULL */
+        int subCount;
+
+        /** create row with supplied primary key field values. */
+        TaskLstRow(int i_taskId) :
+            taskId(i_taskId),
+            modelId(0),
+            name(""),
+            subCount(0)
+        { }
+
+        /** create row with default empty field values. */
+        TaskLstRow(void) : TaskLstRow(0) { }
+
+        ~TaskLstRow(void) throw() { }
+
+        /** less comparator by primary key: task id. */
+        static bool isKeyLess(const TaskLstRow & i_left, const TaskLstRow & i_right);
+
+        /** equal comparator by primary key: task id. */
+        static bool isKeyEqual(const TaskLstRow & i_left, const TaskLstRow & i_right);
+
+        /** find row by primary key: task id. */
+        static vector<TaskLstRow>::const_iterator byKey(int i_taskId, const vector<TaskLstRow> & i_rowVec);
+    };
+
+    /** task_txt table row. */
+    struct TaskTxtRow : public IMetaRow<TaskTxtRow>
+    {
+        /** task_id INT             NOT NULL */
+        int taskId;
+
+        /** lang_id INT             NOT NULL */
+        int langId;
+
+        /** descr   VARCHAR(255)    NOT NULL */
+        string descr;
+
+        /** note    VARCHAR(32000)           */
+        string note;
+
+        /** create row with supplied primary key field values. */
+        TaskTxtRow(int i_taskId, int i_langId) :
+            taskId(i_taskId),
+            langId(i_langId),
+            descr(""),
+            note("")
+        { }
+
+        /** create row with default empty field values. */
+        TaskTxtRow(void) : TaskTxtRow(0, 0) { }
+
+        ~TaskTxtRow(void) throw() { }
+
+        /** less comparator by primary key: task id and language id. */
+        static bool isKeyLess(const TaskTxtRow & i_left, const TaskTxtRow & i_right);
+
+        /** equal comparator by primary key: task id and language id. */
+        static bool isKeyEqual(const TaskTxtRow & i_left, const TaskTxtRow & i_right);
+
+        /** equal comparator by language id. */
+        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+
+        /** find row by primary key: task id and language id. */
+        static vector<TaskTxtRow>::const_iterator byKey(int i_taskId, int i_langId, const vector<TaskTxtRow> & i_rowVec);
+    };
+
+    /** task_txt table row and language name. */
+    struct TaskTxtLangRow : public TaskTxtRow
+    {
+        /** language name */
+        string langName;
+
+        /** less comparator by unique key: task id, language name. */
+        static bool uniqueLangKeyLess(const TaskTxtLangRow & i_left, const TaskTxtLangRow & i_right);
+
+        /** equal comparator by unique key: task id, language name. */
+        static bool uniqueLangKeyEqual(const TaskTxtLangRow & i_left, const TaskTxtLangRow & i_right);
+    };
+
+    /** task_run table row. */
+    struct TaskRunRow : public IMetaRow<TaskRunRow>
+    {
+        /** task_id INT NOT NULL  */
+        int taskId;
+
+        /** set_id  INT NOT NULL  */
+        int setId;
+
+        /** run_id  INT NULL      */
+        int runId;
+
+        /** create row with supplied primary key field values. */
+        TaskRunRow(int i_taskId, int i_setId) :
+            taskId(i_taskId),
+            setId(i_setId),
+            runId(0)
+        { }
+
+        /** create row with default empty field values. */
+        TaskRunRow(void) : TaskRunRow(0, 0) { }
+
+        ~TaskRunRow(void) throw() { }
+
+        /** less comparator by primary key: task id and set id. */
+        static bool isKeyLess(const TaskRunRow & i_left, const TaskRunRow & i_right);
+
+        /** equal comparator by primary key: task id and set id. */
+        static bool isKeyEqual(const TaskRunRow & i_left, const TaskRunRow & i_right);
+
+        /** find row by primary key: task id and set id. */
+        static vector<TaskRunRow>::const_iterator byKey(int i_taskId, int i_setId, const vector<TaskRunRow> & i_rowVec);
     };
 }
 

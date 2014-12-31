@@ -56,7 +56,7 @@ LogBase::LogBase(
     stampedPath(""),
     isNoMsgTime(false)
 {
-    unique_lock<recursive_mutex> lck(theMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
 
     tsSuffix = makeTimeStamp(chrono::system_clock::now());
     pidSuffix = '.' + to_string(getpid());
@@ -69,7 +69,7 @@ LogBase::LogBase(
 LogBase::~LogBase(void) throw()
 {
     try {
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         isConsoleEnabled = isLastEnabled = isStampedEnabled = false;
     }
     catch (...) { }
@@ -89,7 +89,7 @@ void LogBase::init(
 {
     try {
         // reset log status flags
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
 
         isConsoleEnabled = i_logToConsole;
         isNoMsgTime = i_noMsgTime;
@@ -132,7 +132,7 @@ void LogBase::init(
 const string LogBase::timeStampSuffix(void) throw()
 {
     try {
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         return tsSuffix.substr();
     }
     catch (...) {
@@ -148,7 +148,7 @@ const string LogBase::timeStampSuffix(void) throw()
 const string LogBase::suffix(void) throw()
 {
     try {
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         return fileSuffix.substr();
     }
     catch (...) {
@@ -164,7 +164,7 @@ void LogBase::logMsg(const char * i_msg, const char * i_extra) throw()
 
         chrono::system_clock::time_point now = chrono::system_clock::now();
 
-        unique_lock<recursive_mutex> lck(theMutex);     // lock the log 
+        lock_guard<recursive_mutex> lck(theMutex);     // lock the log 
 
         if (isConsoleEnabled) {
             isConsoleEnabled = logToConsole(now, i_msg, i_extra);
@@ -187,7 +187,7 @@ void LogBase::logFormatted(const char * i_format, ...) throw()
     try {
         if (i_format == nullptr) return;       // nothing to log
 
-        unique_lock<recursive_mutex> lck(theMutex); // lock the log 
+        lock_guard<recursive_mutex> lck(theMutex); // lock the log 
 
         // format message for the log
         va_list args;
@@ -275,7 +275,7 @@ Log::Log(
     LogBase(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, false),
     isSqlLog(false)
 {
-    unique_lock<recursive_mutex> lck(theMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, isNoMsgTime, isSqlLog);
 }
 
@@ -283,7 +283,7 @@ Log::Log(
 Log::~Log(void) throw()
 {
     try {
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         isSqlLog = false;
     }
     catch (...) { }
@@ -305,7 +305,7 @@ void Log::init(
     ) throw()
 {
     try {
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         LogBase::init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
         isSqlLog = i_isLogSql && isLastEnabled;
     }
@@ -329,7 +329,7 @@ void Log::logSql(const char * i_sql) throw()
 
         chrono::system_clock::time_point now = chrono::system_clock::now();
 
-        unique_lock<recursive_mutex> lck(theMutex);     // lock the log 
+        lock_guard<recursive_mutex> lck(theMutex);     // lock the log 
 
         if (isSqlLog && isLastEnabled) {
             if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath);
@@ -365,7 +365,7 @@ bool Log::logToFile(
 TraceLog::~TraceLog(void) throw()
 {
     try {
-        unique_lock<recursive_mutex> lck(theMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         
         try { if (isLastCreated) lastSt.close(); }
         catch (...) { }

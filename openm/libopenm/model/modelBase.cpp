@@ -8,6 +8,9 @@ using namespace openm;
 // model exception default error message
 const char openm::modelUnknownErrorMessage[] = "unknown model error";
 
+static recursive_mutex readMutex;   // mutex to lock read operations
+static vector<int> paramReadVec;    // parameters id where read completed
+
 // model public interface
 IModel::~IModel() throw() { }
 
@@ -15,14 +18,16 @@ IModel::~IModel() throw() { }
 ModelBase::ModelBase(
     bool i_isMpiUsed,
     int i_modelId,
+    int i_runId,
     int i_subCount,
     int i_subNumber,
     IDbExec * i_dbExec,
     IMsgExec * i_msgExec,
     const MetaRunHolder * i_metaStore
     ) : 
-    modelId(i_modelId),
     isMpiUsed(i_isMpiUsed),
+    modelId(i_modelId),
+    runId(i_runId),
     dbExec(i_dbExec),
     msgExec(i_msgExec),
     metaStore(i_metaStore),
@@ -35,27 +40,25 @@ ModelBase::ModelBase(
         throw ModelException("database connection must be open at process %d", i_msgExec->rank());
 
     // set model run options
-    int runId = metaStore->runId;
-
     runOpts.subSampleCount = i_subCount;
     runOpts.subSampleNumber = i_subNumber;
-    runOpts.useSparse = metaStore->runOption->boolValue(runId, RunOptionsKey::useSparse);
-    runOpts.nullValue = metaStore->runOption->doubleValue(runId, RunOptionsKey::sparseNull, DBL_EPSILON);
+    runOpts.useSparse = metaStore->runOption->boolValue(RunOptionsKey::useSparse);
+    runOpts.nullValue = metaStore->runOption->doubleValue(RunOptionsKey::sparseNull, DBL_EPSILON);
 
     // if trace log file enabled setup trace file name
     string traceFilePath;
-    if (metaStore->runOption->boolValue(runId, RunOptionsKey::traceToFile)) {
-        traceFilePath = metaStore->runOption->strValue(runId, RunOptionsKey::traceFilePath);
-        if (traceFilePath.empty()) traceFilePath = metaStore->runOption->strValue(runId, RunOptionsKey::setName) + ".txt";
+    if (metaStore->runOption->boolValue(RunOptionsKey::traceToFile)) {
+        traceFilePath = metaStore->runOption->strValue(RunOptionsKey::traceFilePath);
+        if (traceFilePath.empty()) traceFilePath = metaStore->runOption->strValue(RunOptionsKey::setName) + ".txt";
     }
 
     // adjust trace log with actual settings specified in model run options
     theTrace->init(
-        metaStore->runOption->boolValue(runId, RunOptionsKey::traceToConsole),
+        metaStore->runOption->boolValue(RunOptionsKey::traceToConsole),
         traceFilePath.c_str(),
-        metaStore->runOption->boolValue(runId, RunOptionsKey::traceUseTs),
-        metaStore->runOption->boolValue(runId, RunOptionsKey::traceUsePid),
-        metaStore->runOption->boolValue(runId, RunOptionsKey::traceNoMsgTime) || !metaStore->runOption->isExist(runId, RunOptionsKey::traceNoMsgTime)
+        metaStore->runOption->boolValue(RunOptionsKey::traceUseTs),
+        metaStore->runOption->boolValue(RunOptionsKey::traceUsePid),
+        metaStore->runOption->boolValue(RunOptionsKey::traceNoMsgTime) || !metaStore->runOption->isExist(RunOptionsKey::traceNoMsgTime)
         );
 }
 
@@ -70,9 +73,10 @@ ModelBase::~ModelBase(void) throw()
 // create new model
 ModelBase * ModelBase::create(
     bool i_isMpiUsed, 
-    int i_subCount, 
+    int i_runId,
+    int i_subCount,
     int i_subNumber,
-    IDbExec * i_dbExec, 
+    IDbExec * i_dbExec,
     IMsgExec * i_msgExec, 
     const MetaRunHolder * i_metaStore 
     )
@@ -88,41 +92,83 @@ ModelBase * ModelBase::create(
 
     // create the model
     return new ModelBase(
-        i_isMpiUsed, mdRow->modelId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore
+        i_isMpiUsed, mdRow->modelId, i_runId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore
         );
 }
 
 /** model shutdown: save results and cleanup resources. */
-void ModelBase::shutdown(void)
+void ModelBase::shutdown(
+    bool i_isMpiUsed,
+    int i_runId,
+    int i_subCount,
+    IDbExec * i_dbExec,
+    IMsgExec * i_msgExec,
+    const MetaRunHolder * i_metaStore
+    )
 {
+    // find model in metadata tables
+    const ModelDicRow * mdRow = i_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
+    if (mdRow == NULL) throw ModelException("model not found in the database");
+
     // receive all output tables subsamples and write into database
-    if (isMpiUsed && msgExec->isRoot()) receiveSubSamples();
+    if (i_isMpiUsed && i_msgExec->isRoot()) {
+        receiveSubSamples(mdRow->modelId, i_runId, i_subCount, i_dbExec, i_msgExec, i_metaStore);
+    }
 
     // wait for send completion, if any outstanding
-    msgExec->waitSendAll();
+    i_msgExec->waitSendAll();
 
     // update number of completed subsamples and check if all subsamples completed
     bool isAll = false;
 
-    if (isMpiUsed && msgExec->isRoot()) {
-        dbExec->update(
-            "UPDATE run_lst SET sub_completed = sub_count WHERE run_id = " + to_string(metaStore->runId)
+    if (i_isMpiUsed && i_msgExec->isRoot()) {
+        i_dbExec->update(
+            "UPDATE run_lst SET sub_completed = sub_count," \
+            " status = 'p'," \
+            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
+            " WHERE run_id = " + to_string(i_runId)
             );
         isAll = true;   // all subsamples saved in database
     }
-    if (!isMpiUsed) {
-        dbExec->beginTransaction();
-        dbExec->update(
-            "UPDATE run_lst SET sub_completed = sub_completed + 1 WHERE run_id = " + to_string(metaStore->runId)
+    if (!i_isMpiUsed) {
+        i_dbExec->beginTransaction();
+        i_dbExec->update(
+            "UPDATE run_lst SET sub_completed = sub_completed + 1," \
+            " status = 'p'," \
+            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
+            " WHERE run_id = " + to_string(i_runId)
             );
-        isAll = subSampleCount() == dbExec->selectToInt(
-            "SELECT sub_completed FROM run_lst WHERE run_id = " + to_string(metaStore->runId), -1
+        isAll = i_subCount == i_dbExec->selectToInt(
+            "SELECT sub_completed FROM run_lst WHERE run_id = " + to_string(i_runId), -1
             );
-        dbExec->commit();
+        i_dbExec->commit();
     }
 
     // if all subsamples saved in database then calculate output tables aggregated values
-    if (isAll) writeOutputValues();
+    // and mark this run as completed
+    if (isAll) {
+
+        writeOutputValues(mdRow->modelId, i_runId, i_subCount, i_dbExec, i_metaStore);
+
+        i_dbExec->update(
+            "UPDATE run_lst SET status = 's'," \
+            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
+            " WHERE run_id = " + to_string(i_runId)
+            );
+    }
+}
+
+/** model shutdown on error: mark run as failure. */
+void ModelBase::shutdownOnFail(bool i_isMpiUsed, int i_runId, IDbExec * i_dbExec, IMsgExec * i_msgExec)
+{
+    if (!i_isMpiUsed || i_msgExec->isRoot()) {
+        i_dbExec->update(
+            "UPDATE run_lst SET sub_completed = sub_count," \
+            " status = 'e'," \
+            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
+            " WHERE run_id = " + to_string(i_runId)
+            );
+    }
 }
 
 /**
@@ -138,41 +184,35 @@ void ModelBase::readParameter(const char * i_name, const type_info & i_type, lon
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
     try {
+        // parameters shared between threads: read only in one thread
+        lock_guard<recursive_mutex> lck(readMutex);
+
+        // get parameter id by name
+        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
+        if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+
+        // check if parameter read already completed
+        int paramId = paramRow->paramId;
+        bool isDone = std::any_of(
+            paramReadVec.cbegin(), paramReadVec.cend(), [paramId](const int i_id) -> bool { return paramId == i_id; }
+        );
+        if (isDone) return;     // read parameter already completed
+
         // read parameter from db
         if (!isMpiUsed || msgExec->isRoot()) {
             unique_ptr<IParameterReader> reader(
-                IParameterReader::create(modelId, metaStore->runId, i_name, dbExec, metaStore)
+                IParameterReader::create(modelId, runId, i_name, dbExec, metaStore)
                 );
             reader->readParameter(dbExec, i_type, i_size, io_valueArr);
         }
 
         // broadcast parameter to all modeling processes
         if (isMpiUsed) msgExec->bcast(msgExec->rootRank, i_type, i_size, io_valueArr);
+
+        paramReadVec.push_back(paramId);    // parameter read completed
     }
     catch (exception & ex) {
         throw ModelException("Failed to read input parameter: %s. %s", i_name, ex.what());
-    }
-}
-
-/** write output tables aggregated values into database */
-void ModelBase::writeOutputValues(void)
-{
-    const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
-
-    for (const TableDicRow & tblRow : tblVec) {
-
-        unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-            modelId, 
-            metaStore->runId,
-            tblRow.tableName.c_str(), 
-            dbExec, 
-            metaStore,
-            subSampleCount(), 
-            runOptions()->useSparse, 
-            runOptions()->nullValue
-            ));
-
-            writer->writeAllExpressions(dbExec);
     }
 }
 
@@ -210,7 +250,7 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
 
             unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
                 modelId,
-                metaStore->runId,
+                runId,
                 i_name, 
                 dbExec, 
                 metaStore,
@@ -255,6 +295,28 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
     }
 }
 
+/** write output tables aggregated values into database */
+void ModelBase::writeOutputValues(
+    int i_modelId, int i_runId, int i_subCount, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
+    )
+{
+    const vector<TableDicRow> tblVec = i_metaStore->tableDic->byModelId(i_modelId);
+
+    for (const TableDicRow & tblRow : tblVec) {
+
+        unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
+            i_modelId,
+            i_runId,
+            tblRow.tableName.c_str(),
+            i_dbExec,
+            i_metaStore,
+            i_subCount
+            ));
+
+        writer->writeAllExpressions(i_dbExec);
+    }
+}
+
 // helper struct to receive output table values for each accumulator
 struct TblAccRecv
 {
@@ -276,15 +338,21 @@ struct TblAccRecv
 };
 
 /** receive all output tables subsamples and write into database */
-void ModelBase::receiveSubSamples(void)
+void ModelBase::receiveSubSamples(
+    int i_modelId, int i_runId, int i_subCount, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
+    )
 {
     // receive output tables subsamples: [1,..N-1]
     // receive all subsamples except of zero subsample, which caculated localy at root process
-    if (subSampleCount() <= 1) return;  // exit if only one subsample was produced by model
+    if (i_subCount <= 1) return;  // exit if only one subsample was produced by model
+
+    // get sparse settings
+    bool isSparse = i_metaStore->runOption->boolValue(RunOptionsKey::useSparse);
+    double nullValue = i_metaStore->runOption->doubleValue(RunOptionsKey::sparseNull, DBL_EPSILON);
 
     // init list of accumulators to be received
     vector<TblAccRecv> recvVec;
-    const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
+    const vector<TableAccRow> accVec = i_metaStore->tableAcc->byModelId(i_modelId);
 
     int tblId = -1;
     long long valSize = 0;
@@ -293,10 +361,10 @@ void ModelBase::receiveSubSamples(void)
         // get accumulator data size
         if (tblId != accVec[nAcc].tableId) {
             tblId = accVec[nAcc].tableId;
-            valSize = IOutputTableWriter::sizeOf(modelId, metaStore, tblId);
+            valSize = IOutputTableWriter::sizeOf(i_modelId, i_metaStore, tblId);
         }
 
-        for (int nSub = 1; nSub < subSampleCount(); nSub++) {
+        for (int nSub = 1; nSub < i_subCount; nSub++) {
             recvVec.push_back(TblAccRecv(nSub, tblId, accVec[nAcc].accId, nAcc, valSize));
         }
     }
@@ -316,7 +384,7 @@ void ModelBase::receiveSubSamples(void)
                 double * valueArr = valueUptr.get();
 
                 // try to received
-                isReceived = accRecv.isReceived = msgExec->tryReceive(
+                isReceived = accRecv.isReceived = i_msgExec->tryReceive(
                     accRecv.subId,
                     (MsgTag)((int)MsgTag::outSubsampleBase + accRecv.accMsgTag),
                     typeid(double),
@@ -326,20 +394,20 @@ void ModelBase::receiveSubSamples(void)
                 if (!isReceived) continue;
 
                 // accumulator received: write it into database
-                const TableDicRow * tblRow = metaStore->tableDic->byKey(modelId, accRecv.tableId);
+                const TableDicRow * tblRow = i_metaStore->tableDic->byKey(i_modelId, accRecv.tableId);
                 if (tblRow == nullptr) throw new DbException("output table not found in table dictionary, id: %d", accRecv.tableId);
 
                 unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-                    modelId,
-                    metaStore->runId,
+                    i_modelId,
+                    i_runId,
                     tblRow->tableName.c_str(),
-                    dbExec,
-                    metaStore,
-                    runOptions()->subSampleCount,
-                    runOptions()->useSparse,
-                    runOptions()->nullValue
+                    i_dbExec,
+                    i_metaStore,
+                    i_subCount,
+                    isSparse,
+                    nullValue
                     ));
-                writer->writeAccumulator(dbExec, accRecv.subId, accRecv.accId, accRecv.valueSize, valueArr);
+                writer->writeAccumulator(i_dbExec, accRecv.subId, accRecv.accId, accRecv.valueSize, valueArr);
 
                 break;  // data received
             }

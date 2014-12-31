@@ -120,7 +120,6 @@ bool RunTxtRow::isKeyLess(const RunTxtRow & i_left, const RunTxtRow & i_right)
     return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.langId < i_right.langId);
 }
 
-
 // run_txt row equal comparator by primary key: run id and language id.
 bool RunTxtRow::isKeyEqual(const RunTxtRow & i_left, const RunTxtRow & i_right)
 {
@@ -141,54 +140,6 @@ vector<RunTxtRow>::const_iterator RunTxtRow::byKey(int i_runId, int i_langId, co
         i_rowVec.cend(),
         [i_runId, i_langId](const RunTxtRow & i_row) -> bool { return i_row.runId == i_runId && i_row.langId == i_langId; }
     );
-}
-
-// profile_lst row less comparator by primary key: profile name.
-bool ProfileLstRow::isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right)
-{
-    return i_left.name < i_right.name;
-}
-
-// profile_lst row equal comparator by primary key: profile name.
-bool ProfileLstRow::isKeyEqual(const ProfileLstRow & i_left, const ProfileLstRow & i_right)
-{
-    return i_left.name == i_right.name;
-}
-
-// profile_option row less comparator by primary key: profile name, option key.
-bool ProfileOptionRow::isKeyLess(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right)
-{
-    return (i_left.name < i_right.name) || (i_left.name == i_right.name && i_left.key < i_right.key);
-}
-
-// profile_option row equal comparator by primary key: profile name, option key.
-bool ProfileOptionRow::isKeyEqual(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right)
-{
-    return i_left.name == i_right.name && i_left.key == i_right.key;
-}
-
-// profile_option row equal comparator by profile name
-bool ProfileOptionRow::nameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
-{
-    return dynamic_cast<ProfileOptionRow *>(i_left.get())->name == dynamic_cast<ProfileOptionRow *>(i_right.get())->name;
-}
-
-// run_option row less comparator by primary key: run id, option key.
-bool RunOptionRow::isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right)
-{
-    return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.key < i_right.key);
-}
-
-// run_option row equal comparator by primary key: run id, option key.
-bool RunOptionRow::isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right)
-{
-    return i_left.runId == i_right.runId && i_left.key == i_right.key;
-}
-
-// run_option row equal comparator by run id
-bool RunOptionRow::runIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
-{
-    return dynamic_cast<RunOptionRow *>(i_left.get())->runId == dynamic_cast<RunOptionRow *>(i_right.get())->runId;
 }
 
 // type_dic row less comparator by primary key: model id, type id.
@@ -442,143 +393,6 @@ bool ParamDimsRow::modelIdParamIdEqual(const IRowBaseUptr & i_left, const IRowBa
     const ParamDimsRow * right = dynamic_cast<ParamDimsRow *>(i_right.get());
     return 
         left->modelId == right->modelId && left->paramId == right->paramId;
-}
-
-// workset_lst row less comparator by primary key: set id.
-bool WorksetLstRow::isKeyLess(const WorksetLstRow & i_left, const WorksetLstRow & i_right)
-{
-    return i_left.setId < i_right.setId;
-}
-
-// workset_lst row equal comparator by primary key: set id.
-bool WorksetLstRow::isKeyEqual(const WorksetLstRow & i_left, const WorksetLstRow & i_right)
-{
-    return i_left.setId == i_right.setId;
-}
-
-// workset_lst table find row by primary key: set id.
-vector<WorksetLstRow>::const_iterator WorksetLstRow::byKey(int i_setId, const vector<WorksetLstRow> & i_rowVec)
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_setId](const WorksetLstRow & i_row) -> bool { return i_row.setId == i_setId; }
-    );
-}
-
-// workset_txt row less comparator by primary key: set id and language id.
-bool WorksetTxtRow::isKeyLess(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right)
-{
-    return (i_left.setId < i_right.setId) || (i_left.setId == i_right.setId && i_left.langId < i_right.langId);
-}
-
-// workset_txt row equal comparator by primary key: set id and language id.
-bool WorksetTxtRow::isKeyEqual(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right)
-{
-    return i_left.setId == i_right.setId && i_left.langId == i_right.langId;
-}
-
-// workset_txt row equal comparator by language id
-bool WorksetTxtRow::langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
-{
-    return dynamic_cast<WorksetTxtRow *>(i_left.get())->langId == dynamic_cast<WorksetTxtRow *>(i_right.get())->langId;
-}
-
-// workset_txt table find row by primary key: set id and language id.
-vector<WorksetTxtRow>::const_iterator WorksetTxtRow::byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec)
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_setId, i_langId](const WorksetTxtRow & i_row) -> bool { return i_row.setId == i_setId && i_row.langId == i_langId; }
-    );
-}
-
-// workset_txt row less comparator by unique key: set id, language name.
-bool WorksetTxtLangRow::uniqueLangKeyLess(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right)
-{
-    return
-        (i_left.setId < i_right.setId) ||
-        (i_left.setId == i_right.setId && i_left.langName < i_right.langName);
-}
-
-// workset_txt row equal comparator by unique key: set id, language name.
-bool WorksetTxtLangRow::uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right)
-{
-    return i_left.setId == i_right.setId && i_left.langName == i_right.langName;
-}
-
-// workset_parameter row less comparator by primary key: set id and parameter id.
-bool WorksetParamRow::isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right)
-{
-    return i_left.setId == i_right.setId && i_left.paramId < i_right.paramId;
-}
-
-// workset_parameter row equal comparator by primary key: set id and parameter id.
-bool WorksetParamRow::isKeyEqual(const WorksetParamRow & i_left, const WorksetParamRow & i_right)
-{
-    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId;
-}
-
-// workset_parameter table find row by primary key: set id and parameter id.
-vector<WorksetParamRow>::const_iterator WorksetParamRow::byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec)
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_setId, i_paramId](const WorksetParamRow & i_row) -> bool { return i_row.setId == i_setId && i_row.paramId == i_paramId; }
-    );
-}
-
-// workset_parameter_txt row less comparator by primary key: set id, parameter id, language id.
-bool WorksetParamTxtRow::isKeyLess(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right)
-{
-    return
-        (i_left.setId < i_right.setId) ||
-        (i_left.setId == i_right.setId && i_left.paramId < i_right.paramId) ||
-        (i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langId < i_right.langId);
-}
-
-// workset_parameter_txt row equal comparator by primary key: set id, parameter id, language id.
-bool WorksetParamTxtRow::isKeyEqual(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right)
-{
-    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langId == i_right.langId;
-}
-
-
-// workset_parameter_txt row equal comparator by language id
-bool WorksetParamTxtRow::langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
-{
-    return dynamic_cast<WorksetParamTxtRow *>(i_left.get())->langId == dynamic_cast<WorksetParamTxtRow *>(i_right.get())->langId;
-}
-
-// workset_parameter_txt table find row by primary key: set id, parameter id, language id.
-vector<WorksetParamTxtRow>::const_iterator WorksetParamTxtRow::byKey(
-    int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
-    )
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_setId, i_paramId, i_langId](const WorksetParamTxtRow & i_row) -> bool {
-        return i_row.setId == i_setId && i_row.paramId == i_paramId && i_row.langId == i_langId;
-    }
-    );
-}
-
-// workset_parameter_txt row less comparator by unique key: set id, parameter id, language name.
-bool WorksetParamTxtLangRow::uniqueLangKeyLess(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right)
-{
-    return
-        (i_left.setId < i_right.setId) ||
-        (i_left.setId == i_right.setId && i_left.paramId < i_right.paramId) ||
-        (i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langName < i_right.langName);
-}
-
-// workset_parameter_txt row equal comparator by unique key: set id, parameter id, language name.
-bool WorksetParamTxtLangRow::uniqueLangKeyEqual(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right)
-{
-    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langName == i_right.langName;
 }
 
 // table_dic row less comparator by primary key: model id, table id.
@@ -932,5 +746,276 @@ bool GroupPcRow::isKeyEqual(const GroupPcRow & i_left, const GroupPcRow & i_righ
 bool GroupPcRow::modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
 {
     return dynamic_cast<GroupPcRow *>(i_left.get())->modelId == dynamic_cast<GroupPcRow *>(i_right.get())->modelId;
+}
+
+// profile_lst row less comparator by primary key: profile name.
+bool ProfileLstRow::isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right)
+{
+    return i_left.name < i_right.name;
+}
+
+// profile_lst row equal comparator by primary key: profile name.
+bool ProfileLstRow::isKeyEqual(const ProfileLstRow & i_left, const ProfileLstRow & i_right)
+{
+    return i_left.name == i_right.name;
+}
+
+// profile_option row less comparator by primary key: profile name, option key.
+bool ProfileOptionRow::isKeyLess(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right)
+{
+    return (i_left.name < i_right.name) || (i_left.name == i_right.name && i_left.key < i_right.key);
+}
+
+// profile_option row equal comparator by primary key: profile name, option key.
+bool ProfileOptionRow::isKeyEqual(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right)
+{
+    return i_left.name == i_right.name && i_left.key == i_right.key;
+}
+
+// profile_option row equal comparator by profile name
+bool ProfileOptionRow::nameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+{
+    return dynamic_cast<ProfileOptionRow *>(i_left.get())->name == dynamic_cast<ProfileOptionRow *>(i_right.get())->name;
+}
+
+// run_option row less comparator by primary key: run id, option key.
+bool RunOptionRow::isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right)
+{
+    return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.key < i_right.key);
+}
+
+// run_option row equal comparator by primary key: run id, option key.
+bool RunOptionRow::isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right)
+{
+    return i_left.runId == i_right.runId && i_left.key == i_right.key;
+}
+
+// run_option row equal comparator by run id
+bool RunOptionRow::runIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+{
+    return dynamic_cast<RunOptionRow *>(i_left.get())->runId == dynamic_cast<RunOptionRow *>(i_right.get())->runId;
+}
+
+// workset_lst row less comparator by primary key: set id.
+bool WorksetLstRow::isKeyLess(const WorksetLstRow & i_left, const WorksetLstRow & i_right)
+{
+    return i_left.setId < i_right.setId;
+}
+
+// workset_lst row equal comparator by primary key: set id.
+bool WorksetLstRow::isKeyEqual(const WorksetLstRow & i_left, const WorksetLstRow & i_right)
+{
+    return i_left.setId == i_right.setId;
+}
+
+// workset_lst table find row by primary key: set id.
+vector<WorksetLstRow>::const_iterator WorksetLstRow::byKey(int i_setId, const vector<WorksetLstRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_setId](const WorksetLstRow & i_row) -> bool { return i_row.setId == i_setId; }
+    );
+}
+
+// workset_txt row less comparator by primary key: set id and language id.
+bool WorksetTxtRow::isKeyLess(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right)
+{
+    return (i_left.setId < i_right.setId) || (i_left.setId == i_right.setId && i_left.langId < i_right.langId);
+}
+
+// workset_txt row equal comparator by primary key: set id and language id.
+bool WorksetTxtRow::isKeyEqual(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.langId == i_right.langId;
+}
+
+// workset_txt row equal comparator by language id
+bool WorksetTxtRow::langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+{
+    return dynamic_cast<WorksetTxtRow *>(i_left.get())->langId == dynamic_cast<WorksetTxtRow *>(i_right.get())->langId;
+}
+
+// workset_txt table find row by primary key: set id and language id.
+vector<WorksetTxtRow>::const_iterator WorksetTxtRow::byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_setId, i_langId](const WorksetTxtRow & i_row) -> bool { return i_row.setId == i_setId && i_row.langId == i_langId; }
+    );
+}
+
+// workset_txt row less comparator by unique key: set id, language name.
+bool WorksetTxtLangRow::uniqueLangKeyLess(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right)
+{
+    return
+        (i_left.setId < i_right.setId) ||
+        (i_left.setId == i_right.setId && i_left.langName < i_right.langName);
+}
+
+// workset_txt row equal comparator by unique key: set id, language name.
+bool WorksetTxtLangRow::uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.langName == i_right.langName;
+}
+
+// workset_parameter row less comparator by primary key: set id and parameter id.
+bool WorksetParamRow::isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right)
+{
+    return (i_left.setId < i_right.setId) || (i_left.setId == i_right.setId && i_left.paramId < i_right.paramId);
+}
+
+// workset_parameter row equal comparator by primary key: set id and parameter id.
+bool WorksetParamRow::isKeyEqual(const WorksetParamRow & i_left, const WorksetParamRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId;
+}
+
+// workset_parameter table find row by primary key: set id and parameter id.
+vector<WorksetParamRow>::const_iterator WorksetParamRow::byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_setId, i_paramId](const WorksetParamRow & i_row) -> bool { return i_row.setId == i_setId && i_row.paramId == i_paramId; }
+    );
+}
+
+// workset_parameter_txt row less comparator by primary key: set id, parameter id, language id.
+bool WorksetParamTxtRow::isKeyLess(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right)
+{
+    return
+        (i_left.setId < i_right.setId) ||
+        (i_left.setId == i_right.setId && i_left.paramId < i_right.paramId) ||
+        (i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langId < i_right.langId);
+}
+
+// workset_parameter_txt row equal comparator by primary key: set id, parameter id, language id.
+bool WorksetParamTxtRow::isKeyEqual(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langId == i_right.langId;
+}
+
+
+// workset_parameter_txt row equal comparator by language id
+bool WorksetParamTxtRow::langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+{
+    return dynamic_cast<WorksetParamTxtRow *>(i_left.get())->langId == dynamic_cast<WorksetParamTxtRow *>(i_right.get())->langId;
+}
+
+// workset_parameter_txt table find row by primary key: set id, parameter id, language id.
+vector<WorksetParamTxtRow>::const_iterator WorksetParamTxtRow::byKey(
+    int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
+    )
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_setId, i_paramId, i_langId](const WorksetParamTxtRow & i_row) -> bool {
+        return i_row.setId == i_setId && i_row.paramId == i_paramId && i_row.langId == i_langId;
+    }
+    );
+}
+
+// workset_parameter_txt row less comparator by unique key: set id, parameter id, language name.
+bool WorksetParamTxtLangRow::uniqueLangKeyLess(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right)
+{
+    return
+        (i_left.setId < i_right.setId) ||
+        (i_left.setId == i_right.setId && i_left.paramId < i_right.paramId) ||
+        (i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langName < i_right.langName);
+}
+
+// workset_parameter_txt row equal comparator by unique key: set id, parameter id, language name.
+bool WorksetParamTxtLangRow::uniqueLangKeyEqual(const WorksetParamTxtLangRow & i_left, const WorksetParamTxtLangRow & i_right)
+{
+    return i_left.setId == i_right.setId && i_left.paramId == i_right.paramId && i_left.langName == i_right.langName;
+}
+
+/** less comparator by primary key: task id. */
+bool TaskLstRow::isKeyLess(const TaskLstRow & i_left, const TaskLstRow & i_right)
+{
+    return i_left.taskId < i_right.taskId;
+}
+
+/** equal comparator by primary key: task id. */
+bool TaskLstRow::isKeyEqual(const TaskLstRow & i_left, const TaskLstRow & i_right)
+{
+    return i_left.taskId == i_right.taskId;
+}
+
+/** find row by primary key: task id. */
+vector<TaskLstRow>::const_iterator TaskLstRow::byKey(int i_taskId, const vector<TaskLstRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_taskId](const TaskLstRow & i_row) -> bool { return i_row.taskId == i_taskId; }
+    );
+}
+
+/** less comparator by primary key: task id and language id. */
+bool TaskTxtRow::isKeyLess(const TaskTxtRow & i_left, const TaskTxtRow & i_right)
+{
+    return (i_left.taskId < i_right.taskId) || (i_left.taskId == i_right.taskId && i_left.langId < i_right.langId);
+}
+
+/** equal comparator by primary key: task id and language id. */
+bool TaskTxtRow::isKeyEqual(const TaskTxtRow & i_left, const TaskTxtRow & i_right)
+{
+    return i_left.taskId == i_right.taskId && i_left.langId == i_right.langId;
+}
+
+/** equal comparator by language id. */
+bool TaskTxtRow::langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)
+{
+    return dynamic_cast<TaskTxtRow *>(i_left.get())->langId == dynamic_cast<TaskTxtRow *>(i_right.get())->langId;
+}
+
+/** find row by primary key: task id and language id. */
+vector<TaskTxtRow>::const_iterator TaskTxtRow::byKey(int i_taskId, int i_langId, const vector<TaskTxtRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_taskId, i_langId](const TaskTxtRow & i_row) -> bool { return i_row.taskId == i_taskId && i_row.langId == i_langId; }
+    );
+}
+
+/** less comparator by unique key: task id, language name. */
+bool TaskTxtLangRow::uniqueLangKeyLess(const TaskTxtLangRow & i_left, const TaskTxtLangRow & i_right)
+{
+    return
+        (i_left.taskId < i_right.taskId) ||
+        (i_left.taskId == i_right.taskId && i_left.langName < i_right.langName);
+}
+
+/** equal comparator by unique key: task id, language name. */
+bool TaskTxtLangRow::uniqueLangKeyEqual(const TaskTxtLangRow & i_left, const TaskTxtLangRow & i_right)
+{
+    return i_left.taskId == i_right.taskId && i_left.langName == i_right.langName;
+}
+
+/** less comparator by primary key: task id and set id. */
+bool TaskRunRow::isKeyLess(const TaskRunRow & i_left, const TaskRunRow & i_right)
+{
+    return (i_left.taskId < i_right.taskId) || (i_left.taskId == i_right.taskId && i_left.setId < i_right.setId);
+}
+
+/** equal comparator by primary key: task id and set id. */
+bool TaskRunRow::isKeyEqual(const TaskRunRow & i_left, const TaskRunRow & i_right)
+{
+    return i_left.taskId == i_right.taskId && i_left.setId == i_right.setId;
+}
+
+/** find row by primary key: task id and set id. */
+vector<TaskRunRow>::const_iterator TaskRunRow::byKey(int i_taskId, int i_setId, const vector<TaskRunRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_taskId, i_setId](const TaskRunRow & i_row) -> bool { return i_row.taskId == i_taskId && i_row.setId == i_setId; }
+    );
 }
 

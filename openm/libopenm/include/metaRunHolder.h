@@ -19,14 +19,8 @@ namespace openm
     struct MetaRunHolder
     {
     public:
-        /** model run id to store results and parameters in database */
-        int runId;
-
         /** model_dic table rows */
         unique_ptr<IModelDicTable> modelDic;
-
-        /** run_option table rows */
-        unique_ptr<IRunOptionTable> runOption;
 
         /** type_dic table rows */
         unique_ptr<ITypeDicTable> typeDic;
@@ -51,6 +45,9 @@ namespace openm
 
         /** table_expr table rows */
         unique_ptr<ITableExprTable> tableExpr;
+
+        /** run_option table rows */
+        unique_ptr<IRunOptionTable> runOption;
     };
 }
 

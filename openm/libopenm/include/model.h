@@ -10,6 +10,8 @@
 
 #include <memory>
 #include <stdexcept>
+#include <mutex>
+#include <future>
 using namespace std;
 
 #include "libopenm/omCommon.h"
@@ -40,11 +42,30 @@ namespace openm
         /** model factory: create new model. */
         static ModelBase * create(
             bool i_isMpiUsed,
-            int i_subCount, 
+            int i_runId,
+            int i_subCount,
             int i_subNumber,
-            IDbExec * i_dbExec, 
+            IDbExec * i_dbExec,
             IMsgExec * i_msgExec, 
             const MetaRunHolder * i_metaStore 
+            );
+
+        /** model shutdown: save results and cleanup resources. */
+        static void shutdown(
+            bool i_isMpiUsed,
+            int i_runId,
+            int i_subCount,
+            IDbExec * i_dbExec,
+            IMsgExec * i_msgExec,
+            const MetaRunHolder * i_metaStore
+            );
+
+        /** model shutdown on error: mark run as failure. */
+        static void shutdownOnFail(
+            bool i_isMpiUsed, 
+            int i_runId, 
+            IDbExec * i_dbExec, 
+            IMsgExec * i_msgExec
             );
 
         /** number of subsamples */
@@ -59,9 +80,6 @@ namespace openm
         /** update modeling progress */
         int updateProgress(void) { return ++progressCount; /* prototype only */ }
 
-        /** model shutdown: save results and cleanup resources. */
-        void shutdown(void);
-
         /** read input parameter values. */
         void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
 
@@ -69,8 +87,9 @@ namespace openm
         void writeOutputTable(const char * i_name, int i_accCount, long long i_size, const double * i_valueArr[]);
 
     private:
-        int modelId;                        // model id in database
         bool isMpiUsed;                     // if true then use MPI messaging library to pass the data
+        int modelId;                        // model id in database
+        int runId;                          // model run id
         IDbExec * dbExec;                   // db-connection
         IMsgExec * msgExec;                 // message passing interface
         const MetaRunHolder * metaStore;    // metadata tables
@@ -80,6 +99,7 @@ namespace openm
         ModelBase(
             bool i_isMpiUsed,
             int i_modelId,
+            int i_runId,
             int i_subCount,
             int i_subNumber,
             IDbExec * i_dbExec,
@@ -88,11 +108,24 @@ namespace openm
             );
 
     private:
-        /** receive all output tables subsamples and write into database */
-        void receiveSubSamples(void);
-
         /** write output tables aggregated values into database */
-        void writeOutputValues(void);
+        static void writeOutputValues(
+            int i_modelId, 
+            int i_runId, 
+            int i_subCount, 
+            IDbExec * i_dbExec, 
+            const MetaRunHolder * i_metaStore
+            );
+
+        /** receive all output tables subsamples and write into database */
+        static void receiveSubSamples(
+            int i_modelId,
+            int i_runId,
+            int i_subCount,
+            IDbExec * i_dbExec,
+            IMsgExec * i_msgExec,
+            const MetaRunHolder * i_metaStore
+            );
 
     private:
         ModelBase(const ModelBase & i_model);               // = delete;

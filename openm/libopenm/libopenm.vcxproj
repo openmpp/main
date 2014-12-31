@@ -201,6 +201,9 @@
     <ClCompile Include="db\tableDimsTxtTable.cpp" />
     <ClCompile Include="db\tableExprTable.cpp" />
     <ClCompile Include="db\tableExprTxtTable.cpp" />
+    <ClCompile Include="db\taskLstTable.cpp" />
+    <ClCompile Include="db\taskRunTable.cpp" />
+    <ClCompile Include="db\taskTxtTable.cpp" />
     <ClCompile Include="db\typeDicTable.cpp" />
     <ClCompile Include="db\typeDicTxtTable.cpp" />
     <ClCompile Include="db\typeEnumLstTable.cpp" />

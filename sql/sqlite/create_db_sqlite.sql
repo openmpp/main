@@ -1,5 +1,5 @@
 --
--- Copyright (c) 2013 OpenM++
+-- Copyright (c) 2014 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
 -- keep dummy sql below to prevent sqlite3 failure due to UTF-8 BOM
@@ -79,7 +79,7 @@ CREATE TABLE model_dic_txt
 );
 
 --
--- Model run's list: date-time and results
+-- Model run's list
 -- Run id must be different from working set id (use id_lst to get it)
 -- Model run is completed (all data saved in database) when sub_completed = sub_count
 --
@@ -89,9 +89,11 @@ CREATE TABLE run_lst
   model_id      INT          NOT NULL, -- model id
   run_name      VARCHAR(255) NOT NULL, -- model run name
   sub_count     INT          NOT NULL, -- subsamples count
-  sub_started   INT          NOT NULL, -- if <> 0 then number of subsamples started
-  sub_completed INT          NOT NULL, -- if <> 0 then number of subsamples completed
+  sub_started   INT          NOT NULL, -- number of subsamples started
+  sub_completed INT          NOT NULL, -- number of subsamples completed
   create_dt     VARCHAR(32)  NOT NULL, -- creation date-time
+  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success e=failed
+  update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
@@ -112,43 +114,6 @@ CREATE TABLE run_txt
              FOREIGN KEY (run_id) REFERENCES run_lst(run_id),
   CONSTRAINT run_txt_lang 
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
-);
-
---
--- Profile list: profile is a group of options
--- default model options has profile_name = model_name
---
-CREATE TABLE profile_lst
-(
-  profile_name VARCHAR(255) NOT NULL, -- unique profile name
-  PRIMARY KEY (profile_name)
-);
-
---
--- Profile options, ie: ini-style options
---
-CREATE TABLE profile_option
-(
-  profile_name VARCHAR(255)  NOT NULL, -- master key
-  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
-  option_value VARCHAR(2048) NOT NULL, -- option value
-  PRIMARY KEY (profile_name, option_key),
-  CONSTRAINT profile_option_mk 
-             FOREIGN KEY (profile_name) REFERENCES profile_lst(profile_name)
-);
-
---
--- Run options (in priority order):
--- from command line, ini-file, profile_option or default values
---
-CREATE TABLE run_option
-(
-  run_id       INT           NOT NULL, -- master key
-  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
-  option_value VARCHAR(2048) NOT NULL, -- option value
-  PRIMARY KEY (run_id, option_key),
-  CONSTRAINT run_option_mk 
-             FOREIGN KEY (run_id) REFERENCES run_lst(run_id)
 );
 
 -- 
@@ -289,80 +254,6 @@ CREATE TABLE parameter_dims
              FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id),
   CONSTRAINT parameter_dims_type_fk
              FOREIGN KEY (model_id, mod_type_id) REFERENCES type_dic (model_id, mod_type_id)
-);
-
---
--- Working set (workset): 
---   working set is a full set or subset of values for model input parameters
---   if this is a subset (not a full set) then it must be based on specified run id (not NULL)
--- each model must have "default" workset
---   default workset must include ALL model parameters (it is a full set)
---   default workset is where set_id = min(set_id) for that model
--- working set id must be different from run id (use id_lst to get it)
--- working set can be editable or read-only
--- Important: always update parameter values inside of transaction scope
--- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
---
-CREATE TABLE workset_lst
-(
-  set_id      INT          NOT NULL, -- unique working set id
-  run_id      INT          NULL,     -- if not NULL and positive then base run id (source run id)
-  model_id    INT          NOT NULL, -- model id
-  set_name    VARCHAR(255) NOT NULL, -- working set name
-  is_readonly SMALLINT     NOT NULL, -- if non-zero then working set is read-only
-  update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
-  PRIMARY KEY (set_id),
-  CONSTRAINT workset_lst_mk 
-             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
-);
-
---
--- Working set text: description and notes
---
-CREATE TABLE workset_txt
-(
-  set_id   INT             NOT NULL, -- master key
-  model_id INT             NOT NULL, -- model id
-  lang_id  INT             NOT NULL, -- language id
-  descr    VARCHAR(255)    NOT NULL, -- working set description
-  note     VARCHAR(32000),           -- working set notes
-  PRIMARY KEY (set_id, lang_id),
-  CONSTRAINT workset_txt_mk 
-             FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
-  CONSTRAINT workset_txt_lang 
-             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
-);
-
---
--- Working set parameters list
---
-CREATE TABLE workset_parameter
-(
-  set_id       INT NOT NULL, -- master key
-  model_id     INT NOT NULL, -- model id
-  parameter_id INT NOT NULL, -- parameter_dic.parameter_id
-  PRIMARY KEY (set_id, parameter_id),
-  CONSTRAINT workset_parameter_mk 
-             FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
-  CONSTRAINT workset_parameter_param_fk
-             FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id)
-);
-
---
--- Working set parameter text: parameter value notes
---
-CREATE TABLE workset_parameter_txt
-(
-  set_id       INT             NOT NULL, -- master key
-  model_id     INT             NOT NULL, -- model id
-  parameter_id INT             NOT NULL, -- master key
-  lang_id      INT             NOT NULL, -- language id
-  note         VARCHAR(32000),           -- parameter value note
-  PRIMARY KEY (set_id, parameter_id, lang_id),
-  CONSTRAINT workset_parameter_txt_mk 
-             FOREIGN KEY (set_id, parameter_id) REFERENCES workset_parameter (set_id, parameter_id),
-  CONSTRAINT workset_parameter_txt_lang_fk
-             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
 --
@@ -560,12 +451,173 @@ CREATE TABLE group_pc
 );
 
 --
+-- Profile list
+-- profile is a named group of (key, value) options
+-- default model options has profile_name = model_name
+--
+CREATE TABLE profile_lst
+(
+  profile_name VARCHAR(255) NOT NULL, -- unique profile name
+  PRIMARY KEY (profile_name)
+);
+
+--
+-- Profile options, ie: ini-file options
+--
+CREATE TABLE profile_option
+(
+  profile_name VARCHAR(255)  NOT NULL, -- master key
+  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
+  option_value VARCHAR(2048) NOT NULL, -- option value
+  PRIMARY KEY (profile_name, option_key),
+  CONSTRAINT profile_option_mk 
+             FOREIGN KEY (profile_name) REFERENCES profile_lst(profile_name)
+);
+
+--
+-- Run options: options used to run the model
+-- model options priority:
+-- from command line, ini-file, profile_option or default values
+--
+CREATE TABLE run_option
+(
+  run_id       INT           NOT NULL, -- master key
+  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
+  option_value VARCHAR(2048) NOT NULL, -- option value
+  PRIMARY KEY (run_id, option_key),
+  CONSTRAINT run_option_mk 
+             FOREIGN KEY (run_id) REFERENCES run_lst(run_id)
+);
+
+--
+-- Working set (workset): 
+--   working set is a full set or subset of values for model input parameters
+--   if this is a subset (not a full set) then it must be based on specified run id (not NULL)
+-- each model must have "default" workset
+--   default workset must include ALL model parameters (it is a full set)
+--   default workset is where set_id = min(set_id) for that model
+-- working set id must be different from run id (use id_lst to get it)
+-- working set can be editable or read-only
+-- Important: always update parameter values inside of transaction scope
+-- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
+--
+CREATE TABLE workset_lst
+(
+  set_id      INT          NOT NULL, -- unique working set id
+  run_id      INT          NULL,     -- if not NULL and positive then base run id (source run id)
+  model_id    INT          NOT NULL, -- model id
+  set_name    VARCHAR(255) NOT NULL, -- working set name
+  is_readonly SMALLINT     NOT NULL, -- if non-zero then working set is read-only
+  update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
+  PRIMARY KEY (set_id),
+  CONSTRAINT workset_lst_mk 
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
+);
+
+--
+-- Working set text: description and notes
+--
+CREATE TABLE workset_txt
+(
+  set_id   INT             NOT NULL, -- master key
+  model_id INT             NOT NULL, -- model id
+  lang_id  INT             NOT NULL, -- language id
+  descr    VARCHAR(255)    NOT NULL, -- working set description
+  note     VARCHAR(32000),           -- working set notes
+  PRIMARY KEY (set_id, lang_id),
+  CONSTRAINT workset_txt_mk 
+             FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
+  CONSTRAINT workset_txt_lang 
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Working set parameters list
+--
+CREATE TABLE workset_parameter
+(
+  set_id       INT NOT NULL, -- master key
+  model_id     INT NOT NULL, -- model id
+  parameter_id INT NOT NULL, -- parameter_dic.parameter_id
+  PRIMARY KEY (set_id, parameter_id),
+  CONSTRAINT workset_parameter_mk 
+             FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
+  CONSTRAINT workset_parameter_param_fk
+             FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id)
+);
+
+--
+-- Working set parameter text: parameter value notes
+--
+CREATE TABLE workset_parameter_txt
+(
+  set_id       INT             NOT NULL, -- master key
+  model_id     INT             NOT NULL, -- model id
+  parameter_id INT             NOT NULL, -- master key
+  lang_id      INT             NOT NULL, -- language id
+  note         VARCHAR(32000),           -- parameter value note
+  PRIMARY KEY (set_id, parameter_id, lang_id),
+  CONSTRAINT workset_parameter_txt_mk 
+             FOREIGN KEY (set_id, parameter_id) REFERENCES workset_parameter (set_id, parameter_id),
+  CONSTRAINT workset_parameter_txt_lang_fk
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Modelling task list
+--
+CREATE TABLE task_lst
+(
+  task_id   INT          NOT NULL, -- unique task id
+  model_id  INT          NOT NULL, -- master key
+  task_name VARCHAR(255) NOT NULL, -- task name
+  sub_count INT          NOT NULL, -- subsamples count
+  PRIMARY KEY (task_id),
+  CONSTRAINT task_lst_mk 
+             FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
+);
+
+--
+-- Modelling task text: description and notes
+--
+CREATE TABLE task_txt
+(
+  task_id INT             NOT NULL, -- master key
+  lang_id INT             NOT NULL, -- language id
+  descr   VARCHAR(255)    NOT NULL, -- task description
+  note    VARCHAR(32000),           -- task notes
+  PRIMARY KEY (task_id, lang_id),
+  CONSTRAINT task_txt_mk 
+             FOREIGN KEY (task_id) REFERENCES task_lst(task_id),
+  CONSTRAINT task_txt_lang 
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Modelling task input (working sets) and output (model run)
+--
+CREATE TABLE task_run
+(
+  task_id INT NOT NULL, -- master key
+  set_id  INT NOT NULL, -- input working set id
+  run_id  INT NULL,     -- if not null then run id for that set id
+  PRIMARY KEY (task_id, set_id),
+  CONSTRAINT task_run_mk 
+             FOREIGN KEY (task_id) REFERENCES task_lst (task_id),
+  CONSTRAINT task_set_fk 
+             FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
+  CONSTRAINT task_run_fk 
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
+);
+
+--
 -- list of ids, must be positive.
 -- values < 10 reserved for development and testing
 --
+INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id', 10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('model_id', 10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id', 10);
+INSERT INTO id_lst (id_key, id_value) VALUES ('task_id', 10);
 
 --
 -- Languages and word list
