@@ -121,8 +121,8 @@ static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<con
 RunController::RunController(int argc, char ** argv) :
     runId(0),
     subSampleCount(0),
-    threadCount(1),
-    subBaseNumber(0)
+    subBaseNumber(0),
+    threadCount(1)
 {
     // get command line options
     argStore.parseCommandLine(argc, argv, false, true, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr);
