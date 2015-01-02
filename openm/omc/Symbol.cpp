@@ -486,6 +486,9 @@ comment_map_type Symbol::cxx_comments;
 
 comment_map_type Symbol::c_comments;
 
+unordered_map<string, string> Symbol::explicit_labels;
+
+
 int Symbol::pre_simulation_count = 0;
 
 int Symbol::post_simulation_count = 0;
@@ -527,6 +530,16 @@ void Symbol::post_parse(int pass)
                 // Construct key for lookup in map of all // comments
                 yy::position pos(decl_loc.begin.filename, decl_loc.begin.line + j, 0);
                 process_symbol_label(pos);
+            }
+        }
+
+        // Check for an explicit label specified using //LABEL, for each language
+        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+            auto lang_sym = LanguageSymbol::id_to_sym[j];
+            string key = name + "," + lang_sym->name;
+            auto search = explicit_labels.find(key);
+            if (search != explicit_labels.end()) {
+                pp_labels[j] = search->second;
             }
         }
 
@@ -664,7 +677,7 @@ bool Symbol::process_symbol_label(const yy::position& pos)
                 // TODO skip white space, handle corner condition of no text
                 pp_labels[lang_search->second] = cmt.substr(lang_code.size() + 1);
                 // Remove matched label comment from map to allow subsequent
-                // identification of dangling lables on line immediately preceding a declaration.
+                // identification of dangling labels on line immediately preceding a declaration.
                 cxx_comments.erase(cmt_search);
                 return true;
             }
@@ -1119,6 +1132,51 @@ void Symbol::post_parse_all()
 
 void Symbol::process_cxx_comment(const string& cmt, const yy::location& loc)
 {
+    // Parse //LABEL comments
+    if (cmt.length() >= 5 && cmt.substr(0, 5) == "LABEL") {
+        //TODO use regex!
+        std::string::size_type p = 5;
+        std::string::size_type q = 5;
+
+        // Extract symbol name
+        p = cmt.find_first_not_of("( \t", p);
+        if (p == std::string::npos) {
+            //TODO report syntax error on //LABEL
+            return;
+        }
+        q = cmt.find_first_of(", \t", p);
+        if (q == std::string::npos) {
+            //TODO report syntax error on //LABEL
+            return;
+        }
+        string sym_name = cmt.substr(p, q - p);
+
+        // Extract language code
+        p = cmt.find_first_not_of(", \t", q);
+        if (p == std::string::npos) {
+            //TODO report syntax error on //LABEL
+            return;
+        }
+        q = cmt.find_first_of(") \t", p);
+        if (q == std::string::npos) {
+            //TODO report syntax error on //LABEL
+            return;
+        }
+        string lang_code = cmt.substr(p, q - p);
+        string key = sym_name + "," + lang_code;
+
+        // Extract label
+        p = cmt.find_first_not_of(") \t", q);
+        if (p == std::string::npos) {
+            //TODO report syntax error on //LABEL
+            return;
+        }
+        string lab = cmt.substr(p);
+        
+        // Insert label into map of all explicit //LABEL comments
+        explicit_labels.emplace(key, lab);
+    }
+
     // Construct key based on the beginning of the line containing the comment.
     yy::position pos(loc.begin.filename, loc.begin.line, 0);
     comment_map_value_type element(pos, cmt);

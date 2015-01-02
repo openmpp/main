@@ -976,14 +976,20 @@ public:
     static comment_map_type c_comments;
 
     /**
+     * Map of //LABEL statements to associated labels.
+     * 
+     * This maps "symbol,language" as a key to the associated label specified
+     * explicitly by a //LABEL statement in the model source code.
+     */
+    static unordered_map<string, string> explicit_labels;
+
+    /**
      * Map from a token to the preferred string representation of that token.
      * 
      * This is a fixed map independent of any model.  It has a unique key and maps the symbol enum
      * to the preferred term. There is an exact one-to-one correspondence with code in @a parser.y.
      * Maintain this correspondence in all changes or additions. Unfortunately, bison 2.7 with C++
      * does not expose yytname so we need to create this hard-coded equivalent.
-     *
-     * @return The token string.
      */
     static unordered_map<token_type, string, std::hash<int> > token_string;
 
