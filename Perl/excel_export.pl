@@ -11,18 +11,34 @@ use File::Spec;
 use File::Temp qw(tempdir);
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 
-my $version = 0.1;
+my $version = 0.2;
 
-if ( $#ARGV != 1 ) {
+if ( $#ARGV == -1 ) {
 	print "excel_export version $version\n";
+	print "usage: excel_export [-lang lang_code] in_slqite out_xlsx\n";
 	print "  example: excel_export RiskPaths.sqlite Base(tbl).xlsx\n";
+	print "  example: excel_export -lang FR RiskPaths.sqlite Base(tbl).xlsx\n";
 	exit;
 }
 
 # Control verbosity of log output (0, 1, 2)
-my $verbosity = 1;
+my $verbosity = 0;
 
 my $script_name = "excel_export";
+my $lang_code_requested = "";
+if (@ARGV[0] eq "-lang") {
+	shift @ARGV;
+	$lang_code_requested = shift @ARGV;
+}
+if ( $#ARGV != 1 ) {
+	# must have two arguments
+	print "excel_export version $version\n";
+	print "usage: excel_export [-lang lang_code] in_slqite out_xlsx\n";
+	print "  example: excel_export RiskPaths.sqlite Base(tbl).xlsx\n";
+	print "  example: excel_export -lang FR RiskPaths.sqlite Base(tbl).xlsx\n";
+	exit;
+}
+
 my $db = shift @ARGV;
 my $workbook_xlsx = shift @ARGV;
 my $success;
@@ -68,7 +84,7 @@ my $tmpdir = tempdir(CLEANUP => 1);
 # Change slashes from \ to / for sqlite3
 $tmpdir =~ s@[\\]@/@g;
 
-logmsg info, "excel_export", "extracting tables to ${tmpdir}";
+logmsg info, "excel_export", "extracting tables to ${tmpdir}" if $verbosity >= 1;
 $failure = ompp_tables_to_csv($db, $tmpdir);
 if ($failure) {
 	logmsg error, $script_name, "unable to extract tables";
@@ -117,7 +133,32 @@ chomp $result;
 logmsg info, $script_name, "model_id=${model_id} model_name=${model_name}" if $verbosity >= 1;
 
 # Set lang_id
-my $lang_id = 0; # default language for the model
+my $lang_id;
+if ($lang_code_requested ne "") {
+	logmsg info, $script_name, "Get lang_id from lang_lst, for lang_code=${lang_code_requested}" if $verbosity >= 1;
+	$sql = "
+	  Select lang_id
+	  From lang_lst
+	  Where ( lang_code = '${lang_code_requested}' );
+	  ;
+	";
+	logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
+	$result = run_sqlite_statement $db, $sql, $failure;
+	exit 1 if $failure;
+	logmsg info, $script_name, "result", $result if $verbosity >= 2;
+	chomp $result;
+	if ($result eq "") {
+		logmsg error, $script_name, "Requested language code not found, using first language";
+		# Continue anyway, using lang_id 0
+		$lang_id = 0;
+	}
+	else {
+		($lang_id) = split(/[|]/, $result);
+	}
+}
+else {
+	$lang_id = 0;  # default value is first language (lexicographical by language code).
+}
 logmsg info, $script_name, "lang_id=${lang_id}" if $verbosity >= 1;
 
 # Get lang_code from lang_lst
