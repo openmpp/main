@@ -12,6 +12,7 @@
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
     <RUN_SCENARIO>1</RUN_SCENARIO>
     <EXCEL_EXPORT_SCENARIO>1</EXCEL_EXPORT_SCENARIO>
+    <EXCEL_EXPORT_SCENARIO_LANG>FR</EXCEL_EXPORT_SCENARIO_LANG>
     <EXCEL_LAUNCH_SCENARIO>1</EXCEL_LAUNCH_SCENARIO>
   </PropertyGroup>
   <PropertyGroup />
@@ -46,6 +47,9 @@
     </BuildMacro>
     <BuildMacro Include="EXCEL_EXPORT_SCENARIO">
       <Value>$(EXCEL_EXPORT_SCENARIO)</Value>
+    </BuildMacro>
+    <BuildMacro Include="EXCEL_EXPORT_SCENARIO_LANG">
+      <Value>$(EXCEL_EXPORT_SCENARIO_LANG)</Value>
     </BuildMacro>
     <BuildMacro Include="EXCEL_LAUNCH_SCENARIO">
       <Value>$(EXCEL_LAUNCH_SCENARIO)</Value>

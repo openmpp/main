@@ -110,9 +110,17 @@
     <Exec Command="$(TargetPath)" WorkingDirectory="$(TargetDir)"/>
   </Target>
 
+  <!--
+  The following property prepares an optional argument to the Excel export utility.
+  -->
+  <PropertyGroup>
+    <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
+    <EXCEL_EXPORT_OPT Condition="'$(EXCEL_EXPORT_SCENARIO_LANG)'!=''">-lang $(EXCEL_EXPORT_SCENARIO_LANG)</EXCEL_EXPORT_OPT>
+  </PropertyGroup>
+
   <Target Name="ExcelExportScenario" AfterTargets="RunScenario" Condition="'$(EXCEL_EXPORT_SCENARIO)'=='1'" >
     <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
-    <Exec Command="$(OM_BIN_DIR)/$(EXCEL_EXPORT_EXE) $(OutDir)$(MODEL_NAME).sqlite $(OutDir)$(SCENARIO_NAME)(tbl).xlsx" ContinueOnError="true"/>
+    <Exec Command="$(OM_BIN_DIR)/$(EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) $(OutDir)$(MODEL_NAME).sqlite $(OutDir)$(SCENARIO_NAME)(tbl).xlsx" ContinueOnError="true"/>
   </Target>
 
   <Target Name="ExcelLaunchScenario" AfterTargets="ExcelExportScenario" Condition="'$(EXCEL_LAUNCH_SCENARIO)'=='1'" >
