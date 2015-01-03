@@ -11,6 +11,8 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdarg>
+#include "libopenm/omModel.h"
+
 #include "om_types0.h" // fundamental model types
 #include "omc/link.h"
 #include "omc/Range.h"
@@ -21,7 +23,6 @@
 #include "omc/EntitySet.h"
 #include "omc/cumrate.h"
 #include "om_types1.h" // model-specific types
-#include "libopenm/omModel.h"
 
 #include "omc/macros.h"
 #include "omc/globals.h"

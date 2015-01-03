@@ -439,13 +439,6 @@ void CodeGen::do_agents()
         c += agent->name + " " + agent->name + "::om_null_agent;";
     }
 
-    c += "// definition of global time (declaration in Event.h)";
-    c += "Time BaseEvent::global_time;";
-    c += "";
-    c += "// definition of global event counter (declaration in Event.h)";
-    c += "big_counter BaseEvent::global_event_counter;";
-    c += "";
-
     c += doxygen("Free all zombie agents");
     c += "void BaseAgent::free_all_zombies()";
     c += "{";
@@ -454,7 +447,31 @@ void CodeGen::do_agents()
         c += agent->name + "::free_zombies();";
     }
     c += "}";
+    c += "";
 
+    c += "void BaseAgent::initialize_simulation_runtime()";
+    c += "{";
+    c += "agents = new list<BaseAgent *>;";
+    for ( auto agent : Symbol::pp_all_agents ) {
+        // e.g. Person::zombies = new forward_list<Person *>;";
+        c += agent->name + "::zombies = new forward_list<" + agent->name + " *>;";
+        c += agent->name + "::available = new forward_list<" + agent->name + " *>;";
+    }
+    c += "}";
+    c += "";
+
+    c += "void BaseAgent::finalize_simulation_runtime()";
+    c += "{";
+    c += "delete agents;";
+    c += "agents = nullptr;";
+    for ( auto agent : Symbol::pp_all_agents ) {
+        c += "delete " + agent->name + "::zombies;";
+        c += agent->name + "::zombies = nullptr;";
+        c += "delete " + agent->name + "::available;";
+        c += agent->name + "::available = nullptr;";
+    }
+    c += "}";
+    c += "";
 }
 
 void CodeGen::do_entity_sets()
@@ -507,12 +524,20 @@ void CodeGen::do_tables()
 
 void CodeGen::do_event_queue()
 {
-    c += doxygen( "The event queue (definition)" );
-    c += "set<BaseEvent *, less_deref<BaseEvent *> > BaseEvent::event_queue;";
-    c += doxygen( "The dirty event list (definition)" );
-    c += "tailed_forward_list<BaseEvent *> BaseEvent::dirty_events;";
-    c += doxygen( "The active agent list (definition)" );
-    c += "list<BaseAgent *> BaseAgent::agents;";
+    c += "// definition of event_queue (declaration in Event.h)";
+    c += "thread_local set<BaseEvent *, less_deref<BaseEvent *> > *BaseEvent::event_queue = nullptr;";
+    c += "";
+    c += "// definition of dirty_events (declaration in Event.h)";
+    c += "thread_local tailed_forward_list<BaseEvent *> *BaseEvent::dirty_events = nullptr;";
+    c += "";
+    c += "// definition of global_event_counter (declaration in Event.h)";
+    c += "thread_local big_counter BaseEvent::global_event_counter;";
+    c += "";
+    c += "// definition of global_time (declaration in Event.h)";
+    c += "thread_local Time *BaseEvent::global_time = nullptr;";
+    c += "";
+    c += "// definition of active agent list (declaration in Agent.h)";
+    c += "thread_local list<BaseAgent *> *BaseAgent::agents = nullptr;";
     c += "";
 }
 
@@ -522,9 +547,13 @@ void CodeGen::do_RunModel()
 	c += "// Model simulation";
 	c += "void RunModel(IModel * i_model)";
     c += "{";
+    c += "BaseEvent::initialize_simulation_runtime();";
+    c += "BaseAgent::initialize_simulation_runtime();";
     c += "int mem_id = i_model->subSampleNumber();";
     c += "int mem_count = i_model->subSampleCount();";
     c += "RunSimulation(mem_id, mem_count); // Defined by the model framework, generally in a 'use' module";
+    c += "BaseEvent::finalize_simulation_runtime();";
+    c += "BaseAgent::finalize_simulation_runtime();";
     c += "}";
     c += "";
 }

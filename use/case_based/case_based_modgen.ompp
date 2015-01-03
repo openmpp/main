@@ -239,11 +239,8 @@ void RunSimulation(int mem_id, int mem_count)
             }
         }
 
-        // Initialize global event counter for the case
-        BaseEvent::global_event_counter = 0;
-
         // Initialize global time for the case  (can override in StartSimulation)
-        BaseEvent::global_time = 0;
+        BaseEvent::set_global_time(0);
 
         // record the encoded case seed (case_seed + sample_member in high order bits)
         case_seed_encoded = case_seed + sample_member * ((double)mg_modulus + 1);

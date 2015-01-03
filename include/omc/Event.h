@@ -38,17 +38,19 @@ public:
 
     void make_dirty()
     {
+        assert(dirty_events);
         if ( ! is_zombie && ! is_dirty ) {
             is_dirty = true;
-            dirty_events.push_back( this );
+            dirty_events->push_back( this );
         }
     }
 
     void make_zombie()
     {
+        assert(dirty_events);
         if ( ! is_zombie ) {
             is_zombie = true;
-            dirty_events.push_back( this );
+            dirty_events->push_back( this );
         }
     }
 
@@ -100,14 +102,41 @@ public:
     }
 
     /**
+     * Initializes run-time before simulation.
+     */
+    static void initialize_simulation_runtime()
+    {
+        event_queue = new set<BaseEvent *, less_deref<BaseEvent *> > ;
+        dirty_events = new tailed_forward_list<BaseEvent *>;
+        global_time = new Time(0);
+        global_event_counter = 0;
+        trace_event_on = false;
+        event_checksum_reset();
+    }
+
+    /**
+     * Cleans up run-time after simulation.
+     */
+    static void finalize_simulation_runtime()
+    {
+        delete event_queue;
+        event_queue = nullptr;
+        delete dirty_events;
+        dirty_events = nullptr;
+        delete global_time;
+        global_time = nullptr;
+    }
+
+    /**
      * Cleans all events in the dirty list.
      */
     static void clean_all()
     {
-        while ( ! dirty_events.empty() ) {
-            auto evt = dirty_events.front();
+        assert(dirty_events);
+        while ( ! dirty_events->empty() ) {
+            auto evt = dirty_events->front();
             evt->clean();
-            dirty_events.pop_front();
+            dirty_events->pop_front();
         }
     }
 
@@ -121,12 +150,13 @@ public:
         BaseEvent::clean_all();
         BaseAgent::free_all_zombies();
 
-        if ( BaseEvent::event_queue.empty() ) {
+        assert(event_queue);
+        if ( BaseEvent::event_queue->empty() ) {
             return time_infinite;
         }
         else {
             // get the next event from front of the event queue
-            auto *evt = *BaseEvent::event_queue.begin();
+            auto *evt = *BaseEvent::event_queue->begin();
             return evt->event_time;
         }
     }
@@ -141,19 +171,21 @@ public:
         BaseEvent::clean_all();
         BaseAgent::free_all_zombies();
 
-        if ( BaseEvent::event_queue.empty() ) {
+        assert(event_queue);
+        if ( BaseEvent::event_queue->empty() ) {
             return false;
         }
 
         // get the next event from front of the event queue
-        auto *evt = *BaseEvent::event_queue.begin();
+        auto *evt = *BaseEvent::event_queue->begin();
 
         // debug check that event time is not infinite
         // TODO handle run-time error (model developer error)
         assert(evt->event_time != time_infinite);
 
         // update global time
-        global_time = evt->event_time;
+        assert(global_time);
+        *global_time = evt->event_time;
         // update global event counter
         global_event_counter++;
 
@@ -181,6 +213,26 @@ public:
     }
 
     /**
+     * Gets global time.
+     *
+     * @return The global time.
+     */
+    static Time get_global_time()
+    {
+        assert(global_time);
+        return *global_time;
+    }
+
+    /**
+     * Sets global time.
+     */
+    static void set_global_time(Time t)
+    {
+        assert(global_time);
+        *global_time = t;
+    }
+
+    /**
      * Scheduled time of event.
      */
     Time event_time;
@@ -202,16 +254,16 @@ public:
 
     /**
      * The event queue (declaration)
-     *
+     * 
      * @return A Queue of events.
      */
-    static set<BaseEvent *, less_deref<BaseEvent *> > event_queue;
+    static thread_local set<BaseEvent *, less_deref<BaseEvent *> > *event_queue;
 
     /**
      * The dirty event list (declaration)
      * Contains events whose times require calculation.
      */
-    static tailed_forward_list<BaseEvent *> dirty_events;
+    static thread_local tailed_forward_list<BaseEvent *> *dirty_events;
 
     /**
      * Value of just-in-time option
@@ -223,17 +275,12 @@ public:
     /**
      * true to enable event logging (use API)
      */
-    static bool trace_event_on;
-
-    /**
-     * The global time.
-     */
-    static Time global_time;
+    static thread_local bool trace_event_on;
 
     /**
      * The global event counter.
      */
-    static big_counter global_event_counter;
+    static thread_local big_counter global_event_counter;
 
     /**
      * true if running event checksum is activated.
@@ -243,7 +290,7 @@ public:
     /**
      * The current value of the running event checksum.
      */
-    static double event_checksum_value;
+    static thread_local double event_checksum_value;
 
     /**
      * Reset the running event checksum.
@@ -290,6 +337,14 @@ public:
                             event_name,
                             time);
     }
+
+private:
+
+    /**
+     * The global time.
+     */
+    static thread_local Time *global_time;
+
 };
 
 /**
@@ -351,23 +406,24 @@ public:
      */
     void clean()
     {
+        assert(event_queue);
         if ( is_zombie && in_queue ) {
-            event_queue.erase( this );
+            event_queue->erase( this );
             in_queue = false;
         }
         else if ( is_dirty ) {
             Time new_event_time = (agent()->*time_function)();
             if ( in_queue ) {
                 if ( new_event_time != event_time ) {
-                    event_queue.erase( this );
+                    event_queue->erase( this );
                     event_time = new_event_time;
-                    event_queue.insert( this );
+                    event_queue->insert( this );
                 }
             }
             else // ! in_queue
             {
                 event_time = new_event_time;
-                event_queue.insert( this );
+                event_queue->insert( this );
                 in_queue = true;
             }
         }

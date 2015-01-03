@@ -180,7 +180,7 @@ void AgentSymbol::create_auxiliary_symbols()
         c += "// if they are used by model developer code in the Start() function before the";
         c += "// entity enters the simulation.";
         c += "time.initialize(time_infinite);";
-        c += "time.set(BaseEvent::global_time);";
+        c += "time.set(BaseEvent::get_global_time());";
         c += "age.initialize(time_infinite);";
         c += "age.set(0);";
     }

@@ -74,7 +74,7 @@ int GetReplicates()
 void LogSimulationStart()
 {
     // TODO
-    BaseEvent::global_time = 0;
+    BaseEvent::set_global_time(0);
 }
 
 double SIMULATION_END()
@@ -150,12 +150,8 @@ void RunSimulation(int mem_id, int mem_count)
             seed = product % mg_modulus;
         }
     }
-
-    // Initialize global event counter
-    BaseEvent::global_event_counter = 0;
-
     // Initialize global time (can override in StartSimulation)
-    BaseEvent::global_time = -time_infinite;
+    BaseEvent::set_global_time(-time_infinite);
      
     // Model-specific
     Simulation();
