@@ -67,9 +67,6 @@ namespace fmk {
     /**
      * Helper function to output a case checksum message to the trace log.
      * 
-     * This function is used in framework code for the model, e.g. use/case_based_modegen.ompp. It
-     * is implemented in the module use/common.ompp, which is included by all models.
-     *
      * @param case_seed     The case seed.
      * @param case_sample   The case sample.
      */
@@ -190,7 +187,13 @@ void SimulateEvents()
     }
 }
 
-void RunModel(IModel * i_model)
+/**
+ * Simulates the specified simulation member (sub-sample)
+ *
+ * @param mem_id    Identifier of the member to be simulated (sub-sample).
+ * @param mem_count Total number of members (sub-samples).
+ */
+void RunSimulation(int mem_id, int mem_count)
 {
     extern void CaseSimulation(); // defined elsewhere
 
@@ -199,10 +202,10 @@ void RunModel(IModel * i_model)
     theLog->logMsg("Running Simulation");
 
     // The number of member simulations in the sample of simulations
-    sample_size = i_model->subSampleCount();
+    sample_size = mem_count;
 
     // The member to simulate of the sample of simulations
-    sample_member = i_model->subSampleNumber();
+    sample_member = mem_id;
 
     int seed = SimulationSeed; // framework input parameter
     all_cases = SimulationCases; // framework input parameter

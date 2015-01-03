@@ -108,7 +108,13 @@ void SimulateEvents()
     }
 }
 
-void RunModel(IModel * i_model)
+/**
+ * Simulates the specified simulation member (replicate)
+ *
+ * @param mem_id    Identifier of the member to be simulated (replicate).
+ * @param mem_count Total number of members (replicates).
+ */
+void RunSimulation(int mem_id, int mem_count)
 {
     extern void CaseSimulation(); // defined elsewhere
 
@@ -117,10 +123,10 @@ void RunModel(IModel * i_model)
     theLog->logMsg("Running Simulation");
 
     // The number of simulations in the sample of simulations (not used)
-    sample_size = i_model->subSampleCount();
+    sample_size = mem_count;
 
     // The member to simulate of the sample of simulations
-    sample_member = i_model->subSampleNumber();
+    sample_member = mem_id;
 
     int seed = SimulationSeed; // framework input parameter
     simulation_end = SimulationEnd; // framework input parameter

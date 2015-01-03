@@ -519,8 +519,13 @@ void CodeGen::do_event_queue()
 
 void CodeGen::do_RunModel()
 {
-	c += "// Model simulation (implemented in framework module, usually from a 'use' instruction)";
-	c += "extern void RunModel(IModel * i_model);";
+	c += "// Model simulation";
+	c += "void RunModel(IModel * i_model)";
+    c += "{";
+    c += "int mem_id = i_model->subSampleNumber();";
+    c += "int mem_count = i_model->subSampleCount();";
+    c += "RunSimulation(mem_id, mem_count); // Defined by the model framework, generally in a 'use' module";
+    c += "}";
     c += "";
 }
 

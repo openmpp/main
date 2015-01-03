@@ -47,6 +47,10 @@ void LeaplessTimeToCalendar(double exact_time, int *p_year, int *p_month_in_year
 double LeaplessCalendarToTime(int year, int month_in_year, int day_in_month);
 
 // defined in use/case_based/case_based_modgen.ompp
+//         or use/time_based/time_based_modgen.ompp
+extern void RunSimulation(int mem_id, int mem_count);
+
+// defined in use/case_based/case_based_modgen.ompp
 extern double GetCaseSeed();
 extern int GetCaseSample();
 extern int GetUserTableSubSample();
