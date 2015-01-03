@@ -1945,7 +1945,7 @@ entity_set_dimension:
                             Symbol *attribute = $symbol_in_expr;
                             assert(attribute);
 
-                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, attribute, false, @symbol_in_expr);
+                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, false, attribute, false, @symbol_in_expr);
                             // add dimension to entity set's dimension_list
                             pc.get_entity_set_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions.
@@ -1998,7 +1998,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             pc.counter2 = 0;
                             // initialize working counter used for table agentvars
                             pc.counter3 = 0;
-                            // initialize working counter used for table dimensions
+                            // initialize working counter used for table classification dimensions
                             pc.counter4 = 0;
                         }
             table_filter_opt
@@ -2050,8 +2050,9 @@ table_dimension:
                             Symbol *attribute = $symbol_in_expr;
                             assert(attribute);
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
+                            bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
-                            auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, attribute, margin_opt, @symbol_in_expr);
+                            auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, after_analysis_dim, attribute, margin_opt, @symbol_in_expr);
                             // add dimension to table's dimension_list
                             pc.get_table_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions (excluding analysis dimension).

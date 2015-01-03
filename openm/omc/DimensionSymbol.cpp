@@ -11,10 +11,12 @@
 #include "EnumerationSymbol.h"
 
 // static
-string DimensionSymbol::symbol_name(const Symbol* table_or_entity_set, int index)
+string DimensionSymbol::symbol_name(const Symbol* table_or_entity_set, int index, bool after_analysis_dim)
 {
     assert(table_or_entity_set);
-    return table_or_entity_set->name + ".Dim" + to_string(index);
+    // The numeric identifier is based on all dimensions, including the analysis dimension
+    int numeric_id = index + (after_analysis_dim ? 1 : 0);
+    return table_or_entity_set->name + ".Dim" + to_string(numeric_id);
 }
 
 void DimensionSymbol::post_parse(int pass)
