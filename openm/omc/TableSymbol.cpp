@@ -474,11 +474,9 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         assert(av); // logic guarantee
         auto es = dim->pp_enumeration;
         assert(es); // logic guarantee
-        // name of dimension in meta-data is based on the dimension number, including the analysis dimension
-        string meta_name = "dim" + to_string(dim->index + (dim->after_analysis_dim ? 1 : 0));
         TableDimsRow tableDims;
         tableDims.tableId = pp_table_id;
-        tableDims.name = meta_name;
+        tableDims.name = "dim" + to_string(dim->index);
         tableDims.pos = dim->index;
         tableDims.typeId = es->type_id;
         tableDims.isTotal = false;
@@ -488,7 +486,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         for (auto lang : Symbol::pp_all_languages) {
             TableDimsTxtLangRow tableDimsTxt;
             tableDimsTxt.tableId = pp_table_id;
-            tableDimsTxt.name = meta_name;
+            tableDimsTxt.name = "dim" + to_string(dim->index);
             tableDimsTxt.langName = lang->name;
             tableDimsTxt.descr = dim->label(*lang);
             tableDimsTxt.note = dim->note(*lang);
