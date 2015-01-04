@@ -107,6 +107,7 @@ LIBOPENM_CPPLIST = \
   db/worksetTxtTable.cpp \
   model/modelBase.cpp \
   model/runController.cpp \
+  model/runInit.cpp \
   msg/msgCommon.cpp \
   msg/msgExecBase.cpp \
   msg/msgMpiExec.cpp \
