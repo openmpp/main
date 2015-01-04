@@ -153,11 +153,11 @@ void CodeGen::do_preamble()
 
     if (Symbol::option_event_trace) {
         // if event_trace option is on, tracing is active unless turned off
-        c += "bool BaseEvent::trace_event_on = true;";
+        c += "thread_local bool BaseEvent::trace_event_on = true;";
     }
     else {
         // independent of the event_trace option, this static member must be defined
-        c += "bool BaseEvent::trace_event_on = false;";
+        c += "thread_local bool BaseEvent::trace_event_on = false;";
     }
 
     // Let the run-time know whether to generate a running checksum for events
@@ -168,7 +168,7 @@ void CodeGen::do_preamble()
         c += "const bool BaseEvent::event_checksum_on = false;";
     }
     // The checksum must be defined in any case
-    c += "double BaseEvent::event_checksum_value = 0.0;";
+    c += "thread_local double BaseEvent::event_checksum_value = 0.0;";
 
     c += "";
 
