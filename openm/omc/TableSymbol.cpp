@@ -175,9 +175,6 @@ CodeBlock TableSymbol::cxx_declaration_global()
     h += "void initialize_accumulators();";
     h += "void scale_accumulators();";
     h += "void compute_expressions();";
-    // constructor
-    // E.g. DurationOfLife() { initialize_accumulators();}
-    h += name + "() { initialize_accumulators();}";
     h += "";
     h += "// constants";
     h += "static const int n_cells = " + to_string(n_cells) + ";";
@@ -204,7 +201,7 @@ CodeBlock TableSymbol::cxx_declaration_global()
     h += "double *expressions[n_expressions];";
 
     h += "};";
-    h += "extern " + name + " the" + name + ";";
+    h += "extern thread_local " + name + " the" + name + ";";
 
     return h;
 }
@@ -218,7 +215,7 @@ CodeBlock TableSymbol::cxx_definition_global()
     c += "";
     // table definition
     // E.g. DurationOfLife theDurationOfLife;
-    c += name + " the" + name + ";";
+    c += "thread_local " + name + " the" + name + ";";
 
     // definition of initialize_accumulators()
     c += "void " + name + "::initialize_accumulators()";

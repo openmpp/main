@@ -547,11 +547,18 @@ void CodeGen::do_RunModel()
 	c += "// Model simulation";
 	c += "void RunModel(IModel * const i_model)";
     c += "{";
+    c += "// initialize tables";
+	for ( auto table : Symbol::pp_all_tables ) {
+        c += "the" + table->name + ".initialize_accumulators();";
+    }
+    c += "";
     c += "BaseEvent::initialize_simulation_runtime();";
     c += "BaseAgent::initialize_simulation_runtime();";
+    c += "";
     c += "int mem_id = i_model->subSampleNumber();";
     c += "int mem_count = i_model->subSampleCount();";
     c += "RunSimulation(mem_id, mem_count); // Defined by the model framework, generally in a 'use' module";
+    c += "";
     c += "BaseEvent::finalize_simulation_runtime();";
     c += "BaseAgent::finalize_simulation_runtime();";
     c += "}";
