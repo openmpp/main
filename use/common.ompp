@@ -18,12 +18,12 @@ namespace fmk {
     /**
      * The member to simulate of the sample of simulations.
      */
-    int sample_member = 0;
+    thread_local int sample_member = 0;
 
     /**
      * The value for population scaling.
      * 
-     * Specified by model code through a call to SetPopulation().
+     * Specified by model code through a call to SetPopulation() in a PreSimulation function.
      */
     long set_population_value = 0;
 
@@ -32,7 +32,7 @@ namespace fmk {
      * 
      * Set by model code through a call to signal_exit_simulation_all().
      */
-    bool do_exit_simulation_all = false;
+    thread_local bool do_exit_simulation_all = false;
 }
 
 /**
