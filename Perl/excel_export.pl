@@ -248,10 +248,10 @@ for my $record (split(/\n/, $result)) {
 	$table_expr_labels{$table_id, $expr_id} = $table_expr_label;
 }
 
-# Get table_dim_ids, table_dim_types and table_dim_margin from table_dims
-logmsg info, $script_name, "Get table_dim_ids, table_dim_types and table_dim_margin from table_dims" if $verbosity >= 1;
+# Get table_dim_types and table_dim_margin from table_dims
+logmsg info, $script_name, "Get table_dim_types and table_dim_margin from table_dims" if $verbosity >= 1;
 $sql = "
-  Select table_id, dim_name, dim_pos As dim_id, mod_type_id As type_id, is_total As table_dim_margin
+  Select table_id, dim_id, mod_type_id As type_id, is_total As table_dim_margin
   From table_dims
   Where ( model_id = ${model_id} )
   ;
@@ -259,12 +259,10 @@ $sql = "
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 my $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
-my %table_dim_ids;
 my %table_dim_types;
 my %table_dim_margin;
 for my $record (split(/\n/, $result)) {
-	(my $table_id, my $dim_name, my $dim_id, my $type_id, my $table_dim_margin) = split(/[|]/, $record);
-	$table_dim_ids{$table_id, $dim_name} = $dim_id;
+	(my $table_id, my $dim_id, my $type_id, my $table_dim_margin) = split(/[|]/, $record);
 	$table_dim_types{$table_id, $dim_id} = $type_id;
 	$table_dim_margin{$table_id, $dim_id} = $table_dim_margin;
 }
@@ -272,7 +270,7 @@ for my $record (split(/\n/, $result)) {
 # Get table_dim_labels from table_dims_txt
 logmsg info, $script_name, "Get table_dim_labels from table_dims_txt" if $verbosity >= 1;
 $sql = "
-  Select table_id, dim_name, descr As table_dim_label
+  Select table_id, dim_id, descr As table_dim_label
   From table_dims_txt
   Where ( model_id = ${model_id} And lang_id = ${lang_id} )
   ;
@@ -280,10 +278,10 @@ $sql = "
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 my $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
+logmsg info, $script_name, "result", $result if $verbosity >= 2;
 my %table_dim_labels;
 for my $record (split(/\n/, $result)) {
-	(my $table_id, my $dim_name, my $table_dim_label) = split(/[|]/, $record);
-	my $dim_id = $table_dim_ids{$table_id, $dim_name};
+	(my $table_id, my $dim_id, my $table_dim_label) = split(/[|]/, $record);
 	$table_dim_labels{$table_id, $dim_id} = $table_dim_label;
 }
 
