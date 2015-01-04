@@ -20,6 +20,7 @@ using namespace std;
 
 #include "libopenm/omCommon.h"
 #include "libopenm/common/omHelper.h"
+#include "helper.h"
 
 #ifdef _WIN32
 #pragma warning(push)

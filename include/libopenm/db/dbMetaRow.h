@@ -690,33 +690,33 @@ namespace openm
         /** parameter_id INT NOT NULL */
         int paramId;
         
+        /** dim_id      INT NOT NULL */
+        int dimId;
+
         /** dim_name     VARCHAR(8) NOT NULL */
         string name;
-        
-        /** dim_pos      INT NOT NULL */
-        int pos;
         
         /** mod_type_id  INT NOT NULL */
         int typeId;
         
         /** create row with supplied primary key field values. */
-        ParamDimsRow(int i_modelId, int i_paramId, const string & i_name) : 
+        ParamDimsRow(int i_modelId, int i_paramId, int i_dimId) : 
             modelId(i_modelId), 
             paramId(i_paramId), 
-            name(i_name),
-            pos(0),
+            dimId(i_dimId),
+            name(""),
             typeId(0)
         { }
 
         /** create row with default empty field values. */
-        ParamDimsRow(void) : ParamDimsRow(0, 0, "") { }
+        ParamDimsRow(void) : ParamDimsRow(0, 0, 0) { }
 
         ~ParamDimsRow(void) throw() { }
 
-        /** less comparator by primary key: model id, parameter id, dimension name. */
+        /** less comparator by primary key: model id, parameter id, dimension id. */
         static bool isKeyLess(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
 
-        /** equal comparator by primary key: model id, parameter id, dimension name. */
+        /** equal comparator by primary key: model id, parameter id, dimension id. */
         static bool isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
 
         /** table_dims row equal comparator by model id, parameter id. */
@@ -856,11 +856,11 @@ namespace openm
         /** table_id    INT NOT NULL */
         int tableId;
         
+        /** dim_id      INT NOT NULL */
+        int dimId;
+
         /** dim_name    VARCHAR(8) NOT NULL */
         string name;
-        
-        /** dim_pos     INT NOT NULL */
-        int pos;
         
         /** mod_type_id INT NOT NULL */
         int typeId;
@@ -872,25 +872,25 @@ namespace openm
         int dimSize;
         
         /** create row with supplied primary key field values. */
-        TableDimsRow(int i_modelId, int i_tableId, const string & i_name) : 
+        TableDimsRow(int i_modelId, int i_tableId, int i_dimId) :
             modelId(i_modelId), 
             tableId(i_tableId), 
-            name(i_name),
-            pos(0),
+            dimId(i_dimId),
+            name(""),
             typeId(0),
             isTotal(false),
             dimSize(1)
         { }
 
         /** create row with default empty field values. */
-        TableDimsRow(void) : TableDimsRow(0, 0, "") { }
+        TableDimsRow(void) : TableDimsRow(0, 0, 0) { }
 
         ~TableDimsRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, dimension name. */
+        /** less comparator by primary key: model id, table id, dimension id. */
         static bool isKeyLess(const TableDimsRow & i_left, const TableDimsRow & i_right);
         
-        /** equal comparator by primary key: model id, table id, dimension name. */
+        /** equal comparator by primary key: model id, table id, dimension id. */
         static bool isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right);
 
         /** table_dims row equal comparator by model id, table id. */
@@ -906,9 +906,9 @@ namespace openm
         /** table_id INT          NOT NULL */
         int tableId;
         
-        /** dim_name VARCHAR(8)   NOT NULL */
-        string name;
-        
+        /** dim_id   INT          NOT NULL */
+        int dimId;
+
         /** lang_id  INT          NOT NULL */
         int langId;
         
@@ -919,24 +919,24 @@ namespace openm
         string note;
         
         /** create row with supplied primary key field values. */
-        TableDimsTxtRow(int i_modelId, int i_tableId, const string & i_name, int i_langId) : 
+        TableDimsTxtRow(int i_modelId, int i_tableId, int i_dimId, int i_langId) :
             modelId(i_modelId), 
             tableId(i_tableId), 
-            name(i_name),
+            dimId(i_dimId),
             langId(i_langId),
             descr(""), 
             note("")
         { }
 
         /** create row with default empty field values. */
-        TableDimsTxtRow(void) : TableDimsTxtRow(0, 0, "", 0) { }
+        TableDimsTxtRow(void) : TableDimsTxtRow(0, 0, 0, 0) { }
 
         ~TableDimsTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, dimension name, language id. */
+        /** less comparator by primary key: model id, table id, dimension id, language id. */
         static bool isKeyLess(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, dimension name, language id. */
+        /** equal comparator by primary key: model id, table id, dimension id, language id. */
         static bool isKeyEqual(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
 
         /** equal comparator by language id. */

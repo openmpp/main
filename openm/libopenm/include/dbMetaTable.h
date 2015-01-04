@@ -440,14 +440,14 @@ namespace openm
         virtual ~IParamDimsTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, parameter id, dimension name.
+        * create new table object and load table rows sorted by primary key: model id, parameter id, dimension id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static IParamDimsTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, parameter id, dimension name; return NULL if not found. */
-        virtual const ParamDimsRow * byKey(int i_modelId, int i_paramId, const string & i_name) const = 0;
+        /** binary search row by primary key: model id, parameter id, dimension id; return NULL if not found. */
+        virtual const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const = 0;
 
         /** get list of loaded table rows. */
         virtual vector<ParamDimsRow> rows(void) const = 0;
@@ -528,14 +528,14 @@ namespace openm
         virtual ~ITableDimsTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, dimension name.
+        * create new table object and load table rows sorted by primary key: model id, table id, dimension id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITableDimsTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, table id, dimension name; return NULL if not found. */
-        virtual const TableDimsRow * byKey(int i_modelId, int i_tableId, const string & i_name) const = 0;
+        /** binary search row by primary key: model id, table id, dimension id; return NULL if not found. */
+        virtual const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const = 0;
 
         /** get list of loaded table rows. */
         virtual vector<TableDimsRow> rows(void) const = 0;
@@ -556,15 +556,15 @@ namespace openm
         virtual ~ITableDimsTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, dimension name, language id.
+        * create new table object and load table rows sorted by primary key: model id, table id, dimension id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITableDimsTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, table id, dimension name, language id; return NULL if not found. */
-        virtual const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, const string & i_name, int i_langId) const = 0;
+        /** binary search row by primary key: model id, table id, dimension id, language id; return NULL if not found. */
+        virtual const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const = 0;
 
         /** get list of loaded table rows. */
         virtual vector<TableDimsTxtRow> rows(void) const = 0;

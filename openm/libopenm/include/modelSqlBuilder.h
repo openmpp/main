@@ -11,6 +11,7 @@
 #include <fstream>
 #include <streambuf>
 #include "libopenm/db/modelBuilder.h"
+#include "helper.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
 #include "modelAggregationSql.h"
@@ -132,6 +133,9 @@ namespace openm
 
         /** create table sql for value table: aggregated table expressions */
         const void valueCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+
+        /** set names for dimension and accumulator columns */
+        void setDimAccNames(MetaModelHolder & io_metaRows);
 
         /** set field values for model_dic table row */
         void setModelDicRow(ModelDicRow & io_mdRow) const;

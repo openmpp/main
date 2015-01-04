@@ -131,10 +131,10 @@ INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VAL
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 1, 1, 'Salary by Age (fr)', 'Salary by Age note (fr)');
 INSERT INTO parameter_dic_txt (model_id, parameter_id, lang_id, descr, note) VALUES (1, 2, 1, 'Starting Seed', 'Random numbers generator starting seed value');
 
-INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim0', 0, 21);
-INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 0, 'dim1', 1, 22);
-INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 1, 'dim0', 0, 23);
-INSERT INTO parameter_dims (model_id, parameter_id, dim_name, dim_pos, mod_type_id) VALUES (1, 1, 'dim1', 1, 21);
+INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_id) VALUES (1, 0, 0, 'dim0', 21);
+INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_id) VALUES (1, 0, 1, 'dim1', 22);
+INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_id) VALUES (1, 1, 0, 'dim0', 23);
+INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_id) VALUES (1, 1, 1, 'dim1', 21);
 
 -- 
 -- modelOne output tables
@@ -153,13 +153,13 @@ INSERT INTO table_dic_txt
 VALUES
   (1, 0, 1, 'Salary by Sex (fr)', 'Salary by Sex notes (fr)', 'Salary Dim (fr)', NULL);
 
-INSERT INTO table_dims (model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size) VALUES (1, 0, 'dim0', 0, 23, 0, 3);
-INSERT INTO table_dims (model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size) VALUES (1, 0, 'dim1', 1, 22, 0, 2);
+INSERT INTO table_dims (model_id, table_id, dim_id, dim_name, mod_type_id, is_total, dim_size) VALUES (1, 0, 0, 'dim0', 23, 0, 3);
+INSERT INTO table_dims (model_id, table_id, dim_id, dim_name, mod_type_id, is_total, dim_size) VALUES (1, 0, 1, 'dim1', 22, 0, 2);
 
-INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim0', 0, 'Salary Dim', 'Salary Dim notes');
-INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim0', 1, 'Salary Dim (fr)', 'Salary Dim notes (fr)');
-INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim1', 0, 'Sex Dim', 'Sex Dim notes');
-INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note) VALUES (1, 0, 'dim1', 1, 'Sex Dim (fr)', NULL);
+INSERT INTO table_dims_txt (model_id, table_id, dim_id, lang_id, descr, note) VALUES (1, 0, 0, 0, 'Salary Dim', 'Salary Dim notes');
+INSERT INTO table_dims_txt (model_id, table_id, dim_id, lang_id, descr, note) VALUES (1, 0, 0, 1, 'Salary Dim (fr)', 'Salary Dim notes (fr)');
+INSERT INTO table_dims_txt (model_id, table_id, dim_id, lang_id, descr, note) VALUES (1, 0, 1, 0, 'Sex Dim', 'Sex Dim notes');
+INSERT INTO table_dims_txt (model_id, table_id, dim_id, lang_id, descr, note) VALUES (1, 0, 1, 1, 'Sex Dim (fr)', NULL);
 
 INSERT INTO table_acc (model_id, table_id, acc_id, acc_name, acc_expr) VALUES (1, 0, 0, 'acc0', 'value_sum()');
 INSERT INTO table_acc (model_id, table_id, acc_id, acc_name, acc_expr) VALUES (1, 0, 1, 'acc1', 'value_count()');

@@ -246,10 +246,11 @@ CREATE TABLE parameter_dims
 (
   model_id     INT        NOT NULL, -- master key
   parameter_id INT        NOT NULL, -- master key
+  dim_id       INT        NOT NULL, -- unique dimension id
   dim_name     VARCHAR(8) NOT NULL, -- column name: dim0
-  dim_pos      INT        NOT NULL, -- dimension position
   mod_type_id  INT        NOT NULL, -- dimension type id
-  PRIMARY KEY (model_id, parameter_id, dim_name),
+  PRIMARY KEY (model_id, parameter_id, dim_id),
+  CONSTRAINT parameter_dims_un UNIQUE (model_id, parameter_id, dim_name),
   CONSTRAINT parameter_dims_mk
              FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id),
   CONSTRAINT parameter_dims_type_fk
@@ -302,12 +303,13 @@ CREATE TABLE table_dims
 (
   model_id    INT        NOT NULL, -- master key
   table_id    INT        NOT NULL, -- master key
+  dim_id      INT        NOT NULL, -- unique dimension id
   dim_name    VARCHAR(8) NOT NULL, -- unique column name of dimension: dim0
-  dim_pos     INT        NOT NULL, -- dimension position
   mod_type_id INT        NOT NULL, -- dimension type
   is_total    SMALLINT   NOT NULL, -- if <> 0 then dimension has "total" item
   dim_size    INT        NOT NULL, -- number of items, including "total" item
-  PRIMARY KEY (model_id, table_id, dim_name),
+  PRIMARY KEY (model_id, table_id, dim_id),
+  CONSTRAINT table_dims_un UNIQUE (model_id, table_id, dim_name),
   CONSTRAINT table_dims_mk 
              FOREIGN KEY (model_id, table_id) REFERENCES table_dic (model_id, table_id),
   CONSTRAINT table_dims_type_fk 
@@ -321,13 +323,13 @@ CREATE TABLE table_dims_txt
 (
   model_id INT             NOT NULL, -- master key
   table_id INT             NOT NULL, -- master key
-  dim_name VARCHAR(8)      NOT NULL, -- master key
+  dim_id   INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- table dimension description
   note     VARCHAR(32000),           -- table dimension notes
-  PRIMARY KEY (model_id, table_id, dim_name, lang_id),
+  PRIMARY KEY (model_id, table_id, dim_id, lang_id),
   CONSTRAINT table_dims_txt_mk 
-             FOREIGN KEY (model_id, table_id, dim_name) REFERENCES table_dims (model_id, table_id, dim_name),
+             FOREIGN KEY (model_id, table_id, dim_id) REFERENCES table_dims (model_id, table_id, dim_id),
   CONSTRAINT table_dims_txt_lang_fk 
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );

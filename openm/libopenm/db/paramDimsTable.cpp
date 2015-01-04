@@ -19,8 +19,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, parameter id, dimension name
-        const ParamDimsRow * byKey(int i_modelId, int i_paramId, const string & i_name) const;
+        // find row by primary key: model id, parameter id, dimension id
+        const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const;
 
         // get list of all table rows
         vector<ParamDimsRow> rows(void) const { return IMetaTable<ParamDimsRow>::rows(rowVec); }
@@ -40,8 +40,8 @@ namespace openm
     static const type_info * typeParamDimsRow[] = { 
         &typeid(decltype(ParamDimsRow::modelId)), 
         &typeid(decltype(ParamDimsRow::paramId)), 
-        &typeid(decltype(ParamDimsRow::name)), 
-        &typeid(decltype(ParamDimsRow::pos)), 
+        &typeid(decltype(ParamDimsRow::dimId)),
+        &typeid(decltype(ParamDimsRow::name)),
         &typeid(decltype(ParamDimsRow::typeId)) 
     };
 
@@ -66,10 +66,10 @@ namespace openm
                 dynamic_cast<ParamDimsRow *>(i_row)->paramId = (*(int *)i_value);
                 break;
             case 2:
-                dynamic_cast<ParamDimsRow *>(i_row)->name = ((const char *)i_value);
+                dynamic_cast<ParamDimsRow *>(i_row)->dimId = (*(int *)i_value);
                 break;
             case 3:
-                dynamic_cast<ParamDimsRow *>(i_row)->pos = (*(int *)i_value);
+                dynamic_cast<ParamDimsRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 4:
                 dynamic_cast<ParamDimsRow *>(i_row)->typeId = (*(int *)i_value);
@@ -102,7 +102,7 @@ ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = ParamDimsRowAdapter();
     rowVec = IMetaTable<ParamDimsRow>::load(
         "SELECT" \
-        " model_id, parameter_id, dim_name, dim_pos, mod_type_id" \
+        " model_id, parameter_id, dim_id, dim_name, mod_type_id" \
         " FROM parameter_dims" + 
         ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
@@ -114,16 +114,16 @@ ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 ParamDimsTable::~ParamDimsTable(void) throw() { }
 
-// Find row by primary key: model id, parameter id, dimension name
-const ParamDimsRow * ParamDimsTable::byKey(int i_modelId, int i_paramId, const string & i_name) const
+// Find row by primary key: model id, parameter id, dimension id
+const ParamDimsRow * ParamDimsTable::byKey(int i_modelId, int i_paramId, int i_dimId) const
 {
-    const IRowBaseUptr keyRow( new ParamDimsRow(i_modelId, i_paramId, i_name) );
+    const IRowBaseUptr keyRow(new ParamDimsRow(i_modelId, i_paramId, i_dimId));
     return IMetaTable<ParamDimsRow>::byKey(keyRow, rowVec);
 }
 
 // get list of rows by model id and parameter id
 vector<ParamDimsRow> ParamDimsTable::byModelIdParamId(int i_modelId, int i_paramId) const
 {
-    const IRowBaseUptr row( new ParamDimsRow(i_modelId, i_paramId, ""));
+    const IRowBaseUptr row( new ParamDimsRow(i_modelId, i_paramId, 0));
     return IMetaTable<ParamDimsRow>::findAll(row, rowVec, ParamDimsRow::modelIdParamIdEqual);
 }

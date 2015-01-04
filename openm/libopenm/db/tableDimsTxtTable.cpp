@@ -19,8 +19,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, dimension name, language id
-        const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, const string & i_name, int i_langId) const;
+        // find row by primary key: model id, table id, dimension id, language id
+        const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const;
 
         // get list of all table rows
         vector<TableDimsTxtRow> rows(void) const { return IMetaTable<TableDimsTxtRow>::rows(rowVec); }
@@ -40,7 +40,7 @@ namespace openm
     static const type_info * typeTableDimsTxtRow[] = { 
         &typeid(decltype(TableDimsTxtRow::modelId)), 
         &typeid(decltype(TableDimsTxtRow::tableId)), 
-        &typeid(decltype(TableDimsTxtRow::name)), 
+        &typeid(decltype(TableDimsTxtRow::dimId)), 
         &typeid(decltype(TableDimsTxtRow::langId)), 
         &typeid(decltype(TableDimsTxtRow::descr)), 
         &typeid(decltype(TableDimsTxtRow::note)) 
@@ -67,7 +67,7 @@ namespace openm
                 dynamic_cast<TableDimsTxtRow *>(i_row)->tableId = (*(int *)i_value);
                 break;
             case 2:
-                dynamic_cast<TableDimsTxtRow *>(i_row)->name = ((const char *)i_value);
+                dynamic_cast<TableDimsTxtRow *>(i_row)->dimId = (*(int *)i_value);
                 break;
             case 3:
                 dynamic_cast<TableDimsTxtRow *>(i_row)->langId = (*(int *)i_value);
@@ -110,7 +110,7 @@ TableDimsTxtTable::TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 
     const IRowAdapter & adp = TableDimsTxtRowAdapter();
     rowVec = IMetaTable<TableDimsTxtRow>::load(
-        "SELECT model_id, table_id, dim_name, lang_id, descr, note FROM table_dims_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
+        "SELECT model_id, table_id, dim_id, lang_id, descr, note FROM table_dims_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
         );
@@ -119,16 +119,16 @@ TableDimsTxtTable::TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 // Table never unloaded
 TableDimsTxtTable::~TableDimsTxtTable(void) throw() { }
 
-// Find row by primary key: model id, table id, dimension name, language id
-const TableDimsTxtRow * TableDimsTxtTable::byKey(int i_modelId, int i_tableId, const string & i_name, int i_langId) const
+// Find row by primary key: model id, table id, dimension id, language id
+const TableDimsTxtRow * TableDimsTxtTable::byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const
 {
-    const IRowBaseUptr keyRow( new TableDimsTxtRow(i_modelId, i_tableId, i_name, i_langId) );
+    const IRowBaseUptr keyRow( new TableDimsTxtRow(i_modelId, i_tableId, i_dimId, i_langId) );
     return IMetaTable<TableDimsTxtRow>::byKey(keyRow, rowVec);
 }
 
 // get list of rows by language
 vector<TableDimsTxtRow> TableDimsTxtTable::byLang(int i_langId) const
 {
-    const IRowBaseUptr row( new TableDimsTxtRow(0, 0, "", i_langId) );
+    const IRowBaseUptr row( new TableDimsTxtRow(0, 0, 0, i_langId) );
     return IMetaTable<TableDimsTxtRow>::findAll(row, rowVec, TableDimsTxtRow::langEqual);
 }

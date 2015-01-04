@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "libopenm/common/omFile.h"
+#include "helper.h"
 #include "log.h"
 
 using namespace openm;

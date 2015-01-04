@@ -9,13 +9,16 @@ using namespace std;
 
 #include "libopenm/omModel.h"
 
-// Model startup method: initialize parameters
-void ModelStartup(openm::IModel * i_model);
+// Model run initialization: read input parameters
+void RunInit(openm::IRunInit * const i_runInit);
+
+// Model startup method: initialize subsample
+void ModelStartup(openm::IModel * const i_model);
 
 // Model event loop: user code
-void RunModel(openm::IModel * i_model);
+void RunModel(openm::IModel * const i_model);
 
 // Model shutdown method: write output tables
-void ModelShutdown(openm::IModel * i_model);
+void ModelShutdown(openm::IModel * const i_model);
 
 #endif  // MODEL_ONE_H

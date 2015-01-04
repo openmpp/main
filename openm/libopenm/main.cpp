@@ -44,7 +44,10 @@ using namespace openm;
     static const bool isMpiUsed = false;
 #endif
 
-/** model startup method: initialize parameters */
+/** model run initialization: read input parameters */
+OM_RUN_INIT_HANDLER RunInitHandler;
+
+/** model startup method: initialize subsample */
 OM_STARTUP_HANDLER ModelStartupHandler;
 
 /** model event loop: user code entry point */
@@ -102,6 +105,12 @@ int main(int argc, char ** argv)
         // copy input parameters to run the model
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<MetaRunHolder> metaStore(runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get()));
+
+        // initilaze model parameters
+        unique_ptr<IRunInit> runInit(RunInitBase::create(
+            isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
+            ));
+        RunInitHandler(runInit.get());
 
         // create and run modeling threads
         vector<future<bool> > futureVec;
@@ -189,8 +198,8 @@ bool modelThreadLoop(
             i_isMpiUsed, i_runId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore
             ));
 
-        // initialize parameters
-        ModelStartupHandler(model.get());
+        // initialize model subsample
+        if (ModelStartupHandler != NULL) ModelStartupHandler(model.get());
 
         // do the modeling
         RunModelHandler(model.get());

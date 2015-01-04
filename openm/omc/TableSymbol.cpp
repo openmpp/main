@@ -476,8 +476,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         assert(es); // logic guarantee
         TableDimsRow tableDims;
         tableDims.tableId = pp_table_id;
-        tableDims.name = "dim" + to_string(dim->index);
-        tableDims.pos = dim->index;
+        tableDims.dimId = dim->index;
+        //tableDims.name = "dim" + to_string(dim->index);
         tableDims.typeId = es->type_id;
         tableDims.isTotal = false;
         tableDims.dimSize = es->pp_size();
@@ -486,7 +486,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         for (auto lang : Symbol::pp_all_languages) {
             TableDimsTxtLangRow tableDimsTxt;
             tableDimsTxt.tableId = pp_table_id;
-            tableDimsTxt.name = "dim" + to_string(dim->index);
+            tableDimsTxt.dimId = dim->index;
             tableDimsTxt.langName = lang->name;
             tableDimsTxt.descr = dim->label(*lang);
             tableDimsTxt.note = dim->note(*lang);
@@ -500,7 +500,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = acc->index;
-        tableAcc.name = "acc" + to_string(acc->index);
+        // tableAcc.name = "acc" + to_string(acc->index);
         tableAcc.expr = acc->pretty_name();
         metaRows.tableAcc.push_back(tableAcc);
 

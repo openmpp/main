@@ -36,6 +36,9 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_outputDir) : outputDir(i_outpu
 void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
 {
     try {
+        // set names for dimension and accumulator colums
+        setDimAccNames(io_metaRows);
+
         // validate input rows: uniqueness and referential integrity
         prepare(io_metaRows);
 
@@ -452,7 +455,7 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // get dimensions list
     int mId = i_metaRows.modelDic.modelId;
-    const ParamDimsRow dRow(mId, paramInfo->id, "");
+    const ParamDimsRow dRow(mId, paramInfo->id, 0);
     auto dimRange = std::equal_range(
         i_metaRows.paramDims.cbegin(), 
         i_metaRows.paramDims.cend(), 
@@ -1043,7 +1046,8 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // table_dims table
-    // unique: model id, table id, dimension name; master key: model id, table id; foreign key: model id, type id;
+    // unique: model id, table id, dimension id; unique: model id, table id, dimension name;
+    // master key: model id, table id; foreign key: model id, type id;
     sort(io_metaRows.tableDims.begin(), io_metaRows.tableDims.end(), TableDimsRow::isKeyLess);
 
     for (vector<TableDimsRow>::const_iterator rowIt = io_metaRows.tableDims.cbegin(); rowIt != io_metaRows.tableDims.cend(); ++rowIt) {
@@ -1069,28 +1073,39 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TableDimsRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableDims.cend() && TableDimsRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException("in table_dims not unique model id: %d, table id: %d and dimension id: %d", rowIt->modelId, rowIt->tableId, rowIt->dimId);
+
+        if (std::any_of(
+            io_metaRows.tableDims.cbegin(),
+            io_metaRows.tableDims.cend(),
+            [rowIt](const TableDimsRow & i_row) -> bool {
+                return
+                    i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.dimId != rowIt->dimId &&
+                    i_row.name == rowIt->name;
+            }
+            ))
             throw DbException("in table_dims not unique model id: %d, table id: %d and dimension name: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
     // table_dims_txt table
-    // unique: model id, table id, dimension name, language; master key: model id, table id, dimension name;
+    // unique: model id, table id, dimension id, language; master key: model id, table id, dimension name;
     sort(io_metaRows.tableDimsTxt.begin(), io_metaRows.tableDimsTxt.end(), TableDimsTxtLangRow::uniqueLangKeyLess);
 
     for (vector<TableDimsTxtLangRow>::const_iterator rowIt = io_metaRows.tableDimsTxt.cbegin(); rowIt != io_metaRows.tableDimsTxt.cend(); ++rowIt) {
 
-        TableDimsRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->name);
+        TableDimsRow mkRow(rowIt->modelId, rowIt->tableId, rowIt->dimId);
         if (!std::binary_search(
             io_metaRows.tableDims.cbegin(),
             io_metaRows.tableDims.cend(),
             mkRow,
             TableDimsRow::isKeyLess
             ))
-            throw DbException("in table_dims_txt invalid model id: %d table id: %d and dimension name: %s: not found in table_dims", rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
+            throw DbException("in table_dims_txt invalid model id: %d table id: %d and dimension id: %s: not found in table_dims", rowIt->modelId, rowIt->tableId, rowIt->dimId);
 
         vector<TableDimsTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableDimsTxt.cend() && TableDimsTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_dims_txt not unique model id: %d, table id: %d, dimension name: %s and language: %s", rowIt->modelId, rowIt->tableId, rowIt->name.c_str(), rowIt->langName.c_str());
+            throw DbException("in table_dims_txt not unique model id: %d, table id: %d, dimension id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->dimId, rowIt->langName.c_str());
     }
 
     // table_acc table
@@ -1387,6 +1402,25 @@ void ModelSqlBuilder::setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow &
     // mark workset as read-write and set workset creation date-time
     io_wsRow.isReadonly = false;
     io_wsRow.updateDateTime = toDateTimeString(theLog->timeStampSuffix());  // get log date-time as string
+}
+
+// setup names for dimension and accumulator columns, i.e.: "dim0" or "acc1"
+void ModelSqlBuilder::setDimAccNames(MetaModelHolder & io_metaRows)
+{
+    // set name for parameter dimension columns if not specified
+    for (ParamDimsRow & dimRow : io_metaRows.paramDims) {
+        if (dimRow.name.empty()) dimRow.name = "dim" + to_string(dimRow.dimId);
+    }
+
+    // set name for parameter dimension columns if not specified
+    for (TableDimsRow & dimRow : io_metaRows.tableDims) {
+        if (dimRow.name.empty()) dimRow.name = "dim" + to_string(dimRow.dimId);
+    }
+    
+    // set name for parameter dimension columns if not specified
+    for (TableAccRow & accRow : io_metaRows.tableAcc) {
+        if (accRow.name.empty()) accRow.name = "acc" + to_string(accRow.accId);
+    }
 }
 
 // collect info for db parameter tables

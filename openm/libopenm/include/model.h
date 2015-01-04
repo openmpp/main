@@ -17,6 +17,7 @@ using namespace std;
 #include "libopenm/omCommon.h"
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
+#include "helper.h"
 #include "dbExec.h"
 #include "dbMetaTable.h"
 #include "dbParameter.h"
@@ -33,11 +34,57 @@ namespace openm
     /** modeling library exception */
     typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
 
+    /** class to initialize model run input parameters */
+    class RunInitBase : public IRunInit
+    {
+    public:
+        ~RunInitBase(void) throw() { }
+
+        /** model run initialzer factory. */
+        static RunInitBase * create(
+            bool i_isMpiUsed,
+            int i_runId,
+            int i_subCount,
+            IDbExec * i_dbExec,
+            IMsgExec * i_msgExec,
+            const MetaRunHolder * i_metaStore
+            );
+
+        /** number of subsamples */
+        int subSampleCount(void) const throw() { return subCount; }
+
+        /** read input parameter values. */
+        void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
+
+    private:
+        bool isMpiUsed;                     // if true then use MPI messaging library to pass the data
+        int modelId;                        // model id in database
+        int runId;                          // model run id
+        int subCount;                       // number of subsamples
+        IDbExec * dbExec;                   // db-connection
+        IMsgExec * msgExec;                 // message passing interface
+        const MetaRunHolder * metaStore;    // metadata tables
+
+        RunInitBase(
+            bool i_isMpiUsed,
+            int i_modelId,
+            int i_runId,
+            int i_subCount,
+            IDbExec * i_dbExec,
+            IMsgExec * i_msgExec,
+            const MetaRunHolder * i_metaStore
+            );
+
+    private:
+        RunInitBase(const RunInitBase & i_runInit);             // = delete;
+        RunInitBase & operator=(const RunInitBase & i_runInit); // = delete;
+    };
+
     /** model base class */
     class ModelBase : public IModel
     {
     public:
-        ~ModelBase(void) throw();
+        ~ModelBase(void) throw() { }
 
         /** model factory: create new model. */
         static ModelBase * create(
@@ -79,9 +126,6 @@ namespace openm
 
         /** update modeling progress */
         int updateProgress(void) { return ++progressCount; /* prototype only */ }
-
-        /** read input parameter values. */
-        void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
 
         /** write output result table: array of accumulator values. */
         void writeOutputTable(const char * i_name, int i_accCount, long long i_size, const double * i_valueArr[]);

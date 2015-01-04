@@ -8,7 +8,6 @@ using namespace openm;
 // model exception default error message
 const char openm::modelUnknownErrorMessage[] = "unknown model error";
 
-static recursive_mutex readMutex;   // mutex to lock read operations
 static vector<int> paramReadVec;    // parameters id where read completed
 
 // model public interface
@@ -51,23 +50,6 @@ ModelBase::ModelBase(
         traceFilePath = metaStore->runOption->strValue(RunOptionsKey::traceFilePath);
         if (traceFilePath.empty()) traceFilePath = metaStore->runOption->strValue(RunOptionsKey::setName) + ".txt";
     }
-
-    // adjust trace log with actual settings specified in model run options
-    theTrace->init(
-        metaStore->runOption->boolValue(RunOptionsKey::traceToConsole),
-        traceFilePath.c_str(),
-        metaStore->runOption->boolValue(RunOptionsKey::traceUseTs),
-        metaStore->runOption->boolValue(RunOptionsKey::traceUsePid),
-        metaStore->runOption->boolValue(RunOptionsKey::traceNoMsgTime) || !metaStore->runOption->isExist(RunOptionsKey::traceNoMsgTime)
-        );
-}
-
-ModelBase::~ModelBase(void) throw()
-{
-    try {
-        // theLog->logMsg("Model dtor");
-    }
-    catch (...) { }
 }
 
 // create new model
@@ -168,53 +150,6 @@ void ModelBase::shutdownOnFail(bool i_isMpiUsed, int i_runId, IDbExec * i_dbExec
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(i_runId)
             );
-    }
-}
-
-/**
-* read input parameter values.
-*
-* @param[in]     i_name      parameter name
-* @param[in]     i_type      parameter type
-* @param[in]     i_size      parameter size (number of parameter values)
-* @param[in,out] io_valueArr array to return parameter values, size must be =i_size
-*/
-void ModelBase::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
-{
-    if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
-
-    try {
-        // parameters shared between threads: read only in one thread
-        lock_guard<recursive_mutex> lck(readMutex);
-
-        // get parameter id by name
-        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
-        if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
-
-        // check if parameter read already done
-        int paramId = paramRow->paramId;
-        bool isDone = std::any_of(
-            paramReadVec.cbegin(), 
-            paramReadVec.cend(), 
-            [paramId](const int i_id) -> bool { return paramId == i_id; }
-        );
-        if (isDone) return;     // parameter read already done
-
-        // read parameter from db
-        if (!isMpiUsed || msgExec->isRoot()) {
-            unique_ptr<IParameterReader> reader(
-                IParameterReader::create(modelId, runId, i_name, dbExec, metaStore)
-                );
-            reader->readParameter(dbExec, i_type, i_size, io_valueArr);
-        }
-
-        // broadcast parameter to all modeling processes
-        if (isMpiUsed) msgExec->bcast(msgExec->rootRank, i_type, i_size, io_valueArr);
-
-        paramReadVec.push_back(paramId);    // parameter read completed
-    }
-    catch (exception & ex) {
-        throw ModelException("Failed to read input parameter: %s. %s", i_name, ex.what());
     }
 }
 

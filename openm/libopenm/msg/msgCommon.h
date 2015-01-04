@@ -16,13 +16,11 @@
 #include <vector>
 using namespace std;
 
+#include "helper.h"
 #include "msg.h"
 
 namespace openm
 {
-    /** mutex to lock message passing */
-    extern recursive_mutex msgMutex;
-
     /** public interface for message sender */
     class IMsgSend
     {

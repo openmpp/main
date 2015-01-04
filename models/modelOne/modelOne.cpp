@@ -19,7 +19,7 @@ static thread_local double salarySexSum[salarySize][sexSize];
 static thread_local double salarySexCount[salarySize][sexSize];
 
 // Model event loop: user code
-void RunModel(IModel * i_model)
+void RunModel(IModel * const i_model)
 {
     theLog->logMsg("Running Simulation");
 
@@ -41,18 +41,24 @@ void RunModel(IModel * i_model)
     theTrace->logMsg("Event loop completed");
 }
 
-// Model startup method: initialize parameters
-void ModelStartup(IModel * i_model)
+// Initialize model run: read parameters
+void RunInit(IRunInit * const i_runInit)
 {
     // load model parameters
     theLog->logMsg("Reading Parameters");
-    i_model->readParameter("StartingSeed", typeid(int), 1, &startSeed);
-    i_model->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
-    i_model->readParameter("salaryAge", typeid(int),  salarySize * ageSize, salaryAge);
+    i_runInit->readParameter("StartingSeed", typeid(int), 1, &startSeed);
+    i_runInit->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
+    i_runInit->readParameter("salaryAge", typeid(int), salarySize * ageSize, salaryAge);
+}
+
+// Model startup method: initialize subsample
+void ModelStartup(IModel * const i_model)
+{
+    theTrace->logMsg("Start model subsample");
 }
 
 // Model shutdown method: write output tables
-void ModelShutdown(openm::IModel * i_model)
+void ModelShutdown(IModel * const i_model)
 {
     // write output result tables: salarySex sub-sample
     theLog->logMsg("Writing Output Tables");

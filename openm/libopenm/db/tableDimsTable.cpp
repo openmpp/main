@@ -19,8 +19,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, dimension name
-        const TableDimsRow * byKey(int i_modelId, int i_tableId, const string & i_name) const;
+        // find row by primary key: model id, table id, dimension id
+        const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const;
 
         // get list of all table rows
         vector<TableDimsRow> rows(void) const { return IMetaTable<TableDimsRow>::rows(rowVec); }
@@ -40,8 +40,8 @@ namespace openm
     static const type_info * typeTableDimsRow[] = { 
         &typeid(decltype(TableDimsRow::modelId)), 
         &typeid(decltype(TableDimsRow::tableId)), 
-        &typeid(decltype(TableDimsRow::name)), 
-        &typeid(decltype(TableDimsRow::pos)), 
+        &typeid(decltype(TableDimsRow::dimId)),
+        &typeid(decltype(TableDimsRow::name)),
         &typeid(decltype(TableDimsRow::typeId)), 
         &typeid(decltype(TableDimsRow::isTotal)),
         &typeid(decltype(TableDimsRow::dimSize))
@@ -68,10 +68,10 @@ namespace openm
                 dynamic_cast<TableDimsRow *>(i_row)->tableId = (*(int *)i_value);
                 break;
             case 2:
-                dynamic_cast<TableDimsRow *>(i_row)->name = ((const char *)i_value);
+                dynamic_cast<TableDimsRow *>(i_row)->dimId = (*(int *)i_value);
                 break;
             case 3:
-                dynamic_cast<TableDimsRow *>(i_row)->pos = (*(int *)i_value);
+                dynamic_cast<TableDimsRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 4:
                 dynamic_cast<TableDimsRow *>(i_row)->typeId = (*(int *)i_value);
@@ -110,7 +110,7 @@ TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TableDimsRowAdapter();
     rowVec = IMetaTable<TableDimsRow>::load(
         "SELECT" \
-        " model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size" \
+        " model_id, table_id, dim_id, dim_name, mod_type_id, is_total, dim_size" \
         " FROM table_dims" + 
         ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
@@ -122,16 +122,16 @@ TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 TableDimsTable::~TableDimsTable(void) throw() { }
 
-// Find row by primary key: model id, table id, dimension name
-const TableDimsRow * TableDimsTable::byKey(int i_modelId, int i_tableId, const string & i_name) const
+// Find row by primary key: model id, table id, dimension id
+const TableDimsRow * TableDimsTable::byKey(int i_modelId, int i_tableId, int i_dimId) const
 {
-    const IRowBaseUptr keyRow( new TableDimsRow(i_modelId, i_tableId, i_name) );
+    const IRowBaseUptr keyRow( new TableDimsRow(i_modelId, i_tableId, i_dimId) );
     return IMetaTable<TableDimsRow>::byKey(keyRow, rowVec);
 }
 
 // get list of rows by model id and table id
 vector<TableDimsRow> TableDimsTable::byModelIdTableId(int i_modelId, int i_tableId) const
 {
-    const IRowBaseUptr row( new TableDimsRow(i_modelId, i_tableId, ""));
+    const IRowBaseUptr row(new TableDimsRow(i_modelId, i_tableId, 0));
     return IMetaTable<TableDimsRow>::findAll(row, rowVec, TableDimsRow::modelIdTableIdEqual);
 }

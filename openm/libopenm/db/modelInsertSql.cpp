@@ -242,20 +242,20 @@ template<> void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow & i_r
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) parameter dimension name");
     if (i_row.name.length() > 8) throw DbException("invalid (too long) parameter dimension name: %s", i_row.name.c_str());
     
-    if (i_row.pos < 0) throw DbException("invalid (negative) parameter dimension %s position: %d", i_row.name.c_str(), i_row.pos);
+    if (i_row.dimId < 0) throw DbException("invalid (negative) parameter dimension %s id: %d", i_row.name.c_str(), i_row.dimId);
     if (i_row.typeId < 0) throw DbException("invalid (negative) parameter dimension %s type id: %d", i_row.name.c_str(), i_row.typeId);
 
     // make sql
     io_wr.outFs <<
         "INSERT INTO parameter_dims" \
-        " (model_id, parameter_id, dim_name, dim_pos, mod_type_id)" \
+        " (model_id, parameter_id, dim_id, dim_name, mod_type_id)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.paramId << ", ";
+        i_row.paramId << ", " <<
+        i_row.dimId << ", ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.name, true);
     io_wr.outFs <<
-        i_row.pos << ", " <<
         i_row.typeId <<
         " FROM id_lst IL WHERE IL.id_key = 'model_id';\n";
     io_wr.throwOnFail();
@@ -334,20 +334,20 @@ template<> void ModelInsertSql::insertSql<TableDimsRow>(const TableDimsRow & i_r
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) output table dimension name");
     if (i_row.name.length() > 8) throw DbException("invalid (too long) output table dimension name: %s", i_row.name.c_str());
     
-    if (i_row.pos < 0) throw DbException("invalid (negative) output table dimension %s position: %d", i_row.name.c_str(), i_row.pos);
+    if (i_row.dimId < 0) throw DbException("invalid (negative) output table dimension %s id: %d", i_row.name.c_str(), i_row.dimId);
     if (i_row.typeId < 0) throw DbException("invalid (negative) output table dimension %s type id: %d", i_row.name.c_str(), i_row.typeId);
     if (i_row.dimSize <= 0) throw DbException("invalid output table dimension %s size: %d", i_row.name.c_str(), i_row.dimSize);
 
     // make sql
     io_wr.outFs <<
-        "INSERT INTO table_dims (model_id, table_id, dim_name, dim_pos, mod_type_id, is_total, dim_size)" \
+        "INSERT INTO table_dims (model_id, table_id, dim_id, dim_name, mod_type_id, is_total, dim_size)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.tableId << ", ";
+        i_row.tableId << ", " <<
+        i_row.dimId << ", ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.name, true);
     io_wr.outFs <<
-        i_row.pos << ", " <<
         i_row.typeId << ", " <<
         (i_row.isTotal ? "1, " : "0, ") <<
         i_row.dimSize <<
@@ -361,27 +361,25 @@ template<> void ModelInsertSql::insertSql<TableDimsTxtLangRow>(const TableDimsTx
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_row.tableId);
-
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) output table dimension name");
-    if (i_row.name.length() > 8) throw DbException("invalid (too long) output table dimension name: %s", i_row.name.c_str());
+    if (i_row.dimId < 0) throw DbException("invalid (negative) output table dimension id: %d", i_row.dimId);
 
     if (i_row.langName.empty() || i_row.langName.length() < 1) 
-        throw DbException("invalid (empty) language name, output table id: %d, dimension name: %s", i_row.tableId, i_row.name.c_str());
+        throw DbException("invalid (empty) language name, output table id: %d, dimension id: %d", i_row.tableId, i_row.dimId);
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) 
-        throw DbException("invalid (empty) description, output table id: %d, dimension name: %s", i_row.tableId, i_row.name.c_str());
+        throw DbException("invalid (empty) description, output table id: %d, dimension id: %d", i_row.tableId, i_row.dimId);
 
     if (i_row.descr.length() > 255 || i_row.note.length() > 32000) 
-        throw DbException("invalid (too long) description or notes, output table id: %d, dimension name: %s", i_row.tableId, i_row.name.c_str());
+        throw DbException("invalid (too long) description or notes, output table id: %d, dimension id: %d", i_row.tableId, i_row.dimId);
 
     // make sql
     io_wr.outFs <<
-        "INSERT INTO table_dims_txt (model_id, table_id, dim_name, lang_id, descr, note)" \
+        "INSERT INTO table_dims_txt (model_id, table_id, dim_id, lang_id, descr, note)" \
         " SELECT" \
         " IL.id_value, " <<
-        i_row.tableId << ", ";
+        i_row.tableId << ", " <<
+        i_row.dimId << ", ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.name, true);
     io_wr.write(" (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
     io_wr.writeTrimQuoted(i_row.langName);
     io_wr.write("), ");

@@ -248,9 +248,9 @@ WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 CREATE VIEW ParameterDimensionDic AS
 SELECT
   M.parameter_id AS "ParameterID", 
-  D.dim_pos      AS "DisplayPosition", 
+  D.dim_id       AS "DisplayPosition", 
   D.mod_type_id  AS "TypeID", 
-  D.dim_pos      AS "Position"
+  D.dim_id       AS "Position"
 FROM parameter_dic M
 INNER JOIN parameter_dims D ON (D.model_id = M.model_id AND D.parameter_id = M.parameter_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
@@ -321,7 +321,7 @@ AND M.is_user <> 0;
 CREATE VIEW TableClassDic AS
 SELECT
   M.table_id    AS "TableID", 
-  M.dim_pos     AS "Position",
+  M.dim_id      AS "Position",
   TD.table_name || '.' || M.dim_name AS "Name", 
   T.descr       AS "Description",
   T.note        AS "Note",
@@ -330,7 +330,7 @@ SELECT
   T.lang_id     AS "LanguageID" 
 FROM table_dims M
 INNER JOIN table_dic TD ON (TD.model_id = M.model_id AND TD.table_id = M.table_id)
-INNER JOIN table_dims_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id AND T.dim_name = M.dim_name)
+INNER JOIN table_dims_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id AND T.dim_id = M.dim_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
 CREATE VIEW TableExpressionDic AS

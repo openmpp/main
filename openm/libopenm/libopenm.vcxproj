@@ -152,6 +152,7 @@
     <ClInclude Include="include\dbMetaTable.h" />
     <ClInclude Include="include\dbOutputTable.h" />
     <ClInclude Include="include\dbParameter.h" />
+    <ClInclude Include="include\helper.h" />
     <ClInclude Include="include\metaRunHolder.h" />
     <ClInclude Include="include\model.h" />
     <ClInclude Include="include\msg.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\modelBase.cpp" />
     <ClCompile Include="model\runController.cpp" />
+    <ClCompile Include="model\runInit.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />
     <ClCompile Include="msg\msgMpiExec.cpp" />

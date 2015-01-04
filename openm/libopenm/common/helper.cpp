@@ -3,6 +3,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "libopenm/common/omHelper.h"
+#include "helper.h"
 
 #ifdef _WIN32
     #define strcmpNoCase    stricmp
@@ -14,6 +15,9 @@
 
 // helper exception default error message
 const char openm:: helperUnknownErrorMessage[] = "unknown error in helper method";
+
+// mutex to lock library operations
+recursive_mutex openm::rtMutex;
 
 // convert string to lower case
 void openm::toLower(string & io_str)
