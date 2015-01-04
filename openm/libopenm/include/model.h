@@ -102,6 +102,7 @@ namespace openm
             bool i_isMpiUsed,
             int i_runId,
             int i_subCount,
+            int i_threadCount,
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore

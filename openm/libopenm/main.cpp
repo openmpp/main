@@ -146,7 +146,7 @@ int main(int argc, char ** argv)
 
         // final cleanup
         ModelBase::shutdown(
-            isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
+            isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, runCtrl.threadCount, dbExec.get(), msgExec.get(), metaStore.get()
             );
     }
     catch(HelperException & ex) {

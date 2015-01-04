@@ -8,7 +8,8 @@ using namespace openm;
 // model exception default error message
 const char openm::modelUnknownErrorMessage[] = "unknown model error";
 
-static vector<int> paramReadVec;    // parameters id where read completed
+// temporary fix: work-in-progress
+#define OM_MT_DEBUG
 
 // model public interface
 IModel::~IModel() throw() { }
@@ -83,11 +84,17 @@ void ModelBase::shutdown(
     bool i_isMpiUsed,
     int i_runId,
     int i_subCount,
+    int i_threadCount,
     IDbExec * i_dbExec,
     IMsgExec * i_msgExec,
     const MetaRunHolder * i_metaStore
     )
 {
+    // temporary fix: work-in-progress
+#ifdef OM_MT_DEBUG
+    lock_guard<recursive_mutex> lck(rtMutex);
+#endif
+
     // find model in metadata tables
     const ModelDicRow * mdRow = i_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
     if (mdRow == NULL) throw ModelException("model not found in the database");
@@ -115,15 +122,16 @@ void ModelBase::shutdown(
     if (!i_isMpiUsed) {
         i_dbExec->beginTransaction();
         i_dbExec->update(
-            "UPDATE run_lst SET sub_completed = sub_completed + 1," \
+            "UPDATE run_lst SET sub_completed = sub_completed + " + to_string(i_threadCount) + ", " +
             " status = 'p'," \
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(i_runId)
             );
-        isAll = i_subCount == i_dbExec->selectToInt(
+        int nSub = i_dbExec->selectToInt(
             "SELECT sub_completed FROM run_lst WHERE run_id = " + to_string(i_runId), -1
             );
         i_dbExec->commit();
+        isAll = nSub == i_subCount;
     }
 
     // if all subsamples saved in database then calculate output tables aggregated values
@@ -145,8 +153,7 @@ void ModelBase::shutdownOnFail(bool i_isMpiUsed, int i_runId, IDbExec * i_dbExec
 {
     if (!i_isMpiUsed || i_msgExec->isRoot()) {
         i_dbExec->update(
-            "UPDATE run_lst SET sub_completed = sub_count," \
-            " status = 'e'," \
+            "UPDATE run_lst SET status = 'e'," \
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(i_runId)
             );
@@ -183,6 +190,12 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
     if (i_valueArr == NULL) throw ModelException("invalid (empty) value array for output table %s", i_name);
 
     try {
+        // temporary fix: work-in-progress
+#ifdef OM_MT_DEBUG
+        lock_guard<recursive_mutex> lck(rtMutex);
+#endif
+        // end of temporary fix
+
         if (!isMpiUsed || msgExec->isRoot()) {  // write subsample into db: subsample number =0 or any if no MPI used
 
             unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
