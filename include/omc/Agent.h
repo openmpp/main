@@ -342,8 +342,8 @@ public:
         }
     }
 
-    static forward_list<A *> *zombies;
-    static forward_list<A *> *available;
+    static thread_local forward_list<A *> *zombies;
+    static thread_local forward_list<A *> *available;
 
 };
 
@@ -353,12 +353,12 @@ public:
 */
 
 template<typename A>
-forward_list<A *> *Agent<A>::zombies;
+thread_local forward_list<A *> *Agent<A>::zombies;
 
 /**
 * Agent available list (definition)
 */
 
 template<typename A>
-forward_list<A *> *Agent<A>::available;
+thread_local forward_list<A *> *Agent<A>::available;
 
