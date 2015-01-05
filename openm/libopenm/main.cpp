@@ -106,8 +106,8 @@ int main(int argc, char ** argv)
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<MetaRunHolder> metaStore(runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get()));
 
-        // initilaze model parameters
-        unique_ptr<IRunInit> runInit(RunInitBase::create(
+        // initilaze model run: read input parameters
+        unique_ptr<RunInitBase> runInit(RunInitBase::create(
             isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
             ));
         RunInitHandler(runInit.get());
@@ -130,24 +130,20 @@ int main(int argc, char ** argv)
         }
 
         // get results from modeling threads
-        bool isAnyOk = false;
-        bool isAnyFailed = false;
+        int nSuccess = 0;
         for (int nTh = 0; nTh < runCtrl.threadCount; nTh++) {
             bool isOk = futureVec[nTh].get();
-            isAnyOk = isAnyOk || isOk;
-            isAnyFailed = isAnyFailed || !isOk;
+            if (isOk) nSuccess++;
         }
 
         // mark run as failure and exit with error
-        if (isAnyFailed) {
-            ModelBase::shutdownOnFail(isMpiUsed, runCtrl.runId, dbExec.get(), msgExec.get());
+        if (nSuccess != runCtrl.threadCount) {
+            runInit->shutdownOnFail();
             throw ModelException("modeling FAILED");
         }
 
         // final cleanup
-        ModelBase::shutdown(
-            isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, runCtrl.threadCount, dbExec.get(), msgExec.get(), metaStore.get()
-            );
+        runInit->shutdown(runCtrl.threadCount);
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, "Helper error");

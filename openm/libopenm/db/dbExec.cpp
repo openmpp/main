@@ -37,6 +37,7 @@ void DbValue::clear(void)
 */
 IDbExec * IDbExec::create(const string & i_connectionStr)
 {
+    lock_guard<recursive_mutex> lck(rtMutex);
     return new DbExecSqlite(i_connectionStr);
 }
 
@@ -49,11 +50,11 @@ IDbExec * IDbExec::create(const string & i_connectionStr)
 *
 * @param[in]   i_connectionStr database connection string.
 */
-DbExecBase::DbExecBase(const string & i_connectionStr) :
-    isTrxActive(false)
+DbExecBase::DbExecBase(const string & i_connectionStr)
 {
     try {
-        // theLog->logSql("Open db connection");
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         connProps = parseConnectionStr(i_connectionStr);
     }
     catch (DbException & ex) {
@@ -66,13 +67,48 @@ DbExecBase::DbExecBase(const string & i_connectionStr) :
     }
 }
 
-/** close db-connection and cleanup connection resources. */
-DbExecBase::~DbExecBase(void) throw()
+/** return true in transaction scope. */
+bool DbExecBase::isTransaction(void)
 {
     try {
-        // theLog->logSql("Close db connection");
+        lock_guard<recursive_mutex> lck(rtMutex);
+        return
+            trxThreadId != thread::id();
     }
-    catch (...) { }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+/** return true if other thread have active transaction. */
+bool DbExecBase::isTransactionNonOwn(void)
+{
+    lock_guard<recursive_mutex> lck(rtMutex);
+    return
+        trxThreadId != thread::id() && trxThreadId != this_thread::get_id();
+}
+
+/** set transaction ownership status. */
+void DbExecBase::setTransactionActive(void)
+{
+    lock_guard<recursive_mutex> lck(rtMutex);
+    if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
+
+    trxThreadId = this_thread::get_id();
+}
+
+/** release transaction: clean active transaction status. */
+void DbExecBase::releaseTransaction(void)
+{
+    lock_guard<recursive_mutex> lck(rtMutex);
+    if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
+
+    trxThreadId = thread::id();
 }
 
 /** return string value of connection property by key (case neutral) or empty "" string if key not found. */

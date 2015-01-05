@@ -202,7 +202,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
     tv.push_back(&typeid(double));  // set parameters type: accumulator value
     
     // begin update transaction
-    i_dbExec->beginTransaction();
+    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
     // prepare statement
     {
@@ -264,7 +264,8 @@ void OutputTableWriter::writeAllExpressions(IDbExec * i_dbExec)
 {
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
-    i_dbExec->beginTransaction();
+    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+
     for (int nExpr = 0; nExpr < exprCount; nExpr++) {
         writeExpression(i_dbExec, nExpr);
     }

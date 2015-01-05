@@ -37,6 +37,8 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
     exit_guard<DbExecSqlite> onExit(this, &DbExecSqlite::cleanup);
 
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         validateConnectionProps();  // exception if connection properties is invalid
 
         // if DeleteExisting=true then delete existing file
@@ -79,6 +81,7 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
 DbExecSqlite::~DbExecSqlite(void) throw()
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
         cleanup();
     }
     catch (...) { }
@@ -88,8 +91,11 @@ DbExecSqlite::~DbExecSqlite(void) throw()
 void DbExecSqlite::cleanup(void) throw()
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         releaseStatement();
-        isTrxActive = false;
+        try { releaseTransaction(); }
+        catch (...) { }
 
         if (theDb != NULL) sqlite3_close(theDb);
         theDb = NULL;
@@ -114,6 +120,8 @@ void DbExecSqlite::cleanup(void) throw()
 void DbExecSqlite::releaseStatement(void) throw()
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theStmt != NULL) sqlite3_finalize(theStmt);
         theStmt = NULL;
     }
@@ -244,8 +252,11 @@ template <typename TCvt>
 TCvt DbExecSqlite::selectTo(const string & i_sql, const TCvt & i_default, TCvt (DbExecSqlite::*ToRetType)(int))
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
         theLog->logSql(i_sql.c_str());
 
         // release statement on exit
@@ -285,8 +296,11 @@ TCvt DbExecSqlite::selectTo(const string & i_sql, const TCvt & i_default, TCvt (
 vector<string> DbExecSqlite::selectRowStr(const string & i_sql)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
         theLog->logSql(i_sql.c_str());
 
         // release statement on exit
@@ -333,8 +347,11 @@ vector<string> DbExecSqlite::selectRowStr(const string & i_sql)
 IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter & i_adapter)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
         theLog->logSql(i_sql.c_str());
 
         // release statement on exit
@@ -488,8 +505,11 @@ IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter 
 long long DbExecSqlite::selectColumn(const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
         theLog->logSql(i_sql.c_str());
 
         // validate parameters: at least one value expected
@@ -579,8 +599,11 @@ int rc = SQLITE_ROW;
 long long DbExecSqlite::update(const string & i_sql)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
         theLog->logSql(i_sql.c_str());
 
         // execute sql and ignore any results
@@ -598,13 +621,15 @@ long long DbExecSqlite::update(const string & i_sql)
     }
 }
 
-/** begin transaction, throw exception if transaction already active or statement is active (not released). */
+/** begin transaction, throw exception if transaction already active or statement is active. */
 void DbExecSqlite::beginTransaction(void)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
-        if (isTrxActive) throw DbException("db transaction is already active");
+        if (isTransaction()) throw DbException("db transaction is already active");
 
         const char * sql = "BEGIN TRANSACTION";
         theLog->logSql(sql);
@@ -612,7 +637,7 @@ void DbExecSqlite::beginTransaction(void)
         // execute sql and ignore any results
         if (sqlite3_exec(theDb, sql, NULL, NULL, NULL) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
 
-        isTrxActive = true;
+        setTransactionActive();     // transaction is active
         return;
     }
     catch (DbException & ex) {
@@ -625,14 +650,34 @@ void DbExecSqlite::beginTransaction(void)
     }
 }
 
+/** begin transaction in multi-threaded environment, throw exception if transaction already active or statement is active. */
+unique_lock<recursive_mutex> DbExecSqlite::beginTransactionThreaded(void)
+{
+    try {
+        unique_lock<recursive_mutex> lck(rtMutex);
+        beginTransaction();
+        return lck;
+    }
+    catch (DbException & /* ex */) {
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
 /** commit transaction, does nothing if no active transaction, throw exception if statement is active. */
 void DbExecSqlite::commit(void)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
 
-        if (!isTrxActive) return;   // no active transaction - nothing to do
+        if (!isTransaction()) return;   // no active transaction - nothing to do
 
         const char * sql = "COMMIT";
         theLog->logSql(sql);
@@ -640,7 +685,7 @@ void DbExecSqlite::commit(void)
         // execute sql and ignore any results
         if (sqlite3_exec(theDb, sql, NULL, NULL, NULL) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
 
-        isTrxActive = false;
+        releaseTransaction();           // release active transaction
         return;
     }
     catch (DbException & ex) {
@@ -657,10 +702,13 @@ void DbExecSqlite::commit(void)
 void DbExecSqlite::rollback(void)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
-        
-        if (!isTrxActive) return;   // no active transaction - nothing to do
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
+
+        if (!isTransaction()) return;   // no active transaction - nothing to do
 
         const char * sql = "ROLLBACK";
         theLog->logSql(sql);
@@ -668,7 +716,7 @@ void DbExecSqlite::rollback(void)
         // execute sql and ignore any results
         if (sqlite3_exec(theDb, sql, NULL, NULL, NULL) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
 
-        isTrxActive = false;
+        releaseTransaction();           // release active transaction
         return;
     }
     catch (DbException & ex) {
@@ -679,32 +727,6 @@ void DbExecSqlite::rollback(void)
         theLog->logErr(ex, OM_FILE_LINE);
         throw DbException(ex.what());
     }
-}
-
-/**
-* make sql statement to create table if not exists.
-*
-* @param[in] i_tableName     table name to create
-* @param[in] i_tableBodySql  table body definition sql: columns, keys, etc.
-*
-* @return  string with create table statment
-*/
-string DbExecSqlite::makeSqlCreateTableIfNotExist(const string & i_tableName, const string & i_tableBodySql) const
-{
-    return "CREATE TABLE IF NOT EXISTS " + i_tableName + " " + i_tableBodySql;
-}
-
-/**
-* make sql statement to create view if not exists.
-*
-* @param[in] i_viewName     view name to create
-* @param[in] i_viewBodySql  view body definition sql
-*
-* @return  string with create view statment
-*/
-string DbExecSqlite::makeSqlCreateViewIfNotExist(const string & i_viewName, const string & i_viewBodySql) const
-{
-    return "CREATE VIEW IF NOT EXISTS " + i_viewName + " AS " + i_viewBodySql;
 }
 
 /**
@@ -729,8 +751,11 @@ string DbExecSqlite::makeSqlCreateViewIfNotExist(const string & i_viewName, cons
 void DbExecSqlite::createStatement(const string & i_sql, int i_paramCount, const type_info ** i_typeArr)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
         theLog->logSql(i_sql.c_str());
 
         // release statement on exit
@@ -817,8 +842,11 @@ void DbExecSqlite::createStatement(const string & i_sql, int i_paramCount, const
 void DbExecSqlite::executeStatement(int i_paramCount, const DbValue * i_valueArr)
 {
     try {
+        lock_guard<recursive_mutex> lck(rtMutex);
+
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt == NULL) throw DbException("db statement not created");
+        if (isTransactionNonOwn()) throw DbException("db transaction active on other thread");
 
         // validate parameters
         if (bindFncVec.size() != (size_t)i_paramCount || i_valueArr == NULL) throw DbException("invalid number of parameter values or data is nullptr");

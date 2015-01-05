@@ -295,7 +295,7 @@ void RunController::createRunSubsample(
     int modelId = mdRow->modelId;
 
     // update in transaction scope
-    i_dbExec->beginTransaction();
+    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
     // create new run:
     // it must be done for root MPI process or if MPI not used and run id not specified

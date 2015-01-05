@@ -53,8 +53,11 @@ namespace openm
         /** execute sql statement (update, insert, delete, create, etc). */
         long long update(const string & i_sql);
 
-        /** begin transaction, throw exception if transaction already active or statement is active (not released). */
+        /** begin transaction, throw exception if transaction already active or statement is active. */
         void beginTransaction(void);
+
+        /** begin transaction in multi-threaded environment, throw exception if transaction already active or statement is active. */
+        unique_lock<recursive_mutex> beginTransactionThreaded(void);
 
         /** commit transaction, does nothing if no active transaction, throw exception if statement is active. */
         void commit(void);
@@ -63,7 +66,7 @@ namespace openm
         void rollback(void);
 
         /** return true in transaction scope. */
-        bool isTransaction(void) { return isTrxActive; }
+        bool isTransaction(void) { return DbExecBase::isTransaction(); }
 
         /** create new statement with specified parameters. */
         void createStatement(const string & i_sql, int i_paramCount, const type_info ** i_typeArr);
@@ -73,12 +76,6 @@ namespace openm
 
         /** execute statement with parameters. */
         void executeStatement(int i_paramCount, const DbValue * i_valueArr);
-
-        /** make sql statement to create table if not exists. */
-        string makeSqlCreateTableIfNotExist(const string & i_tableName, const string & i_tableBodySql) const;
-
-        /** make sql statement to create view if not exists. */
-        string makeSqlCreateViewIfNotExist(const string & i_viewName, const string & i_viewBodySql) const;
 
     private:
         sqlite3 * theDb;        // sqlite db

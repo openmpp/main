@@ -34,7 +34,7 @@ namespace openm
     /** modeling library exception */
     typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
 
-    /** class to initialize model run input parameters */
+    /** model run init and shutdown: read input parameters and write output values */
     class RunInitBase : public IRunInit
     {
     public:
@@ -44,7 +44,7 @@ namespace openm
         static RunInitBase * create(
             bool i_isMpiUsed,
             int i_runId,
-            int i_subCount,
+            int i_subSampleCount,
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
@@ -55,6 +55,12 @@ namespace openm
 
         /** read input parameter values. */
         void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
+        
+        /** model shutdown: save results and cleanup resources. */
+        void shutdown(int i_threadCount);
+
+        /** model shutdown on error: mark run as failure. */
+        void shutdownOnFail(void);
 
     private:
         bool isMpiUsed;                     // if true then use MPI messaging library to pass the data
@@ -74,6 +80,12 @@ namespace openm
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
             );
+
+        /** write output tables aggregated values into database */
+        void writeOutputValues(void);
+
+        /** receive all output tables subsamples and write into database */
+        void receiveSubSamples(void);
 
     private:
         RunInitBase(const RunInitBase & i_runInit);             // = delete;
@@ -95,25 +107,6 @@ namespace openm
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec, 
             const MetaRunHolder * i_metaStore 
-            );
-
-        /** model shutdown: save results and cleanup resources. */
-        static void shutdown(
-            bool i_isMpiUsed,
-            int i_runId,
-            int i_subCount,
-            int i_threadCount,
-            IDbExec * i_dbExec,
-            IMsgExec * i_msgExec,
-            const MetaRunHolder * i_metaStore
-            );
-
-        /** model shutdown on error: mark run as failure. */
-        static void shutdownOnFail(
-            bool i_isMpiUsed, 
-            int i_runId, 
-            IDbExec * i_dbExec, 
-            IMsgExec * i_msgExec
             );
 
         /** number of subsamples */
@@ -151,27 +144,6 @@ namespace openm
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
             );
-
-    private:
-        /** write output tables aggregated values into database */
-        static void writeOutputValues(
-            int i_modelId, 
-            int i_runId, 
-            int i_subCount, 
-            IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore
-            );
-
-        /** receive all output tables subsamples and write into database */
-        static void receiveSubSamples(
-            int i_modelId,
-            int i_runId,
-            int i_subCount,
-            IDbExec * i_dbExec,
-            IMsgExec * i_msgExec,
-            const MetaRunHolder * i_metaStore
-            );
-
     private:
         ModelBase(const ModelBase & i_model);               // = delete;
         ModelBase & operator=(const ModelBase & i_model);   // = delete;

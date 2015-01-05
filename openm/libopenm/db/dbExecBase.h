@@ -22,15 +22,27 @@ namespace openm
         DbExecBase(const string & i_connectionStr);
 
         /** close db-connection and cleanup connection resources. */
-        ~DbExecBase(void) throw();
+        ~DbExecBase(void) throw() { }
+
+        /** return true in transaction scope. */
+        bool isTransaction(void);
 
     protected:
-
         /** if true then transaction is active */
-        bool isTrxActive;
+        thread::id trxThreadId;
 
         /** connection properties as key+value string pairs (case neutral). */
         NoCaseMap connProps;
+
+    protected:
+        /** return true if other thread have active transaction. */
+        bool isTransactionNonOwn(void);
+
+        /** set transaction ownership status. */
+        void setTransactionActive(void);
+
+        /** release transaction: clean active transaction status. */
+        void releaseTransaction(void);
 
         /** return string value of connection property by key (case neutral) or empty "" string if key not found. */
         string strConnProperty(const string & i_key);

@@ -10,6 +10,7 @@
 
 #include "libopenm/omCommon.h"
 #include "libopenm/db/dbCommon.h"
+#include "helper.h"
 
 namespace openm
 {
@@ -122,6 +123,9 @@ namespace openm
         /** begin transaction. */
         virtual void beginTransaction(void) = 0;
 
+        /** begin transaction in multi-threaded environment. */
+        virtual unique_lock<recursive_mutex> beginTransactionThreaded(void) = 0;
+
         /** commit transaction, does nothing if no active transaction. */
         virtual void commit(void) = 0;
 
@@ -189,32 +193,6 @@ namespace openm
          * @endcode
          */
         virtual void executeStatement(int i_paramCount, const DbValue * i_valueArr) = 0;
-
-        /**
-         * make sql statement to create table if not exists.
-         *
-         * @param[in] i_tableName     table name to create
-         * @param[in] i_tableBodySql  table body definition sql: columns, keys, etc.
-         *
-         * @return  string with create table statment (db-vendor specific)
-         *
-         * it does return db-vendor specific sql to create table if not already exists, for example: \n
-         *      CREATE TABLE IF NOT EXISTS tableName (...column definition and other table body sql...)
-         */
-        virtual string makeSqlCreateTableIfNotExist(const string & i_tableName, const string & i_tableBodySql) const = 0;
-
-        /**
-         * make sql statement to create view if not exists.
-         *
-         * @param[in] i_viewName      view name to create
-         * @param[in] i_viewBodySql   view body definition sql
-         *
-         * @return  string with create view statment (db-vendor specific)
-         *
-         * it does return db-vendor specific sql to create view if not already exists, for example: \n
-         *      CREATE VIEW IF NOT EXISTS viewName AS ...select or other view body deifinition sql...
-         */
-        virtual string makeSqlCreateViewIfNotExist(const string & i_viewName, const string & i_viewBodySql) const = 0;
     };
 }
 

@@ -8,11 +8,6 @@
 #ifndef DB_COMMON_H
 #define DB_COMMON_H
 
-#include <algorithm>
-#include <memory>
-#include <vector>
-#include <string>
-#include <stdexcept>
 using namespace std;
 
 #include "libopenm/common/omHelper.h"
