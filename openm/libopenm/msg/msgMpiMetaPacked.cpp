@@ -233,8 +233,8 @@ namespace openm
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->paramId)>(val->paramId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->dimId)>(val->dimId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack<decltype(val->pos)>(val->pos, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->typeId)>(val->typeId, i_packedSize, io_packedData, io_packPos);
     }
 
@@ -246,8 +246,8 @@ namespace openm
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->paramId = MpiPacked::unpack<decltype(val->paramId)>(i_packedSize, i_packedData, io_packPos);
+        val->dimId = MpiPacked::unpack<decltype(val->dimId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->pos = MpiPacked::unpack<decltype(val->pos)>(i_packedSize, i_packedData, io_packPos);
         val->typeId = MpiPacked::unpack<decltype(val->typeId)>(i_packedSize, i_packedData, io_packPos);
     }
 
@@ -259,8 +259,8 @@ namespace openm
         return
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(typeid(val->paramId)) +
+            MpiPacked::packedSize(typeid(val->dimId)) +
             MpiPacked::packedSize(val->name) +
-            MpiPacked::packedSize(typeid(val->pos)) +
             MpiPacked::packedSize(typeid(val->typeId));
     }
 
@@ -323,8 +323,8 @@ namespace openm
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->tableId)>(val->tableId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->dimId)>(val->dimId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack<decltype(val->pos)>(val->pos, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->typeId)>(val->typeId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isTotal)>(val->isTotal, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->dimSize)>(val->dimSize, i_packedSize, io_packedData, io_packPos);
@@ -338,8 +338,8 @@ namespace openm
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->tableId = MpiPacked::unpack<decltype(val->tableId)>(i_packedSize, i_packedData, io_packPos);
+        val->dimId = MpiPacked::unpack<decltype(val->dimId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->pos = MpiPacked::unpack<decltype(val->pos)>(i_packedSize, i_packedData, io_packPos);
         val->typeId = MpiPacked::unpack<decltype(val->typeId)>(i_packedSize, i_packedData, io_packPos);
         val->isTotal = MpiPacked::unpack<decltype(val->isTotal)>(i_packedSize, i_packedData, io_packPos);
         val->dimSize = MpiPacked::unpack<decltype(val->dimSize)>(i_packedSize, i_packedData, io_packPos);
@@ -353,8 +353,8 @@ namespace openm
         return
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(typeid(val->tableId)) +
+            MpiPacked::packedSize(typeid(val->dimId)) +
             MpiPacked::packedSize(val->name) +
-            MpiPacked::packedSize(typeid(val->pos)) +
             MpiPacked::packedSize(typeid(val->typeId)) +
             MpiPacked::packedSize(typeid(val->isTotal)) +
             MpiPacked::packedSize(typeid(val->dimSize));
