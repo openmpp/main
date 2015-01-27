@@ -5,7 +5,7 @@
   Specify additional targets and macros common to all models
   -->
 
-  <!-- Validate the values of User Macros
+  <!-- Validate the values of User Macros.
   These are specified by the model developer through the Visual Studio IDE
   in the OpenM++.props property sheet.
   -->
@@ -35,11 +35,11 @@
 	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
         Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
     <Error
-	    Text="EXCEL_EXPORT_SCENARIO must be either 0 or 1. Value is $(EXCEL_EXPORT_SCENARIO)"
-        Condition=" ! ( '$(EXCEL_EXPORT_SCENARIO)' == '0' Or '$(EXCEL_EXPORT_SCENARIO)' == '1' )" />
+	    Text="RUN_EXPORT must be either 0 or 1. Value is $(RUN_EXPORT)"
+        Condition=" ! ( '$(RUN_EXPORT)' == '0' Or '$(RUN_EXPORT)' == '1' )" />
     <Error
-	    Text="EXCEL_LAUNCH_SCENARIO must be either 0 or 1. Value is $(EXCEL_LAUNCH_SCENARIO)"
-        Condition=" ! ( '$(EXCEL_LAUNCH_SCENARIO)' == '0' Or '$(EXCEL_LAUNCH_SCENARIO)' == '1' )" />
+	    Text="RUN_EXCEL must be either 0 or 1. Value is $(RUN_EXCEL)"
+        Condition=" ! ( '$(RUN_EXCEL)' == '0' Or '$(RUN_EXCEL)' == '1' )" />
   </Target>
 
   <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
@@ -104,26 +104,33 @@
     <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
   </Target>
 
+  <!--
+  The following property group prepares arguments to the model executable.
+  -->
+  <PropertyGroup>
+    <MODEL_OPTS Condition="'$(MEMBERS)' != '' And '$(PROCESSES)' != '' And '$(THREADS)' != ''">-General.Subsamples $(MEMBERS) -n $(PROCESSES) -General.Threads $(THREADS)</MODEL_OPTS>
+  </PropertyGroup>
+
   <Target Name="RunScenario" AfterTargets="SQLitePublish" Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
-    <Message Text="$(TargetPath)" />
-    <Exec Command="$(TargetPath)" WorkingDirectory="$(TargetDir)"/>
+    <Message Text="$(TargetPath) $(MODEL_OPTS)" />
+    <Exec Command="$(TargetPath) $(MODEL_OPTS)" WorkingDirectory="$(TargetDir)"/>
   </Target>
 
   <!--
-  The following property prepares an optional argument to the Excel export utility.
+  The following property group prepares arguments to the Excel export utility.
   -->
   <PropertyGroup>
     <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
-    <EXCEL_EXPORT_OPT Condition="'$(EXCEL_EXPORT_SCENARIO_LANG)'!=''">-lang $(EXCEL_EXPORT_SCENARIO_LANG)</EXCEL_EXPORT_OPT>
+    <EXCEL_EXPORT_OPT Condition="'$(EXPORT_LANG)'!=''">-lang $(EXPORT_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
 
-  <Target Name="ExcelExportScenario" AfterTargets="RunScenario" Condition="'$(EXCEL_EXPORT_SCENARIO)'=='1'" >
+  <Target Name="RunExport" AfterTargets="RunScenario" Condition="'$(RUN_EXPORT)'=='1'" >
     <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
     <Exec Command="$(OM_BIN_DIR)/$(EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) $(OutDir)$(MODEL_NAME).sqlite $(OutDir)$(SCENARIO_NAME)(tbl).xlsx" ContinueOnError="true"/>
   </Target>
 
-  <Target Name="ExcelLaunchScenario" AfterTargets="ExcelExportScenario" Condition="'$(EXCEL_LAUNCH_SCENARIO)'=='1'" >
+  <Target Name="RunExcel" AfterTargets="RunExport" Condition="'$(RUN_EXCEL)'=='1'" >
     <Message Text="Launching Excel on scenario $(SCENARIO_NAME)..." />
     <Exec Command="&quot;$(OutDir)$(SCENARIO_NAME)(tbl).xlsx&quot;" ContinueOnError="true"/>
   </Target>

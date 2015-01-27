@@ -6,13 +6,18 @@
     <SCENARIO_NAME>Base</SCENARIO_NAME>
     <ENABLE_SCENARIO_PARAMETERS>1</ENABLE_SCENARIO_PARAMETERS>
     <SCENARIO_PARAMETERS_FOLDER>$(ProjectDir)..\parameters\$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
-    <ENABLE_FIXED_PARAMETERS>0</ENABLE_FIXED_PARAMETERS>
+    <ENABLE_FIXED_PARAMETERS>1</ENABLE_FIXED_PARAMETERS>
     <FIXED_PARAMETERS_FOLDER>$(ProjectDir)..\parameters\Fixed</FIXED_PARAMETERS_FOLDER>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
-    <RUN_SCENARIO>0</RUN_SCENARIO>
-    <EXCEL_EXPORT_SCENARIO>0</EXCEL_EXPORT_SCENARIO>
-    <EXCEL_LAUNCH_SCENARIO>0</EXCEL_LAUNCH_SCENARIO>
+    <RUN_SCENARIO>1</RUN_SCENARIO>
+    <MEMBERS>1</MEMBERS>
+    <PROCESSES>1</PROCESSES>
+    <THREADS>1</THREADS>
+    <RUN_EXPORT>0</RUN_EXPORT>
+    <EXPORT_LANG>
+    </EXPORT_LANG>
+    <RUN_EXCEL>0</RUN_EXCEL>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -44,11 +49,23 @@
     <BuildMacro Include="RUN_SCENARIO">
       <Value>$(RUN_SCENARIO)</Value>
     </BuildMacro>
-    <BuildMacro Include="EXCEL_EXPORT_SCENARIO">
-      <Value>$(EXCEL_EXPORT_SCENARIO)</Value>
+    <BuildMacro Include="MEMBERS">
+      <Value>$(MEMBERS)</Value>
     </BuildMacro>
-    <BuildMacro Include="EXCEL_LAUNCH_SCENARIO">
-      <Value>$(EXCEL_LAUNCH_SCENARIO)</Value>
+    <BuildMacro Include="PROCESSES">
+      <Value>$(PROCESSES)</Value>
+    </BuildMacro>
+    <BuildMacro Include="THREADS">
+      <Value>$(THREADS)</Value>
+    </BuildMacro>
+    <BuildMacro Include="RUN_EXPORT">
+      <Value>$(RUN_EXPORT)</Value>
+    </BuildMacro>
+    <BuildMacro Include="EXPORT_LANG">
+      <Value>$(EXPORT_LANG)</Value>
+    </BuildMacro>
+    <BuildMacro Include="RUN_EXCEL">
+      <Value>$(RUN_EXCEL)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

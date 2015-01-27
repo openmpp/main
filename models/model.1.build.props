@@ -5,9 +5,13 @@
   Specify various openM directories and tools
   -->
   <PropertyGroup>
+	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../../../include</OM_INC_DIR>
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../../../bin</OM_BIN_DIR>
-    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../../lib/$(Platform)</OM_LIB_DIR>
+    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../../lib</OM_LIB_DIR>
     <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(SolutionDir)../../../sql</OM_SQL_DIR>
     <BUILD_DIR>$(SolutionDir)build</BUILD_DIR>
     <OMC_IN_DIR>$(SolutionDir)..\code</OMC_IN_DIR>
@@ -19,7 +23,7 @@
   </PropertyGroup>
   
   <!-- 
-  This property group uses the model-specific developer interface property sheet "OpenM++.props"
+  This property group uses properties specified in the model-specific 'user macros' property sheet Model.props
   to set properties used subsequently.
   -->
   <PropertyGroup>
@@ -80,7 +84,7 @@
   <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
     <OM_DB_DEF>OM_DB_SQLITE</OM_DB_DEF>
     <OM_DB_INC>$(OM_INC_DIR)/libsqlite</OM_DB_INC>
-    <OM_DB_LIB>libsqlite.lib</OM_DB_LIB>
+    <OM_DB_LIB>libsqlite$(BUILD_SUFFIX).lib</OM_DB_LIB>
     <OM_DB_LIB_DIR>$(OM_LIB_DIR)</OM_DB_LIB_DIR>
   </PropertyGroup>
 
