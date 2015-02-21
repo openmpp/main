@@ -715,8 +715,8 @@ sub normalize_event_trace
 			my $case_sample = $2;
 			my $checksum = $3;
 			# retain 11 digits of precision in the checksum
-			$checksum = 0 + sprintf("%.10e", $checksum);
-			printf OUT "Seed: %15d Sample: %2d Checksum: %20.5f\n", $case_seed, $case_sample, $checksum;
+			my $checksum_formatted = sprintf("%.10e", $checksum);
+			printf OUT "Seed: %15d Sample: %2d Checksum: %s\n", $case_seed, $case_sample, $checksum_formatted;
 			next;
 		}
 		my $is_trace_line = ($line =~ /^(\w+) - actor_id=(\d+) - case_seed=(\d+) -  : event=(.*) - time=([\d.]+)$/);

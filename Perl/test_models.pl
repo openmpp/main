@@ -6,9 +6,10 @@
 use strict;
 
 use File::Copy;
-use File::Path qw(make_path);
+use File::Path qw(make_path remove_tree);
 use File::Compare;
 use Cwd qw(getcwd);
+use Win32::Exe;
 
 my $do_modgen = 1;
 my $do_ompp = 1;
@@ -18,6 +19,14 @@ if ($#ARGV >= 0) {
 	if ( $ARGV[0] eq "-nomodgen") {
 		shift @ARGV;
 		$do_modgen = 0;
+	}
+}
+
+# Check for and process -noompp flag
+if ($#ARGV >= 0) {
+	if ( $ARGV[0] eq "-noompp") {
+		shift @ARGV;
+		$do_ompp = 0;
 	}
 }
 
@@ -100,6 +109,9 @@ if ( ! -e $modgen_exe ) {
 	logmsg error, "Missing Modgen compiler: $modgen_exe";
 	exit 1;
 }
+my $modgen_version = Win32::Exe->new($modgen_exe)->version_info->get('FileVersion');
+logmsg info, "Modgen version = ${modgen_version}";
+
 
 my $modgen_devenv_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\Common7\\IDE\\devenv.exe";
 if ( ! -e $modgen_devenv_exe ) {
@@ -138,10 +150,10 @@ for my $model (@models) {
 		next MODEL;
 	}
 
-	my $modgen_reference_dir = "${model_dir}/test_outputs/reference/modgen";
-	my $modgen_current_dir = "${model_dir}/test_outputs/current/modgen";
-	my $ompp_reference_dir = "${model_dir}/test_outputs/reference/ompp";
-	my $ompp_current_dir = "${model_dir}/test_outputs/current/ompp";
+	my $modgen_reference_dir = "${model_dir}/test_models/reference/modgen";
+	my $modgen_current_dir = "${model_dir}/test_models/current/modgen";
+	my $ompp_reference_dir = "${model_dir}/test_models/reference/ompp";
+	my $ompp_current_dir = "${model_dir}/test_models/current/ompp";
 
 	##########
 	# Modgen 
@@ -162,19 +174,17 @@ for my $model (@models) {
 			last MODGEN;
 		}
 
-		# Folder for reference results
-		my $reference_results_dir = $modgen_reference_dir;
-
-		# Folder for current results
-		my $current_results_dir = $modgen_current_dir;
-		if (! -d $current_results_dir) {
-			make_path $current_results_dir;
-		}
-		else {
-			# Delete current contents
-			unlink glob "${current_results_dir}/*.*";
-		}
+		# Folders for current generated code and outputs
+		remove_tree $modgen_current_dir;
+		my $current_outputs_dir = "${modgen_current_dir}/outputs";
+		make_path $current_outputs_dir;
+		my $current_generated_code_dir = "${modgen_current_dir}/generated_code";
+		make_path $current_generated_code_dir;
 		
+		# Folders for reference generated code and outputs
+		my $reference_outputs_dir = "${modgen_reference_dir}/outputs";
+		my $reference_generated_code_dir = "${modgen_reference_dir}/generated_code";
+
 		# Run Modgen
 		# Modgen.exe output files are written to the Modgen sub folder using the -D option
 		logmsg info, $model, "modgen", "Modgen compile";
@@ -199,7 +209,7 @@ for my $model (@models) {
 			logerrors $merged;
 			last MODGEN;
 		}
-
+		
 		# Build the model
 		logmsg info, $model, "modgen", "C++ compile, build executable";
 
@@ -207,6 +217,11 @@ for my $model (@models) {
 		# running the model, and processing outputs.
 		chdir "${project_dir}";
 		#logmsg info, $model, "modgen", "project_dir=${project_dir}";
+
+		# Save copy of generated C++ source code
+		for (glob "*.h *.cpp") {
+			copy "$_", "$current_generated_code_dir";
+		}
 
 		# Log file from build
 		my $build_log = "build.log";
@@ -263,7 +278,7 @@ for my $model (@models) {
 		}
 
 		# The ompp Framework model code file for the model
-		# use statements in that file are used to determine scenario settings in the Base.scex file
+		# 'use' statements in that file are used to determine scenario settings in the Base.scex file
 		my $ompp_framework_ompp = "../code/ompp_framework.ompp";
 		if ( ! -e $ompp_framework_ompp ) {
 			logmsg error, $model, "modgen", "Missing ompp framework model code file: $ompp_framework_ompp";
@@ -314,39 +329,49 @@ for my $model (@models) {
 		# If present, copy event trace / case checksum file to results directory
 		my $modgen_Base_debug_txt = "Base(debug).txt";
 		if (-e $modgen_Base_debug_txt) {
-			#copy $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
-			normalize_event_trace $modgen_Base_debug_txt, "${current_results_dir}/trace.txt";
+			#copy $modgen_Base_debug_txt, "${current_outputs_dir}/trace.txt";
+			normalize_event_trace $modgen_Base_debug_txt, "${current_outputs_dir}/trace.txt";
 		}
 
 		logmsg info, $model, "modgen", "Convert output tables to .csv (${significant_digits} digits of precision)";
-		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_results_dir, $significant_digits)) {
+		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_outputs_dir, $significant_digits)) {
 			last MODGEN;
 		}
 		
 		# Create digests of outputs
 		logmsg info, $model, "modgen", "Create digests of current outputs";
-		chdir "${current_results_dir}";
+		chdir "${current_outputs_dir}";
 		my $digests = create_digest(glob "*.csv *.txt");
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
 
 		# If no reference results, copy current results as a starting point
-		if (! -d $reference_results_dir) {
+		if (! -d $reference_outputs_dir) {
 			logmsg info, $model, "modgen", "No reference outputs - create using current outputs.";
-			make_path $reference_results_dir;
-			chdir $current_results_dir;
+			make_path $reference_outputs_dir;
+			chdir $current_outputs_dir;
 			for (glob "*.*") {
-				copy "$_", "$reference_results_dir";
+				copy "$_", "$reference_outputs_dir";
+			}
+			# Also record generated code
+			unlink $reference_generated_code_dir;
+			make_path $reference_generated_code_dir;
+			chdir $current_generated_code_dir;
+			for (glob "*.*") {
+				copy "$_", "$reference_generated_code_dir";
 			}
 		}
 		
-		# Check for differences between current and reference results
-        if (compare("${current_results_dir}/digests.txt","${reference_results_dir}/digests.txt") == 0) {
+		# Check for differences between current and reference outputs
+		my $reference_digests = "${reference_outputs_dir}/digests.txt";
+		my $current_digests = "${current_outputs_dir}/digests.txt";
+        if (compare($current_digests, $reference_digests) == 0) {
 			logmsg info, $model, "modgen", "Current outputs identical to reference outputs";
         }
 		else {
-			logmsg warning, $model, "modgen", "Current outputs differ from reference outputs";
+			my $different_files = digest_differences($reference_digests, $current_digests);
+			logmsg warning, $model, "modgen", "Current outputs differ: ${different_files}";
 		}
 		
 		my $elapsed_seconds = time - $start_seconds;
@@ -372,19 +397,17 @@ for my $model (@models) {
 			last MODGEN;
 		}
 
-		# Folder for reference results
-		my $reference_results_dir = $ompp_reference_dir;
-
-		# Folder for current results
-		my $current_results_dir = $ompp_current_dir;
-		if (! -d $current_results_dir) {
-			make_path $current_results_dir;
-		}
-		else {
-			# Delete current contents
-			unlink glob "${current_results_dir}/*.*";
-		}
+		# Folders for current generated code and outputs
+		remove_tree $ompp_current_dir;
+		my $current_outputs_dir = "${ompp_current_dir}/outputs";
+		make_path $current_outputs_dir;
+		my $current_generated_code_dir = "${ompp_current_dir}/generated_code";
+		make_path $current_generated_code_dir;
 		
+		# Folders for reference generated code and outputs
+		my $reference_outputs_dir = "${ompp_reference_dir}/outputs";
+		my $reference_generated_code_dir = "${ompp_reference_dir}/generated_code";
+
 		# Change working directory to project directory for compilation.
 		chdir ${project_dir};
 
@@ -477,6 +500,11 @@ for my $model (@models) {
 			last OMPP;
 		}
 
+		# Save copy of generated C++ source code
+		for (glob "src/*.h src/*.cpp") {
+			copy "$_", "$current_generated_code_dir";
+		}
+
 		logmsg info, $model, "ompp", "Run Base scenario";
 		
 		# Change working directory to target_dir where the executable and data store
@@ -504,35 +532,41 @@ for my $model (@models) {
 
 		# If present and non-empty copy event trace / case checksum file to results directory
 		if (-s $ompp_trace_txt) {
-			#copy $ompp_trace_txt, "${current_results_dir}/trace.txt";
-			normalize_event_trace $ompp_trace_txt, "${current_results_dir}/trace.txt";
+			#copy $ompp_trace_txt, "${current_outputs_dir}/trace.txt";
+			normalize_event_trace $ompp_trace_txt, "${current_outputs_dir}/trace.txt";
 		}
 
 		logmsg info, $model, "ompp", "Convert output tables to .csv (${significant_digits} digits of precision)";
-		if ( 0 != ompp_tables_to_csv($model_sqlite, $current_results_dir, $significant_digits)) {
+		if ( 0 != ompp_tables_to_csv($model_sqlite, $current_outputs_dir, $significant_digits)) {
 			last OMPP;
 		}
 		
 		# Create digests of outputs
 		logmsg info, $model, "ompp", "Create digests of current outputs";
-		chdir "${current_results_dir}";
+		chdir "${current_outputs_dir}";
 		my $digests = create_digest(glob "*.csv *.txt");
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
 
 		# If no reference results, copy current results as a starting point
-		if (! -d $reference_results_dir) {
+		if (! -d $reference_outputs_dir) {
 			logmsg info, $model, "ompp", "No reference outputs - create using current outputs.";
-			make_path $reference_results_dir;
-			chdir $current_results_dir;
+			make_path $reference_outputs_dir;
+			chdir $current_outputs_dir;
 			for (glob "*.*") {
-				copy "$_", "$reference_results_dir";
+				copy "$_", "$reference_outputs_dir";
+			}
+			# Also record generated code
+			make_path $reference_generated_code_dir;
+			chdir $current_generated_code_dir;
+			for (glob "*.*") {
+				copy "$_", "$reference_generated_code_dir";
 			}
 		}
 		
 		# Check for differences between current and reference outputs
-        if (compare("${current_results_dir}/digests.txt","${reference_results_dir}/digests.txt") == 0) {
+        if (compare("${current_outputs_dir}/digests.txt","${reference_outputs_dir}/digests.txt") == 0) {
 			logmsg info, $model, "ompp", "Current outputs identical to reference outputs";
         }
 		else {
@@ -540,17 +574,19 @@ for my $model (@models) {
 		}
 		
 		# Check for differences in current outputs between Modgen and ompp
-		if (-e "${modgen_current_dir}/digests.txt" and -e "${ompp_current_dir}/digests.txt") {
-			if (compare("${modgen_current_dir}/digests.txt","${ompp_current_dir}/digests.txt") == 0) {
-				logmsg info, $model, "ompp", "Modgen comparison", "Outputs identical";
+		my $modgen_digests_txt = "${modgen_current_dir}/outputs/digests.txt";
+		my $ompp_digests_txt = "${ompp_current_dir}/outputs/digests.txt";
+		if (-e $modgen_digests_txt and -e $ompp_digests_txt) {
+			if (compare($modgen_digests_txt, $ompp_digests_txt) == 0) {
+				logmsg info, $model, "ompp", "Modgen comparison", "Current outputs identical";
 			}
 			else {
-				my $different_files = digest_differences("${modgen_current_dir}/digests.txt","${ompp_current_dir}/digests.txt");
-				logmsg warning, $model, "ompp", "Modgen comparison", "Outputs differ: ${different_files}";
+				my $different_files = digest_differences($modgen_digests_txt, $ompp_digests_txt);
+				logmsg warning, $model, "ompp", "Modgen comparison", "Current outputs differ: ${different_files}";
 			}
 		}
 		else {
-			logmsg warning, $model, "ompp", "Modgen comparison", "Outputs not compared due to missing digest";
+			logmsg warning, $model, "ompp", "Modgen comparison", "Current outputs not compared due to missing digest";
 		}
 		
 		my $elapsed_seconds = time - $start_seconds;
