@@ -566,11 +566,14 @@ for my $model (@models) {
 		}
 		
 		# Check for differences between current and reference outputs
+		my $reference_digests = "${reference_outputs_dir}/digests.txt";
+		my $current_digests = "${current_outputs_dir}/digests.txt";
         if (compare("${current_outputs_dir}/digests.txt","${reference_outputs_dir}/digests.txt") == 0) {
 			logmsg info, $model, "ompp", "Current outputs identical to reference outputs";
         }
 		else {
-			logmsg warning, $model, "ompp", "Current outputs differ from reference outputs";
+			my $different_files = digest_differences($reference_digests, $current_digests);
+			logmsg warning, $model, "ompp", "Current outputs differ: ${different_files}";
 		}
 		
 		# Check for differences in current outputs between Modgen and ompp
