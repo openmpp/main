@@ -57,6 +57,9 @@
     <None Include="..\parameters\Base\Base(IDMM).dat">
       <Filter>Scenarios</Filter>
     </None>
+    <None Include="..\parameters\Base\Base(trigger_fix).dat">
+      <Filter>Scenarios</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IDMM.cpp">

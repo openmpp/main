@@ -246,6 +246,15 @@ table Host ZZZ_30_trigger
     }
 };
 
+table Host ZZZ_30_trigger_b
+{
+    v30
+    * {
+        //EN average age at transition decimals=5
+        value_out(age) / unit
+    }
+};
+
 table Host ZZZ_30_value_at
 {
     {
@@ -253,6 +262,32 @@ table Host ZZZ_30_value_at
         value_at_entrances(disease_phase, DP_INFECTIOUS, age) / entrances(disease_phase, DP_INFECTIOUS)
     }
 };
+
+table Host ZZZ_30_duration
+{
+    {
+        //EN Duration true proportion decimals=4
+        duration(v30, TRUE) / duration()
+    }
+};
+
+table Host ZZZ_30_age_time
+{
+    {
+        //EN Average age on becoming infectious (in) decimals=4
+        value_at_transitions(v30, FALSE, TRUE, age) / entrances(disease_phase, DP_INFECTIOUS),
+
+        //EN Average age on becoming infectious (out) decimals=4
+        value_at_transitions(v30, TRUE, FALSE, age) / entrances(disease_phase, DP_INFECTIOUS),
+
+        //EN Average time on becoming infectious (in) decimals=4
+        value_at_transitions(v30, FALSE, TRUE, time) / entrances(disease_phase, DP_INFECTIOUS),
+
+        //EN Average time on becoming infectious (out) decimals=4
+        value_at_transitions(v30, TRUE, FALSE, time) / entrances(disease_phase, DP_INFECTIOUS)
+    }
+};
+
 
 table Host ZZZ_31_trigger
 [ trigger_exits(disease_phase, DP_INFECTIOUS) ]
@@ -280,14 +315,6 @@ table Host ZZZ_32_trigger
     }
 };
 
-table Host ZZZ_32_value_at
-{
-    {
-        //EN average age at transition decimals=5
-        value_at_transitions(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE, age) / transitions(disease_phase, DP_IMMUNE, DP_SUSCEPTIBLE)
-    }
-};
-
 table Host ZZZ_33_trigger
 [ trigger_changes(disease_phase) ]
 {
@@ -303,4 +330,41 @@ table Host ZZZ_33_value_at
         //EN average age at transition decimals=5
         value_at_changes(disease_phase, age) / changes(disease_phase)
     }
+};
+
+range YEAR //EN Year
+{
+    0, 20
+};
+
+actor Host
+{
+    //EN Year
+    int year = self_scheduling_int(time);
+
+    //EN Year
+    int year_bounded = COERCE(YEAR, year);
+
+    //EN Year flash
+    logical year_flash = trigger_changes(year);
+
+    //EN Year spell
+    logical year_spell = !year_flash;
+
+    //EN Infections
+    int infections = entrances(disease_phase, DP_LATENT);
+    
+};
+
+table Host ProbeTrigger1
+{
+    {
+        //EN Year spell coverage (should be 1.0) decimals=5
+        duration(year_spell, TRUE) / duration()
+    }
+};
+
+track Host
+{
+    v30
 };

@@ -25,5 +25,6 @@
   <Inputs>
     <Input>../parameters/Base/Base(ExtraTests).dat=</Input>
     <Input>../parameters/Base/Base(IDMM).dat=</Input>
+    <Input>../parameters/Base/Base(trigger_fix).dat=</Input>
   </Inputs>
 </Scenario>

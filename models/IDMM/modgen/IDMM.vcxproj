@@ -103,6 +103,7 @@
     <None Include="..\code\TickerCore.mpp" />
     <None Include="..\parameters\Base\Base(ExtraTests).dat" />
     <None Include="..\parameters\Base\Base(IDMM).dat" />
+    <None Include="..\parameters\Base\Base(trigger_fix).dat" />
     <None Include="app.ico" />
     <None Include="Base.scex" />
     <None Include="parse.inf" />

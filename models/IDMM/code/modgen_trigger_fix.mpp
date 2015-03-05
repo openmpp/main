@@ -18,6 +18,12 @@
     separately and independently to each kind of actor.
 */
 
+parameters
+{
+    //EN Enable trigger fix
+    logical EnableTriggerFix;
+};
+
 actor Host
 {
     //EN Any trigger used in the model
@@ -30,9 +36,10 @@ actor Host
 	event timeShadowTriggerEvent, ShadowTriggerEvent; //EN Occurs ASAP after any trigger
 };
 
+static const bool enable_shadow_trigger = false;
 TIME Host::timeShadowTriggerEvent()
 {
-    if (any_trigger) return WAIT(GetMinimumTimeIncrement());
+    if (any_trigger && EnableTriggerFix) return WAIT(GetMinimumTimeIncrement());
     else return TIME_INFINITE;
 }
 

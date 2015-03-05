@@ -1,0 +1,5 @@
+parameters {
+    //EN Enable trigger fix
+    logical EnableTriggerFix = FALSE;
+};
+
