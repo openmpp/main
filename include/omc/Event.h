@@ -199,9 +199,7 @@ public:
         }
 
         // update the global event checksum
-        if (event_checksum_on) evt->event_checksum_update();
-        // TODO SFG DEBUG
-        //theTrace->logFormatted("CHKSUM time=%.15f, id=%d", evt->event_time, evt->get_event_id());
+        if (event_checksum_on && evt->get_event_priority() != openm::event_priority_self_scheduling) evt->event_checksum_update();
 
         // implement the event
         evt->implement_event();
