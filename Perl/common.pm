@@ -306,6 +306,30 @@ sub run_jet_statement {
 	return $result;
 }
 
+# Get the user macro from a property file
+# arg0 - the path of the property fileModel.props file
+# arg1 - the user macro (property) name
+# returns - the name, or empty string if failure
+sub get_user_macro
+{
+	my $model_props = shift(@_);
+	my $user_macro = shift(@_);
+	my $value = '';
+	
+	if (!open MODEL_PROPS, "<${model_props}") {
+		return '';
+	}
+	while (<MODEL_PROPS>) {
+		chomp;
+		my $line = $_;
+		if ( $line =~ /<${user_macro}>(\w+)<\/${user_macro}>/ ) {
+			$value = $1;
+			last;
+		}
+	}
+	close MODEL_PROPS;
+	return $value;
+}
 
 # Create a Modgen .scex file
 # arg0 - the output file name
