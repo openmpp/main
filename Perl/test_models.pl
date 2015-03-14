@@ -11,8 +11,17 @@ use File::Compare;
 use Cwd qw(getcwd);
 use Win32::Exe;
 
+my $new_ref = 0;
 my $do_modgen = 1;
 my $do_ompp = 1;
+
+# Check for and process -newref flag (replace reference by current)
+if ($#ARGV >= 0) {
+	if ( $ARGV[0] eq "-newref") {
+		shift @ARGV;
+		$new_ref = 1;
+	}
+}
 
 # Check for and process -nomodgen flag
 if ($#ARGV >= 0) {
@@ -212,6 +221,12 @@ for my $model_dir (@model_dirs) {
 			last MODGEN;
 		}
 
+		# Delete reference directory if requested by -newref argument
+		if ( $new_ref == 1) {
+			logmsg info, $model_dir, "modgen", "Deleting reference dir (-newref)";
+			remove_tree($modgen_reference_dir);
+		}
+		
 		# Folders for current generated code and outputs
 		remove_tree $modgen_current_dir;
 		my $current_outputs_dir = "${modgen_current_dir}/outputs";
@@ -466,6 +481,12 @@ for my $model_dir (@model_dirs) {
 			last OMPP;
 		}
 
+		# Delete reference directory if requested by -newref argument
+		if ( $new_ref == 1) {
+			logmsg info, $model_dir, "ompp", "Deleting reference dir (-newref)";
+			remove_tree($ompp_reference_dir);
+		}
+		
 		# Folders for current generated code and outputs
 		remove_tree $ompp_current_dir;
 		my $current_outputs_dir = "${ompp_current_dir}/outputs";
