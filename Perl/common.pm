@@ -488,26 +488,29 @@ sub modgen_tables_to_csv
 		return 1;
 	}
 
-	# Get all of the output table names
 	my $ADO_RS = Win32::OLE->new('ADODB.Recordset');
-	my $sql = "Select Name, Rank, AnalysisDimensionPosition, TableID From TableDic Where LanguageID = 0;";
-	$ADO_RS = $ADO_Conn->Execute($sql);
-	if (Win32::OLE->LastError()) {
-		logmsg error, "OLE", Win32::OLE->LastError();
-		return 1;
-	}
-	my $fields = $ADO_RS->Fields->count;
-	# Iterate the recordset and create lists of table names and ranks
+	
+	# Get all of the output table names
 	my @tables;
 	my @ranks;
 	my @expr_positions;
 	my @table_ids;
-	while ( !$ADO_RS->EOF ) {
-		push @tables, $ADO_RS->Fields(0)->value;
-		push @ranks, $ADO_RS->Fields(1)->value;
-		push @expr_positions, $ADO_RS->Fields(2)->value;
-		push @table_ids, $ADO_RS->Fields(3)->value;
-		$ADO_RS->MoveNext;
+	foreach my $which ('TableDic', 'UserTableDic') {
+		my $sql = "Select Name, Rank, AnalysisDimensionPosition, TableID From ${which} Where LanguageID = 0;";
+		$ADO_RS = $ADO_Conn->Execute($sql);
+		if (Win32::OLE->LastError()) {
+			logmsg error, "OLE", Win32::OLE->LastError();
+			return 1;
+		}
+		my $fields = $ADO_RS->Fields->count;
+		# Iterate the recordset and create lists of table names and ranks
+		while ( !$ADO_RS->EOF ) {
+			push @tables, $ADO_RS->Fields(0)->value;
+			push @ranks, $ADO_RS->Fields(1)->value;
+			push @expr_positions, $ADO_RS->Fields(2)->value;
+			push @table_ids, $ADO_RS->Fields(3)->value;
+			$ADO_RS->MoveNext;
+		}
 	}
 	#logmsg info, "tables", join("\n", @tables);
 
