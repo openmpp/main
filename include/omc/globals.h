@@ -5,8 +5,11 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+// Undefined value for a table cell
+const double UNDEF_VALUE = numeric_limits<double>::quiet_NaN();
+
 // The following global functions are defined in framework modules,
-// as indicated. They are documented in the Modgen Developer's Guide.
+// as indicated. They are mostly documented in the Modgen Developer's Guide.
 
 // defined in use/common.ompp
 extern void SetMaxTime(double max_value);
@@ -17,6 +20,7 @@ extern int GetThreads();
 extern void SetPopulation(long lPopulation);
 extern void signal_exit_simulation_all();
 double PieceLinearLookup(double x, const double *ax, const double *ay, int n);
+bool IsUndefined(double x);
 
 // defined in use/random/random_modgen.ompp
 extern void initialize_stream(int model_stream, long seed);
