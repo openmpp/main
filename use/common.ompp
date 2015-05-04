@@ -137,3 +137,16 @@ double PieceLinearLookup(double x, const double *ax, const double *ay, int n)
     return y;
 }
 
+/**
+ * Query if the value x is a numeric quantity.
+ * 
+ * Used to determine if a table cell contains a numeric value, or is empty.
+ *
+ * @param x The double to be checked
+ *
+ * @return true if undefined, false if not.
+ */
+bool IsUndefined(double x)
+{
+    return isnan(x);
+}
