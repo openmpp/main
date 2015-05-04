@@ -48,6 +48,7 @@ public:
         , filter(nullptr)
         , unit(nullptr)
         , expr_dim_position(0)
+        , obs_collections(0)
         , pp_table_id(-1)
     {
         create_auxiliary_symbols();
@@ -180,6 +181,14 @@ public:
      * If the expression dimension is the first dimension displayed, the value is -1.
      */
     int expr_dim_position;
+
+    /**
+     * The number of observation collections in the table.
+     * 
+     * Some accumulators such as P50 require an associated onservation collection
+     * for each cell of the table.  This is the count of the number of such collections in each table cell.
+     */
+    int obs_collections;
 
     /**
      * Numeric identifier. Used for communicating with metadata API.

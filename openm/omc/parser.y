@@ -179,6 +179,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_file                      "file"
 %token <val_token>    TK_filter                    "filter"
 %token <val_token>    TK_fp_consistency            "fp_consistency"
+%token <val_token>    TK_gini                      "gini"
 %token <val_token>    TK_haz1rate                  "haz1rate"
 %token <val_token>    TK_haz2rate                  "haz2rate"
 %token <val_token>    TK_hook                      "hook"
@@ -207,6 +208,23 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_off                       "off"
 %token <val_token>    TK_on                        "on"
 %token <val_token>    TK_order                     "order"
+%token <val_token>    TK_P1                        "P1"
+%token <val_token>    TK_P2                        "P2"
+%token <val_token>    TK_P5                        "P5"
+%token <val_token>    TK_P10                       "P10"
+%token <val_token>    TK_P20                       "P20"
+%token <val_token>    TK_P25                       "P25"
+%token <val_token>    TK_P30                       "P30"
+%token <val_token>    TK_P40                       "P40"
+%token <val_token>    TK_P50                       "P50"
+%token <val_token>    TK_P60                       "P60"
+%token <val_token>    TK_P70                       "P70"
+%token <val_token>    TK_P75                       "P75"
+%token <val_token>    TK_P80                       "P80"
+%token <val_token>    TK_P90                       "P90"
+%token <val_token>    TK_P95                       "P95"
+%token <val_token>    TK_P98                       "P98"
+%token <val_token>    TK_P99                       "P99"
 %token <val_token>    TK_packing_level             "packing_level"
 %token <val_token>    TK_permit_all_cus            "permit_all_cus"
 %token <val_token>    TK_piece_linear              "piece_linear"
@@ -2207,6 +2225,24 @@ table_accumulator:
       TK_sum
     | TK_minimum
     | TK_maximum
+    | TK_P1
+    | TK_P2
+    | TK_P5
+    | TK_P10
+    | TK_P20
+    | TK_P25
+    | TK_P30
+    | TK_P40
+    | TK_P50
+    | TK_P60
+    | TK_P70
+    | TK_P75
+    | TK_P80
+    | TK_P90
+    | TK_P95
+    | TK_P98
+    | TK_P99
+    | TK_gini
     ;
 
 table_increment:

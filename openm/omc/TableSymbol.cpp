@@ -99,6 +99,36 @@ void TableSymbol::post_parse(int pass)
 
     case ePopulateDependencies:
     {
+        // Process collections of observations required by accumulators
+        for (auto acc : pp_accumulators) {
+            if (acc->has_obs_collection) {
+                // Search for an accumulator which is already marked to update the same collection.
+                TableAccumulatorSymbol *acc_found = nullptr;
+                for (auto acc2 : pp_accumulators) {
+                    if (acc2->increment == acc->increment
+                     && acc2->table_op == acc->table_op
+                     && acc2->updates_obs_collection) {
+                        // Accumulator found with the same increment, and handling the collection.
+                        acc_found = acc2;
+                        break;
+                    }
+                }
+                if (acc_found) {
+                    // Another accumulator is already updating the collection of observations.
+                    // Share the same collection.
+                    acc->updates_obs_collection = false;
+                    acc->obs_collection_index = acc_found->obs_collection_index;
+                }
+                else {
+                    // This collection of observations is not handled by another accumulator.
+                    // This accumulator will update the collection.
+                    acc->updates_obs_collection = true;
+                    acc->obs_collection_index = obs_collections;
+                    ++obs_collections;
+                }
+            }
+        }
+
         // The following block of code is almost identical in EntitySetSymbol and TableSymbol
         // construct function bodies
         build_body_update_cell();
@@ -168,11 +198,13 @@ CodeBlock TableSymbol::cxx_declaration_global()
     int n_accumulators = pp_accumulators.size();
     int n_expressions = pp_expressions.size();
     int n_cells = cell_count();
+    int n_obs_collections = obs_collections;
 
     h += "";
     h += "class " + name + " {";
     h += "public:";
     h += "void initialize_accumulators();";
+    h += "void extract_accumulators();";
     h += "void scale_accumulators();";
     h += "void compute_expressions();";
     h += "";
@@ -180,6 +212,9 @@ CodeBlock TableSymbol::cxx_declaration_global()
     h += "static const int n_cells = " + to_string(n_cells) + ";";
     h += "static const int n_accumulators = " + to_string(n_accumulators) + ";";
     h += "static const int n_expressions = " + to_string(n_expressions) + ";";
+    if (n_obs_collections > 0) {
+        h += "static const int n_obs_collections = " + to_string(n_obs_collections) + ";";
+    }
 
     h += "";
     h += "// expression storage";
@@ -191,6 +226,13 @@ CodeBlock TableSymbol::cxx_declaration_global()
     h += "// accumulator storage";
     for (int j = 0; j < n_accumulators; j++) {
         h += "double acc" + to_string(j) + "[n_cells];";
+    }
+
+    if (n_obs_collections > 0) {
+        h += "";
+        h += "// observation collection storage";
+        h += "// TODO: Use pointers to forward_list pending VC implementation of thread_local";
+        h += "forward_list<double> * obs_collections[n_cells][n_obs_collections];";
     }
 
     h += "";
@@ -220,6 +262,18 @@ CodeBlock TableSymbol::cxx_definition_global()
     // definition of initialize_accumulators()
     c += "void " + name + "::initialize_accumulators()";
     c += "{";
+
+    if (obs_collections > 0) {
+        c += "// Initialize observation collections";
+        c += "// TODO: Use pointers to forward_list pending VC implementation of thread_local";
+        c += "for (int cell = 0; cell < n_cells; ++cell) {";
+        c += "for (int coll = 0; coll < n_obs_collections; ++coll) {";
+        c += "obs_collections[cell][coll] = new forward_list<double>;";
+        c += "}";
+        c += "}";
+        c += "";
+    }
+
     for (auto acc : pp_accumulators) {
         string initial_value = "";
         switch (acc->accumulator) {
@@ -231,6 +285,26 @@ CodeBlock TableSymbol::cxx_definition_global()
             break;
         case token::TK_maximum:
             initial_value = "-std::numeric_limits<double>::infinity()";
+            break;
+        case token::TK_gini:
+        case token::TK_P1:
+        case token::TK_P2:
+        case token::TK_P5:
+        case token::TK_P10:
+        case token::TK_P20:
+        case token::TK_P25:
+        case token::TK_P30:
+        case token::TK_P40:
+        case token::TK_P50:
+        case token::TK_P60:
+        case token::TK_P70:
+        case token::TK_P75:
+        case token::TK_P80:
+        case token::TK_P90:
+        case token::TK_P95:
+        case token::TK_P98:
+        case token::TK_P99:
+            initial_value = "std::numeric_limits<double>::quiet_NaN()";
             break;
         default:
             // not reached
@@ -245,6 +319,184 @@ CodeBlock TableSymbol::cxx_definition_global()
         c += "";
 
     }
+    c += "}";
+    c += "";
+
+    // definition of extract_accumulators()
+    c += "void " + name + "::extract_accumulators()";
+    c += "{";
+
+    if (obs_collections > 0) {
+        c += "// process each cell";
+        c += "for (int cell = 0; cell < n_cells; ++cell) {";
+
+        c += "";
+        c += "// Compute statistics for each observation collection in the cell.";
+        c += "double P1[n_obs_collections];";
+        c += "double P2[n_obs_collections];";
+        c += "double P5[n_obs_collections];";
+        c += "double P10[n_obs_collections];";
+        c += "double P20[n_obs_collections];";
+        c += "double P25[n_obs_collections];";
+        c += "double P30[n_obs_collections];";
+        c += "double P40[n_obs_collections];";
+        c += "double P50[n_obs_collections];";
+        c += "double P60[n_obs_collections];";
+        c += "double P70[n_obs_collections];";
+        c += "double P75[n_obs_collections];";
+        c += "double P80[n_obs_collections];";
+        c += "double P90[n_obs_collections];";
+        c += "double P95[n_obs_collections];";
+        c += "double P98[n_obs_collections];";
+        c += "double P99[n_obs_collections];";
+        c += "double gini[n_obs_collections];";
+        c += "for (int coll = 0; coll < n_obs_collections; ++coll) {";
+        c += "P1[coll] = UNDEF_VALUE;";
+        c += "P2[coll] = UNDEF_VALUE;";
+        c += "P5[coll] = UNDEF_VALUE;";
+        c += "P10[coll] = UNDEF_VALUE;";
+        c += "P20[coll] = UNDEF_VALUE;";
+        c += "P25[coll] = UNDEF_VALUE;";
+        c += "P30[coll] = UNDEF_VALUE;";
+        c += "P40[coll] = UNDEF_VALUE;";
+        c += "P50[coll] = UNDEF_VALUE;";
+        c += "P60[coll] = UNDEF_VALUE;";
+        c += "P70[coll] = UNDEF_VALUE;";
+        c += "P75[coll] = UNDEF_VALUE;";
+        c += "P80[coll] = UNDEF_VALUE;";
+        c += "P90[coll] = UNDEF_VALUE;";
+        c += "P95[coll] = UNDEF_VALUE;";
+        c += "P98[coll] = UNDEF_VALUE;";
+        c += "P99[coll] = UNDEF_VALUE;";
+        c += "gini[coll] = UNDEF_VALUE;";
+        c += "auto lst = obs_collections[cell][coll];";
+        c += "lst->sort();";
+        c += "double total_count = distance(lst->begin(), lst->end());";
+        c += "if (total_count > 0) {";
+        c += "double cum_count = 0.0;";
+        c += "double cum_count_prev = 0.0;";
+        c += "double value_prev = 0.0;";
+        c += "double cum_value = 0.0;";
+        c += "double cum_value_i = 0.0; // sum of rank*value";
+        c += "bool P1_done = false;";
+        c += "bool P2_done = false;";
+        c += "bool P5_done = false;";
+        c += "bool P10_done = false;";
+        c += "bool P20_done = false;";
+        c += "bool P25_done = false;";
+        c += "bool P30_done = false;";
+        c += "bool P40_done = false;";
+        c += "bool P50_done = false;";
+        c += "bool P60_done = false;";
+        c += "bool P70_done = false;";
+        c += "bool P75_done = false;";
+        c += "bool P80_done = false;";
+        c += "bool P90_done = false;";
+        c += "bool P95_done = false;";
+        c += "bool P98_done = false;";
+        c += "bool P99_done = false;";
+        c += "for (auto value : *lst ) {";
+        c += "cum_count += 1.0;";
+        c += "cum_value += value;";
+        c += "cum_value_i += cum_count * value;";
+        c += "if (!P1_done && cum_count >= total_count * 0.01) {";
+        c += "P1[coll] = value;";
+        c += "P1_done = true;";
+        c += "}";
+        c += "if (!P2_done && cum_count >= total_count * 0.02) {";
+        c += "P2[coll] = value;";
+        c += "P2_done = true;";
+        c += "}";
+        c += "if (!P5_done && cum_count >= total_count * 0.05) {";
+        c += "P5[coll] = value;";
+        c += "P5_done = true;";
+        c += "}";
+        c += "if (!P10_done && cum_count >= total_count * 0.10) {";
+        c += "P10[coll] = value;";
+        c += "P10_done = true;";
+        c += "}";
+        c += "if (!P20_done && cum_count >= total_count * 0.20) {";
+        c += "P20[coll] = value;";
+        c += "P20_done = true;";
+        c += "}";
+        c += "if (!P25_done && cum_count >= total_count * 0.25) {";
+        c += "P25[coll] = value;";
+        c += "P25_done = true;";
+        c += "}";
+        c += "if (!P30_done && cum_count >= total_count * 0.30) {";
+        c += "P30[coll] = value;";
+        c += "P30_done = true;";
+        c += "}";
+        c += "if (!P40_done && cum_count >= total_count * 0.40) {";
+        c += "P40[coll] = value;";
+        c += "P40_done = true;";
+        c += "}";
+        c += "if (!P50_done && cum_count >= total_count * 0.50) {";
+        c += "P50[coll] = value;";
+        c += "P50_done = true;";
+        c += "}";
+        c += "if (!P60_done && cum_count >= total_count * 0.60) {";
+        c += "P60[coll] = value;";
+        c += "P60_done = true;";
+        c += "}";
+        c += "if (!P70_done && cum_count >= total_count * 0.70) {";
+        c += "P70[coll] = value;";
+        c += "P70_done = true;";
+        c += "}";
+        c += "if (!P75_done && cum_count >= total_count * 0.75) {";
+        c += "P75[coll] = value;";
+        c += "P75_done = true;";
+        c += "}";
+        c += "if (!P80_done && cum_count >= total_count * 0.80) {";
+        c += "P80[coll] = value;";
+        c += "P80_done = true;";
+        c += "}";
+        c += "if (!P90_done && cum_count >= total_count * 0.90) {";
+        c += "P90[coll] = value;";
+        c += "P90_done = true;";
+        c += "}";
+        c += "if (!P95_done && cum_count >= total_count * 0.95) {";
+        c += "P95[coll] = value;";
+        c += "P95_done = true;";
+        c += "}";
+        c += "if (!P98_done && cum_count >= total_count * 0.98) {";
+        c += "P98[coll] = value;";
+        c += "P98_done = true;";
+        c += "}";
+        c += "if (!P99_done && cum_count >= total_count * 0.99) {";
+        c += "P99[coll] = value;";
+        c += "P99_done = true;";
+        c += "}";
+        c += "cum_count_prev = cum_count;";
+        c += "value_prev = value;";
+        c += "}";
+        c += "gini[coll] = (2.0 * cum_value_i ) / (total_count * cum_value) - (total_count + 1.0) / total_count;";
+        c += "}";
+        c += "}";
+        c += "";
+
+        for (auto acc : pp_accumulators) {
+            if (acc->has_obs_collection) {
+                c += "// Assign " + acc->pretty_name();
+                string acc_name = "acc" + to_string(acc->index);
+                string obs_index = to_string(acc->obs_collection_index);
+                string stat_name = token_to_string(acc->accumulator);
+                c += acc_name + "[cell] = " + stat_name + "[" + obs_index + "];";
+                c += "";
+            }
+        }
+
+        c += "// Free observation collections in cell";
+        c += "for (int coll = 0; coll < n_obs_collections; ++coll) {";
+        c += "obs_collections[cell][coll]->clear();";
+        c += "delete obs_collections[cell][coll];";
+        c += "obs_collections[cell][coll] = nullptr;";
+        c += "}";
+
+        c += "}";
+        c += "";
+    }
+
     c += "}";
     c += "";
 
@@ -411,6 +663,30 @@ void TableSymbol::build_body_process_increments()
         case token::TK_maximum:
             c += "double dAccumulator = " + accumulator_expr + ";";
             c += "if ( dIncrement > dAccumulator ) " + accumulator_expr + " = dIncrement;";
+            break;
+        case token::TK_gini:
+        case token::TK_P1:
+        case token::TK_P2:
+        case token::TK_P5:
+        case token::TK_P10:
+        case token::TK_P20:
+        case token::TK_P25:
+        case token::TK_P30:
+        case token::TK_P40:
+        case token::TK_P50:
+        case token::TK_P60:
+        case token::TK_P70:
+        case token::TK_P75:
+        case token::TK_P80:
+        case token::TK_P90:
+        case token::TK_P95:
+        case token::TK_P98:
+        case token::TK_P99:
+            if (acc->updates_obs_collection) {
+                string obs_index = to_string(acc->obs_collection_index);
+                c += "auto lst = the" + name + ".obs_collections[cell][" + obs_index + "];";
+                c += "lst->push_front(dIncrement);";
+            }
             break;
         default:
             assert(0); // parser guarantee

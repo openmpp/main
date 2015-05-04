@@ -11,6 +11,7 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdarg>
+#include <forward_list> // for observation collections in tables
 #include "libopenm/omModel.h"
 
 #include "om_types0.h" // fundamental model types

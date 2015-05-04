@@ -119,7 +119,9 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
                     agg_func = "OM_MAX";
                     break;
                 default:
-                    assert(0);
+                    // Other accumulators cannot be composited, so average
+                    agg_func = "OM_AVG";
+                    break;
                 }
                 result = agg_func + "( acc" + to_string(accumulator->index) + " )";
                 break;

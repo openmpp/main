@@ -352,8 +352,9 @@ void CodeGen::do_ModelShutdown()
 	c += "// Model shutdown method: outputs";
 	c += "void ModelShutdown(IModel * const i_model)";
 	c += "{";
-    c += "// scale accumulators to population size";
+    c += "// extract accumualtors, and scale them to population size";
     for ( auto table : Symbol::pp_all_tables ) {
+	    c += "the" + table->name + ".extract_accumulators();";
 	    c += "the" + table->name + ".scale_accumulators();";
     }
 	c += "";

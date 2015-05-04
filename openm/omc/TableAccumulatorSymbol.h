@@ -37,12 +37,32 @@ public:
         , pp_agentvar(nullptr)
         , analysis_agentvar(analysis_agentvar->stable_rp())
         , pp_analysis_agentvar(nullptr)
+        , updates_obs_collection(false)
+        , obs_collection_index(-1)
         , index(index)
     {
         // grammar guarantee
         assert(accumulator == token::TK_sum
             || accumulator == token::TK_minimum
             || accumulator == token::TK_maximum
+            || accumulator == token::TK_gini
+            || accumulator == token::TK_P1
+            || accumulator == token::TK_P2
+            || accumulator == token::TK_P5
+            || accumulator == token::TK_P10
+            || accumulator == token::TK_P20
+            || accumulator == token::TK_P25
+            || accumulator == token::TK_P30
+            || accumulator == token::TK_P40
+            || accumulator == token::TK_P50
+            || accumulator == token::TK_P60
+            || accumulator == token::TK_P70
+            || accumulator == token::TK_P75
+            || accumulator == token::TK_P80
+            || accumulator == token::TK_P90
+            || accumulator == token::TK_P95
+            || accumulator == token::TK_P98
+            || accumulator == token::TK_P99
             );
 
         // grammar guarantee
@@ -61,6 +81,28 @@ public:
         assert(table_op == token::TK_interval
             || table_op == token::TK_event
             );
+
+        // determine if there is an associated collection of observations
+        has_obs_collection = accumulator == token::TK_gini
+                          || accumulator == token::TK_P1
+                          || accumulator == token::TK_P2
+                          || accumulator == token::TK_P5
+                          || accumulator == token::TK_P10
+                          || accumulator == token::TK_P20
+                          || accumulator == token::TK_P25
+                          || accumulator == token::TK_P30
+                          || accumulator == token::TK_P40
+                          || accumulator == token::TK_P50
+                          || accumulator == token::TK_P60
+                          || accumulator == token::TK_P70
+                          || accumulator == token::TK_P75
+                          || accumulator == token::TK_P80
+                          || accumulator == token::TK_P90
+                          || accumulator == token::TK_P95
+                          || accumulator == token::TK_P98
+                          || accumulator == token::TK_P99
+                          ;
+         
     }
 
     /**
@@ -108,12 +150,12 @@ public:
     TableSymbol* pp_table;
 
     /**
-     * The accumulator, e.g. TK_SUM, TK_MIN, TK_MAX
+     * The kind of accumulator, e.g. TK_sum, TK_minimum, TK_maximum
      */
     token_type accumulator;
 
     /**
-     * The increment, e.g. TK_delta, TK_value_in
+     * The kind of increment, e.g. TK_delta, TK_value_in
      */
     token_type increment;
 
@@ -149,6 +191,28 @@ public:
      * Only valid after post-parse phase 1.
      */
     TableAnalysisAgentVarSymbol* pp_analysis_agentvar;
+
+    /**
+     * Indicates if the accumulator has an associated collection of observations.
+     * 
+     * Accumulators such as P50 have associated collections of increments
+     */
+    bool has_obs_collection;
+
+    /**
+     * Indicates if this accumulator updates its collection of observations.
+     * 
+     * Multiple accumulators can share a single collection of observations, e.g. P50, P25. This flag
+     * is used to ensure that only one such updates the shared collection.
+     */
+    bool updates_obs_collection;
+
+    /**
+     * The zero-based index of the associated collection of observations (if any)
+     * 
+     * Set to -1 if there is no associated collection.
+     */
+    int obs_collection_index;
 
     /**
      * Zero-based index of the accumulator within this table.
