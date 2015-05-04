@@ -70,24 +70,24 @@ my $significant_digits = 8;
 #####################
 
 # ompp compiler version (4 possible values)
-#my $omc_exe = 'omc.exe';
+my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omcD.exe';
-my $omc_exe = 'omc64.exe';
+#my $omc_exe = 'omc64.exe';
 #my $omc_exe = 'omc64D.exe';
 	
-my $ompp_configuration = "Debug";
-#my $ompp_configuration = "Release";
+#my $ompp_configuration = "Debug";
+my $ompp_configuration = "Release";
 
-my $ompp_platform = "Win32";
-#my $ompp_platform = "x64";
+#my $ompp_platform = "Win32";
+my $ompp_platform = "x64";
 
 
 #####################
 # modgen settings for all models
 #####################
 
-my $modgen_configuration = "Debug";
-#my $modgen_configuration = "Release";
+#my $modgen_configuration = "Debug";
+my $modgen_configuration = "Release";
 
 my $modgen_platform = "Win32";
 #my $modgen_platform = "x64";
@@ -240,6 +240,10 @@ for my $model_dir (@model_dirs) {
 
 		# Run Modgen
 		# Modgen.exe output files are written to the Modgen/src sub folder using the -D option
+		my $modgen_output_dir = "${project_dir}/src";
+		remove_tree $modgen_output_dir;
+		make_path $modgen_output_dir;
+		
 		logmsg info, $model_dir, "modgen", "Modgen compile";
 		my $modgen_log = "${project_dir}/modgen.log";
 		# Change working directory to model source directory for Modgen compilation.
@@ -248,7 +252,7 @@ for my $model_dir (@model_dirs) {
 			my @args = (
 				"${modgen_exe}",
 				"-D",
-				"${project_dir}/src",
+				"${modgen_output_dir}",
 				"-EN",
 				);
 			system(@args);
