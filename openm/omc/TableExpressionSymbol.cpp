@@ -103,7 +103,7 @@ string TableExpressionSymbol::get_expression(const ExprForTable *node, expressio
         string result;
         switch (style) {
         case cxx:
-            result = "accumulators[" + to_string(accumulator->index) + "][cell]";
+            result = "acc[" + to_string(accumulator->index) + "][cell]";
             break;
         case sql:
             {

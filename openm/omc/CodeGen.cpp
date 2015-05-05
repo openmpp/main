@@ -352,7 +352,7 @@ void CodeGen::do_ModelShutdown()
 	c += "// Model shutdown method: outputs";
 	c += "void ModelShutdown(IModel * const i_model)";
 	c += "{";
-    c += "// extract accumualtors, and scale them to population size";
+    c += "// extract accumulators, and scale them to population size";
     for ( auto table : Symbol::pp_all_tables ) {
 	    c += "the" + table->name + ".extract_accumulators();";
 	    c += "the" + table->name + ".scale_accumulators();";
@@ -376,7 +376,13 @@ void CodeGen::do_ModelShutdown()
     c += "// write output tables (accumulators)";
 	c += "theLog->logMsg(\"Writing Output Tables\");";
     for ( auto table : Symbol::pp_all_tables ) {
-	    c += "i_model->writeOutputTable( \"" + table->name + "\", the" + table->name + ".n_accumulators, " + to_string(table->cell_count()) + ", const_cast<const double **>(the" + table->name + ".accumulators) );";
+        c += "{";
+        c += "const char *name = \"" + table->name + "\";";
+        c += "auto &tbl = the" + table->name + ";";
+        c += "double *pdbl[tbl.n_accumulators]; // array of pointers for writeOutputTable";
+        c += "for (int j = 0; j < tbl.n_accumulators; ++j) pdbl[j] = tbl.acc[j];";
+	    c += "i_model->writeOutputTable(name, tbl.n_accumulators, tbl.n_cells, const_cast<const double **>(pdbl));";
+        c += "}";
     }
 
     c += "}";

@@ -218,15 +218,11 @@ CodeBlock TableSymbol::cxx_declaration_global()
 
     h += "";
     h += "// expression storage";
-    for (int j = 0; j < n_expressions; j++) {
-        h += "double expr" + to_string(j) + "[n_cells];";
-    }
+    h += "double expr[n_expressions][n_cells];";
 
     h += "";
     h += "// accumulator storage";
-    for (int j = 0; j < n_accumulators; j++) {
-        h += "double acc" + to_string(j) + "[n_cells];";
-    }
+    h += "double acc[n_accumulators][n_cells];";
 
     if (n_obs_collections > 0) {
         h += "";
@@ -234,13 +230,6 @@ CodeBlock TableSymbol::cxx_declaration_global()
         h += "// TODO: Use pointers to forward_list pending VC implementation of thread_local";
         h += "forward_list<double> * obs_collections[n_cells][n_obs_collections];";
     }
-
-    h += "";
-    h += "// accumulator array of pointers";
-    h += "double *accumulators[n_accumulators];";
-    h += "";
-    h += "// expression array of pointers";
-    h += "double *expressions[n_expressions];";
 
     h += "};";
     h += "extern thread_local " + name + " the" + name + ";";
@@ -312,10 +301,8 @@ CodeBlock TableSymbol::cxx_definition_global()
         }
         // e.g.  sum(value_in(alive))
         c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
-        // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc0[cell] =   0.0;
-        c += "for ( int cell = 0; cell < n_cells; cell++ ) acc" + to_string(acc->index) + "[cell] = " + initial_value + ";";
-        // e.g. accumulators[0] = acc0;
-        c += "accumulators[" + to_string(acc->index) + "] = acc" + to_string(acc->index) + ";";
+        // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
+        c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
         c += "";
 
     }
@@ -478,10 +465,10 @@ CodeBlock TableSymbol::cxx_definition_global()
         for (auto acc : pp_accumulators) {
             if (acc->has_obs_collection) {
                 c += "// Assign " + acc->pretty_name();
-                string acc_name = "acc" + to_string(acc->index);
+                string acc_index = to_string(acc->index);
                 string obs_index = to_string(acc->obs_collection_index);
                 string stat_name = token_to_string(acc->accumulator);
-                c += acc_name + "[cell] = " + stat_name + "[" + obs_index + "];";
+                c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
                 c += "";
             }
         }
@@ -509,9 +496,8 @@ CodeBlock TableSymbol::cxx_definition_global()
         if (acc->accumulator == token::TK_sum) {
             // e.g.  sum(value_in(alive))
             c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
-            // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc0[cell] *= scale_factor;
-            c += "for ( int cell = 0; cell < n_cells; cell++ ) acc" + to_string(acc->index) + "[cell] *= scale_factor;";
-            // e.g. accumulators[0] = acc0;
+            // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] *= scale_factor;
+            c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
         }
     }
     c += "}";
@@ -525,11 +511,9 @@ CodeBlock TableSymbol::cxx_definition_global()
     for (auto table_expr : pp_expressions) {
         // E.g.  // SUM_BEFORE( acc0 )
         c += "// " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::sql);
-        // E.g. expressions[0] = expr0;
-        c += "expressions[" + to_string(table_expr->index) + "] = expr" + to_string(table_expr->index) + ";";
-        // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expressions[0][cell] = accumulators[0][cell] ;
+        // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
         c += "for ( int cell = 0; cell < n_cells; cell++ ) "
-            "expressions[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::cxx) + " ;";
+            "expr[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::cxx) + " ;";
         c += "";
     }
     c += "}";
@@ -613,7 +597,7 @@ void TableSymbol::build_body_process_increments()
         // index of accumulator as string
         string accumulator_index = to_string(acc->index);
         // expression for the accumulator as string
-        string accumulator_expr = "the" + name + ".accumulators[" + accumulator_index + "][cell]";
+        string accumulator_expr = "the" + name + ".acc[" + accumulator_index + "][cell]";
 
         // expression which evaluates to the value of the increment
         string increment_expr;
