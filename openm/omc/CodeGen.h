@@ -53,6 +53,7 @@ public:
 	void do_tables();
 	void do_event_queue();
 	void do_RunInit();
+	void do_ModelStartup();
 	void do_RunModel();
 	void do_ModelShutdown();
     void do_API_entries();

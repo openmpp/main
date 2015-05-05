@@ -200,39 +200,22 @@ CodeBlock TableSymbol::cxx_declaration_global()
     int n_cells = cell_count();
     int n_obs_collections = obs_collections;
 
-    h += "";
-    h += "class " + name + " {";
+    if (n_obs_collections == 0) {
+        // E.g. class T02_TotalPopulationByYear : public Table<101, 2, 2>
+        h += "class " + name + " : public Table<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ">";
+    }
+    else {
+        h += "class " + name + " : public TableWithObs<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ", " + to_string(n_obs_collections) + ">";
+    }
+    h += "{";
     h += "public:";
     h += "void initialize_accumulators();";
     h += "void extract_accumulators();";
     h += "void scale_accumulators();";
     h += "void compute_expressions();";
-    h += "";
-    h += "// constants";
-    h += "static const int n_cells = " + to_string(n_cells) + ";";
-    h += "static const int n_accumulators = " + to_string(n_accumulators) + ";";
-    h += "static const int n_expressions = " + to_string(n_expressions) + ";";
-    if (n_obs_collections > 0) {
-        h += "static const int n_obs_collections = " + to_string(n_obs_collections) + ";";
-    }
-
-    h += "";
-    h += "// expression storage";
-    h += "double expr[n_expressions][n_cells];";
-
-    h += "";
-    h += "// accumulator storage";
-    h += "double acc[n_accumulators][n_cells];";
-
-    if (n_obs_collections > 0) {
-        h += "";
-        h += "// observation collection storage";
-        h += "// TODO: Use pointers to forward_list pending VC implementation of thread_local";
-        h += "forward_list<double> * obs_collections[n_cells][n_obs_collections];";
-    }
-
     h += "};";
-    h += "extern thread_local " + name + " the" + name + ";";
+
+    h += "extern thread_local " + name + " * the" + name + ";";
 
     return h;
 }
@@ -246,22 +229,11 @@ CodeBlock TableSymbol::cxx_definition_global()
     c += "";
     // table definition
     // E.g. DurationOfLife theDurationOfLife;
-    c += "thread_local " + name + " the" + name + ";";
+    c += "thread_local " + name + " * the" + name + " = nullptr;";
 
     // definition of initialize_accumulators()
     c += "void " + name + "::initialize_accumulators()";
     c += "{";
-
-    if (obs_collections > 0) {
-        c += "// Initialize observation collections";
-        c += "// TODO: Use pointers to forward_list pending VC implementation of thread_local";
-        c += "for (int cell = 0; cell < n_cells; ++cell) {";
-        c += "for (int coll = 0; coll < n_obs_collections; ++coll) {";
-        c += "obs_collections[cell][coll] = new forward_list<double>;";
-        c += "}";
-        c += "}";
-        c += "";
-    }
 
     for (auto acc : pp_accumulators) {
         string initial_value = "";
@@ -356,9 +328,9 @@ CodeBlock TableSymbol::cxx_definition_global()
         c += "P98[coll] = UNDEF_VALUE;";
         c += "P99[coll] = UNDEF_VALUE;";
         c += "gini[coll] = UNDEF_VALUE;";
-        c += "auto lst = obs_collections[cell][coll];";
-        c += "lst->sort();";
-        c += "double total_count = distance(lst->begin(), lst->end());";
+        c += "auto &lst = obs_collections[cell][coll];";
+        c += "lst.sort();";
+        c += "double total_count = distance(lst.begin(), lst.end());";
         c += "if (total_count > 0) {";
         c += "double cum_count = 0.0;";
         c += "double cum_count_prev = 0.0;";
@@ -382,7 +354,7 @@ CodeBlock TableSymbol::cxx_definition_global()
         c += "bool P95_done = false;";
         c += "bool P98_done = false;";
         c += "bool P99_done = false;";
-        c += "for (auto value : *lst ) {";
+        c += "for (auto &value : lst ) {";
         c += "cum_count += 1.0;";
         c += "cum_value += value;";
         c += "cum_value_i += cum_count * value;";
@@ -472,13 +444,6 @@ CodeBlock TableSymbol::cxx_definition_global()
                 c += "";
             }
         }
-
-        c += "// Free observation collections in cell";
-        c += "for (int coll = 0; coll < n_obs_collections; ++coll) {";
-        c += "obs_collections[cell][coll]->clear();";
-        c += "delete obs_collections[cell][coll];";
-        c += "obs_collections[cell][coll] = nullptr;";
-        c += "}";
 
         c += "}";
         c += "";
@@ -597,7 +562,7 @@ void TableSymbol::build_body_process_increments()
         // index of accumulator as string
         string accumulator_index = to_string(acc->index);
         // expression for the accumulator as string
-        string accumulator_expr = "the" + name + ".acc[" + accumulator_index + "][cell]";
+        string accumulator_expr = "the" + name + "->acc[" + accumulator_index + "][cell]";
 
         // expression which evaluates to the value of the increment
         string increment_expr;
@@ -668,8 +633,8 @@ void TableSymbol::build_body_process_increments()
         case token::TK_P99:
             if (acc->updates_obs_collection) {
                 string obs_index = to_string(acc->obs_collection_index);
-                c += "auto lst = the" + name + ".obs_collections[cell][" + obs_index + "];";
-                c += "lst->push_front(dIncrement);";
+                c += "auto &lst = the" + name + "->obs_collections[cell][" + obs_index + "];";
+                c += "lst.push_front(dIncrement);";
             }
             break;
         default:
