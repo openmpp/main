@@ -273,8 +273,8 @@ CodeBlock TableSymbol::cxx_definition_global()
         }
         // e.g.  sum(value_in(alive))
         c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
-        // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
-        c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
+        // e.g. for ( size_t cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
+        c += "for ( size_t cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
         c += "";
 
     }
@@ -287,7 +287,7 @@ CodeBlock TableSymbol::cxx_definition_global()
 
     if (obs_collections > 0) {
         c += "// process each cell";
-        c += "for (int cell = 0; cell < n_cells; ++cell) {";
+        c += "for (size_t cell = 0; cell < n_cells; ++cell) {";
 
         c += "";
         c += "// Compute statistics for each observation collection in the cell.";
@@ -462,7 +462,7 @@ CodeBlock TableSymbol::cxx_definition_global()
             // e.g.  sum(value_in(alive))
             c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
             // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] *= scale_factor;
-            c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
+            c += "for ( size_t cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
         }
     }
     c += "}";
@@ -477,7 +477,7 @@ CodeBlock TableSymbol::cxx_definition_global()
         // E.g.  // SUM_BEFORE( acc0 )
         c += "// " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::sql);
         // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
-        c += "for ( int cell = 0; cell < n_cells; cell++ ) "
+        c += "for ( size_t cell = 0; cell < n_cells; cell++ ) "
             "expr[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::cxx) + " ;";
         c += "";
     }
@@ -631,12 +631,18 @@ void TableSymbol::build_body_process_increments()
         case token::TK_P95:
         case token::TK_P98:
         case token::TK_P99:
+        {
+            string obs_index = to_string(acc->obs_collection_index);
             if (acc->updates_obs_collection) {
-                string obs_index = to_string(acc->obs_collection_index);
+                c += "// Associated observation collection is " + obs_index;
                 c += "auto &lst = the" + name + "->obs_collections[cell][" + obs_index + "];";
                 c += "lst.push_front(dIncrement);";
             }
-            break;
+            else {
+                c += "// Associated observation collection is " + obs_index + " (increment already pushed)";
+            }
+        }
+        break;
         default:
             assert(0); // parser guarantee
         }
