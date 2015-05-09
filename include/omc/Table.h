@@ -13,11 +13,11 @@ using namespace std;
 /**
  * Template for tables.
  *
- * @tparam cells          Number of cells.
- * @tparam accumulators   Number of accumulators.
- * @tparam expressions    Number of expressions.
+ * @tparam t_cells        Number of cells.
+ * @tparam t_accumulators Number of accumulators.
+ * @tparam t_expressions  Number of expressions.
  */
-template<size_t cells, size_t accumulators, size_t expressions>
+template<size_t t_cells, size_t t_accumulators, size_t t_expressions>
 class Table
 {
 public:
@@ -27,43 +27,43 @@ public:
     virtual void compute_expressions() = 0;
 
     // constants
-    static const size_t n_cells = cells;
-    static const size_t n_accumulators = accumulators;
-    static const size_t n_expressions = expressions;
+    static const size_t n_cells = t_cells;
+    static const size_t n_accumulators = t_accumulators;
+    static const size_t n_expressions = t_expressions;
 
     // expression storage
-    double expr[n_expressions][n_cells];
+    double expr[t_expressions][t_cells];
 
     // accumulator storage
-    double acc[n_accumulators][n_cells];
+    double acc[t_accumulators][t_cells];
 };
 
 /**
  * Template for tables with observation collections.
  *
- * @tparam cells           Number of cells.
- * @tparam accumulators    Number of accumulators.
- * @tparam expressions     Number of expressions.
- * @tparam obs_collections Number of observation collections.
+ * @tparam t_cells        Number of cells.
+ * @tparam t_accumulators Number of accumulators.
+ * @tparam t_expressions  Number of expressions.
+ * @tparam t_collections  Number of observation collections.
  */
-template<size_t cells, size_t accumulators, size_t expressions, size_t obs_collections>
-class TableWithObs : public Table <cells, accumulators, expressions>
+template<size_t t_cells, size_t t_accumulators, size_t t_expressions, size_t t_collections>
+class TableWithObs : public Table <t_cells, t_accumulators, t_expressions>
 {
 public:
 
     ~TableWithObs()
     {
         // Empty observation collections in all cells
-        for (size_t cell = 0; cell < n_cells; ++cell) {
-            for (size_t coll = 0; coll < n_obs_collections; ++coll) {
-                obs_collections[cell][coll].clear();
+        for (size_t cell = 0; cell < t_cells; ++cell) {
+            for (size_t j = 0; j < t_collections; ++j) {
+                coll[cell][j].clear();
             }
         }
     }
 
     // constants
-    static const size_t n_obs_collections = obs_collections;
+    static const size_t n_collections = t_collections;
 
     // observation collection storage
-    forward_list<double> obs_collections[n_cells][n_obs_collections];
+    forward_list<double> coll[t_cells][t_collections];
 };

@@ -123,8 +123,8 @@ void TableSymbol::post_parse(int pass)
                     // This collection of observations is not handled by another accumulator.
                     // This accumulator will update the collection.
                     acc->updates_obs_collection = true;
-                    acc->obs_collection_index = obs_collections;
-                    ++obs_collections;
+                    acc->obs_collection_index = n_collections;
+                    ++n_collections;
                 }
             }
         }
@@ -198,14 +198,13 @@ CodeBlock TableSymbol::cxx_declaration_global()
     int n_accumulators = pp_accumulators.size();
     int n_expressions = pp_expressions.size();
     int n_cells = cell_count();
-    int n_obs_collections = obs_collections;
 
-    if (n_obs_collections == 0) {
+    if (n_collections == 0) {
         // E.g. class T02_TotalPopulationByYear : public Table<101, 2, 2>
         h += "class " + name + " : public Table<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ">";
     }
     else {
-        h += "class " + name + " : public TableWithObs<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ", " + to_string(n_obs_collections) + ">";
+        h += "class " + name + " : public TableWithObs<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ", " + to_string(n_collections) + ">";
     }
     h += "{";
     h += "public:";
@@ -285,50 +284,50 @@ CodeBlock TableSymbol::cxx_definition_global()
     c += "void " + name + "::extract_accumulators()";
     c += "{";
 
-    if (obs_collections > 0) {
+    if (n_collections > 0) {
         c += "// process each cell";
         c += "for (size_t cell = 0; cell < n_cells; ++cell) {";
 
         c += "";
         c += "// Compute statistics for each observation collection in the cell.";
-        c += "double P1[n_obs_collections];";
-        c += "double P2[n_obs_collections];";
-        c += "double P5[n_obs_collections];";
-        c += "double P10[n_obs_collections];";
-        c += "double P20[n_obs_collections];";
-        c += "double P25[n_obs_collections];";
-        c += "double P30[n_obs_collections];";
-        c += "double P40[n_obs_collections];";
-        c += "double P50[n_obs_collections];";
-        c += "double P60[n_obs_collections];";
-        c += "double P70[n_obs_collections];";
-        c += "double P75[n_obs_collections];";
-        c += "double P80[n_obs_collections];";
-        c += "double P90[n_obs_collections];";
-        c += "double P95[n_obs_collections];";
-        c += "double P98[n_obs_collections];";
-        c += "double P99[n_obs_collections];";
-        c += "double gini[n_obs_collections];";
-        c += "for (int coll = 0; coll < n_obs_collections; ++coll) {";
-        c += "P1[coll] = UNDEF_VALUE;";
-        c += "P2[coll] = UNDEF_VALUE;";
-        c += "P5[coll] = UNDEF_VALUE;";
-        c += "P10[coll] = UNDEF_VALUE;";
-        c += "P20[coll] = UNDEF_VALUE;";
-        c += "P25[coll] = UNDEF_VALUE;";
-        c += "P30[coll] = UNDEF_VALUE;";
-        c += "P40[coll] = UNDEF_VALUE;";
-        c += "P50[coll] = UNDEF_VALUE;";
-        c += "P60[coll] = UNDEF_VALUE;";
-        c += "P70[coll] = UNDEF_VALUE;";
-        c += "P75[coll] = UNDEF_VALUE;";
-        c += "P80[coll] = UNDEF_VALUE;";
-        c += "P90[coll] = UNDEF_VALUE;";
-        c += "P95[coll] = UNDEF_VALUE;";
-        c += "P98[coll] = UNDEF_VALUE;";
-        c += "P99[coll] = UNDEF_VALUE;";
-        c += "gini[coll] = UNDEF_VALUE;";
-        c += "auto &lst = obs_collections[cell][coll];";
+        c += "double P1[n_collections];";
+        c += "double P2[n_collections];";
+        c += "double P5[n_collections];";
+        c += "double P10[n_collections];";
+        c += "double P20[n_collections];";
+        c += "double P25[n_collections];";
+        c += "double P30[n_collections];";
+        c += "double P40[n_collections];";
+        c += "double P50[n_collections];";
+        c += "double P60[n_collections];";
+        c += "double P70[n_collections];";
+        c += "double P75[n_collections];";
+        c += "double P80[n_collections];";
+        c += "double P90[n_collections];";
+        c += "double P95[n_collections];";
+        c += "double P98[n_collections];";
+        c += "double P99[n_collections];";
+        c += "double gini[n_collections];";
+        c += "for (size_t j = 0; j < n_collections; ++j) {";
+        c += "P1[j] = UNDEF_VALUE;";
+        c += "P2[j] = UNDEF_VALUE;";
+        c += "P5[j] = UNDEF_VALUE;";
+        c += "P10[j] = UNDEF_VALUE;";
+        c += "P20[j] = UNDEF_VALUE;";
+        c += "P25[j] = UNDEF_VALUE;";
+        c += "P30[j] = UNDEF_VALUE;";
+        c += "P40[j] = UNDEF_VALUE;";
+        c += "P50[j] = UNDEF_VALUE;";
+        c += "P60[j] = UNDEF_VALUE;";
+        c += "P70[j] = UNDEF_VALUE;";
+        c += "P75[j] = UNDEF_VALUE;";
+        c += "P80[j] = UNDEF_VALUE;";
+        c += "P90[j] = UNDEF_VALUE;";
+        c += "P95[j] = UNDEF_VALUE;";
+        c += "P98[j] = UNDEF_VALUE;";
+        c += "P99[j] = UNDEF_VALUE;";
+        c += "gini[j] = UNDEF_VALUE;";
+        c += "auto &lst = coll[cell][j];";
         c += "lst.sort();";
         c += "double total_count = distance(lst.begin(), lst.end());";
         c += "if (total_count > 0) {";
@@ -359,77 +358,77 @@ CodeBlock TableSymbol::cxx_definition_global()
         c += "cum_value += value;";
         c += "cum_value_i += cum_count * value;";
         c += "if (!P1_done && cum_count >= total_count * 0.01) {";
-        c += "P1[coll] = value;";
+        c += "P1[j] = value;";
         c += "P1_done = true;";
         c += "}";
         c += "if (!P2_done && cum_count >= total_count * 0.02) {";
-        c += "P2[coll] = value;";
+        c += "P2[j] = value;";
         c += "P2_done = true;";
         c += "}";
         c += "if (!P5_done && cum_count >= total_count * 0.05) {";
-        c += "P5[coll] = value;";
+        c += "P5[j] = value;";
         c += "P5_done = true;";
         c += "}";
         c += "if (!P10_done && cum_count >= total_count * 0.10) {";
-        c += "P10[coll] = value;";
+        c += "P10[j] = value;";
         c += "P10_done = true;";
         c += "}";
         c += "if (!P20_done && cum_count >= total_count * 0.20) {";
-        c += "P20[coll] = value;";
+        c += "P20[j] = value;";
         c += "P20_done = true;";
         c += "}";
         c += "if (!P25_done && cum_count >= total_count * 0.25) {";
-        c += "P25[coll] = value;";
+        c += "P25[j] = value;";
         c += "P25_done = true;";
         c += "}";
         c += "if (!P30_done && cum_count >= total_count * 0.30) {";
-        c += "P30[coll] = value;";
+        c += "P30[j] = value;";
         c += "P30_done = true;";
         c += "}";
         c += "if (!P40_done && cum_count >= total_count * 0.40) {";
-        c += "P40[coll] = value;";
+        c += "P40[j] = value;";
         c += "P40_done = true;";
         c += "}";
         c += "if (!P50_done && cum_count >= total_count * 0.50) {";
-        c += "P50[coll] = value;";
+        c += "P50[j] = value;";
         c += "P50_done = true;";
         c += "}";
         c += "if (!P60_done && cum_count >= total_count * 0.60) {";
-        c += "P60[coll] = value;";
+        c += "P60[j] = value;";
         c += "P60_done = true;";
         c += "}";
         c += "if (!P70_done && cum_count >= total_count * 0.70) {";
-        c += "P70[coll] = value;";
+        c += "P70[j] = value;";
         c += "P70_done = true;";
         c += "}";
         c += "if (!P75_done && cum_count >= total_count * 0.75) {";
-        c += "P75[coll] = value;";
+        c += "P75[j] = value;";
         c += "P75_done = true;";
         c += "}";
         c += "if (!P80_done && cum_count >= total_count * 0.80) {";
-        c += "P80[coll] = value;";
+        c += "P80[j] = value;";
         c += "P80_done = true;";
         c += "}";
         c += "if (!P90_done && cum_count >= total_count * 0.90) {";
-        c += "P90[coll] = value;";
+        c += "P90[j] = value;";
         c += "P90_done = true;";
         c += "}";
         c += "if (!P95_done && cum_count >= total_count * 0.95) {";
-        c += "P95[coll] = value;";
+        c += "P95[j] = value;";
         c += "P95_done = true;";
         c += "}";
         c += "if (!P98_done && cum_count >= total_count * 0.98) {";
-        c += "P98[coll] = value;";
+        c += "P98[j] = value;";
         c += "P98_done = true;";
         c += "}";
         c += "if (!P99_done && cum_count >= total_count * 0.99) {";
-        c += "P99[coll] = value;";
+        c += "P99[j] = value;";
         c += "P99_done = true;";
         c += "}";
         c += "cum_count_prev = cum_count;";
         c += "value_prev = value;";
         c += "}";
-        c += "gini[coll] = (2.0 * cum_value_i ) / (total_count * cum_value) - (total_count + 1.0) / total_count;";
+        c += "gini[j] = (2.0 * cum_value_i ) / (total_count * cum_value) - (total_count + 1.0) / total_count;";
         c += "}";
         c += "}";
         c += "";
@@ -635,7 +634,7 @@ void TableSymbol::build_body_process_increments()
             string obs_index = to_string(acc->obs_collection_index);
             if (acc->updates_obs_collection) {
                 c += "// Associated observation collection is " + obs_index;
-                c += "auto &lst = the" + name + "->obs_collections[cell][" + obs_index + "];";
+                c += "auto &lst = the" + name + "->coll[cell][" + obs_index + "];";
                 c += "lst.push_front(dIncrement);";
             }
             else {

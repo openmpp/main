@@ -398,7 +398,7 @@ void CodeGen::do_ModelShutdown()
         c += "const char *name = \"" + table->name + "\";";
         c += "auto &tbl = the" + table->name + ";";
         c += "double *pdbl[tbl->n_accumulators]; // array of pointers for writeOutputTable";
-        c += "for (int j = 0; j < tbl->n_accumulators; ++j) pdbl[j] = tbl->acc[j];";
+        c += "for (size_t j = 0; j < tbl->n_accumulators; ++j) pdbl[j] = tbl->acc[j];";
 	    c += "i_model->writeOutputTable(name, tbl->n_accumulators, tbl->n_cells, const_cast<const double **>(pdbl));";
         c += "}";
     }

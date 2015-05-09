@@ -48,7 +48,7 @@ public:
         , filter(nullptr)
         , unit(nullptr)
         , expr_dim_position(0)
-        , obs_collections(0)
+        , n_collections(0)
         , pp_table_id(-1)
     {
         create_auxiliary_symbols();
@@ -188,7 +188,7 @@ public:
      * Some accumulators such as P50 require an associated onservation collection
      * for each cell of the table.  This is the count of the number of such collections in each table cell.
      */
-    int obs_collections;
+    int n_collections;
 
     /**
      * Numeric identifier. Used for communicating with metadata API.

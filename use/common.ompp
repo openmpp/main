@@ -148,5 +148,5 @@ double PieceLinearLookup(double x, const double *ax, const double *ay, int n)
  */
 bool IsUndefined(double x)
 {
-    return isnan(x);
+    return std::isnan(x);
 }
