@@ -7,3 +7,5 @@
  * files in this file, for correct placement in compiler-generated files.
  */
 
+#include <cassert>
+
