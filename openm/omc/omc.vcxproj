@@ -69,7 +69,7 @@
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
   <PropertyGroup>
-    <BUILD_OMC_SRC_DIR>$(BUILD_DIR)/$(ProjectName)/src</BUILD_OMC_SRC_DIR>
+    <BUILD_OMC_SRC_DIR>$(BUILD_DIR)/$(ProjectName)/src_windows</BUILD_OMC_SRC_DIR>
     <OutDir>$(OM_BIN_DIR)/</OutDir>
     <TargetName>$(ProjectName)$(BUILD_SUFFIX)</TargetName>
   </PropertyGroup>
