@@ -410,6 +410,11 @@ for my $model_dir (@model_dirs) {
 			#copy $modgen_Base_debug_txt, "${current_outputs_dir}/trace.txt";
 			normalize_event_trace $modgen_Base_debug_txt, "${current_outputs_dir}/trace.txt";
 		}
+		
+		# Create file to record significant digits used in csv creation
+		open SIGNIFICANT_DIGITS_TXT, ">${current_outputs_dir}/significant_digits.txt";
+		print SIGNIFICANT_DIGITS_TXT "significant digits = ${significant_digits}\n";
+		close SIGNIFICANT_DIGITS_TXT;
 
 		logmsg info, $model_dir, "modgen", "Convert output tables to .csv (${significant_digits} digits of precision)";
 		if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_outputs_dir, $significant_digits)) {
@@ -620,6 +625,11 @@ for my $model_dir (@model_dirs) {
 			#copy $ompp_trace_txt, "${current_outputs_dir}/trace.txt";
 			normalize_event_trace $ompp_trace_txt, "${current_outputs_dir}/trace.txt";
 		}
+
+		# Create file to record significant digits used in csv creation
+		open SIGNIFICANT_DIGITS_TXT, ">${current_outputs_dir}/significant_digits.txt";
+		print SIGNIFICANT_DIGITS_TXT "significant digits = ${significant_digits}\n";
+		close SIGNIFICANT_DIGITS_TXT;
 
 		logmsg info, $model_dir, "ompp", "Convert output tables to .csv (${significant_digits} digits of precision)";
 		if ( 0 != ompp_tables_to_csv($model_sqlite, $current_outputs_dir, $significant_digits)) {
