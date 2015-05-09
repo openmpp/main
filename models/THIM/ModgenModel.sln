@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Model", "Model.vcxproj", "{39D2FE8E-B4FF-4B30-A86D-F34EC877D7C5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Model", "modgen\Model.vcxproj", "{39D2FE8E-B4FF-4B30-A86D-F34EC877D7C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

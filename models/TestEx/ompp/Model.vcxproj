@@ -73,13 +73,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import openM properties for model projects -->
-  <Import Project="$(SolutionDir)../../model.1.build.props" />
-  <Import Project="$(SolutionDir)../../model.2.cpp.props" />
-  <Import Project="$(SolutionDir)../../model.3.ide.props" />
+  <Import Project="$(ProjectDir)../../model.1.build.props" />
+  <Import Project="$(ProjectDir)../../model.2.cpp.props" />
+  <Import Project="$(ProjectDir)../../model.3.ide.props" />
   <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <!-- Import openM targets for model projects -->
-  <Import Project="$(SolutionDir)../../model.4.build.targets" />
+  <Import Project="$(ProjectDir)../../model.4.build.targets" />
 </Project>

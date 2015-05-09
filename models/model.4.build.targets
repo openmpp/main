@@ -7,7 +7,7 @@
 
   <!-- Validate the values of User Macros.
   These are specified by the model developer through the Visual Studio IDE
-  in the OpenM++.props property sheet.
+  in the Model.props property sheet.
   -->
   <Target Name="ValidateUserMacros" BeforeTargets="OmcCompile">
     <Error
@@ -84,8 +84,8 @@
   The following property helps make the SQLitePublish target and output more readable.
   -->
   <PropertyGroup>
-    <OM_MODEL_DB>$([MSBuild]::MakeRelative($(SolutionDir),$(OutDir)$(MODEL_NAME).sqlite))</OM_MODEL_DB>
-    <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(SolutionDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
+    <OM_MODEL_DB>$([MSBuild]::MakeRelative($(ProjectDir),$(OutDir)$(MODEL_NAME).sqlite))</OM_MODEL_DB>
+    <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
     <!--  Replace back slash by forward slash. -->
     <OM_SQL_DIR_REL>$(OM_SQL_DIR_REL.Replace(&quot;\&quot;,&quot;/&quot;))</OM_SQL_DIR_REL>
   </PropertyGroup>

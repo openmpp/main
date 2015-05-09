@@ -8,7 +8,7 @@
     AdditionalLibraryDirectories: OM_MSG_LIB_DIR OM_DB_LIB_DIR OM_LIB_DIR
   -->
   <PropertyGroup>
-    <OutDir>$(SolutionDir)bin/</OutDir>
+    <OutDir>$(ProjectDir)bin/</OutDir>
     <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
     <TargetName>$(MODEL_NAME)$(BUILD_SUFFIX)</TargetName>
   </PropertyGroup>

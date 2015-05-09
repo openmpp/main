@@ -38,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import properties for Modgen model projects -->
-  <Import Project="$(SolutionDir)../../modgen_model.props" />
+  <Import Project="$(ProjectDir)../../modgen_model.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

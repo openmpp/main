@@ -50,7 +50,7 @@ if ($#ARGV >= 0) {
 else {
 	# no models listed on command line
 	# Create model list by identifying all model subdirectories
-	my @paths = glob "*/ompp";
+	my @paths = glob "*/code";
 	for my $path (@paths) {
 		$path =~ s/\/.*//;
 		push @model_dirs, $path;
@@ -299,9 +299,9 @@ for my $model_dir (@model_dirs) {
 		unlink $build_log;
 
 		# Check for solution file
-		my $model_sln = "model.sln";
+		my $model_sln = "../ModgenModel.sln";
 		if ( ! -e $model_sln ) {
-			logmsg error, $model_dir, "modgen", "Missing solution file in ${project_dir}";
+			logmsg error, $model_dir, "modgen", "Missing solution file ${model_sln}";
 			last MODGEN;
 		}
 		
@@ -527,9 +527,9 @@ for my $model_dir (@model_dirs) {
 		}
 		
 		# The solution file
-		my $model_sln = "Model.sln";
+		my $model_sln = "../OmppModel.sln";
 		if ( ! -e $model_sln ) {
-			logmsg error, $model_dir, "ompp", "Missing solution file: $model_sln";
+			logmsg error, $model_dir, "ompp", "Missing solution file: ${model_sln}";
 			last OMPP;
 		}
 

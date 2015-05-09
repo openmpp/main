@@ -32,7 +32,7 @@ if ($#ARGV >= 0) {
 else {
 	# no models listed on command line
 	# Create model list by identifying all model subdirectories
-	my @paths = glob "*/ompp";
+	my @paths = glob "*/code";
 	for my $path (@paths) {
 		$path =~ s/\/.*//;
 		push @model_dirs, $path;

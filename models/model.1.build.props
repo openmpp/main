@@ -9,14 +9,14 @@
 	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
 	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
 	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
-    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../../../include</OM_INC_DIR>
-    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../../../bin</OM_BIN_DIR>
-    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../../../lib</OM_LIB_DIR>
-    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(SolutionDir)../../../sql</OM_SQL_DIR>
-    <BUILD_DIR>$(SolutionDir)build</BUILD_DIR>
-    <OMC_IN_DIR>$(SolutionDir)..\code</OMC_IN_DIR>
-    <OMC_OUT_DIR>$(SolutionDir)src</OMC_OUT_DIR>
-    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(SolutionDir)../../../use</OMC_USE_DIR>
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(ProjectDir)../../../include</OM_INC_DIR>
+    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(ProjectDir)../../../bin</OM_BIN_DIR>
+    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(ProjectDir)../../../lib</OM_LIB_DIR>
+    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(ProjectDir)../../../sql</OM_SQL_DIR>
+    <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
+    <OMC_IN_DIR>$(ProjectDir)..\code</OMC_IN_DIR>
+    <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(ProjectDir)../../../use</OMC_USE_DIR>
     <OMC_EXE>omc.exe</OMC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
     <EXCEL_EXPORT_EXE>excel_export32.exe</EXCEL_EXPORT_EXE>
