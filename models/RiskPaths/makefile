@@ -11,11 +11,11 @@ CPP = $(CC)
 AR = ar
 
 ifndef BUILD_DIR
-  BUILD_DIR = ../build
+  BUILD_DIR = ompp-linux/build
 endif
 
 ifndef OUT_PREFIX
-  OUT_PREFIX = ..
+  OUT_PREFIX = ompp-linux
 endif
 
 ifndef OM_INC_DIR
