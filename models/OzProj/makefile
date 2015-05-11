@@ -87,9 +87,9 @@ endif
 #
 # build directories
 #
-MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
+MODEL_BUILD_DIR = $(BUILD_DIR)
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
-OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
+OMC_OUT_DIR = $(OUT_PREFIX)/src
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
