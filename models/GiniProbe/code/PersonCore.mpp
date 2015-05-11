@@ -1,0 +1,69 @@
+//LABEL(PersonCore, EN) Core functionality of the Person actor
+
+/* NOTE(PersonCore, EN)
+	This module contains the basic information which defines the Person case.
+*/
+
+parameters 
+{
+	//EN mu
+	double mu;
+
+    //EN sigma
+	double sigma;
+};
+
+actor Person            //EN Individual
+{
+    //EN x
+    double x;
+
+	void Start();
+	void Finish();
+};
+
+void Person::Start()
+{
+    // Initialize all attributes.
+    initialize_attributes();
+
+    // Draw from a log-normal distribution 
+    x = exp(mu + sigma * RandNormal(0));
+
+    // Have the entity enter the simulation.
+    enter_simulation();
+}
+
+/*NOTE(Person.Finish, EN)
+	The Finish function terminates the simulation of an actor.
+*/
+void Person::Finish()
+{
+    // Have the entity exit the simulation.
+    exit_simulation();
+}
+
+table Person Results
+{
+    {
+        value_in(x) / unit, //EN mean
+        gini(value_in(x)), //EN gini
+        P1(value_in(x)), //EN P1
+        P2(value_in(x)), //EN P2
+        P5(value_in(x)), //EN P5
+        P10(value_in(x)), //EN P10
+        P20(value_in(x)), //EN P20
+        P25(value_in(x)), //EN P25
+        P30(value_in(x)), //EN P30
+        P40(value_in(x)), //EN P40
+        P50(value_in(x)), //EN P50
+        P60(value_in(x)), //EN P60
+        P70(value_in(x)), //EN P70
+        P75(value_in(x)), //EN P75
+        P80(value_in(x)), //EN P80
+        P90(value_in(x)), //EN P90
+        P95(value_in(x)), //EN P95
+        P98(value_in(x)), //EN P98
+        P99(value_in(x)) //EN P99
+    }
+};

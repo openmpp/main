@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{0e7866a6-65b3-41a1-b201-3b7d043e1098}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
+    </Filter>
+    <Filter Include="Model Source Files">
+      <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
+      <Extensions>mpp;ompp</Extensions>
+    </Filter>
+    <Filter Include="Parameter Files">
+      <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
+      <Extensions>dat;odat</Extensions>
+    </Filter>
+  </ItemGroup>
+</Project>
