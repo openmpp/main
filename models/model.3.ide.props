@@ -6,11 +6,15 @@
   -->
 
   <ItemGroup>
-    <ClCompile Include="src\*.cpp" />
+    <ClCompile Include="src\om_definitions.cpp" />
+    <ClCompile Include="src\om_developer.cpp" />
+    <ClCompile Include="src\om_fixed_parms.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\code\*.h" />
-    <ClInclude Include="src\*.h" />
+    <ClInclude Include="src\om_types0.h" />
+    <ClInclude Include="src\om_declarations.h" />
+    <ClInclude Include="src\om_types1.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\code\*.mpp" />
