@@ -19,7 +19,7 @@ my $models_root = getcwd;
 #  0 - errors only
 #  1 - timing and success
 #  2 - chatty
-my $verbosity = 1;
+my $verbosity = 2;
 
 # Number of significant digits to retain in the output csv files
 my $significant_digits = 8;
@@ -88,6 +88,7 @@ if ( $^O eq 'linux') {
 ###############
 
 use File::Copy;
+use File::Copy::Recursive qw(dircopy);
 use File::Path qw(make_path remove_tree);
 use File::Compare;
 
@@ -248,11 +249,11 @@ for my $model_dir (@model_dirs) {
 		my $current_dir = "${model_path}/test_models/current/${flavour}";
 		my $project_dir = "${model_path}/${flavour}";
 		make_path $project_dir if -d "${project_dir}";
-		# Skip this flavour if place-holder file skip_model found in project folder for this flavour
+		# Skip this flavour if place-holder file skip_model found in project folder
 		next FLAVOUR if -e "${project_dir}/skip_model";
 		logmsg info, $model_dir, $flavour if $verbosity == 0;
 		if ($new_ref) {
-			logmsg info, $model_dir, $flavour, "Deleting old reference directory" if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "Deleting reference directory" if $verbosity >= 2;
 			remove_tree($reference_dir);
 		}
 		remove_tree $current_dir;
@@ -264,14 +265,26 @@ for my $model_dir (@model_dirs) {
 		my $current_generated_code_dir = "${current_dir}/generated_code";
 		make_path $current_generated_code_dir;
 		
-		# Folders for reference generated code and outputs
+		# Folder for current logs (holds a copy)
+		my $current_logs_dir = "${current_dir}/logs";
+		make_path $current_logs_dir;
+		
+		# Folders for reference model outputs
 		my $reference_outputs_dir = "${reference_dir}/outputs";
-		my $reference_generated_code_dir = "${reference_dir}/generated_code";
 
 		my $generated_code_dir = "${project_dir}/src";
 		remove_tree $generated_code_dir;
 		make_path $generated_code_dir;
 
+		# Log file from modgen.exe
+		my $compile_log = "${project_dir}/compile.log";
+		
+		# Log file from build step
+		my $build_log = "${project_dir}/build.log";
+		
+		# Log file from run step
+		my $run_log = "${project_dir}/run.log";
+		
 		if ($flavour eq 'modgen') {
 
 			#####################################
@@ -291,19 +304,13 @@ for my $model_dir (@model_dirs) {
 					);
 				system(@args);
 			};
-			my $modgen_log = "${project_dir}/modgen.log";
-			open MODGEN_LOG, ">${modgen_log}";
-			print MODGEN_LOG $merged;
-			close MODGEN_LOG;
+			open COMPILE_LOG, ">${compile_log}";
+			print COMPILE_LOG $merged;
+			close COMPILE_LOG;
 			if ($retval != 0) {
 				logmsg error, $model_dir, $flavour, "Modgen compile failed - see ModgenLog.htm or modgen.log";
 				logerrors $merged;
 				next FLAVOUR;
-			}
-			# Save copy of generated C++ source code
-			chdir $generated_code_dir;
-			for (glob "*.h *.cpp") {
-				copy "$_", "$current_generated_code_dir";
 			}
 			
 			# Build the model
@@ -422,10 +429,12 @@ for my $model_dir (@model_dirs) {
 			#####################################
 			
 			# Save copy of generated C++ source code
-			for (glob "src/*.h src/*.cpp") {
+			chdir $generated_code_dir;
+			for (glob "*.h *.cpp") {
 				copy "$_", "$current_generated_code_dir";
 			}
 			
+			chdir "${target_dir}";
 			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
 
 			# Delete output database to enable subsequent check for success
@@ -468,7 +477,7 @@ for my $model_dir (@model_dirs) {
 			if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_outputs_dir, $significant_digits)) {
 				next FLAVOUR;
 			}
-			
+		
 		}
 		elsif ($flavour eq 'ompp') {
 		
@@ -528,6 +537,9 @@ for my $model_dir (@model_dirs) {
 					);
 				system(@args);
 			};
+			open BUILD_LOG, ">${build_log}";
+			print BUILD_LOG $merged;
+			close BUILD_LOG;
 			if ($retval != 0) {
 				logmsg error, $model_dir, $flavour, "build failed";
 				logerrors $merged;
@@ -569,10 +581,12 @@ for my $model_dir (@model_dirs) {
 			#####################################
 			
 			# Save copy of generated C++ source code
-			for (glob "src/*.h src/*.cpp") {
+			chdir $generated_code_dir;
+			for (glob "*.h *.cpp") {
 				copy "$_", "$current_generated_code_dir";
 			}
 			
+			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
 			# Change working directory to target_dir where the executable and data store
 			# are located. This avoids having to specify the data connection string
 			# explicitly when launching the model.
@@ -643,6 +657,7 @@ for my $model_dir (@model_dirs) {
 			my $make_defines;
 			$make_defines .= ' RELEASE=1' if $ompp_linux_configuration eq 'release';
 			
+			open BUILD_LOG, ">${build_log}";
 			for my $make_target ('cleanall', 'model', 'publish') {
 				logmsg info, $model_dir, $flavour, "make ${make_target}" if $verbosity >= 2;
 				($merged, $retval) = capture_merged {
@@ -653,12 +668,15 @@ for my $model_dir (@model_dirs) {
 						);
 					system(@args);
 				};
+				print BUILD_LOG $merged;
 				if ($retval != 0) {
 					logmsg error, $model_dir, $flavour, "build failed";
 					logerrors $merged;
+					close BUILD_LOG;
 					next FLAVOUR;
 				}
 			}
+			close BUILD_LOG;
 			
 			# Executable model generated by build
 			my $target_dir = "${project_dir}/bin/${ompp_linux_configuration}";
@@ -686,10 +704,12 @@ for my $model_dir (@model_dirs) {
 			#####################################
 			
 			# Save copy of generated C++ source code
-			for (glob "src/*.h src/*.cpp") {
+			chdir $generated_code_dir;
+			for (glob "*.h *.cpp") {
 				copy "$_", "$current_generated_code_dir";
 			}
 
+			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
 			# Change working directory to target_dir where the executable and data store
 			# are located. This avoids having to specify the data connection string
 			# explicitly when launching the model.
@@ -748,22 +768,17 @@ for my $model_dir (@model_dirs) {
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
+		
+		# Create current copy of all log files
+		chdir $project_dir;
+		for (glob "*.log") {
+			copy "$_", $current_logs_dir;
+		}
 
-		# If no reference results, copy current results to reference as a base for subsequent comparisons
-		if (! -d $reference_outputs_dir) {
+		# If no reference directory, copy current to reference
+		if (! -d $reference_dir) {
 			logmsg info, $model_dir, $flavour, "No reference outputs - create using current outputs." if $verbosity >= 2;
-			make_path $reference_outputs_dir;
-			chdir $current_outputs_dir;
-			for (glob "*.*") {
-				copy "$_", "$reference_outputs_dir";
-			}
-			# Also record generated code
-			unlink $reference_generated_code_dir;
-			make_path $reference_generated_code_dir;
-			chdir $current_generated_code_dir;
-			for (glob "*.*") {
-				copy "$_", "$reference_generated_code_dir";
-			}
+			dircopy $current_dir, $reference_dir;
 		}
 		
 		# Report on differences between current and reference outputs
