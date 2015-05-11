@@ -19,33 +19,33 @@ my $models_root = getcwd;
 #  0 - errors only
 #  1 - timing and success
 #  2 - chatty
-my $verbosity = 2;
+my $verbosity = 3;
 
 # Number of significant digits to retain in the output csv files
 my $significant_digits = 8;
 
 #####################
-# ompp settings
+# ompp settings for Windows
 #####################
 
-# ompp compiler version (4 possible values)
+# ompp compiler version for Windows (4 possible values)
 my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omcD.exe';
 #my $omc_exe = 'omc64.exe';
 #my $omc_exe = 'omc64D.exe';
 	
-#my $ompp_configuration = "Debug";
-my $ompp_configuration = "Release";
+my $ompp_configuration = "Debug";
+#my $ompp_configuration = "Release";
 
-#my $ompp_platform = "Win32";
-my $ompp_platform = "x64";
+my $ompp_platform = "Win32";
+#my $ompp_platform = "x64";
 
 #####################
 # ompp-linux settings
 #####################
 
-#my $ompp_linux_configuration = "debug";
-my $ompp_linux_configuration = "release";
+my $ompp_linux_configuration = "debug";
+#my $ompp_linux_configuration = "release";
 
 #####################
 # modgen settings
@@ -654,7 +654,7 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 
-			my $make_defines;
+			my $make_defines = 'ignore_this = 1';
 			$make_defines .= ' RELEASE=1' if $ompp_linux_configuration eq 'release';
 			
 			open BUILD_LOG, ">${build_log}";
@@ -811,10 +811,10 @@ for my $model_dir (@model_dirs) {
 			my $digests_txt_1 = "${model_path}/test_models/${which}/${flavour1}/outputs/digests.txt";
 			my $digests_txt_2 = "${model_path}/test_models/${which}/${flavour2}/outputs/digests.txt";
 			if (! -e $digests_txt_1) {
-				logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour1} digest";
+				logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour1} digest" if $verbosity >= 2;
 			}
 			elsif (! -e $digests_txt_2) {
-				logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour2} digest";
+				logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour2} digest" if $verbosity >= 2;
 			}
 			else {
 				my $different_files = digest_differences($digests_txt_1, $digests_txt_2);
