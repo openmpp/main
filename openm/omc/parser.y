@@ -2005,7 +2005,8 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 pc.redeclaration = true;
                                 table = dynamic_cast<TableSymbol *>($table);
                                 assert(table); // grammar/logic guarantee
-                                // TODO Raise error?
+                                // redeclaration not allowed
+                                error(@table, "error: A table named '" + $table->name + "' already exists");
                             }
                             // Set agent context and table context for body of table declaration
                             pc.set_agent_context( $agent );
@@ -2267,35 +2268,31 @@ table_operator:
  */
 
 decl_derived_table:
-      "derived_table" SYMBOL[dev_table]
+      "derived_table" SYMBOL[derived_table]
                         {
-                            // morph existing symbol to DerivedTableSymbol
-                            auto *sym = new DerivedTableSymbol( $dev_table, @dev_table );
+                            DerivedTableSymbol *derived_table = nullptr;
 
-                            //TODO
-                            //DerivedTableSymbol *dev_table = nullptr;
-
-                            //if ($dev_table->is_base_symbol()) {
-                            //    // Morph Symbol to DerivedTableSymbol
-                            //    dev_table = new DerivedTableSymbol( $dev_table, $agent, @table );
-                            //    assert(dev_table);
-                            //    $dev_table = dev_table;
-                            //}
-                            //else {
-                            //    // re-declaration
-                            //    pc.redeclaration = true;
-                            //    dev_table = dynamic_cast<DerivedTableSymbol *>($dev_table);
-                            //    assert(dev_table); // grammar/logic guarantee
-                            //    // TODO Raise error?
-                            //}
-                            //// Set developer table context for body of table declaration
-                            //pc.set_derived_table_context( dev_table );
+                            if ($derived_table->is_base_symbol()) {
+                                // Morph Symbol to DerivedTableSymbol
+                                derived_table = new DerivedTableSymbol( $derived_table, @derived_table );
+                                assert(derived_table);
+                                $derived_table = derived_table;
+                            }
+                            else {
+                                // re-declaration
+                                pc.redeclaration = true;
+                                derived_table = dynamic_cast<DerivedTableSymbol *>($derived_table);
+                                assert(derived_table); // grammar/logic guarantee
+                                // redeclaration not allowed
+                                error(@derived_table, "error: A derived table named '" + derived_table->name + "' already exists");
+                            }
+                            // Set derived table context for body of derived table declaration
+                            pc.set_derived_table_context( derived_table );
                         }
             "{" derived_table_dimension_list "}" ";"
                         {
-                            // TODO
-                            //// No developer table context
-                            //pc.set_derived_table_context( nullptr );
+                            // Leaving derived table context
+                            pc.set_derived_table_context( nullptr );
                         }
     | "derived_table" error ";"
     ;
@@ -2308,13 +2305,7 @@ derived_table_dimension_list:
 derived_table_dimension:
     SYMBOL[enumeration] table_margin_opt
                         {
-                            $table_margin_opt;
-                            // add $enumeration to developer table's dimension_list
-                            //pc.get_derived_table_context()->dimension_list.push_back($enumeration->stable_pp());
-                            // add margin specifier to developer table's margin_list
-                            // (maintained in parallel with dimension_list)
-                            //bool margin_opt = $table_margin_opt == token::TK_PLUS;
-                            //pc.get_derived_table_context()->margin_list.push_back(margin_opt);
+                            //TODO
                         }
     | "{" derived_table_analysis_list "}"
     ;

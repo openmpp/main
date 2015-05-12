@@ -37,6 +37,7 @@ public:
         , redeclaration(false)
         , agent_context (nullptr)
         , table_context (nullptr)
+        , derived_table_context (nullptr)
         , entity_set_context (nullptr)
         , classification_context(nullptr)
         , partition_context(nullptr)
@@ -76,6 +77,17 @@ public:
     {
         assert(table_context);  // grammar/logic guarantee that requests only occur in valid table context
         return table_context;
+    }
+
+    void set_derived_table_context( DerivedTableSymbol *derived_table )
+    {
+        derived_table_context = derived_table;
+    }
+
+    DerivedTableSymbol * get_derived_table_context( )
+    {
+        assert(derived_table_context);  // grammar/logic guarantee that requests only occur in valid table context
+        return derived_table_context;
     }
 
     void set_entity_set_context( EntitySetSymbol *entity_set )
@@ -156,6 +168,7 @@ public:
         next_word_is_string = false;
         agent_context = nullptr;
         table_context = nullptr;
+        derived_table_context = nullptr;
         entity_set_context = nullptr;
         classification_context = nullptr;
         partition_context = nullptr;
@@ -303,6 +316,14 @@ private:
      * the table has already been morphed to a TableSymbol if not already done.
      */
 	TableSymbol *table_context;
+
+    /**
+     * derived table context for symbols in derived table declaration
+     * 
+     * Safe to use direct pointers, since context guarantess that we are in a table declaration, so
+     * the table has already been morphed to a TableSymbol if not already done.
+     */
+	DerivedTableSymbol *derived_table_context;
 
     /**
      * entity set context for symbols in entity set declaration

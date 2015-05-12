@@ -17,7 +17,7 @@ using namespace std;
 /**
 * DimensionSymbol.
 * 
-* Corresponds to a dimension of a table (excluding the expression dimension of hte table).
+* Corresponds to a dimension of a table or entity set.
 */
 class DimensionSymbol : public Symbol
 {

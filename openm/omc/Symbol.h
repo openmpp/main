@@ -25,6 +25,7 @@ class AgentSymbol;
 class ParameterSymbol;
 class EntitySetSymbol;
 class TableSymbol;
+class DerivedTableSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
 class HideGroupSymbol;

@@ -106,7 +106,7 @@ public:
      * List of symbols in the map.
      * 
      * The list is gathered during parsing.  It consists of pairs of enumerators from each of the
-     * classifications, which are resovled to a map during post-parse processing.
+     * classifications, which are resolved to a map during post-parse processing.
      */
     list<Symbol **> symbol_list;
 
