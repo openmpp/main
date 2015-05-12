@@ -253,3 +253,45 @@ table Toy AgentIdTest_Toy
         value_out(actor_id)
     }
 };
+
+
+//actor Person
+//{
+//    //EN Age
+//    AGE_GROUP age_group = self_scheduling_split(age, AGE_GROUP);
+//};
+
+table Person ut1_feeder //EN Feeder table for ut1
+{
+    self_scheduling_split(age, AGE_GROUP) 
+    * eye_colour
+    * { duration() }
+};
+
+user_table ut1 //EN User table #1
+{
+      AGE_GROUP
+    * EYE_COLOUR
+    * {
+          ANALYSIS1,
+          ANALYSIS2,
+          ANALYSIS3
+    }
+};
+
+void UserTables()
+{
+    const int nAgeGroups = SIZE(AGE_GROUP);
+    const int nEyeColours = SIZE(EYE_COLOUR);
+    for (int nA = 0; nA < nAgeGroups; ++nA) {
+        for (int nC = 0; nC < nEyeColours; ++nC) {
+            double dValue = GetTableValue("ut1_feeder.Expr0", nA, nC);
+            double dValue1 = 1.0 + dValue;
+            double dValue2 = 2.0 + dValue;
+            double dValue3 = 3.0 + dValue;
+            SetTableValue("ut1.ANALYSIS1", dValue1, nA, nC);
+            SetTableValue("ut1.ANALYSIS2", dValue2, nA, nC);
+            SetTableValue("ut1.ANALYSIS3", dValue3, nA, nC);
+        }
+    }
+}
