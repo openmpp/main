@@ -179,8 +179,8 @@
     <ClInclude Include="ConstantSymbol.h" />
     <ClInclude Include="DependencyGroupSymbol.h" />
     <ClInclude Include="DerivedAgentVarSymbol.h" />
-    <ClInclude Include="DeveloperTableAnalysisSymbol.h" />
-    <ClInclude Include="DeveloperTableSymbol.h" />
+    <ClInclude Include="DerivedTableAnalysisSymbol.h" />
+    <ClInclude Include="DerivedTableSymbol.h" />
     <ClInclude Include="DimensionSymbol.h" />
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
@@ -254,8 +254,8 @@
     <ClCompile Include="ConstantSymbol.cpp" />
     <ClCompile Include="DependencyGroupSymbol.cpp" />
     <ClCompile Include="DerivedAgentVarSymbol.cpp" />
-    <ClCompile Include="DeveloperTableAnalysisSymbol.cpp" />
-    <ClCompile Include="DeveloperTableSymbol.cpp" />
+    <ClCompile Include="DerivedTableAnalysisSymbol.cpp" />
+    <ClCompile Include="DerivedTableSymbol.cpp" />
     <ClCompile Include="DimensionSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="EntitySetSymbol.cpp" />

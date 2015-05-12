@@ -119,7 +119,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_classification "classification"
 %token <val_token>    TK_counter_type   "counter_type"
 %token <val_token>    TK_dependency     "dependency"
-%token <val_token>    TK_developer_table "developer_table"
+%token <val_token>    TK_derived_table "derived_table"
 %token <val_token>    TK_entity         "entity"
 %token <val_token>    TK_entity_set     "entity_set"
 %token <val_token>    TK_extend_parameter "extend_parameter"
@@ -576,7 +576,7 @@ ompp_declarative_island:
 	| decl_link             { pc.InitializeForCxx(); }
 	| decl_entity_set       { pc.InitializeForCxx(); }
 	| decl_table            { pc.InitializeForCxx(); }
-	| decl_developer_table  { pc.InitializeForCxx(); }
+	| decl_derived_table  { pc.InitializeForCxx(); }
 	;
 
 /*
@@ -2263,79 +2263,79 @@ table_operator:
     ;
 
 /*
- * developer_table
+ * derived_table
  */
 
-decl_developer_table:
-      "developer_table" SYMBOL[dev_table]
+decl_derived_table:
+      "derived_table" SYMBOL[dev_table]
                         {
-                            // morph existing symbol to DeveloperTableSymbol
-                            auto *sym = new DeveloperTableSymbol( $dev_table, @dev_table );
+                            // morph existing symbol to DerivedTableSymbol
+                            auto *sym = new DerivedTableSymbol( $dev_table, @dev_table );
 
                             //TODO
-                            //DeveloperTableSymbol *dev_table = nullptr;
+                            //DerivedTableSymbol *dev_table = nullptr;
 
                             //if ($dev_table->is_base_symbol()) {
-                            //    // Morph Symbol to DeveloperTableSymbol
-                            //    dev_table = new DeveloperTableSymbol( $dev_table, $agent, @table );
+                            //    // Morph Symbol to DerivedTableSymbol
+                            //    dev_table = new DerivedTableSymbol( $dev_table, $agent, @table );
                             //    assert(dev_table);
                             //    $dev_table = dev_table;
                             //}
                             //else {
                             //    // re-declaration
                             //    pc.redeclaration = true;
-                            //    dev_table = dynamic_cast<DeveloperTableSymbol *>($dev_table);
+                            //    dev_table = dynamic_cast<DerivedTableSymbol *>($dev_table);
                             //    assert(dev_table); // grammar/logic guarantee
                             //    // TODO Raise error?
                             //}
                             //// Set developer table context for body of table declaration
-                            //pc.set_developer_table_context( dev_table );
+                            //pc.set_derived_table_context( dev_table );
                         }
-            "{" developer_table_dimension_list "}" ";"
+            "{" derived_table_dimension_list "}" ";"
                         {
                             // TODO
                             //// No developer table context
-                            //pc.set_developer_table_context( nullptr );
+                            //pc.set_derived_table_context( nullptr );
                         }
-    | "developer_table" error ";"
+    | "derived_table" error ";"
     ;
 
-developer_table_dimension_list:
-    developer_table_dimension
-  | developer_table_dimension_list "*" developer_table_dimension
+derived_table_dimension_list:
+    derived_table_dimension
+  | derived_table_dimension_list "*" derived_table_dimension
   ;
 
-developer_table_dimension:
+derived_table_dimension:
     SYMBOL[enumeration] table_margin_opt
                         {
                             $table_margin_opt;
                             // add $enumeration to developer table's dimension_list
-                            //pc.get_developer_table_context()->dimension_list.push_back($enumeration->stable_pp());
+                            //pc.get_derived_table_context()->dimension_list.push_back($enumeration->stable_pp());
                             // add margin specifier to developer table's margin_list
                             // (maintained in parallel with dimension_list)
                             //bool margin_opt = $table_margin_opt == token::TK_PLUS;
-                            //pc.get_developer_table_context()->margin_list.push_back(margin_opt);
+                            //pc.get_derived_table_context()->margin_list.push_back(margin_opt);
                         }
-    | "{" developer_table_analysis_list "}"
+    | "{" derived_table_analysis_list "}"
     ;
 
-developer_table_analysis_list:
+derived_table_analysis_list:
       SYMBOL[analysis_symbol]
                         {
-                            // morph existing symbol to DeveloperTableAnalysisSymbol
-                            auto *sym = new DeveloperTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
+                            // morph existing symbol to DerivedTableAnalysisSymbol
+                            auto *sym = new DerivedTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
 
                             // add $analysis_symbol to developer table's analysis_list
-                            //pc.get_developer_table_context()->analysis_list.push_back($analysis->stable_pp());
+                            //pc.get_derived_table_context()->analysis_list.push_back($analysis->stable_pp());
                         }
-    | developer_table_analysis_list "," SYMBOL[analysis_symbol]
+    | derived_table_analysis_list "," SYMBOL[analysis_symbol]
                         {
-                            // morph existing symbol to DeveloperTableAnalysisSymbol
-                            auto *sym = new DeveloperTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
+                            // morph existing symbol to DerivedTableAnalysisSymbol
+                            auto *sym = new DerivedTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
 
                             // add $analysis_symbol to developer table's analysis_list
-                            // morph to DeveloperTableAnalysisSymbol
-                            //pc.get_developer_table_context()->analysis_list.push_back($analysis->stable_pp());
+                            // morph to DerivedTableAnalysisSymbol
+                            //pc.get_derived_table_context()->analysis_list.push_back($analysis->stable_pp());
                         }
 	;
 

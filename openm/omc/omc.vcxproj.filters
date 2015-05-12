@@ -219,12 +219,6 @@
     <ClInclude Include="GlobalFuncSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DeveloperTableAnalysisSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DeveloperTableSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AgentArrayMemberSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -238,6 +232,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DimensionSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DerivedTableAnalysisSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DerivedTableSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -401,12 +401,6 @@
     <ClCompile Include="GlobalFuncSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DeveloperTableAnalysisSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DeveloperTableSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AgentArrayMemberSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -420,6 +414,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DimensionSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DerivedTableAnalysisSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DerivedTableSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

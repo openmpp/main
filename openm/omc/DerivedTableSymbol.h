@@ -1,6 +1,6 @@
 /**
-* @file    DeveloperTableAnalysisSymbol.h
-* Declarations for the DeveloperTableAnalysisSymbol class.
+* @file    DerivedTableSymbol.h
+* Declarations for the DerivedTableSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -9,10 +9,10 @@
 #include "Symbol.h"
 
 /**
-* DeveloperTableAnalysisSymbol.
+* DerivedTableSymbol.
 *
 */
-class DeveloperTableAnalysisSymbol : public Symbol
+class DerivedTableSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -25,7 +25,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    DeveloperTableAnalysisSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    DerivedTableSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
     {
     }

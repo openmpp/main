@@ -1,16 +1,16 @@
 /**
-* @file    DeveloperTableAnalysisSymbol.cpp
-* Definitions for the DeveloperTableAnalysisSymbol class.
+* @file    DerivedTableSymbol.cpp
+* Definitions for the DerivedTableSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include "DeveloperTableAnalysisSymbol.h"
+#include "DerivedTableSymbol.h"
 
 using namespace std;
 
-void DeveloperTableAnalysisSymbol::post_parse(int pass)
+void DerivedTableSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
