@@ -140,7 +140,7 @@ CodeBlock EntitySetSymbol::cxx_declaration_global()
         assert(es); // integrity check guarantee
         dims += "[" + to_string(es->pp_size()) + "]";
     }
-    h += "extern EntitySet<" + pp_agent->name + "> "+ name + dims + ";";
+    h += "extern thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
     h += "";
 
     return h;
@@ -158,7 +158,7 @@ CodeBlock EntitySetSymbol::cxx_definition_global()
         assert(es); // integrity check guarantee
         dims += "[" + to_string(es->pp_size()) + "]";
     }
-    c += "EntitySet<" + pp_agent->name + "> "+ name + dims + ";";
+    c += "thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
     c += "";
 
     return c;
@@ -214,12 +214,13 @@ void EntitySetSymbol::build_body_insert()
     CodeBlock& c = insert_fn->func_body;
 
     if (rank() == 0) {
-        c += name + ".insert(this);" ;
+        c += name + "->insert(this);" ;
     }
     else {
         c += "int cell = " + cell->name + ";" ;
-        c += "EntitySet<" + pp_agent->name + "> * flattened_array = " + name + ";";
-        c += "flattened_array[cell].insert(this);";
+        c += "EntitySet<" + pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + pp_agent->name + "> **>(" + name + ");";
+        c += "assert(flattened_array[cell]);";
+        c += "flattened_array[cell]->insert(this);";
     }
 }
 
@@ -228,12 +229,13 @@ void EntitySetSymbol::build_body_erase()
     CodeBlock& c = erase_fn->func_body;
 
     if (rank() == 0) {
-        c += name + ".erase(this);" ;
+        c += name + "->erase(this);" ;
     }
     else {
         c += "int cell = " + cell->name + ";";
-        c += "EntitySet<" + pp_agent->name + "> * flattened_array = " + name + ";";
-        c += "flattened_array[cell].erase(this);";
+        c += "EntitySet<" + pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + pp_agent->name + "> **>(" + name + ");";
+        c += "assert(flattened_array[cell]);";
+        c += "flattened_array[cell]->erase(this);";
     }
 }
 

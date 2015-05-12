@@ -33,22 +33,14 @@ template<
 class EntitySet
 {
 public:
-    // ctors
     EntitySet()
         : is_dirty(true)
     {}
 
-    // Overload of pointer operator to support Modgen syntax for entity set member functions.
-    // Modgen stores an entity set as a pointer to a separately allocated object,
-    // so model code looks like
-    //     asAllHosts->Count();
-    // whereas ompp stores an entity set as a global, so natural model code looks like this
-    //     asAllHosts.Count();
-    // The following overload of the pointer operator in effect translates the "->" to ".".
-    EntitySet<E>* operator->()
+    ~EntitySet()
     {
-        // return pointer to this object
-        return this;
+        entities.clear();
+        entities_ra.clear();
     }
 
     size_t size()

@@ -361,6 +361,25 @@ void CodeGen::do_ModelStartup()
     }
     c += "";
 
+    c += "// Entity set instantiation";
+    for (auto es : Symbol::pp_all_entity_sets) {
+        c += "{";
+        if (es->rank() == 0) {
+            c += "assert(!" + es->name + ");";
+            c += es->name + " = new EntitySet<" + es->pp_agent->name + ">;";
+        }
+        else {
+            c += "EntitySet<" + es->pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_agent->name + "> **>(" + es->name + ");";
+            c += "const size_t cells = " + to_string(es->cell_count()) + ";";
+            c += "for (size_t cell = 0; cell < cells; ++cell) {";
+            c += "assert(!flattened_array[cell]);";
+            c += "flattened_array[cell] = new EntitySet<" + es->pp_agent->name + ">;";
+            c += "}";
+        }
+        c += "}";
+    }
+    c += "";
+
     c += "}";
     c += "";
 }
@@ -408,6 +427,26 @@ void CodeGen::do_ModelShutdown()
         c += "assert(the" + table->name + "); ";
         c += "delete the" + table->name + ";";
         c += "the" + table->name + " = nullptr;";
+    }
+    c += "";
+
+    c += "// Entity set destruction";
+    for (auto es : Symbol::pp_all_entity_sets) {
+        c += "{";
+        if (es->rank() == 0) {
+            c += "assert(" + es->name + ");";
+            c += "delete(" + es->name + ");";
+        }
+        else {
+            c += "EntitySet<" + es->pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_agent->name + "> **>(" + es->name + ");";
+            c += "const size_t cells = " + to_string(es->cell_count()) + ";";
+            c += "for (size_t cell = 0; cell < cells; ++cell) {";
+            c += "assert(flattened_array[cell]);";
+            c += "delete flattened_array[cell];";
+            c += "flattened_array[cell] = nullptr;";
+            c += "}";
+        }
+        c += "}";
     }
     c += "";
 
