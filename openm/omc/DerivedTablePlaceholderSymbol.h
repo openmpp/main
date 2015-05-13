@@ -28,8 +28,9 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    DerivedTablePlaceholderSymbol(Symbol *derived_table, int index, yy::location decl_loc = yy::location())
+    DerivedTablePlaceholderSymbol(Symbol *derived_table, string placeholder_name, int index, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(derived_table, index), decl_loc)
+        , placeholder_name(placeholder_name)
         , index(index)
         , derived_table(derived_table->stable_rp())
         , pp_derived_table(nullptr)
@@ -41,6 +42,11 @@ public:
     static string symbol_name(const Symbol* derived_table, int index);
 
     void post_parse(int pass);
+
+    /**
+     * Name of the placeholder.
+     */
+    string placeholder_name;
 
     /**
      * Zero-based index of the expression in the expression table dimension.

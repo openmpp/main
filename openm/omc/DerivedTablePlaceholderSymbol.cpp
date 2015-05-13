@@ -31,7 +31,7 @@ void DerivedTablePlaceholderSymbol::post_parse(int pass)
         pp_derived_table = dynamic_cast<DerivedTableSymbol *> (pp_symbol(derived_table));
         assert(pp_derived_table); // parser guarantee
 
-        // Add this table expression to the derived table's list of placeholders
+        // Add this placeholder to the derived table's list of placeholders
         pp_derived_table->pp_placeholders.push_back(this);
         break;
     }

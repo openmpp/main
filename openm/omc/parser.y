@@ -2341,7 +2341,9 @@ derived_table_dimension:
 derived_table_placeholder_list:
       STRING[placeholder]
                         {
-                            //TODO
+                            auto sym = new DerivedTablePlaceholderSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
+                            delete $placeholder; // delete the string created using new in scanner
+                            pc.counter1++;  // counter for placeholders
                         }
     | derived_table_placeholder_list ","
                         {
@@ -2350,7 +2352,9 @@ derived_table_placeholder_list:
                         }
       STRING[placeholder]
                         {
-                            //TODO
+                            auto sym = new DerivedTablePlaceholderSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
+                            delete $placeholder; // delete the string created using new in scanner
+                            pc.counter1++;  // counter for placeholders
                         }
 	;
 
