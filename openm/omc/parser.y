@@ -2023,7 +2023,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
             table_filter_opt
             "{" table_dimension_list "}" ";"
                         {
-                            // No valid agent or table context
+                            // Leaving table and agent context
                             pc.set_table_context( nullptr );
                             pc.set_agent_context( nullptr );
                             // Reset working counters
@@ -2288,11 +2288,18 @@ decl_derived_table:
                             }
                             // Set derived table context for body of derived table declaration
                             pc.set_derived_table_context( derived_table );
+                            // initialize working counter used for derived table placeholders
+                            pc.counter1 = 0;
+                            // initialize working counter used for derived table classification dimensions
+                            pc.counter4 = 0;
                         }
             "{" derived_table_dimension_list "}" ";"
                         {
                             // Leaving derived table context
                             pc.set_derived_table_context( nullptr );
+                            // Reset working counters
+                            pc.counter1 = 0;
+                            pc.counter4 = 0;
                         }
     | "derived_table" error ";"
     ;
@@ -2305,7 +2312,18 @@ derived_table_dimension_list:
 derived_table_dimension:
     SYMBOL[enumeration] table_margin_opt
                         {
-                            //TODO
+                            // This block similar to table_dimension block for native tables
+                            Symbol *enumeration = $enumeration;
+                            assert(enumeration);
+                            bool margin_opt = $table_margin_opt == token::TK_PLUS;
+                            bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
+
+                            auto sym = new DerivedTableDimensionSymbol(pc.get_derived_table_context(), pc.counter4, after_analysis_dim, enumeration, margin_opt, @enumeration);
+                            // add dimension to derived table's dimension_list
+                            pc.get_derived_table_context()->dimension_list.push_back(sym);
+                            // Increment the counter used for the number of dimensions (excluding analysis dimension).
+                            // This is the same as as the 0-based ordinal of the next dimension in the declaration.
+                            pc.counter4++;
                         }
     | "{" 
                         {
@@ -2313,6 +2331,11 @@ derived_table_dimension:
                             pc.next_word_is_string = true;
                         }
       derived_table_placeholder_list "}"
+                        {
+                            // record analysis dimension position which is the
+                            // 0-based ordinal of the immediately preceding classification dimension.
+                            pc.get_derived_table_context()->expr_dim_position = pc.counter4 - 1;
+                        }
     ;
 
 derived_table_placeholder_list:
