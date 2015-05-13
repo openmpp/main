@@ -43,6 +43,8 @@ public:
 
     void post_parse(int pass);
 
+    string pretty_name() const;
+
     /**
      * Name of the placeholder.
      */

@@ -362,6 +362,13 @@ void CodeGen::do_ModelStartup()
     }
     c += "";
 
+    c += "// Derived table instantiation";
+    for (auto derived_table : Symbol::pp_all_derived_tables) {
+        c += "assert(!" + derived_table->cxx_instance + "); ";
+        c += derived_table->cxx_instance + " = new " + derived_table->cxx_type + ";";
+    }
+    c += "";
+
     c += "// Entity set instantiation";
     for (auto es : Symbol::pp_all_entity_sets) {
         c += "{";
@@ -411,8 +418,8 @@ void CodeGen::do_ModelShutdown()
     	c += "";
     }
 
-    c += "// write output tables (accumulators)";
 	c += "theLog->logMsg(\"Writing Output Tables\");";
+    c += "// write tables (accumulators)";
     for ( auto table : Symbol::pp_all_tables ) {
         c += "{";
         c += "const char *name = \"" + table->name + "\";";
@@ -423,11 +430,30 @@ void CodeGen::do_ModelShutdown()
         c += "}";
     }
 
+    c += "// write derived tables (placeholders)";
+    for ( auto derived_table : Symbol::pp_all_derived_tables ) {
+        c += "{";
+        c += "const char *name = \"" + derived_table->name + "\";";
+        c += "auto &tbl = " + derived_table->cxx_instance + ";";
+        c += "double *pdbl[tbl->n_placeholders]; // array of pointers for writeOutputTable";
+        c += "for (size_t j = 0; j < tbl->n_placeholders; ++j) pdbl[j] = tbl->placeholder[j];";
+	    c += "i_model->writeOutputTable(name, tbl->n_placeholders, tbl->n_cells, const_cast<const double **>(pdbl));";
+        c += "}";
+    }
+
     c += "// Table destruction";
     for (auto table : Symbol::pp_all_tables) {
         c += "assert(the" + table->name + "); ";
         c += "delete the" + table->name + ";";
         c += "the" + table->name + " = nullptr;";
+    }
+    c += "";
+
+    c += "// Derived table destruction";
+    for (auto derived_table : Symbol::pp_all_derived_tables) {
+        c += "assert(" + derived_table->cxx_instance + "); ";
+        c += "delete " + derived_table->cxx_instance + ";";
+        c += derived_table->cxx_instance + " = nullptr;";
     }
     c += "";
 

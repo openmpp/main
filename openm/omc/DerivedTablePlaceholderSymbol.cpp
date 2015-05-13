@@ -18,6 +18,13 @@ string DerivedTablePlaceholderSymbol::symbol_name(const Symbol* derived_table, i
     return derived_table->name + ".Expr" + to_string(index);
 }
 
+string DerivedTablePlaceholderSymbol::pretty_name() const
+{
+    // example:     accumulator 0: sum(delta(interval(duration)))
+    string result = " placeholder " + to_string(index) + ": " + placeholder_name;
+    return result;
+}
+
 void DerivedTablePlaceholderSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

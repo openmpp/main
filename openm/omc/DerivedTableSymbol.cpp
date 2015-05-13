@@ -10,6 +10,7 @@
 #include "DerivedTableSymbol.h"
 #include "LanguageSymbol.h"
 #include "EnumerationSymbol.h"
+#include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
@@ -35,6 +36,33 @@ void DerivedTableSymbol::post_parse(int pass)
     default:
         break;
     }
+}
+
+CodeBlock DerivedTableSymbol::cxx_declaration_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    size_t n_cells = cell_count();
+    size_t n_placeholders = pp_placeholders.size();
+    h += "typedef DerivedTable<"  + to_string(n_cells) + ", " + to_string(n_placeholders) + "> " + cxx_type + ";";
+    h += "extern thread_local "  + cxx_type + " * " + cxx_instance + ";";
+
+    return h;
+}
+
+CodeBlock DerivedTableSymbol::cxx_definition_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    size_t n_cells = cell_count();
+    size_t n_placeholders = pp_placeholders.size();
+    c += "thread_local "  + cxx_type + " * " + cxx_instance + " = nullptr;";
+
+    return c;
 }
 
 int DerivedTableSymbol::rank()
@@ -127,12 +155,13 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // 'expressions' for derived table
+    // Just average the values across simulation members
     for (auto expr : pp_placeholders) {
         TableExprRow tableExpr;
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "expr" + to_string(expr->index);
-        tableExpr.src = "AVG(acc" + to_string(expr->index) + ")";
+        tableExpr.src = "OM_AVG(acc" + to_string(expr->index) + ")";
         metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {

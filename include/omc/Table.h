@@ -67,3 +67,29 @@ public:
     // observation collection storage
     forward_list<double> coll[t_cells][t_collections];
 };
+
+/**
+ * Template for derived tables.
+ *
+ * @tparam t_cells        Number of cells.
+ * @tparam t_placeholders Number of placeholders.
+ */
+template<size_t t_cells, size_t t_placeholders>
+class DerivedTable
+{
+public:
+    void initialize_placeholders()
+    {
+        for (size_t cell = 0; cell < n_cells; ++cell) {
+            placeholder[cell] = UNDEF_VALUE;
+        }
+    };
+
+    // constants
+    static const size_t n_cells = t_cells;
+    static const size_t n_placeholders = t_placeholders;
+
+    // placeholder storage
+    double placeholder[t_placeholders][t_cells];
+};
+

@@ -6,9 +6,13 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <list>
 #include "Symbol.h"
+
 #include "DerivedTableDimensionSymbol.h"
 #include "DerivedTablePlaceholderSymbol.h"
+
+class CodeBlock;
 
 /**
 * DerivedTableSymbol.
@@ -32,9 +36,15 @@ public:
         , expr_dim_position(0)
         , pp_table_id(-1)
     {
+        cxx_type = name;
+        cxx_instance = "the" + name;
     }
 
     void post_parse(int pass);
+
+    CodeBlock cxx_declaration_global();
+
+    CodeBlock cxx_definition_global();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
@@ -69,6 +79,16 @@ public:
      * If the expression dimension is the first dimension displayed, the value is -1.
      */
     int expr_dim_position;
+
+    /**
+     * Type used to declare the derived table.
+     */
+    string cxx_type;
+
+    /**
+     * The name of the unitary global instance of the derived table.
+     */
+    string cxx_instance;
 
     /**
      * Numeric identifier. Used for communicating with metadata API.
