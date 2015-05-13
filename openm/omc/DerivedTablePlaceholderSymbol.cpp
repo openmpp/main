@@ -6,6 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include "DerivedTableSymbol.h"
 #include "DerivedTablePlaceholderSymbol.h"
 
 using namespace std;

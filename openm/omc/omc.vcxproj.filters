@@ -234,13 +234,13 @@
     <ClInclude Include="DimensionSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DerivedTableAnalysisSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DerivedTableSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DerivedTableDimensionSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DerivedTablePlaceholderSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -419,13 +419,13 @@
     <ClCompile Include="DimensionSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DerivedTableAnalysisSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DerivedTableSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DerivedTableDimensionSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DerivedTablePlaceholderSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

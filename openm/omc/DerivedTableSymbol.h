@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
+#include "DerivedTablePlaceholderSymbol.h"
 
 /**
 * DerivedTableSymbol.
@@ -31,4 +32,10 @@ public:
     }
 
     void post_parse(int pass);
+
+    /**
+     * The placeholders in the derived table.
+     */
+    list<DerivedTablePlaceholderSymbol *> pp_placeholders;
+
 };

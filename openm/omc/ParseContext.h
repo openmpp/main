@@ -275,10 +275,12 @@ public:
     /**
      * Tells the scanner to treat the immediately following word as a string rather than a symbol.
      * 
-     * Used by the parser to suppress symbol resolution by the scanner, for the next workd only.
-     * Used for parsing pointer (link)
-     * use in expressions, because the lhs of "->" is not known in general.  In this case, the
+     * Used by the parser to suppress symbol resolution by the scanner, for the next word only.
+     * Used for parsing pointer (link).
+     * Used in expressions, because the lhs of "->" is not known in general.  In this case, the
      * nature of the rhs is resolved in a post-parse phase.
+     * Used in derived tables, to avoid creating symbols for placeholder strings
+     * 
      */
     bool next_word_is_string;
 

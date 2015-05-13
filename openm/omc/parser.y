@@ -2298,8 +2298,8 @@ decl_derived_table:
     ;
 
 derived_table_dimension_list:
-    derived_table_dimension
-  | derived_table_dimension_list "*" derived_table_dimension
+      derived_table_dimension
+    | derived_table_dimension_list "*" derived_table_dimension
   ;
 
 derived_table_dimension:
@@ -2307,26 +2307,27 @@ derived_table_dimension:
                         {
                             //TODO
                         }
-    | "{" derived_table_analysis_list "}"
+    | "{" 
+                        {
+                            // placeholder follows
+                            pc.next_word_is_string = true;
+                        }
+      derived_table_placeholder_list "}"
     ;
 
-derived_table_analysis_list:
-      SYMBOL[analysis_symbol]
+derived_table_placeholder_list:
+      STRING[placeholder]
                         {
-                            // morph existing symbol to DerivedTableAnalysisSymbol
-                            auto *sym = new DerivedTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
-
-                            // add $analysis_symbol to developer table's analysis_list
-                            //pc.get_derived_table_context()->analysis_list.push_back($analysis->stable_pp());
+                            //TODO
                         }
-    | derived_table_analysis_list "," SYMBOL[analysis_symbol]
+    | derived_table_placeholder_list ","
                         {
-                            // morph existing symbol to DerivedTableAnalysisSymbol
-                            auto *sym = new DerivedTableAnalysisSymbol( $analysis_symbol, @analysis_symbol );
-
-                            // add $analysis_symbol to developer table's analysis_list
-                            // morph to DerivedTableAnalysisSymbol
-                            //pc.get_derived_table_context()->analysis_list.push_back($analysis->stable_pp());
+                            // placeholder follows
+                            pc.next_word_is_string = true;
+                        }
+      STRING[placeholder]
+                        {
+                            //TODO
                         }
 	;
 

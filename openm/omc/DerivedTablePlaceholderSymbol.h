@@ -29,10 +29,10 @@ public:
     * @param [in,out]  sym The symbol to be morphed.
     */
     DerivedTablePlaceholderSymbol(Symbol *derived_table, int index, yy::location decl_loc = yy::location())
-        : Symbol(symbol_name(table, index), decl_loc)
+        : Symbol(symbol_name(derived_table, index), decl_loc)
         , index(index)
         , derived_table(derived_table->stable_rp())
-        , pp_table(nullptr)
+        , pp_derived_table(nullptr)
     {
     }
 
