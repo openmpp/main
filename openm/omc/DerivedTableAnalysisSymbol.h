@@ -1,18 +1,21 @@
 /**
-* @file    DerivedTableAnalysisSymbol.h
-* Declarations for the DerivedTableAnalysisSymbol class.
+* @file    DerivedTablePlaceholderSymbol.h
+* Declarations for the DerivedTablePlaceholderSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <string>
 #include "Symbol.h"
 
+using namespace std;
+
 /**
-* DerivedTableAnalysisSymbol.
+* DerivedTablePlaceholderSymbol.
 *
 */
-class DerivedTableAnalysisSymbol : public Symbol
+class DerivedTablePlaceholderSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -25,10 +28,36 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    DerivedTableAnalysisSymbol(Symbol *sym, yy::location decl_loc = yy::location())
-        : Symbol(sym, decl_loc)
+    DerivedTablePlaceholderSymbol(Symbol *derived_table, int index, yy::location decl_loc = yy::location())
+        : Symbol(symbol_name(table, index), decl_loc)
+        , index(index)
+        , derived_table(derived_table->stable_rp())
+        , pp_table(nullptr)
     {
     }
 
+    // Construct symbol name for the table expression symbol.
+    // Example: BasicDemography.Expr0
+    static string symbol_name(const Symbol* derived_table, int index);
+
     void post_parse(int pass);
+
+    /**
+     * Zero-based index of the expression in the expression table dimension.
+     */
+    int index;
+
+    /**
+     * The table containing this expression (reference to pointer)
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
+    Symbol*& derived_table;
+
+    /**
+     * The derived table containing this analysis place-holder (pointer)
+     * 
+     * Only valid after post-parse phase 1.
+     */
+    DerivedTableSymbol* pp_derived_table;
 };
