@@ -907,6 +907,13 @@ public:
     static list<TableSymbol *> pp_all_tables;
 
     /**
+     * The derived tables in the model
+     * 
+     * Populated after parsing is complete.
+     */
+    static list<DerivedTableSymbol *> pp_all_derived_tables;
+
+    /**
      * The parameters in the model
      * 
      * Populated after parsing is complete.

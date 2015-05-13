@@ -44,6 +44,7 @@
 #include "TableAnalysisAgentVarSymbol.h"
 #include "EntitySetSymbol.h"
 #include "TableSymbol.h"
+#include "DerivedTableSymbol.h"
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
@@ -83,6 +84,8 @@ list<AgentSymbol *> Symbol::pp_all_agents;
 list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 
 list<TableSymbol *> Symbol::pp_all_tables;
+
+list<DerivedTableSymbol *> Symbol::pp_all_derived_tables;
 
 list<ParameterSymbol *> Symbol::pp_all_parameters;
 
@@ -1017,6 +1020,7 @@ void Symbol::post_parse_all()
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+    pp_all_derived_tables.sort( [] (DerivedTableSymbol *a, DerivedTableSymbol *b) { return a->name < b->name ; } );
     pp_all_parameter_groups.sort( [] (ParameterGroupSymbol *a, ParameterGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
@@ -1034,6 +1038,12 @@ void Symbol::post_parse_all()
     id = 0;
     for ( auto table : pp_all_tables ) {
         table->pp_table_id = id;
+        ++id;
+    }
+    // Note that for derived tables we continue incrementing id
+    // from the last value for native table (they look the same to the API)
+    for ( auto derived_table : pp_all_derived_tables ) {
+        derived_table->pp_table_id = id;
         ++id;
     }
 
@@ -1062,6 +1072,12 @@ void Symbol::post_parse_all()
         table->pp_accumulators.sort( [] (TableAccumulatorSymbol *a, TableAccumulatorSymbol *b) { return a->index < b->index; } );
         // Sort referenced agentvars in sequence order
         table->pp_table_agentvars.sort( [] (TableAnalysisAgentVarSymbol *a, TableAnalysisAgentVarSymbol *b) { return a->index < b->index; } );
+    }
+
+    // Sort collections in derived tables
+    for ( auto derived_table : pp_all_derived_tables ) {
+        // Sort placeholders in sequence order
+        derived_table->pp_placeholders.sort( [] (DerivedTablePlaceholderSymbol *a, DerivedTablePlaceholderSymbol *b) { return a->index < b->index; } );
     }
 
     {

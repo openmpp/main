@@ -26,6 +26,7 @@ void CodeGen::do_all()
 	do_aggregations();
 	do_parameters();
 	do_tables();
+	do_derived_tables();
 	do_agents();
 	do_entity_sets();
     do_event_queue();
@@ -589,6 +590,21 @@ void CodeGen::do_tables()
 	c += "{";
 	c += "// TODO";
     c += "}";
+
+    h += "";
+	c += "";
+}
+
+void CodeGen::do_derived_tables()
+{
+	h += "// model derived tables";
+	c += "// model derived tables";
+
+	for ( auto derived_table : Symbol::pp_all_derived_tables ) {
+        h += derived_table->cxx_declaration_global();
+        c += derived_table->cxx_definition_global();
+        derived_table->populate_metadata(metaRows);
+    }
 
     h += "";
 	c += "";

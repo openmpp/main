@@ -20,6 +20,9 @@ void DerivedTableSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
+        // add this derived table to the complete list of derived tables
+        pp_all_derived_tables.push_back(this);
+
         break;
     }
     default:
