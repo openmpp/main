@@ -179,7 +179,6 @@
     <ClInclude Include="ConstantSymbol.h" />
     <ClInclude Include="DependencyGroupSymbol.h" />
     <ClInclude Include="DerivedAgentVarSymbol.h" />
-    <ClInclude Include="DerivedTableMeasureSymbol.h" />
     <ClInclude Include="DerivedTableSymbol.h" />
     <ClInclude Include="DimensionSymbol.h" />
     <ClInclude Include="dirent\dirent.h" />
@@ -221,6 +220,7 @@
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableDimensionSymbol.h" />
     <ClInclude Include="TableGroupSymbol.h" />
+    <ClInclude Include="TableMeasureSymbol.h" />
     <ClInclude Include="TableSymbol.h" />
     <ClInclude Include="TimeSymbol.h" />
     <ClInclude Include="TypeOfLinkSymbol.h" />
@@ -256,7 +256,6 @@
     <ClCompile Include="ConstantSymbol.cpp" />
     <ClCompile Include="DependencyGroupSymbol.cpp" />
     <ClCompile Include="DerivedAgentVarSymbol.cpp" />
-    <ClCompile Include="DerivedTableMeasureSymbol.cpp" />
     <ClCompile Include="DerivedTableSymbol.cpp" />
     <ClCompile Include="DimensionSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
@@ -294,6 +293,7 @@
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableDimensionSymbol.cpp" />
     <ClCompile Include="TableGroupSymbol.cpp" />
+    <ClCompile Include="TableMeasureSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />
     <ClCompile Include="TimeSymbol.cpp" />
     <ClCompile Include="TypeOfLinkSymbol.cpp" />

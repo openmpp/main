@@ -10,7 +10,7 @@
 #include "Symbol.h"
 
 #include "TableDimensionSymbol.h"
-#include "DerivedTableMeasureSymbol.h"
+#include "TableMeasureSymbol.h"
 
 class CodeBlock;
 
@@ -102,7 +102,7 @@ public:
     /**
      * The placeholders in the derived table.
      */
-    list<DerivedTableMeasureSymbol *> pp_placeholders;
+    list<TableMeasureSymbol *> pp_placeholders;
 
     /**
      * The display position of measures relative to dimensions

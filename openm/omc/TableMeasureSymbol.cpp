@@ -1,31 +1,31 @@
 /**
-* @file    DerivedTableMeasureSymbol.cpp
-* Definitions for the DerivedTableMeasureSymbol class.
+* @file    TableMeasureSymbol.cpp
+* Definitions for the TableMeasureSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
 #include "DerivedTableSymbol.h"
-#include "DerivedTableMeasureSymbol.h"
+#include "TableMeasureSymbol.h"
 
 using namespace std;
 
 // static
-string DerivedTableMeasureSymbol::symbol_name(const Symbol* derived_table, int index)
+string TableMeasureSymbol::symbol_name(const Symbol* derived_table, int index)
 {
     assert(derived_table);
     return derived_table->name + ".Expr" + to_string(index);
 }
 
-string DerivedTableMeasureSymbol::pretty_name() const
+string TableMeasureSymbol::pretty_name() const
 {
     // example:     accumulator 0: sum(delta(interval(duration)))
     string result = " placeholder " + to_string(index) + ": " + placeholder_name;
     return result;
 }
 
-void DerivedTableMeasureSymbol::post_parse(int pass)
+void TableMeasureSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
