@@ -1063,7 +1063,7 @@ void Symbol::post_parse_all()
         agent->pp_identity_agentvars.sort( [] (IdentityAgentVarSymbol *a, IdentityAgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_events.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agent_funcs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
-        agent->pp_agent_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
+        agent->pp_entity_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
         agent->pp_link_agentvars.sort( [] (LinkAgentVarSymbol *a, LinkAgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
     }

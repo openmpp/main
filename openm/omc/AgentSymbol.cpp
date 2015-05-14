@@ -448,7 +448,7 @@ void AgentSymbol::build_body_initialize_tables()
 {
     CodeBlock& c = initialize_tables_fn->func_body;
 
-    for (auto table : pp_agent_tables) {
+    for (auto table : pp_entity_tables) {
         c += "// " + table->name;
         // If the table filter is false at initialization, do nothing
         if (table->filter) {
@@ -467,7 +467,7 @@ void AgentSymbol::build_body_finalize_tables()
 {
     CodeBlock& c = finalize_tables_fn->func_body;
 
-    for (auto table : pp_agent_tables) {
+    for (auto table : pp_entity_tables) {
         c += "// " + table->name;
         // If the table filter is false at finalization, do nothing
         if (table->filter) {

@@ -281,11 +281,11 @@ public:
     list<EntitySetSymbol *> pp_agent_entity_sets;
 
     /**
-     * The tables of this agent
+     * The tables of this entity
      * 
      *  Populated after parsing is complete.
      */
-    list<EntityTableSymbol *> pp_agent_tables;
+    list<EntityTableSymbol *> pp_entity_tables;
 
     /**
      * The link agentvars of this agent

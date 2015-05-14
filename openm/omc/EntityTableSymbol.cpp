@@ -92,7 +92,7 @@ void EntityTableSymbol::post_parse(int pass)
         pp_all_entity_tables.push_back(this);
 
         // Add this table to the agent's list of entity tables
-        pp_agent->pp_agent_tables.push_back(this);
+        pp_agent->pp_entity_tables.push_back(this);
 
         break;
     }
