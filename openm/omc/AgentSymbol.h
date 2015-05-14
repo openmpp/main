@@ -285,7 +285,7 @@ public:
      * 
      *  Populated after parsing is complete.
      */
-    list<TableSymbol *> pp_agent_tables;
+    list<EntityTableSymbol *> pp_agent_tables;
 
     /**
      * The link agentvars of this agent

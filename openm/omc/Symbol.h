@@ -24,7 +24,7 @@ class StringSymbol;
 class AgentSymbol;
 class ParameterSymbol;
 class EntitySetSymbol;
-class TableSymbol;
+class EntityTableSymbol;
 class DerivedTableSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
@@ -904,7 +904,7 @@ public:
      * 
      * Populated after parsing is complete.
      */
-    static list<TableSymbol *> pp_all_tables;
+    static list<EntityTableSymbol *> pp_all_tables;
 
     /**
      * The derived tables in the model

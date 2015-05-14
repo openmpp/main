@@ -71,6 +71,6 @@ public:
     * Only valid after post-parse phase 1.
     */
 
-    TableSymbol* pp_table;
+    EntityTableSymbol* pp_table;
 };
 

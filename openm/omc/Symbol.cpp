@@ -43,7 +43,7 @@
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "EntitySetSymbol.h"
-#include "TableSymbol.h"
+#include "EntityTableSymbol.h"
 #include "DerivedTableSymbol.h"
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"
@@ -83,7 +83,7 @@ list<AgentSymbol *> Symbol::pp_all_agents;
 
 list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 
-list<TableSymbol *> Symbol::pp_all_tables;
+list<EntityTableSymbol *> Symbol::pp_all_tables;
 
 list<DerivedTableSymbol *> Symbol::pp_all_derived_tables;
 
@@ -1019,7 +1019,7 @@ void Symbol::post_parse_all()
     pp_all_agents.sort([](AgentSymbol *a, AgentSymbol *b) { return a->name < b->name; });
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
-    pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+    pp_all_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
     pp_all_derived_tables.sort( [] (DerivedTableSymbol *a, DerivedTableSymbol *b) { return a->name < b->name ; } );
     pp_all_parameter_groups.sort( [] (ParameterGroupSymbol *a, ParameterGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
@@ -1059,7 +1059,7 @@ void Symbol::post_parse_all()
         agent->pp_identity_agentvars.sort( [] (IdentityAgentVarSymbol *a, IdentityAgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_events.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agent_funcs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
-        agent->pp_agent_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+        agent->pp_agent_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
         agent->pp_link_agentvars.sort( [] (LinkAgentVarSymbol *a, LinkAgentVarSymbol *b) { return a->name < b->name ; } );
         agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
     }

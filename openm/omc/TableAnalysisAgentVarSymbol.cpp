@@ -10,7 +10,7 @@
 #include "TableAnalysisAgentVarSymbol.h"
 #include "AgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
-#include "TableSymbol.h"
+#include "EntityTableSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -54,7 +54,7 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
     case eAssignMembers:
     {
         // assign direct pointer to table for post-parse use
-        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
+        pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
         assert(pp_table); // parser guarantee
 
         // assign direct pointer to agentvar for post-parse use

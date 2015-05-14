@@ -15,7 +15,7 @@
 #include "LinkAgentVarSymbol.h"
 #include "AgentMultilinkSymbol.h"
 #include "EntitySetSymbol.h"
-#include "TableSymbol.h"
+#include "EntityTableSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
 

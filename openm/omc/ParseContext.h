@@ -68,12 +68,12 @@ public:
         }
     }
 
-    void set_table_context( TableSymbol *table )
+    void set_table_context( EntityTableSymbol *table )
     {
         table_context = table;
     }
 
-    TableSymbol * get_table_context( )
+    EntityTableSymbol * get_table_context( )
     {
         assert(table_context);  // grammar/logic guarantee that requests only occur in valid table context
         return table_context;
@@ -315,15 +315,15 @@ private:
      * table context for symbols in table declaration
      * 
      * Safe to use direct pointers, since context guarantess that we are in a table declaration, so
-     * the table has already been morphed to a TableSymbol if not already done.
+     * the table has already been morphed to a EntityTableSymbol if not already done.
      */
-	TableSymbol *table_context;
+	EntityTableSymbol *table_context;
 
     /**
      * derived table context for symbols in derived table declaration
      * 
      * Safe to use direct pointers, since context guarantess that we are in a table declaration, so
-     * the table has already been morphed to a TableSymbol if not already done.
+     * the table has already been morphed to a EntityTableSymbol if not already done.
      */
 	DerivedTableSymbol *derived_table_context;
 

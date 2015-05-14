@@ -1,13 +1,13 @@
 /**
-* @file    TableSymbol.cpp
-* Definitions for the TableSymbol class.
+* @file    EntityTableSymbol.cpp
+* Definitions for the EntityTableSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
 #include <regex>
-#include "TableSymbol.h"
+#include "EntityTableSymbol.h"
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
 #include "AgentInternalSymbol.h"
@@ -31,7 +31,7 @@ using namespace openm;
 // this function exist only because g++ below 4.9 does not support std::regex
 static string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
 
-void TableSymbol::create_auxiliary_symbols()
+void EntityTableSymbol::create_auxiliary_symbols()
 {
     {
         assert(!cell); // initialization guarantee
@@ -71,7 +71,7 @@ void TableSymbol::create_auxiliary_symbols()
     }
 }
 
-void TableSymbol::post_parse(int pass)
+void EntityTableSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
@@ -129,7 +129,7 @@ void TableSymbol::post_parse(int pass)
             }
         }
 
-        // The following block of code is almost identical in EntitySetSymbol and TableSymbol
+        // The following block of code is almost identical in EntitySetSymbol and EntityTableSymbol
         // construct function bodies
         build_body_update_cell();
         build_body_prepare_increments();
@@ -189,7 +189,7 @@ void TableSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock TableSymbol::cxx_declaration_global()
+CodeBlock EntityTableSymbol::cxx_declaration_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_global();
@@ -219,7 +219,7 @@ CodeBlock TableSymbol::cxx_declaration_global()
     return h;
 }
 
-CodeBlock TableSymbol::cxx_definition_global()
+CodeBlock EntityTableSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock c = super::cxx_definition_global();
@@ -485,8 +485,8 @@ CodeBlock TableSymbol::cxx_definition_global()
     return c;
 }
 
-// The following function definition is identical in EntitySetSymbol and TableSymbol
-void TableSymbol::build_body_update_cell()
+// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
+void EntityTableSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
 
@@ -531,7 +531,7 @@ void TableSymbol::build_body_update_cell()
     c += cell->name + " = cell;" ;
 }
 
-void TableSymbol::build_body_prepare_increments()
+void EntityTableSymbol::build_body_prepare_increments()
 {
     CodeBlock& c = prepare_increments_fn->func_body;
 
@@ -546,7 +546,7 @@ void TableSymbol::build_body_prepare_increments()
     }
 }
 
-void TableSymbol::build_body_process_increments()
+void EntityTableSymbol::build_body_process_increments()
 {
     CodeBlock& c = process_increments_fn->func_body;
 
@@ -649,14 +649,14 @@ void TableSymbol::build_body_process_increments()
     }
 }
 
-// The following function definition is identical in EntitySetSymbol and TableSymbol
-int TableSymbol::rank()
+// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
+int EntityTableSymbol::rank()
 {
     return dimension_list.size();
 }
 
-// The following function definition is identical in EntitySetSymbol and TableSymbol
-int TableSymbol::cell_count()
+// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
+int EntityTableSymbol::cell_count()
 {
     int cells = 1;
     for (auto dim : dimension_list) {
@@ -667,7 +667,7 @@ int TableSymbol::cell_count()
     return cells;
 }
 
-void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);

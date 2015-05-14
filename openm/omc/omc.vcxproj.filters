@@ -72,9 +72,6 @@
     <ClInclude Include="AgentMemberSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TableSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TableAccumulatorSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -243,6 +240,9 @@
     <ClInclude Include="DerivedTableMeasureSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EntityTableSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -261,9 +261,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgentMemberSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TableSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TableAccumulatorSymbol.cpp">
@@ -426,6 +423,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DerivedTableMeasureSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityTableSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

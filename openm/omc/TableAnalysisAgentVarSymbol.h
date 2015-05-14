@@ -98,7 +98,7 @@ public:
     *
     * Stored as a pointer, which is only valid after post-parse phase 1.
     */
-    TableSymbol* pp_table;
+    EntityTableSymbol* pp_table;
 
     /**
     * The agentvar used in the analysis dimension of the table

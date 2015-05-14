@@ -11,7 +11,7 @@
 
 class AgentVarSymbol;
 class TableAnalysisAgentVarSymbol;
-class TableSymbol;
+class EntityTableSymbol;
 
 using namespace std;
 
@@ -147,7 +147,7 @@ public:
      * 
      * Only valid after post-parse phase 1.
      */
-    TableSymbol* pp_table;
+    EntityTableSymbol* pp_table;
 
     /**
      * The kind of accumulator, e.g. TK_sum, TK_minimum, TK_maximum

@@ -1,6 +1,6 @@
 /**
-* @file    TableSymbol.h
-* Declares the TableSymbol derived class of the Symbol class.
+* @file    EntityTableSymbol.h
+* Declares the EntityTableSymbol derived class of the Symbol class.
 * Also declares related classes.
 */
 // Copyright (c) 2013-2014 OpenM++
@@ -26,9 +26,9 @@ using namespace std;
 
 
 /**
-* TableSymbol.
+* EntityTableSymbol.
 */
-class TableSymbol : public Symbol
+class EntityTableSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -36,7 +36,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    TableSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
+    EntityTableSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)

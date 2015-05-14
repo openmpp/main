@@ -79,7 +79,7 @@ void EntitySetSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
-        // The following block of code is almost identical in EntitySetSymbol and TableSymbol
+        // The following block of code is almost identical in EntitySetSymbol and EntityTableSymbol
         // construct function bodies
         build_body_update_cell();
         build_body_insert();
@@ -164,7 +164,7 @@ CodeBlock EntitySetSymbol::cxx_definition_global()
     return c;
 }
 
-// The following function definition is identical in EntitySetSymbol and TableSymbol
+// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
 void EntitySetSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
@@ -239,13 +239,13 @@ void EntitySetSymbol::build_body_erase()
     }
 }
 
-// The following function definition is identical in EntitySetSymbol and TableSymbol
+// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
 int EntitySetSymbol::rank()
 {
     return dimension_list.size();
 }
 
-// The following function definition is identical in EntitySetSymbol and TableSymbol
+// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
 int EntitySetSymbol::cell_count()
 {
     int cells = 1;

@@ -53,7 +53,7 @@
 #include "TableExpressionSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
-#include "TableSymbol.h"
+#include "EntityTableSymbol.h"
 #include "DerivedTableSymbol.h"
 #include "DerivedTableDimensionSymbol.h"
 #include "DerivedTableMeasureSymbol.h"

@@ -6,7 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include "TableAccumulatorSymbol.h"
-#include "TableSymbol.h"
+#include "EntityTableSymbol.h"
 #include "AgentVarSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "CodeBlock.h"
@@ -54,7 +54,7 @@ void TableAccumulatorSymbol::post_parse(int pass)
     case eAssignMembers:
     {
         // assign direct pointer to table for post-parse use
-        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
+        pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
         assert(pp_table); // parser guarantee
 
         // assign direct pointer to agentvar for post-parse use

@@ -1992,18 +1992,18 @@ entity_set_filter_opt:
 decl_table: // Some code for decl_entity_set and decl_table is nearly identical
       "table" SYMBOL[agent] SYMBOL[table] // Note that the symbol 'table' is not created in agent context
                         {
-                            TableSymbol *table = nullptr;
+                            EntityTableSymbol *table = nullptr;
 
                             if ($table->is_base_symbol()) {
-                                // Morph Symbol to TableSymbol
-                                table = new TableSymbol( $table, $agent, @table );
+                                // Morph Symbol to EntityTableSymbol
+                                table = new EntityTableSymbol( $table, $agent, @table );
                                 assert(table);
                                 $table = table;
                             }
                             else {
                                 // re-declaration
                                 pc.redeclaration = true;
-                                table = dynamic_cast<TableSymbol *>($table);
+                                table = dynamic_cast<EntityTableSymbol *>($table);
                                 assert(table); // grammar/logic guarantee
                                 // redeclaration not allowed
                                 error(@table, "error: A table named '" + $table->name + "' already exists");
@@ -2038,7 +2038,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
 table_filter_opt:
     "[" expr_for_agentvar[root] "]"
                         {
-                            TableSymbol *table = pc.get_table_context();
+                            EntityTableSymbol *table = pc.get_table_context();
                             // create an identity agentvar for the filter
                             auto iav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
                             // note identity agentvar in table
@@ -2371,7 +2371,7 @@ symbol_in_expr:
                         {
                             Symbol *agent = pc.get_agent_context();
                             assert(agent); // grammar guarantee
-                            TableSymbol *table = pc.get_table_context();
+                            EntityTableSymbol *table = pc.get_table_context();
                             if (table) {
                                 // get the name of the av used for the unit in this table
                                 auto name = "om_" + table->name + "_om_unit";
