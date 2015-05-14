@@ -88,10 +88,10 @@ void EntityTableSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // add this table to the complete list of tables
-        pp_all_tables.push_back(this);
+        // add this table to the complete list of entity tables
+        pp_all_entity_tables.push_back(this);
 
-        // Add this table to the agent's list of tables
+        // Add this table to the agent's list of entity tables
         pp_agent->pp_agent_tables.push_back(this);
 
         break;

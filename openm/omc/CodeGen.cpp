@@ -25,7 +25,7 @@ void CodeGen::do_all()
 	do_types();
 	do_aggregations();
 	do_parameters();
-	do_tables();
+	do_entity_tables();
 	do_derived_tables();
 	do_agents();
 	do_entity_sets();
@@ -355,8 +355,8 @@ void CodeGen::do_ModelStartup()
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
 
-    c += "// Table instantiation";
-    for (auto table : Symbol::pp_all_tables) {
+    c += "// Entity table instantiation";
+    for (auto table : Symbol::pp_all_entity_tables) {
         c += "assert(!the" + table->name + "); ";
         c += "the" + table->name + " = new " + table->name + ";";
     }
@@ -398,14 +398,14 @@ void CodeGen::do_ModelShutdown()
 	c += "void ModelShutdown(IModel * const i_model)";
 	c += "{";
     c += "// extract accumulators, and scale them to population size";
-    for ( auto table : Symbol::pp_all_tables ) {
+    for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "the" + table->name + "->extract_accumulators();";
 	    c += "the" + table->name + "->scale_accumulators();";
     }
 	c += "";
 
     c += "// compute table expressions using accumulators";
-    for ( auto table : Symbol::pp_all_tables ) {
+    for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "the" + table->name + "->compute_expressions();";
     }
 	c += "";
@@ -419,8 +419,8 @@ void CodeGen::do_ModelShutdown()
     }
 
 	c += "theLog->logMsg(\"Writing Output Tables\");";
-    c += "// write tables (accumulators)";
-    for ( auto table : Symbol::pp_all_tables ) {
+    c += "// write entity tables (accumulators)";
+    for ( auto table : Symbol::pp_all_entity_tables ) {
         c += "{";
         c += "const char *name = \"" + table->name + "\";";
         c += "auto &tbl = the" + table->name + ";";
@@ -441,8 +441,8 @@ void CodeGen::do_ModelShutdown()
         c += "}";
     }
 
-    c += "// Table destruction";
-    for (auto table : Symbol::pp_all_tables) {
+    c += "// Entity table destruction";
+    for (auto table : Symbol::pp_all_entity_tables) {
         c += "assert(the" + table->name + "); ";
         c += "delete the" + table->name + ";";
         c += "the" + table->name + " = nullptr;";
@@ -589,12 +589,12 @@ void CodeGen::do_entity_sets()
     }
 }
 
-void CodeGen::do_tables()
+void CodeGen::do_entity_tables()
 {
-	h += "// model output tables";
-	c += "// model output tables";
+	h += "// entity tables";
+	c += "// entity tables";
 
-	for ( auto table : Symbol::pp_all_tables ) {
+	for ( auto table : Symbol::pp_all_entity_tables ) {
         h += table->cxx_declaration_global();
         c += table->cxx_definition_global();
         table->populate_metadata(metaRows);
@@ -623,8 +623,8 @@ void CodeGen::do_tables()
 
 void CodeGen::do_derived_tables()
 {
-	h += "// model derived tables";
-	c += "// model derived tables";
+	h += "// derived tables";
+	c += "// derived tables";
 
 	for ( auto derived_table : Symbol::pp_all_derived_tables ) {
         h += derived_table->cxx_declaration_global();
@@ -662,8 +662,8 @@ void CodeGen::do_RunModel()
 	c += "void RunModel(IModel * const i_model)";
     c += "{";
 
-    c += "// initialize tables";
-	for ( auto table : Symbol::pp_all_tables ) {
+    c += "// initialize entity tables";
+	for ( auto table : Symbol::pp_all_entity_tables ) {
         c += "the" + table->name + "->initialize_accumulators();";
     }
     c += "";

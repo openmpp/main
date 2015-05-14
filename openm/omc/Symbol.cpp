@@ -43,6 +43,7 @@
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
 #include "EntitySetSymbol.h"
+#include "TableSymbol.h"
 #include "EntityTableSymbol.h"
 #include "DerivedTableSymbol.h"
 #include "GroupSymbol.h"
@@ -83,7 +84,9 @@ list<AgentSymbol *> Symbol::pp_all_agents;
 
 list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 
-list<EntityTableSymbol *> Symbol::pp_all_tables;
+list<TableSymbol *> Symbol::pp_all_tables;
+
+list<EntityTableSymbol *> Symbol::pp_all_entity_tables;
 
 list<DerivedTableSymbol *> Symbol::pp_all_derived_tables;
 
@@ -1019,7 +1022,8 @@ void Symbol::post_parse_all()
     pp_all_agents.sort([](AgentSymbol *a, AgentSymbol *b) { return a->name < b->name; });
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
-    pp_all_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
+    pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
+    pp_all_entity_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
     pp_all_derived_tables.sort( [] (DerivedTableSymbol *a, DerivedTableSymbol *b) { return a->name < b->name ; } );
     pp_all_parameter_groups.sort( [] (ParameterGroupSymbol *a, ParameterGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
@@ -1036,12 +1040,12 @@ void Symbol::post_parse_all()
         ++id;
     }
     id = 0;
-    for ( auto table : pp_all_tables ) {
+    for ( auto table : pp_all_entity_tables ) {
         table->pp_table_id = id;
         ++id;
     }
     // Note that for derived tables we continue incrementing id
-    // from the last value for native table (they look the same to the API)
+    // from the value for the last entity table (they look the same to the API)
     for ( auto derived_table : pp_all_derived_tables ) {
         derived_table->pp_table_id = id;
         ++id;
@@ -1064,8 +1068,8 @@ void Symbol::post_parse_all()
         agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 
-    // Sort collections in tables
-    for ( auto table : pp_all_tables ) {
+    // Sort collections in entity tables
+    for ( auto table : pp_all_entity_tables ) {
         // Sort expressions in sequence order
         table->pp_expressions.sort( [] (EntityTableMeasureSymbol *a, EntityTableMeasureSymbol *b) { return a->index < b->index; } );
         // Sort accumulators in sequence order
