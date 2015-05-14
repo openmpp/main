@@ -56,7 +56,7 @@
 #include "TableSymbol.h"
 #include "DerivedTableSymbol.h"
 #include "DerivedTableDimensionSymbol.h"
-#include "DerivedTablePlaceholderSymbol.h"
+#include "DerivedTableMeasureSymbol.h"
 #include "EntitySetSymbol.h"
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"

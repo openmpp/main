@@ -1,6 +1,6 @@
 /**
-* @file    DerivedTablePlaceholderSymbol.h
-* Declarations for the DerivedTablePlaceholderSymbol class.
+* @file    DerivedTableMeasureSymbol.h
+* Declarations for the DerivedTableMeasureSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -12,10 +12,10 @@
 using namespace std;
 
 /**
-* DerivedTablePlaceholderSymbol.
+* DerivedTableMeasureSymbol.
 *
 */
-class DerivedTablePlaceholderSymbol : public Symbol
+class DerivedTableMeasureSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -28,7 +28,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    DerivedTablePlaceholderSymbol(Symbol *derived_table, string placeholder_name, int index, yy::location decl_loc = yy::location())
+    DerivedTableMeasureSymbol(Symbol *derived_table, string placeholder_name, int index, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(derived_table, index), decl_loc)
         , placeholder_name(placeholder_name)
         , index(index)

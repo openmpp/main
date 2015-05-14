@@ -180,7 +180,7 @@
     <ClInclude Include="DependencyGroupSymbol.h" />
     <ClInclude Include="DerivedAgentVarSymbol.h" />
     <ClInclude Include="DerivedTableDimensionSymbol.h" />
-    <ClInclude Include="DerivedTablePlaceholderSymbol.h" />
+    <ClInclude Include="DerivedTableMeasureSymbol.h" />
     <ClInclude Include="DerivedTableSymbol.h" />
     <ClInclude Include="DimensionSymbol.h" />
     <ClInclude Include="dirent\dirent.h" />
@@ -256,7 +256,7 @@
     <ClCompile Include="DependencyGroupSymbol.cpp" />
     <ClCompile Include="DerivedAgentVarSymbol.cpp" />
     <ClCompile Include="DerivedTableDimensionSymbol.cpp" />
-    <ClCompile Include="DerivedTablePlaceholderSymbol.cpp" />
+    <ClCompile Include="DerivedTableMeasureSymbol.cpp" />
     <ClCompile Include="DerivedTableSymbol.cpp" />
     <ClCompile Include="DimensionSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />

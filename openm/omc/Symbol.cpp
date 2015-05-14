@@ -1077,7 +1077,7 @@ void Symbol::post_parse_all()
     // Sort collections in derived tables
     for ( auto derived_table : pp_all_derived_tables ) {
         // Sort placeholders in sequence order
-        derived_table->pp_placeholders.sort( [] (DerivedTablePlaceholderSymbol *a, DerivedTablePlaceholderSymbol *b) { return a->index < b->index; } );
+        derived_table->pp_placeholders.sort( [] (DerivedTableMeasureSymbol *a, DerivedTableMeasureSymbol *b) { return a->index < b->index; } );
     }
 
     {

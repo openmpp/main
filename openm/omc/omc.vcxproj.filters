@@ -240,7 +240,7 @@
     <ClInclude Include="DerivedTableDimensionSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DerivedTablePlaceholderSymbol.h">
+    <ClInclude Include="DerivedTableMeasureSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -425,7 +425,7 @@
     <ClCompile Include="DerivedTableDimensionSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DerivedTablePlaceholderSymbol.cpp">
+    <ClCompile Include="DerivedTableMeasureSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
