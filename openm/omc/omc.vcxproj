@@ -221,6 +221,7 @@
     <ClInclude Include="StringSymbol.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableGroupSymbol.h" />
+    <ClInclude Include="TableSymbol.h" />
     <ClInclude Include="TimeSymbol.h" />
     <ClInclude Include="TypeOfLinkSymbol.h" />
     <ClInclude Include="TypeSymbol.h" />
@@ -293,6 +294,7 @@
     <ClCompile Include="StringSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableGroupSymbol.cpp" />
+    <ClCompile Include="TableSymbol.cpp" />
     <ClCompile Include="TimeSymbol.cpp" />
     <ClCompile Include="TypeOfLinkSymbol.cpp" />
     <ClCompile Include="TypeSymbol.cpp" />

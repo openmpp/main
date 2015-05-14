@@ -50,6 +50,7 @@
 #include "MultilinkAgentVarSymbol.h"
 #include "AgentSymbol.h"
 #include "DimensionSymbol.h"
+#include "TableSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
