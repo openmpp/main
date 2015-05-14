@@ -1,29 +1,29 @@
 /**
-* @file    TableExpressionSymbol.h
-* Definitions for the TableExpressionSymbol class.
+* @file    EntityTableMeasureSymbol.h
+* Definitions for the EntityTableMeasureSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
 #include "TableAccumulatorSymbol.h"
-#include "TableExpressionSymbol.h"
+#include "EntityTableMeasureSymbol.h"
 #include "EntityTableSymbol.h"
 #include "ExprForTable.h"
 #include "Literal.h"
 
 // static
-string TableExpressionSymbol::symbol_name(const Symbol* table, int index)
+string EntityTableMeasureSymbol::symbol_name(const Symbol* table, int index)
 {
     assert(table);
     return table->name + ".Expr" + to_string(index);
 }
 
 /**
-* Post-parse operations for TableExpressionSymbol
+* Post-parse operations for EntityTableMeasureSymbol
 */
 
-void TableExpressionSymbol::post_parse(int pass)
+void EntityTableMeasureSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
@@ -58,7 +58,7 @@ void TableExpressionSymbol::post_parse(int pass)
 * @return  Result as a \a CodeBlock
 */
 
-void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
+void EntityTableMeasureSymbol::post_parse_traverse(ExprForTable *node)
 {
     auto acc = dynamic_cast<ExprForTableAccumulator *>(node);
     auto lit = dynamic_cast<const ExprForTableLiteral *>(node);
@@ -92,7 +92,7 @@ void TableExpressionSymbol::post_parse_traverse(ExprForTable *node)
 * @return  Result as a \a CodeBlock
 */
 
-string TableExpressionSymbol::get_expression(const ExprForTable *node, expression_style style)
+string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expression_style style)
 {
     const ExprForTableAccumulator* acc = dynamic_cast<const ExprForTableAccumulator *>(node);
     const ExprForTableLiteral* lit = dynamic_cast<const ExprForTableLiteral *>(node);

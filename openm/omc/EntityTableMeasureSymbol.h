@@ -1,6 +1,6 @@
 /**
-* @file    TableExpressionSymbol.h
-* Declarations for the TableExpressionSymbol class.
+* @file    EntityTableMeasureSymbol.h
+* Declarations for the EntityTableMeasureSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -12,9 +12,9 @@
 using namespace std;
 
 /**
-* TableExpressionSymbol.
+* EntityTableMeasureSymbol.
 */
-class TableExpressionSymbol : public Symbol
+class EntityTableMeasureSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -22,7 +22,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    TableExpressionSymbol(Symbol *table, ExprForTable *root, int index, yy::location decl_loc = yy::location())
+    EntityTableMeasureSymbol(Symbol *table, ExprForTable *root, int index, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(table, index), decl_loc)
         , root(root)
         , index(index)

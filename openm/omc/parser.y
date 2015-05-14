@@ -2089,12 +2089,12 @@ table_dimension:
 table_expression_list:
       expr_for_table[root]
                         {
-                            auto sym = new TableExpressionSymbol(pc.get_table_context(), $root, pc.counter1, @root);
+                            auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, pc.counter1, @root);
                             pc.counter1++;  // counter for expressions
                         }
     | table_expression_list "," expr_for_table[root]
                         {
-                            auto sym = new TableExpressionSymbol(pc.get_table_context(), $root, pc.counter1, @root);
+                            auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, pc.counter1, @root);
                             pc.counter1++;  // counter for expressions
                         }
 	;

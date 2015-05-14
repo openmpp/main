@@ -20,7 +20,7 @@
 #include "DimensionSymbol.h"
 #include "TableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
-#include "TableExpressionSymbol.h"
+#include "EntityTableMeasureSymbol.h"
 #include "EnumerationSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
@@ -474,10 +474,10 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "{";
     for (auto table_expr : pp_expressions) {
         // E.g.  // SUM_BEFORE( acc0 )
-        c += "// " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::sql);
+        c += "// " + table_expr->get_expression(table_expr->root, EntityTableMeasureSymbol::expression_style::sql);
         // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
         c += "for ( size_t cell = 0; cell < n_cells; cell++ ) "
-            "expr[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression(table_expr->root, TableExpressionSymbol::expression_style::cxx) + " ;";
+            "expr[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression(table_expr->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
         c += "";
     }
     c += "}";
@@ -748,7 +748,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "expr" + to_string(expr->index);
-        tableExpr.src = expr->get_expression(expr->root, TableExpressionSymbol::expression_style::sql);
+        tableExpr.src = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql);
         metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {

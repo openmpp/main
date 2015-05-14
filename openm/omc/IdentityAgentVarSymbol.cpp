@@ -29,7 +29,7 @@ void IdentityAgentVarSymbol::create_auxiliary_symbols()
 }
 
 /**
-* Post-parse operations for TableExpressionSymbol
+* Post-parse operations for EntityTableMeasureSymbol
 */
 
 void IdentityAgentVarSymbol::post_parse(int pass)

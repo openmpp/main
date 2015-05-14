@@ -11,7 +11,7 @@
 #include "Symbol.h"
 
 class DimensionSymbol;
-class TableExpressionSymbol;
+class EntityTableMeasureSymbol;
 class TableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
 class AgentFuncSymbol;
@@ -162,7 +162,7 @@ public:
     /**
      * The expressions in the table.
      */
-    list<TableExpressionSymbol *> pp_expressions;
+    list<EntityTableMeasureSymbol *> pp_expressions;
 
     /**
      * The agentvars used in all expressions in the table.
