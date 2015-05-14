@@ -46,6 +46,27 @@ public:
 
     CodeBlock cxx_definition_global();
 
+    /**
+     * Create the C++ initializer list for the shape of the table
+     * 
+     * Example: {2, 5} for a 2x5 table.
+     * 
+     * @return A string.
+     */
+    string cxx_shape_initializer_list() const;
+
+    /**
+     * Create the C++ initializer for the table
+     * 
+     * This is an expression list used to initialize the table at construction.
+     * The expression list does not include the enclosing parentheses used for construction.
+     * 
+     * Example: ({2, 5}) for a 2x5 table
+     * 
+     * @return A string.
+     */
+    string cxx_initializer() const;
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
@@ -53,14 +74,14 @@ public:
      *
      * @return An int.
      */
-    int rank();
+    int rank() const;
 
     /**
      * The total number of table cells in the table.
      *
      * @return An int.
      */
-    int cell_count();
+    int cell_count() const;
 
     /**
      * List of dimensions

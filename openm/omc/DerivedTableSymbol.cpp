@@ -45,8 +45,14 @@ CodeBlock DerivedTableSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
     size_t n_cells = cell_count();
-    size_t n_placeholders = pp_placeholders.size();
-    h += "typedef DerivedTable<"  + to_string(n_cells) + ", " + to_string(n_placeholders) + "> " + cxx_type + ";";
+    size_t n_measures = pp_placeholders.size();
+    size_t n_rank = rank();
+    //h += "typedef DerivedTable<"  + to_string(n_cells) + ", " + to_string(n_placeholders) + "> " + cxx_type + ";";
+    h += "typedef BaseTable<"
+        + to_string(n_measures) + ", "
+        + to_string(n_rank) + ", "
+        + to_string(n_cells)
+        + "> " + cxx_type + ";";
     h += "extern thread_local "  + cxx_type + " * " + cxx_instance + ";";
 
     return h;
@@ -65,12 +71,12 @@ CodeBlock DerivedTableSymbol::cxx_definition_global()
     return c;
 }
 
-int DerivedTableSymbol::rank()
+int DerivedTableSymbol::rank() const
 {
     return dimension_list.size();
 }
 
-int DerivedTableSymbol::cell_count()
+int DerivedTableSymbol::cell_count() const
 {
     int cells = 1;
     for (auto dim : dimension_list) {
@@ -80,6 +86,34 @@ int DerivedTableSymbol::cell_count()
     }
     return cells;
 }
+
+string DerivedTableSymbol::cxx_initializer() const
+{
+    string cxx;
+    cxx = cxx_shape_initializer_list();
+    return cxx;
+}
+
+string DerivedTableSymbol::cxx_shape_initializer_list() const
+{
+    string cxx = "{";
+    bool first_dim = true;
+    for (auto dim : dimension_list) {
+        if (first_dim) {
+            first_dim = false;
+        }
+        else {
+            cxx += ", ";
+        }
+        auto es = dim->pp_enumeration;
+        assert(es); // integrity check guarantee
+        cxx += to_string(es->pp_size());
+    }
+    cxx += "}";
+
+    return cxx;
+}
+
 
 void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {

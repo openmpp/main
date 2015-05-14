@@ -7,8 +7,92 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <vector>
+#include <algorithm>
+#include <cstdarg>
 
 using namespace std;
+
+template<size_t Tmeasures, size_t Trank, size_t Tcells>
+class BaseTable
+{
+public:
+    BaseTable(initializer_list<size_t> shape)
+        : shape(shape)
+    {
+        // There are one or more measures.
+        assert(measures > 0);
+
+        // The rank is equal to the size of shape.
+        assert(rank == shape.size());
+
+        // The number of cells is equal to product of the values in shape.
+        assert(cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>()));
+    };
+
+    /**
+     * Initializes the measures.
+     */
+    void initialize_measures()
+    {
+        for (size_t cell = 0; cell < n_cells; ++cell) {
+            measure[cell] = UNDEF_VALUE;
+        }
+    };
+
+    /**
+     * Compute the flattened index corresponding to dimension indices in argument list.
+     *
+     * @return The index of the cell.
+     */
+    size_t get_cell_index(va_list argp) const
+    {
+        size_t cell = 0;
+        va_list args;
+        va_start(args, rank);
+        cell = va_arg(args, size_t);
+        for (size_t dim = 1; dim < rank; ++dim) {
+            cell *= shape[dim];
+            cell += va_args(args, size_t);
+        }
+        va_end(args);
+        return cell;
+    }
+
+    void set_cell(...)
+    {
+        va_list args;
+    }
+
+    /**
+     * The number of table dimensions.
+     * 
+     * The rank can be zero, in which case the table has no dimensions and a single cell. The set of
+     * measures do not count as a dimension.
+     */
+    const size_t rank = Trank;
+
+    /**
+     * The total number of cells in the table.
+     */
+    const size_t cells = Tcells;
+
+    /**
+     * The number of measures in the table.  A measure corresponds to an expression in a regular
+     * table, and to a placeholder in a derived table.
+     */
+    static const size_t measures = Tmeasures;
+
+    /**
+     * The size of each dimension in the table.
+     */
+    const vector<size_t> shape;
+
+    /**
+     * Storage for all measures in all cells in the table.
+     */
+    double measure[Tmeasures][Tcells];
+};
 
 /**
  * Template for tables.
@@ -78,13 +162,6 @@ template<size_t t_cells, size_t t_placeholders>
 class DerivedTable
 {
 public:
-    void initialize_placeholders()
-    {
-        for (size_t cell = 0; cell < n_cells; ++cell) {
-            placeholder[cell] = UNDEF_VALUE;
-        }
-    };
-
     // constants
     static const size_t n_cells = t_cells;
     static const size_t n_placeholders = t_placeholders;
