@@ -19,7 +19,7 @@
 #include "RangeSymbol.h"
 #include "DimensionSymbol.h"
 #include "EntityTableAccumulatorSymbol.h"
-#include "TableAnalysisAgentVarSymbol.h"
+#include "EntityTableMeasureAttributeSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EnumerationSymbol.h"
 #include "CodeBlock.h"

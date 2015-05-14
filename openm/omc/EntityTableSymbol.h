@@ -13,7 +13,7 @@
 class DimensionSymbol;
 class EntityTableMeasureSymbol;
 class EntityTableAccumulatorSymbol;
-class TableAnalysisAgentVarSymbol;
+class EntityTableMeasureAttributeSymbol;
 class AgentFuncSymbol;
 class AgentInternalSymbol;
 class AgentVarSymbol;
@@ -167,7 +167,7 @@ public:
     /**
      * The agentvars used in all expressions in the table.
      */
-    list<TableAnalysisAgentVarSymbol *> pp_table_agentvars;
+    list<EntityTableMeasureAttributeSymbol *> pp_table_agentvars;
 
     /**
      * The accumulators used in all expressions in the table.

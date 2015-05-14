@@ -41,7 +41,7 @@
 #include "IdentityAgentVarSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableAccumulatorSymbol.h"
-#include "TableAnalysisAgentVarSymbol.h"
+#include "EntityTableMeasureAttributeSymbol.h"
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
 #include "DerivedTableSymbol.h"
@@ -1071,7 +1071,7 @@ void Symbol::post_parse_all()
         // Sort accumulators in sequence order
         table->pp_accumulators.sort( [] (EntityTableAccumulatorSymbol *a, EntityTableAccumulatorSymbol *b) { return a->index < b->index; } );
         // Sort referenced agentvars in sequence order
-        table->pp_table_agentvars.sort( [] (TableAnalysisAgentVarSymbol *a, TableAnalysisAgentVarSymbol *b) { return a->index < b->index; } );
+        table->pp_table_agentvars.sort( [] (EntityTableMeasureAttributeSymbol *a, EntityTableMeasureAttributeSymbol *b) { return a->index < b->index; } );
     }
 
     // Sort collections in derived tables

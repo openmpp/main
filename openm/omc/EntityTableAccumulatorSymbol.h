@@ -10,7 +10,7 @@
 #include "Symbol.h"
 
 class AgentVarSymbol;
-class TableAnalysisAgentVarSymbol;
+class EntityTableMeasureAttributeSymbol;
 class EntityTableSymbol;
 
 using namespace std;
@@ -190,7 +190,7 @@ public:
      * 
      * Only valid after post-parse phase 1.
      */
-    TableAnalysisAgentVarSymbol* pp_analysis_agentvar;
+    EntityTableMeasureAttributeSymbol* pp_analysis_agentvar;
 
     /**
      * Indicates if the accumulator has an associated collection of observations.

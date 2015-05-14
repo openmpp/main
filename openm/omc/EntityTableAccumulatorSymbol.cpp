@@ -8,7 +8,7 @@
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableSymbol.h"
 #include "AgentVarSymbol.h"
-#include "TableAnalysisAgentVarSymbol.h"
+#include "EntityTableMeasureAttributeSymbol.h"
 #include "CodeBlock.h"
 
 
@@ -61,8 +61,8 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
         pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
         assert(pp_agentvar); // parser guarantee
 
-        // assign direct pointer to TableAnalysisAgentVarSymbol for post-parse use
-        pp_analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *> (pp_symbol(analysis_agentvar));
+        // assign direct pointer to EntityTableMeasureAttributeSymbol for post-parse use
+        pp_analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *> (pp_symbol(analysis_agentvar));
         assert(pp_analysis_agentvar); // parser guarantee
 
         break;

@@ -52,7 +52,7 @@
 #include "DimensionSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableAccumulatorSymbol.h"
-#include "TableAnalysisAgentVarSymbol.h"
+#include "EntityTableMeasureAttributeSymbol.h"
 #include "EntityTableSymbol.h"
 #include "DerivedTableSymbol.h"
 #include "DerivedTableDimensionSymbol.h"

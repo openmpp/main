@@ -1,6 +1,6 @@
 /**
-* @file    TableAnalysisAgentVarSymbol.h
-* Declarations for the TableAnalysisAgentVarSymbol class.
+* @file    EntityTableMeasureAttributeSymbol.h
+* Declarations for the EntityTableMeasureAttributeSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -16,7 +16,7 @@ class CodeBlock;
 using namespace std;
 
 /**
-* TableAnalysisAgentVarSymbol.
+* EntityTableMeasureAttributeSymbol.
 *
 * Represents an agentvar used in the analysis dimension
 * (also known as the expression dimension) of a table.
@@ -26,7 +26,7 @@ using namespace std;
 * 'in' value of the agentvar when a table increment is started.
 */
 
-class TableAnalysisAgentVarSymbol : public Symbol
+class EntityTableMeasureAttributeSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -34,7 +34,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    TableAnalysisAgentVarSymbol(Symbol *table, Symbol *agentvar, int index)
+    EntityTableMeasureAttributeSymbol(Symbol *table, Symbol *agentvar, int index)
         : Symbol(symbol_name(table, agentvar))
         , table(table->stable_rp())
         , pp_table(nullptr)

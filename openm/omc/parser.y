@@ -2915,14 +2915,14 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_ty
 {
     Symbol *table = pc.get_table_context();
     // Also create symbol for associated analysis agentvar if not already present
-    TableAnalysisAgentVarSymbol *analysis_agentvar = nullptr;
-    if ( TableAnalysisAgentVarSymbol::exists( table, agentvar) ) {
-        string unique_name = TableAnalysisAgentVarSymbol::symbol_name( table, agentvar);
-        analysis_agentvar = dynamic_cast<TableAnalysisAgentVarSymbol *>(Symbol::get_symbol( unique_name ));
+    EntityTableMeasureAttributeSymbol *analysis_agentvar = nullptr;
+    if ( EntityTableMeasureAttributeSymbol::exists( table, agentvar) ) {
+        string unique_name = EntityTableMeasureAttributeSymbol::symbol_name( table, agentvar);
+        analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *>(Symbol::get_symbol( unique_name ));
         assert( analysis_agentvar );
     }
     else {
-        analysis_agentvar = new TableAnalysisAgentVarSymbol( table, agentvar, pc.counter3);
+        analysis_agentvar = new EntityTableMeasureAttributeSymbol( table, agentvar, pc.counter3);
         pc.counter3++;
     }
     // determine if the increment requires the creation & maintenance of an associated 'in' agent member.

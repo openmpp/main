@@ -1,13 +1,13 @@
 /**
-* @file    TableAnalysisAgentVarSymbol.cpp
-* Definitions for the TableAnalysisAgentVarSymbol class.
+* @file    EntityTableMeasureAttributeSymbol.cpp
+* Definitions for the EntityTableMeasureAttributeSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
 #include "libopenm/common/omHelper.h"
-#include "TableAnalysisAgentVarSymbol.h"
+#include "EntityTableMeasureAttributeSymbol.h"
 #include "AgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
 #include "EntityTableSymbol.h"
@@ -17,7 +17,7 @@ using namespace std;
 using namespace openm;
 
 // static
-string TableAnalysisAgentVarSymbol::symbol_name(const Symbol *table, const Symbol *agentvar)
+string EntityTableMeasureAttributeSymbol::symbol_name(const Symbol *table, const Symbol *agentvar)
 {
     string result;
     result = "om_" + table->name + "_taav_" + agentvar->name;
@@ -25,13 +25,13 @@ string TableAnalysisAgentVarSymbol::symbol_name(const Symbol *table, const Symbo
 }
 
 // static
-bool TableAnalysisAgentVarSymbol::exists(const Symbol *table, const Symbol *agentvar)
+bool EntityTableMeasureAttributeSymbol::exists(const Symbol *table, const Symbol *agentvar)
 {
     string unm = symbol_name(table, agentvar);
     return symbols.count(unm) == 0 ? false : true;
 }
 
-void TableAnalysisAgentVarSymbol::post_parse(int pass)
+void EntityTableMeasureAttributeSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
@@ -65,7 +65,7 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this TableAnalysisAgentVarSymbol to the table's list of agentvars
+        // Add this EntityTableMeasureAttributeSymbol to the table's list of agentvars
         pp_table->pp_table_agentvars.push_back(this);
         break;
     }
@@ -74,14 +74,14 @@ void TableAnalysisAgentVarSymbol::post_parse(int pass)
     }
 }
 
-string TableAnalysisAgentVarSymbol::in_member_name() const
+string EntityTableMeasureAttributeSymbol::in_member_name() const
 {
     string result;
     result = "om_" + table->name + "_in_" + agentvar->name;
     return result;
 }
 
-CodeBlock TableAnalysisAgentVarSymbol::cxx_prepare_increment() const
+CodeBlock EntityTableMeasureAttributeSymbol::cxx_prepare_increment() const
 {
     assert(pp_table);  // only call post-parse
     assert(pp_agentvar);  // only call post-parse
