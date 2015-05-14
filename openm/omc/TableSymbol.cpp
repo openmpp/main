@@ -28,8 +28,8 @@ void TableSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // add this derived table to the complete list of derived tables
-        //TODO pp_all_derived_tables.push_back(this);
+        // add this table to the complete list of tables
+        pp_all_tables.push_back(this);
 
         break;
     }
@@ -44,16 +44,6 @@ CodeBlock TableSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    size_t n_cells = cell_count();
-    size_t n_measures = pp_placeholders.size();
-    size_t n_rank = rank();
-    //h += "typedef DerivedTable<"  + to_string(n_cells) + ", " + to_string(n_placeholders) + "> " + cxx_type + ";";
-    h += "typedef BaseTable<"
-        + to_string(n_measures) + ", "
-        + to_string(n_rank) + ", "
-        + to_string(n_cells)
-        + "> " + cxx_type + ";";
-    h += "extern thread_local "  + cxx_type + " * " + cxx_instance + ";";
 
     return h;
 }
@@ -62,11 +52,6 @@ CodeBlock TableSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain
     CodeBlock c = super::cxx_definition_global();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    size_t n_cells = cell_count();
-    size_t n_placeholders = pp_placeholders.size();
-    c += "thread_local "  + cxx_type + " * " + cxx_instance + " = nullptr;";
 
     return c;
 }
@@ -85,13 +70,6 @@ int TableSymbol::cell_count() const
         cells *= es->pp_size();
     }
     return cells;
-}
-
-string TableSymbol::cxx_initializer() const
-{
-    string cxx;
-    cxx = cxx_shape_initializer_list();
-    return cxx;
 }
 
 string TableSymbol::cxx_shape_initializer_list() const
@@ -118,18 +96,6 @@ string TableSymbol::cxx_measure_name_initializer_list() const
 {
     string cxx = "{";
     //TODO
-    bool first_dim = true;
-    for (auto dim : dimension_list) {
-        if (first_dim) {
-            first_dim = false;
-        }
-        else {
-            cxx += ", ";
-        }
-        auto es = dim->pp_enumeration;
-        assert(es); // integrity check guarantee
-        cxx += to_string(es->pp_size());
-    }
     cxx += "}";
 
     return cxx;

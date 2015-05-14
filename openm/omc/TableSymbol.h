@@ -66,18 +66,6 @@ public:
      */
     string cxx_measure_name_initializer_list() const;
 
-    /**
-     * The C++ initializer for the table
-     * 
-     * This is an expression list used to initialize the table at construction.
-     * The expression list does not include the enclosing parentheses used for construction.
-     * 
-     * Example: {2, 5} for a 2x5 table
-     * 
-     * @return A string.
-     */
-    string cxx_initializer() const;
-
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
