@@ -33,7 +33,7 @@ public:
     */
     DerivedTableSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , expr_dim_position(0)
+        , measures_position(0)
         , pp_table_id(-1)
     {
         cxx_type = name;
@@ -47,7 +47,7 @@ public:
     CodeBlock cxx_definition_global();
 
     /**
-     * Create the C++ initializer list for the shape of the table
+     * The C++ initializer list for the shape of the table
      * 
      * Example: {2, 5} for a 2x5 table.
      * 
@@ -56,12 +56,23 @@ public:
     string cxx_shape_initializer_list() const;
 
     /**
-     * Create the C++ initializer for the table
+     * The C++ initializer list for the measure names.
+     * 
+     * Examples:
+     *   {"SIMULATED", "ESTIMATE"}
+     *   {"Expr0", "Expr1", "Expr2"}
+     *
+     * @return A string.
+     */
+    string cxx_measure_name_initializer_list() const;
+
+    /**
+     * The C++ initializer for the table
      * 
      * This is an expression list used to initialize the table at construction.
      * The expression list does not include the enclosing parentheses used for construction.
      * 
-     * Example: ({2, 5}) for a 2x5 table
+     * Example: {2, 5} for a 2x5 table
      * 
      * @return A string.
      */
@@ -94,12 +105,12 @@ public:
     list<DerivedTablePlaceholderSymbol *> pp_placeholders;
 
     /**
-     * The expression dimension display position.
+     * The display position of measures relative to dimensions
      * 
-     * The zero-based ordinal classification after which the expression dimension will be displayed.
-     * If the expression dimension is the first dimension displayed, the value is -1.
+     * The value is the zero-based ordinal of the dimension after which the measures will be
+     * displayed. If the mesaures are displayed before the first dimension, the value is -1.
      */
-    int expr_dim_position;
+    int measures_position;
 
     /**
      * Type used to declare the derived table.
@@ -107,7 +118,7 @@ public:
     string cxx_type;
 
     /**
-     * The name of the unitary global instance of the derived table.
+     * The name of the unitary global instance of the table.
      */
     string cxx_instance;
 

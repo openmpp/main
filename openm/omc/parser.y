@@ -2332,9 +2332,9 @@ derived_table_dimension:
                         }
       derived_table_placeholder_list "}"
                         {
-                            // record analysis dimension position which is the
+                            // record measures position which is the
                             // 0-based ordinal of the immediately preceding classification dimension.
-                            pc.get_derived_table_context()->expr_dim_position = pc.counter4 - 1;
+                            pc.get_derived_table_context()->measures_position = pc.counter4 - 1;
                         }
     ;
 

@@ -114,6 +114,26 @@ string DerivedTableSymbol::cxx_shape_initializer_list() const
     return cxx;
 }
 
+string DerivedTableSymbol::cxx_measure_name_initializer_list() const
+{
+    string cxx = "{";
+    //TODO
+    bool first_dim = true;
+    for (auto dim : dimension_list) {
+        if (first_dim) {
+            first_dim = false;
+        }
+        else {
+            cxx += ", ";
+        }
+        auto es = dim->pp_enumeration;
+        assert(es); // integrity check guarantee
+        cxx += to_string(es->pp_size());
+    }
+    cxx += "}";
+
+    return cxx;
+}
 
 void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
@@ -129,7 +149,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.rank = rank();
     tableDic.isSparse = true;   // do not store NULLs
     tableDic.isHidden = false;
-    tableDic.exprPos = expr_dim_position;
+    tableDic.exprPos = measures_position;
     metaRows.tableDic.push_back(tableDic);
 
     for (auto lang : Symbol::pp_all_languages) {
