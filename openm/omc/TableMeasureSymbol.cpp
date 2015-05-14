@@ -21,7 +21,7 @@ string TableMeasureSymbol::symbol_name(const Symbol* derived_table, int index)
 string TableMeasureSymbol::pretty_name() const
 {
     // example:     accumulator 0: sum(delta(interval(duration)))
-    string result = " placeholder " + to_string(index) + ": " + placeholder_name;
+    string result = " measure " + to_string(index) + ": " + measure_name;
     return result;
 }
 
@@ -34,12 +34,12 @@ void TableMeasureSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to derived table for post-parse use
-        pp_derived_table = dynamic_cast<DerivedTableSymbol *> (pp_symbol(derived_table));
-        assert(pp_derived_table); // parser guarantee
+        // assign direct pointer to table for post-parse use
+        pp_table = dynamic_cast<TableSymbol *> (pp_symbol(table));
+        assert(pp_table); // parser guarantee
 
-        // Add this placeholder to the derived table's list of placeholders
-        pp_derived_table->pp_placeholders.push_back(this);
+        // Add this measure to the table's list of measures
+        pp_table->pp_measures.push_back(this);
         break;
     }
     default:

@@ -69,11 +69,24 @@ public:
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
-     * The rank of the table.
+     * The number of measures in the table.
      *
-     * @return An int.
+     * @return A size_t.
      */
-    int rank() const;
+    size_t measure_count() const
+    {
+        return pp_measures.size();
+    }
+
+    /**
+     * The number of dimensions in the table (rank).
+     *
+     * @return A size_t.
+     */
+    size_t dimension_count() const
+    {
+        return dimension_list.size();
+    }
 
     /**
      * The total number of table cells in the table.
@@ -90,7 +103,7 @@ public:
     /**
      * The measures in the table.
      */
-    list<TableMeasureSymbol *> pp_placeholders;
+    list<TableMeasureSymbol *> pp_measures;
 
     /**
      * The display position of measures relative to dimensions

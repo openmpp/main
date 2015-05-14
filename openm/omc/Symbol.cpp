@@ -1068,6 +1068,12 @@ void Symbol::post_parse_all()
         agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 
+    // Sort collections in tables
+    for ( auto table : pp_all_tables ) {
+        // Sort measures in sequence order
+        table->pp_measures.sort( [] (TableMeasureSymbol *a, TableMeasureSymbol *b) { return a->index < b->index; } );
+    }
+
     // Sort collections in entity tables
     for ( auto table : pp_all_entity_tables ) {
         // Sort expressions in sequence order
@@ -1076,12 +1082,6 @@ void Symbol::post_parse_all()
         table->pp_accumulators.sort( [] (EntityTableAccumulatorSymbol *a, EntityTableAccumulatorSymbol *b) { return a->index < b->index; } );
         // Sort referenced agentvars in sequence order
         table->pp_table_agentvars.sort( [] (EntityTableMeasureAttributeSymbol *a, EntityTableMeasureAttributeSymbol *b) { return a->index < b->index; } );
-    }
-
-    // Sort collections in derived tables
-    for ( auto derived_table : pp_all_derived_tables ) {
-        // Sort placeholders in sequence order
-        derived_table->pp_placeholders.sort( [] (TableMeasureSymbol *a, TableMeasureSymbol *b) { return a->index < b->index; } );
     }
 
     {

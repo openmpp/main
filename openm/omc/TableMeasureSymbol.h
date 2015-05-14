@@ -28,12 +28,12 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TableMeasureSymbol(Symbol *derived_table, string placeholder_name, int index, yy::location decl_loc = yy::location())
-        : Symbol(symbol_name(derived_table, index), decl_loc)
-        , placeholder_name(placeholder_name)
+    TableMeasureSymbol(Symbol *table, string measure_name, int index, yy::location decl_loc = yy::location())
+        : Symbol(symbol_name(table, index), decl_loc)
+        , measure_name(measure_name)
         , index(index)
-        , derived_table(derived_table->stable_rp())
-        , pp_derived_table(nullptr)
+        , table(table->stable_rp())
+        , pp_table(nullptr)
     {
     }
 
@@ -46,9 +46,9 @@ public:
     string pretty_name() const;
 
     /**
-     * Name of the placeholder.
+     * Name of the measure
      */
-    string placeholder_name;
+    string measure_name;
 
     /**
      * Zero-based index of the measure in the table measures.
@@ -60,12 +60,12 @@ public:
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol*& derived_table;
+    Symbol*& table;
 
     /**
-     * The derived table containing this measure (pointer)
+     * The table containing this measure (pointer)
      * 
      * Only valid after post-parse phase 1.
      */
-    DerivedTableSymbol* pp_derived_table;
+    TableSymbol* pp_table;
 };

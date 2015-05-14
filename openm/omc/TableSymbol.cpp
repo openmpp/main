@@ -56,11 +56,6 @@ CodeBlock TableSymbol::cxx_definition_global()
     return c;
 }
 
-int TableSymbol::rank() const
-{
-    return dimension_list.size();
-}
-
 int TableSymbol::cell_count() const
 {
     int cells = 1;
@@ -112,7 +107,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.tableId = pp_table_id;
     tableDic.tableName = name;
     tableDic.isUser = true;
-    tableDic.rank = rank();
+    tableDic.rank = dimension_count();
     tableDic.isSparse = true;   // do not store NULLs
     tableDic.isHidden = false;
     tableDic.exprPos = measures_position;
@@ -154,7 +149,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // 'accumulators' for derived table
-    for (auto acc : pp_placeholders) {
+    for (auto acc : pp_measures) {
         TableAccRow tableAcc;
 
         tableAcc.tableId = pp_table_id;
@@ -176,7 +171,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // 'expressions' for derived table
     // Just average the values across simulation members
-    for (auto expr : pp_placeholders) {
+    for (auto expr : pp_measures) {
         TableExprRow tableExpr;
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
