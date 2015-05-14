@@ -158,8 +158,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableTxt.langName = lang->name;
         tableTxt.descr = label(*lang);
         tableTxt.note = note(*lang);
-        tableTxt.exprDescr = "Expressions (" + lang->name + ")"; // TODO
-        tableTxt.exprNote = "Expressions Note (" + lang->name + ")"; // TODO
+        tableTxt.exprDescr = "Measures (" + lang->name + ")"; // TODO
+        tableTxt.exprNote = "Measures Note (" + lang->name + ")"; // TODO
         metaRows.tableTxt.push_back(tableTxt);
     }
 
@@ -234,7 +234,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 }
 
-// this function exist only because g++ below 4.9 does not support std::regex
+// this function exists only because g++ below 4.9 does not support std::regex
 #ifdef _WIN32
 
 string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)

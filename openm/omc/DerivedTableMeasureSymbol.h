@@ -51,19 +51,19 @@ public:
     string placeholder_name;
 
     /**
-     * Zero-based index of the expression in the expression table dimension.
+     * Zero-based index of the measure in the table measures.
      */
     int index;
 
     /**
-     * The table containing this expression (reference to pointer)
+     * The table containing this measure (reference to pointer)
      * 
      * Stable to symbol morphing during parse phase.
      */
     Symbol*& derived_table;
 
     /**
-     * The derived table containing this analysis place-holder (pointer)
+     * The derived table containing this measure (pointer)
      * 
      * Only valid after post-parse phase 1.
      */

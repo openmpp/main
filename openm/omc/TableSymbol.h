@@ -95,12 +95,12 @@ public:
     int cell_count() const;
 
     /**
-     * List of dimensions
+     * The dimensions in the table
      */
     list<DerivedTableDimensionSymbol *> dimension_list;
 
     /**
-     * The placeholders in the derived table.
+     * The measures in the table.
      */
     list<DerivedTableMeasureSymbol *> pp_placeholders;
 
