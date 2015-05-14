@@ -9,7 +9,7 @@
 #include <list>
 #include "Symbol.h"
 
-#include "DerivedTableDimensionSymbol.h"
+#include "TableDimensionSymbol.h"
 #include "DerivedTableMeasureSymbol.h"
 
 class CodeBlock;
@@ -97,7 +97,7 @@ public:
     /**
      * The dimensions in the table
      */
-    list<DerivedTableDimensionSymbol *> dimension_list;
+    list<TableDimensionSymbol *> dimension_list;
 
     /**
      * The measures in the table.

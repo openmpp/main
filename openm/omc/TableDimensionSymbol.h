@@ -1,6 +1,6 @@
 /**
-* @file    DerivedTableDimensionSymbol.h
-* Declarations for the DerivedTableDimensionSymbol class.
+* @file    TableDimensionSymbol.h
+* Declarations for the TableDimensionSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -14,11 +14,11 @@ class EunumerationSymbol;
 using namespace std;
 
 /**
-* DerivedTableDimensionSymbol.
+* TableDimensionSymbol.
 * 
 * Corresponds to a dimension of a derived table.
 */
-class DerivedTableDimensionSymbol : public Symbol
+class TableDimensionSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -26,7 +26,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    DerivedTableDimensionSymbol(Symbol *derived_table, int index, bool after_analysis_dim, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
+    TableDimensionSymbol(Symbol *derived_table, int index, bool after_analysis_dim, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(derived_table, index, after_analysis_dim), decl_loc)
         , index(index)
         , after_analysis_dim(after_analysis_dim)
@@ -56,7 +56,7 @@ public:
     /**
      * Zero-based index of the dimension in the table.
      * 
-     * Note that index in DerivedTableDimensionSymbol does not count the special analysis dimension.
+     * Note that index in TableDimensionSymbol does not count the special analysis dimension.
      */
     int index;
 

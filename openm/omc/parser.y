@@ -2318,7 +2318,7 @@ derived_table_dimension:
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
-                            auto sym = new DerivedTableDimensionSymbol(pc.get_derived_table_context(), pc.counter4, after_analysis_dim, enumeration, margin_opt, @enumeration);
+                            auto sym = new TableDimensionSymbol(pc.get_derived_table_context(), pc.counter4, after_analysis_dim, enumeration, margin_opt, @enumeration);
                             // add dimension to derived table's dimension_list
                             pc.get_derived_table_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions (excluding analysis dimension).

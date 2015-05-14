@@ -1,16 +1,16 @@
 /**
-* @file    DerivedTableDimensionSymbol.h
-* Definitions for the DerivedTableDimensionSymbol class.
+* @file    TableDimensionSymbol.h
+* Definitions for the TableDimensionSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include "DerivedTableDimensionSymbol.h"
+#include "TableDimensionSymbol.h"
 #include "EnumerationSymbol.h"
 
 // static
-string DerivedTableDimensionSymbol::symbol_name(const Symbol* derived_table, int index, bool after_analysis_dim)
+string TableDimensionSymbol::symbol_name(const Symbol* derived_table, int index, bool after_analysis_dim)
 {
     assert(derived_table);
     // The numeric identifier is based on all dimensions, including the analysis dimension
@@ -18,7 +18,7 @@ string DerivedTableDimensionSymbol::symbol_name(const Symbol* derived_table, int
     return derived_table->name + ".Dim" + to_string(numeric_id);
 }
 
-void DerivedTableDimensionSymbol::post_parse(int pass)
+void TableDimensionSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
