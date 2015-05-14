@@ -8,7 +8,7 @@
 #pragma once
 #include "Symbol.h"
 
-class TableAccumulatorSymbol;
+class EntityTableAccumulatorSymbol;
 class Literal;
 
 using namespace std;
@@ -69,7 +69,7 @@ public:
     }
 
 	Symbol*& accumulator;
-	TableAccumulatorSymbol *pp_accumulator;
+	EntityTableAccumulatorSymbol *pp_accumulator;
 };
 
 class ExprForTableLiteral : public ExprForTable {

@@ -1,11 +1,11 @@
 /**
-* @file    TableAccumulatorSymbol.cpp
-* Definitions for the TableAccumulatorSymbol class.
+* @file    EntityTableAccumulatorSymbol.cpp
+* Definitions for the EntityTableAccumulatorSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-#include "TableAccumulatorSymbol.h"
+#include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableSymbol.h"
 #include "AgentVarSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
@@ -13,7 +13,7 @@
 
 
 // static
-string TableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
+string EntityTableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
 {
     string result;
     result = "om_" + table->name + "_ta_" + token_to_string(accumulator) + "_" + token_to_string(increment) + "_" + token_to_string(table_op) + "_" + agentvar->name;
@@ -21,20 +21,20 @@ string TableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accum
 }
 
 // static
-bool TableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
+bool EntityTableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
 {
     string unm = symbol_name(table, accumulator, increment, table_op, agentvar);
     return symbols.count(unm) == 0 ? false : true;
 }
 
-string TableAccumulatorSymbol::pretty_name() const
+string EntityTableAccumulatorSymbol::pretty_name() const
 {
     // example:     accumulator 0: sum(delta(interval(duration)))
     string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator) + "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + agentvar->pretty_name() + ")))";
     return result;
 }
 
-void TableAccumulatorSymbol::post_parse(int pass)
+void EntityTableAccumulatorSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);

@@ -1,6 +1,6 @@
 /**
-* @file    TableAccumulatorSymbol.h
-* Declarations for the TableAccumulatorSymbol class.
+* @file    EntityTableAccumulatorSymbol.h
+* Declarations for the EntityTableAccumulatorSymbol class.
 */
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
@@ -16,9 +16,9 @@ class EntityTableSymbol;
 using namespace std;
 
 /**
-* TableAccumulatorSymbol.
+* EntityTableAccumulatorSymbol.
 */
-class TableAccumulatorSymbol : public Symbol
+class EntityTableAccumulatorSymbol : public Symbol
 {
 private:
     typedef Symbol super;
@@ -26,7 +26,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    TableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, token_type table_op, Symbol *agentvar, Symbol *analysis_agentvar, int index)
+    EntityTableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, token_type table_op, Symbol *agentvar, Symbol *analysis_agentvar, int index)
         : Symbol(symbol_name(table, accumulator, increment, table_op, agentvar))
         , table(table->stable_rp())
         , pp_table(nullptr)
@@ -106,7 +106,7 @@ public:
     }
 
     /**
-     * Get the unique name for this TableAccumulatorSymbol.
+     * Get the unique name for this EntityTableAccumulatorSymbol.
      *
      * @param table       The table.
      * @param accumulator The accumulator, e.g. token::TK_sum.

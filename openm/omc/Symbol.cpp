@@ -40,7 +40,7 @@
 #include "AgentMultilinkSymbol.h"
 #include "IdentityAgentVarSymbol.h"
 #include "EntityTableMeasureSymbol.h"
-#include "TableAccumulatorSymbol.h"
+#include "EntityTableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
@@ -1069,7 +1069,7 @@ void Symbol::post_parse_all()
         // Sort expressions in sequence order
         table->pp_expressions.sort( [] (EntityTableMeasureSymbol *a, EntityTableMeasureSymbol *b) { return a->index < b->index; } );
         // Sort accumulators in sequence order
-        table->pp_accumulators.sort( [] (TableAccumulatorSymbol *a, TableAccumulatorSymbol *b) { return a->index < b->index; } );
+        table->pp_accumulators.sort( [] (EntityTableAccumulatorSymbol *a, EntityTableAccumulatorSymbol *b) { return a->index < b->index; } );
         // Sort referenced agentvars in sequence order
         table->pp_table_agentvars.sort( [] (TableAnalysisAgentVarSymbol *a, TableAnalysisAgentVarSymbol *b) { return a->index < b->index; } );
     }

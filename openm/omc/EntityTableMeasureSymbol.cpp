@@ -6,7 +6,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include "TableAccumulatorSymbol.h"
+#include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableSymbol.h"
 #include "ExprForTable.h"
@@ -64,7 +64,7 @@ void EntityTableMeasureSymbol::post_parse_traverse(ExprForTable *node)
     auto lit = dynamic_cast<const ExprForTableLiteral *>(node);
     if (acc != nullptr) {
         // found an accumulator leaf of the expression tree
-        (acc->pp_accumulator) = dynamic_cast<TableAccumulatorSymbol *>(acc->accumulator);
+        (acc->pp_accumulator) = dynamic_cast<EntityTableAccumulatorSymbol *>(acc->accumulator);
         assert(acc->pp_accumulator); // parser guarantee
     }
     else if (lit != nullptr) {
@@ -99,7 +99,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
 
     if (acc != nullptr) {
         // Node is a terminal accumulator leaf of the expression tree
-        const TableAccumulatorSymbol *accumulator = acc->pp_accumulator;
+        const EntityTableAccumulatorSymbol *accumulator = acc->pp_accumulator;
         string result;
         switch (style) {
         case cxx:

@@ -18,7 +18,7 @@
 #include "NumericSymbol.h"
 #include "RangeSymbol.h"
 #include "DimensionSymbol.h"
-#include "TableAccumulatorSymbol.h"
+#include "EntityTableAccumulatorSymbol.h"
 #include "TableAnalysisAgentVarSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EnumerationSymbol.h"
@@ -103,7 +103,7 @@ void EntityTableSymbol::post_parse(int pass)
         for (auto acc : pp_accumulators) {
             if (acc->has_obs_collection) {
                 // Search for an accumulator which is already marked to update the same collection.
-                TableAccumulatorSymbol *acc_found = nullptr;
+                EntityTableAccumulatorSymbol *acc_found = nullptr;
                 for (auto acc2 : pp_accumulators) {
                     if (acc2->increment == acc->increment
                      && acc2->table_op == acc->table_op

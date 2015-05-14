@@ -186,6 +186,7 @@
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="EntitySetSymbol.h" />
+    <ClInclude Include="EntityTableAccumulatorSymbol.h" />
     <ClInclude Include="EntityTableMeasureSymbol.h" />
     <ClInclude Include="EntityTableSymbol.h" />
     <ClInclude Include="EnumerationSymbol.h" />
@@ -218,7 +219,6 @@
     <ClInclude Include="SimpleAgentVarSymbol.h" />
     <ClInclude Include="StringSymbol.h" />
     <ClInclude Include="Symbol.h" />
-    <ClInclude Include="TableAccumulatorSymbol.h" />
     <ClInclude Include="TableAnalysisAgentVarSymbol.h" />
     <ClInclude Include="TableGroupSymbol.h" />
     <ClInclude Include="TimeSymbol.h" />
@@ -261,6 +261,7 @@
     <ClCompile Include="DimensionSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
     <ClCompile Include="EntitySetSymbol.cpp" />
+    <ClCompile Include="EntityTableAccumulatorSymbol.cpp" />
     <ClCompile Include="EntityTableMeasureSymbol.cpp" />
     <ClCompile Include="EntityTableSymbol.cpp" />
     <ClCompile Include="EnumerationSymbol.cpp" />
@@ -290,7 +291,6 @@
     <ClCompile Include="SimpleAgentVarSymbol.cpp" />
     <ClCompile Include="StringSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
-    <ClCompile Include="TableAccumulatorSymbol.cpp" />
     <ClCompile Include="TableAnalysisAgentVarSymbol.cpp" />
     <ClCompile Include="TableGroupSymbol.cpp" />
     <ClCompile Include="TimeSymbol.cpp" />

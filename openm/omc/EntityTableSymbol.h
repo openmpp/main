@@ -12,7 +12,7 @@
 
 class DimensionSymbol;
 class EntityTableMeasureSymbol;
-class TableAccumulatorSymbol;
+class EntityTableAccumulatorSymbol;
 class TableAnalysisAgentVarSymbol;
 class AgentFuncSymbol;
 class AgentInternalSymbol;
@@ -172,7 +172,7 @@ public:
     /**
      * The accumulators used in all expressions in the table.
      */
-    list<TableAccumulatorSymbol *> pp_accumulators;
+    list<EntityTableAccumulatorSymbol *> pp_accumulators;
 
     /**
      * The expression dimension display position.

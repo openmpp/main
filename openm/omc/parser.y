@@ -2936,14 +2936,14 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_ty
             ) analysis_agentvar->need_value_in = true;
     }
     // Also create symbol for associated accumulator if not already present
-    TableAccumulatorSymbol *accumulator = nullptr;
-    if ( TableAccumulatorSymbol::exists( table, acc, incr, table_op, agentvar) ) {
-        string unique_name = TableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, agentvar );
-        accumulator = dynamic_cast<TableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
+    EntityTableAccumulatorSymbol *accumulator = nullptr;
+    if ( EntityTableAccumulatorSymbol::exists( table, acc, incr, table_op, agentvar) ) {
+        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, agentvar );
+        accumulator = dynamic_cast<EntityTableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
         assert( accumulator );
     }
     else {
-        accumulator = new TableAccumulatorSymbol( table, acc, incr, table_op, agentvar, analysis_agentvar, pc.counter2);
+        accumulator = new EntityTableAccumulatorSymbol( table, acc, incr, table_op, agentvar, analysis_agentvar, pc.counter2);
         pc.counter2++;
     }
 	auto result = new ExprForTableAccumulator( accumulator );
