@@ -27,13 +27,15 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    DimensionSymbol(Symbol *table_or_entity_set, int index, bool after_analysis_dim, Symbol *attribute, bool has_margin, yy::location decl_loc = yy::location())
+    DimensionSymbol(Symbol *table_or_entity_set, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(table_or_entity_set, index, after_analysis_dim), decl_loc)
         , index(index)
         , after_analysis_dim(after_analysis_dim)
         , has_margin(has_margin)
-        , attribute(attribute->stable_rp())
+        , attribute(attribute ? attribute->stable_pp() : nullptr)
+        , enumeration(enumeration ? enumeration->stable_pp() : nullptr)
         , pp_attribute(nullptr)
+        , pp_enumeration(nullptr)
     {
     }
 
@@ -71,9 +73,9 @@ public:
     /**
      * The attribute for the dimension (reference to pointer)
      * 
-     * Stable to symbol morphing during parse phase.
+     * Stable to symbol morphing during parse phase. Is nullptr for derived tables.
      */
-    Symbol*& attribute;
+    Symbol** attribute;
 
     /**
      * The attribute for the dimension
@@ -81,6 +83,14 @@ public:
      * Only valid after post-parse.
      */
     AgentVarSymbol* pp_attribute;
+
+    /**
+     * The enumeration for the dimension (reference to pointer)
+     * 
+     * Stable to symbol morphing during parse phase. Is nullptr except for derived tables, for which
+     * the enumeration is specified explicitly in model code.
+     */
+    Symbol** enumeration;
 
     /**
      * The enumeration for the dimension

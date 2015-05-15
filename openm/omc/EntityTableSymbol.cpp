@@ -691,8 +691,6 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // dimensions for table
     for (auto dim : dimension_list ) {
-        auto av = dim->pp_attribute;
-        assert(av); // logic guarantee
         auto es = dim->pp_enumeration;
         assert(es); // logic guarantee
         TableDimsRow tableDims;
