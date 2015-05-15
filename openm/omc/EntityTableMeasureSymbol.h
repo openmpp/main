@@ -7,6 +7,7 @@
 
 #pragma once
 #include <string>
+#include "TableMeasureSymbol.h"
 #include "Symbol.h"
 
 using namespace std;
@@ -14,63 +15,51 @@ using namespace std;
 /**
 * EntityTableMeasureSymbol.
 */
-class EntityTableMeasureSymbol : public Symbol
+class EntityTableMeasureSymbol : public TableMeasureSymbol
 {
 private:
-    typedef Symbol super;
+    typedef TableMeasureSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
 
     EntityTableMeasureSymbol(Symbol *table, ExprForTable *root, int index, yy::location decl_loc = yy::location())
-        : Symbol(symbol_name(table, index), decl_loc)
+        : TableMeasureSymbol(table, symbol_name(table, index), index, decl_loc)
         , root(root)
-        , index(index)
-        , table(table->stable_rp())
-        , pp_table(nullptr)
     {
     }
 
-    // Construct symbol name for the table expression symbol.
-    // Example: BasicDemography.Expr0
-    static string symbol_name(const Symbol* table, int index);
-
     void post_parse(int pass);
 
+    /**
+     * Perform post-parse operations on nodes of a ExprForTable tree
+     * 
+     * Assigns the pp_accumulator pointer using the assumulator member from the parse phase.
+     *
+     * @param [in,out] node The root of the expression tree.
+     *
+     * ### return Result as a \a CodeBlock.
+     */
     void post_parse_traverse(ExprForTable *node);
 
     enum expression_style {
         cxx,
         sql
     };
+
+    /**
+     * Get C++ expression using accumulators.
+     *
+     * @param node  The root of the expression tree.
+     * @param style The style.
+     *
+     * @return Result as a \a CodeBlock.
+     */
     string get_expression(const ExprForTable *node, expression_style style);
 
     /**
-    * Root of the expression tree
-    */
-
+     * Root of the expression tree.
+     */
     ExprForTable *root;
-
-    /**
-    * Zero-based index of the expression in the expression table dimension
-    */
-
-    int index;
-
-    /**
-    * The table containing this expression (reference to pointer)
-    *
-    * Stable to symbol morphing during parse phase.
-    */
-
-    Symbol*& table;
-
-    /**
-    * The table containing this expression (pointer)
-    *
-    * Only valid after post-parse phase 1.
-    */
-
-    EntityTableSymbol* pp_table;
 };
 

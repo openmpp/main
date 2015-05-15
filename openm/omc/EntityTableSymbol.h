@@ -8,7 +8,7 @@
 
 #pragma once
 #include <list>
-#include "Symbol.h"
+#include "TableSymbol.h"
 
 class DimensionSymbol;
 class EntityTableMeasureSymbol;
@@ -28,16 +28,16 @@ using namespace std;
 /**
 * EntityTableSymbol.
 */
-class EntityTableSymbol : public Symbol
+class EntityTableSymbol : public TableSymbol
 {
 private:
-    typedef Symbol super;
+    typedef TableSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
 
     EntityTableSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
-        : Symbol(sym, decl_loc)
+        : TableSymbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
         , cell(nullptr)
@@ -47,10 +47,10 @@ public:
         , process_increments_fn(nullptr)
         , filter(nullptr)
         , unit(nullptr)
-        , measures_position(0)
         , n_collections(0)
-        , pp_table_id(-1)
     {
+        cxx_class = "cls_" + name;
+
         create_auxiliary_symbols();
     }
 
@@ -64,6 +64,8 @@ public:
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();
+
+    string cxx_initializer() const;
 
     /**
      * Builds the function body of the update_cell function.
@@ -83,21 +85,14 @@ public:
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
-     * The number of dimensions in the table (rank).
+     * The number of accumulators in the table.
      *
      * @return A size_t.
      */
-    size_t dimension_count() const
+    size_t accumulator_count() const
     {
-        return dimension_list.size();
+        return pp_accumulators.size();
     }
-
-    /**
-     * The total number of table cells in the table.
-     *
-     * @return A size_t.
-     */
-    size_t cell_count() const;
 
     /**
      * Reference to pointer to agent.
@@ -158,14 +153,9 @@ public:
     BuiltinAgentVarSymbol *unit;
 
     /**
-     * List of dimensions
-     */
-    list<DimensionSymbol *> dimension_list;
-
-    /**
      * The expressions in the table.
      */
-    list<EntityTableMeasureSymbol *> pp_expressions;
+    //list<EntityTableMeasureSymbol *> pp_expressions;
 
     /**
      * The agentvars used in all expressions in the table.
@@ -178,14 +168,6 @@ public:
     list<EntityTableAccumulatorSymbol *> pp_accumulators;
 
     /**
-     * The display position of measures relative to dimensions
-     * 
-     * The value is the zero-based ordinal of the dimension after which the measures will be
-     * displayed. If the mesaures are displayed before the first dimension, the value is -1.
-     */
-    int measures_position;
-
-    /**
      * The number of observation collections in the table.
      * 
      * Some accumulators such as P50 require an associated onservation collection
@@ -194,7 +176,7 @@ public:
     int n_collections;
 
     /**
-     * Numeric identifier. Used for communicating with metadata API.
+     * Class name used to declare the entity table.
      */
-    int pp_table_id;
+    string cxx_class;
 };

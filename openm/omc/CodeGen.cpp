@@ -356,16 +356,16 @@ void CodeGen::do_ModelStartup()
     c += "{";
 
     c += "// Entity table instantiation";
-    for (auto table : Symbol::pp_all_entity_tables) {
-        c += "assert(!the" + table->name + "); ";
-        c += "the" + table->name + " = new " + table->name + ";";
+    for (auto et : Symbol::pp_all_entity_tables) {
+        c += "assert(!" + et->cxx_instance + "); ";
+        c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
     }
     c += "";
 
     c += "// Derived table instantiation";
-    for (auto derived_table : Symbol::pp_all_derived_tables) {
-        c += "assert(!" + derived_table->cxx_instance + "); ";
-        c += derived_table->cxx_instance + " = new " + derived_table->cxx_type + "(" + derived_table->cxx_initializer() + ");";
+    for (auto dt : Symbol::pp_all_derived_tables) {
+        c += "assert(!" + dt->cxx_instance + "); ";
+        c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
     }
     c += "";
 
@@ -435,9 +435,9 @@ void CodeGen::do_ModelShutdown()
         c += "{";
         c += "const char *name = \"" + derived_table->name + "\";";
         c += "auto &tbl = " + derived_table->cxx_instance + ";";
-        c += "double *pdbl[tbl->measures]; // array of pointers for writeOutputTable";
-        c += "for (size_t j = 0; j < tbl->measures; ++j) pdbl[j] = tbl->measure[j];";
-	    c += "i_model->writeOutputTable(name, tbl->measures, tbl->cells, const_cast<const double **>(pdbl));";
+        c += "double *pdbl[tbl->n_measures]; // array of pointers for writeOutputTable";
+        c += "for (size_t j = 0; j < tbl->n_measures; ++j) pdbl[j] = tbl->measure[j];";
+	    c += "i_model->writeOutputTable(name, tbl->n_measures, tbl->n_cells, const_cast<const double **>(pdbl));";
         c += "}";
     }
 

@@ -13,25 +13,32 @@
 
 using namespace std;
 
-template<size_t Tmeasures, size_t Trank, size_t Tcells>
-class BaseTable
+/**
+ * A table.
+ *
+ * @tparam Tdimensions Number of dimensions.
+ * @tparam Tcells      Number of cells.
+ * @tparam Tmeasures   Number of measures.
+ */
+template<size_t Tdimensions, size_t Tcells, size_t Tmeasures>
+class Table
 {
 public:
-    BaseTable(initializer_list<size_t> shape)
+    Table(initializer_list<size_t> shape)
         : shape(shape)
     {
         // There are one or more measures.
-        assert(measures > 0);
+        assert(n_measures > 0);
 
         // The rank is equal to the size of shape.
-        assert(rank == shape.size());
+        assert(n_dimensions == shape.size());
 
         // The number of cells is equal to product of the values in shape.
-        assert(cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>()));
+        assert(n_cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>()));
     };
 
     /**
-     * Initializes the measures.
+     * Initialize the measures to the undefined value (silent NaN)
      */
     void initialize_measures()
     {
@@ -62,26 +69,27 @@ public:
     void set_cell(...)
     {
         va_list args;
+        // TODO
     }
 
     /**
      * The number of table dimensions.
      * 
-     * The rank can be zero, in which case the table has no dimensions and a single cell. The set of
-     * measures do not count as a dimension.
+     * The number of dimensions can be zero, in which case the table has no dimensions and a single
+     * cell. The set of measures do not count as a dimension.
      */
-    const size_t rank = Trank;
+    const size_t n_dimensions = Tdimensions;
 
     /**
      * The total number of cells in the table.
      */
-    const size_t cells = Tcells;
+    const size_t n_cells = Tcells;
 
     /**
      * The number of measures in the table.  A measure corresponds to an expression in a regular
      * table, and to a placeholder in a derived table.
      */
-    static const size_t measures = Tmeasures;
+    static const size_t n_measures = Tmeasures;
 
     /**
      * The size of each dimension in the table.
@@ -89,84 +97,87 @@ public:
     const vector<size_t> shape;
 
     /**
-     * Storage for all measures in all cells in the table.
+     * Measure storage.
      */
     double measure[Tmeasures][Tcells];
 };
 
 /**
- * Template for tables.
+ * Template for entity tables.
  *
- * @tparam t_cells        Number of cells.
- * @tparam t_accumulators Number of accumulators.
- * @tparam t_expressions  Number of expressions.
+ * @tparam Tdimensions Number of dimensions.
+ * @tparam Tcells      Number of cells.
+ * @tparam Tmeasures   Number of measures.
+ * @tparam Taccumulators Number of accumulators.
  */
-template<size_t t_cells, size_t t_accumulators, size_t t_expressions>
-class Table
+template<size_t Tdimensions, size_t Tcells, size_t Tmeasures, size_t Taccumulators>
+class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
+    EntityTable(initializer_list<size_t> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
+    {
+    };
+
     virtual void initialize_accumulators() = 0;
     virtual void extract_accumulators() = 0;
     virtual void scale_accumulators() = 0;
     virtual void compute_expressions() = 0;
 
-    // constants
-    static const size_t n_cells = t_cells;
-    static const size_t n_accumulators = t_accumulators;
-    static const size_t n_expressions = t_expressions;
+    static const size_t n_accumulators = Taccumulators;
 
-    // expression storage
-    double expr[t_expressions][t_cells];
-
-    // accumulator storage
-    double acc[t_accumulators][t_cells];
+    /**
+     * Accumulator storage.
+     */
+    double acc[Taccumulators][Tcells];
 };
 
 /**
  * Template for tables with observation collections.
  *
- * @tparam t_cells        Number of cells.
- * @tparam t_accumulators Number of accumulators.
- * @tparam t_expressions  Number of expressions.
- * @tparam t_collections  Number of observation collections.
+ * @tparam Tdimensions Number of dimensions.
+ * @tparam Tcells      Number of cells.
+ * @tparam Tmeasures   Number of measures.
+ * @tparam Taccumulators Number of accumulators.
+ * @tparam Tcollections  Number of observation collections.
  */
-template<size_t t_cells, size_t t_accumulators, size_t t_expressions, size_t t_collections>
-class TableWithObs : public Table <t_cells, t_accumulators, t_expressions>
+template<size_t Tdimensions, size_t Tcells, size_t Tmeasures, size_t Taccumulators, size_t Tcollections>
+class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>
 {
 public:
 
-    ~TableWithObs()
+    EntityTableWithObs(initializer_list<size_t> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(shape)
+    {
+    };
+
+    ~EntityTableWithObs()
     {
         // Empty observation collections in all cells
-        for (size_t cell = 0; cell < t_cells; ++cell) {
-            for (size_t j = 0; j < t_collections; ++j) {
+        for (size_t cell = 0; cell < n_cells; ++cell) {
+            for (size_t j = 0; j < n_collections; ++j) {
                 coll[cell][j].clear();
             }
         }
     }
 
     // constants
-    static const size_t n_collections = t_collections;
+    static const size_t n_collections = Tcollections;
 
     // observation collection storage
-    forward_list<double> coll[t_cells][t_collections];
+    forward_list<double> coll[Tcells][Tcollections];
 };
 
 /**
  * Template for derived tables.
  *
- * @tparam t_cells        Number of cells.
- * @tparam t_placeholders Number of placeholders.
+ * @tparam t_cells    Number of cells.
+ * @tparam t_measures Number of measures.
  */
-template<size_t t_cells, size_t t_placeholders>
-class DerivedTable
+template<size_t Tdimensions, size_t Tcells, size_t Tmeasures>
+class DerivedTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    // constants
-    static const size_t n_cells = t_cells;
-    static const size_t n_placeholders = t_placeholders;
-
-    // placeholder storage
-    double placeholder[t_placeholders][t_cells];
+    DerivedTable(initializer_list<size_t> shape) : Table(shape)
+    {
+    };
 };
 

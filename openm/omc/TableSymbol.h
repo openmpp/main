@@ -96,6 +96,18 @@ public:
     size_t cell_count() const;
 
     /**
+     * The C++ initializer for the table
+     * 
+     * This is an expression list used to initialize the table at construction.
+     * The expression list does not include the enclosing parentheses used for construction.
+     * 
+     * Example: {2, 5} for a 2x5 table
+     * 
+     * @return A string.
+     */
+    virtual string cxx_initializer() const = 0;
+
+    /**
      * The dimensions in the table
      */
     list<DimensionSymbol *> dimension_list;
@@ -114,7 +126,7 @@ public:
     int measures_position;
 
     /**
-     * Type used to declare the derived table.
+     * Type name used to declare the table.
      */
     string cxx_type;
 

@@ -1076,8 +1076,6 @@ void Symbol::post_parse_all()
 
     // Sort collections in entity tables
     for ( auto table : pp_all_entity_tables ) {
-        // Sort expressions in sequence order
-        table->pp_expressions.sort( [] (EntityTableMeasureSymbol *a, EntityTableMeasureSymbol *b) { return a->index < b->index; } );
         // Sort accumulators in sequence order
         table->pp_accumulators.sort( [] (EntityTableAccumulatorSymbol *a, EntityTableAccumulatorSymbol *b) { return a->index < b->index; } );
         // Sort referenced agentvars in sequence order

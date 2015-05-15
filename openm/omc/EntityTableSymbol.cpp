@@ -195,26 +195,46 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    int n_accumulators = pp_accumulators.size();
-    int n_expressions = pp_expressions.size();
+    int n_dimensions = dimension_count();
     int n_cells = cell_count();
+    int n_measures = measure_count();
+    int n_accumulators = accumulator_count();
 
+    string cxx_template;
     if (n_collections == 0) {
-        // E.g. class T02_TotalPopulationByYear : public Table<101, 2, 2>
-        h += "class " + name + " : public Table<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ">";
+        cxx_template = 
+            "EntityTable<"
+            + to_string(n_dimensions) + ", "
+            + to_string(n_cells) + ", "
+            + to_string(n_measures) + ", "
+            + to_string(n_accumulators)
+            + ">";
     }
     else {
-        h += "class " + name + " : public TableWithObs<" + to_string(n_cells) + ", " + to_string(n_accumulators) + ", " + to_string(n_expressions) + ", " + to_string(n_collections) + ">";
+        cxx_template = 
+            "EntityTableWithObs<"
+            + to_string(n_dimensions) + ", "
+            + to_string(n_cells) + ", "
+            + to_string(n_measures) + ", "
+            + to_string(n_accumulators) + ", "
+            + to_string(n_collections)
+            + ">";
     }
+    h += "class " + cxx_class + " : public " + cxx_template;
     h += "{";
     h += "public:";
+    // constructor
+    h += cxx_class + "(initializer_list<size_t> shape) : " + cxx_template + "(shape)";
+    h += "{";
+    h += "}";
     h += "void initialize_accumulators();";
     h += "void extract_accumulators();";
     h += "void scale_accumulators();";
     h += "void compute_expressions();";
     h += "};";
 
-    h += "extern thread_local " + name + " * the" + name + ";";
+    h += "typedef " + cxx_class + " " + cxx_type + ";";
+    h += "extern thread_local " + cxx_type + " * " + cxx_instance + ";";
 
     return h;
 }
@@ -472,17 +492,26 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     // E.g. void DurationOfLife::compute_expressions()
     c += "void " + name + "::compute_expressions()";
     c += "{";
-    for (auto table_expr : pp_expressions) {
+    for (auto measure : pp_measures) {
+        auto etm = dynamic_cast<EntityTableMeasureSymbol *>(measure);
+        assert(etm); // logic guarantee
         // E.g.  // SUM_BEFORE( acc0 )
-        c += "// " + table_expr->get_expression(table_expr->root, EntityTableMeasureSymbol::expression_style::sql);
+        c += "// " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql);
         // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
         c += "for ( size_t cell = 0; cell < n_cells; cell++ ) "
-            "expr[" + to_string(table_expr->index) + "][cell] = " + table_expr->get_expression(table_expr->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
+            "measure[" + to_string(etm->index) + "][cell] = " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
         c += "";
     }
     c += "}";
     c += "";
     return c;
+}
+
+string EntityTableSymbol::cxx_initializer() const
+{
+    string cxx;
+    cxx = cxx_shape_initializer_list();
+    return cxx;
 }
 
 // The following function definition is identical in EntitySetSymbol and EntityTableSymbol
@@ -526,7 +555,7 @@ void EntityTableSymbol::build_body_update_cell()
         c += "cell += index;";
     }
     c += "";
-    c += "assert(cell >= 0 && cell < " + name + "::n_cells ); // logic guarantee";
+    c += "assert(cell >= 0 && cell < " + to_string(cell_count()) + "); // logic guarantee";
     c += "";
     c += cell->name + " = cell;" ;
 }
@@ -649,72 +678,16 @@ void EntityTableSymbol::build_body_process_increments()
     }
 }
 
-// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
-size_t EntityTableSymbol::cell_count() const
-{
-    int cells = 1;
-    for (auto dim : dimension_list) {
-        auto es = dim->pp_enumeration;
-        assert(es); // integrity check guarantee
-        cells *= es->pp_size();
-    }
-    return cells;
-}
-
 void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    TableDicRow tableDic;
-
-    tableDic.tableId = pp_table_id;
-    tableDic.tableName = name;
-    tableDic.isUser = false;
-    tableDic.rank = dimension_count();
-    tableDic.isSparse = true;   // do not store NULLs
-    tableDic.isHidden = false;
-    tableDic.exprPos = measures_position;
-    metaRows.tableDic.push_back(tableDic);
-
-    for (auto lang : Symbol::pp_all_languages) {
-        TableDicTxtLangRow tableTxt;
-        tableTxt.tableId = pp_table_id;
-        tableTxt.langName = lang->name;
-        tableTxt.descr = label(*lang);
-        tableTxt.note = note(*lang);
-        tableTxt.exprDescr = "Measures (" + lang->name + ")"; // TODO
-        tableTxt.exprNote = "Measures Note (" + lang->name + ")"; // TODO
-        metaRows.tableTxt.push_back(tableTxt);
-    }
-
-    // dimensions for table
-    for (auto dim : dimension_list ) {
-        auto es = dim->pp_enumeration;
-        assert(es); // logic guarantee
-        TableDimsRow tableDims;
-        tableDims.tableId = pp_table_id;
-        tableDims.dimId = dim->index;
-        //tableDims.name = "dim" + to_string(dim->index);
-        tableDims.typeId = es->type_id;
-        tableDims.isTotal = false;
-        tableDims.dimSize = es->pp_size();
-        metaRows.tableDims.push_back(tableDims);
-
-        for (auto lang : Symbol::pp_all_languages) {
-            TableDimsTxtLangRow tableDimsTxt;
-            tableDimsTxt.tableId = pp_table_id;
-            tableDimsTxt.dimId = dim->index;
-            tableDimsTxt.langName = lang->name;
-            tableDimsTxt.descr = dim->label(*lang);
-            tableDimsTxt.note = dim->note(*lang);
-            metaRows.tableDimsTxt.push_back(tableDimsTxt);
-        }
-    }
 
     // accumulators for table
     for (auto acc : pp_accumulators) {
+
         TableAccRow tableAcc;
 
         tableAcc.tableId = pp_table_id;
@@ -735,8 +708,12 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // expressions for table
-    for (auto expr : pp_expressions) {
+    for (auto measure : pp_measures) {
+
         TableExprRow tableExpr;
+
+        auto expr = dynamic_cast<EntityTableMeasureSymbol *>(measure);
+        assert(expr); // logic guarantee
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "expr" + to_string(expr->index);

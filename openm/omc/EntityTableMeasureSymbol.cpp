@@ -12,13 +12,6 @@
 #include "ExprForTable.h"
 #include "Literal.h"
 
-// static
-string EntityTableMeasureSymbol::symbol_name(const Symbol* table, int index)
-{
-    assert(table);
-    return table->name + ".Expr" + to_string(index);
-}
-
 /**
 * Post-parse operations for EntityTableMeasureSymbol
 */
@@ -32,12 +25,12 @@ void EntityTableMeasureSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to table for post-parse use
-        pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
-        assert(pp_table); // parser guarantee
+        //// assign direct pointer to table for post-parse use
+        //pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
+        //assert(pp_table); // parser guarantee
 
-        // Add this table expression to the table's list of expressions
-        pp_table->pp_expressions.push_back(this);
+        //// Add this table expression to the table's list of expressions
+        //pp_table->pp_expressions.push_back(this);
 
         // Perform post-parse operation to each element of the expression
         post_parse_traverse(root);
@@ -47,16 +40,6 @@ void EntityTableMeasureSymbol::post_parse(int pass)
         break;
     }
 }
-
-/**
-* Perform post-parse operations on nodes of a ExprForTable tree
-*
-* Assigns the pp_accumulator pointer using the assumulator member from the parse phase.
-* 
-* @param   node    The root of the expression tree.
-*
-* @return  Result as a \a CodeBlock
-*/
 
 void EntityTableMeasureSymbol::post_parse_traverse(ExprForTable *node)
 {
@@ -83,14 +66,6 @@ void EntityTableMeasureSymbol::post_parse_traverse(ExprForTable *node)
         post_parse_traverse(op->right);
     }
 }
-
-/**
-* Get C++ expression using accumulators
-*
-* @param   node    The root of the expression tree.
-*
-* @return  Result as a \a CodeBlock
-*/
 
 string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expression_style style)
 {
