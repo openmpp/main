@@ -213,7 +213,7 @@ void EntitySetSymbol::build_body_insert()
 {
     CodeBlock& c = insert_fn->func_body;
 
-    if (rank() == 0) {
+    if (dimension_count() == 0) {
         c += name + "->insert(this);" ;
     }
     else {
@@ -228,7 +228,7 @@ void EntitySetSymbol::build_body_erase()
 {
     CodeBlock& c = erase_fn->func_body;
 
-    if (rank() == 0) {
+    if (dimension_count() == 0) {
         c += name + "->erase(this);" ;
     }
     else {
@@ -240,15 +240,9 @@ void EntitySetSymbol::build_body_erase()
 }
 
 // The following function definition is identical in EntitySetSymbol and EntityTableSymbol
-int EntitySetSymbol::rank()
+size_t EntitySetSymbol::cell_count() const
 {
-    return dimension_list.size();
-}
-
-// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
-int EntitySetSymbol::cell_count()
-{
-    int cells = 1;
+    size_t cells = 1;
     for (auto dim : dimension_list) {
         auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee

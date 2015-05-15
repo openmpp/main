@@ -47,7 +47,7 @@ public:
         , process_increments_fn(nullptr)
         , filter(nullptr)
         , unit(nullptr)
-        , expr_dim_position(0)
+        , measures_position(0)
         , n_collections(0)
         , pp_table_id(-1)
     {
@@ -83,18 +83,21 @@ public:
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
-     * The rank of the table.
+     * The number of dimensions in the table (rank).
      *
-     * @return An int.
+     * @return A size_t.
      */
-    int rank();
+    size_t dimension_count() const
+    {
+        return dimension_list.size();
+    }
 
     /**
      * The total number of table cells in the table.
      *
-     * @return An int.
+     * @return A size_t.
      */
-    int cell_count();
+    size_t cell_count() const;
 
     /**
      * Reference to pointer to agent.
@@ -175,12 +178,12 @@ public:
     list<EntityTableAccumulatorSymbol *> pp_accumulators;
 
     /**
-     * The expression dimension display position.
+     * The display position of measures relative to dimensions
      * 
-     * The zero-based ordinal classification after which the expression dimension will be displayed.
-     * If the expression dimension is the first dimension displayed, the value is -1.
+     * The value is the zero-based ordinal of the dimension after which the measures will be
+     * displayed. If the mesaures are displayed before the first dimension, the value is -1.
      */
-    int expr_dim_position;
+    int measures_position;
 
     /**
      * The number of observation collections in the table.

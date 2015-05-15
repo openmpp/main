@@ -2082,7 +2082,7 @@ table_dimension:
                         {
                             // record analysis dimension position which is the
                             // 0-based ordinal of the immediately preceding classification dimension.
-                            pc.get_table_context()->expr_dim_position = pc.counter4 - 1;
+                            pc.get_table_context()->measures_position = pc.counter4 - 1;
                         }
     ;
 

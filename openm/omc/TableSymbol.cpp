@@ -56,9 +56,9 @@ CodeBlock TableSymbol::cxx_definition_global()
     return c;
 }
 
-int TableSymbol::cell_count() const
+size_t TableSymbol::cell_count() const
 {
-    int cells = 1;
+    size_t cells = 1;
     for (auto dim : dimension_list) {
         auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee

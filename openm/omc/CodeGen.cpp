@@ -372,7 +372,7 @@ void CodeGen::do_ModelStartup()
     c += "// Entity set instantiation";
     for (auto es : Symbol::pp_all_entity_sets) {
         c += "{";
-        if (es->rank() == 0) {
+        if (es->dimension_count() == 0) {
             c += "assert(!" + es->name + ");";
             c += es->name + " = new EntitySet<" + es->pp_agent->name + ">;";
         }
@@ -460,7 +460,7 @@ void CodeGen::do_ModelShutdown()
     c += "// Entity set destruction";
     for (auto es : Symbol::pp_all_entity_sets) {
         c += "{";
-        if (es->rank() == 0) {
+        if (es->dimension_count() == 0) {
             c += "assert(" + es->name + ");";
             c += "delete(" + es->name + ");";
         }

@@ -650,13 +650,7 @@ void EntityTableSymbol::build_body_process_increments()
 }
 
 // The following function definition is identical in EntitySetSymbol and EntityTableSymbol
-int EntityTableSymbol::rank()
-{
-    return dimension_list.size();
-}
-
-// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
-int EntityTableSymbol::cell_count()
+size_t EntityTableSymbol::cell_count() const
 {
     int cells = 1;
     for (auto dim : dimension_list) {
@@ -678,10 +672,10 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     tableDic.tableId = pp_table_id;
     tableDic.tableName = name;
     tableDic.isUser = false;
-    tableDic.rank = rank();
+    tableDic.rank = dimension_count();
     tableDic.isSparse = true;   // do not store NULLs
     tableDic.isHidden = false;
-    tableDic.exprPos = expr_dim_position;
+    tableDic.exprPos = measures_position;
     metaRows.tableDic.push_back(tableDic);
 
     for (auto lang : Symbol::pp_all_languages) {
@@ -690,8 +684,8 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableTxt.langName = lang->name;
         tableTxt.descr = label(*lang);
         tableTxt.note = note(*lang);
-        tableTxt.exprDescr = "Expressions (" + lang->name + ")"; // TODO
-        tableTxt.exprNote = "Expressions Note (" + lang->name + ")"; // TODO
+        tableTxt.exprDescr = "Measures (" + lang->name + ")"; // TODO
+        tableTxt.exprNote = "Measures Note (" + lang->name + ")"; // TODO
         metaRows.tableTxt.push_back(tableTxt);
     }
 

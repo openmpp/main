@@ -72,18 +72,20 @@ public:
     void build_body_erase();
 
     /**
-     * The rank of the entity set
+     * The number of dimensions in the entity set (rank).
      *
-     * @return An int.
+     * @return A size_t.
      */
-    int rank();
-
+    size_t dimension_count() const
+    {
+        return dimension_list.size();
+    }
     /**
      * The total number of cells in the agent set
      *
      * @return An int.
      */
-    int cell_count();
+    size_t cell_count() const;
 
     /**
      * Reference to pointer to agent.

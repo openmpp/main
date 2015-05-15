@@ -91,9 +91,9 @@ public:
     /**
      * The total number of table cells in the table.
      *
-     * @return An int.
+     * @return An size_t.
      */
-    int cell_count() const;
+    size_t cell_count() const;
 
     /**
      * The dimensions in the table
