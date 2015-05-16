@@ -224,7 +224,7 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     h += "{";
     h += "public:";
     // constructor
-    h += cxx_class + "(initializer_list<size_t> shape) : " + cxx_template + "(shape)";
+    h += cxx_class + "(initializer_list<int> shape) : " + cxx_template + "(shape)";
     h += "{";
     h += "}";
     h += "void initialize_accumulators();";
@@ -292,8 +292,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         }
         // e.g.  sum(value_in(alive))
         c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
-        // e.g. for ( size_t cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
-        c += "for ( size_t cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
+        // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
+        c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
         c += "";
 
     }
@@ -481,7 +481,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             // e.g.  sum(value_in(alive))
             c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->agentvar->name + "))";
             // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] *= scale_factor;
-            c += "for ( size_t cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
+            c += "for (int cell = 0; cell < n_cells; cell++) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
         }
     }
     c += "}";
@@ -498,7 +498,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         // E.g.  // SUM_BEFORE( acc0 )
         c += "// " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql);
         // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
-        c += "for ( size_t cell = 0; cell < n_cells; cell++ ) "
+        c += "for (int cell = 0; cell < n_cells; cell++ ) "
             "measure[" + to_string(etm->index) + "][cell] = " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
         c += "";
     }

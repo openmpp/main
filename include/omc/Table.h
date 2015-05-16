@@ -20,11 +20,11 @@ using namespace std;
  * @tparam Tcells      Number of cells.
  * @tparam Tmeasures   Number of measures.
  */
-template<size_t Tdimensions, size_t Tcells, size_t Tmeasures>
+template<int Tdimensions, int Tcells, int Tmeasures>
 class Table
 {
 public:
-    Table(initializer_list<size_t> shape)
+    Table(initializer_list<int> shape)
         : shape(shape)
     {
         // There are one or more measures.
@@ -34,7 +34,7 @@ public:
         assert(n_dimensions == shape.size());
 
         // The number of cells is equal to product of the values in shape.
-        assert(n_cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>()));
+        assert(n_cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>()));
     };
 
     /**
@@ -42,7 +42,7 @@ public:
      */
     void initialize_measures()
     {
-        for (size_t cell = 0; cell < n_cells; ++cell) {
+        for (int cell = 0; cell < n_cells; ++cell) {
             measure[cell] = UNDEF_VALUE;
         }
     };
@@ -52,24 +52,39 @@ public:
      *
      * @return The index of the cell.
      */
-    size_t get_cell_index(va_list argp) const
+    int get_cell_index(vector<int> indices) const
     {
-        size_t cell = 0;
-        va_list args;
-        va_start(args, rank);
-        cell = va_arg(args, size_t);
-        for (size_t dim = 1; dim < rank; ++dim) {
+        int cell = 0;
+        for (int dim = 0; dim < n_dimensions; ++dim) {
             cell *= shape[dim];
-            cell += va_args(args, size_t);
+            cell += indices[dim];
         }
-        va_end(args);
+        assert(cell < n_cells);
         return cell;
     }
 
-    void set_cell(...)
+    /**
+     * Gets the address of a measure.
+     *
+     * @param measure_index The index of the meaure.
+     * @param indices       The indices of the cell.
+     *
+     * @return null if it fails, else the measure address.
+     */
+    double * get_measure_address(int measure_index, vector<int> indices)
     {
-        va_list args;
-        // TODO
+        assert(measure_index < n_measures); // logic guarantee
+        if (indices.size() != shape.size()) {
+            //TODO run-time error Number of indices does nto match table rank
+            return nullptr;
+        }
+        for (size_t dim = 0; dim < shape.size(); ++dim) {
+            if (indices[dim] < 0 || indices[dim] >= shape[dim])
+            //TODO run-time error Invalid index for dimension dim
+            return nullptr;
+        }
+        auto cell_index = get_cell_index(indices);
+        return &measure[measure_index][cell_index];
     }
 
     /**
@@ -78,23 +93,23 @@ public:
      * The number of dimensions can be zero, in which case the table has no dimensions and a single
      * cell. The set of measures do not count as a dimension.
      */
-    const size_t n_dimensions = Tdimensions;
+    const int n_dimensions = Tdimensions;
 
     /**
      * The total number of cells in the table.
      */
-    const size_t n_cells = Tcells;
+    const int n_cells = Tcells;
 
     /**
      * The number of measures in the table.  A measure corresponds to an expression in a regular
      * table, and to a placeholder in a derived table.
      */
-    static const size_t n_measures = Tmeasures;
+    static const int n_measures = Tmeasures;
 
     /**
      * The size of each dimension in the table.
      */
-    const vector<size_t> shape;
+    const vector<int> shape;
 
     /**
      * Measure storage.
@@ -110,11 +125,11 @@ public:
  * @tparam Tmeasures   Number of measures.
  * @tparam Taccumulators Number of accumulators.
  */
-template<size_t Tdimensions, size_t Tcells, size_t Tmeasures, size_t Taccumulators>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    EntityTable(initializer_list<size_t> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
+    EntityTable(initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
     {
     };
 
@@ -123,7 +138,7 @@ public:
     virtual void scale_accumulators() = 0;
     virtual void compute_expressions() = 0;
 
-    static const size_t n_accumulators = Taccumulators;
+    static const int n_accumulators = Taccumulators;
 
     /**
      * Accumulator storage.
@@ -140,27 +155,27 @@ public:
  * @tparam Taccumulators Number of accumulators.
  * @tparam Tcollections  Number of observation collections.
  */
-template<size_t Tdimensions, size_t Tcells, size_t Tmeasures, size_t Taccumulators, size_t Tcollections>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, int Tcollections>
 class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>
 {
 public:
 
-    EntityTableWithObs(initializer_list<size_t> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(shape)
+    EntityTableWithObs(initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(shape)
     {
     };
 
     ~EntityTableWithObs()
     {
         // Empty observation collections in all cells
-        for (size_t cell = 0; cell < n_cells; ++cell) {
-            for (size_t j = 0; j < n_collections; ++j) {
+        for (int cell = 0; cell < n_cells; ++cell) {
+            for (int j = 0; j < n_collections; ++j) {
                 coll[cell][j].clear();
             }
         }
     }
 
     // constants
-    static const size_t n_collections = Tcollections;
+    static const int n_collections = Tcollections;
 
     // observation collection storage
     forward_list<double> coll[Tcells][Tcollections];
@@ -172,11 +187,11 @@ public:
  * @tparam t_cells    Number of cells.
  * @tparam t_measures Number of measures.
  */
-template<size_t Tdimensions, size_t Tcells, size_t Tmeasures>
+template<int Tdimensions, int Tcells, int Tmeasures>
 class DerivedTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    DerivedTable(initializer_list<size_t> shape) : Table(shape)
+    DerivedTable(initializer_list<int> shape) : Table(shape)
     {
     };
 };

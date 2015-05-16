@@ -52,6 +52,7 @@ public:
 	void do_entity_sets();
 	void do_entity_tables();
 	void do_derived_tables();
+	void do_table_interface();
 	void do_event_queue();
 	void do_RunInit();
 	void do_ModelStartup();

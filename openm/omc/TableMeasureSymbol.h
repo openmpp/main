@@ -37,9 +37,9 @@ public:
     {
     }
 
-    // Construct symbol name for the table expression symbol.
+    // Construct symbol name for the table measure symbol.
     // Example: BasicDemography.Expr0
-    static string symbol_name(const Symbol* derived_table, int index);
+    static string symbol_name(const Symbol* table, int index);
 
     void post_parse(int pass);
 

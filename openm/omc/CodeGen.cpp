@@ -27,6 +27,7 @@ void CodeGen::do_all()
 	do_parameters();
 	do_entity_tables();
 	do_derived_tables();
+	do_table_interface();
 	do_agents();
 	do_entity_sets();
     do_event_queue();
@@ -599,26 +600,6 @@ void CodeGen::do_entity_tables()
         c += table->cxx_definition_global();
         table->populate_metadata(metaRows);
     }
-
-	h += "// Model code interface to tables";
-	h += "double GetTableValue(const string name, ...);";
-	h += "void SetTableValue(const string name, double value, ...);";
-
-	c += "// Model code interface to tables";
-	c += "double GetTableValue(const string name, ...)";
-	c += "{";
-	c += "// TODO";
-    c += "return 0.0;";
-    c += "}";
-    c += "";
-
-	c += "void SetTableValue(const string name, double value, ...)";
-	c += "{";
-	c += "// TODO";
-    c += "}";
-
-    h += "";
-	c += "";
 }
 
 void CodeGen::do_derived_tables()
@@ -634,6 +615,93 @@ void CodeGen::do_derived_tables()
 
     h += "";
 	c += "";
+}
+
+void CodeGen::do_table_interface()
+{
+    // om_table_measure (global object)
+    h += "extern const map<string, pair<int, int>> om_table_measure;";
+    c += doxygen(
+        "Helper map for model developer table interface.",
+        " ",
+        "The key of the map is a string with the form table.measure.",
+        "The value of the map is a pair containing the numeric table identifier",
+        "and the numeric measure identifier within the table."
+                 );
+    c += "const map<string, pair<int, int>> om_table_measure = {";
+    for (auto table : Symbol::pp_all_tables) {
+        for (auto measure : table->pp_measures) {
+            auto key = table->name + "." + measure->measure_name;
+            auto table_id = to_string(table->pp_table_id);
+            auto measure_id = to_string(measure->index);
+            c += "{\"" + key + "\", {" + table_id + ", " + measure_id + "} },";
+        }
+    }
+    c += "};";
+    c += "";
+
+    // om_get_table_measure_address (global function)
+    h += "double * om_get_table_measure_address(int table_id, int measure_id, vector<int> indices);";
+    c += doxygen("Get the address of a measure in a table");
+    c += "double * om_get_table_measure_address(int table_id, int measure_id, vector<int> indices)";
+    c += "{";
+    c += "switch (table_id) {";
+    for (auto table : Symbol::pp_all_tables) {
+        c += "case " + to_string(table->pp_table_id) + ": return " + table->cxx_instance + "->get_measure_address(measure_id, indices);";
+    }
+    c += "default: assert(false); // logic guarantee";
+    c += "}";
+    c += "return nullptr;";
+    c += "}";
+    c += "";
+
+	h += "// Interface to tables from model code";
+    h += "";
+    h += "template<typename ...Items>";
+	h += "double GetTableValue(const string measure_name, Items... args)";
+	h += "{";
+    h += "vector<int> indices = {{ args ... }};";
+    h += "auto it = om_table_measure.find(measure_name);";
+    h += "if (it == om_table_measure.end()) {";
+    h += "//TODO - run time error - invalid table.measure";
+    h += "return 0.0;";
+    h += "}";
+    h += "auto pr = it->second;";
+    h += "auto table_id = pr.first;";
+    h += "auto measure_id = pr.second;";
+    h += "double *address = om_get_table_measure_address(table_id, measure_id, indices);";
+    h += "if (address != nullptr) {";
+    h += "return *address;";
+    h += "}";
+    h += "else {";
+    h += "return UNDEF_VALUE;";
+    h += "}";
+    h += "}";
+    h += "";
+
+    h += "template<typename ...Items>";
+	h += "void SetTableValue(const string measure_name, double value, Items... args)";
+	h += "{";
+    h += "vector<int> indices = {{ args ... }};";
+    h += "auto it = om_table_measure.find(measure_name);";
+    h += "if (it == om_table_measure.end()) {";
+    h += "//TODO - run time error - invalid table.measure";
+    h += "}";
+    h += "auto pr = it->second;";
+    h += "auto table_id = pr.first;";
+    h += "auto measure_id = pr.second;";
+    h += "double *address = om_get_table_measure_address(table_id, measure_id, indices);";
+    h += "if (address != nullptr) {";
+    h += "*address = value;";
+    h += "}";
+    h += "else {";
+    h += "//TODO - run time error";
+    h += "}";
+    h += "}";
+
+    h += "";
+	c += "";
+
 }
 
 void CodeGen::do_event_queue()

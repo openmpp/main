@@ -24,7 +24,7 @@ public:
     bool is_base_symbol() const { return false; }
 
     EntityTableMeasureSymbol(Symbol *table, ExprForTable *root, int index, yy::location decl_loc = yy::location())
-        : TableMeasureSymbol(table, symbol_name(table, index), index, decl_loc)
+        : TableMeasureSymbol(table, "Expr" + to_string(index), index, decl_loc)
         , root(root)
     {
     }

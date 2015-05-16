@@ -1030,25 +1030,24 @@ void Symbol::post_parse_all()
     pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
-    pp_all_aggregations.sort( [] (AggregationSymbol *a, AggregationSymbol *b) { return a->name < b->name ; } );
+    pp_all_aggregations.sort([](AggregationSymbol *a, AggregationSymbol *b) { return a->name < b->name; });
 
     // Assign numeric identifiers to symbols in selected collections
-    // These numeric id's are used for communicating with the meta-data API.
-    int id = 0;
-    for ( auto parameter : pp_all_parameters ) {
-        parameter->pp_parameter_id = id;
-        ++id;
+    // These numeric id's are used to communicate with the meta-data API.
+    {
+        int id = 0;
+        for (auto parameter : pp_all_parameters) {
+            parameter->pp_parameter_id = id;
+            ++id;
+        }
     }
-    id = 0;
-    for ( auto table : pp_all_entity_tables ) {
-        table->pp_table_id = id;
-        ++id;
-    }
-    // Note that for derived tables we continue incrementing id
-    // from the value for the last entity table (they look the same to the API)
-    for ( auto derived_table : pp_all_derived_tables ) {
-        derived_table->pp_table_id = id;
-        ++id;
+
+    {
+        int id = 0;
+        for (auto table : pp_all_tables) {
+            table->pp_table_id = id;
+            ++id;
+        }
     }
 
     // Sort collection of enumerators in each enumeration in ordinal order

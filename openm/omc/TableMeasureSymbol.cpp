@@ -12,10 +12,10 @@
 using namespace std;
 
 // static
-string TableMeasureSymbol::symbol_name(const Symbol* derived_table, int index)
+string TableMeasureSymbol::symbol_name(const Symbol* table, int index)
 {
-    assert(derived_table);
-    return derived_table->name + ".Expr" + to_string(index);
+    assert(table);
+    return table->name + ".Expr" + to_string(index);
 }
 
 string TableMeasureSymbol::pretty_name() const
