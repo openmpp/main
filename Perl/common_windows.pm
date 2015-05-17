@@ -111,7 +111,10 @@ sub modgen_tables_to_csv
 	my @ranks;
 	my @expr_positions;
 	my @table_ids;
+	my @user_table_flags;
 	foreach my $which ('TableDic', 'UserTableDic') {
+		my $user_table_flag = 0;
+		$user_table_flag = 1 if $which eq 'UserTableDic';
 		my $sql = "Select Name, Rank, AnalysisDimensionPosition, TableID From ${which} Where LanguageID = 0;";
 		$ADO_RS = $ADO_Conn->Execute($sql);
 		if (Win32::OLE->LastError()) {
@@ -125,6 +128,7 @@ sub modgen_tables_to_csv
 			push @ranks, $ADO_RS->Fields(1)->value;
 			push @expr_positions, $ADO_RS->Fields(2)->value;
 			push @table_ids, $ADO_RS->Fields(3)->value;
+			push @user_table_flags, $user_table_flag;
 			$ADO_RS->MoveNext;
 		}
 	}
@@ -136,15 +140,18 @@ sub modgen_tables_to_csv
 		my $rank = @ranks[$j];
 		my $expr_position = @expr_positions[$j];
 		my $table_id = @table_ids[$j];
+		my $user_table_flag = @user_table_flags[$j];
 		
 		if (!open CSV, ">${dir}/${table}.csv") {
 			logmsg error, "error opening >${dir}/${table}.csv";
 		}
 
 		# For each classification dimension of the table, determine if it has a margin
+		my $which = 'TableClassDimDic';
+		$which = 'UserTableClassDimDic' if $user_table_flag == 1;
 		my $sql = "
 		  Select Totals
-		  From TableClassDimDic
+		  From ${which}
 		  Where LanguageID = 0 And TableID = ${table_id}
 		  ;
 		";
