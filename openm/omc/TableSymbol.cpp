@@ -29,6 +29,18 @@ void TableSymbol::post_parse(int pass)
 
         break;
     }
+    case ePopulateDependencies:
+    {
+        // Mark enumerations required for metadata support for this table
+        // The enumeration of each dimension in the table is required
+        for (auto dim : dimension_list) {
+            auto es = dim->pp_enumeration;
+            assert(es); // logic guarantee
+            es->metadata_needed = true;
+        }
+
+        break;
+    }
     default:
         break;
     }

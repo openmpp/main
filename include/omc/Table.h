@@ -43,7 +43,7 @@ public:
     void initialize_measures()
     {
         for (int cell = 0; cell < n_cells; ++cell) {
-            measure[cell] = UNDEF_VALUE;
+            measure[cell] = numeric_limits<double>::quiet_NaN();
         }
     };
 
@@ -130,8 +130,7 @@ class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
     EntityTable(initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
-    {
-    };
+    {};
 
     virtual void initialize_accumulators() = 0;
     virtual void extract_accumulators() = 0;
@@ -167,7 +166,7 @@ public:
     ~EntityTableWithObs()
     {
         // Empty observation collections in all cells
-        for (int cell = 0; cell < n_cells; ++cell) {
+        for (int cell = 0; cell < Tcells; ++cell) {
             for (int j = 0; j < n_collections; ++j) {
                 coll[cell][j].clear();
             }
@@ -191,7 +190,7 @@ template<int Tdimensions, int Tcells, int Tmeasures>
 class DerivedTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    DerivedTable(initializer_list<int> shape) : Table(shape)
+    DerivedTable(initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
     {
     };
 };

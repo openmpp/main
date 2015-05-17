@@ -172,15 +172,6 @@ void EntityTableSymbol::post_parse(int pass)
             c += "}";
         }
 
-        // Mark enumerations required for metadata support for this table
-        // The enumeration of each dimension is required
-        for (auto dim : dimension_list) {
-            assert(dim->pp_attribute); // previously verified
-            auto es = dynamic_cast<EnumerationSymbol *>(dim->pp_attribute->pp_data_type);
-            assert(es); // previously verified
-            es->metadata_needed = true;
-        }
-
         break;
     }
 
@@ -220,7 +211,7 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
             + to_string(n_collections)
             + ">";
     }
-    h += "class " + cxx_class + " : public " + cxx_template;
+    h += "class " + cxx_class + " final : public " + cxx_template;
     h += "{";
     h += "public:";
     // constructor
@@ -235,6 +226,7 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
 
     h += "typedef " + cxx_class + " " + cxx_type + ";";
     h += "extern thread_local " + cxx_type + " * " + cxx_instance + ";";
+    h += "";
 
     return h;
 }

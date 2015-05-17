@@ -53,6 +53,7 @@ CodeBlock DerivedTableSymbol::cxx_declaration_global()
         + to_string(n_measures)
         + "> " + cxx_type + ";";
     h += "extern thread_local "  + cxx_type + " * " + cxx_instance + ";";
+    h += "";
 
     return h;
 }
