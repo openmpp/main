@@ -28,7 +28,7 @@ my $significant_digits = 8;
 # ompp settings for Windows
 #####################
 
-# ompp compiler version for Windows (4 possible values)
+# ompp compiler version for Windows (4 possible values), without leading path
 my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omcD.exe';
 #my $omc_exe = 'omc64.exe';
@@ -91,6 +91,8 @@ use File::Copy;
 use File::Copy::Recursive qw(dircopy);
 use File::Path qw(make_path remove_tree);
 use File::Compare;
+use File::stat;
+use POSIX qw(strftime);
 
 # use the common.pm module of shared functions	
 use common qw(
@@ -183,7 +185,9 @@ if ($is_windows) {
 		}
 		push @flavours, 'modgen';
 		my $modgen_version = modgen_version($modgen_exe);
-		push @flavours_tombstone, "version=${modgen_version} platform=${modgen_platform} configuration=${modgen_configuration}";
+		my $sb = stat($modgen_exe);
+		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
+		push @flavours_tombstone, "version=${modgen_version} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_configuration}";
 	}
 	if ($do_ompp) {
 		if ( ! -e $create_db_sqlite_sql ) {
@@ -195,12 +199,21 @@ if ($is_windows) {
 			exit 1;
 		}
 		push @flavours, 'ompp';
-		push @flavours_tombstone, "compiler=${omc_exe} platform=${ompp_platform} configuration=${ompp_configuration}";
+		my $full_path = "${models_root}/../bin/${omc_exe}";
+		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
+		my $sb = stat($full_path);
+		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
+		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${ompp_platform} configuration=${ompp_configuration}";
 	}
 }
 else { # linux
 	push @flavours, 'ompp-linux';
-	push @flavours_tombstone, "configuration=${ompp_linux_configuration}";
+	my $omc_exe = 'omc';
+	my $full_path = "${models_root}/../bin/${omc_exe}";
+	-e $full_path or die "Missing ${full_path}"; # shouldn't happen
+	my $sb = stat($full_path);
+	my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
+	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${ompp_linux_configuration}";
 }
 	
 my $version = "1.1";
@@ -256,7 +269,9 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Deleting reference directory" if $verbosity >= 2;
 			remove_tree($reference_dir);
 		}
+		
 		remove_tree $current_dir;
+		
 		# Folder for current model outputs
 		my $current_outputs_dir = "${current_dir}/outputs";
 		make_path $current_outputs_dir;
@@ -268,6 +283,12 @@ for my $model_dir (@model_dirs) {
 		# Folder for current logs (holds a copy)
 		my $current_logs_dir = "${current_dir}/logs";
 		make_path $current_logs_dir;
+		
+		# File containing current tombstone information
+		my $tombstone_txt = "${current_dir}/tombstone.txt";
+		open TOMBSTONE_TXT, '>'.$tombstone_txt or die "Cannot open ${tombstone_txt}.";
+		print TOMBSTONE_TXT $tombstone;
+		close TOMBSTONE_TXT;
 		
 		# Folders for reference model outputs
 		my $reference_outputs_dir = "${reference_dir}/outputs";
@@ -779,6 +800,26 @@ for my $model_dir (@model_dirs) {
 		if (! -d $reference_dir) {
 			logmsg info, $model_dir, $flavour, "No reference outputs - create using current outputs." if $verbosity >= 2;
 			dircopy $current_dir, $reference_dir;
+		}
+		
+		# Report on version differences
+		my $tombstone_reference_txt = "${reference_dir}/tombstone.txt";
+		my $tombstone_current_txt = "${current_dir}/tombstone.txt";
+		if (! -e $tombstone_reference_txt || ! -e $tombstone_current_txt) {
+			logmsg error, $model_dir, $flavour, "Tombstone file(s) missing";
+		}
+		else {
+			if (compare($tombstone_reference_txt, $tombstone_current_txt) != 0) {
+				logmsg info, $model_dir, $flavour, "Current build differs from reference build:" if $verbosity >= 1;
+				open FILE, "<".$tombstone_reference_txt || die "unable to open ${tombstone_reference_txt}";
+				my $tombstone_reference = <FILE>;
+				close FILE;
+				logmsg info, $model_dir, $flavour, "  Reference: ${tombstone_reference}" if $verbosity >= 1;
+				open FILE, "<".$tombstone_current_txt || die "unable to open ${tombstone_current_txt}";
+				my $tombstone_current = <FILE>;
+				close FILE;
+				logmsg info, $model_dir, $flavour, "  Current:   ${tombstone_current}" if $verbosity >= 1;
+			}
 		}
 		
 		# Report on differences between current and reference outputs
