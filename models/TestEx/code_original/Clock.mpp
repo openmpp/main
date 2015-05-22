@@ -1,0 +1,580 @@
+/*****************************************************************************
+*	LifePaths™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-1999 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | CH  | 99/11/10 | Added WeeksInYear                                       |
+* | CH  | 99/09/13 | Change to clock event                                   |
+* | SG  | 99/08/19 | Initial implementation                                  |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+//LABEL(Clock, EN) The clock event
+
+
+classification DAY_OF_WEEK { 					//EN Day of week
+	//EN Monday
+	MONDAY,        			
+	//EN Tuesday
+	TUESDAY,
+	//EN Wednesday
+	WEDNESDAY,
+	//EN Thursday
+	THURSDAY,
+	//EN Friday
+	FRIDAY,
+	//EN Saturday
+	SATURDAY,
+	//EN Sunday
+	SUNDAY
+};
+
+
+classification MONTH_IN_YEAR { 				//EN Month of year
+	//EN January
+	JANUARY,
+	//EN February
+	FEBRUARY,
+	//EN March
+	MARCH,
+	//EN April
+	APRIL,
+	//EN May
+	MAY,
+	//EN June
+	JUNE,
+	//EN July
+	JULY,
+	//EN August
+	AUGUST, 
+	//EN September
+	SEPTEMBER,
+	//EN October
+	OCTOBER,
+	//EN November
+	NOVEMBER,
+	//EN December
+	DECEMBER
+};
+
+classification DAY_OF_MONTH { 				//EN Day of month
+	DAY1,	 //EN 1
+	DAY2,  //EN 2
+	DAY3,  //EN 3
+	DAY4,  //EN 4
+	DAY5,  //EN 5
+	DAY6,  //EN 6
+	DAY7,  //EN 7
+	DAY8,  //EN 8
+	DAY9,  //EN 9
+	DAY10, //EN 10
+	DAY11, //EN 11
+	DAY12, //EN 12
+	DAY13, //EN 13
+	DAY14, //EN 14
+	DAY15, //EN 15
+	DAY16, //EN 16
+	DAY17, //EN 17
+	DAY18, //EN 18
+	DAY19, //EN 19
+	DAY20, //EN 20
+	DAY21, //EN 21
+	DAY22, //EN 22
+	DAY23, //EN 23
+	DAY24, //EN 24
+	DAY25, //EN 25
+	DAY26, //EN 26
+	DAY27, //EN 27
+	DAY28, //EN 28
+	DAY29, //EN 29
+	DAY30, //EN 30
+	DAY31  //EN 31
+};
+
+classification WEEK_OF_MONTH { 				//EN Week of month
+	WEEK1, //EN 1
+	WEEK2, //EN 2
+	WEEK3, //EN 3
+	WEEK4, //EN 4
+	WEEK5, //EN 5
+	WEEK6  //EN 6
+};
+
+parameters {
+	//EN Force daily accounting
+	logical GongDaily;
+	//EN Force weekly accounting
+	logical GongWeekly;
+	//EN Force monthly accounting
+	logical GongMonthly;
+	//EN Force yearly accounting
+	logical GongYearly;
+};
+
+
+actor Person
+{
+	int year; 							//EN Year number
+	/* NOTE(Person.year,EN)
+		This is the conventional 4-digit calendar year,
+		which is updated by the clock when it gongs.
+		The clock is guaranteed to gong yearly if told to do so through
+		the gong_yearly state.
+	*/
+	int month; 							//EN Month number
+	/* NOTE(Person.month,EN)
+		This is a continuously increasing counter of months,
+		which is updated by the clock when it gongs.
+		The clock is guaranteed to gong monthly if told to do so through
+		the gong_monthly state.
+	*/
+	int week; 							//EN Week number
+	/* NOTE(Person.week,EN)
+		This is a continuously increasing counter of weeks,
+		which is updated by the clock when it gongs.
+		The clock is guaranteed to gong weekly if told to do so through
+		the gong_weekly state.
+	*/
+	int day; 							//EN Day number
+	/* NOTE(Person.day,EN)
+		This is a continuously increasing counter of days,
+		which is updated by the clock when it gongs.
+		The clock is guaranteed to gong daily only if told to do so through
+		the gong_daily state.
+	*/
+
+	logical year_spell;				//EN Year spell
+	/* NOTE(Person.year_spell,EN)
+		This state defines a spell consisting of the current year,
+		and is maintained by the clock when it gongs.
+		The clock will maintain this state only if told to do so through
+		the gong_yearly state.
+	*/
+	logical year_partial;			//EN Year spell is partial
+
+	logical month_spell;				//EN Month spell
+	/* NOTE(Person.month_spell,EN)
+		This state defines a spell consisting of the current month,
+		and is maintained by the clock when it gongs.
+		The clock will maintain this state only if told to do so through
+		the gong_monthly state.
+	*/
+	logical month_partial;			//EN Month spell is partial
+
+	logical week_spell; 				//EN Week spell
+	/* NOTE(Person.week_spell,EN)
+		This state defines a spell consisting of the current week,
+		and is maintained by the clock when it gongs.
+		The clock will maintain this state only if told to do so through
+		the gong_weekly state.
+	*/
+	logical week_partial;			//EN Week spell is partial
+
+	logical day_spell; 				//EN Day spell
+	/* NOTE(Person.day_spell,EN)
+		This state defines a spell consisting of the current day,
+		and is maintained by the clock when it gongs.
+		The clock will maintain this state only if told to do so through
+		the gong_daily state.
+	*/
+	logical day_partial;				//EN Day spell is partial
+
+	int gong_yearly;					//EN Requests that the clock gong on year roll-over
+	/* NOTE(Person.gong_yearly,EN)
+		If this state is not zero, the clock will gong annually.
+		Events which require annual accounting can ensure that the clock
+		gongs every year by incrementing this state.  If the event no longer
+		requires the annual gong, it can decrement this state.
+	*/
+	int gong_monthly;					//EN Requests that the clock gong on month roll-over
+	/* NOTE(Person.gong_monthly,EN)
+		If this state is not zero, the clock will gong monthly.
+		Events which require monthly accounting can ensure that the clock
+		gongs every month by incrementing this state.  If the event no longer
+		requires the monthly gong, it can decrement this state.
+	*/
+	int gong_weekly; 					//EN Requests that the clock gong on week roll-over
+	/* NOTE(Person.gong_weekly,EN)
+		If this state is not zero, the clock will gong weekly.
+		Events which require weekly accounting can ensure that the clock
+		gongs every week by incrementing this state.  If the event no longer
+		requires the weekly gong, it can decrement this state.
+	*/
+	int gong_daily;	 				//EN Requests that the clock gong on day roll-over
+	/* NOTE(Person.gong_daily,EN)
+		If this state is not zero, the clock will gong daily.
+		Events which require daily accounting can ensure that the clock
+		gongs every day by incrementing this state.  If the event no longer
+		requires the daily gong, it can decrement this state.
+	*/
+
+
+	MONTH_IN_YEAR month_of_year; 	//EN Month of year
+	/* NOTE(Person.month_of_year,EN)
+		This state gives the month within the current year, where 0 is January
+		and 11 is December.  It is maintained by the clock when it gongs.
+		The clock is guaranteed to gong monthly if told to do so through
+		the gong_monthly state.
+	*/
+	DAY_OF_MONTH day_of_month; 	//EN Day of month
+	/* NOTE(Person.month_of_year,EN)
+		This state gives the day within the current month, where 0 is the
+		first day of the month.  It is maintained by the clock when it gongs.
+		The clock is guaranteed to gong daily if told to do so through
+		the gong_daily state.
+	*/
+	DAY_OF_WEEK day_of_week;	  	//EN Day of week
+	/* NOTE(Person.day_of_week,EN)
+		This state gives the day within the current week, where 0 is Monday
+		and 6 is Sunday.  It is maintained by the clock when it gongs.
+		The clock is guaranteed to gong daily if told to do so through
+		the gong_daily state.
+	*/
+	WEEK_OF_MONTH week_of_month;	 //EN Week of month
+	/* NOTE(Person.week_of_month,EN)
+		This state gives the week within the current month. It is maintained by the clock when it gongs.
+		The clock is guaranteed to gong weekly if told to do so through
+		the gong_daily state.
+	*/
+
+	TIME next_gong_time;				//EN Next time at which the gong will chime
+	/* NOTE(Person.next_gong_time,EN)
+		This is a state used internally by the clock event.
+	*/
+
+	void YearStart();			//EN Start of year
+	void YearEnd();				//EN End of year
+	void MonthStart();			//EN Start of month
+	void MonthEnd();   			//EN End of month
+	void WeekStart();			//EN Start of week
+	void WeekEnd();				//EN End of week
+	void DayStart();   			//EN Start of day
+	void DayEnd();				//EN End of day
+
+	TIME RoundUpToDay(TIME dTime);			//EN Rounds a time up to next day boundary
+	event timeClockEvent, ClockEvent, 127;	//EN General-purpose clock
+
+
+	void StartClock();			//EN Initialize the clock at birth of actor
+	hook StartClock, StartClockHere;
+	void FinishClock();			//EN Terminate the clock at death of actor
+	hook FinishClock, Finish;
+
+};
+
+TIME Person::timeClockEvent()
+{
+	return next_gong_time;
+}	
+
+void Person::ClockEvent()
+{
+	int		nYear;
+	int		nMonth;
+	int		nWeek;
+	int		nDay;
+	int		nMonthOfYear;
+	int		nDayOfMonth;
+	int		nDayOfWeek;
+	int		nWeekOfMonth;
+	logical	bDayBoundary;
+	logical	bWeekBoundary;
+	logical	bMonthBoundary;
+	logical	bYearBoundary;
+
+	// Determine clock counters at the present time.
+	nDay = LeaplessTimeToDay( time, &bDayBoundary );
+	LeaplessDayToCalendar( nDay, &nYear, &nMonthOfYear, &nDayOfMonth, &nDayOfWeek);
+	// Figure out some additional derived counters.
+	nWeek = nDay / 7;
+	nMonth = 12 * nYear + nMonthOfYear;
+	nWeekOfMonth = ( nDayOfMonth + ( 70 + nDayOfWeek - nDayOfMonth ) % 7 ) / 7;
+
+	// Determine what spell boundaries we are on at this instant.
+	if (bDayBoundary) {
+		bWeekBoundary = (nDayOfWeek == 0) ? TRUE : FALSE;
+		bMonthBoundary = (nDayOfMonth == 0) ? TRUE : FALSE;
+		bYearBoundary = (nMonthOfYear == 0 && nDayOfMonth == 0) ? TRUE : FALSE;
+	}
+	else {
+		// We can't be on a week, month, or year boundary if we aren't on a day boundary.
+		bWeekBoundary = FALSE;
+		bMonthBoundary = FALSE;
+		bYearBoundary = FALSE;
+	}
+
+	// Finish off previous day spell if complete.
+	if (day_spell && bDayBoundary) {
+		day_spell = FALSE;
+		DayEnd();
+	}
+	// Finish off previous week spell if complete.
+	if (week_spell && bWeekBoundary) {
+		week_spell = FALSE;
+		WeekEnd();
+	}
+	// Finish off previous month spell if complete.
+	if (month_spell && bMonthBoundary) {
+		month_spell = FALSE;
+		MonthEnd();
+	}
+	// Finish off previous year spell if complete.
+	if (year_spell && bYearBoundary) {
+		year_spell = FALSE;
+		YearEnd();
+	}
+
+	// update the various counters
+	year = nYear;
+	month = nMonth;
+	week = nWeek;
+	day = nDay;
+	month_of_year = (MONTH_IN_YEAR) nMonthOfYear;
+	day_of_month = (DAY_OF_MONTH) nDayOfMonth;
+	day_of_week = (DAY_OF_WEEK) nDayOfWeek;
+	week_of_month = (WEEK_OF_MONTH) nWeekOfMonth;
+
+	// initialize a new day spell if requested
+	if (gong_daily && !day_spell) {
+		day_spell = TRUE;
+		day_partial = !bDayBoundary ? TRUE : FALSE;
+		DayStart();
+	}
+	// initialize a new week spell if requested
+	if (gong_weekly && !week_spell) {
+		week_spell = TRUE;
+		week_partial = !bWeekBoundary ? TRUE : FALSE;
+		WeekStart();
+	}
+	// initialize a new month spell if requested
+	if (gong_monthly && !month_spell) {
+		month_spell = TRUE;
+		month_partial = !bMonthBoundary ? TRUE : FALSE;
+		MonthStart();
+	}
+	// initialize a new year spell if requested
+	if (gong_yearly && !year_spell) {
+		year_spell = TRUE;
+		year_partial = !bYearBoundary ? TRUE : FALSE;
+		YearStart();
+	}
+
+	// Now determine when the gong should chime next,
+	// depending on the requests in the "gong_" states.
+
+	int nGongDay;	// next day at which the gong will chime
+	int nTempDay;
+	const int nBigDay = 1<<30;	// A day in the very distant future
+
+	// Determine which of the various active gong settings will cause the next gong.
+	if (gong_daily || day_spell) {
+		// This is the minimum gong period, and all others are a multiple of it,
+		// so we need check no further, since the clock will gong daily.
+		nGongDay = nDay + 1;
+	}
+	else {
+
+		nGongDay = nBigDay;
+
+		// Check for week roll-over
+		if (gong_weekly || week_spell) {
+			// calculate day at next week roll-over
+			nTempDay = nDay + 7 - nDayOfWeek;
+			if (nTempDay < nGongDay) {
+				nGongDay = nTempDay;
+			}
+		}
+
+		// Check for month roll-over
+		if (gong_monthly || month_spell) {
+
+			// calculate day at next month roll-over
+			if (nMonthOfYear < 11) {
+				// Jan - Nov
+				nTempDay = LeaplessCalendarToDay(nYear, nMonthOfYear + 1, 0);
+
+			}
+			else {
+				// Dec
+				nTempDay = LeaplessCalendarToDay(nYear + 1, 0, 0);
+			}
+			if (nTempDay < nGongDay) {
+				nGongDay = nTempDay;
+			}
+		}
+		// Check for year roll-over (but don't bother if month roll-over checked)
+		else if (gong_yearly || year_spell) {
+			// calculate day at next year roll-over
+			nTempDay = LeaplessCalendarToDay(nYear + 1, 0, 0);
+			if (nTempDay < nGongDay) {
+				nGongDay = nTempDay;
+			}
+		}
+	}
+
+	// Setting next_gong_time will schedule the gong (i.e. the next Clock event)
+	if (nGongDay == nBigDay) {
+		next_gong_time = TIME_INFINITE;
+	}
+	else {
+		next_gong_time = (TIME) ( LeaplessDayToTime( nGongDay ) );
+	}
+
+
+
+}
+
+void Person::StartClock()
+{
+	// Set up initial gonged intervals as specified through parameters
+	gong_daily = GongDaily;
+	gong_weekly = GongWeekly;
+	gong_monthly = GongMonthly;
+	gong_yearly = GongYearly;
+
+	ClockEvent();
+}
+
+void Person::FinishClock()
+{
+	int		nYear;
+	int		nMonth;
+	int		nWeek;
+	int		nDay;
+	int		nMonthOfYear;
+	int		nDayOfMonth;
+	int		nDayOfWeek;
+	int		nWeekOfMonth;
+	logical	bDayBoundary;
+	logical	bWeekBoundary;
+	logical	bMonthBoundary;
+	logical	bYearBoundary;
+
+	// Determine clock counters at the present time.
+	nDay = LeaplessTimeToDay( time, &bDayBoundary );
+	LeaplessDayToCalendar( nDay, &nYear, &nMonthOfYear, &nDayOfMonth, &nDayOfWeek);
+	// Figure out some additional derived counters.
+	nWeek = nDay / 7;
+	nMonth = 12 * nYear + nMonthOfYear;
+	nWeekOfMonth = ( nDayOfMonth + ( 70 + nDayOfWeek - nDayOfMonth ) % 7 ) / 7;
+
+	// Determine what spell boundaries we are on at this instant.
+	if (bDayBoundary) {
+		bWeekBoundary = (nDayOfWeek == 0) ? TRUE : FALSE;
+		bMonthBoundary = (nDayOfMonth == 0) ? TRUE : FALSE;
+		bYearBoundary = (nMonthOfYear == 0 && nDayOfMonth == 0) ? TRUE : FALSE;
+	}
+	else {
+		// We can't be on a week, month, or year boundary if we aren't on a day boundary.
+		bWeekBoundary = FALSE;
+		bMonthBoundary = FALSE;
+		bYearBoundary = FALSE;
+	}
+
+	// Update states.
+	year = nYear;
+	month = nMonth;
+	week = nWeek;
+	day = nDay;
+	month_of_year = (MONTH_IN_YEAR) nMonthOfYear;
+	day_of_month = (DAY_OF_MONTH) nDayOfMonth;
+	day_of_week = (DAY_OF_WEEK) nDayOfWeek;
+	week_of_month = (WEEK_OF_MONTH) nWeekOfMonth;
+
+	// Terminate any open spells
+	// Finish off any previous day spell.
+	if (day_spell) {
+		day_partial = !bDayBoundary ? TRUE : FALSE;
+		day_spell = FALSE;
+		DayEnd();
+	}
+	// Finish off any previous week spell.
+	if (week_spell) {
+		week_partial = !bWeekBoundary ? TRUE : FALSE;
+		week_spell = FALSE;
+		WeekEnd();
+	}
+	// Finish off any previous month spell.
+	if (month_spell) {
+		month_partial = !bMonthBoundary ? TRUE : FALSE;
+		month_spell = FALSE;
+		MonthEnd();
+	}
+	// Finish off any previous year spell.
+	if (year_spell) {
+		year_partial = !bYearBoundary ? TRUE : FALSE;
+		year_spell = FALSE;
+		YearEnd();
+	}
+
+}
+
+
+void Person::YearStart()
+{
+}
+
+void Person::YearEnd()
+{
+}
+
+void Person::MonthStart()
+{
+}
+
+void Person::MonthEnd()
+{
+}
+
+void Person::WeekStart()
+{
+}
+
+void Person::WeekEnd()
+{
+}
+
+void Person::DayStart()
+{
+}
+
+void Person::DayEnd()
+{
+}
+
+
+// TO DO - More Modgen time utility functions
+TIME RoundUpToDay(TIME dTime)
+{
+	double dResult;
+
+	dResult = dTime;
+	return (TIME) dResult;
+}
+
+
+/* NOTE(Clock, EN) 
+	The clock event implements a calendar.  It is a special
+	Leapless calendar.  Every year has exactly 365 days.  The module
+	contains various states and functions that can be used to measure
+	quantities and perform computations at the beginning or end of various
+	time accounting intervals (days, weeks, months and years).
+
+	Sequencing:
+		The fundamental sequence related to a "gongs" of the clock for a particular kind of activated interval (e.g. a month) is as follows:
+	(1) End previously activated interval:
+		month_spell = FALSE;
+		MonthEnd();
+	(2) Update clock variables to the present time:
+		day = …
+		week = …
+		etc.
+	(3) Start a new activated interval:
+			month_spell = TRUE;
+		MonthStart();
+	This means, for example, that  CompletedSpellWeightedDuration(month_spell, TRUE, earnings_rate), referred to in a function hooked to MonthEnd(), will give the earnings of the month that is just about to complete.
+*/

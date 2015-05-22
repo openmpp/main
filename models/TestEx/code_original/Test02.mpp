@@ -1,0 +1,85 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | SG  | 00/12/14 | Created                                                 |
+* | CC	| 07/11/14 | Converted to VS2005, project TestEx, removed chckbnd 	 |
+* |		|		   |	code which is now included in Modgen, changed 		 |
+* |		|		   |	language code to EN									 |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+//LABEL(Test02, EN) Test Module for bounds checking
+
+
+range T02_RANGE5 {10, 14}; //EN Range with 5 levels
+
+classification T02_CLASSIFICATION5 {	//EN Classification with 4 levels
+	T02_LEVEL0, //EN Level 0
+	T02_LEVEL1, //EN Level 1
+	T02_LEVEL2, //EN Level 2
+	T02_LEVEL3 //EN Level 3
+};
+
+partition T02_PARTITION5 { //EN Partition with 3 groups
+	10, 20
+};
+
+parameters {
+	model_generated long T02_Parm[T02_RANGE5][T02_CLASSIFICATION5][T02_PARTITION5];
+	model_generated long T02_Parm2[T02_RANGE5];
+};
+
+actor Person {
+	//EN Index #0
+	int t02_index0 = {0};
+	//EN Index #1
+	int t02_index1 = {0};
+	//EN Index #2
+	int t02_index2 = {0};
+
+	/* Following tests bounds checking of parameters used in derived states. */
+
+	//EN Result of indexing into parameter T02_Parm
+	int t02_value1 = T02_Parm[t02_index0][t02_index1][t02_index2];
+
+	int t02_value2;
+
+	void t02_user_func();
+
+	hook t02_user_func, BirthdayEvent;
+	
+};
+
+void Person::t02_user_func() {
+
+	//t02_index0 = curtate_age;
+	//t02_index1 = curtate_age + 1;
+	//t02_index2 = curtate_age + 2;
+
+	// Following code tests CHKBND() and BoundCheck() directly
+	/*CHKBND(t02_index0, 5, "Test: T02_Parm", 0);
+	CHKBND(t02_index1, 4, "Test: T02_Parm", 1);
+	CHKBND(t02_index2, 3, "Test: T02_Parm", 2);*/
+	
+	// Following tests bounds checking on user code
+	//t02_value2 = T02_Parm[t02_index0][t02_index1][t02_index2];
+
+	// Following tests that bounds checking markup processes only outermost index level
+	//t02_value2 = T02_Parm[T02_Parm2[t02_index0]][t02_index1][t02_index2];
+
+	// Following tests bounds checking on user code
+	//t02_value2 = T02_Parm[t02_index0][t02_index1][t02_index2];
+}
+
+
+
+/* NOTE(Test02, EN)
+	This test module creates various tests to verify the correct operation of the 
+	Modgen bounds checking of parameters.
+*/

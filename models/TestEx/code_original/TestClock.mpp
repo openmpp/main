@@ -1,0 +1,369 @@
+/*****************************************************************************
+*	LifePaths™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-1999 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | CH  | 99/11/10 | Added WeeksInYear                                       |
+* | CH  | 99/09/13 | Change to clock event                                   |
+* | SG  | 99/08/19 | Initial implementation                                  |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+
+parameters {
+	//EN Force daily accounting
+	logical GongDaily2;
+	//EN Force weekly accounting
+	logical GongWeekly2;
+	//EN Force monthly accounting
+	logical GongMonthly2;
+	//EN Force yearly accounting
+	logical GongYearly2;
+};
+
+
+actor TestActor06
+{
+	int year; 							//EN Year number
+	int month; 							//EN Month number
+	int week; 							//EN Week number
+	int day; 							//EN Day number
+
+	logical year_spell;				//EN Year spell
+	logical year_partial;			//EN Year spell is partial
+
+	logical month_spell;				//EN Month spell
+	logical month_partial;			//EN Month spell is partial
+
+	logical week_spell; 				//EN Week spell
+	logical week_partial;			//EN Week spell is partial
+
+	logical day_spell; 				//EN Day spell
+	logical day_partial;				//EN Day spell is partial
+
+	int gong_yearly;					//EN Requests that the clock gong on year roll-over
+	int gong_monthly;					//EN Requests that the clock gong on month roll-over
+	int gong_weekly; 					//EN Requests that the clock gong on week roll-over
+	int gong_daily;	 				//EN Requests that the clock gong on day roll-over
+
+	MONTH_IN_YEAR month_of_year; 	//EN Month of year
+	DAY_OF_MONTH day_of_month; 	//EN Day of month
+	DAY_OF_WEEK day_of_week;	  	//EN Day of week
+	WEEK_OF_MONTH week_of_month;	 //EN Week of month
+
+	TIME next_gong_time;				//EN Next time at which the gong will chime
+
+	void YearStart();			//EN Start of year
+	void YearEnd();				//EN End of year
+	void MonthStart();			//EN Start of month
+	void MonthEnd();   			//EN End of month
+	void WeekStart();			//EN Start of week
+	void WeekEnd();				//EN End of week
+	void DayStart();   			//EN Start of day
+	void DayEnd();				//EN End of day
+
+	TIME RoundUpToDay(TIME dTime);			//EN Rounds a time up to next day boundary
+	event timeClockEvent, ClockEvent, 127;	//EN General-purpose clock
+
+
+	void StartClock2();			//EN Initialize the clock at birth of actor
+	hook StartClock2, StartClockHere2;
+	void FinishClock2();			//EN Terminate the clock at death of actor
+	hook FinishClock2, Finish;
+
+};
+
+TIME TestActor06::timeClockEvent()
+{
+	return next_gong_time;
+}	
+
+void TestActor06::ClockEvent()
+{
+	int		nYear;
+	int		nMonth;
+	int		nWeek;
+	int		nDay;
+	int		nMonthOfYear;
+	int		nDayOfMonth;
+	int		nDayOfWeek;
+	int		nWeekOfMonth;
+	logical	bDayBoundary;
+	logical	bWeekBoundary;
+	logical	bMonthBoundary;
+	logical	bYearBoundary;
+
+	// Determine clock counters at the present time.
+	nDay = LeaplessTimeToDay( time, &bDayBoundary );
+	LeaplessDayToCalendar( nDay, &nYear, &nMonthOfYear, &nDayOfMonth, &nDayOfWeek);
+	// Figure out some additional derived counters.
+	nWeek = nDay / 7;
+	nMonth = 12 * nYear + nMonthOfYear;
+	nWeekOfMonth = ( nDayOfMonth + ( 70 + nDayOfWeek - nDayOfMonth ) % 7 ) / 7;
+
+	// Determine what spell boundaries we are on at this instant.
+	if (bDayBoundary) {
+		bWeekBoundary = (nDayOfWeek == 0) ? TRUE : FALSE;
+		bMonthBoundary = (nDayOfMonth == 0) ? TRUE : FALSE;
+		bYearBoundary = (nMonthOfYear == 0 && nDayOfMonth == 0) ? TRUE : FALSE;
+	}
+	else {
+		// We can't be on a week, month, or year boundary if we aren't on a day boundary.
+		bWeekBoundary = FALSE;
+		bMonthBoundary = FALSE;
+		bYearBoundary = FALSE;
+	}
+
+	// Finish off previous day spell if complete.
+	if (day_spell && bDayBoundary) {
+		day_spell = FALSE;
+		DayEnd();
+	}
+	// Finish off previous week spell if complete.
+	if (week_spell && bWeekBoundary) {
+		week_spell = FALSE;
+		WeekEnd();
+	}
+	// Finish off previous month spell if complete.
+	if (month_spell && bMonthBoundary) {
+		month_spell = FALSE;
+		MonthEnd();
+	}
+	// Finish off previous year spell if complete.
+	if (year_spell && bYearBoundary) {
+		year_spell = FALSE;
+		YearEnd();
+	}
+
+	// update the various counters
+	year = nYear;
+	month = nMonth;
+	week = nWeek;
+	day = nDay;
+	month_of_year = (MONTH_IN_YEAR) nMonthOfYear;
+	day_of_month = (DAY_OF_MONTH) nDayOfMonth;
+	day_of_week = (DAY_OF_WEEK) nDayOfWeek;
+	week_of_month = (WEEK_OF_MONTH) nWeekOfMonth;
+
+	// initialize a new day spell if requested
+	if (gong_daily && !day_spell) {
+		day_spell = TRUE;
+		day_partial = !bDayBoundary ? TRUE : FALSE;
+		DayStart();
+	}
+	// initialize a new week spell if requested
+	if (gong_weekly && !week_spell) {
+		week_spell = TRUE;
+		week_partial = !bWeekBoundary ? TRUE : FALSE;
+		WeekStart();
+	}
+	// initialize a new month spell if requested
+	if (gong_monthly && !month_spell) {
+		month_spell = TRUE;
+		month_partial = !bMonthBoundary ? TRUE : FALSE;
+		MonthStart();
+	}
+	// initialize a new year spell if requested
+	if (gong_yearly && !year_spell) {
+		year_spell = TRUE;
+		year_partial = !bYearBoundary ? TRUE : FALSE;
+		YearStart();
+	}
+
+	// Now determine when the gong should chime next,
+	// depending on the requests in the "gong_" states.
+
+	int nGongDay;	// next day at which the gong will chime
+	int nTempDay;
+	const int nBigDay = 1<<30;	// A day in the very distant future
+
+	// Determine which of the various active gong settings will cause the next gong.
+	if (gong_daily || day_spell) {
+		// This is the minimum gong period, and all others are a multiple of it,
+		// so we need check no further, since the clock will gong daily.
+		nGongDay = nDay + 1;
+	}
+	else {
+
+		nGongDay = nBigDay;
+
+		// Check for week roll-over
+		if (gong_weekly || week_spell) {
+			// calculate day at next week roll-over
+			nTempDay = nDay + 7 - nDayOfWeek;
+			if (nTempDay < nGongDay) {
+				nGongDay = nTempDay;
+			}
+		}
+
+		// Check for month roll-over
+		if (gong_monthly || month_spell) {
+
+			// calculate day at next month roll-over
+			if (nMonthOfYear < 11) {
+				// Jan - Nov
+				nTempDay = LeaplessCalendarToDay(nYear, nMonthOfYear + 1, 0);
+
+			}
+			else {
+				// Dec
+				nTempDay = LeaplessCalendarToDay(nYear + 1, 0, 0);
+			}
+			if (nTempDay < nGongDay) {
+				nGongDay = nTempDay;
+			}
+		}
+		// Check for year roll-over (but don't bother if month roll-over checked)
+		else if (gong_yearly || year_spell) {
+			// calculate day at next year roll-over
+			nTempDay = LeaplessCalendarToDay(nYear + 1, 0, 0);
+			if (nTempDay < nGongDay) {
+				nGongDay = nTempDay;
+			}
+		}
+	}
+
+	// Setting next_gong_time will schedule the gong (i.e. the next Clock event)
+	if (nGongDay == nBigDay) {
+		next_gong_time = TIME_INFINITE;
+	}
+	else {
+		next_gong_time = (TIME) ( LeaplessDayToTime( nGongDay ) );
+	}
+
+
+
+}
+
+void TestActor06::StartClock2()
+{
+	// Set up initial gonged intervals as specified through parameters
+	gong_daily = GongDaily;
+	gong_weekly = GongWeekly;
+	gong_monthly = GongMonthly;
+	gong_yearly = GongYearly;
+
+	ClockEvent();
+}
+
+void TestActor06::FinishClock2()
+{
+	int		nYear;
+	int		nMonth;
+	int		nWeek;
+	int		nDay;
+	int		nMonthOfYear;
+	int		nDayOfMonth;
+	int		nDayOfWeek;
+	int		nWeekOfMonth;
+	logical	bDayBoundary;
+	logical	bWeekBoundary;
+	logical	bMonthBoundary;
+	logical	bYearBoundary;
+
+	// Determine clock counters at the present time.
+	nDay = LeaplessTimeToDay( time, &bDayBoundary );
+	LeaplessDayToCalendar( nDay, &nYear, &nMonthOfYear, &nDayOfMonth, &nDayOfWeek);
+	// Figure out some additional derived counters.
+	nWeek = nDay / 7;
+	nMonth = 12 * nYear + nMonthOfYear;
+	nWeekOfMonth = ( nDayOfMonth + ( 70 + nDayOfWeek - nDayOfMonth ) % 7 ) / 7;
+
+	// Determine what spell boundaries we are on at this instant.
+	if (bDayBoundary) {
+		bWeekBoundary = (nDayOfWeek == 0) ? TRUE : FALSE;
+		bMonthBoundary = (nDayOfMonth == 0) ? TRUE : FALSE;
+		bYearBoundary = (nMonthOfYear == 0 && nDayOfMonth == 0) ? TRUE : FALSE;
+	}
+	else {
+		// We can't be on a week, month, or year boundary if we aren't on a day boundary.
+		bWeekBoundary = FALSE;
+		bMonthBoundary = FALSE;
+		bYearBoundary = FALSE;
+	}
+
+	// Update states.
+	year = nYear;
+	month = nMonth;
+	week = nWeek;
+	day = nDay;
+	month_of_year = (MONTH_IN_YEAR) nMonthOfYear;
+	day_of_month = (DAY_OF_MONTH) nDayOfMonth;
+	day_of_week = (DAY_OF_WEEK) nDayOfWeek;
+	week_of_month = (WEEK_OF_MONTH) nWeekOfMonth;
+
+	// Terminate any open spells
+	// Finish off any previous day spell.
+	if (day_spell) {
+		day_partial = !bDayBoundary ? TRUE : FALSE;
+		day_spell = FALSE;
+		DayEnd();
+	}
+	// Finish off any previous week spell.
+	if (week_spell) {
+		week_partial = !bWeekBoundary ? TRUE : FALSE;
+		week_spell = FALSE;
+		WeekEnd();
+	}
+	// Finish off any previous month spell.
+	if (month_spell) {
+		month_partial = !bMonthBoundary ? TRUE : FALSE;
+		month_spell = FALSE;
+		MonthEnd();
+	}
+	// Finish off any previous year spell.
+	if (year_spell) {
+		year_partial = !bYearBoundary ? TRUE : FALSE;
+		year_spell = FALSE;
+		YearEnd();
+	}
+
+}
+
+
+void TestActor06::YearStart()
+{
+}
+
+void TestActor06::YearEnd()
+{
+}
+
+void TestActor06::MonthStart()
+{
+}
+
+void TestActor06::MonthEnd()
+{
+}
+
+void TestActor06::WeekStart()
+{
+}
+
+void TestActor06::WeekEnd()
+{
+}
+
+void TestActor06::DayStart()
+{
+}
+
+void TestActor06::DayEnd()
+{
+}
+
+
+// TO DO - More Modgen time utility functions
+TIME TestActor06::RoundUpToDay(TIME dTime)
+{
+	double dResult;
+
+	dResult = dTime;
+	return (TIME) dResult;
+}
+

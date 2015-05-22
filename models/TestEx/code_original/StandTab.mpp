@@ -1,0 +1,33 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | CC  | 07/09/14 | Created using Simpex's StandTab module                  |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+/* NOTE(StandTab, EN)
+This file contains the definitions of the model's Standard Tables.
+*/
+
+table Person SimulatedCases //EN Number of cases simulated
+{
+	{ 
+		unit //EN Persons
+	}
+};
+
+/*table Person X05_PersonsByGenderCol //EN Stratify persons by gender (in columns)
+{
+	{
+		unit //EN Persons
+	}
+	* sex+
+};
+*/
+
+// TODO - define tracking

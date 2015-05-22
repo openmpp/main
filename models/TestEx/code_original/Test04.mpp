@@ -1,0 +1,371 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | JGM	| 07/09/14 | Simple tests dealing with durations of actor states	 |
+* |		|		   |	  (p21 Developers Guide)                   			 |
+* |		|		   |	                                        			 |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+//LABEL(Test04, EN) Test & Illustrate duration derived states
+
+// Arbitarary label for the child at certain ages
+classification AGE_LABEL { 
+	BABY,
+	RUGRAT,
+	TODDLER,
+	KID
+};
+
+// Recurring health conditions
+classification HEALTH { 
+	WELL,
+	ILL,
+	FAKING
+};
+
+partition TENS {
+	10, 20, 30, 40, 60, 70, 80 
+};
+
+
+actor Person {
+	LIFE t04_curtate_age2 		= curtate_age * curtate_age; // A self-referential state
+	LIFE t04_update_by_2 = {0};
+
+	AGE_LABEL t04_age_label 	= {BABY};
+	HEALTH t04_health 			= {WELL};
+
+	//CC. test of self-scheduling int(active_spell_duration())
+	int t04_asd_curtate_age3_int = self_scheduling_int( active_spell_duration(curtate_age, 3) );
+
+	//CC. test of value_at_changes(observed_state, summed_state)
+	double t04_changes_moy 		= value_at_changes( curtate_age, t01_changes_moy ); 
+
+	//CC. test of split(observed_state, partition_name)
+	double t04_changes_moy_part = split( t04_changes_moy, TENS );
+
+	//CC. test of active_spell_delta(observed_state, value, differenced_state)
+	double t04_asd_age 			= active_spell_delta( curtate_age, 3, t04_curtate_age2 );
+	//CC. second test of active_spell_delta
+	double t04_asd_year1975 	= active_spell_delta( year, 1975, curtate_age );
+
+	//CC. test of active_spell_duration(observed_state, value)
+	double t04_asdur_baby 		= active_spell_duration( t04_age_label, BABY );
+	//CC. second test of active_spell_duration
+	double t04_asdur_kid 		= active_spell_duration( t04_age_label, KID );
+
+	//CC. second test of duration_trigger(observed_state, value, time_interval)
+	double t04_dur_trigger_baby = duration_trigger( t04_age_label, BABY, 0.285 );
+	//CC. third test of duration_trigger(observed_state, value, time_interval)
+	double t04_dur_trigger_kid  = duration_trigger( t04_age_label, KID, 0.5 );
+
+	//CC. second test of duration_counter(observed_state, value, time_interval)
+	double t04_durc_well 		= duration_counter( t04_health, WELL, 1 );
+	//CC. third test of duration_counter(observed_state, value, time_interval)
+	double t04_durc_age3 		= duration_counter( curtate_age, 3, 1 );
+
+	//CC. fourth test of duration_trigger(observed_state, value, time_interval)
+	double t04_dtrigger_baby 	= duration_trigger( t04_age_label, BABY, 0.285 );
+	//CC. fifth test of duration_trigger(observed_state, value, time_interval)
+	double t04_dtrigger_kid 	= duration_trigger( t04_age_label, KID, 0.9 );
+	//CC. sixth test of duration_trigger(observed_state, value, time_interval)
+	double t04_dtrigger_well 	= duration_trigger( t04_health, WELL, 0.9 );
+
+	//CC. fourth test of duration_counter(observed_state, value, time_interval)
+	double t04_dcounter_well	= duration_counter( t04_health, WELL, 1 );
+
+	//CC. test of completed_spell_delta(observed_state, value, differenced_state)
+	double t04_csd_baby 		= completed_spell_delta( t04_age_label, BABY, curtate_age );
+	//CC. second test of completed_spell_delta(observed_state, value, differenced_state)
+	double t04_csd_well 		= completed_spell_delta( t04_health, WELL, curtate_age );
+	//CC. third test of completed_spell_delta(observed_state, value, differenced_state)
+	double t04_csd_ill  		= completed_spell_delta( t04_health, ILL, curtate_age );
+	//CC. fourth test of completed_spell_delta(observed_state, value, differenced_state)
+	double t04_csd_faking 		= completed_spell_delta( t04_health, FAKING, curtate_age );
+
+	// ----------------------------
+	// Tests of undergone_entrance and undergone_change. See: Test 4 (4)
+	// ----------------------------
+	//CC. test of undergone_entrance(observed_state, value)	
+	logical t04_isBaby 			= undergone_entrance( t04_age_label, BABY );
+	//CC. second test of undergone_entrance(observed_state, value)
+	logical t04_isRugrat 		= undergone_entrance( t04_age_label, RUGRAT );
+	//CC. third test of undergone_entrance(observed_state, value)
+	logical t04_isToddler 		= undergone_entrance( t04_age_label, TODDLER );
+	//CC. fourth test of undergone_entrance(observed_state, value)
+	logical t04_isKid 			= undergone_entrance( t04_age_label, KID );
+
+	//CC. fifth test of undergone_entrance(observed_state, value)
+	logical t04_isWell   		= undergone_entrance( t04_health, WELL );
+	//CC.sixth test of undergone_entrance(observed_state, value)
+	logical t04_isIll   		= undergone_entrance( t04_health, ILL );
+	//CC. seventh test of undergone_entrance(observed_state, value)
+	logical t04_isFaking   		= undergone_entrance( t04_health, FAKING );
+
+	//CC. second test of undergone_change(observed_value)
+	logical t04_cisBaby          = undergone_change( t04_age_label );
+	//CC. third test of undergone_change(observed_value)
+	logical t04_cisRugrat        = undergone_change( t04_age_label );
+	//CC. fourth test of undergone_change(observed_value)
+	logical t04_cisToddler       = undergone_change( t04_age_label );
+	//CC. fifth test of undergone_change(observed_value)
+	logical t04_cisKid           = undergone_change( t04_age_label );
+
+	//CC. sixth test of undergone_change(observed_value)
+	logical t04_cisWell          = undergone_change( t04_health );
+	//CC. seventh test of undergone_change(observed_value)
+	logical t04_cisIll           = undergone_change( t04_health );
+	//CC. eigth test of undergone_change(observed_value)
+	logical t04_cisFaking        = undergone_change( t04_health );
+	
+	void t04_update_vars();
+	hook t04_update_vars, BirthdayEvent;
+};
+
+// Called on BirthdayEvent. Update testing variables appropriately.
+void Person::t04_update_vars() {
+	t04_update_by_2 += (LIFE)2;
+
+	// Update AGE_TABLE for testing
+	switch ( curtate_age ) {
+		case 0:
+		case 1:
+			t04_age_label 	= BABY;
+			t04_health 		= WELL;
+			break;
+		case 2:
+			t04_age_label 	= RUGRAT;
+			t04_health 		= ILL;
+			break;
+		case 3:
+			t04_age_label 	= TODDLER;
+			t04_health 		= FAKING;
+			break;
+		case 4:
+			t04_age_label 	= TODDLER;
+			t04_health 		= WELL;
+			break;
+		default:
+			t04_age_label 	= KID;
+			t04_health 		= ILL;
+			break;
+		
+	}
+}
+
+/*
+ */
+table Person T04_TABLE01 //EN Test 4 (1): Actor states, curtate_age
+[ dominant ]
+{
+	myCase
+	*
+	curtate_age+
+	//decade+ //EN COERCE curtate_age to a 10 year timeframe
+	*
+	{
+		age, 														//EN age
+		value_out(curtate_age), 									// decimals=2
+		value_out2(curtate_age), 									// decimals=2
+
+		// ----------------------------
+		// Simple test of variable squared... 
+		// ----------------------------
+		// Expect the same as value_out2() except for last position: is 40 instead of 49 in last area. 
+		// This is becase LIFE type is a restricted range that only goes up to 40.
+		// ----------------------------
+		value_out(t04_curtate_age2),								// decimals=2
+
+		// ----------------------------
+		// Test: active_spell_delta(var, state, analysis)
+		// ----------------------------
+		// active_spell_delta( curtate_age, 3, t04_curtate_age2 )
+
+		// Expected: 0 0 5 0 0 0 ...  since 9 - 4 = 5
+		value_out( t04_asd_age ), 									//EN SPELL_DELTA 2 decimals=2
+
+		// Expect: 0... No change because the t01_changes_moy is always 12
+		active_spell_delta( curtate_age, 3, t01_changes_moy ),  	//EN SPELL_DELTA MOY
+
+		// Test: active_spell_delta( year, 1975, curtate_age )
+		// Expect: difference of 1 in 1975
+		value_out(year),
+		value_out( t04_asd_year1975 ),  							//EN SPELL_DELTA YEAR base 75
+
+		// ----------------------------
+		// Current Spell Duration Tests
+		// ----------------------------
+		// Expect: age 3 to show growth in current age
+		active_spell_duration( curtate_age, 3 ), 					//EN CURRENT_SPELL DUR3 decimals=2
+		t04_asd_curtate_age3_int, 									// INT TEST decimals=2
+
+		// ----------------------------
+		// Active Spell Duration
+		// ----------------------------
+		// Test: active_spell_duration( t04_age_label, BABY )
+		// Expect: First two periods to be 1, 
+		value_out( t04_asdur_baby ), 								// ASD BABY decimals=2
+		// Test: active_spell_duration( t04_age_label, KID )
+		value_out( t04_asdur_kid ), 								// ASD KID decimals=2
+		
+		// ----------------------------
+		// Current Spell Weighted Duration (p21) -- Not sure what this is
+		// supposed to do exactly
+		// ----------------------------
+		//active_spell_weighted_duration(),
+
+		// Expect: Positive
+		value_out(t04_dur_trigger_baby), 			//EN Duration Dummy Baby decimals=2
+
+		// Expect: Negative
+		value_out(t04_dur_trigger_kid), 			//EN Duration Dummy Kid decimals=2
+
+		// ----------------------------
+		// BUG -- The expected durations are not shown
+		// ----------------------------
+		// Test: duration_counter( t04_health, WELL, 0.5 )
+		// Expect: The proper duration of WELLness to be shown (Note: occurs
+		// twice over the person's life.
+		value_out( t04_durc_well ), 								// DUR COUNTER HEALTH WELL decimals=2
+
+		// ----------------------------
+		// BUG -- The expected durations are not shown
+		// ----------------------------
+		// Test: duration_counter( curtate_age, 3, 0.5 )
+		// Expect: The year in which the person turns three to be flagged.
+		value_out( t04_durc_age3 ), 								// DUR COUNTER AGE3 decimals=2
+
+		// ----------------------------
+		// Partition tests
+		// ----------------------------
+		t04_changes_moy, 											// decimals=2
+		// ----------------------------
+		// BUG: ?? Not sure how the partition should look
+		// ----------------------------
+		t04_changes_moy_part, 										// PARTITION TEST Delta decimals=2
+		value_out(t04_changes_moy_part), 							// PARTITION TEST decimals=2
+		
+		age
+
+	}  //EN Deltas of cumulating states
+};
+
+table Person T04_TABLE02 //EN Test 4 (2): Year, duration tests
+[ dominant ]
+{
+	myCase *
+	sim_year+ *
+	{
+		value_out(year), // decimals=0
+
+		// ----------------------------
+		// duration() tests - As expected. The duration of the classification
+		// is properly split across years of the child's life.
+		// ----------------------------
+		duration(), 						//EN Duration decimals=2
+		duration( t04_age_label, BABY ),	// decimals=2
+		duration( t04_age_label, RUGRAT ), 	// decimals=2
+		duration( t04_age_label, TODDLER ),	// decimals=2
+		duration( t04_age_label, KID ), 	// decimals=2
+
+		// ----------------------------
+		// duration_trigger(state, value, elapsed time)
+		// ----------------------------
+		// BUG: In API docs p21 -- mixes up parameter args
+		// ----------------------------
+
+		// Expect: 0 1 1 0 0 0 0 0 0 0 
+		value_out( t04_dtrigger_baby ),		//EN Duration Trigger Baby decimals=2 
+
+		// Expect: 0 0 0 0 0 0 0 1 1 
+		value_out( t04_dtrigger_kid ), 		//EN Duration Trigger Kid  decimals=2 
+
+		// ----------------------------
+		// BUG: ?? Does not seem to capture values initialized with, only when
+		// variable changes state. In this case, person is born well (year 0) and
+		// continues to be well in year 1. Results only show year 1.
+		// ----------------------------
+		value_out( t04_dtrigger_well ), 	//EN Duration Trigger Well  decimals=2 
+
+		// ----------------------------
+		// duration_counter(state, value, size of time internal, [max count]) 
+		// ----------------------------
+		// BUG: Person is well in two separate periods of his life. This result
+		// only shows the first period.
+		// ----------------------------
+		value_out( t04_dcounter_well ), 	//EN Duration Counter WELL  decimals=2
+
+		// ----------------------------
+		// Previous Spell Data
+		// ----------------------------
+		// BUG: Or a nit. The delta is correct, but it lingers every period
+		// thereafter, which is confusing.
+		value_out( t04_csd_baby ), 			//EN CSD Baby 	decimals=2
+		value_out( t04_csd_well ), 			//EN CSD Well  	decimals=2
+		value_out( t04_csd_ill ), 			//EN CSD Ill 	decimals=2
+		value_out( t04_csd_faking ), 		//EN CSD Faking decimals=2
+
+		age
+	}
+};
+
+/*
+	Possible BUG: Output in this table is unexpected. All classification labels have been applied to t04_age_label
+	BUT the last label applied, which is currently in effect, is not shown in the table.
+*/
+table Person T04_TABLE03 //EN Test 4 (3): Classification
+[ dominant ]
+{
+	myCase *
+	t04_age_label+ *
+	{
+		t04_age_label,
+		value_out(t04_age_label)
+	}
+};
+
+table Person T04_TABLE04 //EN Test 4 (4): Year, logical tests
+[ dominant ]
+{
+	myCase *
+	decade+ *
+	{
+		value_out( year ),
+		value_out( age ),
+
+		value_out( t04_isBaby ),
+		value_out( t04_isRugrat ),
+		value_out( t04_isToddler ),
+		value_out( t04_isKid ),
+
+		value_out( t04_isWell ),
+		value_out( t04_isIll ),
+		value_out( t04_isFaking ),
+
+		value_out( t04_cisBaby ),
+		value_out( t04_cisRugrat ),
+		value_out( t04_cisToddler ),
+		value_out( t04_cisKid ),
+
+		value_out( t04_cisWell ),
+		value_out( t04_cisIll ),
+		value_out( t04_cisFaking ),
+
+		age
+	}
+};
+
+/* NOTE(Test04, EN)
+	This test module generates and then tabulates a number of states that test
+	the Modgen family of functions related to duration of actor states. 
+	Dev Manual, p21.
+*/
+
+

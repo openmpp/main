@@ -1,0 +1,156 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | CC  | 07/09/14 | Created using Simpex.  emptied Simpex.mpp, renamed,     |
+* |		|		   |	modified CaseSimulation like Compex.mpp				 |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+/* NOTE(TestEx, EN)
+This file contains the definition of model types, and actor definitions
+for the testex model.  It also contains the simulation control code
+which users should never modify.
+*/
+
+// Supported languages are English and French as per file 
+// included with the model. 
+
+// Define the model version and type
+version 1, 0;
+
+model_type case_based;
+options event_trace = on;
+
+// Define time (this is continuous)
+time_type double;
+
+/* supported languages */
+languages {
+	EN, // English
+	FR	// Français
+};
+
+// =====================================================================
+// Simulation Control Functions for the model. 
+// Users should not modify code beyond this point.
+
+// Simulation of one case, which is a person in this model.
+// An actor for the new case is created
+// an event loop is then run until the death of the person
+// the actors are destroyed in their respective event functions
+
+void CaseSimulation(long lCase)
+{
+	CRandState	rRandState;
+	int			nCloneNumber = 0;
+	int			nClonesRequested = 0;
+	Person		*prDominant;
+	TestActor06	*prTestAct;
+	logical     bDominant;
+	SEX         eSex;
+	TIME        tBirth;
+	TIME        tDeath;
+
+	while ( nCloneNumber <= nClonesRequested ) {
+		if ( nCloneNumber == 0 ) {
+			GetRandState( rRandState );
+		}
+		else {
+			SetRandState( rRandState );
+		}
+
+		// initialize the next case ( its dominant person )
+
+		SetCaseWeight( 1.0 );
+
+		// Deliberately crash the model!!!
+		//*((int *) NULL) = 1;
+
+		// This model generates cases with fixed properties
+		// that are a function of the case number
+		switch ( lCase ) {
+			case 0:
+				bDominant = TRUE;
+				eSex = FEMALE;
+				tBirth = 1971.5;
+				tDeath = 1978.5;
+				break;
+			/*case 1:
+				bDominant = TRUE;
+				eSex = FEMALE;
+				tBirth = 1961.5;
+				tDeath = 1988.5;
+				break;
+			case 2:
+				bDominant = TRUE;
+				eSex = FEMALE;
+				tBirth = 1951.5;
+				tDeath = 1998.5;
+				break;*/
+			default:
+				bDominant = TRUE;
+				eSex = FEMALE;
+				tBirth = 1971.5;
+				tDeath = 1978.5;
+				break;
+		}
+
+		// -----------------------------------
+		// For Test06.mpp -- create other actor to test links
+		// -----------------------------------
+		prDominant = new Person();
+		prTestAct = new TestActor06();
+		prDominant->Start( lCase, bDominant, tBirth, tDeath, tBirth, eSex, nCloneNumber, nClonesRequested );
+		prTestAct->Start( tBirth, tBirth, TRUE );
+		prDominant->ltestactor = prTestAct; // establish the 1 to 1 link
+		// -----------------------------------
+
+		// event loop for current case
+		while ( !gpoEventQueue->Empty() ) {
+		
+			if ( gbCancelled || gbErrors || 
+				CaseEnd == DOMINANT_DEAD && !prDominant->alive ) {
+				// close the case, destroy all remaining actors
+//				prTestAct->Finish();
+				gpoEventQueue->FinishAllActors();
+			}
+			else {
+				// age all actors to the time of next event
+				gpoEventQueue->WaitUntil( gpoEventQueue->NextEvent() );
+	
+				// implement the next event
+				gpoEventQueue->Implement();
+			}
+		}
+
+		nCloneNumber = prDominant->clone_number + 1;
+		nClonesRequested = prDominant->clones_requested;
+	}
+
+	// release the memory occupied by the actors used in this case
+//	DeleteAllPersonActors();
+}
+
+
+// =====================================================================
+// Main function of the model. Contains code required to run each thread of
+// execution independently.
+
+void Simulation()
+{
+	long        lCase;
+
+	// case loop
+	for ( lCase = 0; lCase < CASES() && !gbInterrupted && !gbCancelled && !gbErrors; 
+			lCase++ ) {
+		// simulate the next case
+		StartCase();
+		CaseSimulation(lCase);
+		SignalCase();
+	}
+}

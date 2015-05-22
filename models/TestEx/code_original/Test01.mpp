@@ -1,0 +1,384 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | SG  | 00/09/07 | Created                                                 |
+* | CC	| 07/11/14 | Converted to VS2005, project TestEx, changed language	 |
+* |		|		   |	code to EN, changed case_number to myCase			 |
+* |	JGM	| 07/09/22 | Adding simple tests									 |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+//LABEL(Test01, EN) Test & Illustrate duration derived states
+
+actor Person {
+	//CC.  Test of duration().
+	double t01_years_lived 			= duration(); 				//EN Years lived
+
+	//CC.  Not the self-scheduling int(duration).  Would have been interesting to compare with the int(duration()) self-scheduling state.
+	int t01_years_lived_int 		= int(t01_years_lived);		// Test for integer result
+
+	//CC.  Test of duration(variable, state).
+	double t01_years_lived_while_3 	= duration(curtate_age, 3); //EN Years lived while aged 3
+
+	double t01_rate_of_1 			= 1; 						//EN Rate of 1
+	double t01_rate_of_3 			= 3; 						//EN Rate of 3
+	double t01_rate_of_365 			= 365; 						//EN Rate of 365
+	double t01_rate_of_number		= 1.978; 					//EN Rate of 1.978
+	//CC.  This adds nothing.  Why not use age directly?  Note that this was in core.
+	double t01_rate_of_age 			= age; 						//EN Rate of age
+
+	//CC.  Test of weighted_duration(weighting_state)
+	double t01_cumulated_rate_of_1 	 = weighted_duration(t01_rate_of_1); 	//EN Cumulated rate-of-1
+
+	//CC.  Note: following is same test as t01_cumulated_rate_of_1 - test of weighted_duration(weighting_state)
+	double t01_cumulated_rate_of_365 = weighted_duration(t01_rate_of_365); 	//EN Cumulated rate-of-365
+
+	//CC.  Third test of weighted_duration(weighting_state)
+	double t01_cumulated_rate_of_num = weighted_duration(t01_rate_of_number); 	//EN add constant
+	int t01_cumulated_rate_of_num_int = int(t01_cumulated_rate_of_num);
+
+	//CC.  this is equivalent to weighted_duration(age).  This is a bad idea and should not be allowed.  There is a thread on that subject.
+	//		Note that Jon pointed that out in a note in the table where this is used.
+	double t01_cumulated_rate_of_age = weighted_duration(age); 	//EN Cumulated rate-of-age
+
+	int t01_cumulated_rate_of_age_int = int(t01_cumulated_rate_of_age);				//EN INT TEST decimals=4
+	//CC. Test of weighted_duration(observed_state, value, weighting_state)
+	double t01_january_days  = weighted_duration(month_of_year, JANUARY, t01_rate_of_365); //EN Cumulated days lived in January
+
+	//double t01_completed_spell_weighted_duration = completed_spell_weighted_duration(year_spell, TRUE, year);
+
+	//CC. test of changes(observed_state)
+	double t01_changes_bday = changes( next_birthday ); //EN Changes to birthday
+
+	//CC.  second test of changes(observed_state)
+	double t01_changes_moy = changes( month_of_year ); //EN Changes Month of Year 
+
+	logical t01_trigger_moy = trigger_changes(month_of_year); //EN Flash for month change
+
+	logical t01_trigger_year = trigger_entrances(month_of_year, JANUARY);//EN Flash for year change
+
+	logical t01_trigger_year2 = trigger_exits(month_of_year, DECEMBER);//EN Flash for year change (exits)
+	logical t01_trigger_year3 = trigger_transitions(month_of_year, DECEMBER, JANUARY); //EN Flash for year change (transitions)
+	logical t01_first_year_passed = undergone_exit(month_of_year, DECEMBER);
+	logical t01_first_year_passed2 = undergone_transition(month_of_year, DECEMBER, JANUARY);
+	double months_in_year = value_at_latest_entrance(month_of_year, JANUARY, changes(month_of_year));
+
+	//double t01_val_in_age = value_in(age) 	//EN Value in
+	//double t01_val_out_age = value_out(age) //EN Value out
+
+	//CC. test of undergone_changes(observed_state)
+	//CC. changed name.  Was first_changes, changed it to undergone_changes
+	double t01_first_changes = undergone_change(t01_change_var);
+
+
+};
+
+/*
+   sim_year is defined in PersonCore.mpp. It COERCEs year to be between 1970 and 1980
+   This table tests variables using: 1) sex and 2) calendar year as dimensions in the table 
+   by which to view the variables.
+*/
+table Person T01_TABLE01 //EN Test 1 (1): Cumulating states by year
+[ dominant ]
+{
+	myCase+
+	*
+	sex+
+	*
+	sim_year+
+	*
+	{
+		case_id,									// decimals=4
+
+		value_in(curtate_age),                      //EN value_in curtate_age decimals=2
+		curtate_age,                                //EN curtate_age decimals=2
+
+		t01_years_lived,							// decimals=4 
+		t01_years_lived_while_3,					// decimals=4
+		t01_cumulated_rate_of_1,					// decimals=4
+		t01_cumulated_rate_of_365,					// decimals=4
+		t01_cumulated_rate_of_age,					// decimals=4
+		t01_january_days							// decimals=4
+
+	} //EN Deltas of cumulating states 
+}; //EN Test 1 (1): Cumulating states by year
+
+/*
+   @see PersonCore.mpp
+   Simulated life is over the course of 40 years.
+   The individuals here live only 7 years from 1971.5 and die at 1978.5
+
+   Dimensions of the table are (1) the case being run (2) the age of the individual
+
+   In PersonCore::BirthdayEvent() increments the next_birthday counter on each birthday iff the 
+   special variable "age" of the Person Actor is > 0. As a result, next_birthday increases by 2
+   the first period (in the age of individual dimension) and 1 every subsequent period until period 6.
+
+   next_birthday(in)	age 	curtate_age		next_birthday(out)
+   1971.5				0		0				1972.5
+   1972.5				1		1				1973.5
+   1973.5				2		2				1974.5
+   ... etc.
+
+	Expect: t01_changes_bday : 2 1 1 1 1 1 1 0 0 0 ...
+
+
+ */
+table Person T01_TABLE02 //EN Test 1 (2): Cumulating states by age
+[ dominant ]
+{
+	myCase
+	*
+	//decade+ //EN COERCE curtate_age to a 10 year timeframe
+	curtate_age+
+	*
+	{
+		/* 
+		// Duplicate of chart above in comments
+		value_in(next_birthday),	// decimals=1
+		value_in(age), 				// decimals=1
+		value_in(curtate_age), 		// decimals=1
+		value_out(age), 			// decimals=1
+		value_out(curtate_age), 	// decimals=1
+		value_out(next_birthday),	// decimals=1
+		*/
+
+		/*
+		   ------------------------------------
+		   Table Tests - Verify basic table functionality
+		   ------------------------------------
+		 */
+
+		/*
+			Expect: 0 1 2 3 4 5 6 7, as age=0 at first
+		    Expect: 1 2 3 4 5 6 7 7, since age=1 after change
+		 */
+		// Test: value_in, value_out
+		value_in(age), 	
+		value_out(age), 	
+
+		/*
+			Expect: 0 1 4 9 16 25 36 49, as age=0 at first
+		   	Expect: 1 4 9 16 25 36 49 49, since age=1 after change
+		 */
+		// Test: value_in2, value_out2
+		value_in2(age), 	//EN age in sqrd
+		value_out2(age), 	//EN age out sqrd
+
+		/*
+		   ------------------------------------
+		   Test "Derived States Associated with Changes to Actor States"
+				Modgen Developer's Guide 9.0.1
+		   ------------------------------------
+		 */
+
+		/*
+		   Test: changes
+		   next_birthday is updated in the PersonCore::BirthdayEvent()
+		   This event is called on the birthdate tBirth = 1971.5;
+		   Since the year in question is 1972, the first entry contains 2 changes 
+		   (one for the birth event, and a second for the increment of the year)
+		*/
+		t01_changes_bday,								// decimals=1
+
+		// Test: changes using classification
+		// Expect: 12 changes per year, and total of 7*12=84
+		t01_changes_moy,								// decimals=1 
+
+		// Test:   entrances(var, state) 
+		// Expect: 1*7=7
+		// Note that this does not work for a variable and a double. Must be classification it seems
+		//CC. test of entrances(observed_state, value)
+		entrances(month_of_year, JANUARY), 				// decimals=1  
+
+		// Test: exists(var, state)
+		// Expect: 1*7=7
+		//CC. test of exits(observed_state, value)
+		exits(month_of_year, JANUARY), 					// decimals=1
+
+		// Test: first_changes(t01_change_var)
+		// Expect: Change occurs when age==3. See PersonCore for t01_change_var
+		first_changes(t01_change_var), 					// decimals=1
+
+		// Test: first_entrances(month_of_year, MARCH)
+		// Expect: First entrance occurs in the 1st 
+		first_entrances(month_of_year, MARCH), 			// decimals=1
+
+		// Test: transitions(var, state1, state2 )
+		// Expect: 1*7=7 since there is one such transition per year
+		//CC. test of transitions(observed_state, value1, value2)
+		transitions(month_of_year, FEBRUARY, MARCH), 	// decimals=1
+
+		// Test: transitions(var, state1, state2 )
+		// Expect: 0*7=0 since there is no transition from Jan directly to march
+		//CC. second test of transitions(observed_state, value1, value2)
+		transitions(month_of_year, JANUARY, MARCH), 	// decimals=1
+
+		// -----------------------------------
+		// Value tests
+		// -----------------------------------
+
+		t01_first_changes, 											//EN VALUE TESTS - var
+		value_out(curtate_age), 									//EN Age - Recorded var.
+
+		// Test: value_at_changes(t01_first_changes, age )
+		// Expect: 3 because t01_first_changes occurs at age 3
+		//CC. second test of value_at_changse(observed_value, cumulated_state)
+		value_at_changes( t01_first_changes, curtate_age ), 		// decimals=1
+
+		// Tests for value_at_changes(var, recorded_var)
+		// value_at_changes notes the changes in "var" and returns the
+		// appropriate sum of the recorded variable at that time
+
+		// Expect: 0,1,2,3,4,5,6
+		value_at_changes( curtate_age, t01_lag_curtate_age ), 		// decimals=1
+
+		// Expect: 1,2,3,4,5,6,7 because the curtate_age changes before the lag
+		value_at_changes( t01_lag_curtate_age, curtate_age ), 		// decimals=1
+
+		// Expect: 12 24 36 48 60 72 84 ; month of year changes by 12 each age unit
+		value_at_changes( curtate_age, t01_changes_moy ), 			// decimals=1
+
+		// Test: value_at_entrances(var, state, recorded_var)
+		// Expect: 0 0 36 0 0 ... At age 3 we get the sum to that point
+		//CC. test of value_at_entrances(observed_state, value, cumulated_state)
+		value_at_entrances( curtate_age, 3, t01_changes_moy ), 		//EN ENTRANCES3 decimals=2
+
+		// Expect: 0 0 0 48 0 0 0 
+		value_at_entrances( curtate_age, 4, t01_changes_moy ), 		//EN ENTRANCES4 decimals=2
+
+		// Expect: 0 0 0 48 0 0 0 ; ie. Same as above
+		//CC. test of value_at_exits(observed_state, value, cumulated_state)
+		value_at_exits( curtate_age, 3, t01_changes_moy ), 			//EN EXITS3 decimals=2
+
+		// Expect: 12 0 0 ...
+		//CC. test of value_at_first_change(observed_state, returned_state)
+		value_at_first_change( curtate_age, t01_changes_moy ), 		//EN FIRST_CHANGE decimals=2
+
+		// Expect: 0 0 36 0 0 
+		//CC. test of value_at_first_entrance(observed_state, value, returned_state)
+		value_at_first_entrance( curtate_age, 3, t01_changes_moy ),	//EN FIRST_CHANGE decimals=2
+
+		// Expect: 0 0 36 0 0 0 0 ; Between 2 -> 3 there is a transition
+		//CC. test of value_at_transitions(observed_state, value, cumulated_state)
+		value_at_transitions( curtate_age, 2, 3, t01_changes_moy ), //EN TRANSITION 2->3 decimals=2
+
+		// Expect: 0 0 0 0 0 0 0 ; No transition occurs between 1 to 3
+		value_at_transitions( curtate_age, 1, 3, t01_changes_moy), 	//EN TRANSITION 1->3 decimals=2
+		
+		// Expect: 12 12 12 12 12 12 12 ; Since curtate_age changes every year,
+		// the recorded value is 12 each time
+		//CC. test of value_at_latest_change(observed_state, value, returned_state)
+		value_at_latest_change( curtate_age, t01_changes_moy ),		//EN LATEST_CHG decimals=2
+
+		// Expect: 0 0 36 0 0 ;
+		//CC. test of value_at_latest_entrance(observed_state, value, returned_state)
+		value_at_latest_entrance( curtate_age, 3, t01_changes_moy ), //EN LATEST_ENTRANCE3 decimals=2
+
+		// Expect: 0 0 0 0 0 0 0 ; There is no entrance since the Person only
+		// lives 7 years
+		value_at_latest_entrance( curtate_age, 9, t01_changes_moy ), //EN LATEST_ENTRANCE9 decimals=2
+
+		
+		// -----------------------------------
+		// Duration Tests
+		// -----------------------------------
+
+		// Test: duration() of curtate_age
+		// Expect: 1*7=7
+		t01_years_lived,							// decimals=4
+		value_out(t01_years_lived),							// decimals=4
+
+		// Test: int() with duration
+		// Expect: 1*7=7
+		t01_years_lived_int,						//EN INT TEST1 Delta decimals=4
+		value_out(t01_years_lived_int),				//EN INT TEST1 decimals=4
+
+		// Test: duration(curtate_age, 3)
+		// Expect: total to 1, and 1 in year 3
+		t01_years_lived_while_3,					// decimals=4
+
+		// Test: weighted_duration(t01_rate_of_1);
+		// Expect: sum to 7*1=7
+		t01_cumulated_rate_of_1,					// decimals=4
+
+		// Test: weighted_duration(t01_rate_of_365);
+		// Expect: sum to 7*365=2555
+		t01_cumulated_rate_of_365,					// decimals=4
+		t01_cumulated_rate_of_num,					// decimals=4
+		value_out(t01_cumulated_rate_of_num),		// decimals=4
+
+		// NIT: Integer test, Okay but perhaps docs should warn that all
+		// decimals are dropped and there is no rounding.
+		t01_cumulated_rate_of_num_int,				//EN INT TEST2 Delta decimals=4
+		value_out(t01_cumulated_rate_of_num_int),	//EN INT TEST2 decimals=4
+
+		// Test: weighted_duration(age); SEE NOTE:
+		// Expect: 	This test should fail. age is a built-in member of the Actor type 
+		//			age is continuously updated state (cus) so its value at any
+		//			point is not determined. Right now, this works, but it should
+		//			fail in future.
+		t01_cumulated_rate_of_age,					// decimals=4
+		value_out(t01_cumulated_rate_of_age),					// decimals=4
+
+		// Test: int()
+		// Expected: All decimals are dropped, no rounding occurs
+		//	CC.  Result is not what was expected, if expectations were good.
+		t01_cumulated_rate_of_age_int,				//EN INT TEST3 Delta decimals=4
+		value_out(t01_cumulated_rate_of_age_int),	//EN INT TEST3 decimals=4
+
+		// Test: weighted_duration(month_of_year, JANUARY, t01_rate_of_365);
+		// Expect: sum of 31*7=217
+		t01_january_days							// decimals=4
+
+
+	}  //EN Deltas of cumulating states
+}; //Test 1 (2): Cumulating states by age
+
+table_group T01_TABLE_GROUP { //EN Tables to test and illustrate duration functions 
+	T01_TABLE01, T01_TABLE02
+};
+
+/* NOTE(Test01, EN)
+	This test module generates and then tabulates a number of states that test
+	the Modgen family of functions related to duration and change.
+*/
+
+table Person testTrigger1
+[t01_trigger_year]
+{
+	{
+		event(duration())
+	}
+	
+};
+
+table Person testTrigger2
+{
+	{
+		event(duration( t01_trigger_year, TRUE))
+	}
+	
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

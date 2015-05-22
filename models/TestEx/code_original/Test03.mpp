@@ -1,0 +1,303 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | SG  | 00/12/14 | Created                                                 |
+* | CC	| 07/11/14 | Converted to VS2005, project TestEx, changed language	 |
+* |		|		   |	code to EN, changed case_number to myCase			 |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+//LABEL(Test03, EN) Test Module for classification typing
+
+actor Person {
+	//CC. test of duration_trigger(observed_state, value, time_interval)
+	int nDummy 		= duration_trigger(curtate_age, 2, 0.25);
+
+	//CC. test of duration_counter(observed_state, value, time_interval)
+	int nCounter 	= duration_counter(month_of_year, MARCH, 0.01);
+	//CC. test of duration_counter(observed_State, value, time_interval, max_count)
+	int nCounter2 	= duration_counter(month_of_year, MARCH, 0.01, 3);
+};
+
+classification PROVINCE {       //EN Province 
+	NFLD,       //EN Newfoundland 
+	PEI,        //EN P. E. I. 
+	NS,         //EN Nova Scotia 
+	NB,         //EN New Brunswick 
+	QUE,        //EN Quebec 
+	ONT,        //EN Ontario 
+	MAN,        //EN Manitoba 
+	SASK,       //EN Saskatchewan 
+	ALTA,       //EN Alberta 
+	BC,         //EN British Columbia 
+	YUK,        //EN Yukon 
+	NWT         //EN N. W. T. 
+};
+
+
+classification REGION {   //EN Region
+	R_ATLANTIC,  //EN Atlantic
+	R_QUEBEC,    //EN Quebec
+	R_ONTARIO,   //EN Ontario
+	R_PRAIRIES,  //EN Prairies
+	R_ALBERTA,   //EN Alberta,
+	R_BC         //EN British Columbia
+};
+
+aggregation REGION, PROVINCE {	//EN Province to region
+	R_ATLANTIC, NFLD,
+	R_ATLANTIC, PEI,
+	R_ATLANTIC, NS,
+	R_ATLANTIC, NB,
+	R_QUEBEC,   QUE,
+	R_ONTARIO,  ONT,
+	R_PRAIRIES, MAN,
+	R_PRAIRIES, SASK,
+	R_ALBERTA,  ALTA,
+	R_BC,       BC,
+	R_BC,       YUK,
+	R_ALBERTA,  NWT
+};
+
+actor Person {
+	PROVINCE province 	= PROVINCE(year%12);	//EN Province
+	//CC. test of aggregate(observed_state, classification_name)
+	REGION region 		= aggregate( province, REGION ); //EN Region
+	REGION region2 		= PROVINCE_To_REGION( province ); //EN Region
+
+	//REGION region = aggregate( province, REGION ); //EN Region
+	DAY_OF_WEEK day_of_death = value_at_first_entrance(alive, FALSE, day_of_week);
+	//DAY_OF_WEEK day_of_death2 = value_at_first_transition(day_of_week, MONDAY, TUESDAY, day_of_week);
+	//int day_of_death2 = value_at_transitions(day_of_week, MONDAY, TUESDAY, year);
+	//int day_of_death2 = value_at_changes(alive, year);
+	//DAY_OF_WEEK day_of_death = value_at_first_change(alive, day_of_week);
+};
+
+table_group T03_TABLE_GROUP { 
+	TB_PROV, TB_REGION
+};
+
+table Person TB_PROV //EN Test 3: Province
+[ dominant ]
+{
+	province+ * 
+	{
+		unit, 
+		duration() 
+	}
+
+};
+
+table Person TB_REGION //EN Test 3: Region aggregate
+[ dominant ]
+{
+	region+ *
+	{ 
+		unit,
+		table_unit_TB_PROV,
+		//table_filter_CENSUS_COUNTS,
+		duration() 
+	}
+};
+
+/*table Person TB_FUNNY
+{
+	table_filter_CENSUS_COUNTS * { duration(), table_unit_CENSUS_COUNTS }
+}*/
+
+table Person TB_TEST2 //EN Test 3: TB Test2
+[ dominant ]
+{
+	  //aggregate(province,REGION)+ //EN Region
+     value_at_first_entrance(day_of_week,MONDAY,province)
+	* 
+	{ 
+		unit, 
+		duration() 
+	}
+};
+
+table Person TB_PROVINCE_AT_DEATH //EN  Test 3: Province at death
+[ dominant ]
+{
+	value_at_first_entrance(alive, FALSE, province)+ * 
+	{ 
+		unit, 
+		duration() 
+	}
+
+};
+
+classification CENSUS_YEAR { //EN Census Year
+	YR1971,	//EN 1971
+	YR1976,	//EN 1976
+	YR1981,	//EN 1981
+	YR1986,	//EN 1986
+	YR1991,	//EN 1991
+	YR1996,	//EN 1996
+	YR2001	//EN 2001
+};
+
+table Person CENSUS_COUNTS //EN  Test 3: Census counts
+[ dominant && IntIs_CENSUS_YEAR( year) ]
+{
+	census_year+ * 
+	{ 
+		unit, 
+		duration() 
+	}
+};
+
+table Person CENSUS_COUNTS_CHECK //EN  Test 3: Debug the Census table
+[ dominant ]
+{
+	{ 
+		duration() 
+	}
+	* sim_year+
+	* table_filter_CENSUS_COUNTS //EN  Test 3: Filter for CENSUS_COUNTS
+};
+
+table Person JUNK1
+[ province ]
+{
+	{ 
+		duration() 
+	}
+	* province
+};
+
+table Person JUNK2
+{
+	{ 
+		duration() 
+	}
+	* province
+	* table_filter_JUNK1 //EN Filter for JUNK1
+};
+
+actor Person {
+	CENSUS_YEAR census_year = IntTo_CENSUS_YEAR( year ); //EN Census Year
+};
+
+
+classification FOS { //EN Field of study
+	FOS1,	//EN Mathematics
+	FOS2,	//EN Economics
+	FOS3,	//EN Sociology
+	FOS4,	//EN Anthropology
+	FOS5,	//EN Psychology
+	FOS6,	//EN Kinesiology
+	FOS7	//EN Ontology
+};
+
+classification FOS_SEL { //EN Field of study (selected)
+	FOS_SEL2,	//EN Economics
+	FOS_SEL3,	//EN Sociology
+	FOS_SEL5		//EN Psychology
+};
+
+actor Person {
+	FOS fos = IntTo_FOS(year%7);	//EN Field of study
+//	FOS fos = FOS(year%7);	//EN Field of study
+	FOS_SEL fos_sel = IntTo_FOS_SEL( IntFrom_FOS( fos ) ); //EN Field of study
+};
+
+table Person FOS_SELECTED //EN  Test 3: Selected graduates
+[ dominant && IntIs_FOS_SEL( IntFrom_FOS( fos ) ) ]
+{
+	fos_sel * 
+	{ 
+		unit 
+	}
+};
+
+table Person FOS_ALL //EN  Test 3: All graduates
+[ dominant ]
+{
+	fos * 
+	{ 
+		unit 
+	}
+};
+
+table Person TEST42 //EN  Test 3: Test of universe
+{
+	fos * 
+	{ 
+		unit 
+	}
+};
+
+//table Person
+
+
+
+classification EDLEV3 {	//EN  Test 3: Education (3 levels)
+	ED3_NA,
+	ED3_PRIMSEC,
+	ED3_POSTSEC
+};
+
+classification EDLEV5 {	//EN  Test 3: Education (5 levels)
+	ED5_NA,
+	ED5_PRIMARY,
+	ED5_SECONDARY,
+	ED5_CC,
+	ED5_UNI
+};
+
+
+range RANGE1TO5 {1,5};
+
+range REP_YEAR70 {1970,1979};
+
+actor Person {
+	EDLEV3 edlev3 = {ED3_NA};
+	EDLEV5 edlev5 = {ED5_NA};
+	RANGE1TO5 rng1to5 = {1};
+
+	REP_YEAR70 rep_year70 		= COERCE(REP_YEAR70, year); //EN The seventies
+	//logical rep_year70_filter = year >= MIN(REP_YEAR70) && year <= MAX(REP_YEAR70);
+	logical rep_year70_filter 	= WITHIN(REP_YEAR70, year);
+
+	void t03_user_func();
+
+	hook t03_user_func, BirthdayEvent;
+	
+};
+
+table Person DECADE70
+//[ dominant && rep_year70_filter ]
+[ dominant && WITHIN(REP_YEAR70, year) ]
+{
+	rep_year70
+	*
+	myCase
+	*
+	{
+		unit
+	}
+};
+
+void Person::t03_user_func() {
+
+	edlev3 = ED3_NA;
+	edlev5 = ED5_NA;
+	edlev5 = (EDLEV5) 1000;
+
+	rng1to5 = 5;
+
+}
+
+
+
+
+/* NOTE(Test03, EN)
+*/

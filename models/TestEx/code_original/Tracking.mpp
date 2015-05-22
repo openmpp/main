@@ -1,0 +1,25 @@
+
+track Person
+[ dominant ]
+{
+	//age,
+	//t01_rate_of_age,
+	//curtate_age,
+	//t01_lag_curtate_age,
+	//nDummy,
+	//year,
+	month_of_year,
+	//nCounter,
+	//nCounter2,
+	//t04_curtate_age2,
+	//friend_total,
+	//numTestActors,
+	//counter07,
+//	counter06
+	t01_trigger_moy,
+	t01_trigger_year,
+	t01_trigger_year2,
+	t01_trigger_year3,
+	t01_first_year_passed2,
+	t01_first_year_passed
+};

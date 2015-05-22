@@ -1,0 +1,120 @@
+/*****************************************************************************
+*	Modgen™ published by authority of the Minister responsible for 
+*			   Statistics Canada.
+*	© 1998-2000 Minister of Industry. 
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | JGM	| 07/09/16 | tests related to linking to other actors of the same and|
+* |		|		   |										different types	 |
+* |		|		   |	                                        			 |
+* +-----+----------+---------------------------------------------------------+
+******************************************************************************/
+
+link Person.mlFriends[]; //EN Link to friends
+
+actor Person {
+
+	int friend_total 		= {0};
+
+	//CC. test of count(link_name)
+	int count_friends 		= count( mlFriends );
+	//CC. test of sum_over(link_name, summed_state)
+	int sum_over_friends 	= sum_over( mlFriends, friend_total ); 
+
+	int  CountFriends();
+	void CreateFriend();
+	void UpdateFriendCount();
+
+	hook UpdateFriendCount, BirthdayEvent;
+};
+
+void Person::CreateFriend()
+{
+	if ( dominant ) { // we only care about the friends of the dominant actors
+		Person *prFriend = new Person();
+		// Create friends almost the same - no clones
+		
+		// ----------------------------
+		// BUG: Think they had friends before they actually were. See
+		// spreadsheet for differing outputs. (Under "docs")
+		// DOB: same as dominant actor
+		// ----------------------------
+		//prFriend->Start( case_number, false, date_of_birth, date_of_death, sex, 0, 0 );
+
+		// ----------------------------
+		// Make the non-dominant friend live the same year they become friends
+		// DOB: 1973
+		// ----------------------------
+		// Another possibility is to set DOB later and see effect
+		prFriend->Start( case_number, false, 1973, date_of_death, time, sex, 0, 0 );
+
+		mlFriends->Add(prFriend);
+	}
+}
+
+int Person::CountFriends()
+{
+	int counter = 0;
+	int index   = 0;
+
+	Person *prFriend = mlFriends->GetNext( index, &index );
+	while ( prFriend != NULL ) {
+		counter += 1;
+		prFriend = mlFriends->GetNext( index + 1, &index );
+	}
+	return counter;
+}
+
+void Person::UpdateFriendCount() {
+	if ( dominant && age > 2 && age < MAX(LIFE) ) {
+		CreateFriend(); // Make a friend on their birthday
+	}
+	friend_total = CountFriends();
+}
+
+/*
+ */
+table Person T05_TABLE01 //EN Test 5 (1): Dominant actors
+[ dominant ]
+{
+	myCase *
+	sim_year+ *
+	{
+		value_out( curtate_age ) 		/ unit, // decimals=2
+		friend_total 					/ unit,	//EN friend_total decimals=2
+		value_out( friend_total ) 		/ unit, // decimals=2
+		value_out( count_friends ) 		/ unit, // decimals=2
+		value_out( sum_over_friends ) 	/ unit, // decimals=2
+		age
+
+	}
+};
+
+/*
+BUG: Non-dominant actors have a positive value for count(mlFriends) on dates before they
+	were even linked to the dominant actor.
+*/
+table Person T05_TABLE02 //EN Test 5 (2): Non-dominant actors
+[ !dominant ]
+{
+	myCase *
+	sim_year+ *
+	{
+		value_out( curtate_age ) 		/ unit, // decimals=2
+		friend_total 					/ unit,	//EN friend_total decimals=2
+		value_out( friend_total ) 		/ unit, // decimals=2
+		value_out( count_friends ) 		/ unit, // decimals=2
+		value_out( sum_over_friends ) 	/ unit, // decimals=2
+
+		age	
+	}
+};
+
+/* NOTE(Test05, EN)
+	This test module handles tests related to linking to other actors of the same and different types.
+*/
+
+
