@@ -1,10 +1,10 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-//LABEL(WizardCaseBased, EN) Core simulation functions
+//LABEL(model, EN) Model settings
 
-/* NOTE(WizardCaseBased, EN)
-	This module contains core simulation functions and definitions.
+/* NOTE(model, EN)
+	This module contains model settings and the central simulation function.
 */
 
 // The model version number
@@ -23,11 +23,13 @@ languages {
 };
 
 /**
- * The CaseSimulation function simulates a single case.
+ * Simulates a single case.
+ * 
+ * Called by code in a simulation framework module.
  */
 void CaseSimulation()
 {
-    extern void SimulateEvents(); // defined elsewhere
+    extern void SimulateEvents(); // defined in a simulation framework module
 
 	// Initialize the person actor
 	auto prPerson = new Person();

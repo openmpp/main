@@ -1,10 +1,10 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-//LABEL ( WizardCaseBasedFR, EN ) French translations of WizardCaseBased strings
+//LABEL ( language_FR, EN ) French translation
 
-/*NOTE( WizardCaseBasedFR, EN)
-	This module contains French translations of WizardCaseBased labels and notes.
+/*NOTE( language_FR, EN)
+	This module contains French translations of labels and notes.
 */
 
 
