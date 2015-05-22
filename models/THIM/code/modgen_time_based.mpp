@@ -1,52 +1,12 @@
-//LABEL(modgen_framework, EN) Simulation framework code for Modgen
+//LABEL(modgen_time_based, EN) Modgen simulation framework for time-based cross-compatible models
 
-/* NOTE(modgen_framework, EN)
-    The OpenM++ compiler ignores source code files starting with "modgen_".
-    This allows the selective incorporation of code just for the Modgen compiler.
-
-	This module contains declarations and/or definitions of functions which differ
-    in OpenM++ and Modgen.  This allows the use of a single model code base
-    which can be used by either the Modgen compiler or the OpenM++ compiler.
+/* NOTE(modgen_time_based, EN)
+	This module implements Modgen versions of core global functions for time-based models.
+	
+    This module is ignored by the OpenM++ compiler.
+	
+	It should not be necessary to modify any code in this module.
 */
-
-actor Host
-{
-    void initialize_attributes(); //EN Initialize all entity attributes (ompp)
-    void enter_simulation(); //EN Have the entity enter the simulation (ompp)
-    void exit_simulation(); //EN Have the entity exit the simulation (ompp)
-
-    void hook_OneTime(); //EN Call hooked functions (ompp)
-};
-
-void Host::initialize_attributes() { }
-void Host::enter_simulation() { }
-void Host::exit_simulation() { }
-
-void Host::hook_OneTime() { }
-
-actor Ticker
-{
-    void initialize_attributes(); //EN Initialize all entity attributes (ompp)
-    void enter_simulation(); //EN Have the entity enter the simulation (ompp)
-    void exit_simulation(); //EN Have the entity exit the simulation (ompp)
-};
-
-void Ticker::initialize_attributes() { }
-void Ticker::enter_simulation() { }
-void Ticker::exit_simulation() { }
-
-void LogSimulationStart()
-{
-	// Buffer for messages
-	const size_t nBufSize = 255;
-	char szBuffer[nBufSize];
-
-	// Replicate number for progress reporting
-	int nReplicate = GetReplicate();
-
-	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_START"));
-	ProgressMessage( szBuffer );
-}
 
 bool do_exit_simulation_all = false;
 /**
@@ -59,6 +19,8 @@ void signal_exit_simulation_all()
 
 /**
  * Simulate all events for all entities in the simulation.
+ *
+ * Used in the main simulation module of the model.
  */
 void SimulateEvents()
 {
@@ -125,5 +87,24 @@ void SimulateEvents()
 		}
 	}
 }
+
+/**
+ * Write a start message for the simulation member in the log.
+ *
+ * Used in the main simulation module of the model.
+ */
+void LogSimulationStart()
+{
+	// Buffer for messages
+	const size_t nBufSize = 255;
+	char szBuffer[nBufSize];
+
+	// Simulation member ordinal for progress reporting
+	int nSimulationMember = GetReplicate();
+
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nSimulationMember, ModelString("S_MODEL_START"));
+	ProgressMessage( szBuffer );
+}
+
 
 

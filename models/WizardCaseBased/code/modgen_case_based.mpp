@@ -1,0 +1,70 @@
+//LABEL(modgen_case_based, EN) Modgen simulation framework for case-based cross-compatible models
+
+/* NOTE(modgen_case_based, EN)
+	This module implements Modgen versions of core global functions for case-based models.
+	
+    This module is ignored by the OpenM++ compiler.
+	
+	It should not be necessary to modify any code in this module.
+*/
+
+bool do_exit_simulation_all = false;
+/**
+ * Tells the framework to exit all entities from the simulation after completion of the current event.
+ */
+void signal_exit_simulation_all()
+{
+    do_exit_simulation_all = true;
+}
+
+/**
+ * Simulate all events for all entities in the simulation.
+ *
+ * Used in the main simulation module of the model.
+ */
+void SimulateEvents()
+{
+	while (!gpoEventQueue->Empty())
+	{
+    	if (do_exit_simulation_all || gbCancelled || gbErrors) 
+    	{
+            do_exit_simulation_all = false;
+			// Terminate the case.
+    		gpoEventQueue->FinishAllActors();
+    	}
+		else 
+		{
+			// Age actor to the time of the next event.
+			gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
+
+			// Implement the next event.
+			gpoEventQueue->Implement();
+		}
+	}
+}
+
+/**
+ * The Simulation function is called by Modgen to simulate a set of cases.
+ */
+void Simulation()
+{
+    extern void CaseSimulation(); // defined elsewhere
+
+	long  lCase = 0; 	// counter for cases simulated
+
+	// Loop through all cases.
+	for ( lCase = 0; lCase < CASES() && !gbInterrupted 
+		  && !gbCancelled && !gbErrors; lCase++ )
+	{
+		// Tell the Modgen run-time to prepare to simulate a new case.
+		StartCase(); 
+
+		// Call the CaseSimulation function defined earlier in this module.
+		CaseSimulation(); 
+
+		// Tell the Modgen run-time that the case has been completed.
+		SignalCase();
+	}
+}
+							
+

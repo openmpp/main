@@ -1,24 +1,12 @@
-//LABEL(modgen_framework, EN) Compatibility module for OpenM++
+//LABEL(modgen_case_based, EN) Modgen simulation framework for case-based cross-compatible models
 
-/* NOTE(modgen_framework, EN)
-    As a special case, the OpenM++ compiler will ignore source code files starting with "modgen_".
-    This allows the selective incorporation of code for the Modgen compiler.
-
-	This module contains declarations and/or definitions of functions which differ
-    in OpenM++ and Modgen.  This allows the use of a single model code base
-    which can be used by either the Modgen compiler or the OpenM++ compiler.
+/* NOTE(modgen_case_based, EN)
+	This module implements Modgen versions of core global functions for case-based models.
+	
+    This module is ignored by the OpenM++ compiler.
+	
+	It should not be necessary to modify any code in this module.
 */
-
-actor Person
-{
-    void initialize_attributes(); //EN Initialize all entity attributes (ompp)
-    void enter_simulation(); //EN Have the entity enter the simulation (ompp)
-    void exit_simulation(); //EN Have the entity exit the simulation (ompp)
-};
-
-void Person::initialize_attributes() { }
-void Person::enter_simulation() { }
-void Person::exit_simulation() { }
 
 bool do_exit_simulation_all = false;
 /**
@@ -31,6 +19,8 @@ void signal_exit_simulation_all()
 
 /**
  * Simulate all events for all entities in the simulation.
+ *
+ * Used in the main simulation module of the model.
  */
 void SimulateEvents()
 {
@@ -58,6 +48,9 @@ void SimulateEvents()
  */
 void Simulation()
 {
+	// Open the microdata file
+	PersonOpenFile();
+
     extern void CaseSimulation(); // defined elsewhere
 
 	long  lCase = 0; 	// counter for cases simulated
@@ -75,6 +68,9 @@ void Simulation()
 		// Tell the Modgen run-time that the case has been completed.
 		SignalCase();
 	}
+	
+	// Close the microdata file
+	PersonCloseFile();
 }
 							
 
