@@ -75,7 +75,7 @@
   <!-- Import openM properties for model projects -->
   <Import Project="$(ProjectDir)../../model-ompp.1.build.props" />
   <Import Project="$(ProjectDir)../../model-ompp.2.cpp.props" />
-  <Import Project="$(ProjectDir)../../model-ompp.3.ide.props" />
+  <Import Project="$(ProjectDir)../../model-ompp.3.items.props" />
   <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
