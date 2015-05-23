@@ -1,5 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- 
+  This setting forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
+  for more complex dependencies.  If this is not set VS sometimes thinks things are up-to-date when
+  they are not, and does not launch MSBuild.
+  -->
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
   
   <PropertyGroup>
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
@@ -71,17 +80,11 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-  
-  <ItemGroup>
-    <ClCompile Include="src\*.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\code\*.h" />
-    <ClInclude Include="src\*.h" />
-  </ItemGroup>
+
   <ItemGroup>
     <ResourceCompile Include="src\model.rc" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="..\code\*.mpp" />
     <None Include="..\code\*.ompp" />
@@ -90,5 +93,4 @@
     <None Include="..\parameters\Base\*.dat" />
     <None Include="..\parameters\Base\*.odat" />
   </ItemGroup>
-  
 </Project>

@@ -39,7 +39,7 @@ actor Person            //EN Individual
 		can also be used to count actors in tables.
 	*/
 
-
+    logical dead = ! alive;
 	
 	event timeMortalityEvent, MortalityEvent;	//EN Mortality event
 

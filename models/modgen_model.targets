@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- 
+  Build
+  -->
+  
+  <!-- 
+  This is a single Modgen output file which is always produced and whose timestamp is compared
+  to each input model source module to determine if the Modgen target needs to run.
+  -->
+  <PropertyGroup>
+    <MODGEN_TIMESTAMP_OUTPUT_FILE>src/ModgenLog.htm</MODGEN_TIMESTAMP_OUTPUT_FILE>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <MODGEN_INPUTS Include="..\code\*.mpp" />
+    <MODGEN_INPUTS Include="..\code\*.h" />
+  </ItemGroup>
+  
+  <Target Name="Modgen"
+		Inputs="@(MODGEN_INPUTS)"
+		Outputs="@(MODGEN_INPUTS -> '$(MODGEN_TIMESTAMP_OUTPUT_FILE)')">
+    <MakeDir Directories="src" />
+    <Exec
+      WorkingDirectory="../code"
+      Command="&quot;C:/Program Files (x86)/StatCan/Modgen 11/Modgen.exe&quot; -D ../modgen/src -EN" 
+	/>
+
+	<!-- Defining the item groups inside the target makes them depend dynamically on Modgen output -->
+	<ItemGroup>
+		<ClCompile Include="src\*.cpp" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ClInclude Include="..\code\*.h" />
+		<ClInclude Include="src\*.h" />
+	</ItemGroup>
+
+  </Target>
+
+  <PropertyGroup>
+    <BuildDependsOn>Modgen;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
+
+  <!-- 
+  Clean
+  -->
+  
+  <Target Name="ModgenClean">
+    <RemoveDir Directories="src" />
+  </Target>
+  
+  <PropertyGroup>
+    <CleanDependsOn>ModgenClean;$(CleanDependsOn)</CleanDependsOn>
+  </PropertyGroup>
+  
+</Project>
