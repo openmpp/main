@@ -25,17 +25,17 @@
     <Exec
       WorkingDirectory="../code"
       Command="&quot;C:/Program Files (x86)/StatCan/Modgen 11/Modgen.exe&quot; -D ../modgen/src -EN" 
-	/>
+    />
 
-	<!-- Defining the item groups inside the target makes them depend dynamically on Modgen output -->
-	<ItemGroup>
-		<ClCompile Include="src\*.cpp" />
-	</ItemGroup>
+    <!-- Defining the item groups inside the target makes them depend dynamically on Modgen output -->
+    <ItemGroup>
+      <ClCompile Include="src\*.cpp" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ClInclude Include="..\code\*.h" />
-		<ClInclude Include="src\*.h" />
-	</ItemGroup>
+    <ItemGroup>
+      <ClInclude Include="..\code\*.h" />
+      <ClInclude Include="src\*.h" />
+    </ItemGroup>
 
   </Target>
 
