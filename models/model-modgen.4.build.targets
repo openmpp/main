@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project InitialTargets="Diagnostics" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
   Build
@@ -19,7 +19,7 @@
     <MakeDir Directories="src" />
     <Message Text="Before ClCompile=@(CLCompile)" />
     <Exec WorkingDirectory="../code"
-          Command="&quot;C:/Program Files (x86)/StatCan/Modgen 11/Modgen.exe&quot; -D ../modgen/src -EN" 
+          Command="$(MODGEN_EXE) -D ../modgen/src -EN" 
     />
     <Message Text="After ClCompile=@(CLCompile)" />
   </Target>
@@ -39,5 +39,14 @@
   <PropertyGroup>
     <CleanDependsOn>ModgenClean;$(CleanDependsOn)</CleanDependsOn>
   </PropertyGroup>
-  
+ 
+  <!-- 
+  Diagnostics
+  -->
+ 
+  <Target Name="Diagnostics">
+    <Message Text="MODGEN_INPUTS=@(MODGEN_INPUTS)" />
+    <Message Text="MODGEN_OUTPUTS=@(MODGEN_OUTPUTS)" />
+  </Target>
+
 </Project>

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <None Include="..\code\*.mpp" />
+    <None Include="..\code\*.ompp" />
+    <None Include="..\parameters\Fixed\*.dat" />
+    <None Include="..\parameters\Fixed\*.odat" />
+    <None Include="..\parameters\Base\*.dat" />
+    <None Include="..\parameters\Base\*.odat" />
+
+    <MODGEN_INPUTS Include="../code/*.mpp" />
+
+    <MODGEN_CPP_OUTPUTS Include="@(MODGEN_INPUTS -> 'src/%(filename).cpp' )" />
+    <MODGEN_CPP_OUTPUTS Include="src/ACTORS.CPP" />
+    <MODGEN_CPP_OUTPUTS Include="src/TABINIT.CPP" />
+    
+    <MODGEN_H_OUTPUTS Include="src/ACTORS.H" />
+    <MODGEN_H_OUTPUTS Include="src/MODEL.H" />
+    <MODGEN_H_OUTPUTS Include="src/TABINIT.H" />
+    
+    <MODGEN_RC_OUTPUTS Include="src/MODEL.RC" />
+    
+    <MODGEN_OUTPUTS Include="@(MODGEN_H_OUTPUTS)" />
+    <MODGEN_OUTPUTS Include="@(MODGEN_CPP_OUTPUTS)" />
+    <MODGEN_OUTPUTS Include="@(MODGEN_RC_OUTPUTS)" />
+
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="..\code\*.h" />
+
+    <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
+  </ItemGroup>
+
+</Project>

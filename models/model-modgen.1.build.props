@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- 
+  The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,
+  and do it right for more complex dependencies.  If this is not set VS sometimes thinks things are up-to-date
+  when they are not, and does not launch MSBuild.
+  -->
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+  
+    <MODGEN_EXE>&quot;C:/Program Files (x86)/StatCan/Modgen 11/Modgen.exe&quot;</MODGEN_EXE>
+
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+    
+    <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
+    
+    <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
+
+  </PropertyGroup>
+
+
+</Project>

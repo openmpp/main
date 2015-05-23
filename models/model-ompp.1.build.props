@@ -14,6 +14,11 @@
   Specify various openM directories and tools
   -->
   <PropertyGroup>
+  
+    <OMC_EXE>omc.exe</OMC_EXE>
+    <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
+    <EXCEL_EXPORT_EXE>excel_export32.exe</EXCEL_EXPORT_EXE>
+
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
@@ -27,10 +32,8 @@
     <OMC_IN_DIR>$(ProjectDir)..\code</OMC_IN_DIR>
     <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
     <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(ProjectDir)../../../use</OMC_USE_DIR>
-    <OMC_EXE>omc.exe</OMC_EXE>
-    <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
-    <EXCEL_EXPORT_EXE>excel_export32.exe</EXCEL_EXPORT_EXE>
-  </PropertyGroup>
+
+    </PropertyGroup>
   
   <!-- 
   This property group uses properties specified in the model-specific 'user macros' property sheet Model.props
