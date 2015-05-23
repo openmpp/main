@@ -40,6 +40,7 @@
   <!-- Import properties for Modgen model projects -->
   <Import Project="$(ProjectDir)../../modgen_model.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <!-- Import targets for Modgen model projects -->
   <Import Project="$(ProjectDir)../../modgen_model.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
