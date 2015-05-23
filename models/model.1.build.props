@@ -2,13 +2,23 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
+  This property forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
+  for the more complex dependencies.  If this is not set VS may think things are up-to-date
+  when they are not, and  not launch MSBuild.
+  -->
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <!-- 
   Specify various openM directories and tools
   -->
   <PropertyGroup>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(ProjectDir)../../../include</OM_INC_DIR>
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(ProjectDir)../../../bin</OM_BIN_DIR>
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(ProjectDir)../../../lib</OM_LIB_DIR>

@@ -13,30 +13,15 @@
     <MODGEN_TIMESTAMP_OUTPUT_FILE>src/ModgenLog.htm</MODGEN_TIMESTAMP_OUTPUT_FILE>
   </PropertyGroup>
   
-  <ItemGroup>
-    <MODGEN_INPUTS Include="..\code\*.mpp" />
-    <MODGEN_INPUTS Include="..\code\*.h" />
-  </ItemGroup>
-  
   <Target Name="Modgen"
-		Inputs="@(MODGEN_INPUTS)"
-		Outputs="@(MODGEN_INPUTS -> '$(MODGEN_TIMESTAMP_OUTPUT_FILE)')">
+          Inputs="@(MODGEN_INPUTS)"
+          Outputs="@(MODGEN_OUTPUTS)">
     <MakeDir Directories="src" />
-    <Exec
-      WorkingDirectory="../code"
-      Command="&quot;C:/Program Files (x86)/StatCan/Modgen 11/Modgen.exe&quot; -D ../modgen/src -EN" 
+    <Message Text="Before ClCompile=@(CLCompile)" />
+    <Exec WorkingDirectory="../code"
+          Command="&quot;C:/Program Files (x86)/StatCan/Modgen 11/Modgen.exe&quot; -D ../modgen/src -EN" 
     />
-
-    <!-- Defining the item groups inside the target makes them depend dynamically on Modgen output -->
-    <ItemGroup>
-      <ClCompile Include="src\*.cpp" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ClInclude Include="..\code\*.h" />
-      <ClInclude Include="src\*.h" />
-    </ItemGroup>
-
+    <Message Text="After ClCompile=@(CLCompile)" />
   </Target>
 
   <PropertyGroup>

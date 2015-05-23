@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project InitialTargets="Diagnostics" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
   This setting forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
@@ -13,13 +13,13 @@
   <PropertyGroup>
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
 
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
-	
-	<MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
-	
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+    
+    <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
+    
     <OutDir>$(ProjectDir)bin/</OutDir>
     <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
     <TargetName>$(MODEL_NAME)$(BUILD_SUFFIX)</TargetName>
@@ -82,10 +82,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ResourceCompile Include="src\model.rc" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\code\*.mpp" />
     <None Include="..\code\*.ompp" />
     <None Include="..\parameters\Fixed\*.dat" />
@@ -93,4 +89,34 @@
     <None Include="..\parameters\Base\*.dat" />
     <None Include="..\parameters\Base\*.odat" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <MODGEN_INPUTS Include="../code/*.mpp" />
+    
+    <MODGEN_CPP_OUTPUTS Include="@(MODGEN_INPUTS -> 'src/%(filename).cpp' )" />
+    <MODGEN_CPP_OUTPUTS Include="src/ACTORS.CPP" />
+    <MODGEN_CPP_OUTPUTS Include="src/TABINIT.CPP" />
+    
+    <MODGEN_H_OUTPUTS Include="src/ACTORS.H" />
+    <MODGEN_H_OUTPUTS Include="src/MODEL.H" />
+    <MODGEN_H_OUTPUTS Include="src/TABINIT.H" />
+    
+    <MODGEN_RC_OUTPUTS Include="src/MODEL.RC" />
+    
+    <MODGEN_OUTPUTS Include="@(MODGEN_H_OUTPUTS)" />
+    <MODGEN_OUTPUTS Include="@(MODGEN_CPP_OUTPUTS)" />
+    <MODGEN_OUTPUTS Include="@(MODGEN_RC_OUTPUTS)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="..\code\*.h" />
+    <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
+  </ItemGroup>
+  
+  <Target Name="Diagnostics">
+    <Message Text="MODGEN_INPUTS=@(MODGEN_INPUTS)" />
+    <Message Text="MODGEN_OUTPUTS=@(MODGEN_OUTPUTS)" />
+  </Target>
 </Project>
