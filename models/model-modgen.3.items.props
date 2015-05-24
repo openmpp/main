@@ -2,24 +2,18 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
-    <None Include="..\code\*.mpp" />
-    <None Include="..\code\*.ompp" />
-    <None Include="..\parameters\Fixed\*.dat" />
-    <None Include="..\parameters\Fixed\*.odat" />
-    <None Include="..\parameters\Base\*.dat" />
-    <None Include="..\parameters\Base\*.odat" />
 
-    <MODGEN_INPUTS Include="../code/*.mpp" />
+    <MODGEN_INPUTS Include="$(MODEL_CODE_DIR)/*.mpp" />
 
-    <MODGEN_CPP_OUTPUTS Include="@(MODGEN_INPUTS -> 'src/%(filename).cpp' )" />
-    <MODGEN_CPP_OUTPUTS Include="src/ACTORS.CPP" />
-    <MODGEN_CPP_OUTPUTS Include="src/TABINIT.CPP" />
+    <MODGEN_CPP_OUTPUTS Include="@(MODGEN_INPUTS -> '$(MODGEN_OUT_DIR)/%(filename).cpp' )" />
+    <MODGEN_CPP_OUTPUTS Include="$(MODGEN_OUT_DIR)/ACTORS.CPP" />
+    <MODGEN_CPP_OUTPUTS Include="$(MODGEN_OUT_DIR)/TABINIT.CPP" />
     
-    <MODGEN_H_OUTPUTS Include="src/ACTORS.H" />
-    <MODGEN_H_OUTPUTS Include="src/MODEL.H" />
-    <MODGEN_H_OUTPUTS Include="src/TABINIT.H" />
+    <MODGEN_H_OUTPUTS Include="$(MODGEN_OUT_DIR)/ACTORS.H" />
+    <MODGEN_H_OUTPUTS Include="$(MODGEN_OUT_DIR)/MODEL.H" />
+    <MODGEN_H_OUTPUTS Include="$(MODGEN_OUT_DIR)/TABINIT.H" />
     
-    <MODGEN_RC_OUTPUTS Include="src/MODEL.RC" />
+    <MODGEN_RC_OUTPUTS Include="$(MODGEN_OUT_DIR)/MODEL.RC" />
     
     <MODGEN_OUTPUTS Include="@(MODGEN_H_OUTPUTS)" />
     <MODGEN_OUTPUTS Include="@(MODGEN_CPP_OUTPUTS)" />
@@ -28,9 +22,29 @@
     <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
 
     <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
-    <ClInclude Include="..\code\*.h" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />
 
     <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
+    
+  <!-- 
+    Commented and coded using relative path to fixed sister directories
+    pending bug fix of VS vcxproj.filters issue. 
+    (Project does not load if filters refer to files with slightly complex Include property)
+  
+    <None Include="$(MODEL_CODE_DIR)/*.mpp" />
+    <None Include="$(MODEL_CODE_DIR)/*.ompp" />
+    <None Include="$(MODEL_PARAM_DIR)/$(FIXED_NAME)/*.dat" />
+    <None Include="$(MODEL_PARAM_DIR)/$(FIXED_NAME)/*.odat" />
+    <None Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.dat" />
+    <None Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.odat" />
+  -->
+    <None Include="../code/*.mpp" />
+    <None Include="../code/*.ompp" />
+    <None Include="../parameters/Fixed/*.dat" />
+    <None Include="../parameters/Fixed/*.odat" />
+    <None Include="../parameters/Base/*.dat" />
+    <None Include="../parameters/Base/*.odat" />
+    
   </ItemGroup>
 
 </Project>

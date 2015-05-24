@@ -38,9 +38,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import properties for Modgen model projects -->
-  <Import Project="$(ProjectDir)../../modgen_model.props" />
+  <Import Project="$(ProjectDir)../../model-modgen.1.build.props" />
+  <Import Project="$(ProjectDir)../../model-modgen.2.cpp.props" />
+  <Import Project="$(ProjectDir)../../model-modgen.3.items.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="$(ProjectDir)../../modgen_model.targets" />
+  <!-- Import targets for Modgen model projects -->
+  <Import Project="$(ProjectDir)../../model-modgen.4.build.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
