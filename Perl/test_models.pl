@@ -312,30 +312,8 @@ for my $model_dir (@model_dirs) {
 			# Build model (modgen)              #
 			#####################################
 
-			logmsg info, $model_dir, $flavour, "Modgen compile" if $verbosity >= 2;
-			# Change current directory to model source code directory for Modgen compilation,
-			# because Modgen only compiles code in current directory.
-			chdir "${model_source_dir}";
-			($merged, $retval) = capture_merged {
-				my @args = (
-					"${modgen_exe}",
-					"-D",
-					"${generated_code_dir}",
-					"-EN",
-					);
-				system(@args);
-			};
-			open COMPILE_LOG, ">${compile_log}";
-			print COMPILE_LOG $merged;
-			close COMPILE_LOG;
-			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "Modgen compile failed - see ModgenLog.htm or modgen.log";
-				logerrors $merged;
-				next FLAVOUR;
-			}
-			
 			# Build the model
-			logmsg info, $model_dir, $flavour, "C++ compile & build" if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "Modgen compile, C++ compile, build executable" if $verbosity >= 2;
 
 			# Change working directory to where vxproj, etc. are located
 			chdir "${project_dir}";
@@ -355,7 +333,7 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			# Check for solution file in parent folder
-			my $model_sln = "../ModgenModel.sln";
+			my $model_sln = "../model-modgen.sln";
 			if ( ! -e $model_sln ) {
 				logmsg error, $model_dir, $flavour, "Missing solution file ${model_sln}";
 				next FLAVOUR;
@@ -531,7 +509,7 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			# The solution file
-			my $model_sln = "../OmppModel.sln";
+			my $model_sln = "../model-ompp.sln";
 			if ( ! -e $model_sln ) {
 				logmsg error, $model_dir, $flavour, "Missing solution file: ${model_sln}";
 				next FLAVOUR;
@@ -630,6 +608,10 @@ for my $model_dir (@model_dirs) {
 				logerrors $merged;
 				next FLAVOUR;
 			}
+			
+			my $elapsed_seconds = time - $start_seconds;
+			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
 			if ( 0 != ompp_tables_to_csv($model_sqlite, $current_outputs_dir, $significant_digits)) {
@@ -640,10 +622,6 @@ for my $model_dir (@model_dirs) {
 			if (-s $ompp_trace_txt) {
 				normalize_event_trace $ompp_trace_txt, "${current_outputs_dir}/trace.txt";
 			}
-			
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 		}
 		elsif ($flavour eq 'ompp-linux') {
 		
@@ -753,6 +731,10 @@ for my $model_dir (@model_dirs) {
 				logerrors $merged;
 				next FLAVOUR;
 			}
+			
+			my $elapsed_seconds = time - $start_seconds;
+			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;;
 			if ( 0 != ompp_tables_to_csv($model_sqlite, $current_outputs_dir, $significant_digits)) {
@@ -763,10 +745,6 @@ for my $model_dir (@model_dirs) {
 			if (-s $ompp_trace_txt) {
 				normalize_event_trace $ompp_trace_txt, "${current_outputs_dir}/trace.txt";
 			}
-			
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 		}
 		else {
 			logmsg error, $model_dir, "logic error!";
