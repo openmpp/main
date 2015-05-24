@@ -2,6 +2,19 @@
 <Project InitialTargets="Diagnostics" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
+  Clean
+  -->
+  
+  <Target Name="ModgenClean">
+    <Message Text="Delete modgen compiler output" />
+    <RemoveDir Directories="$(MODGEN_OUT_DIR)" />
+  </Target>
+  
+  <PropertyGroup>
+    <CleanDependsOn>ModgenClean;$(CleanDependsOn)</CleanDependsOn>
+  </PropertyGroup>
+ 
+  <!-- 
   Build
   -->
   
@@ -18,18 +31,6 @@
     <BuildDependsOn>ModgenCompile;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 
-  <!-- 
-  Clean
-  -->
-  
-  <Target Name="ModgenClean">
-    <RemoveDir Directories="src" />
-  </Target>
-  
-  <PropertyGroup>
-    <CleanDependsOn>ModgenClean;$(CleanDependsOn)</CleanDependsOn>
-  </PropertyGroup>
- 
   <!-- 
   Diagnostics
   -->

@@ -1,85 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- 
-  This property forces Visual Studio to always use MSBuild to evaluate dependencies, and do it right
-  for the more complex dependencies.  If this is not set VS may think things are up-to-date
-  when they are not, and  not launch MSBuild.
-  -->
   <PropertyGroup>
-    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-  </PropertyGroup>
 
-  <!-- 
-  Specify various openM directories and tools
-  -->
-  <PropertyGroup>
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
   
     <OMC_EXE>omc.exe</OMC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
     <EXCEL_EXPORT_EXE>excel_export32.exe</EXCEL_EXPORT_EXE>
 
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include</OM_INC_DIR>
+    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
+    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(OM_ROOT)/lib</OM_LIB_DIR>
+    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(OM_ROOT)/sql</OM_SQL_DIR>
+
+    <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
+    <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
+    
+    <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
+    <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
+    <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
 
-    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(ProjectDir)../../../include</OM_INC_DIR>
-    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(ProjectDir)../../../bin</OM_BIN_DIR>
-    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(ProjectDir)../../../lib</OM_LIB_DIR>
-    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(ProjectDir)../../../sql</OM_SQL_DIR>
-    <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
-    <OMC_IN_DIR>$(ProjectDir)..\code</OMC_IN_DIR>
-    <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
-    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(ProjectDir)../../../use</OMC_USE_DIR>
+    <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
+    <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX).exe</MODEL_EXE>
+    <MODEL_SQLITE>$(MODEL_NAME).sqlite</MODEL_SQLITE>
+    
+    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
 
-    </PropertyGroup>
+
+    <!-- 
+    The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,
+    and do it right for more complex dependencies.  If this is not set VS sometimes thinks things are up-to-date
+    when they are not, and does not launch MSBuild.
+    -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    
+  </PropertyGroup>
   
   <!-- 
   This property group uses properties specified in the model-specific 'user macros' property sheet Model.props
   to set properties used subsequently.
   -->
   <PropertyGroup>
-    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
     <!-- omc -p option to supply parameters -->
     <OMC_IN_SCENARIO_OPT Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'">-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
     <!-- omc -f option to supply fixed parameter -->
     <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
   </PropertyGroup>
-
-  <!-- 
-  This is one selected omc output file which is always output and whose timestamp is compared
-  to each input model source module to determine if the omc target needs to run.
-  -->
-  <PropertyGroup>
-    <OMC_TIMESTAMP_OUTPUT_FILE>$(OMC_OUT_DIR)/om_definitions.cpp</OMC_TIMESTAMP_OUTPUT_FILE>
-  </PropertyGroup>
-  
-  <!-- 
-  This lists all omc C++ header file outputs
-  -->
-  <ItemGroup>
-    <OMC_CXX_HEADER_OUTPUTS Include="$(OMC_OUT_DIR)/om_types0.h" />
-    <OMC_CXX_HEADER_OUTPUTS Include="$(OMC_OUT_DIR)/om_types1.h" />
-    <OMC_CXX_HEADER_OUTPUTS Include="$(OMC_OUT_DIR)/om_declarations.h" />
-  </ItemGroup>
-
-  <!-- 
-  This lists all omc C++ source module outputs
-  -->
-  <ItemGroup>
-    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_definitions.cpp" />
-    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_developer.cpp" />
-    <OMC_CXX_MODULE_OUTPUTS Include="$(OMC_OUT_DIR)/om_fixed_parms.cpp" Condition="'$(ACTIVATE_FIXED_PARMS)'!=''" />
-  </ItemGroup>
-
-  <!-- 
-  This lists all omc sql outputs
-  -->
-  <ItemGroup>
-    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(SolutionName)_create_model.sql" />
-    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(SolutionName)_optional_views.sql" />
-  </ItemGroup>
 
   <!-- 
   Use this to choose database library provider, now only SQlite supported

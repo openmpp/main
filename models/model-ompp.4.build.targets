@@ -1,15 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project InitialTargets="Validate;Diagnostics" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   
   <!-- 
-  Specify additional targets and macros common to all models
+  Validate
   -->
 
-  <!-- Validate the values of User Macros.
-  These are specified by the model developer through the Visual Studio IDE
-  in the Model.props property sheet.
-  -->
-  <Target Name="ValidateUserMacros" BeforeTargets="OmcCompile">
+
+  <Target Name="Validate">
     <Error
 	    Text="MODEL_NAME cannot be empty"
         Condition=" ( '$(MODEL_NAME)' == '' )" />
@@ -42,102 +40,154 @@
         Condition=" ! ( '$(RUN_EXCEL)' == '0' Or '$(RUN_EXCEL)' == '1' )" />
   </Target>
 
-  <Target Name="BeforeClean" BeforeTargets="PrepareForClean">
+  
+  <!-- 
+  Clean
+  -->
+  
+  
+  <Target Name="OmcClean">
     <Message Text="Delete omc compiler output" />
     <RemoveDir Directories="$(OMC_OUT_DIR)" />
   </Target>
 
-  <!-- Following groups are for OmcCompile target dependencies -->
-  <ItemGroup>
-    <OMC_INPUTS Include="..\code\*.mpp" />
-    <OMC_INPUTS Include="..\code\*.ompp" />
-    <OMC_INPUTS Include="..\code\*.h" />
-    <OMC_INPUTS Include="Model.props" />
-    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.odat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'" />
-  </ItemGroup>
-  <ItemGroup>
-    <OMC_OUTPUTS Include="@(OMC_CXX_HEADER_OUTPUTS)" />
-    <OMC_OUTPUTS Include="@(OMC_CXX_MODULE_OUTPUTS)" />
-    <OMC_OUTPUTS Include="@(OMC_SQL_OUTPUTS)" />
-  </ItemGroup>
+  <PropertyGroup>
+    <CleanDependsOn>OmcClean;$(CleanDependsOn)</CleanDependsOn>
+  </PropertyGroup>
+
   
-  <!--
-  The value of the 'Outputs' attribute is a Transform which just repeats the same reference time-stamp file
-  from the last time omc ran, for each file in the @(OMC_INPUTS) list.
-  This will cause the target to run if any of the model source files is more recent than the last omc run.
-  'Returns' contains a full list of omc outputs in case any are missing.
+  <!-- 
+  Build
   -->
-  <Target Name="OmcCompile" Inputs="@(OMC_INPUTS)" Outputs="@(OMC_INPUTS -> '$(OMC_TIMESTAMP_OUTPUT_FILE)')" Returns="@(OMC_OUTPUTS)">
+  
+  
+  <Target Name="OmcCompile"
+          Inputs="@(OMC_INPUTS)"
+          Outputs="@(OMC_OUTPUTS)"
+          >
     <MakeDir Directories="$(OMC_OUT_DIR)" />
     <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
-    <Exec Command="$(OM_BIN_DIR)/$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
+    <Exec Command="&quot;$(OM_BIN_DIR)/$(OMC_EXE)&quot; -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
     </ItemGroup>
     <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(OutDir)" />
   </Target>
+
+  <PropertyGroup>
+    <BuildDependsOn>OmcCompile;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
+  
   
   <!--
-  The following property helps make the SQLitePublish target and output more readable.
+  SQLitePublish
   -->
+
+  
+  <!-- The following properties helps make the SQLitePublish target and output more readable. -->
   <PropertyGroup>
+    <MODEL_PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).publish.tickle</MODEL_PUBLISH_TICKLE>
     <OM_MODEL_DB>$([MSBuild]::MakeRelative($(ProjectDir),$(OutDir)$(MODEL_NAME).sqlite))</OM_MODEL_DB>
     <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
     <!--  Replace back slash by forward slash. -->
     <OM_SQL_DIR_REL>$(OM_SQL_DIR_REL.Replace(&quot;\&quot;,&quot;/&quot;))</OM_SQL_DIR_REL>
   </PropertyGroup>
 
-  <Target Name="SQLitePublish" AfterTargets="link">
-	<Delete Files="$(OM_MODEL_DB)" />
+  <Target Name="SQLitePublish" 
+          Inputs="@(SQLITE_INPUTS)"
+          Outputs="$(MODEL_PUBLISH_TICKLE)"
+          AfterTargets="link"
+          >
+    <Delete Files="$(OM_MODEL_DB)" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
-    <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
+    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
-    <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
+    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
-    <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
+    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
+    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
-    <Exec Command="$(OM_BIN_DIR)/$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
+    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
+    <Touch  Files="$(MODEL_PUBLISH_TICKLE)"
+            AlwaysCreate="true"
+            />
   </Target>
 
+
   <!--
-  The following property group prepares arguments to the model executable.
+  RunModel
   -->
+
+  
   <PropertyGroup>
-    <MODEL_OPTS Condition="'$(MEMBERS)' != '' And '$(PROCESSES)' != '' And '$(THREADS)' != ''">-General.Subsamples $(MEMBERS) -n $(PROCESSES) -General.Threads $(THREADS)</MODEL_OPTS>
+    <!-- The following property prepares arguments to the model executable. -->
+    <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -General.Subsamples $(MEMBERS)</MODEL_OPTS>
+    <MODEL_OPTS Condition="'$(PROCESSES)' != ''">$(MODEL_OPTS) -n $(PROCESSES) </MODEL_OPTS>
+    <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -General.Threads $(THREADS)</MODEL_OPTS>
+    <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
   </PropertyGroup>
 
-  <Target Name="RunScenario" AfterTargets="SQLitePublish" Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" >
+  <Target Name="RunModel"
+          Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" 
+          Inputs="$(MODEL_PUBLISH_TICKLE)"
+          Outputs="$(RUN_MODEL_TICKLE)"
+          AfterTargets="SQLitePublish"
+          >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
-    <Exec Command="$(TargetPath) $(MODEL_OPTS)" WorkingDirectory="$(TargetDir)"/>
+    <Exec WorkingDirectory="$(TargetDir)"
+          Command="$(TargetPath) $(MODEL_OPTS)"
+          />
+    <Touch  Files="$(RUN_MODEL_TICKLE)"
+            AlwaysCreate="true"
+            />
   </Target>
 
+
   <!--
-  The following property group prepares arguments to the Excel export utility.
+  RunExport
   -->
+
+  
   <PropertyGroup>
     <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
     <EXCEL_EXPORT_OPT Condition="'$(EXPORT_LANG)'!=''">-lang $(EXPORT_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
 
-  <Target Name="RunExport" AfterTargets="RunScenario" Condition="'$(RUN_EXPORT)'=='1'" >
+  <Target Name="RunExport"
+          Condition="'$(RUN_EXPORT)'=='1'" 
+          AfterTargets="RunModel"
+          >
     <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
     <Exec Command="$(OM_BIN_DIR)/$(EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) $(OutDir)$(MODEL_NAME).sqlite $(OutDir)$(SCENARIO_NAME)(tbl).xlsx" ContinueOnError="true"/>
   </Target>
 
-  <Target Name="RunExcel" AfterTargets="RunExport" Condition="'$(RUN_EXCEL)'=='1'" >
+  
+  <!--
+  RunExcel
+  -->
+
+  
+  <Target Name="RunExcel"
+          Condition="'$(RUN_EXCEL)'=='1'"
+          AfterTargets="RunExport"
+          >
     <Message Text="Launching Excel on scenario $(SCENARIO_NAME)..." />
     <Exec Command="&quot;$(OutDir)$(SCENARIO_NAME)(tbl).xlsx&quot;" ContinueOnError="true"/>
   </Target>
 
-  <PropertyGroup>
-    <BuildDependsOn>OmcCompile;$(BuildDependsOn)</BuildDependsOn>
-  </PropertyGroup>
-
+ 
+  <!-- 
+  Diagnostics
+  -->
+ 
+ 
+  <Target Name="Diagnostics"
+          Condition="'1'=='1'">
+    <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
+    <Message Text="OMC_INPUTS=@(OMC_INPUTS)" />
+    <Message Text="OMC_OUTPUTS=@(OMC_OUTPUTS)" />
+  </Target>
 
 </Project>
