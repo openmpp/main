@@ -4,27 +4,36 @@
   <PropertyGroup>
   
     <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'==''">C:/Program Files (x86)/StatCan/Modgen 11</MODGEN_ROOT>
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+
+    <MODGEN_BIN_DIR Condition="'$(MODGEN_BIN_DIR)'==''">$(MODGEN_ROOT)</MODGEN_BIN_DIR>
+    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
     
     <MODGEN_EXE>Modgen.exe</MODGEN_EXE>
+    <CREATE_SCEX_EXE>create_scex.exe</CREATE_SCEX_EXE>
 
+    <COMPLETE_MODGEN_EXE>&quot;$(MODGEN_BIN_DIR)/$(MODGEN_EXE)&quot;</COMPLETE_MODGEN_EXE>
+    <COMPLETE_CREATE_SCEX_EXE>&quot;$(OM_BIN_DIR)/$(CREATE_SCEX_EXE)&quot;</COMPLETE_CREATE_SCEX_EXE>
+    
     <MODGEN_INC_DIR Condition="'$(MODGEN_INC_DIR)'==''">$(MODGEN_ROOT)</MODGEN_INC_DIR>
-    <MODGEN_BIN_DIR Condition="'$(MODGEN_BIN_DIR)'==''">$(MODGEN_ROOT)</MODGEN_BIN_DIR>
     <MODGEN_LIB_DIR Condition="'$(MODGEN_LIB_DIR)'==''">$(MODGEN_ROOT)</MODGEN_LIB_DIR>
-
+    
     <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
     <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
-    
+
     <MODGEN_IN_DIR>$(MODEL_CODE_DIR)</MODGEN_IN_DIR>
     <MODGEN_OUT_DIR>$(ProjectDir)src</MODGEN_OUT_DIR>
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
-
-    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
-    <FIXED_NAME Condition="'$(FIXED_NAME)'==''">Fixed</FIXED_NAME>
-
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+
+    <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
+
+    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
+    <FIXED_NAME Condition="'$(FIXED_NAME)'==''">Fixed</FIXED_NAME>
+
 
     <!-- 
     The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,

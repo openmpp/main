@@ -1,9 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project InitialTargets="Diagnostics" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  
+  <!-- 
+  Validate
+  -->
+
+
+  <Target Name="Validate">
+    <Error  Text="MODEL_NAME cannot be empty"
+            Condition=" ( '$(MODEL_NAME)' == '' )" />
+  </Target>
+
+  
   <!-- 
   Clean
   -->
+
   
   <Target Name="ModgenClean">
     <Message Text="Delete modgen compiler output" />
@@ -14,26 +27,56 @@
     <CleanDependsOn>ModgenClean;$(CleanDependsOn)</CleanDependsOn>
   </PropertyGroup>
  
+ 
   <!-- 
   Build
   -->
-  
+ 
+ 
   <Target Name="ModgenCompile"
           Inputs="@(MODGEN_INPUTS)"
-          Outputs="@(MODGEN_OUTPUTS)">
+          Outputs="@(MODGEN_OUTPUTS)"
+          >
     <MakeDir Directories="$(MODGEN_OUT_DIR)" />
     <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
-          Command="&quot;$(MODGEN_BIN_DIR)/$(MODGEN_EXE)&quot; -D $(MODGEN_OUT_DIR) -EN" 
+          Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -EN" 
     />
   </Target>
 
   <PropertyGroup>
     <BuildDependsOn>ModgenCompile;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
+ 
+ 
+  <!-- 
+  ScexPublish
+  -->
+ 
+  <PropertyGroup>
+    <FRAMEWORK_ODAT>$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/Base(Framework).odat</FRAMEWORK_ODAT>
+    <FRAMEWORK_OMPP>$(MODEL_CODE_DIR)/ompp_framework.ompp</FRAMEWORK_OMPP>
+    <SCENARIO_SCEX>$(MODEL_BIN_DIR)/$(SCENARIO_NAME).scex</SCENARIO_SCEX>
+  </PropertyGroup>
+ 
+  <Target Name="ScexPublish"
+          Inputs="$(FRAMEWORK_ODAT);$(FRAMEWORK_OMPP);@(SCENARIO_DATS)"
+          Outputs="$(SCENARIO_SCEX)"
+          AfterTargets="Build"
+          >
+    <MakeDir Directories="$(MODGEN_OUT_DIR)" />
+    <Message
+          Text="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) $(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')"
+    />
+    <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
+          Command="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) $(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')" 
+    />
+  </Target>
 
+ 
   <!-- 
   Diagnostics
   -->
+ 
  
   <Target Name="Diagnostics" Condition="'1'=='0'">
     <Message Text="MODGEN_INPUTS=@(MODGEN_INPUTS)" />

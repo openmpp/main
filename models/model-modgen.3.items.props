@@ -46,6 +46,9 @@
     <None Include="../parameters/Base/*.dat" />
     <None Include="../parameters/Base/*.odat" />
     
+    
+    <SCENARIO_DATS Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.dat" />
+    
   </ItemGroup>
 
 </Project>

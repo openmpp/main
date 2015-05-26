@@ -21,7 +21,7 @@
       
   -->
   <PropertyGroup>
-    <OutDir>$(ProjectDir)bin/</OutDir>
+    <OutDir>$(MODEL_BIN_DIR)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
     <TargetName>$(MODEL_NAME)$(BUILD_SUFFIX)</TargetName>
   </PropertyGroup>

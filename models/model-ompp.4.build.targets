@@ -66,8 +66,8 @@
           Outputs="@(OMC_OUTPUTS)"
           >
     <MakeDir Directories="$(OMC_OUT_DIR)" />
-    <Message Text="$(OM_BIN_DIR)/$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
-    <Exec Command="&quot;$(OM_BIN_DIR)/$(OMC_EXE)&quot; -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
+    <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
     </ItemGroup>
@@ -100,15 +100,15 @@
           >
     <Delete Files="$(OM_MODEL_DB)" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
-    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
-    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
-    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
     <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
-    <Exec Command="&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot; $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
     <Touch  Files="$(MODEL_PUBLISH_TICKLE)"
             AlwaysCreate="true"
             />
@@ -151,16 +151,19 @@
 
   
   <PropertyGroup>
+    <EXCEL_EXPORT_OUT>$(OutDir)$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
     <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
     <EXCEL_EXPORT_OPT Condition="'$(EXPORT_LANG)'!=''">-lang $(EXPORT_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
 
   <Target Name="RunExport"
           Condition="'$(RUN_EXPORT)'=='1'" 
+          Inputs="$(RUN_MODEL_TICKLE)"
+          Outputs="$(EXCEL_EXPORT_OUT)"
           AfterTargets="RunModel"
           >
     <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
-    <Exec Command="$(OM_BIN_DIR)/$(EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) $(OutDir)$(MODEL_NAME).sqlite $(OutDir)$(SCENARIO_NAME)(tbl).xlsx" ContinueOnError="true"/>
+    <Exec Command="$(COMPLETE_EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) $(OutDir)$(MODEL_NAME).sqlite $(EXCEL_EXPORT_OUT)" ContinueOnError="true"/>
   </Target>
 
   
@@ -173,8 +176,8 @@
           Condition="'$(RUN_EXCEL)'=='1'"
           AfterTargets="RunExport"
           >
-    <Message Text="Launching Excel on scenario $(SCENARIO_NAME)..." />
-    <Exec Command="&quot;$(OutDir)$(SCENARIO_NAME)(tbl).xlsx&quot;" ContinueOnError="true"/>
+    <Message Text="Launching Excel with outputs from scenario $(SCENARIO_NAME)..." />
+    <Exec Command="&quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
   </Target>
 
  

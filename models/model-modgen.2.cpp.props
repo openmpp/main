@@ -13,7 +13,7 @@
       
   -->
   <PropertyGroup>
-    <OutDir>$(ProjectDir)bin/</OutDir>
+    <OutDir>$(MODEL_BIN_DIR)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
     <TargetName>$(MODEL_NAME)$(BUILD_SUFFIX)</TargetName>
   </PropertyGroup>
@@ -72,17 +72,5 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-
-  <!-- 
-  Default debugger settings (can be overridden by model.vcxproj.user)
-  -->
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
 
 </Project>
