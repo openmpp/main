@@ -88,6 +88,7 @@ IdentityAgentVarSymbol.cpp \
 LanguageSymbol.cpp \
 LinkAgentVarSymbol.cpp \
 LinkToAgentVarSymbol.cpp \
+md5.cpp \
 ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
 MultilinkAgentVarSymbol.cpp \

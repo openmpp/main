@@ -202,6 +202,7 @@
     <ClInclude Include="LinkToAgentVarSymbol.h" />
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
+    <ClInclude Include="md5.h" />
     <ClInclude Include="ModelSymbol.h" />
     <ClInclude Include="ModelTypeSymbol.h" />
     <ClInclude Include="ModuleSymbol.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAgentVarSymbol.cpp" />
     <ClCompile Include="LinkToAgentVarSymbol.cpp" />
+    <ClCompile Include="md5.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="MultilinkAgentVarSymbol.cpp" />

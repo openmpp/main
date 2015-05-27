@@ -36,6 +36,17 @@ void EnumerationSymbol::post_parse(int pass)
     }
 }
 
+string EnumerationSymbol::metadata_signature() const
+{
+    // Hook into the hierarchical calling chain
+    string sig = super::metadata_signature();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    sig += "size: " + to_string(pp_size()) + "\n";
+
+    return sig;
+}
+
 void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain

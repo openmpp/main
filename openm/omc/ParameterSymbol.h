@@ -67,6 +67,8 @@ public:
      */
     list<string> initializer_for_storage();
 
+    string metadata_signature() const;
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

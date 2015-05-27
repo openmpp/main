@@ -383,8 +383,24 @@ public:
     virtual CodeBlock cxx_definition_global();
 
     /**
-     * Populate metadata associated with the symbol.
+     * Metadata signature from which a digest can be constructed.
      * 
+     * When this function is called on an object in the \ref Symbol hierarchy, the call is first
+     * passed upwards through the inheritance hierarchy so that operations are performed at all
+     * hierarchical levels, and at higher levels before lower levels.
+     *
+     */
+    virtual string metadata_signature() const;
+
+    /**
+     * Digest of the metadata signature using the md5 algorithm
+     *
+     * @return A string.
+     */
+    string metadata_digest() const;
+
+    /**
+     * Populate metadata associated with the symbol.
      * 
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all

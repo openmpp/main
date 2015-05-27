@@ -47,6 +47,8 @@ public:
 
     CodeBlock cxx_declaration_global();
 
+    string metadata_signature() const;
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     bool is_valid_constant(const Constant &k) const;

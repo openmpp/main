@@ -60,6 +60,8 @@ public:
 
     void post_parse(int pass);
 
+    string metadata_signature() const;
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

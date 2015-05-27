@@ -42,6 +42,20 @@ void EnumerationWithEnumeratorsSymbol::post_parse(int pass)
     }
 }
 
+string EnumerationWithEnumeratorsSymbol::metadata_signature() const
+{
+    // Hook into the hierarchical calling chain
+    string sig = super::metadata_signature();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    sig += "enumerators:\n";
+    for (auto enumerator : pp_enumerators) {
+        sig += " " + enumerator->name + "\n";
+    }
+
+    return sig;
+}
+
 void EnumerationWithEnumeratorsSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain

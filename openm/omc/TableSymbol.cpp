@@ -104,6 +104,26 @@ string TableSymbol::cxx_measure_name_initializer_list() const
     return cxx;
 }
 
+string TableSymbol::metadata_signature() const
+{
+    // Hook into the hierarchical calling chain
+    string sig = super::metadata_signature();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    sig += "dimensions: " + to_string(dimension_count()) + "\n";
+    sig += "measures: " + to_string(measure_count()) + "\n";
+    int dim_index = 0;
+    for (auto dim : dimension_list) {
+        sig += "dimension: " + to_string(dim_index) + "\n";
+        sig += "has_margin: " + to_string(dim->has_margin) + "\n";
+        auto enumeration = dim->pp_enumeration;
+        sig += enumeration->metadata_signature();
+        dim_index++;
+    }
+
+    return sig;
+}
+
 void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain
