@@ -4,14 +4,12 @@
 # Script to export the output tables of a SQLite scenario to Excel in pivot table format
 
 use strict;
-use Win32::OLE qw(in with);
-use Win32::OLE::Const 'Microsoft Excel';
-use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
+use Excel::Writer::XLSX;
 use File::Spec;
 use File::Temp qw(tempdir);
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 
-my $version = 0.2;
+my $version = 0.3;
 
 if ( $#ARGV == -1 ) {
 	print "excel_export version $version\n";
@@ -69,15 +67,6 @@ if (-s $workbook_xlsx) {
 	unlink $workbook_xlsx || logmsg error, $script_name, "unable to remove existing ${workbook_xlsx}\n";
 }
 
-# Get already active Excel application or open new
-my $Excel = Win32::OLE->GetActiveObject('Excel.Application')
-		   || Win32::OLE->new('Excel.Application', 'Quit');
-
-if (!$Excel) {
-	logmsg error, $script_name, "Excel not available";
-	exit 1;
-}
-		   
 # Extract csv versions of tables to a temporary folder
 my $tmpdir = tempdir(CLEANUP => 1);
 #my $tmpdir = tempdir();
@@ -91,9 +80,6 @@ if ($failure) {
 	exit 1
 };
  
-# Turn off those many irritating are-you-sure? Excel dialogs
-$Excel->{DisplayAlerts} = 0;
-
 if (-s $workbook_xlsx) {
 	$failure = unlink $workbook_xlsx;
 	if ($failure) {
@@ -101,14 +87,8 @@ if (-s $workbook_xlsx) {
 		exit 1;
 	}
 }
-# make xlsx file absolute, otherwise Excel saves in 'Documents' folder
-$workbook_xlsx = File::Spec->rel2abs($workbook_xlsx);
 
-Win32::OLE->Option(Warn => 3);
-
-# Create a new Excel workbook
-my $Book = $Excel->Workbooks->Add();
-$Book->SaveAs($workbook_xlsx);
+my $Book = Excel::Writer::XLSX->new($workbook_xlsx);
 
 ###############
 # SQLite Read #
@@ -420,54 +400,49 @@ my $ContentsSheet;
 {
 	# Create the Contents sheet
 	# Actually, just use the default 'Sheet1' which is already there, and rename it.
-	my $Sheet = $Book->ActiveSheet;
+	my $Sheet = $Book->add_worksheet('Contents');
 	$PreviousSheet = $Sheet;
-	$Sheet->{Name} = 'Contents';
 	$ContentsSheet = $Sheet;
-	$Sheet->Cells(1, 1)->{Value} = 'Table Name';
-	$Sheet->Cells(1, 2)->{Value} = 'Table Description';
-	$Sheet->Cells(1, 3)->{Value} = 'Worksheet names';
-	my $row = 2;
+	$Sheet->write(0, 0, 'Table Name');
+	$Sheet->write(0, 1, 'Table Description');
+	$Sheet->write(0, 2, 'Worksheet names');
+	my $row = 1;
 	for my $table_id (@table_ids) {
 		my $table_name = $table_names[$table_id];
 		my $table_description = $table_labels[$table_id];
 		my $table_worksheet_name = $table_worksheet_names[$table_id];
-		$Sheet->Cells($row, 1)->{Value} = $table_name;
-		$Sheet->Cells($row, 2)->{Value} = $table_description;
-		$Sheet->Cells($row, 3)->{Value} = $table_worksheet_name;
+		$Sheet->write($row, 0, $table_name);
+		$Sheet->write($row, 1, $table_description);
+		$Sheet->write($row, 2, $table_worksheet_name);
 		++$row;
 	}
-	$Sheet->Columns("A:C")->Autofit;
 }
 
 {
 	# Create the Scenario Information sheet
-	$Book->Sheets->Add({after => $PreviousSheet});
-	my $Sheet = $Book->ActiveSheet;
-	$PreviousSheet = $Sheet;
-	$Sheet->{Name} = "Scenario Information";
-	$Sheet->Cells(1, 1)->{Value} = 'Directory';
-	$Sheet->Cells(1, 2)->{Value} = '.';
-	$Sheet->Cells(2, 1)->{Value} = 'Command Line';
-	$Sheet->Cells(2, 2)->{Value} = "${model_name}.exe -sc ${set_name}.scex -s";
-	$Sheet->Cells(3, 1)->{Value} = 'Full Report';
-	$Sheet->Cells(3, 2)->{Value} = 'TRUE';
-	$Sheet->Cells(4, 1)->{Value} = $case_based ? 'Cases' : 'Replicates';
-	$Sheet->Cells(4, 2)->{Value} = $case_based ? $simulation_cases : $pieces;
-	$Sheet->Cells(5, 1)->{Value} = $case_based ? 'Cases Requested' : 'Replicates Requested';
-	$Sheet->Cells(5, 2)->{Value} = $case_based ? $simulation_cases : $pieces;
-	$Sheet->Cells(6, 1)->{Value} = 'Language';
-	$Sheet->Cells(6, 2)->{Value} = $lang_code;
-	$Sheet->Cells(7, 1)->{Value} = 'coefficient of variation values (%)';
-	$Sheet->Cells(7, 2)->{Value} = 'FALSE';
-	$Sheet->Cells(8, 1)->{Value} = 'standard error values';
-	$Sheet->Cells(8, 2)->{Value} = 'FALSE';
-	$Sheet->Cells(9, 1)->{Value} = 'Simulation date and time';
-	$Sheet->Cells(9, 2)->{Value} = $run_date_time;
-	$Sheet->Cells(9, 2)->{NumberFormat} = 'yyyy/mm/dd h:mm:ss';
-	$Sheet->Cells(10, 1)->{Value} = $case_based ? 'Subsamples:' : 'Replicates:';
-	#$Sheet->Cells(10, 2)->{Value} = ''; # Deliberately empty
-	$Sheet->Columns("A:B")->Autofit;
+	my $Sheet = $Book->add_worksheet('Scenario Information');
+	$Sheet->write(0, 0, 'Directory');
+	$Sheet->write(0, 1, '.');
+	$Sheet->write(1, 0, 'Command Line');
+	$Sheet->write(1, 1, "${model_name}.exe -sc ${set_name}.scex -s");
+	$Sheet->write(2, 0, 'Full Report');
+	$Sheet->write(2, 1, 'TRUE');
+	$Sheet->write(3, 0, $case_based ? 'Cases' : 'Replicates');
+	$Sheet->write(3, 1, $case_based ? $simulation_cases : $pieces);
+	$Sheet->write(4, 0, $case_based ? 'Cases Requested' : 'Replicates Requested');
+	$Sheet->write(4, 1, $case_based ? $simulation_cases : $pieces);
+	$Sheet->write(5, 0, 'Language');
+	$Sheet->write(5, 1, $lang_code);
+	$Sheet->write(6, 0, 'coefficient of variation values (%)');
+	$Sheet->write(6, 1, 'FALSE');
+	$Sheet->write(7, 0, 'standard error values');
+	$Sheet->write(7, 1, 'FALSE');
+	$Sheet->write(8, 0, 'Simulation date and time');
+	my $format = $Book->add_format();
+	$format->set_num_format('yyyy/mm/dd h:mm:ss');
+	$Sheet->write(8, 1, $run_date_time, $format);
+	$Sheet->write(9, 0, $case_based ? 'Subsamples:' : 'Replicates:');
+	#$Sheet->write(9, 1, ''); # Deliberately empty
 }
 
 # Create the table sheets
@@ -480,25 +455,23 @@ for my $table_id (@table_ids) {
 	logmsg info, $script_name, "table_name=${table_name} table_rank=${table_rank} table_expr_size=${table_expr_size}" if $verbosity >= 1;
 	
 	# Create a worksheet for the output table
-	$Book->Sheets->Add({after => $PreviousSheet});
-	my $Sheet = $Book->ActiveSheet;
+	my $Sheet = $Book->add_worksheet($table_worksheet_name);
 	$PreviousSheet = $Sheet;
-	$Sheet->{Name} = $table_worksheet_name;
 	
 	# Column headers
 	# Classification dimensions
 	if ($table_rank > 0) {
 		for my $dim_id (0..$table_rank - 1) {
-			my $col = $dim_id + 1;
+			my $col = $dim_id;
 			my $table_dim_label = $table_dim_labels{$table_id, $dim_id};
-			$Sheet->Cells(1, $col)->{Value} = $table_dim_label;
+			$Sheet->write(0, $col, $table_dim_label);
 		}
 	}
 	# Expression dimension
 	for my $expr_id (0..$table_expr_size - 1) {
-		my $col = 1 + $table_rank + $expr_id;
+		my $col = $table_rank + $expr_id;
 		my $table_expr_label = $table_expr_labels{$table_id, $expr_id};
-		$Sheet->Cells(1, $col)->{Value} = $table_expr_label;
+		$Sheet->write(0, $col, $table_expr_label);
 	}
 	
 	# Get table data from csv and insert into sheet
@@ -533,33 +506,30 @@ for my $table_id (@table_ids) {
 		if ($expr_id == 0) {
 			# New observation
 			++$observation_counter;
-			my $row = $observation_counter + 1;
+			my $row = $observation_counter;
 			logmsg info, $script_name, $table_name, "observation_counter=${observation_counter} row=${row}" if $verbosity >= 2;
 			# Classification dimensions for this observation
 			if ($table_rank > 0) {
 				for my $dim_id (0..$table_rank - 1) {
 					my $type_id = $table_dim_types{$table_id, $dim_id};
-					my $col = $dim_id + 1;
+					my $col = $dim_id;
 					my $enum_id = $fields[$dim_id] + 0;
 					my $enum_label = $enum_labels{$type_id, $enum_id};
-					$Sheet->Cells($row, $col)->{Value} = $enum_label;
+					$Sheet->write($row, $col, $enum_label);
 				}
 			}
 		}
 		# Expression dimension
 		if (!$value_missing) {
-			my $row = $observation_counter + 1;
-			my $col = 1 + $table_rank + $expr_id;
+			my $row = $observation_counter;
+			my $col = $table_rank + $expr_id;
 			logmsg info, $script_name, $table_name, "row=${row} col=${col} value=${value}" if $verbosity >= 2;
-			$Sheet->Cells($row, $col)->{Value} = $value;
+			$Sheet->write($row, $col, $value);
 		}
 	}
 	close CSV;
 }
 
-$ContentsSheet->Activate;
-$Book->Save();
-#$Book->Close();
 rmdir $tmpdir;
 
 exit 0; # success
