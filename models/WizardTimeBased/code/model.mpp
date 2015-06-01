@@ -1,6 +1,6 @@
-//LABEL(WizardTimeBased, EN) Core simulation functions
+//LABEL(model, EN) Core simulation functions
 
-/* NOTE(WizardTimeBased, EN)
+/* NOTE(model, EN)
 	This module contains core simulation functions and definitions.
 */
 
