@@ -354,7 +354,7 @@ table Person testTrigger1
 [t01_trigger_year]
 {
 	{
-		event(duration())
+		duration()
 	}
 	
 };
@@ -362,7 +362,7 @@ table Person testTrigger1
 table Person testTrigger2
 {
 	{
-		event(duration( t01_trigger_year, TRUE))
+		duration( t01_trigger_year, TRUE)
 	}
 	
 };
