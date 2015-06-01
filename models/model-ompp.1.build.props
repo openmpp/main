@@ -9,7 +9,7 @@
   
     <OMC_EXE>omc.exe</OMC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
-    <EXCEL_EXPORT_EXE>excel_export32.exe</EXCEL_EXPORT_EXE>
+    <EXCEL_EXPORT_EXE>excel_export.exe</EXCEL_EXPORT_EXE>
 
     <COMPLETE_OMC_EXE>&quot;$(OM_BIN_DIR)/$(OMC_EXE)&quot;</COMPLETE_OMC_EXE>
     <COMPLETE_SQLITE_EXE>&quot;$(OM_BIN_DIR)/$(SQLITE_EXE)&quot;</COMPLETE_SQLITE_EXE>
