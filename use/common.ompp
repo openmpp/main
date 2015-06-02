@@ -52,7 +52,9 @@ void SetMaxTime(double max_value)
  */
 void StartEventTrace()
 {
-    BaseEvent::trace_event_on = true;
+    if (BaseEvent::trace_event_enabled) {
+        BaseEvent::trace_event_on = true;
+    }
 }
 
 /**
@@ -62,7 +64,9 @@ void StartEventTrace()
  */
 void StopEventTrace()
 {
-    BaseEvent::trace_event_on = false;
+    if (BaseEvent::trace_event_enabled) {
+        BaseEvent::trace_event_on = false;
+    }
 }
 
 /**

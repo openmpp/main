@@ -110,7 +110,7 @@ public:
         dirty_events = new tailed_forward_list<BaseEvent *>;
         global_time = new Time(0);
         global_event_counter = 0;
-        trace_event_on = false;
+        trace_event_on = trace_event_enabled;
         event_checksum_reset();
     }
 
@@ -199,7 +199,7 @@ public:
         }
 
         // update the global event checksum
-        if (event_checksum_on && evt->get_event_priority() != openm::event_priority_self_scheduling) evt->event_checksum_update();
+        if (event_checksum_enabled && evt->get_event_priority() != openm::event_priority_self_scheduling) evt->event_checksum_update();
 
         // implement the event
         evt->implement_event();
@@ -271,6 +271,11 @@ public:
     static const bool just_in_time;
 
     /**
+     * true if trace event is activated.
+     */
+    static const bool trace_event_enabled;
+
+    /**
      * true to enable event logging (use API)
      */
     static thread_local bool trace_event_on;
@@ -283,7 +288,7 @@ public:
     /**
      * true if running event checksum is activated.
      */
-    static const bool event_checksum_on;
+    static const bool event_checksum_enabled;
 
     /**
      * The current value of the running event checksum.

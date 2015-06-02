@@ -256,7 +256,7 @@ void RunSimulation(int mem_id, int mem_count)
         CaseSimulation();
 
         // Log the case checksum if activated
-        if (BaseEvent::event_checksum_on) case_checksum_msg(case_seed, sample_member);
+        if (BaseEvent::event_checksum_enabled) case_checksum_msg(case_seed, sample_member);
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
