@@ -26,7 +26,6 @@ index_type		ushort;
 // options
 options bounds_errors=off;
 options packing_level=2;
-options event_trace=on;
 
 
 
