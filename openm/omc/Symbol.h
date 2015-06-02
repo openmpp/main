@@ -757,9 +757,19 @@ public:
     static void populate_pp_symbols();
 
     /**
-     * Sort pp_symbols for Modgen compatible code-generation.
+     * Sort pp_symbols for Modgen compatible code-generation (1).
+     * 
+     * This sort ignores sorting_group.  It is used just to reproduce Modgen self-scheduling numeric
+     * identifiers.
      */
-    static void modgen_sort_pp_symbols();
+    static void modgen_sort_pp_symbols1();
+
+    /**
+     * Sort pp_symbols for Modgen compatible code-generation (2).
+     * 
+     * This sort respects sorting group.  Within sorting group, order is by Modgen-compatible name.
+     */
+    static void modgen_sort_pp_symbols2();
 
     /**
      * Process a semantic error encountered during the post-parse phase.

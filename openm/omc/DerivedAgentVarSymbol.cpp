@@ -535,7 +535,7 @@ void DerivedAgentVarSymbol::assign_sorting_group()
     case token::TK_trigger_transitions:
     case token::TK_trigger_changes:
     {
-        // trigger states are reset before anything else in 'time' side-effects.
+        // trigger states are reset before anything else in the self-scheduling event.
         sorting_group = 1;
         break;
     }
@@ -1454,115 +1454,9 @@ void DerivedAgentVarSymbol::create_side_effects()
         break;
     }
     case token::TK_trigger_entrances:
-    {
-        reset_cxx += injection_description();
-        reset_cxx += "// Re-assign starting value for simulation entry";
-        reset_cxx += cxx_initialization_expression(false);
-
-        // Turn it on.
-        auto *av = pp_av1;
-        assert(av);
-        assert(k1);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Activate trigger " + pretty_name();
-        c += "if (om_new == " + k1->value() + ") {";
-        c += name + ".set(true);";
-        c += "}";
-
-        // Reset it as side-effect of time.
-        // This will occur at the next event, before anything else.
-        // (in sorting group #1)
-        av = pp_agent->pp_time;
-        assert(av);
-        CodeBlock& c2 = av->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// Reset trigger " + pretty_name();
-        c2 += name + ".set(false);";
-        break;
-    }
     case token::TK_trigger_exits:
-    {
-        reset_cxx += injection_description();
-        reset_cxx += "// Re-assign starting value for simulation entry";
-        reset_cxx += cxx_initialization_expression(false);
-
-        // Turn it on.
-        auto *av = pp_av1;
-        assert(av);
-        assert(k1);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Activate trigger " + pretty_name();
-        c += "if (om_old == " + k1->value() + ") {";
-        c += name + ".set(true);";
-        c += "}";
-
-        // Reset it as side-effect of time.
-        // This will occur at the next event, before anything else.
-        // (in sorting group #1)
-        av = pp_agent->pp_time;
-        assert(av);
-        CodeBlock& c2 = av->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// Reset trigger " + pretty_name();
-        c2 += name + ".set(false);";
-        break;
-    }
     case token::TK_trigger_transitions:
-    {
-        reset_cxx += injection_description();
-        reset_cxx += "// Re-assign starting value for simulation entry";
-        reset_cxx += cxx_initialization_expression(false);
-
-        // Turn it on.
-        auto *av = pp_av1;
-        assert(av);
-        assert(k1);
-        assert(k2);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Activate trigger " + pretty_name();
-        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        c += name + ".set(true);";
-        c += "}";
-
-        // Reset it as side-effect of time.
-        // This will occur at the next event, before anything else.
-        // (in sorting group #1)
-        av = pp_agent->pp_time;
-        assert(av);
-        CodeBlock& c2 = av->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// Reset trigger " + pretty_name();
-        c2 += name + ".set(false);";
-        break;
-    }
     case token::TK_trigger_changes:
-    {
-        reset_cxx += injection_description();
-        reset_cxx += "// Re-assign starting value for simulation entry";
-        reset_cxx += cxx_initialization_expression(false);
-
-        // Turn it on.
-        auto *av = pp_av1;
-        assert(av);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Activate trigger " + pretty_name();
-        c += name + ".set(true);";
-
-        // Reset it as side-effect of time.
-        // This will occur at the next event, before anything else.
-        // (in sorting group #1)
-        av = pp_agent->pp_time;
-        assert(av);
-        CodeBlock& c2 = av->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// Reset trigger " + pretty_name();
-        c2 += name + ".set(false);";
-        break;
-    }
     case token::TK_duration_trigger:
     case token::TK_duration_counter:
     {
@@ -1583,6 +1477,10 @@ void DerivedAgentVarSymbol::create_side_effects()
             // attribute-specific code (begin)
             switch (tok) {
 
+            case token::TK_trigger_entrances:
+            case token::TK_trigger_exits:
+            case token::TK_trigger_transitions:
+            case token::TK_trigger_changes:
             case token::TK_duration_trigger:
             reset_cxx += "// There is no change in the triggering condition when the entity enters the simulation.";
             reset_cxx += "ss_time = time_infinite;";
@@ -1616,6 +1514,50 @@ void DerivedAgentVarSymbol::create_side_effects()
 
             // attribute-specific code (begin)
             switch (tok) {
+
+            case token::TK_trigger_entrances:
+            cxx += "if (om_new == " + k1->value() + ") {";
+            cxx += "// Activate trigger " + pretty_name();
+            cxx += "ss_attr.set(true);";
+            cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            cxx += "ss_time = time;";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            break;
+
+            case token::TK_trigger_exits:
+            cxx += "if (om_old == " + k1->value() + ") {";
+            cxx += "// Activate trigger " + pretty_name();
+            cxx += "ss_attr.set(true);";
+            cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            cxx += "ss_time = time;";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            break;
+
+            case token::TK_trigger_transitions:
+            cxx += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+            cxx += "// Activate trigger " + pretty_name();
+            cxx += "ss_attr.set(true);";
+            cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            cxx += "ss_time = time;";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            break;
+
+            case token::TK_trigger_changes:
+            cxx += "{";
+            cxx += "// Activate trigger " + pretty_name();
+            cxx += "ss_attr.set(true);";
+            cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            cxx += "ss_time = time;";
+            cxx += "// Mark the entity's self-scheduling event for recalculation";
+            cxx += "ss_event.make_dirty();";
+            cxx += "}";
+            break;
 
             case token::TK_duration_trigger:
             cxx += "if (om_new == " + k1->value() + ") {";
@@ -1671,6 +1613,14 @@ void DerivedAgentVarSymbol::create_side_effects()
 
             // attribute-specific code (begin)
             switch (tok) {
+
+            case token::TK_trigger_entrances:
+            case token::TK_trigger_exits:
+            case token::TK_trigger_transitions:
+            case token::TK_trigger_changes:
+            cxx += "ss_attr.set(false);";
+            cxx += "ss_time = time_infinite;";
+            break;
 
             case token::TK_duration_trigger:
             cxx += "ss_attr.set(true);";
@@ -2222,6 +2172,10 @@ string DerivedAgentVarSymbol::pretty_name() const
 bool DerivedAgentVarSymbol::is_self_scheduling() const
 {
     switch (tok) {
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
     case token::TK_duration_counter:
     case token::TK_duration_trigger:
     case token::TK_self_scheduling_int:
@@ -2248,6 +2202,34 @@ string DerivedAgentVarSymbol::pp_modgen_name() const
 
     string result = pp_agent->name + "::";
     switch (tok) {
+    case token::TK_trigger_entrances:
+    {
+        assert(pp_av1);
+        assert(k1);
+        result += "trigger_entrances_" + pp_av1->name + "_" + k1->value_as_name();
+        break;
+    }
+    case token::TK_trigger_exits:
+    {
+        assert(pp_av1);
+        assert(k1);
+        result += "trigger_exits_" + pp_av1->name + "_" + k1->value_as_name();
+        break;
+    }
+    case token::TK_trigger_transitions:
+    {
+        assert(pp_av1);
+        assert(k1);
+        assert(k2);
+        result += "trigger_transitions_" + pp_av1->name + "_" + k1->value_as_name() + "_" + k2->value_as_name();
+        break;
+    }
+    case token::TK_trigger_changes:
+    {
+        assert(pp_av1);
+        result += "trigger_changes_" + pp_av1->name;
+        break;
+    }
     case token::TK_duration_counter:
     {
         assert(pp_av1);
@@ -2275,8 +2257,9 @@ string DerivedAgentVarSymbol::pp_modgen_name() const
         else {
             auto dav = dynamic_cast<DerivedAgentVarSymbol *>(pp_av1);
             assert(dav);
-            result += "_" + token_to_string(dav->tok); // e.g. active_spell_duration
-            if (dav->pp_av1) result += "_" + dav->pp_av1->name;
+            result += token_to_string(dav->tok); // e.g. active_spell_duration
+            result += "_";
+            if (dav->pp_av1) result += dav->pp_av1->name;
             if (dav->k1) result += "_" + dav->k1->value();
         }
         break;
@@ -2291,8 +2274,9 @@ string DerivedAgentVarSymbol::pp_modgen_name() const
         else {
             auto dav = dynamic_cast<DerivedAgentVarSymbol *>(pp_av1);
             assert(dav);
-            result += "_" + token_to_string(dav->tok); // e.g. active_spell_duration
-            if (dav->pp_av1) result += "_" + dav->pp_av1->name;
+            result += token_to_string(dav->tok); // e.g. active_spell_duration
+            result += "_";
+            if (dav->pp_av1) result += dav->pp_av1->name;
             if (dav->k1) result += "_" + dav->k1->value();
         }
         assert(pp_prt);

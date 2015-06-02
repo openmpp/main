@@ -944,7 +944,17 @@ void Symbol::populate_pp_symbols()
     );
 }
 
-void Symbol::modgen_sort_pp_symbols()
+void Symbol::modgen_sort_pp_symbols1()
+{
+    pp_symbols.sort(
+        [](symbol_map_value_type a, symbol_map_value_type b)
+        {
+            return a.second->pp_modgen_name() < b.second->pp_modgen_name();
+        }
+    );
+}
+
+void Symbol::modgen_sort_pp_symbols2()
 {
     pp_symbols.sort(
         [](symbol_map_value_type a, symbol_map_value_type b)
@@ -1152,7 +1162,10 @@ void Symbol::post_parse_all()
     // Optionally sort symbol table so that self-scheduled attributes have identical numbers
     // and identical code injection order between ompp and Modgen.
     if (modgen_sort_option) {
-        modgen_sort_pp_symbols();
+        // This first sort does not respect sorting group.
+        // It is used temporarily to reproduce the Modgen self-scheduling
+        // numeric identifiers in the for loop below.
+        modgen_sort_pp_symbols1();
     }
 
     // Assign numeric identifier to self-scheduling derived agentvars (used in trace output)
@@ -1164,6 +1177,11 @@ void Symbol::post_parse_all()
                 ++(dav->pp_agent->next_ss_id);
             }
         }
+    }
+
+    if (modgen_sort_option) {
+        // This second sort restores sorting group
+        modgen_sort_pp_symbols2();
     }
 
     // Pass 6: populate additional collections for subsequent code generation, e.g. for side_effect functions.
