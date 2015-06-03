@@ -2345,6 +2345,7 @@ CodeBlock DerivedAgentVarSymbol::cxx_declaration_agent()
         + pp_data_type->name + ", "
         + pp_data_type->wrapped_type() + ", "
         + pp_agent->name + ", "
+        + "&om_name_" + name + ", "
         + "&" + side_effects_fn->unique_name + ">";
     h += name + ";";
 

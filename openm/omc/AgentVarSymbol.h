@@ -55,6 +55,10 @@ public:
      */
     void create_auxiliary_symbols();
 
+    CodeBlock cxx_declaration_agent();
+
+    CodeBlock cxx_definition_agent();
+
     /**
      * Change the data type in the post-parse phase.
      *

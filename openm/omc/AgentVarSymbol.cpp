@@ -36,6 +36,28 @@ void AgentVarSymbol::create_auxiliary_symbols()
     side_effects_fn->doc_block = doxygen_short("Implement side effects of setting " + name + " in agent " + agent->name + ".");
 }
 
+CodeBlock AgentVarSymbol::cxx_declaration_agent()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_agent();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    h += "static const string om_name_" + name + ";";
+
+    return h;
+}
+
+CodeBlock AgentVarSymbol::cxx_definition_agent()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_agent();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    c += "const string " + pp_agent->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
+
+    return c;
+}
+
 void AgentVarSymbol::change_data_type(TypeSymbol *new_type)
 {
     // TODO Pass it upwards to AgentDataMemberSymbol rather than fiddling directly with members.
