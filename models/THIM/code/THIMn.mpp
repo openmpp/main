@@ -65,13 +65,13 @@ void Simulation()
     // are not affected by a change of time horizon.
     SetMaxTime(500.0);
 
-	// Create neighborhoods
-	CreateNeighborhoods();
-
 	// Create the single Ticker entity.
 	auto paTicker = new Ticker();
 	// Enter it into the the simulation.
 	paTicker->Start();
+
+	// Create neighborhoods
+	CreateNeighborhoods();
 
 	// Create the starting population
 	CreateStartingPopulation();
