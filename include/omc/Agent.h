@@ -38,10 +38,15 @@ public:
     virtual void om_initialize_time_and_age() = 0;
 
     /**
-     * One-time initialization of the offset of each agentvar in each type of agent. This offset is
-     * used to invoke side-effects when agentvar values change.
+     * Assign offset of each attribute in the entity.
+     * 
+     * This function is called exactly once for each kind of entity to assign static members which
+     * contain the offset of each attribute within the containing entity. This offset is used to
+     * access the containing entity to invoke side-effects when the value of the attribute changes.
+     * These offsets are fixed at compile time but the value cannot cannot be determined by the C++
+     * compiler at the time of template instantiation.
      */
-    virtual void om_initialize_callback_member_offsets() = 0;
+    virtual void om_assign_attribute_offsets() = 0;
 
     /**
      * Insert agent into entity sets of this agent type. The function definition is specific

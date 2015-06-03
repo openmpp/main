@@ -192,12 +192,12 @@ void AgentSymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Model-specific customizations before simulating entity.");
     }
 
-    // The initialize_callback_member_offsets member function
+    // The assign_attribute_offsets member function
     {
-        assert(!initialize_callback_member_offsets_fn); // initialization guarantee
-        initialize_callback_member_offsets_fn = new AgentFuncSymbol("om_initialize_callback_member_offsets", this);
-        assert(initialize_callback_member_offsets_fn); // out of memory check
-        initialize_callback_member_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing entity.");
+        assert(!assign_attribute_offsets_fn); // initialization guarantee
+        assign_attribute_offsets_fn = new AgentFuncSymbol("om_assign_attribute_offsets", this);
+        assert(assign_attribute_offsets_fn); // out of memory check
+        assign_attribute_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing entity.");
         // function body is generated in post-parse phase
     }
 
@@ -342,7 +342,7 @@ void AgentSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // construct function bodies.
-        build_body_initialize_callback_member_offsets();
+        build_body_assign_attribute_offsets();
         build_body_initialize_data_members();
         build_body_initialize_data_members0();
         build_body_initialize_events();
@@ -360,9 +360,9 @@ void AgentSymbol::post_parse(int pass)
     }
 }
 
-void AgentSymbol::build_body_initialize_callback_member_offsets()
+void AgentSymbol::build_body_assign_attribute_offsets()
 {
-    CodeBlock& c = initialize_callback_member_offsets_fn->func_body;
+    CodeBlock& c = assign_attribute_offsets_fn->func_body;
 
     for ( auto dm : pp_callback_members ) {
         // e.g. age.offset_in_agent = (char *)&(this->age) - (char *)this;

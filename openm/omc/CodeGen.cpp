@@ -302,7 +302,7 @@ void CodeGen::do_RunInit()
     c += "// Agent static initialization part 1: Initialize agent member offsets & null agent data members";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Agent - " + agent->name;
-        c += agent->name + "::om_null_agent.om_initialize_callback_member_offsets();";
+        c += agent->name + "::om_null_agent.om_assign_attribute_offsets();";
         c += agent->name + "::om_null_agent.om_initialize_data_members0();";
         c += "";
     }
