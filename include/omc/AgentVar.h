@@ -13,19 +13,29 @@
 using namespace std;
 
 /**
- * Base template for agentvars.
+ * Base template for attributes.
  * 
- * The return value casting operator is implemented in AgentVar, so C++ code can use the
- * agentvar in expressions. No assignment operators are implemented, making agentvars declared
+ * The return value casting operator is implemented in this template, so C++ code can use the
+ * attribute in expressions. No assignment operators are implemented, making entities declared
  * using AgentVar read-only. Side-effects are evaluated if a call to set() changes the value.
+ * 
+ * A bug in VC++ prevented the use of nullptr in NT_side_effects.  The parameter NT_se_present
+ * is a work-around for this bug.
  *
- * @tparam T               Type being wrapped.
+ * @tparam T               Type of the attribute.
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
- * @tparam A               Type of containing agent.
- * @tparam NT_name         Name of the attribute (non-type argument).
- * @tparam NT_side_effects Function implementing assignment side effects (non-type argument).
+ * @tparam A               Type of containing entity.
+ * @tparam NT_name         Name of the attribute (non-type parameter).
+ * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
+ * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
  */
-template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value) = nullptr>
+template<
+    typename T,
+    typename T2,
+    typename A,
+    string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present
+>
 class AgentVar 
 {
 public:
@@ -83,7 +93,7 @@ public:
         T old_value = get();
         if ( old_value != new_value ) {
             value = new_value;
-            if ( NT_side_effects != nullptr ) {
+            if (NT_se_present) {
                 (agent()->*NT_side_effects)(old_value, new_value);
             }
         }
@@ -113,30 +123,45 @@ public:
 };
 
 /**
- * AgentVar offset in Agent (static definition)
+ * Attribute offset in entity (static definition)
  * 
- * The offset is used within an instance of agentvar to gain access to the enclosing agent to
- * call the side-effects function in the context of the agent and with access to all agentvars
- * in the agent.  Agentvars do not contain a pointer to the continaing agent because the memory
- * cost would be prohibitive for simulations with many agents containing many agentvars.
+ * The offset is used within an instance of attribute to gain access to the enclosing entity to
+ * call the side-effects function in the context of the entity and with access to all attributes
+ * in the entity.  Attributes do not contain a pointer to the containing entity because the memory
+ * cost would be prohibitive for simulations with many entities containing many attributes.
  */
-template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value)>
-size_t AgentVar<T, T2, A, NT_name, NT_side_effects>::offset_in_agent = 0;
+template<
+    typename T,
+    typename T2,
+    typename A,
+    string const *NT_name,
+    void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present
+>
+size_t AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>::offset_in_agent = 0;
 
 /**
- * Template for assignable agentvars.
+ * Template for assignable attributes.
  * 
  * All C++ assignment operators are implemented in AssignableAgentVar, allowing developer code to
- * assign values.  Side-effects are performed if the assignment changes the value.
+ * assign values.  Side-effects are executed if the assignment changes the value.
  *
  * @tparam T               Generic type parameter.
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
  * @tparam A               Type of containing agent.
  * @tparam NT_name         Name of the attribute (non-type argument).
  * @tparam NT_side_effects Function implementing assignment side effects (non-type argument).
+ * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
  */
-template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value) = nullptr>
-class AssignableAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects>
+template<
+    typename T,
+    typename T2,
+    typename A,
+    string const *NT_name,
+    void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present
+>
+class AssignableAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
 {
 public:
 
@@ -273,20 +298,29 @@ public:
 };
 
 /**
- * Template for expression agentvars.
+ * Template for expression attributes.
  * 
- * No assignment operators are implemented, making the agentvar read-only in C++ code.  A
+ * No assignment operators are implemented, making the attribute read-only in C++ code.  A
  * constant template argument holds the function used to evaluate the expression.
  *
- * @tparam T                  Generic type parameter.
+ * @tparam T                  Type of the attribute.
  * @tparam T2                 Type of the type being wrapped (e.g. range has inner type int).
- * @tparam A                  Type of containing agent.
+ * @tparam A                  Type of the containing entity.
  * @tparam NT_name            Name of the attribute (non-type argument).
- * @tparam NT_side_effects    Function implementing assignment side effects (non-type argument).
- * @tparam NT_expression      Function implementing expression evaluation (non-type argument).
+ * @tparam NT_side_effects    Function implementing assignment side effects (non-type parameter).
+ * @tparam NT_se_present        Assignment side-effects function is empty (non-type parameter).
+ * @tparam NT_expression      Function implementing expression evaluation (non-type parameter).
  */
-template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value), T (A::*NT_expression)()>
-class ExpressionAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects>
+template<
+    typename T,
+    typename T2,
+    typename A,
+    string const *NT_name,
+    void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present,
+    T (A::*NT_expression)()
+>
+class ExpressionAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
 {
 public:
     // evaluate expression and update
@@ -304,21 +338,31 @@ public:
  * constant template argument holds the function used to evaluate the logical condition during
  * which duration will be cumulated.
  *
- * @tparam T               Generic type parameter.
+ * @tparam T               Type of the attribute.
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
- * @tparam A               Type of containing agent.
+ * @tparam A               Type of the containing entity.
  * @tparam NT_name         Name of the attribute (non-type argument).
- * @tparam NT_side_effects Function implementing assignment side effects (non-type argument).
- * @tparam NT_condition    Function implementing the condition (non-type argument).
+ * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
+ * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
+ * @tparam NT_condition    Function implementing the condition (non-type parameter).
  */
-template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value) = nullptr , bool (A::*NT_condition)() = nullptr>
-class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects>
+template<
+    typename T,
+    typename T2,
+    typename A,
+    string const *NT_name,
+    void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present,
+    bool (A::*NT_condition)() = nullptr
+>
+class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
 {
 public:
     // update duration 
     void advance( T delta_time )
     {
-        bool active = ( NT_condition == nullptr || ((this->agent())->*NT_condition)() );        if ( active ) {
+        bool active = ( NT_condition == nullptr || ((this->agent())->*NT_condition)() );
+        if ( active ) {
             this->set( this->get() + delta_time );
         }
     }
@@ -348,13 +392,22 @@ public:
  *
  * @tparam T               Storage type, e.g. link<Thing>
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
- * @tparam A               Type of containing agent, e.g. Person
- * @tparam B               Type of the agent in the link, e.g. Thing
- * @tparam NT_name         Name of the attribute (non-type argument).
- * @tparam NT_side_effects Function implementing assignment side effects (constant).
+ * @tparam A               Type of the containing entity.
+ * @tparam B               Type of the entity in the link, e.g. Thing
+ * @tparam NT_name         Name of the attribute (non-type parameter).
+ * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
+ * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
  */
-template<typename T, typename T2, typename A, typename B, string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value) = nullptr>
-class LinkAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects>
+template<
+    typename T,
+    typename T2,
+    typename A,
+    typename B,
+    string const *NT_name,
+    void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present
+>
+class LinkAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
 {
 public:
 

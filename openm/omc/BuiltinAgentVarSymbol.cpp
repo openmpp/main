@@ -50,7 +50,9 @@ CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
         + pp_data_type->wrapped_type() + ", "
         + agent->name + ", "
         + "&om_name_" + name + ", "
-        + "&" + side_effects_fn->unique_name + ">";
+        + "&" + side_effects_fn->unique_name + ", "
+        + (!side_effects_fn->empty() ? "true" : "false")
+        + ">";
     h += name + ";";
 
     return h;

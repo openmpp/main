@@ -51,6 +51,11 @@ CodeBlock AgentFuncSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    if (suppress_code_if_empty && empty()) {
+        // Suppress declaration
+        return CodeBlock();
+    }
+
     if (doc_block.size() == 0) {
         // use a default short doxygen comment
         h += doxygen_short(label());
@@ -71,6 +76,11 @@ CodeBlock AgentFuncSymbol::cxx_definition_agent()
     CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+
+    if (suppress_code_if_empty && empty()) {
+        // Suppress definition
+        return CodeBlock();
+    }
 
     if (!suppress_defn) {
         c += return_decl + " " + unique_name + "(" + arg_list_decl + ")";

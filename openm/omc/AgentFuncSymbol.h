@@ -38,6 +38,7 @@ public:
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
+        , suppress_code_if_empty(false)
     {
     }
 
@@ -56,6 +57,7 @@ public:
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
+        , suppress_code_if_empty(false)
     {
     }
 
@@ -75,6 +77,16 @@ public:
     CodeBlock cxx_declaration_agent();
 
     CodeBlock cxx_definition_agent();
+
+    /**
+     * Checks whether the function body is empty.
+     *
+     * @return true if empty, false otherwise.
+     */
+    bool empty() const
+    {
+        return func_body.empty();
+    }
 
     /**
      * The comment block which immediately preceeds the function declaration.
@@ -97,6 +109,13 @@ public:
      * True if developer-supplied, false if generated
      */
     bool suppress_defn;
+
+    /**
+     * Flag to suppress declaration and definition if function body is empty.
+     * 
+     * Default is false.
+     */
+    bool suppress_code_if_empty;
 
     /**
      * The function body (if generated)
