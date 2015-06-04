@@ -86,7 +86,9 @@ CodeBlock LinkAgentVarSymbol::cxx_declaration_agent()
         + reciprocal_agent->name + ", "
         + "&om_name_" + name + ", "
         + "&" + side_effects_fn->unique_name + ", "
-        + (!side_effects_fn->empty() ? "true" : "false")
+        + (!side_effects_fn->empty() ? "true" : "false") + ", "
+        + "&" + notify_fn->unique_name + ", "
+        + (!notify_fn->empty() ? "true" : "false")
         + ">";
     h += name + ";";
 

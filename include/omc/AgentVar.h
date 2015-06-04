@@ -19,8 +19,8 @@ using namespace std;
  * attribute in expressions. No assignment operators are implemented, making entities declared
  * using AgentVar read-only. Side-effects are evaluated if a call to set() changes the value.
  * 
- * A bug in VC++ prevented the use of nullptr in NT_side_effects.  The parameter NT_se_present
- * is a work-around for this bug.
+ * A bug in VC++ prevented the use of nullptr for NT_side_effects.  The parameter NT_se_present
+ * is a work-around for this bug.  Ditto for NT_notify and NT_ntfy_present.
  *
  * @tparam T               Type of the attribute.
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
@@ -28,13 +28,18 @@ using namespace std;
  * @tparam NT_name         Name of the attribute (non-type parameter).
  * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
  * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
+ * @tparam NT_notify       Function implementing pre-notification of change in value (non-type parameter).
+ * @tparam NT_ntfy_present Assignment pre-notification actions are present (non-type parameter).
  */
 template<
     typename T,
     typename T2,
     typename A,
-    string const *NT_name, void (A::*NT_side_effects)(T old_value, T new_value),
-    bool NT_se_present
+    string const *NT_name,
+    void (A::*NT_side_effects)(T old_value, T new_value),
+    bool NT_se_present,
+    void (A::*NT_notify)(),
+    bool NT_ntfy_present
 >
 class AgentVar 
 {
@@ -92,10 +97,20 @@ public:
     {
         T old_value = get();
         if ( old_value != new_value ) {
+
+            // Before the value of the attribute changes
+            if (NT_ntfy_present) {
+                (agent()->*NT_notify)();
+            }
+
+            // Change the attribute to the new value
             value = new_value;
+
+            // After the attribute value has changed
             if (NT_se_present) {
                 (agent()->*NT_side_effects)(old_value, new_value);
             }
+
         }
 
     }
@@ -136,9 +151,11 @@ template<
     typename A,
     string const *NT_name,
     void (A::*NT_side_effects)(T old_value, T new_value),
-    bool NT_se_present
+    bool NT_se_present,
+    void (A::*NT_notify)(),
+    bool NT_ntfy_present
 >
-size_t AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>::offset_in_agent = 0;
+size_t AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
 
 /**
  * Template for assignable attributes.
@@ -152,6 +169,8 @@ size_t AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>::offset_in_ag
  * @tparam NT_name         Name of the attribute (non-type argument).
  * @tparam NT_side_effects Function implementing assignment side effects (non-type argument).
  * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
+ * @tparam NT_notify       Function implementing pre-notification of change in value (non-type parameter).
+ * @tparam NT_ntfy_present Assignment pre-notification actions are present (non-type parameter).
  */
 template<
     typename T,
@@ -159,9 +178,11 @@ template<
     typename A,
     string const *NT_name,
     void (A::*NT_side_effects)(T old_value, T new_value),
-    bool NT_se_present
+    bool NT_se_present,
+    void (A::*NT_notify)(),
+    bool NT_ntfy_present
 >
-class AssignableAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
+class AssignableAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
 
@@ -308,7 +329,9 @@ public:
  * @tparam A                  Type of the containing entity.
  * @tparam NT_name            Name of the attribute (non-type argument).
  * @tparam NT_side_effects    Function implementing assignment side effects (non-type parameter).
- * @tparam NT_se_present        Assignment side-effects function is empty (non-type parameter).
+ * @tparam NT_se_present      Assignment side-effects function is empty (non-type parameter).
+ * @tparam NT_ntfy_present Assignment pre-notification actions are present (non-type parameter).
+ * @tparam NT_notify          Function implementing pre-notification of change in value (non-type parameter).
  * @tparam NT_expression      Function implementing expression evaluation (non-type parameter).
  */
 template<
@@ -318,9 +341,11 @@ template<
     string const *NT_name,
     void (A::*NT_side_effects)(T old_value, T new_value),
     bool NT_se_present,
+    void (A::*NT_notify)(),
+    bool NT_ntfy_present,
     T (A::*NT_expression)()
 >
-class ExpressionAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
+class ExpressionAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
     // evaluate expression and update
@@ -344,6 +369,8 @@ public:
  * @tparam NT_name         Name of the attribute (non-type argument).
  * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
  * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
+ * @tparam NT_notify       Function implementing pre-notification of change in value (non-type parameter).
+ * @tparam NT_ntfy_present Assignment pre-notification actions are present (non-type parameter).
  * @tparam NT_condition    Function implementing the condition (non-type parameter).
  */
 template<
@@ -353,9 +380,11 @@ template<
     string const *NT_name,
     void (A::*NT_side_effects)(T old_value, T new_value),
     bool NT_se_present,
+    void (A::*NT_notify)(),
+    bool NT_ntfy_present,
     bool (A::*NT_condition)() = nullptr
 >
-class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
+class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
     // update duration 
@@ -397,6 +426,8 @@ public:
  * @tparam NT_name         Name of the attribute (non-type parameter).
  * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
  * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
+ * @tparam NT_notify       Function implementing pre-notification of change in value (non-type parameter).
+ * @tparam NT_ntfy_present Assignment pre-notification actions are present (non-type parameter).
  */
 template<
     typename T,
@@ -405,9 +436,11 @@ template<
     typename B,
     string const *NT_name,
     void (A::*NT_side_effects)(T old_value, T new_value),
-    bool NT_se_present
+    bool NT_se_present,
+    void (A::*NT_notify)(),
+    bool NT_ntfy_present
 >
-class LinkAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present>
+class LinkAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
 

@@ -26,14 +26,20 @@ using namespace std;
 void AgentVarSymbol::create_auxiliary_symbols()
 {
     assert(!side_effects_fn); // logic guarantee
-
     side_effects_fn = new AgentFuncSymbol("om_side_effects_" + name,
                                           agent,
                                           "void",
                                           data_type->name + " om_old, " + data_type->name + " om_new");
     assert(side_effects_fn); // out of memory check
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of changing " + name + " in agent " + agent->name + ".");
 
-    side_effects_fn->doc_block = doxygen_short("Implement side effects of setting " + name + " in agent " + agent->name + ".");
+    assert(!notify_fn); // logic guarantee
+    notify_fn = new AgentFuncSymbol("om_notify_" + name,
+                                          agent,
+                                          "void",
+                                          "");
+    assert(notify_fn); // out of memory check
+    notify_fn->doc_block = doxygen_short("Implement notification before changing " + name + " in agent " + agent->name + ".");
 }
 
 CodeBlock AgentVarSymbol::cxx_declaration_agent()

@@ -31,6 +31,7 @@ public:
     AgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(sym, agent, type, decl_loc)
         , side_effects_fn(nullptr)
+        , notify_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -46,6 +47,7 @@ public:
     AgentVarSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(member_name, agent, type, decl_loc)
         , side_effects_fn(nullptr)
+        , notify_fn(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -106,9 +108,14 @@ public:
     void post_parse(int pass);
 
     /**
-     * The side effects function of the agentvar.
+     * The side effects function of the attribute.
      */
     AgentFuncSymbol *side_effects_fn;
+
+    /**
+     * The change notification function of the attribute.
+     */
+    AgentFuncSymbol *notify_fn;
 
 };
 
