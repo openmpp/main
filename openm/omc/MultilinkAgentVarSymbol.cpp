@@ -142,6 +142,7 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
         // Dependency on multilink
         {
             CodeBlock& c = pp_multilink->side_effects_fn->func_body;
+            c += injection_description();
             c += "// Re-evaluate multilink agentvar " + name;
             c += evaluate_fn->name + "();";
             c += "";
@@ -152,6 +153,7 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
             if (pp_multilink->reciprocal_link) {
                 string rlink = pp_multilink->reciprocal_link->name;
                 CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
+                c += injection_description();
                 c += "// Incremental update of multilink agentvar " + name;
                 c += "{";
                 c += "auto lnk = " + rlink + ".get();";
@@ -181,6 +183,7 @@ void MultilinkAgentVarSymbol::post_parse(int pass)
                 assert(pp_multilink->reciprocal_multilink);
                 string rlink = pp_multilink->reciprocal_multilink->name;
                 CodeBlock& c = pp_agentvar->side_effects_fn->func_body;
+                c += injection_description();
                 c += "// Incremental update of multilink agentvar " + name + " for each agent of multilink";
                 c += "for (auto &lnk : " + rlink + ".storage) {";
                 c += "if (lnk.get() != nullptr) {";
