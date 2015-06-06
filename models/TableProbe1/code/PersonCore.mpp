@@ -1,0 +1,134 @@
+classification TEST
+{
+    T_00, //EN Filter true on exit
+    T_01, //EN Filter false on exit
+    T_02  //EN Fltr & x
+};
+
+range ASSIGNMENTS
+{
+    0,
+    9
+};
+
+classification ATTRIBUTE
+{
+    A_TIME,
+    A_ALIVE,
+    A_FLTR,
+    A_ROW,
+    A_COL,
+    A_X
+};
+
+range ROW
+{
+    0, 1
+};
+
+range COL
+{
+    0, 2
+};
+
+range EVENT_COUNTER
+{
+    0, 9
+};
+
+parameters
+{
+    //EN Only one test
+    logical OneTest;
+
+    //EN Which test
+    TEST WhichTest;
+
+    //EN Script of attribute assignments
+	int Script[TEST][ASSIGNMENTS][ATTRIBUTE];
+	/* NOTE(Script, EN)
+        The leading dimension TEST corresponds to a case in the simulation.
+        The first column gives the times at which values will be assigned to attributes.
+        Additional columns are the values to assign at the given time.
+        If duplicate values with the same time are present they are assigned in row order,
+        within the event at the given time.
+        The simulation starts at time 0, with no associated event,
+        so entries with time=0 assign values to attributes before the entity enters the simulation.
+        An event occurs at each integral time 1,2,... during which assignments occur.
+	*/
+
+};
+
+actor Person
+{
+     //EN Test (with long description)
+    TEST test = OneTest ? WhichTest : TEST(actor_id - 1);
+
+	logical alive;
+    logical fltr;
+    ROW row;
+    COL col;
+    int x;
+    EVENT_COUNTER event_counter;
+
+    void AssignAttributes();
+
+	event timeScriptEvent, ScriptEvent;
+
+	void Start();
+	void Finish();
+};
+
+void Person::AssignAttributes()
+{
+    for (int j = 0; j < SIZE(ASSIGNMENTS); ++j) {
+
+        if (time == Script[test][j][A_TIME]) {
+
+            alive  = 0 != Script[test][j][A_ALIVE];
+            fltr   = 0 != Script[test][j][A_FLTR];
+            row    = COERCE(ROW, Script[test][j][A_ROW]);
+            col    = COERCE(COL, Script[test][j][A_COL]);
+            x      = Script[test][j][A_X];
+
+        }
+    }
+}
+
+TIME Person::timeScriptEvent()
+{
+	return WAIT(1.0);
+}
+
+void Person::ScriptEvent()
+{
+    event_counter++;
+
+    AssignAttributes();
+
+    if (alive == false) {
+	    Finish();
+    }
+}
+
+void Person::Start()
+{
+    initialize_attributes();
+
+	age = 0;
+	time = 0;
+
+    AssignAttributes();
+
+    enter_simulation();
+}
+
+extern void signal_exit_simulation_all();
+void Person::Finish()
+{
+    if (OneTest || (int)test == SIZE(TEST) - 1) {
+        // Stop the simulation - no more tests to do
+        signal_exit_simulation_all();
+    }
+    exit_simulation();
+}

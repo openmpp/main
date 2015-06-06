@@ -1,0 +1,60 @@
+parameters
+{
+    //EN Only one test
+    logical OneTest = TRUE;
+
+    //EN Which test
+    TEST WhichTest = T_02;
+
+	//EN Script of attribute assignments
+    int Script[TEST][ASSIGNMENTS][ATTRIBUTE] = {
+
+        // T_00 Filter true on exit
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    1,    0,     2,
+                 2,    1,    1,    1,    1,     4,
+                 3,    1,    1,    0,    2,     8,
+                 4,    0,    1,    0,    0,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // filler assignments (ignored)
+        },
+
+         // T_01 Filter false on exit
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    1,    0,     2,
+                 2,    1,    1,    1,    1,     4,
+                 3,    1,    1,    0,    2,     8,
+                 4,    0,    0,    0,    0,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // filler assignments (ignored)
+        },
+
+
+        // T_02 Fltr & x
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    1,     2,
+                 2,    1,    0,    0,    2,     4,
+                 3,    1,    0,    1,    0,     8,
+                 4,    0,    0,    1,    1,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // filler assignments (ignored)
+        },
+    };
+	/* NOTE(Script, EN)
+        The leading dimension TEST corresponds to a case in the simulation.
+        The first column gives the times at which values will be assigned to attributes.
+        Additional columns are the values to assign at the given time.
+        If duplicate values with the same time are present they are assigned in row order,
+        within the event at the given time.
+        The simulation starts at time 0, with no associated event,
+        so entries with time=0 assign values to attributes before the entity enters the simulation.
+        An event occurs at each integral time 1,2,... during which assignments occur.
+	*/
+};
+

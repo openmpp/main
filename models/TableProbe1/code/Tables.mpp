@@ -1,0 +1,28 @@
+table Person Table00
+{
+    test
+    * event_counter
+	* {
+        unit,
+		value_in(fltr),  //EN fltr(in)
+		value_out(fltr), //EN fltr(out)
+		value_in(row),   //EN row(in)
+		value_out(row),  //EN row(out)
+		value_in(col),   //EN col(in)
+		value_out(col),  //EN col(out)
+		value_in(x),     //EN x(in)
+		value_out(x)     //EN x(out)
+	}
+};
+
+table Person Table01
+[ fltr ]
+{
+    test
+	* {
+		value_in(x),
+		value_out(x)
+	}
+    * row
+    * col
+};
