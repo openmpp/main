@@ -28,7 +28,6 @@ void SimulateEvents()
 	{
     	if (do_exit_simulation_all || gbCancelled || gbErrors) 
     	{
-            do_exit_simulation_all = false;
 			// Terminate the case.
     		gpoEventQueue->FinishAllActors();
     	}
@@ -64,6 +63,11 @@ void Simulation()
 
 		// Tell the Modgen run-time that the case has been completed.
 		SignalCase();
+
+        if (do_exit_simulation_all) {
+            // The model signalled to end the simulation
+            break;
+        }
 	}
 }
 							
