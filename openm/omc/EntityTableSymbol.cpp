@@ -607,14 +607,15 @@ void EntityTableSymbol::build_body_start_increment()
 {
     CodeBlock& c = start_increment_fn->func_body;
 
-    c += "// Set active status";
-    c += active->name + " = true;";
+    c += "// Create aliases for members used by this table to clarify subsequent code";
+    c += "auto & cell = " + cell->name + ";";
+    c += "auto & cell_in = " + cell_in->name + ";";
+    c += "auto & active = " + active->name + ";";
+    c += "auto & pending = " + pending->name + ";";
     c += "";
-    c += "// Reset pending increment status";
-    c += pending->name + " = false;";
-    c += "";
-    c += "// Record cell index at increment start";
-    c += cell_in->name + " = " + cell->name + ";";
+    c += "active = true;";
+    c += "pending = false;";
+    c += "cell_in = cell;";
     c += "";
 
     for (auto ma : pp_measure_attributes) {
@@ -643,10 +644,12 @@ void EntityTableSymbol::build_body_finish_increment()
 {
     CodeBlock& c = finish_increment_fn->func_body;
 
-    c += "// Set active status";
-    c += active->name + " = false;";
+    c += "// Create aliases for members used by this table to clarify subsequent code";
+    c += "auto & active = " + active->name + ";";
+    c += "auto & cell_in = " + cell_in->name + ";";
     c += "";
-    c += "int cell = " + cell_in->name + ";" ;
+
+    c += "active = false;";
     c += "";
 
     for (auto acc : pp_accumulators) {
@@ -666,7 +669,7 @@ void EntityTableSymbol::build_body_finish_increment()
         // index of accumulator as string
         string accumulator_index = to_string(acc->index);
         // expression for the accumulator as string
-        string accumulator_expr = "the" + name + "->acc[" + accumulator_index + "][cell]";
+        string accumulator_expr = "the" + name + "->acc[" + accumulator_index + "][cell_in]";
 
         // expression which evaluates to the value of the increment
         string increment_expr;
@@ -704,6 +707,17 @@ void EntityTableSymbol::build_body_finish_increment()
 
         c += "{";
         c += "// " + acc->pretty_name();
+        if (acc->uses_value_in()) {
+            if (acc->table_op == token::TK_interval) {
+                c += "auto & value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
+            }
+            else if (acc->table_op == token::TK_event) {
+                c += "auto & value_in = " + acc->pp_analysis_agentvar->in_event_member_name() + ";";
+            }
+        }
+        c += "auto & value_out = " + acc->agentvar->name + ";";
+        c += "";
+
         c += "double dIncrement = " + increment_expr + ";";
         switch (acc->accumulator) {
         case token::TK_sum:
@@ -739,7 +753,7 @@ void EntityTableSymbol::build_body_finish_increment()
             string obs_index = to_string(acc->obs_collection_index);
             if (acc->updates_obs_collection) {
                 c += "// Associated observation collection is " + obs_index;
-                c += "auto &lst = the" + name + "->coll[cell][" + obs_index + "];";
+                c += "auto &lst = the" + name + "->coll[cell_in][" + obs_index + "];";
                 c += "lst.push_front(dIncrement);";
             }
             else {
@@ -758,11 +772,12 @@ void EntityTableSymbol::build_body_start_pending()
 {
     CodeBlock& c = start_pending_fn->func_body;
 
+    c += "// Create aliases for members used by this table to clarify subsequent code";
     if (filter) {
         c += "auto & filter = " + filter->name + ";";
     }
     else {
-        c += "const bool filter = true;";
+        c += "const bool filter = true; // table has no filter";
     }
     c += "auto & cell = " + cell->name + ";";
     c += "auto & cell_in = " + cell_in->name + ";";
@@ -783,11 +798,12 @@ void EntityTableSymbol::build_body_finish_pending()
 {
     CodeBlock& c = finish_pending_fn->func_body;
 
+    c += "// Create aliases for members used by this table to clarify subsequent code";
     if (filter) {
         c += "auto & filter = " + filter->name + ";";
     }
     else {
-        c += "const bool filter = true;";
+        c += "const bool filter = true; // table has no filter";
     }
     c += "auto & active = " + active->name + ";";
     c += "auto & pending = " + pending->name + ";";

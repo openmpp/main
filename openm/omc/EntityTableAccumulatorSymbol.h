@@ -136,6 +136,19 @@ public:
     virtual string pretty_name() const;
 
     /**
+     * Determines if accumulator uses the value at start of the increment
+     */
+    bool uses_value_in() const
+    {
+        return increment == token::TK_delta
+            || increment == token::TK_delta2
+            || increment == token::TK_nz_delta
+            || increment == token::TK_value_in
+            || increment == token::TK_value_in2
+            || increment == token::TK_nz_value_in;
+    }
+
+    /**
      * The table containing this accumulator (reference to pointer)
      * 
      * Stable to symbol morphing during parse phase.
