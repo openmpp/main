@@ -48,6 +48,17 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             }
             string member_name = in_member_name();
             auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
+            assert(sym);
+        }
+        if ( need_value_in_event ) {
+            // Create symbol for the data member which will hold the 'in' value of the increment (for 'event' tabulation operator)
+            auto av = dynamic_cast<AgentVarSymbol *>(agentvar);
+            if (av == nullptr) {
+                throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
+            }
+            string member_name = in_event_member_name();
+            auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
+            assert(sym);
         }
         break;
     }
@@ -81,13 +92,10 @@ string EntityTableMeasureAttributeSymbol::in_member_name() const
     return result;
 }
 
-CodeBlock EntityTableMeasureAttributeSymbol::cxx_prepare_increment() const
+string EntityTableMeasureAttributeSymbol::in_event_member_name() const
 {
-    assert(pp_table);  // only call post-parse
-    assert(pp_agentvar);  // only call post-parse
-    CodeBlock c;
-    // example:              DurationOfLife.value_in.alive = alive;\n
-    c += in_member_name() + " = " + pp_agentvar->name + ".get();";
-    return c;
+    string result;
+    result = "om_" + table->name + "_in_event_" + agentvar->name;
+    return result;
 }
 

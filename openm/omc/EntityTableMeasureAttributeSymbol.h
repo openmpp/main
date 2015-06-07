@@ -42,6 +42,7 @@ public:
         , pp_agentvar(nullptr)
         , index(index)
         , need_value_in(false)
+        , need_value_in_event(false)
     {
     }
 
@@ -70,20 +71,23 @@ public:
 
     void post_parse(int pass);
 
-
     /**
-     * Gets the member name for the 'in' value.
+     * Gets the member name for the 'in' value (for 'interval' table operator)
      * 
-     * This is the name of the data member which holds the "in" value of the agentvar.  It holds the
-     * value of the agentvar at the start of an increment, and is used to compute 'delta', etc. when
-     * the increment is finalized and passed to an accumulator.
+     * Stores the "in" value of the attribute at the start of an increment.
      *
      * @return The name as a string.
      */
-
     string in_member_name() const;
 
-    CodeBlock cxx_prepare_increment() const;
+    /**
+     * Gets the member name for the 'in' value (for 'event' table operator)
+     * 
+     * Stores the "in" value of the attribute at the start of an increment.
+     *
+     * @return The name as a string.
+     */
+    string in_event_member_name() const;
 
     /**
     * The table using the agentvar
@@ -125,11 +129,13 @@ public:
     const int index;
 
     /**
-    * true means that generated code needs the member storing the "value_in" of the agentvar
-    *
-    * Only valid after post-parse phase 1.
-    */
-
+     * true means that generated code needs the member storing the "value_in" of the attribute
+     */
     bool need_value_in;
+
+    /**
+     * true means that generated code needs the member storing the "value_in" of event(attribute)
+     */
+    bool need_value_in_event;
 };
 

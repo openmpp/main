@@ -446,7 +446,7 @@ void CodeGen::do_ModelShutdown()
         c += "}";
     }
 
-    c += "// write derived tables (placeholders)";
+    c += "// write derived tables (measures)";
     for ( auto derived_table : Symbol::pp_all_derived_tables ) {
         c += "{";
         c += "const char *name = \"" + derived_table->name + "\";";

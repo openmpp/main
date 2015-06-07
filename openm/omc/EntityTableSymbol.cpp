@@ -618,14 +618,18 @@ void EntityTableSymbol::build_body_start_increment()
     c += "";
 
     for (auto ma : pp_measure_attributes) {
-        if (ma->need_value_in) {
+        if (ma->need_value_in || ma->need_value_in_event) {
             c += "// Record attribute values at increment start";
             break;
         }
     }
     for (auto ma : pp_measure_attributes) {
-        if (ma->need_value_in)
-            c += ma->cxx_prepare_increment();
+        if (ma->need_value_in) {
+            c += ma->in_member_name() + " = " + ma->pp_agentvar->name + ".get();";
+        }
+        if (ma->need_value_in_event) {
+            c += ma->in_event_member_name() + " = " + ma->pp_agentvar->name + ".get();";
+        }
     }
     c += "";
 
@@ -648,8 +652,17 @@ void EntityTableSymbol::build_body_finish_increment()
     for (auto acc : pp_accumulators) {
         // name of agentvar
         string agentvar_name = acc->agentvar->name;
-        // name of 'in' for agentvar
-        string in_agentvar_name = acc->pp_analysis_agentvar->in_member_name();
+        // name of 'in' for attribute
+        string in_agentvar_name;
+        if (acc->table_op == token::TK_interval) {
+            in_agentvar_name = acc->pp_analysis_agentvar->in_member_name();
+        }
+        else if (acc->table_op == token::TK_event) {
+            in_agentvar_name = acc->pp_analysis_agentvar->in_event_member_name();
+        }
+        else {
+            assert(0); // logic guarantee
+        }
         // index of accumulator as string
         string accumulator_index = to_string(acc->index);
         // expression for the accumulator as string

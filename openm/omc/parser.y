@@ -2925,15 +2925,23 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_ty
         analysis_agentvar = new EntityTableMeasureAttributeSymbol( table, agentvar, pc.counter3);
         pc.counter3++;
     }
-    // determine if the increment requires the creation & maintenance of an associated 'in' agent member.
-    if ( analysis_agentvar->need_value_in == false ) {
-        if (   incr == token::TK_delta
-            || incr == token::TK_delta2
-            || incr == token::TK_nz_delta
-            || incr == token::TK_value_in
-            || incr == token::TK_value_in2
-            || incr == token::TK_nz_value_in
-            ) analysis_agentvar->need_value_in = true;
+    // determine if the increment requires the creation & maintenance of an associated 'in' member.
+    if (   incr == token::TK_delta
+        || incr == token::TK_delta2
+        || incr == token::TK_nz_delta
+        || incr == token::TK_value_in
+        || incr == token::TK_value_in2
+        || incr == token::TK_nz_value_in ) {
+
+        if (table_op == token::TK_interval) {
+            analysis_agentvar->need_value_in = true;
+        }
+        else if (table_op == token::TK_event) {
+            analysis_agentvar->need_value_in_event = true;
+        }
+        else {
+            assert(false); // logic guarantee
+        }
     }
     // Also create symbol for associated accumulator if not already present
     EntityTableAccumulatorSymbol *accumulator = nullptr;
