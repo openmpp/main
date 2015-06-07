@@ -243,7 +243,13 @@ sub modgen_tables_to_csv
 			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
 				my $value = $ADO_RS->Fields($field_ordinal)->value;
 				if (length($value) && $round_value && $field_ordinal == $fields - 1) {
-					$value = 0 + sprintf("%.${round_prec}e", $value);
+					if ($value eq '-1.#IND' ) {
+						# is a NaN, output in CSV sa an empty field (NULL)
+						$value = '';
+					}
+					else {
+						$value = 0 + sprintf("%.${round_prec}e", $value);
+					}
 				}
 				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];
 				$out_line .= "${value}";
