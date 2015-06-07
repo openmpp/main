@@ -448,17 +448,21 @@ void AgentSymbol::build_body_initialize_tables()
 {
     CodeBlock& c = initialize_tables_fn->func_body;
 
-    for (auto table : pp_entity_tables) {
-        c += "// " + table->name;
+    for (auto tbl : pp_entity_tables) {
+        c += "// " + tbl->name;
+        c += "{";
+        if (tbl->filter) {
+            c += "auto & filter = " + tbl->filter->name + ";";
+        }
+        else {
+            c += "const bool filter = true;";
+        }
         // If the table filter is false at initialization, do nothing
-        if (table->filter) {
-            c += "if (" + table->filter->name + ") {" ;
-        }
-        c += table->update_cell_fn->name + "();" ;
-        c += table->prepare_increments_fn->name + "();" ;
-        if (table->filter) {
-            c += "}" ;
-        }
+        c += "if (filter) {" ;
+        c += tbl->update_cell_fn->name + "();" ;
+        c += tbl->start_increment_fn->name + "();" ;
+        c += "}" ;
+        c += "}";
         c += "";
     }
 }
@@ -467,16 +471,34 @@ void AgentSymbol::build_body_finalize_tables()
 {
     CodeBlock& c = finalize_tables_fn->func_body;
 
-    for (auto table : pp_entity_tables) {
-        c += "// " + table->name;
-        // If the table filter is false at finalization, do nothing
-        if (table->filter) {
-            c += "if (" + table->filter->name + ") {" ;
+    for (auto tbl : pp_entity_tables) {
+        c += "// " + tbl->name;
+        c += "{";
+        if (tbl->filter) {
+            c += "auto & filter = " + tbl->filter->name + ";";
         }
-        c += table->process_increments_fn->name + "();";
-        if (table->filter) {
-            c += "}" ;
+        else {
+            c += "const bool filter = true;";
         }
+        c += "auto & active = " + tbl->active->name + ";";
+        c += "auto & pending = " + tbl->pending->name + ";";
+        c += "";
+        c += "if (pending) {";
+        c += "// Values are definitive";
+        c += "pending = false;";
+        c += "if (active) {";
+        c += "// Finish the pending increment";
+        c += tbl->finish_increment_fn->name + "();";
+        c += "}";
+        c += "if (filter) {";
+        c += "// Start a final increment";
+        c += tbl->start_increment_fn->name + "();";
+        c += "}";
+        c += "}";
+        c += "if (active) {";
+        c += tbl->finish_increment_fn->name + "();";
+        c += "}";
+        c += "}";
         c += "";
     }
 }

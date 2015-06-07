@@ -41,10 +41,15 @@ public:
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
         , cell(nullptr)
-        , previous_global_counter(nullptr)
+        , cell_in(nullptr)
+        , active(nullptr)
+        , pending(nullptr)
+        , pending_event_counter(nullptr)
         , update_cell_fn(nullptr)
-        , prepare_increments_fn(nullptr)
-        , process_increments_fn(nullptr)
+        , start_increment_fn(nullptr)
+        , finish_increment_fn(nullptr)
+        , start_pending_fn(nullptr)
+        , finish_pending_fn(nullptr)
         , filter(nullptr)
         , unit(nullptr)
         , n_collections(0)
@@ -68,19 +73,29 @@ public:
     string cxx_initializer() const;
 
     /**
-     * Builds the function body of the update_cell function.
+     * Builds the function body of the update cell function.
      */
     void build_body_update_cell();
 
     /**
-     * Builds the function body of the prepare_increment function.
+     * Builds the function body of the start increment function.
      */
-    void build_body_prepare_increments();
+    void build_body_start_increment();
 
     /**
-     * Builds the function body of the process_increment function.
+     * Builds the function body of the finish increment function.
      */
-    void build_body_process_increments();
+    void build_body_finish_increment();
+
+    /**
+     * Builds the function body of the start pending function.
+     */
+    void build_body_start_pending();
+
+    /**
+     * Builds the function body of the finish pending function.
+     */
+    void build_body_finish_pending();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
@@ -109,9 +124,24 @@ public:
     AgentSymbol *pp_agent;
 
     /**
-     * The agentvar which will hold the active index into the table.
+     * The attribute containing the active index in the table.
      */
     AgentInternalSymbol *cell;
+
+    /**
+     * The attribute containing the index in the table at increment start
+     */
+    AgentInternalSymbol *cell_in;
+
+    /**
+     * The attribute containing active increment status
+     */
+    AgentInternalSymbol *active;
+
+    /**
+     * The attribute containing pending increment status
+     */
+    AgentInternalSymbol *pending;
 
     /**
      * The agentvar which will hold the value of the global event counter at the previous table
@@ -125,22 +155,32 @@ public:
      * Because the global event counter is 1 for the first event, the default initialization value
      * of zero for this agentvar works as intended.
      */
-    AgentInternalSymbol *previous_global_counter;
+    AgentInternalSymbol *pending_event_counter;
 
     /**
-     * The agent function which updates the active cell index using agentvars.
+     * The entity function which updates the active cell index using attributes.
      */
     AgentFuncSymbol *update_cell_fn;
 
     /**
-     * The agent function which prepares the increment for the active table cell.
+     * The entity function which starts a new increment.
      */
-    AgentFuncSymbol *prepare_increments_fn;
+    AgentFuncSymbol *start_increment_fn;
 
     /**
-     * The agent function which processes the increment for the active table cell.
+     * The entity function which finishes the current increment.
      */
-    AgentFuncSymbol *process_increments_fn;
+    AgentFuncSymbol *finish_increment_fn;
+
+    /**
+     * The entity function which checks for and starts a pending increment.
+     */
+    AgentFuncSymbol *start_pending_fn;
+
+    /**
+     * The entity function which checks for and finishes a pending increment.
+     */
+    AgentFuncSymbol *finish_pending_fn;
 
     /**
      * The expression agentvar of the table filter.
@@ -158,12 +198,12 @@ public:
     //list<EntityTableMeasureSymbol *> pp_expressions;
 
     /**
-     * The agentvars used in all expressions in the table.
+     * The measure attributes used in table measures.
      */
-    list<EntityTableMeasureAttributeSymbol *> pp_table_agentvars;
+    list<EntityTableMeasureAttributeSymbol *> pp_measure_attributes;
 
     /**
-     * The accumulators used in all expressions in the table.
+     * The accumulators used in table measures.
      */
     list<EntityTableAccumulatorSymbol *> pp_accumulators;
 

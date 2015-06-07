@@ -1101,8 +1101,8 @@ void Symbol::post_parse_all()
     for ( auto table : pp_all_entity_tables ) {
         // Sort accumulators in sequence order
         table->pp_accumulators.sort( [] (EntityTableAccumulatorSymbol *a, EntityTableAccumulatorSymbol *b) { return a->index < b->index; } );
-        // Sort referenced agentvars in sequence order
-        table->pp_table_agentvars.sort( [] (EntityTableMeasureAttributeSymbol *a, EntityTableMeasureAttributeSymbol *b) { return a->index < b->index; } );
+        // Sort measure attributes in sequence order
+        table->pp_measure_attributes.sort( [] (EntityTableMeasureAttributeSymbol *a, EntityTableMeasureAttributeSymbol *b) { return a->index < b->index; } );
     }
 
     {
