@@ -677,7 +677,7 @@ void CodeGen::do_table_interface()
 	h += "{";
     h += "vector<int> indices = {{ args ... }};";
     h += "// Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0";
-    h += "if (indices.size() == 1 && indices[0] == 0) indices.pop_back();";
+    h += "if (0 == sizeof...(Items)) indices.clear();";
     h += "auto it = om_table_measure.find(measure_name);";
     h += "if (it == om_table_measure.end()) {";
     h += "//TODO - run time error - invalid table.measure";
@@ -701,7 +701,7 @@ void CodeGen::do_table_interface()
 	h += "{";
     h += "vector<int> indices = {{ args ... }};";
     h += "// Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0";
-    h += "if (indices.size() == 1 && indices[0] == 0) indices.pop_back();";
+    h += "if (0 == sizeof...(Items)) indices.clear();";
     h += "auto it = om_table_measure.find(measure_name);";
     h += "if (it == om_table_measure.end()) {";
     h += "//TODO - run time error - invalid table.measure";
