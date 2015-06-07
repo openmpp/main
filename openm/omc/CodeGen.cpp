@@ -676,6 +676,8 @@ void CodeGen::do_table_interface()
 	h += "double GetTableValue(const string measure_name, Items... args)";
 	h += "{";
     h += "vector<int> indices = {{ args ... }};";
+    h += "// Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0";
+    h += "if (indices.size() == 1 && indices[0] == 0) indices.pop_back();";
     h += "auto it = om_table_measure.find(measure_name);";
     h += "if (it == om_table_measure.end()) {";
     h += "//TODO - run time error - invalid table.measure";
@@ -698,6 +700,8 @@ void CodeGen::do_table_interface()
 	h += "void SetTableValue(const string measure_name, double value, Items... args)";
 	h += "{";
     h += "vector<int> indices = {{ args ... }};";
+    h += "// Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0";
+    h += "if (indices.size() == 1 && indices[0] == 0) indices.pop_back();";
     h += "auto it = om_table_measure.find(measure_name);";
     h += "if (it == om_table_measure.end()) {";
     h += "//TODO - run time error - invalid table.measure";
