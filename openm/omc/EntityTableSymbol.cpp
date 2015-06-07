@@ -645,6 +645,7 @@ void EntityTableSymbol::build_body_finish_increment()
     CodeBlock& c = finish_increment_fn->func_body;
 
     c += "// Create aliases for members used by this table to clarify subsequent code";
+    c += "auto & table = the" + name + ";";
     c += "auto & active = " + active->name + ";";
     c += "auto & cell_in = " + cell_in->name + ";";
     c += "";
@@ -671,42 +672,9 @@ void EntityTableSymbol::build_body_finish_increment()
         // expression for the accumulator as string
         string accumulator_expr = "the" + name + "->acc[" + accumulator_index + "][cell_in]";
 
-        // expression which evaluates to the value of the increment
-        string increment_expr;
-        switch (acc->increment) {
-        case token::TK_value_in:
-            increment_expr = in_agentvar_name;
-            break;
-        case token::TK_nz_value_in:
-            increment_expr = in_agentvar_name + " != 0 ? 1.0 : 0.0";
-            break;
-        case token::TK_value_in2:
-            increment_expr = in_agentvar_name + " * " + in_agentvar_name;
-            break;
-        case token::TK_value_out:
-            increment_expr = agentvar_name;
-            break;
-        case token::TK_nz_value_out:
-            increment_expr = agentvar_name + " != 0 ? 1.0 : 0.0";
-            break;
-        case token::TK_value_out2:
-            increment_expr = agentvar_name + " * " + agentvar_name;
-            break;
-        case token::TK_delta:
-            increment_expr = agentvar_name + " - " + in_agentvar_name;
-            break;
-        case token::TK_nz_delta:
-            increment_expr = "(" + agentvar_name + " - " + in_agentvar_name + ") != 0 ? 1.0 : 0.0";
-            break;
-        case token::TK_delta2:
-            increment_expr = "(" + agentvar_name + " - " + in_agentvar_name + ") * (" + agentvar_name + " - " + in_agentvar_name + ")";
-            break;
-        default:
-            assert(0); // parser guarantee
-        }
-
         c += "{";
         c += "// " + acc->pretty_name();
+        c += "const int acc_index = " + to_string(acc->index) + "; // accumulator index";
         if (acc->uses_value_in()) {
             if (acc->table_op == token::TK_interval) {
                 c += "auto & value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
@@ -718,18 +686,50 @@ void EntityTableSymbol::build_body_finish_increment()
         c += "auto & value_out = " + acc->agentvar->name + ";";
         c += "";
 
-        c += "double dIncrement = " + increment_expr + ";";
+        c += "double dIncrement;";
+        switch (acc->increment) {
+        case token::TK_value_in:
+            c += "dIncrement = value_in;";
+            break;
+        case token::TK_nz_value_in:
+            c += "dIncrement = value_in != 0 ? 1.0 : 0.0;";
+            break;
+        case token::TK_value_in2:
+            c += "dIncrement = value_in * value_in;";
+            break;
+        case token::TK_value_out:
+            c += "dIncrement = value_out;";
+            break;
+        case token::TK_nz_value_out:
+            c += "dIncrement = value_out != 0 ? 1.0 : 0.0;";
+            break;
+        case token::TK_value_out2:
+            c += "dIncrement = value_out * value_out;";
+            break;
+        case token::TK_delta:
+            c += "dIncrement = value_out - value_in;";
+            break;
+        case token::TK_nz_delta:
+            c += "dIncrement = (value_out - value_in) != 0 ? 1.0 : 0.0;";
+            break;
+        case token::TK_delta2:
+            c += "dIncrement = (value_out - value_in) * (value_out - value_in);";
+            break;
+        default:
+            assert(0); // parser guarantee
+        }
+        c += "";
+
+        c += "auto & dAccumulator = table->acc[acc_index][cell_in];";
         switch (acc->accumulator) {
         case token::TK_sum:
-            c += accumulator_expr + " += dIncrement;";
+            c += "dAccumulator += dIncrement;";
             break;
         case token::TK_minimum:
-            c += "double dAccumulator = " + accumulator_expr + ";";
-            c += "if ( dIncrement < dAccumulator ) " + accumulator_expr + " = dIncrement;";
+            c += "if ( dIncrement < dAccumulator ) dAccumulator = dIncrement;";
             break;
         case token::TK_maximum:
-            c += "double dAccumulator = " + accumulator_expr + ";";
-            c += "if ( dIncrement > dAccumulator ) " + accumulator_expr + " = dIncrement;";
+            c += "if ( dIncrement > dAccumulator ) dAccumulator = dIncrement;";
             break;
         case token::TK_gini:
         case token::TK_P1:
@@ -750,14 +750,13 @@ void EntityTableSymbol::build_body_finish_increment()
         case token::TK_P98:
         case token::TK_P99:
         {
-            string obs_index = to_string(acc->obs_collection_index);
+            c += "const int obs_index = " + to_string(acc->obs_collection_index) + "; // observation collection index";
             if (acc->updates_obs_collection) {
-                c += "// Associated observation collection is " + obs_index;
-                c += "auto &lst = the" + name + "->coll[cell_in][" + obs_index + "];";
-                c += "lst.push_front(dIncrement);";
+                c += "auto &obs_coll = table->coll[cell_in][obs_index];";
+                c += "obs_coll.push_front(dIncrement);";
             }
             else {
-                c += "// Associated observation collection is " + obs_index + " (increment already pushed)";
+                c += "// Same increment is being pushed by another accumulator";
             }
         }
         break;
