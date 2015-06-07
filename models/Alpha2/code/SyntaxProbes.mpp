@@ -295,3 +295,11 @@ void UserTables()
         }
     }
 }
+
+
+user_table ut2 //EN User table #2
+{
+    {
+          ANALYSIS1 // Deliberately left empty
+    }
+};
