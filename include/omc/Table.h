@@ -35,15 +35,19 @@ public:
 
         // The number of cells is equal to product of the values in shape.
         assert(n_cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>()));
+
+        initialize_measures();
     };
 
     /**
-     * Initialize the measures to the undefined value (silent NaN)
+     * Initialize the measures to the undefined value (quiet NaN)
      */
     void initialize_measures()
     {
-        for (int cell = 0; cell < n_cells; ++cell) {
-            measure[cell] = numeric_limits<double>::quiet_NaN();
+        for (int msr = 0; msr < n_measures; ++msr) {
+            for (int cell = 0; cell < n_cells; ++cell) {
+                measure[msr][cell] = numeric_limits<double>::quiet_NaN();
+            }
         }
     };
 
