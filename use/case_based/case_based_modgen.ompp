@@ -175,9 +175,8 @@ void SimulateEvents()
     // Simulate the case
     while (true) {
         if (fmk::do_exit_simulation_all) {
-            // The previous event signalled to end the case
+            // The previous event signalled to end the simulation
             BaseAgent::exit_simulation_all();
-            fmk::do_exit_simulation_all = false;
             break;
         }
         if (!BaseEvent::do_next_event()) {
@@ -260,6 +259,11 @@ void RunSimulation(int mem_id, int mem_count)
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
+
+        if (fmk::do_exit_simulation_all) {
+            // The model signalled to end the simulation
+            break;
+        }
 
         {
             // generate the case seed for the next case
