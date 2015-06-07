@@ -2,7 +2,8 @@ classification TEST
 {
     T_00, //EN Filter true on exit
     T_01, //EN Filter false on exit
-    T_02  //EN Fltr & x
+    T_02, //EN Fltr & x
+    T_03  //EN Fltr w/o x
 };
 
 range ASSIGNMENTS

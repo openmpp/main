@@ -1,10 +1,10 @@
 parameters
 {
     //EN Only one test
-    logical OneTest = TRUE;
+    logical OneTest = FALSE;
 
     //EN Which test
-    TEST WhichTest = T_02;
+    TEST WhichTest = T_03;
 
 	//EN Script of attribute assignments
     int Script[TEST][ASSIGNMENTS][ATTRIBUTE] = {
@@ -33,7 +33,6 @@ parameters
            (5) {-1, 0, 0, 0, 0, 0} // filler assignments (ignored)
         },
 
-
         // T_02 Fltr & x
         (1) {
              // time  alive  fltr  row   col    x
@@ -42,6 +41,18 @@ parameters
                  2,    1,    0,    0,    2,     4,
                  3,    1,    0,    1,    0,     8,
                  4,    0,    0,    1,    1,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // filler assignments (ignored)
+        },
+
+        // T_02 Fltr w/o x
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 2,    1,    0,    0,    0,     2,
+                 3,    1,    0,    0,    0,     4,
+                 4,    0,    0,    0,    0,     8,
 
            (5) {-1, 0, 0, 0, 0, 0} // filler assignments (ignored)
         },

@@ -26,3 +26,12 @@ table Person Table01
     * row
     * col
 };
+
+table Person Table02
+{
+    test
+	* {
+		unit,
+        duration()
+	}
+};
