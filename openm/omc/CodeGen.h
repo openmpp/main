@@ -52,6 +52,10 @@ public:
 	void do_entity_sets();
 	void do_entity_tables();
 	void do_derived_tables();
+
+    /**
+     * Generate model-specific helper code for the table read/write model developer API.
+     */
 	void do_table_interface();
 	void do_event_queue();
 	void do_RunInit();

@@ -634,15 +634,6 @@ void CodeGen::do_derived_tables()
 
 void CodeGen::do_table_interface()
 {
-    // om_table_measure (global object)
-    h += "extern const map<string, pair<int, int>> om_table_measure;";
-    c += doxygen(
-        "Helper map for model developer table interface.",
-        " ",
-        "The key of the map is a string with the form table.measure.",
-        "The value of the map is a pair containing the numeric table identifier",
-        "and the numeric measure identifier within the table."
-                 );
     c += "const map<string, pair<int, int>> om_table_measure = {";
     for (auto table : Symbol::pp_all_tables) {
         for (auto measure : table->pp_measures) {
@@ -655,9 +646,6 @@ void CodeGen::do_table_interface()
     c += "};";
     c += "";
 
-    // om_get_table_measure_address (global function)
-    h += "double * om_get_table_measure_address(int table_id, int measure_id, vector<int> indices);";
-    c += doxygen("Get the address of a measure in a table");
     c += "double * om_get_table_measure_address(int table_id, int measure_id, vector<int> indices)";
     c += "{";
     c += "switch (table_id) {";
@@ -670,55 +658,6 @@ void CodeGen::do_table_interface()
     c += "}";
     c += "";
 
-	h += "// Interface to tables from model code";
-    h += "";
-    h += "template<typename ...Items>";
-	h += "double GetTableValue(const string measure_name, Items... args)";
-	h += "{";
-    h += "vector<int> indices = {{ args ... }};";
-    h += "// Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0";
-    h += "if (0 == sizeof...(Items)) indices.clear();";
-    h += "auto it = om_table_measure.find(measure_name);";
-    h += "if (it == om_table_measure.end()) {";
-    h += "//TODO - run time error - invalid table.measure";
-    h += "return 0.0;";
-    h += "}";
-    h += "auto pr = it->second;";
-    h += "auto table_id = pr.first;";
-    h += "auto measure_id = pr.second;";
-    h += "double *address = om_get_table_measure_address(table_id, measure_id, indices);";
-    h += "if (address != nullptr) {";
-    h += "return *address;";
-    h += "}";
-    h += "else {";
-    h += "return UNDEF_VALUE;";
-    h += "}";
-    h += "}";
-    h += "";
-
-    h += "template<typename ...Items>";
-	h += "void SetTableValue(const string measure_name, double value, Items... args)";
-	h += "{";
-    h += "vector<int> indices = {{ args ... }};";
-    h += "// Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0";
-    h += "if (0 == sizeof...(Items)) indices.clear();";
-    h += "auto it = om_table_measure.find(measure_name);";
-    h += "if (it == om_table_measure.end()) {";
-    h += "//TODO - run time error - invalid table.measure";
-    h += "}";
-    h += "auto pr = it->second;";
-    h += "auto table_id = pr.first;";
-    h += "auto measure_id = pr.second;";
-    h += "double *address = om_get_table_measure_address(table_id, measure_id, indices);";
-    h += "if (address != nullptr) {";
-    h += "*address = value;";
-    h += "}";
-    h += "else {";
-    h += "//TODO - run time error";
-    h += "}";
-    h += "}";
-
-    h += "";
 	c += "";
 
 }
