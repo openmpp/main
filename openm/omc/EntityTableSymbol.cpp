@@ -613,30 +613,42 @@ void EntityTableSymbol::build_body_start_increment()
     c += "auto & active = " + active->name + ";";
     c += "auto & pending = " + pending->name + ";";
     c += "";
+    c += "assert(!active);";
     c += "active = true;";
     c += "pending = false;";
     c += "cell_in = cell;";
     c += "";
 
     for (auto ma : pp_measure_attributes) {
-        if (ma->need_value_in || ma->need_value_in_event) {
-            c += "// Record attribute values at increment start";
-            break;
+        if (!ma->need_value_in && !ma->need_value_in_event) {
+            // value at start of increment not needed for this attribute
+            continue;
         }
-    }
-    for (auto ma : pp_measure_attributes) {
+
         if (ma->need_value_in) {
-            c += ma->in_member_name() + " = " + ma->pp_agentvar->name + ".get();";
+            c += "{";
+            c += "// interval(" + ma->pp_agentvar->name +")";
+            c += "auto & value_in = " + ma->in_member_name() + ";";
+            c += "auto value_curr = " + ma->pp_agentvar->name + ";";
+            c += "";
+            c += "value_in = value_curr;";
+            c += "}";
         }
         if (ma->need_value_in_event) {
-            c += ma->in_event_member_name() + " = " + ma->pp_agentvar->name + ".get();";
+            c += "{";
+            c += "// event(" + ma->pp_agentvar->name +")";
+            c += "auto & value_in = " + ma->in_event_member_name() + ";";
+            c += "auto value_curr = " + ma->pp_agentvar->name + ";";
+            c += "";
+            c += "value_in = value_curr;";
+            c += "}";
         }
     }
     c += "";
 
     if (unit) {
-        c += "// Increment the table unit counter";
-        c += unit->name + ".set(" + unit->name + ".get() + 1);";
+        c += "// Update the increment counter (unit)";
+        c += unit->name + "++;";
     }
 }
 
@@ -649,9 +661,7 @@ void EntityTableSymbol::build_body_finish_increment()
     c += "auto & active = " + active->name + ";";
     c += "auto & cell_in = " + cell_in->name + ";";
     c += "";
-
-    c += "active = false;";
-    c += "";
+    c += "assert(active);";
 
     for (auto acc : pp_accumulators) {
         // name of agentvar
@@ -765,6 +775,8 @@ void EntityTableSymbol::build_body_finish_increment()
         }
         c += "}";
     }
+    c += "";
+    c += "active = false;";
 }
 
 void EntityTableSymbol::build_body_start_pending()
@@ -810,7 +822,6 @@ void EntityTableSymbol::build_body_finish_pending()
     c += "";
     c += "if (pending && BaseEvent::global_event_counter > pending_event_counter) {";
     c += "// Values are definitive";
-    c += "pending = false;";
     c += "if (active) {";
     c += "// Finish the pending increment";
     c += finish_increment_fn->name + "();";
@@ -820,6 +831,7 @@ void EntityTableSymbol::build_body_finish_pending()
     c += update_cell_fn->name + "();";
     c += start_increment_fn->name + "();";
     c += "}";
+    c += "pending = false;";
     c += "}";
 }
 

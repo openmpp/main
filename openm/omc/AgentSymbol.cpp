@@ -455,12 +455,17 @@ void AgentSymbol::build_body_initialize_tables()
             c += "auto & filter = " + tbl->filter->name + ";";
         }
         else {
-            c += "const bool filter = true;";
+            c += "const bool filter = true; // table has no filter";
         }
+        c += "auto & active = " + tbl->active->name + ";";
+        c += "auto & pending = " + tbl->pending->name + ";";
+        c += "";
         // If the table filter is false at initialization, do nothing
-        c += "if (filter) {" ;
-        c += tbl->update_cell_fn->name + "();" ;
-        c += tbl->start_increment_fn->name + "();" ;
+        c += "active = false;";
+        c += "pending = false;";
+        c += "if (filter) {";
+        c += tbl->update_cell_fn->name + "();";
+        c += tbl->start_increment_fn->name + "();";
         c += "}" ;
         c += "}";
         c += "";
