@@ -2116,6 +2116,13 @@ expr_for_table[result]:
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
                         }
+      // Ex. unit
+    | "unit"
+                        {
+                            // This is the special accumulator wich counts increments
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
+                        }
       // Ex. max_value_in(income)
     | modgen_cumulation_operator "(" symbol_in_expr ")"
                         {
@@ -2367,32 +2374,6 @@ symbol_in_expr:
       SYMBOL
     | derived_agentvar
     | link_to_agentvar
-    | "unit"[kw]
-                        {
-                            Symbol *agent = pc.get_agent_context();
-                            assert(agent); // grammar guarantee
-                            EntityTableSymbol *table = pc.get_table_context();
-                            if (table) {
-                                // get the name of the av used for the unit in this table
-                                auto name = "om_" + table->name + "_om_unit";
-                                if (Symbol::exists(name, agent)) {
-                                    auto av = Symbol::get_symbol(name, agent);
-                                    assert(av);
-                                    $$ = av;
-                                }
-                                else {
-                                    auto bav = new BuiltinAgentVarSymbol(name, agent, NumericSymbol::find(token::TK_counter));
-                                    assert(bav);
-                                    // note unit agentvar in table
-                                    table->unit = bav;
-                                    $$ = bav;
-                                }
-                            }
-                            else {
-                                error(@kw, "Invalid use of 'unit' outside of table");
-                                YYERROR;
-                            }
-                        }
 	;
 
 link_to_agentvar:
@@ -2911,37 +2892,43 @@ ldouble_synonym:
 %%
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol * agentvar, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
+static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
 {
     Symbol *table = pc.get_table_context();
-    // Also create symbol for associated analysis agentvar if not already present
     EntityTableMeasureAttributeSymbol *analysis_agentvar = nullptr;
-    if ( EntityTableMeasureAttributeSymbol::exists( table, agentvar) ) {
-        string unique_name = EntityTableMeasureAttributeSymbol::symbol_name( table, agentvar);
-        analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *>(Symbol::get_symbol( unique_name ));
-        assert( analysis_agentvar );
-    }
-    else {
-        analysis_agentvar = new EntityTableMeasureAttributeSymbol( table, agentvar, pc.counter3);
-        pc.counter3++;
-    }
-    // determine if the increment requires the creation & maintenance of an associated 'in' member.
-    if (   incr == token::TK_delta
-        || incr == token::TK_delta2
-        || incr == token::TK_nz_delta
-        || incr == token::TK_value_in
-        || incr == token::TK_value_in2
-        || incr == token::TK_nz_value_in ) {
-
-        if (table_op == token::TK_interval) {
-            analysis_agentvar->need_value_in = true;
-        }
-        else if (table_op == token::TK_event) {
-            analysis_agentvar->need_value_in_event = true;
+    if (agentvar) {
+        // Also create symbol for associated analysis agentvar if not already present
+        if ( EntityTableMeasureAttributeSymbol::exists( table, agentvar) ) {
+            string unique_name = EntityTableMeasureAttributeSymbol::symbol_name( table, agentvar);
+            analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *>(Symbol::get_symbol( unique_name ));
+            assert( analysis_agentvar );
         }
         else {
-            assert(false); // logic guarantee
+            analysis_agentvar = new EntityTableMeasureAttributeSymbol( table, agentvar, pc.counter3);
+            pc.counter3++;
         }
+        // determine if the increment requires the creation & maintenance of an associated 'in' member.
+        if (   incr == token::TK_delta
+            || incr == token::TK_delta2
+            || incr == token::TK_nz_delta
+            || incr == token::TK_value_in
+            || incr == token::TK_value_in2
+            || incr == token::TK_nz_value_in ) {
+
+            if (table_op == token::TK_interval) {
+                analysis_agentvar->need_value_in = true;
+            }
+            else if (table_op == token::TK_event) {
+                analysis_agentvar->need_value_in_event = true;
+            }
+            else {
+                assert(false); // logic guarantee
+            }
+        }
+    }
+    else {
+        // if no attribute, then this is the increment counter accumulator (unit)
+        assert(acc == token::TK_unit);
     }
     // Also create symbol for associated accumulator if not already present
     EntityTableAccumulatorSymbol *accumulator = nullptr;

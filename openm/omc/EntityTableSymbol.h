@@ -51,7 +51,6 @@ public:
         , start_pending_fn(nullptr)
         , finish_pending_fn(nullptr)
         , filter(nullptr)
-        , unit(nullptr)
         , n_collections(0)
     {
         cxx_class = "cls_" + name;
@@ -186,11 +185,6 @@ public:
      * The expression agentvar of the table filter.
      */
     IdentityAgentVarSymbol *filter;
-
-    /**
-     * The builtin agentvar of the table 'unit'.
-     */
-    BuiltinAgentVarSymbol *unit;
 
     /**
      * The expressions in the table.

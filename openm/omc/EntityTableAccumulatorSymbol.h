@@ -33,16 +33,17 @@ public:
         , accumulator(accumulator)
         , increment(increment)
         , table_op(table_op)
-        , agentvar(agentvar->stable_rp())
+        , agentvar(agentvar ? agentvar->stable_pp() : nullptr)
         , pp_agentvar(nullptr)
-        , analysis_agentvar(analysis_agentvar->stable_rp())
+        , analysis_agentvar(analysis_agentvar ? analysis_agentvar->stable_pp() : nullptr)
         , pp_analysis_agentvar(nullptr)
         , updates_obs_collection(false)
         , obs_collection_index(-1)
         , index(index)
     {
         // grammar guarantee
-        assert(accumulator == token::TK_sum
+        assert(accumulator == token::TK_unit
+            || accumulator == token::TK_sum
             || accumulator == token::TK_minimum
             || accumulator == token::TK_maximum
             || accumulator == token::TK_gini
@@ -66,7 +67,8 @@ public:
             );
 
         // grammar guarantee
-        assert(increment == token::TK_delta
+        assert(increment == token::TK_unused && accumulator == token::TK_unit
+            || increment == token::TK_delta
             || increment == token::TK_delta2
             || increment == token::TK_nz_delta
             || increment == token::TK_value_in
@@ -78,7 +80,8 @@ public:
             );
 
         // grammar guarantee
-        assert(table_op == token::TK_interval
+        assert(table_op == token::TK_unused && accumulator == token::TK_unit
+            || table_op == token::TK_interval
             || table_op == token::TK_event
             );
 
@@ -178,11 +181,11 @@ public:
     token_type table_op;
 
     /**
-     * The agentvar being accumulated (reference to pointer)
+     * The agentvar being accumulated (pointer to pointer)
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol*& agentvar;
+    Symbol** agentvar;
 
     /**
      * The agentvar being accumulated (pointer)
@@ -192,11 +195,11 @@ public:
     AgentVarSymbol* pp_agentvar;
 
     /**
-     * The analysis agentvar being accumulated (reference to pointer)
+     * The analysis agentvar being accumulated (pointer to pointer)
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol*& analysis_agentvar;
+    Symbol** analysis_agentvar;
 
     /**
      * The analysis agentvar being accumulated (pointer)

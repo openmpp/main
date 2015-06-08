@@ -16,7 +16,11 @@
 string EntityTableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
 {
     string result;
-    result = "om_" + table->name + "_ta_" + token_to_string(accumulator) + "_" + token_to_string(increment) + "_" + token_to_string(table_op) + "_" + agentvar->name;
+    result = "om_" + table->name + "_ta_" + token_to_string(accumulator);
+    if (accumulator != token::TK_unit) {
+        assert(agentvar); // grammar guarantee
+        result += "_" + token_to_string(increment) + "_" + token_to_string(table_op) + "_" + agentvar->name;
+    }
     return result;
 }
 
@@ -30,7 +34,11 @@ bool EntityTableAccumulatorSymbol::exists(const Symbol *table, token_type accumu
 string EntityTableAccumulatorSymbol::pretty_name() const
 {
     // example:     accumulator 0: sum(delta(interval(duration)))
-    string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator) + "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + agentvar->pretty_name() + ")))";
+    string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator);
+    if (accumulator != token::TK_unit) {
+        assert(agentvar); // grammar guarantee
+        result += "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + (*agentvar)->pretty_name() + ")))";
+    }
     return result;
 }
 
@@ -57,13 +65,19 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
         pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
         assert(pp_table); // parser guarantee
 
-        // assign direct pointer to agentvar for post-parse use
-        pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
-        assert(pp_agentvar); // parser guarantee
+        if (accumulator != token::TK_unit) {
+            // assign direct pointer to agentvar for post-parse use
+            pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
+            assert(pp_agentvar); // parser guarantee
 
-        // assign direct pointer to EntityTableMeasureAttributeSymbol for post-parse use
-        pp_analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *> (pp_symbol(analysis_agentvar));
-        assert(pp_analysis_agentvar); // parser guarantee
+            // assign direct pointer to EntityTableMeasureAttributeSymbol for post-parse use
+            pp_analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *> (pp_symbol(analysis_agentvar));
+            assert(pp_analysis_agentvar); // parser guarantee
+        }
+        else {
+            pp_agentvar = nullptr;
+            pp_analysis_agentvar = nullptr;
+        }
 
         break;
     }
