@@ -35,3 +35,24 @@ table Person Table02
         duration()
 	}
 };
+
+table Person Table03
+[ trigger_changes(event_counter) ]
+{
+    test
+	* {
+		value_in(x)
+	}
+    * event_counter
+};
+
+table Person Table04
+{
+    test
+	* {
+        //x
+		event(x)
+	}
+    * event_counter
+};
+
