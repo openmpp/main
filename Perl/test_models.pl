@@ -22,7 +22,7 @@ my $models_root = getcwd;
 my $verbosity = 3;
 
 # Number of significant digits to retain in the output csv files
-my $significant_digits = 6;
+my $significant_digits = 5;
 
 #####################
 # ompp settings for Windows
