@@ -80,7 +80,7 @@ public:
     {
         assert(measure_index < n_measures); // logic guarantee
         if (indices.size() != shape.size()) {
-            //TODO run-time error Number of indices does nto match table rank
+            //TODO run-time error Number of indices does not match table rank
             return nullptr;
         }
         for (size_t dim = 0; dim < shape.size(); ++dim) {
@@ -254,7 +254,7 @@ double GetTableValue(const string measure_name, Items... args)
         return *address;
     }
     else {
-        return UNDEF_VALUE;
+        return numeric_limits<double>::quiet_NaN();
     }
 }
 
