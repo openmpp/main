@@ -625,10 +625,10 @@ void EntityTableSymbol::build_body_start_increment()
     c += "auto & cell_in = " + cell_in->name + ";";
     c += "auto & active = " + active->name + ";";
     c += "auto & pending = " + pending->name + ";";
+    c += "auto & pending_event_counter = " + pending_event_counter->name + ";";
     c += "";
     c += "assert(!active);";
     c += "active = true;";
-    c += "pending = false;";
     c += "cell_in = cell;";
     c += "";
 
@@ -639,19 +639,32 @@ void EntityTableSymbol::build_body_start_increment()
         }
 
         if (ma->need_value_in) {
+            auto attr = ma->pp_agentvar;
+            assert(attr); // logic guarantee
             c += "{";
-            c += "// interval(" + ma->pp_agentvar->name +")";
+            c += "// interval(" + attr->name +")";
             c += "auto & value_in = " + ma->in_member_name() + ";";
-            c += "auto value_curr = " + ma->pp_agentvar->name + ";";
+            c += attr->data_type->name + " value_curr = " + attr->name + ";";
             c += "";
             c += "value_in = value_curr;";
             c += "}";
         }
         if (ma->need_value_in_event) {
+            auto attr = ma->pp_agentvar;
+            assert(attr); // logic guarantee
+            assert(attr->lagged);
+            assert(attr->lagged_event_counter);
+
             c += "{";
-            c += "// event(" + ma->pp_agentvar->name +")";
+            c += "// event(" + attr->name +")";
             c += "auto & value_in = " + ma->in_event_member_name() + ";";
-            c += "auto value_curr = " + ma->pp_agentvar->name + ";";
+            c += attr->data_type->name + " value_curr = " + attr->name + ";";
+            c += "auto & value_lagged = " + attr->lagged->name + ";";
+            c += "auto & value_lagged_counter = " + attr->lagged_event_counter->name + ";";
+            c += "";
+            c += "if (pending && pending_event_counter == value_lagged_counter) {";
+            c += "value_curr = value_lagged;";
+            c += "}";
             c += "";
             c += "value_in = value_curr;";
             c += "}";
@@ -668,29 +681,35 @@ void EntityTableSymbol::build_body_finish_increment()
     c += "auto & table = the" + name + ";";
     c += "auto & active = " + active->name + ";";
     c += "auto & cell_in = " + cell_in->name + ";";
+    c += "auto & pending = " + pending->name + ";";
+    c += "auto & pending_event_counter = " + pending_event_counter->name + ";";
     c += "";
     c += "assert(active);";
 
     for (auto acc : pp_accumulators) {
-        // index of accumulator as string
-        string accumulator_index = to_string(acc->index);
-        // expression for the accumulator as string
-        string accumulator_expr = "the" + name + "->acc[" + accumulator_index + "][cell_in]";
-
         c += "{";
         c += "// " + acc->pretty_name();
         c += "const int acc_index = " + to_string(acc->index) + "; // accumulator index";
-        if (acc->uses_value_in()) {
-            if (acc->table_op == token::TK_interval) {
-                c += "auto & value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
-            }
-            else if (acc->table_op == token::TK_event) {
-                c += "auto & value_in = " + acc->pp_analysis_agentvar->in_event_member_name() + ";";
-            }
-        }
         if (acc->accumulator != token::TK_unit) {
-            assert(acc->pp_agentvar);
-            c += "auto & value_out = " + acc->pp_agentvar->name + ";";
+            auto attr = acc->pp_agentvar;
+            assert(attr);
+            c += attr->data_type->name + " value_out = " + attr->name + ";";
+            if (acc->uses_value_in()) {
+                if (acc->table_op == token::TK_interval) {
+                    c += "auto & value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
+                }
+                else if (acc->table_op == token::TK_event) {
+                    c += "auto & value_in = " + acc->pp_analysis_agentvar->in_event_member_name() + ";";
+                    assert(attr->lagged);
+                    assert(attr->lagged_event_counter);
+                    c += "auto & value_lagged = " + attr->lagged->name + ";";
+                    c += "auto & value_lagged_counter = " + attr->lagged_event_counter->name + ";";
+                    c += "";
+                    c += "if (pending && pending_event_counter == value_lagged_counter) {";
+                    c += "value_out = value_lagged;";
+                    c += "}";
+                }
+            }
         }
         c += "";
 

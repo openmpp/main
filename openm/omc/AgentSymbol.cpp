@@ -490,7 +490,6 @@ void AgentSymbol::build_body_finalize_tables()
         c += "";
         c += "if (pending) {";
         c += "// Values are definitive";
-        c += "pending = false;";
         c += "if (active) {";
         c += "// Finish the pending increment";
         c += tbl->finish_increment_fn->name + "();";
@@ -499,6 +498,7 @@ void AgentSymbol::build_body_finalize_tables()
         c += "// Start a final increment";
         c += tbl->start_increment_fn->name + "();";
         c += "}";
+        c += "pending = false;";
         c += "}";
         c += "if (active) {";
         c += tbl->finish_increment_fn->name + "();";

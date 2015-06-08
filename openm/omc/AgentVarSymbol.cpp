@@ -90,6 +90,7 @@ string AgentVarSymbol::get_lagged_event_counter_name()
 
 void AgentVarSymbol::create_lagged()
 {
+    assert(!lagged && !lagged_event_counter); // logic guarantee - called only once
     string lagged_name = get_lagged_name();
     string lagged_counter_name = get_lagged_event_counter_name();
 
@@ -100,12 +101,12 @@ void AgentVarSymbol::create_lagged()
     }
 
     // lagged stores in same type as this agentvar
-    auto lagged = new AgentInternalSymbol(lagged_name, agent, data_type);
+    lagged = new AgentInternalSymbol(lagged_name, agent, data_type);
 
     // lagged event counter stores in same type as global event counter (big_counter)
     auto *typ = NumericSymbol::find(token::TK_big_counter);
     assert(typ); // initialization guarantee
-    auto lagged_event_counter = new AgentInternalSymbol(lagged_counter_name, agent, typ);
+    lagged_event_counter = new AgentInternalSymbol(lagged_counter_name, agent, typ);
 
     // Add side-effect code to maintain lagged value
     CodeBlock & c = side_effects_fn->func_body;

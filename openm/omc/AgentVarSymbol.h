@@ -8,6 +8,7 @@
 #pragma once
 #include "AgentDataMemberSymbol.h"
 
+class AgentInternalSymbol;
 class AgentFuncSymbol;
 
 using namespace std;
@@ -30,6 +31,8 @@ public:
      */
     AgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : AgentDataMemberSymbol(sym, agent, type, decl_loc)
+        , lagged(nullptr)
+        , lagged_event_counter(nullptr)
         , side_effects_fn(nullptr)
         , notify_fn(nullptr)
     {
@@ -106,6 +109,20 @@ public:
     bool is_valid_comparison(const ConstantSymbol * constant, string &err_msg);
 
     void post_parse(int pass);
+
+    /**
+     * The lagged version of this attribute.
+     * 
+     * Created by calling create_lagged.
+     */
+    AgentInternalSymbol *lagged;
+
+    /**
+     * The value of the global event counter when the lagged version was last updated.
+     * 
+     * Created by calling create_lagged.
+     */
+    AgentInternalSymbol *lagged_event_counter;
 
     /**
      * The side effects function of the attribute.
