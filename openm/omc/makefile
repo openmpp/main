@@ -72,6 +72,7 @@ DerivedAgentVarSymbol.cpp \
 DerivedTableSymbol.cpp \
 DimensionSymbol.cpp \
 Driver.cpp \
+EntityIncrementSymbol.cpp \
 EntitySetSymbol.cpp \
 EntityTableAccumulatorSymbol.cpp \
 EntityTableMeasureAttributeSymbol.cpp \

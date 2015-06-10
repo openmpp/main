@@ -11,6 +11,7 @@
 #include "TableSymbol.h"
 
 class DimensionSymbol;
+class EntityIncrementSymbol;
 class EntityTableMeasureSymbol;
 class EntityTableAccumulatorSymbol;
 class EntityTableMeasureAttributeSymbol;
@@ -40,6 +41,7 @@ public:
         : TableSymbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
+        , increment(nullptr)
         , cell(nullptr)
         , cell_in(nullptr)
         , active(nullptr)
@@ -121,6 +123,13 @@ public:
      * For use post-parse.
      */
     AgentSymbol *pp_agent;
+
+    /**
+     * The increment symbol for the table
+     * 
+     * For use post-parse.
+     */
+    EntityIncrementSymbol *increment;
 
     /**
      * The attribute containing the active index in the table.

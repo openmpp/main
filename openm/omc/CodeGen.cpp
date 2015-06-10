@@ -532,6 +532,20 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
+	    h += "// increment members in " + agent->name + " entity";
+	    h += "//";
+	    h += "";
+        for ( auto table : agent->pp_entity_tables ) {
+            auto incr = table->increment;
+            assert(incr); // logic guarantee - every entity table has an associated increment in the entity.
+            h += incr->cxx_declaration_agent();
+            c += incr->cxx_definition_agent();
+        }
+	    h += "";
+	    c += "";
+
+	    h += "";
+	    h += "//";
 	    h += "// data members in " + agent->name + " agent";
 	    h += "//";
 	    h += "";

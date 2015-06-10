@@ -10,6 +10,7 @@
 #include "EntityTableSymbol.h"
 #include "LanguageSymbol.h"
 #include "AgentSymbol.h"
+#include "EntityIncrementSymbol.h"
 #include "AgentInternalSymbol.h"
 #include "AgentVarSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
@@ -34,6 +35,11 @@ static string regexReplace(const string & i_srcText, const char * i_pattern, con
 
 void EntityTableSymbol::create_auxiliary_symbols()
 {
+    {
+        assert(!increment); // initialization guarantee
+        increment = new EntityIncrementSymbol("om_" + name + "_incr", agent);
+    }
+
     {
         assert(!cell); // initialization guarantee
         // Set storage type to int. Can be changed in a subsequent pass to optimize storage based on array size.
@@ -601,7 +607,6 @@ void EntityTableSymbol::build_body_update_cell()
         if (dim > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
-        //c += "index = " + av->unique_name + ".get();";
         c += "index = " + av->name + ";";
         auto rs = dynamic_cast<RangeSymbol *>(es);
         if (rs) {

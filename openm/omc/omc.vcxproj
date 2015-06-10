@@ -183,6 +183,7 @@
     <ClInclude Include="DimensionSymbol.h" />
     <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
+    <ClInclude Include="EntityIncrementSymbol.h" />
     <ClInclude Include="EntitySetSymbol.h" />
     <ClInclude Include="EntityTableAccumulatorSymbol.h" />
     <ClInclude Include="EntityTableMeasureAttributeSymbol.h" />
@@ -259,6 +260,7 @@
     <ClCompile Include="DerivedTableSymbol.cpp" />
     <ClCompile Include="DimensionSymbol.cpp" />
     <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="EntityIncrementSymbol.cpp" />
     <ClCompile Include="EntitySetSymbol.cpp" />
     <ClCompile Include="EntityTableAccumulatorSymbol.cpp" />
     <ClCompile Include="EntityTableMeasureAttributeSymbol.cpp" />

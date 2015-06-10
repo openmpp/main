@@ -195,7 +195,7 @@ void EntitySetSymbol::build_body_update_cell()
         if (dim > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
-        c += "index = " + av->unique_name + ".get();";
+        c += "index = " + av->name + ";";
         auto rs = dynamic_cast<RangeSymbol *>(es);
         if (rs) {
             c += "// adjust range to zero-based" ;

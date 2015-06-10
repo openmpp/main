@@ -34,6 +34,7 @@
 #include "AgentMemberSymbol.h"
 #include "AgentEventSymbol.h"
 #include "AgentDataMemberSymbol.h"
+#include "EntityIncrementSymbol.h"
 #include "AgentInternalSymbol.h"
 #include "AgentMultilinkSymbol.h"
 #include "AgentVarSymbol.h"
