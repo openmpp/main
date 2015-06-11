@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">../../..</OM_ROOT>
+  </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -73,13 +76,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import openM properties for model projects -->
-  <Import Project="$(ProjectDir)../../model-ompp.1.build.props" />
-  <Import Project="$(ProjectDir)../../model-ompp.2.cpp.props" />
-  <Import Project="$(ProjectDir)../../model-ompp.3.items.props" />
+  <Import Project="$(OM_ROOT)/props/model-ompp.1.build.props" />
+  <Import Project="$(OM_ROOT)/props/model-ompp.2.cpp.props" />
+  <Import Project="$(OM_ROOT)/props/model-ompp.3.items.props" />
   <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <!-- Import openM targets for model projects -->
-  <Import Project="$(ProjectDir)../../model-ompp.4.build.targets" />
+  <Import Project="$(OM_ROOT)/props/model-ompp.4.build.targets" />
 </Project>

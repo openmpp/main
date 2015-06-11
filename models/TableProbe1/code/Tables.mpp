@@ -56,3 +56,12 @@ table Person Table04
     * event_counter
 };
 
+table Person Table05
+[ !alive ]
+{
+    test
+	* {
+        unit
+	}
+    * event_counter
+};
