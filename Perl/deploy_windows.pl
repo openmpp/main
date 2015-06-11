@@ -3,6 +3,14 @@
 
 # Script to prepare files for binary deployment
 
+# Check for and process -no64 flag
+my $no64 = 0;
+if ($#ARGV == 0 && $ARGV[0] eq '-no64') {
+	$no64 = 1;
+	shift @ARGV;
+}
+
+
 use File::Copy;
 use File::Copy::Recursive qw(dircopy);
 use File::Path qw(make_path remove_tree);
@@ -63,6 +71,9 @@ $subdir = 'lib';
 	);
 mkdir "${deploy_dir}/${subdir}" or die;
 for my $file (@files) {
+	if ($no64 && $file =~ /64/) {
+		next;
+	}
 	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }
 
