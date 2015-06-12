@@ -1,0 +1,78 @@
+
+//LABEL(Experimental, EN) Tranistory experiments
+
+/*NOTE(Experimental, EN)
+  This module is a place to try out various tables and attributes without
+  modifying any other modules in the model.
+*/
+
+actor Person {
+  ONE_COLUMN one_column = Value;
+};
+
+table Person Experiment1
+[ case_id == 0 ]
+{
+  {
+    value_in(alive),
+    value_out(alive),
+    value_in(duration()),
+    value_out(duration()),
+    delta(duration()),
+    duration()
+  }
+  * one_column
+};
+
+table Person Experiment2 //EN Generation 2
+[ generation == 2 ]
+{
+  mid_year
+  * {
+    duration()
+  }
+};
+
+range GENS //EN Generation
+{ 0, 2 };
+
+actor Person {
+  //EN Generation
+  GENS range_generation = COERCE(GENS, generation);
+};
+
+table Person Experiment3 //EN PY's by generation and year
+{
+  {
+    duration()
+  }
+  * mid_year
+  * range_generation+
+};
+
+table Person Experiment4 //EN PY's by origin and year
+{
+  {
+    duration()
+  }
+  * mid_year
+  * origin
+};
+
+table Person Experiment5 //EN Proportion indigenous by year
+{
+  {
+    duration(indigenous, TRUE) / duration() //EN Proportion indigenous decimals=6
+  }
+  * mid_year
+  * one_column
+};
+
+table Person Experiment6 //EN PY's by region and year
+{
+  {
+    duration()
+  }
+  * mid_year
+  * region
+};
