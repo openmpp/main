@@ -24,41 +24,46 @@ parameters
    file PersonMicroDataFile;
 };
 
-// The CaseSimulation function simulates a single case,
-// and is called by the Simulation function declared later
-// in this module.
-
-void CaseSimulation( ofstream *ofs )
+/**
+ * Simulates a single case.
+ * 
+ * Called by code in a simulation framework module.
+ */
+void CaseSimulation(case_info &ci)
 {
-  // Initialize the first actor in the case.
-  Person *poFirstActor = new Person();
-  poFirstActor->Start(  );
+    extern void SimulateEvents(); // defined in a simulation framework module
 
-  // Note that all initial characteristics are assigned in Start.
-  // Dump to output file.
-  for (int nJ=0; nJ<SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
+	// Initialize the person actor
+	auto prPerson = new Person();
+	prPerson->Start();
+
+    // All initial characteristics are assigned in Start.
+    // Dump attributes to the output file.
+    auto ofs = ci.output_stream;
+
+    for (int nJ=0; nJ<SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
     // Fields:
     switch ( nJ ) {
     case PMC_SEX:
-      (*ofs) << (int) poFirstActor->sex;
+      (*ofs) << (int) prPerson->sex;
       break;
     case PMC_AGE:
-      (*ofs) << (int) poFirstActor->integer_age;
+      (*ofs) << (int) prPerson->integer_age;
       break;
     case PMC_REGION:
-      (*ofs) << (int) poFirstActor->region;
+      (*ofs) << (int) prPerson->region;
       break;
     case PMC_NATIVE_BORN:
-      (*ofs) << (int) poFirstActor->native_born;
+      (*ofs) << (int) prPerson->native_born;
       break;
     case PMC_RECENT_ARRIVAL:
-      (*ofs) << (int) poFirstActor->recent_arrival;
+      (*ofs) << (int) prPerson->recent_arrival;
       break;
     case PMC_YEARS_SINCE_ARRIVAL:
-      (*ofs) << (int) poFirstActor->years_since_arrival;
+      (*ofs) << (int) prPerson->years_since_arrival;
       break;
     case PMC_INDIGENOUS:
-      (*ofs) << (int) poFirstActor->indigenous;
+      (*ofs) << (int) prPerson->indigenous;
       break;
     default:
       ; // Error
@@ -69,65 +74,27 @@ void CaseSimulation( ofstream *ofs )
     else (*ofs) << std::endl;
   }
 
-	// Continue processing events until there are no more.
-	// Model code is responsible for ending the case by calling
-	// Finish on all existant actors.
-
-	// The Modgen run-time implements the global event queue gpoEventQueue.
-	while ( !gpoEventQueue->Empty() )
-	{
-		// The global variables gbCancelled and gbErrors
-		// are maintained by the Modgen run-time.
-		if ( gbCancelled || gbErrors )
-		{
-			// The user cancelled the simulation, or run-time errors occurred.
-			// Terminate the case immediately.
-			gpoEventQueue->FinishAllActors();
-		}
-		else
-		{
-			// Age all actors to the time of the next event.
-			gpoEventQueue->WaitUntil( gpoEventQueue->NextEvent() );
-	
-			// Implement the next event.
-			gpoEventQueue->Implement();
-		}
-	}
-
-	// Note that Modgen handles memory cleanup when Finish is called on an actor.
+	// Simulate events until there are no more.
+    SimulateEvents();
 }
 
 
-// The Simulation function is called by Modgen to simulate a set of cases.
-void Simulation()
+// Invoked at the beginning of the Simulation function
+void Simulation_start(case_info &ci)
 {
-  // Construct a local output stream object
-  ofstream output_stream( PersonMicroDataFile, ios_base::out | ios_base::trunc );
+    auto ofs = new std::ofstream(PersonMicroDataFile, ios_base::out | ios_base::trunc );
 
-	// counter for cases simulated
-	long lCase = 0;
-
-	// The Modgen run-time implements CASES (used below),
-	// which supplies the number of cases to simulate in a particular thread.
-	// 
-	// The following loop for cases is stopped if
-	//  - the simulation is cancelled by the user, with partial reports (gbInterrupted)
-	//  - the simulation is cancelled by the user, with no partial reports (gbCancelled)
-	//  - a run-time error occurs (gbErrors)
-	//
-	// The global variables gbInterrupted, gbCancelled and gbErrors
-	// are maintained by the Modgen run-time.
-	for ( lCase = 0; lCase < CASES() && !gbInterrupted && !gbCancelled && !gbErrors; lCase++ )
-	{
-		// Simulate a case.
-
-		// Tell the Modgen run-time to prepare to simulate a new case.
-		StartCase();
-
-		// Call the CaseSimulation function defined earlier in this module.
-		CaseSimulation( &output_stream );
-
-		// Tell the Modgen run-time that the case has been completed.
-		SignalCase();
-	}
+    if (!ofs->is_open()) {
+        // fatal error (TODO)
+        int j = 1;
+    }
+    ci.output_stream = ofs;
 }
+
+// Invoked at the end of the Simulation function
+void Simulation_end(case_info &ci)
+{
+    delete ci.output_stream;
+}
+
+

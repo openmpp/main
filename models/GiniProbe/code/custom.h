@@ -7,3 +7,11 @@
  * files in this file, for correct placement in compiler-generated files.
  */
 
+/**
+ * Information about the case.
+ * 
+ * Some case-based models need to communicate additional information to the case, or between
+ * cases.  This structure can be used for that purpose.  It is required but can be left empty.
+ */
+struct case_info {
+};

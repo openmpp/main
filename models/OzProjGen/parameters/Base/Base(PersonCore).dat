@@ -1,10 +1,16 @@
 parameters {
-	file	PersonMicroDataFile = "Base.csv"; //EN Output file for synthetic starting population
+	file	PersonMicroDataFile = "../../../microdata/OzProj18_5K.csv"; //EN Output file for synthetic starting population
+/* NOTE ( PersonMicroDataFile, EN )
+>The output file name has the following form:
+> OzProj<version>_<size>.csv
+> e.g. OzProj18_5K.csv
+> Version identifies the fields present, and is the version of OzProjGen which produced the file.
+> Size denotes the number of records in the otuput file, e.g. 5K is 5,000, 1M is 1,000,000, etc.
+*/
+
 /* NOTE ( StartPopDistn, EN )
 >Source: ABS 3101.0 Table 59 ERP by single year of age, Australia
 */
-
-
 	 //EN Starting population distribution
 	cumrate[2]	StartPopDistn[SEX][RANGE_AGE] = {
 		149027, 151366, 150320, 149673, 148141, 148229, 144049, 141402, 139417, 139108, 141445, 141421, 142100, 142585, 143992, 145265, 148891, 148744, 150442, 153257, 159078, 165562, 165309, 165991, 167530, 169468, 169736, 168334, 168837, 164709, 161964, 155898, 152785, 149373, 149191, 149645, 152132, 155299, 159131, 165997, 168239, 160004, 157549, 152125, 148831, 148328, 149725, 154192, 155625, 156277, 155388, 150059, 148242, 144347, 141591, 140047, 135211, 130958, 129906, 125947, 124329, 122104, 119089, 120640, 125036, 105917, 100885, 95977, 86379, 85095, 78811, 75721, 71654, 67211, 63899, 59213, 54156, 51134, 48253, 45655, 44694, 41975, 38139, 34802, 30962, 27482, 23461, 19744, 16374, 13877, 10891, 8273, 5406, 4063, 3088, 2257, 1531, 1007, 667, 397, 552, 
@@ -13,8 +19,6 @@ parameters {
 /* NOTE ( NativeBorn, EN )
 >Source: ABS 3415.0  Migrants, 2011 Census, Table 9
 */
-
-
 	 //EN Native-born proportion (last 5 years)
 	double	NativeBorn[SEX][AGE_CLASS2] = {
 		(2) 0.877851191, 0.766747409, 0.641268689, 0.661855858, 0.634937516, 0.621486785, 0.581731432, 0.566370111, 

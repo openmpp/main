@@ -194,9 +194,19 @@ void SimulateEvents()
  */
 void RunSimulation(int mem_id, int mem_count)
 {
-    extern void CaseSimulation(); // defined elsewhere
+    // The following functions are usually defined in the main simulation module, e.g. model.mpp
+    // case_info is usually declared in the model-specific include file custom.h
+    extern void Simulation_start(case_info &ci);
+    extern void Simulation_end(case_info &ci);
+    extern void CaseSimulation(case_info &ci);
 
     using namespace fmk;
+
+    // Create the case information communication object
+    case_info ci;
+
+	// Perform operations at the start of Simulation
+	Simulation_start(ci);
 
     string msg = "Running Simulation - member=" + to_string(mem_id);
     theLog->logMsg(msg.c_str());
@@ -252,7 +262,7 @@ void RunSimulation(int mem_id, int mem_count)
         BaseEvent::event_checksum_reset();
 
         // Simulate the case
-        CaseSimulation();
+        CaseSimulation(ci);
 
         // Log the case checksum if activated
         if (BaseEvent::event_checksum_enabled) case_checksum_msg(case_seed, sample_member);
@@ -272,6 +282,9 @@ void RunSimulation(int mem_id, int mem_count)
             case_seed = product % mg_modulus;
         }
     } // cases
+
+	// Perform operations at the end of Simulation
+	Simulation_end(ci);
 }
 
 

@@ -19,9 +19,11 @@ languages {
 };
 
 /**
- * The CaseSimulation function simulates a single case.
+ * Simulates a single case.
+ * 
+ * Called by code in a simulation framework module.
  */
-void CaseSimulation( )
+void CaseSimulation(case_info &ci)
 {
   extern void SimulateEvents(); // defined elsewhere
 
@@ -74,5 +76,22 @@ void CaseSimulation( )
   oeObservation->Finish();
 }
 
+/**
+ * Invoked at the beginning of the Simulation function.
+ *
+ * @param [in,out] ci Additional information related to the case.
+ */
+void Simulation_start(case_info &ci)
+{
+    // Initialize case information in ci (if used).
+}
 
-// The Simulation function is called by Modgen to simulate a set of cases.
+/**
+ * Invoked at the end of the Simulation function.
+ *
+ * @param [in,out] ci Additional information related to the case.
+ */
+void Simulation_end(case_info &ci)
+{
+    // Finalize case information in ci (if used).
+}

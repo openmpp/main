@@ -22,9 +22,11 @@ languages {
 };
 
 /**
- * The CaseSimulation function simulates a single case.
+ * Simulates a single case.
+ * 
+ * Called by code in a simulation framework module.
  */
-void CaseSimulation()
+void CaseSimulation(case_info &ci)
 {
     extern void SimulateEvents(); // defined elsewhere
 
@@ -34,4 +36,24 @@ void CaseSimulation()
 
 	// Simulate events until there are no more.
     SimulateEvents();
+}
+
+/**
+ * Invoked at the beginning of the Simulation function.
+ *
+ * @param [in,out] ci Additional information related to the case.
+ */
+void Simulation_start(case_info &ci)
+{
+    // Initialize case information in ci (if used).
+}
+
+/**
+ * Invoked at the end of the Simulation function.
+ *
+ * @param [in,out] ci Additional information related to the case.
+ */
+void Simulation_end(case_info &ci)
+{
+    // Finalize case information in ci (if used).
 }

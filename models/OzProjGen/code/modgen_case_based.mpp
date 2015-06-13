@@ -1,7 +1,7 @@
-//LABEL(modgen_case_based_microdata, EN) Modgen simulation framework for case-based cross-compatible models which read a microdata file
+//LABEL(modgen_case_based, EN) Modgen simulation framework for case-based cross-compatible models
 
-/* NOTE(modgen_case_based_microdata, EN)
-	This module implements Modgen versions of core global functions for case-based models which read a microdata file.
+/* NOTE(modgen_case_based, EN)
+	This module implements Modgen versions of core global functions for case-based models
 	
     This module is ignored by the OpenM++ compiler.
 	
@@ -47,10 +47,16 @@ void SimulateEvents()
  */
 void Simulation()
 {
-	// Open the microdata file
-	PersonOpenFile();
+    // The following are defined in the main simulation model, e.g. model.mpp
+    extern void Simulation_start(case_info &ci);
+    extern void Simulation_end(case_info &ci);
+    extern void CaseSimulation(case_info &ci);
 
-    extern void CaseSimulation(); // defined elsewhere
+    // Create the case information communication object
+    case_info ci;
+
+	// Perform operations at the start of Simulation
+	Simulation_start(ci);
 
 	long  lCase = 0; 	// counter for cases simulated
 
@@ -62,7 +68,7 @@ void Simulation()
 		StartCase(); 
 
 		// Call the CaseSimulation function defined earlier in this module.
-		CaseSimulation(); 
+		CaseSimulation(ci); 
 
 		// Tell the Modgen run-time that the case has been completed.
 		SignalCase();
@@ -73,8 +79,8 @@ void Simulation()
         }
 	}
 	
-	// Close the microdata file
-	PersonCloseFile();
+	// Perform operations at the end of Simulation
+	Simulation_end(ci);
 }
 							
 
