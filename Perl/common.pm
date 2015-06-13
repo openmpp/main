@@ -105,6 +105,13 @@ if (!defined(which($sqlite3_exe))) {
 	}
 }
 if (!defined(which($sqlite3_exe))) {
+	# Look in bin subdir of OM_ROOT for Windows executable.
+	$sqlite3_exe = File::Spec->catfile(dirname($0), "%OM_ROOT%/bin/sqlite3.exe");
+	if (-e $sqlite3_exe) {
+		$sqlite3_exe = abs_path($sqlite3_exe);
+	}
+}
+if (!defined(which($sqlite3_exe))) {
 	# Too bad, so sad...
 	logmsg error, "Cannot find sqlite3.";
 	exit 1;
