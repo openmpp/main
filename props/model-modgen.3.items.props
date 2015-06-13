@@ -21,6 +21,7 @@
     <MODGEN_OUTPUTS Include="@(MODGEN_RC_OUTPUTS)" />
 
     <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="../code/custom.cpp" />
 
     <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
     <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />

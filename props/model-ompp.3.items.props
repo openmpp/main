@@ -45,11 +45,12 @@
     <ClCompile Include="src/om_definitions.cpp" />
     <ClCompile Include="src/om_developer.cpp" />
     <ClCompile Include="src/om_fixed_parms.cpp" />
+    <ClCompile Include="../code/custom.cpp" />
 
     <ClInclude Include="src/om_types0.h" />
     <ClInclude Include="src/om_types1.h" />
     <ClInclude Include="src/om_declarations.h" />
-    <ClInclude Include="code/*.h" />
+    <ClInclude Include="../code/*.h" />
 
     <None Include="../code/*.mpp" />
     <None Include="../code/*.ompp" />

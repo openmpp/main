@@ -125,7 +125,8 @@ MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_fixed_parms.cpp
 
 MODEL_CPPLIST = \
-  $(MODEL_OMC_CPP)
+  $(MODEL_OMC_CPP) \
+  $(MODEL_CODE_SUB)/custom.cpp
 
 sources = $(MODEL_CPPLIST)
 
@@ -147,6 +148,12 @@ $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+	
+$(DEPS_DIR)/custom.d : $(MODEL_CODE_SUB)/custom.cpp
+	$(CPP) -MM $(CPPFLAGS) $< -MF $@
+
+$(OBJ_DIR)/custom.o : $(MODEL_CODE_SUB)/custom.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
