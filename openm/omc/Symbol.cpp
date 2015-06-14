@@ -26,6 +26,7 @@
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
+#include "StringTypeSymbol.h"
 #include "UnknownTypeSymbol.h"
 #include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
@@ -800,6 +801,9 @@ void Symbol::populate_default_symbols(const string &model_name)
     sym = new NumericSymbol(token::TK_integer, token::TK_int, "0"); // integer
     sym = new NumericSymbol(token::TK_counter, token::TK_int, "0"); // counter
     sym = new NumericSymbol(token::TK_big_counter, token::TK_unsigned, token::TK_long, token::TK_long, "0"); // counter
+
+    // Other types
+    sym = new StringTypeSymbol();
     sym = new UnknownTypeSymbol();
 
     // Not implemented (a string)

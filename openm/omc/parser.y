@@ -1241,9 +1241,34 @@ decl_parameter:
                             // No longer in parameter context
                             pc.set_parameter_context( nullptr );
                         }
-    | "file" SYMBOL[parm] ";"
+    | "file" SYMBOL[parm]
                         {
-                            // TODO
+                            ParameterSymbol *parm = nullptr;
+
+                            if ($parm->is_base_symbol()) {
+                                // parameter declaration
+                                pc.redeclaration = false;
+                                // Morph Symbol to ParameterSymbol
+                                TypeSymbol *ts = StringTypeSymbol::find();
+                                assert(ts);
+                                parm = new ParameterSymbol( $parm, ts, @parm );
+                                assert(parm);
+                                $parm = parm;
+                            }
+                            else {
+                                // parameter re-declaration
+                                pc.redeclaration = true;
+                                parm = dynamic_cast<ParameterSymbol *>($parm);
+                                assert(parm); // grammar/logic guarantee
+                                parm->redecl_loc = @parm; // note redeclaration location
+                            }
+                            // Set parameter context for gathering the initializer (if present).
+                            pc.set_parameter_context( parm );
+                        }
+            parameter_initializer_expr ";"
+                        {
+                            // No longer in parameter context
+                            pc.set_parameter_context( nullptr );
                         }
     | error ";"
                         {
@@ -1366,7 +1391,6 @@ parameter_initializer_element:
                             $parameter_initializer_element = $initializer_constant;
                         }
     ;
-
 
 /*
  * entity
@@ -2658,7 +2682,7 @@ constant:
 initializer_constant:
       signed_literal[literal]
                         {
-                            // Create a constant representing a literal
+                            // Create a constant which wraps the literal
                             auto cs = new Constant($literal, @literal);
                             assert(cs);
                             $initializer_constant = cs;

@@ -9,6 +9,7 @@
 #include "TypeSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
+#include "StringTypeSymbol.h"
 #include "ClassificationSymbol.h"
 #include "RangeSymbol.h"
 #include "PartitionSymbol.h"
@@ -20,6 +21,16 @@ using namespace std;
 bool TypeSymbol::is_bool()
 {
     if (dynamic_cast<BoolSymbol *>(this)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool TypeSymbol::is_string()
+{
+    if (dynamic_cast<StringTypeSymbol *>(this)) {
         return true;
     }
     else {
@@ -75,7 +86,8 @@ bool TypeSymbol::is_numeric_or_bool()
     else {
         assert(dynamic_cast<ClassificationSymbol *>(this)
             || dynamic_cast<RangeSymbol *>(this)
-            || dynamic_cast<PartitionSymbol *>(this)); // grammar guarantee
+            || dynamic_cast<PartitionSymbol *>(this)
+            || dynamic_cast<StringTypeSymbol *>(this)); // grammar guarantee
         return false;
     }
 }

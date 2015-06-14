@@ -62,6 +62,13 @@ public:
     /**
      * Determines derived type.
      *
+     * @return true if string, else false.
+     */
+    bool is_string();
+
+    /**
+     * Determines derived type.
+     *
      * @return true if classification, else false.
      */
     bool is_classification();

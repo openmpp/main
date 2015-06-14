@@ -219,6 +219,7 @@
     <ClInclude Include="SimpleAgentVarEnumSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
     <ClInclude Include="StringSymbol.h" />
+    <ClInclude Include="StringTypeSymbol.h" />
     <ClInclude Include="Symbol.h" />
     <ClInclude Include="TableGroupSymbol.h" />
     <ClInclude Include="TableMeasureSymbol.h" />
@@ -293,6 +294,7 @@
     <ClCompile Include="SimpleAgentVarEnumSymbol.cpp" />
     <ClCompile Include="SimpleAgentVarSymbol.cpp" />
     <ClCompile Include="StringSymbol.cpp" />
+    <ClCompile Include="StringTypeSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
     <ClCompile Include="TableGroupSymbol.cpp" />
     <ClCompile Include="TableMeasureSymbol.cpp" />

@@ -387,6 +387,10 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         // For fundamental types (and bool), the name of the symbol is the name of the type
         typ = pp_datatype->name;
     }
+    else if (pp_datatype->is_string()) {
+        // For the string type, the type is "string"
+        typ = "string";
+    }
     else {
         // for parameters of type classification, range, or partition
         // get the underlying storage type
@@ -447,6 +451,11 @@ CodeBlock ParameterSymbol::cxx_transform_haz1rate()
 
 string ParameterSymbol::cxx_assert_sanity()
 {
+    if (pp_datatype->is_string()) {
+        // For string type parameters, skip sanity check
+        return "";
+    }
+
     string typ; // storage type
     if (pp_datatype->is_time()) {
         // For Time, the type is wrapped

@@ -103,6 +103,7 @@ RealSymbol.cpp \
 SimpleAgentVarEnumSymbol.cpp \
 SimpleAgentVarSymbol.cpp \
 StringSymbol.cpp \
+StringTypeSymbol.cpp \
 Symbol.cpp \
 TableGroupSymbol.cpp \
 TableMeasureSymbol.cpp \
