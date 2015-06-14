@@ -8,15 +8,19 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstdarg>
 #include <forward_list> // for observation collections in tables
 #include "libopenm/omModel.h"
+#include "omc/fixed_precision_float.h"
 
 #include "om_types0.h" // fundamental model types
 #include "omc/link.h"
 #include "omc/Range.h"
+#include "omc/Partition.h"
+#include "omc/Classification.h"
 #include "omc/Agent.h"
 #include "omc/AgentVar.h"
 #include "omc/Event.h"
@@ -26,6 +30,8 @@
 #include "omc/Increment.h"
 #include "omc/cumrate.h"
 #include "om_types1.h" // model-specific types
+
+#include "custom.h" // model-specific declarations and additional includes
 
 #include "omc/macros.h"
 #include "omc/globals.h"

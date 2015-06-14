@@ -116,8 +116,6 @@ void CodeGen::do_preamble()
                 );
     h += "" ;
 	h += "#pragma once";
-	h += "#include \"omc/omSimulation.h\"";
-	h += "#include \"custom.h\" // model-specific header file";
     h += "";
     h += "using namespace std;";
     h += "";
@@ -149,7 +147,6 @@ void CodeGen::do_preamble()
                 digest_str
                 );
 	c += "";
-    c += "#include <cassert>";
     c += "#include <typeinfo>";
     c += "#include \"omc/omSimulation.h\"";
     c += "";
