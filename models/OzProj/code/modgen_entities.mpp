@@ -43,3 +43,8 @@ void Observation::exit_simulation() { }
 // function hook_<name>.                           //
 /////////////////////////////////////////////////////
 
+actor Person
+{
+    void hook_Start();
+};
+void Person::hook_Start() { }

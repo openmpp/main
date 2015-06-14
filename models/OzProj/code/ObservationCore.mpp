@@ -34,6 +34,9 @@ actor Observation //EN Microdata observation
 
   //EN Start the Observation entity
   void Start();
+
+  //EN Finish the Observation entity
+  void Finish();
 };
 /*NOTE(Observation, EN)
   An Observation entity holds data from a record in the microdata file.
@@ -83,6 +86,12 @@ void Observation::Start()
 
   // Have the entity enter the simulation (OpenM++).
   enter_simulation();
+}
+
+void Observation::Finish()
+{
+    // Exit the simulation (OpenM++).
+    exit_simulation();
 }
 
 table Observation MicrodataSex //EN Microdata: Persons by sex

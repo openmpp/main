@@ -147,6 +147,9 @@ void Person::SimulationControlEvent()
 */
 void Person::Start()
 {
+  // Initialize all attributes (OpenM++).
+  initialize_attributes();
+
   time = MIN(YEAR) - 1;
 
   // Draw from the starting distribution by sex and age.
@@ -203,6 +206,9 @@ void Person::Start()
     indigenous = TRUE;
   else
     indigenous = FALSE;
+
+  // Have the entity enter the simulation (OpenM++).
+  enter_simulation();
 }
 
 /*NOTE(Person.Finish, EN)
@@ -210,6 +216,9 @@ void Person::Start()
 */
 void Person::Finish()
 {
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+
 	// After the code in this function is executed,
 	// Modgen removes the actor from tables and from the simulation.
 	// Modgen also recuperates any memory used by the actor.

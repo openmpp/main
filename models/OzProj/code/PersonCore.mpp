@@ -280,6 +280,8 @@ void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
   else
     integer_mid_year = integer_calendar_year;
 
+  hook_Start();
+
   // Have the entity enter the simulation (OpenM++).
   enter_simulation();
 }
@@ -289,6 +291,9 @@ void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
 */
 void Person::Finish()
 {
+    // Exit the simulation (OpenM++).
+    exit_simulation();
+
 	// After the code in this function is executed,
 	// Modgen removes the actor from tables and from the simulation.
 	// Modgen also recuperates any memory used by the actor.
