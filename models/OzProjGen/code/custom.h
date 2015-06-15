@@ -7,6 +7,7 @@
  * files in this file, for correct placement in compiler-generated files.
  */
 
+#pragma once
 #include <fstream>
 
 /**
