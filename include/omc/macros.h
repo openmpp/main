@@ -5,11 +5,6 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-// The following macro is not defined for Modgen models.
-// It can be used to exclude Modgen-specific C++ code during C++ compilation by openM++.
-// Both the Modgen compiler and omc ignore preprocessor directives in model source code.
-#define OPENM 1
-
 #define TRUE true
 #define FALSE false
 #define WAIT( delta_time ) static_cast<Time>((time + static_cast<Time::type>(delta_time)))

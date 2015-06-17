@@ -31,6 +31,11 @@
 #include "omc/cumrate.h"
 #include "om_types1.h" // model-specific types
 
+// The following macro is not defined for Modgen models.
+// It can be used to exclude Modgen-specific C++ code during C++ compilation by openM++.
+// Both the Modgen compiler and omc ignore preprocessor directives in model source code.
+#define OPENM 1
+
 #include "custom.h" // model-specific declarations and additional includes
 
 #include "omc/macros.h"
