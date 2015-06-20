@@ -13,12 +13,12 @@ namespace fmk {
     /**
      * The number of simulations in the sample of simulations (not used)
      */
-    int sample_size = 0;
+    int simulation_members = 0;
 
     /**
-     * The member to simulate of the sample of simulations.
+     * The current simulation member.
      */
-    thread_local int sample_member = 0;
+    thread_local int simulation_member = 0;
 
     /**
      * The value for population scaling.

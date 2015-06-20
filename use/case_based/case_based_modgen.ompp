@@ -94,11 +94,25 @@ namespace fmk {
     thread_local double case_seed_encoded = 0.0;
 
     /**
-     * The case counter in thread.
+     * The case counter in this simulation member.
      */
-    thread_local long long case_counter_in_thread = 0;
+    thread_local long long member_case_counter = 0;
 
 } // fmk
+
+/**
+ * Gets the numeric case identifier of the current case.
+ * 
+ * See Modgen Developer's Guide. The case identifier is unique, sequential, and starts at 0.
+ * Values are interleaved among simulation members.  For example, if there are 4 simulation
+ * members, member 0 would have case identifiers 0,4,8,... member 1 would have case identifiers 1,5,9,...
+ *
+ * @return The case identifier.
+ */
+long long GetCaseID()
+{
+    return fmk::member_case_counter * fmk::simulation_members + fmk::simulation_member;
+}
 
 /**
  * Gets the case seed of the current case (encoded with sample number).
@@ -121,7 +135,7 @@ double GetCaseSeed()
  */
 int GetCaseSample()
 {
-    return fmk::sample_member;
+    return fmk::simulation_member;
 }
 
 /**
@@ -133,7 +147,7 @@ int GetCaseSample()
  */
 int GetUserTableSubSample()
 {
-    return fmk::sample_member;
+    return fmk::simulation_member;
 }
 
 /**
@@ -157,7 +171,7 @@ long long GetAllCases()
  */
 int GetSubSamples()
 {
-    return fmk::sample_size;
+    return fmk::simulation_members;
 }
 
 /**
@@ -167,7 +181,7 @@ int GetSubSamples()
  */
 long long GetCaseCounterInThread()
 {
-    return fmk::case_counter_in_thread;
+    return fmk::member_case_counter;
 }
 
 void SimulateEvents()
@@ -195,7 +209,7 @@ void SimulateEvents()
 void RunSimulation(int mem_id, int mem_count)
 {
     // The following functions are usually defined in the main simulation module, e.g. model.mpp
-    // case_info is usually declared in the model-specific include file custom.h
+    // case_info is usually declared in the model-specific include file custom_early.h
     extern void Simulation_start(case_info &ci);
     extern void Simulation_end(case_info &ci);
     extern void CaseSimulation(case_info &ci);
@@ -212,10 +226,10 @@ void RunSimulation(int mem_id, int mem_count)
     theLog->logMsg(msg.c_str());
 
     // The number of member simulations in the sample of simulations
-    sample_size = mem_count;
+    simulation_members = mem_count;
 
     // The member to simulate of the sample of simulations
-    sample_member = mem_id;
+    simulation_member = mem_id;
 
     int seed = SimulationSeed; // framework input parameter
     all_cases = SimulationCases; // framework input parameter
@@ -223,18 +237,18 @@ void RunSimulation(int mem_id, int mem_count)
     // The number of cases to simulate for this sample member.
     // Divide the total cases for the entire simulation by the number of members
     // and spread any cases in the remainder among the first members (one extra case each)
-    member_cases = all_cases / sample_size;
-    if (sample_member < (all_cases % sample_size)) {
+    member_cases = all_cases / simulation_members;
+    if (simulation_member < (all_cases % simulation_members)) {
         member_cases++;
     };
 
     // for sample numbers greater than the (Modgen) maximum, re-use generators cyclically
     // and increment the starting case_seed for the simulation of the sample
-    long case_seed = seed + (int)sample_member / max_samples;
-    long case_seed_generator = case_seed_generators[sample_member % max_samples];
+    long case_seed = seed + (int)simulation_member / max_samples;
+    long case_seed_generator = case_seed_generators[simulation_member % max_samples];
 
-    // For sample_member numbers greater than limit, re-use generators cyclically.
-    model_stream_generator = model_stream_generators[sample_member % max_samples];
+    // For simulation_member numbers greater than limit, re-use generators cyclically.
+    model_stream_generator = model_stream_generators[simulation_member % max_samples];
 
     for (long long thisCase = 0; thisCase < member_cases; thisCase++) {
 
@@ -252,11 +266,11 @@ void RunSimulation(int mem_id, int mem_count)
         // Initialize global time for the case  (can override in StartSimulation)
         BaseEvent::set_global_time(0);
 
-        // record the encoded case seed (case_seed + sample_member in high order bits)
-        case_seed_encoded = case_seed + sample_member * ((double)mg_modulus + 1);
+        // record the encoded case seed (case_seed + simulation_member in high order bits)
+        case_seed_encoded = case_seed + simulation_member * ((double)mg_modulus + 1);
 
-        // record the case counter within the thread of execution
-        case_counter_in_thread = thisCase;
+        // record the case counter within the current simulation member
+        member_case_counter = thisCase;
 
         // Reset the running event checksum
         BaseEvent::event_checksum_reset();
@@ -265,7 +279,7 @@ void RunSimulation(int mem_id, int mem_count)
         CaseSimulation(ci);
 
         // Log the case checksum if activated
-        if (BaseEvent::event_checksum_enabled) case_checksum_msg(case_seed, sample_member);
+        if (BaseEvent::event_checksum_enabled) case_checksum_msg(case_seed, simulation_member);
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
