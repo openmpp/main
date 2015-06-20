@@ -526,8 +526,6 @@ for my $model_dir (@model_dirs) {
 					"/p:OMC_EXE=${omc_exe}",
 					"/p:Configuration=${ompp_configuration}",
 					"/p:Platform=${ompp_platform}",
-					"/p:ENABLE_SCENARIO_PARAMETERS=1",
-					"/p:ENABLE_FIXED_PARAMETERS=1",
 					"/p:GRID_COMPUTING=EMPTY",
 					"/p:RUN_SCENARIO=0",
 					"/p:RUN_EXPORT=0",
