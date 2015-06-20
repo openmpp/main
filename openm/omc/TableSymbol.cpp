@@ -139,7 +139,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDic.tableName = name;
         tableDic.isUser = true;
         tableDic.rank = dimension_count();
-        tableDic.isSparse = true;   // do not store NULLs
+        tableDic.isSparse = true;   // do not store zeroes
         tableDic.isHidden = false;
         tableDic.exprPos = measures_position;
         metaRows.tableDic.push_back(tableDic);

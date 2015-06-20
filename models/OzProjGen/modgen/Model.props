@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <MODEL_NAME>OzProj</MODEL_NAME>
+    <MODEL_NAME>OzProjGen</MODEL_NAME>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />

@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 19, 0, 0;
+version 0, 19, 0, 1;
 
 // The model type
 model_type case_based;
@@ -25,11 +25,15 @@ languages {
  */
 void CaseSimulation(case_info &ci)
 {
-  extern void SimulateEvents(); // defined elsewhere
+  extern void SimulateEvents(); // defined in a simulation framework module
+
+  // Read the record corresponding to the case_id of the case
+  long lCaseID = GetCaseID();
+  ci.in_csv.get_record(lCaseID);
 
   // Initialize the Observation entity for the record used in the current case
   auto oeObservation = new Observation();
-  oeObservation->Start();
+  oeObservation->Start(&ci);
 
   // The following works for undercount rates up to 50%
   int nAge = oeObservation->o_age_group1;
@@ -76,22 +80,14 @@ void CaseSimulation(case_info &ci)
   oeObservation->Finish();
 }
 
-/**
- * Invoked at the beginning of the Simulation function.
- *
- * @param [in,out] ci Additional information related to the case.
- */
+// Invoked at the beginning of the simulation
 void Simulation_start(case_info &ci)
 {
-    // Initialize case information in ci (if used).
+  ci.in_csv.open(MicroDataInputFile);
 }
 
-/**
- * Invoked at the end of the Simulation function.
- *
- * @param [in,out] ci Additional information related to the case.
- */
+// Invoked at the end of the simulation
 void Simulation_end(case_info &ci)
 {
-    // Finalize case information in ci (if used).
+  ci.in_csv.close();
 }

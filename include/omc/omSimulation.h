@@ -36,12 +36,18 @@
 // Both the Modgen compiler and omc ignore preprocessor directives in model source code.
 #define OPENM 1
 
-#include "custom.h" // model-specific declarations and additional includes
+#include "custom_early.h" // model-specific declarations and includes (early)
+
+// Make logical a synonym for bool in C++ model code.
+typedef bool logical;
+
+#include "om_declarations.h" // model-specific classes
+
+#include "custom.h" // model-specific declarations and includes (late)
 
 #include "omc/macros.h"
 #include "omc/globals.h"
 
-#include "om_declarations.h" // model-specific classes
 
 namespace openm {
 

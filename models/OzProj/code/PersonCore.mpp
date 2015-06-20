@@ -6,6 +6,9 @@
 
 parameters 
 {
+  //EN Microdata input file
+  file MicroDataInputFile;
+
   //EN Simulation starting time
   double SimulationStartTime;
   /*NOTE(SimulationStartTime, EN)
@@ -39,22 +42,22 @@ parameters
   double NativeToIndigenous;
 };
 
+using namespace std;
+
 void PreSimulation()
 {
-  // Open the microdata file
-  PersonOpenFile();
-
+  input_csv inCsv;
+  inCsv.open(MicroDataInputFile);
+  ImmigrantDonors = 0;
   long lRecordCount = 0;
-  while ( PersonGetRecord(lRecordCount) ) {
+  while (inCsv.get_record(lRecordCount)) {
     lRecordCount++;
-    if ( PersonMicroData[PMC_NATIVE_BORN] == 0
-      && PersonMicroData[PMC_YEARS_SINCE_ARRIVAL] <= MaxYearsForImmigrantDonor ) {
+    if (inCsv.fields[PMC_NATIVE_BORN] == 0
+      && inCsv.fields[PMC_YEARS_SINCE_ARRIVAL] <= MaxYearsForImmigrantDonor ) {
         ImmigrantDonors++;
     }
   }
-
-  // Close the microdata file
-  PersonCloseFile();
+  inCsv.close();
 }
 
 actor Person            //EN Individual

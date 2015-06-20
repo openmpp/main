@@ -11,7 +11,7 @@ parameters {
 			(2) 0.000, 
 		},
 	};
-	file	PersonMicroDataFile = "../../../Microdata/OzProj18_5K.csv"; //EN File name of starting population
+	file	MicroDataInputFile = "../../../Microdata/OzProj18_5K.csv"; //EN File name of starting population
 	int	RealWorldStartPopulation = 22340024; //EN Real world population count at start
 	int	MaxYearsForImmigrantDonor = 0; //EN Maximum years since immigration immigration to be an immigrant donor
 /* NOTE ( Immigrants, EN )
