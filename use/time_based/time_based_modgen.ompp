@@ -44,7 +44,7 @@ double GetCaseSeed()
  */
 int GetReplicate()
 {
-    return fmk::sample_member;
+    return fmk::simulation_member;
 }
 
 /**
@@ -56,7 +56,7 @@ int GetReplicate()
  */
 int GetUserTableReplicate()
 {
-    return fmk::sample_member;
+    return fmk::simulation_member;
 }
 
 /**
@@ -68,7 +68,7 @@ int GetUserTableReplicate()
  */
 int GetReplicates()
 {
-    return fmk::sample_size;
+    return fmk::simulation_members;
 }
 
 void LogSimulationStart()
@@ -124,22 +124,22 @@ void RunSimulation(int mem_id, int mem_count)
     theLog->logMsg(msg.c_str());
 
     // The number of simulations in the sample of simulations (not used)
-    sample_size = mem_count;
+    simulation_members = mem_count;
 
     // The member to simulate of the sample of simulations
-    sample_member = mem_id;
+    simulation_member = mem_id;
 
     int seed = SimulationSeed; // framework input parameter
     simulation_end = SimulationEnd; // framework input parameter
 
     // The master seed to simulate this member of the 'sample' of simulations
-    long master_seed = seed + sample_member;
+    long master_seed = seed + simulation_member;
 
-    // record the encoded 'case' seed (master_seed + sample_member in high order bits)
-    case_seed_encoded = master_seed + sample_member * ((double)mg_modulus + 1);
+    // record the encoded 'case' seed (master_seed + simulation_member in high order bits)
+    case_seed_encoded = master_seed + simulation_member * ((double)mg_modulus + 1);
 
-    // For sample_member numbers greater than limit, re-use generators cyclically.
-    model_stream_generator = model_stream_generators[sample_member % max_samples];
+    // For simulation_member numbers greater than limit, re-use generators cyclically.
+    model_stream_generator = model_stream_generators[simulation_member % max_samples];
 
     {
         // initialize the stream generators
