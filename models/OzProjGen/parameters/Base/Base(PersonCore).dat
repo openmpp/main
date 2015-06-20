@@ -1,6 +1,6 @@
 parameters {
-	file	PersonMicroDataFile = "../../../microdata/OzProj18_5K.csv"; //EN Output file for synthetic starting population
-/* NOTE ( PersonMicroDataFile, EN )
+	file	MicroDataOutputFile = "../../../microdata/OzProj18_5K.csv"; //EN Output file for synthetic starting population
+/* NOTE ( MicroDataOutputFile, EN )
 >The output file name has the following form:
 > OzProj<version>_<size>.csv
 > e.g. OzProj18_5K.csv

@@ -21,7 +21,7 @@ languages {
 parameters
 {
    //EN Output file for synthetic starting population
-   file PersonMicroDataFile;
+   file MicroDataOutputFile;
 };
 
 /**
@@ -82,7 +82,7 @@ void CaseSimulation(case_info &ci)
 // Invoked at the beginning of the Simulation function
 void Simulation_start(case_info &ci)
 {
-    auto ofs = new std::ofstream(PersonMicroDataFile, ios_base::out | ios_base::trunc );
+    auto ofs = new std::ofstream(MicroDataOutputFile, ios_base::out | ios_base::trunc );
 
     if (!ofs->is_open()) {
         // fatal error (TODO)
