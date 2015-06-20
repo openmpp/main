@@ -10,7 +10,6 @@
 
 #pragma once
 #include <string>
-
 typedef std::string std_string; // Can be used instead of std::string in model code, to avoid Modgen issues when using 'string' in model code.
 
 #include "microdata_csv.h"
@@ -28,7 +27,7 @@ namespace mm {
  */
 struct case_info {
     /**
-     * Microdata csv object
+     * Microdata input csv object
      */
     input_csv in_csv;
 };

@@ -29,7 +29,7 @@ void CaseSimulation(case_info &ci)
 
   // Read the record corresponding to the case_id of the case
   long long lCaseID = GetCaseID();
-  ci.in_csv.get_record(lCaseID);
+  ci.in_csv.read_record(lCaseID);
 
   // Initialize the Observation entity for the record used in the current case
   auto oeObservation = new Observation();

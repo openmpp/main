@@ -10,10 +10,9 @@
 
 #pragma once
 #include <string>
-
 typedef std::string std_string; // Can be used instead of std::string in model code, to avoid Modgen issues when using 'string' in model code.
 
-#include <fstream>
+#include "microdata_csv.h"
 
 #if !defined(OPENM)
 namespace mm {
@@ -27,7 +26,10 @@ namespace mm {
  * but can be left empty.
  */
 struct case_info {
-    std::ostream *output_stream;
+    /**
+     * Microdata output csv object
+     */
+    output_csv out_csv;
 };
 
 #if !defined(OPENM)

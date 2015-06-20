@@ -50,10 +50,10 @@ void PreSimulation()
   inCsv.open(MicroDataInputFile);
   ImmigrantDonors = 0;
   long lRecordCount = 0;
-  while (inCsv.get_record(lRecordCount)) {
+  while (inCsv.read_record(lRecordCount)) {
     lRecordCount++;
-    if (inCsv.fields[PMC_NATIVE_BORN] == 0
-      && inCsv.fields[PMC_YEARS_SINCE_ARRIVAL] <= MaxYearsForImmigrantDonor ) {
+    if (inCsv[PMC_NATIVE_BORN] == 0
+      && inCsv[PMC_YEARS_SINCE_ARRIVAL] <= MaxYearsForImmigrantDonor ) {
         ImmigrantDonors++;
     }
   }

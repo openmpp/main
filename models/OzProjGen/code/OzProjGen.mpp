@@ -38,63 +38,54 @@ void CaseSimulation(case_info &ci)
 	prPerson->Start();
 
     // All initial characteristics are assigned in Start.
-    // Dump attributes to the output file.
-    auto ofs = ci.output_stream;
 
-    for (int nJ=0; nJ<SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
+    // Push the fields in the correct order.
+    for (int nJ = 0; nJ < SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
     // Fields:
-    switch ( nJ ) {
+    switch (nJ) {
     case PMC_SEX:
-      (*ofs) << (int) prPerson->sex;
+      ci.out_csv << (int) prPerson->sex;
       break;
     case PMC_AGE:
-      (*ofs) << (int) prPerson->integer_age;
+      ci.out_csv << (int) prPerson->integer_age;
       break;
     case PMC_REGION:
-      (*ofs) << (int) prPerson->region;
+      ci.out_csv << (int) prPerson->region;
       break;
     case PMC_NATIVE_BORN:
-      (*ofs) << (int) prPerson->native_born;
+      ci.out_csv << (int) prPerson->native_born;
       break;
     case PMC_RECENT_ARRIVAL:
-      (*ofs) << (int) prPerson->recent_arrival;
+      ci.out_csv << (int) prPerson->recent_arrival;
       break;
     case PMC_YEARS_SINCE_ARRIVAL:
-      (*ofs) << (int) prPerson->years_since_arrival;
+      ci.out_csv << (int) prPerson->years_since_arrival;
       break;
     case PMC_INDIGENOUS:
-      (*ofs) << (int) prPerson->indigenous;
+      ci.out_csv << (int) prPerson->indigenous;
       break;
     default:
       ; // Error
     }
 
-    // Separators:
-    if ( nJ < SIZE(PERSON_MICRODATA_COLUMNS) - 1 ) (*ofs) << ',';
-    else (*ofs) << std::endl;
   }
+  // All fields have been pushed, now write the record.
+  ci.out_csv.write_record();
 
-	// Simulate events until there are no more.
-    SimulateEvents();
+  // Simulate events until there are no more.
+  SimulateEvents();
 }
-
 
 // Invoked at the beginning of the Simulation function
 void Simulation_start(case_info &ci)
 {
-    auto ofs = new std::ofstream(MicroDataOutputFile, ios_base::out | ios_base::trunc );
-
-    if (!ofs->is_open()) {
-        // fatal error (TODO)
-        int j = 1;
-    }
-    ci.output_stream = ofs;
+    ci.out_csv.open(MicroDataOutputFile);
 }
 
 // Invoked at the end of the Simulation function
 void Simulation_end(case_info &ci)
 {
-    delete ci.output_stream;
+  ci.out_csv.close();
 }
 
 

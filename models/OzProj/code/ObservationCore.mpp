@@ -53,38 +53,38 @@ void Observation::Start(case_info *ci)
 
   // Process sex
   int nSex = 0;
-  nSex = (int) ci->in_csv.fields[PMC_SEX];
+  nSex = (int) ci->in_csv[PMC_SEX];
   if ( 0 == nSex ) o_sex = MALE;
   else o_sex = FEMALE;
 
   // Process age
   int nAge = 0;
-  nAge = (int) ci->in_csv.fields[PMC_AGE];
+  nAge = (int) ci->in_csv[PMC_AGE];
   o_range_age = COERCE(RANGE_AGE, nAge);
 
   // Process region
   int nRegion = 0;
-  nRegion = (int) ci->in_csv.fields[PMC_REGION];
+  nRegion = (int) ci->in_csv[PMC_REGION];
   o_region = (REGION) nRegion;
 
   // Process native-born
   int nNative_born = 0;
-  nNative_born = (int) ci->in_csv.fields[PMC_NATIVE_BORN];
+  nNative_born = (int) ci->in_csv[PMC_NATIVE_BORN];
   o_native_born = ( nNative_born == 1 ) ? TRUE : FALSE;
 
   // Process recent arrival
   int nRecent_arrival = 0;
-  nRecent_arrival = (int) ci->in_csv.fields[PMC_RECENT_ARRIVAL];
+  nRecent_arrival = (int) ci->in_csv[PMC_RECENT_ARRIVAL];
   o_recent_arrival = ( nRecent_arrival == 1 ) ? TRUE : FALSE;
 
   // Process years since arrival
   int nYears_since_arrival = 0;
-  nYears_since_arrival = (int) ci->in_csv.fields[PMC_YEARS_SINCE_ARRIVAL];
+  nYears_since_arrival = (int) ci->in_csv[PMC_YEARS_SINCE_ARRIVAL];
   o_years_since_arrival = COERCE(RANGE_AGE, nYears_since_arrival);
 
   // Process indigenous
   int nIndigenous = 0;
-  nIndigenous = (int) ci->in_csv.fields[PMC_INDIGENOUS];
+  nIndigenous = (int) ci->in_csv[PMC_INDIGENOUS];
   o_indigenous =  ( nIndigenous == 1 ) ? TRUE : FALSE;
 
   // Have the entity enter the simulation (OpenM++).
