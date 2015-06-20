@@ -55,6 +55,7 @@ double LeaplessCalendarToTime(int year, int month_in_year, int day_in_month);
 extern void RunSimulation(int mem_id, int mem_count);
 
 // defined in use/case_based/case_based_modgen.ompp
+extern long long GetCaseID();
 extern double GetCaseSeed();
 extern int GetCaseSample();
 extern int GetUserTableSubSample();
