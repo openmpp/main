@@ -1715,42 +1715,67 @@ void DerivedAgentVarSymbol::create_side_effects()
             // get the side-effect call-back function for age / time
             assert(av->side_effects_fn);
             CodeBlock& cse = av->side_effects_fn->func_body; // body of the C++ side-effect function for the argument attribute (e.g. "age")
-            // inject the code
-            cse += injection_description();
-            cse += "if (!om_active) {";
-            cse += "// Initial value of " + av->name + " is being assigned.";
-            cse += "auto & ss_attr = " + name + ";";
-            cse += "auto & ss_time = " + ait->name + ";";
+            // For self_scheduling_int(age), the side-effects for initial assignment need to be injected into
+            // both age and time, in case time is assigned after age.  So we build the side effect code block separately
+            // into a local CodeBlock named blk, and then inject it after it's build in the right place(s).
+            // Note that if the block is for 'age', the code needs to use age.get() rather than om_new, since
+            // it will be injected into the side-effect function for time as well as age.  In the side-effect function for time
+            // om_new is the new value of time, not age, which is why we need to use age.get() instead in the following code.
+            CodeBlock blk;
+            blk += injection_description();
+            blk += "if (!om_active) {";
+            blk += "// Initial values are being assigned.";
+            blk += "auto & ss_attr = " + name + ";";
+            blk += "auto & ss_time = " + ait->name + ";";
             if (tok == token::TK_self_scheduling_split) {
-                cse += "auto part = ss_attr.get(); // working copy of partition";
+                blk += "auto part = ss_attr.get(); // working copy of partition";
             }
 
-            // There are 3 distinct cases to handle
+            // There are 4 distinct cases to handle
             if (tok == token::TK_self_scheduling_int && av->name == "age") {
-                cse += "// Initial value is the integer part of age.";
-                cse += "ss_attr.set((int)om_new);";
-                cse += "// Time to wait for next change is the fraction of time remaining to next integer boundary";
-                cse += "ss_time = time + (1 - (om_new - (int)om_new));";
+                blk += "// Initial value is the integer part of age.";
+                blk += "ss_attr.set((int)age.get());";
+                blk += "// Time to wait for next change is the fraction of time remaining to next integer boundary";
+                blk += "ss_time = time + (1 - (age.get() - (int)age.get()));";
             }
             else if (tok == token::TK_self_scheduling_int && av->name == "time") {
-                cse += "// Initial value is the integer part of time.";
-                cse += "ss_attr.set((int)om_new);";
-                cse += "// Time of next change is next integer time";
-                cse += "ss_time = 1 + (int)om_new;";
+                blk += "// Initial value is the integer part of time.";
+                blk += "ss_attr.set((int)om_new);";
+                blk += "// Time of next change is next integer time";
+                blk += "ss_time = 1 + (int)om_new;";
             }
-            else if (tok == token::TK_self_scheduling_split) {
-                cse += "// Initial value is the corresponding partition interval.";
-                cse += "part.set_from_value(om_new);";
-                cse += "ss_attr.set(part);";
-                cse += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
-                cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                cse += "else ss_time = time + (part.upper() - om_new);";
+            else if (tok == token::TK_self_scheduling_split && av->name == "age") {
+                blk += "// Initial value is the corresponding partition interval.";
+                blk += "part.set_from_value(age.get());";
+                blk += "ss_attr.set(part);";
+                blk += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
+                blk += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                blk += "else ss_time = time + (part.upper() - age.get());";
+            }
+            else if (tok == token::TK_self_scheduling_split && av->name == "time") {
+                blk += "// Initial value is the corresponding partition interval.";
+                blk += "part.set_from_value(om_new);";
+                blk += "ss_attr.set(part);";
+                blk += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
+                blk += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                blk += "else ss_time = time + (part.upper() - om_new);";
             }
             else {
                 assert(false);
             }
-
-            cse += "}";
+            blk += "}";
+            // inject the side-effect block for self_scheduling_QQQ(time) into time, and self_scheduling_QQQ(age) into age
+            cse += blk;
+            // For self_scheduling_QQQ(age), inject the side-effect block into time as well.
+            if (av->name == "age") {
+                // find the attribute for time
+                auto attr_time = av->pp_agent->pp_time;
+                assert(attr_time);
+                // get the body of the C++ side-effect function for "time"
+                CodeBlock& cse_time = attr_time->side_effects_fn->func_body; 
+                // inject the fragment into time
+                cse_time += blk;
+            }
 
             // Code injection: self-scheduling event implement function
             cif += injection_description();
