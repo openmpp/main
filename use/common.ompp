@@ -36,6 +36,17 @@ namespace fmk {
 }
 
 /**
+ * Fatal exit from the model, with a message.
+ * 
+ * See Modgen Developer's Guide for more information.
+ */
+void ModelExit(const char* msg)
+{
+    theLog->logMsg(msg);
+    exit(-1);
+}
+
+/**
  * Set maximum time for fixed-precision time operations.
  * 
  * See Modgen Developer's Guide for more information.

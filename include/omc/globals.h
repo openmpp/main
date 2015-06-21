@@ -5,6 +5,9 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+#pragma once;
+#include <limits>
+
 // Undefined value for a table cell
 const double UNDEF_VALUE = numeric_limits<double>::quiet_NaN();
 
@@ -12,6 +15,7 @@ const double UNDEF_VALUE = numeric_limits<double>::quiet_NaN();
 // as indicated. They are mostly documented in the Modgen Developer's Guide.
 
 // defined in use/common.ompp
+extern void ModelExit(const char * msg);
 extern void SetMaxTime(double max_value);
 extern void StartEventTrace();
 extern void StopEventTrace();
