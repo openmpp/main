@@ -316,7 +316,7 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Modgen compile, C++ compile, build executable" if $verbosity >= 2;
 
 			# Change working directory to where vxproj, etc. are located
-			chdir "${project_dir}";
+			chdir "${project_dir}" || die;
 
 			# The property sheet containing user macros
 			my $model_props = "Model.props";
@@ -332,10 +332,11 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
-			# Check for solution file in parent folder
-			my $model_sln = "../model-modgen.sln";
+			# Find solution file in parent folder
+			my @matches = glob "../*-modgen.sln";
+			my $model_sln = pop @matches;
 			if ( ! -e $model_sln ) {
-				logmsg error, $model_dir, $flavour, "Missing solution file ${model_sln}";
+				logmsg error, $model_dir, $flavour, "Missing solution file xyz-modgen.sln ${model_sln}";
 				next FLAVOUR;
 			}
 			
@@ -485,7 +486,7 @@ for my $model_dir (@model_dirs) {
 			#####################################
 
 			# Change working directory to project directory for compilation.
-			chdir ${project_dir};
+			chdir ${project_dir} || die;
 
 			# The property sheet containing user macros
 			my $model_props = "Model.props";
@@ -508,10 +509,11 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
-			# The solution file
-			my $model_sln = "../model-ompp.sln";
+			# Find the solution file
+			my @matches = glob "../*-ompp.sln";
+			my $model_sln = pop @matches;
 			if ( ! -e $model_sln ) {
-				logmsg error, $model_dir, $flavour, "Missing solution file: ${model_sln}";
+				logmsg error, $model_dir, $flavour, "Missing solution file: xyz-ompp.sln";
 				next FLAVOUR;
 			}
 
