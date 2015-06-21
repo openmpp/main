@@ -8,6 +8,7 @@
 
 #pragma once
 #include <set>
+#include <sstream>
 #include <cassert>
 #include "libopenm/omModel.h" // for theTrace
 #include "omc/tailed_forward_list.h"
@@ -60,7 +61,7 @@ public:
 
     virtual int get_modgen_event_num() const = 0;
 
-    virtual int get_agent_id() = 0;
+    virtual int get_entity_id() = 0;
 
     virtual void implement_event() = 0;
 
@@ -95,8 +96,8 @@ public:
 		if ( event_id > rhs_event_id ) return false;
 
 		// lower agent_id wins (created earlier)
-		int agent_id = get_agent_id();
-		int rhs_agent_id = rhs.get_agent_id();
+		int agent_id = get_entity_id();
+		int rhs_agent_id = rhs.get_entity_id();
 		if ( agent_id < rhs_agent_id ) return true;
 		else return false;
     }
@@ -189,13 +190,17 @@ public:
         // update global event counter
         global_event_counter++;
 
-        if ( just_in_time ) {
+        if (just_in_time) {
             // age the agent to the time of the event
             evt->age_agent();
         }
         else {
-            // age all agents to the time of the event
-            BaseAgent::age_all_agents( evt->event_time );
+            // Age all agents to the time of the event.
+            // The first argument in age_all_agents is the time of the event.
+            // The second argument in age_all_agents is the entity_id of the entity within which the event occurred.
+            // The second argument allows age_all_agents to detect the model error condition
+            // in which time is running backwards in the entity within which the event occurred.
+            BaseAgent::age_all_agents(evt->event_time, evt->get_entity_id());
         }
 
         // update the global event checksum
@@ -392,9 +397,9 @@ public:
         return (A *) ( (char *)this - offset_in_agent );
     }
 
-    int get_agent_id()
+    int get_entity_id()
     {
-        return (agent()->get_entity_id)();
+        return (agent()->om_get_entity_id)();
     }
 
     void implement_event()
@@ -434,11 +439,21 @@ public:
     }
 
     /**
-     * Age the agent to the time of event occurrence.
+     * Age the entity of this event to the time of event occurrence.
      */
     void age_agent()
     {
-        agent()->age_agent( event_time );
+        if (event_time < agent()->time.get()) {
+            // The time of this event is in the local past of the entity within which the event occurs.
+            // This is an error in model logic.
+            std::stringstream ss;
+            ss << "Error - Event time " << event_time
+                << " is earlier than current time " << agent()->time.get()
+                << " in event " << get_event_id()
+                << " in entity with entity_id " << agent()->entity_id.get();
+            ModelExit(ss.str().c_str());
+        }
+        agent()->age_agent(event_time);
     }
 
 	// offset to containing agent

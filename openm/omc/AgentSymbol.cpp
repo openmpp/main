@@ -148,13 +148,22 @@ void AgentSymbol::create_auxiliary_symbols()
         auto *fn = new AgentFuncSymbol("age_agent", this, "void", "Time t");
         fn->doc_block = doxygen_short("Age the entity to the given time.");
         CodeBlock& c = fn->func_body;
-        c += "if (time <= t) time.set(t);";
-        c += "else assert(false); // time running backwards?";
+        c += "if (time < t) {";
+        c += "// Age the entity forward to the given time.";
+        c += "time.set(t);";
+        c += "}";
+        c += "else {";
+        c += "// The entity is already older than the given time.";
+        c += "// This is normal if another agent is 'catching up' to this agent in its own events.";
+        c += "// It is a model error if the current event is in this agent,";
+        c += "// since that implies that an event is trying to make time run backwards for this agent.";
+        c += "// This possibility is detected and handled outside of this function.";
+        c += "}";
     }
 
-    // The get_entity_id() member function
+    // The om_get_entity_id() member function
     {
-        auto *fn = new AgentFuncSymbol("get_entity_id", this, "int", "");
+        auto *fn = new AgentFuncSymbol("om_get_entity_id", this, "int", "");
         fn->doc_block = doxygen_short("Return unique entity_id of this entity.");
         CodeBlock& c = fn->func_body;
         c += "return entity_id;" ;
@@ -183,6 +192,14 @@ void AgentSymbol::create_auxiliary_symbols()
         c += "time.set(BaseEvent::get_global_time());";
         c += "age.initialize(time_infinite);";
         c += "age.set(0);";
+    }
+
+    // The om_get_time() member function
+    {
+        auto *fn = new AgentFuncSymbol("om_get_time", this, "double", "");
+        fn->doc_block = doxygen_short("Return current time of this entity.");
+        CodeBlock& c = fn->func_body;
+        c += "return time.get();" ;
     }
 
     // The om_Start_custom() member function

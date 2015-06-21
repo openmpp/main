@@ -16,6 +16,8 @@
 #include "libopenm/omModel.h"
 #include "omc/fixed_precision_float.h"
 
+#include "omc/globals0.h"
+
 #include "om_types0.h" // fundamental model types
 #include "omc/link.h"
 #include "omc/Range.h"
@@ -36,7 +38,7 @@
 // Both the Modgen compiler and omc ignore preprocessor directives in model source code.
 #define OPENM 1
 
-#include "omc/globals.h"
+#include "omc/globals1.h"
 
 #include "custom_early.h" // model-specific declarations and includes (early)
 

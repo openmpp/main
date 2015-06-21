@@ -9,6 +9,7 @@
 #pragma once
 #include <list>
 #include <forward_list>
+#include <sstream>
 #include <cassert>
 #include "om_types0.h" // for Time
 
@@ -31,6 +32,16 @@ public:
      * Assign unique entity_id to agent as part of initialization.
      */
     virtual void om_set_entity_id() = 0;
+
+    /**
+     * Get unique entity_id of agent.
+     */
+    virtual int om_get_entity_id() = 0;
+
+    /**
+     * Get current time of agent.
+     */
+    virtual double om_get_time() = 0;
 
     /**
      * Initialize time and age as part of entity initialization.
@@ -129,13 +140,29 @@ public:
 
     /**
      * Age all agents to the given time.
-     *
-     * @param t The target time.
+     * 
+     * If originating_entity_id is not supplied, no check for time runnign backwards is performed
+     * 
+     * @param t                     The target time.
+     * @param originating_entity_id Identifier of the entity within which the event occurred.
      */
-    static void age_all_agents( Time t )
+    static void age_all_agents( Time t, int originating_entity_id = -1)
     {
         assert(agents);
         for ( auto agent : *agents ) {
+            if (agent->om_get_entity_id() == originating_entity_id) {
+                // This is the entity within which the event occurred.
+                // Check for time running backwards in the entity within which the event occurred
+                if (t < agent->om_get_time()) {
+                    // The time of this event is in the local past of the entity within which the event occurs.
+                    // This is an error in model logic.
+                    std::stringstream ss;
+                    ss << "Error - Event time " << t
+                        << " is earlier than current time " << agent->om_get_time()
+                        << " in entity with entity_id " << agent->om_get_entity_id();
+                    ModelExit(ss.str().c_str());
+                }
+            }
             agent->age_agent( t );
         }
     }
