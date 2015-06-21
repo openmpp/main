@@ -5,7 +5,7 @@ parameters {
 > OzProj<version>_<size>.csv
 > e.g. OzProj18_5K.csv
 > Version identifies the fields present, and is the version of OzProjGen which produced the file.
-> Size denotes the number of records in the otuput file, e.g. 5K is 5,000, 1M is 1,000,000, etc.
+> Size denotes the number of records in the output file, e.g. 5K is 5,000, 1M is 1,000,000, etc.
 */
 
 /* NOTE ( StartPopDistn, EN )

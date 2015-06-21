@@ -17,8 +17,7 @@
  * Functionality to read a numeric csv.
  * 
  * A csv file can be opened for forward reading, one record at a time.  Forward seek capability
- * is implemented. A record is split into numeric values into the member named 'fields', which
- * is a vector of double's.
+ * is implemented. A record is split into numeric values which can be accessed by index using the [] operator.
  */
 class input_csv {
 
@@ -30,22 +29,22 @@ public:
     }
 
     // ctor
-    input_csv(const char* file_name)
+    input_csv(const char* fname)
     {
-        open(file_name);
+        open(fname);
     }
 
     // ctor
-    input_csv(const std::string& file_name)
+    input_csv(const std::string& fname)
     {
-        open(file_name);
+        open(fname);
     }
 
 #if !defined(OPENM)
     // ctor
-    input_csv(const CString& file_name)
+    input_csv(const CString& fname)
     {
-        open(file_name);
+        open(fname);
     }
 #endif
 
@@ -57,37 +56,34 @@ public:
     /**
      * Opens the given numeric csv file.
      *
-     * @param file_name Filename of the file.
+     * @param fname Filename of the file.
      *
      * @return true if it succeeds, false if it fails.
      */
-    bool open(const char *file_name)
+    void open(const char *fname)
     {
+        file_name = fname;
         if (input_stream.is_open()) {
             input_stream.close();
         }
-        input_stream.open(file_name, std::ios_base::in);
-        if (input_stream.is_open()) {
-            rec_num = 0;
-            fields.clear();
-            return true;
-        }
-        else {
-            fields.clear();
-            return false;
+        input_stream.open(fname, std::ios_base::in);
+        if (!input_stream.is_open()) {
+            std::stringstream ss;
+            ss << "Unable to open input csv file '" << fname <<"'";
+            ModelExit(ss.str().c_str());
         }
     }
 
     /**
      * Opens the specified numeric csv file.
      * 
-     * @param file_name Filename of the file.
+     * @param fname Filename of the file.
      *
      * @return true if it succeeds, false if it fails.
      */
-    bool open(const std::string& file_name)
+    void open(const std::string& fname)
     {
-        return open(file_name.c_str());
+        open(fname.c_str());
     }
 
 #if !defined(OPENM)
@@ -97,14 +93,14 @@ public:
      * This overloaded version allows the use of a file parameter as argument in Modgen, where a
      * 'string' is an MFC CString.
      *
-     * @param file_name Filename of the file.
+     * @param fname Filename of the file.
      *
      * @return true if it succeeds, false if it fails.
      */
-    bool open(const CString &file_name)
+    void open(const CString &fname)
     {
-        const char *fn = (LPCSTR)file_name;
-        return open(fn);
+        const char *fn = (LPCSTR)fname;
+        open(fn);
     }
 #endif
 
@@ -123,11 +119,18 @@ public:
      *
      * @param index Zero-based index for the fields
      *
-     * @return The field value.
+     * @return The field value
      */
     double operator[](std::size_t index) const
     {
-        return fields[index];
+        if (index >= 0 && index < fields.size()) {
+            return fields[index];
+        }
+        else {
+            std::stringstream ss;
+            ss << "Field " << index << " not present in record " << rec_num << " in input csv file '" << file_name << "'";
+            ModelExit(ss.str().c_str());
+        }
     }
 
     /**
@@ -192,7 +195,7 @@ public:
     /**
      * Number of the current record.
      * 
-     * This is the number of the record which will be read on the next call to get_record.
+     * This is the number of the record which will be read on the next call to read_record.
      *
      * @return A long.
      */
@@ -202,6 +205,7 @@ public:
     }
 
 private:
+    std::string file_name;
     std::vector<double> fields;
     std::ifstream input_stream;
     long rec_num;
@@ -225,22 +229,22 @@ public:
     }
 
     // ctor
-    output_csv(const char* file_name)
+    output_csv(const char* fname)
     {
-        open(file_name);
+        open(fname);
     }
 
     // ctor
-    output_csv(const std::string& file_name)
+    output_csv(const std::string& fname)
     {
-        open(file_name);
+        open(fname);
     }
 
 #if !defined(OPENM)
     // ctor
-    output_csv(const CString& file_name)
+    output_csv(const CString& fname)
     {
-        open(file_name);
+        open(fname);
     }
 #endif
 
@@ -250,38 +254,34 @@ public:
     }
 
     /**
-     * Opens the given numeric csv file.
+     * Opens the given numeric csv file for output.
      *
-     * @param file_name Filename of the file.
-     *
-     * @return true if it succeeds, false if it fails.
+     * @param fname Filename of the file.
      */
-    bool open(const char *file_name)
+    void open(const char *fname)
     {
+        file_name = fname;
         rec_num = 0;
         fields.clear();
         if (output_stream.is_open()) {
             output_stream.close();
         }
-        output_stream.open(file_name, ios_base::out | ios_base::trunc);
-        if (output_stream.is_open()) {
-            return true;
-        }
-        else {
-            return false;
+        output_stream.open(fname, ios_base::out | ios_base::trunc);
+        if (!output_stream.is_open()) {
+            std::stringstream ss;
+            ss << "Unable to open csv file '" << fname <<"' for output.";
+            ModelExit(ss.str().c_str());
         }
     }
 
     /**
      * Opens the specified numeric csv file for writing
      * 
-     * @param file_name Filename of the file.
-     *
-     * @return true if it succeeds, false if it fails.
+     * @param fname Filename of the file.
      */
-    bool open(const std::string& file_name)
+    void open(const std::string& fname)
     {
-        return open(file_name.c_str());
+        open(fname.c_str());
     }
 
 #if !defined(OPENM)
@@ -291,14 +291,12 @@ public:
      * This overloaded version allows the use of a file parameter as argument in Modgen, where a
      * 'string' is an MFC CString.
      *
-     * @param file_name Filename of the file.
-     *
-     * @return true if it succeeds, false if it fails.
+     * @param fname Filename of the file.
      */
-    bool open(const CString &file_name)
+    void open(const CString &fname)
     {
-        const char *fn = (LPCSTR)file_name;
-        return open(fn);
+        const char *fn = (LPCSTR)fname;
+        open(fn);
     }
 #endif
 
@@ -312,6 +310,13 @@ public:
         fields.clear();
     }
 
+    /**
+     * Push a field into the record.
+     * 
+     * The record will be written by a sunsequent call to write_record
+     *
+     * @param val The value.
+     */
     void operator <<(double val)
     {
         fields.push_back(val);
@@ -329,7 +334,7 @@ public:
             fields.clear();
             return false;
         }
-        size_t field_count = fields.size();
+        size_t fields_left = fields.size();
 #if defined(OPENM)
         for (auto &val : fields) {
             if (std::isfinite(val)) {
@@ -338,14 +343,14 @@ public:
 #else
         // Modgen 11 uses VS2010 which does not suport range-based for
         // or std::isfinite().  Use equivalents until Modgen moves to VS 2013.
-        for (size_t j = 0; j < field_count; ++j ) {
+        for (size_t j = 0; fields_left > 0; ++j ) {
             double &val = fields[j];
             if (_finite(val)) {
                 output_stream << val;
             }
 #endif
-            --field_count;
-            if (field_count) {
+            --fields_left;
+            if (fields_left) {
                 output_stream << ',';
             }
             else {
@@ -359,7 +364,7 @@ public:
     }
 
     /**
-     * Number of the current record.
+     * Number of the record to be written.
      * 
      * This is the number of the record which will be written on the next call to get_record. or
      * equivalently, the number of records written.
@@ -372,6 +377,7 @@ public:
     }
 
 private:
+    std::string file_name;
     std::vector<double> fields;
     std::ofstream output_stream;
     long rec_num;
