@@ -858,10 +858,20 @@ public:
      * The post-parse symbol table.
      * 
      * Populated after parsing is complete by populate_pp_symbols(). Sorted in lexicographic order
-     * by unique_name.  Stored as pairs with unique_name in first to maek it easy to find a symbol
+     * by unique_name.  Stored as pairs with unique_name in first to make it easy to find a symbol
      * when debugging.
      */
     static list<symbol_map_value_type> pp_symbols;
+
+    /**
+     * List of symbols to ignore in post-parse pass #1.
+     * 
+     * Symbols morphed in pass #1 (eCreateMissingSymbols) will have invalid pair.second (Symbol *)
+     * in pp_symbols, so should not be processed if they happen to come later in pp_symbols than the
+     * symbol which morphed them. Any post_parse code which creates a new symbol or morphs an
+     * existing symbol in this pass pushes the name into this hash to ensure they are skipped.
+     */
+    static unordered_set<string> pp_ignore_pass1;
 
     /**
      * List of all identifiers in model source code.

@@ -25,9 +25,8 @@ public:
     bool is_base_symbol() const { return false; }
 
     /**
-    * Constructor for the bool enumeration symbol
-    */
-
+     * Constructor for the bool enumeration symbol.
+     */
     BoolSymbol()
         : EnumerationWithEnumeratorsSymbol(token_to_string(token::TK_bool), token::TK_bool, kind_of_type::logical_type)
     {
@@ -44,7 +43,6 @@ public:
      *
      * @return null if it fails, else a BoolSymbol*.
      */
-
     static BoolSymbol *find();
 };
 

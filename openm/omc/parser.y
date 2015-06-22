@@ -782,10 +782,12 @@ decl_index_type:
 decl_model_type:
           "model_type" model_type[type_to_use] ";"
                         {
+                            // Instantiation of new instance will replace existing instance (in constructor for Symbol)
                             auto *sym = new ModelTypeSymbol((token_type) $type_to_use, false, @$);
                         }
         | "model_type" model_type[type_to_use] "," "just_in_time" ";"
                         {
+                            // Instantiation of new instance will replace existing instance (in constructor for Symbol)
                             auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true, @$);
                         }
         | "model_type" error ";"

@@ -28,9 +28,10 @@ public:
     /**
      * Constructor.
      *
-     * @param value The token for the model type, e.g. token::KW_case_based.
+     * @param value        The token for the model type, e.g. token::KW_case_based.
+     * @param just_in_time (Optional) the just in time.
+     * @param decl_loc     (Optional) the declaration location.
      */
-
     ModelTypeSymbol(token_type value, bool just_in_time = false, yy::location decl_loc = yy::location())
         : Symbol(token_to_string(token::TK_model_type), decl_loc)
         , value(value)
@@ -44,22 +45,30 @@ public:
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
+    /**
+     * Gets the one and only ModelTypeSymbol.
+     *
+     * @return null if it fails, else a ModelTypeSymbol*.
+     */
+    static ModelTypeSymbol *find();
+
+    bool is_case_based() const
+    {
+        return value == token::TK_case_based;
+    }
 
     /**
      * The model type
-     *
+     * 
      *  This can be either TK_case_based or TK_time_based.
      */
-
     token_type value;
-
 
     /**
      * Value of just-in-time option
      * 
-     * True if active, false if inactive
+     * True if active, false if inactive.
      */
-
     bool just_in_time;
 private:
 

@@ -90,6 +90,10 @@ void AgentEventSymbol::post_parse(int pass)
             ci += implement_func->name + "();";
             // Plug it in
             implement_func = cover_implement_func;
+            // push the names into the pass #1 ignore hash
+            pp_ignore_pass1.insert(cover_time_func->unique_name);
+            pp_ignore_pass1.insert(cover_implement_func->unique_name);
+
         }
         break;
     }

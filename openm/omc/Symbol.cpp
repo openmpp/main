@@ -69,6 +69,8 @@ symbol_map_type Symbol::symbols;
 
 list<symbol_map_value_type> Symbol::pp_symbols;
 
+unordered_set<string> Symbol::pp_ignore_pass1;
+
 unordered_set<string> Symbol::identifiers_in_model_source;
 
 list<TypeSymbol *> Symbol::pp_all_types0;
@@ -999,6 +1001,11 @@ void Symbol::post_parse_all()
     // pass 1: create additional symbols not created during parse phase
     // symbols will be processed in lexicographical order
     for (auto pr : pp_symbols) {
+        if (pp_ignore_pass1.count(pr.first) != 0) {
+            // This is a freshly morphed pass #1 symbol, so ignore it.
+            // Note that pr.second will be invalid for symbols morphed in pass #1.
+            continue;
+        }
         pr.second->post_parse( eCreateMissingSymbols );
     }
 

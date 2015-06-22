@@ -2336,6 +2336,9 @@ void DerivedAgentVarSymbol::post_parse(int pass)
             auto agnt = dynamic_cast<AgentSymbol *>(agent);
             assert(agnt);
             agnt->create_ss_event();
+            assert(agnt->ss_event);
+            // push the name into the pass #1 ignore hash
+            pp_ignore_pass1.insert(agnt->ss_event->unique_name);
         }
         break;
     }

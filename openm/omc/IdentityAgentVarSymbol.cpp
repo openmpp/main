@@ -152,6 +152,8 @@ void IdentityAgentVarSymbol::post_parse_traverse1(ExprForAgentVar *node)
                     // an undeclared SYMBOL followed by a '('
                     // create a GlobalFuncSymbol with that name
                     auto gfs = new GlobalFuncSymbol(sym->name, sym->decl_loc);
+                    // push the name into the pass #1 ignore hash
+                    pp_ignore_pass1.insert(gfs->unique_name);
                 }
             }
         }

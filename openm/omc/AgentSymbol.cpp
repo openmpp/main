@@ -18,6 +18,7 @@
 #include "EntityTableSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
+#include "ModelTypeSymbol.h"
 
 using namespace std;
 
@@ -91,24 +92,6 @@ void AgentSymbol::create_auxiliary_symbols()
 
     {
         string nm = "entity_id";
-        auto sym = Symbol::get_symbol(nm, this);
-        if (!sym || sym->is_base_symbol()) {
-            NumericSymbol *typ = NumericSymbol::find(token::TK_int);
-            BuiltinAgentVarSymbol *biav = nullptr;
-            if (!sym) {
-                // create it
-                biav = new BuiltinAgentVarSymbol(nm, this, typ);
-            }
-            else {
-                // morph it
-                biav = new BuiltinAgentVarSymbol(sym, this, typ);
-            }
-            // initialize it
-        }
-    }
-
-    {
-        string nm = "case_id";
         auto sym = Symbol::get_symbol(nm, this);
         if (!sym || sym->is_base_symbol()) {
             NumericSymbol *typ = NumericSymbol::find(token::TK_int);
@@ -343,6 +326,33 @@ void AgentSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        // Find the one and only ModelTypeSymbol
+        auto mts = ModelTypeSymbol::find();
+        assert(mts);
+        if (mts->is_case_based()) {
+            // create case_id (or morph it to correct type)
+            string nm = "case_id";
+            auto sym = Symbol::get_symbol(nm, this);
+            if (!sym || sym->is_base_symbol()) {
+                NumericSymbol *typ = NumericSymbol::find(token::TK_llong);
+                BuiltinAgentVarSymbol *biav = nullptr;
+                if (!sym) {
+                    // create it
+                    biav = new BuiltinAgentVarSymbol(nm, this, typ);
+                }
+                else {
+                    // morph it
+                    biav = new BuiltinAgentVarSymbol(sym, this, typ);
+                }
+                // push its name into the pass #1 ignore hash
+                pp_ignore_pass1.insert(biav->unique_name);
+            }
+        }
+        break;
+    }
+
     case eAssignMembers:
     {
         // assign direct pointer to builtin member 'time' for use post-parse
@@ -394,6 +404,13 @@ void AgentSymbol::build_body_initialize_data_members()
 
     for ( auto adm : pp_agent_data_members ) {
         c += adm->cxx_initialization_expression(false);
+    }
+
+    auto mts = ModelTypeSymbol::find();
+    assert(mts);
+    if (mts->is_case_based()) {
+        c += "";
+        c += "case_id.initialize(GetCaseID());";
     }
 }
 

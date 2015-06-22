@@ -59,7 +59,7 @@ void CodeGen::do_preamble()
     model_symbol->model_digest = model_symbol->metadata_digest();
 
     // Get the model_type symbol
-    ModelTypeSymbol *model_type_symbol = dynamic_cast<ModelTypeSymbol *>(Symbol::find_a_symbol(typeid(ModelTypeSymbol)));
+    auto *model_type_symbol = ModelTypeSymbol::find();
     assert(model_type_symbol);
     model_type_symbol->populate_metadata(metaRows);
 

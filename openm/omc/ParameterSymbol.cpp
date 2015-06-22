@@ -50,6 +50,8 @@ void ParameterSymbol::post_parse(int pass)
 
             lookup_fn = new GlobalFuncSymbol("Lookup_" + name, "bool", args);
             lookup_fn->doc_block = doxygen_short("Draw from discrete probability distribution - " + name);
+            // push the name into the pass #1 ignore hash
+            pp_ignore_pass1.insert(lookup_fn->unique_name);
         }
         break;
     }

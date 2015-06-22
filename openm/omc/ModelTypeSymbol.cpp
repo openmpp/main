@@ -47,3 +47,11 @@ void ModelTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.modelDic.type = static_cast<int>(ModelType::timeBased);
     }
 };
+
+ModelTypeSymbol *ModelTypeSymbol::find()
+{
+    auto mts = dynamic_cast<ModelTypeSymbol *>(get_symbol(token_to_string(token::TK_model_type)));
+    assert(mts); // only called when valid
+    return mts;
+}
+

@@ -41,7 +41,7 @@ public:
      * @param type         The type.
      */
     BuiltinAgentVarSymbol(Symbol *sym, const Symbol *agent, const Symbol *type)
-    : AgentVarSymbol(sym, agent, type, decl_loc)
+    : AgentVarSymbol(sym, agent, type)
     {
     }
 

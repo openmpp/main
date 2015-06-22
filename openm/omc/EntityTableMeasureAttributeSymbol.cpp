@@ -49,6 +49,8 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             string member_name = in_member_name();
             auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
             assert(sym);
+            // push the name into the pass #1 ignore hash
+            pp_ignore_pass1.insert(sym->unique_name);
         }
         if ( need_value_in_event ) {
             // Create symbol for the data member which will hold the 'in' value of the increment (for 'event' tabulation operator)
@@ -59,6 +61,8 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             string member_name = in_event_member_name();
             auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
             assert(sym);
+            // push the name into the pass #1 ignore hash
+            pp_ignore_pass1.insert(sym->unique_name);
         }
         break;
     }

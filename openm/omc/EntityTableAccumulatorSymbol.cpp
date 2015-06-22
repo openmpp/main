@@ -8,6 +8,7 @@
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableSymbol.h"
 #include "AgentVarSymbol.h"
+#include "AgentInternalSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
 #include "CodeBlock.h"
 
@@ -56,6 +57,11 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
             auto av = dynamic_cast<AgentVarSymbol *>(pp_symbol(agentvar));
             assert(av);
             av->create_lagged();
+            assert(av->lagged);
+            assert(av->lagged_event_counter);
+            // push the names into the pass #1 ignore hash
+            pp_ignore_pass1.insert(av->lagged->unique_name);
+            pp_ignore_pass1.insert(av->lagged_event_counter->unique_name);
         }
         break;
     }
