@@ -130,6 +130,8 @@ public:
             std::stringstream ss;
             ss << "Field " << index << " not present in record " << rec_num << " in input csv file '" << file_name << "'";
             ModelExit(ss.str().c_str());
+            // not reached, but keep the C++ compiler happy by returning something.
+            return std::numeric_limits<double>::quiet_NaN();
         }
     }
 
