@@ -5,7 +5,9 @@
 
 use strict;
 
+use File::Copy;
 use File::Copy::Recursive qw(dircopy);
+use File::Compare;
 use Cwd qw(getcwd);
 
 # use the common.pm module of shared functions	
@@ -51,6 +53,38 @@ for my $model_dir (@model_dirs) {
 		next MODEL;
 	}
 
-	logmsg info, "propagating invariant files to ${model_dir}";
-	dircopy "invariant", "${model_dir}";
+	# Invariant files to align if present in model
+	# First element is the file, second is the model containing the definitive version to propagate.
+	my @invariant_list = (
+		"makefile",                     "WizardCaseBased",
+		"modgen/Model.vcxproj",         "WizardCaseBased",
+		"modgen/Model.vcxproj.filters", "WizardCaseBased",
+		"ompp/Model.vcxproj",           "WizardCaseBased",
+		"ompp/Model.vcxproj.filters",   "WizardCaseBased",
+		"code/modgen_case_based.mpp",   "WizardCaseBased",
+		"code/xcom_case_based.h",       "WizardCaseBased",
+		"code/modgen_time_based.mpp",   "WizardTimeBased",
+		"code/microdata_csv.h",         "OzProj",
+	);
+	
+	my $any_propagated = 0;
+	for( my $j = 0; $j <= $#invariant_list; $j += 2) {
+		my $invariant_file = @invariant_list[$j];
+		my $invariant_dir = @invariant_list[$j + 1];
+		my $src = "${invariant_dir}/${invariant_file}";
+		my $dst = "${model_dir}/${invariant_file}";
+		-e "${src}" || die "Not found: ${src}";
+		if (-f "${dst}" && ${model_dir} ne ${invariant_dir}) {
+			if (compare ${src}, ${dst}) {
+				logmsg info, ${model_dir}, "Updating ${invariant_file} from ${invariant_dir}";
+				copy ${src}, ${dst};
+				$any_propagated = 1;
+			}
+		}
+	}
+	if ($any_propagated) {
+		# put spacing line in to make more easily visible that a file was updated.
+		logmsg info, " ";
+	}
+
 }

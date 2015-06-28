@@ -1,9 +1,10 @@
 /**
  * @file   custom.h
- * Custom include file for the model
+ * Model-specific declarations and includes (late)
  *  
  * This file is included in all compiler-generated files for the model.
- * Place any required globals declarations in this file, or include other
- * files in this file, for correct placement in compiler-generated files.
+ * This file comes late in the include order, after entity declarations.
  */
 
+#pragma once
+#include "xcom_case_based.h"
