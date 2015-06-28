@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 19, 0, 1;
+version 0, 22, 0, 0;
 
 // The model type
 model_type case_based;
@@ -84,10 +84,16 @@ void CaseSimulation(case_info &ci)
 void Simulation_start(case_info &ci)
 {
   ci.in_csv.open(MicroDataInputFile);
+  if (MicroDataOutputFlag) {
+      ci.out_csv.open(MicroDataOutputFile);
+  }
 }
 
 // Invoked at the end of the simulation
 void Simulation_end(case_info &ci)
 {
   ci.in_csv.close();
+  if (MicroDataOutputFlag) {
+      ci.out_csv.close();
+  }
 }

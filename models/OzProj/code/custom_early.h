@@ -30,6 +30,11 @@ struct case_info {
      * Microdata input csv object
      */
     input_csv in_csv;
+
+    /**
+     * Microdata output csv object
+     */
+    output_csv out_csv;
 };
 
 #if !defined(OPENM)

@@ -219,6 +219,9 @@ void RunSimulation(int mem_id, int mem_count)
     // Create the case information communication object
     case_info ci;
 
+    // Initialize CaseInfo API
+    CaseInfo(&ci);
+
 	// Perform operations at the start of Simulation
 	Simulation_start(ci);
 
@@ -299,6 +302,20 @@ void RunSimulation(int mem_id, int mem_count)
 
 	// Perform operations at the end of Simulation
 	Simulation_end(ci);
+
+    // Reset CaseInfo API
+    CaseInfo(nullptr, true);
 }
 
+case_info* CaseInfo(case_info* ci, bool reset)
+{
+    static thread_local case_info* ci_stored = nullptr;
 
+    if (reset) {
+        ci_stored = nullptr;
+    }
+    else if (ci) {
+        ci_stored = ci;
+    }
+    return ci_stored;
+}

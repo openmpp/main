@@ -6,8 +6,17 @@
 
 parameters 
 {
-  //EN Microdata input file
+  //EN Microdata input file for the starting population
   file MicroDataInputFile;
+
+  //EN Microdata output option
+  logical MicroDataOutputFlag;
+
+  //EN Microdata output time
+  double MicroDataOutputTime;
+
+  //EN Microdata output file for the projected population
+  file MicroDataOutputFile;
 
   //EN Simulation starting time
   double SimulationStartTime;
@@ -60,7 +69,7 @@ void PreSimulation()
   inCsv.close();
 }
 
-actor Person            //EN Individual
+actor Person //EN Individual
 {
 	// The variables time and age are automatically defined by Modgen.
 	// Model-specific labels and notes are supplied below.
@@ -150,6 +159,12 @@ actor Person            //EN Individual
   //EN Beginning of the simulation
   logical simulation_begin = { TRUE };
 
+  //EN Microdata output done
+  logical microdata_output_done = { FALSE };
+
+  //EN Microdata output event
+  event timeMicroDataOutputEvent, MicroDataOutputEvent;
+
   //EN Simulation control event
   event timeSimulationControlEvent, SimulationControlEvent;
 
@@ -162,9 +177,61 @@ actor Person            //EN Individual
   //LABEL(Person.Start, EN) Starts the actor
   void Start(Observation *oeObs, Person *peMother, double dArrival);
 
-	//LABEL(Person.Finish, EN) Finishes the actor
-	void Finish();
+  //LABEL(Person.Finish, EN) Finishes the actor
+  void Finish();
 };
+
+// The time function of MicrodataOutputEvent
+TIME Person::timeMicroDataOutputEvent()
+{
+  if (MicroDataOutputFlag && !microdata_output_done)
+    return MicroDataOutputTime;
+  else
+    return TIME_INFINITE;
+}
+
+// The implement function of MicrodataOutputEvent
+void Person::MicroDataOutputEvent()
+{
+  // Write current values to the microdata output file
+
+  // Get the case_info for the simulation member
+  auto ci = CaseInfo();
+
+  // Push the fields in the correct order.
+  for (int nJ = 0; nJ < SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
+  // Fields:
+  switch (nJ) {
+  case PMC_SEX:
+    ci->out_csv << (int) sex;
+    break;
+  case PMC_AGE:
+    ci->out_csv << (int) integer_age;
+    break;
+  case PMC_REGION:
+    ci->out_csv << (int) region;
+    break;
+  case PMC_NATIVE_BORN:
+    ci->out_csv << (int) native_born;
+    break;
+  case PMC_RECENT_ARRIVAL:
+    ci->out_csv << (int) recent_arrival;
+    break;
+  case PMC_YEARS_SINCE_ARRIVAL:
+    ci->out_csv << (int) years_since_arrival;
+    break;
+  case PMC_INDIGENOUS:
+    ci->out_csv << (int) indigenous;
+    break;
+  default:
+      ; // Error
+    }
+  }
+  // All fields have been pushed, now write the record.
+  ci->out_csv.write_record();
+
+  microdata_output_done = TRUE;
+}
 
 // The time function of SimulationControlEvent
 TIME Person::timeSimulationControlEvent()
@@ -282,6 +349,11 @@ void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
     integer_mid_year = integer_calendar_year + 1;
   else
     integer_mid_year = integer_calendar_year;
+
+  if (time > MicroDataOutputTime) {
+      // Disable microdata output if Person starts after the microdata output time
+      microdata_output_done = TRUE;
+  }
 
   hook_Start();
 

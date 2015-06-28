@@ -74,7 +74,7 @@ TIME Person::timeChildbirthEvent()
 void Person::ChildbirthEvent()
 {
   births++;
-  Person *peChild = new Person;
+  auto peChild = new Person;
   peChild->Start(NULL, this, 0);
 }
 
