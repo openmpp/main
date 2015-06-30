@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 21, 0, 0;
+version 0, 22, 0, 0;
 
 // The model type
 model_type case_based;
@@ -31,46 +31,11 @@ parameters
  */
 void CaseSimulation(case_info &ci)
 {
-    extern void SimulateEvents(); // defined in a simulation framework module
+  extern void SimulateEvents(); // defined in a simulation framework module
 
-	// Initialize the person actor
-	auto prPerson = new Person();
-	prPerson->Start();
-
-    // All initial characteristics are assigned in Start.
-
-    // Push the fields in the correct order.
-    for (int nJ = 0; nJ < SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
-    // Fields:
-    switch (nJ) {
-    case PMC_SEX:
-      ci.out_csv << (int) prPerson->sex;
-      break;
-    case PMC_AGE:
-      ci.out_csv << (int) prPerson->integer_age;
-      break;
-    case PMC_REGION:
-      ci.out_csv << (int) prPerson->region;
-      break;
-    case PMC_NATIVE_BORN:
-      ci.out_csv << (int) prPerson->native_born;
-      break;
-    case PMC_RECENT_ARRIVAL:
-      ci.out_csv << (int) prPerson->recent_arrival;
-      break;
-    case PMC_YEARS_SINCE_ARRIVAL:
-      ci.out_csv << (int) prPerson->years_since_arrival;
-      break;
-    case PMC_INDIGENOUS:
-      ci.out_csv << (int) prPerson->indigenous;
-      break;
-    default:
-      ; // Error
-    }
-
-  }
-  // All fields have been pushed, now write the record.
-  ci.out_csv.write_record();
+  // Initialize the person actor
+  auto prPerson = new Person();
+  prPerson->Start();
 
   // Simulate events until there are no more.
   SimulateEvents();
@@ -79,7 +44,17 @@ void CaseSimulation(case_info &ci)
 // Invoked before simulating cases
 void Simulation_start(case_info &ci)
 {
-  ci.out_csv.open(MicroDataOutputFile);
+  std_string fname = MicroDataOutputFile;
+  auto simulation_members = GetSubSamples();
+  if (simulation_members > 1) {
+    // The simulation has multiple members.
+    // Each member requires a different output file.
+    // Modify the file name by appending the simulation member number
+    // before the file extension.
+    auto member = GetCaseSample();
+    fname = output_csv::name_with_number(fname, member);
+  }
+  ci.out_csv.open(fname);
 }
 
 // Invoked after simulating cases

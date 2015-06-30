@@ -142,13 +142,3 @@ classification REGION //EN Region
   REG_ACT
 };
 
-classification PERSON_MICRODATA_COLUMNS	 //EN fields in the microdata file 
-{
-  PMC_SEX,
-  PMC_AGE,
-  PMC_REGION,
-  PMC_NATIVE_BORN,
-  PMC_RECENT_ARRIVAL,
-  PMC_YEARS_SINCE_ARRIVAL,
-  PMC_INDIGENOUS
-};

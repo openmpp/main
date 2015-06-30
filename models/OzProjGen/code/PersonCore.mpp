@@ -120,10 +120,10 @@ actor Person            //EN Individual
   event timeSimulationControlEvent, SimulationControlEvent;
 
   //LABEL(Person.Start, EN) Starts the actor
-	void Start();
+  void Start();
 
-	//LABEL(Person.Finish, EN) Finishes the actor
-	void Finish();
+  //LABEL(Person.Finish, EN) Finishes the actor
+  void Finish();
 };
 
 // The time function of SimulationControlEvent
@@ -135,6 +135,10 @@ TIME Person::timeSimulationControlEvent()
 // The implement function of SimulationControlEvent
 void Person::SimulationControlEvent()
 {
+  // Write current values to the microdata output file
+  auto ci = CaseInfo();
+  WriteUnitRecord(ci);
+
   if ( simulation_begin )
     simulation_begin = FALSE;
 
