@@ -378,6 +378,28 @@ public:
         return rec_num;
     }
 
+    /**
+     * Append a number to a file name, preserving the extension.
+     *
+     * @param name   The file name.
+     * @param number The number to append.
+     *
+     * @return A string.
+     */
+    static std::string name_with_number(const std::string& name, long long number)
+    {
+        string num = to_string(number);
+        auto pos1 = name.find_last_of('.');
+        auto pos2 = name.find_last_of("/\\");
+        if (pos1 == std::string::npos || pos2 > pos1) {
+            // no extension
+            return name + num;
+        }
+        else {
+            return name.substr(0, pos1) + num + name.substr(pos1);
+        }
+    }
+
 private:
     std::string file_name;
     std::vector<double> fields;
