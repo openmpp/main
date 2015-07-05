@@ -90,11 +90,11 @@ actor Person //EN Individual
 
   //EN Phantom
   logical phantom = { FALSE };
-	/*NOTE(Person.phantom, EN)
-		Set to TRUE for auxiliary Person entities to enable their exclusion from
-        tables.  Auxiliary Person entities are a convenient way to represent
-        characteristics of individuals related to the Person entity being simulated.
-	*/
+  /*NOTE(Person.phantom, EN)
+    Set to TRUE for auxiliary Person entities to enable their exclusion from
+    tables.  Auxiliary Person entities are a convenient way to represent
+    characteristics of individuals related to the Person entity being simulated.
+  */
 
     //EN Alive
 	logical alive = {TRUE};
@@ -449,8 +449,9 @@ void Person::Start_Common()
     integer_mid_year = integer_calendar_year;
 
   // Disable microdata output if Person starts after the microdata output time
-  if (time > MicroDataOutputTime) {
-      microdata_output_done = TRUE;
+  // or if a phantom.
+  if (phantom || time > MicroDataOutputTime) {
+    microdata_output_done = TRUE;
   }
 }
 

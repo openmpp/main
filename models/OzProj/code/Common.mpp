@@ -114,7 +114,7 @@ classification PERSON_ORIGIN //EN Origin of Person
   //EN Immigrant arriving during simulation
   PO_IMMIGRANT,
 
-  //EN Phantom Person containing auxiliary characteristics of simualted Person
+  //EN Phantom Person containing auxiliary characteristics of simulated Person
   PO_PHANTOM
 };
 
