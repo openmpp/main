@@ -112,7 +112,10 @@ classification PERSON_ORIGIN //EN Origin of Person
   PO_BIRTH,
 
   //EN Immigrant arriving during simulation
-  PO_IMMIGRANT
+  PO_IMMIGRANT,
+
+  //EN Phantom Person containing auxiliary characteristics of simualted Person
+  PO_PHANTOM
 };
 
 classification REGION //EN Region

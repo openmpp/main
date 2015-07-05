@@ -55,7 +55,7 @@ void Person::EmigrationEvent()
 }
 
 table Person DeparturesByYear //EN Departures by mid-year
-[ emigrated ]
+[ !phantom && emigrated ]
 {
   {
     unit

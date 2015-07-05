@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 22, 0, 0;
+version 0, 23, 0, 0;
 
 // The model type
 model_type case_based;
@@ -48,7 +48,7 @@ void CaseSimulation(case_info &ci)
   for (int nCopy = 0; nCopy < nCopies; nCopy++ ) {
     // Initialize the Person entity in the case.
     auto pePerson = new Person();
-    pePerson->Start(oeObservation, NULL, 0);
+    pePerson->Start(PO_INITIAL_POP, oeObservation);
 
     // Simulate events until there are no more.
     SimulateEvents();
@@ -69,7 +69,11 @@ void CaseSimulation(case_info &ci)
       double dArrivalTime = MIN(YEAR) + nYear + 0.5 - RandUniform(8);
       for ( int nClone = 0; nClone < nClones; nClone++ ) {
         auto pePerson = new Person();
-        pePerson->Start(oeObservation, NULL, dArrivalTime);
+        pePerson->Start(
+          PO_IMMIGRANT,
+          oeObservation,
+          NULL, // argument not used
+          dArrivalTime);
         // Simulate events until there are no more.
         SimulateEvents();
       }

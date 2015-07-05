@@ -88,7 +88,15 @@ actor Person //EN Individual
 		A unit of age is a year.
 	*/
 
-	//EN Alive
+  //EN Phantom
+  logical phantom = { FALSE };
+	/*NOTE(Person.phantom, EN)
+		Set to TRUE for auxiliary Person entities to enable their exclusion from
+        tables.  Auxiliary Person entities are a convenient way to represent
+        characteristics of individuals related to the Person entity being simulated.
+	*/
+
+    //EN Alive
 	logical alive = {TRUE};
 	/*NOTE(Person.alive, EN)
 		Set to TRUE when the actor starts, and to FALSE just before the actor finishes.
@@ -173,7 +181,38 @@ actor Person //EN Individual
   event timeIdentityChangeEvent, IdentityChangeEvent;
 
   //LABEL(Person.Start, EN) Starts the actor
-  void Start(Observation *oeObs, Person *peMother, double dArrival);
+  void Start(
+    PERSON_ORIGIN po,
+    Observation *oeObs,
+    Person *peMother = 0,
+    double dArrival = 0.0,
+    double dTime = 0.0,
+    double dAge = 0.0,
+    SEX eSex = MALE,
+    bool bIndigenous = 0,
+    REGION eRegion = REG_NSW
+    );
+
+  //LABEL(Person.Start_InitialPop, EN) Starts the actor (initial population)
+  void Start_InitialPop(Observation *oeObs);
+
+  //LABEL(Person.Start_Immigrant, EN) Starts the actor (immigrant)
+  void Start_Immigrant(Observation *oeObs, double dArrival);
+
+  //LABEL(Person.Start_Birth, EN) Starts the actor (birth)
+  void Start_Birth(Person *peMother);
+
+  //LABEL(Person.Start_Phantom, EN) Starts the actor (phantom)
+  void Start_Phantom(
+    double dTime,
+    double dAge,
+    SEX eSex,
+    bool bIndigenous,
+    REGION eRegion
+    );
+
+  //LABEL(Person.Start_Common, EN) Starts the actor (attributes in common)
+  void Start_Common();
 
   //LABEL(Person.Finish, EN) Finishes the actor
   void Finish();
@@ -250,61 +289,156 @@ void Person::IdentityChangeEvent()
 /*NOTE(Person.Start, EN)
 	The Start function initializes actor variables before simulation
 	of the actor commences.
+
+  The model contains qualitatively different ways to start an entity.
+  The first argument (origin) specifies which way is used.  Each of the
+  remaining arguments may or may not be used dependent on the first argument (origin).
 */
-void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
+void Person::Start(
+  PERSON_ORIGIN po,
+  Observation *oeObs,
+  Person *peMother,
+  double dArrival,
+  double dTime,
+  double dAge,
+  SEX eSex,
+  bool bIndigenous,
+  REGION eRegion
+  )
 {
   // Initialize all attributes (OpenM++).
   initialize_attributes();
 
-  if ( peMother == NULL ) {
-    if ( dArrival == 0 ) {
-      // Member of initial population
-      origin = PO_INITIAL_POP;
-      int nAge = oeObs->o_range_age;
-      age = nAge + RandUniform(3);
-      time = SimulationStartTime;
-      calendar_year_of_arrival = (int) SimulationStartTime - oeObs->o_years_since_arrival;
-      native_born = oeObs->o_native_born;
-      indigenous = oeObs->o_indigenous;
-      region = oeObs->o_region;
-    }
-    else {
-      // Future immigrant
-      origin = PO_IMMIGRANT;
-      int nAge = oeObs->o_range_age;
-      nAge -= oeObs->o_years_since_arrival;
-      age = nAge + RandUniform(6);
-      time = dArrival;
-      calendar_year_of_arrival = (int) dArrival;
-      native_born = FALSE;
-      indigenous = FALSE;
-      // Assign region of arrival
-      int nRegion = 0;
-      Lookup_ArrivalRegionDistn(RandUniform(11), sex, range_age, &nRegion);
-      region = (REGION) nRegion;
-    }
-
-    // Assign other attributes using the microdata observation
-    sex = oeObs->o_sex;
+  if (po == PO_INITIAL_POP) {
+    // Member of initial population
+    // Assign age and time in Start for Modgen compatibility.
+    int nAge = oeObs->o_range_age;
+    age = nAge + RandUniform(3);
+    time = SimulationStartTime;
+    Start_InitialPop(oeObs);
   }
-  else {
+  else if (po == PO_IMMIGRANT) {
+    // Future immigrant
+    // Assign age and time in Start for Modgen compatibility.
+    int nAge = oeObs->o_range_age;
+    nAge -= oeObs->o_years_since_arrival;
+    age = nAge + RandUniform(6);
+    time = dArrival;
+    Start_Immigrant(oeObs, dArrival);
+  }
+  else if (po == PO_BIRTH) {
     // Newborn
-    origin = PO_BIRTH;
+    // Assign age and time in Start for Modgen compatibility.
     age = 0;
     time = peMother->time;
-
-    generation = peMother->generation + 1;
-
-    double dProportionMale = SexRatioAtBirth / ( SexRatioAtBirth + 100.0 );
-    if ( RandUniform(5) < dProportionMale )
-      sex = MALE;
-    else
-      sex = FEMALE;
-
-    indigenous = peMother->indigenous;
-    region = peMother->region;
+    Start_Birth(peMother);
+  }
+  else if (po == PO_PHANTOM) {
+    // Phantom
+    // Assign age and time in Start for Modgen compatibility.
+    age = dAge;
+    time = dTime;
+    Start_Phantom(dTime, dAge, eSex, bIndigenous, eRegion);
+  }
+  else {
+    assert(false); // Not reached
   }
 
+  hook_Start();
+
+  // Have the entity enter the simulation (OpenM++).
+  enter_simulation();
+}
+
+void Person::Start_InitialPop(Observation *oeObs)
+{
+  // Member of initial population
+  origin = PO_INITIAL_POP;
+  phantom = false;
+  int nAge = oeObs->o_range_age;
+  // Assign age and time in Start for Modgen compatibility.
+  //age = nAge + RandUniform(3);
+  //time = SimulationStartTime;
+  calendar_year_of_arrival = (int) SimulationStartTime - oeObs->o_years_since_arrival;
+  native_born = oeObs->o_native_born;
+  // Assign other attributes using the microdata observation
+  sex = oeObs->o_sex;
+  indigenous = oeObs->o_indigenous;
+  region = oeObs->o_region;
+
+  // Starting attributes common to all origins
+  Start_Common();
+}
+
+void Person::Start_Immigrant(Observation *oeObs, double dArrival)
+{
+  // Future immigrant
+  origin = PO_IMMIGRANT;
+  phantom = false;
+  int nAge = oeObs->o_range_age;
+  nAge -= oeObs->o_years_since_arrival;
+  // Assign age and time in Start for Modgen compatibility.
+  //age = nAge + RandUniform(6);
+  //time = dArrival;
+  calendar_year_of_arrival = (int) dArrival;
+  native_born = FALSE;
+  indigenous = FALSE;
+  // Assign other attributes using the microdata observation
+  sex = oeObs->o_sex;
+  // Assign region of arrival
+  int nRegion = 0;
+  Lookup_ArrivalRegionDistn(RandUniform(11), sex, range_age, &nRegion);
+  region = (REGION) nRegion;
+
+  // Starting attributes common to all origins
+  Start_Common();
+}
+
+void Person::Start_Birth(Person *peMother)
+{
+  // Newborn
+  origin = PO_BIRTH;
+  phantom = false;
+  // Assign age and time in Start for Modgen compatibility.
+  //age = 0;
+  //time = peMother->time;
+  generation = peMother->generation + 1;
+  double dProportionMale = SexRatioAtBirth / ( SexRatioAtBirth + 100.0 );
+  if ( RandUniform(5) < dProportionMale )
+    sex = MALE;
+  else
+    sex = FEMALE;
+  indigenous = peMother->indigenous;
+  region = peMother->region;
+
+  // Starting attributes common to all origins
+  Start_Common();
+}
+
+void Person::Start_Phantom(
+  double dTime,
+  double dAge,
+  SEX eSex,
+  bool bIndigenous,
+  REGION eRegion
+  )
+{
+  // Phantom
+  origin = PO_PHANTOM;
+  phantom = true;
+  // Assign age and time in Start for Modgen compatibility.
+  //age = dAge;
+  //time = dTime;
+  sex = eSex;
+  indigenous = bIndigenous;
+  region = eRegion;
+
+  // Starting attributes common to all origins
+  Start_Common();
+}
+
+void Person::Start_Common()
+{
   // Initialize the mid-year clock
   double dFraction = time - integer_calendar_year;
   if ( dFraction >= 0.5 )
@@ -314,15 +448,10 @@ void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
   else
     integer_mid_year = integer_calendar_year;
 
+  // Disable microdata output if Person starts after the microdata output time
   if (time > MicroDataOutputTime) {
-      // Disable microdata output if Person starts after the microdata output time
       microdata_output_done = TRUE;
   }
-
-  hook_Start();
-
-  // Have the entity enter the simulation (OpenM++).
-  enter_simulation();
 }
 
 /*NOTE(Person.Finish, EN)
@@ -339,7 +468,7 @@ void Person::Finish()
 }
 
 table Person InitialPopCounts //EN Initial population counts
-[ simulation_begin ]
+[ !phantom && simulation_begin ]
 {
   {
     unit

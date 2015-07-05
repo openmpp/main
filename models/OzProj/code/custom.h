@@ -7,4 +7,5 @@
  */
 
 #pragma once
+#include <cassert>
 #include "xcom_case_based.h"
