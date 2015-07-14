@@ -31,7 +31,7 @@ setReadonlyWorkset <- function(dbCon, defRs, isReadonly, worksetId)
   # execute in transaction scope
   isTrxCompleted <- FALSE;
   tryCatch({
-    dbBeginTransaction(dbCon)
+    dbBegin(dbCon)
     
     # set readonly flag by workset id
     rdOnlyVal <- ifelse(isReadonly, 1L, 0L)
@@ -73,7 +73,7 @@ setReadonlyDefaultWorkset <- function(dbCon, defRs, isReadonly)
   setId <- 0L
   isTrxCompleted <- FALSE;
   tryCatch({
-    dbBeginTransaction(dbCon)
+    dbBegin(dbCon)
     
     # set readonly flag by model name and timestamp
     rdOnlyVal <- ifelse(isReadonly, 1L, 0L)

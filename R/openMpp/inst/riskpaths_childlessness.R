@@ -12,10 +12,53 @@ library("openMpp")
 #   T05_CohortFertility: Cohort fertility, expression 1
 #
 
+# The strings model_exe, model_sqlite, model_args, and scenario_cases
+# provide information to run this example in a particular hardware
+# and file system environment.
+# Comment all except one of each, and change to suit as desired.
+
+###################################################################
+# For running on a local machine using the working directory in R #
+###################################################################
+
+# For the following values to work, you must first set the R Working directory
+# to the directory containing the Alpha1 executable and the SQLite database.
+# In RStudio Session > Set Working Directory > Choose Directory, then navigate to location, e.g.
+# /ompp_root/models/RiskPaths/ompp/bin
+
+model_exe = "RiskPaths"
+model_sqlite = "RiskPaths.sqlite"
+# Default - One simulation member and one thread
+model_args = " "
+# 4 simulation members and 4 threads
+#model_args = " -General.Subsamples 4 -General.Threads 4"
+scenario_cases = 1000L
+
+
+###################################################################
+# For running on a local machine using explicit paths             #
+###################################################################
+
+#model_exe = "/path/to/executable/model/RiskPaths"
+#model_sqlite = "/path/to/SQLite/database/RiskPaths.sqlite"
+# Default - One simulation member and one thread
+#model_args = " "
+#scenario_cases = 1000L
+
+
+###################################################################
+# For running on cluster (change to match your cluster)           #
+###################################################################
+#model_exe = "/mirror/omrun"
+#model_sqlite = "/mirror/RiskPaths.sqlite"
+#model_args = "-n 16 /mirror/RiskPaths"
+#scenario_cases = 100000L
+
+
 # 
 # connect to database to model databes
 #
-theDb <- dbConnect("SQLite", "RiskPaths.sqlite", synchronous = 2)
+theDb <- dbConnect(RSQLite::SQLite(), model_sqlite, synchronous = "full")
 invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
 
 defRs <- getModel(theDb, "RiskPaths")       # find RiskPaths model in database
@@ -46,7 +89,7 @@ copyWorksetParameterFromRun(theDb, defRs, setId, baseRunId, list(name = "Simulat
 #
 # update number of simulation cases
 #
-updateWorksetParameter(theDb, defRs, setId, list(name = "SimulationCases", value = 100000L))
+updateWorksetParameter(theDb, defRs, setId, list(name = "SimulationCases", value = scenario_cases))
 
 #
 # analyze RiskPaths model varying AgeBaselineForm1 and UnionStatusPreg1 parameters
@@ -83,9 +126,9 @@ for (scAgeBy in scaleValues)
     # run the model on cluster using 16 subsamples
     # consult your cluster admin on how to use computational grid
     system2(
-      "/mirror/omrun", 
+      model_exe, 
       paste(
-        "-n 16 /mirror/RiskPaths",
+        model_args,
         " -OpenM.SetId ", setId, 
         " -OpenM.LogToConsole false",
         " -OpenM.LogToFile true",

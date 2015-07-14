@@ -173,7 +173,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
   
   isTrxCompleted <- FALSE;
   tryCatch({
-    dbBeginTransaction(dbCon)
+    dbBegin(dbCon)
 
     # get next set id
     dbGetQuery(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'")

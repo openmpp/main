@@ -44,7 +44,7 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
   # execute in transaction scope
   isTrxCompleted <- FALSE;
   tryCatch({
-    dbBeginTransaction(dbCon)
+    dbBegin(dbCon)
     
     # find model by workset id, it must not be readonly workset
     setRs <- lockWorksetUsingReadonly(dbCon, defRs, TRUE, worksetId, TRUE, -1L)
@@ -191,7 +191,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
   # execute in transaction scope
   isTrxCompleted <- FALSE;
   tryCatch({
-    dbBeginTransaction(dbCon)
+    dbBegin(dbCon)
     
     # find model by workset id, it must not be readonly workset
     setRs <- lockWorksetUsingReadonly(dbCon, defRs, TRUE, worksetId, TRUE, -1L)

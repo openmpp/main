@@ -7,7 +7,7 @@ library("openMpp")
 #
 # open db connection
 #
-theDb <- dbConnect("SQLite", "modelOne.sqlite", synchronous = 2)
+theDb <- dbConnect(RSQLite::SQLite(), "modelOne.sqlite", synchronous = "full")
 invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
 
 # find the model: get model definition from database
