@@ -31,6 +31,9 @@ range RANGE_AGE_65 //EN Age
 range RANGE_AGE_85 //EN Age
 { 0, 85 };
 
+range CHILD_AGE //EN Age
+{ 0, 14 };
+
 range YEAR //EN Year
 { 2012, 2061 };
 

@@ -1,9 +1,15 @@
-classification TEST
+classification SCRIPT
 {
-    T_00, //EN Filter true on exit
-    T_01, //EN Filter false on exit
-    T_02, //EN Fltr & x
-    T_03  //EN Fltr w/o x
+    S_00, //EN S_00: Filter true on exit
+    S_01, //EN S_01: Filter false on exit
+    S_02, //EN S_02: Fltr & x
+    S_03, //EN S_03: Fltr w/o x
+    S_04, //EN S_04: col & multiple x
+    S_05, //EN S_05: No spurious changes
+    S_06, //EN S_06: Spurious change in x
+    S_07, //EN S_07: Spurious change in filter (true-false-true)
+    S_08, //EN S_08: Spurious change in filter (false-true-false)
+    S_09  //EN S_09: Spurious change in col
 };
 
 range ASSIGNMENTS
@@ -14,12 +20,12 @@ range ASSIGNMENTS
 
 classification ATTRIBUTE
 {
-    A_TIME,
-    A_ALIVE,
-    A_FLTR,
-    A_ROW,
-    A_COL,
-    A_X
+    A_TIME,  //EN time
+    A_ALIVE, //EN alive
+    A_FLTR,  //EN filter
+    A_ROW,   //EN row
+    A_COL,   //EN col
+    A_X      //EN x
 };
 
 range ROW
@@ -39,16 +45,16 @@ range EVENT_COUNTER
 
 parameters
 {
-    //EN Only one test
-    logical OneTest;
+    //EN Only one script (case)
+    logical OneScript;
 
-    //EN Which test
-    TEST WhichTest;
+    //EN Which script (case)
+    SCRIPT WhichScript;
 
-    //EN Script of attribute assignments
-	int Script[TEST][ASSIGNMENTS][ATTRIBUTE];
-	/* NOTE(Script, EN)
-        The leading dimension TEST corresponds to a case in the simulation.
+    //EN Scripts of attribute assignments
+	int Scripts[SCRIPT][ASSIGNMENTS][ATTRIBUTE];
+	/* NOTE(Scripts, EN)
+        The leading dimension SCRIPT corresponds to a case in the simulation.
         The first column gives the times at which values will be assigned to attributes.
         Additional columns are the values to assign at the given time.
         If duplicate values with the same time are present they are assigned in row order,
@@ -62,8 +68,8 @@ parameters
 
 actor Person
 {
-     //EN Test (with long description)
-    TEST test = OneTest ? WhichTest : TEST(actor_id - 1);
+    //EN Scripts (with long description)
+    SCRIPT script = OneScript ? WhichScript : SCRIPT(actor_id - 1);
 
 	logical alive;
     logical fltr;
@@ -84,13 +90,13 @@ void Person::AssignAttributes()
 {
     for (int j = 0; j < SIZE(ASSIGNMENTS); ++j) {
 
-        if (time == Script[test][j][A_TIME]) {
+        if (time == Scripts[script][j][A_TIME]) {
 
-            alive  = 0 != Script[test][j][A_ALIVE];
-            fltr   = 0 != Script[test][j][A_FLTR];
-            row    = COERCE(ROW, Script[test][j][A_ROW]);
-            col    = COERCE(COL, Script[test][j][A_COL]);
-            x      = Script[test][j][A_X];
+            alive  = 0 != Scripts[script][j][A_ALIVE];
+            fltr   = 0 != Scripts[script][j][A_FLTR];
+            row    = COERCE(ROW, Scripts[script][j][A_ROW]);
+            col    = COERCE(COL, Scripts[script][j][A_COL]);
+            x      = Scripts[script][j][A_X];
 
         }
     }
@@ -127,8 +133,8 @@ void Person::Start()
 extern void signal_exit_simulation_all();
 void Person::Finish()
 {
-    if (OneTest || (int)test == SIZE(TEST) - 1) {
-        // Stop the simulation - no more tests to do
+    if (OneScript || (int)script == SIZE(SCRIPT) - 1) {
+        // Stop the simulation - no more SCRIPTs to do
         signal_exit_simulation_all();
     }
     exit_simulation();

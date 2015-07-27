@@ -54,7 +54,7 @@ table Person YavgByAgeDec //EN YavgByAgeDec
 	is_adult
 	* split(integer_age, AGE_GROUP_20)
 	* {
-		value_in(income) / unit, //EN Mean income (000's) scale=-3
+		0.001 * value_in(income) / unit, //EN Mean income (000's)
 		unit					//EN Count
 	}
 	*decade

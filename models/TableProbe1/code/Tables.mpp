@@ -1,6 +1,6 @@
-table Person Table00
+table Person Table00 //EN Attributes by event
 {
-    test
+    script
     * event_counter
 	* {
         unit,
@@ -18,10 +18,11 @@ table Person Table00
 table Person Table01
 [ fltr ]
 {
-    test
+    script
 	* {
-		value_in(x),
-		value_out(x)
+        unit,
+        value_in(x),
+        value_out(x)
 	}
     * row
     * col
@@ -29,7 +30,7 @@ table Person Table01
 
 table Person Table02
 {
-    test
+    script
 	* {
 		unit,
         duration()
@@ -39,7 +40,7 @@ table Person Table02
 table Person Table03
 [ trigger_changes(event_counter) ]
 {
-    test
+    script
 	* {
 		value_in(x)
 	}
@@ -48,7 +49,7 @@ table Person Table03
 
 table Person Table04
 {
-    test
+    script
 	* {
         //x
 		event(x)
@@ -59,9 +60,28 @@ table Person Table04
 table Person Table05
 [ !alive ]
 {
-    test
+    script
 	* {
         unit
 	}
     * event_counter
+};
+
+table Person Table06
+{
+    script
+	* {
+		event(x)
+	}
+    * col
+};
+
+
+table Person Table07
+{
+    script
+	* {
+		x
+	}
+    * col
 };

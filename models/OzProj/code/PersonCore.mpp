@@ -218,6 +218,11 @@ actor Person //EN Individual
   void Finish();
 };
 
+link Person.lSpouse; //EN Spouse
+
+link Person.mlChildren[] //EN Children 
+		Person.mlParents[];  //EN Parents 
+
 // The time function of MicrodataOutputEvent
 TIME Person::timeMicroDataOutputEvent()
 {
@@ -460,12 +465,21 @@ void Person::Start_Common()
 */
 void Person::Finish()
 {
-    // Exit the simulation (OpenM++).
-    exit_simulation();
+  // Finish all phantom entities associated with this entity
+  if (!phantom) {
+    // check for phantom spouse
+    if (lSpouse) {
+      if (lSpouse.phantom) {
+        // finish phantom spouse
+        lSpouse->Finish();
+      }
+    }
+    // check for phantom parents
+    if ()
+  }
 
-	// After the code in this function is executed,
-	// Modgen removes the actor from tables and from the simulation.
-	// Modgen also recuperates any memory used by the actor.
+  // Exit the simulation (OpenM++).
+  exit_simulation();
 }
 
 table Person InitialPopCounts //EN Initial population counts

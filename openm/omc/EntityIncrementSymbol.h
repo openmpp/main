@@ -8,6 +8,7 @@
 #pragma once
 #include <cassert>
 #include "AgentMemberSymbol.h"
+#include "EntityTableSymbol.h"
 
 
 class CodeBlock;
@@ -33,10 +34,17 @@ public:
      * @param data_type   The type.
      * @param decl_loc    (Optional) the declaration location.
      */
-    EntityIncrementSymbol(const string member_name, const Symbol *agent, yy::location decl_loc = yy::location())
+    EntityIncrementSymbol(const string member_name, const Symbol *agent, const EntityTableSymbol *table, yy::location decl_loc = yy::location())
         : AgentMemberSymbol(member_name, agent, decl_loc)
+        , table(table)
     {
     }
+
+    string pretty_name() const
+    {
+        return "Increment for table " + table->name;
+    }
+
 
     CodeBlock cxx_declaration_agent();
 
@@ -44,4 +52,8 @@ public:
 
     void post_parse(int pass);
 
+    /**
+     * The table for this increment.
+     */
+    const EntityTableSymbol *table;
 };

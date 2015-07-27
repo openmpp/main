@@ -43,11 +43,6 @@ actor Person {
 	double t01_cumulated_rate_of_num = weighted_duration(t01_rate_of_number); 	//EN add constant
 	int t01_cumulated_rate_of_num_int = int(t01_cumulated_rate_of_num);
 
-	//CC.  this is equivalent to weighted_duration(age).  This is a bad idea and should not be allowed.  There is a thread on that subject.
-	//		Note that Jon pointed that out in a note in the table where this is used.
-	double t01_cumulated_rate_of_age = weighted_duration(age); 	//EN Cumulated rate-of-age
-
-	int t01_cumulated_rate_of_age_int = int(t01_cumulated_rate_of_age);				//EN INT TEST decimals=4
 	//CC. Test of weighted_duration(observed_state, value, weighting_state)
 	double t01_january_days  = weighted_duration(month_of_year, JANUARY, t01_rate_of_365); //EN Cumulated days lived in January
 
@@ -103,7 +98,6 @@ table Person T01_TABLE01 //EN Test 1 (1): Cumulating states by year
 		t01_years_lived_while_3,					// decimals=4
 		t01_cumulated_rate_of_1,					// decimals=4
 		t01_cumulated_rate_of_365,					// decimals=4
-		t01_cumulated_rate_of_age,					// decimals=4
 		t01_january_days							// decimals=4
 
 	} //EN Deltas of cumulating states 
@@ -318,20 +312,6 @@ table Person T01_TABLE02 //EN Test 1 (2): Cumulating states by age
 		// decimals are dropped and there is no rounding.
 		t01_cumulated_rate_of_num_int,				//EN INT TEST2 Delta decimals=4
 		value_out(t01_cumulated_rate_of_num_int),	//EN INT TEST2 decimals=4
-
-		// Test: weighted_duration(age); SEE NOTE:
-		// Expect: 	This test should fail. age is a built-in member of the Actor type 
-		//			age is continuously updated state (cus) so its value at any
-		//			point is not determined. Right now, this works, but it should
-		//			fail in future.
-		t01_cumulated_rate_of_age,					// decimals=4
-		value_out(t01_cumulated_rate_of_age),					// decimals=4
-
-		// Test: int()
-		// Expected: All decimals are dropped, no rounding occurs
-		//	CC.  Result is not what was expected, if expectations were good.
-		t01_cumulated_rate_of_age_int,				//EN INT TEST3 Delta decimals=4
-		value_out(t01_cumulated_rate_of_age_int),	//EN INT TEST3 decimals=4
 
 		// Test: weighted_duration(month_of_year, JANUARY, t01_rate_of_365);
 		// Expect: sum of 31*7=217

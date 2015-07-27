@@ -997,21 +997,12 @@ void DerivedAgentVarSymbol::create_side_effects()
     }
     case token::TK_active_spell_delta:
     {
-        // Cannot safely inject side-effect to the observed agentvar
-        // since the observed agentvar might change and the spell condition go false in same event.
-        // If the spell condition goes false before the observed agentvar changes value in the event
-        // implementation, the active spell delta would be in error.
-        // Instead, the side-effect is added to time, which is guaranteed to invoke side-effects before
-        // the event is implemented.  But that doesn't handle all cases, since
-        // some agentvars are updated when time advances, including possibly the spell condition.
-        // So active_spell_delta is assigned a sorting_group which comes before identity agentvars.
-        // OK, so much for background, now...
-        // add side-effect to time
-        auto *av = pp_agent->pp_time;
-        assert(iav);
+        assert(iav); // spell condition
         assert(pp_av2); // observed agentvar
         assert(dav); // holds value of observed agentvar at beginning of spell
-        CodeBlock& c = av->side_effects_fn->func_body;
+
+        // add side-effect to observed attribute
+        CodeBlock& c = pp_av2->side_effects_fn->func_body;
         c += injection_description();
         c += "// Maintain value for " + pretty_name();
         c += "if (om_active && " + iav->name + ") {";

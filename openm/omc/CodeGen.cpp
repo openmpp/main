@@ -299,7 +299,7 @@ void CodeGen::do_RunInit()
     c += "// Agent static initialization part 1: Initialize agent member offsets & null agent data members";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Agent - " + agent->name;
-        c += agent->name + "::om_null_agent.om_assign_attribute_offsets();";
+        c += agent->name + "::om_null_agent.om_assign_member_offsets();";
         c += agent->name + "::om_null_agent.om_initialize_data_members0();";
         c += "";
     }
@@ -529,7 +529,7 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
-	    h += "// increment members in " + agent->name + " entity";
+	    h += "// Entity table increment members in " + agent->name + " entity";
 	    h += "//";
 	    h += "";
         for ( auto table : agent->pp_entity_tables ) {

@@ -42,7 +42,7 @@ public:
     AgentSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , pp_time(nullptr)
-        , assign_attribute_offsets_fn(nullptr)
+        , assign_member_offsets_fn(nullptr)
         , initialize_data_members_fn(nullptr)
         , initialize_data_members0_fn(nullptr)
         , initialize_events_fn(nullptr)
@@ -74,7 +74,7 @@ public:
     /**
      * Builds the function body of the function.
      */
-    void build_body_assign_attribute_offsets();
+    void build_body_assign_member_offsets();
 
     /**
      * Builds the function body of the function.
@@ -132,12 +132,12 @@ public:
     BuiltinAgentVarSymbol *pp_time;
 
     /**
-     * Assigns offsets of all attributes within the entity.
+     * Assigns offsets of attributes and increments within the entity.
      * 
-     * This function has the fixed name om_assign_attribute_offsets().  It is called in the run-
+     * This function has the fixed name om_assign_member_offsets().  It is called in the run-
      * time support class BaseAgent exactly once for each kind of entity.
      */
-    AgentFuncSymbol *assign_attribute_offsets_fn;
+    AgentFuncSymbol *assign_member_offsets_fn;
 
     /**
      * The agent function which initializes the values of all data members in the agent.
@@ -250,7 +250,7 @@ public:
      * 
      *  Populated after parsing is complete.
      */
-    list<AgentDataMemberSymbol *> pp_callback_members;
+    list<AgentMemberSymbol *> pp_callback_members;
 
     /**
      * The expression agentvars of this agent.

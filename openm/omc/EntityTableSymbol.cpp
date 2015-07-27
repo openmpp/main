@@ -37,78 +37,28 @@ void EntityTableSymbol::create_auxiliary_symbols()
 {
     {
         assert(!increment); // initialization guarantee
-        increment = new EntityIncrementSymbol("om_" + name + "_incr", agent);
+        increment = new EntityIncrementSymbol("om_" + name + "_incr", agent, this);
     }
 
     {
-        assert(!cell); // initialization guarantee
-        // Set storage type to int. Can be changed in a subsequent pass to optimize storage based on array size.
-        auto *typ = NumericSymbol::find(token::TK_int);
-        assert(typ); // initialization guarantee
-        cell = new AgentInternalSymbol("om_" + name + "_cell", agent, typ);
+        assert(!current_cell_fn); // initialization guarantee
+        current_cell_fn = new AgentFuncSymbol("om_" + name + "_current_cell", agent, "int", "");
+        assert(current_cell_fn); // out of memory check
+        current_cell_fn->doc_block = doxygen_short("Compute the current cell index of table " + name + " using attributes in the " + agent->name + " entity.");
     }
 
     {
-        assert(!cell_in); // initialization guarantee
-        auto *typ = cell->data_type; // type of cell_in is the same as cell
-        cell_in = new AgentInternalSymbol("om_" + name + "_cell_in", agent, typ);
+        assert(!init_increment_fn); // initialization guarantee
+        init_increment_fn = new AgentFuncSymbol("om_" + name + "_init_increment", agent, "void", "int pending, big_counter pending_event_counter");
+        assert(init_increment_fn); // out of memory check
+        init_increment_fn->doc_block = doxygen_short("Initialize the increment for the active table cell in " + name + ".");
     }
 
     {
-        assert(!active); // initialization guarantee
-        auto *typ = BoolSymbol::find();
-        assert(typ); // initialization guarantee
-        active = new AgentInternalSymbol("om_" + name + "_active", agent, typ);
-    }
-
-    {
-        assert(!pending); // initialization guarantee
-        auto *typ = BoolSymbol::find();
-        assert(typ); // initialization guarantee
-        pending = new AgentInternalSymbol("om_" + name + "_pending", agent, typ);
-    }
-
-    {
-        assert(!pending_event_counter); // initialization guarantee
-        // Set storage type to big_counter, which is the same type as the global event counter.
-        auto *typ = NumericSymbol::find(token::TK_big_counter);
-        assert(typ); // initialization guarantee
-        pending_event_counter = new AgentInternalSymbol("om_" + name + "_pending_event_counter", agent, typ);
-    }
-
-    {
-        assert(!update_cell_fn); // initialization guarantee
-        update_cell_fn = new AgentFuncSymbol("om_" + name + "_update_cell", agent);
-        assert(update_cell_fn); // out of memory check
-        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
-    }
-
-    {
-        assert(!start_increment_fn); // initialization guarantee
-        start_increment_fn = new AgentFuncSymbol("om_" + name + "_start_increment", agent);
-        assert(start_increment_fn); // out of memory check
-        start_increment_fn->doc_block = doxygen_short("Start a new increment for the active table cell in " + name + ".");
-    }
-
-    {
-        assert(!finish_increment_fn); // initialization guarantee
-        finish_increment_fn = new AgentFuncSymbol("om_" + name + "_finish_increment", agent);
-        assert(finish_increment_fn); // out of memory check
-        finish_increment_fn->doc_block = doxygen_short("Finish the current increment for the active table cell in " + name + ".");
-    }
-
-    {
-        assert(!start_pending_fn); // initialization guarantee
-        start_pending_fn = new AgentFuncSymbol("om_" + name + "_start_pending", agent);
-        assert(start_pending_fn); // out of memory check
-        start_pending_fn->doc_block = doxygen_short("Check for and start a pending increment for the active table cell in " + name + ".");
-    }
-
-    {
-        assert(!finish_pending_fn); // initialization guarantee
-        finish_pending_fn = new AgentFuncSymbol("om_" + name + "_finish_pending", agent);
-        assert(finish_pending_fn); // out of memory check
-        finish_pending_fn->doc_block = doxygen_short("Check for and finish a pending increment for the active table cell in " + name + ".");
+        assert(!push_increment_fn); // initialization guarantee
+        push_increment_fn = new AgentFuncSymbol("om_" + name + "_push_increment", agent, "void", "int cell_in, int pending, big_counter pending_event_counter");
+        assert(push_increment_fn); // out of memory check
+        push_increment_fn->doc_block = doxygen_short("Finalize the increment and push it to the accumulators in " + name + ".");
     }
 }
 
@@ -134,6 +84,9 @@ void EntityTableSymbol::post_parse(int pass)
 
         // Add this table to the agent's list of entity tables
         pp_agent->pp_entity_tables.push_back(this);
+
+        // Add the increment for this table to the agent's list of all callback members
+        pp_agent->pp_callback_members.push_back(increment);
 
         break;
     }
@@ -171,11 +124,9 @@ void EntityTableSymbol::post_parse(int pass)
         }
 
         // construct function bodies
-        build_body_update_cell();
-        build_body_start_increment();
-        build_body_finish_increment();
-        build_body_start_pending();
-        build_body_finish_pending();
+        build_body_current_cell();
+        build_body_init_increment();
+        build_body_push_increment();
 
         // Dependency on change in attributes used as dimensions
         for (auto dim : dimension_list) {
@@ -185,8 +136,10 @@ void EntityTableSymbol::post_parse(int pass)
             c += "// Cell change in " + name;
             c += "if (om_active) {";
             c += "// Check and start pending increment in entity table " + name;
-            c += update_cell_fn->name + "();";
-            c += start_pending_fn->name + "();";
+            c += "auto cell = " + current_cell_fn->name + "();";
+            c += "auto & incr = " + increment->name + ";";
+            c += "incr.set_cell(cell);";
+            c += "incr.start_pending();";
             c += "}";
         }
 
@@ -197,8 +150,9 @@ void EntityTableSymbol::post_parse(int pass)
             c += "// filter change in " + name;
             c += "if (om_active) {";
             c += "// Check and start pending increment in entity table " + name;
-            c += update_cell_fn->name + "();";
-            c += start_pending_fn->name + "();";
+            c += "auto & incr = " + increment->name + ";";
+            c += "incr.set_filter(om_new);";
+            c += "incr.start_pending();";
             c += "}";
         }
 
@@ -224,8 +178,11 @@ void EntityTableSymbol::post_parse(int pass)
             for (auto attr : all_attributes) {
                 CodeBlock& c = attr->notify_fn->func_body;
                 c += injection_description();
-                c += "// Check and finish pending increment in entity table " + name;
-                c += "if (om_active) " + finish_pending_fn->name + "();";
+                c += "// Check for and finish pending increment in entity table " + name;
+                c += "if (om_active) {";
+                c += "auto & incr = " + increment->name + ";";
+                c += "incr.finish_pending();";
+                c += "}";
             }
         }
 
@@ -576,17 +533,16 @@ string EntityTableSymbol::cxx_initializer() const
     return cxx;
 }
 
-// The following function definition is identical in EntitySetSymbol and EntityTableSymbol
-void EntityTableSymbol::build_body_update_cell()
+void EntityTableSymbol::build_body_current_cell()
 {
-    CodeBlock& c = update_cell_fn->func_body;
+    CodeBlock& c = current_cell_fn->func_body;
 
     int rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0
         c += "// only a single cell if rank 0";
-        c += cell->name + " = 0;" ;
+        c += "return 0;" ;
         return;
     }
 
@@ -603,7 +559,7 @@ void EntityTableSymbol::build_body_update_cell()
         }
         assert(es); // integrity check guarantee
         c += "";
-        c += "// dimension=" + to_string(dim->index) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
+        c += "// dimension=" + to_string(dim->index) + " attribute=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
         if (dim > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
@@ -618,24 +574,12 @@ void EntityTableSymbol::build_body_update_cell()
     c += "";
     c += "assert(cell >= 0 && cell < " + to_string(cell_count()) + "); // logic guarantee";
     c += "";
-    c += cell->name + " = cell;" ;
+    c += "return cell;" ;
 }
 
-void EntityTableSymbol::build_body_start_increment()
+void EntityTableSymbol::build_body_init_increment()
 {
-    CodeBlock& c = start_increment_fn->func_body;
-
-    c += "// Create aliases for members used by this table to clarify subsequent code";
-    c += "auto & cell = " + cell->name + ";";
-    c += "auto & cell_in = " + cell_in->name + ";";
-    c += "auto & active = " + active->name + ";";
-    c += "auto & pending = " + pending->name + ";";
-    c += "auto & pending_event_counter = " + pending_event_counter->name + ";";
-    c += "";
-    c += "assert(!active);";
-    c += "active = true;";
-    c += "cell_in = cell;";
-    c += "";
+    CodeBlock& c = init_increment_fn->func_body;
 
     for (auto ma : pp_measure_attributes) {
         if (!ma->need_value_in && !ma->need_value_in_event) {
@@ -675,22 +619,13 @@ void EntityTableSymbol::build_body_start_increment()
             c += "}";
         }
     }
-    c += "";
 }
 
-void EntityTableSymbol::build_body_finish_increment()
+void EntityTableSymbol::build_body_push_increment()
 {
-    CodeBlock& c = finish_increment_fn->func_body;
+    CodeBlock& c = push_increment_fn->func_body;
 
-    c += "// Create aliases for members used by this table to clarify subsequent code";
     c += "auto & table = the" + name + ";";
-    c += "auto & active = " + active->name + ";";
-    c += "auto & cell_in = " + cell_in->name + ";";
-    c += "auto & pending = " + pending->name + ";";
-    c += "auto & pending_event_counter = " + pending_event_counter->name + ";";
-    c += "";
-    c += "assert(active);";
-
     for (auto acc : pp_accumulators) {
         c += "{";
         c += "// " + acc->pretty_name();
@@ -804,64 +739,6 @@ void EntityTableSymbol::build_body_finish_increment()
         }
         c += "}";
     }
-    c += "";
-    c += "active = false;";
-}
-
-void EntityTableSymbol::build_body_start_pending()
-{
-    CodeBlock& c = start_pending_fn->func_body;
-
-    c += "// Create aliases for members used by this table to clarify subsequent code";
-    if (filter) {
-        c += "auto & filter = " + filter->name + ";";
-    }
-    else {
-        c += "const bool filter = true; // table has no filter";
-    }
-    c += "auto & cell = " + cell->name + ";";
-    c += "auto & cell_in = " + cell_in->name + ";";
-    c += "auto & active = " + active->name + ";";
-    c += "auto & pending = " + pending->name + ";";
-    c += "auto & pending_event_counter = " + pending_event_counter->name + ";";
-    c += "";
-    c += "if (active && filter && cell == cell_in) {";
-    c += "pending = false;";
-    c += "}";
-    c += "else {";
-    c += "pending = true;";
-    c += "pending_event_counter = BaseEvent::global_event_counter;";
-    c += "}";
-}
-
-void EntityTableSymbol::build_body_finish_pending()
-{
-    CodeBlock& c = finish_pending_fn->func_body;
-
-    c += "// Create aliases for members used by this table to clarify subsequent code";
-    if (filter) {
-        c += "auto & filter = " + filter->name + ";";
-    }
-    else {
-        c += "const bool filter = true; // table has no filter";
-    }
-    c += "auto & active = " + active->name + ";";
-    c += "auto & pending = " + pending->name + ";";
-    c += "auto & pending_event_counter = " + pending_event_counter->name + ";";
-    c += "";
-    c += "if (pending && BaseEvent::global_event_counter > pending_event_counter) {";
-    c += "// Values are definitive";
-    c += "if (active) {";
-    c += "// Finish the pending increment";
-    c += finish_increment_fn->name + "();";
-    c += "}";
-    c += "if (filter) {";
-    c += "// Start a new increment";
-    c += update_cell_fn->name + "();";
-    c += start_increment_fn->name + "();";
-    c += "}";
-    c += "pending = false;";
-    c += "}";
 }
 
 void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)

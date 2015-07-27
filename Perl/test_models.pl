@@ -22,7 +22,7 @@ my $models_root = getcwd;
 my $verbosity = 3;
 
 # Number of significant digits to retain in the output csv files
-my $significant_digits = 5;
+my $significant_digits = 7;
 
 #####################
 # ompp settings for Windows
@@ -34,8 +34,8 @@ my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omc64.exe';
 #my $omc_exe = 'omc64D.exe';
 	
-my $ompp_configuration = "Debug";
-#my $ompp_configuration = "Release";
+#my $ompp_configuration = "Debug";
+my $ompp_configuration = "Release";
 
 my $ompp_platform = "Win32";
 #my $ompp_platform = "x64";
@@ -44,8 +44,8 @@ my $ompp_platform = "Win32";
 # ompp-linux settings
 #####################
 
-my $ompp_linux_configuration = "debug";
-#my $ompp_linux_configuration = "release";
+#my $ompp_linux_configuration = "debug";
+my $ompp_linux_configuration = "release";
 
 #####################
 # modgen settings

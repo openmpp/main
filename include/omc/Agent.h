@@ -49,7 +49,7 @@ public:
     virtual void om_initialize_time_and_age() = 0;
 
     /**
-     * Assign offset of each attribute in the entity.
+     * Assign offset of each attribute and increment in the entity.
      * 
      * This function is called exactly once for each kind of entity to assign static members which
      * contain the offset of each attribute within the containing entity. This offset is used to
@@ -57,7 +57,7 @@ public:
      * These offsets are fixed at compile time but the value cannot cannot be determined by the C++
      * compiler at the time of template instantiation.
      */
-    virtual void om_assign_attribute_offsets() = 0;
+    virtual void om_assign_member_offsets() = 0;
 
     /**
      * Insert agent into entity sets of this agent type. The function definition is specific
@@ -218,6 +218,7 @@ public:
     void enter_simulation()
     {
         om_reset_derived_attributes();
+        om_initialize_identity_attributes();
         om_initialize_entity_sets();
         om_initialize_tables();
         om_initialize_events();

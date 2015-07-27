@@ -90,7 +90,6 @@ string AgentVarSymbol::get_lagged_event_counter_name()
 
 void AgentVarSymbol::create_lagged()
 {
-    assert(!lagged && !lagged_event_counter); // logic guarantee - called only once
     string lagged_name = get_lagged_name();
     string lagged_counter_name = get_lagged_event_counter_name();
 

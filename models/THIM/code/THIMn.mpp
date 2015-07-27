@@ -26,7 +26,7 @@ model_type time_based, just_in_time;
 time_type double;
 
 // Other data types
-real_type		float;
+real_type		double;
 counter_type	ushort;
 integer_type	short;
 //index_type		ushort;

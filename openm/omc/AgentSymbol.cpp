@@ -16,6 +16,7 @@
 #include "AgentMultilinkSymbol.h"
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
+#include "EntityIncrementSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
 #include "ModelTypeSymbol.h"
@@ -192,12 +193,12 @@ void AgentSymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Model-specific customizations before simulating entity.");
     }
 
-    // The assign_attribute_offsets member function
+    // The assign_member_offsets member function
     {
-        assert(!assign_attribute_offsets_fn); // initialization guarantee
-        assign_attribute_offsets_fn = new AgentFuncSymbol("om_assign_attribute_offsets", this);
-        assert(assign_attribute_offsets_fn); // out of memory check
-        assign_attribute_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of agentvars in the containing entity.");
+        assert(!assign_member_offsets_fn); // initialization guarantee
+        assign_member_offsets_fn = new AgentFuncSymbol("om_assign_member_offsets", this);
+        assert(assign_member_offsets_fn); // out of memory check
+        assign_member_offsets_fn->doc_block = doxygen_short("One-time calculation of the offsets of attributes and increments in the containing entity.");
         // function body is generated in post-parse phase
     }
 
@@ -369,7 +370,7 @@ void AgentSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // construct function bodies.
-        build_body_assign_attribute_offsets();
+        build_body_assign_member_offsets();
         build_body_initialize_data_members();
         build_body_initialize_data_members0();
         build_body_initialize_events();
@@ -387,9 +388,9 @@ void AgentSymbol::post_parse(int pass)
     }
 }
 
-void AgentSymbol::build_body_assign_attribute_offsets()
+void AgentSymbol::build_body_assign_member_offsets()
 {
-    CodeBlock& c = assign_attribute_offsets_fn->func_body;
+    CodeBlock& c = assign_member_offsets_fn->func_body;
 
     for ( auto dm : pp_callback_members ) {
         // e.g. age.offset_in_agent = (char *)&(this->age) - (char *)this;
@@ -411,6 +412,7 @@ void AgentSymbol::build_body_initialize_data_members()
     if (mts->is_case_based()) {
         c += "";
         c += "case_id.initialize(GetCaseID());";
+        c += "case_seed.initialize(GetCaseSeed());";
     }
 }
 
@@ -491,16 +493,12 @@ void AgentSymbol::build_body_initialize_tables()
         else {
             c += "const bool filter = true; // table has no filter";
         }
-        c += "auto & active = " + tbl->active->name + ";";
-        c += "auto & pending = " + tbl->pending->name + ";";
+        c += "auto cell = " + tbl->current_cell_fn->name + "();";
         c += "";
-        // If the table filter is false at initialization, do nothing
-        c += "active = false;";
-        c += "pending = false;";
-        c += "if (filter) {";
-        c += tbl->update_cell_fn->name + "();";
-        c += tbl->start_increment_fn->name + "();";
-        c += "}" ;
+        c += "auto & incr = " + tbl->increment->name + ";";
+        c += "incr.set_filter(filter);";
+        c += "incr.set_cell(cell);";
+        c += "incr.initialize_increment();";
         c += "}";
         c += "";
     }
@@ -513,30 +511,8 @@ void AgentSymbol::build_body_finalize_tables()
     for (auto tbl : pp_entity_tables) {
         c += "// " + tbl->name;
         c += "{";
-        if (tbl->filter) {
-            c += "auto & filter = " + tbl->filter->name + ";";
-        }
-        else {
-            c += "const bool filter = true;";
-        }
-        c += "auto & active = " + tbl->active->name + ";";
-        c += "auto & pending = " + tbl->pending->name + ";";
-        c += "";
-        c += "if (pending) {";
-        c += "// Values are definitive";
-        c += "if (active) {";
-        c += "// Finish the pending increment";
-        c += tbl->finish_increment_fn->name + "();";
-        c += "}";
-        c += "if (filter) {";
-        c += "// Start a final increment";
-        c += tbl->start_increment_fn->name + "();";
-        c += "}";
-        c += "pending = false;";
-        c += "}";
-        c += "if (active) {";
-        c += tbl->finish_increment_fn->name + "();";
-        c += "}";
+        c += "auto & incr = " + tbl->increment->name + ";";
+        c += "incr.finalize_increment();";
         c += "}";
         c += "";
     }

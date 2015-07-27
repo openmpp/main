@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 22, 0, 0;
+version 0, 24, 0, 0;
 
 // The model type
 model_type case_based;

@@ -4,6 +4,21 @@
 	This module contains the basic information which defines the Person case.
 */
 
+range AGE_DIFF1 //EN Age difference (mother-child)
+{ 15, 49 };
+
+range AGE_DIFF2 //EN Age difference (husband-wife)
+{ -5, 20 };
+
+classification INDIGENOUS_STATUS //EN Indigenous
+{
+  //EN Non-indigenous
+  INDIGENOUS_NO,
+
+  //EN Indigenous
+  INDIGENOUS_YES
+};
+
 parameters 
 {
   //EN Starting population distribution
@@ -23,6 +38,24 @@ parameters
 
   //EN Regional distribution by sex and age
   cumrate[1] RegionAgeSexDistn[SEX][RANGE_AGE_85][REGION];
+
+  //EN Mother-child age difference
+  cumrate MotherChildAgeDiffDistn[AGE_DIFF1];
+
+  //EN Proportion of woman married
+  double FemaleMarriedProportion[RANGE_AGE];
+
+  //EN Husband-wife age difference
+  cumrate HusbandWifeAgeDiffDistn[AGE_DIFF2];
+
+  //EN Mother indigenous proportion by child indigenous
+  double MotherIndigenousByChildIndigenous[INDIGENOUS_STATUS];
+
+  //EN Father indigenous proportion by child indigenous
+  double FatherIndigenousByChildIndigenous[INDIGENOUS_STATUS];
+
+  //EN Husband indigenous proportion by wife indigenous
+  double HusbandIndigenousByWifeIndigenous[INDIGENOUS_STATUS];
 };
 
 actor Person            //EN Individual
@@ -108,13 +141,40 @@ actor Person            //EN Individual
   //EN Year
   YEAR year = COERCE(YEAR, integer_time + 1);
 
-  //EN Beginning of the simulation
-  logical simulation_begin = { TRUE };
-
   /*NOTE(Person.year, EN)
     The real world year number at the end of the current mid-year interval, e.g.
     year = 2012 means real world time is in the interval [2011.5, 2012.5].
   */
+
+  //EN Mother present
+  logical mother_present;
+
+  //EN Mother's integer age
+  int mother_integer_age;
+
+  //EN Mother's indigenous status
+  logical mother_indigenous;
+
+  //EN Father present
+  logical father_present;
+
+  //EN Father's integer age
+  int father_integer_age;
+
+  //EN Father's indigenous status
+  logical father_indigenous;
+
+  //EN Husband present
+  logical husband_present;
+
+  //EN Husband's integer age
+  int husband_integer_age;
+
+  //EN Husband's indigenous status
+  logical husband_indigenous;
+
+  //EN Beginning of the simulation
+  logical simulation_begin = { TRUE };
 
   //EN Simulation control event
   event timeSimulationControlEvent, SimulationControlEvent;
@@ -210,6 +270,50 @@ void Person::Start()
     indigenous = TRUE;
   else
     indigenous = FALSE;
+
+  // Parent characteristics of child (under 15)
+  if (integer_age <= MAX(CHILD_AGE)) {
+    int nA = 0;
+    // Mother attributes
+    mother_present = true; // assumed for synthetic data
+    Lookup_MotherChildAgeDiffDistn(RandUniform(8), &nA);
+    nA += MIN(AGE_DIFF1);
+    mother_integer_age = integer_age + nA;
+    if (RandUniform(9) < MotherIndigenousByChildIndigenous[indigenous]) {
+      mother_indigenous = true;
+    }
+    else {
+      mother_indigenous = false;
+    }
+    // Father attributes
+    father_present = true; // assumed for synthetic data
+    Lookup_HusbandWifeAgeDiffDistn(RandUniform(10), &nA);
+    nA += MIN(AGE_DIFF2);
+    father_integer_age = mother_integer_age + nA;
+    if (RandUniform(11) < FatherIndigenousByChildIndigenous[indigenous]) {
+      father_indigenous = true;
+    }
+    else {
+      father_indigenous = false;
+    }
+  }
+
+  // Husband characteristics of woman
+  if (sex == FEMALE && integer_age > MAX(CHILD_AGE)) {
+    int nA = 0;
+    if (RandUniform(12) < FemaleMarriedProportion[range_age]) {
+      husband_present = true;
+      Lookup_HusbandWifeAgeDiffDistn(RandUniform(13), &nA);
+      nA += MIN(AGE_DIFF2);
+      husband_integer_age = integer_age + nA;
+      if (RandUniform(14) < HusbandIndigenousByWifeIndigenous[indigenous]) {
+        husband_indigenous = true;
+      }
+      else {
+        husband_indigenous = false;
+      }
+    }
+  }
 
   // Have the entity enter the simulation (OpenM++).
   enter_simulation();
