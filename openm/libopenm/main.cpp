@@ -30,8 +30,8 @@
 * Common portion of runtime contains set of helper functions and utility classes, like openm::ILog.
 * They are used everywhere inside of the model runtime code.
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "libopenm/common/omFile.h"
 #include "model.h"

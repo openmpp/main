@@ -2,8 +2,8 @@
  * @file    ExprForAgentVar.h
  * Declares and implements the class ExprForAgentVar which represents elements in an openM++ agentvar expression
  */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include "Symbol.h"

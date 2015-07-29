@@ -2,8 +2,8 @@
 * @file
 * OpenM++ modeling library: run controller class to create new model run
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #ifndef RUN_CTRL_H
 #define RUN_CTRL_H

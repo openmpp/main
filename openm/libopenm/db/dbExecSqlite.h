@@ -2,8 +2,8 @@
  * @file
  * OpenM++ data library: db connection wrapper for SQLite
  */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #ifndef DB_EXEC_SQLITE_H
 #define DB_EXEC_SQLITE_H

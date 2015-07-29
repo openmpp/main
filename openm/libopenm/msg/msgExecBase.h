@@ -2,8 +2,8 @@
  * @file
  * OpenM++: message passing library base class
  */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #ifndef MSG_EXEC_BASE_H
 #define MSG_EXEC_BASE_H

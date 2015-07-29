@@ -5,8 +5,8 @@
 * The artifical leapless calendar has exactly 365 days, with no leap years.
 * Years have a fixed length of 1.0.
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 namespace fmk {
 

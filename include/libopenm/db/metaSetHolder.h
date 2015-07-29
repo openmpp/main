@@ -2,8 +2,8 @@
  * @file
  * OpenM++ modeling library: holder struct for working sets metadata.
  */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #ifndef META_SET_HOLDER_H
 #define META_SET_HOLDER_H

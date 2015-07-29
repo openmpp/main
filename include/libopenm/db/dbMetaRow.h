@@ -2,8 +2,8 @@
  * @file
  * OpenM++ data library: db rows of model metadata tables
  */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #ifndef DB_META_ROW_H
 #define DB_META_ROW_H

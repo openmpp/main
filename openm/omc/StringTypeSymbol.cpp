@@ -2,8 +2,8 @@
 * @file    StringTypeSymbol.cpp
 * Definitions for the StringTypeSymbol class.
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "StringTypeSymbol.h"
 #include "libopenm/db/metaModelHolder.h"

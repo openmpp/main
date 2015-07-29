@@ -2,8 +2,8 @@
  * @file    AgentLinkSymbol.cpp
  * Definitions for the AgentLinkSymbol class.
  */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "LinkAgentVarSymbol.h"
 #include "AgentMultilinkSymbol.h"

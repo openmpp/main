@@ -2,8 +2,8 @@
 * @file    ModelTypeSymbol.h
 * Declarations for the ModelTypeSymbol class.
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include <cassert>
