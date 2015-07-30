@@ -3,8 +3,8 @@
 * Declares templates which implement run-time functionality related to cumrate parameters
 *
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include <cassert>

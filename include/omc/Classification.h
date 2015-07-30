@@ -3,8 +3,8 @@
 * Declares the Classification template
 *
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include "omc/integer_counter.h"

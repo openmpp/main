@@ -2,8 +2,8 @@
 * @file    macros.h
 * Macros available to all models.
 */
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #define TRUE true
 #define FALSE false
