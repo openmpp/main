@@ -3,7 +3,7 @@
 
   <PropertyGroup>
   
-    <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'==''">C:/Program Files (x86)/StatCan/Modgen 11</MODGEN_ROOT>
+    <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'==''">$(registry:HKEY_LOCAL_MACHINE\Software\StatCan\Modgen\11@Path)</MODGEN_ROOT>
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
 
     <MODGEN_BIN_DIR Condition="'$(MODGEN_BIN_DIR)'==''">$(MODGEN_ROOT)</MODGEN_BIN_DIR>
