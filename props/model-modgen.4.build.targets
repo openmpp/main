@@ -23,8 +23,13 @@
     <RemoveDir Directories="$(MODGEN_OUT_DIR)" />
   </Target>
   
+  <Target Name="ScexPublishClean">
+    <Message Text="Delete ScexPublish output" />
+    <Delete Files="$(SCENARIO_SCEX)" />
+  </Target>
+
   <PropertyGroup>
-    <CleanDependsOn>ModgenClean;$(CleanDependsOn)</CleanDependsOn>
+    <CleanDependsOn>ModgenClean;ScexPublishClean;$(CleanDependsOn)</CleanDependsOn>
   </PropertyGroup>
  
  
@@ -41,8 +46,8 @@
     <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
           Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -EN" 
     />
-    <Exec Command="$(COMPLETE_PATCH_MODGEN_OUTPUTS_EXE) $(MODGEN_OUT_DIR)"
-    />
+    <Exec Command="$(COMPLETE_PATCH_MODGEN_OUTPUTS_EXE) $(MODGEN_OUT_DIR)" />
+    <Touch Files="@(MODGEN_OUTPUTS)" />
   </Target>
 
   <PropertyGroup>

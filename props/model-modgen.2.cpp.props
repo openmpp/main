@@ -2,10 +2,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
-  Override default VStudio cpp project settings to build openM models:
+  Override default VStudio cpp project settings to build Modgen models:
   
     AdditionalIncludeDirectories:
       MODEL_CODE_DIR
+      MODGEN_INC_DIR
       
     AdditionalDependencies:
       
