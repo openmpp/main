@@ -49,6 +49,7 @@
     
     
     <SCENARIO_DATS Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.dat" />
+    <SCENARIO_DATS Include="$(MODEL_PARAM_DIR)/$(FIXED_NAME)/*.dat" />
     
   </ItemGroup>
 
