@@ -62,7 +62,7 @@ for my $model_dir (@model_dirs) {
 		"ompp/Model.vcxproj",           "WizardCaseBased",
 		"ompp/Model.vcxproj.filters",   "WizardCaseBased",
 		"code/modgen_case_based.mpp",   "WizardCaseBased",
-		"code/xcom_case_based.h",       "WizardCaseBased",
+		"code/case_based.h",            "WizardCaseBased",
 		"code/modgen_time_based.mpp",   "WizardTimeBased",
 		"code/microdata_csv.h",         "OzProj",
 	);

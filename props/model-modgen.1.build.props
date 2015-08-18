@@ -21,10 +21,15 @@
     <MODGEN_LIB_DIR Condition="'$(MODGEN_LIB_DIR)'==''">$(MODGEN_ROOT)</MODGEN_LIB_DIR>
     
     <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
+    <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
+    
     <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
 
     <MODGEN_IN_DIR>$(MODEL_CODE_DIR)</MODGEN_IN_DIR>
+    
     <MODGEN_OUT_DIR>$(ProjectDir)src</MODGEN_OUT_DIR>
+    <PCH_CXX>$(MODGEN_OUT_DIR)/pch.cxx</PCH_CXX>
+    
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>

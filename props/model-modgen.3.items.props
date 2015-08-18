@@ -20,8 +20,14 @@
     <MODGEN_OUTPUTS Include="@(MODGEN_CPP_OUTPUTS)" />
     <MODGEN_OUTPUTS Include="@(MODGEN_RC_OUTPUTS)" />
 
+    <ClCompile Include="$(PCH_CXX)">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+
     <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
-    <ClCompile Include="../code/custom.cpp" />
+    <ClCompile Include="$(CUSTOM_CPP)" Condition="Exists('$(CUSTOM_CPP)')">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
 
     <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
     <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />

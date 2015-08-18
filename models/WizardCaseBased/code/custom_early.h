@@ -13,7 +13,7 @@
 
 typedef std::string std_string; // Can be used instead of std::string in model code, to avoid Modgen issues when using 'string' in model code.
 
-#if !defined(OPENM)
+#if defined(MODGEN)
 namespace mm {
 #endif
 
@@ -27,7 +27,7 @@ namespace mm {
 struct case_info {
 };
 
-#if !defined(OPENM)
+#if defined(MODGEN)
 }
 #endif
 

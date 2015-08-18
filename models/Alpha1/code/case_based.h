@@ -1,5 +1,5 @@
 /**
- * @file   xcom_case_based.h
+ * @file   case_based.h
  * Declarations common to cross-compatible case-based models
  *  
  * Included in custom.h.
@@ -7,7 +7,7 @@
 
 #pragma once
 
-#if !defined(OPENM)
+#if defined(MODGEN)
 namespace mm {
 #endif
 
@@ -24,7 +24,7 @@ namespace mm {
  */
 case_info* CaseInfo(case_info* ci = nullptr, bool reset = false);
 
-#if !defined(OPENM)
+#if defined(MODGEN)
 }
 #endif
 

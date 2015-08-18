@@ -40,28 +40,59 @@ if (!-d $src_dir) {
 	exit 1;
 }
 
-my $model_h = "${src_dir}/MODEL.H";
-if (!-f $model_h) {
-	logmsg error, $script_name, "File ${model_h} not found\n";
-	exit 1;
-}
+#
+# MODEL.H
+#
 
-(my $fh, my $filename) = tempfile();
-
-# Insert a line in model.h to include custom_early.h before actors.h
-open MODEL_H, "<".$model_h;
-while (<MODEL_H>) {
-	chomp;
-	my $line = $_;
-	if ($line =~ /actors/) {
-		print $fh "#include \"custom_early.h\" // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+{
+	my $model_h = "${src_dir}/MODEL.H";
+	if (!-f $model_h) {
+		logmsg error, $script_name, "File ${model_h} not found\n";
+		exit 1;
 	}
-	print $fh $line."\n";
+	(my $fh, my $filename) = tempfile();
+	# Insert a line in model.h to include custom_early.h before actors.h
+	open MODEL_H, "<".$model_h;
+	while (<MODEL_H>) {
+		chomp;
+		my $line = $_;
+		if ($line =~ /actors/) {
+			print $fh "#include \"custom_early.h\" // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+		}
+		print $fh $line."\n";
+	}
+	close $fh;
+	close MODEL_CPP;
+	copy $filename, $model_h;
+	unlink $filename;
 }
-close $fh;
-close MODEL_H;
 
-copy $filename, $model_h;
-unlink $filename;
+#
+# ACTORS.CPP
+#
+
+{
+	my $actors_cpp = "${src_dir}/ACTORS.CPP";
+	if (!-f $actors_cpp) {
+		logmsg error, $script_name, "File ${actors_cpp} not found\n";
+		exit 1;
+	}
+	(my $fh, my $filename) = tempfile();
+	# Remove the line #define MAIN_MODULE to allow use of pre-compiled headers
+	open ACTORS_CPP, "<".$actors_cpp;
+	while (<ACTORS_CPP>) {
+		chomp;
+		my $line = $_;
+		if ($line =~ /#define\s+MAIN_MODULE/) {
+			# skip it
+			next;
+		}
+		print $fh $line."\n";
+	}
+	close $fh;
+	close ACTORS_CPP;
+	copy $filename, $actors_cpp;
+	unlink $filename;
+}
 
 exit 0;

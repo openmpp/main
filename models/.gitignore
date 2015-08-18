@@ -1,0 +1,11 @@
+/*/modgen/bin/
+/*/modgen/build/
+/*/modgen/src/
+/*/ompp/bin/
+/*/ompp/build/
+/*/ompp/src/
+*.vcxproj.user
+*.suo
+*.sdf
+*.opensdf
+*.log
