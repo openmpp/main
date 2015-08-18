@@ -89,6 +89,10 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 $subdir = 'R';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
+# Perl
+$subdir = 'Perl';
+dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+
 # sql
 $subdir = 'sql';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
