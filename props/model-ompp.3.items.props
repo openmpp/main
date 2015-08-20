@@ -36,16 +36,22 @@
   </ItemGroup>
 
   <!-- 
-    Coded using relative path to fixed sister directories
-    pending bug fix of VS vcxproj.filters issue. 
+    Some property groups are coded below using relative path to fixed sister directories
+    rather than using symbolic properties assigned earlier.
+    This approach is used pending bug fix of VS vcxproj.filters issue. 
     (Solution Explorer nodes not populated if filters refer to files
     with slightly complex Include property)
   -->
   <ItemGroup>
+    <ClCompile Include="$(PCH_CXX)" Condition="'$(USE_PCH)'=='1'">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src/om_definitions.cpp" />
     <ClCompile Include="src/om_developer.cpp" />
     <ClCompile Include="src/om_fixed_parms.cpp" />
-    <ClCompile Include="../code/custom.cpp" />
+    <ClCompile Include="$(CUSTOM_CPP)" Condition="Exists('$(CUSTOM_CPP)')">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
 
     <ClInclude Include="src/om_types0.h" />
     <ClInclude Include="src/om_types1.h" />

@@ -313,6 +313,7 @@ int main(int argc, char * argv[])
         om_developer_cpp << " * Developer-supplied C++ functions" << endl;
         om_developer_cpp << " */" << endl;
         om_developer_cpp << "" << endl;
+        om_developer_cpp << "#include \"omc/omPch.h\"" << endl;
         om_developer_cpp << "#include \"omc/omSimulation.h\"" << endl;
 		om_developer_cpp << "using namespace openm;" << endl;
 

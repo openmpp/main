@@ -66,12 +66,23 @@
           Outputs="@(OMC_OUTPUTS)"
           >
     <MakeDir Directories="$(OMC_OUT_DIR)" />
+    <PropertyGroup>
+      <START_TIME>$([System.DateTime]::Now)</START_TIME>
+    </PropertyGroup>
     <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
     <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
+    <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))" />
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
     </ItemGroup>
     <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(OutDir)" />
+    <WriteLinesToFile 
+        Condition="'$(USE_PCH)'=='1' And !Exists('$(PCH_CXX)')"
+        File="$(PCH_CXX)"
+        Lines="#include &quot;omc/omPch.h&quot;"
+        Overwrite="true"
+        Encoding="Unicode"
+    />
   </Target>
 
   <PropertyGroup>
@@ -188,6 +199,7 @@
  
   <Target Name="Diagnostics"
           Condition="'1'=='1'">
+    <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
     <Message Text="OMC_INPUTS=@(OMC_INPUTS)" />
     <Message Text="OMC_OUTPUTS=@(OMC_OUTPUTS)" />

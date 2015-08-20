@@ -20,10 +20,15 @@
     <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(OM_ROOT)/sql</OM_SQL_DIR>
 
     <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
+    <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
+    
     <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
     
     <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
+
     <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
+    <PCH_CXX>$(OMC_OUT_DIR)/pch.cxx</PCH_CXX>
+
     <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
@@ -56,6 +61,18 @@
     <OMC_IN_SCENARIO_OPT Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'">-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
     <!-- omc -f option to supply fixed parameter -->
     <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- 
+    Use this to control the multiprocessor compilation option (true/false)
+    -->
+    <MULTIPROCESSOR_COMPILE>true</MULTIPROCESSOR_COMPILE>
+    
+    <!-- 
+    Use this to control the use of pre-compiled headers (1/0)
+    -->
+    <USE_PCH>0</USE_PCH>
   </PropertyGroup>
 
   <!-- 
