@@ -48,7 +48,9 @@
     </ClCompile>
     <ClCompile Include="src/om_definitions.cpp" />
     <ClCompile Include="src/om_developer.cpp" />
-    <ClCompile Include="src/om_fixed_parms.cpp" />
+    <ClCompile Include="src/om_fixed_parms.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="$(CUSTOM_CPP)" Condition="Exists('$(CUSTOM_CPP)')">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>

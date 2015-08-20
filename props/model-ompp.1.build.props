@@ -67,7 +67,7 @@
     <!-- 
     Use this to control the multiprocessor compilation option (true/false)
     -->
-    <MULTIPROCESSOR_COMPILE>true</MULTIPROCESSOR_COMPILE>
+    <MULTIPROCESSOR_COMPILE>false</MULTIPROCESSOR_COMPILE>
     
     <!-- 
     Use this to control the use of pre-compiled headers (1/0)
