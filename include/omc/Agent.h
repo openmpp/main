@@ -41,7 +41,7 @@ public:
     /**
      * Get current time of agent.
      */
-    virtual double om_get_time() = 0;
+    virtual Time om_get_time() = 0;
 
     /**
      * Initialize time and age as part of entity initialization.
