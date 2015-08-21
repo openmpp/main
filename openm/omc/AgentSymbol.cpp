@@ -180,7 +180,7 @@ void AgentSymbol::create_auxiliary_symbols()
 
     // The om_get_time() member function
     {
-        auto *fn = new AgentFuncSymbol("om_get_time", this, "double", "");
+        auto *fn = new AgentFuncSymbol("om_get_time", this, "Time", "");
         fn->doc_block = doxygen_short("Return current time of this entity.");
         CodeBlock& c = fn->func_body;
         c += "return time.get();" ;
