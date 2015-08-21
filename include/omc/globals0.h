@@ -5,7 +5,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#pragma once;
+#pragma once
 
 // The following global functions are defined in framework modules,
 // as indicated. They are mostly documented in the Modgen Developer's Guide.
