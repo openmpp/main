@@ -67,12 +67,17 @@
     <!-- 
     Use this to control the multiprocessor compilation option (true/false)
     -->
-    <MULTIPROCESSOR_COMPILE>false</MULTIPROCESSOR_COMPILE>
+    <MULTIPROCESSOR_COMPILE Condition="'$(MULTIPROCESSOR_COMPILE)'==''">false</MULTIPROCESSOR_COMPILE>
     
     <!-- 
     Use this to control the use of pre-compiled headers (1/0)
     -->
-    <USE_PCH>0</USE_PCH>
+    <USE_PCH Condition="'$(USE_PCH)'==''">0</USE_PCH>
+    
+    <!-- 
+    Use this to disable #line directives in generated cpp files (0=use, 1=disable)
+    -->
+    <NO_LINE_DIRECTIVES Condition="'$(NO_LINE_DIRECTIVES)'==''">0</NO_LINE_DIRECTIVES>
   </PropertyGroup>
 
   <!-- 

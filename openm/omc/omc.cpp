@@ -15,6 +15,7 @@
 * * -Omc.UseDir        use/dir/with/ompp/files
 * * -Omc.ParamDir      input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir      input/dir/to/find/fixed/parameter/files/
+* * -Omc.noLineDirectives suppress #line directives in generated cpp files
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
 * Short form of command line arguments:
@@ -89,6 +90,9 @@ namespace openm
 
         /** omc input directory with OpenM++ fixed parameter files */
         static const char * fixedDir;
+
+        /** omc suppress #line directives in generated cpp files */
+        static const char * noLineDirectives;
     };
 
     /** keys for omc options (short form) */
@@ -140,6 +144,9 @@ namespace openm
     /** omc input directory for OpenM++ fixed parameter files */
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
+    /** omc no #line directives option */
+    const char * OmcArgKey::noLineDirectives = "Omc.noLineDirectives";
+
     /** short name for options file name: -s fileName.ini */
     const char * OmcShortKey::optionsFile = "ini";
 
@@ -173,6 +180,7 @@ namespace openm
         OmcArgKey::useDir,
         OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
+        OmcArgKey::noLineDirectives,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -289,6 +297,12 @@ int main(int argc, char * argv[])
             Symbol::use_folder = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
         }
 
+        // Obtain information on generation of #line directives
+        bool no_line_directives = false;
+        if (argStore.isOptionExist(OmcArgKey::noLineDirectives)) {
+            no_line_directives = argStore.boolOption(OmcArgKey::noLineDirectives);
+        }
+
         if (!Symbol::use_folder.empty() && Symbol::use_folder.back() != '/' && Symbol::use_folder.back() != '\\') {
             Symbol::use_folder += '/';
         }
@@ -298,6 +312,7 @@ int main(int argc, char * argv[])
 
         // create unique instance of ParseContext
         ParseContext pc;
+        pc.no_line_directives = no_line_directives;
 
         // open & prepare pass-through / markup stream om_developer.cpp
         ofstream om_developer_cpp(outDir + "om_developer.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
@@ -519,7 +534,8 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             theLog->logFormatted("Parsing %s", full_name.c_str());
             string normalized_full_name = replaceAll(full_name, "\\", "/");
             *markup_stream << endl; // required in case last line of previous file had no trailing newline
-            *markup_stream << "#line 1 \"" << normalized_full_name << "\"" << endl;
+            string line_start = pc.no_line_directives ? "//#line " : "#line ";
+            *markup_stream << line_start << "1 \"" << normalized_full_name << "\"" << endl;
 
             // create new instance of parser-scanner driver for each source file
             Driver drv( pc );

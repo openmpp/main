@@ -44,6 +44,7 @@ public:
         , parameter_context(nullptr)
         , is_fixed_parameter_value(false)
         , is_scenario_parameter_value(false)
+        , no_line_directives(false)
     {
         // The default location constructor for comment_location is fine.
     }
@@ -302,6 +303,11 @@ public:
      * True if parsing parameter values specified in a scenario.
      */
     bool is_scenario_parameter_value;
+
+    /**
+     * True to disable inserted #line directives in generated files
+     */
+    bool no_line_directives;
 private:
 
     /**

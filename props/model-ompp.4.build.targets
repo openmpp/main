@@ -69,8 +69,8 @@
     <PropertyGroup>
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
     </PropertyGroup>
-    <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
-    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT)" />
+    <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))" />
     <ItemGroup>
       <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
