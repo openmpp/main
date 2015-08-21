@@ -69,24 +69,30 @@
   <!-- 
   ScexPublish
   -->
+  <ItemGroup>
+    <FRAMEWORK_ODAT Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*Framework*.odat" />
+  </ItemGroup>
  
   <PropertyGroup>
-    <FRAMEWORK_ODAT>$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/Base(Framework).odat</FRAMEWORK_ODAT>
     <FRAMEWORK_OMPP>$(MODEL_CODE_DIR)/ompp_framework.ompp</FRAMEWORK_OMPP>
     <SCENARIO_SCEX>$(MODEL_BIN_DIR)/$(SCENARIO_NAME).scex</SCENARIO_SCEX>
   </PropertyGroup>
  
   <Target Name="ScexPublish"
-          Inputs="$(FRAMEWORK_ODAT);$(FRAMEWORK_OMPP);@(SCENARIO_DATS)"
+          Inputs="@(FRAMEWORK_ODAT);$(FRAMEWORK_OMPP);@(SCENARIO_DATS)"
           Outputs="$(SCENARIO_SCEX)"
           AfterTargets="Build"
           >
+    <Error
+        Condition="'1' != '@(FRAMEWORK_ODAT->Count())'"
+        Text="Cannot find framework .odat file"
+    />
     <MakeDir Directories="$(MODGEN_OUT_DIR)" />
     <Message
-          Text="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) $(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')"
+          Text="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) @(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')"
     />
     <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
-          Command="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) $(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')" 
+          Command="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) @(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')" 
     />
   </Target>
 
