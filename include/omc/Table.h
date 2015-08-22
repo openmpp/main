@@ -31,7 +31,7 @@ public:
         assert(n_measures > 0);
 
         // The rank is equal to the size of shape.
-        assert(n_dimensions == shape.size());
+        assert(n_dimensions == (int)shape.size());
 
         // The number of cells is equal to product of the values in shape.
         assert(n_cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>()));
