@@ -152,6 +152,19 @@ public:
     }
 
     /**
+     * Determines if accumulator uses the value at end of the increment
+     */
+    bool uses_value_out() const
+    {
+        return increment == token::TK_delta
+            || increment == token::TK_delta2
+            || increment == token::TK_nz_delta
+            || increment == token::TK_value_out
+            || increment == token::TK_value_out2
+            || increment == token::TK_nz_value_out;
+    }
+
+    /**
      * The table containing this accumulator (reference to pointer)
      * 
      * Stable to symbol morphing during parse phase.

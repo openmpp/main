@@ -633,7 +633,9 @@ void EntityTableSymbol::build_body_push_increment()
         if (acc->accumulator != token::TK_unit) {
             auto attr = acc->pp_agentvar;
             assert(attr);
-            c += attr->data_type->name + " value_out = " + attr->name + ";";
+            if (acc->uses_value_out()) {
+                c += attr->data_type->name + " value_out = " + attr->name + ";";
+            }
             if (acc->uses_value_in()) {
                 if (acc->table_op == token::TK_interval) {
                     c += "auto & value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
