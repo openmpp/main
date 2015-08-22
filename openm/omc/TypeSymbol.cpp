@@ -137,26 +137,34 @@ TypeSymbol * TypeSymbol::summing_type()
 }
 
 
-string TypeSymbol::wrapped_type()
+string TypeSymbol::exposed_type()
 {
-    if (dynamic_cast<ClassificationSymbol *>(this)
-     || dynamic_cast<RangeSymbol *>(this)
-     || dynamic_cast<PartitionSymbol *>(this)) {
-        auto es = dynamic_cast<EnumerationSymbol *>(this);
-        assert(es);
-        return (Symbol::token_to_string(es->storage_type));
+    if (auto cs = dynamic_cast<ClassificationSymbol *>(this)) {
+        // a classification exposes an enum
+        //return cs->enum_name();
+        return "int";
     }
-    else if (dynamic_cast<TimeSymbol *>(this)) {
-        auto ts = dynamic_cast<TimeSymbol *>(this);
-        assert(ts);
+    else if (dynamic_cast<RangeSymbol *>(this)) {
+        // a range exposes an int
+        return "int";
+    }
+    else if (dynamic_cast<PartitionSymbol *>(this)) {
+        // a partition exposes an int
+        return "int";
+    }
+    else if (auto ts = dynamic_cast<TimeSymbol *>(this)) {
         if (ts->is_wrapped()) {
+            // fixed_precision_float<...>
+            // a Time type of float, double, etc. exposes the floating point type
             return (Symbol::token_to_string(ts->time_type));
         }
         else {
+            // not wrapped - no additional exposed type
             return "void";
         }
     }
     else {
+        // not wrapped - no additional exposed type
         return "void";
     }
 }

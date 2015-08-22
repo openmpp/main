@@ -47,12 +47,22 @@ public:
 
     bool is_valid_constant(const Constant &k) const;
 
+    /**
+     * The name of the C++ enum used for classification values.
+     *
+     * @return A string.
+     */
+    string enum_name() const
+    {
+        return "om_enum_" + name;
+    }
+
     string format_for_storage(const Constant &k) const;
 
     /**
-     * Query if the classification is a cnadidate for integer transformations.
+     * Query if the classification is a candidate for integer transformations.
      * 
-     * To be a candidate, at least one fo the enumerators must have trailing digits.
+     * To be a candidate, at least one of the enumerators must have trailing digits.
      *
      * @return true if trailing digits, false if not.
      */

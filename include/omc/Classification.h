@@ -56,7 +56,7 @@ public:
         set_value(val);
     }
 
-    // operator: cast to T (use in C++ expression)
+    // operator: conversion to T
     operator T() const
     {
         return enum_value;

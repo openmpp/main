@@ -123,11 +123,14 @@ public:
     TypeSymbol * summing_type();
 
     /**
-     * Gets the wrapped type.
+     * Gets the exposed type.
+     * 
+     * The return value is supplied as an argument to attribute templates where it is used to define
+     * type conversion overloads.
      *
-     * @return The wrapped type, e.g. "int".  If none, returns "void"..
+     * @return The exposed type, e.g. "int".  If none, returns "void"..
      */
-    string wrapped_type();
+    string exposed_type();
 
     /**
      * Query if 'k' is valid constant for this type

@@ -319,7 +319,7 @@ CodeBlock IdentityAgentVarSymbol::cxx_declaration_agent()
 
     h += "AgentVar<"
         + pp_data_type->name + ", "
-        + pp_data_type->wrapped_type() + ", "
+        + pp_data_type->exposed_type() + ", "
         + agent->name + ", "
         + "&om_name_" + name + ", "
         + "&" + side_effects_fn->unique_name + ", "

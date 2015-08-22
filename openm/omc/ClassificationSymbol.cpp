@@ -64,7 +64,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
 
     h += "";
     h += doxygen("Classification: " + name);
-    h += "enum om_enum_" + name + " : " + token_to_string(storage_type) + " {";
+    h += "enum " + enum_name() + " : " + token_to_string(storage_type) + " {";
     bool first = true;
     for (auto enumerator : pp_enumerators) {
         h += doxygen_short(enumerator->name);
@@ -78,7 +78,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
         h += "";
     }
     h += "};";
-    h += "typedef Classification<om_enum_" + name + ", " + to_string(pp_size()) + "> " + name + ";" ;
+    h += "typedef Classification<" + enum_name() + ", " + to_string(pp_size()) + "> " + name + ";" ;
 
     if (pp_generate_IntIs) {
         h += "";

@@ -47,7 +47,7 @@ CodeBlock BuiltinAgentVarSymbol::cxx_declaration_agent()
     // example:         AgentVar<Time, Person, &Person::time_side_effects> time;
     h += "AssignableAgentVar<"
         + pp_data_type->name + ", "
-        + pp_data_type->wrapped_type() + ", "
+        + pp_data_type->exposed_type() + ", "
         + agent->name + ", "
         + "&om_name_" + name + ", "
         + "&" + side_effects_fn->unique_name + ", "
