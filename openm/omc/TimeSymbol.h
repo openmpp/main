@@ -21,7 +21,7 @@ public:
      *
      * @param kw1 Keyword #1 for the associated typedef, e.g. token::KW_double.
      */
-    TimeSymbol(token_type wrapped_type)
+    TimeSymbol(token_type time_type)
         : NumericSymbol(token::TK_Time, "0")
         , time_type(time_type)
     {
