@@ -387,11 +387,16 @@ for my $model_dir (@model_dirs) {
 			
 			# The odat Framework parameter file for the Base scenario.
 			# Parameters in that file will be transformed into scenario settings in the Base.scex file
-			my $Base_Framework_odat = "${parameters_dir}/Base/Base(Framework).odat";
-			if ( ! -e $Base_Framework_odat ) {
-				logmsg error, $model_dir, $flavour, "Missing ompp Base Framework parameters: $Base_Framework_odat";
+			my @Base_Framework_odat_candidates = glob "${parameters_dir}/Base/*Framework*.odat";
+			if ( 0 + @Base_Framework_odat_candidates == 0 ) {
+				logmsg error, $model_dir, $flavour, "Missing ompp Framework odat parameter file";
 				next FLAVOUR;
 			}
+			if ( 0 + @Base_Framework_odat_candidates > 1 ) {
+				logmsg error, $model_dir, $flavour, "Ambiguous ompp Framework odat parameter file";
+				next FLAVOUR;
+			}
+			my $Base_Framework_odat = pop @Base_Framework_odat_candidates;
 
 			# The ompp Framework model code file for the model
 			# 'use' statements in that file are used to determine scenario settings in the Base.scex file
