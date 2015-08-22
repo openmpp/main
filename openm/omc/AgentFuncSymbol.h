@@ -58,6 +58,7 @@ public:
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
         , suppress_code_if_empty(false)
+        , has_line_directive(false)
     {
     }
 
@@ -116,6 +117,15 @@ public:
      * Default is false.
      */
     bool suppress_code_if_empty;
+
+    /**
+     * Indicates if the body contains a #line directive
+     * 
+     * Can be used by calling code to restore the #line after the function definition.
+     * 
+     * Default is false.
+     */
+    bool has_line_directive;
 
     /**
      * The function body (if generated)

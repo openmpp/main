@@ -17,13 +17,15 @@ using namespace std;
 class CodeGen
 {
 public:
-	CodeGen( 
-        ofstream *oat0_arg, 
+    CodeGen(
+        ofstream *oat0_arg,
         ofstream *oat1_arg,
         ofstream *oah_arg,
-        ofstream *oac_arg, 
-        ofstream *oaz_arg, 
-        const string & i_timestamp, 
+        ofstream *oac_arg,
+        ofstream *oaz_arg,
+        const string & i_timestamp,
+        bool no_line_directives,
+        string c_fname,
         openm::MetaModelHolder & io_metaRows 
         )
 		: oat0(oat0_arg)
@@ -32,6 +34,8 @@ public:
 		, oac(oac_arg)
 		, oaz(oaz_arg)
         , time_stamp(i_timestamp)
+        , no_line_directives(no_line_directives)
+        , c_fname(c_fname)
         , metaRows(io_metaRows)
 
 	{
@@ -80,7 +84,7 @@ public:
     CodeBlock h;
 
     /**
-     * CodeBlock for om_definitions.cpp.
+     * CodeBlock for om_fixed_parms.cpp.
      */
     CodeBlock c;
 
@@ -98,10 +102,16 @@ public:
     /** output stream for om_declarations.h */
 	ofstream *oah;
 
+    /** disable #line directives */
+	bool no_line_directives;
+
+    /** full name of om_definitions.cpp */
+	string c_fname;
+
     /** output stream for om_definitions.cpp */
 	ofstream *oac;
 
-    /** output stream for om_initializers.cpp */
+    /** output stream for om_fixed_parms.cpp */
 	ofstream *oaz;
 
 private:

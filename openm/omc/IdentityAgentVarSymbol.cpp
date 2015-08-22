@@ -26,6 +26,7 @@ void IdentityAgentVarSymbol::create_auxiliary_symbols()
     expression_fn = new AgentFuncSymbol(name + "_update_identity", agent);
     assert(expression_fn); // out of memory check
     expression_fn->doc_block = doxygen_short("Evaluate and assign expression for " + name + ".");
+    expression_fn->has_line_directive = true; // the body will contain a #line directive
 }
 
 /**
@@ -306,6 +307,16 @@ void IdentityAgentVarSymbol::build_body_expression()
 {
     CodeBlock& c = expression_fn->func_body;
 
+    if (decl_loc.begin.filename) {
+        c += (no_line_directives ? "//#line " : "#line ")
+            + to_string(decl_loc.begin.line)
+            + " \""
+            + *(decl_loc.begin.filename)
+            + "\"";
+    }
+    else {
+        c += "//#line This is a generated identity attribute which has no associated model source file";
+    }
     c += name + ".set(" + cxx_expression(root) + ");";
 }
 

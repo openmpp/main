@@ -1156,6 +1156,11 @@ public:
     static bool option_case_checksum;
 
     /**
+     * True to disable inserted #line directives in generated files
+     */
+    static bool no_line_directives;
+
+    /**
      * true to sort post-parse symbol table using Modgen name order where it matters.
      * 
      * For compatible event trace outputs between equivalent Modgen and ompp models,

@@ -302,6 +302,9 @@ int main(int argc, char * argv[])
         if (argStore.isOptionExist(OmcArgKey::noLineDirectives)) {
             no_line_directives = argStore.boolOption(OmcArgKey::noLineDirectives);
         }
+        // make available globally in static member of Symbol
+        Symbol::no_line_directives = no_line_directives;
+
 
         if (!Symbol::use_folder.empty() && Symbol::use_folder.back() != '/' && Symbol::use_folder.back() != '\\') {
             Symbol::use_folder += '/';
@@ -312,7 +315,6 @@ int main(int argc, char * argv[])
 
         // create unique instance of ParseContext
         ParseContext pc;
-        pc.no_line_directives = no_line_directives;
 
         // open & prepare pass-through / markup stream om_developer.cpp
         ofstream om_developer_cpp(outDir + "om_developer.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
@@ -425,7 +427,8 @@ int main(int argc, char * argv[])
         exit_guard<ofstream> onExit_om_declarations_h(&om_declarations_h, &ofstream::close);   // close on exit
         if (om_declarations_h.fail()) throw HelperException("Unable to open %s for writing", "om_declarations.h");
 
-        ofstream om_definitions_cpp(outDir + "om_definitions.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        string om_definitions_cpp_fname = outDir + "om_definitions.cpp";
+        ofstream om_definitions_cpp(om_definitions_cpp_fname, ios_base::out | ios_base::trunc | ios_base::binary);
         exit_guard<ofstream> onExit_om_definitions_cpp(&om_definitions_cpp, &ofstream::close);   // close on exit
         if (om_definitions_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
 
@@ -445,7 +448,17 @@ int main(int argc, char * argv[])
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create(outDir));
 
-        CodeGen cg(&om_types0_h, &om_types1_h, &om_declarations_h, &om_definitions_cpp, &om_fixed_parms_cpp, builder->timeStamp(), metaRows);
+        CodeGen cg(
+            &om_types0_h,
+            &om_types1_h,
+            &om_declarations_h,
+            &om_definitions_cpp,
+            &om_fixed_parms_cpp,
+            builder->timeStamp(),
+            no_line_directives,
+            om_definitions_cpp_fname,
+            metaRows
+            );
         cg.do_all();
 
         // build model creation sql script
@@ -534,7 +547,7 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             theLog->logFormatted("Parsing %s", full_name.c_str());
             string normalized_full_name = replaceAll(full_name, "\\", "/");
             *markup_stream << endl; // required in case last line of previous file had no trailing newline
-            string line_start = pc.no_line_directives ? "//#line " : "#line ";
+            string line_start = Symbol::no_line_directives ? "//#line " : "#line ";
             *markup_stream << line_start << "1 \"" << normalized_full_name << "\"" << endl;
 
             // create new instance of parser-scanner driver for each source file

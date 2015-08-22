@@ -526,6 +526,14 @@ void CodeGen::do_agents()
         for ( auto func_member : agent->pp_agent_funcs ) {
             h += func_member->cxx_declaration_agent();
             c += func_member->cxx_definition_agent();
+            if (func_member->has_line_directive) {
+                c += 
+                    (no_line_directives ? "//#line " : "#line ")
+                    + to_string(c.size() + 2)
+                    + " \""
+                    + c_fname
+                    + "\"";
+            }
         }
 
 	    h += "";
