@@ -658,12 +658,12 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 
-			my $make_defines = 'ignore_this = 1';
+			my $make_defines = '';
 			$make_defines .= ' RELEASE=1' if $ompp_linux_configuration eq 'release';
 			
 			open BUILD_LOG, ">${build_log}";
 			for my $make_target ('cleanall', 'model', 'publish') {
-				logmsg info, $model_dir, $flavour, "make ${make_target}" if $verbosity >= 2;
+				logmsg info, $model_dir, $flavour, "make ${make_target} ${make_defines}" if $verbosity >= 2;
 				($merged, $retval) = capture_merged {
 					my @args = (
 						"make",
