@@ -114,7 +114,7 @@ LIBSQLITE_A = libsqlite.a
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_SUB) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++11 -fdiagnostics-color=auto -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_SUB) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 MODEL_MPP = $(wildcard $(MODEL_CODE_SUB)/*.mpp $(MODEL_CODE_SUB)/*.ompp $(MODEL_CODE_SUB)/*.dat $(MODEL_CODE_SUB)/*.odat)
