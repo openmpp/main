@@ -43,6 +43,7 @@
 #include <fstream>
 #include <list>
 #include <cctype>
+#include <algorithm>
 #include "Symbol.h"
 #include "ParameterSymbol.h"
 #include "Driver.h"
@@ -255,6 +256,8 @@ int main(int argc, char * argv[])
 
         // get list of source file names in specified directory or current directory by default
         string inpDir = argStore.strOption(OmcArgKey::inputDir);
+        // normalize path separators (to avoid escaping \ in #line directives)
+        std::replace( inpDir.begin(), inpDir.end(), '\\', '/'); 
         bool isFromCurrent = inpDir == "" || inpDir == ".";
 
         if (!isFromCurrent) theLog->logFormatted("Compile source from: %s", inpDir.c_str());
@@ -277,6 +280,8 @@ int main(int argc, char * argv[])
         }
 
         string outDir = argStore.strOption(OmcArgKey::outputDir);
+        // normalize path separators (to avoid escaping \ in #line directives)
+        std::replace( outDir.begin(), outDir.end(), '\\', '/'); 
         bool isToCurrent = outDir == "" || outDir == ".";
 
         if (!isToCurrent) theLog->logFormatted("Compile source into: %s", outDir.c_str());
