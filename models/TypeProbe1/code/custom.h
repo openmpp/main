@@ -8,3 +8,11 @@
 
 #pragma once
 #include "case_based.h"
+
+#if defined(MODGEN)
+namespace mm {
+    typedef EMOTION EMOTION_t;
+}
+#else
+typedef om_enum_EMOTION EMOTION_t;
+#endif

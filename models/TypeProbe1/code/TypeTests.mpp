@@ -1,0 +1,55 @@
+//LABEL(TypeTests, EN) Various tests of types - classifications, ranges, partitions
+
+/* NOTE(TypeTests, EN)
+	This module contains various tests.
+*/
+
+classification EMOTION
+{
+    HAPPY,
+    SAD
+};
+
+classification ATTENTION
+{
+    INTERESTED,
+    BORED
+};
+
+actor Person
+{
+    logical is_birthday;
+    logical is_morning;
+    EMOTION morning_emotion;
+    EMOTION afternoon_emotion;
+
+    logical is_happy_morning = ( morning_emotion == HAPPY );
+    logical is_consistent = ( morning_emotion == afternoon_emotion );
+    int daily_difference = afternoon_emotion - morning_emotion;
+    EMOTION z01 = HAPPY;
+    EMOTION z02 = { HAPPY };
+    EMOTION z03 = morning_emotion;
+    //EMOTION z04 = EMOTION_t(morning_emotion);
+    EMOTION z05 = is_birthday ? HAPPY : SAD;
+    //EMOTION z06 = is_birthday ? HAPPY : morning_emotion;
+    //EMOTION z07 = is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
+    //EMOTION z08 = is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
+    //EMOTION z09 = is_birthday ? HAPPY :
+    //             is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
+    //EMOTION z10 = is_birthday ? HAPPY :
+    //             is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
+    // The following generates C++ compile error due to overload resolution ambiguity
+    //EMOTION z11 = is_birthday ? morning_emotion : afternoon_emotion;
+    
+    void helper();
+};
+
+void Person::helper()
+{
+    //EMOTION emot1;
+    //emot1 = EMOTION_t(morning_emotion);
+
+    //EMOTION emot2;
+    //emot2 = morning_emotion;
+}
+
