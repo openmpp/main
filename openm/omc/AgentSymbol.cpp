@@ -6,6 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
+#include "libopenm/omCommon.h"
 #include "AgentSymbol.h"
 #include "BuiltinAgentVarSymbol.h"
 #include "AgentInternalSymbol.h"
@@ -333,7 +334,8 @@ void AgentSymbol::post_parse(int pass)
         auto mts = ModelTypeSymbol::find();
         assert(mts);
         if (mts->is_case_based()) {
-            // create case_id (or morph it to correct type)
+            // create case_id (or morph it to the correct type)
+            //theLog->logFormatted("creating case_id for entity %s", name.c_str());
             string nm = "case_id";
             auto sym = Symbol::get_symbol(nm, this);
             if (!sym || sym->is_base_symbol()) {

@@ -62,6 +62,9 @@ public:
         , next_ss_id(0)
     {
         create_auxiliary_symbols();
+        // Place in earliest sorting group so that missing symbols. e.g. case_id
+        // are created or morphed before other symbols in first post_parse pass.
+        sorting_group = 0;
     }
 
     /**

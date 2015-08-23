@@ -164,6 +164,7 @@ public:
         , decl_loc(decl_loc)
         , redecl_loc(yy::location())
         , reference_count(0)
+        , sorting_group(10)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
