@@ -43,7 +43,7 @@ LIB_OMC_A = libopenm_omc_db.a
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 OMC_EXE = omc

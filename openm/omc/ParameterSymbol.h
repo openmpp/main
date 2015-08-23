@@ -31,6 +31,7 @@ public:
         , pp_datatype(nullptr)
         , lookup_fn(nullptr)
         , haz1rate(false)
+        , pp_parameter_id(0)
     {
     }
 
@@ -145,11 +146,6 @@ public:
     {
         return "om_cumrate_" + name;
     }
-
-    /**
-     * True if parameter declared as haz1rate
-     */
-    bool haz1rate;
 
     /**
      * The data type of the parameter contents (parse phase reference to pointer)
@@ -271,6 +267,11 @@ public:
      * The lookup function for cumrate parameters
      */
     GlobalFuncSymbol * lookup_fn;
+
+    /**
+     * True if parameter declared as haz1rate
+     */
+    bool haz1rate;
 
     /**
      * Numeric identifier of the parameter. Used for communicating with the metadata API.

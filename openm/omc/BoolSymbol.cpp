@@ -21,7 +21,9 @@ void BoolSymbol::post_parse(int pass)
     {
         // Create enumerators for false and true, associated with the bool enumeration symbol
         auto sym0 = new BoolEnumeratorSymbol(token_to_string(token::TK_false), this, 0);
+        assert(sym0);
         auto sym1 = new BoolEnumeratorSymbol(token_to_string(token::TK_true), this, 1);
+        assert(sym1);
     }
     break;
     default:

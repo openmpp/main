@@ -753,10 +753,13 @@ string Symbol::note(const LanguageSymbol & language) const
 
 void Symbol::populate_default_symbols(const string &model_name)
 {
-    Symbol *sym;
+    Symbol *sym = nullptr;
     sym = new VersionSymbol( 1, 0, 0, 0 );
+    assert(sym);
     sym = new ModelTypeSymbol(token::TK_case_based, false);
+    assert(sym);
     sym = new ModelSymbol(model_name);
+    assert(sym);
 
 
     // types
@@ -778,37 +781,59 @@ void Symbol::populate_default_symbols(const string &model_name)
     // C++ ambiguous integral type
     // (in C/C++, the signedness of char is not specified)
     sym = new NumericSymbol(token::TK_char, "0");
+    assert(sym);
 
     // C++ signed integral types
     sym = new NumericSymbol(token::TK_schar, token::TK_signed, token::TK_char, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_short, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_int, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_long, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_llong, token::TK_long, token::TK_long, "0");
+    assert(sym);
 
     // C++ unsigned integral types (including bool)
     sym = new BoolSymbol();
+    assert(sym);
     sym = new NumericSymbol(token::TK_uchar, token::TK_unsigned, token::TK_char, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_ushort, token::TK_unsigned, token::TK_short, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_uint, token::TK_unsigned, token::TK_int, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_ulong, token::TK_unsigned, token::TK_long, "0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_ullong, token::TK_unsigned, token::TK_long, token::TK_long, "0");
+    assert(sym);
 
     // C++ floating point types
     sym = new NumericSymbol(token::TK_float, "0.0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_double, "0.0");
+    assert(sym);
     sym = new NumericSymbol(token::TK_ldouble, token::TK_long, token::TK_double, "0");
+    assert(sym);
  
     // Changeable numeric types
     sym = new TimeSymbol(token::TK_double); // Time
+    assert(sym);
     sym = new RealSymbol(token::TK_double); // real
+    assert(sym);
     sym = new NumericSymbol(token::TK_integer, token::TK_int, "0"); // integer
+    assert(sym);
     sym = new NumericSymbol(token::TK_counter, token::TK_int, "0"); // counter
+    assert(sym);
     sym = new NumericSymbol(token::TK_big_counter, token::TK_unsigned, token::TK_long, token::TK_long, "0"); // counter
+    assert(sym);
 
     // Other types
     sym = new StringTypeSymbol();
+    assert(sym);
     sym = new UnknownTypeSymbol();
+    assert(sym);
 
     // Not implemented (a string)
     //sym = new NumericSymbol(token::TK_file, "");
@@ -1366,12 +1391,17 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
         best_size = sizeof(long);
     }
 
-    // Signed typoes are preferred by the following order.
+    // The following order picks signed types over unsigned types
     OST_HELPER(long);
     OST_HELPER(int);
     OST_HELPER(short);
     OST_HELPER(char);
-    OST_HELPER(ulong);
+    // Windows 64-bit memory model is LLP64, where unsigned long is 32-bit
+    // Linux 64-bit memory model is LP64, where unsigned long is 64 bits.
+    // So unsigned long is not a storage candidate for 64-bit Linux.
+    // Eliminate as a storage candidate for both.
+    // (in any case, the context is storage type for classifications, ranges and partitions).
+    //OST_HELPER(ulong);
     OST_HELPER(uint);
     OST_HELPER(ushort);
     OST_HELPER(uchar);

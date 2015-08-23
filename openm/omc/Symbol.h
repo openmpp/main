@@ -693,8 +693,9 @@ public:
     static const size_t storage_size(token_type tok);
 
     /**
-     * Determine fundamental integer storage type which can store a value within the specified
-     * limits.
+     * Determine integer/character storage type which can store a bounded value
+     * 
+     * Used to optimize the storage type used for classications, ranges, and partitions.
      *
      * @param min_value The minimum value.
      * @param max_value The maximum value.

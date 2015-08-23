@@ -44,6 +44,7 @@ void AgentSymbol::create_auxiliary_symbols()
                 // morph it
                 biav = new BuiltinAgentVarSymbol(sym, this, typ);
             }
+            assert(biav);
             // initialize it
             // declare the om_delta local variable for use in subsequently added code
             auto fn = biav->side_effects_fn;
@@ -69,6 +70,7 @@ void AgentSymbol::create_auxiliary_symbols()
                 // morph it
                 biav = new BuiltinAgentVarSymbol(sym, this, typ);
             }
+            assert(biav);
             // initialize it
             biav->sorting_group = 2; // age is continuously-updated
         }
@@ -88,6 +90,7 @@ void AgentSymbol::create_auxiliary_symbols()
                 // morph it
                 biav = new BuiltinAgentVarSymbol(sym, this, typ);
             }
+            assert(biav);
             // initialize it
         }
     }
@@ -106,6 +109,7 @@ void AgentSymbol::create_auxiliary_symbols()
                 // morph it
                 biav = new BuiltinAgentVarSymbol(sym, this, typ);
             }
+            assert(biav);
             // initialize it
         }
     }
@@ -124,6 +128,7 @@ void AgentSymbol::create_auxiliary_symbols()
                 // morph it
                 biav = new BuiltinAgentVarSymbol(sym, this, typ);
             }
+            assert(biav);
             // initialize it
         }
     }

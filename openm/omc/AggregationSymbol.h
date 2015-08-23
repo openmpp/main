@@ -32,8 +32,8 @@ public:
     explicit AggregationSymbol(const Symbol *from, const Symbol *to, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(from, to), decl_loc)
         , from(from->stable_rp())
-        , to(to->stable_rp())
         , pp_from(nullptr)
+        , to(to->stable_rp())
         , pp_to(nullptr)
         , pp_generate_To(false)
     {

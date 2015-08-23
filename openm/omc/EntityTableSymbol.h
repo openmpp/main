@@ -115,6 +115,11 @@ public:
     EntityIncrementSymbol *increment;
 
     /**
+     * The entity function which computes the active cell index using entity attributes.
+     */
+    AgentFuncSymbol *current_cell_fn;
+
+    /**
      * The entity function which initializes the increment.
      */
     AgentFuncSymbol *init_increment_fn;
@@ -123,11 +128,6 @@ public:
      * The entity function which finalizes the increment and pushes it to the accumulator.
      */
     AgentFuncSymbol *push_increment_fn;
-
-    /**
-     * The entity function which computes the active cell index using entity attributes.
-     */
-    AgentFuncSymbol *current_cell_fn;
 
     /**
      * The expression agentvar of the table filter.

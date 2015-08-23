@@ -141,8 +141,8 @@ string TypeSymbol::exposed_type()
 {
     if (auto cs = dynamic_cast<ClassificationSymbol *>(this)) {
         // a classification exposes an enum
-        //return cs->enum_name();
-        return "int";
+        string typ = cs->enum_name();
+        return true ? "int" : typ; // for testing - expose int or expose enum?
     }
     else if (dynamic_cast<RangeSymbol *>(this)) {
         // a range exposes an int

@@ -32,10 +32,10 @@ public:
         , oat1(oat1_arg)
         , oah(oah_arg)
 		, oac(oac_arg)
-		, oaz(oaz_arg)
-        , time_stamp(i_timestamp)
-        , no_line_directives(no_line_directives)
         , c_fname(c_fname)
+		, oaz(oaz_arg)
+        , no_line_directives(no_line_directives)
+        , time_stamp(i_timestamp)
         , metaRows(io_metaRows)
 
 	{
@@ -73,46 +73,46 @@ public:
      */
     CodeBlock t0;
 
+    /** output stream for om_types0.h */
+    ofstream *oat0;
+
     /**
      * CodeBlock for om_types1.h.
      */
     CodeBlock t1;
+
+    /** output stream for om_types1.h */
+    ofstream *oat1;
 
     /**
      * CodeBlock for om_declarations.h.
      */
     CodeBlock h;
 
+    /** output stream for om_declarations.h */
+	ofstream *oah;
+
     /**
      * CodeBlock for om_fixed_parms.cpp.
      */
     CodeBlock c;
+
+    /** output stream for om_definitions.cpp */
+	ofstream *oac;
+
+    /** full name of om_definitions.cpp */
+	string c_fname;
 
     /**
      * CodeBlock for om_initializers.cpp.
      */
     CodeBlock z;
 
-    /** output stream for om_types0.h */
-    ofstream *oat0;
-
-    /** output stream for om_types1.h */
-    ofstream *oat1;
-
-    /** output stream for om_declarations.h */
-	ofstream *oah;
+    /** output stream for om_fixed_parms.cpp */
+	ofstream *oaz;
 
     /** disable #line directives */
 	bool no_line_directives;
-
-    /** full name of om_definitions.cpp */
-	string c_fname;
-
-    /** output stream for om_definitions.cpp */
-	ofstream *oac;
-
-    /** output stream for om_fixed_parms.cpp */
-	ofstream *oaz;
 
 private:
     const string time_stamp;        // model compilation timestamp

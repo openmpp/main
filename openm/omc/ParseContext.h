@@ -35,6 +35,8 @@ public:
         , parse_warnings(0)
         , next_word_is_string(false)
         , redeclaration(false)
+        , is_fixed_parameter_value(false)
+        , is_scenario_parameter_value(false)
         , agent_context (nullptr)
         , table_context (nullptr)
         , derived_table_context (nullptr)
@@ -42,8 +44,6 @@ public:
         , classification_context(nullptr)
         , partition_context(nullptr)
         , parameter_context(nullptr)
-        , is_fixed_parameter_value(false)
-        , is_scenario_parameter_value(false)
     {
         // The default location constructor for comment_location is fine.
     }

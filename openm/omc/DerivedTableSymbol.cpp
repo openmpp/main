@@ -64,8 +64,6 @@ CodeBlock DerivedTableSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    size_t n_cells = cell_count();
-    size_t n_placeholders = measure_count();
     c += "thread_local "  + cxx_type + " * " + cxx_instance + " = nullptr;";
 
     return c;

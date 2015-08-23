@@ -35,6 +35,7 @@ int Driver::parse(string *in_filename, const string& module_name, const string& 
 
 	// Create symbol for this module.
     auto sym = new ModuleSymbol(module_name);
+    assert(sym);
 
     pc.InitializeForModule();
 

@@ -613,11 +613,13 @@ language_list:
                         {
                             // morph existing symbol to LanguageSymbol
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
+                            assert(sym);
                         }
 	| language_list "," SYMBOL
                         {
                             // morph existing symbol to LanguageSymbol
                             auto *sym = new LanguageSymbol( $SYMBOL, @SYMBOL );
+                            assert(sym);
                         }
 	;
 
@@ -630,6 +632,7 @@ decl_string:
                         {
                             // morph existing symbol to StringSymbol
                             auto *sym = new StringSymbol( $string, @string );
+                            assert(sym);
                         }
         | "string" error ";"
         ;
@@ -785,11 +788,13 @@ decl_model_type:
                         {
                             // Instantiation of new instance will replace existing instance (in constructor for Symbol)
                             auto *sym = new ModelTypeSymbol((token_type) $type_to_use, false, @$);
+                            assert(sym);
                         }
         | "model_type" model_type[type_to_use] "," "just_in_time" ";"
                         {
                             // Instantiation of new instance will replace existing instance (in constructor for Symbol)
                             auto *sym = new ModelTypeSymbol((token_type)$type_to_use, true, @$);
+                            assert(sym);
                         }
         | "model_type" error ";"
       ;
@@ -815,6 +820,7 @@ decl_version:
                             delete $sub_sub_minor;
 
                             auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor, @$ );
+                            assert(sym);
                         }
       | "version" error ";"
     ;
@@ -846,12 +852,14 @@ classification_levels:
                         {
                             // morph existing symbol to EnumeratorSymbol
                             auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            assert(sym);
                             pc.counter1++;  // counter for classification levels
                         }
       | classification_levels "," SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
                             auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            assert(sym);
                             pc.counter1++;  // counter for classification levels
                         }
 	;
@@ -902,6 +910,7 @@ decl_partition:
                             string enumerator_name = enum_symbol->name + "_om_" + to_string(pc.counter1);
                             string upper_split_point = "max";
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @last);
+                            assert(sym);
 
                             // No valid partition context
                             pc.set_partition_context( nullptr );
@@ -917,6 +926,7 @@ partition_splitpoints:
                             string enumerator_name = enum_symbol->name + "_om_" + to_string(pc.counter1);
                             string upper_split_point = $signed_numeric_literal->value();
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
+                            assert(sym);
                             pc.counter1++;  // counter for partition split points
                         }
       | partition_splitpoints "," signed_numeric_literal
@@ -926,6 +936,7 @@ partition_splitpoints:
                             string enumerator_name = enum_symbol->name + "_om_" + to_string(pc.counter1);
                             string upper_split_point = $signed_numeric_literal->value();
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @signed_numeric_literal);
+                            assert(sym);
                             pc.counter1++;  // counter for partition split points
                         }
 	;
@@ -1445,14 +1456,17 @@ decl_simple_agentvar:
         decl_type_part[type_symbol] SYMBOL[agentvar] ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, nullptr, @agentvar );
+                            assert(sym);
                         }
       | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" signed_literal "}" ";"
                         {
                             auto *sym = new SimpleAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $signed_literal, @agentvar );
+                            assert(sym);
                         }
       | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
                         {
                             auto *sym = new SimpleAgentVarEnumSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $enumerator, @agentvar );
+                            assert(sym);
                         }
     ;
 
@@ -1489,6 +1503,7 @@ decl_identity_agentvar:
         decl_type_part[type_symbol] SYMBOL[agentvar] "=" expr_for_agentvar ";"
                         {
                             auto *sym = new IdentityAgentVarSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
+                            assert(sym);
                         }
     ;
 
@@ -1512,9 +1527,9 @@ decl_agent_function:
                                     arg_list = *$args;
                                 }
 
-                                auto args = $args;
                                 // argument 5 suppress_defn=true tells omc that the function definition is developer-supplied
                                 auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), return_type, arg_list, true, @SYMBOL );
+                                assert(sym);
                                 delete $args;
                             }
                             else {
@@ -1577,6 +1592,7 @@ decl_agent_event:
                             // Create agent event symbol
                             string event_name = "om_" + $implement_func->name + "_om_event";
                             auto *sym = new AgentEventSymbol(event_name, agent, $time_func, $implement_func, true, event_priority, @decl_agent_event);
+                            assert(sym);
                         }
     ;
 
@@ -1607,6 +1623,7 @@ decl_hook:
                             if (!AgentHookSymbol::exists(agent, $from, $to)) {
                                 // Create the agent hook symbol
                                 auto *sym = new AgentHookSymbol(agent, $from, $to, order, @kw);
+                                assert(sym);
                                 // Use high-level sorting order to control calling order in generated code.
                                 sym->sorting_group = order;
                             }
@@ -1991,6 +2008,7 @@ entity_set_dimension:
                             assert(attribute);
 
                             auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, false, attribute, nullptr, false, @symbol_in_expr);
+                            assert(sym);
                             // add dimension to entity set's dimension_list
                             pc.get_entity_set_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions.
@@ -2068,6 +2086,7 @@ table_filter_opt:
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an identity agentvar for the filter
                             auto iav = new IdentityAgentVarSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
+                            assert(iav);
                             // note identity agentvar in table
                             table->filter = iav;
                         }
@@ -2099,6 +2118,7 @@ table_dimension:
                             bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
                             auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, after_analysis_dim, attribute, nullptr, margin_opt, @symbol_in_expr);
+                            assert(sym);
                             // add dimension to table's dimension_list
                             pc.get_table_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions (excluding analysis dimension).
@@ -2117,11 +2137,13 @@ table_expression_list:
       expr_for_table[root]
                         {
                             auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, pc.counter1, @root);
+                            assert(sym);
                             pc.counter1++;  // counter for expressions
                         }
     | table_expression_list "," expr_for_table[root]
                         {
                             auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, pc.counter1, @root);
+                            assert(sym);
                             pc.counter1++;  // counter for expressions
                         }
 	;
@@ -2353,6 +2375,7 @@ derived_table_dimension:
                             bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
                             auto sym = new DimensionSymbol(pc.get_derived_table_context(), pc.counter4, after_analysis_dim, nullptr, enumeration, margin_opt, @enumeration);
+                            assert(sym);
                             // add dimension to derived table's dimension_list
                             pc.get_derived_table_context()->dimension_list.push_back(sym);
                             // Increment the counter used for the number of dimensions (excluding analysis dimension).
@@ -2376,6 +2399,7 @@ derived_table_placeholder_list:
       STRING[placeholder]
                         {
                             auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
+                            assert(sym);
                             delete $placeholder; // delete the string created using new in scanner
                             pc.counter1++;  // counter for placeholders
                         }
@@ -2387,6 +2411,7 @@ derived_table_placeholder_list:
       STRING[placeholder]
                         {
                             auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
+                            assert(sym);
                             delete $placeholder; // delete the string created using new in scanner
                             pc.counter1++;  // counter for placeholders
                         }

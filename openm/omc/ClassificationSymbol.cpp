@@ -144,7 +144,7 @@ CodeBlock ClassificationSymbol::cxx_definition_global()
             if (isdigit(name.back())) {
                 string number = name.substr(name.find_last_not_of("0123456789") + 1);
                 // Remove any leading zeros, since leading zero means octal in a C++ literal.
-                int j = number.find_first_not_of("0");
+                auto j = number.find_first_not_of("0");
                 if (j == std::string::npos) {
                     // if all 0's, leave the final '0' digit
                     j = number.length() - 1;
@@ -171,7 +171,7 @@ CodeBlock ClassificationSymbol::cxx_definition_global()
             if (isdigit(name.back())) {
                 string number = name.substr(name.find_last_not_of("0123456789") + 1);
                 // Remove any leading zeros, since leading zero means octal in a C++ literal.
-                int j = number.find_first_not_of("0");
+                auto j = number.find_first_not_of("0");
                 if (j == std::string::npos) {
                     // if all 0's, leave the final '0' digit
                     j = number.length() - 1;
@@ -197,7 +197,7 @@ CodeBlock ClassificationSymbol::cxx_definition_global()
             if (isdigit(name.back())) {
                 string number = name.substr(name.find_last_not_of("0123456789") + 1);
                 // Remove any leading zeros, since leading zero means octal in a C++ literal.
-                int j = number.find_first_not_of("0");
+                auto j = number.find_first_not_of("0");
                 if (j == std::string::npos) {
                     // if all 0's, leave the final '0' digit
                     j = number.length() - 1;

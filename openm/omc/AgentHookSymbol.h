@@ -92,16 +92,7 @@ public:
     Symbol*& to;
 
     /**
-     * The hook order.
-     * 
-     * This is the optional third argument of the hook declaration in model code.  It specifies an
-     * optional calling order to handle the situation where more than one function is hooked to
-     * another.
-     */
-    int order;
-
-    /**
-     * The 'from' function for the hook (typed pointer)
+     * The 'to' function for the hook (typed pointer)
      */
     AgentFuncSymbol *pp_to;
 
@@ -109,6 +100,15 @@ public:
      * The hook implement function for the 'to' function
      */
     AgentFuncSymbol *hook_fn;
+
+    /**
+     * The hook order.
+     * 
+     * This is the optional third argument of the hook declaration in model code.  It specifies an
+     * optional calling order to handle the situation where more than one function is hooked to
+     * another.
+     */
+    int order;
 };
 
 

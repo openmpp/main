@@ -33,8 +33,8 @@ public:
         , after_analysis_dim(after_analysis_dim)
         , has_margin(has_margin)
         , attribute(attribute ? attribute->stable_pp() : nullptr)
-        , enumeration(enumeration ? enumeration->stable_pp() : nullptr)
         , pp_attribute(nullptr)
+        , enumeration(enumeration ? enumeration->stable_pp() : nullptr)
         , pp_enumeration(nullptr)
     {
     }
@@ -52,11 +52,6 @@ public:
     void post_parse(int pass);
 
     /**
-     * true if this dimension has a margin (using '+')
-     */
-    bool has_margin;
-
-    /**
      * Zero-based index of the dimension in the table.
      * 
      * Note that index in DimensionSymbol does not count the special analysis dimension.
@@ -64,11 +59,16 @@ public:
     int index;
 
     /**
-     * In a table, true if this enumeration dimension comes after ths special analysis dimension
+     * In a table, true if this enumeration dimension comes after this special analysis dimension
      * 
      * In an entity set, is always false.
      */
     bool after_analysis_dim;
+
+    /**
+     * true if this dimension has a margin (using '+')
+     */
+    bool has_margin;
 
     /**
      * The attribute for the dimension (reference to pointer)

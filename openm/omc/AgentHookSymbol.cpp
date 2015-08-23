@@ -46,7 +46,6 @@ void AgentHookSymbol::create_auxiliary_symbols()
             // create it
             fn_sym = new AgentFuncSymbol(fn_name, agent, "void", "");
             fn_sym->doc_block = doxygen_short("Call functions hooked to the function '" + to->name + "'");
-            CodeBlock& c = fn_sym->func_body;
         }
         // store it
         hook_fn = fn_sym;
