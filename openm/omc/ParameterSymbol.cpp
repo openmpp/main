@@ -38,7 +38,7 @@ void ParameterSymbol::post_parse(int pass)
             
             // construct the argument list
             string args = "double uniform";
-            int rank = dimension_list.size();
+            int rank = enumeration_list.size();
             int conditional_dims = rank - cumrate_dims;
             int lookup_dims = cumrate_dims;
             for (int j = 0; j < conditional_dims; j++) {
@@ -70,7 +70,7 @@ void ParameterSymbol::post_parse(int pass)
     {
         // validate dimension list
         // and populate the post-parse version
-        for (auto psym : dimension_list) {
+        for (auto psym : enumeration_list) {
             assert(psym); // logic guarantee
             auto sym = *psym; // remove one level of indirection
             assert(sym); // grammar guarantee
@@ -85,26 +85,26 @@ void ParameterSymbol::post_parse(int pass)
                 continue; // don't insert invalid type in dimension list
             }
             // process the dimension into post-parse members
-            pp_dimension_list.push_back(es);
+            pp_enumeration_list.push_back(es);
             pp_shape.push_back(es->pp_size());
         }
         // Create auxiliary lists for conditioning and distribution portions
-        for (auto es : pp_dimension_list) {
-            if (pp_conditioning_dimension_list.size() < conditioning_dims()) {
-                pp_conditioning_dimension_list.push_back(es);
+        for (auto es : pp_enumeration_list) {
+            if (pp_conditioning_enumeration_list.size() < conditioning_dims()) {
+                pp_conditioning_enumeration_list.push_back(es);
                 pp_conditioning_shape.push_back(es->pp_size());
             }
             else {
-                pp_distribution_dimension_list.push_back(es);
+                pp_distribution_enumeration_list.push_back(es);
                 pp_distribution_shape.push_back(es->pp_size());
             }
         }
         // clear the parse version to avoid inadvertant use post-parse
-        dimension_list.clear();
+        enumeration_list.clear();
 
         // validate dimension list (redeclaration)
         // and populate the post-parse version (redeclaration version)
-        for (auto psym : dimension_list2) {
+        for (auto psym : enumeration_list2) {
             assert(psym); // logic guarantee
             auto sym = *psym; // remove one level of indirection
             assert(sym); // grammar guarantee
@@ -118,10 +118,10 @@ void ParameterSymbol::post_parse(int pass)
                 pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
-            pp_dimension_list2.push_back(es);
+            pp_enumeration_list2.push_back(es);
         }
         // clear the parse version to avoid inadvertant use post-parse
-        dimension_list2.clear();
+        enumeration_list2.clear();
 
         // add this parameter to the complete list of parameters
         pp_all_parameters.push_back(this);
@@ -138,7 +138,7 @@ void ParameterSymbol::post_parse(int pass)
                 es->metadata_needed = true;
             }
             // The enumeration of each dimension
-            for (auto es : pp_dimension_list) {
+            for (auto es : pp_enumeration_list) {
                 es->metadata_needed = true;
             }
         }
@@ -237,7 +237,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
         int values_per_line = 1; // number of initializer values to place on each line
         if (rank() >= 1) {
             // number of values per line is size of trailing dimension
-            auto es = pp_dimension_list.back();
+            auto es = pp_enumeration_list.back();
             values_per_line = es->pp_size();
         }
         c += "{";
@@ -311,7 +311,7 @@ string ParameterSymbol::metadata_signature() const
     sig += "content: " + pp_datatype->metadata_signature();
     sig += "dimensions: " + to_string(rank()) + "\n";
     int dim_index = 0;
-    for (auto enumeration : pp_dimension_list) {
+    for (auto enumeration : pp_enumeration_list) {
         sig += "dimension " + to_string(dim_index) + ":\n";
         sig += enumeration->metadata_signature();
         dim_index++;
@@ -355,7 +355,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     int dimension = 0;
-    for (auto es : pp_dimension_list) {
+    for (auto es : pp_enumeration_list) {
         ParamDimsRow paramDims;
         paramDims.paramId = pp_parameter_id;
         paramDims.dimId = dimension;
@@ -369,7 +369,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 string ParameterSymbol::cxx_name_and_dimensions(bool use_zero) const
 {
     string result = name;
-    for (auto es : pp_dimension_list) {
+    for (auto es : pp_enumeration_list) {
         result += "[" + (use_zero ? "0" : to_string(es->pp_size())) + "]";
     }
     return result;

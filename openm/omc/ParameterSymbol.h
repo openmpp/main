@@ -158,9 +158,9 @@ public:
     TypeSymbol *pp_datatype;
 
     /**
-     * List of dimensions (parse phase references to pointers)
+     * List of dimensions (enumerations) (parse phase references to pointers)
      */
-    list<Symbol **> dimension_list;
+    list<Symbol **> enumeration_list;
 
     /**
      * Gets the rank of the parameter.
@@ -169,13 +169,13 @@ public:
      */
     size_t rank() const
     {
-        return pp_dimension_list.size();
+        return pp_enumeration_list.size();
     }
 
     /**
-     * Dimensions
+     * Dimensions (enumerations)
      */
-    list<EnumerationSymbol *> pp_dimension_list;
+    list<EnumerationSymbol *> pp_enumeration_list;
 
     /**
      * Shape
@@ -203,9 +203,9 @@ public:
     }
 
     /**
-     * List of conditioning dimensions (leading dimensions)
+     * List of conditioning dimensions (enumerations) (leading dimensions)
      */
-    list<EnumerationSymbol *> pp_conditioning_dimension_list;
+    list<EnumerationSymbol *> pp_conditioning_enumeration_list;
 
     /**
      * Shape of conditioning portion (leading dimensions)
@@ -231,9 +231,9 @@ public:
     }
 
     /**
-     * List of distribution dimensions (trailing dimensions)
+     * List of distribution dimensions (enumerations) (trailing dimensions)
      */
-    list<EnumerationSymbol *> pp_distribution_dimension_list;
+    list<EnumerationSymbol *> pp_distribution_enumeration_list;
 
     /**
      * Shape of distribution portion (trailing dimensions)
@@ -249,14 +249,14 @@ public:
     }
 
     /**
-     * List of dimensions - redeclaration (parse phase references to pointers)
+     * List of dimensions (enumerations) - redeclaration (parse phase references to pointers)
      */
-    list<Symbol **> dimension_list2;
+    list<Symbol **> enumeration_list2;
 
     /**
-     * List of dimensions - redeclaration (post-parse phase pointers)
+     * List of dimensions (enumerations) - redeclaration (post-parse phase pointers)
      */
-    list<EnumerationSymbol *> pp_dimension_list2;
+    list<EnumerationSymbol *> pp_enumeration_list2;
 
     /**
      * List of initializers.

@@ -17,7 +17,7 @@ using namespace std;
 /**
 * DimensionSymbol.
 * 
-* Corresponds to a dimension of a table or entity set.
+* Corresponds to a dimension of a table, entity set, or parameter.
 */
 class DimensionSymbol : public Symbol
 {
@@ -27,8 +27,8 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    DimensionSymbol(Symbol *table_or_entity_set, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
-        : Symbol(symbol_name(table_or_entity_set, index, after_analysis_dim), decl_loc)
+    DimensionSymbol(Symbol *symbol_with_dimensions, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
+        : Symbol(symbol_name(symbol_with_dimensions, index, after_analysis_dim), decl_loc)
         , index(index)
         , after_analysis_dim(after_analysis_dim)
         , has_margin(has_margin)
@@ -37,17 +37,19 @@ public:
         , enumeration(enumeration ? enumeration->stable_pp() : nullptr)
         , pp_enumeration(nullptr)
     {
+        // exactly one of either attribute or enumeration is specified
+        assert((attribute && !enumeration) || (enumeration && !attribute)); // grammar guarantee
     }
 
     /**
      * Construct symbol name for the dimension symbol. Example: BasicDemography.Dim0.
      *
-     * @param table_or_entity_set The table or entity set containing the this dimension.
+     * @param symbol_with_dimensions The table or entity set containing the this dimension.
      * @param index          0-based index of the enumeration dimension among all enumeration dimensions in teh table.
      *
      * @return A string.
      */
-    static string symbol_name(const Symbol* table_or_entity_set, int index, bool after_analysis_dim);
+    static string symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim);
 
     void post_parse(int pass);
 

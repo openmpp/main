@@ -1281,8 +1281,13 @@ decl_parameter:
                         }
             parameter_initializer_expr ";"
                         {
-                            // No longer in parameter context
+                            // Leaving parameter context
                             pc.set_parameter_context( nullptr );
+                            // Reset working counters
+                            pc.counter1 = 0;
+                            pc.counter2 = 0;
+                            pc.counter3 = 0;
+                            pc.counter4 = 0;
                         }
     | error ";"
                         {
@@ -1297,15 +1302,17 @@ decl_parameter:
 	;
 
 decl_dim_list:
-      decl_dim_list "[" SYMBOL[dim] "]"
+      decl_dim_list "[" SYMBOL[enumeration] "]"
                         {
+                            Symbol *enumeration = $enumeration;
+                            assert(enumeration);
                             if (!pc.redeclaration) {
-                                // add $dim to parameter's dimension_list
-                                pc.get_parameter_context()->dimension_list.push_back($dim->stable_pp());
+                                // add enumeration to parameter's dimension_list
+                                pc.get_parameter_context()->enumeration_list.push_back(enumeration->stable_pp());
                             }
                             else {
-                                // keep track of dimension list of redelcaration for subsequent semantic check
-                                pc.get_parameter_context()->dimension_list2.push_back($dim->stable_pp());
+                                // keep track of dimension list of redeclaration for subsequent semantic check
+                                pc.get_parameter_context()->enumeration_list2.push_back(enumeration->stable_pp());
                             }
                         }
     | /* Nothing */
