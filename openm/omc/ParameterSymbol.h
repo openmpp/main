@@ -10,6 +10,7 @@
 #include "Symbol.h"
 #include "NumericSymbol.h"
 #include "Constant.h"
+#include "DimensionSymbol.h"
 
 /**
 * ParameterSymbol.
@@ -156,6 +157,11 @@ public:
      * The data type of the parameter contents (post-parse phase pointer)
      */
     TypeSymbol *pp_datatype;
+
+    /**
+     * The dimensions in the table (dimension symbols)
+     */
+    list<DimensionSymbol *> dimension_list;
 
     /**
      * List of dimensions (enumerations) (parse phase references to pointers)

@@ -1307,8 +1307,16 @@ decl_dim_list:
                             Symbol *enumeration = $enumeration;
                             assert(enumeration);
                             if (!pc.redeclaration) {
-                                // add enumeration to parameter's dimension_list
+                                // add enumeration to parameter's enumeration list
                                 pc.get_parameter_context()->enumeration_list.push_back(enumeration->stable_pp());
+
+                                auto sym = new DimensionSymbol(pc.get_parameter_context(), pc.counter4, false, nullptr, enumeration, false, @enumeration);
+                                assert(sym);
+                                // add dimension symbol to parameter's dimension_list
+                                pc.get_parameter_context()->dimension_list.push_back(sym);
+                                // Increment the counter used for the number of dimensions.
+                                // This is the same as the 0-based ordinal of the next dimension in the declaration.
+                                pc.counter4++;
                             }
                             else {
                                 // keep track of dimension list of redeclaration for subsequent semantic check

@@ -354,15 +354,31 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.paramTxt.push_back(paramTxt);
     }
 
-    int dimension = 0;
-    for (auto es : pp_enumeration_list) {
+    // The dimensions of the parameter
+    for (auto dim : dimension_list ) {
+
         ParamDimsRow paramDims;
+
+        auto es = dim->pp_enumeration;
+        assert(es); // logic guarantee
         paramDims.paramId = pp_parameter_id;
-        paramDims.dimId = dimension;
-        // paramDims.name = "dim" + to_string(dimension);
+        paramDims.dimId = dim->index;
+        //paramDims.name = "dim" + to_string(dim->index);
         paramDims.typeId = es->type_id;
         metaRows.paramDims.push_back(paramDims);
-        ++dimension;
+
+        // Labels and notes for the dimensions of the parameter
+        for (auto lang : Symbol::pp_all_languages) {
+
+        //    ParamDimsTxtLangRow paramDimsTxt;
+
+        //    paramDimsTxt.tableId = pp_parameter_id;
+        //    paramDimsTxt.dimId = dim->index;
+        //    paramDimsTxt.langName = lang->name;
+        //    paramDimsTxt.descr = dim->label(*lang);
+        //    paramDimsTxt.note = dim->note(*lang);
+        //    metaRows.paramDimsTxt.push_back(paramDimsTxt);
+        }
     }
 }
 
