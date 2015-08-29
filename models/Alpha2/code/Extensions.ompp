@@ -27,3 +27,42 @@ parameters
     real a_real;
 };
 
+void PreSimulation_02()
+{
+    1 + 1;
+}
+
+void PreSimulation_01()
+{
+    1 + 1;
+}
+
+void PreSimulation()
+{
+    1 + 1;
+}
+
+void UserTables_A()
+{
+    1 + 2;
+}
+
+void UserTables_B()
+{
+    3 + 4;
+}
+
+void PostSimulation()
+{
+    1 + 2;
+}
+
+void PostSimulation42()
+{
+    1 + 2;
+}
+void PostSimulation43()
+{
+    1 + 2;
+}
+
