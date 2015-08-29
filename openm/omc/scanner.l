@@ -484,15 +484,35 @@ blank       [ \t\r]
                 /* Create working string version of the word to facilitate possible mark-up */
                 string word(yytext);
 
-                if (word == "PreSimulation") {
-                    /* Modgen allows multiple PreSimulation functions.  Append a distinguishing numeric suffix. */
-                    ++Symbol::pre_simulation_count;
-                    word = Symbol::pre_simulation_name(Symbol::pre_simulation_count - 1);
+                if ("PreSimulation" == word.substr(0, 13)) {
+                    /* starts with PreSimulation */
+                    if (word == "PreSimulation") {
+                        /* Ambiguous PreSimulation with no suffix */
+                        ++Symbol::pre_simulation_ambiguous_count;
+                        word = Symbol::pre_simulation_disambiguated_name(Symbol::pre_simulation_ambiguous_count - 1);
+                    }
+                    else {
+                        /* PreSimulation with a suffix */
+                        Symbol::pre_simulation_suffixed.push_back(word);
+                    }
                 }
-                else if (word == "UserTables") {
-                    /* Modgen allows multiple UserTable functions.  Append a distinguishing numeric suffix. */
-                    ++Symbol::post_simulation_count;
-                    word = Symbol::post_simulation_name(Symbol::post_simulation_count - 1);
+                else if ("PostSimulation" == word.substr(0, 14)) {
+                    if (word == "PostSimulation") {
+                        ++Symbol::post_simulation_ambiguous_count;
+                        word = Symbol::post_simulation_disambiguated_name(Symbol::post_simulation_ambiguous_count - 1);
+                    }
+                    else {
+                        Symbol::post_simulation_suffixed.push_back(word);
+                    }
+                }
+                else if ("UserTables" == word.substr(0, 10)) {
+                    if (word == "UserTables") {
+                        ++Symbol::user_tables_ambiguous_count;
+                        word = Symbol::user_tables_disambiguated_name(Symbol::user_tables_ambiguous_count - 1);
+                    }
+                    else {
+                        Symbol::user_tables_suffixed.push_back(word);
+                    }
                 }
 
     			if ( ! pc.cxx_suppress ) *drv.outside << word;

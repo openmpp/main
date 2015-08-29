@@ -120,21 +120,25 @@ void CodeGen::do_preamble()
     h += "using namespace std;";
     h += "";
 
-    if (Symbol::pre_simulation_count > 0) {
-        h += "// pre-simulation functions from model source code";
-        for (int id = 0; id < Symbol::pre_simulation_count; ++id) {
-            h += "extern void " + Symbol::pre_simulation_name(id) + "();";
+    h += "// PreSimulation, PostSimulation, UserTables functions (suffixed) from model source code";
+    for (auto lst : {Symbol::pre_simulation_suffixed, Symbol::post_simulation_suffixed, Symbol::user_tables_suffixed}) {
+        for (auto fn : lst) {
+            h += "extern void " + fn + "();";
         }
-        h += "";
     }
+    h += "";
 
-    if (Symbol::post_simulation_count > 0) {
-        h += "// post-simulation functions from model source code";
-        for (int id = 0; id < Symbol::post_simulation_count; ++id) {
-            h += "extern void " + Symbol::post_simulation_name(id) + "();";
-        }
-        h += "";
+    h += "// PreSimulation, PostSimulation, UserTables functions (no suffix) from model source code";
+    for (int id = 0; id < Symbol::pre_simulation_ambiguous_count; ++id) {
+        h += "extern void " + Symbol::pre_simulation_disambiguated_name(id) + "();";
     }
+    for (int id = 0; id < Symbol::post_simulation_ambiguous_count; ++id) {
+        h += "extern void " + Symbol::post_simulation_disambiguated_name(id) + "();";
+    }
+    for (int id = 0; id < Symbol::user_tables_ambiguous_count; ++id) {
+        h += "extern void " + Symbol::user_tables_disambiguated_name(id) + "();";
+    }
+    h += "";
 
 
     // om_definitions.cpp
@@ -340,10 +344,13 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    if (Symbol::pre_simulation_count > 0) {
+    if (Symbol::pre_simulation_suffixed.size() > 0 || Symbol::pre_simulation_ambiguous_count > 0) {
         c += "theLog->logMsg(\"Running pre-simulation\");";
-        for (int id = 0; id < Symbol::pre_simulation_count; ++id) {
-            c += Symbol::pre_simulation_name(id) + "();";
+        for (int id = 0; id < Symbol::pre_simulation_ambiguous_count; ++id) {
+            c += Symbol::pre_simulation_disambiguated_name(id) + "();";
+        }
+        for (auto fn : Symbol::pre_simulation_suffixed) {
+            c += fn + "();";
         }
         for (auto parameter : Symbol::pp_all_parameters) {
             if (parameter->source == ParameterSymbol::derived_parameter) {
@@ -424,10 +431,24 @@ void CodeGen::do_ModelShutdown()
     }
 	c += "";
 
-    if (Symbol::post_simulation_count > 0) {
+    if (Symbol::post_simulation_suffixed.size() > 0 || Symbol::post_simulation_ambiguous_count > 0) {
         c += "theLog->logMsg(\"Running post-simulation\");";
-        for (int id = 0; id < Symbol::post_simulation_count; ++id) {
-            c += Symbol::post_simulation_name(id) + "();";
+        for (int id = 0; id < Symbol::post_simulation_ambiguous_count; ++id) {
+            c += Symbol::post_simulation_disambiguated_name(id) + "();";
+        }
+        for (auto fn : Symbol::post_simulation_suffixed) {
+            c += fn + "();";
+        }
+    	c += "";
+    }
+
+    if (Symbol::user_tables_suffixed.size() > 0 || Symbol::user_tables_ambiguous_count > 0) {
+        c += "theLog->logMsg(\"Computing derived tables\");";
+        for (int id = 0; id < Symbol::user_tables_ambiguous_count; ++id) {
+            c += Symbol::user_tables_disambiguated_name(id) + "();";
+        }
+        for (auto fn : Symbol::user_tables_suffixed) {
+            c += fn + "();";
         }
     	c += "";
     }

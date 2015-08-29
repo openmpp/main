@@ -1080,50 +1080,80 @@ public:
     static unordered_set<string> om_developer_functions;
 
     /**
-     * A count of the number of PreSimulation functions encountered in the model source code.
+     * All suffixed PreSimulation definitions present in model source code.
+     */
+    static list<string> pre_simulation_suffixed;
+
+    /**
+     * A count of the number of ambiguous PreSimulation functions encountered in the model source code.
      * 
      * Maintained dynamically during parsing of model source code.
      */
-    static int pre_simulation_count;
+    static int pre_simulation_ambiguous_count;
 
     /**
-     * Return the pre-simulation function name associated with a given numeric id.
+     * Return the disambiguated pre-simulation function name with a given numeric id.
      *
      * @param id The identifier.
      *
      * @return A string.
      */
-    static string pre_simulation_name(int id)
+    static string pre_simulation_disambiguated_name(int id)
     {
-        string result = "pre_simulation_";
-        if (id < 10) {
-            result += "0";
-        }
-        result += to_string(id);
+        // The om_ prefix avoids any collision with ohter names in model code
+        string result = "om_PreSimulation_disambiguated_" + to_string(id);
         return result;
     }
 
     /**
-     * A count of the number of UserTables functions encountered in the model source code.
+     * All suffixed PostSimulation definitions present in model source code.
+     */
+    static list<string> post_simulation_suffixed;
+
+    /**
+     * A count of the number of ambiguous PostSimulation functions encountered in the model source code.
      * 
      * Maintained dynamically during parsing of model source code.
      */
-    static int post_simulation_count;
+    static int post_simulation_ambiguous_count;
 
     /**
-     * Return the post-simulation function name associated with a given numeric id.
+     * Return the disambiguated post-simulation function name with a given numeric id.
      *
      * @param id The identifier.
      *
      * @return A string.
      */
-    static string post_simulation_name(int id)
+    static string post_simulation_disambiguated_name(int id)
     {
-        string result = "post_simulation_";
-        if (id < 10) {
-            result += "0";
-        }
-        result += to_string(id);
+        // The om_ prefix avoids any collision with ohter names in model code
+        string result = "om_PostSimulation_disambiguated_" + to_string(id);
+        return result;
+    }
+
+    /**
+     * All suffixed UserTables definitions present in model source code.
+     */
+    static list<string> user_tables_suffixed;
+
+    /**
+     * A count of the number of ambiguous UserTables functions encountered in the model source code.
+     * 
+     * Maintained dynamically during parsing of model source code.
+     */
+    static int user_tables_ambiguous_count;
+
+    /**
+     * Return the disambiguated user tables function name with a given numeric id.
+     *
+     * @param id The identifier.
+     *
+     * @return A string.
+     */
+    static string user_tables_disambiguated_name(int id)
+    {
+        // The om_ prefix avoids any collision with ohter names in model code
+        string result = "om_UserTables_disambiguated_" + to_string(id);
         return result;
     }
 
