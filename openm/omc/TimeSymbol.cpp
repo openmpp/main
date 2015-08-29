@@ -35,12 +35,14 @@ CodeBlock TimeSymbol::cxx_declaration_global()
     }
 
     h += "typedef " + typedef_string + " Time;";
-    h += "typedef " + typedef_string + " TIME; // For Modgen source compatibility";
+    h += "typedef " + exposed_type() + " Time_t; // For use in model code";
+    h += "typedef " + typedef_string + " TIME;";
+    h += "typedef " + exposed_type() + " TIME_t; // For use in model code";
     // Time 'literals'
-    h += "extern const Time time_infinite;";
-    h += "extern const Time TIME_INFINITE; // For Modgen source compatibility";
-    h += "extern const Time time_undef;";
-    h += "extern const Time TIME_UNDEF; // For Modgen source compatibility";
+    h += "extern const Time_t time_infinite;";
+    h += "extern const Time_t TIME_INFINITE; // For Modgen source compatibility";
+    h += "extern const Time_t time_undef;";
+    h += "extern const Time_t TIME_UNDEF; // For Modgen source compatibility";
 
     return h;
 }
@@ -53,10 +55,10 @@ CodeBlock TimeSymbol::cxx_definition_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     // Time 'literals'
-    c += "const Time time_infinite = 32767;";
-    c += "const Time TIME_INFINITE = 32767; // for Modgen models";
-    c += "const Time time_undef = -1;";
-    c += "const Time TIME_UNDEF = -1; // for Modgen models";
+    c += "const Time_t time_infinite = 32767;";
+    c += "const Time_t TIME_INFINITE = 32767; // for Modgen models";
+    c += "const Time_t time_undef = -1;";
+    c += "const Time_t TIME_UNDEF = -1; // for Modgen models";
     c += "";
 
     return c;
