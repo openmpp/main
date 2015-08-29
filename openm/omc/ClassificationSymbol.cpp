@@ -79,6 +79,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     }
     h += "};";
     h += "typedef Classification<" + enum_name() + ", " + to_string(pp_size()) + "> " + name + ";" ;
+    h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     if (pp_generate_IntIs) {
         h += "";
