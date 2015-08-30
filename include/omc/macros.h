@@ -7,7 +7,8 @@
 
 #define TRUE true
 #define FALSE false
-#define WAIT( delta_time ) static_cast<Time>((time + static_cast<Time::type>(delta_time)))
+//#define WAIT( delta_time ) static_cast<Time>((time + static_cast<Time::type>(delta_time)))
+#define WAIT( delta_time ) (TIME_t(time) + TIME_t(delta_time))
 
 // Implementation of old-style Modgen macros related to classifications, ranges, and partitions
 #define MIN( symbol )				(symbol::min)
@@ -25,11 +26,11 @@
 
 // override std:min and std::max to enable type conversion of arguments
 #ifndef min
-#define min(a,b) (((a)< (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #ifndef max
-#define max(a,b) (((a)> (b)) ? (a) : (b))
+#define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
 // translate use of CString in model developer code to C++ string for portability
