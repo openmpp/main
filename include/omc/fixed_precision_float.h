@@ -108,6 +108,7 @@ public:
         if (max_val < 1) {
             // disable
             addend = 0;
+            return;
         }
         // binary digits required for integer part (less 1)
         int binary_digits = (int) (log(max_val) / log(2.0));
