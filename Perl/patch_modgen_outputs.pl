@@ -43,9 +43,12 @@ if (!-d $src_dir) {
 #
 # MODEL.H
 #
+# Insert #include "custom_early.h"
+#
 
 {
-	my $model_h = "${src_dir}/MODEL.H";
+	my $file_name = 'MODEL.H';
+	my $model_h = "${src_dir}/${file_name}";
 	if (!-f $model_h) {
 		logmsg error, $script_name, "File ${model_h} not found\n";
 		exit 1;
@@ -57,7 +60,9 @@ if (!-d $src_dir) {
 		chomp;
 		my $line = $_;
 		if ($line =~ /actors/) {
-			print $fh "#include \"custom_early.h\" // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+			my $modified_line = "#include \"custom_early.h\" // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+			print $fh $modified_line;
+			print "patched ${file_name}: $modified_line";
 		}
 		print $fh $line."\n";
 	}
@@ -70,20 +75,26 @@ if (!-d $src_dir) {
 #
 # ACTORS.CPP
 #
+# Comment #define MAIN_MODULE
+#
 
 {
-	my $actors_cpp = "${src_dir}/ACTORS.CPP";
+	my $file_name = 'ACTORS.CPP';
+	my $actors_cpp = "${src_dir}/${file_name}";
 	if (!-f $actors_cpp) {
 		logmsg error, $script_name, "File ${actors_cpp} not found\n";
 		exit 1;
 	}
 	(my $fh, my $filename) = tempfile();
-	# Remove the line #define MAIN_MODULE to allow use of pre-compiled headers
+	# Comment the line #define MAIN_MODULE to allow use of pre-compiled headers
 	open ACTORS_CPP, "<".$actors_cpp;
 	while (<ACTORS_CPP>) {
 		chomp;
 		my $line = $_;
 		if ($line =~ /#define\s+MAIN_MODULE/) {
+			my $modified_line = "//".$line." // Commented by patch_modgen_outputs after Modgen compilation.\n";
+			print $fh $modified_line;
+			print "patched ${file_name}: $modified_line";
 			# skip it
 			next;
 		}
@@ -92,6 +103,56 @@ if (!-d $src_dir) {
 	close $fh;
 	close ACTORS_CPP;
 	copy $filename, $actors_cpp;
+	unlink $filename;
+}
+
+#
+# ACTORS.H
+#
+
+{
+	my $file_name = 'ACTORS.H';
+	my $actors_h = "${src_dir}/${file_name}";
+	if (!-f $actors_h) {
+		logmsg error, $script_name, "File ${actors_h} not found\n";
+		exit 1;
+	}
+	(my $fh, my $filename) = tempfile();
+	open ACTORS_H, "<".$actors_h;
+	my $in_classifications = 0;
+	my $classification_name = '';
+	while (<ACTORS_H>) {
+		chomp;
+		my $line = $_;
+		print $fh $line."\n";
+		if ($line =~ /^typedef\s+(\w+)\s+TIME;$/) {
+			my $typ = $1;
+			my $modified_line = "typedef ${typ} TIME_t; // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+			print $fh $modified_line;
+			print "patched ${file_name}: $modified_line";
+		}
+		if ($line eq "// classifications") {
+			$in_classifications = 1;
+		}
+		if ($line eq "// ranges") {
+			$in_classifications = 0;
+		}
+		if ($in_classifications) {
+			if ($line =~ /^enum\s+(\w+)\s+{$/) {
+				# beginning of enum for classification
+				$classification_name = $1;
+			}
+			if ($line =~ /};$/) {
+				# end of enum for classification
+				my $modified_line = "typedef ${classification_name} ${classification_name}_t; // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+				print $fh $modified_line;
+				print "patched ${file_name}: $modified_line";
+			}
+		}
+	}
+	close $fh;
+	close ACTORS_H;
+	copy $filename, $actors_h;
 	unlink $filename;
 }
 
