@@ -244,11 +244,13 @@ sub modgen_tables_to_csv
 				my $value = $ADO_RS->Fields($field_ordinal)->value;
 				if (length($value) && $round_value && $field_ordinal == $fields - 1) {
 					if ($value eq '-1.#IND' ) {
-						# is a NaN, output in CSV sa an empty field (NULL)
+						# is a NaN, output in CSV as an empty field (NULL)
 						$value = '';
 					}
 					else {
 						$value = 0 + sprintf("%.${round_prec}e", $value);
+						# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
+						$value =~ s/e-0(\d\d)/e-$1/;
 					}
 				}
 				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];

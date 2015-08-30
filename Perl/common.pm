@@ -262,6 +262,8 @@ sub ompp_tables_to_csv
 				if ($round_value) {
 					$value = 0.0 + sprintf("%.${round_prec}e", $value);
 				}
+				# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
+				$value =~ s/e-0(\d\d)/e-$1/;
 				push @fields, $value;
 				$line = join(',', @fields);
 			}
