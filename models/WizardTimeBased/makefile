@@ -119,6 +119,8 @@ CPPFLAGS = $(CXXFLAGS)
 
 MODEL_MPP = $(wildcard $(MODEL_CODE_SUB)/*.mpp $(MODEL_CODE_SUB)/*.ompp $(MODEL_CODE_SUB)/*.dat $(MODEL_CODE_SUB)/*.odat)
 
+MODEL_CPP = $(wildcard $(MODEL_CODE_SUB)/*.cpp)
+
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
   $(OMC_OUT_DIR)/om_developer.cpp \
@@ -126,7 +128,7 @@ MODEL_OMC_CPP = \
 
 MODEL_CPPLIST = \
   $(MODEL_OMC_CPP) \
-  $(MODEL_CODE_SUB)/custom.cpp
+  $(MODEL_CPP)
 
 sources = $(MODEL_CPPLIST)
 
@@ -147,13 +149,13 @@ $(MODEL_OMC_CPP) : $(MODEL_MPP)
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
+$(DEPS_DIR)/%.d : $(MODEL_CODE_SUB)/%.cpp
+	$(CPP) -MM $(CPPFLAGS) $< -MF $@
+
 $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
-$(DEPS_DIR)/custom.d : $(MODEL_CODE_SUB)/custom.cpp
-	$(CPP) -MM $(CPPFLAGS) $< -MF $@
-
-$(OBJ_DIR)/custom.o : $(MODEL_CODE_SUB)/custom.cpp
+$(OBJ_DIR)/%.o : $(MODEL_CODE_SUB)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
