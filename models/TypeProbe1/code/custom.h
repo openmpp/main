@@ -11,8 +11,10 @@
 
 #if defined(MODGEN)
 namespace mm {
-    typedef EMOTION EMOTION_t;
+    //typedef EMOTION EMOTION_t;
+    //typedef TIME TIME_t;
 }
 #else
-typedef om_enum_EMOTION EMOTION_t;
+//typedef om_enum_EMOTION EMOTION_t;
+//typedef double TIME_t;
 #endif

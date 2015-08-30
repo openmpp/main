@@ -29,27 +29,52 @@ actor Person
     EMOTION z01 = HAPPY;
     EMOTION z02 = { HAPPY };
     EMOTION z03 = morning_emotion;
-    //EMOTION z04 = EMOTION_t(morning_emotion);
+    EMOTION z04 = EMOTION_t(morning_emotion);
     EMOTION z05 = is_birthday ? HAPPY : SAD;
-    //EMOTION z06 = is_birthday ? HAPPY : morning_emotion;
-    //EMOTION z07 = is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
-    //EMOTION z08 = is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
-    //EMOTION z09 = is_birthday ? HAPPY :
-    //             is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
-    //EMOTION z10 = is_birthday ? HAPPY :
-    //             is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
+    EMOTION z06 = is_birthday ? HAPPY : EMOTION_t(morning_emotion);
+    EMOTION z07 = is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
+    EMOTION z08 = is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
+    EMOTION z09 = is_birthday ? HAPPY :
+                 is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
+    EMOTION z10 = is_birthday ? HAPPY :
+                 is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
     // The following generates C++ compile error due to overload resolution ambiguity
     //EMOTION z11 = is_birthday ? morning_emotion : afternoon_emotion;
-    
+
+    TIME my_happy_time;
+    TIME my_sad_time;
+
+    TIME my_worst_time = my_sad_time;
+    TIME my_later_time = my_happy_time + 1;
+    TIME my_best_time = TIME_t(my_happy_time);
+    TIME my_delta_time = my_later_time - my_happy_time;
+    TIME my_movie_time = 1942;
+
+    TIME my_time = is_birthday ? TIME_t(my_happy_time) : TIME_t(my_sad_time);
+
     void helper();
 };
 
 void Person::helper()
 {
-    //EMOTION emot1;
-    //emot1 = EMOTION_t(morning_emotion);
+    EMOTION emot1;
+    emot1 = EMOTION_t(morning_emotion);
 
-    //EMOTION emot2;
-    //emot2 = morning_emotion;
+    EMOTION emot2;
+    emot2 = morning_emotion;
+
+//    TIME forever = TIME_INFINITE;
+    TIME forever = {TIME_INFINITE};
+    TIME any_time = my_time;
+    TIME the_time = WAIT(my_time);
+    TIME the_time2 = WAIT(TIME_t(my_time));
+    TIME wait_time = min((TIME_t)my_happy_time, (TIME_t)my_sad_time);
+
+    // sidestep g++ warnings
+    forever++;
+    any_time++;
+    the_time++;
+    the_time2++;
+    wait_time++;
 }
 
