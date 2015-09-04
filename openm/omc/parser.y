@@ -105,7 +105,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %printer { yyoutput << "floating point literal " << $$->value(); } <pval_FloatingPointLiteral>
 %printer { yyoutput << "string literal " << $$->value(); } <pval_StringLiteral>
 %printer { yyoutput << "constant " << $$->is_literal ? $$->literal->value() : (*($$->enumerator))->name; } <pval_ConstantSymbol>
-%printer { yyoutput << "symbol " << '"' << $$->name << '"' << " type=" << typeid($$).name(); } <pval_Symbol>
+// special code in line below to handle decl_type_part "void", whose value is nullptr
+%printer { yyoutput << "symbol " << '"' << ($$ ? $$->name : "void") << '"' << " type=" << ($$ ? typeid($$).name() : "void"); } <pval_Symbol>
 %printer { yyoutput << "table expr "; } <pval_TableExpr>
 %printer { yyoutput << "initial value type=" << Symbol::token_to_string($$->associated_token); } <pval_InitialValue>
 
@@ -157,9 +158,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_all_internal_states       "all_internal_states"
 %token <val_token>    TK_all_links                 "all_links"
 %token <val_token>    TK_big_counter               "big_counter"
-%token <val_token>    TK_bounds_errors             "bounds_errors"
 %token <val_token>    TK_case_based                "case_based"
-%token <val_token>    TK_case_checksum             "case_checksum"
 %token <val_token>    TK_cell_based                "cell_based"
 %token <val_token>    TK_changes                   "changes"
 %token <val_token>    TK_completed_spell_delta     "completed_spell_delta"
@@ -179,14 +178,12 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_exits                     "exits"
 %token <val_token>    TK_file                      "file"
 %token <val_token>    TK_filter                    "filter"
-%token <val_token>    TK_fp_consistency            "fp_consistency"
 %token <val_token>    TK_gini                      "gini"
 %token <val_token>    TK_haz1rate                  "haz1rate"
 %token <val_token>    TK_haz2rate                  "haz2rate"
 %token <val_token>    TK_hook                      "hook"
 %token <val_token>    TK_IMPLEMENT_HOOK            "IMPLEMENT_HOOK"
 %token <val_token>    TK_index                     "index"
-%token <val_token>    TK_index_errors              "index_errors"
 %token <val_token>    TK_integer                   "integer"
 %token <val_token>    TK_interval                  "interval"
 %token <val_token>    TK_just_in_time              "just_in_time"
@@ -206,8 +203,6 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_nz_delta                  "nz_delta"
 %token <val_token>    TK_nz_value_in               "nz_value_in"
 %token <val_token>    TK_nz_value_out              "nz_value_out"
-%token <val_token>    TK_off                       "off"
-%token <val_token>    TK_on                        "on"
 %token <val_token>    TK_order                     "order"
 %token <val_token>    TK_P1                        "P1"
 %token <val_token>    TK_P2                        "P2"
@@ -226,8 +221,6 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_P95                       "P95"
 %token <val_token>    TK_P98                       "P98"
 %token <val_token>    TK_P99                       "P99"
-%token <val_token>    TK_packing_level             "packing_level"
-%token <val_token>    TK_permit_all_cus            "permit_all_cus"
 %token <val_token>    TK_piece_linear              "piece_linear"
 %token <val_token>    TK_RandomStream              "RandomStream"
 %token <val_token>    TK_rate                      "rate"
@@ -468,9 +461,6 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %left  POSTFIX_INCREMENT POSTFIX_DECREMENT '(' FUNCTION_CALL "[" ARRAY_SUBSCRIPTING "." "->"  // precedence 2
 %left  "::"              // precedence 1
 
-%type  <val_int>        option_value
-%type  <val_token>      option_keyword
-
 %type  <val_token>      model_type
 %type  <val_token>      modgen_cumulation_operator
 %type  <val_token>      table_accumulator
@@ -642,8 +632,25 @@ decl_string:
  */
 
 decl_options:
-      "options" options_list ";"
-    | "options" error ";"
+        "options" 
+                        {
+                            // Actually, it's too late to do this here because the look-ahead token
+                            // has already been read.  So "options" is detected and handled as a special
+                            // case in the scanner.
+                            pc.next_word_is_string = true;
+                        }
+            options_list ";"
+                        {
+                            pc.next_word_is_string = false;
+                        }
+      | "options"
+                        {
+                            pc.next_word_is_string = true;
+                        }
+            error ";"
+                        {
+                            pc.next_word_is_string = false;
+                        }
     ;
 
 options_list:
@@ -652,46 +659,18 @@ options_list:
 	;
 
 option:
-        option_keyword[kw] "=" option_value[value]
+        STRING[key] "=" 
                         {
-                            // process recognized option / value pair
-                            token_type kw = (token_type)$kw;
-                            int value = $value;
-
-                            if (kw == token::TK_event_trace) {
-                                Symbol::option_event_trace = (value == 1) ? true : false;
-                            }
-
-                            if (kw == token::TK_case_checksum) {
-                                Symbol::option_case_checksum = (value == 1) ? true : false;
-                            }
+                            pc.next_word_is_string = true;
+                        }
+            STRING[value]
+                        {
+                            // place key-value pair in options collection
+                            Symbol::options[*$key] = *$value;
+                            // prepare for another possible key-value pair
+                            pc.next_word_is_string = true;
                         }
 	;
-
-option_keyword:
-      "bounds_errors"
-    | "index_errors"
-    | "case_checksum"
-    | "event_trace"
-    | "fp_consistency"
-    | "packing_level"
-	;
-
-option_value[value]:
-      "on"
-                        {
-                            $value = 1;
-                        }
-    | "off"
-                        {
-                            $value = 0;
-                        }
-    | INTEGER_LITERAL[integer_value]
-                        {
-                            $value = stoi( $integer_value->value() );
-                            delete $integer_value;
-                        }
-    ;
 
 /*
  * import

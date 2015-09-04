@@ -789,6 +789,15 @@ public:
     static void post_parse_all();
 
     /**
+     * Parse all options in model source code
+     * 
+     * All key-value pairs in options statements are placed in the map Symbol::options during model
+     * code parsing for subsequent processing by this function. Unrecognized options are ignored, as
+     * are unrecognized values for recognized options.
+     */
+    static void parse_options();
+
+    /**
      * Store a C++ style single-line comment for later use.
      *
      * @param cmt The comment.
@@ -1176,6 +1185,11 @@ public:
      * A count of warnings identified during post-parse processing.
      */
     static int post_parse_warnings;
+
+    /**
+     * All key-value pairs given in options statements in model code.
+     */
+    static unordered_map<string, string> options;
 
     /**
      * true if event_trace activated in options statement.

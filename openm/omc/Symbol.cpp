@@ -165,9 +165,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_all_internal_states, "all_internal_states" },
     { token::TK_all_links, "all_links" },
     { token::TK_big_counter, "big_counter" },
-    { token::TK_bounds_errors, "bounds_errors" },
     { token::TK_case_based, "case_based" },
-    { token::TK_case_checksum, "case_checksum" },
     { token::TK_cell_based, "cell_based" },
     { token::TK_changes, "changes" },
     { token::TK_completed_spell_delta, "completed_spell_delta" },
@@ -187,14 +185,12 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_exits, "exits" },
     { token::TK_file, "file" },
     { token::TK_filter, "filter" },
-    { token::TK_fp_consistency, "fp_consistency" },
     { token::TK_gini, "gini" },
     { token::TK_haz1rate, "haz1rate" },
     { token::TK_haz2rate, "haz2rate" },
     { token::TK_hook, "hook" },
     { token::TK_IMPLEMENT_HOOK, "IMPLEMENT_HOOK" },
     { token::TK_index, "index" },
-    { token::TK_index_errors, "index_errors" },
     { token::TK_integer, "integer" },
     { token::TK_interval, "interval" },
     { token::TK_just_in_time, "just_in_time" },
@@ -214,8 +210,6 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_nz_delta, "nz_delta" },
     { token::TK_nz_value_in, "nz_value_in" },
     { token::TK_nz_value_out, "nz_value_out" },
-    { token::TK_off, "off" },
-    { token::TK_on, "on" },
     { token::TK_order, "order" },
     { token::TK_P1, "P1" },
     { token::TK_P2, "P2" },
@@ -234,8 +228,6 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_P95, "P95" },
     { token::TK_P98, "P98" },
     { token::TK_P99, "P99" },
-    { token::TK_packing_level, "packing_level" },
-    { token::TK_permit_all_cus, "permit_all_cus" },
     { token::TK_piece_linear, "piece_linear" },
     { token::TK_RandomStream, "RandomStream" },
     { token::TK_rate, "rate" },
@@ -534,6 +526,8 @@ int Symbol::type_changes = 0;
 int Symbol::post_parse_errors = 0;
 
 int Symbol::post_parse_warnings = 0;
+
+unordered_map<string, string> Symbol::options;
 
 bool Symbol::option_event_trace = false;
 
@@ -1025,6 +1019,11 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
 
 void Symbol::post_parse_all()
 {
+    // Parse all options encountered in model code.
+    // This is done before any other post-parse operations
+    // to allow options to affect post-parse processing as well as code generation.
+    parse_options();
+
     if (LanguageSymbol::number_of_languages() == 0) {
         pp_error(yy::location(), "error - no languages specified");
     }
@@ -1264,6 +1263,38 @@ void Symbol::post_parse_all()
                 theLog->logMsg(msg.c_str());
             }
             cur = range.second;
+        }
+    }
+
+}
+
+void Symbol::parse_options()
+{
+    {
+        string key = "event_trace";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_event_trace = true;
+            }
+            else if (value == "off") {
+                option_event_trace = false;
+            }
+        }
+    }
+
+    {
+        string key = "case_checksum";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_case_checksum = true;
+            }
+            else if (value == "off") {
+                option_case_checksum = false;
+            }
         }
     }
 

@@ -477,6 +477,10 @@ blank       [ \t\r]
                     /* transition to openM++ declarative island */
     				BEGIN(om_decl);
                     yylval->val_token = tok;
+                    /* special case to force a 'word' look-ahead token following 'options' to be STRING */
+                    if (tok == token::TK_options) {
+                        pc.next_word_is_string = true;
+                    }
                     /* feed token to parser */
                     return tok;
     			}
