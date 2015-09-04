@@ -535,6 +535,10 @@ bool Symbol::option_case_checksum = false;
 
 bool Symbol::no_line_directives = false;
 
+bool Symbol::trace_parsing = false;
+
+bool Symbol::trace_scanning = false;
+
 bool Symbol::modgen_sort_option = true;
 
 void Symbol::post_parse(int pass)

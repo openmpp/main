@@ -15,7 +15,9 @@
 * * -Omc.UseDir        use/dir/with/ompp/files
 * * -Omc.ParamDir      input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir      input/dir/to/find/fixed/parameter/files/
-* * -Omc.noLineDirectives suppress #line directives in generated cpp files
+* * -Omc.NoLineDirectives suppress #line directives in generated cpp files
+* * -Omc.TraceScanning detailed tracing from scanner
+* * -Omc.TraceParsing  detailed tracing from parser
 * * -OpenM.OptionsFile some/optional/omc.ini
 * 
 * Short form of command line arguments:
@@ -94,6 +96,12 @@ namespace openm
 
         /** omc suppress #line directives in generated cpp files */
         static const char * noLineDirectives;
+
+        /** omc generate detailed output from parser */
+        static const char * traceParsing;
+
+        /** omc generate detailed output from scanner */
+        static const char * traceScanning;
     };
 
     /** keys for omc options (short form) */
@@ -146,7 +154,13 @@ namespace openm
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
     /** omc no #line directives option */
-    const char * OmcArgKey::noLineDirectives = "Omc.noLineDirectives";
+    const char * OmcArgKey::noLineDirectives = "Omc.NoLineDirectives";
+
+    /** omc trace parsing option */
+    const char * OmcArgKey::traceParsing = "Omc.TraceParsing";
+
+    /** omc trace scanning option */
+    const char * OmcArgKey::traceScanning = "Omc.TraceScanning";
 
     /** short name for options file name: -s fileName.ini */
     const char * OmcShortKey::optionsFile = "ini";
@@ -182,6 +196,8 @@ namespace openm
         OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
         OmcArgKey::noLineDirectives,
+        OmcArgKey::traceParsing,
+        OmcArgKey::traceScanning,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -310,6 +326,23 @@ int main(int argc, char * argv[])
         // make available globally in static member of Symbol
         Symbol::no_line_directives = no_line_directives;
 
+        // Obtain information on detailed parsing option
+        if (argStore.isOptionExist(OmcArgKey::traceParsing)) {
+            Symbol::trace_parsing = argStore.boolOption(OmcArgKey::traceParsing);
+        }
+        else {
+            // default value
+            Symbol::trace_parsing = false;
+        }
+
+        // Obtain information on detailed scanning option
+        if (argStore.isOptionExist(OmcArgKey::traceScanning)) {
+            Symbol::trace_scanning = argStore.boolOption(OmcArgKey::traceScanning);
+        }
+        else {
+            // default value
+            Symbol::trace_scanning = false;
+        }
 
         if (!Symbol::use_folder.empty() && Symbol::use_folder.back() != '/' && Symbol::use_folder.back() != '\\') {
             Symbol::use_folder += '/';
@@ -557,8 +590,8 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
 
             // create new instance of parser-scanner driver for each source file
             Driver drv( pc );
-            drv.trace_scanning = false; // set to true to see detailed scanning actions
-            drv.trace_parsing = false; // set to true to see detailed parsing actions
+            drv.trace_scanning = Symbol::trace_scanning;
+            drv.trace_parsing = Symbol::trace_parsing;
             // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
             drv.parse(&*it, file_name, file_stem, markup_stream);
         }

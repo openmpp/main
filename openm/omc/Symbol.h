@@ -1207,6 +1207,16 @@ public:
     static bool no_line_directives;
 
     /**
+     * True to enable detailed output from parser
+     */
+    static bool trace_parsing;
+
+    /**
+     * True to enable detailed output from scanner
+     */
+    static bool trace_scanning;
+
+    /**
      * true to sort post-parse symbol table using Modgen name order where it matters.
      * 
      * For compatible event trace outputs between equivalent Modgen and ompp models,
