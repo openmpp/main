@@ -1237,24 +1237,61 @@ void Symbol::post_parse_all()
 
     // For special global functions, sort and check for duplicates
     for (auto sg : {&pre_simulation, &post_simulation, &derived_tables}) {
+        bool dups_found = false;
         if (sg->ambiguous_count > 1) {
+            dups_found = true;
             post_parse_warnings++;
-            string msg = "Warning: Multiple " + sg->prefix + " functions with ambiguous order.";
+            string msg = "omc : warning : Multiple " + sg->prefix + " functions with no suffix";
             theLog->logMsg(msg.c_str());
         }
-        sg->suffixes.sort();
-        // check for duplicates
+        sg->suffixes.sort(); // lexicographic
+
+        // check for duplicates and suffix validity (numeric, no extraneous leading '0')
+        list<int> valid_suffixes;
         for (auto cur = sg->suffixes.begin(); cur != sg->suffixes.end();) {
-            auto range = equal_range(cur, sg->suffixes.end(), *cur);
+            auto suffix = *cur;
+            assert(suffix);
+            assert(suffix.length() > 0);
+            auto range = equal_range(cur, sg->suffixes.end(), suffix);
             if (distance(range.first, range.second) > 1) {
+                dups_found = true;
                 post_parse_errors++;
-                string msg = "Error: Duplicate definition of function " + sg->prefix + *cur;
+                string msg = "omc : error : Duplicate definition of function " + sg->prefix + suffix;
                 theLog->logMsg(msg.c_str());
             }
+            if ((suffix[0] == '0' && suffix.length() > 1) || std::string::npos != suffix.find_first_not_of("0123456789")) {
+                post_parse_warnings++;
+                string msg = "omc : warning : Unrecognized suffix in " + sg->prefix + " function " + sg->prefix + suffix;
+                theLog->logMsg(msg.c_str());
+            }
+            else {
+                valid_suffixes.push_back(stoi(suffix));
+            }
+            // skip any duplicates
             cur = range.second;
         }
-    }
 
+        // Recreate the list of suffixes, in numeric order
+        valid_suffixes.sort();
+        sg->suffixes.clear();
+        for (auto id : valid_suffixes) {
+            sg->suffixes.push_back(to_string(id));
+        }
+
+        // Output helpful list of used suffixes, if dups were found
+        if (dups_found) {
+            string msg = "To disambiguate multiple " + sg->prefix + " functions, append a numeric suffix";
+            theLog->logMsg(msg.c_str());
+            if (sg->suffixes.size() > 0) {
+                string used;
+                for (auto suffix : sg->suffixes) {
+                    used += " " + suffix;
+                }
+                string msg = "List of " + sg->prefix + " suffixes used in model:" + used;
+                theLog->logMsg(msg.c_str());
+            }
+        }
+    }
 }
 
 void Symbol::parse_options()
