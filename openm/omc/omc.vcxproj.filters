@@ -252,6 +252,9 @@
     <ClInclude Include="StringTypeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SpecialGlobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">

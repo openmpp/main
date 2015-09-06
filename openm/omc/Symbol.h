@@ -13,6 +13,7 @@
 #include <forward_list>
 #include <map>
 #include "location.hh"
+#include "SpecialGlobal.h"
 #include "parser.hpp"
 
 class CodeBlock;
@@ -1089,82 +1090,19 @@ public:
     static unordered_set<string> om_developer_functions;
 
     /**
-     * All suffixed PreSimulation definitions present in model source code.
+     * PreSimulation functions in model code.
      */
-    static list<string> pre_simulation_suffixed;
+    static SpecialGlobal pre_simulation;
 
     /**
-     * A count of the number of ambiguous PreSimulation functions encountered in the model source code.
-     * 
-     * Maintained dynamically during parsing of model source code.
+     * PostSimulation functions in model code.
      */
-    static int pre_simulation_ambiguous_count;
+    static SpecialGlobal post_simulation;
 
     /**
-     * Return the disambiguated pre-simulation function name with a given numeric id.
-     *
-     * @param id The identifier.
-     *
-     * @return A string.
+     * UserTables functions in model code.
      */
-    static string pre_simulation_disambiguated_name(int id)
-    {
-        // The om_ prefix avoids any collision with ohter names in model code
-        string result = "om_PreSimulation_disambiguated_" + to_string(id);
-        return result;
-    }
-
-    /**
-     * All suffixed PostSimulation definitions present in model source code.
-     */
-    static list<string> post_simulation_suffixed;
-
-    /**
-     * A count of the number of ambiguous PostSimulation functions encountered in the model source code.
-     * 
-     * Maintained dynamically during parsing of model source code.
-     */
-    static int post_simulation_ambiguous_count;
-
-    /**
-     * Return the disambiguated post-simulation function name with a given numeric id.
-     *
-     * @param id The identifier.
-     *
-     * @return A string.
-     */
-    static string post_simulation_disambiguated_name(int id)
-    {
-        // The om_ prefix avoids any collision with ohter names in model code
-        string result = "om_PostSimulation_disambiguated_" + to_string(id);
-        return result;
-    }
-
-    /**
-     * All suffixed UserTables definitions present in model source code.
-     */
-    static list<string> user_tables_suffixed;
-
-    /**
-     * A count of the number of ambiguous UserTables functions encountered in the model source code.
-     * 
-     * Maintained dynamically during parsing of model source code.
-     */
-    static int user_tables_ambiguous_count;
-
-    /**
-     * Return the disambiguated user tables function name with a given numeric id.
-     *
-     * @param id The identifier.
-     *
-     * @return A string.
-     */
-    static string user_tables_disambiguated_name(int id)
-    {
-        // The om_ prefix avoids any collision with ohter names in model code
-        string result = "om_UserTables_disambiguated_" + to_string(id);
-        return result;
-    }
+    static SpecialGlobal derived_tables;
 
     /**
      * A count of type changes made in a single post-parse pass.

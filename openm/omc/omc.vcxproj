@@ -222,6 +222,7 @@
     <ClInclude Include="RealSymbol.h" />
     <ClInclude Include="SimpleAgentVarEnumSymbol.h" />
     <ClInclude Include="SimpleAgentVarSymbol.h" />
+    <ClInclude Include="SpecialGlobal.h" />
     <ClInclude Include="StringSymbol.h" />
     <ClInclude Include="StringTypeSymbol.h" />
     <ClInclude Include="Symbol.h" />

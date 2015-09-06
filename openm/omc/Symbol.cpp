@@ -509,17 +509,11 @@ comment_map_type Symbol::c_comments;
 
 unordered_map<string, string> Symbol::explicit_labels;
 
-list<string> Symbol::pre_simulation_suffixed;
+SpecialGlobal Symbol::pre_simulation("PreSimulation");
 
-int Symbol::pre_simulation_ambiguous_count = 0;
+SpecialGlobal Symbol::post_simulation("PostSimulation");
 
-list<string> Symbol::post_simulation_suffixed;
-
-int Symbol::post_simulation_ambiguous_count = 0;
-
-list<string> Symbol::user_tables_suffixed;
-
-int Symbol::user_tables_ambiguous_count = 0;
+SpecialGlobal Symbol::derived_tables("UserTables");
 
 int Symbol::type_changes = 0;
 
@@ -1241,29 +1235,20 @@ void Symbol::post_parse_all()
 
     // Process PreSimulation, PostSimulation, UserTables
 
-    // For suffix-less functions, generate warning if calling order is ambiguous
-    if (pre_simulation_ambiguous_count > 1 || (pre_simulation_ambiguous_count == 1 && pre_simulation_suffixed.size() > 0)) {
-        post_parse_warnings++;
-        theLog->logMsg("Warning: Multiple PreSimulation functions with ambiguous order.");
-    }
-    if (post_simulation_ambiguous_count > 1 || (post_simulation_ambiguous_count == 1 && post_simulation_suffixed.size() > 0)) {
-        post_parse_warnings++;
-        theLog->logMsg("Warning: Multiple PostSimulation functions with ambiguous order.");
-    }
-    if (user_tables_ambiguous_count > 1 || (user_tables_ambiguous_count == 1 && user_tables_suffixed.size() > 0)) {
-        post_parse_warnings++;
-        theLog->logMsg("Warning: Multiple UserTables functions with ambiguous order.");
-    }
-
-    // For suffixed functions, sort and check for duplicates
-    for (auto lst : {&pre_simulation_suffixed, &post_simulation_suffixed, &user_tables_suffixed}) {
-        lst->sort();
+    // For special global functions, sort and check for duplicates
+    for (auto sg : {&pre_simulation, &post_simulation, &derived_tables}) {
+        if (sg->ambiguous_count > 1) {
+            post_parse_warnings++;
+            string msg = "Warning: Multiple " + sg->prefix + " functions with ambiguous order.";
+            theLog->logMsg(msg.c_str());
+        }
+        sg->suffixes.sort();
         // check for duplicates
-        for (auto cur = lst->begin(); cur != lst->end();) {
-            auto range = equal_range(cur, lst->end(), *cur);
+        for (auto cur = sg->suffixes.begin(); cur != sg->suffixes.end();) {
+            auto range = equal_range(cur, sg->suffixes.end(), *cur);
             if (distance(range.first, range.second) > 1) {
                 post_parse_errors++;
-                string msg = "Error: Duplicate definition of function " + *cur;
+                string msg = "Error: Duplicate definition of function " + sg->prefix + *cur;
                 theLog->logMsg(msg.c_str());
             }
             cur = range.second;

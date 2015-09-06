@@ -120,26 +120,16 @@ void CodeGen::do_preamble()
     h += "using namespace std;";
     h += "";
 
-    h += "// PreSimulation, PostSimulation, UserTables functions (suffixed) from model source code";
-    for (auto lst : {Symbol::pre_simulation_suffixed, Symbol::post_simulation_suffixed, Symbol::user_tables_suffixed}) {
-        for (auto fn : lst) {
-            h += "extern void " + fn + "();";
+    h += "// PreSimulation, PostSimulation, UserTables functions in model source code";
+    for (auto sg : {&Symbol::pre_simulation, &Symbol::post_simulation, &Symbol::derived_tables}) {
+        for (auto suffix : sg->suffixes) {
+            h += "extern void " + sg->prefix + suffix + "();";
+        }
+        for (size_t id = 0; id < sg->ambiguous_count; ++id) {
+            h += "extern void " + sg->disambiguated_name(id) + "();";
         }
     }
     h += "";
-
-    h += "// PreSimulation, PostSimulation, UserTables functions (no suffix) from model source code";
-    for (int id = 0; id < Symbol::pre_simulation_ambiguous_count; ++id) {
-        h += "extern void " + Symbol::pre_simulation_disambiguated_name(id) + "();";
-    }
-    for (int id = 0; id < Symbol::post_simulation_ambiguous_count; ++id) {
-        h += "extern void " + Symbol::post_simulation_disambiguated_name(id) + "();";
-    }
-    for (int id = 0; id < Symbol::user_tables_ambiguous_count; ++id) {
-        h += "extern void " + Symbol::user_tables_disambiguated_name(id) + "();";
-    }
-    h += "";
-
 
     // om_definitions.cpp
     c += doxygen(
@@ -344,24 +334,28 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    if (Symbol::pre_simulation_suffixed.size() > 0 || Symbol::pre_simulation_ambiguous_count > 0) {
+    auto & sg = Symbol::pre_simulation;
+    if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
         c += "theLog->logMsg(\"Running pre-simulation\");";
-        for (int id = 0; id < Symbol::pre_simulation_ambiguous_count; ++id) {
-            c += Symbol::pre_simulation_disambiguated_name(id) + "();";
+        for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+            c += sg.disambiguated_name(id) + "();";
         }
-        for (auto fn : Symbol::pre_simulation_suffixed) {
-            c += fn + "();";
+        for (auto suffix : sg.suffixes) {
+            c += sg.prefix + suffix + "();";
         }
-        for (auto parameter : Symbol::pp_all_parameters) {
-            if (parameter->source == ParameterSymbol::derived_parameter) {
-                if (parameter->cumrate) {
-                    // prepare cumrate for derived parameters after all pre-simulation code has executed
-                    c += parameter->cxx_initialize_cumrate();
-                }
-                if (parameter->haz1rate) {
-                    // perform haz1rate transformation
-                    c += parameter->cxx_transform_haz1rate();
-                }
+        c += "";
+    }
+
+    // generate code for transformations of derived parameters
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::derived_parameter) {
+            if (parameter->cumrate) {
+                // prepare cumrate for derived parameters after all pre-simulation code has executed
+                c += parameter->cxx_initialize_cumrate();
+            }
+            if (parameter->haz1rate) {
+                // perform haz1rate transformation
+                c += parameter->cxx_transform_haz1rate();
             }
         }
     }
@@ -429,28 +423,34 @@ void CodeGen::do_ModelShutdown()
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "the" + table->name + "->compute_expressions();";
     }
-	c += "";
+    c += "";
 
-    if (Symbol::post_simulation_suffixed.size() > 0 || Symbol::post_simulation_ambiguous_count > 0) {
-        c += "theLog->logMsg(\"Running post-simulation\");";
-        for (int id = 0; id < Symbol::post_simulation_ambiguous_count; ++id) {
-            c += Symbol::post_simulation_disambiguated_name(id) + "();";
+    {
+        auto & sg = Symbol::post_simulation;
+        if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
+            c += "theLog->logMsg(\"Running post-simulation\");";
+            for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+                c += sg.disambiguated_name(id) + "();";
+            }
+            for (auto suffix : sg.suffixes) {
+                c += sg.prefix + suffix + "();";
+            }
+            c += "";
         }
-        for (auto fn : Symbol::post_simulation_suffixed) {
-            c += fn + "();";
-        }
-    	c += "";
     }
 
-    if (Symbol::user_tables_suffixed.size() > 0 || Symbol::user_tables_ambiguous_count > 0) {
-        c += "theLog->logMsg(\"Computing derived tables\");";
-        for (int id = 0; id < Symbol::user_tables_ambiguous_count; ++id) {
-            c += Symbol::user_tables_disambiguated_name(id) + "();";
+    {
+        auto & sg = Symbol::derived_tables;
+        if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
+            c += "theLog->logMsg(\"Computing derived tables\");";
+            for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+                c += sg.disambiguated_name(id) + "();";
+            }
+            for (auto suffix : sg.suffixes) {
+                c += sg.prefix + suffix + "();";
+            }
+            c += "";
         }
-        for (auto fn : Symbol::user_tables_suffixed) {
-            c += fn + "();";
-        }
-    	c += "";
     }
 
 	c += "theLog->logMsg(\"Writing Output Tables\");";
