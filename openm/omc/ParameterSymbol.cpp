@@ -210,19 +210,20 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     if (source == missing_parameter) {
+        //TODO treat as error?
         c += "// WARNING - No data supplied for the following parameter:";
     }
     
-    if (source != fixed_parameter || initializer_list.empty()) {
-        // Parameter is not internal, or (if internal), no initializer was provided in the model source.
-        // For these situations, just use the default value for a type of this kind.
-        c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
-    }
-    else {
-        // Parameter is internal and an initializer was provided in the model source.
+    if (source == fixed_parameter) {
+        // Parameter is fixed (an initializer was provided in the model source).
+        assert(!initializer_list.empty());
         c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = ";
         c += cxx_initializer();
         c += ";" ;
+    }
+    else {
+        // Initialize using the default value for a type of this kind.
+        c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
     }
     if (cumrate) {
         c += "cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";

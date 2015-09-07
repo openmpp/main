@@ -1306,37 +1306,41 @@ decl_dim_list:
     ;
 
 parameter_initializer_expr:
-      "=" parameter_initializer_element
+      "="[eq] parameter_initializer_element
                         {
                             // add first (and only) element to the initializer list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
-                            if (pc.is_scenario_parameter_value) {
+                            if (parm->source == ParameterSymbol::derived_parameter) {
+                                drv.warning(@eq, "warning: ignoring initializer for derived parameter");
+                            }
+                            else if (pc.is_scenario_parameter_value) {
                                 parm->source = ParameterSymbol::scenario_parameter;
                             }
                             else if (pc.is_fixed_parameter_value) {
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {
-                                // error - parameter value specified in model source
-                                assert(false); // model developer error
+                                error(@eq, "error: parameter initializer not allowed in model source code");
                             }
                             parm->initializer_list.push_back($parameter_initializer_element);
                         }
-    | "=" "{" parameter_initializer_list[wrk] "}"
+    | "="[eq] "{" parameter_initializer_list[wrk] "}"
                         {
                             // splice the gathered initializer list into the parameter's list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
-                            if (pc.is_scenario_parameter_value) {
+                            if (parm->source == ParameterSymbol::derived_parameter) {
+                                drv.warning(@eq, "warning: ignoring initializer for derived parameter");
+                            }
+                            else if (pc.is_scenario_parameter_value) {
                                 parm->source = ParameterSymbol::scenario_parameter;
                             }
                             else if (pc.is_fixed_parameter_value) {
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {
-                                // error - parameter value specified in model source
-                                assert(false); // model developer error
+                                error(@eq, "error: parameter initializer not allowed in model source code");
                             }
                             auto wrk = $wrk; // to see it in the debugger
                             parm->initializer_list.splice(parm->initializer_list.end(), *wrk);
