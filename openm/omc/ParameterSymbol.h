@@ -38,6 +38,19 @@ public:
 
     void post_parse(int pass);
 
+    /**
+     * Alternate name
+     * 
+     * The name and alternate name become C++ identifiers which can be used to access the parameter
+     * in C++ code using different cv-qualifiers (specifically const and non-const).
+     *
+     * @return A string.
+     */
+    string alternate_name() const
+    {
+        return "om_param_" + name;
+    }
+
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();
@@ -109,7 +122,7 @@ public:
      *
      * @return A string.
      */
-    string cxx_assert_sanity();
+    string cxx_type_check();
 
     /**
      * Enumeration indicating source of parameter value.

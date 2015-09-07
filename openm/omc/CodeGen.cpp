@@ -291,52 +291,72 @@ void CodeGen::do_RunInit()
 	c += "void RunInit(IRunInit * const i_runInit)";
 	c += "{";
 
-    c += "// Agent static initialization part 1: Initialize agent member offsets & null agent data members";
+    c += "theLog->logMsg(\"Initializing invariant entity data\");";
+
+    c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
     for (auto agent : Symbol::pp_all_agents) {
-        c += "// Agent - " + agent->name;
+        c += "// Entity - " + agent->name;
         c += agent->name + "::om_null_agent.om_assign_member_offsets();";
         c += agent->name + "::om_null_agent.om_initialize_data_members0();";
         c += "";
     }
 
-    c += "// Agent static initialization part 2: Initialize null agent dependent agentvars";
+    c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
     for (auto agent : Symbol::pp_all_agents) {
-        c += "// Agent - " + agent->name;
+        c += "// Entity - " + agent->name;
         c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
         c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
         c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
     }
     c += "";
 
-    c += "// Sanity type check of storage type and readParameters type argument";
+    c += "theLog->logMsg(\"Preparing fixed and missing parameters\");";
+    // Missing parameters are done here, since they are handled identically to fixed parameters.
+    bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
-        c += parameter->cxx_assert_sanity();
+        if (parameter->source == ParameterSymbol::fixed_parameter
+            || parameter->source == ParameterSymbol::missing_parameter) {
+
+            if (parameter->source == ParameterSymbol::missing_parameter) {
+                any_missing_parameters = true;
+                c += "theLog->logFormatted(\"omc : warning : missing parameter " + parameter->name + "\");";
+            }
+            if (parameter->cumrate) {
+                // prepare cumrate for parameter
+                c += parameter->cxx_initialize_cumrate();
+            }
+            if (parameter->haz1rate) {
+                // perform haz1rate transformation
+                c += parameter->cxx_transform_haz1rate();
+            }
+        }
+    }
+    if (any_missing_parameters) {
+        c += "theLog->logMsg(\"Missing parameters written to Missing.dat (TODO)\");";
     }
     c += "";
 
-    c += "theLog->logMsg(\"Reading Parameters\");";
+    c += "theLog->logMsg(\"Reading scenario parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
-        if (parameter->source == ParameterSymbol::derived_parameter) continue;
         if (parameter->source == ParameterSymbol::scenario_parameter) {
+            c += parameter->cxx_type_check();
             c += parameter->cxx_read_parameter();
-        }
-        else if (parameter->source == ParameterSymbol::missing_parameter) {
-            c += "theLog->logFormatted(\"warning - no values supplied for parameter " + parameter->name + "\");";
-        }
-        if (parameter->cumrate) {
-            // prepare cumrate for fixed, scenario, and missing parameters
-            c += parameter->cxx_initialize_cumrate();
-        }
-        if (parameter->haz1rate) {
-            // perform haz1rate transformation
-            c += parameter->cxx_transform_haz1rate();
+            if (parameter->cumrate) {
+                // prepare cumrate for parameter
+                c += parameter->cxx_initialize_cumrate();
+            }
+            if (parameter->haz1rate) {
+                // perform haz1rate transformation
+                c += parameter->cxx_transform_haz1rate();
+            }
         }
     }
     c += "";
 
+    c += "theLog->logMsg(\"Computing derived parameters\");";
+    c += "// TODO Re-initialize derived parameters";
     auto & sg = Symbol::pre_simulation;
     if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-        c += "theLog->logMsg(\"Running pre-simulation\");";
         for (size_t id = 0; id < sg.ambiguous_count; ++id) {
             c += sg.disambiguated_name(id) + "();";
         }
@@ -346,11 +366,10 @@ void CodeGen::do_RunInit()
         c += "";
     }
 
-    // generate code for transformations of derived parameters
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::derived_parameter) {
             if (parameter->cumrate) {
-                // prepare cumrate for derived parameters after all pre-simulation code has executed
+                // prepare cumrate for parameter
                 c += parameter->cxx_initialize_cumrate();
             }
             if (parameter->haz1rate) {

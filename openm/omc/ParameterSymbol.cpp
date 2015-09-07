@@ -468,7 +468,7 @@ CodeBlock ParameterSymbol::cxx_transform_haz1rate()
     return cxx;
 }
 
-string ParameterSymbol::cxx_assert_sanity()
+string ParameterSymbol::cxx_type_check()
 {
     if (pp_datatype->is_string()) {
         // For string type parameters, skip sanity check
@@ -494,6 +494,6 @@ string ParameterSymbol::cxx_assert_sanity()
         typ = Symbol::token_to_string(ens->storage_type);
     }
 
-    string result = "assert(sizeof(" + cxx_name_and_dimensions(true) + ") == sizeof(" + typ + "));" ;
+    string result = "static_assert(sizeof(" + cxx_name_and_dimensions(true) + ") == sizeof(" + typ + "), \"Incoherence in datatype of " + name + "\");" ;
     return result;
 }
