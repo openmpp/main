@@ -1250,7 +1250,6 @@ void Symbol::post_parse_all()
         list<int> valid_suffixes;
         for (auto cur = sg->suffixes.begin(); cur != sg->suffixes.end();) {
             auto suffix = *cur;
-            assert(suffix);
             assert(suffix.length() > 0);
             auto range = equal_range(cur, sg->suffixes.end(), suffix);
             if (distance(range.first, range.second) > 1) {
