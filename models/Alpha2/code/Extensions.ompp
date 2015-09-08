@@ -27,12 +27,22 @@ parameters
     real a_real;
 };
 
-void PreSimulation_02()
+void PreSimulation_A()
 {
     1 + 1;
 }
 
-void PreSimulation_01()
+void PreSimulation01()
+{
+    1 + 1;
+}
+
+void PreSimulation1()
+{
+    1 + 1;
+}
+
+void PreSimulation4()
 {
     1 + 1;
 }
@@ -42,14 +52,29 @@ void PreSimulation()
     1 + 1;
 }
 
-void UserTables_A()
+void PreSimulation()
+{
+    1 + 1;
+}
+
+void UserTables1()
 {
     1 + 2;
 }
 
-void UserTables_B()
+void UserTables2()
+{
+    1 + 2;
+}
+
+void UserTables11()
 {
     3 + 4;
+}
+
+void PostSimulation()
+{
+    1 + 2;
 }
 
 void PostSimulation()
@@ -61,8 +86,47 @@ void PostSimulation42()
 {
     1 + 2;
 }
+
+extern const int &A;
+extern int om_param_A;
+
+int om_param_A = 4;
+const int &A = om_param_A;
+
 void PostSimulation43()
 {
     1 + 2;
+    //A = 5;  // compiler error, as desired
+    om_param_A = 5;
 }
+
+// Deliberately missing parameters
+parameters
+{
+    //EN a long
+    long missing_a_long;
+
+    //EN a float
+    float missing_a_float;
+
+    //EN a double
+    double missing_a_double;
+
+    //EN a switch (bool)
+    logical missing_a_switch;
+
+    //EN a SEX (classification)
+    SEX missing_a_sex;
+
+    //EN a YEAR (range)
+    YEAR missing_a_year;
+
+    //EN a AGE_GROUP (partition)
+    // supported in ompp, unsupported in Modgen
+    AGE_GROUP missing_a_age_group;
+
+    //EN This parameter is missing something
+    double missing_Something[SEX][AGE_GROUP];
+
+};
 

@@ -303,3 +303,35 @@ user_table ut2 //EN User table #2
           ANALYSIS1 // Deliberately left empty
     }
 };
+
+// Deliberately missing parameters
+parameters
+{
+    //EN a long
+    long missing_a_long;
+
+    //EN a float
+    float missing_a_float;
+
+    //EN a double
+    double missing_a_double;
+
+    //EN a switch (bool)
+    logical missing_a_switch;
+
+    //EN a SEX (classification)
+    SEX missing_a_sex;
+
+    //EN a YEAR (range)
+    YEAR missing_a_year;
+
+    //EN a AGE_GROUP (partition)
+    // supported in ompp, unsupported in Modgen
+    //AGE_GROUP a_age_group;
+
+    //EN This parameter is missing something
+    double missing_Something[SEX][AGE_GROUP];
+
+};
+
+options packing_level = 2;
