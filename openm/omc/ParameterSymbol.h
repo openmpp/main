@@ -98,11 +98,12 @@ public:
     /**
      * C++ code fragment with parameter name followed by dimension list.
      *
-     * @param use_zero (Optional) Generate [0] instead of [n] where n is the dimension size.
+     * @param use_alternate (Optional) Use the alternate name instead of the true name.
+     * @param use_zero   (Optional) Generate [0] instead of [n] where n is the dimension size.
      *
      * @return A string.
      */
-    string cxx_name_and_dimensions(bool use_zero = false) const;
+    string cxx_dimensions(bool use_zero = false) const;
 
     /**
      * C++ code to read parameter from data store.

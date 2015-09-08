@@ -195,7 +195,9 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += "extern " + datatype->name + " " + cxx_name_and_dimensions() + ";";
+    h += "extern " + datatype->name + " " + alternate_name() + cxx_dimensions() + "; // read-write version";
+    string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
+    h += "extern " + cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + ";";
     if (cumrate) {
         h += "extern cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
     }
@@ -217,14 +219,19 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     if (source == fixed_parameter) {
         // Parameter is fixed (an initializer was provided in the model source).
         assert(!initializer_list.empty());
-        c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = ";
+        c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = ";
         c += cxx_initializer();
         c += ";" ;
     }
     else {
         // Initialize using the default value for a type of this kind.
-        c += pp_datatype->name + " " + cxx_name_and_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
+        c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
     }
+
+    string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
+    // definition of read-only reference for use in model code
+    c += cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + " = " + alternate_name() + ";";
+
     if (cumrate) {
         c += "cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
     }
@@ -419,9 +426,9 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 }
 
-string ParameterSymbol::cxx_name_and_dimensions(bool use_zero) const
+string ParameterSymbol::cxx_dimensions(bool use_zero) const
 {
-    string result = name;
+    string result;
     for (auto es : pp_enumeration_list) {
         result += "[" + (use_zero ? "0" : to_string(es->pp_size())) + "]";
     }
@@ -464,17 +471,17 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
             c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
             c += "long work[" + cell_count + "];";
             c += "i_runInit->readParameter(\"" + name + "\", typeid(long), " + cell_count + ", &work);";
-            c += typ + " *parm = (" + typ + " *) &" + name + ";";
+            c += typ + " *parm = (" + typ + " *) &" + alternate_name() + ";";
             c += "for (size_t j = 0; j < " + cell_count + "; ++j) parm[j] = (" + typ + ") (work[j] + " + to_string(rng->lower_bound) + ");";
             c += "}";
         }
         else {
             // range starts at 0 so requires no transformation
-            c += "i_runInit->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + name + ");";
+            c += "i_runInit->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
         }
     }
     else {
-        c += "i_runInit->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + name + ");";
+        c += "i_runInit->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
     }
 
     return c;
@@ -530,6 +537,6 @@ string ParameterSymbol::cxx_type_check()
         typ = Symbol::token_to_string(ens->storage_type);
     }
 
-    string result = "static_assert(sizeof(" + cxx_name_and_dimensions(true) + ") == sizeof(" + typ + "), \"Incoherence in datatype of " + name + "\");" ;
+    string result = "static_assert(sizeof(" + alternate_name() + cxx_dimensions(true) + ") == sizeof(" + typ + "), \"Incoherence in datatype of " + name + "\");" ;
     return result;
 }
