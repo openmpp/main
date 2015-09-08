@@ -303,6 +303,42 @@ list<string> ParameterSymbol::initializer_for_storage()
     return values;
 }
 
+CodeBlock ParameterSymbol::dat_definition() const
+{
+    CodeBlock d;
+
+    string lang = LanguageSymbol::default_language();
+
+    d += "/* NOTE ( " + name + ", " + lang + " )";
+    d += "*/";
+    d += "//" + lang + " " + label();
+
+    assert(pp_datatype);
+    string value = pp_datatype->default_initial_value();
+    string line1;
+    line1 += pp_datatype->name;
+    line1 += " " + name;
+    for (auto es : pp_enumeration_list) {
+        line1 += "[" + es->name + "]";
+    }
+    line1 += " = ";
+    if (rank() == 0) {
+        line1 += value + ";";
+        d += line1;
+    }
+    else {
+        line1 += "{";
+        d += line1;
+        d += "(" + to_string(size()) + ") " + value;
+        d += "};";
+    }
+    d += "";
+
+    return d;
+}
+
+
+
 string ParameterSymbol::metadata_signature() const
 {
     // Hook into the hierarchical calling chain

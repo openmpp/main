@@ -61,6 +61,17 @@ public:
     int language_id;
 
     /**
+     * Gets the default language for hte model
+     *
+     * @return The default language.
+     */
+    static string default_language()
+    {
+        assert(id_to_sym.size() > 0);
+        return id_to_sym[0]->name;
+    }
+
+    /**
      * language_id for the next LanguageSymbol
      * 
      * A shared counter used to assign sequentially increasing identifier to each LanguageSymbol.

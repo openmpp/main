@@ -82,6 +82,15 @@ public:
      */
     list<string> initializer_for_storage();
 
+    /**
+     * Definition of the parameter in .dat format
+     * 
+     * Content is set to the default value for the type (normally zero)
+     *
+     * @return A CodeBlock.
+     */
+    CodeBlock dat_definition() const;
+
     string metadata_signature() const;
 
     void populate_metadata(openm::MetaModelHolder & metaRows);

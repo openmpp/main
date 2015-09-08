@@ -382,9 +382,10 @@ int main(int argc, char * argv[])
         parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
 
         // Parse parameter scenario directory if specified
+        string paramDir; // make visible for possible later use for Missing.dat
         if (argStore.isOptionExist(OmcArgKey::paramDir)) {
             // -p scenario parameters specified
-            string paramDir = argStore.strOption(OmcArgKey::paramDir);
+            paramDir = argStore.strOption(OmcArgKey::paramDir);
             pc.is_scenario_parameter_value = true;
             pc.is_fixed_parameter_value = false;
             if (paramDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", paramDir.c_str());
@@ -486,18 +487,44 @@ int main(int argc, char * argv[])
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create(outDir));
 
+        CodeBlock missing_param_defs; // Generated definitions for missing parameters
         CodeGen cg(
             &om_types0_h,
             &om_types1_h,
             &om_declarations_h,
             &om_definitions_cpp,
             &om_fixed_parms_cpp,
+            missing_param_defs,
             builder->timeStamp(),
             no_line_directives,
             om_definitions_cpp_fname,
             metaRows
             );
         cg.do_all();
+
+        string Missing_dat_name = "Missing.dat.tmp";
+        if (missing_param_defs.size() > 0) {
+            // Some generated output for one or more missing parameters present.
+            if (argStore.isOptionExist(OmcArgKey::paramDir)) {
+                // open output stream for generated definitions for missing parameters
+                ofstream Missing_dat(paramDir + Missing_dat_name, ios_base::out | ios_base::trunc | ios_base::binary);
+                exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
+                if (Missing_dat.fail()) throw HelperException("Unable to open %s for writing", "Missing.dat.tmp");
+                Missing_dat << missing_param_defs;
+                Missing_dat.close();
+            }
+            else {
+                string msg = "omc : warning : Unable to write missing parameters to " + Missing_dat_name + " - no input parameter directory was specified.";
+                theLog->logMsg(msg.c_str());
+            }
+        }
+        else {
+            // Model contains no missing parameters, so delete obsolete Missing.dat.tmp if present
+            if (argStore.isOptionExist(OmcArgKey::paramDir)) {
+                string full_name = paramDir + Missing_dat_name;
+                remove(full_name.c_str());
+            }
+        }
 
         // build model creation sql script
         theLog->logMsg("Meta-data processing");

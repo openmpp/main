@@ -23,6 +23,7 @@ public:
         ofstream *oah_arg,
         ofstream *oac_arg,
         ofstream *oaz_arg,
+        CodeBlock & missing_dat,
         const string & i_timestamp,
         bool no_line_directives,
         string c_fname,
@@ -34,6 +35,7 @@ public:
 		, oac(oac_arg)
         , c_fname(c_fname)
 		, oaz(oaz_arg)
+        , m(missing_dat)
         , no_line_directives(no_line_directives)
         , time_stamp(i_timestamp)
         , metaRows(io_metaRows)
@@ -110,6 +112,11 @@ public:
 
     /** output stream for om_fixed_parms.cpp */
 	ofstream *oaz;
+
+    /**
+     * CodeBlock for Missing.dat.
+     */
+    CodeBlock &m;
 
     /** disable #line directives */
 	bool no_line_directives;

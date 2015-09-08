@@ -318,8 +318,13 @@ void CodeGen::do_RunInit()
             || parameter->source == ParameterSymbol::missing_parameter) {
 
             if (parameter->source == ParameterSymbol::missing_parameter) {
-                any_missing_parameters = true;
-                c += "theLog->logFormatted(\"omc : warning : missing parameter " + parameter->name + "\");";
+                if (!any_missing_parameters) {
+                    m += "parameters {";
+                    any_missing_parameters = true;
+                }
+                m += parameter->dat_definition();
+                // create warning message which the model will output whenever it is run
+                c += "theLog->logFormatted(\"model : warning : parameter " + parameter->name + " was missing when model was published\");";
             }
             if (parameter->cumrate) {
                 // prepare cumrate for parameter
@@ -332,7 +337,8 @@ void CodeGen::do_RunInit()
         }
     }
     if (any_missing_parameters) {
-        c += "theLog->logMsg(\"Missing parameters written to Missing.dat (TODO)\");";
+        m += "};";
+        theLog->logMsg("Missing parameters written to Missing.dat.tmp");
     }
     c += "";
 
