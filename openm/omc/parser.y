@@ -511,6 +511,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type <pval_Constant_list> parameter_initializer_list
 %type <pval_string>      decl_func_arg_element
 %type <pval_string>      decl_func_arg_string
+%type <pval_string>      option_rhs
 %type <pval_Symbol_list> array_decl_dimension_list
 %type <pval_Symbol_list> symbol_list
 
@@ -632,38 +633,52 @@ decl_string:
  */
 
 decl_options:
-        "options" 
+          "options" 
                         {
                             // Actually, it's too late to do this here because the look-ahead token
                             // has already been read.  So "options" is detected and handled as a special
                             // case in the scanner.
                             pc.next_word_is_string = true;
                         }
-            options_list ";"
+              options_list ";"
                         {
                             pc.next_word_is_string = false;
                         }
-      | "options"
+       | "options"
                         {
                             pc.next_word_is_string = true;
                         }
-            error ";"
+              error ";"
                         {
                             pc.next_word_is_string = false;
                         }
     ;
 
 options_list:
-      option
-	| options_list option
+          option
+	    | options_list option
 	;
 
+option_rhs[result]:
+            STRING[value]
+                        {
+                            $result = $value;
+                        }
+         | INTEGER_LITERAL[value]
+                        {
+                            // create a new string from the IntegerLiteral
+                            $result = new string($value->value());
+                            // finished with the StringLiteral
+                            delete $value;
+                        }
+    ;
+
 option:
-        STRING[key] "=" 
+          STRING[key] "=" 
                         {
                             pc.next_word_is_string = true;
                         }
-            STRING[value]
+              option_rhs[value]
                         {
                             // place key-value pair in options collection
                             Symbol::options[*$key] = *$value;
