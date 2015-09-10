@@ -47,6 +47,42 @@ void ModelExit(const char* msg)
 }
 
 /**
+ * In Modgen, displays a warning message in the UI.
+ *
+ * See Modgen Developer's Guide for more information.
+ * 
+ * @param fmt The format string
+ */
+void WarningMsg(const char* fmt, ...)
+{
+    // not implemented
+}
+
+/**
+ * In Modgen, displays a progress message in the UI.
+ *
+ * See Modgen Developer's Guide for more information.
+ * 
+ * @param fmt The format string
+ */
+void ProgressMsg(const char* msg)
+{
+    // not implemented
+}
+
+/**
+ * Communicates current simulation time to UI to display progress.
+ *
+ * See Modgen Developer's Guide for more information.
+ * 
+ * @param tm The time.
+ */
+void TimeReport(double tm)
+{
+    // not implemented
+}
+
+/**
  * Set maximum time for fixed-precision time operations.
  * 
  * See Modgen Developer's Guide for more information.

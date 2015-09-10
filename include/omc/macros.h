@@ -39,6 +39,9 @@
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
 
+// A (very) direct implementation of the variadic WriteLogEntry() Modgen function
+#define WriteLogEntry theLog->logFormatted
+
 // Fixed precision time arithmetic is implemented using the wrapped Time typoe in ompp.
 #define CoarsenMantissa(x) Time(x)
 

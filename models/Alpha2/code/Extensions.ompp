@@ -130,3 +130,11 @@ parameters
 
 };
 
+void PreSimulation99()
+{
+    int a = 5;
+    WriteLogEntry("My favourite number is %d!", a);
+    a = 42;
+    WriteDebugLogEntry("The answer is  %d!", a);
+    WarningMsg("This is an empty warning", a, a);
+}
