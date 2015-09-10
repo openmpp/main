@@ -24,7 +24,6 @@ extern void SetPopulation(long lPopulation);
 extern void signal_exit_simulation_all();
 double PieceLinearLookup(double x, const double *ax, const double *ay, int n);
 bool IsUndefined(double x);
-void WarningMsg(const char *fmt, ...);
 void ProgressMsg(const char *msg);
 void TimeReport(double dTime);
 

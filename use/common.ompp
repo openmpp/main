@@ -47,18 +47,6 @@ void ModelExit(const char* msg)
 }
 
 /**
- * In Modgen, displays a warning message in the UI.
- *
- * See Modgen Developer's Guide for more information.
- * 
- * @param fmt The format string
- */
-void WarningMsg(const char* fmt, ...)
-{
-    // not implemented
-}
-
-/**
  * In Modgen, displays a progress message in the UI.
  *
  * See Modgen Developer's Guide for more information.

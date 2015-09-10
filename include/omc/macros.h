@@ -42,6 +42,9 @@
 // A (very) direct implementation of the variadic WriteLogEntry() Modgen function
 #define WriteLogEntry theLog->logFormatted
 
+// A (very) direct implementation of the variadic WarningMsg() Modgen function
+#define WarningMsg theLog->logFormatted
+
 // Fixed precision time arithmetic is implemented using the wrapped Time typoe in ompp.
 #define CoarsenMantissa(x) Time(x)
 
