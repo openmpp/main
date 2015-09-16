@@ -310,6 +310,6 @@ void PreSimulation()
     WriteLogEntry("My favourite number is %d!", a);
     a = 42;
     WriteDebugLogEntry("The answer is  %d!", a);
-    WarningMsg("This is an empty warning", a, a);
+    WarningMsg("This is an empty warning %d %d", a, a);
 }
 
