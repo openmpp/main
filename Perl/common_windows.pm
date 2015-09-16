@@ -30,8 +30,8 @@ sub run_jet_statement {
 	use Win32::OLE;
 	use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
 
-	my $sConnect = "Provider = Microsoft.Jet.OLEDB.4.0; Data source = ${db}";
-	#my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${db}";
+	#my $sConnect = "Provider = Microsoft.Jet.OLEDB.4.0; Data source = ${db}";
+	my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${db}";
 	my $ADO_Conn = Win32::OLE->new('ADODB.Connection');	# creates a connection object
 	my $ADO_RS = Win32::OLE->new('ADODB.Recordset');		# creates a recordset object
 	$ADO_Conn->Open($sConnect);
@@ -94,8 +94,8 @@ sub modgen_tables_to_csv
 	
 	use Win32::OLE;
 	use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
-	my $sConnect = "Provider = Microsoft.Jet.OLEDB.4.0; Data source = ${db}";
-	#my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${db}";
+	#my $sConnect = "Provider = Microsoft.Jet.OLEDB.4.0; Data source = ${db}";
+	my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${db}";
 	my $ADO_Conn = Win32::OLE->new('ADODB.Connection');	# creates a connection object
 
 	$ADO_Conn->Open($sConnect);
