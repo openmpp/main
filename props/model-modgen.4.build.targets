@@ -105,7 +105,9 @@
   <Target Name="Diagnostics"
           Condition="'1'=='1'">
     <Message Text="OM_ROOT=$(OM_ROOT)" />
-    <Message Text="MODGEN_ROOT=$(MODGEN_ROOT)" />
+    <Message Text="MODGEN_VERSION=$(MODGEN_VERSION)" />
+    <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />
+    <Message Text="CHARACTER_SET=$(CHARACTER_SET)" />
     <Message Text="MODGEN_INPUTS=@(MODGEN_INPUTS)" />
     <Message Text="MODGEN_OUTPUTS=@(MODGEN_OUTPUTS)" />
   </Target>

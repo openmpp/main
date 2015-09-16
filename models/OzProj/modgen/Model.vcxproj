@@ -12,21 +12,33 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{39D2FE8E-B4FF-4B30-A86D-F34EC877D7C5}</ProjectGuid>
     <RootNamespace>default</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <!-- Import properties for Modgen model projects -->
+  <Import Project="$(OM_ROOT)/props/model-modgen.1.build.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>$(CHARACTER_SET)</CharacterSet>
+    <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>$(CHARACTER_SET)</CharacterSet>
+    <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -41,7 +53,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import properties for Modgen model projects -->
-  <Import Project="$(OM_ROOT)/props/model-modgen.1.build.props" />
   <Import Project="$(OM_ROOT)/props/model-modgen.2.cpp.props" />
   <Import Project="$(OM_ROOT)/props/model-modgen.3.items.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

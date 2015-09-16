@@ -51,6 +51,8 @@ my $ompp_linux_configuration = "release";
 # modgen settings
 #####################
 
+my $modgen_version = 12;
+
 #my $modgen_configuration = "Debug";
 my $modgen_configuration = "Release";
 
@@ -61,7 +63,7 @@ my $modgen_platform = "Win32";
 # file locations
 #####################
 
-my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen 11\\Modgen.exe";
+my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen ${modgen_version}\\Modgen.exe";
 my $modgen_devenv_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\Common7\\IDE\\devenv.exe";
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
@@ -315,7 +317,7 @@ for my $model_dir (@model_dirs) {
 			# Build the model
 			logmsg info, $model_dir, $flavour, "Modgen compile, C++ compile, build executable" if $verbosity >= 2;
 
-			# Change working directory to where vxproj, etc. are located
+			# Change working directory to where vcxproj, etc. are located
 			chdir "${project_dir}" || die;
 
 			# The property sheet containing user macros
@@ -331,6 +333,9 @@ for my $model_dir (@model_dirs) {
 				logmsg error, $model_dir, $flavour, "Failed to get MODEL_NAME from ${model_props}";
 				next FLAVOUR;
 			}
+
+			# Project file
+			my $model_vcxproj = 'model.vcxproj';
 			
 			# Find solution file in parent folder
 			my @matches = glob "../*-modgen.sln";
@@ -341,14 +346,20 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			# Log file from devenv build
-			my $build_log = "build.log";
+			my $build_log = "msbuild.log";
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
 				my @args = (
-					"${modgen_devenv_exe}",
-					"${model_sln}",
-					"/Rebuild", "${modgen_configuration}|${modgen_platform}",
-					"/Out", "${build_log}",
+					"${msbuild_exe}",
+					"${model_vcxproj}",
+					"/nologo",
+					"/verbosity:normal",
+					"/fileLogger",
+					"/flp:Verbosity=minimal",
+					"/p:Configuration=${modgen_configuration}",
+					"/p:Platform=${modgen_platform}",
+					"/p:MODGEN_VERSION=${modgen_version}",
+					"/t:Rebuild",
 					);
 				system(@args);
 			};
