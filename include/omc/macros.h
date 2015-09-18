@@ -33,9 +33,6 @@
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
-// translate use of CString in model developer code to C++ string for portability
-#define CString string
-
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
 

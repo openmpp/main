@@ -47,6 +47,9 @@
 // Make logical a synonym for bool in C++ model code.
 typedef bool logical;
 
+// Make some (deprecated) uses in model code of the MS CString class work portably
+typedef std::string CString;
+
 #include "om_declarations.h" // model-specific classes
 
 #include "custom.h" // model-specific declarations and includes (late)
