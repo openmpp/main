@@ -99,7 +99,8 @@ public:
      */
     void open(const CString &fname)
     {
-        const char *fn = (LPCSTR)fname;
+		CStringA fname2(fname);
+        const char *fn = fname2;
         open(fn);
     }
 #endif
@@ -297,7 +298,8 @@ public:
      */
     void open(const CString &fname)
     {
-        const char *fn = (LPCSTR)fname;
+		CStringA fname2(fname);
+        const char *fn = fname2;
         open(fn);
     }
 #endif
@@ -400,7 +402,39 @@ public:
         }
     }
 
-private:
+	/**
+	* Append a number to a file name, preserving the extension.
+	*
+	* @param name   The file name.
+	* @param number The number to append.
+	*
+	* @return A string.
+	*/
+	static std::string name_with_number(const char * name, long long number)
+	{
+		const std::string name2(name);
+		return name_with_number(name2, number);
+	}
+
+#if !defined(OPENM)
+	/**
+	* Append a number to a file name, preserving the extension.
+	*
+	* @param name   The file name.
+	* @param number The number to append.
+	*
+	* @return A string.
+	*/
+	static std::string name_with_number(const CString name, long long number)
+	{
+		CStringA name2(name);
+		const char *name3 = name2;
+
+		return name_with_number(name3, number);
+	}
+#endif
+
+	private:
     std::string file_name;
     std::vector<double> fields;
     std::ofstream output_stream;

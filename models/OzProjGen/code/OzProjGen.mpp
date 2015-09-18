@@ -44,7 +44,6 @@ void CaseSimulation(case_info &ci)
 // Invoked before simulating cases
 void Simulation_start(case_info &ci)
 {
-  std_string fname = MicroDataOutputFile;
   auto simulation_members = GetSubSamples();
   if (simulation_members > 1) {
     // The simulation has multiple members.
@@ -52,9 +51,12 @@ void Simulation_start(case_info &ci)
     // Modify the file name by appending the simulation member number
     // before the file extension.
     auto member = GetCaseSample();
-    fname = output_csv::name_with_number(fname, member);
+    auto fname = output_csv::name_with_number(MicroDataOutputFile, member);
+	ci.out_csv.open(fname);
   }
-  ci.out_csv.open(fname);
+  else {
+	  ci.out_csv.open(MicroDataOutputFile);
+  }
 }
 
 // Invoked after simulating cases
