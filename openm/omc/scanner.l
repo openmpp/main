@@ -365,16 +365,6 @@ blank       [ \t\r]
 				return token::SYMBOL;
 			}
 
-{floating}   {
-                yylval->pval_FloatingPointLiteral = new FloatingPointLiteral ( yytext );
-                return token::FLOATING_POINT_LITERAL;
-			}
-
-{integer}   {
-                yylval->pval_IntegerLiteral = new IntegerLiteral ( yytext );
-                return token::INTEGER_LITERAL;
-			}
-
 "{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
                 switch ( *yytext ) {
                     case '{': pc.brace_level++; break;
@@ -403,7 +393,7 @@ blank       [ \t\r]
                 return tok;
 			}
 
-"->*"|"<<="|">>=" {
+"->*"|"<<="|">>="|"..." {
 				/* three character C++ operators */
 				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
@@ -422,6 +412,16 @@ blank       [ \t\r]
 				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
+			}
+
+{floating}  {
+                yylval->pval_FloatingPointLiteral = new FloatingPointLiteral ( yytext );
+                return token::FLOATING_POINT_LITERAL;
+			}
+
+{integer}   {
+                yylval->pval_IntegerLiteral = new IntegerLiteral ( yytext );
+                return token::INTEGER_LITERAL;
 			}
 
 .           {

@@ -359,7 +359,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_xor_eq        "xor_eq"
 
 // C++ operators
-// Source: http://en.cppreference.com/w/cpp/keyword
+// Source: http://en.cppreference.com/w/cpp/language/expressions#Operators
 
 // assignment
 %token <val_token>    TK_ASSIGN        "="
@@ -418,6 +418,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %token <val_token>    TK_COLON         ":"
 %token <val_token>    TK_COMMA         ","
 %token <val_token>    TK_SEMICOLON     ";"
+%token <val_token>    TK_ELLIPSIS      "..."
 
 // braces, brackets, parentheses
 %token <val_token>    TK_LEFT_BRACE    "{"
@@ -1534,22 +1535,27 @@ decl_agent_function:
 
                                 string arg_list;
                                 if ($args == nullptr) {
+                                    // empty argument list
                                     arg_list = "";
                                 }
                                 else {
+                                    // argument list assembled into a string
                                     arg_list = *$args;
+                                    delete $args;
                                 }
 
-                                // argument 5 suppress_defn=true tells omc that the function definition is developer-supplied
+                                // argument 5 below (suppress_defn=true) tells omc that the function definition is developer-supplied
                                 auto sym = new AgentFuncSymbol( $SYMBOL, pc.get_agent_context(), return_type, arg_list, true, @SYMBOL );
                                 assert(sym);
-                                delete $args;
                             }
                             else {
                                 // redeclaration
-                                // silently ignore redeclaration, esp. of Start() and Finish()
+                                // ignore redeclaration, but issue warning
+                                string msg = "warning : ignoring redeclaration of entity function " + $SYMBOL->name;
+                                drv.warning(@SYMBOL, msg);
                             }
-                            // Turn off suppression of SYMBOL recognition within the function argument declaration.
+                            // Function argument declaration is now complete, so
+                            // turn off suppression of SYMBOL recognition.
                             pc.next_word_is_string = false;
                         }
     ;
@@ -1570,6 +1576,7 @@ decl_func_arg_string[result]: // declaration of function arguments, as a string
                         }
     | /*nothing*/
                         {
+                            // Start building the argument list (starting with nothing)
                             $result = nullptr;
                             // Suppress SYMBOL recognition within the function argument declaration.
                             pc.next_word_is_string = true;
@@ -1594,7 +1601,31 @@ decl_func_arg_element[result]: // a syntactic element of a function argument lis
                         }
     ;
 
-decl_func_arg_token: "," | "unsigned" | "char" | "int" | "long" | "integer" | "counter" | "real" | "float" | "double" | "=" | "*" | "Time" ;
+// keywords and operators which might be present in the declaration of function arguments
+decl_func_arg_token:
+      ","
+    | "const"
+    | "unsigned"
+    | "char"
+    | "int"
+    | "long"
+    | "integer"
+    | "counter"
+    | "real"
+    | "float"
+    | "double"
+    | "::"
+    | "<"
+    | ">"
+    | ">>"
+    | "="
+    | "-" // to allow unary minus in default argument value
+    | "*"
+    | "&"
+    | "..." // to allow variadic functions
+    | "Time"
+    | "string"
+    ;
 
 decl_agent_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] event_priority_opt[priority] ";"

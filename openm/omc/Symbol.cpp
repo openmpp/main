@@ -425,6 +425,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_COLON, ":" },
     { token::TK_COMMA, "," },
     { token::TK_SEMICOLON, ";" },
+    { token::TK_ELLIPSIS, "..." },
 
     // braces, brackets, parentheses
     { token::TK_LEFT_BRACE, "{" },
