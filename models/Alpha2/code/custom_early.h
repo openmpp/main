@@ -31,3 +31,18 @@ struct case_info {
 }
 #endif
 
+namespace Some {
+	namespace Really {
+		namespace Long {
+			struct Thingee {
+				int x;
+			};
+			extern Thingee thing;
+		};
+	};
+};
+
+struct GlobalThing {
+	int x;
+};
+extern GlobalThing thing;

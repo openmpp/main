@@ -310,6 +310,27 @@ void PreSimulation()
     WriteLogEntry("My favourite number is %d!", a);
     a = 42;
     WriteDebugLogEntry("The answer is  %d!", a);
-    WarningMsg("This is an empty warning %d %d", a, a);
+//    WarningMsg("This is an empty warning %d %d", a, a);
 }
+
+
+
+// tests of entity functions arguments (Modgen 12 compatible)
+actor Person
+{
+	void SomeThingThatTakesAPointer(CString* thing);
+	void SomeThingThatTakesAConstPointer(const CString* thing);
+	void SomeThingThatTakesAConstDoublePointer(const double* thing);
+	void SomeThingThatTakesARef(std::vector<double>& thing);
+	void SomeThingThatTakesAConstRef(const CString& thing);
+	void SomeThingThatTakesANamespaceQualifiedConstRef(const std::basic_string<char, char_traits<char>, allocator<char>>& thing);
+	void SomeReallyLongName(const Some::Really::Long::Thingee& thing);
+	void SomeReallyLongModifiableName(Some::Really::Long::Thingee& thing);
+	void GlobalNamespaceRef(::GlobalThing& thing);
+    void SomethingWithDefaultArguments(int a, int b = -1);
+    // The following are not Modgen 12 compatible, and are tested in Extensions.ompp
+    //void SomethingVariadic(const char *fmt, ...);
+    //void SomethingStringee(int a, std::string s);
+    //void SomethingStringee2(std::string s);
+};
 
