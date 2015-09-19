@@ -99,16 +99,16 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 };
 
 %printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
-%printer { yyoutput << "literal " << $$->value(); } <pval_Literal>
-%printer { yyoutput << "integer literal " << $$->value(); } <pval_IntegerLiteral>
-%printer { yyoutput << "character literal " << $$->value(); } <pval_CharacterLiteral>
-%printer { yyoutput << "floating point literal " << $$->value(); } <pval_FloatingPointLiteral>
-%printer { yyoutput << "string literal " << $$->value(); } <pval_StringLiteral>
-%printer { yyoutput << "constant " << $$->is_literal ? $$->literal->value() : (*($$->enumerator))->name; } <pval_ConstantSymbol>
+%printer { yyoutput << "literal " << ($$ ? $$->value() : "nullptr"); } <pval_Literal>
+%printer { yyoutput << "integer literal " << ($$ ? $$->value() : "nullptr"); } <pval_IntegerLiteral>
+%printer { yyoutput << "character literal " << ($$ ? $$->value() : "nullptr"); } <pval_CharacterLiteral>
+%printer { yyoutput << "floating point literal " << ($$ ? $$->value() : "nullptr"); } <pval_FloatingPointLiteral>
+%printer { yyoutput << "string literal " << ($$ ? $$->value() : "nullptr"); } <pval_StringLiteral>
+%printer { yyoutput << "constant " << ($$ ? ($$->is_literal ? $$->literal->value() : (*($$->enumerator))->name) : "nullptr"); } <pval_ConstantSymbol>
 // special code in line below to handle decl_type_part "void", whose value is nullptr
 %printer { yyoutput << "symbol " << '"' << ($$ ? $$->name : "void") << '"' << " type=" << ($$ ? typeid($$).name() : "void"); } <pval_Symbol>
 %printer { yyoutput << "table expr "; } <pval_TableExpr>
-%printer { yyoutput << "initial value type=" << Symbol::token_to_string($$->associated_token); } <pval_InitialValue>
+%printer { yyoutput << "initial value type=" << ($$ ? Symbol::token_to_string($$->associated_token) : "nullptr"); } <pval_InitialValue>
 
 %destructor { delete $$; } <pval_IntegerLiteral> <pval_CharacterLiteral> <pval_FloatingPointLiteral> <pval_StringLiteral>
 
@@ -586,6 +586,7 @@ decl_use:
                             use_file = Symbol::use_folder + use_file;
                             Symbol::all_source_files.push_back(use_file);
                             delete $path;
+                            $path = nullptr;
                         }
         | "use" error ";"
         ;
@@ -671,6 +672,7 @@ option_rhs[result]:
                             $result = new string($value->value());
                             // finished with the StringLiteral
                             delete $value;
+                            $value = nullptr;
                         }
     ;
 
@@ -695,16 +697,48 @@ option:
 decl_import: // just parse old-style syntax, and assume a single table name, not a list
           "import" SYMBOL[param]
               "(" 
-                      {
+                        {
                             pc.next_word_is_string = true;
-                      }
+                        }
               STRING[model] "." 
-                      {
+                        {
+                            // parse and ignore for now
+                            delete $model;
+                            $model = nullptr;
                             pc.next_word_is_string = true;
-                      }
-            STRING[table] ")" ";"
+                        }
+              STRING[table] ")"
+                        {
+                            // parse and ignore for now
+                            delete $table;
+                            $table = nullptr;
+                            pc.next_word_is_string = true;
+                        }
+              import_opt ";"
+                        {
+                            // finished import statement, return to normal symbol processing
+                            pc.next_word_is_string = false;
+                        }
         | "import" error ";"
         ;
+
+import_opt:
+          STRING[key] "="
+                        {
+                            // parse and ignore for now
+                            delete $key;
+                            $key = nullptr;
+                            pc.next_word_is_string = true;
+                        }
+              STRING[value]
+                        {
+                            // parse and ignore for now
+                            delete $value;
+                            $value = nullptr;
+                        }
+	    | /* nothing */
+      ;
+
 
 /*
  * changeable types
@@ -804,15 +838,19 @@ decl_version:
                         {
                             int major = stoi( $major->value() );
                             delete $major;
+                            $major = nullptr;
 
                             int minor = stoi($minor->value());
                             delete $minor;
+                            $minor = nullptr;
 
                             int sub_minor = stoi($sub_minor->value());
                             delete $sub_minor;
+                            $sub_minor = nullptr;
 
                             int sub_sub_minor = stoi($sub_sub_minor->value());
                             delete $sub_sub_minor;
+                            $sub_sub_minor = nullptr;
 
                             auto *sym = new VersionSymbol( major, minor, sub_minor, sub_sub_minor, @$ );
                             assert(sym);
@@ -879,6 +917,7 @@ decl_aggregation:
                             for (auto sym : *pls) agg->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $symbol_list = nullptr;
                         }
     | "aggregation" "{" error "}" ";"
 	| "aggregation" error ";"
@@ -945,9 +984,11 @@ decl_range:
                         {
                             int lower_bound = stoi( $lower_bound->value() );
                             delete $lower_bound;
+                            $lower_bound = nullptr;
 
                             int upper_bound = stoi($upper_bound->value());
                             delete $upper_bound;
+                            $upper_bound = nullptr;
 
                             // Morph Symbol to RangeSymbol
                             $range = new RangeSymbol( $range, lower_bound, upper_bound, @range );
@@ -975,6 +1016,7 @@ decl_parameter_group:
                             for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $symbol_list = nullptr;
                         }
 	| parameter_group_token "{" error "}" ";"
 	| parameter_group_token error ";"
@@ -1013,6 +1055,7 @@ decl_table_group:
                             for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $symbol_list = nullptr;
                         }
 	| "table_group" "{" error "}" ";"
 	| "table_group" error ";"
@@ -1034,6 +1077,7 @@ decl_hide:
                             for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $symbol_list = nullptr;
                         }
 	| "hide" "(" error ")" ";"
 	| "hide" error ";"
@@ -1055,6 +1099,7 @@ decl_dependency:
                             for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $symbol_list = nullptr;
                         }
 	| "dependency" "(" error ")" ";"
 	| "dependency" error ";"
@@ -1078,6 +1123,7 @@ decl_track:
                             //for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $symbol_list = nullptr;
                             // Leaving agent context
                             pc.set_agent_context( nullptr );
                         }
@@ -1236,6 +1282,7 @@ decl_parameter:
                             if ($cumrate_dims) {
                                 parm->cumrate_dims = stoi($cumrate_dims->value());
                                 delete $cumrate_dims;
+                                $cumrate_dims = nullptr;
                             }
                             else {
                                 // default value if not specified explcitily
@@ -1361,6 +1408,7 @@ parameter_initializer_expr:
                             auto wrk = $wrk; // to see it in the debugger
                             parm->initializer_list.splice(parm->initializer_list.end(), *wrk);
                             delete wrk;
+                            $wrk = nullptr;
                         }
     | /* Nothing */
     ;
@@ -1399,6 +1447,7 @@ parameter_initializer_list[result]:
                             }
                             (*wrk).clear();
                             delete wrk;
+                            $wrk = nullptr;
                             $result = result;
                         }
       | parameter_initializer_list[wrk1] "," parameter_initializer_list[wrk2]
@@ -1408,6 +1457,7 @@ parameter_initializer_list[result]:
                             auto wrk2 = $wrk2;
                             (*wrk1).splice((*wrk1).end(), *wrk2);
                             delete wrk2;
+                            $wrk2 = nullptr;
                             $result = $wrk1;
                         }
     ;
@@ -1494,6 +1544,7 @@ decl_agent_array:
                             for (auto sym : *pls) aam->dimension_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
+                            $array_decl_dimension_list = nullptr;
                         }
     ;
 
@@ -1542,6 +1593,7 @@ decl_agent_function:
                                     // argument list assembled into a string
                                     arg_list = *$args;
                                     delete $args;
+                                    $args = nullptr;
                                 }
 
                                 // argument 5 below (suppress_defn=true) tells omc that the function definition is developer-supplied
@@ -1571,6 +1623,7 @@ decl_func_arg_string[result]: // declaration of function arguments, as a string
                                 // append the syntactic element to the complete argument string
                                 *$current += " " + *$element;
                                 delete $element;
+                                $element = nullptr;
                                 $result = $current;
                             }
                         }
@@ -1594,6 +1647,9 @@ decl_func_arg_element[result]: // a syntactic element of a function argument lis
     | literal[lit]
                         {
                             $result = new string($lit->value());
+                            // No other uses of $lit, so delete
+                            delete $lit;
+                            $lit = nullptr;
                         }
     | decl_func_arg_token[tok]
                         {
@@ -1632,6 +1688,7 @@ decl_agent_event:
                         {
                             int event_priority = stoi($priority->value());
                             delete $priority;
+                            $priority = nullptr;
                             auto *agent = pc.get_agent_context();
                             // Create agent event symbol
                             string event_name = "om_" + $implement_func->name + "_om_event";
@@ -1713,6 +1770,7 @@ expr_for_agentvar[result]:
     | literal
                         {
 	                        $result = new ExprForAgentVarLiteral( $literal );
+                            // NB: pointer $literal is used in ExprForAgentVarLiteral, so not deleted
                         }
     //
     // arithmetic
@@ -2445,6 +2503,7 @@ derived_table_placeholder_list:
                             auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
                             assert(sym);
                             delete $placeholder; // delete the string created using new in scanner
+                            $placeholder = nullptr;
                             pc.counter1++;  // counter for placeholders
                         }
     | derived_table_placeholder_list ","
@@ -2457,6 +2516,7 @@ derived_table_placeholder_list:
                             auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
                             assert(sym);
                             delete $placeholder; // delete the string created using new in scanner
+                            $placeholder = nullptr;
                             pc.counter1++;  // counter for placeholders
                         }
 	;
@@ -2486,6 +2546,7 @@ link_to_agentvar:
                             // subsequent post-parse resolution.
                             $link_to_agentvar = LinkToAgentVarSymbol::create_symbol(pc.get_agent_context(), $link, *$agentvar);
                             delete $agentvar; // delete the string created using new in scanner
+                            $agentvar = nullptr;
                         }
         ;
 
@@ -2721,6 +2782,7 @@ derived_agentvar:
                         {
                             $derived_agentvar = MultilinkAgentVarSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$agentvar );
                             delete $agentvar; // delete the string created using new in scanner
+                            $agentvar = nullptr;
                         }
 	;
 
@@ -2735,11 +2797,12 @@ aggregate_multilink_function:
  */
 
 constant:
-      signed_literal[literal]
+      signed_literal[lit]
                         {
                             // Create a constant representing a literal
-                            auto cs = new ConstantSymbol($literal, @literal);
+                            auto cs = new ConstantSymbol($lit, @lit);
                             assert(cs);
+                            // NB: pointer $lit is used in ConstantSymbol, so not deleted
                             $constant = cs;
                         }
     | SYMBOL[enumerator]
@@ -2752,11 +2815,12 @@ constant:
     ;
 
 initializer_constant:
-      signed_literal[literal]
+      signed_literal[lit]
                         {
                             // Create a constant which wraps the literal
-                            auto cs = new Constant($literal, @literal);
+                            auto cs = new Constant($lit, @lit);
                             assert(cs);
+                            // NB: pointer $lit is used in Constant, so not deleted
                             $initializer_constant = cs;
                         }
     | SYMBOL[enumerator]
@@ -2799,6 +2863,7 @@ signed_integer_literal:
                         {
                             $signed_integer_literal = new IntegerLiteral( "-" + $INTEGER_LITERAL->value() );
                             delete $INTEGER_LITERAL;
+                            $INTEGER_LITERAL = nullptr;
                         }
     ;
 
@@ -2811,6 +2876,7 @@ signed_floating_point_literal:
                         {
                             $signed_floating_point_literal = new FloatingPointLiteral( "-" + $FLOATING_POINT_LITERAL->value() );
                             delete $FLOATING_POINT_LITERAL;
+                            $FLOATING_POINT_LITERAL = nullptr;
                         }
     ;
 
