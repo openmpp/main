@@ -58,7 +58,7 @@ blank       [ \t\r]
 					BEGIN(cxx_outside);
 
 					/* mark-up file - maintain correspondence of line numbers with source file */
-					/* this does not work with windows back-slashed pathes */
+					/* this does not work with windows back-slashed paths */
 					/* *drv.outside << "#line 1 \"" << *yylloc->end.filename << "\"\n"; */
 				}
 			}
@@ -294,24 +294,21 @@ blank       [ \t\r]
 				*drv.outside << yytext;
 			}
 
-"//".*\n    {
+"//".*    {
 				/* single line comment */
+                /* pattern does not include trailing newline */
+                /* so matches a // comment at eof even if no trailing newline */
 
                 /* note location of comment body */
                 pc.comment_location = *yylloc;
 
                 /* location maintenance */
-                yylloc->lines(1);
                 yylloc->step();
 
                 /* build comment body, does not include comment introducer or trailing newline */
                 pc.comment_body = yytext + 2;
-                pc.comment_body.erase( pc.comment_body.length() - 1 );
 
                 Symbol::process_cxx_comment(pc.comment_body, pc.comment_location);
-
-				/* mark-up file - output newline to maintain validity of #line directives (remove comment) */
-				*drv.outside << "\n";
 			}
 }
 
