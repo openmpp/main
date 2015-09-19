@@ -51,14 +51,14 @@ int Driver::parse(string *in_filename, const string& module_name, const string& 
 void Driver::error (const yy::location& l, const string& m)
 {
     pc.parse_errors++;
-    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
     //cerr << l << ": " << m << endl;
 }
 
 void Driver::warning (const yy::location& l, const string& m)
 {
     pc.parse_warnings++;
-    theLog->logFormatted("%s(%d) %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
     //cerr << l << ": " << m << endl;
 }
 
