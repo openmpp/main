@@ -51,6 +51,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(OM_MSG_LIB);$(OM_DB_LIB);libopenm$(BUILD_SUFFIX).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OM_MSG_LIB_DIR);$(OM_DB_LIB_DIR);$(OM_LIB_DIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -89,6 +90,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <LargeAddressAware>true</LargeAddressAware>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
