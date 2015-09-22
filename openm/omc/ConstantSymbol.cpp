@@ -62,7 +62,7 @@ void ConstantSymbol::post_parse(int pass)
             pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));
             if (!pp_enumerator) {
                 assert(*enumerator); // parser guarantee
-                pp_error("Error - '" + (*enumerator)->name + "' is not an enumerator");
+                pp_error("Error : '" + (*enumerator)->name + "' is not an enumerator");
                 // OK to continue
             }
         }

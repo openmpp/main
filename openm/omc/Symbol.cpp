@@ -598,14 +598,14 @@ void Symbol::post_parse(int pass)
                 else {
                     // The source code contained an agent-qualified name token which was never declared,
                     // and no global with the same name exists.
-                    pp_error("Error - '" + name + "' was never declared");
+                    pp_error("error : '" + name + "' was never declared");
                     // OK to continue
                 }
             }
             else {
                 // I don't think we should get here.  All symbols should be derived symbols at this point.
                 // A syntax error should have been detected earlier.
-                pp_error("Error - unresolved symbol '" + name + "'");
+                pp_error("error : unresolved symbol '" + name + "'");
                 throw HelperException("Finish omc");
             }
         }
@@ -948,14 +948,14 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
             else {
                 // The source code contained an agent-qualified name token which was never declared,
                 // and no global with the same name exists.
-                pp_error(sym->decl_loc, "Error - '" + sym->name + "' was never declared");
+                pp_error(sym->decl_loc, "error : '" + sym->name + "' was never declared");
                 // OK to continue
             }
         }
         else {
             // I don't think we should get here.  All symbols should be derived symbols at this point.
             // A syntax error should have been detected earlier.
-            pp_error(sym->decl_loc, "Error - unresolved symbol '" + sym->name + "'");
+            pp_error(sym->decl_loc, "error : unresolved symbol '" + sym->name + "'");
             throw HelperException("Finish omc");
         }
     }
@@ -1024,7 +1024,7 @@ void Symbol::post_parse_all()
     parse_options();
 
     if (LanguageSymbol::number_of_languages() == 0) {
-        pp_error(yy::location(), "error - no languages specified");
+        pp_error(yy::location(), "error : no languages specified");
     }
 
     // Create pp_symbols now to easily find Symbols while debugging.

@@ -38,7 +38,7 @@ void AgentHookSymbol::create_auxiliary_symbols()
             // cast it to derived type
             fn_sym = dynamic_cast<AgentFuncSymbol *>(sym);
             if (!fn_sym) {
-                pp_error("error - symbol '" + fn_name + "' is reserved for implementing hooks");
+                pp_error("error : symbol '" + fn_name + "' is reserved for implementing hooks");
                 return;
             }
         }
@@ -67,12 +67,12 @@ void AgentHookSymbol::post_parse(int pass)
         // assign direct pointer to classifications for use post-parse
         pp_to = dynamic_cast<AgentFuncSymbol *> (pp_symbol(to));
         if (!pp_to) {
-            pp_error("error: '" + to->name + "' must be a function member of agent '" + pp_agent->name + "'");
+            pp_error("error : '" + to->name + "' must be a function member of agent '" + pp_agent->name + "'");
             break;
         }
         pp_from = dynamic_cast<AgentFuncSymbol *> (pp_symbol(from));
         if (!pp_from) {
-            pp_error("error: '" + from->name + "' must be a function member of agent '" + pp_agent->name + "'");
+            pp_error("error : '" + from->name + "' must be a function member of agent '" + pp_agent->name + "'");
             break;
         }
 
@@ -96,21 +96,21 @@ void AgentHookSymbol::post_parse(int pass)
                     pp_to->body_identifiers.begin(),
                     pp_to->body_identifiers.end(),
                     [nm](string id){ return nm == id; })) {
-            pp_error("error - the target function '" + pp_to->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
+            pp_error("error : the target function '" + pp_to->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
         }
 
         // Test for ambiguous hook order and emit warning if found.
         // 
         // First test if the hook has no explicit order, but other hooks are present.
         if (order == 0 && pp_agent->pp_hooks.count(pp_to->name) > 1) {
-            pp_warning("Warning: One or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
+            pp_warning("warning : one or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
         }
         else {
             // Second test is if the hook has an explicit order, but is tied to one or more other hooks.
             // See comment for 'key' above
             string key = pp_to->name + "_om_" + to_string(order);
             if (pp_agent->pp_hooks_with_order.count(key) > 1) {
-                pp_warning("Warning: One or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
+                pp_warning("warning : one or more functions hooking to '" + pp_to->name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
             }
         }
 

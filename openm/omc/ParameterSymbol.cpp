@@ -62,7 +62,7 @@ void ParameterSymbol::post_parse(int pass)
         assert(!pp_datatype); // no use allowed in parse phase
         pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
         if (!pp_datatype) {
-            pp_error("'" + datatype->name + "' is not a datatype in parameter '" + name + "'");
+            pp_error("error : '" + datatype->name + "' is not a datatype in parameter '" + name + "'");
         }
         break;
     }
@@ -76,12 +76,12 @@ void ParameterSymbol::post_parse(int pass)
             assert(sym); // grammar guarantee
             auto es = dynamic_cast<EnumerationSymbol *>(sym);
             if (!es) {
-                pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error("error : '" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
             if (es->is_bool()) {
                 // bool not allowed as parameter dimension
-                pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error("error : '" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
             // process the dimension into post-parse members
@@ -110,12 +110,12 @@ void ParameterSymbol::post_parse(int pass)
             assert(sym); // grammar guarantee
             auto es = dynamic_cast<EnumerationSymbol *>(sym);
             if (!es) {
-                pp_error("'" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error("error : '" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
             if (es->is_bool()) {
                 // bool not allowed as parameter dimension
-                pp_error("'" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error("error : '" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
                 continue; // don't insert invalid type in dimension list
             }
             pp_enumeration_list2.push_back(es);

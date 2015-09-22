@@ -79,7 +79,7 @@ void LinkToAgentVarSymbol::post_parse(int pass)
         auto sym = Symbol::get_symbol(agentvar, agent);
         auto av = dynamic_cast<AgentVarSymbol *> (sym);
         if (!av) {
-            pp_error("error - invalid member '" + agentvar + "' of link '" + pp_link->name + "'");
+            pp_error("error : invalid member '" + agentvar + "' of link '" + pp_link->name + "'");
         }
         pp_agentvar = av;
         break;

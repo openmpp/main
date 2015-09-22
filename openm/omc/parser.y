@@ -11,6 +11,7 @@
 
 #pragma once
 #include <string>
+#include <sstream>
 #include <list>
 #include <typeinfo>
 
@@ -1375,7 +1376,9 @@ parameter_initializer_expr:
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
                             if (parm->source == ParameterSymbol::derived_parameter) {
-                                drv.warning(@eq, "warning: ignoring initializer for derived parameter");
+                                ostringstream msg;
+                                msg << "warning : ignoring initializer for derived parameter " << parm->name;
+                                drv.warning(@eq, msg.str());
                             }
                             else if (pc.is_scenario_parameter_value) {
                                 parm->source = ParameterSymbol::scenario_parameter;
@@ -1384,7 +1387,9 @@ parameter_initializer_expr:
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {
-                                error(@eq, "error: parameter initializer not allowed in model source code");
+                                ostringstream msg;
+                                msg << "error : initializer for parameter " << parm->name << " not allowed in model source code";
+                                error(@eq, msg.str());
                             }
                             parm->initializer_list.push_back($parameter_initializer_element);
                         }
@@ -1394,7 +1399,9 @@ parameter_initializer_expr:
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
                             if (parm->source == ParameterSymbol::derived_parameter) {
-                                drv.warning(@eq, "warning: ignoring initializer for derived parameter");
+                                ostringstream msg;
+                                msg << "warning : ignoring initializer for derived parameter " << parm->name;
+                                drv.warning(@eq, msg.str());
                             }
                             else if (pc.is_scenario_parameter_value) {
                                 parm->source = ParameterSymbol::scenario_parameter;
@@ -1403,7 +1410,9 @@ parameter_initializer_expr:
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {
-                                error(@eq, "error: parameter initializer not allowed in model source code");
+                                ostringstream msg;
+                                msg << "error : initializer for parameter " << parm->name << " not allowed in model source code";
+                                error(@eq, msg.str());
                             }
                             auto wrk = $wrk; // to see it in the debugger
                             parm->initializer_list.splice(parm->initializer_list.end(), *wrk);

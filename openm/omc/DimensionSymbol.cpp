@@ -34,7 +34,7 @@ void DimensionSymbol::post_parse(int pass)
             // assign direct pointer to attribute for post-parse use
             pp_attribute = dynamic_cast<AgentVarSymbol *> (pp_symbol(attribute));
             if (!pp_attribute) {
-                pp_error("'" + (*attribute)->name + "' must be an attribute to be used as a dimension");
+                pp_error("error : '" + (*attribute)->name + "' must be an attribute to be used as a dimension");
             }
         }
         else {
@@ -45,7 +45,7 @@ void DimensionSymbol::post_parse(int pass)
             // An enumeration was specified for this dimension.
             pp_enumeration = dynamic_cast<EnumerationSymbol *> (pp_symbol(enumeration));
             if (!pp_enumeration) {
-                pp_error("'" + (*enumeration)->name + "' must be an enumeration to be used as a dimension");
+                pp_error("error : '" + (*enumeration)->name + "' must be an enumeration to be used as a dimension");
             }
         }
         break;
@@ -56,7 +56,7 @@ void DimensionSymbol::post_parse(int pass)
             // Assign direct pointer to enumeration for post-parse use
             pp_enumeration = dynamic_cast<EnumerationSymbol *>(pp_attribute->pp_data_type);
             if (!pp_enumeration) {
-                pp_error("The datatype of '" + pp_attribute->name + "' must be an enumeration to be used as a dimension");
+                pp_error("error : the datatype of '" + pp_attribute->name + "' must be an enumeration to be used as a dimension");
             }
         }
         break;
