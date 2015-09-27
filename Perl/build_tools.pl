@@ -21,7 +21,7 @@ chdir 'Perl' or die;
 
 my $merged; # output from build command
 my $retval; # return value from build command
-for my $utility ('excel_export', 'create_scex', 'patch_modgen_outputs') {
+for my $utility ('excel_export', 'create_scex', 'patch_modgen11_outputs', 'patch_modgen12_outputs') {
 	my $input = "${utility}.pl";
 	my $output = "${om_root}/bin/${utility}.exe";
 	print "Building utility ${utility}\n";

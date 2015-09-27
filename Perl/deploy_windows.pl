@@ -50,7 +50,8 @@ $subdir = 'bin';
 	'sqlite3.exe',
 	'create_scex.exe',
 	'excel_export.exe',
-	'patch_modgen_outputs.exe',
+	'patch_modgen11_outputs.exe',
+	'patch_modgen12_outputs.exe',
 	);
 mkdir "${deploy_dir}/${subdir}" or die;
 for my $file (@files) {

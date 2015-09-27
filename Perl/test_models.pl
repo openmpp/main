@@ -56,8 +56,8 @@ my $modgen_version = 12;
 #my $modgen_configuration = "Debug";
 my $modgen_configuration = "Release";
 
-my $modgen_platform = "Win32";
-#my $modgen_platform = "x64";
+#my $modgen_platform = "Win32";
+my $modgen_platform = "x64";
 
 #####################
 # file locations

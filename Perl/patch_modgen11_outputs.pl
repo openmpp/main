@@ -12,9 +12,9 @@ my $version = 0.1;
 
 if ( $#ARGV != 0 ) {
 	# must have 1 argument
-	print "patch_modgen_outputs version $version\n";
-	print "usage: patch_modgen_outputs dir\n";
-	print "  example: patch_modgen_outputs Alpha1/modgen/src\n";
+	print "patch_modgen11_outputs version $version\n";
+	print "usage: patch_modgen11_outputs dir\n";
+	print "  example: patch_modgen11_outputs Alpha1/modgen/src\n";
 	exit 1;
 }
 
@@ -60,7 +60,7 @@ if (!-d $src_dir) {
 		chomp;
 		my $line = $_;
 		if ($line =~ /actors/) {
-			my $modified_line = "#include \"custom_early.h\" // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+			my $modified_line = "#include \"custom_early.h\" // Inserted by patch_modgen11_outputs after Modgen compilation.\n";
 			print $fh $modified_line;
 			print "patched ${file_name}: $modified_line";
 		}
@@ -76,6 +76,7 @@ if (!-d $src_dir) {
 # ACTORS.CPP
 #
 # Comment #define MAIN_MODULE
+# Patch generated code to fix self_scheduling_int bug
 #
 
 {
@@ -92,11 +93,17 @@ if (!-d $src_dir) {
 		chomp;
 		my $line = $_;
 		if ($line =~ /#define\s+MAIN_MODULE/) {
-			my $modified_line = "//".$line." // Commented by patch_modgen_outputs after Modgen compilation.\n";
+			my $modified_line = "//".$line." // Commented by patch_modgen11_outputs after Modgen compilation.\n";
 			print $fh $modified_line;
 			print "patched ${file_name}: $modified_line";
 			# skip it
 			next;
+		}
+		if ($line =~ /poDerivedStates->Set_ssint_age\( int\(value\) \);/) {
+			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
+			print $fh $original_line;
+			$line =~ s/ int/ std::floor/;
+			print "patched ${file_name}: ${line}";
 		}
 		print $fh $line."\n";
 	}
@@ -127,7 +134,7 @@ if (!-d $src_dir) {
 		print $fh $line."\n";
 		if ($line =~ /^typedef\s+(\w+)\s+TIME;$/) {
 			my $typ = $1;
-			my $modified_line = "typedef ${typ} TIME_t; // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+			my $modified_line = "typedef ${typ} TIME_t; // Inserted by patch_modgen11_outputs after Modgen compilation.\n";
 			print $fh $modified_line;
 			print "patched ${file_name}: $modified_line";
 		}
@@ -144,7 +151,7 @@ if (!-d $src_dir) {
 			}
 			if ($line =~ /};$/) {
 				# end of enum for classification
-				my $modified_line = "typedef ${classification_name} ${classification_name}_t; // Inserted by patch_modgen_outputs after Modgen compilation.\n";
+				my $modified_line = "typedef ${classification_name} ${classification_name}_t; // Inserted by patch_modgen11_outputs after Modgen compilation.\n";
 				print $fh $modified_line;
 				print "patched ${file_name}: $modified_line";
 			}

@@ -51,7 +51,6 @@
     />
     <Message Text="Modgen elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))" />
     <Exec Command="$(COMPLETE_PATCH_MODGEN_OUTPUTS_EXE) $(MODGEN_OUT_DIR)"
-          Condition=" ( '$(MODGEN_VERSION)' == '11' )"
     />
     <Touch Files="@(MODGEN_OUTPUTS)" />
     <WriteLinesToFile 
