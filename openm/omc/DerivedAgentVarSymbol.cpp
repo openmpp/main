@@ -738,9 +738,19 @@ void DerivedAgentVarSymbol::assign_data_type()
     case token::TK_transitions:
     case token::TK_changes:
     case token::TK_duration_counter:
-    case token::TK_self_scheduling_int:
     {
         auto *sym = NumericSymbol::find(token::TK_counter);
+        assert(sym);  // Initialization guarantee
+        change_data_type(sym);
+        break;
+    }
+
+    // type is integer
+    case token::TK_self_scheduling_int:
+    {
+        // Note that self_scheduling_int(age) and self_scheduling_int(time) can be negative,
+        // so the integer protean type is used.
+        auto *sym = NumericSymbol::find(token::TK_integer);
         assert(sym);  // Initialization guarantee
         change_data_type(sym);
         break;
@@ -1724,16 +1734,16 @@ void DerivedAgentVarSymbol::create_side_effects()
 
             // There are 4 distinct cases to handle
             if (tok == token::TK_self_scheduling_int && av->name == "age") {
-                blk += "// Initial value is the integer part of age.";
-                blk += "ss_attr.set((int)age.get());";
-                blk += "// Time to wait for next change is the fraction of time remaining to next integer boundary";
+                blk += "// Initial value is the largest integer less than or equal to age.";
+                blk += "ss_attr.set(std::floor(age.get()));";
+                blk += "// Time to wait for next change is the fraction of time remaining to the next integer boundary";
                 blk += "ss_time = time + (1 - (age.get() - (int)age.get()));";
             }
             else if (tok == token::TK_self_scheduling_int && av->name == "time") {
-                blk += "// Initial value is the integer part of time.";
-                blk += "ss_attr.set((int)om_new);";
+                blk += "// Initial value is the largest integer less than or equal to time.";
+                blk += "ss_attr.set(std::floor(om_new));";
                 blk += "// Time of next change is next integer time";
-                blk += "ss_time = 1 + (int)om_new;";
+                blk += "ss_time = 1 + std::floor(om_new);";
             }
             else if (tok == token::TK_self_scheduling_split && av->name == "age") {
                 blk += "// Initial value is the corresponding partition interval.";
