@@ -7,7 +7,15 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include <set>
+
+#define RB_TREE 1 // for development branch purposes only - remove once working
+
+#if RB_TREE
+	#include "omc/rb_tree.h"
+#else
+	#include <set>
+#endif
+
 #include "omc/less_deref.h"
 #include "omc/link.h"
 
@@ -34,15 +42,22 @@ class EntitySet
 {
 public:
     EntitySet()
+#if RB_TREE
+#else
         : is_dirty(true)
+#endif
     {}
 
     ~EntitySet()
     {
+#if RB_TREE
+        entities.clear(entities.root);
+#else
         entities.clear();
         entities_ra.clear();
-    }
-
+#endif
+	}
+	
     size_t size()
     {
         return entities.size();
@@ -59,6 +74,11 @@ public:
         if (index < 0 || index >= entities.size()) {
             return nullptr;
         }
+#if RB_TREE
+        auto result_node = entities.os_select(index + 1);
+        //assert(entities.os_rank(result_node) == index + 1); // test of os_rank failed
+        return result_node->key;
+#else
         if (is_dirty) {
             // reconstruct the random access vector
             entities_ra.clear();
@@ -68,6 +88,7 @@ public:
             is_dirty = false;
         }
         return entities_ra[index];
+#endif
     }
 
     // For Modgen compatibility
@@ -80,34 +101,77 @@ public:
     {
         if (entities.size() > 0) {
             size_t index = (size_t) (uniform_draw * entities.size());
-            return entities_ra[index];
+            return at(index);
         }
         else {
             return nullptr;
         }
     }
 
+    //TODO: Consider recycling rb_node removed by rb_delete in subsequent rb_insert
+    // in other tree, possibly
     void insert(E * entity)
     {
+#if RB_TREE
+        auto tmp = new rb_node<link<E>>(link<E>(entity));
+	    entities.rb_insert(tmp);
+#else
         entities.insert(entity);
         is_dirty = true;
+#endif
     }
 
     void erase(E * entity)
     {
-        entities.erase(entity);
+#if RB_TREE
+        auto tmp = entities.iterative_tree_search(entity);
+        assert(tmp != entities.NIL);
+	    entities.rb_delete(tmp);
+        delete tmp;
+#else
+	    entities.erase(entity);
         is_dirty = true;
+#endif
+    }
+
+    /**
+     * Gets the rank (order statistic) of the given entity in an entity set.
+     *
+     * @param entity If non-null, the entity.
+     *
+     * @return An int.
+     */
+    int rank(const E * entity) const
+    {
+#if RB_TREE
+        auto tmp = entities.iterative_tree_search(entity);
+        if (tmp == entities.NIL) {
+            return 0; // not found
+        }
+	    return entities.os_rank(tmp);
+#else
+        for (int i = 0; i < size(); ++i) {
+            if (entities_ra[i] == entity) {
+                return i + 1;
+            }
+        }
+        return 0; // not found
+#endif
     }
 
 private:
 
     //* storage - a set of entity links, ordered by entity_id
+#if RB_TREE
+    rb_tree<link<E>, linkE_comp<E> > entities;
+#else
     set<link<E>, linkE_comp<E> > entities;
 
-    //* storage - a vector of entity links, ordered as in entities
+    //* storage - a vector (for random access) of entity links, ordered as in entities
     vector<link<E> > entities_ra;
 
     //* indicates that entities_ra requires reconstruction
     bool is_dirty;
+#endif
 };
 
