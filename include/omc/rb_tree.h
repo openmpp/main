@@ -153,7 +153,7 @@ template<typename T, typename CMP = std::less<T> >
 class rb_tree
 {
 public:
-    typedef typename rb_node<T> node_type;
+    typedef rb_node<T> node_type;
 
     enum colors {
         RED = rb_node<T>::RED,
