@@ -272,21 +272,6 @@ public:
     }
 
     /**
-     * Gets the next agent identifier.
-     * 
-     * Used to set agent_id as part of the initialization of each agent. Returns the value 1 on the
-     * first call.
-     *
-     * @return The next entity identifier.
-     */
-    static int get_next_entity_id()
-    {
-        // TODO check for correct multi-threaded behaviour
-        static int counter = 0;
-        return ++counter;
-    }
-
-    /**
      * True if agent is active in the simulation.
      */
     bool om_active;

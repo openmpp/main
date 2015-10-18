@@ -11,7 +11,7 @@
 namespace fmk {
 
     /**
-     * The number of simulations in the sample of simulations (not used)
+     * The number of simulations in the sample of simulations
      */
     int simulation_members = 0;
 
@@ -19,6 +19,11 @@ namespace fmk {
      * The current simulation member.
      */
     thread_local int simulation_member = 0;
+
+    /**
+     * The entity counter in this simulation member.
+     */
+    thread_local long long member_entity_counter = 0;
 
     /**
      * The value for population scaling.
@@ -34,6 +39,42 @@ namespace fmk {
      */
     thread_local bool do_exit_simulation_all = false;
 }
+
+/**
+ * Gets total number of simulation members.
+ *
+ * @return The simulation members.
+ */
+int get_simulation_members()
+{
+    return fmk::simulation_members;
+}
+
+/**
+ * Gets current simulation member.
+ *
+ * @return The simulation member.
+ */
+int get_simulation_member()
+{
+    return fmk::simulation_member;
+}
+
+/**
+ * Gets the next entity identifier.
+ * 
+ * As a side-effect, increments the counter of entities in the simulation member. The entity_id
+ * is constructed to be unique both within and across simulation members, with a minimum value
+ * of 1.
+ *
+ * @return The next entity identifier.
+ */
+int get_next_entity_id()
+{
+    fmk::member_entity_counter++;
+    return fmk::member_entity_counter * fmk::simulation_members + fmk::simulation_member;
+}
+
 
 /**
  * Fatal exit from the model, with a message.

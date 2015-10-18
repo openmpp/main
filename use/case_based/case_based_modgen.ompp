@@ -216,6 +216,9 @@ void RunSimulation(int mem_id, int mem_count)
 
     using namespace fmk;
 
+    // Initialize the entity counter for this simulation member
+    member_entity_counter = 0;
+
     // Create the case information communication object
     case_info ci;
 

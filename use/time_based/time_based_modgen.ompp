@@ -120,6 +120,9 @@ void RunSimulation(int mem_id, int mem_count)
 
     using namespace fmk;
 
+    // Initialize the entity counter for this simulation member
+    member_entity_counter = 0;
+
     string msg = "Running Simulation - member=" + to_string(mem_id);
     theLog->logMsg(msg.c_str());
 
