@@ -64,7 +64,7 @@ public:
 	rb_node * p;
 	T key;
 	bool color;
-    int size;
+    size_t size;
 
     /**
      * Minimum value of subtree rooted at this node
@@ -481,11 +481,11 @@ public:
      * Source: CLRS 14.1 Dynamic order statistics
      * The code is an unwound version of the pseudocode in CLRS.
      */
-    node_type * os_select(int i)
+    node_type * os_select(size_t i)
     {
         assert(i > 0 && i <= root->size); // invalid order statistic
         auto x = root;
-        int r = x->left->size + 1;
+        size_t r = x->left->size + 1;
         while (i != r) {
             if (i < r) {
                 x = x->left;
@@ -504,9 +504,9 @@ public:
      * 
      * Source: CLRS 14.1 Dynamic order statistics
      */
-    int os_rank(node_type * x)
+    size_t os_rank(node_type * x)
     {
-        int r = x->left->size + 1;
+        size_t r = x->left->size + 1;
         auto y = x;
         while (y != root) {
             if (y == y->p->right) {
@@ -536,7 +536,7 @@ public:
 
     // Interface functions
 
-    int size()
+    size_t size()
     {
         return root->size;
     }

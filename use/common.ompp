@@ -23,7 +23,7 @@ namespace fmk {
     /**
      * The entity counter in this simulation member.
      */
-    thread_local long long member_entity_counter = 0;
+    thread_local long member_entity_counter = 0;
 
     /**
      * The value for population scaling.
