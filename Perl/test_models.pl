@@ -1,7 +1,7 @@
 # Copyright (c) 2013-2015 OpenM++
 # This code is licensed under MIT license (see LICENSE.txt for details)
 
-# Script to test multiple models in ompp, ompp-lilnux, and modgen
+# Script to test multiple models in ompp, ompp-linux, and modgen
 
 # usage: perl test_models.pl [-newref] [-nomodgen] [-noompp] models
 # If models is not specified, all models will be processed.
@@ -21,7 +21,7 @@ my $models_root = getcwd;
 #  2 - chatty
 my $verbosity = 3;
 
-# Number of significant digits to retain in the output csv files
+# Number of significant digits to retain in the output csv files (0 means full precision)
 my $significant_digits = 7;
 
 #####################
@@ -56,8 +56,8 @@ my $modgen_version = 12;
 #my $modgen_configuration = "Debug";
 my $modgen_configuration = "Release";
 
-#my $modgen_platform = "Win32";
-my $modgen_platform = "x64";
+my $modgen_platform = "Win32";
+#my $modgen_platform = "x64";
 
 #####################
 # file locations
@@ -355,7 +355,8 @@ for my $model_dir (@model_dirs) {
 					"/nologo",
 					"/verbosity:normal",
 					"/fileLogger",
-					"/flp:Verbosity=minimal",
+					# "/flp:Verbosity=minimal",
+					"/flp:Verbosity=normal",
 					"/p:Configuration=${modgen_configuration}",
 					"/p:Platform=${modgen_platform}",
 					"/p:MODGEN_VERSION=${modgen_version}",
@@ -364,7 +365,7 @@ for my $model_dir (@model_dirs) {
 				system(@args);
 			};
 			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "C++ compile failed (${retval}) see ${build_log}";
+				logmsg error, $model_dir, $flavour, "Build failed (${retval}) see ${build_log}";
 				logerrors $merged;
 				next FLAVOUR;
 			}

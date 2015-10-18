@@ -76,7 +76,7 @@ sub modgen_tables_to_csv
 	my $round_value = 0;
 	my $round_prec = 0;
 	if ($#_ == 0) {
-		$round_prec = shift(@_) - 1;
+		$round_prec = shift(@_);
 		if ($round_prec > 0) {
 			$round_value = 1;
 		}
@@ -248,7 +248,10 @@ sub modgen_tables_to_csv
 						$value = '';
 					}
 					else {
-						$value = 0 + sprintf("%.${round_prec}e", $value);
+						$value = $value + 0.0;
+						if ($round_value) {
+							$value = 0.0 + sprintf("%.${round_prec}g", $value);
+						}
 						# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 						$value =~ s/e-0(\d\d)/e-$1/;
 					}
