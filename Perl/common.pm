@@ -263,7 +263,7 @@ sub ompp_tables_to_csv
 					$value = 0.0 + sprintf("%.${round_prec}g", $value);
 				}
 				# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
-				$value =~ s/e-0(\d\d)/e-$1/;
+				$value =~ s/e([-+])0(\d\d)/e\1\2/;
 				push @fields, $value;
 				$line = join(',', @fields);
 			}
@@ -532,6 +532,8 @@ sub normalize_event_trace
 			my $checksum = $3;
 			# retain 11 digits of precision in the checksum
 			my $checksum_formatted = sprintf("%.10e", $checksum);
+			# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
+			$checksum_formatted =~ s/e([-+])0(\d\d)/e\1\2/;
 			printf OUT "Seed: %15d Sample: %2d Checksum: %s\n", $case_seed, $case_sample, $checksum_formatted;
 			next;
 		}

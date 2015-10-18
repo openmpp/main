@@ -253,7 +253,7 @@ sub modgen_tables_to_csv
 							$value = 0.0 + sprintf("%.${round_prec}g", $value);
 						}
 						# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
-						$value =~ s/e-0(\d\d)/e-$1/;
+						$value =~ s/e([-+])0(\d\d)/e\1\2/;
 					}
 				}
 				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];
