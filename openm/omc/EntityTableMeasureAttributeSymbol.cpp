@@ -8,8 +8,8 @@
 #include <cassert>
 #include "libopenm/common/omHelper.h"
 #include "EntityTableMeasureAttributeSymbol.h"
-#include "AgentVarSymbol.h"
-#include "AgentInternalSymbol.h"
+#include "AttributeSymbol.h"
+#include "EntityInternalSymbol.h"
 #include "EntityTableSymbol.h"
 #include "CodeBlock.h"
 
@@ -42,24 +42,24 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
     {
         if ( need_value_in ) {
             // Create symbol for the data member which will hold the 'in' value of the increment.
-            auto av = dynamic_cast<AgentVarSymbol *>(agentvar);
+            auto av = dynamic_cast<AttributeSymbol *>(agentvar);
             if (av == nullptr) {
                 throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
             }
             string member_name = in_member_name();
-            auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
+            auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
             assert(sym);
             // push the name into the pass #1 ignore hash
             pp_ignore_pass1.insert(sym->unique_name);
         }
         if ( need_value_in_event ) {
             // Create symbol for the data member which will hold the 'in' value of the increment (for 'event' tabulation operator)
-            auto av = dynamic_cast<AgentVarSymbol *>(agentvar);
+            auto av = dynamic_cast<AttributeSymbol *>(agentvar);
             if (av == nullptr) {
                 throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
             }
             string member_name = in_event_member_name();
-            auto sym = new AgentInternalSymbol(member_name, av->agent, av->data_type);
+            auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
             assert(sym);
             // push the name into the pass #1 ignore hash
             pp_ignore_pass1.insert(sym->unique_name);
@@ -73,7 +73,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
         assert(pp_table); // parser guarantee
 
         // assign direct pointer to agentvar for post-parse use
-        pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
+        pp_agentvar = dynamic_cast<AttributeSymbol *> (pp_symbol(agentvar));
         assert(pp_agentvar); // parser guarantee
 
         break;

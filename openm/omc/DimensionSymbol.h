@@ -9,7 +9,7 @@
 #include <string>
 #include "Symbol.h"
 
-class AgentVarSymbol;
+class AttributeSymbol;
 class EunumerationSymbol;
 
 using namespace std;
@@ -84,7 +84,7 @@ public:
      * 
      * Only valid after post-parse.
      */
-    AgentVarSymbol* pp_attribute;
+    AttributeSymbol* pp_attribute;
 
     /**
      * The enumeration for the dimension (reference to pointer)

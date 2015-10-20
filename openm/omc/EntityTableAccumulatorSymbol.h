@@ -9,7 +9,7 @@
 #include <cassert>
 #include "Symbol.h"
 
-class AgentVarSymbol;
+class AttributeSymbol;
 class EntityTableMeasureAttributeSymbol;
 class EntityTableSymbol;
 
@@ -205,7 +205,7 @@ public:
      * 
      * Only valid after post-parse phase 1.
      */
-    AgentVarSymbol* pp_agentvar;
+    AttributeSymbol* pp_agentvar;
 
     /**
      * The analysis agentvar being accumulated (pointer to pointer)

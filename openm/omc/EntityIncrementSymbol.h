@@ -7,7 +7,7 @@
 
 #pragma once
 #include <cassert>
-#include "AgentMemberSymbol.h"
+#include "EntityMemberSymbol.h"
 #include "EntityTableSymbol.h"
 
 
@@ -18,10 +18,10 @@ using namespace std;
 /**
  * Functionality associated with the entity member Increment<> associated with a table
  */
-class EntityIncrementSymbol : public AgentMemberSymbol
+class EntityIncrementSymbol : public EntityMemberSymbol
 {
 private:
-    typedef AgentMemberSymbol super;
+    typedef EntityMemberSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -35,7 +35,7 @@ public:
      * @param decl_loc    (Optional) the declaration location.
      */
     EntityIncrementSymbol(const string member_name, const Symbol *agent, const EntityTableSymbol *table, yy::location decl_loc = yy::location())
-        : AgentMemberSymbol(member_name, agent, decl_loc)
+        : EntityMemberSymbol(member_name, agent, decl_loc)
         , table(table)
     {
     }

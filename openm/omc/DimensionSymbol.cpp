@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include "DimensionSymbol.h"
-#include "AgentVarSymbol.h"
+#include "AttributeSymbol.h"
 #include "EnumerationSymbol.h"
 
 // static
@@ -32,7 +32,7 @@ void DimensionSymbol::post_parse(int pass)
             // Attribute was assigned during parsing.
             // The dimension symbol is in an entity table or entity set.
             // assign direct pointer to attribute for post-parse use
-            pp_attribute = dynamic_cast<AgentVarSymbol *> (pp_symbol(attribute));
+            pp_attribute = dynamic_cast<AttributeSymbol *> (pp_symbol(attribute));
             if (!pp_attribute) {
                 pp_error("error : '" + (*attribute)->name + "' must be an attribute to be used as a dimension");
             }

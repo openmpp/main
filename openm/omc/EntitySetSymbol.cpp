@@ -7,13 +7,13 @@
 
 #include <cassert>
 #include "EntitySetSymbol.h"
-#include "AgentSymbol.h"
-#include "AgentInternalSymbol.h"
-#include "AgentFuncSymbol.h"
-#include "IdentityAgentVarSymbol.h"
+#include "EntitySymbol.h"
+#include "EntityInternalSymbol.h"
+#include "EntityFuncSymbol.h"
+#include "IdentityAttributeSymbol.h"
 #include "RangeSymbol.h"
 #include "DimensionSymbol.h"
-#include "AgentVarSymbol.h"
+#include "AttributeSymbol.h"
 #include "NumericSymbol.h"
 #include "EnumerationSymbol.h"
 #include "CodeBlock.h"
@@ -27,26 +27,26 @@ void EntitySetSymbol::create_auxiliary_symbols()
         // Set storage type to int. Can be changed in a subsequent pass to optimize storage based on array size.
         auto *typ = NumericSymbol::find(token::TK_int);
         assert(typ); // initialization guarantee
-        cell = new AgentInternalSymbol("om_" + name + "_cell", agent, typ);
+        cell = new EntityInternalSymbol("om_" + name + "_cell", agent, typ);
     }
 
     {
         assert(!update_cell_fn); // initialization guarantee
-        update_cell_fn = new AgentFuncSymbol("om_" + name + "_update_cell", agent);
+        update_cell_fn = new EntityFuncSymbol("om_" + name + "_update_cell", agent);
         assert(update_cell_fn); // out of memory check
         update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
     }
 
     {
         assert(!insert_fn); // initialization guarantee
-        insert_fn = new AgentFuncSymbol("om_" + name + "_insert", agent);
+        insert_fn = new EntityFuncSymbol("om_" + name + "_insert", agent);
         assert(insert_fn); // out of memory check
         insert_fn->doc_block = doxygen_short("Insert the entity into the active cell in " + name + ".");
     }
 
     {
         assert(!erase_fn); // initialization guarantee
-        erase_fn = new AgentFuncSymbol("om_" + name + "_erase", agent);
+        erase_fn = new EntityFuncSymbol("om_" + name + "_erase", agent);
         assert(erase_fn); // out of memory check
         erase_fn->doc_block = doxygen_short("Erase the entity from the active cell in " + name + ".");
     }
@@ -62,7 +62,7 @@ void EntitySetSymbol::post_parse(int pass)
     case eAssignMembers:
     {
         // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
+        pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
         assert(pp_agent); // parser guarantee
 
         break;

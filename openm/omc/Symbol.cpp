@@ -30,16 +30,16 @@
 #include "UnknownTypeSymbol.h"
 #include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
-#include "AgentSymbol.h"
-#include "AgentDataMemberSymbol.h"
-#include "AgentDataMemberSymbol.h"
-#include "AgentEventSymbol.h"
-#include "AgentFuncSymbol.h"
-#include "AgentVarSymbol.h"
-#include "DerivedAgentVarSymbol.h"
-#include "LinkAgentVarSymbol.h"
-#include "AgentMultilinkSymbol.h"
-#include "IdentityAgentVarSymbol.h"
+#include "EntitySymbol.h"
+#include "EntityDataMemberSymbol.h"
+#include "EntityDataMemberSymbol.h"
+#include "EntityEventSymbol.h"
+#include "EntityFuncSymbol.h"
+#include "AttributeSymbol.h"
+#include "DerivedAttributeSymbol.h"
+#include "LinkAttributeSymbol.h"
+#include "EntityMultilinkSymbol.h"
+#include "IdentityAttributeSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
@@ -85,7 +85,7 @@ list<LanguageSymbol *> Symbol::pp_all_languages;
 
 list<StringSymbol *> Symbol::pp_all_strings;
 
-list<AgentSymbol *> Symbol::pp_all_agents;
+list<EntitySymbol *> Symbol::pp_all_agents;
 
 list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 
@@ -1087,7 +1087,7 @@ void Symbol::post_parse_all()
     pp_all_strings.sort([](StringSymbol *a, StringSymbol *b) { return a->name < b->name; });
     pp_all_types0.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_types1.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
-    pp_all_agents.sort([](AgentSymbol *a, AgentSymbol *b) { return a->name < b->name; });
+    pp_all_agents.sort([](EntitySymbol *a, EntitySymbol *b) { return a->name < b->name; });
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
@@ -1125,14 +1125,14 @@ void Symbol::post_parse_all()
 
     // Sort collections in agents in lexicographic order
     for ( auto agent : pp_all_agents ) {
-        agent->pp_agent_data_members.sort( [] (AgentDataMemberSymbol *a, AgentDataMemberSymbol *b) { return a->name < b->name ; } );
-        agent->pp_callback_members.sort( [] (AgentMemberSymbol *a, AgentMemberSymbol *b) { return a->name < b->name ; } );
-        agent->pp_identity_agentvars.sort( [] (IdentityAgentVarSymbol *a, IdentityAgentVarSymbol *b) { return a->name < b->name ; } );
-        agent->pp_agent_events.sort( [] (AgentEventSymbol *a, AgentEventSymbol *b) { return a->event_name < b->event_name ; } );
-        agent->pp_agent_funcs.sort( [] (AgentFuncSymbol *a, AgentFuncSymbol *b) { return a->name < b->name ; } );
+        agent->pp_agent_data_members.sort( [] (EntityDataMemberSymbol *a, EntityDataMemberSymbol *b) { return a->name < b->name ; } );
+        agent->pp_callback_members.sort( [] (EntityMemberSymbol *a, EntityMemberSymbol *b) { return a->name < b->name ; } );
+        agent->pp_identity_agentvars.sort( [] (IdentityAttributeSymbol *a, IdentityAttributeSymbol *b) { return a->name < b->name ; } );
+        agent->pp_agent_events.sort( [] (EntityEventSymbol *a, EntityEventSymbol *b) { return a->event_name < b->event_name ; } );
+        agent->pp_agent_funcs.sort( [] (EntityFuncSymbol *a, EntityFuncSymbol *b) { return a->name < b->name ; } );
         agent->pp_entity_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
-        agent->pp_link_agentvars.sort( [] (LinkAgentVarSymbol *a, LinkAgentVarSymbol *b) { return a->name < b->name ; } );
-        agent->pp_multilink_members.sort( [] (AgentMultilinkSymbol *a, AgentMultilinkSymbol *b) { return a->name < b->name ; } );
+        agent->pp_link_agentvars.sort( [] (LinkAttributeSymbol *a, LinkAttributeSymbol *b) { return a->name < b->name ; } );
+        agent->pp_multilink_members.sort( [] (EntityMultilinkSymbol *a, EntityMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 
     // Sort collections in tables
@@ -1209,7 +1209,7 @@ void Symbol::post_parse_all()
     // Assign numeric identifier to self-scheduling derived agentvars (used in trace output)
     for (auto pr : pp_symbols) {
         auto sym = pr.second;
-        if (auto dav = dynamic_cast<DerivedAgentVarSymbol *>(sym)) {
+        if (auto dav = dynamic_cast<DerivedAttributeSymbol *>(sym)) {
             if (dav->is_self_scheduling()) {
                 dav->numeric_id = dav->pp_agent->next_ss_id;
                 ++(dav->pp_agent->next_ss_id);

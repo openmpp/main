@@ -8,8 +8,8 @@
 #include <cassert>
 #include <string>
 #include "EntityIncrementSymbol.h"
-#include "AgentSymbol.h"
-#include "AgentFuncSymbol.h"
+#include "EntitySymbol.h"
+#include "EntityFuncSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;

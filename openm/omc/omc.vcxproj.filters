@@ -66,33 +66,6 @@
     <ClInclude Include="dirent\dirent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentMemberSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentDataMemberSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentEventSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentFuncSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentInternalSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BuiltinAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SimpleAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LanguageSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -147,34 +120,13 @@
     <ClInclude Include="NumericSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExprForAgentVar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IdentityAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TypeOfLinkSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LinkToAgentVarSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentMultilinkSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MultilinkAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UnknownTypeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EnumerationWithEnumeratorsSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SimpleAgentVarEnumSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StringSymbol.h">
@@ -184,9 +136,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConstantSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DerivedAgentVarSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GroupSymbol.h">
@@ -207,16 +156,10 @@
     <ClInclude Include="GlobalFuncSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentArrayMemberSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Constant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AggregationSymbol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AgentHookSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DimensionSymbol.h">
@@ -255,6 +198,63 @@
     <ClInclude Include="SpecialGlobal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BuiltinAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DerivedAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityArrayMemberSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityDataMemberSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityEventSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityFuncSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityHookSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityInternalSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityMemberSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityMultilinkSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitySymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExprForAttribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IdentityAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkToAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultilinkAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleAttributeEnumSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -267,33 +267,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Symbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentMemberSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentEventSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentDataMemberSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentFuncSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentInternalSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BuiltinAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SimpleAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParameterSymbol.cpp">
@@ -347,31 +320,13 @@
     <ClCompile Include="NumericSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IdentityAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LinkAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TypeOfLinkSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LinkToAgentVarSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentMultilinkSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MultilinkAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UnknownTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SimpleAgentVarEnumSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StringSymbol.cpp">
@@ -381,9 +336,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ConstantSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DerivedAgentVarSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GroupSymbol.cpp">
@@ -404,16 +356,10 @@
     <ClCompile Include="GlobalFuncSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AgentArrayMemberSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Constant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AggregationSymbol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AgentHookSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DimensionSymbol.cpp">
@@ -447,6 +393,60 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StringTypeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BuiltinAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DerivedAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityArrayMemberSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityDataMemberSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityEventSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityFuncSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityHookSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityInternalSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityMemberSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityMultilinkSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntitySymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IdentityAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkToAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultilinkAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleAttributeEnumSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleAttributeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

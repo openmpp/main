@@ -7,8 +7,8 @@
 
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableSymbol.h"
-#include "AgentVarSymbol.h"
-#include "AgentInternalSymbol.h"
+#include "AttributeSymbol.h"
+#include "EntityInternalSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
 #include "CodeBlock.h"
 
@@ -54,7 +54,7 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
     {
         // If agentvar is subject to event() tabulation operator create lagged version.
         if (table_op == token::TK_event) {
-            auto av = dynamic_cast<AgentVarSymbol *>(pp_symbol(agentvar));
+            auto av = dynamic_cast<AttributeSymbol *>(pp_symbol(agentvar));
             assert(av);
             av->create_lagged();
             assert(av->lagged);
@@ -73,7 +73,7 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
 
         if (accumulator != token::TK_unit) {
             // assign direct pointer to agentvar for post-parse use
-            pp_agentvar = dynamic_cast<AgentVarSymbol *> (pp_symbol(agentvar));
+            pp_agentvar = dynamic_cast<AttributeSymbol *> (pp_symbol(agentvar));
             assert(pp_agentvar); // parser guarantee
 
             // assign direct pointer to EntityTableMeasureAttributeSymbol for post-parse use

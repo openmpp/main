@@ -10,7 +10,7 @@
 #include <string>
 #include "Symbol.h"
 
-class AgentVarSymbol;
+class AttributeSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -118,7 +118,7 @@ public:
     * Stored as a pointer, which is only valid after post-parse phase 1.
     */
 
-    AgentVarSymbol* pp_agentvar;
+    AttributeSymbol* pp_agentvar;
 
 
     /**

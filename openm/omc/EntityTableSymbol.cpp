@@ -9,13 +9,13 @@
 #include <regex>
 #include "EntityTableSymbol.h"
 #include "LanguageSymbol.h"
-#include "AgentSymbol.h"
+#include "EntitySymbol.h"
 #include "EntityIncrementSymbol.h"
-#include "AgentInternalSymbol.h"
-#include "AgentVarSymbol.h"
-#include "BuiltinAgentVarSymbol.h"
-#include "AgentFuncSymbol.h"
-#include "IdentityAgentVarSymbol.h"
+#include "EntityInternalSymbol.h"
+#include "AttributeSymbol.h"
+#include "BuiltinAttributeSymbol.h"
+#include "EntityFuncSymbol.h"
+#include "IdentityAttributeSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
 #include "RangeSymbol.h"
@@ -42,21 +42,21 @@ void EntityTableSymbol::create_auxiliary_symbols()
 
     {
         assert(!current_cell_fn); // initialization guarantee
-        current_cell_fn = new AgentFuncSymbol("om_" + name + "_current_cell", agent, "int", "");
+        current_cell_fn = new EntityFuncSymbol("om_" + name + "_current_cell", agent, "int", "");
         assert(current_cell_fn); // out of memory check
         current_cell_fn->doc_block = doxygen_short("Compute the current cell index of table " + name + " using attributes in the " + agent->name + " entity.");
     }
 
     {
         assert(!init_increment_fn); // initialization guarantee
-        init_increment_fn = new AgentFuncSymbol("om_" + name + "_init_increment", agent, "void", "int pending, big_counter pending_event_counter");
+        init_increment_fn = new EntityFuncSymbol("om_" + name + "_init_increment", agent, "void", "int pending, big_counter pending_event_counter");
         assert(init_increment_fn); // out of memory check
         init_increment_fn->doc_block = doxygen_short("Initialize the increment for the active table cell in " + name + ".");
     }
 
     {
         assert(!push_increment_fn); // initialization guarantee
-        push_increment_fn = new AgentFuncSymbol("om_" + name + "_push_increment", agent, "void", "int cell_in, int pending, big_counter pending_event_counter");
+        push_increment_fn = new EntityFuncSymbol("om_" + name + "_push_increment", agent, "void", "int cell_in, int pending, big_counter pending_event_counter");
         assert(push_increment_fn); // out of memory check
         push_increment_fn->doc_block = doxygen_short("Finalize the increment and push it to the accumulators in " + name + ".");
     }
@@ -72,7 +72,7 @@ void EntityTableSymbol::post_parse(int pass)
     case eAssignMembers:
     {
         // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<AgentSymbol *> (pp_symbol(agent));
+        pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
         assert(pp_agent); // parser guarantee
 
         break;
@@ -160,7 +160,7 @@ void EntityTableSymbol::post_parse(int pass)
         // to trigger processing of "lazy increments"
         {
             // All attributes used in the table.
-            list<AgentVarSymbol *> all_attributes;
+            list<AttributeSymbol *> all_attributes;
 
             // Attributes used as dimensions
             for (auto dim : dimension_list) {

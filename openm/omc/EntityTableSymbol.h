@@ -15,11 +15,11 @@ class EntityIncrementSymbol;
 class EntityTableMeasureSymbol;
 class EntityTableAccumulatorSymbol;
 class EntityTableMeasureAttributeSymbol;
-class AgentFuncSymbol;
-class AgentInternalSymbol;
-class AgentVarSymbol;
-class IdentityAgentVarSymbol;
-class BuiltinAgentVarSymbol;
+class EntityFuncSymbol;
+class EntityInternalSymbol;
+class AttributeSymbol;
+class IdentityAttributeSymbol;
+class BuiltinAttributeSymbol;
 class CodeBlock;
 
 using namespace std;
@@ -105,7 +105,7 @@ public:
      * 
      * For use post-parse.
      */
-    AgentSymbol *pp_agent;
+    EntitySymbol *pp_agent;
 
     /**
      * The increment symbol for the table
@@ -117,22 +117,22 @@ public:
     /**
      * The entity function which computes the active cell index using entity attributes.
      */
-    AgentFuncSymbol *current_cell_fn;
+    EntityFuncSymbol *current_cell_fn;
 
     /**
      * The entity function which initializes the increment.
      */
-    AgentFuncSymbol *init_increment_fn;
+    EntityFuncSymbol *init_increment_fn;
 
     /**
      * The entity function which finalizes the increment and pushes it to the accumulator.
      */
-    AgentFuncSymbol *push_increment_fn;
+    EntityFuncSymbol *push_increment_fn;
 
     /**
      * The expression agentvar of the table filter.
      */
-    IdentityAgentVarSymbol *filter;
+    IdentityAttributeSymbol *filter;
 
     /**
      * The attributes used in table measures.

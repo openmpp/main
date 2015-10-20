@@ -8,10 +8,10 @@
 #pragma once
 #include "Symbol.h"
 
-class AgentFuncSymbol;
-class AgentInternalSymbol;
-class AgentVarSymbol;
-class IdentityAgentVarSymbol;
+class EntityFuncSymbol;
+class EntityInternalSymbol;
+class AttributeSymbol;
+class IdentityAttributeSymbol;
 class DimensionSymbol;
 class CodeBlock;
 
@@ -100,32 +100,32 @@ public:
      * For use post-parse.
      */
 
-    AgentSymbol *pp_agent;
+    EntitySymbol *pp_agent;
 
     /**
      * The agentvar which will hold the active index into the entity set.
      */
-    AgentInternalSymbol *cell;
+    EntityInternalSymbol *cell;
 
     /**
      * The agent function which updates the active cell index using agentvars.
      */
-    AgentFuncSymbol *update_cell_fn;
+    EntityFuncSymbol *update_cell_fn;
 
     /**
      * The agent function which inserts the agent into the entity set.
      */
-    AgentFuncSymbol *insert_fn;
+    EntityFuncSymbol *insert_fn;
 
     /**
      * The agent function which removes the agent from the entity set.
      */
-    AgentFuncSymbol *erase_fn;
+    EntityFuncSymbol *erase_fn;
 
     /**
      * The expression agentvar of the entity set filter.
      */
-    IdentityAgentVarSymbol *filter;
+    IdentityAttributeSymbol *filter;
 
     /**
      * List of dimensions
