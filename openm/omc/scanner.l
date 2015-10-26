@@ -1,3 +1,8 @@
+%top{
+/* Define C std integer type macros (e.g. INT8_MIN) before flex's fall-back versions */
+#include <cstdint>
+}
+
 %{ /* -*- C++ -*- */
 #include <iostream>
 #include <fstream>
