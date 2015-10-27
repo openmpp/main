@@ -14,4 +14,150 @@
       <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src/om_definitions.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_developer.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_fixed_parms.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(CUSTOM_CPP)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src/om_types0.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_types1.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_declarations.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom_early.h" />
+    <ClInclude Include="../code/custom.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom_early.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/ExtraTests.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/HostCore.mpp" />
+    <None Include="../code/IDMM.mpp" />
+    <None Include="../code/IDMMFR.mpp" />
+    <None Include="../code/ModelStrings.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/modgen_time_based.mpp" />
+    <None Include="../code/TestTables.mpp" />
+    <None Include="../code/TickerCore.mpp" />
+    <None Include="../code/*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../parameters/Base/Base%28ExtraTests%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/Base/Base%28IDMM%29.dat" />
+    <None Include="../parameters/Base/Base%28ExtraTests%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/Base/Base%28IDMM%29.dat" />
+    <None Include="../parameters/Base/*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

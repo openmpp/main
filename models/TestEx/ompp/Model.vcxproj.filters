@@ -14,4 +14,388 @@
       <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src/om_definitions.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_developer.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_fixed_parms.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(CUSTOM_CPP)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src/om_types0.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_types1.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_declarations.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/case_based.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h" />
+    <ClInclude Include="../code/custom_early.h" />
+    <ClInclude Include="../code/case_based.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h" />
+    <ClInclude Include="../code/custom_early.h" />
+    <ClInclude Include="../code/case_based.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h" />
+    <ClInclude Include="../code/custom_early.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/Clock.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/StandTab.mpp" />
+    <None Include="../code/Test01.mpp" />
+    <None Include="../code/Test02.mpp" />
+    <None Include="../code/Test03.mpp" />
+    <None Include="../code/Test04.mpp" />
+    <None Include="../code/Test05.mpp" />
+    <None Include="../code/Test06.mpp" />
+    <None Include="../code/Test07.mpp" />
+    <None Include="../code/Test08.mpp" />
+    <None Include="../code/Test09.mpp" />
+    <None Include="../code/TestClock.mpp" />
+    <None Include="../code/TestEx.mpp" />
+    <None Include="../code/Tracking.mpp" />
+    <None Include="../code/*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../parameters/Base/base%28Clock%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/Base/Base%28PersonCore%29.dat" />
+    <None Include="../parameters/Base/base%28TestClock%29.dat" />
+    <None Include="../parameters/Base/base%28Clock%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/Base/Base%28PersonCore%29.dat" />
+    <None Include="../parameters/Base/base%28TestClock%29.dat" />
+    <None Include="../parameters/Base/base%28Clock%29.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/Base/Base%28PersonCore%29.dat" />
+    <None Include="../parameters/Base/base%28TestClock%29.dat" />
+    <None Include="../parameters/Base/*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
