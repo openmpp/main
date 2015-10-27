@@ -455,11 +455,11 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // get dimensions list
     int mId = i_metaRows.modelDic.modelId;
-    const ParamDimsRow dRow(mId, paramInfo->id, 0);
+    const ParamDimsRow pdRow(mId, paramInfo->id, 0);
     auto dimRange = std::equal_range(
         i_metaRows.paramDims.cbegin(), 
         i_metaRows.paramDims.cend(), 
-        dRow, 
+        pdRow,
         [](const ParamDimsRow & i_left, const ParamDimsRow & i_right) -> bool { 
             return
                 i_left.modelId < i_right.modelId || 

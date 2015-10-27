@@ -14,4 +14,88 @@
       <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src/om_definitions.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_developer.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_fixed_parms.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(CUSTOM_CPP)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src/om_types0.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_types1.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_declarations.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/case_based.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h" />
+    <ClInclude Include="../code/custom_early.h" />
+    <ClInclude Include="../code/case_based.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h" />
+    <ClInclude Include="../code/custom_early.h" />
+    <ClInclude Include="../code/case_based.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h" />
+    <ClInclude Include="../code/custom_early.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../code/language_FR.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/model.mpp" />
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/language_FR.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/model.mpp" />
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/language_FR.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/model.mpp" />
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/language_FR.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/model.mpp" />
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/language_FR.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/model.mpp" />
+    <None Include="../code/modgen_case_based.mpp" />
+    <None Include="../code/modgen_entities.mpp" />
+    <None Include="../code/PersonCore.mpp" />
+    <None Include="../code/*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../parameters/Base/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/Base/*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

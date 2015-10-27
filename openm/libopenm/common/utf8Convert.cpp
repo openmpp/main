@@ -322,14 +322,14 @@ public:
     {
         if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
 
-        u32string ustr = cvt32.from_bytes(i_text, i_text + i_size);
+        wstring ustr = wcvt.from_bytes(i_text, i_text + i_size);
         return 
             u8cvt.to_bytes(ustr.c_str());
     }
 
 private:
-    wstring_convert<codecvt_utf16<char32_t, 0x10ffff, codecvt_mode::little_endian>, char32_t> cvt32;    // to convert UTF-16LE bytes into UCS-4
-    wstring_convert<codecvt_utf8<char32_t>, char32_t> u8cvt;                                            // to convert UCS-4 into UTF-8
+    wstring_convert<codecvt_utf16<wchar_t, 0x10ffff, codecvt_mode::little_endian>, wchar_t> wcvt;   // to convert UTF-16LE bytes into wide char
+    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;              // to convert wide char into UTF-8
 };
 
 // convert from UTF-16BE to UTF-8
@@ -344,14 +344,14 @@ public:
     {
         if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
 
-        u32string ustr = cvt32.from_bytes(i_text, i_text + i_size);
+        wstring ustr = wcvt.from_bytes(i_text, i_text + i_size);
         return 
             u8cvt.to_bytes(ustr.c_str());
     }
 
 private:
-    wstring_convert<codecvt_utf16<char32_t, 0x10ffff, (codecvt_mode)0>, char32_t> cvt32;    // to convert UTF-16BE bytes into UCS-4
-    wstring_convert<codecvt_utf8<char32_t>, char32_t> u8cvt;                                // to convert UCS-4 into UTF-8
+    wstring_convert<codecvt_utf16<wchar_t, 0x10ffff, (codecvt_mode)0>, wchar_t> wcvt;   // to convert UTF-16BE bytes into wide char
+    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;              // to convert wide char into UTF-8
 };
 
 // create new converter instance by specified conversion type.
