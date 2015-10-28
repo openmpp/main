@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        GroupPcTable(const GroupPcTable & i_table);               // = delete;
-        GroupPcTable & operator=(const GroupPcTable & i_table);   // = delete;
+        GroupPcTable(const GroupPcTable & i_table) = delete;
+        GroupPcTable & operator=(const GroupPcTable & i_table) = delete;
     };
 
     // Columns type for group_pc row

@@ -126,8 +126,8 @@ namespace openm
         }
 
     private:
-        MsgEmptyExec(const MsgEmptyExec & i_exec);              // = delete;
-        MsgEmptyExec & operator=(const MsgEmptyExec & i_exec);  // = delete;
+        MsgEmptyExec(const MsgEmptyExec & i_exec) = delete;
+        MsgEmptyExec & operator=(const MsgEmptyExec & i_exec) = delete;
     };
 
     /** base class for non-blocking send (empty implementation) */
@@ -150,8 +150,8 @@ namespace openm
         int sendToRank;     // destination MPI process rank
 
     private:
-        MsgEmptySendBase(const MsgEmptySendBase & i_send);              // = delete;
-        MsgEmptySendBase & operator=(const MsgEmptySendBase & i_send);  // = delete;
+        MsgEmptySendBase(const MsgEmptySendBase & i_send) = delete;
+        MsgEmptySendBase & operator=(const MsgEmptySendBase & i_send) = delete;
     };
 
     /** non-blocking send of value array (empty implementation) */
@@ -180,8 +180,8 @@ namespace openm
         void * valueArr;                // value array
 
     private:
-        MsgEmptySendArray(const MsgEmptySendArray & i_send);                // = delete;
-        MsgEmptySendArray & operator=(const MsgEmptySendArray & i_send);    // = delete;
+        MsgEmptySendArray(const MsgEmptySendArray & i_send) = delete;
+        MsgEmptySendArray & operator=(const MsgEmptySendArray & i_send) = delete;
     };
 
     /** non-blocking send of packed data (empty implementation) */
@@ -208,8 +208,8 @@ namespace openm
         const IPackedAdapter & packAdp; // adapter to pack db rows data
 
     private:
-        MsgEmptySendPacked(const MsgEmptySendPacked & i_send);              // = delete;
-        MsgEmptySendPacked & operator=(const MsgEmptySendPacked & i_send);  // = delete;
+        MsgEmptySendPacked(const MsgEmptySendPacked & i_send) = delete;
+        MsgEmptySendPacked & operator=(const MsgEmptySendPacked & i_send) = delete;
     };
 
     /** non-blocking receive of value array (empty implementation) */
@@ -243,8 +243,8 @@ namespace openm
         void * resultValueArr;          // received data
 
     private:
-        MsgEmptyRecvArray(const MsgEmptyRecvArray & i_recv);                // = delete;
-        MsgEmptyRecvArray & operator=(const MsgEmptyRecvArray & i_recv);    // = delete;
+        MsgEmptyRecvArray(const MsgEmptyRecvArray & i_recv) = delete;
+        MsgEmptyRecvArray & operator=(const MsgEmptyRecvArray & i_recv) = delete;
     };
 
     /** non-blocking receive of packed data (empty implementation) */
@@ -274,8 +274,8 @@ namespace openm
         const IPackedAdapter & packAdp; // adapter to unpack received data
 
     private:
-        MsgEmptyRecvPacked(const MsgEmptyRecvPacked & i_recv);              // = delete;
-        MsgEmptyRecvPacked & operator=(const MsgEmptyRecvPacked & i_recv);  // = delete;
+        MsgEmptyRecvPacked(const MsgEmptyRecvPacked & i_recv) = delete;
+        MsgEmptyRecvPacked & operator=(const MsgEmptyRecvPacked & i_recv) = delete;
     };
 }
 

@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        ParamDimsTable(const ParamDimsTable & i_table);             // = delete;
-        ParamDimsTable & operator=(const ParamDimsTable & i_table); // = delete;
+        ParamDimsTable(const ParamDimsTable & i_table) = delete;
+        ParamDimsTable & operator=(const ParamDimsTable & i_table) = delete;
     };
 
     // Columns type for parameter_dims row

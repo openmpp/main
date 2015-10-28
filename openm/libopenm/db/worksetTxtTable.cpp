@@ -18,8 +18,8 @@ namespace openm
         static vector<WorksetTxtRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
-        WorksetTxtTable(const WorksetTxtTable & i_table);               // = delete;
-        WorksetTxtTable & operator=(const WorksetTxtTable & i_table);   // = delete;
+        WorksetTxtTable(const WorksetTxtTable & i_table) = delete;
+        WorksetTxtTable & operator=(const WorksetTxtTable & i_table) = delete;
     };
 
     // Columns type for workset_txt row

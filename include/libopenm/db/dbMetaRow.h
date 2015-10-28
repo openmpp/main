@@ -723,6 +723,66 @@ namespace openm
         static bool modelIdParamIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
+
+    /** parameter_dims_txt table row. */
+    struct ParamDimsTxtRow : public IMetaRow<ParamDimsTxtRow>
+    {
+        /** model_id INT          NOT NULL */
+        int modelId;
+
+        /** parameter_id INT      NOT NULL */
+        int paramId;
+
+        /** dim_id   INT          NOT NULL */
+        int dimId;
+
+        /** lang_id  INT          NOT NULL */
+        int langId;
+
+        /** descr    VARCHAR(255) NOT NULL */
+        string descr;
+
+        /** note     VARCHAR(32000) */
+        string note;
+
+        /** create row with supplied primary key field values. */
+        ParamDimsTxtRow(int i_modelId, int i_paramId, int i_dimId, int i_langId) :
+            modelId(i_modelId),
+            paramId(i_paramId),
+            dimId(i_dimId),
+            langId(i_langId),
+            descr(""),
+            note("")
+        { }
+
+        /** create row with default empty field values. */
+        ParamDimsTxtRow(void) : ParamDimsTxtRow(0, 0, 0, 0) { }
+
+        ~ParamDimsTxtRow(void) throw() { }
+
+        /** less comparator by primary key: model id, parameter id, dimension id, language id. */
+        static bool isKeyLess(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right);
+
+        /** equal comparator by primary key: model id, parameter id, dimension id, language id. */
+        static bool isKeyEqual(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right);
+
+        /** equal comparator by language id. */
+        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
+    };
+
+    /** parameter_dims_txt table row and language name. */
+    struct ParamDimsTxtLangRow : public ParamDimsTxtRow
+    {
+        /** language name */
+        string langName;
+
+        /** less comparator by unique key: model id, parameter id, dimension name, language name. */
+        static bool uniqueLangKeyLess(const ParamDimsTxtLangRow & i_left, const ParamDimsTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, parameter id, dimension name, language name. */
+        static bool uniqueLangKeyEqual(const ParamDimsTxtLangRow & i_left, const ParamDimsTxtLangRow & i_right);
+    };
+
     /** table_dic table row. */
     struct TableDicRow : public IMetaRow<TableDicRow>
     {

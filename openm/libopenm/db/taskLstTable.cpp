@@ -18,8 +18,8 @@ namespace openm
         static vector<TaskLstRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
-        TaskLstTable(const TaskLstTable & i_table);               // = delete;
-        TaskLstTable & operator=(const TaskLstTable & i_table);   // = delete;
+        TaskLstTable(const TaskLstTable & i_table) = delete;
+        TaskLstTable & operator=(const TaskLstTable & i_table) = delete;
     };
 
     // Columns type for task_lst row

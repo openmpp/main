@@ -35,8 +35,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        LangLstTable(const LangLstTable & i_table);               // = delete;
-        LangLstTable & operator=(const LangLstTable & i_table);   // = delete;
+        LangLstTable(const LangLstTable & i_table) = delete;
+        LangLstTable & operator=(const LangLstTable & i_table) = delete;
     };
 
     // Columns type for lang_lst row

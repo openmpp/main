@@ -88,8 +88,8 @@ namespace openm
         void receiveSubSamples(void);
 
     private:
-        RunInitBase(const RunInitBase & i_runInit);             // = delete;
-        RunInitBase & operator=(const RunInitBase & i_runInit); // = delete;
+        RunInitBase(const RunInitBase & i_runInit) = delete;
+        RunInitBase & operator=(const RunInitBase & i_runInit) = delete;
     };
 
     /** model base class */
@@ -145,8 +145,8 @@ namespace openm
             const MetaRunHolder * i_metaStore
             );
     private:
-        ModelBase(const ModelBase & i_model);               // = delete;
-        ModelBase & operator=(const ModelBase & i_model);   // = delete;
+        ModelBase(const ModelBase & i_model) = delete;
+        ModelBase & operator=(const ModelBase & i_model) = delete;
     };
 }
 

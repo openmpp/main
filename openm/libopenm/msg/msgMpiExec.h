@@ -72,8 +72,8 @@ namespace openm
         void cleanup(void) throw();
 
     private:
-        MpiExec(const MpiExec & i_exec);                // = delete;
-        MpiExec & operator=(const MpiExec & i_exec);    // = delete;
+        MpiExec(const MpiExec & i_exec) = delete;
+        MpiExec & operator=(const MpiExec & i_exec) = delete;
     };
 }
 

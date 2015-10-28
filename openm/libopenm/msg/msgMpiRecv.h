@@ -55,8 +55,8 @@ namespace openm
         MPI_Datatype mpiType;   // MPI type to receive
 
     private:
-        MpiRecvArray(const MpiRecvArray & i_recv);                // = delete;
-        MpiRecvArray & operator=(const MpiRecvArray & i_recv);    // = delete;
+        MpiRecvArray(const MpiRecvArray & i_recv) = delete;
+        MpiRecvArray & operator=(const MpiRecvArray & i_recv) = delete;
     };
 
     /** non-blocking receive of packed data */
@@ -94,8 +94,8 @@ namespace openm
         const IPackedAdapter & packAdp; // adapter to unpack received data
 
     private:
-        MpiRecvPacked(const MpiRecvPacked & i_recv);                // = delete;
-        MpiRecvPacked & operator=(const MpiRecvPacked & i_recv);    // = delete;
+        MpiRecvPacked(const MpiRecvPacked & i_recv) = delete;
+        MpiRecvPacked & operator=(const MpiRecvPacked & i_recv) = delete;
     };
 }
 

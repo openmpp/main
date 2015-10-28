@@ -151,6 +151,11 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
     }
     io_wr.write("\n");
 
+    for (const ParamDimsTxtLangRow & row : i_metaRows.paramDimsTxt) {
+        ModelInsertSql::insertSql(row, io_wr);
+    }
+    io_wr.write("\n");
+
     // model output tables
     io_wr.write(
         "--\n" \
@@ -997,6 +1002,27 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
         if (nextIt != io_metaRows.paramDims.cend() && ParamDimsRow::isKeyEqual(*rowIt, *nextIt))
             throw DbException("in parameter_dims not unique model id: %d, parameter id: %d and dimension name: %s", rowIt->modelId, rowIt->paramId, rowIt->name.c_str());
+    }
+
+    // parameter_dims_txt table
+    // unique: model id, parameter id, dimension id, language; master key: model id, parameter id, dimension name;
+    sort(io_metaRows.paramDimsTxt.begin(), io_metaRows.paramDimsTxt.end(), ParamDimsTxtLangRow::uniqueLangKeyLess);
+
+    for (vector<ParamDimsTxtLangRow>::const_iterator rowIt = io_metaRows.paramDimsTxt.cbegin(); rowIt != io_metaRows.paramDimsTxt.cend(); ++rowIt) {
+
+        ParamDimsRow mkRow(rowIt->modelId, rowIt->paramId, rowIt->dimId);
+        if (!std::binary_search(
+            io_metaRows.paramDims.cbegin(),
+            io_metaRows.paramDims.cend(),
+            mkRow,
+            ParamDimsRow::isKeyLess
+            ))
+            throw DbException("in parameter_dims_txt invalid model id: %d parameter id: %d and dimension id: %s: not found in parameter_dims", rowIt->modelId, rowIt->paramId, rowIt->dimId);
+
+        vector<ParamDimsTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.paramDimsTxt.cend() && ParamDimsTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException("in parameter_dims_txt not unique model id: %d, parameter id: %d, dimension id: %d and language: %s", rowIt->modelId, rowIt->paramId, rowIt->dimId, rowIt->langName.c_str());
     }
 
     // table_dic table

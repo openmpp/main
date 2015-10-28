@@ -136,6 +136,11 @@ INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_i
 INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_id) VALUES (1, 1, 0, 'dim0', 23);
 INSERT INTO parameter_dims (model_id, parameter_id, dim_id, dim_name, mod_type_id) VALUES (1, 1, 1, 'dim1', 21);
 
+INSERT INTO parameter_dims_txt (model_id, parameter_id, dim_id, lang_id, descr, note) VALUES (1, 0, 0, 0, 'Age Dim', 'Age Dim notes');
+INSERT INTO parameter_dims_txt (model_id, parameter_id, dim_id, lang_id, descr, note) VALUES (1, 0, 0, 1, 'Age Dim (fr)', 'Age Dim notes (fr)');
+INSERT INTO parameter_dims_txt (model_id, parameter_id, dim_id, lang_id, descr, note) VALUES (1, 0, 1, 0, 'Sex Dim', 'Sex Dim notes');
+INSERT INTO parameter_dims_txt (model_id, parameter_id, dim_id, lang_id, descr, note) VALUES (1, 0, 1, 1, 'Sex Dim', NULL);
+
 -- 
 -- modelOne output tables
 --

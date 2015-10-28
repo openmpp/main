@@ -377,7 +377,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
  
     ParamDicRow paramDic;
 
-    // basic information aboput the parameter
+    // basic information about the parameter
 
     paramDic.paramId = pp_parameter_id;
     paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
@@ -414,14 +414,14 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         // Labels and notes for the dimensions of the parameter
         for (auto lang : Symbol::pp_all_languages) {
 
-        //    ParamDimsTxtLangRow paramDimsTxt;
+            ParamDimsTxtLangRow paramDimsTxt;
 
-        //    paramDimsTxt.tableId = pp_parameter_id;
-        //    paramDimsTxt.dimId = dim->index;
-        //    paramDimsTxt.langName = lang->name;
-        //    paramDimsTxt.descr = dim->label(*lang);
-        //    paramDimsTxt.note = dim->note(*lang);
-        //    metaRows.paramDimsTxt.push_back(paramDimsTxt);
+            paramDimsTxt.paramId = pp_parameter_id;
+            paramDimsTxt.dimId = dim->index;
+            paramDimsTxt.langName = lang->name;
+            paramDimsTxt.descr = dim->label(*lang);
+            paramDimsTxt.note = dim->note(*lang);
+            metaRows.paramDimsTxt.push_back(paramDimsTxt);
         }
     }
 }

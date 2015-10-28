@@ -45,6 +45,9 @@ namespace openm
         /** parameter_dims table rows */
         vector<ParamDimsRow> paramDims;
 
+        /** parameter_dims_txt table rows and language name */
+        vector<ParamDimsTxtLangRow> paramDimsTxt;
+
         /** table_dic table rows */
         vector<TableDicRow> tableDic;
 

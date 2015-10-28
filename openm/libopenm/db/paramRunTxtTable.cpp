@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        ParamRunTxtTable(const ParamRunTxtTable & i_table);               // = delete;
-        ParamRunTxtTable & operator=(const ParamRunTxtTable & i_table);   // = delete;
+        ParamRunTxtTable(const ParamRunTxtTable & i_table) = delete;
+        ParamRunTxtTable & operator=(const ParamRunTxtTable & i_table) = delete;
     };
 
     // Columns type for parameter_run_txt row

@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        TableDimsTable(const TableDimsTable & i_table);             // = delete;
-        TableDimsTable & operator=(const TableDimsTable & i_table); // = delete;
+        TableDimsTable(const TableDimsTable & i_table) = delete;
+        TableDimsTable & operator=(const TableDimsTable & i_table) = delete;
     };
 
     // Columns type for table_dims row

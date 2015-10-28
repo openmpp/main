@@ -18,8 +18,8 @@ namespace openm
         static vector<RunTxtRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
-        RunTxtTable(const RunTxtTable & i_table);               // = delete;
-        RunTxtTable & operator=(const RunTxtTable & i_table);   // = delete;
+        RunTxtTable(const RunTxtTable & i_table) = delete;
+        RunTxtTable & operator=(const RunTxtTable & i_table) = delete;
     };
 
     // Columns type for run_txt row

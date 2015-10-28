@@ -39,8 +39,8 @@ namespace openm
         string deleteValueSql;      // sql to delete parameter value
 
     private:
-        ParameterWriter(const ParameterWriter & i_writer);              // = delete;
-        ParameterWriter & operator=(const ParameterWriter & i_writer);  // = delete;
+        ParameterWriter(const ParameterWriter & i_writer) = delete;
+        ParameterWriter & operator=(const ParameterWriter & i_writer) = delete;
     };
 }
 

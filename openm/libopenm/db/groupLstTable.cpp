@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        GroupLstTable(const GroupLstTable & i_table);               // = delete;
-        GroupLstTable & operator=(const GroupLstTable & i_table);   // = delete;
+        GroupLstTable(const GroupLstTable & i_table) = delete;
+        GroupLstTable & operator=(const GroupLstTable & i_table) = delete;
     };
 
     // Columns type for group_lst row

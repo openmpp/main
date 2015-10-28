@@ -64,8 +64,8 @@ namespace openm
         vector<unique_ptr<IMsgRecv> > recvVec;     // active receive requests vector
 
     private:
-        MsgExecBase(const MsgExecBase & i_msgExec);                 // = delete;
-        MsgExecBase & operator=(const MsgExecBase & i_msgExec);     // = delete;
+        MsgExecBase(const MsgExecBase & i_msgExec) = delete;
+        MsgExecBase & operator=(const MsgExecBase & i_msgExec) = delete;
     };
 }
 

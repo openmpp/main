@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        GroupTxtTable(const GroupTxtTable & i_table);               // = delete;
-        GroupTxtTable & operator=(const GroupTxtTable & i_table);   // = delete;
+        GroupTxtTable(const GroupTxtTable & i_table) = delete;
+        GroupTxtTable & operator=(const GroupTxtTable & i_table) = delete;
     };
 
     // Columns type for group_txt row

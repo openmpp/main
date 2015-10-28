@@ -64,8 +64,8 @@ namespace openm
         virtual void validateConnectionProps(void) = 0;
 
     private:
-        DbExecBase(const DbExecBase & i_dbExec);                // = delete;
-        DbExecBase & operator=(const DbExecBase & i_dbExec);    // = delete;
+        DbExecBase(const DbExecBase & i_dbExec) = delete;
+        DbExecBase & operator=(const DbExecBase & i_dbExec) = delete;
     };
 }
 

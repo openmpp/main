@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        TableAccTxtTable(const TableAccTxtTable & i_table);               // = delete;
-        TableAccTxtTable & operator=(const TableAccTxtTable & i_table);   // = delete;
+        TableAccTxtTable(const TableAccTxtTable & i_table) = delete;
+        TableAccTxtTable & operator=(const TableAccTxtTable & i_table) = delete;
     };
 
     // Columns type for table_acc_txt row

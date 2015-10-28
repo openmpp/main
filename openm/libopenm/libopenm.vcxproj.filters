@@ -299,5 +299,8 @@
     <ClCompile Include="model\runInit.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="db\paramDimsTxtTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

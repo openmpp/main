@@ -39,8 +39,8 @@ namespace openm
         void cleanup(void) throw();
 
     private:
-        MpiSendBase(const MpiSendBase & i_send);                // = delete;
-        MpiSendBase & operator=(const MpiSendBase & i_send);    // = delete;
+        MpiSendBase(const MpiSendBase & i_send) = delete;
+        MpiSendBase & operator=(const MpiSendBase & i_send) = delete;
     };
 
     /** non-blocking MPI send of value array */
@@ -59,8 +59,8 @@ namespace openm
         bool isCompleted(void) { return MpiSendBase::isCompleted(); }
 
     private:
-        MpiSendArray(const MpiSendArray & i_send);                // = delete;
-        MpiSendArray & operator=(const MpiSendArray & i_send);    // = delete;
+        MpiSendArray(const MpiSendArray & i_send) = delete;
+        MpiSendArray & operator=(const MpiSendArray & i_send) = delete;
     };
 
     /** non-blocking MPI send of packed data */
@@ -82,8 +82,8 @@ namespace openm
         vector<char> packedData;    // data to send
 
     private:
-        MpiSendPacked(const MpiSendPacked & i_send);                // = delete;
-        MpiSendPacked & operator=(const MpiSendPacked & i_send);    // = delete;
+        MpiSendPacked(const MpiSendPacked & i_send) = delete;
+        MpiSendPacked & operator=(const MpiSendPacked & i_send) = delete;
     };
 }
 

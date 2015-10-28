@@ -38,8 +38,8 @@ namespace openm
         string selectValueSql;  // sql to select value
 
     private:
-        ParameterReader(const ParameterReader & i_reader);              // = delete;
-        ParameterReader & operator=(const ParameterReader & i_reader);  // = delete;
+        ParameterReader(const ParameterReader & i_reader) = delete;
+        ParameterReader & operator=(const ParameterReader & i_reader) = delete;
     };
 }
 

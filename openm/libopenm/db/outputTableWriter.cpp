@@ -57,8 +57,8 @@ namespace openm
         vector<TableExprRow> tableExpr; // table aggregation expressions
 
     private:
-        OutputTableWriter(const OutputTableWriter & i_writer);              // = delete;
-        OutputTableWriter & operator=(const OutputTableWriter & i_writer);  // = delete;
+        OutputTableWriter(const OutputTableWriter & i_writer) = delete;
+        OutputTableWriter & operator=(const OutputTableWriter & i_writer) = delete;
     };
 }
 

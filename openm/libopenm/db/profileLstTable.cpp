@@ -29,8 +29,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        ProfileLstTable(const ProfileLstTable & i_table);               // = delete;
-        ProfileLstTable & operator=(const ProfileLstTable & i_table);   // = delete;
+        ProfileLstTable(const ProfileLstTable & i_table) = delete;
+        ProfileLstTable & operator=(const ProfileLstTable & i_table) = delete;
     };
 
     // Columns type for profile_lst row

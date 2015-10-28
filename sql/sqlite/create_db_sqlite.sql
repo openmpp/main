@@ -258,6 +258,24 @@ CREATE TABLE parameter_dims
 );
 
 --
+-- Dimensions text info for parameter
+--
+CREATE TABLE parameter_dims_txt 
+(
+  model_id     INT             NOT NULL, -- master key
+  parameter_id INT             NOT NULL, -- master key
+  dim_id       INT             NOT NULL, -- master key
+  lang_id      INT             NOT NULL, -- language id
+  descr        VARCHAR(255)    NOT NULL, -- table dimension description
+  note         VARCHAR(32000),           -- table dimension notes
+  PRIMARY KEY (model_id, parameter_id, dim_id, lang_id),
+  CONSTRAINT parameter_dims_txt_mk 
+             FOREIGN KEY (model_id, parameter_id, dim_id) REFERENCES parameter_dims (model_id, parameter_id, dim_id),
+  CONSTRAINT parameter_dims_txt_lang_fk 
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
 -- Output result tables
 --
 CREATE TABLE table_dic 

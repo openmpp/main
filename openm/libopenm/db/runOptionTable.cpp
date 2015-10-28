@@ -77,8 +77,8 @@ namespace openm
         double doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const throw();
 
     private:
-        RunOptionTable(const RunOptionTable & i_table);               // = delete;
-        RunOptionTable & operator=(const RunOptionTable & i_table);   // = delete;
+        RunOptionTable(const RunOptionTable & i_table) = delete;
+        RunOptionTable & operator=(const RunOptionTable & i_table) = delete;
     };
 
     // Columns type for run_option row

@@ -24,6 +24,7 @@ DROP TABLE table_dims_txt;
 DROP TABLE table_dims;
 DROP TABLE table_dic_txt;
 DROP TABLE table_dic;
+DROP TABLE parameter_dims_txt;
 DROP TABLE parameter_dims;
 DROP TABLE parameter_run_txt;
 DROP TABLE parameter_dic_txt;

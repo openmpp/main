@@ -462,6 +462,35 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
+    /** parameter_dims_txt table public interface. */
+    struct IParamDimsTxtTable : public IMetaTable<ParamDimsTxtRow>
+    {
+        virtual ~IParamDimsTxtTable() throw() = 0;
+
+        /**
+        * create new table object and load table rows sorted by primary key: model id, parameter id, dimension id, language id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static IParamDimsTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** binary search row by primary key: model id, parameter id, dimension id, language id; return NULL if not found. */
+        virtual const ParamDimsTxtRow * byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const = 0;
+
+        /** get list of loaded table rows. */
+        virtual vector<ParamDimsTxtRow> rows(void) const = 0;
+
+        /** get list of rows by language. */
+        virtual vector<ParamDimsTxtRow> byLang(int i_langId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IParamDimsTxtTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
     /** table_dic table public interface. */
     struct ITableDicTable : public IMetaTable<TableDicRow>
     {

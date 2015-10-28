@@ -131,8 +131,8 @@ namespace openm
         CleanupHandler cleanup;         // resource release method
 
     private:
-        exit_guard(const exit_guard & i_guard);                 // = delete;
-        exit_guard & operator=(const exit_guard & i_guard);     // = delete;
+        exit_guard(const exit_guard & i_guard) = delete;
+        exit_guard & operator=(const exit_guard & i_guard) = delete;
     };
 
     /** openM++ exceptions */

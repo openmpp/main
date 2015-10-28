@@ -104,6 +104,9 @@ namespace openm
     /** write sql to insert into parameter_dims table. */
     template<> void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow & i_row, ModelSqlWriter & io_wr);
 
+    /** write sql to insert into parameter_dims_txt table. */
+    template<> void ModelInsertSql::insertSql<ParamDimsTxtLangRow>(const ParamDimsTxtLangRow & i_row, ModelSqlWriter & io_wr);
+
     /** write sql to insert into table_dic table. */
     template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row, ModelSqlWriter & io_wr);
 

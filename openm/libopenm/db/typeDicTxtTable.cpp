@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        TypeDicTxtTable(const TypeDicTxtTable & i_table);               // = delete;
-        TypeDicTxtTable & operator=(const TypeDicTxtTable & i_table);   // = delete;
+        TypeDicTxtTable(const TypeDicTxtTable & i_table) = delete;
+        TypeDicTxtTable & operator=(const TypeDicTxtTable & i_table) = delete;
     };
 
     // Columns type for type_dic_txt row

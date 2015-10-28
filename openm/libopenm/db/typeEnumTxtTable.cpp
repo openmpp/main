@@ -35,8 +35,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        TypeEnumTxtTable(const TypeEnumTxtTable & i_table);               // = delete;
-        TypeEnumTxtTable & operator=(const TypeEnumTxtTable & i_table);   // = delete;
+        TypeEnumTxtTable(const TypeEnumTxtTable & i_table) = delete;
+        TypeEnumTxtTable & operator=(const TypeEnumTxtTable & i_table) = delete;
     };
 
     // Columns type for type_enum_txt row

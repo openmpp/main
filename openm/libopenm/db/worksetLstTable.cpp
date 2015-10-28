@@ -18,8 +18,8 @@ namespace openm
         static vector<WorksetLstRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
-        WorksetLstTable(const WorksetLstTable & i_table);               // = delete;
-        WorksetLstTable & operator=(const WorksetLstTable & i_table);   // = delete;
+        WorksetLstTable(const WorksetLstTable & i_table) = delete;
+        WorksetLstTable & operator=(const WorksetLstTable & i_table) = delete;
     };
 
     // Columns type for workset_lst row

@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        LangWordTable(const LangWordTable & i_table);               // = delete;
-        LangWordTable & operator=(const LangWordTable & i_table);   // = delete;
+        LangWordTable(const LangWordTable & i_table) = delete;
+        LangWordTable & operator=(const LangWordTable & i_table) = delete;
     };
 
     // Columns type for lang_word row

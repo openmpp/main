@@ -18,8 +18,8 @@ namespace openm
         static vector<WorksetParamRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
-        WorksetParamTable(const WorksetParamTable & i_table);               // = delete;
-        WorksetParamTable & operator=(const WorksetParamTable & i_table);   // = delete;
+        WorksetParamTable(const WorksetParamTable & i_table) = delete;
+        WorksetParamTable & operator=(const WorksetParamTable & i_table) = delete;
     };
 
     // Columns type for workset_parameter row

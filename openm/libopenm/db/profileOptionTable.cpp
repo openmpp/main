@@ -32,8 +32,8 @@ namespace openm
         IRowBaseVec rowVec;     // table rows
 
     private:
-        ProfileOptionTable(const ProfileOptionTable & i_table);               // = delete;
-        ProfileOptionTable & operator=(const ProfileOptionTable & i_table);   // = delete;
+        ProfileOptionTable(const ProfileOptionTable & i_table) = delete;
+        ProfileOptionTable & operator=(const ProfileOptionTable & i_table) = delete;
     };
 
     // Columns type for profile_option row

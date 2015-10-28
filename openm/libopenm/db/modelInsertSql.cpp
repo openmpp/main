@@ -261,6 +261,39 @@ template<> void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow & i_r
     io_wr.throwOnFail();
 }
 
+// write sql to insert into parameter_dims_txt table.
+// language name used to select language id
+template<> void ModelInsertSql::insertSql<ParamDimsTxtLangRow>(const ParamDimsTxtLangRow & i_row, ModelSqlWriter & io_wr)
+{
+    // validate field values
+    if (i_row.paramId < 0) throw DbException("invalid (negative) output parameter id: %d", i_row.paramId);
+    if (i_row.dimId < 0) throw DbException("invalid (negative) output parameter dimension id: %d", i_row.dimId);
+
+    if (i_row.langName.empty() || i_row.langName.length() < 1)
+        throw DbException("invalid (empty) language name, output parameter id: %d, dimension id: %d", i_row.paramId, i_row.dimId);
+
+    if (i_row.descr.empty() || i_row.descr.length() < 1)
+        throw DbException("invalid (empty) description, output parameter id: %d, dimension id: %d", i_row.paramId, i_row.dimId);
+
+    if (i_row.descr.length() > 255 || i_row.note.length() > 32000)
+        throw DbException("invalid (too long) description or notes, output parameter id: %d, dimension id: %d", i_row.paramId, i_row.dimId);
+
+    // make sql
+    io_wr.outFs <<
+        "INSERT INTO parameter_dims_txt (model_id, parameter_id, dim_id, lang_id, descr, note)" \
+        " SELECT" \
+        " IL.id_value, " <<
+        i_row.paramId << ", " <<
+        i_row.dimId << ", ";
+    io_wr.throwOnFail();
+    io_wr.write(" (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
+    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.write("), ");
+    io_wr.writeQuoted(i_row.descr, true);
+    io_wr.writeQuoted(i_row.note);
+    io_wr.write(" FROM id_lst IL WHERE IL.id_key = 'model_id';\n");
+}
+
 // write sql to insert into table_dic table.
 template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row, ModelSqlWriter & io_wr)
 {

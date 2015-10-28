@@ -18,8 +18,8 @@ namespace openm
         static vector<TaskRunRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
-        TaskRunTable(const TaskRunTable & i_table);               // = delete;
-        TaskRunTable & operator=(const TaskRunTable & i_table);   // = delete;
+        TaskRunTable(const TaskRunTable & i_table) = delete;
+        TaskRunTable & operator=(const TaskRunTable & i_table) = delete;
     };
 
     // Columns type for task_run row

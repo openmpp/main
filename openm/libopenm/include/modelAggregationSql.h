@@ -173,8 +173,8 @@ namespace openm
         const string pushToNextLevel(const string & i_fncExpr);
 
     private:
-        ModelAggregationSql(const ModelAggregationSql & i_other);               // = delete;
-        ModelAggregationSql & operator=(const ModelAggregationSql & i_other);   // = delete;
+        ModelAggregationSql(const ModelAggregationSql & i_other) = delete;
+        ModelAggregationSql & operator=(const ModelAggregationSql & i_other) = delete;
     };
 }
 

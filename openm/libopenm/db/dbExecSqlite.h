@@ -132,8 +132,8 @@ namespace openm
         void setFieldStr(IRowBase * i_row, int i_column, const IRowAdapter & i_adapter);
 
     private:
-        DbExecSqlite(const DbExecSqlite & i_dbExec);                // = delete;
-        DbExecSqlite & operator=(const DbExecSqlite & i_dbExec);    // = delete;
+        DbExecSqlite(const DbExecSqlite & i_dbExec) = delete;
+        DbExecSqlite & operator=(const DbExecSqlite & i_dbExec) = delete;
     };
 
     // setter to pass field value into row adapter

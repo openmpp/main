@@ -258,7 +258,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
 #ifdef OM_UCVT_MSSTL
 //
 // classes below does not intended to be public
-// it's created as MS-specic and tested on VC++ 2012 only
+// it's created as MS-specic and tested on VC++ only
 //
 
 // convert from default Windows code page to UTF-8
@@ -307,7 +307,7 @@ public:
 
 private:
     unique_ptr<wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t>> wcvt;   // to convert source bytes into wide char
-    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;              // to convert wide char into UTF-8
+    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;                          // to convert wide char into UTF-8
 };
 
 // convert from UTF-16LE to UTF-8
@@ -329,7 +329,7 @@ public:
 
 private:
     wstring_convert<codecvt_utf16<wchar_t, 0x10ffff, codecvt_mode::little_endian>, wchar_t> wcvt;   // to convert UTF-16LE bytes into wide char
-    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;              // to convert wide char into UTF-8
+    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;                                          // to convert wide char into UTF-8
 };
 
 // convert from UTF-16BE to UTF-8
@@ -351,7 +351,7 @@ public:
 
 private:
     wstring_convert<codecvt_utf16<wchar_t, 0x10ffff, (codecvt_mode)0>, wchar_t> wcvt;   // to convert UTF-16BE bytes into wide char
-    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;              // to convert wide char into UTF-8
+    wstring_convert<codecvt_utf8<wchar_t>, wchar_t> u8cvt;                              // to convert wide char into UTF-8
 };
 
 // create new converter instance by specified conversion type.
