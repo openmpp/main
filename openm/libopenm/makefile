@@ -81,6 +81,7 @@ LIBOPENM_CPPLIST = \
   db/paramDicTable.cpp \
   db/paramDicTxtTable.cpp \
   db/paramDimsTable.cpp \
+  db/paramDimsTxtTable.cpp \
   db/parameterReader.cpp \
   db/parameterWriter.cpp \
   db/paramRunTxtTable.cpp \
