@@ -117,8 +117,6 @@ void CodeGen::do_preamble()
     h += "" ;
 	h += "#pragma once";
     h += "";
-    h += "using namespace std;";
-    h += "";
 
     h += "// PreSimulation, PostSimulation, UserTables functions in model source code";
     for (auto sg : {&Symbol::pre_simulation, &Symbol::post_simulation, &Symbol::derived_tables}) {

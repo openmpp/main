@@ -11,7 +11,7 @@
 #include "ParseContext.h"
 #include "ast.h"
 
-/* Copyright (c) 2013 OpenM++
+/* Copyright (c) 2013-2015 OpenM++
 * This code is licensed under MIT license (see LICENSE.txt for details)
 */
 
