@@ -67,7 +67,7 @@ my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen ${modgen_version}\\Mo
 my $modgen_devenv_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\Common7\\IDE\\devenv.exe";
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
-my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\12.0\\Bin\\MSBuild.exe";
+my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
 my $create_db_sqlite_sql = "${models_root}/../sql/sqlite/create_db_sqlite.sql";
 
 
@@ -337,14 +337,6 @@ for my $model_dir (@model_dirs) {
 			# Project file
 			my $model_vcxproj = 'model.vcxproj';
 			
-			# Find solution file in parent folder
-			my @matches = glob "../*-modgen.sln";
-			my $model_sln = pop @matches;
-			if ( ! -e $model_sln ) {
-				logmsg error, $model_dir, $flavour, "Missing solution file xyz-modgen.sln ${model_sln}";
-				next FLAVOUR;
-			}
-			
 			# Log file from devenv build
 			my $build_log = "msbuild.log";
 			unlink $build_log;
@@ -544,21 +536,16 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
-			# Find the solution file
-			my @matches = glob "../*-ompp.sln";
-			my $model_sln = pop @matches;
-			if ( ! -e $model_sln ) {
-				logmsg error, $model_dir, $flavour, "Missing solution file: xyz-ompp.sln";
-				next FLAVOUR;
-			}
-
+			# Project file
+			my $model_vcxproj = 'model.vcxproj';
+			
 			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and Base scenario" if $verbosity >= 2;
 			my $build_log = "msbuild.log";
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${msbuild_exe}",
-					"${model_sln}",
+					"${model_vcxproj}",
 					"/nologo",
 					"/verbosity:normal",
 					"/clp:ForceNoAlign",
