@@ -10,10 +10,6 @@ endif
 CPP = $(CC)
 AR = ar
 
-ifndef BUILD_DIR
-  BUILD_DIR = ompp-linux/build
-endif
-
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux/bin
 endif
@@ -86,8 +82,14 @@ endif
 
 #
 # build directories
+# if model build directory defined globally 
+#   then assume shared some/build/ location and use model name to avoid conflicts
 #
-MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
+ifndef BUILD_DIR
+  MODEL_BUILD_DIR = ompp-linux/build
+else
+  MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
+endif
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
 OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
 
