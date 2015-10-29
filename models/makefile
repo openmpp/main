@@ -1,9 +1,11 @@
 ifndef BUILD_DIR
-  BUILD_DIR = ./build
+  BUILD_DIR = ../build
+  ALL_BUILD_DIR = ./build
 endif
 
 ifndef OUT_PREFIX
-  OUT_PREFIX = .
+  OUT_PREFIX = ../bin
+  ALL_OUT_DIR = ./bin
 endif
 
 MODEL_DIRS = \
@@ -34,19 +36,19 @@ endif
 all : prepare $(MODEL_DIRS)
 
 $(MODEL_DIRS) :
-	$(MAKE) -C $@
-	$(MAKE) -C $@ publish
+	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) -C $@
+	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) -C $@ publish
 
 .PHONY : prepare
 prepare:
-	@if [ ! -d $(BUILD_DIR) ] ; then mkdir -p $(BUILD_DIR) ; fi
-	@if [ ! -d $(OUT_PREFIX) ] ; then mkdir -p $(OUT_PREFIX) ; fi
+	@if [ ! -d $(ALL_BUILD_DIR) ] ; then mkdir -p $(ALL_BUILD_DIR) ; fi
+	@if [ ! -d $(ALL_OUT_DIR) ] ; then mkdir -p $(ALL_OUT_DIR) ; fi
 
 .PHONY : clean
 clean:
-	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) clean;)
+	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) -C $(d) clean;)
 
 .PHONY : cleanall
 cleanall:
-	rm -rf $(OUT_PREFIX)/bin
-	rm -rf $(BUILD_DIR)
+	rm -rf $(ALL_OUT_DIR)
+	rm -rf $(ALL_BUILD_DIR)

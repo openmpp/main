@@ -15,7 +15,7 @@ ifndef BUILD_DIR
 endif
 
 ifndef OUT_PREFIX
-  OUT_PREFIX = ompp-linux
+  OUT_PREFIX = ompp-linux/bin
 endif
 
 ifndef OM_INC_DIR
@@ -80,25 +80,25 @@ endif
 #
 # source files subdirectory: .ompp .mpp .odat .dat
 #
-ifndef MODEL_CODE_SUB
-  MODEL_CODE_SUB = code
+ifndef MODEL_CODE_DIR
+  MODEL_CODE_DIR = code
 endif
 
 #
 # build directories
 #
-MODEL_BUILD_DIR = $(BUILD_DIR)
+MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
 DEPS_DIR = $(MODEL_BUILD_DIR)/deps
-OMC_OUT_DIR = $(OUT_PREFIX)/src
+OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin/debug
+  OUT_BIN_DIR = $(OUT_PREFIX)/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
   OBJ_DIR = $(MODEL_BUILD_DIR)/release
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin/release
+  OUT_BIN_DIR = $(OUT_PREFIX)/release
 endif
 
 ifndef OM_DB_LIB
@@ -114,12 +114,12 @@ LIBSQLITE_A = libsqlite.a
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -fdiagnostics-color=auto -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_SUB) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++11 -fdiagnostics-color=auto -D_REENTRANT -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-MODEL_MPP = $(wildcard $(MODEL_CODE_SUB)/*.mpp $(MODEL_CODE_SUB)/*.ompp $(MODEL_CODE_SUB)/*.dat $(MODEL_CODE_SUB)/*.odat)
+MODEL_MPP = $(wildcard $(MODEL_CODE_DIR)/*.mpp $(MODEL_CODE_DIR)/*.ompp $(MODEL_CODE_DIR)/*.dat $(MODEL_CODE_DIR)/*.odat)
 
-MODEL_CPP = $(wildcard $(MODEL_CODE_SUB)/*.cpp)
+MODEL_CPP = $(wildcard $(MODEL_CODE_DIR)/*.cpp)
 
 MODEL_OMC_CPP = \
   $(OMC_OUT_DIR)/om_definitions.cpp \
@@ -141,21 +141,21 @@ all: model
 .PHONY : model
 model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
 
-$(MODEL_OMC_CPP): | prepare
+$(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 $(MODEL_OMC_CPP) : $(MODEL_MPP)
-	$(OMC_EXE) -m $(MODEL_NAME) -i $(CURDIR)/$(MODEL_CODE_SUB) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
+	$(OMC_EXE) -m $(MODEL_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_BASE_OPT) $(OMC_FIXED_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
-$(DEPS_DIR)/%.d : $(MODEL_CODE_SUB)/%.cpp
+$(DEPS_DIR)/%.d : $(MODEL_CODE_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
-$(OBJ_DIR)/%.o : $(MODEL_CODE_SUB)/%.cpp
+$(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
