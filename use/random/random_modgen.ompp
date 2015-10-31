@@ -1,7 +1,16 @@
 /**
 * @file    random_modgen.ompp
-* Implementation of framework for Modgen random number generation
-* 
+* Implementation of framework for random number generation (Modgen)
+*
+* This version of the random number generation framework uses a set of 41 
+* integral-congruential generators based on the Mersenne prime 2^31 - 1.
+*
+* The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
+*
+* The interface to framework modules, e.g. case_based_modgen.ompp consists of the functions
+* new_streams, delete_streams, initialize_stream
+*
+* Other content in this module should be considered to be 'private'.
 */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -9,9 +18,9 @@
 namespace fmk {
 
     /**
-     * The fixed number of random number generators available in Modgen.
+     * The fixed number of random number stream generators available in Modgen.
      */
-    const int max_samples = 41;
+    const int max_stream_generators = 41;
 
     /**
      * The fixed modulus used by all Modgen random number generators.
@@ -26,7 +35,7 @@ namespace fmk {
     /**
      * Multiplier of generator used for a given 'sample member'.
      */
-    const long model_stream_generators[max_samples] = {
+    const long model_stream_generators[max_stream_generators] = {
         16807,
         1826645050,
         519701294,
@@ -70,11 +79,11 @@ namespace fmk {
         1096609123,
     };
 
-    // Current seed for each stream generator in the model
-    thread_local long model_stream_seeds[model_streams];
+    // Current seed for each stream generator in the simulation (const model_streams is declared in framework module of model)
+    thread_local long stream_seeds[model_streams];
 
-    // Multiplier for the generator for the streams in the model (shared by all streams)
-    thread_local long model_stream_generator = 0;
+    // Multiplier of the generator for the streams for this simulation (shared by all streams, varies by simulation member)
+    thread_local long stream_generator = 0;
 
     // Is there a random normal in other_normal?
     thread_local bool other_normal_valid[model_streams] = { false };
@@ -85,10 +94,26 @@ namespace fmk {
 
 } // fmk
 
-// Initialize a model stream
-void initialize_stream(int model_stream, long seed)
+// Create objects for random streams
+void new_streams()
 {
-    fmk::model_stream_seeds[model_stream] = seed;
+	// no objects are used for Modgen random number streams
+}
+
+// Delete objects for random streams
+void delete_streams()
+{
+	// no objects are used for Modgen random number streams
+}
+
+// Initialize a model stream
+void initialize_stream(int model_stream, int member, long seed)
+{
+	// For members beyond number of Modgen generators, re-use generators cyclically.
+	// Note that fmk::stream_generator is idnetical and shared for a simulation member.
+	fmk::stream_generator = fmk::model_stream_generators[member % fmk::max_stream_generators];
+
+    fmk::stream_seeds[model_stream] = seed;
     fmk::other_normal_valid[model_stream] = false;
 }
 
@@ -96,12 +121,12 @@ double RandUniform(int strm)
 {
     using namespace fmk;
 
-    assert(strm < model_streams);
-    long seed = model_stream_seeds[strm];
-    long long product = model_stream_generator;
+    assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+    long seed = stream_seeds[strm];
+    long long product = stream_generator;
     product *= seed;
     seed = product % mg_modulus;
-    model_stream_seeds[strm] = seed;
+    stream_seeds[strm] = seed;
     return (double)seed / (double)mg_modulus;
 }
 
@@ -109,7 +134,7 @@ double RandNormal(int strm)
 {
     using namespace fmk;
 
-    assert(strm < model_streams);
+    assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
 
     if (other_normal_valid[strm]) {
         other_normal_valid[strm] = false;
@@ -137,7 +162,7 @@ double RandLogistic(int strm)
 {
     using namespace fmk;
 
-    assert(strm < model_streams);
+    assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
     double p = RandUniform(strm);
     double odds_ratio = p / (1.0 - p);
     double x = log(odds_ratio);

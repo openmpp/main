@@ -19,8 +19,13 @@ parameters {
  */
 namespace fmk {
 
-    // Multiplier of generator used to generate the starting seeds for each case
-    const long case_seed_generators[max_samples] = {
+	/**
+	* The fixed number of random number stream case seed generators available in Modgen.
+	*/
+	const int max_case_seed_generators = 41;
+
+	// Multiplier of generator used to generate the starting seeds for each case
+    const long case_seed_generators[max_case_seed_generators] = {
         470583131,
         1278375574,
         1182424016,
@@ -248,21 +253,21 @@ void RunSimulation(int mem_id, int mem_count)
         member_cases++;
     };
 
-    // for sample numbers greater than the (Modgen) maximum, re-use generators cyclically
-    // and increment the starting case_seed for the simulation of the sample
-    long case_seed = seed + (int)simulation_member / max_samples;
-    long case_seed_generator = case_seed_generators[simulation_member % max_samples];
+    // For simulation member values greater than the (Modgen) maximum, re-use case seed generators cyclically
+    // and increment the starting case_seed for the simulation of the sample.
+    long case_seed = seed + (int)simulation_member / max_case_seed_generators;
+    long case_seed_generator = case_seed_generators[simulation_member % max_case_seed_generators];
 
-    // For simulation_member numbers greater than limit, re-use generators cyclically.
-    model_stream_generator = model_stream_generators[simulation_member % max_samples];
+	// Create stream generator objects
+	new_streams();
 
     for (long long thisCase = 0; thisCase < member_cases; thisCase++) {
-
         {
-            // initialize the stream generators
+            // initialize the stream generators in the case, based on the simulation member and case seed
             long seed = case_seed;
             for (int model_stream = 0; model_stream < model_streams; model_stream++) {
-                initialize_stream(model_stream, seed);
+                initialize_stream(model_stream, simulation_member, seed);
+				// use specific fixed integral-congruential generator (with multiplier model_stream_seed_generator) to create seeds for streams
                 long long product = model_stream_seed_generator;
                 product *= seed;
                 seed = product % mg_modulus;
@@ -305,6 +310,9 @@ void RunSimulation(int mem_id, int mem_count)
 
 	// Perform operations at the end of Simulation
 	Simulation_end(ci);
+
+	// Free stream generator objects
+	delete_streams();
 
     // Reset CaseInfo API
     CaseInfo(nullptr, true);

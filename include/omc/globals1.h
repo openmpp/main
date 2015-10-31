@@ -31,7 +31,9 @@ void ProgressMsg(const char *msg);
 void TimeReport(double dTime);
 
 // defined in use/random/random_modgen.ompp
-extern void initialize_stream(int model_stream, long seed);
+extern void new_streams();
+extern void delete_streams();
+extern void initialize_stream(int model_stream, int member, long seed);
 extern double RandUniform(int strm);
 extern double RandNormal(int strm);
 extern double RandLogistic(int strm);

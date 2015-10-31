@@ -12,6 +12,7 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdarg>
+#include <random>
 #include <forward_list> // for observation collections in tables
 #include "libopenm/omModel.h"
 #include "omc/fixed_precision_float.h"

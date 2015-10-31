@@ -1,0 +1,133 @@
+/**
+* @file    random_mt19937.ompp
+* Implementation of framework for random number generation (Mersenne twister mt19937)
+*
+* This version of the random number generation framework uses the Mersenne twister 
+* random number generator std::mt19937 from the C++ std library.
+*
+* The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
+*
+* The interface to framework modules, e.g. case_based_modgen.ompp consists of the functions
+* new_streams, delete_streams, initialize_stream
+*
+* Other content in this module should be considered to be 'private'.
+*/
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+namespace fmk {
+
+	/**
+	* The fixed modulus used by all Modgen random number generators.
+	*/
+	const long mg_modulus = 2147483647;
+
+	/**
+	* Multiplier of generator used to initialize the model stream seeds.
+	*/
+	const long model_stream_seed_generator = 376740290;
+
+	// Stream generators in the simulation (const model_streams is declared in framework module of model)
+	thread_local std::mt19937 * stream_generators[model_streams];
+
+	// Transformation to [0,1)
+	thread_local std::uniform_real_distribution<double> * stream_uniforms[model_streams];
+
+	// Is there a random normal in other_normal?
+	thread_local bool other_normal_valid[model_streams] = { false };
+
+	// The other normal draw
+	thread_local double other_normal[model_streams];
+
+} // fmk
+
+// Create objects for random streams
+void new_streams()
+{
+	for (int strm = 0; strm < fmk::model_streams; ++strm) {
+		assert(!fmk::stream_generators[strm]);
+		fmk::stream_generators[strm] = new std::mt19937(0);
+
+		assert(!fmk::stream_uniforms[strm]);
+		fmk::stream_uniforms[strm] = new std::uniform_real_distribution<double>(0,1);
+	}
+}
+
+// Delete objects for random streams
+void delete_streams()
+{
+	for (int strm = 0; strm < fmk::model_streams; ++strm) {
+		assert(fmk::stream_generators[strm]);
+		delete fmk::stream_generators[strm];
+		fmk::stream_generators[strm] = nullptr;
+
+		assert(fmk::stream_uniforms[strm]);
+		delete fmk::stream_uniforms[strm];
+		fmk::stream_uniforms[strm] = nullptr;
+	}
+}
+
+// Initialize a model stream
+void initialize_stream(int model_stream, int member, long seed)
+{
+	// create seed sequence based on simulation member and seed
+	long vals[2];
+	vals[0] = member;
+	vals[1] = seed;
+	std::seed_seq sseq(vals, vals + 2); // constructor using iterators
+	fmk::stream_generators[model_stream]->seed(sseq);
+	fmk::stream_uniforms[model_stream]->reset();
+
+	fmk::other_normal_valid[model_stream] = false;
+}
+
+double RandUniform(int strm)
+{
+	assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
+
+	double result = 0.0;
+	while (result == 0.0) {
+		result = (*fmk::stream_uniforms[strm])(*fmk::stream_generators[strm]);
+	}
+	return result;
+}
+
+double RandNormal(int strm)
+{
+	using namespace fmk;
+
+	assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+
+	if (other_normal_valid[strm]) {
+		other_normal_valid[strm] = false;
+		return other_normal[strm];
+	}
+	else {
+		double r2 = 1;
+		double x = 0;
+		double y = 0;
+		while (r2 >= 1) {
+			x = 2.0 * RandUniform(strm) - 1.0;
+			y = 2.0 * RandUniform(strm) - 1.0;
+			r2 = x * x + y * y;
+		}
+		double scale = sqrt(-2.0 * log(r2) / r2);
+		double n1 = scale * x;
+		double n2 = scale * y;
+		other_normal[strm] = n2;
+		other_normal_valid[strm] = true;
+		return n1;
+	}
+}
+
+double RandLogistic(int strm)
+{
+	using namespace fmk;
+
+	assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+	double p = RandUniform(strm);
+	double odds_ratio = p / (1.0 - p);
+	double x = log(odds_ratio);
+	return x;
+}
+
