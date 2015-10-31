@@ -837,15 +837,15 @@ public:
     static bool is_om_developer_function(const char* nm);
 
     /**
-     * Pathname of the use folder.
+     * Pathnames of use folders.
      * 
      * Used to resolve 'use' statements to physical files. 
      * It can be specified in omc.ini or as command line argument.
      * By default relative to location of omc.exe executable.
      */
-    static string use_folder;
+    static vector<string> use_folders;
 
-    /**
+	/**
      * Source files for the model.
      * 
      * Consists of all source files parsed by the compiler, in parse order. Source file names

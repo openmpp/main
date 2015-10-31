@@ -43,7 +43,8 @@ class ExprForTable;
 #include "ParseContext.h"
 #include "ast.h"
 #include "libopenm/omCommon.h"
-// last item found by flex.  Used in grammar to provide error information
+#include "libopenm/common/omFile.h"
+	// last item found by flex.  Used in grammar to provide error information
 // TODO check and eliminate use
 extern char *yytext;
 
@@ -583,9 +584,19 @@ decl_use:
                             string use_file = $path->value();
                             // remove leading and trailing double quote characters
                             use_file = use_file.substr(1, use_file.length() - 2);
-                            // prepend the fixed 'use' folder location
-                            use_file = Symbol::use_folder + use_file;
-                            Symbol::all_source_files.push_back(use_file);
+							bool found = false;
+							for (auto use_dir : Symbol::use_folders) {
+								// prepend a 'use' folder location
+								string use_file_full = use_dir + use_file;
+								if (openm::isFileExists(use_file_full.c_str())) {
+									found = true;
+									Symbol::all_source_files.push_back(use_file_full);
+									break;
+								}
+							}
+							if (!found) {
+								error(@path, "error: File '" + use_file + "' not found in any use folder.");
+							}
                             delete $path;
                             $path = nullptr;
                         }

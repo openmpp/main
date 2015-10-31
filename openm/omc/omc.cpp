@@ -53,6 +53,7 @@
 #include "CodeGen.h"
 #include "libopenm/common/omHelper.h"
 #include "libopenm/common/argReader.h"
+#include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
 
 // using freeware implementation of dirent.h for VisualStudio because MS stop including it
@@ -309,14 +310,37 @@ int main(int argc, char * argv[])
             if (outDir.back() != '/' && outDir.back() != '\\') outDir += '/';
         }
 
-        // Obtain location of the 'use' folder and make available to parser.
-        if (argStore.isOptionExist(OmcArgKey::useDir)) {
-            Symbol::use_folder = argStore.strOption(OmcArgKey::useDir);
-        }
-        else {
-            string omc_exe = argv[0];
-            Symbol::use_folder = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
-        }
+        // Obtain locations of 'use' folders to make available to parser.
+		{
+			string use_folders;
+			if (argStore.isOptionExist(OmcArgKey::useDir)) {
+				use_folders = argStore.strOption(OmcArgKey::useDir);
+			}
+			else {
+				// default value is sister directory of omc.exe directory, named 'use'
+				string omc_exe = argv[0];
+				use_folders = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
+			}
+
+			// split and iterate the delimited use folders - either ; or : are valid delimiters
+			{
+				const string delimiters = ";:";
+				size_t last_pos = use_folders.find_first_not_of(delimiters, 0);
+				size_t pos = use_folders.find_first_of(delimiters, last_pos);
+				while (string::npos != pos || string::npos != last_pos) {
+					string use_folder = use_folders.substr(last_pos, pos - last_pos);
+					// 'normalize' to have trailing /
+					if (!use_folder.empty() && use_folder.back() != '/' && use_folder.back() != '\\') {
+						use_folder += '/';
+					}
+					Symbol::use_folders.push_back(use_folder);
+					theLog->logFormatted("use folder: %s", use_folder.c_str());
+					// advance to next token
+					last_pos = use_folders.find_first_not_of(delimiters, pos);
+					pos = use_folders.find_first_of(delimiters, last_pos);
+				}
+			}
+		}
 
         // Obtain information on generation of #line directives
         bool no_line_directives = false;
@@ -342,10 +366,6 @@ int main(int argc, char * argv[])
         else {
             // default value
             Symbol::trace_scanning = false;
-        }
-
-        if (!Symbol::use_folder.empty() && Symbol::use_folder.back() != '/' && Symbol::use_folder.back() != '\\') {
-            Symbol::use_folder += '/';
         }
 
         // Populate symbol table with default symbols

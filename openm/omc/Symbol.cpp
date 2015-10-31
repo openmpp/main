@@ -61,7 +61,7 @@
 using namespace std;
 using namespace openm;
 
-string Symbol::use_folder;
+vector<string> Symbol::use_folders;
 
 list<string> Symbol::all_source_files;
 
