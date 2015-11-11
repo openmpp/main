@@ -71,23 +71,23 @@
   <PropertyGroup>
     <MODEL_NAME>$(ProjectName)</MODEL_NAME>
   </PropertyGroup>
-
-  <Import Project="$(SolutionDir)../../model.1.build.props" />
-  <Import Project="$(SolutionDir)../../model.2.cpp.props" />
-
+  
+  <Import Project="$(SolutionDir)../../props/model-ompp.1.build.props" />
+  <Import Project="$(SolutionDir)../../props/model-ompp.2.cpp.props" />
+  
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)../modelOne.cpp" />
-    <ClCompile Include="$(SolutionDir)../modelOne_om.cpp" />
+    <ClCompile Include="$(SolutionDir)/modelOne.cpp" />
+    <ClCompile Include="$(SolutionDir)/modelOne_om.cpp" />
   </ItemGroup>
 
   <ItemGroup>
-    <ClInclude Include="$(SolutionDir)../modelOne_om.h" />
+    <ClInclude Include="$(SolutionDir)/modelOne_om.h" />
   </ItemGroup>
 
   <ItemGroup>
-    <SqlScript Include="$(SolutionDir)../modelOne_create_model_sqlite.sql" />
-    <SqlScript Include="$(SolutionDir)../modelOne_insert_param_sqlite.sql" />
-    <SqlScript Include="$(SolutionDir)../modelOne_optional_views_sqlite.sql" />
+    <SqlScript Include="$(SolutionDir)/modelOne_create_model_sqlite.sql" />
+    <SqlScript Include="$(SolutionDir)/modelOne_insert_param_sqlite.sql" />
+    <SqlScript Include="$(SolutionDir)/modelOne_optional_views_sqlite.sql" />
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
