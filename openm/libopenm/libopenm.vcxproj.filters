@@ -296,7 +296,7 @@
     <ClCompile Include="db\taskRunTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="model\runInit.cpp">
+    <ClCompile Include="model\runBase.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="db\paramDimsTxtTable.cpp">

@@ -40,13 +40,10 @@ namespace openm
         ~RunOptions(void) throw() { }
     };
 
-    /** public interface to initialize model run input parameters */
-    struct IRunInit
+    /** public interface to initialize model run and input parameters */
+    struct IRunBase
     {
-        virtual ~IRunInit(void) throw() = 0;
-
-        /** number of subsamples */
-        virtual int subSampleCount(void) const throw() = 0;
+        virtual ~IRunBase(void) throw() = 0;
 
         /** read model parameter */
         virtual void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
@@ -96,7 +93,7 @@ extern const char * OM_MODEL_TIMESTAMP;
 int main(int argc, char ** argv);
 
 /** model run initialization: read input parameters */
-typedef void(*OM_RUN_INIT_HANDLER)(openm::IRunInit * const i_runInit);
+typedef void(*OM_RUN_INIT_HANDLER)(openm::IRunBase * const i_runBase);
 extern OM_RUN_INIT_HANDLER RunInitHandler;
 
 /** model startup method: initialize subsample */

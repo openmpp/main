@@ -286,7 +286,7 @@ void CodeGen::do_parameters()
 void CodeGen::do_RunInit()
 {
     c += "// Model run initialization";
-	c += "void RunInit(IRunInit * const i_runInit)";
+	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
 
     c += "theLog->logMsg(\"Initializing invariant entity data\");";

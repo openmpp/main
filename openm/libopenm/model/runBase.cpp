@@ -1,20 +1,21 @@
 // OpenM++ modeling library: 
-// model run init and shutdown: read input parameters and write output values
+// model run basic support: initialize run, read input parameters and write output values
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
 using namespace openm;
 
-// run initialization public interface
-IRunInit::~IRunInit() throw() { }
+// model run basic support public interface
+IRunBase::~IRunBase() throw() { }
 
-// model run initialzer
-RunInitBase::RunInitBase(
+// model run basic support
+RunBase::RunBase(
     bool i_isMpiUsed,
     int i_modelId,
     int i_runId,
     int i_subSampleCount,
+    int i_threadCount,
     IDbExec * i_dbExec,
     IMsgExec * i_msgExec,
     const MetaRunHolder * i_metaStore
@@ -23,6 +24,7 @@ RunInitBase::RunInitBase(
     modelId(i_modelId),
     runId(i_runId),
     subCount(i_subSampleCount),
+    threadCount(i_threadCount),
     dbExec(i_dbExec),
     msgExec(i_msgExec),
     metaStore(i_metaStore)
@@ -44,11 +46,12 @@ RunInitBase::RunInitBase(
         );
 }
 
-// create new model run initialzer
-RunInitBase * RunInitBase::create(
+// create new model run basic support
+RunBase * RunBase::create(
     bool i_isMpiUsed, 
     int i_runId,
     int i_subCount,
+    int i_threadCount,
     IDbExec * i_dbExec,
     IMsgExec * i_msgExec, 
     const MetaRunHolder * i_metaStore 
@@ -64,7 +67,7 @@ RunInitBase * RunInitBase::create(
     if (mdRow == NULL) throw ModelException("model not found in the database");
 
     // create the run initialzer
-    return new RunInitBase(i_isMpiUsed, mdRow->modelId, i_runId, i_subCount, i_dbExec, i_msgExec, i_metaStore);
+    return new RunBase(i_isMpiUsed, mdRow->modelId, i_runId, i_subCount, i_threadCount, i_dbExec, i_msgExec, i_metaStore);
 }
 
 /**
@@ -75,7 +78,7 @@ RunInitBase * RunInitBase::create(
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void RunInitBase::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
+void RunBase::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
@@ -97,7 +100,7 @@ void RunInitBase::readParameter(const char * i_name, const type_info & i_type, l
 }
 
 /** model shutdown on error: mark run as failure. */
-void RunInitBase::shutdownOnFail(void)
+void RunBase::shutdownOnFail(void)
 {
     if (!isMpiUsed || msgExec->isRoot()) {
         dbExec->update(
@@ -109,7 +112,7 @@ void RunInitBase::shutdownOnFail(void)
 }
 
 /** model shutdown: save results and cleanup resources. */
-void RunInitBase::shutdown(int i_threadCount)
+void RunBase::shutdown(void)
 {
     // find model in metadata tables
     const ModelDicRow * mdRow = metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
@@ -117,7 +120,7 @@ void RunInitBase::shutdown(int i_threadCount)
 
     // receive all output tables subsamples and write into database
     if (isMpiUsed && msgExec->isRoot()) {
-        receiveSubSamples(i_threadCount);
+        receiveSubSamples();
     }
 
     // wait for send completion, if any outstanding
@@ -138,7 +141,7 @@ void RunInitBase::shutdown(int i_threadCount)
     if (!isMpiUsed) {
         unique_lock<recursive_mutex> lck = dbExec->beginTransactionThreaded();
         dbExec->update(
-            "UPDATE run_lst SET sub_completed = sub_completed + " + to_string(i_threadCount) + ", " +
+            "UPDATE run_lst SET sub_completed = sub_completed + " + to_string(threadCount) + ", " +
             " status = 'p'," \
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(runId)
@@ -163,7 +166,7 @@ void RunInitBase::shutdown(int i_threadCount)
 }
 
 /** write output tables aggregated values into database */
-void RunInitBase::writeOutputValues(void)
+void RunBase::writeOutputValues(void)
 {
     const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
 
@@ -202,11 +205,11 @@ struct TblAccRecv
 };
 
 /** receive all output tables subsamples and write into database */
-void RunInitBase::receiveSubSamples(int i_threadCount)
+void RunBase::receiveSubSamples()
 {
     // receive output tables subsamples: [threadCount,..N-1]
     // receive all subsamples except of first threadCount subsamples, which caculated localy at root process
-    if (subCount <= i_threadCount) return;  // exit if all subsamples was produced at root model process
+    if (subCount <= threadCount) return;  // exit if all subsamples was produced at root model process
 
     // get sparse settings
     bool isSparse = metaStore->runOption->boolValue(RunOptionsKey::useSparse);
@@ -226,7 +229,7 @@ void RunInitBase::receiveSubSamples(int i_threadCount)
             valSize = IOutputTableWriter::sizeOf(modelId, metaStore, tblId);
         }
 
-        for (int nSub = i_threadCount; nSub < subCount; nSub++) {
+        for (int nSub = threadCount; nSub < subCount; nSub++) {
             recvVec.push_back(TblAccRecv(nSub, tblId, accVec[nAcc].accId, nAcc, valSize));
         }
     }
@@ -247,8 +250,8 @@ void RunInitBase::receiveSubSamples(int i_threadCount)
 
                 // try to received
                 isReceived = accRecv.isReceived = msgExec->tryReceive(
-                    (accRecv.subId / i_threadCount),
-                    (MsgTag)((int)MsgTag::outSubsampleBase + accRecv.accIndex),
+                    (accRecv.subId / threadCount),
+                    (MsgTag)(((int)MsgTag::outSubsampleBase + accRecv.accIndex) * subCount + accRecv.subId),
                     typeid(double),
                     accRecv.valueSize,
                     valueArr

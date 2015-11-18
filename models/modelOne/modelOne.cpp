@@ -42,13 +42,13 @@ void RunModel(IModel * const i_model)
 }
 
 // Initialize model run: read parameters
-void RunInit(IRunInit * const i_runInit)
+void RunInit(IRunBase * const i_runBase)
 {
     // load model parameters
     theLog->logMsg("Reading Parameters");
-    i_runInit->readParameter("StartingSeed", typeid(int), 1, &startSeed);
-    i_runInit->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
-    i_runInit->readParameter("salaryAge", typeid(int), salarySize * ageSize, salaryAge);
+    i_runBase->readParameter("StartingSeed", typeid(int), 1, &startSeed);
+    i_runBase->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
+    i_runBase->readParameter("salaryAge", typeid(int), salarySize * ageSize, salaryAge);
 }
 
 // Model startup method: initialize subsample

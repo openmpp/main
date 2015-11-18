@@ -129,7 +129,7 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
             for (int nAcc = 0; nAcc < i_accCount; nAcc++) {
                 msgExec->startSend(
                     IMsgExec::rootRank, 
-                    (MsgTag)((int)MsgTag::outSubsampleBase + accPos + nAcc), 
+                    (MsgTag)(((int)MsgTag::outSubsampleBase + accPos + nAcc) * subSampleCount() + subSampleNumber()), 
                     typeid(double), 
                     i_size, 
                     (void *)(i_valueArr[nAcc])

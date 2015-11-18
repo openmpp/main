@@ -461,7 +461,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         typ = Symbol::token_to_string(ens->storage_type);
     }
 
-    // i_runInit is an argument (local variable) of the global function RunInit
+    // i_runBase is an argument (local variable) of the global function RunInit
     if (pp_datatype->is_range()) {
         auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
         assert(rng);
@@ -470,18 +470,18 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
             c += "{";
             c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
             c += "long work[" + cell_count + "];";
-            c += "i_runInit->readParameter(\"" + name + "\", typeid(long), " + cell_count + ", &work);";
+            c += "i_runBase->readParameter(\"" + name + "\", typeid(long), " + cell_count + ", &work);";
             c += typ + " *parm = (" + typ + " *) &" + alternate_name() + ";";
             c += "for (size_t j = 0; j < " + cell_count + "; ++j) parm[j] = (" + typ + ") (work[j] + " + to_string(rng->lower_bound) + ");";
             c += "}";
         }
         else {
             // range starts at 0 so requires no transformation
-            c += "i_runInit->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
+            c += "i_runBase->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
         }
     }
     else {
-        c += "i_runInit->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
+        c += "i_runBase->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
     }
 
     return c;

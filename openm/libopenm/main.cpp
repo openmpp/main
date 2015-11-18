@@ -107,10 +107,10 @@ int main(int argc, char ** argv)
         unique_ptr<MetaRunHolder> metaStore(runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get()));
 
         // initilaze model run: read input parameters
-        unique_ptr<RunInitBase> runInit(RunInitBase::create(
-            isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
+        unique_ptr<RunBase> runBase(RunBase::create(
+            isMpiUsed, runCtrl.runId, runCtrl.subSampleCount, runCtrl.threadCount, dbExec.get(), msgExec.get(), metaStore.get()
             ));
-        RunInitHandler(runInit.get());
+        RunInitHandler(runBase.get());
 
         // create and run modeling threads
         vector<future<bool> > futureVec;
@@ -138,12 +138,12 @@ int main(int argc, char ** argv)
 
         // mark run as failure and exit with error
         if (nSuccess != runCtrl.threadCount) {
-            runInit->shutdownOnFail();
+            runBase->shutdownOnFail();
             throw ModelException("modeling FAILED");
         }
 
         // final cleanup
-        runInit->shutdown(runCtrl.threadCount);
+        runBase->shutdown();
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, "Helper error");

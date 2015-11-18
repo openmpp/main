@@ -218,7 +218,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\modelBase.cpp" />
     <ClCompile Include="model\runController.cpp" />
-    <ClCompile Include="model\runInit.cpp" />
+    <ClCompile Include="model\runBase.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />
     <ClCompile Include="msg\msgMpiExec.cpp" />

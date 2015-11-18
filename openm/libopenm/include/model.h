@@ -34,30 +34,28 @@ namespace openm
     /** modeling library exception */
     typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
 
-    /** model run init and shutdown: read input parameters and write output values */
-    class RunInitBase : public IRunInit
+    /** model run basic support: initialze, read input parameters and write output values */
+    class RunBase : public IRunBase
     {
     public:
-        ~RunInitBase(void) throw() { }
+        ~RunBase(void) throw() { }
 
-        /** model run initialzer factory. */
-        static RunInitBase * create(
+        /** model run basis factory. */
+        static RunBase * create(
             bool i_isMpiUsed,
             int i_runId,
             int i_subSampleCount,
+            int i_threadCount,
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
             );
 
-        /** number of subsamples */
-        int subSampleCount(void) const throw() { return subCount; }
-
         /** read input parameter values. */
         void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
         
         /** model shutdown: save results and cleanup resources. */
-        void shutdown(int i_threadCount);
+        void shutdown(void);
 
         /** model shutdown on error: mark run as failure. */
         void shutdownOnFail(void);
@@ -67,15 +65,17 @@ namespace openm
         int modelId;                        // model id in database
         int runId;                          // model run id
         int subCount;                       // number of subsamples
+        int threadCount;                    // number of modeling threads
         IDbExec * dbExec;                   // db-connection
         IMsgExec * msgExec;                 // message passing interface
         const MetaRunHolder * metaStore;    // metadata tables
 
-        RunInitBase(
+        RunBase(
             bool i_isMpiUsed,
             int i_modelId,
             int i_runId,
             int i_subCount,
+            int i_threadCount,
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
@@ -85,11 +85,11 @@ namespace openm
         void writeOutputValues(void);
 
         /** receive all output tables subsamples and write into database */
-        void receiveSubSamples(int i_threadCount);
+        void receiveSubSamples(void);
 
     private:
-        RunInitBase(const RunInitBase & i_runInit) = delete;
-        RunInitBase & operator=(const RunInitBase & i_runInit) = delete;
+        RunBase(const RunBase & i_runBase) = delete;
+        RunBase & operator=(const RunBase & i_runBase) = delete;
     };
 
     /** model base class */

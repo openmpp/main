@@ -114,18 +114,6 @@ namespace openm
     private:
         ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
 
-        // return subsample number for the process rank
-        //static int subNumberByRank(int i_rank, int i_subCount)
-        //{
-        //    return (i_rank > 0 && i_subCount > 0) ? i_rank % i_subCount : 0;
-        //}
-
-        // return actual run id for the process rank
-        //static int runIdByRank(int i_rank, int i_subCount, int i_baseRunid)
-        //{
-        //    return i_baseRunid + ((i_rank > 0 && i_subCount > 0) ? i_rank / i_subCount : 0);
-        //}
-
         // create new run or next subsample for existing run
         void createRunSubsample(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
 

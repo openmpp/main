@@ -10,7 +10,7 @@ using namespace std;
 #include "libopenm/omModel.h"
 
 // Model run initialization: read input parameters
-void RunInit(openm::IRunInit * const i_runInit);
+void RunInit(openm::IRunBase * const i_runBase);
 
 // Model startup method: initialize subsample
 void ModelStartup(openm::IModel * const i_model);
