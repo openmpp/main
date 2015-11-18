@@ -85,7 +85,7 @@ namespace openm
         void writeOutputValues(void);
 
         /** receive all output tables subsamples and write into database */
-        void receiveSubSamples(void);
+        void receiveSubSamples(int i_threadCount);
 
     private:
         RunInitBase(const RunInitBase & i_runInit) = delete;

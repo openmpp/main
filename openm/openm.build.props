@@ -5,10 +5,10 @@
   Use this to specify additional build directories and tools, such as bison and flex
   -->
   <PropertyGroup>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
-	<BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(SolutionDir)../include</OM_INC_DIR>
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(SolutionDir)../bin</OM_BIN_DIR>
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(SolutionDir)../lib</OM_LIB_DIR>

@@ -117,7 +117,7 @@ void RunInitBase::shutdown(int i_threadCount)
 
     // receive all output tables subsamples and write into database
     if (isMpiUsed && msgExec->isRoot()) {
-        receiveSubSamples();
+        receiveSubSamples(i_threadCount);
     }
 
     // wait for send completion, if any outstanding
@@ -184,29 +184,29 @@ void RunInitBase::writeOutputValues(void)
 // helper struct to receive output table values for each accumulator
 struct TblAccRecv
 {
-    int subId;              // subsample to receive: [1,...N-1]
+    int subId;              // subsample to receive: [threadCount,...N-1]
     int tableId;            // output table id
     int accId;              // accumulator id
-    int accMsgTag;          // message tag for that accumulator: index of accumulator in the list of accumulators
+    int accIndex;           // index of accumulator in the list of accumulators
     long long valueSize;    // size of accumulator data
     bool isReceived;        // if true then data received
 
-    TblAccRecv(int i_subId, int i_tableId, int i_accId, int i_accMsgTag, long long i_valueSize) :
+    TblAccRecv(int i_subId, int i_tableId, int i_accId, int i_accIndex, long long i_valueSize) :
         subId(i_subId),
         tableId(i_tableId),
         accId(i_accId),
-        accMsgTag(i_accMsgTag),
+        accIndex(i_accIndex),
         valueSize(i_valueSize),
         isReceived(false)
     { }
 };
 
 /** receive all output tables subsamples and write into database */
-void RunInitBase::receiveSubSamples(void)
+void RunInitBase::receiveSubSamples(int i_threadCount)
 {
-    // receive output tables subsamples: [1,..N-1]
-    // receive all subsamples except of zero subsample, which caculated localy at root process
-    if (subCount <= 1) return;  // exit if only one subsample was produced by model
+    // receive output tables subsamples: [threadCount,..N-1]
+    // receive all subsamples except of first threadCount subsamples, which caculated localy at root process
+    if (subCount <= i_threadCount) return;  // exit if all subsamples was produced at root model process
 
     // get sparse settings
     bool isSparse = metaStore->runOption->boolValue(RunOptionsKey::useSparse);
@@ -226,7 +226,7 @@ void RunInitBase::receiveSubSamples(void)
             valSize = IOutputTableWriter::sizeOf(modelId, metaStore, tblId);
         }
 
-        for (int nSub = 1; nSub < subCount; nSub++) {
+        for (int nSub = i_threadCount; nSub < subCount; nSub++) {
             recvVec.push_back(TblAccRecv(nSub, tblId, accVec[nAcc].accId, nAcc, valSize));
         }
     }
@@ -247,8 +247,8 @@ void RunInitBase::receiveSubSamples(void)
 
                 // try to received
                 isReceived = accRecv.isReceived = msgExec->tryReceive(
-                    accRecv.subId,
-                    (MsgTag)((int)MsgTag::outSubsampleBase + accRecv.accMsgTag),
+                    (accRecv.subId / i_threadCount),
+                    (MsgTag)((int)MsgTag::outSubsampleBase + accRecv.accIndex),
                     typeid(double),
                     accRecv.valueSize,
                     valueArr
