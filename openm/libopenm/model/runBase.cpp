@@ -156,6 +156,9 @@ void RunBase::shutdown(void)
     // if all subsamples saved in database then calculate output tables aggregated values
     // and mark this run as completed
     if (isAll) {
+#ifdef _DEBUG
+        theLog->logMsg("Writing Output Tables Expressions");
+#endif      
         writeOutputValues();
         dbExec->update(
             "UPDATE run_lst SET status = 's'," \

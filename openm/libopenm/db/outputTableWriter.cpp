@@ -288,7 +288,7 @@ void OutputTableWriter::writeExpression(IDbExec * i_dbExec, int i_nExpression)
     // (
     //  SELECT
     //    M1.run_id, M1.dim0, M1.dim1, SUM(M1.acc0) AS expr2
-    //  FROM modelone_201208171604590148_f0_salarySex M1
+    //  FROM modelone_201208171604590148_a0_salarySex M1
     //  GROUP BY M1.run_id, M1.dim0, M1.dim1
     // ) F
     // WHERE F.run_id = 15
