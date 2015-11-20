@@ -58,6 +58,9 @@ namespace openm
         /** MPI_Unpack string from data buffer at i_packPos position and return the string. */
         static string unpackStr(int i_packedSize, void * i_packedData, int & io_packPos);
 
+        /** return an MPI_Pack'ed copy of source array. */
+        static char * MpiPacked::packArray(const type_info & i_type, long long i_size, void * i_valueArr);
+
         /** return MPI pack size for specified primitive type. */
         static int packedSize(const type_info & i_type);
 

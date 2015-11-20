@@ -84,8 +84,9 @@ MpiSendArray::MpiSendArray(
     if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
 
     int sendSize = (int)i_size;
+    sendValueArr.reset(MpiPacked::packArray(i_type, i_size, i_valueArr));
 
-    int mpiRet = MPI_Isend(i_valueArr, sendSize, MpiPacked::toMpiType(i_type), sendToRank, msgTag, MPI_COMM_WORLD, &mpiRq);
+    int mpiRet = MPI_Isend(sendValueArr.get(), sendSize, MpiPacked::toMpiType(i_type), sendToRank, msgTag, MPI_COMM_WORLD, &mpiRq);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, selfRank);
 
     onExit.hold();  // initialization completed OK

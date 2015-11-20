@@ -13,8 +13,8 @@ using namespace std;
 using namespace openm;
 
 /**
- * MPI_Pack string into data buffer at i_packPos position.
- *
+* MPI_Pack string into data buffer at i_packPos position.
+*
 * @param[in]     i_value       string to be packed
 * @param[in]     i_packedSize  total size in bytes of io_packedData buffer
 * @param[in,out] io_packedData destination buffer to pack MPI message
@@ -61,6 +61,29 @@ string MpiPacked::unpackStr(int i_packedSize, void * i_packedData, int & io_pack
 
     string sVal = cBuf.get();
     return sVal;
+}
+
+/**
+* return an MPI_Pack'ed copy of source array.
+*
+* @param[in]     i_type        type of value array
+* @param[in]     i_size        size of value array
+* @param[in]     i_valueArr    array of values to be packed
+*/
+char * MpiPacked::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+{
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+
+    int srcSize = (int)i_size;
+    int packSize = srcSize * packedSize(i_type);
+    int packPos = 0;
+
+    unique_ptr<char[]> packedData(new char[packSize]);
+
+    int mpiRet = MPI_Pack(i_valueArr, srcSize, toMpiType(i_type), packedData.get(), packSize, &packPos, MPI_COMM_WORLD);
+    if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
+
+    return packedData.release();
 }
 
 /**

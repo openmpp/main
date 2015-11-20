@@ -246,7 +246,6 @@ void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, Model
         );
     for (const OutTblInfo & tblInfo : outInfoVec) {
         accCreateTableBody(tblInfo, io_wr);
-//        accFlatCreateViewBody(tblInfo, io_wr);
         valueCreateTableBody(tblInfo, io_wr);
     }
     io_wr.write("\n");
@@ -718,59 +717,6 @@ const void ModelSqlBuilder::accCreateTableBody(const OutTblInfo & i_tblInfo, Mod
     }
     io_wr.write(", acc_id, sub_id))\n;\n");
 }
-
-// create table sql for accumulator flatten view:
-// CREATE VIEW modelOne_201208171604590148_f0_salarySex
-// AS
-// SELECT
-//   A0.run_id, A0.dim0, A0.dim1, A0.sub_id, A0.acc_value AS acc0,
-//   (
-//     SELECT acc_value FROM modelOne_201208171604590148_a0_salarySex A1
-//     WHERE A1.run_id = A0.run_id AND A1.dim0 = A0.dim0 AND A1.dim1 = A0.dim1 AND A1.sub_id = A0.sub_id
-//     AND A1.acc_id = 1
-//   ) AS acc1
-// FROM modelOne_201208171604590148_a0_salarySex A0
-// WHERE A0.acc_id = 0;
-//
-/*
-const void ModelSqlBuilder::accFlatCreateViewBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
-{
-    size_t accCount = i_tblInfo.accNameVec.size();
-
-    io_wr.outFs <<
-        "CREATE VIEW " << i_tblInfo.accFlatViewName << " AS SELECT A0.run_id,";
-    io_wr.throwOnFail();
-
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        io_wr.outFs << " A0." << dimName << ",";
-        io_wr.throwOnFail();
-    }
-    io_wr.write(" A0.sub_id, A0.acc_value AS acc0");
-
-    for (size_t nAcc = 1; nAcc < accCount; nAcc++) {
-        
-        string alias = "A" + to_string(nAcc);
-
-        io_wr.outFs << ", (SELECT " << alias << ".acc_value FROM " << i_tblInfo.accTableName << " " << alias <<
-            " WHERE " << alias << ".run_id = A0.run_id AND ";
-        io_wr.throwOnFail();
-
-        for (const string & dimName : i_tblInfo.dimNameVec) {
-            io_wr.outFs << alias << "." << dimName << " = A0." << dimName << " AND ";
-            io_wr.throwOnFail();
-        }
-        io_wr.outFs << alias << ".sub_id = A0.sub_id AND " << alias << ".acc_id = " << nAcc <<
-            ") AS " << i_tblInfo.accNameVec[nAcc];
-        io_wr.throwOnFail();
-    }
-
-    io_wr.outFs << " FROM " << i_tblInfo.accTableName << " A0";
-    io_wr.throwOnFail();
-    if (accCount > 1) io_wr.write(" WHERE A0.acc_id = 0");
-
-    io_wr.write("\n;\n");
-}
-*/
 
 // create table sql for value table:
 // CREATE TABLE modelOne_201208171604590148_v0_salarySex

@@ -172,6 +172,13 @@ void MsgExecBase::waitSendAll(void)
                 isAllDone = isAllDone && isDone;
             }
 
+            // remove completed send requests from the queue
+            std::remove_if(
+                sendVec.begin(), 
+                sendVec.end(),
+                [](const unique_ptr<IMsgSend> & i_send) -> bool { return i_send.get()->isCompleted(); }
+            );
+
             // sleep if any outstanding request exist
             if (!isAllDone) sleepMilli(OM_SEND_SLEEP_TIME);
         }
