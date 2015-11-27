@@ -477,27 +477,23 @@ void CodeGen::do_ModelShutdown()
     }
 
 	c += "theLog->logMsg(\"Writing Output Tables\");";
-    c += "// write entity tables (accumulators)";
+    c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
-        c += "{";
-        c += "const char *name = \"" + table->name + "\";";
-        c += "auto &tbl = the" + table->name + ";";
-        c += "double *pdbl[tbl->n_accumulators]; // array of pointers for writeOutputTable";
-        c += "for (size_t j = 0; j < tbl->n_accumulators; ++j) pdbl[j] = tbl->acc[j];";
-	    c += "i_model->writeOutputTable(name, tbl->n_accumulators, tbl->n_cells, const_cast<const double **>(pdbl));";
-        c += "}";
+        c += "i_model->writeOutputTable(\"" +
+            table->name + "\", the" + table->name + "->n_cells, the" + table->name + "->acc_storage);";
     }
+    c += "// at this point any kind of table->acc[k][j] will cause memory access violation";
+    c += "";
 
-    c += "// write derived tables (measures)";
+    c += "// write derived tables (measures) and release measures memory";
     for ( auto derived_table : Symbol::pp_all_derived_tables ) {
-        c += "{";
-        c += "const char *name = \"" + derived_table->name + "\";";
-        c += "auto &tbl = " + derived_table->cxx_instance + ";";
-        c += "double *pdbl[tbl->n_measures]; // array of pointers for writeOutputTable";
-        c += "for (size_t j = 0; j < tbl->n_measures; ++j) pdbl[j] = tbl->measure[j];";
-	    c += "i_model->writeOutputTable(name, tbl->n_measures, tbl->n_cells, const_cast<const double **>(pdbl));";
-        c += "}";
+        c += "i_model->writeOutputTable(\"" +
+            derived_table->name + "\", " + 
+            derived_table->cxx_instance + "->n_cells, " + 
+            derived_table->cxx_instance + "->measure_storage);";
     }
+    c += "// at this point any kind of table->measure[k][j] will cause memory access violation";
+    c += "";
 
     c += "// Entity table destruction";
     for (auto table : Symbol::pp_all_entity_tables) {

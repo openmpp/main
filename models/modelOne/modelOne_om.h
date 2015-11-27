@@ -5,6 +5,8 @@
 #ifndef MODEL_ONE_H
 #define MODEL_ONE_H
 
+#include <forward_list>
+#include <memory>
 using namespace std;
 
 #include "libopenm/omModel.h"
@@ -20,5 +22,41 @@ void RunModel(openm::IModel * const i_model);
 
 // Model shutdown method: write output tables
 void ModelShutdown(openm::IModel * const i_model);
+
+// model dimensions size
+const size_t ageSize = 4;
+const size_t sexSize = 2;
+const size_t salarySize = 3;
+
+// model output tables: salary by sex
+class SalarySex
+{
+public:
+    static const size_t N_CELL = salarySize * sexSize;  // number of cells
+    static const size_t N_ACC = 2;                      // number of accumulators
+    static const size_t ACC_Sum = 0;                    // accumulator 0: sum
+    static const size_t ACC_Count = 1;                  // accumulator 1: count
+    static const char * NAME;                           // output table name: salarySex
+
+public:
+    double * acc[N_ACC];                // acc[N_ACC][N_CELL];
+    forward_list<unique_ptr<double> > acc_storage;
+
+    SalarySex(void)
+    {
+        auto it = acc_storage.before_begin();
+        for (int k = 0; k < N_ACC; k++) {
+            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            acc[k] = it->get();
+        }
+    }
+
+    // initailize accumulators
+    void initialize_accumulators(void)
+    {
+        std::fill(acc[ACC_Sum], &acc[ACC_Sum][N_CELL], 0.0);
+        std::fill(acc[ACC_Count], &acc[ACC_Count][N_CELL], 0.0);
+    }
+};
 
 #endif  // MODEL_ONE_H

@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 
@@ -36,6 +37,13 @@ public:
         // The number of cells is equal to product of the values in shape.
         assert(n_cells == std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>()));
 
+        // allocate and initialize measures
+        auto it = measure_storage.before_begin();
+        for (int msr = 0; msr < n_measures; ++msr) {
+            it = measure_storage.insert_after(it, unique_ptr<double>(new double[Tcells]));
+            measure[msr] = it->get();
+        }
+
         initialize_measures();
     };
 
@@ -49,7 +57,7 @@ public:
                 measure[msr][cell] = numeric_limits<double>::quiet_NaN();
             }
         }
-    };
+    }
 
     /**
      * Compute the flattened index corresponding to dimension indices in argument list.
@@ -118,7 +126,8 @@ public:
     /**
      * Measure storage.
      */
-    double measure[Tmeasures][Tcells];
+    double * measure[Tmeasures];            // measure[Tmeasures][Tcells];
+    forward_list<unique_ptr<double> > measure_storage;
 };
 
 /**
@@ -134,7 +143,13 @@ class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
     EntityTable(initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
-    {};
+    {
+        auto it = acc_storage.before_begin();
+        for (int k = 0; k < Taccumulators; k++) {
+            it = acc_storage.insert_after(it, unique_ptr<double>(new double[Tcells]));
+            acc[k] = it->get();
+        }
+    };
 
     virtual void initialize_accumulators() = 0;
     virtual void extract_accumulators() = 0;
@@ -146,7 +161,8 @@ public:
     /**
      * Accumulator storage.
      */
-    double acc[Taccumulators][Tcells];
+    double * acc[Taccumulators];            // acc[Taccumulators][Tcells];
+    forward_list<unique_ptr<double> > acc_storage;
 };
 
 /**

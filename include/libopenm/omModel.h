@@ -9,6 +9,7 @@
 #define OM_MODEL_H
 
 #include <typeinfo>
+#include <memory>
 using namespace std;
 
 #include "omCommon.h"
@@ -67,7 +68,7 @@ namespace openm
         virtual int updateProgress(void) = 0;
 
         /** write output result table: subsample value */
-        virtual void writeOutputTable(const char * i_name, int i_accCount, long long i_size, const double * i_valueArr[]) = 0;
+        virtual void writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
     };
 }
 

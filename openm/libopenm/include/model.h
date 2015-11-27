@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <mutex>
 #include <future>
+#include <forward_list>
 using namespace std;
 
 #include "libopenm/omCommon.h"
@@ -121,8 +122,8 @@ namespace openm
         /** update modeling progress */
         int updateProgress(void) { return ++progressCount; /* prototype only */ }
 
-        /** write output result table: array of accumulator values. */
-        void writeOutputTable(const char * i_name, int i_accCount, long long i_size, const double * i_valueArr[]);
+        /** write output result table and release accumulators memory. */
+        void writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues);
 
     private:
         bool isMpiUsed;                     // if true then use MPI messaging library to pass the data

@@ -6,34 +6,38 @@
 using namespace openm;
 
 // model parameters
-static const int ageSize = 4;
-static const int sexSize = 2;
-static const int salarySize = 3;
-
 static int startSeed = 1;
 static double ageSex[ageSize][sexSize];
 static int salaryAge[salarySize][ageSize];
 
-// model output tables: subsample accumulators
-static thread_local double salarySexSum[salarySize][sexSize];
-static thread_local double salarySexCount[salarySize][sexSize];
+// model output tables: salary by sex
+const char * SalarySex::NAME = "salarySex";
+thread_local unique_ptr<SalarySex> theSalarySex; // salary by sex
 
 // Model event loop: user code
 void RunModel(IModel * const i_model)
 {
     theLog->logMsg("Running Simulation");
 
-    // calculate output accumulators for each sub-sample
-    for (int nSalary = 0; nSalary < salarySize; nSalary++) {
-        for (int nSex = 0; nSex < sexSize; nSex++) {
+    // calculte salary by sex accumulator 0: sum
+    size_t nCell = 0;
 
-            salarySexCount[nSalary][nSex] = (double)(nSalary + nSex + i_model->subSampleNumber() + 1);
-
-            salarySexSum[nSalary][nSex] = 0.0;
-            for (int nAge = 0; nAge < ageSize; nAge++) {
-                salarySexSum[nSalary][nSex] += 
+    for (size_t nSalary = 0; nSalary < salarySize; nSalary++) {
+        for (size_t nSex = 0; nSex < sexSize; nSex++) {
+            for (size_t nAge = 0; nAge < ageSize; nAge++) {
+                theSalarySex->acc[SalarySex::ACC_Sum][nCell] +=
                     ((double)salaryAge[nSalary][nAge]) * ageSex[nAge][nSex] * (double)(i_model->subSampleNumber() + 1);
             }
+            nCell++;
+        }
+    }
+
+    // calculte salary by sex accumulator 1: count
+    nCell = 0;
+
+    for (size_t nSalary = 0; nSalary < salarySize; nSalary++) {
+        for (size_t nSex = 0; nSex < sexSize; nSex++) {
+            theSalarySex->acc[SalarySex::ACC_Count][nCell++] = (double)(nSalary + nSex + i_model->subSampleNumber() + 1);
         }
     }
 
@@ -55,6 +59,12 @@ void RunInit(IRunBase * const i_runBase)
 void ModelStartup(IModel * const i_model)
 {
     theTrace->logMsg("Start model subsample");
+
+    // clear existing output table(s) - release memory if allocated by previous run
+    theSalarySex.reset(new SalarySex());
+
+    // allocate and initialize new output table(s)
+    theSalarySex->initialize_accumulators();
 }
 
 // Model shutdown method: write output tables
@@ -63,8 +73,5 @@ void ModelShutdown(IModel * const i_model)
     // write output result tables: salarySex sub-sample
     theLog->logMsg("Writing Output Tables");
 
-    const double * salarySexAccArr[2];
-    salarySexAccArr[0] = (double *)salarySexSum;
-    salarySexAccArr[1] = (double *)salarySexCount;
-    i_model->writeOutputTable("salarySex", 2, salarySize * sexSize, salarySexAccArr);
+    i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
 }

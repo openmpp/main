@@ -64,36 +64,63 @@ ModelBase * ModelBase::create(
 }
 
 /**
-* write output result table: array of accumulator values.
+* write output result table: vector of accumulator values and release accumulators memory.
 *
-* @param[in] i_name      output table name
-* @param[in] i_accCount  number of accumulators for the output table
-* @param[in] i_size      number of values for each accumulator
-* @param[in] i_valueArr  array of pointers to accumulator values
+* @param[in]     i_name         output table name
+* @param[in]     i_size         number of cells for each accumulator
+* @param[in,out] io_accValues   accumulator values
 *
 * usage example: \n
 * @code
-*      // declare model output table accumulators
-*      static double salaryBySexSum[salarySize][sexSize];
-*      static double salaryBySexCount[salarySize][sexSize];
+*      // allocate model output table accumulators: [N_accumulators][N_cells]
+*      double * acc[N_accumulators];
+*      forward_list<unique_ptr<double> > acc_storage; 
+*
+*      auto it = acc_storage.before_begin();
+*      for (int k = 0; k < N_accumulators; ++k) {
+*        it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_cells]));
+*        acc[k] = it->get();
+*      }
 *      ...
-*      // run the model and calculate accumulator values in arrays above
+*      // run the model and calculate accumulator values
+*      for (int k = 0; k < N_accumulators; ++k) {
+*        std::fill(acc[k], &acc[k][N_cells], 0.0);
+*      }
 *      ...
-*      // write output table "salarySex" into database
-*      const double * accArr[2];
-*      accArr[0] = (double *)salaryBySexSum;
-*      accArr[1] = (double *)salaryBySexCount;
-*      i_model->writeOutputTable("salarySex", 2, salarySize * sexSize, salarySexAccArr);
+*      // write output table "salaryBySex" into database
+*      i_model->writeOutputTable("salaryBySex", N_cells, acc_storage);
+*      // at this point any kind of table->acc[k][j] will cause memory access violation
 * @endcode
 */
-void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long i_size, const double * i_valueArr[])
+void ModelBase::writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) output table name");
-    if (i_accCount <= 0 || i_size <= 0) throw ModelException("invalid number of accumulators: %d or size: %lld for output table %s", i_accCount, i_size, i_name);
-    if (i_valueArr == NULL) throw ModelException("invalid (empty) value array for output table %s", i_name);
+    if (io_accValues.empty() || i_size <= 0) throw ModelException("invalid (empty) accumulators or size: %lld for output table %s", i_size, i_name);
 
     try {
-        if (!isMpiUsed || msgExec->isRoot()) {  // write subsample into db: subsample number =0 or any if no MPI used
+        forward_list<unique_ptr<double> > accValLst;
+        accValLst.swap(io_accValues);                   // release accumulators memory at return
+
+        // find output table db row
+        const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
+        if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
+
+        int tblId = tblRow->tableId;
+
+        // validate accumulator(s) arrays
+        int srcCount = 0;
+        for (const auto & apc : accValLst) {
+            if (apc.get() == nullptr) throw ModelException("invalid (empty) array of accumulator values for output table %s", i_name);
+            srcCount++;
+        }
+
+        // validate number of accumulators
+        int accCount = (int)metaStore->tableAcc->byModelIdTableId(modelId, tblId).size();
+        if (accCount <= 0 || accCount != srcCount) throw DbException("invalid number of accumulators: %d, expected: %d for output table accumulators not found for table: %s", srcCount, accCount, i_name);
+
+        // if no MPI used or at main (root) process then write subsample into db 
+        // else start sending subsample data to root process
+        if (!isMpiUsed || msgExec->isRoot()) {  
 
             unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
                 modelId,
@@ -105,35 +132,34 @@ void ModelBase::writeOutputTable(const char * i_name, int i_accCount, long long 
                 runOptions()->useSparse, 
                 runOptions()->nullValue
                 ));
-            for (int nAcc = 0; nAcc < i_accCount; nAcc++) {
-                writer->writeAccumulator(dbExec, subSampleNumber(), nAcc, i_size, i_valueArr[nAcc]);
+            int nAcc = 0;
+            for (const auto & apc : accValLst) {
+                writer->writeAccumulator(dbExec, subSampleNumber(), nAcc, i_size, apc.get());
+                nAcc++;
             }
         }
-        else {  // send subsample data to root process
-
-            // find output table db row
-            const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-            if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
-
-            int tblId = tblRow->tableId;
-            const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
+        else {  // initiate send of subsample data to root process
 
             // find starting index of table accumulators in db rows of accumulators
+            const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
+
             int accPos = 0;
             while (accPos < (int)accVec.size() && accVec[accPos].tableId != tblId) {
                 accPos++;
             }
             if (accPos >= (int)accVec.size()) throw ModelException("accumulators not found for output table %s", i_name);
 
-            // send accumulators
-            for (int nAcc = 0; nAcc < i_accCount; nAcc++) {
+            // start sending accumulators
+            int nAcc = 0;
+            for (auto & ap : accValLst) {
                 msgExec->startSend(
-                    IMsgExec::rootRank, 
-                    (MsgTag)(((int)MsgTag::outSubsampleBase + accPos + nAcc) * subSampleCount() + subSampleNumber()), 
-                    typeid(double), 
-                    i_size, 
-                    (void *)(i_valueArr[nAcc])
+                    IMsgExec::rootRank,
+                    (MsgTag)(((int)MsgTag::outSubsampleBase + accPos + nAcc) * subSampleCount() + subSampleNumber()),
+                    typeid(double),
+                    i_size,
+                    ap.release()
                     );
+                nAcc++;
             }
         }
     }

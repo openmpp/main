@@ -71,7 +71,7 @@ void MpiSendBase::cleanup(void) throw()
 * @param[in] i_msgTag   tag to identify message content (parameter or output data)
 * @param[in] i_type     type of value array
 * @param[in] i_size     size of value array
-* @param[in] i_valueArr value array to send (should not be deallocated until send compled)
+* @param[in] i_valueArr value array to send
  */
 MpiSendArray::MpiSendArray(
     int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
@@ -84,7 +84,7 @@ MpiSendArray::MpiSendArray(
     if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
 
     int sendSize = (int)i_size;
-    sendValueArr = MpiPacked::packArray(i_type, i_size, i_valueArr);
+    sendValueArr.reset(static_cast<char *>(i_valueArr));
 
     int mpiRet = MPI_Isend(sendValueArr.get(), sendSize, MpiPacked::toMpiType(i_type), sendToRank, msgTag, MPI_COMM_WORLD, &mpiRq);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, selfRank);

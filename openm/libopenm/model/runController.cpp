@@ -660,10 +660,6 @@ void RunController::broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_m
     i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &subSampleCount);
     i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &threadCount);
 
-    // set actual run id and subsample number
-    //runId = runIdByRank(i_msgExec->rank(), subSampleCount, runId);
-    //subBaseNumber = subNumberByRank(i_msgExec->rank(), subSampleCount);
-
     // broadcast metadata tables
     broadcastMetaTable<IModelDicTable>(io_metaStore->modelDic, i_msgExec, MsgTag::modelDic);
     broadcastMetaTable<ITypeDicTable>(io_metaStore->typeDic, i_msgExec, MsgTag::typeDic);

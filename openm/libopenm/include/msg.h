@@ -197,7 +197,7 @@ namespace openm
          * @param[in] i_msgTag    tag to identify message content (parameter or output data)
          * @param[in] i_type      type of value array
          * @param[in] i_size      size of value array
-         * @param[in] i_valueArr  value array to send (should not be deallocated until send compled)
+         * @param[in] i_valueArr  value array to send
          */
         virtual void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr) = 0;
 
