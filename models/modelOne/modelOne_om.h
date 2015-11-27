@@ -45,7 +45,7 @@ public:
     SalarySex(void)
     {
         auto it = acc_storage.before_begin();
-        for (int k = 0; k < N_ACC; k++) {
+        for (size_t k = 0; k < N_ACC; k++) {
             it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
             acc[k] = it->get();
         }
