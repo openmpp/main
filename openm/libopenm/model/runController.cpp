@@ -119,13 +119,13 @@ static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<con
 
 /** create run controller, initialize run options from command line and ini-file. */
 RunController::RunController(int argc, char ** argv) :
+    modelId(0),
     runId(0),
     subSampleCount(0),
     subFirstNumber(0),
     subPerProcess(1),
     processCount(1),
-    maxThreadCount(1),
-    modelId(0)
+    maxThreadCount(1)
 {
     // get command line options
     argStore.parseCommandLine(argc, argv, false, true, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr);
@@ -152,34 +152,30 @@ RunController::RunController(int argc, char ** argv) :
 * (a) determine run id, number of subsamples, processes, threads
 * --------------------------------------------------------------
 *
-* it can be following cases:
+* Typically new run id and run input parameters created unless run id specified (see "custom run" below)
 *
 * Number of subsamples by default = 1 and it can be specified 
 * using command-line argument, ini-file or profile table in database
 *
-* Number of modelling threads by default = number of subsamples per modelling process.
-* It can be less if specified by command-line argument (or ini-file or profile table in database)
-* and in that case subsamples would be run sequentially. 
+* Number of modelling threads by default = 1 and subsamples run sequentially in single thread.
+* If more threads specified (i.e. by command-line argument) then subsamples run in parallel. 
 *
-* Typically new run id and run input parameters created unless run id specified (see "custom run" below)
+* For example: \n
+*   model.exe -General.Subsamples 8 \n
+*   model.exe -General.Subsamples 8 -General.Threads 4 \n
+*   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
 *
-* 1. if MPI not used then
+* If MPI is used then
 *
-*   number of modelling processes = 1 \n
-*   number of threads = number of model subsamples, if not limited by model run argument
-*
-* 2. if MPI is used then
-*
-*   number of processes = MPI world size \n
-*   number of subsamples per process = MPI world size / number of processes \n
-*   if MPI world size % number of processes != 0 then remainder of subsamples calculated by root process
-*   number of threads = number of subsamples per process, if not limited by model run argument
+*   number of modelling processes = MPI world size \n
+*   number of subsamples per process = total number of subsamples / number of processes \n
+*   if total number of subsamples % number of processes != 0 then remainder calculated at root process \n
 *
 * 3. "custom run" case scenario:
 *
 *   run id > 0 expliictly specified as run option (i.e. on command line) \n
 *   run_id key exist in run_lst table \n
-*   number of subsamples = sub_count column value of run_lst table \n
+*   total number of subsamples = sub_count column value of run_lst table \n
 *   process subsample number = sub_started column value of run_lst table
 *   number of threads can not be specified and must be 1 by default
 *   modelling process will calculate only one subsample and exit.

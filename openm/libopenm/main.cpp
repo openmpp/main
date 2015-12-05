@@ -227,7 +227,7 @@ bool runModelThreads(
     int nextSub = 0;
     int maxSub = i_runCtrl.subPerProcess;
 
-    while (nextSub < maxSub && nextSub < i_runCtrl.subSampleCount || modelFutureLst.size() > 0) {
+    while ((nextSub < maxSub && nextSub < i_runCtrl.subSampleCount) || modelFutureLst.size() > 0) {
 
         // create and start new modelling threads
         while (nextSub < maxSub && (int)modelFutureLst.size() < i_runCtrl.maxThreadCount) {
