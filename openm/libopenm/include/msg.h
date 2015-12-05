@@ -258,7 +258,9 @@ namespace openm
     };
 }
 
-#define OM_SEND_SLEEP_TIME  29L     /* msec, send completion test sleep interval */
-#define OM_RECV_SLEEP_TIME  31L     /* msec, receive probe sleep interval */
+#define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
+#define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
+#define OM_PROGRESS_WAIT_TIME 17L       /* msec, wait interval for modeling threads polling */
+#define OM_PROGRESS_SLEEP_TIME 131L     /* msec, sleep interval if no progress in modeling threads */
 
 #endif  // OM_MSG_H

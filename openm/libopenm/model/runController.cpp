@@ -1,6 +1,6 @@
 /**
 * @file
-* OpenM++ modeling library: run controller class to create new model run
+* OpenM++ modeling library: run controller class to create new model run and support data exchange
 */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -121,8 +121,11 @@ static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<con
 RunController::RunController(int argc, char ** argv) :
     runId(0),
     subSampleCount(0),
-    subBaseNumber(0),
-    threadCount(1)
+    subFirstNumber(0),
+    subPerProcess(1),
+    processCount(1),
+    maxThreadCount(1),
+    modelId(0)
 {
     // get command line options
     argStore.parseCommandLine(argc, argv, false, true, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr);
@@ -136,36 +139,50 @@ RunController::RunController(int argc, char ** argv) :
     argStore.adjustLogSettings(argc, argv);
 }
 
-/** complete model run initialization: create run and input parameters in database. 
+/** model run controler: create new run and input parameters in database and support data exchange. 
 *
-* - (a) determine run id, number of subsamples and process subsample number
+* - (a) determine run id, number of subsamples, processes, threads
 * - (b) create new "run" in database (if required)
 * - (c) determine run options and save it in database (if required)
 * - (d) find id of source working set for input parameters
 * - (e) prepare model input parameters
-* - (f) load metadata tables from db
+* - (f) load metadata tables from db and broadcast it to child processes
+* - (g) receive accumulators data from to child processes and write into database
 *
-* (a) determine run id, number of subsamples and process subsample number
-* -----------------------------------------------------------------------
+* (a) determine run id, number of subsamples, processes, threads
+* --------------------------------------------------------------
+*
 * it can be following cases:
-* 
-* 1. if MPI is used then 
-* 
-*   new run id created by root process \n
-*   number of subsamples = MPI world size \n
-*   process subsample number = MPI process rank
-*   
-* 2. if MPI not used then it must be one of:
-* 
-*   - "custom run" case scenario: \n
-*       run id > 0 expliictly specified as run option (i.e. on command line) \n
-*       run_id key exist in run_lst table \n
-*       number of subsamples = sub_count column value of run_lst table \n
-*       process subsample number = sub_started column value of run_lst table
-*     
-*   - "debug" case scenario: \n
-*       run id = 0 and number of subsamples = 1 \n
-*       in "debug" case new run id will be created
+*
+* Number of subsamples by default = 1 and it can be specified 
+* using command-line argument, ini-file or profile table in database
+*
+* Number of modelling threads by default = number of subsamples per modelling process.
+* It can be less if specified by command-line argument (or ini-file or profile table in database)
+* and in that case subsamples would be run sequentially. 
+*
+* Typically new run id and run input parameters created unless run id specified (see "custom run" below)
+*
+* 1. if MPI not used then
+*
+*   number of modelling processes = 1 \n
+*   number of threads = number of model subsamples, if not limited by model run argument
+*
+* 2. if MPI is used then
+*
+*   number of processes = MPI world size \n
+*   number of subsamples per process = MPI world size / number of processes \n
+*   if MPI world size % number of processes != 0 then remainder of subsamples calculated by root process
+*   number of threads = number of subsamples per process, if not limited by model run argument
+*
+* 3. "custom run" case scenario:
+*
+*   run id > 0 expliictly specified as run option (i.e. on command line) \n
+*   run_id key exist in run_lst table \n
+*   number of subsamples = sub_count column value of run_lst table \n
+*   process subsample number = sub_started column value of run_lst table
+*   number of threads can not be specified and must be 1 by default
+*   modelling process will calculate only one subsample and exit.
 *       
 * (b) create new "run" in database (if required)
 * ----------------------------------------------
@@ -226,35 +243,35 @@ RunController::RunController(int argc, char ** argv) :
 *   in that case working set value of "Population" input parameter ignored \n
 *   because command line options have higher priority than database values.
 * 
-* (f) load metadata tables from db
-* ------------------------------------------------------------------------
+* (f) load metadata tables from db and broadcast it to child processes
+* --------------------------------------------------------------------
 * read all model metadata from database and (if required) broadcast it to all subsample processes.
 */
 MetaRunHolder * RunController::init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
 {
-    // get main run control values: run id, number of subsamples, threads, processes, etc.
+    // get main run control values: run id, number of subsamples, threads, processes
     runId = argStore.intOption(RunOptionsKey::runId, 0);                    // "custom run": run id must exist in database
-    threadCount = argStore.intOption(RunOptionsKey::threadCount, 1);        // number of modeling threads
-    int nProc = i_isMpiUsed ? i_msgExec->worldSize() : 1;                   // number of processes: MPI world size
+    processCount = i_isMpiUsed ? i_msgExec->worldSize() : 1;                // number of processes: MPI world size
     subSampleCount = argStore.intOption(RunOptionsKey::subSampleCount, 1);  // number of subsamples from command line or ini-file
-    subBaseNumber = i_isMpiUsed ? i_msgExec->rank() * threadCount : 0;      // first subsample number
+    maxThreadCount = argStore.intOption(RunOptionsKey::threadCount, 1);     // max number of modeling threads
 
     // basic validation
-    if (subSampleCount <= 0 || threadCount <= 0 || nProc <= 0) 
-        throw ModelException("Invalid number of subsamples: %d or threads: %d or processes: %d", subSampleCount, threadCount, nProc);
+    if (subSampleCount <= 0 || maxThreadCount <= 0 || processCount <= 0 || subSampleCount < processCount)
+        throw ModelException("Invalid number of subsamples: %d or threads: %d or processes: %d", subSampleCount, maxThreadCount, processCount);
     if (runId < 0) throw ModelException("Invalid run id: %d", runId);
-    if (subBaseNumber < 0) throw ModelException("Invalid subsample number: %d", subBaseNumber);
 
-    // if run id not specified then
-    //   number of subsamples must be = number of processes * number of threads
-    // else (custom run) thread count must be 1
-    if (runId <= 0) {
-        if (subSampleCount != nProc * threadCount)
-            throw ModelException("Invalid number of subsamples: %d, expected: %d", subSampleCount, nProc * threadCount);
-    }
-    else {
-        if (nProc != 1 || threadCount != 1)
-            throw ModelException("Invalid run id %d or number of threads: %d or processes: %d", runId, threadCount, nProc);
+    // calculate number of subsamples and first subsample number
+    subPerProcess = subSampleCount / processCount;                          // number of subsamples for each modeling process
+    subFirstNumber = i_isMpiUsed ? i_msgExec->rank() * subPerProcess : 0;   // first subsample number for current modeling process
+
+    if (subFirstNumber < 0 || subPerProcess <= 0 || subFirstNumber + subPerProcess > subSampleCount)
+        throw ModelException("Invalid subsample number: %d or number of subsamples per process: %d", subFirstNumber, subPerProcess);
+
+    // if run id specified then only one subsample calculated and thread count must be 1 (custom run)
+    if (runId > 0) {
+        subPerProcess = 1;
+        if (processCount != 1 || maxThreadCount != 1)
+            throw ModelException("Invalid run id %d or number of threads: %d or processes: %d", runId, maxThreadCount, processCount);
     }
 
     // create new metadata rows storage
@@ -275,10 +292,14 @@ MetaRunHolder * RunController::init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgEx
         metaStore->runOption.reset(IRunOptionTable::create(i_dbExec, runId));
     }
 
-    // broadcast metadata: run id, subsample count, subsample number and meta tables from root to all other processes
+    // broadcast metadata: run id, subsample count and meta tables from root to all other processes
     if (i_isMpiUsed) {
         broadcastMetaData(i_msgExec, metaStore.get());
+
+        // create list of accumulators to be received from child modelling processes 
+        if (i_msgExec->isRoot()) initAccReceiveList(metaStore.get());
     }
+
     return metaStore.release();
 }
 
@@ -292,7 +313,7 @@ void RunController::createRunSubsample(
     const ModelDicRow * mdRow = io_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
     if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
-    int modelId = mdRow->modelId;
+    modelId = mdRow->modelId;
 
     // update in transaction scope
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
@@ -338,8 +359,8 @@ void RunController::createRunSubsample(
             "UPDATE run_lst SET status = 'p', sub_started = sub_started + 1 WHERE run_id = " + sRunId
             );
 
-        subBaseNumber = i_dbExec->selectToInt("SELECT sub_started - 1 FROM run_lst WHERE run_id = " + sRunId, -1);
-        if (subBaseNumber < 0)
+        subFirstNumber = i_dbExec->selectToInt("SELECT sub_started - 1 FROM run_lst WHERE run_id = " + sRunId, -1);
+        if (subFirstNumber < 0)
             throw DbException("invalid run id: %d", runId);     // run id not found
 
         int nSubCount = i_dbExec->selectToInt("SELECT sub_count FROM run_lst WHERE run_id = " + sRunId, 0);
@@ -348,11 +369,11 @@ void RunController::createRunSubsample(
 
         subSampleCount = nSubCount;     // actual number of subsamples
 
-        if (subBaseNumber >= subSampleCount)
-            throw DbException("invalid sub-sample number: %d, it must be less than %d (run id: %d)", subBaseNumber, subSampleCount, runId);
+        if (subFirstNumber >= subSampleCount)
+            throw DbException("invalid sub-sample number: %d, it must be less than %d (run id: %d)", subFirstNumber, subSampleCount, runId);
 
         // validate destination run: it must be new run or empty run
-        if (subBaseNumber == 0) {
+        if (subFirstNumber == 0) {
             int nCompleted = i_dbExec->selectToInt("SELECT sub_completed FROM run_lst WHERE run_id = " + sRunId, 0);
             if (nCompleted != 0)
                 throw DbException("destination run must be empty, but it already have %d completed subsamples (run id: %d)", nCompleted, runId);
@@ -362,7 +383,7 @@ void RunController::createRunSubsample(
     // first subsample number =0 (ie: MPI root process)
     // save run options in run_option table
     // copy input parameters from working set and "base" run into new run id
-    if (subBaseNumber == 0) {
+    if (subFirstNumber == 0) {
 
         // merge run options values from command line, ini-file and profile_option table
         // save run options in run_option table
@@ -526,7 +547,6 @@ void RunController::createRunParameters(
     )
 {
     // find input parameters workset
-    int modelId = i_mdRow->modelId;
     int setId = argStore.intOption(RunOptionsKey::setId, 0);
     if (setId <= 0) 
         throw DbException("invalid set id or model working sets not found in database");
@@ -635,19 +655,23 @@ void RunController::createRunParameters(
 // read metadata tables from db, except of run_option table
 void RunController::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
 {
+    // find model and set model id
     io_metaStore->modelDic.reset(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_TIMESTAMP));
 
     const ModelDicRow * mdRow = io_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
     if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
-    io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mdRow->modelId));
+    modelId = mdRow->modelId;
+
+    // read metadata tables
+    io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, modelId));
+    io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, modelId));
+    io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, modelId));
+    io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, modelId));
+    io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, modelId));
+    io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, modelId));
+    io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, modelId));
+    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, modelId));
 }
 
 // broadcast metadata: run id, subsample count, subsample number and meta tables from root to all modelling processes
@@ -655,10 +679,11 @@ void RunController::broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_m
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    // broadcast run id, subsample count and thread from root to all model processes
+    // broadcast model id, run id, subsample count and thread from root to all model processes
+    i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &modelId);
     i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &runId);
     i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &subSampleCount);
-    i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &threadCount);
+    i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, &maxThreadCount);
 
     // broadcast metadata tables
     broadcastMetaTable<IModelDicTable>(io_metaStore->modelDic, i_msgExec, MsgTag::modelDic);
@@ -690,3 +715,93 @@ void RunController::broadcastMetaTable(unique_ptr<MetaTbl> & i_tableUptr, IMsgEx
     }
 }
 
+// create list of accumulators to be received from child modelling processes:
+// root process calculating first subPerProcess subsamples 
+// and remainder of subSampleCount / processCount
+void RunController::initAccReceiveList(const MetaRunHolder * i_metaStore)
+{
+    if (subSampleCount <= subPerProcess) return;    // exit if all subsamples was produced at root model process
+
+    const vector<TableAccRow> accVec = i_metaStore->tableAcc->byModelId(modelId);
+
+    int tblId = -1;
+    long long valSize = 0;
+    for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
+
+        // get accumulator data size
+        if (tblId != accVec[nAcc].tableId) {
+            tblId = accVec[nAcc].tableId;
+            valSize = IOutputTableWriter::sizeOf(modelId, i_metaStore, tblId);
+        }
+
+        for (int nSub = subPerProcess; nSub < processCount * subPerProcess; nSub++) {
+            accRecvVec.push_back(AccReceiveItem(nSub, tblId, accVec[nAcc].accId, nAcc, valSize));
+        }
+    }
+}
+
+/** receive accumulators of output tables subsamples and write into database.
+*
+* @return  true if not all accumulators for all subsamples received yet (if data not ready)
+*/
+bool RunController::receiveSubSamples(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore)
+{
+    if (!i_isMpiUsed || !i_msgExec->isRoot()) return false; // exit if this is not a root process
+    if (accRecvVec.empty()) return false;                   // exit if nothing to receive
+
+    // get sparse settings
+    bool isSparse = i_metaStore->runOption->boolValue(RunOptionsKey::useSparse);
+    double nullValue = i_metaStore->runOption->doubleValue(RunOptionsKey::sparseNull, DBL_EPSILON);
+
+    // try to receive and save accumulators
+    bool isReceived = false;
+    for (AccReceiveItem & accRecv : accRecvVec) {
+
+        if (!accRecv.isReceived) {      // if accumulator not yet received
+
+            // allocate buffer to receive the data
+            unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
+            double * valueArr = valueUptr.get();
+
+            // try to received
+            accRecv.isReceived = i_msgExec->tryReceive(
+                (accRecv.subNumber / subPerProcess),
+                (MsgTag)(((int)MsgTag::outSubsampleBase + accRecv.accIndex) * subSampleCount + accRecv.subNumber),
+                typeid(double),
+                accRecv.valueSize,
+                valueArr
+                );
+            if (!accRecv.isReceived) continue;
+
+            // accumulator received: write it into database
+            const TableDicRow * tblRow = i_metaStore->tableDic->byKey(modelId, accRecv.tableId);
+            if (tblRow == nullptr) throw new DbException("output table not found in table dictionary, id: %d", accRecv.tableId);
+
+            unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
+                modelId,
+                runId,
+                tblRow->tableName.c_str(),
+                i_dbExec,
+                i_metaStore,
+                subSampleCount,
+                isSparse,
+                nullValue
+                ));
+            writer->writeAccumulator(i_dbExec, accRecv.subNumber, accRecv.accId, accRecv.valueSize, valueArr);
+
+            isReceived = true;
+        }
+    }
+
+    // check if anything left to receive
+    bool isAnyToRecv = std::any_of(
+        accRecvVec.cbegin(),
+        accRecvVec.cend(),
+        [](AccReceiveItem i_recv) -> bool { return !i_recv.isReceived; }
+    );
+
+    // no data received: if any accumulators outstanding then sleep before try again
+    if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
+
+    return isAnyToRecv;
+}

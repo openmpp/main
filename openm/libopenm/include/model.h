@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <mutex>
 #include <future>
+#include <list>
 #include <forward_list>
 using namespace std;
 
@@ -44,9 +45,9 @@ namespace openm
         /** model run basis factory. */
         static RunBase * create(
             bool i_isMpiUsed,
+            int i_modelId,
             int i_runId,
             int i_subSampleCount,
-            int i_threadCount,
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
@@ -56,7 +57,7 @@ namespace openm
         void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
         
         /** model shutdown: save results and cleanup resources. */
-        void shutdown(void);
+        void shutdown(int i_processSubCount);
 
         /** model shutdown on error: mark run as failure. */
         void shutdownOnFail(void);
@@ -66,7 +67,6 @@ namespace openm
         int modelId;                        // model id in database
         int runId;                          // model run id
         int subCount;                       // number of subsamples
-        int threadCount;                    // number of modeling threads
         IDbExec * dbExec;                   // db-connection
         IMsgExec * msgExec;                 // message passing interface
         const MetaRunHolder * metaStore;    // metadata tables
@@ -76,7 +76,6 @@ namespace openm
             int i_modelId,
             int i_runId,
             int i_subCount,
-            int i_threadCount,
             IDbExec * i_dbExec,
             IMsgExec * i_msgExec,
             const MetaRunHolder * i_metaStore
@@ -84,9 +83,6 @@ namespace openm
 
         /** write output tables aggregated values into database */
         void writeOutputValues(void);
-
-        /** receive all output tables subsamples and write into database */
-        void receiveSubSamples(void);
 
     private:
         RunBase(const RunBase & i_runBase) = delete;

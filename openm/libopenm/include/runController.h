@@ -93,23 +93,35 @@ namespace openm
         /** create run controller, initialize run options from command line and ini-file. */
         RunController(int argc, char ** argv);
 
+        /** model id in database */
+        int modelId;
+
         /** run id, if defined by run options or zero */
         int runId;
 
-        /** number of subsamples */
+        /** total number of subsamples */
         int subSampleCount;
 
         /** subsample staring number for current modeling process */
-        int subBaseNumber;
+        int subFirstNumber;
 
-        /** number of modeling threads */
-        int threadCount;
+        /** number of subsamples for each modeling process */
+        int subPerProcess;
+
+        /** number of modeling processes */
+        int processCount;
+
+        /** max number of modeling threads */
+        int maxThreadCount;
 
         /** arguments from command line and ini-file. */
         const ArgReader & argOpts(void) const { return argStore; }
 
         /** complete model run initialization: create run and input parameters in database. */
         MetaRunHolder * init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
+
+        /** receive accumulators of output tables subsamples and write into database. */
+        bool receiveSubSamples(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore);
 
     private:
         ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
@@ -131,12 +143,37 @@ namespace openm
         // read metadata tables from db, except of run_option table
         void readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
 
-        //  broadcast metadata: run id, subsample count, subsample number and meta tables from root to all modelling processes
+        //  broadcast metadata: run id, subsample count and meta tables from root to all modelling processes
         void broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
         
         // broadcast meta table db rows
         template <class MetaTbl>
         void broadcastMetaTable(unique_ptr<MetaTbl> & i_tableUptr, IMsgExec * i_msgExec, MsgTag i_msgTag);
+        
+        // helper struct to receive output table values for each accumulator
+        struct AccReceiveItem
+        {
+            int subNumber;          // subsample number to receive
+            int tableId;            // output table id
+            int accId;              // accumulator id
+            int accIndex;           // index of accumulator in the list of accumulators
+            long long valueSize;    // size of accumulator data
+            bool isReceived;        // if true then data received
+
+            AccReceiveItem(int i_subNumber, int i_tableId, int i_accId, int i_accIndex, long long i_valueSize) :
+                subNumber(i_subNumber),
+                tableId(i_tableId),
+                accId(i_accId),
+                accIndex(i_accIndex),
+                valueSize(i_valueSize),
+                isReceived(false)
+            { }
+        };
+
+        vector<AccReceiveItem> accRecvVec;      // list of accumulators to be received
+
+        // create list of accumulators to be received from child modelling processes
+        void initAccReceiveList(const MetaRunHolder * i_metaStore);
     };
 }
 
