@@ -29,6 +29,9 @@ namespace openm
         /** reserved and should not be used */
         unused = 0,
 
+        /** modelling job status */
+        statusUpdate,
+
         /** lang_lst db rows */
         langLst,
 

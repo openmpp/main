@@ -26,8 +26,7 @@ namespace openm
     static const type_info * typeTaskLstRow[] = { 
         &typeid(decltype(TaskLstRow::taskId)), 
         &typeid(decltype(TaskLstRow::modelId)), 
-        &typeid(decltype(TaskLstRow::name)), 
-        &typeid(decltype(TaskLstRow::subCount))
+        &typeid(decltype(TaskLstRow::name)) 
     };
 
     // Size (number of columns) for task_lst row
@@ -54,9 +53,6 @@ namespace openm
                 break;
             case 2:
                 dynamic_cast<TaskLstRow *>(i_row)->name = ((const char *)i_value);
-                break;
-            case 3:
-                dynamic_cast<TaskLstRow *>(i_row)->subCount = (*(int *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -94,7 +90,7 @@ vector<TaskLstRow> TaskLstTable::select(IDbExec * i_dbExec, const string & i_whe
 
     const IRowAdapter & adp = TaskLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT task_id, model_id, task_name, sub_count FROM task_lst " + i_where + " ORDER BY 1", 
+        "SELECT task_id, model_id, task_name FROM task_lst " + i_where + " ORDER BY 1", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), TaskLstRow::keyLess);

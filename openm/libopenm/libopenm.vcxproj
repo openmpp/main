@@ -153,8 +153,10 @@
     <ClInclude Include="include\dbOutputTable.h" />
     <ClInclude Include="include\dbParameter.h" />
     <ClInclude Include="include\helper.h" />
+    <ClInclude Include="include\metaLoader.h" />
     <ClInclude Include="include\metaRunHolder.h" />
     <ClInclude Include="include\model.h" />
+    <ClInclude Include="include\modelRunState.h" />
     <ClInclude Include="include\msg.h" />
     <ClInclude Include="include\runController.h" />
     <ClInclude Include="msg\msgCommon.h" />
@@ -204,8 +206,10 @@
     <ClCompile Include="db\tableDimsTxtTable.cpp" />
     <ClCompile Include="db\tableExprTable.cpp" />
     <ClCompile Include="db\tableExprTxtTable.cpp" />
+    <ClCompile Include="db\taskLogTable.cpp" />
     <ClCompile Include="db\taskLstTable.cpp" />
     <ClCompile Include="db\taskRunTable.cpp" />
+    <ClCompile Include="db\taskSetTable.cpp" />
     <ClCompile Include="db\taskTxtTable.cpp" />
     <ClCompile Include="db\typeDicTable.cpp" />
     <ClCompile Include="db\typeDicTxtTable.cpp" />
@@ -217,8 +221,10 @@
     <ClCompile Include="db\worksetTxtTable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\modelBase.cpp" />
+    <ClCompile Include="model\modelRunState.cpp" />
     <ClCompile Include="model\runController.cpp" />
     <ClCompile Include="model\runBase.cpp" />
+    <ClCompile Include="model\metaLoader.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />
     <ClCompile Include="msg\msgMpiExec.cpp" />

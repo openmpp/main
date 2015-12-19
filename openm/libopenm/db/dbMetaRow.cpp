@@ -1038,24 +1038,71 @@ bool TaskTxtLangRow::uniqueLangKeyEqual(const TaskTxtLangRow & i_left, const Tas
 }
 
 /** less comparator by primary key: task id and set id. */
-bool TaskRunRow::isKeyLess(const TaskRunRow & i_left, const TaskRunRow & i_right)
+bool TaskSetRow::isKeyLess(const TaskSetRow & i_left, const TaskSetRow & i_right)
 {
     return (i_left.taskId < i_right.taskId) || (i_left.taskId == i_right.taskId && i_left.setId < i_right.setId);
 }
 
 /** equal comparator by primary key: task id and set id. */
-bool TaskRunRow::isKeyEqual(const TaskRunRow & i_left, const TaskRunRow & i_right)
+bool TaskSetRow::isKeyEqual(const TaskSetRow & i_left, const TaskSetRow & i_right)
 {
     return i_left.taskId == i_right.taskId && i_left.setId == i_right.setId;
 }
 
 /** find row by primary key: task id and set id. */
-vector<TaskRunRow>::const_iterator TaskRunRow::byKey(int i_taskId, int i_setId, const vector<TaskRunRow> & i_rowVec)
+vector<TaskSetRow>::const_iterator TaskSetRow::byKey(int i_taskId, int i_setId, const vector<TaskSetRow> & i_rowVec)
 {
     return find_if(
         i_rowVec.cbegin(),
         i_rowVec.cend(),
-        [i_taskId, i_setId](const TaskRunRow & i_row) -> bool { return i_row.taskId == i_taskId && i_row.setId == i_setId; }
+        [i_taskId, i_setId](const TaskSetRow & i_row) -> bool { return i_row.taskId == i_taskId && i_row.setId == i_setId; }
     );
 }
 
+/** less comparator by primary key: task log id. */
+bool TaskLogRow::isKeyLess(const TaskLogRow & i_left, const TaskLogRow & i_right)
+{
+    return i_left.taskLogId < i_right.taskLogId;
+}
+
+/** equal comparator by primary key: task log id. */
+bool TaskLogRow::isKeyEqual(const TaskLogRow & i_left, const TaskLogRow & i_right)
+{
+    return i_left.taskLogId == i_right.taskLogId;
+}
+
+/** find row by primary key: task log id. */
+vector<TaskLogRow>::const_iterator TaskLogRow::byKey(int i_taskLogId, const vector<TaskLogRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_taskLogId](const TaskLogRow & i_row) -> bool { return i_row.taskLogId == i_taskLogId; }
+    );
+}
+
+/** less comparator by primary key: task id, set id, run id. */
+bool TaskRunRow::isKeyLess(const TaskRunRow & i_left, const TaskRunRow & i_right)
+{
+    return (i_left.taskId < i_right.taskId) || 
+        (i_left.taskId == i_right.taskId && i_left.setId < i_right.setId) ||
+        (i_left.taskId == i_right.taskId && i_left.setId == i_right.setId && i_left.runId < i_right.runId);
+}
+
+/** equal comparator by primary key: task id, set id, run id. */
+bool TaskRunRow::isKeyEqual(const TaskRunRow & i_left, const TaskRunRow & i_right)
+{
+    return i_left.taskId == i_right.taskId && i_left.setId == i_right.setId && i_left.runId == i_right.runId;
+}
+
+/** find row by primary key: task id, set id, run id. */
+vector<TaskRunRow>::const_iterator TaskRunRow::byKey(int i_taskId, int i_setId, int i_runId, const vector<TaskRunRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_taskId, i_setId, i_runId](const TaskRunRow & i_row) -> bool { 
+            return i_row.taskId == i_taskId && i_row.setId == i_setId && i_row.runId == i_runId;
+        }
+    );
+}

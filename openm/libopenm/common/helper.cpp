@@ -14,7 +14,7 @@
 #endif  // _WIN32
 
 // helper exception default error message
-const char openm:: helperUnknownErrorMessage[] = "unknown error in helper method";
+const char openm::helperUnknownErrorMessage[] = "unknown error in helper method";
 
 // mutex to lock library operations
 recursive_mutex openm::rtMutex;

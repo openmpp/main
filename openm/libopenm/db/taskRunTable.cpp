@@ -26,7 +26,8 @@ namespace openm
     static const type_info * typeTaskRunRow[] = { 
         &typeid(decltype(TaskRunRow::taskId)),
         &typeid(decltype(TaskRunRow::setId)),
-        &typeid(decltype(TaskRunRow::runId))
+        &typeid(decltype(TaskRunRow::runId)),
+        &typeid(decltype(TaskRunRow::taskLogId))
     };
 
     // Size (number of columns) for task_run row
@@ -54,6 +55,9 @@ namespace openm
             case 2:
                 dynamic_cast<TaskRunRow *>(i_row)->runId = (*(int *)i_value);
                 break;
+            case 3:
+                dynamic_cast<TaskRunRow *>(i_row)->taskLogId = (*(int *)i_value);
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -68,17 +72,18 @@ ITaskRunTable::~ITaskRunTable(void) throw() { }
 TaskRunTable::~TaskRunTable(void) throw() { }
 
 // select table rows
-vector<TaskRunRow> ITaskRunTable::select(IDbExec * i_dbExec, int i_taskId)
+vector<TaskRunRow> ITaskRunTable::select(IDbExec * i_dbExec, int i_taskLogId)
 {
-    string sWhere = (i_taskId > 0) ? " WHERE task_id = " + to_string(i_taskId) : "";
+    string sWhere = (i_taskLogId > 0) ? " WHERE task_log_id = " + to_string(i_taskLogId) : "";
     return 
         TaskRunTable::select(i_dbExec, sWhere);
 }
 
-// select table rows by task id and set id
-vector<TaskRunRow> ITaskRunTable::byKey(IDbExec * i_dbExec, int i_taskId, int i_setId)
+// select table rows by task id, set id, run id
+vector<TaskRunRow> ITaskRunTable::byKey(IDbExec * i_dbExec, int i_taskId, int i_setId, int i_runId)
 {
-    string sWhere = " WHERE task_id = " + to_string(i_taskId) + " AND set_id = " + to_string(i_setId);
+    string sWhere = 
+        " WHERE task_id = " + to_string(i_taskId) + " AND set_id = " + to_string(i_setId) + " AND run_id = " + to_string(i_runId);
     return 
         TaskRunTable::select(i_dbExec, sWhere);
 }
@@ -90,7 +95,7 @@ vector<TaskRunRow> TaskRunTable::select(IDbExec * i_dbExec, const string & i_whe
 
     const IRowAdapter & adp = TaskRunRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT task_id, set_id, run_id FROM task_run " + i_where + " ORDER BY 1, 2", 
+        "SELECT task_id, set_id, run_id, task_log_id FROM task_run " + i_where + " ORDER BY 1, 2, 3", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), TaskRunRow::keyLess);

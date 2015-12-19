@@ -892,23 +892,23 @@ namespace openm
         /** return string value by primary key (run id, option key) or default value if not found. */
         virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw() = 0;
 
-        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
-        virtual bool boolValue(int i_runId, const char * i_key) const throw() = 0;
-
-        /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
-        virtual long long longValue(int i_runId, const char * i_key, long long i_default) const throw() = 0;
-
-        /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
-        virtual double doubleValue(int i_runId, const char * i_key, double i_default) const throw() = 0;
-
         /** return string value by option key (first found) or default value if not found. */
         virtual string strValue(const char * i_key, const string & i_default = "") const throw() = 0;
+
+        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
+        virtual bool boolValue(int i_runId, const char * i_key) const throw() = 0;
 
         /** return booleanvalue by option key (first found) or false if not found or value not "yes", "1", "true". */
         virtual bool boolValue(const char * i_key) const throw() = 0;
 
+        /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
+        virtual long long longValue(int i_runId, const char * i_key, long long i_default) const throw() = 0;
+
         /** return long value by option key (first found) or default if not found or can not be converted to long. */
         virtual long long longValue(const char * i_key, long long i_default) const throw() = 0;
+
+        /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
+        virtual double doubleValue(int i_runId, const char * i_key, double i_default) const throw() = 0;
 
         /** return double value by option key (first found) or default if not found or can not be converted to double. */
         virtual double doubleValue(const char * i_key, double i_default) const throw() = 0;
@@ -1020,20 +1020,52 @@ namespace openm
         static vector<TaskTxtRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_langId);
     };
 
-    /** task_run table public interface. */
-    struct ITaskRunTable : public IMetaTable<TaskRunRow>
+    /** task_set table public interface. */
+    struct ITaskSetTable : public IMetaTable<TaskSetRow>
     {
-        virtual ~ITaskRunTable() throw() = 0;
+        virtual ~ITaskSetTable() throw() = 0;
 
         /**
         * select table rows sorted by primary key: task id and set id.
         *
         * if i_taskId > 0 then select only rows where task_id = i_taskId
         */
-        static vector<TaskRunRow> select(IDbExec * i_dbExec, int i_taskId = 0);
+        static vector<TaskSetRow> select(IDbExec * i_dbExec, int i_taskId = 0);
 
         /** select table row by primary key: task id and set id. */
-        static vector<TaskRunRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId);
+        static vector<TaskSetRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId);
+    };
+
+    /** task_log table public interface. */
+    struct ITaskLogTable : public IMetaTable<TaskLogRow>
+    {
+        virtual ~ITaskLogTable() throw() = 0;
+
+        /**
+        * select table rows sorted by primary key: task log id.
+        *
+        * if i_taskId > 0 then select only rows where task_id = i_taskId
+        */
+        static vector<TaskLogRow> select(IDbExec * i_dbExec, int i_taskId = 0);
+
+        /** select table row by primary key: task log id. */
+        static vector<TaskLogRow> byKey(IDbExec * i_dbExec, int i_taskLogId);
+    };
+
+    /** task_run table public interface. */
+    struct ITaskRunTable : public IMetaTable<TaskRunRow>
+    {
+        virtual ~ITaskRunTable() throw() = 0;
+
+        /**
+        * select table rows sorted by primary key: task id, set id, run id.
+        *
+        * if i_taskLogId > 0 then select only rows where task_log_id = i_taskLogId
+        */
+        static vector<TaskRunRow> select(IDbExec * i_dbExec, int i_taskLogId = 0);
+
+        /** select table row by primary key: task id, set id, run id. */
+        static vector<TaskRunRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId, int i_runId);
     };
 }
 

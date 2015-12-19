@@ -1674,15 +1674,11 @@ namespace openm
         /** task_name VARCHAR(255) NOT NULL */
         string name;
 
-        /** sub_count INT          NOT NULL */
-        int subCount;
-
         /** create row with supplied primary key field values. */
         TaskLstRow(int i_taskId) :
             taskId(i_taskId),
             modelId(0),
-            name(""),
-            subCount(0)
+            name("")
         { }
 
         /** create row with default empty field values. */
@@ -1754,8 +1750,8 @@ namespace openm
         static bool uniqueLangKeyEqual(const TaskTxtLangRow & i_left, const TaskTxtLangRow & i_right);
     };
 
-    /** task_run table row. */
-    struct TaskRunRow : public IMetaRow<TaskRunRow>
+    /** task_set table row. */
+    struct TaskSetRow : public IMetaRow<TaskSetRow>
     {
         /** task_id INT NOT NULL  */
         int taskId;
@@ -1763,29 +1759,111 @@ namespace openm
         /** set_id  INT NOT NULL  */
         int setId;
 
-        /** run_id  INT NULL      */
-        int runId;
-
         /** create row with supplied primary key field values. */
-        TaskRunRow(int i_taskId, int i_setId) :
+        TaskSetRow(int i_taskId, int i_setId) :
             taskId(i_taskId),
-            setId(i_setId),
-            runId(0)
+            setId(i_setId)
         { }
 
         /** create row with default empty field values. */
-        TaskRunRow(void) : TaskRunRow(0, 0) { }
+        TaskSetRow(void) : TaskSetRow(0, 0) { }
+
+        ~TaskSetRow(void) throw() { }
+
+        /** less comparator by primary key: task id and set id. */
+        static bool isKeyLess(const TaskSetRow & i_left, const TaskSetRow & i_right);
+
+        /** equal comparator by primary key: task id and set id. */
+        static bool isKeyEqual(const TaskSetRow & i_left, const TaskSetRow & i_right);
+
+        /** find row by primary key: task id and set id. */
+        static vector<TaskSetRow>::const_iterator byKey(int i_taskId, int i_setId, const vector<TaskSetRow> & i_rowVec);
+    };
+
+    /** task_log table row. */
+    struct TaskLogRow : public IMetaRow<TaskLogRow>
+    {
+        /** task_log_id INT         NOT NULL */
+        int taskLogId;
+
+        /** task_id     INT         NOT NULL */
+        int taskId;
+
+        /** sub_count   INT         NOT NULL */
+        int subCount;
+
+        /** create_dt   VARCHAR(32) NOT NULL */
+        string createDateTime;
+
+        /** task status: i=init p=progress s=success x=exit e=failed */
+        string status;
+
+        /** update_dt   VARCHAR(32) NOT NULL */
+        string updateDateTime;
+
+        /** create row with supplied primary key field values. */
+        TaskLogRow(int i_taskLogId) :
+            taskLogId(i_taskLogId),
+            taskId(0),
+            subCount(0),
+            createDateTime(""),
+            status(""),
+            updateDateTime("")
+        { }
+
+        /** create row with default empty field values. */
+        TaskLogRow(void) : TaskLogRow(0) { }
+
+        ~TaskLogRow(void) throw() { }
+
+        /** less comparator by primary key: task log id. */
+        static bool isKeyLess(const TaskLogRow & i_left, const TaskLogRow & i_right);
+
+        /** equal comparator by primary key: task log id. */
+        static bool isKeyEqual(const TaskLogRow & i_left, const TaskLogRow & i_right);
+
+        /** find row by primary key: task log id. */
+        static vector<TaskLogRow>::const_iterator byKey(int i_taskLogId, const vector<TaskLogRow> & i_rowVec);
+    };
+
+    /** task_run table row. */
+    struct TaskRunRow : public IMetaRow<TaskRunRow>
+    {
+        /** task_id     INT NOT NULL */
+        int taskId;
+
+        /** set_id      INT NOT NULL */
+        int setId;
+
+        /** run_id      INT NOT NULL */
+        int runId;
+
+        /** task_log_id INT NOT NULL */
+        int taskLogId;
+
+        /** create row with supplied primary key field values. */
+        TaskRunRow(int i_taskId, int i_setId, int i_runId) :
+            taskId(i_taskId),
+            setId(i_setId),
+            runId(i_runId),
+            taskLogId(0)
+        { }
+
+        /** create row with default empty field values. */
+        TaskRunRow(void) : TaskRunRow(0, 0, 0) { }
 
         ~TaskRunRow(void) throw() { }
 
-        /** less comparator by primary key: task id and set id. */
+        /** less comparator by primary key: task id, set id, run id. */
         static bool isKeyLess(const TaskRunRow & i_left, const TaskRunRow & i_right);
 
-        /** equal comparator by primary key: task id and set id. */
+        /** equal comparator by primary key: task id, set id, run id. */
         static bool isKeyEqual(const TaskRunRow & i_left, const TaskRunRow & i_right);
 
-        /** find row by primary key: task id and set id. */
-        static vector<TaskRunRow>::const_iterator byKey(int i_taskId, int i_setId, const vector<TaskRunRow> & i_rowVec);
+        /** find row by primary key: task id, set id, run id. */
+        static vector<TaskRunRow>::const_iterator byKey(
+            int i_taskId, int i_setId, int i_runId, const vector<TaskRunRow> & i_rowVec
+            );
     };
 }
 

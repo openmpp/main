@@ -55,10 +55,10 @@ namespace openm
         /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
         void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter);
 
-        /** try to non-blocking receive value array, return true if completed. */
+        /** try to non-blocking receive and unpack vector of db rows, return true if completed. */
         bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const;
 
-        /** try to non-blocking receive and unpack vector of db rows, return true if completed. */
+        /** try to non-blocking receive value array, return true if completed. */
         bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const;
 
         /** wait for all non-blocking send to be completed. */

@@ -98,6 +98,11 @@ LIBOPENM_CPPLIST = \
   db/tableDimsTxtTable.cpp \
   db/tableExprTable.cpp \
   db/tableExprTxtTable.cpp \
+  db/taskLogTable.cpp \
+  db/taskLstTable.cpp \
+  db/taskRunTable.cpp \
+  db/taskSetTable.cpp \
+  db/taskTxtTable.cpp \
   db/typeDicTable.cpp \
   db/typeDicTxtTable.cpp \
   db/typeEnumLstTable.cpp \
@@ -106,7 +111,9 @@ LIBOPENM_CPPLIST = \
   db/worksetParamTable.cpp \
   db/worksetParamTxtTable.cpp \
   db/worksetTxtTable.cpp \
+  model/metaLoader.cpp \
   model/modelBase.cpp \
+  model/modelRunState.cpp \
   model/runController.cpp \
   model/runBase.cpp \
   msg/msgCommon.cpp \

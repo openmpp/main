@@ -19,6 +19,7 @@ using namespace std;
 #include "libopenm/omCommon.h"
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
+#include "libopenm/common/argReader.h"
 #include "helper.h"
 #include "dbExec.h"
 #include "dbMetaTable.h"
@@ -26,6 +27,8 @@ using namespace std;
 #include "dbOutputTable.h"
 #include "metaRunHolder.h"
 #include "msg.h"
+#include "modelRunState.h"
+#include "metaLoader.h"
 #include "runController.h"
 
 namespace openm
@@ -59,8 +62,8 @@ namespace openm
         /** model shutdown: save results and cleanup resources. */
         void shutdown(int i_processSubCount);
 
-        /** model shutdown on error: mark run as failure. */
-        void shutdownOnFail(void);
+        /** model run shutdown if exiting without completion (ie: exit on error). */
+        void shutdownOnExit(ModelStatus i_status);
 
     private:
         bool isMpiUsed;                     // if true then use MPI messaging library to pass the data

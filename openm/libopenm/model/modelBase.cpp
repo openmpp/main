@@ -132,6 +132,7 @@ void ModelBase::writeOutputTable(const char * i_name, long long i_size, forward_
                 runOptions()->useSparse, 
                 runOptions()->nullValue
                 ));
+
             int nAcc = 0;
             for (const auto & apc : accValLst) {
                 writer->writeAccumulator(dbExec, subSampleNumber(), nAcc, i_size, apc.get());
@@ -154,7 +155,7 @@ void ModelBase::writeOutputTable(const char * i_name, long long i_size, forward_
             for (auto & ap : accValLst) {
                 msgExec->startSend(
                     IMsgExec::rootRank,
-                    (MsgTag)(((int)MsgTag::outSubsampleBase + accPos + nAcc) * subSampleCount() + subSampleNumber()),
+                    (MsgTag)(RunController::accMsgTag(subSampleNumber(), subSampleCount(), accPos + nAcc)),
                     typeid(double),
                     i_size,
                     ap.release()

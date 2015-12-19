@@ -95,7 +95,8 @@ namespace openm
         /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
         void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter)
         {
-             return MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter);
+            lock_guard<recursive_mutex> lck(rtMutex);
+            return MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter);
         }
 
         /** try to non-blocking receive value array, return return true if received. */
@@ -108,7 +109,8 @@ namespace openm
         /** try to non-blocking receive and unpack vector of db rows, return return true if received. */
         bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const
         {
-             return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter);
+            lock_guard<recursive_mutex> lck(rtMutex);
+            return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter);
         }
 
         /** wait for all non-blocking send to be completed. */

@@ -9,7 +9,6 @@
 #define HELPER_H
 
 #include <mutex>
-
 #include "libopenm/common/omHelper.h"
 
 using namespace std;

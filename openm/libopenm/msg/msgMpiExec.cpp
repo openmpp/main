@@ -244,14 +244,14 @@ void MpiExec::startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, con
     return MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter);
 }
 
-/** try to non-blocking receive value array, return true if completed. */
+/** try to non-blocking receive and unpack vector of db rows, return true if completed. */
 bool MpiExec::tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const
 {
     lock_guard<recursive_mutex> lck(rtMutex);
     return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter);
 }
 
-/** try to non-blocking receive and unpack vector of db rows, return true if completed. */
+/** try to non-blocking receive value array, return true if completed. */
 bool MpiExec::tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const
 {
     lock_guard<recursive_mutex> lck(rtMutex);

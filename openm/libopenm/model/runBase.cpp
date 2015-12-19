@@ -95,12 +95,12 @@ void RunBase::readParameter(const char * i_name, const type_info & i_type, long 
     }
 }
 
-/** model run shutdown on error: mark run as failure. */
-void RunBase::shutdownOnFail(void)
+/** model run shutdown if exiting without completion (ie: exit on error). */
+void RunBase::shutdownOnExit(ModelStatus i_status)
 {
     if (!isMpiUsed || msgExec->isRoot()) {
         dbExec->update(
-            "UPDATE run_lst SET status = 'e'," \
+            "UPDATE run_lst SET status = " + string((i_status < ModelStatus::error) ? "'x', " : "'e', ") +
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(runId)
             );

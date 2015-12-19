@@ -69,7 +69,7 @@ static bool modelThreadLoop(
 
 // run modeling threads to calculate subsamples
 static bool runModelThreads(
-    RunController & i_runCtrl, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
+    int i_runId, RunController & i_runCtrl, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
     );
 
 /** main entry point */
@@ -104,32 +104,33 @@ int main(int argc, char ** argv)
             (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(connectionStr) : nullptr
             );
 
-        // create new model run in database or use exising
-        // initialize run id and subsample number
-        // store run options in database with new run id
-        // copy input parameters to run the model
         // load metadata tables and broadcast it to all modeling processes
-        unique_ptr<MetaRunHolder> metaStore(runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get()));
-
-        // initilaze model run: read input parameters
-        unique_ptr<RunBase> runBase(RunBase::create(
-            isMpiUsed, runCtrl.modelId, runCtrl.runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
-            ));
-        RunInitHandler(runBase.get());
-
-        // do the modelling: run modeling threads to calculate subsamples
-        bool isRunOk = runModelThreads(runCtrl, dbExec.get(), msgExec.get(), metaStore.get());
-
-        // mark run as failure and exit with error
-        if (!isRunOk) {
-            runBase->shutdownOnFail();
-            throw ModelException("modeling FAILED");
-        }
-
-        // final cleanup
-        runBase->shutdown(
-            runCtrl.subPerProcess + ((isMpiUsed && msgExec->isRoot()) ? runCtrl.subSampleCount % runCtrl.processCount : 0)
+        unique_ptr<MetaRunHolder> metaStore(
+            runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get())
             );
+
+        // create new model run's until modelling task completed
+        for (int runId = 0; 
+                (runId = runCtrl.initRun(isMpiUsed, dbExec.get(), msgExec.get(), metaStore.get())) > 0;
+                ) {
+
+            // initilaze model run: read input parameters
+            unique_ptr<RunBase> runBase(RunBase::create(
+                isMpiUsed, runCtrl.modelId, runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
+                ));
+            RunInitHandler(runBase.get());
+
+            // do the modelling: run modeling threads to calculate subsamples
+            bool isRunOk = runModelThreads(runId, runCtrl, dbExec.get(), msgExec.get(), metaStore.get());
+            if (!isRunOk) {
+                runBase->shutdownOnExit(ModelStatus::error);
+                throw ModelException("modeling FAILED");
+            }
+
+            // model run completed OK, receive and write the data, do final cleanup
+            runCtrl.receiveSendLast(isMpiUsed, dbExec.get(), msgExec.get(), metaStore.get());
+            runBase->shutdown(runCtrl.selfSubCount);
+        }
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -219,23 +220,23 @@ bool modelThreadLoop(
 
 // run modeling threads to calculate subsamples
 bool runModelThreads(
-    RunController & i_runCtrl, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
+    int i_runId, RunController & i_runCtrl, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
     )
 {
     list<future<bool> > modelFutureLst;     // modeling threads
 
     int nextSub = 0;
-    int maxSub = i_runCtrl.subPerProcess;
+    int maxSub = i_runCtrl.selfSubCount;
 
-    while ((nextSub < maxSub && nextSub < i_runCtrl.subSampleCount) || modelFutureLst.size() > 0) {
+    while (nextSub < maxSub || modelFutureLst.size() > 0) {
 
         // create and start new modelling threads
-        while (nextSub < maxSub && (int)modelFutureLst.size() < i_runCtrl.maxThreadCount) {
+        while (nextSub < maxSub && (int)modelFutureLst.size() < i_runCtrl.threadCount) {
             modelFutureLst.push_back(std::move(std::async(
                 launch::async,
                 modelThreadLoop,
                 isMpiUsed,
-                i_runCtrl.runId,
+                i_runId,
                 i_runCtrl.subSampleCount,
                 i_runCtrl.subFirstNumber + nextSub,
                 i_dbExec,
@@ -273,29 +274,7 @@ bool runModelThreads(
             this_thread::sleep_for(chrono::milliseconds(OM_PROGRESS_SLEEP_TIME));
             continue;
         }
-
-        // root process calculating first subPerProcess subsamples 
-        // and remainder of subSampleCount / processCount subsamples
-        if (nextSub >= maxSub && nextSub < i_runCtrl.subSampleCount && isMpiUsed && i_msgExec->isRoot()) {
-            nextSub = i_runCtrl.processCount * i_runCtrl.subPerProcess;
-            maxSub = i_runCtrl.subSampleCount;
-        }
     }
 
-    // receive outstanding subsamples
-    if (isMpiUsed && i_msgExec->isRoot()) {
-
-        bool isAnyToRecv = true;
-        do { 
-            isAnyToRecv = i_runCtrl.receiveSubSamples(isMpiUsed, i_dbExec, i_msgExec, i_metaStore);
-
-            if (isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
-        }
-        while (isAnyToRecv);
-    }
-
-    // wait for send completion, if any outstanding
-    i_msgExec->waitSendAll();
-
-    return true;
+    return true;    // modelling completed OK
 }

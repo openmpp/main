@@ -4,6 +4,8 @@
 --
 
 DROP TABLE task_run;
+DROP TABLE task_log;
+DROP TABLE task_set;
 DROP TABLE task_txt;
 DROP TABLE task_lst;
 DROP TABLE workset_parameter_txt;
