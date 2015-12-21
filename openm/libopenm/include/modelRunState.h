@@ -27,13 +27,13 @@ namespace openm
         /** run in progress */
         progress,
 
-        /** waiting */
+        /** waiting (reserved) */
         wait,
 
         /** completed */
         done = 64,
 
-        /** exit and not completed */
+        /** exit and not completed (reserved) */
         exit,
 
         /** error failure */
@@ -48,7 +48,7 @@ namespace openm
         ModelRunState(void);
 
         /** initialize model run state */
-        explicit ModelRunState(const ModelRunState & i_state);
+        explicit ModelRunState(const ModelRunState && i_state);
 
         /** copy model run state */
         ModelRunState & operator=(const ModelRunState & i_state);
@@ -72,6 +72,9 @@ namespace openm
         ModelStatus theStatus;                          // current status
         chrono::system_clock::time_point startTime;     // process start time
         chrono::system_clock::time_point updateTime;    // last update time
+
+    private:
+        ModelRunState(const ModelRunState & i_state) = delete;
     };
 }
 

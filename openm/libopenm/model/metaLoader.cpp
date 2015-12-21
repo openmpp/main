@@ -284,7 +284,6 @@ void MetaLoader::broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_meta
     broadcastMetaTable<ITableDimsTable>(io_metaStore->tableDims, i_msgExec, MsgTag::tableDims);
     broadcastMetaTable<ITableAccTable>(io_metaStore->tableAcc, i_msgExec, MsgTag::tableAcc);
     broadcastMetaTable<ITableExprTable>(io_metaStore->tableExpr, i_msgExec, MsgTag::tableExpr);
-    // broadcastMetaTable<IRunOptionTable>(io_metaStore->runOption, i_msgExec, MsgTag::runOption);
 }
 
 // temporary: work-in-progress
@@ -409,7 +408,7 @@ void MetaLoader::readTask(IDbExec * i_dbExec, const ModelDicRow * i_mdRow)
     if (taskSetRows.size() <= 0) throw DbException("no input data sets found for the task: %d of model %s, id: %d", taskId, i_mdRow->name.c_str(), i_mdRow->modelId);
 
     for (const TaskSetRow & tsRow : taskSetRows) {
-        taskRunLst.push_back(std::move(TaskItem(tsRow.setId)));
+        taskRunLst.push_back(TaskItem(tsRow.setId));
     }
 }
 

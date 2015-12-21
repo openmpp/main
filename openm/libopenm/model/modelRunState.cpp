@@ -20,7 +20,7 @@ ModelRunState::ModelRunState(void) :
 }
 
 /** initialize model run state */
-ModelRunState::ModelRunState(const ModelRunState & i_state)
+ModelRunState::ModelRunState(const ModelRunState && i_state)
 {
     lock_guard<recursive_mutex> lck(mrsMutex);
     theStatus = i_state.theStatus;
