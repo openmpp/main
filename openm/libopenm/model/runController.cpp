@@ -60,7 +60,7 @@ using namespace openm;
 * (c) find id of source working set for input parameters
 * ------------------------------------------------------
 * use following to find input parameters set id: \n
-*   - if task id or task name specified then find set id in task_run \n
+*   - if task id or task name specified then find task id in task_lst \n
 *   - if set id specified as run option then use such set id \n
 *   - if set name specified as run option then find set id by name \n
 *   - else use min(set id) as default set of model parameters
@@ -256,16 +256,16 @@ void RunController::createRunSubsample(
 
             // update task progress in database
             i_dbExec->update(
-                "UPDATE task_log SET status = 'p', update_dt = " + toQuoted(dtStr) + 
-                "  WHERE task_log_id = " + to_string(taskLogId)
+                "UPDATE task_run_lst SET status = 'p', update_dt = " + toQuoted(dtStr) + 
+                "  WHERE task_run_id = " + to_string(taskRunId)
                 );
             i_dbExec->update(
-                "INSERT INTO task_run (task_id, set_id, run_id, task_log_id)" \
+                "INSERT INTO task_run_set (task_id, set_id, run_id, task_run_id)" \
                 " VALUES (" +
                 to_string(taskId) + ", " +
                 to_string(setId) + ", " +
                 sRunId + ", " +
-                to_string(taskLogId) + ")"
+                to_string(taskRunId) + ")"
                 );
         }
     }

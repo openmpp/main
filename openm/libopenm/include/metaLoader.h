@@ -114,7 +114,7 @@ namespace openm
 
     protected:
         int taskId;             // if > 0 then modelling task id
-        int taskLogId;          // if > 0 then modelling task log id: log of task run progress
+        int taskRunId;          // if > 0 then modelling task run id
         ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
 
         // task item: workset, result run and status
@@ -162,8 +162,8 @@ namespace openm
         // read modelling task definition
         void readTask(IDbExec * i_dbExec, const ModelDicRow * i_mdRow);
 
-        // create task run log entry in database
-        void createTaskRunLog(IDbExec * i_dbExec);
+        // create task run entry in database
+        void createTaskRun(IDbExec * i_dbExec);
 
         // find modelling task, if specified
         void findTask(IDbExec * i_dbExec, const ModelDicRow * i_mdRow);

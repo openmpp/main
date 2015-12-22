@@ -1036,36 +1036,36 @@ namespace openm
         static vector<TaskSetRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId);
     };
 
-    /** task_log table public interface. */
-    struct ITaskLogTable : public IMetaTable<TaskLogRow>
+    /** task_run_lst table public interface. */
+    struct ITaskRunLstTable : public IMetaTable<TaskRunLstRow>
     {
-        virtual ~ITaskLogTable() throw() = 0;
+        virtual ~ITaskRunLstTable() throw() = 0;
 
         /**
-        * select table rows sorted by primary key: task log id.
+        * select table rows sorted by primary key: task run id.
         *
         * if i_taskId > 0 then select only rows where task_id = i_taskId
         */
-        static vector<TaskLogRow> select(IDbExec * i_dbExec, int i_taskId = 0);
+        static vector<TaskRunLstRow> select(IDbExec * i_dbExec, int i_taskId = 0);
 
-        /** select table row by primary key: task log id. */
-        static vector<TaskLogRow> byKey(IDbExec * i_dbExec, int i_taskLogId);
+        /** select table row by primary key: task run id. */
+        static vector<TaskRunLstRow> byKey(IDbExec * i_dbExec, int i_taskRunId);
     };
 
-    /** task_run table public interface. */
-    struct ITaskRunTable : public IMetaTable<TaskRunRow>
+    /** task_run_set table public interface. */
+    struct ITaskRunSetTable : public IMetaTable<TaskRunSetRow>
     {
-        virtual ~ITaskRunTable() throw() = 0;
+        virtual ~ITaskRunSetTable() throw() = 0;
 
         /**
         * select table rows sorted by primary key: task id, set id, run id.
         *
-        * if i_taskLogId > 0 then select only rows where task_log_id = i_taskLogId
+        * if i_taskRunId > 0 then select only rows where task_run_id = i_taskRunId
         */
-        static vector<TaskRunRow> select(IDbExec * i_dbExec, int i_taskLogId = 0);
+        static vector<TaskRunSetRow> select(IDbExec * i_dbExec, int i_taskRunId = 0);
 
         /** select table row by primary key: task id, set id, run id. */
-        static vector<TaskRunRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId, int i_runId);
+        static vector<TaskRunSetRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId, int i_runId);
     };
 }
 

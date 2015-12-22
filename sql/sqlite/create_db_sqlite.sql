@@ -629,34 +629,34 @@ CREATE TABLE task_set
 --
 -- Task run history and status
 --
-CREATE TABLE task_log
+CREATE TABLE task_run_lst
 (
-  task_log_id INT         NOT NULL, -- unique log id
+  task_run_id INT         NOT NULL, -- unique log id
   task_id     INT         NOT NULL, -- master key
   sub_count   INT         NOT NULL, -- subsamples count of task run
   create_dt   VARCHAR(32) NOT NULL, -- start date-time
   status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress s=success x=exit e=failed
   update_dt   VARCHAR(32) NOT NULL, -- last update date-time
-  PRIMARY KEY (task_log_id),
-  CONSTRAINT task_log_mk 
+  PRIMARY KEY (task_run_id),
+  CONSTRAINT task_run_lst_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id)
 );
 
 --
 -- Task run: input (working sets) and output (model run)
 --
-CREATE TABLE task_run
+CREATE TABLE task_run_set
 (
   task_id     INT NOT NULL, -- master key
   set_id      INT NOT NULL, -- input working set id
   run_id      INT NOT NULL, -- result run id
-  task_log_id INT NOT NULL, -- if <> 0 then task log id
+  task_run_id INT NOT NULL, -- if <> 0 then task log id
   PRIMARY KEY (task_id, set_id, run_id),
-  CONSTRAINT task_run_mk 
+  CONSTRAINT task_rs_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id),
-  CONSTRAINT task_run_set_fk 
+  CONSTRAINT task_rs_set_fk 
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
-  CONSTRAINT task_run_run_fk 
+  CONSTRAINT task_rs_run_fk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
 );
 
@@ -668,7 +668,7 @@ INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id', 10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('model_id', 10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('task_id', 10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('task_log_id', 10);
+INSERT INTO id_lst (id_key, id_value) VALUES ('task_run_id', 10);
 
 --
 -- Languages and word list

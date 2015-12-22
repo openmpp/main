@@ -3,8 +3,8 @@
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
 
-DROP TABLE task_run;
-DROP TABLE task_log;
+DROP TABLE task_run_set;
+DROP TABLE task_run_lst;
 DROP TABLE task_set;
 DROP TABLE task_txt;
 DROP TABLE task_lst;

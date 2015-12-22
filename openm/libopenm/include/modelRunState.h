@@ -21,8 +21,11 @@ namespace openm
     /** modelling job status */
     enum class ModelStatus
     {
+        /** unknown state */
+        undefined = 0,
+
         /** initial state */
-        init = 0,
+        init = 1,
 
         /** run in progress */
         progress,
@@ -56,9 +59,6 @@ namespace openm
         /** get model status */
         ModelStatus status(void);
 
-        /** set model status and return it */
-        ModelStatus status(ModelStatus i_status);
-
         /** set model status if not already set as one of exit status values */
         ModelStatus statusIfNotExit(ModelStatus i_status);
 
@@ -72,6 +72,9 @@ namespace openm
         ModelStatus theStatus;                          // current status
         chrono::system_clock::time_point startTime;     // process start time
         chrono::system_clock::time_point updateTime;    // last update time
+
+        /** set model status and return it */
+        ModelStatus status(ModelStatus i_status);
 
     private:
         ModelRunState(const ModelRunState & i_state) = delete;

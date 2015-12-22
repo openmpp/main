@@ -123,7 +123,7 @@ MetaLoader::MetaLoader(int argc, char ** argv) :
     processCount(1),
     threadCount(1),
     taskId(0),
-    taskLogId(0)
+    taskRunId(0)
 {
     // get command line options
     argStore.parseCommandLine(argc, argv, false, true, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr);
@@ -235,8 +235,8 @@ void MetaLoader::initRoot(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
     if (taskId > 0) {
         readTask(i_dbExec, mdRow);
 
-        // create task run log entry in database
-        createTaskRunLog(i_dbExec);
+        // create task run entry in database
+        createTaskRun(i_dbExec);
     }
 }
 
@@ -412,26 +412,26 @@ void MetaLoader::readTask(IDbExec * i_dbExec, const ModelDicRow * i_mdRow)
     }
 }
 
-// create task run log entry in database
-void MetaLoader::createTaskRunLog(IDbExec * i_dbExec) 
+// create task run entry in database
+void MetaLoader::createTaskRun(IDbExec * i_dbExec) 
 { 
     // update in transaction scope
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
-    // get next task run log id
-    i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'task_log_id'");
+    // get next task run id
+    i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'task_run_id'");
 
-    taskLogId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'task_log_id'", 0);
-    if (taskLogId <= 0)
-        throw DbException("invalid task log id: %d", taskLogId);
+    taskRunId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'task_run_id'", 0);
+    if (taskRunId <= 0)
+        throw DbException("invalid task run id: %d", taskRunId);
 
     string dtStr = toDateTimeString(theLog->timeStampSuffix()); // get log date-time as string
 
     // create new run
     i_dbExec->update(
-        "INSERT INTO task_log (task_log_id, task_id, sub_count, create_dt, status, update_dt)" \
+        "INSERT INTO task_run_lst (task_run_id, task_id, sub_count, create_dt, status, update_dt)" \
         " VALUES (" +
-        to_string(taskLogId) + ", " +
+        to_string(taskRunId) + ", " +
         to_string(taskId) + ", " +
         to_string(subSampleCount) + ", " +
         toQuoted(dtStr) + ", "

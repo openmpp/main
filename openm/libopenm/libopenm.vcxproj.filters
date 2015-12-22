@@ -299,9 +299,6 @@
     <ClCompile Include="db\taskTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\taskRunTable.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="model\runBase.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -311,14 +308,17 @@
     <ClCompile Include="model\modelRunState.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
-    <ClCompile Include="db\taskLogTable.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="db\taskSetTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="model\metaLoader.cpp">
       <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="db\taskRunSetTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\taskRunLstTable.cpp">
+      <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

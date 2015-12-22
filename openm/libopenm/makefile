@@ -98,9 +98,9 @@ LIBOPENM_CPPLIST = \
   db/tableDimsTxtTable.cpp \
   db/tableExprTable.cpp \
   db/tableExprTxtTable.cpp \
-  db/taskLogTable.cpp \
   db/taskLstTable.cpp \
-  db/taskRunTable.cpp \
+  db/taskRunLstTable.cpp \
+  db/taskRunSetTable.cpp \
   db/taskSetTable.cpp \
   db/taskTxtTable.cpp \
   db/typeDicTable.cpp \
