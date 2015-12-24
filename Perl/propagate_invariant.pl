@@ -59,6 +59,7 @@ for my $model_dir (@model_dirs) {
 	my @invariant_list = (
 		"makefile",                     "WizardCaseBased",
 		"MODEL-modgen.sln",             "WizardCaseBased",
+		"MODEL-ompp.sln",               "WizardCaseBased",
 		"modgen/Model.vcxproj",         "WizardCaseBased",
 		"modgen/Model.vcxproj.filters", "WizardCaseBased",
 		"ompp/Model.vcxproj",           "WizardCaseBased",

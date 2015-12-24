@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Hard-coded for VS 2015 (no support for lower versions) -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v140</PLATFORM_TOOLSET>
+  </PropertyGroup>
+</Project>

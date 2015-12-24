@@ -10,6 +10,13 @@ chdir "../models" || die "Invoke test_models from Perl folder";
 use Cwd qw(getcwd);
 my $models_root = getcwd;
 
+# Get root of ompp dev system to assign OM_ROOT later for build props files
+# This makes the script work independently of the OM_ROOT environment variable
+chdir "..";
+my $om_root = getcwd;
+
+chdir $models_root;
+
 
 #####################
 # Common settings
@@ -332,7 +339,7 @@ for my $model_dir (@model_dirs) {
 			# Project file
 			my $model_vcxproj = 'model.vcxproj';
 			
-			# Log file from devenv build
+			# Log file from build
 			my $build_log = "msbuild.log";
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
@@ -343,6 +350,7 @@ for my $model_dir (@model_dirs) {
 					"/verbosity:normal",
 					"/fileLogger",
 					"/flp:Verbosity=normal",
+					"/p:OM_ROOT=${om_root}",
 					"/p:Configuration=${modgen_configuration}",
 					"/p:Platform=${modgen_platform}",
 					"/p:MODGEN_VERSION=${modgen_version}",
@@ -544,6 +552,7 @@ for my $model_dir (@model_dirs) {
 					"/nologo",
 					"/verbosity:normal",
 					"/clp:ForceNoAlign",
+					"/p:OM_ROOT=${om_root}",
 					"/p:OMC_EXE=${omc_exe}",
 					"/p:Configuration=${ompp_configuration}",
 					"/p:Platform=${ompp_platform}",
