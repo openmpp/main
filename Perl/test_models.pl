@@ -37,8 +37,8 @@ my $omc_exe = 'omc.exe';
 #my $ompp_configuration = "Debug";
 my $ompp_configuration = "Release";
 
-my $ompp_platform = "Win32";
-#my $ompp_platform = "x64";
+#my $ompp_platform = "Win32";
+my $ompp_platform = "x64";
 
 #####################
 # ompp-linux settings
@@ -63,8 +63,6 @@ my $modgen_platform = "Win32";
 # file locations
 #####################
 
-my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen ${modgen_version}\\Modgen.exe";
-my $modgen_devenv_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\Common7\\IDE\\devenv.exe";
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
 my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
@@ -186,12 +184,9 @@ my @flavours;
 my @flavours_tombstone;
 if ($is_windows) {
 	if ($do_modgen) {
+		my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen ${modgen_version}\\Modgen.exe";
 		if ( ! -e $modgen_exe ) {
 			logmsg error, "Missing Modgen compiler: $modgen_exe";
-			exit 1;
-		}
-		if ( ! -e $modgen_devenv_exe ) {
-			logmsg error, "Missing Visual Studio devenv for Modgen: $modgen_devenv_exe";
 			exit 1;
 		}
 		push @flavours, 'modgen';
