@@ -1,6 +1,6 @@
 /**
-* @file    random_modgen.ompp
-* Implementation of framework for random number generation (Modgen)
+* @file    random_lcg41.ompp
+* Implementation of framework for random number generation (Modgen's 41 linear congruential generators for streams)
 *
 * This version of the random number generation framework uses a set of 41 
 * integral-congruential generators based on the Mersenne prime 2^31 - 1.

@@ -1,9 +1,7 @@
 /**
-* @file    time_based_modgen.ompp
+* @file    time_based_common.ompp
 * Implementation of framework for time-based models
 * 
-* The module modgen_common.ompp must be in a "use" statement
-* before this module, to define smbols used here. 
 */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)

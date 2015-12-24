@@ -1,0 +1,65 @@
+/**
+* @file    case_based_lcg41.ompp
+* Modgen's 41 linear congruential generators for case seeds
+*
+*/
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+/**
+ * The fmk namespace protects the global namespace for model use.
+ */
+namespace fmk {
+
+	/**
+	* The fixed number of random number stream case seed generators available in Modgen.
+	*/
+	const int max_case_seed_generators = 41;
+
+	// Multiplier of generator used to generate the starting seeds for each case
+    const long case_seed_generators[max_case_seed_generators] = {
+        470583131,
+        1278375574,
+        1182424016,
+        465267208,
+        236156608,
+        507096703,
+        1030737213,
+        1192442634,
+        286354484,
+        1963413634,
+        929285805,
+        1074439303,
+        1866718706,
+        1746251423,
+        444178200,
+        1076542630,
+        289753891,
+        490363125,
+        803959450,
+        37939113,
+        1153920361,
+        1010788020,
+        1148043095,
+        1422167303,
+        1596996927,
+        396692538,
+        2125924067,
+        290525234,
+        1412033687,
+        70608958,
+        366654164,
+        29727326,
+        40186327,
+        1271122795,
+        940165244,
+        735279377,
+        1988769561,
+        988683283,
+        1943943356,
+        1294875557,
+        914624015,
+    };
+
+} // fmk
+

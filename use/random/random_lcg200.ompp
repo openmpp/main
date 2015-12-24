@@ -1,0 +1,639 @@
+/**
+* @file    random_lcg200.ompp
+* Implementation of framework for random number generation (200 optimal linear congruential generators for streams)
+*
+* This version of the random number generation framework uses a set of 400 
+* integral-congruential generators based on the Mersenne prime 2^31 - 1.
+*
+* Source:
+* "An Exhaustive Analysis of Multiplicative Congruential Random Number Generators with Modulus $2^{31} - 1$"
+* George S. Fishman ; Louis R. Moore ; III
+* SIAM Journal on Scientific and Statistical Computing 7, 24 (1986)
+*
+* 205 multipliers were taken from the appendix of that article.  An additional 205 multipliers
+* were derived by a programmatic search for the complementary primitive roots of the 205 multipliers
+* in the appendix.  The appendix contains an error.  Two multipliers are duplicated, which reduces
+* the number of multipliers in the table to 205 from the 207 stated in the article.
+*
+* From the 410 multipliers, 200 are used for case seed generators, and 200 for simulation members.
+* 1 of the remaining generators is used to initialize the model stream seeds in each simulation member.
+* The other 9 are kept as spares and commented in the code below.
+*
+* The order of the 410 multipliers was randomized (re-ordered in Excel before pasting here).
+* The source Excel workbook was named 'RNG Multipliers.xlsx'
+* The C++ code to recover the complementary multipliers is at the end of this module (commented).
+*
+* The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
+*
+* The interface to framework modules, e.g. case_based_modgen.ompp consists of the functions
+* new_streams, delete_streams, initialize_stream
+*
+* Other content in this module should be considered to be 'private'.
+*/
+// Copyright (c) 2013-2015 OpenM++
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+namespace fmk {
+
+    /**
+     * The fixed number of random number stream generators.
+     */
+    const int max_stream_generators = 200;
+
+    /**
+     * The fixed modulus used by all Modgen random number generators.
+     */
+    const long mg_modulus = 2147483647;
+
+    /**
+     * Multiplier of generator used to initialize the model stream seeds.
+     */
+    const long model_stream_seed_generator = 1187848453;
+
+	// Spare generators:
+	//1932380919
+	//1901918329
+	//451629028
+	//1267201170
+	//531799225
+	//403636263
+	//1788106230
+	//1035519219
+	//1622264322
+
+
+    /**
+     * Multiplier of generator used for a given 'sample member'.
+     */
+    const long model_stream_generators[max_stream_generators] = {
+		416992769,
+		950706376,
+		713942061,
+		56469953,
+		243513064,
+		965146404,
+		235716977,
+		1130677564,
+		120412784,
+		947392581,
+		149289625,
+		251676340,
+		569170662,
+		2071221896,
+		1552956148,
+		1275117224,
+		786824435,
+		257260339,
+		2028496059,
+		659947220,
+		1145761685,
+		62292588,
+		483389111,
+		540559624,
+		1481523456,
+		1998977773,
+		448144984,
+		1640011312,
+		1233908474,
+		1748017396,
+		1130645943,
+		2023998384,
+		1905014417,
+		1294711786,
+		1575159490,
+		283166534,
+		534897944,
+		1411007767,
+		292397876,
+		1715177057,
+		242314215,
+		742938285,
+		1019054714,
+		424358458,
+		1833170687,
+		1037414126,
+		1704318220,
+		546480576,
+		698256562,
+		473911476,
+		1393492757,
+		2113075375,
+		655808424,
+		1113127164,
+		964028288,
+		1067403910,
+		1554283637,
+		1082644345,
+		1074109599,
+		469869402,
+		1018790969,
+		612997337,
+		391842496,
+		356267478,
+		1042479915,
+		1402531614,
+		953366920,
+		157937717,
+		894441765,
+		553469741,
+		1860488201,
+		1255591059,
+		860737565,
+		393031269,
+		578880432,
+		1424257534,
+		621506530,
+		1064648718,
+		1186074745,
+		1257701541,
+		1434972591,
+		290960373,
+		1869095734,
+		930959341,
+		2082150220,
+		1482800924,
+		1542873971,
+		1499553667,
+		1446922890,
+		100249242,
+		1153132396,
+		577141763,
+		983403815,
+		716074234,
+		356413684,
+		1506299139,
+		694951949,
+		1511416461,
+		1517266187,
+		1597057776,
+		355389105,
+		538107543,
+		572572374,
+		679408046,
+		1126855583,
+		698108846,
+		1588813465,
+		482920380,
+		1334646982,
+		1088726920,
+		329440414,
+		447381396,
+		883482946,
+		1567316532,
+		334258581,
+		168736150,
+		427639930,
+		1888847798,
+		921778105,
+		511806823,
+		1522856686,
+		1571641634,
+		1486383955,
+		1024303102,
+		1657861484,
+		1956806422,
+		1310663411,
+		2101655234,
+		1100494401,
+		62089911,
+		703155392,
+		979167897,
+		614779685,
+		2099489754,
+		621389603,
+		32424309,
+		1993412958,
+		1897412292,
+		266228800,
+		533725005,
+		1337239139,
+		2086553364,
+		1117435554,
+		922112940,
+		1788388177,
+		857010188,
+		1256909708,
+		1076532097,
+		2061749697,
+		1490690267,
+		1262413818,
+		886518388,
+		532393040,
+		876389446,
+		1569903639,
+		250146612,
+		933766127,
+		1472802766,
+		2110382506,
+		2013802426,
+		360472390,
+		1987860796,
+		1768050394,
+		1017513943,
+		449635645,
+		702106025,
+		655054434,
+		902371428,
+		1904505529,
+		737009774,
+		1443020356,
+		423606211,
+		1882462218,
+		231487336,
+		539146268,
+		764970606,
+		129200747,
+		12900495,
+		2049513912,
+		855481343,
+		389617234,
+		707656279,
+		1383244483,
+		361076890,
+		1898043715,
+		36944245,
+		502005751,
+		131698448,
+		1292868648,
+		471646417,
+		1257431879,
+		2127726524,
+		1442273554,
+		417557914,
+		1694772677,
+		428641844,
+		340363889,
+		1229881012,
+		1158519011,
+		600472792,
+	};
+
+    // Current seed for each stream generator in the simulation (const model_streams is declared in framework module of model)
+    thread_local long stream_seeds[model_streams];
+
+    // Multiplier of the generator for the streams for this simulation (shared by all streams, varies by simulation member)
+    thread_local long stream_generator = 0;
+
+    // Is there a random normal in other_normal?
+    thread_local bool other_normal_valid[model_streams] = { false };
+
+    // The other normal draw
+    thread_local double other_normal[model_streams];
+
+
+} // fmk
+
+// Create objects for random streams
+void new_streams()
+{
+	// no objects are used for Modgen random number streams
+}
+
+// Delete objects for random streams
+void delete_streams()
+{
+	// no objects are used for Modgen random number streams
+}
+
+// Initialize a model stream
+void initialize_stream(int model_stream, int member, long seed)
+{
+	// For members beyond number of Modgen generators, re-use generators cyclically.
+	// Note that fmk::stream_generator is idnetical and shared for a simulation member.
+	fmk::stream_generator = fmk::model_stream_generators[member % fmk::max_stream_generators];
+
+    fmk::stream_seeds[model_stream] = seed;
+    fmk::other_normal_valid[model_stream] = false;
+}
+
+double RandUniform(int strm)
+{
+    using namespace fmk;
+
+    assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+    long seed = stream_seeds[strm];
+    long long product = stream_generator;
+    product *= seed;
+    seed = product % mg_modulus;
+    stream_seeds[strm] = seed;
+    return (double)seed / (double)mg_modulus;
+}
+
+double RandNormal(int strm)
+{
+    using namespace fmk;
+
+    assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+
+    if (other_normal_valid[strm]) {
+        other_normal_valid[strm] = false;
+        return other_normal[strm];
+    }
+    else {
+        double r2 = 1;
+        double x = 0;
+        double y = 0;
+        while (r2 >= 1) {
+            x = 2.0 * RandUniform(strm) - 1.0;
+            y = 2.0 * RandUniform(strm) - 1.0;
+            r2 = x * x + y * y;
+        }
+        double scale = sqrt(-2.0 * log(r2) / r2);
+        double n1 = scale * x;
+        double n2 = scale * y;
+        other_normal[strm] = n2;
+        other_normal_valid[strm] = true;
+        return n1;
+    }
+}
+
+double RandLogistic(int strm)
+{
+    using namespace fmk;
+
+    assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+    double p = RandUniform(strm);
+    double odds_ratio = p / (1.0 - p);
+    double x = log(odds_ratio);
+    return x;
+}
+
+
+
+// C++ code to find complementary multipliers (primitve roots).  See article for method and math.
+//
+
+//#include "iostream"
+//#include "iomanip"
+//#include "set"
+//
+//using namespace std;
+//
+//long long bmodpow(long long base, long long exponent, unsigned int modulus)
+//{
+//	long long result = 1;
+//	while (exponent > 0) {
+//		if (exponent % 2 == 1) {
+//			result = (result * base) % modulus;
+//		}
+//		exponent = exponent >> 1;
+//		base = (base * base) % modulus;
+//	}
+//	return result;
+//}
+//
+//// From appendix of article SIAM J. Sci. and Stat. Comput., 7(1), 24–45. (22 pages)
+//// An Exhaustive Analysis of Multiplicative Congruential Random Number Generators with Modulus $2^{ 31 } -1$
+//// Submitted : 10  September  1984
+////	George S.Fishman and Louis R.Moore, III
+//set<long long> mult_a =
+//{
+//	742938285,
+//	950706376,
+//	1226874159,
+//	62089911,
+//	1343714438,
+//	2049513912,
+//	781259587,
+//	482920380,
+//	1810831696,
+//	502005751,
+//	464822633,
+//	1980989888,
+//	329440414,
+//	1930251322,
+//	800218253,
+//	1575965843,
+//	1100494401,
+//	1647274979,
+//	62292588,
+//	1904505529,
+//	1032193948,
+//	1754050460,
+//	1580850638,
+//	1622264322,
+//	30010801,
+//	1187848453,
+//	531799225,
+//	1402531614,
+//	988799757,
+//	1067403910,
+//	1434972591,
+//	1542873971,
+//	621506530,
+//	473911476,
+//	2110382506,
+//	150663646,
+//	131698448,
+//	1114950053,
+//	1768050394,
+//	513482567,
+//	1626240045,
+//	2099489754,
+//	1262413818,
+//	334033198,
+//	404208769,
+//	257260339,
+//	1006097463,
+//	1393492757,
+//	1760624889,
+//	1442273554,
+//	959387418,
+//	1113127164,
+//	1446285050,
+//	231487336,
+//	231487336,
+//	403636263,
+//	365870474,
+//	1683348964,
+//	56469953,
+//	391539936,
+//	621389603,
+//	1697836722,
+//	209720443,
+//	1651132469,
+//	1036489797,
+//	1094002855,
+//	958373200,
+//	1882462218,
+//	1901918329,
+//	1482800924,
+//	1609286051,
+//	1873448661,
+//	1394633840,
+//	1691910501,
+//	155279822,
+//	1499553667,
+//	2117906721,
+//	1337239139,
+//	1257701541,
+//	1061023798,
+//	659947220,
+//	1472802766,
+//	1709954462,
+//	1437555212,
+//	2112159807,
+//	1610356818,
+//	1362323644,
+//	1528100852,
+//	644912347,
+//	1640011312,
+//	1267201170,
+//	809609776,
+//	292397876,
+//	1022131410,
+//	1636624282,
+//	672536717,
+//	1292868648,
+//	964028288,
+//	1493834601,
+//	1037566960,
+//	743722486,
+//	1509089937,
+//	1567699476,
+//	1947306937,
+//	1076532097,
+//	1957811727,
+//	628467148,
+//	1040895393,
+//	786824435,
+//	556530824,
+//	87921290,
+//	1457913431,
+//	385787459,
+//	1567316532,
+//	930959341,
+//	1588813465,
+//	1035519219,
+//	36944245,
+//	1891356973,
+//	1897412292,
+//	754680739,
+//	1971204812,
+//	1888847798,
+//	1571641634,
+//	1117435554,
+//	569170662,
+//	927407259,
+//	1490690267,
+//	235716977,
+//	149289625,
+//	1660576129,
+//	1517266187,
+//	1229881012,
+//	707656279,
+//	1869095734,
+//	995560464,
+//	539146268,
+//	1604187179,
+//	2082150220,
+//	370594724,
+//	2044924591,
+//	916100787,
+//	1037414126,
+//	1838122410,
+//	1265438464,
+//	1007804709,
+//	1257431879,
+//	2061749697,
+//	737009774,
+//	408432740,
+//	876389446,
+//	1294711786,
+//	965146404,
+//	737154017,
+//	764970606,
+//	1074109599,
+//	1039219247,
+//	428641844,
+//	1522856686,
+//	1019054714,
+//	805874727,
+//	1165699491,
+//	258880375,
+//	1554283637,
+//	1155862579,
+//	848396760,
+//	915892507,
+//	614779685,
+//	391842496,
+//	380006810,
+//	2011769251,
+//	1860139263,
+//	1920597088,
+//	1993412958,
+//	511806823,
+//	979167897,
+//	1956806422,
+//	1256909708,
+//	581488682,
+//	334258581,
+//	68580478,
+//	534897944,
+//	251676340,
+//	1051072528,
+//	2101655234,
+//	1413698051,
+//	796322341,
+//	698108846,
+//	1544249456,
+//	857010188,
+//	1860488201,
+//	355389105,
+//	1774722449,
+//	1582405117,
+//	553469741,
+//	1411007767,
+//	1230102545,
+//	356267478,
+//	778084663,
+//	1905014417,
+//	1109871330,
+//	1704318220,
+//	270593738,
+//	483389111,
+//	323128013,
+//	361076890,
+//};
+//
+//set<long long> mult_b;
+//
+//int main()
+//{
+//	long long b = 7;
+//	long long m = 2147483647; // 2^31 - 1
+//
+//							  // sanity check of mult_a contents
+//	for (auto a : mult_a) {
+//		if (bmodpow(a, m - 1, m) != 1) {
+//			cout << a << " in mult_a is not a primitive root\n";
+//		}
+//	}
+//
+//	unsigned int i = 0;
+//	for (i = 1; i < m; i++) {
+//		if (0 == i % 1000000) {
+//			cout << "i=" << i << "\n";
+//		}
+//		long long mult = bmodpow(b, i, m);
+//		auto search = mult_a.find(mult);
+//		if (search != mult_a.end()) {
+//			long long a = *search;
+//			long long astar = bmodpow(b, m - 1 - i, m);
+//			cout << "i=" << i << " a=" << a << " astar=" << astar << " bmodpow(astar, m-1, m)=" << bmodpow(astar, m - 1, m) << "\n";
+//			mult_b.insert(astar);
+//			mult_a.erase(a);
+//			if (mult_a.size() == 0) {
+//				break;
+//			}
+//		}
+//	}
+//
+//	cout << "mult_b.size()=" << mult_b.size() << "\n";
+//	for (auto it : mult_b) {
+//		cout << it << endl;
+//	}
+//
+//	return 0;
+//}
+//

@@ -14,8 +14,9 @@
 // after all model-specific modules.
 use "common.ompp";
 use "common_modgen.ompp";
-use "random/random_modgen.ompp";
-use "case_based/case_based_modgen.ompp";
+use "random/random_lcg41.ompp";
+use "case_based/case_based_lcg41.ompp";
+use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
 #endif
 
