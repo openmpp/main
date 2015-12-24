@@ -25,7 +25,7 @@ if ($@) {
 
 chdir "../models" || die "Invoke propagate_invariant from Perl folder";
 my $models_root = getcwd;
-my @model_dirs;
+my @model_dirs; # list of models (without path)
 
 if ($#ARGV >= 0) {
 	# model folders listed explicitly on command line
@@ -53,10 +53,12 @@ for my $model_dir (@model_dirs) {
 		next MODEL;
 	}
 
-	# Invariant files to align if present in model
+	# Invariant files to align if present in each model
 	# First element is the file, second is the model containing the definitive version to propagate.
+	# As a special case, if MODEL is in first element, it is replaced by the source and destination model
 	my @invariant_list = (
 		"makefile",                     "WizardCaseBased",
+		"MODEL-modgen.sln",             "WizardCaseBased",
 		"modgen/Model.vcxproj",         "WizardCaseBased",
 		"modgen/Model.vcxproj.filters", "WizardCaseBased",
 		"ompp/Model.vcxproj",           "WizardCaseBased",
@@ -73,6 +75,9 @@ for my $model_dir (@model_dirs) {
 		my $invariant_dir = @invariant_list[$j + 1];
 		my $src = "${invariant_dir}/${invariant_file}";
 		my $dst = "${model_dir}/${invariant_file}";
+		# handle special case where string 'MODEL' is in the src file name
+		$src =~ s/MODEL/${invariant_dir}/;
+		$dst =~ s/MODEL/${model_dir}/;
 		-e "${src}" || die "Not found: ${src}";
 		if (-f "${dst}" && ${model_dir} ne ${invariant_dir}) {
 			if (compare ${src}, ${dst}) {

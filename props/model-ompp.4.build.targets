@@ -200,6 +200,9 @@
   <Target Name="Diagnostics"
           Condition="'1'=='1'">
     <Message Text="OM_ROOT=$(OM_ROOT)" />
+    <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
+    <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
+    <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />
     <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
     <Message Text="OMC_INPUTS=@(OMC_INPUTS)" />
     <Message Text="OMC_OUTPUTS=@(OMC_OUTPUTS)" />
