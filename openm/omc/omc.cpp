@@ -322,9 +322,9 @@ int main(int argc, char * argv[])
 				use_folders = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
 			}
 
-			// split and iterate the delimited use folders - either ; or : are valid delimiters
+			// split and iterate the delimited use folders - either ; or , are valid delimiters
 			{
-				const string delimiters = ";:";
+				const string delimiters = ";,";
 				size_t last_pos = use_folders.find_first_not_of(delimiters, 0);
 				size_t pos = use_folders.find_first_of(delimiters, last_pos);
 				while (string::npos != pos || string::npos != last_pos) {
