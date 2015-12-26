@@ -113,7 +113,7 @@ public:
     void insert(E * entity)
     {
 #if RB_TREE
-        auto tmp = new rb_node<link<E>>(link<E>(entity));
+        auto tmp = new rb_node<link<E>>(link<E>(entity), entities.NIL);
 	    entities.rb_insert(tmp);
 #else
         entities.insert(entity);

@@ -517,7 +517,8 @@ void CodeGen::do_ModelShutdown()
         if (es->dimension_count() == 0) {
             c += "assert(" + es->name + ");";
             c += "delete(" + es->name + ");";
-        }
+			c += es->name + " = nullptr;";
+		}
         else {
             c += "EntitySet<" + es->pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_agent->name + "> **>(" + es->name + ");";
             c += "const size_t cells = " + to_string(es->cell_count()) + ";";

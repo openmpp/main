@@ -36,20 +36,11 @@ public:
         BLACK
     };
 
-   	// Declaration of sentinel NIL node (see CLRS 13.1 Properties of red-black trees)
-	static rb_node NIL_INSTANCE;
-	static rb_node * NIL;
+	rb_node()
+	{
+	}
 
-    rb_node()
-        : left(NIL)
-        , right(NIL)
-        , p(NIL)
-        , color(BLACK)
-        , size(0)
-    {
-    }
-
-    rb_node(T key)
+    rb_node(T key, rb_node * NIL)
         : left(NIL)
         , right(NIL)
         , p(NIL)
@@ -65,89 +56,7 @@ public:
 	T key;
 	bool color;
     size_t size;
-
-    /**
-     * Minimum value of subtree rooted at this node
-     * 
-     * Source: CLRS 13.2 Querying a binary search tree
-     *
-     * @return The node with the minimum value.
-     */
-    rb_node * tree_minimum()
-    {
-        auto x = this;
-        while (x->left != NIL) {
-            x = x->left;
-        }
-        return x;
-    }
-
-    /**
-     * Maximum value of subtree rooted at this node
-     * 
-     * Source: CLRS 13.2 Querying a binary search tree
-     *
-     * @return The node with the minimum value.
-     */
-    const rb_node * tree_maximum() const
-    {
-        auto x = this;
-        while (x->right != NIL) {
-            x = x->right;
-        }
-        return x;
-    }
-
-    /**
-     * Get the successor node
-     * 
-     * Source: CLRS 13.2 Querying a binary search tree
-     *
-     * @return The next node, or NIL if this node is the maximum.
-     */
-	rb_node * tree_successor() const
-	{
-        auto x = this;
-        if (x->right != NIL) {
-            return x->right->tree_minimum();
-        }
-        auto y = x->p;
-        while (y != NIL && x == y->right) {
-            x = y;
-            y = x->p;
-        }
-        return y;
-	}
-
-    /**
-     * Get the predecessor node
-     * 
-     * Source: CLRS 13.2 Querying a binary search tree
-     *
-     * @return The previous node, or NIL if this node is the minimum.
-     */
-	rb_node * tree_predecessor() const
-	{
-        auto x = this;
-        if (x->left != NIL) {
-            return x->left->tree_maximum();
-        }
-        auto y = x->p;
-        while (y != NIL && x == y->left) {
-            x = y;
-            y = x->p;
-        }
-        return y;
-	}
 };
-
-// Definition of sentinel NIL node
-template<typename T>
-rb_node<T> rb_node<T>::NIL_INSTANCE =  rb_node<T>();
-
-template<typename T>
-rb_node<T> * rb_node<T>::NIL = &rb_node<T>::NIL_INSTANCE;
-
 
 template<typename T, typename CMP = std::less<T> >
 class rb_tree
@@ -160,15 +69,98 @@ public:
         BLACK = rb_node<T>::BLACK
     };
 
-    // NIL definition:
-	static node_type * NIL ;
-
     rb_tree()
-        : root(NIL)
     {
+		// Create tree-specific NIL instance.
+		// rb_delete and rb_transplant use the p member of
+		// rb_node for intermediate storage, which requires
+		// a distinct NIL instance for each rb_tree.
+		NIL = new node_type;
+		NIL->color = BLACK;
+		NIL->left = NIL;
+		NIL->right = NIL;
+		NIL->p = NIL;
+		NIL->size = 0;
+
+		root = NIL;
     }
 
-    /**
+	~rb_tree()
+	{
+		delete NIL;
+	}
+
+	/**
+	* Minimum value of subtree rooted at a node
+	*
+	* Source: CLRS 13.2 Querying a binary search tree
+	*
+	* @return The node with the minimum value.
+	*/
+	node_type * tree_minimum(node_type * x)
+	{
+		while (x->left != NIL) {
+			x = x->left;
+		}
+		return x;
+	}
+
+	/**
+	* Maximum value of subtree rooted at a node
+	*
+	* Source: CLRS 13.2 Querying a binary search tree
+	*
+	* @return The node with the minimum value.
+	*/
+	node_type * tree_maximum(node_type * x)
+	{
+		while (x->right != NIL) {
+			x = x->right;
+		}
+		return x;
+	}
+
+	/**
+	* Get the successor node
+	*
+	* Source: CLRS 13.2 Querying a binary search tree
+	*
+	* @return The next node, or NIL if this node is the maximum.
+	*/
+	node_type * tree_successor(node_type * x)
+	{
+		if (x->right != NIL) {
+			return x->right->tree_minimum();
+		}
+		auto y = x->p;
+		while (y != NIL && x == y->right) {
+			x = y;
+			y = x->p;
+		}
+		return y;
+	}
+
+	/**
+	* Get the predecessor node
+	*
+	* Source: CLRS 13.2 Querying a binary search tree
+	*
+	* @return The previous node, or NIL if this node is the minimum.
+	*/
+	node_type * tree_predecessor(node_type * x)
+	{
+		if (x->left != NIL) {
+			return x->left->tree_maximum();
+		}
+		auto y = x->p;
+		while (y != NIL && x == y->left) {
+			x = y;
+			y = x->p;
+		}
+		return y;
+	}
+
+	/**
      * Find node with a given key
      * 
      * Source: CLRS 12.2 Querying a binary search tree
@@ -383,7 +375,7 @@ public:
 		    rb_transplant(z, z->left);
 	    }
 	    else {
-		    y = z->right->tree_minimum();
+		    y = tree_minimum(z->right);
 		    y_original_color = y->color;
 		    x = y->right;
 		    if (y->p == z) {
@@ -547,7 +539,6 @@ public:
     }
 
     node_type * root;
-};
 
-template<typename T, typename CMP>
-rb_node<T> * rb_tree<T, CMP>::NIL = rb_node<T>::NIL;
+	node_type * NIL;
+};
