@@ -105,7 +105,6 @@ void Person::MigrationEvent()
 }
 
 table Person MigrantsByOriginAndDestination //EN Migrants by origin and destination
-[ !phantom ]
 {
   mid_year+
   * region //EN Region (from)

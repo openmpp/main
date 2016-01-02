@@ -1,16 +1,10 @@
 parameters {
-	file	MicroDataOutputFile = "../../../microdata/OzProj24_5K.csv"; //EN Output file for synthetic starting population
-/* NOTE ( MicroDataOutputFile, EN )
->The output file name has the following form:
-> OzProj<version>_<size>.csv
-> e.g. OzProj18_5K.csv
-> Version identifies the fields present, and is the version of OzProjGen which produced the file.
-> Size denotes the number of records in the output file, e.g. 5K is 5,000, 1M is 1,000,000, etc.
-*/
-
+	file	MicroDataOutputFile = "../../../microdata/OzProj22_5K.csv"; //EN Output file for synthetic starting population
 /* NOTE ( StartPopDistn, EN )
 >Source: ABS 3101.0 Table 59 ERP by single year of age, Australia
 */
+
+
 	 //EN Starting population distribution
 	cumrate[2]	StartPopDistn[SEX][RANGE_AGE] = {
 		149027, 151366, 150320, 149673, 148141, 148229, 144049, 141402, 139417, 139108, 141445, 141421, 142100, 142585, 143992, 145265, 148891, 148744, 150442, 153257, 159078, 165562, 165309, 165991, 167530, 169468, 169736, 168334, 168837, 164709, 161964, 155898, 152785, 149373, 149191, 149645, 152132, 155299, 159131, 165997, 168239, 160004, 157549, 152125, 148831, 148328, 149725, 154192, 155625, 156277, 155388, 150059, 148242, 144347, 141591, 140047, 135211, 130958, 129906, 125947, 124329, 122104, 119089, 120640, 125036, 105917, 100885, 95977, 86379, 85095, 78811, 75721, 71654, 67211, 63899, 59213, 54156, 51134, 48253, 45655, 44694, 41975, 38139, 34802, 30962, 27482, 23461, 19744, 16374, 13877, 10891, 8273, 5406, 4063, 3088, 2257, 1531, 1007, 667, 397, 552, 
@@ -19,6 +13,8 @@ parameters {
 /* NOTE ( NativeBorn, EN )
 >Source: ABS 3415.0  Migrants, 2011 Census, Table 9
 */
+
+
 	 //EN Native-born proportion (last 5 years)
 	double	NativeBorn[SEX][AGE_CLASS2] = {
 		(2) 0.877851191, 0.766747409, 0.641268689, 0.661855858, 0.634937516, 0.621486785, 0.581731432, 0.566370111, 
@@ -302,75 +298,5 @@ Australians, June, 2011
 		15873, 11821, 7996, 4171, 4022, 1134, 101, 554, 
 		96121, 71354, 46935, 26149, 23766, 6833, 437, 3253, 
 	};
-
-/* NOTE ( MotherChildAgeDiffDistn, EN )
->Source: ABS 3222.0 Population Projections, Australia, 2012 (base)
->Projection assumptions (detailed), Table 2
-*/
-  //EN Mother-child age difference
-  cumrate MotherChildAgeDiffDistn[AGE_DIFF1] = {
-    2.3777, 5.7346, 12.2449, 20.427, 30.9203,
-    38.5345, 42.6383, 48.4608, 57.1631, 66.7033,
-    78.8431, 89.7777, 103.7848, 116.404, 125.744,
-    129.182, 135.936, 131.5186, 124.0559, 113.7734,
-    102.4628, 88.0337, 71.9527, 57.3479, 43.582,
-    30.967, 21.2387, 13.493, 7.8778, 4.0627,
-    2.1765, 1.1978, 0.5826, 0.3284, 0.4724,
-  };
-
-/* NOTE ( FemaleMarriedProportion, EN )
->Source: ABS ABS.Stat T05 Social Marital Status by Age by Sex, 2011.
-*/
-  //EN Proportion of woman married
-  double FemaleMarriedProportion[RANGE_AGE] = {
-    (15) 0.0,
-    (5) 0.027493838,
-    (5) 0.256543141,
-    (5) 0.571522387,
-    (5) 0.71005758,
-    (5) 0.740150726,
-    (5) 0.733105993,
-    (5) 0.71796264,
-    (5) 0.705910776,
-    (5) 0.697753415,
-    (5) 0.684145742,
-    (5) 0.648513331,
-    (5) 0.583184279,
-    (5) 0.475304856,
-    (5) 0.334031247,
-    (16) 0.169612535
-  };
-
-/* NOTE ( HusbandWifeAgeDiffDistn, EN )
->Source: Notional (fixed two year difference).
-*/
-  //EN Husband-wife age difference
-  cumrate HusbandWifeAgeDiffDistn[AGE_DIFF2] = {
-    (7) 0.0, 1.0, (18) 0.0
-  };
-
-/* NOTE ( MotherIndigenousByChildIndigenous, EN )
->Source: Notional.
-*/
-  //EN Mother indigenous proportion by child indigenous
-  double MotherIndigenousByChildIndigenous[INDIGENOUS_STATUS] = {
-    0.0, 0.8
-  };
-
-/* NOTE ( FatherIndigenousByChildIndigenous, EN )
->Source: Notional.
-*/
-  //EN Father indigenous proportion by child indigenous
-  double FatherIndigenousByChildIndigenous[INDIGENOUS_STATUS] = {
-    0.0, 0.8
-  };
-
-/* NOTE ( HusbandIndigenousByWifeIndigenous, EN )
->Source: Notional.
-*/
-  //EN Husband indigenous proportion by wife indigenous
-  double HusbandIndigenousByWifeIndigenous[INDIGENOUS_STATUS] = {
-    0.02, 0.90
-  };
 };
 

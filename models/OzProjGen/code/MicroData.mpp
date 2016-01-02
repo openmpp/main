@@ -14,16 +14,7 @@ classification PERSON_MICRODATA_COLUMNS	 //EN fields in the microdata file
   PMC_NATIVE_BORN,
   PMC_RECENT_ARRIVAL,
   PMC_YEARS_SINCE_ARRIVAL,
-  PMC_INDIGENOUS,
-  PMC_MOTHER_PRESENT,
-  PMC_MOTHER_AGE,
-  PMC_MOTHER_INDIGENOUS,
-  PMC_FATHER_PRESENT,
-  PMC_FATHER_AGE,
-  PMC_FATHER_INDIGENOUS,
-  PMC_HUSBAND_PRESENT,
-  PMC_HUSBAND_AGE,
-  PMC_HUSBAND_INDIGENOUS
+  PMC_INDIGENOUS
 };
 
 actor Person //EN Individual
@@ -58,33 +49,6 @@ void Person::WriteUnitRecord(case_info *ci)
     break;
   case PMC_INDIGENOUS:
     ci->out_csv << (int) indigenous;
-    break;
-  case PMC_MOTHER_PRESENT:
-    ci->out_csv << (int) mother_present;
-    break;
-  case PMC_MOTHER_AGE:
-    ci->out_csv << (int) mother_integer_age;
-    break;
-  case PMC_MOTHER_INDIGENOUS:
-    ci->out_csv << (int) mother_indigenous;
-    break;
-  case PMC_FATHER_PRESENT:
-    ci->out_csv << (int) father_present;
-    break;
-  case PMC_FATHER_AGE:
-    ci->out_csv << (int) father_integer_age;
-    break;
-  case PMC_FATHER_INDIGENOUS:
-    ci->out_csv << (int) father_indigenous;
-    break;
-  case PMC_HUSBAND_PRESENT:
-    ci->out_csv << (int) husband_present;
-    break;
-  case PMC_HUSBAND_AGE:
-    ci->out_csv << (int) husband_integer_age;
-    break;
-  case PMC_HUSBAND_INDIGENOUS:
-    ci->out_csv << (int) husband_indigenous;
     break;
   default:
       assert(false); // Error

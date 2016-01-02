@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 24, 0, 0;
+version 0, 22, 0, 0;
 
 // The model type
 model_type case_based;
@@ -48,7 +48,7 @@ void CaseSimulation(case_info &ci)
   for (int nCopy = 0; nCopy < nCopies; nCopy++ ) {
     // Initialize the Person entity in the case.
     auto pePerson = new Person();
-    pePerson->Start(PO_INITIAL_POP, oeObservation);
+    pePerson->Start(oeObservation, NULL, 0);
 
     // Simulate events until there are no more.
     SimulateEvents();
@@ -69,11 +69,7 @@ void CaseSimulation(case_info &ci)
       double dArrivalTime = MIN(YEAR) + nYear + 0.5 - RandUniform(8);
       for ( int nClone = 0; nClone < nClones; nClone++ ) {
         auto pePerson = new Person();
-        pePerson->Start(
-          PO_IMMIGRANT,
-          oeObservation,
-          NULL, // argument not used
-          dArrivalTime);
+        pePerson->Start(oeObservation, NULL, dArrivalTime);
         // Simulate events until there are no more.
         SimulateEvents();
       }
@@ -89,17 +85,7 @@ void Simulation_start(case_info &ci)
 {
   ci.in_csv.open(MicroDataInputFile);
   if (MicroDataOutputFlag) {
-      std_string fname = MicroDataOutputFile;
-      auto simulation_members = GetSubSamples();
-      if (simulation_members > 1) {
-          // The simulation has multiple members.
-          // Each member requires a different output file.
-          // Modify the file name by appending the simulation member number
-          // before the file extension.
-          auto member = GetCaseSample();
-          fname = output_csv::name_with_number(fname, member);
-      }
-      ci.out_csv.open(fname);
+      ci.out_csv.open(MicroDataOutputFile);
   }
 }
 

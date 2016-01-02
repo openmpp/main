@@ -75,15 +75,10 @@ void Person::ChildbirthEvent()
 {
   births++;
   auto peChild = new Person;
-  peChild->Start(
-    PO_BIRTH,
-    NULL, // argument not used
-    this  // The newborn's mother
-    );
+  peChild->Start(NULL, this, 0);
 }
 
 table Person BirthsByYear //EN Births by year
-[ !phantom ]
 {
   mid_year
   * {

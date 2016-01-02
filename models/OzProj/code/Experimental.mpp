@@ -11,7 +11,7 @@ actor Person {
 };
 
 table Person Experiment1
-[ !phantom && case_id == 0 ]
+[ case_id == 0 ]
 {
   {
     value_in(alive),
@@ -25,7 +25,7 @@ table Person Experiment1
 };
 
 table Person Experiment2 //EN Generation 2
-[ !phantom && generation == 2 ]
+[ generation == 2 ]
 {
   mid_year
   * {
@@ -42,7 +42,6 @@ actor Person {
 };
 
 table Person Experiment3 //EN PY's by generation and year
-[ !phantom ]
 {
   {
     duration()
@@ -52,7 +51,6 @@ table Person Experiment3 //EN PY's by generation and year
 };
 
 table Person Experiment4 //EN PY's by origin and year
-[ !phantom ]
 {
   {
     duration()
@@ -62,7 +60,6 @@ table Person Experiment4 //EN PY's by origin and year
 };
 
 table Person Experiment5 //EN Proportion indigenous by year
-[ !phantom ]
 {
   {
     duration(indigenous, TRUE) / duration() //EN Proportion indigenous decimals=6
@@ -72,7 +69,6 @@ table Person Experiment5 //EN Proportion indigenous by year
 };
 
 table Person Experiment6 //EN PY's by region and year
-[ !phantom ]
 {
   {
     duration()

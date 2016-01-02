@@ -14,7 +14,7 @@ typedef std::string std_string; // Can be used instead of std::string in model c
 
 #include "microdata_csv.h"
 
-#if !defined(OPENM)
+#if defined(MODGEN)
 namespace mm {
 #endif
 
@@ -37,7 +37,7 @@ struct case_info {
     output_csv out_csv;
 };
 
-#if !defined(OPENM)
+#if defined(MODGEN)
 }
 #endif
 

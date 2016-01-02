@@ -40,7 +40,7 @@ public:
         open(fname);
     }
 
-#if !defined(OPENM)
+#if defined(MODGEN)
     // ctor
     input_csv(const CString& fname)
     {
@@ -86,7 +86,7 @@ public:
         open(fname.c_str());
     }
 
-#if !defined(OPENM)
+#if defined(MODGEN)
     /**
      * Opens the specified numeric csv file.
      * 
@@ -99,7 +99,7 @@ public:
      */
     void open(const CString &fname)
     {
-		CStringA fname2(fname);
+        CStringA fname2(fname);
         const char *fn = fname2;
         open(fn);
     }
@@ -243,7 +243,7 @@ public:
         open(fname);
     }
 
-#if !defined(OPENM)
+#if defined(MODGEN)
     // ctor
     output_csv(const CString& fname)
     {
@@ -287,7 +287,7 @@ public:
         open(fname.c_str());
     }
 
-#if !defined(OPENM)
+#if defined(MODGEN)
     /**
      * Opens the specified numeric csv file.
      * 
@@ -298,7 +298,7 @@ public:
      */
     void open(const CString &fname)
     {
-		CStringA fname2(fname);
+        CStringA fname2(fname);
         const char *fn = fname2;
         open(fn);
     }
@@ -339,20 +339,23 @@ public:
             return false;
         }
         size_t fields_left = fields.size();
-#if defined(OPENM)
+
+#if ( !defined(_MSC_VER) || _MSC_VER >= 1800 )
         for (auto &val : fields) {
             if (std::isfinite(val)) {
                 output_stream << val;
             }
 #else
-        // Modgen 11 uses VS2010 which does not suport range-based for
-        // or std::isfinite().  Use equivalents until Modgen moves to VS 2013.
+        // _MSC_VER == 1800 means Visual Studio 2013
+        // This fall-back code is for Modgen 11 which uses VS 2010.
+        // VS 2010 does not support range-based for or std::isfinite().
         for (size_t j = 0; fields_left > 0; ++j ) {
             double &val = fields[j];
             if (_finite(val)) {
                 output_stream << val;
             }
 #endif
+
             --fields_left;
             if (fields_left) {
                 output_stream << ',';
@@ -379,60 +382,6 @@ public:
     {
         return rec_num;
     }
-
-    /**
-     * Append a number to a file name, preserving the extension.
-     *
-     * @param name   The file name.
-     * @param number The number to append.
-     *
-     * @return A string.
-     */
-    static std::string name_with_number(const std::string& name, long long number)
-    {
-        string num = to_string(number);
-        auto pos1 = name.find_last_of('.');
-        auto pos2 = name.find_last_of("/\\");
-        if (pos1 == std::string::npos || pos2 > pos1) {
-            // no extension
-            return name + num;
-        }
-        else {
-            return name.substr(0, pos1) + num + name.substr(pos1);
-        }
-    }
-
-	/**
-	* Append a number to a file name, preserving the extension.
-	*
-	* @param name   The file name.
-	* @param number The number to append.
-	*
-	* @return A string.
-	*/
-	static std::string name_with_number(const char * name, long long number)
-	{
-		const std::string name2(name);
-		return name_with_number(name2, number);
-	}
-
-#if !defined(OPENM)
-	/**
-	* Append a number to a file name, preserving the extension.
-	*
-	* @param name   The file name.
-	* @param number The number to append.
-	*
-	* @return A string.
-	*/
-	static std::string name_with_number(const CString name, long long number)
-	{
-		CStringA name2(name);
-		const char *name3 = name2;
-
-		return name_with_number(name3, number);
-	}
-#endif
 
 	private:
     std::string file_name;

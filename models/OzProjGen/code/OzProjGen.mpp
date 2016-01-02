@@ -5,7 +5,7 @@
 */
 
 // The model version number
-version 0, 24, 0, 0;
+version 0, 22, 0, 0;
 
 // The model type
 model_type case_based;
@@ -44,19 +44,7 @@ void CaseSimulation(case_info &ci)
 // Invoked before simulating cases
 void Simulation_start(case_info &ci)
 {
-  auto simulation_members = GetSubSamples();
-  if (simulation_members > 1) {
-    // The simulation has multiple members.
-    // Each member requires a different output file.
-    // Modify the file name by appending the simulation member number
-    // before the file extension.
-    auto member = GetCaseSample();
-    auto fname = output_csv::name_with_number(MicroDataOutputFile, member);
-	ci.out_csv.open(fname);
-  }
-  else {
-	  ci.out_csv.open(MicroDataOutputFile);
-  }
+  ci.out_csv.open(MicroDataOutputFile);
 }
 
 // Invoked after simulating cases
