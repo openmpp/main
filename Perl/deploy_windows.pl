@@ -3,7 +3,7 @@
 
 # Script to prepare files for binary deployment
 
-# SHould be re-factored to use subroutines rather than all that repetitve copying...
+# Should be re-factored to use subroutines rather than all that repetitive copying...
 
 # Check for and process -no64 flag
 my $no64 = 0;
@@ -12,10 +12,11 @@ if ($#ARGV == 0 && $ARGV[0] eq '-no64') {
 	shift @ARGV;
 }
 
-
+use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 use File::Copy;
 use File::Copy::Recursive qw(dircopy);
 use File::Path qw(make_path remove_tree);
+use POSIX qw(strftime);
 
 #####################
 # Common settings
@@ -91,8 +92,8 @@ $subdir = 'R';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # Perl
-$subdir = 'Perl';
-dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+#$subdir = 'Perl';
+#dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # sql
 $subdir = 'sql';
@@ -105,6 +106,9 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 # models
 mkdir "${deploy_dir}/models" or die;
 
+$subdir = 'models/microdata';
+dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+
 $subdir = 'models';
 @files = (
 	'.gitignore',
@@ -115,8 +119,12 @@ for my $file (@files) {
 
 # Selected models
 @models = (
-	'Alpha1',
+	'IDMM',
+	'OzProj',
+	'OzProjGen',
 	'RiskPaths',
+	'WizardCaseBased',
+	'WizardTimeBased',
 	);
 for my $model (@models) {
 	my $model_dir = "models/${model}";
@@ -153,3 +161,28 @@ for my $model (@models) {
 		copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 	}
 }
+
+my $seven_zip = "C:\\Program Files\\7-Zip\\7z.exe";
+if (! -e $seven_zip) {
+	$seven_zip = "C:\\Program Files (x86)\\7-Zip\\7z.exe";
+}
+
+chdir "${om_root}/deploy_windows" or die;
+if (-e $seven_zip) {
+	my $time_stamp = strftime "%Y%m%d", localtime;
+	my $archive = "openmpp_win_${time_stamp}.zip";
+	print "Construct archive $archive\n";
+	unlink $archive;
+	($stdout, $stderr) = capture {
+		my @args = ("$seven_zip", "a", "-tzip", '"'.$archive.'"',
+			'".\\*"',
+			);
+		system(@args);
+	};
+	($last_line) = $stdout =~ /\n(.*)$/;
+	print "  7zip: |$last_line|\n" if ( $last_line ne "Everything is Ok" );
+}
+else {
+	print "7-zip not found - .zip archive not created\n";
+}
+chdir $om_root;
