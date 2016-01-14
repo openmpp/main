@@ -23,6 +23,7 @@
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
     
     <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
+    <PUBLISH_DIR>$(ProjectDir)../db</PUBLISH_DIR>
     
     <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
 
@@ -38,10 +39,10 @@
 
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX).exe</MODEL_EXE>
-    <MODEL_SQLITE>$(MODEL_NAME).sqlite</MODEL_SQLITE>
     
     <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
 
+    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sqlite</PUBLISH_SQLITE>
 
     <!-- 
     The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,

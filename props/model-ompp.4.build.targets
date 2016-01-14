@@ -72,10 +72,6 @@
     <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
     <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))" />
-    <ItemGroup>
-      <AllSqlScript Include="$(OMC_OUT_DIR)/*.sql" />
-    </ItemGroup>
-    <Copy SourceFiles="@(AllSqlScript)" DestinationFolder="$(OutDir)" />
     <WriteLinesToFile 
         Condition="'$(USE_PCH)'=='1' And !Exists('$(PCH_CXX)')"
         File="$(PCH_CXX)"
@@ -95,10 +91,10 @@
   -->
 
   
-  <!-- The following properties helps make the SQLitePublish target and output more readable. -->
+  <!-- The following properties help make the SQLitePublish target and output more readable. -->
   <PropertyGroup>
-    <MODEL_PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).publish.tickle</MODEL_PUBLISH_TICKLE>
-    <OM_MODEL_DB>$([MSBuild]::MakeRelative($(ProjectDir),$(OutDir)$(MODEL_NAME).sqlite))</OM_MODEL_DB>
+    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
+    <PUBLISH_SQLITE_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(PUBLISH_SQLITE)))</PUBLISH_SQLITE_REL>
     <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
     <!--  Replace back slash by forward slash. -->
     <OM_SQL_DIR_REL>$(OM_SQL_DIR_REL.Replace(&quot;\&quot;,&quot;/&quot;))</OM_SQL_DIR_REL>
@@ -106,21 +102,22 @@
 
   <Target Name="SQLitePublish" 
           Inputs="@(SQLITE_INPUTS)"
-          Outputs="$(MODEL_PUBLISH_TICKLE)"
+          Outputs="$(PUBLISH_TICKLE)"
           AfterTargets="link"
           >
-    <Delete Files="$(OM_MODEL_DB)" />
-    <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
-    <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
-    <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_create_model.sql" />
-    <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Message Text="$(SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(OM_MODEL_DB) &lt; src/$(MODEL_NAME)_Base.sql" />
-    <Touch  Files="$(MODEL_PUBLISH_TICKLE)"
+    <MakeDir Directories="$(PUBLISH_DIR)" />
+    <Delete Files="$(PUBLISH_SQLITE)" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_Base.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME).sql" />
+    <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
             />
   </Target>
@@ -136,12 +133,13 @@
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -General.Subsamples $(MEMBERS)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(PROCESSES)' != ''">$(MODEL_OPTS) -n $(PROCESSES) </MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -General.Threads $(THREADS)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
     <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
   </PropertyGroup>
 
   <Target Name="RunModel"
           Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" 
-          Inputs="$(MODEL_PUBLISH_TICKLE)"
+          Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="SQLitePublish"
           >
@@ -162,7 +160,7 @@
 
   
   <PropertyGroup>
-    <EXCEL_EXPORT_OUT>$(OutDir)$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
+    <EXCEL_EXPORT_OUT>$(PUBLISH_DIR)/$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
     <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
     <EXCEL_EXPORT_OPT Condition="'$(EXPORT_LANG)'!=''">-lang $(EXPORT_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
@@ -174,7 +172,8 @@
           AfterTargets="RunModel"
           >
     <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
-    <Exec Command="$(COMPLETE_EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) $(OutDir)$(MODEL_NAME).sqlite $(EXCEL_EXPORT_OUT)" ContinueOnError="true"/>
+    <Message Text="$(COMPLETE_EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
+    <Exec Command="$(COMPLETE_EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
   </Target>
 
   

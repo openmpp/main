@@ -31,7 +31,7 @@
     <SQLITE_INPUTS Include="$(OM_SQL_DIR)/sqlite/optional_meta_views_sqlite.sql" />
     <SQLITE_INPUTS Include="@(OMC_SQL_OUTPUTS)" />
 
-    <SQLITE_OUTPUTS Include="$(MODEL_BIN_DIR)/$(MODEL_SQLITE)" />
+    <SQLITE_OUTPUTS Include="$(PUBLISH_SQLITE)" />
 
   </ItemGroup>
 
@@ -62,10 +62,8 @@
 
     <None Include="../code/*.mpp" />
     <None Include="../code/*.ompp" />
-    <None Include="../parameters/Fixed/*.dat" />
-    <None Include="../parameters/Fixed/*.odat" />
-    <None Include="../parameters/Base/*.dat" />
-    <None Include="../parameters/Base/*.odat" />
+    <None Include="../parameters/*/*.dat" />
+    <None Include="../parameters/*/*.odat" />
     
   </ItemGroup>
 
