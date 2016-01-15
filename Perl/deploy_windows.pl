@@ -5,12 +5,14 @@
 
 # Should be re-factored to use subroutines rather than all that repetitive copying...
 
-# Check for and process -no64 flag
+# Check for and process -no64 flag (makes a smaller package)
 my $no64 = 0;
 if ($#ARGV == 0 && $ARGV[0] eq '-no64') {
 	$no64 = 1;
 	shift @ARGV;
 }
+
+do 'build_tools.pl' || die;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 use File::Copy;
@@ -33,7 +35,7 @@ use Cwd qw(getcwd);
 my $om_root = getcwd;
 
 # Preliminary check of source folder structure
-for my $subdir ('bin', 'include', 'lib', 'props', 'R', 'sql', 'use', 'models') {
+for my $subdir ('bin', 'include', 'openm', 'lib', 'props', 'R', 'sql', 'use', 'models') {
 	-d "${om_root}/${subdir}" or die "Missing directory ${om_root}/${subdir}";
 }
 
@@ -81,6 +83,10 @@ for my $file (@files) {
 
 # include
 $subdir = 'include';
+dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+
+# openm/libopenm
+$subdir = 'openm/libopenm';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # props
