@@ -220,11 +220,14 @@
     <ClCompile Include="db\worksetParamTxtTable.cpp" />
     <ClCompile Include="db\worksetTxtTable.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="model\childController.cpp" />
+    <ClCompile Include="model\metaLoader.cpp" />
+    <ClCompile Include="model\restartController.cpp" />
     <ClCompile Include="model\modelBase.cpp" />
     <ClCompile Include="model\modelRunState.cpp" />
+    <ClCompile Include="model\rootController.cpp" />
     <ClCompile Include="model\runController.cpp" />
-    <ClCompile Include="model\runBase.cpp" />
-    <ClCompile Include="model\metaLoader.cpp" />
+    <ClCompile Include="model\singleController.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />
     <ClCompile Include="msg\msgMpiExec.cpp" />

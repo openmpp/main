@@ -16,17 +16,14 @@ namespace openm
         ModelDicTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ModelDicTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by model id and language
         const ModelDicTxtRow * byKey(int i_modelId, int i_langId) const;
-
-        // get list of all table rows
-        vector<ModelDicTxtRow> rows(void) const { return IMetaTable<ModelDicTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<ModelDicTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -101,7 +98,7 @@ ModelDicTxtTable::ModelDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = ModelDicTxtRowAdapter();
-    rowVec = IMetaTable<ModelDicTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, lang_id, descr, note FROM model_dic_txt" + sWhere + " ORDER BY 1, 2", 
         i_dbExec,
         adp
@@ -115,13 +112,6 @@ ModelDicTxtTable::~ModelDicTxtTable(void) throw() { }
 const ModelDicTxtRow * ModelDicTxtTable::byKey(int i_modelId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new ModelDicTxtRow(i_modelId, i_langId) );
-    return IMetaTable<ModelDicTxtRow>::byKey(keyRow, rowVec);
-}
-
-// get list of rows by language
-vector<ModelDicTxtRow> ModelDicTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new ModelDicTxtRow(0, i_langId) );
-    return IMetaTable<ModelDicTxtRow>::findAll(row, rowVec, ModelDicTxtRow::langEqual);
+    return findKey(keyRow);
 }
 

@@ -16,14 +16,14 @@ namespace openm
         TableAccTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableAccTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, accumulator id
         const TableAccRow * byKey(int i_modelId, int i_tableId, int i_accId) const;
-
-        // get list of all table rows
-        vector<TableAccRow> rows(void) const { return IMetaTable<TableAccRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<TableAccRow> byModelId(int i_modelId) const;
@@ -103,7 +103,7 @@ ITableAccTable * ITableAccTable::create(IRowBaseVec & io_rowVec)
 TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = TableAccRowAdapter();
-    rowVec = IMetaTable<TableAccRow>::load(
+    rowVec = load(
         "SELECT model_id, table_id, acc_id, acc_name, acc_expr FROM table_acc" + 
         ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
@@ -119,19 +119,23 @@ TableAccTable::~TableAccTable(void) throw() { }
 const TableAccRow * TableAccTable::byKey(int i_modelId, int i_tableId, int i_accId) const
 {
     const IRowBaseUptr keyRow( new TableAccRow(i_modelId, i_tableId, i_accId) );
-    return IMetaTable<TableAccRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id
 vector<TableAccRow> TableAccTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row( new TableAccRow(i_modelId, 0, 0));
-    return IMetaTable<TableAccRow>::findAll(row, rowVec, TableAccRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const TableAccRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }
 
 // get list of rows by model id and table id
 vector<TableAccRow> TableAccTable::byModelIdTableId(int i_modelId, int i_tableId) const
 {
-    const IRowBaseUptr row( new TableAccRow(i_modelId, i_tableId, 0));
-    return IMetaTable<TableAccRow>::findAll(row, rowVec, TableAccRow::modelIdTableIdEqual);
+    return findAll(
+        [i_modelId, i_tableId](const TableAccRow & i_row) -> bool {
+                return i_row.modelId == i_modelId && i_row.tableId == i_tableId;
+            }
+    );
 }

@@ -16,14 +16,14 @@ namespace openm
         GroupLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~GroupLstTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id and group id
         const GroupLstRow * byKey(int i_modelId, int i_groupId) const;
-
-        // get list of all table rows
-        vector<GroupLstRow> rows(void) const { return IMetaTable<GroupLstRow>::rows(rowVec); }
 
         // get list of rows by model id and is parameter group flag
         vector<GroupLstRow> byModelId(int i_modelId, bool i_isParam) const;
@@ -104,7 +104,7 @@ IGroupLstTable * IGroupLstTable::create(IRowBaseVec & io_rowVec)
 GroupLstTable::GroupLstTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = GroupLstRowAdapter();
-    rowVec = IMetaTable<GroupLstRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, group_id, is_parameter, group_name, is_hidden, is_generated" \
         " FROM group_lst" +
@@ -122,14 +122,15 @@ GroupLstTable::~GroupLstTable(void) throw() { }
 const GroupLstRow * GroupLstTable::byKey(int i_modelId, int i_groupId) const
 {
     const IRowBaseUptr keyRow( new GroupLstRow(i_modelId, i_groupId) );
-    return IMetaTable<GroupLstRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id and is parameter group flag
 vector<GroupLstRow> GroupLstTable::byModelId(int i_modelId, bool i_isParam) const
 {
-    const IRowBaseUptr row( new GroupLstRow(i_modelId, 0) );
-    dynamic_cast<GroupLstRow *>(row.get())->isParam = i_isParam;
-
-    return IMetaTable<GroupLstRow>::findAll(row, rowVec, GroupLstRow::modelIdIsParamEqual);
+    return findAll(
+        [i_modelId, i_isParam](const GroupLstRow & i_row) -> bool {
+                return i_row.modelId == i_modelId && i_row.isParam == i_isParam;
+            }
+        );
 }

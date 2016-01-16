@@ -13,17 +13,17 @@ namespace openm
     {
     public:
         TableDicTable(IDbExec * i_dbExec, int i_modelId = 0);
-        TableDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
+        TableDicTable(IRowBaseVec & io_rowVec) { rowVec.swap(io_rowVec); }
         ~TableDicTable() throw();
+
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
 
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id and table id
         const TableDicRow * byKey(int i_modelId, int i_tableId) const;
-
-        // get list of all table rows
-        vector<TableDicRow> rows(void) const { return IMetaTable<TableDicRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<TableDicRow> byModelId(int i_modelId) const;
@@ -119,7 +119,7 @@ ITableDicTable * ITableDicTable::create(IRowBaseVec & io_rowVec)
 TableDicTable::TableDicTable(IDbExec * i_dbExec, int i_modelId)   
 { 
     const IRowAdapter & adp = TableDicRowAdapter();
-    rowVec = IMetaTable<TableDicRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, table_id, db_name_suffix, table_name, is_user, table_rank, is_sparse, is_hidden, expr_dim_pos" \
         " FROM table_dic" + 
@@ -137,21 +137,23 @@ TableDicTable::~TableDicTable(void) throw() { }
 const TableDicRow * TableDicTable::byKey(int i_modelId, int i_tableId) const
 {
     const IRowBaseUptr keyRow( new TableDicRow(i_modelId, i_tableId) );
-    return IMetaTable<TableDicRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // find first row by model id and table name or NULL if not found
 const TableDicRow * TableDicTable::byModelIdName(int i_modelId, const string & i_name) const
 {
-    const IRowBaseUptr row( new TableDicRow(i_modelId, 0));
-    dynamic_cast<TableDicRow *>(row.get())->tableName = i_name;
-
-    return IMetaTable<TableDicRow>::findFirst(row, rowVec, TableDicRow::modelIdNameEqual);
+    return findFirst(
+        [i_modelId, i_name](const TableDicRow & i_row) -> bool {
+                return i_row.modelId == i_modelId && i_row.tableName == i_name;
+            }
+        );
 }
 
 // get list of rows by model id
 vector<TableDicRow> TableDicTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row( new TableDicRow(i_modelId, 0) );
-    return IMetaTable<TableDicRow>::findAll(row, rowVec, TableDicRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const TableDicRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }

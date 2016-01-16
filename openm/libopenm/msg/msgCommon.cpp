@@ -32,6 +32,12 @@ IMsgExec * IMsgExec::create(int argc, char **argv)
     return new MpiExec(argc, argv);
 }
 
+// return new allocated and packed copy of source array.
+unique_ptr<unsigned char> IPackedAdapter::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+{
+    return MpiPacked::packArray(i_type, i_size, i_valueArr);
+}
+
 // create new value array sender.
 IMsgSendArray * IMsgSendArray::create(
     int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
@@ -108,6 +114,12 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
 { 
     lock_guard<recursive_mutex> lck(rtMutex);
     return new EmptyPackedAdapter(i_msgTag);
+}
+
+/** return new allocated and packed copy of source array. */
+unique_ptr<unsigned char> IPackedAdapter::packArray(const type_info & /*i_type*/, long long /*i_size*/, void * /*i_valueArr*/)
+{
+    throw MsgException("Invalid operation: not supported for empty message interface");
 }
 
 // create new message passing interface.

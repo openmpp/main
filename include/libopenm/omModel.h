@@ -41,6 +41,50 @@ namespace openm
         ~RunOptions(void) throw() { }
     };
 
+    /** modeling job status */
+    enum class ModelStatus : int
+    {
+        /** unknown status */
+        undefined = 0,
+
+        /** initial status */
+        init = 1,
+
+        /** run in progress */
+        progress,
+
+        /** waiting (reserved) */
+        wait,
+
+        /** completed */
+        done = 64,
+
+        /** exit and not completed (reserved) */
+        exit,
+
+        /** error failure */
+        error = 128
+    };
+
+    /** model run status codes */
+    struct RunStatus
+    {
+        /** i = initial status */
+        static const char * init;
+
+        /** p = run in progress */
+        static const char * progress;
+
+        /** s = completed successfully */
+        static const char * done;
+
+        /** x = exit and not completed (reserved) */
+        static const char * exit;
+
+        /** e = error failure */
+        static const char * error;
+    };
+
     /** public interface to initialize model run and input parameters */
     struct IRunBase
     {
@@ -50,7 +94,7 @@ namespace openm
         virtual void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
     };
 
-    /** model public interface */
+    /** model subsample run public interface */
     struct IModel
     {
         virtual ~IModel(void) throw() = 0;

@@ -16,17 +16,14 @@ namespace openm
         ModelDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ModelDicTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by model id
         const ModelDicRow * byKey(int i_modelId) const;
-
-        // return first table row or NULL if table is empty
-        const ModelDicRow * firstRow(void) const { return IMetaTable<ModelDicRow>::firstRow(rowVec); }
-
-        // get list of all table rows
-        vector<ModelDicRow> rows(void) const { return IMetaTable<ModelDicRow>::rows(rowVec); }
 
         // find first row by model name and timestamp or NULL if not found
         const ModelDicRow * byNameTimeStamp(const string & i_name, const string & i_timestamp) const;
@@ -135,7 +132,7 @@ ModelDicTable::ModelDicTable(IDbExec * i_dbExec, const char * i_name, const char
     sql += " ORDER BY 1";
 
     const IRowAdapter & adp = ModelDicRowAdapter();
-    rowVec = IMetaTable<ModelDicRow>::load(sql, i_dbExec, adp);
+    rowVec = load(sql, i_dbExec, adp);
 }
 
 // Table never unloaded
@@ -145,15 +142,15 @@ ModelDicTable::~ModelDicTable(void) throw() { }
 const ModelDicRow * ModelDicTable::byKey(int i_modelId) const
 {
     const IRowBaseUptr keyRow( new ModelDicRow(i_modelId) );
-    return IMetaTable<ModelDicRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // find first row by model name and timestamp or NULL if not found
 const ModelDicRow * ModelDicTable::byNameTimeStamp(const string & i_name, const string & i_timestamp) const
 {
-    const IRowBaseUptr row( new ModelDicRow() );
-    dynamic_cast<ModelDicRow *>(row.get())->name = i_name;
-    dynamic_cast<ModelDicRow *>(row.get())->timestamp = i_timestamp;
-
-    return IMetaTable<ModelDicRow>::findFirst(row, rowVec, ModelDicRow::nameTimeStampEqual);
+    return findFirst(
+        [i_name, i_timestamp](const ModelDicRow & i_row) -> bool {
+            return i_row.name == i_name && i_row.timestamp == i_timestamp;
+        }
+    );
 }

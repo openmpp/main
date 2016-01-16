@@ -16,14 +16,14 @@ namespace openm
         TableExprTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableExprTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, expr id
         const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const;
-
-        // get list of all table rows
-        vector<TableExprRow> rows(void) const { return IMetaTable<TableExprRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<TableExprRow> byModelId(int i_modelId) const;
@@ -111,7 +111,7 @@ ITableExprTable * ITableExprTable::create(IRowBaseVec & io_rowVec)
 TableExprTable::TableExprTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = TableExprRowAdapter();
-    rowVec = IMetaTable<TableExprRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql" \
         " FROM table_expr" + 
@@ -129,19 +129,23 @@ TableExprTable::~TableExprTable(void) throw() { }
 const TableExprRow * TableExprTable::byKey(int i_modelId, int i_tableId, int i_exprId) const
 {
     const IRowBaseUptr keyRow( new TableExprRow(i_modelId, i_tableId, i_exprId) );
-    return IMetaTable<TableExprRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id
 vector<TableExprRow> TableExprTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row(new TableExprRow(i_modelId, 0, 0));
-    return IMetaTable<TableExprRow>::findAll(row, rowVec, TableExprRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const TableExprRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }
 
 // get list of rows by model id and table id
 vector<TableExprRow> TableExprTable::byModelIdTableId(int i_modelId, int i_tableId) const
 {
-    const IRowBaseUptr row( new TableExprRow(i_modelId, i_tableId, 0));
-    return IMetaTable<TableExprRow>::findAll(row, rowVec, TableExprRow::modelIdTableIdEqual);
+    return findAll(
+        [i_modelId, i_tableId](const TableExprRow & i_row) -> bool {
+            return i_row.modelId == i_modelId && i_row.tableId == i_tableId;
+        }
+    );
 }

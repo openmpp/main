@@ -16,17 +16,14 @@ namespace openm
         TableExprTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableExprTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, expr id, language id
         const TableExprTxtRow * byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const;
-
-        // get list of all table rows
-        vector<TableExprTxtRow> rows(void) const { return IMetaTable<TableExprTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<TableExprTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -109,7 +106,7 @@ TableExprTxtTable::TableExprTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableExprTxtRowAdapter();
-    rowVec = IMetaTable<TableExprTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, table_id, expr_id, lang_id, descr, note FROM table_expr_txt" +  sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
@@ -123,12 +120,5 @@ TableExprTxtTable::~TableExprTxtTable(void) throw() { }
 const TableExprTxtRow * TableExprTxtTable::byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableExprTxtRow(i_modelId, i_tableId, i_exprId, i_langId) );
-    return IMetaTable<TableExprTxtRow>::byKey(keyRow, rowVec);
-}
-
-// get list of rows by language
-vector<TableExprTxtRow> TableExprTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new TableExprTxtRow(0, 0, 0, i_langId) );
-    return IMetaTable<TableExprTxtRow>::findAll(row, rowVec, TableExprTxtRow::langEqual);
+    return findKey(keyRow);
 }

@@ -16,17 +16,14 @@ namespace openm
         TableDimsTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableDimsTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, dimension id, language id
         const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const;
-
-        // get list of all table rows
-        vector<TableDimsTxtRow> rows(void) const { return IMetaTable<TableDimsTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<TableDimsTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -109,7 +106,7 @@ TableDimsTxtTable::TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableDimsTxtRowAdapter();
-    rowVec = IMetaTable<TableDimsTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, table_id, dim_id, lang_id, descr, note FROM table_dims_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
@@ -123,12 +120,6 @@ TableDimsTxtTable::~TableDimsTxtTable(void) throw() { }
 const TableDimsTxtRow * TableDimsTxtTable::byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableDimsTxtRow(i_modelId, i_tableId, i_dimId, i_langId) );
-    return IMetaTable<TableDimsTxtRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
-// get list of rows by language
-vector<TableDimsTxtRow> TableDimsTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new TableDimsTxtRow(0, 0, 0, i_langId) );
-    return IMetaTable<TableDimsTxtRow>::findAll(row, rowVec, TableDimsTxtRow::langEqual);
-}

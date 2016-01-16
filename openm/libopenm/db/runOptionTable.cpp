@@ -16,14 +16,14 @@ namespace openm
         RunOptionTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~RunOptionTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: run id, option key
         const RunOptionRow * byKey(int i_runId, const string & i_key) const;
-
-        // get list of all table rows
-        vector<RunOptionRow> rows(void) const { return IMetaTable<RunOptionRow>::rows(rowVec); }
 
         // get list of rows by run id
         vector<RunOptionRow> byRunId(int i_runId) const;
@@ -137,7 +137,7 @@ IRunOptionTable * IRunOptionTable::create(IRowBaseVec & io_rowVec)
 RunOptionTable::RunOptionTable(IDbExec * i_dbExec, int i_runId)
 { 
     const IRowAdapter & adp = RunOptionRowAdapter();
-    rowVec = IMetaTable<RunOptionRow>::load(
+    rowVec = load(
         "SELECT run_id, option_key, option_value FROM run_option" +
         ((i_runId > 0) ? " WHERE run_id = " + to_string(i_runId) : "") +
         " ORDER BY 1, 2", 
@@ -153,7 +153,7 @@ RunOptionTable::~RunOptionTable(void) throw() { }
 const RunOptionRow * RunOptionTable::byKey(int i_runId, const string & i_key) const
 {
     const IRowBaseUptr keyRow( new RunOptionRow(i_runId, i_key) );
-    return IMetaTable<RunOptionRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // Find first row by option key
@@ -172,8 +172,9 @@ const RunOptionRow * RunOptionTable::firstOptionKey(const string & i_key) const
 // get list of rows by run id
 vector<RunOptionRow> RunOptionTable::byRunId(int i_runId) const
 {
-    const IRowBaseUptr row( new RunOptionRow(i_runId, "") );
-    return IMetaTable<RunOptionRow>::findAll(row, rowVec, RunOptionRow::runIdEqual);
+    return findAll(
+        [i_runId](const RunOptionRow & i_row) -> bool { return i_row.runId == i_runId; }
+    );
 }
 
 /** return true if primary key (run id, option key) found. */

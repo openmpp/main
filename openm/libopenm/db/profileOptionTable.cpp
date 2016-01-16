@@ -16,6 +16,9 @@ namespace openm
         ProfileOptionTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ProfileOptionTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
@@ -23,8 +26,6 @@ namespace openm
         const ProfileOptionRow * byKey(const string & i_name, const string & i_key) const;
 
         // get list of all table rows
-        vector<ProfileOptionRow> rows(void) const { return IMetaTable<ProfileOptionRow>::rows(rowVec); }
-
         // get list of rows by profile name
         vector<ProfileOptionRow> byName(const string & i_name) const;
 
@@ -92,7 +93,7 @@ IProfileOptionTable * IProfileOptionTable::create(IRowBaseVec & io_rowVec)
 ProfileOptionTable::ProfileOptionTable(IDbExec * i_dbExec, const string & i_name)
 { 
     const IRowAdapter & adp = ProfileOptionRowAdapter();
-    rowVec = IMetaTable<ProfileOptionRow>::load(
+    rowVec = load(
         "SELECT profile_name, option_key, option_value" \
         " FROM profile_option" +
         ((i_name != "") ? " WHERE profile_name = " + toQuoted(i_name) : "") +
@@ -109,12 +110,14 @@ ProfileOptionTable::~ProfileOptionTable(void) throw() { }
 const ProfileOptionRow * ProfileOptionTable::byKey(const string & i_name, const string & i_key) const
 {
     const IRowBaseUptr keyRow( new ProfileOptionRow(i_name, i_key) );
-    return IMetaTable<ProfileOptionRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by profile name
 vector<ProfileOptionRow> ProfileOptionTable::byName(const string & i_name) const
 {
-    const IRowBaseUptr row( new ProfileOptionRow(i_name, "") );
-    return IMetaTable<ProfileOptionRow>::findAll(row, rowVec, ProfileOptionRow::nameEqual);
+    return findAll(
+        [i_name](const ProfileOptionRow & i_row) -> bool { return i_row.name == i_name; }
+    );
 }
+

@@ -16,17 +16,14 @@ namespace openm
         GroupTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~GroupTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, group id, language id
         const GroupTxtRow * byKey(int i_modelId, int i_groupId, int i_langId) const;
-
-        // get list of all table rows
-        vector<GroupTxtRow> rows(void) const { return IMetaTable<GroupTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<GroupTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -105,7 +102,7 @@ GroupTxtTable::GroupTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = GroupTxtRowAdapter();
-    rowVec = IMetaTable<GroupTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, group_id, lang_id, descr, note FROM group_txt" + sWhere + " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -119,12 +116,6 @@ GroupTxtTable::~GroupTxtTable(void) throw() { }
 const GroupTxtRow * GroupTxtTable::byKey(int i_modelId, int i_groupId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new GroupTxtRow(i_modelId, i_groupId, i_langId) );
-    return IMetaTable<GroupTxtRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
-// get list of rows by language
-vector<GroupTxtRow> GroupTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new GroupTxtRow(0, 0, i_langId) );
-    return IMetaTable<GroupTxtRow>::findAll(row, rowVec, GroupTxtRow::langEqual);
-}

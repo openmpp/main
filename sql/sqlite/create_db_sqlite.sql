@@ -91,6 +91,7 @@ CREATE TABLE run_lst
   sub_count     INT          NOT NULL, -- subsamples count
   sub_started   INT          NOT NULL, -- number of subsamples started
   sub_completed INT          NOT NULL, -- number of subsamples completed
+  sub_restart   INT          NOT NULL, -- subsample to restart from
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=failed
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
@@ -631,7 +632,7 @@ CREATE TABLE task_set
 --
 CREATE TABLE task_run_lst
 (
-  task_run_id INT         NOT NULL, -- unique log id
+  task_run_id INT         NOT NULL, -- unique task run id
   task_id     INT         NOT NULL, -- master key
   sub_count   INT         NOT NULL, -- subsamples count of task run
   create_dt   VARCHAR(32) NOT NULL, -- start date-time
@@ -650,7 +651,7 @@ CREATE TABLE task_run_set
   task_id     INT NOT NULL, -- master key
   set_id      INT NOT NULL, -- input working set id
   run_id      INT NOT NULL, -- result run id
-  task_run_id INT NOT NULL, -- if <> 0 then task log id
+  task_run_id INT NOT NULL, -- task run id
   PRIMARY KEY (task_id, set_id, run_id),
   CONSTRAINT task_rs_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id),

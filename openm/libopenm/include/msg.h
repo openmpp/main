@@ -29,11 +29,14 @@ namespace openm
         /** reserved and should not be used */
         unused = 0,
 
-        /** modelling job status */
+        /** modeling job status */
         statusUpdate,
 
+        /** initial message at process start */
+        initial,
+
         /** lang_lst db rows */
-        langLst,
+        langLst = 32,
 
         /** lang_word db rows */
         langWord,
@@ -142,6 +145,9 @@ namespace openm
          * @param[in,out] io_rowVec    vector to push back received db rows
          */
         virtual void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const = 0;
+
+        /** return new allocated and packed copy of source array. */
+        static unique_ptr<unsigned char> packArray(const type_info & i_type, long long i_size, void * i_valueArr);
     };
 
     /** public interface for message passing */

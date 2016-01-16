@@ -16,17 +16,14 @@ namespace openm
         TableAccTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableAccTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, accumulator id, language id
         const TableAccTxtRow * byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const;
-
-        // get list of all table rows
-        vector<TableAccTxtRow> rows(void) const { return IMetaTable<TableAccTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<TableAccTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -109,7 +106,7 @@ TableAccTxtTable::TableAccTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableAccTxtRowAdapter();
-    rowVec = IMetaTable<TableAccTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, table_id, acc_id, lang_id, descr, note FROM table_acc_txt" +  sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
@@ -123,12 +120,5 @@ TableAccTxtTable::~TableAccTxtTable(void) throw() { }
 const TableAccTxtRow * TableAccTxtTable::byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableAccTxtRow(i_modelId, i_tableId, i_accId, i_langId) );
-    return IMetaTable<TableAccTxtRow>::byKey(keyRow, rowVec);
-}
-
-// get list of rows by language
-vector<TableAccTxtRow> TableAccTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new TableAccTxtRow(0, 0, 0, i_langId) );
-    return IMetaTable<TableAccTxtRow>::findAll(row, rowVec, TableAccTxtRow::langEqual);
+    return findKey(keyRow);
 }

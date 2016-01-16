@@ -57,80 +57,88 @@ OM_EVENT_LOOP_HANDLER RunModelHandler;
 OM_SHUTDOWN_HANDLER ModelShutdownHandler;
 
 /** model thread function */
-static bool modelThreadLoop(
-    bool i_isMpiUsed,
-    int i_runId,
-    int i_subCount,
-    int i_subNumber,
-    IDbExec * i_dbExec,
-    IMsgExec * i_msgExec,
-    const MetaRunHolder * i_metaStore
-    );
+static bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunController * i_runCtrl);
 
 // run modeling threads to calculate subsamples
-static bool runModelThreads(
-    int i_runId, RunController & i_runCtrl, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
-    );
+static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
 /** main entry point */
 int main(int argc, char ** argv) 
 {
     try {
         // get model run options from command line and ini-file
-        RunController runCtrl(argc, argv);
+        const ArgReader argOpts = MetaLoader::getRunOptions(argc, argv);
 
         // adjust log file(s) with actual log settings specified in model run options file
         theLog->init(
-            runCtrl.argOpts().boolOption(ArgKey::logToConsole) || !runCtrl.argOpts().isOptionExist(ArgKey::logToConsole),
-            runCtrl.argOpts().strOption(ArgKey::logFilePath).c_str(),
-            runCtrl.argOpts().boolOption(ArgKey::logUseTs),
-            runCtrl.argOpts().boolOption(ArgKey::logUsePid),
-            runCtrl.argOpts().boolOption(ArgKey::logNoMsgTime),
-            runCtrl.argOpts().boolOption(ArgKey::logSql)
+            argOpts.boolOption(ArgKey::logToConsole) || !argOpts.isOptionExist(ArgKey::logToConsole),
+            argOpts.strOption(ArgKey::logFilePath).c_str(),
+            argOpts.boolOption(ArgKey::logUseTs),
+            argOpts.boolOption(ArgKey::logUsePid),
+            argOpts.boolOption(ArgKey::logNoMsgTime),
+            argOpts.boolOption(ArgKey::logSql)
             );
         theLog->logMsg("Model", OM_MODEL_NAME);
+
+        // if trace log file enabled setup trace file name
+        string traceFilePath;
+        if (argOpts.boolOption(RunOptionsKey::traceToFile)) {
+            traceFilePath = argOpts.strOption(RunOptionsKey::traceFilePath);
+            if (traceFilePath.empty()) traceFilePath = argOpts.strOption(RunOptionsKey::setName) + ".txt";
+        }
+        theTrace->init(
+            argOpts.boolOption(RunOptionsKey::traceToConsole),
+            traceFilePath.c_str(),
+            argOpts.boolOption(RunOptionsKey::traceUseTs),
+            argOpts.boolOption(RunOptionsKey::traceUsePid),
+            argOpts.boolOption(RunOptionsKey::traceNoMsgTime) || !argOpts.isOptionExist(RunOptionsKey::traceNoMsgTime)
+            );
 
         // init message interface
         unique_ptr<IMsgExec> msgExec(IMsgExec::create(argc, argv));
 
         // get db-connection string or use default if not specified
-        string connectionStr = runCtrl.argOpts().strOption(
-            RunOptionsKey::dbConnStr, 
+        string connectionStr = argOpts.strOption(
+            RunOptionsKey::dbConnStr,
             string("Database=") + OM_MODEL_NAME + ".sqlite; Timeout=86400; OpenMode=ReadWrite;"
             );
 
         // open db-connection
-        unique_ptr<IDbExec> dbExec( 
+        unique_ptr<IDbExec> dbExec(
             (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(connectionStr) : nullptr
             );
 
         // load metadata tables and broadcast it to all modeling processes
-        unique_ptr<MetaRunHolder> metaStore(
-            runCtrl.init(isMpiUsed, dbExec.get(), msgExec.get())
-            );
+        unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
-        // create new model run's until modelling task completed
-        for (int runId = 0; 
-                (runId = runCtrl.initRun(isMpiUsed, dbExec.get(), msgExec.get(), metaStore.get())) > 0;
-                ) {
+        if (theModelRunState.isExit()) {        // exit if initial status not a continue status
+            if (theModelRunState.isError()) {
+                theLog->logMsg("Error at model initialization");
+                return EXIT_FAILURE;
+            }
+            theLog->logMsg("Done.");
+            return EXIT_SUCCESS;
+        }
+
+        // run the model until modeling task completed
+        for (int runId = 0; (runId = runCtrl->nextRun()) > 0; ) {
 
             // initilaze model run: read input parameters
-            unique_ptr<RunBase> runBase(RunBase::create(
-                isMpiUsed, runCtrl.modelId, runId, runCtrl.subSampleCount, dbExec.get(), msgExec.get(), metaStore.get()
-                ));
-            RunInitHandler(runBase.get());
+            RunInitHandler(runCtrl.get());
 
-            // do the modelling: run modeling threads to calculate subsamples
-            bool isRunOk = runModelThreads(runId, runCtrl, dbExec.get(), msgExec.get(), metaStore.get());
+            // do the modeling: run modeling threads to calculate subsamples
+            bool isRunOk = runModelThreads(runId, runCtrl.get());
             if (!isRunOk) {
-                runBase->shutdownOnExit(ModelStatus::error);
+                runCtrl->shutdownOnExit(ModelStatus::error);
                 throw ModelException("modeling FAILED");
             }
 
-            // model run completed OK, receive and write the data, do final cleanup
-            runCtrl.receiveSendLast(isMpiUsed, dbExec.get(), msgExec.get(), metaStore.get());
-            runBase->shutdown(runCtrl.selfSubCount);
+            // model run completed OK, receive and write the data
+            runCtrl->shutdownRun();
         }
+
+        // all model run completed OK, do final cleanup
+        runCtrl->shutdown();
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -162,24 +170,16 @@ int main(int argc, char ** argv)
 }
 
 /** model thread function */
-bool modelThreadLoop(
-    bool i_isMpiUsed,
-    int i_runId,
-    int i_subCount,
-    int i_subNumber,
-    IDbExec * i_dbExec,
-    IMsgExec * i_msgExec,
-    const MetaRunHolder * i_metaStore
-    )
+bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunController * i_runCtrl)
 {
     try {
 #ifdef _DEBUG
         theLog->logFormatted("Subsample %d", i_subNumber);
 #endif      
         // create the model
-        unique_ptr<IModel> model(ModelBase::create(
-            i_isMpiUsed, i_runId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore
-            ));
+        unique_ptr<IModel> model(
+            ModelBase::create(i_runId, i_subCount, i_subNumber, i_runCtrl, i_runCtrl->meta())
+            );
 
         // initialize model subsample
         if (ModelStartupHandler != NULL) ModelStartupHandler(model.get());
@@ -219,29 +219,24 @@ bool modelThreadLoop(
 }
 
 // run modeling threads to calculate subsamples
-bool runModelThreads(
-    int i_runId, RunController & i_runCtrl, IDbExec * i_dbExec, IMsgExec * i_msgExec, const MetaRunHolder * i_metaStore
-    )
+bool runModelThreads(int i_runId, RunController * i_runCtrl)
 {
     list<future<bool> > modelFutureLst;     // modeling threads
 
     int nextSub = 0;
-    int maxSub = i_runCtrl.selfSubCount;
+    int maxSub = i_runCtrl->selfSubCount;
 
     while (nextSub < maxSub || modelFutureLst.size() > 0) {
 
-        // create and start new modelling threads
-        while (nextSub < maxSub && (int)modelFutureLst.size() < i_runCtrl.threadCount) {
+        // create and start new modeling threads
+        while (nextSub < maxSub && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
             modelFutureLst.push_back(std::move(std::async(
                 launch::async,
                 modelThreadLoop,
-                isMpiUsed,
                 i_runId,
-                i_runCtrl.subSampleCount,
-                i_runCtrl.subFirstNumber + nextSub,
-                i_dbExec,
-                i_msgExec,
-                i_metaStore
+                i_runCtrl->subSampleCount,
+                i_runCtrl->subFirstNumber + nextSub,
+                i_runCtrl
                 )));
             nextSub++;
         }
@@ -250,14 +245,14 @@ bool runModelThreads(
         bool isAnyCompleted = false;
         for (auto mfIt = modelFutureLst.begin(); mfIt != modelFutureLst.end(); ) {
 
-            // skip thread if modelling not completed yet
+            // skip thread if modeling not completed yet
             if (mfIt->wait_for(chrono::milliseconds(OM_PROGRESS_WAIT_TIME)) != future_status::ready) {
                 ++mfIt;
                 continue;
             }
             isAnyCompleted = true;
 
-            // modelling completed: get result sucess and remove thread form the list
+            // modeling completed: get result sucess and remove thread form the list
             bool isOk = mfIt->get();
             mfIt = modelFutureLst.erase(mfIt);
 
@@ -265,16 +260,14 @@ bool runModelThreads(
         }
 
         // try to receive output subsamples
-        if (isMpiUsed && i_msgExec->isRoot()) {
-            i_runCtrl.receiveSubSamples(isMpiUsed, i_dbExec, i_msgExec, i_metaStore);
-        }
+        i_runCtrl->receiveSubSamples();
 
-        // wait if no modelling progress and any threads still running
+        // wait if no modeling progress and any threads still running
         if (!isAnyCompleted && modelFutureLst.size() > 0) {
             this_thread::sleep_for(chrono::milliseconds(OM_PROGRESS_SLEEP_TIME));
             continue;
         }
     }
 
-    return true;    // modelling completed OK
+    return true;    // modeling completed OK
 }

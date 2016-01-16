@@ -16,14 +16,14 @@ namespace openm
         TableDimsTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableDimsTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, dimension id
         const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const;
-
-        // get list of all table rows
-        vector<TableDimsRow> rows(void) const { return IMetaTable<TableDimsRow>::rows(rowVec); }
 
         // get list of rows by model id and table id
         vector<TableDimsRow> byModelIdTableId(int i_modelId, int i_tableId) const;
@@ -108,7 +108,7 @@ ITableDimsTable * ITableDimsTable::create(IRowBaseVec & io_rowVec)
 TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)   
 { 
     const IRowAdapter & adp = TableDimsRowAdapter();
-    rowVec = IMetaTable<TableDimsRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, table_id, dim_id, dim_name, mod_type_id, is_total, dim_size" \
         " FROM table_dims" + 
@@ -126,12 +126,15 @@ TableDimsTable::~TableDimsTable(void) throw() { }
 const TableDimsRow * TableDimsTable::byKey(int i_modelId, int i_tableId, int i_dimId) const
 {
     const IRowBaseUptr keyRow( new TableDimsRow(i_modelId, i_tableId, i_dimId) );
-    return IMetaTable<TableDimsRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id and table id
 vector<TableDimsRow> TableDimsTable::byModelIdTableId(int i_modelId, int i_tableId) const
 {
-    const IRowBaseUptr row(new TableDimsRow(i_modelId, i_tableId, 0));
-    return IMetaTable<TableDimsRow>::findAll(row, rowVec, TableDimsRow::modelIdTableIdEqual);
+    return findAll(
+        [i_modelId, i_tableId](const TableDimsRow & i_row) -> bool {
+                return i_row.modelId == i_modelId && i_row.tableId == i_tableId;
+            }
+    );
 }

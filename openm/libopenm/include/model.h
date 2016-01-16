@@ -25,9 +25,9 @@ using namespace std;
 #include "dbMetaTable.h"
 #include "dbParameter.h"
 #include "dbOutputTable.h"
+#include "modelRunState.h"
 #include "metaRunHolder.h"
 #include "msg.h"
-#include "modelRunState.h"
 #include "metaLoader.h"
 #include "runController.h"
 
@@ -39,73 +39,18 @@ namespace openm
     /** modeling library exception */
     typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
 
-    /** model run basic support: initialze, read input parameters and write output values */
-    class RunBase : public IRunBase
-    {
-    public:
-        ~RunBase(void) throw() { }
-
-        /** model run basis factory. */
-        static RunBase * create(
-            bool i_isMpiUsed,
-            int i_modelId,
-            int i_runId,
-            int i_subSampleCount,
-            IDbExec * i_dbExec,
-            IMsgExec * i_msgExec,
-            const MetaRunHolder * i_metaStore
-            );
-
-        /** read input parameter values. */
-        void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr);
-        
-        /** model shutdown: save results and cleanup resources. */
-        void shutdown(int i_processSubCount);
-
-        /** model run shutdown if exiting without completion (ie: exit on error). */
-        void shutdownOnExit(ModelStatus i_status);
-
-    private:
-        bool isMpiUsed;                     // if true then use MPI messaging library to pass the data
-        int modelId;                        // model id in database
-        int runId;                          // model run id
-        int subCount;                       // number of subsamples
-        IDbExec * dbExec;                   // db-connection
-        IMsgExec * msgExec;                 // message passing interface
-        const MetaRunHolder * metaStore;    // metadata tables
-
-        RunBase(
-            bool i_isMpiUsed,
-            int i_modelId,
-            int i_runId,
-            int i_subCount,
-            IDbExec * i_dbExec,
-            IMsgExec * i_msgExec,
-            const MetaRunHolder * i_metaStore
-            );
-
-        /** write output tables aggregated values into database */
-        void writeOutputValues(void);
-
-    private:
-        RunBase(const RunBase & i_runBase) = delete;
-        RunBase & operator=(const RunBase & i_runBase) = delete;
-    };
-
-    /** model base class */
+    /** model subsample run base class */
     class ModelBase : public IModel
     {
     public:
         ~ModelBase(void) throw() { }
 
-        /** model factory: create new model. */
+        /** model factory: create new model subsample run. */
         static ModelBase * create(
-            bool i_isMpiUsed,
             int i_runId,
             int i_subCount,
             int i_subNumber,
-            IDbExec * i_dbExec,
-            IMsgExec * i_msgExec, 
+            RunController * i_runCtrl,
             const MetaRunHolder * i_metaStore 
             );
 
@@ -119,31 +64,40 @@ namespace openm
         const RunOptions * runOptions(void) const { return &runOpts; }
 
         /** update modeling progress */
-        int updateProgress(void) { return ++progressCount; /* prototype only */ }
+        int updateProgress(void) { return runState.updateProgress(); }
 
-        /** write output result table and release accumulators memory. */
+        /** write result into output table and release accumulators memory. */
         void writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues);
 
     private:
-        bool isMpiUsed;                     // if true then use MPI messaging library to pass the data
         int modelId;                        // model id in database
         int runId;                          // model run id
-        IDbExec * dbExec;                   // db-connection
-        IMsgExec * msgExec;                 // message passing interface
+        RunController * runCtrl;            // run controller interface
         const MetaRunHolder * metaStore;    // metadata tables
+        ModelRunState runState;             // model run state
         RunOptions runOpts;                 // model run options
-        int progressCount;                  // model progress count
 
         ModelBase(
-            bool i_isMpiUsed,
             int i_modelId,
             int i_runId,
             int i_subCount,
             int i_subNumber,
-            IDbExec * i_dbExec,
-            IMsgExec * i_msgExec,
+            RunController * i_runCtrl,
             const MetaRunHolder * i_metaStore
             );
+
+        // helper struct to store output table save status
+        struct TableDoneItem
+        {
+            int tableId;    // output table id
+            bool isDone;    // if true then table is written into db or send to root process
+
+            TableDoneItem(const TableDicRow & i_tableRow) : tableId(i_tableRow.tableId), isDone(false)
+            { }
+        };
+
+        vector<TableDoneItem> tableDoneVec;     // status for all output tables of subsample
+
     private:
         ModelBase(const ModelBase & i_model) = delete;
         ModelBase & operator=(const ModelBase & i_model) = delete;

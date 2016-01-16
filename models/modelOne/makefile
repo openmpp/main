@@ -36,11 +36,11 @@ DEPS_DIR = $(MODEL_BUILD_DIR)/deps
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug
-  OUT_BIN_DIR = $(OUT_PREFIX)/debug
+  OUT_BIN_DIR = $(OUT_PREFIX)
 else
   BD_CFLAGS = -DNDEBUG -O3
   OBJ_DIR = $(MODEL_BUILD_DIR)/release
-  OUT_BIN_DIR = $(OUT_PREFIX)/release
+  OUT_BIN_DIR = $(OUT_PREFIX)
 endif
 
 ifndef OM_DB_LIB

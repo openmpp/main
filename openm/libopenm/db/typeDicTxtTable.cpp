@@ -16,17 +16,14 @@ namespace openm
         TypeDicTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TypeDicTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, type id, language id
         const TypeDicTxtRow * byKey(int i_modelId, int i_typeId, int i_langId) const;
-
-        // get list of all table rows
-        vector<TypeDicTxtRow> rows(void) const { return IMetaTable<TypeDicTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<TypeDicTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -105,7 +102,7 @@ TypeDicTxtTable::TypeDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TypeDicTxtRowAdapter();
-    rowVec = IMetaTable<TypeDicTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, mod_type_id, lang_id, descr, note FROM type_dic_txt" + sWhere + " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -119,12 +116,5 @@ TypeDicTxtTable::~TypeDicTxtTable(void) throw() { }
 const TypeDicTxtRow * TypeDicTxtTable::byKey(int i_modelId, int i_typeId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TypeDicTxtRow(i_modelId, i_typeId, i_langId) );
-    return IMetaTable<TypeDicTxtRow>::byKey(keyRow, rowVec);
-}
-
-// get list of rows by language
-vector<TypeDicTxtRow> TypeDicTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new TypeDicTxtRow(0, 0, i_langId) );
-    return IMetaTable<TypeDicTxtRow>::findAll(row, rowVec, TypeDicTxtRow::langEqual);
+    return findKey(keyRow);
 }

@@ -16,17 +16,14 @@ namespace openm
         TypeEnumTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TypeEnumTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, type id, enum id, language id
         const TypeEnumTxtRow * byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const;
-
-        // get list of all table rows
-        vector<TypeEnumTxtRow> rows(void) const { return IMetaTable<TypeEnumTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<TypeEnumTxtRow> byLang(int i_langId) const;
 
         // get list of rows by model id and type id
         vector<TypeEnumTxtRow> byModelIdTypeId(int i_modelId, int i_typeId) const;
@@ -112,7 +109,7 @@ TypeEnumTxtTable::TypeEnumTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TypeEnumTxtRowAdapter();
-    rowVec = IMetaTable<TypeEnumTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, mod_type_id, enum_id, lang_id, descr, note FROM type_enum_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
@@ -126,19 +123,15 @@ TypeEnumTxtTable::~TypeEnumTxtTable(void) throw() { }
 const TypeEnumTxtRow * TypeEnumTxtTable::byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TypeEnumTxtRow(i_modelId, i_typeId, i_enumId, i_langId) );
-    return IMetaTable<TypeEnumTxtRow>::byKey(keyRow, rowVec);
-}
-
-// get list of rows by language
-vector<TypeEnumTxtRow> TypeEnumTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new TypeEnumTxtRow(0, 0, 0, i_langId) );
-    return IMetaTable<TypeEnumTxtRow>::findAll(row, rowVec, TypeEnumTxtRow::langEqual);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id and type id
 vector<TypeEnumTxtRow> TypeEnumTxtTable::byModelIdTypeId(int i_modelId, int i_typeId) const
 {
-    const IRowBaseUptr row( new TypeEnumTxtRow(i_modelId, i_typeId, 0, 0) );
-    return IMetaTable<TypeEnumTxtRow>::findAll(row, rowVec, TypeEnumTxtRow::modelIdTypeIdEqual);
+    return findAll(
+        [i_modelId, i_typeId](const TypeEnumTxtRow & i_row) -> bool { 
+            return i_row.modelId == i_modelId && i_row.typeId == i_typeId;
+        }
+    );
 }
