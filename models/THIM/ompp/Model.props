@@ -2,22 +2,24 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <MODEL_NAME>THIM</MODEL_NAME>
+    <MODEL_NAME>
+    </MODEL_NAME>
     <SCENARIO_NAME>Base</SCENARIO_NAME>
     <ENABLE_SCENARIO_PARAMETERS>1</ENABLE_SCENARIO_PARAMETERS>
-    <SCENARIO_PARAMETERS_FOLDER>$(ProjectDir)..\parameters\$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
+    <SCENARIO_PARAMETERS_FOLDER>..\parameters\$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
     <ENABLE_FIXED_PARAMETERS>0</ENABLE_FIXED_PARAMETERS>
-    <FIXED_PARAMETERS_FOLDER></FIXED_PARAMETERS_FOLDER>
-    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
-    <DB_PROVIDER>SQLITE</DB_PROVIDER>
+    <FIXED_PARAMETERS_FOLDER>..\parameters\Fixed</FIXED_PARAMETERS_FOLDER>
     <RUN_SCENARIO>1</RUN_SCENARIO>
     <MEMBERS>1</MEMBERS>
-    <PROCESSES>1</PROCESSES>
     <THREADS>1</THREADS>
+    <PROCESSES>1</PROCESSES>
+    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
+    <DB_PROVIDER>SQLITE</DB_PROVIDER>
     <RUN_EXPORT>0</RUN_EXPORT>
     <EXPORT_LANG>
     </EXPORT_LANG>
     <RUN_EXCEL>0</RUN_EXCEL>
+    <OMC_USE_DIR>$(OM_ROOT)/use</OMC_USE_DIR>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -40,23 +42,23 @@
     <BuildMacro Include="FIXED_PARAMETERS_FOLDER">
       <Value>$(FIXED_PARAMETERS_FOLDER)</Value>
     </BuildMacro>
-    <BuildMacro Include="GRID_COMPUTING">
-      <Value>$(GRID_COMPUTING)</Value>
-    </BuildMacro>
-    <BuildMacro Include="DB_PROVIDER">
-      <Value>$(DB_PROVIDER)</Value>
-    </BuildMacro>
     <BuildMacro Include="RUN_SCENARIO">
       <Value>$(RUN_SCENARIO)</Value>
     </BuildMacro>
     <BuildMacro Include="MEMBERS">
       <Value>$(MEMBERS)</Value>
     </BuildMacro>
+    <BuildMacro Include="THREADS">
+      <Value>$(THREADS)</Value>
+    </BuildMacro>
     <BuildMacro Include="PROCESSES">
       <Value>$(PROCESSES)</Value>
     </BuildMacro>
-    <BuildMacro Include="THREADS">
-      <Value>$(THREADS)</Value>
+    <BuildMacro Include="GRID_COMPUTING">
+      <Value>$(GRID_COMPUTING)</Value>
+    </BuildMacro>
+    <BuildMacro Include="DB_PROVIDER">
+      <Value>$(DB_PROVIDER)</Value>
     </BuildMacro>
     <BuildMacro Include="RUN_EXPORT">
       <Value>$(RUN_EXPORT)</Value>
@@ -66,6 +68,9 @@
     </BuildMacro>
     <BuildMacro Include="RUN_EXCEL">
       <Value>$(RUN_EXCEL)</Value>
+    </BuildMacro>
+    <BuildMacro Include="OMC_USE_DIR">
+      <Value>$(OMC_USE_DIR)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

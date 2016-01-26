@@ -8,8 +8,12 @@
 
 
   <Target Name="Validate">
-    <Error  Text="MODEL_NAME cannot be empty"
-            Condition=" ( '$(MODEL_NAME)' == '' )" />
+    <Error
+	    Text="SCENARIO_NAME cannot be empty"
+        Condition=" ( '$(SCENARIO_NAME)' == '' )" />
+    <Error
+	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
+        Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
   </Target>
 
   
@@ -46,8 +50,14 @@
     <PropertyGroup>
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
     </PropertyGroup>
-    <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
+    <Exec 
+          WorkingDirectory="$(MODGEN_IN_DIR)"
           Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -EN" 
+          Condition="'$(MODGEN_VERSION)'=='11'"
+    />
+    <Exec 
+          Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -i $(MODGEN_IN_DIR) -EN" 
+          Condition="'$(MODGEN_VERSION)'=='12'"
     />
     <Message Text="Modgen elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))" />
     <Exec Command="$(COMPLETE_PATCH_MODGEN_OUTPUTS_EXE) $(MODGEN_OUT_DIR)"
@@ -75,8 +85,9 @@
   </ItemGroup>
  
   <PropertyGroup>
+    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
     <FRAMEWORK_OMPP>$(MODEL_CODE_DIR)/ompp_framework.ompp</FRAMEWORK_OMPP>
-    <SCENARIO_SCEX>$(MODEL_BIN_DIR)/$(SCENARIO_NAME).scex</SCENARIO_SCEX>
+    <SCENARIO_SCEX>$(PUBLISH_DIR)/$(SCENARIO_NAME).scex</SCENARIO_SCEX>
   </PropertyGroup>
  
   <Target Name="ScexPublish"
@@ -88,16 +99,49 @@
         Condition="'1' != '@(FRAMEWORK_ODAT->Count())'"
         Text="Cannot find framework .odat file"
     />
-    <MakeDir Directories="$(MODGEN_OUT_DIR)" />
+    <MakeDir Directories="$(PUBLISH_DIR)" />
+    <Delete Files="$(SCENARIO_SCEX)" />
     <Message
-          Text="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) @(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')"
+          Text="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) @(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) $(MODEL_PROPS) @(SCENARIO_DATS, ' ')"
     />
     <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
-          Command="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) @(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) @(SCENARIO_DATS, ' ')" 
+          Command="$(COMPLETE_CREATE_SCEX_EXE) $(SCENARIO_SCEX) @(FRAMEWORK_ODAT) $(FRAMEWORK_OMPP) $(MODEL_PROPS) @(SCENARIO_DATS, ' ')" 
     />
+    <Touch  Files="$(PUBLISH_TICKLE)"
+            AlwaysCreate="true"
+            />
   </Target>
 
  
+  <!--
+  RunModel
+  -->
+
+  
+  <PropertyGroup>
+    <!-- The following property prepares arguments to the model executable. -->
+    <MODEL_OPTS>-sc $(SCENARIO_SCEX) -s</MODEL_OPTS>
+    <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
+  </PropertyGroup>
+
+  <Target Name="RunModel"
+          Condition="'$(RUN_SCENARIO)'=='1'" 
+          Inputs="$(PUBLISH_TICKLE)"
+          Outputs="$(RUN_MODEL_TICKLE)"
+          AfterTargets="ScexPublish"
+          >
+    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="$(TargetPath) $(MODEL_OPTS)" />
+    <Exec WorkingDirectory="$(TargetDir)"
+          Command="$(TargetPath) $(MODEL_OPTS)"
+          IgnoreExitCode="true"
+          />
+    <Touch  Files="$(RUN_MODEL_TICKLE)"
+            AlwaysCreate="true"
+            />
+  </Target>
+
+
   <!-- 
   Diagnostics
   -->
@@ -105,6 +149,8 @@
  
   <Target Name="Diagnostics"
           Condition="'1'=='1'">
+    <Message Text="MODEL_NAME=$(MODEL_NAME)" />
+    <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="MODGEN_VERSION=$(MODGEN_VERSION)" />
     <Message Text="MODGEN_ROOT=$(MODGEN_ROOT)" />

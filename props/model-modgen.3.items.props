@@ -48,10 +48,8 @@
     -->
     <None Include="../code/*.mpp" />
     <None Include="../code/*.ompp" />
-    <None Include="../parameters/Fixed/*.dat" />
-    <None Include="../parameters/Fixed/*.odat" />
-    <None Include="../parameters/Base/*.dat" />
-    <None Include="../parameters/Base/*.odat" />
+    <None Include="../parameters/*/*.dat" />
+    <None Include="../parameters/*/*.odat" />
     
     
     <SCENARIO_DATS Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.dat" />

@@ -25,11 +25,14 @@
     
     <MODGEN_INC_DIR Condition="'$(MODGEN_INC_DIR)'==''">$(MODGEN_ROOT)</MODGEN_INC_DIR>
     <MODGEN_LIB_DIR Condition="'$(MODGEN_LIB_DIR)'==''">$(MODGEN_ROOT)</MODGEN_LIB_DIR>
-    
+
     <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
     
     <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
+    <PUBLISH_DIR>$(ProjectDir)../output-modgen</PUBLISH_DIR>
+
+    <MODEL_PROPS>$(ProjectDir)Model.props</MODEL_PROPS>
 
     <MODGEN_IN_DIR>$(MODEL_CODE_DIR)</MODGEN_IN_DIR>
     
@@ -37,6 +40,7 @@
     <PCH_CXX>$(MODGEN_OUT_DIR)/pch.cxx</PCH_CXX>
     
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
+    
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
     <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
@@ -44,7 +48,14 @@
 
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
 
+    <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
+    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME>
+    <!--  Remove trailing backslash -->
+    <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>
+    <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
+    
     <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
+    
     <FIXED_NAME Condition="'$(FIXED_NAME)'==''">Fixed</FIXED_NAME>
 
 

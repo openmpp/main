@@ -9,8 +9,8 @@
 
   <Target Name="Validate">
     <Error
-	    Text="MODEL_NAME cannot be empty"
-        Condition=" ( '$(MODEL_NAME)' == '' )" />
+	    Text="SCENARIO_NAME cannot be empty"
+        Condition=" ( '$(SCENARIO_NAME)' == '' )" />
     <Error
 	    Text="ENABLE_SCENARIO_PARAMETERS must be either 0 or 1. Value is $(ENABLE_SCENARIO_PARAMETERS)"
         Condition=" ! ( '$(ENABLE_SCENARIO_PARAMETERS)' == '0' Or '$(ENABLE_SCENARIO_PARAMETERS)' == '1' )" />
@@ -115,7 +115,7 @@
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model.sql" />
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_Base.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME).sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME).sql" />
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
@@ -198,6 +198,8 @@
  
   <Target Name="Diagnostics"
           Condition="'1'=='1'">
+    <Message Text="MODEL_NAME=$(MODEL_NAME)" />
+    <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />

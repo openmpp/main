@@ -7,11 +7,11 @@ use strict;
 
 my $version = 0.1;
 
-if ( $#ARGV < 3 ) {
-	# must have at least 4 arguments
+if ( $#ARGV < 4 ) {
+	# must have at least 5 arguments
 	print "create_scex version $version\n";
-	print "usage: create_scex out_scex in_framework_odat in_framework_ompp param1.dat...\n";
-	print "  example: create_scex Base.scex Base(Framework).odat ompp_framework.ompp *.dat\n";
+	print "usage: create_scex out_scex in_framework_odat in_framework_ompp Model_props param1.dat...\n";
+	print "  example: create_scex Base.scex Base(Framework).odat ompp_framework.ompp ../modgen/Model.props *.dat\n";
 	exit 1;
 }
 
@@ -23,6 +23,7 @@ my $script_name = "create_scex";
 my $out_scex = shift @ARGV;
 my $in_odat = shift @ARGV;
 my $in_ompp = shift @ARGV;
+my $model_props = shift @ARGV;
 my @in_dat = @ARGV;
 
 use common qw(
@@ -43,12 +44,16 @@ if (!-s $in_ompp) {
 	logmsg error, $script_name, "Framework parameter module ${in_ompp} not found\n";
 	exit 1;
 }
+if (!-s $model_props) {
+	logmsg error, $script_name, "Model macros ${model_props} not found\n";
+	exit 1;
+}
 
 my @in_dat;
 for my $arg (@ARGV) {
 	push @in_dat, glob $arg;
 }
 
-my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, @in_dat;
+my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, $model_props, @in_dat;
 
 return $result;

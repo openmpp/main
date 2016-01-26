@@ -283,7 +283,7 @@ sub ompp_tables_to_csv
 
 
 # Get the user macro from a property file
-# arg0 - the path of the property fileModel.props file
+# arg0 - the path of the property file Model.props
 # arg1 - the user macro (property) name
 # returns - the name, or empty string if failure
 sub get_user_macro
@@ -311,6 +311,7 @@ sub get_user_macro
 # arg0 - the output file name
 # arg1 - the ompp Base(Framework).odat file
 # arg2 - the ompp ompp_framework.ompp file
+# arg3 - the Modgen property file Model.props
 # argN - remaining arguments are .dat files
 # returns - 0 for success, otherwise non-zero
 sub modgen_create_scex
@@ -318,6 +319,7 @@ sub modgen_create_scex
 	my $scex_file      = shift(@_);
 	my $framework_odat_file = shift(@_);
 	my $framework_ompp_file = shift(@_);
+	my $model_props = shift(@_);
 
 	my @dat_files = @_;
 
@@ -346,6 +348,12 @@ sub modgen_create_scex
 		CopyParameters => 0,
 		MemoryReports => 0,
 	);
+	
+	# Override values based on Model.props
+	my $members = get_user_macro($model_props, 'MEMBERS');
+	$General{"Subsamples"} = $members;
+	my $threads = get_user_macro($model_props, 'THREADS');
+	$General{"Threads"} = $threads;
 
 	# Parse Base ompp framework code file for .scex scenario information
 	if (!open FRAMEWORK_OMPP, "<${framework_ompp_file}") {
