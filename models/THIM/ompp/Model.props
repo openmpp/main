@@ -15,10 +15,10 @@
     <PROCESSES>1</PROCESSES>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
-    <RUN_EXPORT>0</RUN_EXPORT>
-    <EXPORT_LANG>
-    </EXPORT_LANG>
-    <RUN_EXCEL>0</RUN_EXCEL>
+    <EXPORT_EXCEL>0</EXPORT_EXCEL>
+    <EXPORT_EXCEL_LANG>
+    </EXPORT_EXCEL_LANG>
+    <EXPORT_EXCEL_LAUNCH>0</EXPORT_EXCEL_LAUNCH>
     <OMC_USE_DIR>$(OM_ROOT)/use</OMC_USE_DIR>
   </PropertyGroup>
   <PropertyGroup />
@@ -60,14 +60,14 @@
     <BuildMacro Include="DB_PROVIDER">
       <Value>$(DB_PROVIDER)</Value>
     </BuildMacro>
-    <BuildMacro Include="RUN_EXPORT">
-      <Value>$(RUN_EXPORT)</Value>
+    <BuildMacro Include="EXPORT_EXCEL">
+      <Value>$(EXPORT_EXCEL)</Value>
     </BuildMacro>
-    <BuildMacro Include="EXPORT_LANG">
-      <Value>$(EXPORT_LANG)</Value>
+    <BuildMacro Include="EXPORT_EXCEL_LANG">
+      <Value>$(EXPORT_EXCEL_LANG)</Value>
     </BuildMacro>
-    <BuildMacro Include="RUN_EXCEL">
-      <Value>$(RUN_EXCEL)</Value>
+    <BuildMacro Include="EXPORT_EXCEL_LAUNCH">
+      <Value>$(EXPORT_EXCEL_LAUNCH)</Value>
     </BuildMacro>
     <BuildMacro Include="OMC_USE_DIR">
       <Value>$(OMC_USE_DIR)</Value>

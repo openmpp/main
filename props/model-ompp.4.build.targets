@@ -33,11 +33,11 @@
 	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
         Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
     <Error
-	    Text="RUN_EXPORT must be either 0 or 1. Value is $(RUN_EXPORT)"
-        Condition=" ! ( '$(RUN_EXPORT)' == '0' Or '$(RUN_EXPORT)' == '1' )" />
+	    Text="EXPORT_EXCEL must be either 0 or 1. Value is $(EXPORT_EXCEL)"
+        Condition=" ! ( '$(EXPORT_EXCEL)' == '0' Or '$(EXPORT_EXCEL)' == '1' )" />
     <Error
-	    Text="RUN_EXCEL must be either 0 or 1. Value is $(RUN_EXCEL)"
-        Condition=" ! ( '$(RUN_EXCEL)' == '0' Or '$(RUN_EXCEL)' == '1' )" />
+	    Text="EXPORT_EXCEL_LAUNCH must be either 0 or 1. Value is $(EXPORT_EXCEL_LAUNCH)"
+        Condition=" ! ( '$(EXPORT_EXCEL_LAUNCH)' == '0' Or '$(EXPORT_EXCEL_LAUNCH)' == '1' )" />
   </Target>
 
   
@@ -162,11 +162,11 @@
   <PropertyGroup>
     <EXCEL_EXPORT_OUT>$(PUBLISH_DIR)/$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
     <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
-    <EXCEL_EXPORT_OPT Condition="'$(EXPORT_LANG)'!=''">-lang $(EXPORT_LANG)</EXCEL_EXPORT_OPT>
+    <EXCEL_EXPORT_OPT Condition="'$(EXPORT_EXCEL_LANG)'!=''">-lang $(EXPORT_EXCEL_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
 
   <Target Name="RunExport"
-          Condition="'$(RUN_EXPORT)'=='1'" 
+          Condition="'$(EXPORT_EXCEL)'=='1'" 
           Inputs="$(RUN_MODEL_TICKLE)"
           Outputs="$(EXCEL_EXPORT_OUT)"
           AfterTargets="RunModel"
@@ -183,7 +183,7 @@
 
   
   <Target Name="RunExcel"
-          Condition="'$(RUN_EXCEL)'=='1'"
+          Condition="'$(EXPORT_EXCEL_LAUNCH)'=='1'"
           AfterTargets="RunExport"
           >
     <Message Text="Launching Excel with outputs from scenario $(SCENARIO_NAME)..." />
