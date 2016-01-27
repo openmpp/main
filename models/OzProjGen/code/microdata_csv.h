@@ -12,6 +12,37 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <cstdlib>
+
+/**
+* Shared common functionality.
+*
+* Functionality shared by input_csv and output_csv.
+*/
+class core_csv {
+public:
+
+	/**
+	* Expand leading $XYZ/the/file.csv using environment variable XYZ
+	*
+	* @param path Filename to be expanded (in place)
+	*/
+	static void expand(std::string & path)
+	{
+		if (path.length() > 0 && '$' == path[0]) {
+			auto slash_pos = path.find_first_of("\\/:");
+			if (slash_pos == std::string::npos) {
+				slash_pos = path.length();
+			}
+			auto env_name = path.substr(1, slash_pos - 1);
+			auto env_value = std::getenv(env_name.c_str());
+			if (env_value) {
+				path = env_value + path.substr(slash_pos);
+			}
+		}
+	}
+};
+
 
 /**
  * Functionality to read a numeric csv.
@@ -19,7 +50,7 @@
  * A csv file can be opened for forward reading, one record at a time.  Forward seek capability
  * is implemented. A record is split into numeric values which can be accessed by index using the [] operator.
  */
-class input_csv {
+class input_csv : core_csv {
 
 public:
     // ctor
@@ -63,10 +94,11 @@ public:
     void open(const char *fname)
     {
         file_name = fname;
+		expand(file_name);
         if (input_stream.is_open()) {
             input_stream.close();
         }
-        input_stream.open(fname, std::ios_base::in);
+        input_stream.open(file_name.c_str(), std::ios_base::in);
         if (!input_stream.is_open()) {
             std::stringstream ss;
             ss << "Unable to open input csv file '" << fname <<"'";
@@ -222,7 +254,7 @@ private:
  * number of the record which would be written next, or equivalently the number of records
  * written so far. Fields with non-finite values are output as empty values in the csv.
  */
-class output_csv {
+class output_csv : core_csv {
 
 public:
     // ctor
@@ -264,12 +296,13 @@ public:
     void open(const char *fname)
     {
         file_name = fname;
-        rec_num = 0;
+		expand(file_name);
+		rec_num = 0;
         fields.clear();
         if (output_stream.is_open()) {
             output_stream.close();
         }
-        output_stream.open(fname, ios_base::out | ios_base::trunc);
+        output_stream.open(file_name.c_str(), ios_base::out | ios_base::trunc);
         if (!output_stream.is_open()) {
             std::stringstream ss;
             ss << "Unable to open csv file '" << fname <<"' for output.";
