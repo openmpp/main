@@ -16,17 +16,14 @@ namespace openm
         ParamRunTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ParamRunTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: run id, parameter id, language id
         const ParamRunTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const;
-
-        // get list of all table rows
-        vector<ParamRunTxtRow> rows(void) const { return IMetaTable<ParamRunTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<ParamRunTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -105,7 +102,7 @@ ParamRunTxtTable::ParamRunTxtTable(IDbExec * i_dbExec, int i_runId, int i_langId
     if (i_runId > 0 && i_langId >= 0) sWhere = " WHERE run_id = " + to_string(i_runId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = ParamRunTxtRowAdapter();
-    rowVec = IMetaTable<ParamRunTxtRow>::load(
+    rowVec = load(
         "SELECT run_id, model_id, parameter_id, lang_id, note FROM parameter_run_txt" + sWhere + " ORDER BY 1, 3, 4", 
         i_dbExec,
         adp
@@ -119,12 +116,5 @@ ParamRunTxtTable::~ParamRunTxtTable(void) throw() { }
 const ParamRunTxtRow * ParamRunTxtTable::byKey(int i_runId, int i_paramId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new ParamRunTxtRow(i_runId, i_paramId, i_langId) );
-    return IMetaTable<ParamRunTxtRow>::byKey(keyRow, rowVec);
-}
-
-// get list of rows by language
-vector<ParamRunTxtRow> ParamRunTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new ParamRunTxtRow(0, 0, i_langId) );
-    return IMetaTable<ParamRunTxtRow>::findAll(row, rowVec, ParamRunTxtRow::langEqual);
+    return findKey(keyRow);
 }

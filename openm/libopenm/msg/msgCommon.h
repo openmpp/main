@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef MSG_MPI_COMMON_H
-#define MSG_MPI_COMMON_H
+#ifndef MSG_COMMON_H
+#define MSG_COMMON_H
 
 #include <climits>
 #include <cstdint>
@@ -141,4 +141,4 @@ namespace openm
     #error No message passing providers defined
 #endif      // OM_MSG_MPI
 
-#endif  // MSG_MPI_COMMON_H
+#endif  // MSG_COMMON_H

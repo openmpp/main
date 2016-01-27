@@ -66,9 +66,6 @@
     <ClInclude Include="msg\msgMpiSend.h">
       <Filter>Source Files\msg</Filter>
     </ClInclude>
-    <ClInclude Include="include\runController.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="include\dbExec.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
@@ -123,10 +120,13 @@
     <ClInclude Include="include\helper.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\modelRunState.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
     <ClInclude Include="include\metaLoader.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\modelRunState.h">
+    <ClInclude Include="include\runController.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -299,9 +299,6 @@
     <ClCompile Include="db\taskTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="model\runBase.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="db\paramDimsTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
@@ -311,14 +308,26 @@
     <ClCompile Include="db\taskSetTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="model\metaLoader.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="db\taskRunSetTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\taskRunLstTable.cpp">
       <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="model\childController.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\restartController.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\rootController.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\metaLoader.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\singleController.cpp">
+      <Filter>Source Files\model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -30,6 +30,7 @@ namespace openm
         &typeid(decltype(RunLstRow::subCount)),
         &typeid(decltype(RunLstRow::subStarted)),
         &typeid(decltype(RunLstRow::subCompleted)),
+        &typeid(decltype(RunLstRow::subRestart)),
         &typeid(decltype(RunLstRow::createDateTime)),
         &typeid(decltype(RunLstRow::status)),
         &typeid(decltype(RunLstRow::updateDateTime))
@@ -70,12 +71,15 @@ namespace openm
                 dynamic_cast<RunLstRow *>(i_row)->subCompleted = (*(int *)i_value);
                 break;
             case 6:
-                dynamic_cast<RunLstRow *>(i_row)->createDateTime = ((const char *)i_value);
+                dynamic_cast<RunLstRow *>(i_row)->subRestart = (*(int *)i_value);
                 break;
             case 7:
-                dynamic_cast<RunLstRow *>(i_row)->status = ((const char *)i_value);
+                dynamic_cast<RunLstRow *>(i_row)->createDateTime = ((const char *)i_value);
                 break;
             case 8:
+                dynamic_cast<RunLstRow *>(i_row)->status = ((const char *)i_value);
+                break;
+            case 9:
                 dynamic_cast<RunLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
                 break;
             default:
@@ -114,7 +118,8 @@ vector<RunLstRow> RunLstTable::select(IDbExec * i_dbExec, const string & i_where
 
     const IRowAdapter & adp = RunLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT run_id, model_id, run_name, sub_count, sub_started, sub_completed, create_dt, status, update_dt" \
+        "SELECT" \
+        " run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt" \
         " FROM run_lst " + i_where + " ORDER BY 1", 
         adp
         );

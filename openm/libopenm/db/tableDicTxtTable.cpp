@@ -16,17 +16,14 @@ namespace openm
         TableDicTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableDicTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, table id, language id
         const TableDicTxtRow * byKey(int i_modelId, int i_tableId, int i_langId) const;
-
-        // get list of all table rows
-        vector<TableDicTxtRow> rows(void) const { return IMetaTable<TableDicTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<TableDicTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -113,7 +110,7 @@ TableDicTxtTable::TableDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableDicTxtRowAdapter();
-    rowVec = IMetaTable<TableDicTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, table_id, lang_id, descr, note, expr_descr, expr_note FROM table_dic_txt" +  sWhere + " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -127,12 +124,6 @@ TableDicTxtTable::~TableDicTxtTable(void) throw() { }
 const TableDicTxtRow * TableDicTxtTable::byKey(int i_modelId, int i_tableId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableDicTxtRow(i_modelId, i_tableId, i_langId) );
-    return IMetaTable<TableDicTxtRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
-// get list of rows by language
-vector<TableDicTxtRow> TableDicTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new TableDicTxtRow(0, 0, i_langId) );
-    return IMetaTable<TableDicTxtRow>::findAll(row, rowVec, TableDicTxtRow::langEqual);
-}

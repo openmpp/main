@@ -16,14 +16,14 @@ namespace openm
         GroupPcTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~GroupPcTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, group id, child position
         const GroupPcRow * byKey(int i_modelId, int i_groupId, int i_chidPos) const;
-
-        // get list of all table rows
-        vector<GroupPcRow> rows(void) const { return IMetaTable<GroupPcRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<GroupPcRow> byModelId(int i_modelId) const;
@@ -100,7 +100,7 @@ IGroupPcTable * IGroupPcTable::create(IRowBaseVec & io_rowVec)
 GroupPcTable::GroupPcTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = GroupPcRowAdapter();
-    rowVec = IMetaTable<GroupPcRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, group_id, child_pos, child_group_id, leaf_id" \
         " FROM group_pc" +
@@ -118,12 +118,13 @@ GroupPcTable::~GroupPcTable(void) throw() { }
 const GroupPcRow * GroupPcTable::byKey(int i_modelId, int i_groupId, int i_chidPos) const
 {
     const IRowBaseUptr keyRow( new GroupPcRow(i_modelId, i_groupId, i_chidPos) );
-    return IMetaTable<GroupPcRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id
 vector<GroupPcRow> GroupPcTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row( new GroupPcRow(i_modelId, 0, 0) );
-    return IMetaTable<GroupPcRow>::findAll(row, rowVec, GroupPcRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const GroupPcRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }

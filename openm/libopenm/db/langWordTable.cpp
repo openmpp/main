@@ -16,17 +16,14 @@ namespace openm
         LangWordTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~LangWordTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by language id and word code
         const LangWordRow * byKey(int i_langId, const string & i_code) const;
-
-        // return first table row or NULL if table is empty
-        const LangWordRow * firstRow(void) const { return IMetaTable<LangWordRow>::firstRow(rowVec); }
-
-        // get list of all table rows
-        vector<LangWordRow> rows(void) const { return IMetaTable<LangWordRow>::rows(rowVec); }
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -96,7 +93,7 @@ LangWordTable::LangWordTable(IDbExec * i_dbExec)
     string sql = "SELECT lang_id, word_code, word_value FROM lang_word ORDER BY 1, 2";
 
     const IRowAdapter & adp = LangWordRowAdapter();
-    rowVec = IMetaTable<LangWordRow>::load(sql, i_dbExec, adp);
+    rowVec = load(sql, i_dbExec, adp);
 }
 
 // Table never unloaded
@@ -106,5 +103,5 @@ LangWordTable::~LangWordTable(void) throw() { }
 const LangWordRow * LangWordTable::byKey(int i_langId, const string & i_code) const
 {
     const IRowBaseUptr keyRow( new LangWordRow(i_langId, i_code) );
-    return IMetaTable<LangWordRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }

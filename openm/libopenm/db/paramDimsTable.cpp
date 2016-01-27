@@ -16,14 +16,14 @@ namespace openm
         ParamDimsTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ParamDimsTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, parameter id, dimension id
         const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const;
-
-        // get list of all table rows
-        vector<ParamDimsRow> rows(void) const { return IMetaTable<ParamDimsRow>::rows(rowVec); }
 
         // get list of rows by model id and parameter id
         vector<ParamDimsRow> byModelIdParamId(int i_modelId, int i_paramId) const;
@@ -100,7 +100,7 @@ IParamDimsTable * IParamDimsTable::create(IRowBaseVec & io_rowVec)
 ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = ParamDimsRowAdapter();
-    rowVec = IMetaTable<ParamDimsRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, parameter_id, dim_id, dim_name, mod_type_id" \
         " FROM parameter_dims" + 
@@ -118,12 +118,15 @@ ParamDimsTable::~ParamDimsTable(void) throw() { }
 const ParamDimsRow * ParamDimsTable::byKey(int i_modelId, int i_paramId, int i_dimId) const
 {
     const IRowBaseUptr keyRow(new ParamDimsRow(i_modelId, i_paramId, i_dimId));
-    return IMetaTable<ParamDimsRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id and parameter id
 vector<ParamDimsRow> ParamDimsTable::byModelIdParamId(int i_modelId, int i_paramId) const
 {
-    const IRowBaseUptr row( new ParamDimsRow(i_modelId, i_paramId, 0));
-    return IMetaTable<ParamDimsRow>::findAll(row, rowVec, ParamDimsRow::modelIdParamIdEqual);
+    return findAll(
+        [i_modelId, i_paramId](const ParamDimsRow & i_row) -> bool {
+            return i_row.modelId == i_modelId && i_row.paramId == i_paramId;
+        }
+    );
 }

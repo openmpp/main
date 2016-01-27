@@ -16,14 +16,14 @@ namespace openm
         ProfileLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ProfileLstTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by profile name
         const ProfileLstRow * byKey(const string & i_name) const;
-
-        // get list of all table rows
-        vector<ProfileLstRow> rows(void) const { return IMetaTable<ProfileLstRow>::rows(rowVec); }
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -83,7 +83,7 @@ IProfileLstTable * IProfileLstTable::create(IRowBaseVec & io_rowVec)
 ProfileLstTable::ProfileLstTable(IDbExec * i_dbExec)
 { 
     const IRowAdapter & adp = ProfileLstRowAdapter();
-    rowVec = IMetaTable<ProfileLstRow>::load("SELECT profile_name FROM profile_lst ORDER BY 1", i_dbExec, adp);
+    rowVec = load("SELECT profile_name FROM profile_lst ORDER BY 1", i_dbExec, adp);
 }
 
 // Table never unloaded
@@ -93,5 +93,5 @@ ProfileLstTable::~ProfileLstTable(void) throw() { }
 const ProfileLstRow * ProfileLstTable::byKey(const string & i_name) const
 {
     const IRowBaseUptr keyRow( new ProfileLstRow(i_name) );
-    return IMetaTable<ProfileLstRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }

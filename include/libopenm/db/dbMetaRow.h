@@ -61,9 +61,6 @@ namespace openm
 
         /** equal comparator by primary key: language id. */
         static bool isKeyEqual(const LangLstRow & i_left, const LangLstRow & i_right);
-
-        /** lang_lst row equal comparator by language code. */
-        static bool codeEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** lang_word table row. */
@@ -154,9 +151,6 @@ namespace openm
 
         /** equal comparator by primary key: model id. */
         static bool isKeyEqual(const ModelDicRow & i_left, const ModelDicRow & i_right);
-
-        /** model_dic row equal comparator by model name and timestamp. */
-        static bool nameTimeStampEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** model_dic_txt table row. */
@@ -192,9 +186,6 @@ namespace openm
 
         /** equal comparator by primary key: model id and language id. */
         static bool isKeyEqual(const ModelDicTxtRow & i_left, const ModelDicTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** model_dic_txt table row and language name. */
@@ -231,6 +222,9 @@ namespace openm
         /** sub_completed INT          NOT NULL */
         int subCompleted;
 
+        /** sub_restart   INT          NOT NULL */
+        int subRestart;
+
         /** create_dt     VARCHAR(32) NOT NULL */
         string createDateTime;
 
@@ -248,6 +242,7 @@ namespace openm
             subCount(0),
             subStarted(0),
             subCompleted(0),
+            subRestart(0),
             createDateTime(""),
             status(""),
             updateDateTime("")
@@ -306,9 +301,6 @@ namespace openm
         /** equal comparator by primary key: run id and language id. */
         static bool isKeyEqual(const RunTxtRow & i_left, const RunTxtRow & i_right);
 
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
         /** find row by primary key: run id and language id. */
         static vector<RunTxtRow>::const_iterator byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec);
     };
@@ -350,12 +342,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, type id. */
         static bool isKeyEqual(const TypeDicRow & i_left, const TypeDicRow & i_right);
-
-        /** equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** equal comparator by model id and type name. */
-        static bool modelIdNameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** type_dic_txt table row. */
@@ -395,9 +381,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, type id, language id. */
         static bool isKeyEqual(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** type_dic_txt table row and language name. */
@@ -446,12 +429,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, type id, enum id. */
         static bool isKeyEqual(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right);
-
-        /** equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** equal comparator by model id and type id. */
-        static bool modelIdTypeIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** type_enum_txt table row. */
@@ -495,12 +472,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, type id, enum id, language id. */
         static bool isKeyEqual(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** equal comparator by model id and type id. */
-        static bool modelIdTypeIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** type_enum_txt table row and language name. */
@@ -569,12 +540,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, parameter id. */
         static bool isKeyEqual(const ParamDicRow & i_left, const ParamDicRow & i_right);
-
-        /** parameter_dic row equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** parameter_dic row equal comparator by model id and parameter name. */
-        static bool modelIdNameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** parameter_dic_txt table row. */
@@ -614,9 +579,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, parameter id, language id. */
         static bool isKeyEqual(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** parameter_dic_txt table row and language name. */
@@ -669,9 +631,6 @@ namespace openm
 
         /** equal comparator by primary key: run id, parameter id, language id. */
         static bool isKeyEqual(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** parameter_run_txt table row and language name. */
@@ -718,9 +677,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, parameter id, dimension id. */
         static bool isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
-
-        /** table_dims row equal comparator by model id, parameter id. */
-        static bool modelIdParamIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
 
@@ -765,9 +721,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, parameter id, dimension id, language id. */
         static bool isKeyEqual(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** parameter_dims_txt table row and language name. */
@@ -836,12 +789,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id. */
         static bool isKeyEqual(const TableDicRow & i_left, const TableDicRow & i_right);
-
-        /** table_dic row equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** table_dic row equal comparator by model id and table name. */
-        static bool modelIdNameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_dic_txt table row. */
@@ -889,9 +836,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id, language id. */
         static bool isKeyEqual(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_dic_txt table row and language name. */
@@ -952,9 +896,6 @@ namespace openm
         
         /** equal comparator by primary key: model id, table id, dimension id. */
         static bool isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right);
-
-        /** table_dims row equal comparator by model id, table id. */
-        static bool modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_dims_txt table row. */
@@ -998,9 +939,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id, dimension id, language id. */
         static bool isKeyEqual(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_dims_txt table row and language name. */
@@ -1053,12 +991,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id, accumulator id. */
         static bool isKeyEqual(const TableAccRow & i_left, const TableAccRow & i_right);
-
-        /** table_acc row equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** table_acc row equal comparator by model id, table id. */
-        static bool modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_acc_txt table row. */
@@ -1102,9 +1034,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id, accumulator id, language id. */
         static bool isKeyEqual(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_acc_txt table row and language name. */
@@ -1165,12 +1094,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id, expr id. */
         static bool isKeyEqual(const TableExprRow & i_left, const TableExprRow & i_right);
-
-        /** table_expr row equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
-        /** table_expr row equal comparator by model id, table id. */
-        static bool modelIdTableIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_expr_txt table row. */
@@ -1214,9 +1137,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, table id, expr id, language id. */
         static bool isKeyEqual(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** table_expr_txt table row and language name. */
@@ -1273,9 +1193,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, group id. */
         static bool isKeyEqual(const GroupLstRow & i_left, const GroupLstRow & i_right);
-
-        /** equal comparator by model id and is parameter group flag. */
-        static bool modelIdIsParamEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** group_txt table row. */
@@ -1315,9 +1232,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, group id, language id. */
         static bool isKeyEqual(const GroupTxtRow & i_left, const GroupTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** group_txt table row and language name. */
@@ -1370,9 +1284,6 @@ namespace openm
 
         /** equal comparator by primary key: model id, group id, child position. */
         static bool isKeyEqual(const GroupPcRow & i_left, const GroupPcRow & i_right);
-
-        /** equal comparator by model id. */
-        static bool modelIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** profile_lst table row. */
@@ -1425,9 +1336,6 @@ namespace openm
 
         /** equal comparator by primary key: profile name, option key. */
         static bool isKeyEqual(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right);
-
-        /** equal comparator by profile name. */
-        static bool nameEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** run_option table row. */
@@ -1459,9 +1367,6 @@ namespace openm
 
         /** equal comparator by primary key: run id, option key. */
         static bool isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right);
-
-        /** run_option row equal comparator by run id. */
-        static bool runIdEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
     };
 
     /** workset_lst table row. */
@@ -1547,9 +1452,6 @@ namespace openm
 
         /** equal comparator by primary key: set id and language id. */
         static bool isKeyEqual(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
 
         /** find row by primary key: set id and language id. */
         static vector<WorksetTxtRow>::const_iterator byKey(int i_setId, int i_langId, const vector<WorksetTxtRow> & i_rowVec);
@@ -1640,9 +1542,6 @@ namespace openm
         /** equal comparator by primary key: set id, parameter id, language id. */
         static bool isKeyEqual(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
 
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
-
         /** find row by primary key: set id, parameter id, language id. */
         static vector<WorksetParamTxtRow>::const_iterator byKey(
             int i_setId, int i_paramId, int i_langId, const vector<WorksetParamTxtRow> & i_rowVec
@@ -1729,9 +1628,6 @@ namespace openm
 
         /** equal comparator by primary key: task id and language id. */
         static bool isKeyEqual(const TaskTxtRow & i_left, const TaskTxtRow & i_right);
-
-        /** equal comparator by language id. */
-        static bool langEqual(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right);
 
         /** find row by primary key: task id and language id. */
         static vector<TaskTxtRow>::const_iterator byKey(int i_taskId, int i_langId, const vector<TaskTxtRow> & i_rowVec);

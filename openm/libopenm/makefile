@@ -111,11 +111,14 @@ LIBOPENM_CPPLIST = \
   db/worksetParamTable.cpp \
   db/worksetParamTxtTable.cpp \
   db/worksetTxtTable.cpp \
+  model/childController.cpp \
   model/metaLoader.cpp \
   model/modelBase.cpp \
   model/modelRunState.cpp \
+  model/restartController.cpp \
   model/runController.cpp \
-  model/runBase.cpp \
+  model/rootController.cpp \
+  model/singleController.cpp \
   msg/msgCommon.cpp \
   msg/msgExecBase.cpp \
   msg/msgMpiExec.cpp \

@@ -12,7 +12,6 @@
 using namespace std;
 
 #include "libopenm/common/argReader.h"
-#include "modelRunState.h"
 
 namespace openm
 {
@@ -40,11 +39,14 @@ namespace openm
         /** working set name to get input parameters */
         static const char * setName;
 
-        /** modelling task id */
+        /** modeling task id */
         static const char * taskId;
 
-        /** modelling task name */
+        /** modeling task name */
         static const char * taskName;
+
+        /** modeling task run id */
+        static const char * taskRunId;
 
         /** profile name to get run options, default is model name */
         static const char * profile;
@@ -91,8 +93,8 @@ namespace openm
     class MetaLoader
     {
     public:
-        /** create metadata loader, initialize run options from command line and ini-file. */
-        MetaLoader(int argc, char ** argv);
+        /** last cleanup */
+        virtual ~MetaLoader(void) throw() = 0;
 
         /** model id in database */
         int modelId;
@@ -100,73 +102,59 @@ namespace openm
         /** total number of subsamples */
         int subSampleCount;
 
-        /** number of modeling processes */
-        int processCount;
-
         /** max number of modeling threads */
         int threadCount;
 
-        /** arguments from command line and ini-file. */
+        /** arguments from command line and ini-file */
         const ArgReader & argOpts(void) const { return argStore; }
 
-        /** read metadata from db, deterine number of subsamples, merge command line and ini-file options with db profile table. */
-        MetaRunHolder * init(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
+        /** model metadata tables */
+        const MetaRunHolder * meta(void) const { return metaStore.get(); }
+
+        /** initialize run options from command line and ini-file */
+        static const ArgReader getRunOptions(int argc, char ** argv);
 
     protected:
-        int taskId;             // if > 0 then modelling task id
-        int taskRunId;          // if > 0 then modelling task run id
-        ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
+        unique_ptr<MetaRunHolder> metaStore;    // metadata tables
 
-        // task item: workset, result run and status
-        struct TaskItem
-        {
-            int setId;              // set id of input parameters
-            int runId;              // if >0 then run id
-            ModelRunState state;    // run status
-
-            TaskItem(int i_setId) : setId(i_setId), runId(0) { }
-
-        private:
-            TaskItem(void) = delete;
-        };
-
-        list<TaskItem> taskRunLst;  // pairs of (set, run) for modelling task
-
-    protected:
-        // broadcast run options from root to all modelling processes
-        void broadcastRunId(IMsgExec * i_msgExec, int * io_runId);
-
-        // broadcast run options from root to all modelling processes
-        void broadcastRunOptions(IMsgExec * i_msgExec, unique_ptr<IRunOptionTable> & i_runOptionTbl);
-
-        // find source working set for input parameters
-        int findWorkset(IDbExec * i_dbExec, const ModelDicRow * i_mdRow);
-
-    private:
-        // initialization for main (root) process
-        void initRoot(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
+        /** create metadata loader. */
+        MetaLoader(const ArgReader & i_argStore) :
+            modelId(0),
+            subSampleCount(0),
+            threadCount(1),
+            argStore(i_argStore)
+        { }
 
         // read metadata tables from db, except of run_option table
-        const ModelDicRow * readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
+        static const ModelDicRow * readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
 
-        //  broadcast metadata: run id, subsample count and meta tables from root to all modelling processes
+        // broadcast metadata tables from root to all modeling processes
         void broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
+
+        // broadcast run options from root to all modeling processes
+        void broadcastRunId(IMsgExec * i_msgExec, int * io_runId);
+
+        // broadcast run options from root to all modeling processes
+        void broadcastRunOptions(IMsgExec * i_msgExec, unique_ptr<IRunOptionTable> & io_runOptionTbl);
+
+        // merge command line and ini-file arguments with profile_option table values
+        void mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+
+        // create task run entry in database
+        int createTaskRun(int i_taskId, IDbExec * i_dbExec);
+
+        // find modeling task, if specified
+        int findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+
+        // find source working set for input parameters
+        int findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+
+    private:
+        ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
 
         // broadcast meta table db rows
         template <class MetaTbl>
-        static void broadcastMetaTable(unique_ptr<MetaTbl> & i_tableUptr, IMsgExec * i_msgExec, MsgTag i_msgTag);
-
-        // merge command line and ini-file arguments with profile_option table values
-        void mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_mdRow, const MetaRunHolder * i_metaStore);
-
-        // read modelling task definition
-        void readTask(IDbExec * i_dbExec, const ModelDicRow * i_mdRow);
-
-        // create task run entry in database
-        void createTaskRun(IDbExec * i_dbExec);
-
-        // find modelling task, if specified
-        void findTask(IDbExec * i_dbExec, const ModelDicRow * i_mdRow);
+        static void broadcastMetaTable(IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;

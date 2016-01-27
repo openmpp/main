@@ -16,17 +16,14 @@ namespace openm
         ParamDimsTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ParamDimsTxtTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id,  parameter id, dimension id, language id
         const ParamDimsTxtRow * byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const;
-
-        // get list of all table rows
-        vector<ParamDimsTxtRow> rows(void) const { return IMetaTable<ParamDimsTxtRow>::rows(rowVec); }
-
-        // get list of rows by language
-        vector<ParamDimsTxtRow> byLang(int i_langId) const;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -109,7 +106,7 @@ ParamDimsTxtTable::ParamDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
     if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = ParamDimsTxtRowAdapter();
-    rowVec = IMetaTable<ParamDimsTxtRow>::load(
+    rowVec = load(
         "SELECT model_id, parameter_id, dim_id, lang_id, descr, note FROM parameter_dims_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
@@ -123,12 +120,6 @@ ParamDimsTxtTable::~ParamDimsTxtTable(void) throw() { }
 const ParamDimsTxtRow * ParamDimsTxtTable::byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new ParamDimsTxtRow(i_modelId, i_paramId, i_dimId, i_langId) );
-    return IMetaTable<ParamDimsTxtRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
-// get list of rows by language
-vector<ParamDimsTxtRow> ParamDimsTxtTable::byLang(int i_langId) const
-{
-    const IRowBaseUptr row( new ParamDimsTxtRow(0, 0, 0, i_langId) );
-    return IMetaTable<ParamDimsTxtRow>::findAll(row, rowVec, ParamDimsTxtRow::langEqual);
-}

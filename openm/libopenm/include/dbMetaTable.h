@@ -18,40 +18,14 @@ using namespace std;
 
 namespace openm
 {
-    /** base class for model metadata db-tables */
+    /** base class for metadata db-tables */
     template<class TRow> struct IMetaTable
     {
     public:
-        /** db table row comparator. */
-        typedef function<bool(const IRowBaseUptr & i_left, const IRowBaseUptr & i_right)> RowComparator;
-
         virtual ~IMetaTable<TRow>(void) throw() { }
 
     protected:
-        /** load table: return vector of selected rows sorted by primary key. */
-        static IRowBaseVec load(const string & i_sqlSelect, IDbExec * i_dbExec, const IRowAdapter & i_adapter)
-        {
-            if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-
-            IRowBaseVec vec = i_dbExec->selectRowList(i_sqlSelect, i_adapter);
-            stable_sort(vec.begin(), vec.end(), TRow::keyLess);
-            return vec;
-        }
-
-        /** binary search row by primary key, return NULL if not found. */
-        static const TRow * byKey(const IRowBaseUptr & i_row, const IRowBaseVec & i_rowVec)
-        {
-            IRowBaseVec::const_iterator rowIt = lower_bound(i_rowVec.begin(), i_rowVec.end(), i_row, TRow::keyLess);
-            return dynamic_cast<TRow *>( (rowIt != i_rowVec.end() && TRow::keyEqual(*rowIt, i_row)) ? rowIt->get() : NULL );
-        }
-
-        /** return first table row or NULL if table is empty. */
-        static const TRow * firstRow(const IRowBaseVec & i_rowVec)
-        {
-            return dynamic_cast<TRow *>(!i_rowVec.empty() ? i_rowVec[0].get() : NULL);
-        }
-
-        /** get list of loaded table rows. */
+        /** get list of table rows. */
         static vector<TRow> rows(const IRowBaseVec & i_rowVec)
         {
             vector<TRow> vec;
@@ -60,29 +34,102 @@ namespace openm
             }
             return vec;
         }
+    };
 
-        /** get list of rows by predicate: all rows where comparator to i_row return true. */
-        static vector<TRow> findAll(const IRowBaseUptr & i_row, const IRowBaseVec & i_rowVec, RowComparator i_cmp)
+    /** base class for preloaded metadata db-tables */
+    template<class TRow> struct IMetaLoadedTable : public IMetaTable<TRow>
+    {
+        /** db table row comparator. */
+        typedef function<bool(const TRow & i_dbRow)> RowEqual;
+
+        virtual ~IMetaLoadedTable<TRow>(void) throw() { }
+
+        /** get const reference to list of all table rows. */
+        virtual const IRowBaseVec & rowsCRef(void) const = 0;
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+
+        /** return number of rows. */
+        IRowBaseVec::difference_type rowCount(void) const { return rowsCRef().size(); }
+
+        /** get list of loaded table rows. */
+        vector<TRow> rows(void) const
         {
             vector<TRow> vec;
-            for (IRowBaseVec::const_iterator rowIt = i_rowVec.begin(); rowIt != i_rowVec.end(); ++rowIt) {
-                if (i_cmp(i_row, *rowIt)) vec.push_back( *dynamic_cast<TRow *>(rowIt->get()) );
+            for (IRowBaseVec::const_iterator rowIt = rowsCRef().cbegin(); rowIt != rowsCRef().cend(); ++rowIt) {
+                vec.push_back(*dynamic_cast<TRow *>(rowIt->get()));
+            }
+            return vec;
+        }
+
+        /** return first table row or NULL if table is empty. */
+        const TRow * firstRow(void) const
+        {
+            return dynamic_cast<TRow *>(!rowsCRef().empty() ? rowsCRef()[0].get() : nullptr);
+        }
+
+        /** get list of rows by predicate: all rows where comparator to i_row return true. */
+        vector<TRow> findAll(RowEqual i_cmp) const
+        {
+            vector<TRow> vec;
+            for (IRowBaseVec::const_iterator rowIt = rowsCRef().cbegin(); rowIt != rowsCRef().cend(); ++rowIt) {
+                if (i_cmp(*dynamic_cast<TRow *>(rowIt->get()))) vec.push_back(*dynamic_cast<TRow *>(rowIt->get()));
             }
             return vec;
         }
 
         /** get first row by predicate or NULL if not found: first row where comparator to i_row return true. */
-        static const TRow * findFirst(const IRowBaseUptr & i_row, const IRowBaseVec & i_rowVec, RowComparator i_cmp)
+        const TRow * findFirst(RowEqual i_cmp) const { return byIndex(indexOf(i_cmp)); }
+
+        /** return row value by index or NUUL if out of range. */
+        const TRow * byIndex(IRowBaseVec::difference_type i_index) const 
         {
-            for (IRowBaseVec::const_iterator rowIt = i_rowVec.begin(); rowIt != i_rowVec.end(); ++rowIt) {
-                if (i_cmp(i_row, *rowIt)) return dynamic_cast<TRow *>(rowIt->get());
+            return (0 <= i_index && i_index < rowCount()) ? dynamic_cast<TRow *>(rowsCRef()[i_index].get()) : nullptr;
+        }
+
+        /** get first row by predicate or NULL if not found: first row where comparator to i_row return true. */
+        IRowBaseVec::difference_type indexOf(RowEqual i_cmp, IRowBaseVec::difference_type i_startPos = 0) const
+        {
+            if (i_startPos >= 0) {
+                for (IRowBaseVec::size_type pos = i_startPos; pos < rowsCRef().size(); pos++) {
+                    if (i_cmp(*dynamic_cast<TRow *>(rowsCRef()[pos].get()))) return pos;
+                }
             }
-            return NULL;
+            return -1;
+        }
+
+        /** count rows by predicate: where comparator to i_row return true. */
+        IRowBaseVec::size_type countOf(RowEqual i_cmp) const
+        {
+            IRowBaseVec::size_type nCount = 0;
+            for (IRowBaseVec::const_iterator rowIt = rowsCRef().cbegin(); rowIt != rowsCRef().cend(); ++rowIt) {
+                if (i_cmp(*dynamic_cast<TRow *>(rowIt->get()))) nCount++;
+            }
+            return nCount;
+        }
+
+    protected:
+        /** load table: return vector of selected rows sorted by primary key. */
+        static IRowBaseVec load(const string & i_sqlSelect, IDbExec * i_dbExec, const IRowAdapter & i_adapter)
+        {
+            if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+
+            IRowBaseVec vec = i_dbExec->selectRowList(i_sqlSelect, i_adapter);
+            stable_sort(vec.begin(), vec.end(), TRow::keyLess);
+            return vec;
+        }
+
+        /** binary search row by primary key, return NULL if not found. */
+        const TRow * findKey(const IRowBaseUptr & i_row) const
+        {
+            IRowBaseVec::const_iterator rowIt = lower_bound(rowsCRef().cbegin(), rowsCRef().cend(), i_row, TRow::keyLess);
+            return dynamic_cast<TRow *>((rowIt != rowsCRef().cend() && TRow::keyEqual(*rowIt, i_row)) ? rowIt->get() : nullptr);
         }
     };
 
     /** lang_lst table public interface. */
-    struct ILangLstTable : public IMetaTable<LangLstRow>
+    struct ILangLstTable : public IMetaLoadedTable<LangLstRow>
     {
         virtual ~ILangLstTable() throw() = 0;
 
@@ -91,12 +138,6 @@ namespace openm
 
         /** binary search row by primary key: language id, return NULL if not found. */
         virtual const LangLstRow * byKey(int i_langId) const = 0;
-
-        /** return first table row or NULL if table is empty. */
-        virtual const LangLstRow * firstRow(void) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<LangLstRow> rows(void) const = 0;
 
         /** get first row by language code or NULL if not found. */
         virtual const LangLstRow * byCode(const string & i_code) const = 0;
@@ -109,7 +150,7 @@ namespace openm
     };
 
     /** lang_word table public interface. */
-    struct ILangWordTable : public IMetaTable<LangWordRow>
+    struct ILangWordTable : public IMetaLoadedTable<LangWordRow>
     {
         virtual ~ILangWordTable() throw() = 0;
 
@@ -119,9 +160,6 @@ namespace openm
         /** binary search row by primary key: language id and word code, return NULL if not found. */
         virtual const LangWordRow * byKey(int i_langId, const string & i_code) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<LangWordRow> rows(void) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static ILangWordTable * create(IRowBaseVec & io_rowVec);
 
@@ -130,7 +168,7 @@ namespace openm
     };
 
     /** model_dic table public interface. */
-    struct IModelDicTable : public IMetaTable<ModelDicRow>
+    struct IModelDicTable : public IMetaLoadedTable<ModelDicRow>
     {
         virtual ~IModelDicTable() throw() = 0;
 
@@ -139,16 +177,10 @@ namespace openm
         * 
         * if name and/or timestamp specified then select only rows where model_name = i_name and model_ts = i_timestamp
         */
-        static IModelDicTable * create(IDbExec * i_dbExec, const char * i_name = NULL, const char * i_timestamp = NULL);
+        static IModelDicTable * create(IDbExec * i_dbExec, const char * i_name = nullptr, const char * i_timestamp = nullptr);
 
         /** binary search row by primary key: model id, return NULL if not found. */
         virtual const ModelDicRow * byKey(int i_modelId) const = 0;
-
-        /** return first table row or NULL if table is empty. */
-        virtual const ModelDicRow * firstRow(void) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<ModelDicRow> rows(void) const = 0;
 
         /** get first row by model name and timestamp or NULL if not found. */
         virtual const ModelDicRow * byNameTimeStamp(const string & i_name, const string & i_timestamp) const = 0;
@@ -161,7 +193,7 @@ namespace openm
     };
 
     /** model_dic_txt table public interface. */
-    struct IModelDicTxtTable : public IMetaTable<ModelDicTxtRow>
+    struct IModelDicTxtTable : public IMetaLoadedTable<ModelDicTxtRow>
     {
         virtual ~IModelDicTxtTable() throw() = 0;
 
@@ -175,12 +207,6 @@ namespace openm
 
         /** binary search row by primary key: model id and language, return NULL if not found. */
         virtual const ModelDicTxtRow * byKey(int i_modelId, int i_langId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<ModelDicTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<ModelDicTxtRow> byLang(int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static IModelDicTxtTable * create(IRowBaseVec & io_rowVec);
@@ -223,7 +249,7 @@ namespace openm
     };
 
     /** type_dic table public interface. */
-    struct ITypeDicTable : public IMetaTable<TypeDicRow>
+    struct ITypeDicTable : public IMetaLoadedTable<TypeDicRow>
     {
         virtual ~ITypeDicTable() throw() = 0;
 
@@ -236,9 +262,6 @@ namespace openm
 
         /** binary search row by primary key: model id and type id, return NULL if not found. */
         virtual const TypeDicRow * byKey(int i_modelId, int i_typeId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<TypeDicRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<TypeDicRow> byModelId(int i_modelId) const = 0;
@@ -254,7 +277,7 @@ namespace openm
     };
 
     /** type_dic_txt table public interface. */
-    struct ITypeDicTxtTable : public IMetaTable<TypeDicTxtRow>
+    struct ITypeDicTxtTable : public IMetaLoadedTable<TypeDicTxtRow>
     {
         virtual ~ITypeDicTxtTable() throw() = 0;
 
@@ -269,12 +292,6 @@ namespace openm
         /** binary search row by primary key: model id, type id, language id; return NULL if not found. */
         virtual const TypeDicTxtRow * byKey(int i_modelId, int i_typeId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TypeDicTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<TypeDicTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static ITypeDicTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -283,7 +300,7 @@ namespace openm
     };
 
     /** type_enum_lst table public interface. */
-    struct ITypeEnumLstTable : public IMetaTable<TypeEnumLstRow>
+    struct ITypeEnumLstTable : public IMetaLoadedTable<TypeEnumLstRow>
     {
         virtual ~ITypeEnumLstTable() throw() = 0;
 
@@ -296,9 +313,6 @@ namespace openm
 
         /** binary search row by primary key: model id, type id, enum id return NULL if not found. */
         virtual const TypeEnumLstRow * byKey(int i_modelId, int i_typeId, int i_enumId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<TypeEnumLstRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<TypeEnumLstRow> byModelId(int i_modelId) const = 0;
@@ -314,7 +328,7 @@ namespace openm
     };
 
     /** type_enum_txt table public interface. */
-    struct ITypeEnumTxtTable : public IMetaTable<TypeEnumTxtRow>
+    struct ITypeEnumTxtTable : public IMetaLoadedTable<TypeEnumTxtRow>
     {
         virtual ~ITypeEnumTxtTable() throw() = 0;
 
@@ -329,12 +343,6 @@ namespace openm
         /** binary search row by primary key: model id, type id, enum id, language id; return NULL if not found. */
         virtual const TypeEnumTxtRow * byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TypeEnumTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<TypeEnumTxtRow> byLang(int i_langId) const = 0;
-
         /** get list of rows by model id and type id. */
         virtual vector<TypeEnumTxtRow> byModelIdTypeId(int i_modelId, int i_typeId) const = 0;
 
@@ -346,7 +354,7 @@ namespace openm
     };
 
     /** parameter_dic table public interface. */
-    struct IParamDicTable : public IMetaTable<ParamDicRow>
+    struct IParamDicTable : public IMetaLoadedTable<ParamDicRow>
     {
         virtual ~IParamDicTable() throw() = 0;
 
@@ -359,9 +367,6 @@ namespace openm
 
         /** binary search row by primary key: model id and parameter id, return NULL if not found. */
         virtual const ParamDicRow * byKey(int i_modelId, int i_paramId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<ParamDicRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<ParamDicRow> byModelId(int i_modelId) const = 0;
@@ -377,7 +382,7 @@ namespace openm
     };
 
     /** parameter_dic_txt table public interface. */
-    struct IParamDicTxtTable : public IMetaTable<ParamDicTxtRow>
+    struct IParamDicTxtTable : public IMetaLoadedTable<ParamDicTxtRow>
     {
         virtual ~IParamDicTxtTable() throw() = 0;
 
@@ -392,12 +397,6 @@ namespace openm
         /** binary search row by primary key: model id, parameter id, language id; return NULL if not found. */
         virtual const ParamDicTxtRow * byKey(int i_modelId, int i_paramId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<ParamDicTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<ParamDicTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static IParamDicTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -406,7 +405,7 @@ namespace openm
     };
 
     /** parameter_run_txt table public interface. */
-    struct IParamRunTxtTable : public IMetaTable<ParamRunTxtRow>
+    struct IParamRunTxtTable : public IMetaLoadedTable<ParamRunTxtRow>
     {
         virtual ~IParamRunTxtTable() throw() = 0;
 
@@ -421,12 +420,6 @@ namespace openm
         /** binary search row by primary key: run id, parameter id, language id; return NULL if not found. */
         virtual const ParamRunTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<ParamRunTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<ParamRunTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static IParamRunTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -435,7 +428,7 @@ namespace openm
     };
 
     /** parameter_dims table public interface. */
-    struct IParamDimsTable : public IMetaTable<ParamDimsRow>
+    struct IParamDimsTable : public IMetaLoadedTable<ParamDimsRow>
     {
         virtual ~IParamDimsTable() throw() = 0;
 
@@ -449,9 +442,6 @@ namespace openm
         /** binary search row by primary key: model id, parameter id, dimension id; return NULL if not found. */
         virtual const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<ParamDimsRow> rows(void) const = 0;
-
         /** get list of rows by model id and parameter id. */
         virtual vector<ParamDimsRow> byModelIdParamId(int i_modelId, int i_paramId) const = 0;
 
@@ -463,7 +453,7 @@ namespace openm
     };
 
     /** parameter_dims_txt table public interface. */
-    struct IParamDimsTxtTable : public IMetaTable<ParamDimsTxtRow>
+    struct IParamDimsTxtTable : public IMetaLoadedTable<ParamDimsTxtRow>
     {
         virtual ~IParamDimsTxtTable() throw() = 0;
 
@@ -478,12 +468,6 @@ namespace openm
         /** binary search row by primary key: model id, parameter id, dimension id, language id; return NULL if not found. */
         virtual const ParamDimsTxtRow * byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<ParamDimsTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<ParamDimsTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static IParamDimsTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -492,7 +476,7 @@ namespace openm
     };
 
     /** table_dic table public interface. */
-    struct ITableDicTable : public IMetaTable<TableDicRow>
+    struct ITableDicTable : public IMetaLoadedTable<TableDicRow>
     {
         virtual ~ITableDicTable() throw() = 0;
 
@@ -505,9 +489,6 @@ namespace openm
 
         /** binary search row by primary key: model id and table id, return NULL if not found. */
         virtual const TableDicRow * byKey(int i_modelId, int i_tableId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<TableDicRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<TableDicRow> byModelId(int i_modelId) const = 0;
@@ -523,7 +504,7 @@ namespace openm
     };
 
     /** table_dic_txt table public interface. */
-    struct ITableDicTxtTable : public IMetaTable<TableDicTxtRow>
+    struct ITableDicTxtTable : public IMetaLoadedTable<TableDicTxtRow>
     {
         virtual ~ITableDicTxtTable() throw() = 0;
 
@@ -538,12 +519,6 @@ namespace openm
         /** binary search row by primary key: model id, table id, language id; return NULL if not found. */
         virtual const TableDicTxtRow * byKey(int i_modelId, int i_tableId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TableDicTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<TableDicTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static ITableDicTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -552,7 +527,7 @@ namespace openm
     };
 
     /** table_dims table public interface. */
-    struct ITableDimsTable : public IMetaTable<TableDimsRow>
+    struct ITableDimsTable : public IMetaLoadedTable<TableDimsRow>
     {
         virtual ~ITableDimsTable() throw() = 0;
 
@@ -566,9 +541,6 @@ namespace openm
         /** binary search row by primary key: model id, table id, dimension id; return NULL if not found. */
         virtual const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TableDimsRow> rows(void) const = 0;
-
         /** get list of rows by model id and table id. */
         virtual vector<TableDimsRow> byModelIdTableId(int i_modelId, int i_tableId) const = 0;
 
@@ -580,7 +552,7 @@ namespace openm
     };
 
     /** table_dims_txt table public interface. */
-    struct ITableDimsTxtTable : public IMetaTable<TableDimsTxtRow>
+    struct ITableDimsTxtTable : public IMetaLoadedTable<TableDimsTxtRow>
     {
         virtual ~ITableDimsTxtTable() throw() = 0;
 
@@ -595,12 +567,6 @@ namespace openm
         /** binary search row by primary key: model id, table id, dimension id, language id; return NULL if not found. */
         virtual const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TableDimsTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<TableDimsTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static ITableDimsTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -609,7 +575,7 @@ namespace openm
     };
 
     /** table_acc table public interface. */
-    struct ITableAccTable : public IMetaTable<TableAccRow>
+    struct ITableAccTable : public IMetaLoadedTable<TableAccRow>
     {
         virtual ~ITableAccTable() throw() = 0;
 
@@ -622,9 +588,6 @@ namespace openm
 
         /** binary search row by primary key: model id, table id, accumulator id; return NULL if not found. */
         virtual const TableAccRow * byKey(int i_modelId, int i_tableId, int i_accId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<TableAccRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<TableAccRow> byModelId(int i_modelId) const = 0;
@@ -640,7 +603,7 @@ namespace openm
     };
 
     /** table_acc_txt table public interface. */
-    struct ITableAccTxtTable : public IMetaTable<TableAccTxtRow>
+    struct ITableAccTxtTable : public IMetaLoadedTable<TableAccTxtRow>
     {
         virtual ~ITableAccTxtTable() throw() = 0;
 
@@ -655,12 +618,6 @@ namespace openm
         /** binary search row by primary key: model id, table id, accumulator id, language id; return NULL if not found. */
         virtual const TableAccTxtRow * byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TableAccTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<TableAccTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static ITableAccTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -669,7 +626,7 @@ namespace openm
     };
 
     /** table_expr table public interface. */
-    struct ITableExprTable : public IMetaTable<TableExprRow>
+    struct ITableExprTable : public IMetaLoadedTable<TableExprRow>
     {
         virtual ~ITableExprTable() throw() = 0;
 
@@ -682,9 +639,6 @@ namespace openm
 
         /** binary search row by primary key: model id, table id, expr id; return NULL if not found. */
         virtual const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<TableExprRow> rows(void) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<TableExprRow> byModelId(int i_modelId) const = 0;
@@ -700,7 +654,7 @@ namespace openm
     };
 
     /** table_expr_txt table public interface. */
-    struct ITableExprTxtTable : public IMetaTable<TableExprTxtRow>
+    struct ITableExprTxtTable : public IMetaLoadedTable<TableExprTxtRow>
     {
         virtual ~ITableExprTxtTable() throw() = 0;
 
@@ -715,12 +669,6 @@ namespace openm
         /** binary search row by primary key: model id, table id, expr id, language id; return NULL if not found. */
         virtual const TableExprTxtRow * byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<TableExprTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<TableExprTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static ITableExprTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -729,7 +677,7 @@ namespace openm
     };
 
     /** group_lst table public interface. */
-    struct IGroupLstTable : public IMetaTable<GroupLstRow>
+    struct IGroupLstTable : public IMetaLoadedTable<GroupLstRow>
     {
         virtual ~IGroupLstTable() throw() = 0;
 
@@ -743,9 +691,6 @@ namespace openm
         /** binary search row by primary key: model id and group id, return NULL if not found. */
         virtual const GroupLstRow * byKey(int i_modelId, int i_groupId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<GroupLstRow> rows(void) const = 0;
-
         /** get list of rows by model id and is parameter group flag. */
         virtual vector<GroupLstRow> byModelId(int i_modelId, bool i_isParam) const = 0;
 
@@ -757,7 +702,7 @@ namespace openm
     };
 
     /** group_txt table public interface. */
-    struct IGroupTxtTable : public IMetaTable<GroupTxtRow>
+    struct IGroupTxtTable : public IMetaLoadedTable<GroupTxtRow>
     {
         virtual ~IGroupTxtTable() throw() = 0;
 
@@ -772,12 +717,6 @@ namespace openm
         /** binary search row by primary key: model id, group id, language id; return NULL if not found. */
         virtual const GroupTxtRow * byKey(int i_modelId, int i_groupId, int i_langId) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<GroupTxtRow> rows(void) const = 0;
-
-        /** get list of rows by language. */
-        virtual vector<GroupTxtRow> byLang(int i_langId) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static IGroupTxtTable * create(IRowBaseVec & io_rowVec);
 
@@ -786,7 +725,7 @@ namespace openm
     };
 
     /** group_pc table public interface. */
-    struct IGroupPcTable : public IMetaTable<GroupPcRow>
+    struct IGroupPcTable : public IMetaLoadedTable<GroupPcRow>
     {
         virtual ~IGroupPcTable() throw() = 0;
 
@@ -800,9 +739,6 @@ namespace openm
         /** binary search row by primary key: model id, group id, child position; return NULL if not found. */
         virtual const GroupPcRow * byKey(int i_modelId, int i_groupId, int i_chidPos) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<GroupPcRow> rows(void) const = 0;
-
         /** get list of rows by model id. */
         virtual vector<GroupPcRow> byModelId(int i_modelId) const = 0;
 
@@ -814,7 +750,7 @@ namespace openm
     };
 
     /** profile_lst table public interface. */
-    struct IProfileLstTable : public IMetaTable<ProfileLstRow>
+    struct IProfileLstTable : public IMetaLoadedTable<ProfileLstRow>
     {
         virtual ~IProfileLstTable() throw() = 0;
 
@@ -824,9 +760,6 @@ namespace openm
         /** binary search row by primary key: profile name, return NULL if not found. */
         virtual const ProfileLstRow * byKey(const string & i_name) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<ProfileLstRow> rows(void) const = 0;
-
         /** create new table rows by swap with supplied vector of rows. */
         static IProfileLstTable * create(IRowBaseVec & io_rowVec);
 
@@ -835,7 +768,7 @@ namespace openm
     };
 
     /** profile_option table public interface. */
-    struct IProfileOptionTable : public IMetaTable<ProfileOptionRow>
+    struct IProfileOptionTable : public IMetaLoadedTable<ProfileOptionRow>
     {
         virtual ~IProfileOptionTable() throw() = 0;
 
@@ -849,9 +782,6 @@ namespace openm
         /** binary search row by primary key: profile name and option key, return NULL if not found. */
         virtual const ProfileOptionRow * byKey(const string & i_name, const string & i_key) const = 0;
 
-        /** get list of loaded table rows. */
-        virtual vector<ProfileOptionRow> rows(void) const = 0;
-
         /** get list of rows by profile name. */
         virtual vector<ProfileOptionRow> byName(const string & i_name) const = 0;
 
@@ -863,7 +793,7 @@ namespace openm
     };
 
     /** run_option table public interface. */
-    struct IRunOptionTable : public IMetaTable<RunOptionRow>
+    struct IRunOptionTable : public IMetaLoadedTable<RunOptionRow>
     {
         virtual ~IRunOptionTable() throw() = 0;
 
@@ -876,9 +806,6 @@ namespace openm
 
         /** binary search row by primary key: run id and option key, return NULL if not found. */
         virtual const RunOptionRow * byKey(int i_runId, const string & i_key) const = 0;
-
-        /** get list of loaded table rows. */
-        virtual vector<RunOptionRow> rows(void) const = 0;
 
         /** get list of rows by run id. */
         virtual vector<RunOptionRow> byRunId(int i_runId) const = 0;

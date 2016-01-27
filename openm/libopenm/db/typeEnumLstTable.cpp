@@ -16,14 +16,14 @@ namespace openm
         TypeEnumLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TypeEnumLstTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id, type id, enum id
         const TypeEnumLstRow * byKey(int i_modelId, int i_typeId, int i_enumId) const;
-
-        // get list of all table rows
-        vector<TypeEnumLstRow> rows(void) const { return IMetaTable<TypeEnumLstRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<TypeEnumLstRow> byModelId(int i_modelId) const;
@@ -99,7 +99,7 @@ ITypeEnumLstTable * ITypeEnumLstTable::create(IRowBaseVec & io_rowVec)
 TypeEnumLstTable::TypeEnumLstTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = TypeEnumLstRowAdapter();
-    rowVec = IMetaTable<TypeEnumLstRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, mod_type_id, enum_id, enum_name" \
         " FROM type_enum_lst" +
@@ -117,19 +117,23 @@ TypeEnumLstTable::~TypeEnumLstTable(void) throw() { }
 const TypeEnumLstRow * TypeEnumLstTable::byKey(int i_modelId, int i_typeId, int i_enumId) const
 {
     const IRowBaseUptr keyRow( new TypeEnumLstRow(i_modelId, i_typeId, i_enumId) );
-    return IMetaTable<TypeEnumLstRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id
 vector<TypeEnumLstRow> TypeEnumLstTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row( new TypeEnumLstRow(i_modelId, 0, 0) );
-    return IMetaTable<TypeEnumLstRow>::findAll(row, rowVec, TypeEnumLstRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const TypeEnumLstRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }
 
 // get list of rows by model id and type id
 vector<TypeEnumLstRow> TypeEnumLstTable::byModelIdTypeId(int i_modelId, int i_typeId) const
 {
-    const IRowBaseUptr row( new TypeEnumLstRow(i_modelId, i_typeId, 0) );
-    return IMetaTable<TypeEnumLstRow>::findAll(row, rowVec, TypeEnumLstRow::modelIdTypeIdEqual);
+    return findAll(
+        [i_modelId, i_typeId](const TypeEnumLstRow & i_row) -> bool {
+            return i_row.modelId == i_modelId && i_row.typeId == i_typeId;
+        }
+    );
 }

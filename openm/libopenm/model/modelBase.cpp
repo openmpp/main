@@ -1,4 +1,4 @@
-// OpenM++ modeling library: base model class
+// OpenM++ modeling library: base class for model subsample run 
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,63 +8,59 @@ using namespace openm;
 // model exception default error message
 const char openm::modelUnknownErrorMessage[] = "unknown model error";
 
-// model public interface
+// model subsample run public interface
 IModel::~IModel() throw() { }
 
-// base model class
+// new model subsample run
 ModelBase::ModelBase(
-    bool i_isMpiUsed,
     int i_modelId,
     int i_runId,
     int i_subCount,
     int i_subNumber,
-    IDbExec * i_dbExec,
-    IMsgExec * i_msgExec,
+    RunController * i_runCtrl,
     const MetaRunHolder * i_metaStore
     ) : 
-    isMpiUsed(i_isMpiUsed),
     modelId(i_modelId),
     runId(i_runId),
-    dbExec(i_dbExec),
-    msgExec(i_msgExec),
-    metaStore(i_metaStore),
-    progressCount(0)
+    runCtrl(i_runCtrl),
+    metaStore(i_metaStore)
 {
     // set model run options
     runOpts.subSampleCount = i_subCount;
     runOpts.subSampleNumber = i_subNumber;
     runOpts.useSparse = metaStore->runOption->boolValue(RunOptionsKey::useSparse);
     runOpts.nullValue = metaStore->runOption->doubleValue(RunOptionsKey::sparseNull, DBL_EPSILON);
+
+    // setup accumulators list of id's
+    const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
+
+    for (const TableDicRow & tblRow : tblVec) {
+        tableDoneVec.push_back(TableDoneItem(tblRow));
+    }
 }
 
-// create new model
+// create new model subsample run
 ModelBase * ModelBase::create(
-    bool i_isMpiUsed, 
     int i_runId,
     int i_subCount,
     int i_subNumber,
-    IDbExec * i_dbExec,
-    IMsgExec * i_msgExec, 
+    RunController * i_runCtrl,
     const MetaRunHolder * i_metaStore 
     )
 {
-    if (i_msgExec == NULL) throw MsgException("invalid (NULL) message passing interface");
     if (i_metaStore == NULL) throw ModelException("invalid (NULL) model metadata");
-    if ((!i_isMpiUsed || i_msgExec->isRoot()) && i_dbExec == NULL) 
-        throw ModelException("database connection must be open at process %d", i_msgExec->rank());
+    if (i_runCtrl == NULL) throw ModelException("invalid (NULL) run controller interface");
 
     // find model in metadata tables
     const ModelDicRow * mdRow = i_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
     if (mdRow == NULL) throw ModelException("model not found in the database");
 
-    // create the model
-    return new ModelBase(
-        i_isMpiUsed, mdRow->modelId, i_runId, i_subCount, i_subNumber, i_dbExec, i_msgExec, i_metaStore
-        );
+    // create the model subsample run
+    return new ModelBase(mdRow->modelId, i_runId, i_subCount, i_subNumber, i_runCtrl, i_metaStore);
 }
 
 /**
-* write output result table: vector of accumulator values and release accumulators memory.
+* write result into output table and release accumulators memory.
 *
 * @param[in]     i_name         output table name
 * @param[in]     i_size         number of cells for each accumulator
@@ -114,55 +110,21 @@ void ModelBase::writeOutputTable(const char * i_name, long long i_size, forward_
             srcCount++;
         }
 
-        // validate number of accumulators
-        int accCount = (int)metaStore->tableAcc->byModelIdTableId(modelId, tblId).size();
-        if (accCount <= 0 || accCount != srcCount) throw DbException("invalid number of accumulators: %d, expected: %d for output table accumulators not found for table: %s", srcCount, accCount, i_name);
+        int accCount = (int)metaStore->tableAcc->countOf(
+            [&](const TableAccRow & i_row) -> bool { return i_row.modelId == modelId && i_row.tableId == tblRow->tableId; }
+        );
 
-        // if no MPI used or at main (root) process then write subsample into db 
-        // else start sending subsample data to root process
-        if (!isMpiUsed || msgExec->isRoot()) {  
+        if (srcCount <= 0 || accCount != srcCount) throw DbException("invalid number of accumulators: %d for output table : %s", srcCount, i_name);
 
-            unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-                modelId,
-                runId,
-                i_name, 
-                dbExec, 
-                metaStore,
-                subSampleCount(), 
-                runOptions()->useSparse, 
-                runOptions()->nullValue
-                ));
-
-            int nAcc = 0;
-            for (const auto & apc : accValLst) {
-                writer->writeAccumulator(dbExec, subSampleNumber(), nAcc, i_size, apc.get());
-                nAcc++;
-            }
+        // update table write status and check if all tables completed
+        bool isLast = true;
+        for (auto & td : tableDoneVec) {
+            if (td.tableId == tblId) td.isDone = true;
+            if (!td.isDone) isLast = false;
         }
-        else {  // initiate send of subsample data to root process
 
-            // find starting index of table accumulators in db rows of accumulators
-            const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
-
-            int accPos = 0;
-            while (accPos < (int)accVec.size() && accVec[accPos].tableId != tblId) {
-                accPos++;
-            }
-            if (accPos >= (int)accVec.size()) throw ModelException("accumulators not found for output table %s", i_name);
-
-            // start sending accumulators
-            int nAcc = 0;
-            for (auto & ap : accValLst) {
-                msgExec->startSend(
-                    IMsgExec::rootRank,
-                    (MsgTag)(RunController::accMsgTag(subSampleNumber(), subSampleCount(), accPos + nAcc)),
-                    typeid(double),
-                    i_size,
-                    ap.release()
-                    );
-                nAcc++;
-            }
-        }
+        // write subsample into database or start sending data to root process
+        runCtrl->writeAccumulators(runOpts, isLast, i_name, i_size, accValLst);
     }
     catch (exception & ex) {
         throw ModelException("Failed to write output table: %s. %s", i_name, ex.what());

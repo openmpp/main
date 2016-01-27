@@ -16,14 +16,14 @@ namespace openm
         ParamDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ParamDicTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id and parameter id
         const ParamDicRow * byKey(int i_modelId, int i_paramId) const;
-
-        // get list of all table rows
-        vector<ParamDicRow> rows(void) const { return IMetaTable<ParamDicRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<ParamDicRow> byModelId(int i_modelId) const;
@@ -119,7 +119,7 @@ IParamDicTable * IParamDicTable::create(IRowBaseVec & io_rowVec)
 ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = ParamDicRowAdapter();
-    rowVec = IMetaTable<ParamDicRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated" \
         " FROM parameter_dic" +
@@ -137,21 +137,23 @@ ParamDicTable::~ParamDicTable(void) throw() { }
 const ParamDicRow * ParamDicTable::byKey(int i_modelId, int i_paramId) const
 {
     const IRowBaseUptr keyRow( new ParamDicRow(i_modelId, i_paramId) );
-    return IMetaTable<ParamDicRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // find first row by model id and parameter name or NULL if not found
 const ParamDicRow * ParamDicTable::byModelIdName(int i_modelId, const string & i_name) const
 {
-    const IRowBaseUptr row( new ParamDicRow(i_modelId, 0));
-    dynamic_cast<ParamDicRow *>(row.get())->paramName = i_name;
-
-    return IMetaTable<ParamDicRow>::findFirst(row, rowVec, ParamDicRow::modelIdNameEqual);
+    return findFirst(
+        [i_modelId, i_name](const ParamDicRow & i_row) -> bool {
+                return i_row.modelId == i_modelId && i_row.paramName == i_name;
+            }
+        );
 }
 
 // get list of rows by model id
 vector<ParamDicRow> ParamDicTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row( new ParamDicRow(i_modelId, 0) );
-    return IMetaTable<ParamDicRow>::findAll(row, rowVec, ParamDicRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const ParamDicRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }

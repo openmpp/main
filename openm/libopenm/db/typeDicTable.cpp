@@ -16,14 +16,14 @@ namespace openm
         TypeDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TypeDicTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by primary key: model id and type id
         const TypeDicRow * byKey(int i_modelId, int i_typeId) const;
-
-        // get list of all table rows
-        vector<TypeDicRow> rows(void) const { return IMetaTable<TypeDicRow>::rows(rowVec); }
 
         // get list of rows by model id
         vector<TypeDicRow> byModelId(int i_modelId) const;
@@ -103,7 +103,7 @@ ITypeDicTable * ITypeDicTable::create(IRowBaseVec & io_rowVec)
 TypeDicTable::TypeDicTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = TypeDicRowAdapter();
-    rowVec = IMetaTable<TypeDicRow>::load(
+    rowVec = load(
         "SELECT" \
         " model_id, mod_type_id, mod_type_name, dic_id, total_enum_id" \
         " FROM type_dic" +
@@ -121,21 +121,23 @@ TypeDicTable::~TypeDicTable(void) throw() { }
 const TypeDicRow * TypeDicTable::byKey(int i_modelId, int i_typeId) const
 {
     const IRowBaseUptr keyRow( new TypeDicRow(i_modelId, i_typeId) );
-    return IMetaTable<TypeDicRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // get list of rows by model id
 vector<TypeDicRow> TypeDicTable::byModelId(int i_modelId) const
 {
-    const IRowBaseUptr row( new TypeDicRow(i_modelId, 0) );
-    return IMetaTable<TypeDicRow>::findAll(row, rowVec, TypeDicRow::modelIdEqual);
+    return findAll(
+        [i_modelId](const TypeDicRow & i_row) -> bool { return i_row.modelId == i_modelId; }
+    );
 }
 
 // find first row by model id and type name or NULL if not found
 const TypeDicRow * TypeDicTable::byModelIdName(int i_modelId, const string & i_name) const
 {
-    const IRowBaseUptr row( new TypeDicRow(i_modelId, 0));
-    dynamic_cast<TypeDicRow *>(row.get())->name = i_name;
-
-    return IMetaTable<TypeDicRow>::findFirst(row, rowVec, TypeDicRow::modelIdNameEqual);
+    return findFirst(
+        [i_modelId, i_name](const TypeDicRow & i_row) -> bool {
+                return i_row.modelId == i_modelId && i_row.name == i_name;
+            }
+        );
 }

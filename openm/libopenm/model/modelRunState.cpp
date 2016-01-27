@@ -5,6 +5,24 @@
 #include "modelRunState.h"
 using namespace openm;
 
+namespace openm
+{
+    /** i = initial status */
+    const char * RunStatus::init = "s";
+
+    /** p = run in progress */
+    const char * RunStatus::progress = "p";
+
+    /** s = completed successfully */
+    const char * RunStatus::done = "s";
+
+    /** x = exit and not completed (reserved) */
+    const char * RunStatus::exit = "x";
+
+    /** e = error failure */
+    const char * RunStatus::error = "e";
+}
+
 // process-wide model run state holder
 ModelRunState openm::theModelRunState;
 
@@ -14,6 +32,7 @@ static recursive_mutex mrsMutex;
 /** initialize model run state */
 ModelRunState::ModelRunState(void) :
     theStatus(ModelStatus::init),
+    progressCount(0),
     startTime(chrono::system_clock::now())
 {
     updateTime = startTime;
@@ -24,6 +43,7 @@ ModelRunState::ModelRunState(const ModelRunState && i_state)
 {
     lock_guard<recursive_mutex> lck(mrsMutex);
     theStatus = i_state.theStatus;
+    progressCount = i_state.progressCount;
     startTime = i_state.startTime;
     updateTime = i_state.updateTime;
 }
@@ -34,6 +54,7 @@ ModelRunState & ModelRunState::operator=(const ModelRunState & i_state)
     if (this != &i_state) {
         lock_guard<recursive_mutex> lck(mrsMutex);
         theStatus = i_state.theStatus;
+        progressCount = i_state.progressCount;
         startTime = i_state.startTime;
         updateTime = i_state.updateTime;
     }
@@ -57,17 +78,35 @@ ModelStatus ModelRunState::status(ModelStatus i_status)
 }
 
 /** set model status if not already set as one of exit status values */
-ModelStatus ModelRunState::statusIfNotExit(ModelStatus i_status)
+ModelStatus ModelRunState::updateStatus(ModelStatus i_status)
 {
     lock_guard<recursive_mutex> lck(mrsMutex);
     if (!isExit(theStatus)) status(i_status);
     return theStatus;
 }
 
-/** return true if status is one of exiting: ie done or exit */
+/** return true if status is one of exiting: ie done, exit, error */
 bool ModelRunState::isExit(void)
 {
     lock_guard<recursive_mutex> lck(mrsMutex);
     return isExit(theStatus);
 }
 
+/** return true if status is an error */
+bool ModelRunState::isError(void)
+{
+    lock_guard<recursive_mutex> lck(mrsMutex);
+    return isError(theStatus);
+}
+
+/** update modeling progress */
+int ModelRunState::updateProgress(void) 
+{ 
+    lock_guard<recursive_mutex> lck(mrsMutex);
+    if (!isExit(theStatus)) {
+        theStatus = ModelStatus::progress;
+        progressCount++;
+        updateTime = chrono::system_clock::now();
+    }
+    return progressCount;
+}

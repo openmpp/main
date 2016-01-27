@@ -16,17 +16,14 @@ namespace openm
         LangLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~LangLstTable() throw();
 
+        // get const reference to list of all table rows
+        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by language id
         const LangLstRow * byKey(int i_langId) const;
-
-        // return first table row or NULL if table is empty
-        const LangLstRow * firstRow(void) const { return IMetaTable<LangLstRow>::firstRow(rowVec); }
-
-        // get list of all table rows
-        vector<LangLstRow> rows(void) const { return IMetaTable<LangLstRow>::rows(rowVec); }
 
         // find first row by language code or NULL if not found
         const LangLstRow * byCode(const string & i_code) const;
@@ -99,7 +96,7 @@ LangLstTable::LangLstTable(IDbExec * i_dbExec)
     string sql = "SELECT lang_id, lang_code, lang_name FROM lang_lst ORDER BY 1";
 
     const IRowAdapter & adp = LangLstRowAdapter();
-    rowVec = IMetaTable<LangLstRow>::load(sql, i_dbExec, adp);
+    rowVec = load(sql, i_dbExec, adp);
 }
 
 // Table never unloaded
@@ -109,14 +106,13 @@ LangLstTable::~LangLstTable(void) throw() { }
 const LangLstRow * LangLstTable::byKey(int i_langId) const
 {
     const IRowBaseUptr keyRow( new LangLstRow(i_langId) );
-    return IMetaTable<LangLstRow>::byKey(keyRow, rowVec);
+    return findKey(keyRow);
 }
 
 // find first row by language code or NULL if not found
 const LangLstRow * LangLstTable::byCode(const string & i_code) const
 {
-    const IRowBaseUptr row( new LangLstRow() );
-    dynamic_cast<LangLstRow *>(row.get())->code = i_code;
-
-    return IMetaTable<LangLstRow>::findFirst(row, rowVec, LangLstRow::codeEqual);
+    return findFirst(
+        [i_code](const LangLstRow & i_row) -> bool { return i_row.code == i_code; }
+    );
 }
