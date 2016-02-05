@@ -6,17 +6,6 @@
 # usage: perl test_models.pl [-newref] [-nomodgen] [-noompp] models
 # If models is not specified, all models will be processed.
 
-chdir "../models" || die "Invoke test_models from Perl folder";
-use Cwd qw(getcwd);
-my $models_root = getcwd;
-
-# Get root of ompp dev system to assign OM_ROOT later for build props files
-# This makes the script work independently of the OM_ROOT environment variable
-chdir "..";
-my $om_root = getcwd;
-
-chdir $models_root;
-
 
 #####################
 # Common settings
@@ -44,8 +33,8 @@ my $omc_exe = 'omc.exe';
 #my $ompp_configuration = "Debug";
 my $ompp_configuration = "Release";
 
-#my $ompp_platform = "Win32";
-my $ompp_platform = "x64";
+my $ompp_platform = "Win32";
+#my $ompp_platform = "x64";
 
 #####################
 # ompp-linux settings
@@ -67,20 +56,50 @@ my $modgen_platform = "Win32";
 #my $modgen_platform = "x64";
 
 #####################
+# There are no configuration settings in subsequent code in this script
+#####################
+
+use strict;
+
+use Cwd qw(getcwd);
+
+my $om_root = %ENV{'OM_ROOT'};
+if ( $om_root eq '') {
+	# Try parent directory, assuming this script was invoked in the OM_ROOT/Perl directory
+	chdir '..';
+	$om_root = getcwd();
+}
+else {
+	-d $om_root || die "directory not found OM_ROOT='${om_root}'\n";
+}
+
+
+# Default location assumes script is invoked from OM_ROOT/Perl.
+my $models_root = "../models";
+
+# Check for and process -m <model-folder> option
+if ($#ARGV >= 0) {
+	if ( $ARGV[0] eq "-m") {
+		# discard -m argument
+		shift @ARGV;
+		# get immediately following value
+		$models_root = @ARGV[0];
+		shift @ARGV;
+	}
+}
+
+chdir $models_root || die "Folder ${models_root} not found";
+my $models_root = getcwd; # to ensure is absolute path
+
+#####################
 # file locations
 #####################
 
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
 my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
-my $create_db_sqlite_sql = "${models_root}/../sql/sqlite/create_db_sqlite.sql";
+my $create_db_sqlite_sql = "${om_root}/sql/sqlite/create_db_sqlite.sql";
 
-
-#####################
-# There are no configuration settings in subsequent code in this script
-#####################
-
-use strict;
 
 # determine if running on windows or linux
 my $is_windows = 1;
@@ -126,7 +145,7 @@ if ($is_windows) {
 	#				run_jet_statement
 	#				modgen_tables_to_csv
 	#			);
-	require "../perl/common_windows.pm";
+	require "${om_root}/perl/common_windows.pm";
 }
 
 ###############
@@ -212,7 +231,7 @@ if ($is_windows) {
 			exit 1;
 		}
 		push @flavours, 'ompp';
-		my $full_path = "${models_root}/../bin/${omc_exe}";
+		my $full_path = "${om_root}/bin/${omc_exe}";
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
@@ -534,7 +553,7 @@ for my $model_dir (@model_dirs) {
 			#####################################
 
 			# Change working directory to project directory for compilation.
-			chdir ${project_dir} || die;
+			chdir $project_dir || die;
 
 			# The property sheet containing user macros
 			my $model_props = "Model.props";
@@ -556,6 +575,16 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
+			# Determine fixed parameter folder from FIXED_PARAMETERS_FOLDER user macro in Model.props
+			my $fixed_parameters_folder = get_user_macro($model_props, 'FIXED_PARAMETERS_FOLDER');
+			# Use files in Fixed folder if not empty, independent of user macro ENABLE_FIXED_PARAMETERS
+			# This works around a consequence of propagate_invariant, which copies WizardCaseBased/ompp/Model.props,
+			# which does not use parameters/Fixed
+			my $enable_fixed_parameters = '0';
+			if ( -d $fixed_parameters_folder ) {
+				$enable_fixed_parameters = '1';
+			}
+			
 			# Project file
 			my $model_vcxproj = 'model.vcxproj';
 			
@@ -575,6 +604,7 @@ for my $model_dir (@model_dirs) {
 					"/p:Platform=${ompp_platform}",
 					"/p:GRID_COMPUTING=EMPTY",
 					"/p:SCENARIO_NAME=Base",
+					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
 					"/p:RUN_SCENARIO=0",
 					"/p:RUN_EXPORT=0",
 					"/p:RUN_EXCEL=0",

@@ -298,7 +298,7 @@ sub get_user_macro
 	while (<MODEL_PROPS>) {
 		chomp;
 		my $line = $_;
-		if ( $line =~ /<${user_macro}>(\w+)<\/${user_macro}>/ ) {
+		if ( $line =~ /<${user_macro}>(.*)<\/${user_macro}>/ ) {
 			$value = $1;
 			last;
 		}

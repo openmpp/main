@@ -5,6 +5,19 @@
 
 use strict;
 
+use Cwd qw(getcwd);
+
+my $om_root = %ENV{'OM_ROOT'};
+if ( $om_root eq '') {
+	# Try parent directory, assuming this script was invoked in the OM_ROOT/Perl directory
+	chdir '..';
+	$om_root = getcwd();
+}
+else {
+	-d $om_root || die "directory not found OM_ROOT='${om_root}'\n";
+}
+
+
 use File::Copy;
 use File::Copy::Recursive qw(dircopy);
 use File::Compare;
@@ -22,9 +35,22 @@ if ($@) {
 	exit;
 }
 
+# Default location assumes script is invoked from OM_ROOT/Perl.
+my $models_root = "../models";
 
-chdir "../models" || die "Invoke propagate_invariant from Perl folder";
-my $models_root = getcwd;
+# Check for and process -m <model-folder> option
+if ($#ARGV >= 0) {
+	if ( $ARGV[0] eq "-m") {
+		# discard -m argument
+		shift @ARGV;
+		# get immediately following value
+		$models_root = @ARGV[0];
+		shift @ARGV;
+	}
+}
+
+chdir $models_root || die "Folder ${models_root} not found";
+
 my @model_dirs; # list of models (without path)
 
 if ($#ARGV >= 0) {
@@ -76,7 +102,7 @@ for my $model_dir (@model_dirs) {
 	for( my $j = 0; $j <= $#invariant_list; $j += 2) {
 		my $invariant_file = @invariant_list[$j];
 		my $invariant_dir = @invariant_list[$j + 1];
-		my $src = "${invariant_dir}/${invariant_file}";
+		my $src = "${om_root}/models/${invariant_dir}/${invariant_file}";
 		my $dst = "${model_dir}/${invariant_file}";
 		# handle special case where string 'MODEL' is in the src file name
 		$src =~ s/MODEL/${invariant_dir}/;
