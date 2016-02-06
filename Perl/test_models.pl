@@ -66,8 +66,10 @@ use Cwd qw(getcwd);
 my $om_root = %ENV{'OM_ROOT'};
 if ( $om_root eq '') {
 	# Try parent directory, assuming this script was invoked in the OM_ROOT/Perl directory
+	my $save_dir = getcwd();
 	chdir '..';
 	$om_root = getcwd();
+	chdir $save_dir;
 }
 else {
 	-d $om_root || die "directory not found OM_ROOT='${om_root}'\n";
