@@ -1,0 +1,14 @@
+parameters {
+	//EN Selected emotion
+	EMOTION DefaultEmotion = HAPPY;
+
+	//EN Wellness weights
+	double WellnessWeights[EMOTION] = {
+		// HAPPY
+		1.0,
+		// SAD
+		0.5
+	};
+
+};
+
