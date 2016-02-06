@@ -1,0 +1,4 @@
+parameters {
+
+    double HappinessReversalHazard = 0.10;
+};

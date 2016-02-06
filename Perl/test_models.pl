@@ -382,7 +382,7 @@ for my $model_dir (@model_dirs) {
 					"/p:Configuration=${modgen_configuration}",
 					"/p:Platform=${modgen_platform}",
 					"/p:MODGEN_VERSION=${modgen_version}",
-					"/p:SCENARIO_NAME=Base",
+					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:RUN_SCENARIO=0",
 					"/t:Rebuild",
 					);
@@ -425,54 +425,6 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 
-			# #####################################
-			# # Create Base scenario file (modgen)#
-			# #####################################
-			
-			# logmsg info, $model_dir, $flavour, "Create Base scenario file" if $verbosity >= 2;
-			
-			# # Base scenario will be run in target_dir (where model executable is located)
-			# chdir "${target_dir}";
-			
-			# # The odat Framework parameter file for the Base scenario.
-			# # Parameters in that file will be transformed into scenario settings in the Base.scex file
-			# my @Base_Framework_odat_candidates = glob "${parameters_dir}/Base/*Framework*.odat";
-			# if ( 0 + @Base_Framework_odat_candidates == 0 ) {
-				# logmsg error, $model_dir, $flavour, "Missing ompp Framework odat parameter file";
-				# next FLAVOUR;
-			# }
-			# if ( 0 + @Base_Framework_odat_candidates > 1 ) {
-				# logmsg error, $model_dir, $flavour, "Ambiguous ompp Framework odat parameter file";
-				# next FLAVOUR;
-			# }
-			# my $Base_Framework_odat = pop @Base_Framework_odat_candidates;
-
-			# # The ompp Framework model code file for the model
-			# # 'use' statements in that file are used to determine scenario settings in the Base.scex file
-			# my $ompp_framework_ompp = "${model_source_dir}/ompp_framework.ompp";
-			# if ( ! -e $ompp_framework_ompp ) {
-				# logmsg error, $model_dir, $flavour, "Missing ompp framework model code file: $ompp_framework_ompp";
-				# next FLAVOUR;
-			# }
-
-			# # The name of the Modgen Base scenario file
-			# # (will be created by this script, in the same directory as the model executable)
-			# my $modgen_Base_scex = "Base.scex";
-			# unlink $modgen_Base_scex;
-
-			# # List of all the .dat files in the Base scenario
-			# # with relative paths (so .scex file works independnent of ompp installation folder.
-			# my @modgen_Base_dats;
-			# push @modgen_Base_dats, glob("../../parameters/Base/*.dat");
-			# push @modgen_Base_dats, glob("../../parameters/Fixed/*.dat");
-
-			# # Create the Modgen scex scenario file
-			# modgen_create_scex($publish_scex, $Base_Framework_odat, $ompp_framework_ompp, $model_props, @modgen_Base_dats);
-			# if ( ! -e $modgen_Base_scex ) {
-				# logmsg error, $model_dir, $flavour, "Missing Base scenario file: $modgen_Base_scex";
-				# next FLAVOUR;
-			# }
-
 			my $elapsed_seconds = time - $start_seconds;
 			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
 			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $verbosity >= 1;
@@ -492,8 +444,8 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
 
 			# Delete output database to enable subsequent check for success
-			my $modgen_Base_mdb = "${publish_dir}/${scenario_name}(tbl).mdb";
-			unlink $modgen_Base_mdb;
+			my $modgen_scenario_mdb = "${publish_dir}/${scenario_name}(tbl).mdb";
+			unlink $modgen_scenario_mdb;
 
 			($merged, $retval) = capture_merged {
 				my @args = (
@@ -512,8 +464,8 @@ for my $model_dir (@model_dirs) {
 				logerrors $merged;
 				next FLAVOUR;
 			}
-			if ( ! -e $modgen_Base_mdb ) {
-				logmsg error, $model_dir, $flavour, "Missing Base scenario database: ${modgen_Base_mdb}";
+			if ( ! -e $modgen_scenario_mdb ) {
+				logmsg error, $model_dir, $flavour, "Missing scenario database: ${modgen_scenario_mdb}";
 				next FLAVOUR;
 			}
 
@@ -522,19 +474,19 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			# Copy model run log file to logs directory
-			my $modgen_Base_log_txt = "${publish_dir}/${scenario_name}(log).txt";
-			if (-s $modgen_Base_log_txt) {
-				copy $modgen_Base_log_txt, $current_logs_dir;
+			my $modgen_scenario_log_txt = "${publish_dir}/${scenario_name}(log).txt";
+			if (-s $modgen_scenario_log_txt) {
+				copy $modgen_scenario_log_txt, $current_logs_dir;
 			}
 			
 			# If present, copy event trace / case checksum file to results directory
-			my $modgen_Base_debug_txt = "${publish_dir}/${scenario_name}(debug).txt";
-			if (-e $modgen_Base_debug_txt) {
-				normalize_event_trace $modgen_Base_debug_txt, "${current_outputs_dir}/trace.txt";
+			my $modgen_scenario_debug_txt = "${publish_dir}/${scenario_name}(debug).txt";
+			if (-e $modgen_scenario_debug_txt) {
+				normalize_event_trace $modgen_scenario_debug_txt, "${current_outputs_dir}/trace.txt";
 			}
 			
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
-			if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_outputs_dir, $significant_digits)) {
+			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits)) {
 				next FLAVOUR;
 			}
 
@@ -590,7 +542,7 @@ for my $model_dir (@model_dirs) {
 			# Project file
 			my $model_vcxproj = 'model.vcxproj';
 			
-			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and Base scenario" if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and scenario" if $verbosity >= 2;
 			my $build_log = "msbuild.log";
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
@@ -605,7 +557,7 @@ for my $model_dir (@model_dirs) {
 					"/p:Configuration=${ompp_configuration}",
 					"/p:Platform=${ompp_platform}",
 					"/p:GRID_COMPUTING=EMPTY",
-					"/p:SCENARIO_NAME=Base",
+					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
 					"/p:RUN_SCENARIO=0",
 					"/p:RUN_EXPORT=0",

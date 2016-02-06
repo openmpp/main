@@ -1,0 +1,8 @@
+parameters {
+	//EN mu
+	double mu = 0.0;
+
+    //EN sigma
+	double sigma = 1.0;
+};
+

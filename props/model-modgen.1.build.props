@@ -56,7 +56,7 @@
     <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>
     <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
     
-    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Base</SCENARIO_NAME>
+    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
     
     <FIXED_NAME Condition="'$(FIXED_NAME)'==''">Fixed</FIXED_NAME>
 

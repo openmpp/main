@@ -1,0 +1,144 @@
+parameters
+{
+    //EN Only one SCRIPT
+    logical OneScript = FALSE;
+
+    //EN Which SCRIPT
+    SCRIPT WhichScript = S_03;
+
+	//EN Scripts of attribute assignments
+    int Scripts[SCRIPT][ASSIGNMENTS][ATTRIBUTE] = {
+
+        // S_00 Filter true on exit
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    1,    0,     2,
+                 2,    1,    1,    1,    1,     4,
+                 3,    1,    1,    0,    2,     8,
+                 4,    0,    1,    0,    0,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+         // S_01 Filter false on exit
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    1,    0,     2,
+                 2,    1,    1,    1,    1,     4,
+                 3,    1,    1,    0,    2,     8,
+                 4,    0,    0,    0,    0,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_02 Fltr & x
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    1,     2,
+                 2,    1,    0,    0,    2,     4,
+                 3,    1,    0,    1,    0,     8,
+                 4,    0,    0,    1,    1,    16,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_03 Fltr w/o x
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 2,    1,    0,    0,    0,     2,
+                 3,    1,    0,    0,    0,     4,
+                 4,    0,    0,    0,    0,     8,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_04 col & multiple x
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 1,    1,    1,    0,    0,     4,
+                 1,    1,    1,    0,    1,     4,
+                 2,    0,    1,    0,    1,     4,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_05 No spurious changes
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 1,    1,    1,    0,    0,     2,
+                 1,    1,    1,    0,    0,     2,
+                 1,    0,    1,    0,    0,     2,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_06 Spurious change in x
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 1,    1,    1,    0,    0,     4,
+                 1,    1,    1,    0,    0,     2,
+                 1,    0,    1,    0,    0,     2,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_07 Spurious change in filter (true-false-true)
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 1,    1,    0,    0,    0,     2,
+                 1,    1,    1,    0,    0,     2,
+                 1,    0,    1,    0,    0,     2,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_08 Spurious change in filter (false-true-false)
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    0,    0,    0,     2,
+                 1,    1,    1,    0,    0,     4,
+                 1,    1,    0,    0,    0,     4,
+                 1,    0,    0,    0,    0,     4,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+        // S_09: Spurious change in col
+        (1) {
+             // time  alive  fltr  row   col    x
+                 0,    1,    1,    0,    0,     1,
+                 1,    1,    1,    0,    0,     2,
+                 1,    1,    1,    0,    1,     2,
+                 1,    1,    1,    0,    0,     2,
+                 1,    0,    1,    0,    0,     2,
+
+           (5) {-1, 0, 0, 0, 0, 0} // (ignored)
+        },
+
+    };
+	/* NOTE(Scripts, EN)
+        The leading dimension SCRIPT corresponds to a case in the simulation.
+        The first column gives the times at which values will be assigned to attributes.
+        Additional columns are the values to assign at the given time.
+        If duplicate values with the same time are present they are assigned in row order,
+        within the event at the given time.
+        The simulation starts at time 0, with no associated event,
+        so entries with time=0 assign values to attributes before the entity enters the simulation.
+        An event occurs at each integral time 1,2,... during which assignments occur.
+	*/
+};
+
