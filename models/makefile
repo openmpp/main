@@ -14,6 +14,7 @@ MODEL_DIRS = \
   Alpha2 \
   GiniProbe \
   IDMM \
+  IDMM_extra \
   OzProj \
   OzProjGen \
   RiskPaths \

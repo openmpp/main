@@ -1,0 +1,110 @@
+//LABEL(modgen_time_based, EN) Modgen simulation framework for time-based cross-compatible models
+
+/* NOTE(modgen_time_based, EN)
+	This module implements Modgen versions of core global functions for time-based models.
+	
+    This module is ignored by the OpenM++ compiler.
+	
+	It should not be necessary to modify any code in this module.
+*/
+
+bool do_exit_simulation_all = false;
+/**
+ * Tells the framework to exit all entities from the simulation after completion of the current event.
+ */
+void signal_exit_simulation_all()
+{
+    do_exit_simulation_all = true;
+}
+
+/**
+ * Simulate all events for all entities in the simulation.
+ *
+ * Used in the main simulation module of the model.
+ */
+void SimulateEvents()
+{
+	// Buffer for messages
+	const size_t nBufSize = 255;
+	char szBuffer[nBufSize];
+
+	// Replicate number for progress reporting
+	int nReplicate = GetReplicate();
+
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_SIMULATION"));
+	ProgressMessage( szBuffer );
+
+	double dCurrentTime = TIME_INFINITE;
+	double dStartTime = TIME_INFINITE;
+
+	int nLastProgressPercent = -1;
+	int nThisProgressPercent = -1;
+
+	while ( !gpoEventQueue->Empty() ) 
+	{
+
+		// get the time of next event, verify against the simulation end
+		dCurrentTime = gpoEventQueue->NextEvent();
+
+		// Note the start time (time of first event) for progress indicator
+		if ( dStartTime == TIME_INFINITE )
+		{
+			dStartTime = dCurrentTime;
+		}
+
+		if ( dCurrentTime > SIMULATION_END() || do_exit_simulation_all || gbInterrupted || gbCancelled || gbErrors )
+		{
+            do_exit_simulation_all = false;
+			if (dCurrentTime > SIMULATION_END())
+			{
+				// age all actors to the simulation end time
+				gpoEventQueue->WaitUntilAllActors( SIMULATION_END() );
+			}
+
+			sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_FINISH"));
+			ProgressMessage( szBuffer );
+
+			gpoEventQueue->FinishAllActors();
+		}
+		else 
+		{
+			// age all actors to the time of next event
+			gpoEventQueue->WaitUntil( dCurrentTime );
+
+			// implement the next event
+			gpoEventQueue->Implement();
+		}
+
+		// Update progress indicator only if the integer percentage complete changes
+		// (updates to the progress bar at every event are expensive).
+		nThisProgressPercent = (int)( 100 * ( dCurrentTime - dStartTime ) /
+		                                    ( SIMULATION_END() - dStartTime ) );
+
+		if ( nThisProgressPercent > nLastProgressPercent )
+		{
+			TimeReport( dCurrentTime );	// update simulation progress
+			nLastProgressPercent = nThisProgressPercent;
+		}
+	}
+}
+
+/**
+ * Write a start message for the simulation member in the log.
+ *
+ * Used in the main simulation module of the model.
+ */
+void LogSimulationStart()
+{
+	// Buffer for messages
+	const size_t nBufSize = 255;
+	char szBuffer[nBufSize];
+
+	// Simulation member ordinal for progress reporting
+	int nSimulationMember = GetReplicate();
+
+	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nSimulationMember, ModelString("S_MODEL_START"));
+	ProgressMessage( szBuffer );
+}
+
+
+
