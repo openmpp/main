@@ -10,12 +10,19 @@ endif
 
 MODEL_DIRS = \
   modelOne \
-  WizardCaseBased \
-  WizardTimeBased \
   Alpha1 \
   Alpha2 \
+  GiniProbe \
   IDMM \
-  RiskPaths 
+  OzProj \
+  OzProjGen \
+  RiskPaths \
+  TableProbe1 \
+  TestEx \
+  THIM \
+  TypeProbe1 \
+  WizardCaseBased \
+  WizardTimeBased
 
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)

@@ -10,24 +10,39 @@ endif
 CPP = $(CC)
 AR = ar
 
+ifndef OM_ROOT
+  OM_ROOT = ../..
+endif
+
+ifndef OM_INC_DIR
+  OM_INC_DIR = $(OM_ROOT)/include
+endif
+
+ifndef OM_BIN_DIR
+  OM_BIN_DIR = $(OM_ROOT)/bin
+endif
+
+ifndef OM_LIB_DIR
+  OM_LIB_DIR = $(OM_ROOT)/lib
+endif
+
+ifndef OM_SQLITE_DIR
+  OMC_SQLITE_DIR = $(OM_ROOT)/sql/sqlite
+endif
+
+ifndef OMC_USE_DIR
+  OMC_USE_DIR = $(OM_ROOT)/use
+endif
+
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux/bin
 endif
 
-ifndef OM_INC_DIR
-  OM_INC_DIR = ../../include
-endif
-
-ifndef OM_BIN_DIR
-  OM_BIN_DIR = ../../bin
-endif
-
-ifndef OM_LIB_DIR
-  OM_LIB_DIR = ../../lib
-endif
-
-ifndef OMC_USE_DIR
-  OMC_USE_DIR = ../../use
+#
+# location of output database
+#
+ifndef PUBLISH_DIR
+  PUBLISH_DIR = output-linux
 endif
 
 #
@@ -43,19 +58,26 @@ ifndef MODEL_NAME
 endif
 
 #
-# model default parameters: if Base subdirectory exist the use it
+# scenario name
+#
+ifndef SCENARIO_NAME
+  SCENARIO_NAME = Base
+endif
+
+#
+# model default parameters: if SCENARIO_NAME subdirectory exist the use it
 #
 ifndef OMC_DISABLE_AUTO_PARAM_DIR
-  ifndef OMC_BASE_PARAM_DIR
-    ifneq (,$(wildcard parameters/Base))
-      OMC_BASE_PARAM_DIR = parameters/Base
+  ifndef OMC_SCENARIO_PARAM_DIR
+    ifneq (,$(wildcard parameters/$(SCENARIO_NAME)))
+      OMC_SCENARIO_PARAM_DIR = parameters/$(SCENARIO_NAME)
     endif
   endif
 endif
 
-ifdef OMC_BASE_PARAM_DIR
-  OMC_BASE_NAME = $(notdir $(OMC_BASE_PARAM_DIR))
-  OMC_BASE_OPT = -s $(OMC_BASE_NAME) -p $(OMC_BASE_PARAM_DIR)
+ifdef OMC_SCENARIO_PARAM_DIR
+  OMC_BASE_NAME = $(notdir $(OMC_SCENARIO_PARAM_DIR))
+  OMC_BASE_OPT = -s $(OMC_BASE_NAME) -p $(OMC_SCENARIO_PARAM_DIR)
 endif
 
 #
@@ -141,7 +163,7 @@ DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
 all: model 
 
 .PHONY : model
-model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
+model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
@@ -164,31 +186,21 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
 #
-# create model SQLite database
+# create output SQLite database
 #
 SQLITE_EXE = sqlite3
-MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
-
-ifndef OM_SQLITE_DIR
-  OMC_SQLITE_DIR = ../../sql/sqlite
-endif
-
-.PHONY : model_sql
-model_sql : $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
-
-$(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql :
-	cp -pf $(OMC_OUT_DIR)/*.sql $(OUT_BIN_DIR)
+PUBLISH_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sqlite
 
 .PHONY : publish
-publish : model_sql $(MODEL_SQLITE)
+publish : $(PUBLISH_SQLITE)
 
-$(MODEL_SQLITE) :
-	rm -f $(MODEL_SQLITE)
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_$(OMC_BASE_NAME).sql
+$(PUBLISH_SQLITE) :
+	rm -f $(PUBLISH_SQLITE)
+	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
+	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql
+	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
+	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql
 
 .PHONY: clean
 clean:
@@ -197,11 +209,12 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(OMC_OUT_DIR)/*
+	rm -f $(PUBLISH_SQLITE)
 
 .PHONY: cleanall
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
-	rm -f $(MODEL_SQLITE)
+	rm -rf $(PUBLISH_DIR)
 
 .PHONY: prepare
 prepare:
@@ -209,6 +222,7 @@ prepare:
 	@if [ ! -d $(OMC_OUT_DIR) ] ; then mkdir -p $(OMC_OUT_DIR) ; fi
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_BIN_DIR) ] ; then mkdir -p $(OUT_BIN_DIR) ; fi
+	@if [ ! -d $(PUBLISH_DIR) ] ; then mkdir -p $(PUBLISH_DIR) ; fi
 
 # include dependencies for each .cpp file
 # if target is not clean or prepare
