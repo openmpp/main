@@ -7,7 +7,7 @@ use strict;
 
 use Cwd qw(getcwd);
 
-my $om_root = %ENV{'OM_ROOT'};
+my $om_root = $ENV{'OM_ROOT'};
 if ( $om_root eq '') {
 	# Try parent directory, assuming this script was invoked in the OM_ROOT/Perl directory
 	my $save_dir = getcwd();
