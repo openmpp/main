@@ -12,6 +12,8 @@
     <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'=='' And '$(MODGEN_VERSION)'=='12'">$(registry:HKEY_LOCAL_MACHINE\Software\StatCan\Modgen\12@Path)</MODGEN_ROOT>
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
 
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include</OM_INC_DIR>
+    
     <MODGEN_BIN_DIR Condition="'$(MODGEN_BIN_DIR)'==''">$(MODGEN_ROOT)</MODGEN_BIN_DIR>
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
     

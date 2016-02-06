@@ -97,7 +97,6 @@ for my $model_dir (@model_dirs) {
 		"code/modgen_case_based.mpp",   "WizardCaseBased",
 		"code/case_based.h",            "WizardCaseBased",
 		"code/modgen_time_based.mpp",   "WizardTimeBased",
-		"code/microdata_csv.h",         "OzProj",
 	);
 	
 	my $any_propagated = 0;
