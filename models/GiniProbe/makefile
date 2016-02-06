@@ -39,6 +39,18 @@ ifndef OUT_PREFIX
 endif
 
 #
+# default arguments for run control
+#
+
+ifdef MEMBERS
+  RUN_OPT_MEMBERS = -General.Subsamples $(MEMBERS) $(RUN_OPTS)
+endif
+
+ifdef THREADS
+  RUN_OPT_THREADS = -General.Threads $(THREADS) $(RUN_OPTS)
+endif
+
+#
 # location of output database
 #
 ifndef PUBLISH_DIR
@@ -200,6 +212,11 @@ $(PUBLISH_SQLITE) :
 	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql
 	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
 	$(SQLITE_EXE) $(PUBLISH_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql
+
+.PHONY : run
+run:
+	$(OUT_BIN_DIR)/$(MODEL_EXE) $(RUN_OPT_MEMBERS) $(RUN_OPT_THREADS) \
+		-OpenM.Database Database="$(PUBLISH_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:
