@@ -560,8 +560,9 @@ for my $model_dir (@model_dirs) {
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
 					"/p:RUN_SCENARIO=0",
-					"/p:RUN_EXPORT=0",
-					"/p:RUN_EXCEL=0",
+					"/p:EXPORT_CSV=0",
+					"/p:EXPORT_EXCEL=0",
+					"/p:EXPORT_EXCEL_LAUNCH=0",
 					"/t:Rebuild"
 					);
 				system(@args);

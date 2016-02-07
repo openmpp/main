@@ -12,14 +12,15 @@
     <RUN_SCENARIO>1</RUN_SCENARIO>
     <MEMBERS>1</MEMBERS>
     <THREADS>1</THREADS>
-    <PROCESSES>1</PROCESSES>
-    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
-    <DB_PROVIDER>SQLITE</DB_PROVIDER>
-    <EXPORT_EXCEL>0</EXPORT_EXCEL>
+    <EXPORT_CSV>1</EXPORT_CSV>
+    <EXPORT_EXCEL>1</EXPORT_EXCEL>
     <EXPORT_EXCEL_LANG>
     </EXPORT_EXCEL_LANG>
     <EXPORT_EXCEL_LAUNCH>0</EXPORT_EXCEL_LAUNCH>
     <OMC_USE_DIR>$(OM_ROOT)/use</OMC_USE_DIR>
+    <PROCESSES>1</PROCESSES>
+    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
+    <DB_PROVIDER>SQLITE</DB_PROVIDER>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -51,14 +52,8 @@
     <BuildMacro Include="THREADS">
       <Value>$(THREADS)</Value>
     </BuildMacro>
-    <BuildMacro Include="PROCESSES">
-      <Value>$(PROCESSES)</Value>
-    </BuildMacro>
-    <BuildMacro Include="GRID_COMPUTING">
-      <Value>$(GRID_COMPUTING)</Value>
-    </BuildMacro>
-    <BuildMacro Include="DB_PROVIDER">
-      <Value>$(DB_PROVIDER)</Value>
+    <BuildMacro Include="EXPORT_CSV">
+      <Value>$(EXPORT_CSV)</Value>
     </BuildMacro>
     <BuildMacro Include="EXPORT_EXCEL">
       <Value>$(EXPORT_EXCEL)</Value>
@@ -71,6 +66,15 @@
     </BuildMacro>
     <BuildMacro Include="OMC_USE_DIR">
       <Value>$(OMC_USE_DIR)</Value>
+    </BuildMacro>
+    <BuildMacro Include="PROCESSES">
+      <Value>$(PROCESSES)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GRID_COMPUTING">
+      <Value>$(GRID_COMPUTING)</Value>
+    </BuildMacro>
+    <BuildMacro Include="DB_PROVIDER">
+      <Value>$(DB_PROVIDER)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

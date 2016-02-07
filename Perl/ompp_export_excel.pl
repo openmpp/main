@@ -113,8 +113,6 @@ $sql = "
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
-my $model_id;
-my $model_name;
 chomp $result;
 (my $model_id, my $model_name) = split(/[|]/, $result);
 logmsg info, $script_name, "model_id=${model_id} model_name=${model_name}" if $verbosity >= 1;
@@ -159,7 +157,6 @@ $sql = "
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
-my $lang_code;
 chomp $result;
 (my $lang_code) = split(/[|]/, $result);
 logmsg info, $script_name, "lang_code=${lang_code}" if $verbosity >= 1;
@@ -194,7 +191,7 @@ $sql = "
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
-my $result = run_sqlite_statement $db, $sql, $failure;
+$result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 my @table_labels;
 for my $record (split(/\n/, $result)) {
@@ -227,7 +224,7 @@ $sql = "
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
-my $result = run_sqlite_statement $db, $sql, $failure;
+$result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 my %table_expr_labels;
 for my $record (split(/\n/, $result)) {
@@ -244,7 +241,7 @@ $sql = "
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
-my $result = run_sqlite_statement $db, $sql, $failure;
+$result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 my %table_dim_types;
 my %table_dim_margin;
@@ -263,7 +260,7 @@ $sql = "
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
-my $result = run_sqlite_statement $db, $sql, $failure;
+$result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 logmsg info, $script_name, "result", $result if $verbosity >= 2;
 my %table_dim_labels;
@@ -281,7 +278,7 @@ $sql = "
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
-my $result = run_sqlite_statement $db, $sql, $failure;
+$result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 my %enum_labels;
 for my $record (split(/\n/, $result)) {
@@ -292,7 +289,7 @@ for my $record (split(/\n/, $result)) {
 # Create table_worksheet names by mangling table_names
 my @table_worksheet_names;
 for my $table_id (@table_ids) {
-	my $table_worksheet_name = @table_names[$table_id];
+	my $table_worksheet_name = $table_names[$table_id];
 	# TODO - mangle name to shorten
 	$table_worksheet_names[$table_id] = $table_worksheet_name; 
 }
@@ -327,9 +324,6 @@ $sql = "
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
-my $run_id;
-my $run_date_time;
-my $pieces;
 chomp $result;
 (my $run_id, my $run_date_time, my $pieces) = split(/[|]/, $result);
 logmsg info, $script_name, "run_id=${run_id} run_date_time=${run_date_time} pieces=${pieces}" if $verbosity >= 1;
@@ -345,8 +339,6 @@ $sql = "
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
-my $set_id;
-my $set_name;
 chomp $result;
 (my $set_id, my $set_name) = split(/[|]/, $result);
 logmsg info, $script_name, "set_id=${set_id} set_name=${set_name}" if $verbosity >= 1;
@@ -484,7 +476,7 @@ for my $table_id (@table_ids) {
 	# Get table data from csv and insert into sheet
 	# Note that multiple records are read into one 'observation' which includes all expressions in the table
 	$retcode = open CSV, "<${tmpdir}/${table_name}.csv";
-	if ($retcode == undef) {
+	if (!defined($retcode)) {
 		logmsg error, $script_name, "unable to open ${tmpdir}/${table_name}.csv, retcode=${retcode}";
 		exit 1;
 	}

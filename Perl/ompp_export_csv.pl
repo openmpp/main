@@ -47,8 +47,8 @@ if (! -s $db) {
 	exit -1;
 }
 
-if (! -d $out_dir) {
-	logmsg error, $script_name, "Destination directory '${out_dir}' not found\n";
+if (-d $out_dir || -f $out_dir) {
+	logmsg error, $script_name, "Output directory for csv files '${out_dir}' must not already exist\n";
 	exit -1;
 }
 

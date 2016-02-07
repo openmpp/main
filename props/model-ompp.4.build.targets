@@ -33,6 +33,9 @@
 	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
         Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
     <Error
+	    Text="EXPORT_CSV must be either 0 or 1. Value is $(EXPORT_CSV)"
+        Condition=" ! ( '$(EXPORT_CSV)' == '0' Or '$(EXPORT_CSV)' == '1' )" />
+    <Error
 	    Text="EXPORT_EXCEL must be either 0 or 1. Value is $(EXPORT_EXCEL)"
         Condition=" ! ( '$(EXPORT_EXCEL)' == '0' Or '$(EXPORT_EXCEL)' == '1' )" />
     <Error
@@ -155,7 +158,27 @@
 
 
   <!--
-  RunExport
+  ExportCsv
+  -->
+
+  
+  <PropertyGroup>
+    <CSV_EXPORT_DIR>$(PUBLISH_DIR)/$(SCENARIO_NAME)</CSV_EXPORT_DIR>
+  </PropertyGroup>
+
+  <Target Name="ExportCsv"
+          Condition="'$(EXPORT_CSV)'=='1'"
+          AfterTargets="RunModel"
+          >
+    <RemoveDir Directories="$(CSV_EXPORT_DIR)" />
+    <Message Text="Exporting scenario $(SCENARIO_NAME) to csv..." />
+    <Message Text="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
+    <Exec Command="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
+  </Target>
+
+  
+  <!--
+  ExportExcel
   -->
 
   
@@ -165,13 +188,13 @@
     <EXCEL_EXPORT_OPT Condition="'$(EXPORT_EXCEL_LANG)'!=''">--lang $(EXPORT_EXCEL_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
 
-  <Target Name="RunExport"
+  <Target Name="ExportExcel"
           Condition="'$(EXPORT_EXCEL)'=='1'" 
           Inputs="$(RUN_MODEL_TICKLE)"
           Outputs="$(EXCEL_EXPORT_OUT)"
           AfterTargets="RunModel"
           >
-    <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
+    <Message Text="Exporting scenario $(SCENARIO_NAME) to Excel..." />
     <Message Text="$(COMPLETE_OMPP_EXPORT_EXCEL_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
     <Exec Command="$(COMPLETE_OMPP_EXPORT_EXCEL_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
   </Target>
@@ -184,7 +207,7 @@
   
   <Target Name="RunExcel"
           Condition="'$(EXPORT_EXCEL_LAUNCH)'=='1'"
-          AfterTargets="RunExport"
+          AfterTargets="ExportExcel"
           >
     <Message Text="Launching Excel with outputs from scenario $(SCENARIO_NAME)..." />
     <Exec Command="&quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
