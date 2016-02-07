@@ -193,6 +193,9 @@ sub ompp_tables_to_csv
 			$round_value = 1;
 		}
 	}
+	
+	# Change slashes from \ to / for sqlite3
+	$dir =~ s@[\\]@/@g;
 
 	if (! -d $dir) {
 		if (!mkdir $dir) {

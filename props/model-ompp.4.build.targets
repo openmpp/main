@@ -162,7 +162,7 @@
   <PropertyGroup>
     <EXCEL_EXPORT_OUT>$(PUBLISH_DIR)/$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
     <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
-    <EXCEL_EXPORT_OPT Condition="'$(EXPORT_EXCEL_LANG)'!=''">-lang $(EXPORT_EXCEL_LANG)</EXCEL_EXPORT_OPT>
+    <EXCEL_EXPORT_OPT Condition="'$(EXPORT_EXCEL_LANG)'!=''">--lang $(EXPORT_EXCEL_LANG)</EXCEL_EXPORT_OPT>
   </PropertyGroup>
 
   <Target Name="RunExport"
@@ -172,8 +172,8 @@
           AfterTargets="RunModel"
           >
     <Message Text="Exporting scenario $(SCENARIO_NAME)..." />
-    <Message Text="$(COMPLETE_EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
-    <Exec Command="$(COMPLETE_EXCEL_EXPORT_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
+    <Message Text="$(COMPLETE_OMPP_EXPORT_EXCEL_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
+    <Exec Command="$(COMPLETE_OMPP_EXPORT_EXCEL_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
   </Target>
 
   

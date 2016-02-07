@@ -1,44 +1,54 @@
-# Copyright (c) 2013-2014 OpenM++
-# This code is licensed under MIT license (see LICENSE.txt for details)
+# Copyright (c) 2013-2016 OpenM++ contributors
+# This code is licensed under the MIT license (see LICENSE.txt for details)
 
-# Script to export the output tables of a SQLite scenario to Excel in pivot table format
+# Script to export the output tables of a SQLite scenario to Excel 
+# Workbook structure is identical to Modgen export to Excel "pivot table format"
 
 use strict;
+use warnings;
+
+my $script_name = "ompp_export_excel";
+my $script_version = '1.0';
+
+use Getopt::Long::Descriptive;
+
+my ($opt, $usage) = describe_options(
+	$script_name.' %o <source-sqlite> <destination-folder>',
+	[ 'help|h'    => "print usage message and exit" ],
+	[ 'version|v' => "print version and exit" ],
+	[ 'lang|l=s'  => "language of labels (a language declared in the model)",
+		{ default => '' } ],
+);
+
+if ($opt->version) {
+	print $script_name.' version '.$script_version."\n";
+	exit 0;
+}
+
+if ($opt->help) {
+	print $usage->text;
+	exit 0;
+}
+
+if ($#ARGV != 1) {
+	# must have exactly two arguments
+	print $usage->text;
+	exit -1;
+}
+
+my $db = shift @ARGV;
+my $workbook_xlsx = shift @ARGV;
+
+# Control verbosity of log output (0, 1, 2)
+my $verbosity = 0;
+
+my $lang_code_requested = $opt->lang;
+
 use Excel::Writer::XLSX;
 use File::Spec;
 use File::Temp qw(tempdir);
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 
-my $version = 0.3;
-
-if ( $#ARGV == -1 ) {
-	print "excel_export version $version\n";
-	print "usage: excel_export [-lang lang_code] in_sqlite out_xlsx\n";
-	print "  example: excel_export RiskPaths.sqlite Base(tbl).xlsx\n";
-	print "  example: excel_export -lang FR RiskPaths.sqlite Base(tbl).xlsx\n";
-	exit;
-}
-
-# Control verbosity of log output (0, 1, 2)
-my $verbosity = 0;
-
-my $script_name = "excel_export";
-my $lang_code_requested = "";
-if (@ARGV[0] eq "-lang") {
-	shift @ARGV;
-	$lang_code_requested = shift @ARGV;
-}
-if ( $#ARGV != 1 ) {
-	# must have two arguments
-	print "excel_export version $version\n";
-	print "usage: excel_export [-lang lang_code] in_slqite out_xlsx\n";
-	print "  example: excel_export RiskPaths.sqlite Base(tbl).xlsx\n";
-	print "  example: excel_export -lang FR RiskPaths.sqlite Base(tbl).xlsx\n";
-	exit;
-}
-
-my $db = shift @ARGV;
-my $workbook_xlsx = shift @ARGV;
 my $success;
 my $failure;
 my $retcode;
@@ -60,7 +70,7 @@ if ($@) {
 	exit;
 }
 
-if (!-s $db) {
+if (! -s $db) {
 	logmsg error, $script_name, "SQLite database ${db} not found\n";
 }
 if (-s $workbook_xlsx) {
@@ -69,9 +79,6 @@ if (-s $workbook_xlsx) {
 
 # Extract csv versions of tables to a temporary folder
 my $tmpdir = tempdir(CLEANUP => 1);
-#my $tmpdir = tempdir();
-# Change slashes from \ to / for sqlite3
-$tmpdir =~ s@[\\]@/@g;
 
 logmsg info, "excel_export", "extracting tables to ${tmpdir}" if $verbosity >= 1;
 $failure = ompp_tables_to_csv($db, $tmpdir);

@@ -7,7 +7,7 @@ use strict;
 
 use File::Compare;
 
-my $create_scex_exe = '../../create_scex.exe';
+my $create_scex_exe = '../../bin/ompp_create_scex.exe';
 
 my $correct_scex = 'Correct.scex';
 my $in_odat = 'Base(Framework).odat';

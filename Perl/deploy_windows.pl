@@ -12,6 +12,7 @@ if ($#ARGV == 0 && $ARGV[0] eq '-no64') {
 	shift @ARGV;
 }
 
+print "Rebuilding tools and utilities\n";
 do 'build_tools.pl' || die;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
@@ -35,24 +36,28 @@ use Cwd qw(getcwd);
 my $om_root = getcwd;
 
 # Preliminary check of source folder structure
-for my $subdir ('bin', 'include', 'openm', 'lib', 'props', 'R', 'sql', 'use', 'models') {
+for my $subdir ('bin', 'include', 'openm', 'lib', 'props', 'R', 'Excel', 'sql', 'use', 'models') {
 	-d "${om_root}/${subdir}" or die "Missing directory ${om_root}/${subdir}";
 }
 
 my $deploy_dir = "deploy_windows";
+print "Removing previous deployment directory ${deploy_dir}\n";
 remove_tree $deploy_dir;
 mkdir $deploy_dir or die "Unable to remove deployment directory ${deploy_dir}";
 
 my $subdir;
 my @files;
 
+print "Copying files and folders to ${deploy_dir}\n";
+
 # bin
 $subdir = 'bin';
 @files = (
 	'omc.exe',
 	'sqlite3.exe',
-	'create_scex.exe',
-	'excel_export.exe',
+	'ompp_create_scex.exe',
+	'ompp_export_csv.exe',
+	'ompp_export_excel.exe',
 	'patch_modgen11_outputs.exe',
 	'patch_modgen12_outputs.exe',
 	);
@@ -95,6 +100,10 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # R
 $subdir = 'R';
+dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+
+# Excel
+$subdir = 'Excel';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # Perl
@@ -197,7 +206,7 @@ chdir "${om_root}/deploy_windows" or die;
 if (-e $seven_zip) {
 	my $time_stamp = strftime "%Y%m%d", localtime;
 	my $archive = "openmpp_win_${time_stamp}.zip";
-	print "Construct archive $archive\n";
+	print "Constructing archive $archive\n";
 	unlink $archive;
 	($stdout, $stderr) = capture {
 		my @args = ("$seven_zip", "a", "-tzip", '"'.$archive.'"',
