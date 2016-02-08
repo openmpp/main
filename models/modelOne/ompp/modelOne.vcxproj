@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- OM_ROOT set first allows indirection to folder containing props files -->
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+    <MODEL_SRC_DIR Condition="'$(MODEL_SRC_DIR)'==''">$(ProjectDir)..</MODEL_SRC_DIR>
+  </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -70,19 +75,19 @@
   <PropertyGroup>
     <MODEL_NAME>$(ProjectName)</MODEL_NAME>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)../../props/model-ompp.1.build.props" />
-  <Import Project="$(SolutionDir)../../props/model-ompp.2.cpp.props" />
+  <Import Project="$(OM_ROOT)/props/model-ompp.1.build.props" />
+  <Import Project="$(OM_ROOT)/props/model-ompp.2.cpp.props" />
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)/modelOne.cpp" />
-    <ClCompile Include="$(SolutionDir)/modelOne_om.cpp" />
+    <ClCompile Include="$(MODEL_SRC_DIR)/modelOne.cpp" />
+    <ClCompile Include="$(MODEL_SRC_DIR)/modelOne_om.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(SolutionDir)/modelOne_om.h" />
+    <ClInclude Include="$(MODEL_SRC_DIR)/modelOne_om.h" />
   </ItemGroup>
   <ItemGroup>
-    <SqlScript Include="$(SolutionDir)/modelOne_create_model_sqlite.sql" />
-    <SqlScript Include="$(SolutionDir)/modelOne_insert_param_sqlite.sql" />
-    <SqlScript Include="$(SolutionDir)/modelOne_optional_views_sqlite.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_create_model_sqlite.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_insert_param_sqlite.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_optional_views_sqlite.sql" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
