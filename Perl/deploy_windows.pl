@@ -54,10 +54,17 @@ print "Copying files and folders to ${deploy_dir}\n";
 $subdir = '.';
 @files = (
 	'README_win.txt',
+	'LICENSE.txt',
+	'AUTHORS.txt',
 	);
 for my $file (@files) {
 	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }
+
+# licenses
+$subdir = 'props';
+dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+
 
 # lib
 $subdir = 'lib';
