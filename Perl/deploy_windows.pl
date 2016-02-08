@@ -36,7 +36,7 @@ use Cwd qw(getcwd);
 my $om_root = getcwd;
 
 # Preliminary check of source folder structure
-for my $subdir ('bin', 'include', 'openm', 'lib', 'props', 'R', 'Excel', 'sql', 'use', 'models') {
+for my $subdir ('licenses', 'bin', 'include', 'openm', 'lib', 'props', 'R', 'Excel', 'sql', 'use', 'models') {
 	-d "${om_root}/${subdir}" or die "Missing directory ${om_root}/${subdir}";
 }
 
@@ -50,7 +50,7 @@ my @files;
 
 print "Copying files and folders to ${deploy_dir}\n";
 
-# root
+# ompp root
 $subdir = '.';
 @files = (
 	'README_win.txt',
@@ -62,9 +62,28 @@ for my $file (@files) {
 }
 
 # licenses
-$subdir = 'props';
+$subdir = 'licenses';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
+# bin
+$subdir = 'bin';
+@files = (
+	'omc.exe',
+	'ompp_create_scex.exe',
+	'ompp_export_csv.exe',
+	'ompp_export_excel.exe',
+	'README.openm.win.txt',
+	'patch_modgen11_outputs.exe',
+	'patch_modgen12_outputs.exe',
+	'sqlite3.exe',
+	);
+mkdir "${deploy_dir}/${subdir}" or die;
+for my $file (@files) {
+	if ($no64 && $file =~ /64/) {
+		next;
+	}
+	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
+}
 
 # lib
 $subdir = 'lib';
