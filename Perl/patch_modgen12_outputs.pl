@@ -63,7 +63,8 @@ if (!-d $src_dir) {
 			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
 			print $fh $original_line;
 			$line =~ s/ int/ std::floor/;
-			print "patched ${file_name}: ${line}";
+			$line .= " // Modified by patch_modgen12_outputs after Modgen compilation.";
+			print "patched ${file_name}: ${line}\n";
 		}
 		print $fh $line."\n";
 	}

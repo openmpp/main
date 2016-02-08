@@ -50,18 +50,11 @@ my @files;
 
 print "Copying files and folders to ${deploy_dir}\n";
 
-# bin
-$subdir = 'bin';
+# root
+$subdir = '.';
 @files = (
-	'omc.exe',
-	'sqlite3.exe',
-	'ompp_create_scex.exe',
-	'ompp_export_csv.exe',
-	'ompp_export_excel.exe',
-	'patch_modgen11_outputs.exe',
-	'patch_modgen12_outputs.exe',
+	'README_win.txt',
 	);
-mkdir "${deploy_dir}/${subdir}" or die;
 for my $file (@files) {
 	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }

@@ -493,7 +493,7 @@ for my $table_id (@table_ids) {
 		my $expr_id = $fields[$table_rank] + 0;
 		my $value = $fields[$table_rank + 1];
 		my $value_missing = 0;
-		if ( $value eq '') {
+		if ( !defined($value) || $value eq '') {
 			$value_missing = 1;
 		}
 		else {

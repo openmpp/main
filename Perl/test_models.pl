@@ -6,6 +6,11 @@
 # usage: perl test_models.pl [-newref] [-nomodgen] [-noompp] models
 # If models is not specified, all models will be processed.
 
+use Cwd qw(abs_path);
+my $script_path = abs_path($0);
+$script_path =~ s@[^/\\]*$@@;
+print "script_path=".$script_path."\n";
+
 
 #####################
 # Common settings
@@ -147,7 +152,7 @@ if ($is_windows) {
 	#				run_jet_statement
 	#				modgen_tables_to_csv
 	#			);
-	require "${om_root}/perl/common_windows.pm";
+	require "${script_path}/common_windows.pm";
 }
 
 ###############
