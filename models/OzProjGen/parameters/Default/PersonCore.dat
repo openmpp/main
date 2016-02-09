@@ -1,5 +1,5 @@
 parameters {
-	file	MicroDataOutputFile = "$OM_ROOT/models/Microdata/OzProj22_5K.csv"; //EN Output file for synthetic starting population
+	file	MicroDataOutputFile = "$OM_ROOT/models/microdata/OzProj22_5K.csv"; //EN Output file for synthetic starting population
 /* NOTE ( StartPopDistn, EN )
 >Source: ABS 3101.0 Table 59 ERP by single year of age, Australia
 */
