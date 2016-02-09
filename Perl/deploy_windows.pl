@@ -140,6 +140,10 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 # models
 mkdir "${deploy_dir}/models" or die;
 
+# models bin: pre-built models binaries and sample database
+mkdir "${deploy_dir}/models/bin" or die;
+my $models_bin = "${deploy_dir}/models/bin";
+
 $subdir = 'models/microdata';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
@@ -194,6 +198,21 @@ for my $model (@models) {
 	for my $file (@files) {
 		copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 	}
+	
+	# model exe
+	copy "${model_dir}/ompp/bin/${model}.exe", "${models_bin}" 
+		or die "Failed to copy ${model_dir}/ompp/bin/${model}.exe";
+		
+	# model db.sqlite, use default name for database file to open without explicit connection string
+	copy "${model_dir}/output/${model}_Default.sqlite", "${models_bin}/${model}.sqlite" 
+		or die "Failed to copy ${model_dir}/output/${model}_Default.sqlite";
+	
+	# model sql files
+	$subdir = "${model_dir}/ompp/src";
+	my @files = glob("${subdir}/*.sql");
+	for my $file (@files) {
+		copy "${om_root}/${file}", "${models_bin}" or die "Failed to copy ${subdir}/${file}";
+	}
 }
 
 
@@ -212,6 +231,25 @@ mkdir "${deploy_dir}/${subdir}" or die;
 my @files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters");
 for my $file (@files) {
 	copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
+}
+
+# modelOne executable, sql scripts and if exists ini-file and db.sqlite
+my $model_dir = "${om_root}/models/modelOne";
+copy "${model_dir}/ompp/bin/modelOne.exe", "${models_bin}" or die "Failed to copy ${model_dir}/ompp/bin/modelOne.exe";
+
+my @files = glob("${model_dir}/*_sqlite.sql");
+for my $file (@files) {
+	copy "${file}", "${models_bin}" or die "Failed to copy ${file}";
+}
+	
+my $model_ini = "${model_dir}/modelOne.ini";
+if (-e $model_ini) {
+	copy "${model_ini}", "${models_bin}" or die "Failed to copy ${model_ini}";
+}
+
+my $model_sqlite = "${model_dir}/ompp/modelOne.sqlite";
+if (-e $model_sqlite) {
+	copy "${model_sqlite}", "${models_bin}" or die "Failed to copy ${model_sqlite}";
 }
 
 
