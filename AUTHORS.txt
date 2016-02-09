@@ -1,0 +1,26 @@
+--------------------
+OpenM++ contributors
+--------------------
+
+Original version created in 2013 by:
+                                                          Contributing
+                    User ID    E-mail                     Organization
+                    ---------  -------------------------  ------------
+Steve Gribble       esseffgee  steve.gribble@hotmail.com  uOttawa
+Anatoly Cherkassky  amc1999    anatoly@beyond2020.com     uOttawa
+
+--------------------------
+Contributing Organizations
+--------------------------
+
+Following organizations are intellectual property holders of OpenM++:
+
+uOttawa: University of Ottawa, www.uottawa.ca
+
+----------
+Contact Us
+----------
+
+openmpp99@gmail.com
+www.openmpp.org
+ommp.sourceforge.net

@@ -6,16 +6,10 @@
 # usage: perl test_models.pl [-newref] [-nomodgen] [-noompp] models
 # If models is not specified, all models will be processed.
 
-chdir "../models" || die "Invoke test_models from Perl folder";
-use Cwd qw(getcwd);
-my $models_root = getcwd;
-
-# Get root of ompp dev system to assign OM_ROOT later for build props files
-# This makes the script work independently of the OM_ROOT environment variable
-chdir "..";
-my $om_root = getcwd;
-
-chdir $models_root;
+use Cwd qw(abs_path);
+my $script_path = abs_path($0);
+$script_path =~ s@[^/\\]*$@@;
+print "script_path=".$script_path."\n";
 
 
 #####################
@@ -44,8 +38,8 @@ my $omc_exe = 'omc.exe';
 #my $ompp_configuration = "Debug";
 my $ompp_configuration = "Release";
 
-#my $ompp_platform = "Win32";
-my $ompp_platform = "x64";
+my $ompp_platform = "Win32";
+#my $ompp_platform = "x64";
 
 #####################
 # ompp-linux settings
@@ -67,20 +61,52 @@ my $modgen_platform = "Win32";
 #my $modgen_platform = "x64";
 
 #####################
+# There are no configuration settings in subsequent code in this script
+#####################
+
+use strict;
+
+use Cwd qw(getcwd);
+
+my $om_root = $ENV{'OM_ROOT'};
+if ( $om_root eq '') {
+	# Try parent directory, assuming this script was invoked in the OM_ROOT/Perl directory
+	my $save_dir = getcwd();
+	chdir '..';
+	$om_root = getcwd();
+	chdir $save_dir;
+}
+else {
+	-d $om_root || die "directory not found OM_ROOT='${om_root}'\n";
+}
+
+
+# Default location assumes script is invoked from OM_ROOT/Perl.
+my $models_root = "../models";
+
+# Check for and process -m <model-folder> option
+if ($#ARGV >= 0) {
+	if ( $ARGV[0] eq "-m") {
+		# discard -m argument
+		shift @ARGV;
+		# get immediately following value
+		$models_root = @ARGV[0];
+		shift @ARGV;
+	}
+}
+
+chdir $models_root || die "Folder ${models_root} not found";
+my $models_root = getcwd; # to ensure is absolute path
+
+#####################
 # file locations
 #####################
 
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
 my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
-my $create_db_sqlite_sql = "${models_root}/../sql/sqlite/create_db_sqlite.sql";
+my $create_db_sqlite_sql = "${om_root}/sql/sqlite/create_db_sqlite.sql";
 
-
-#####################
-# There are no configuration settings in subsequent code in this script
-#####################
-
-use strict;
 
 # determine if running on windows or linux
 my $is_windows = 1;
@@ -126,7 +152,7 @@ if ($is_windows) {
 	#				run_jet_statement
 	#				modgen_tables_to_csv
 	#			);
-	require "../perl/common_windows.pm";
+	require "${script_path}/common_windows.pm";
 }
 
 ###############
@@ -212,7 +238,7 @@ if ($is_windows) {
 			exit 1;
 		}
 		push @flavours, 'ompp';
-		my $full_path = "${models_root}/../bin/${omc_exe}";
+		my $full_path = "${om_root}/bin/${omc_exe}";
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
@@ -222,7 +248,7 @@ if ($is_windows) {
 else { # linux
 	push @flavours, 'ompp-linux';
 	my $omc_exe = 'omc';
-	my $full_path = "${models_root}/../bin/${omc_exe}";
+	my $full_path = "${om_root}/bin/${omc_exe}";
 	-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 	my $sb = stat($full_path);
 	my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
@@ -306,7 +332,7 @@ for my $model_dir (@model_dirs) {
 		# Folders for reference model outputs
 		my $reference_outputs_dir = "${reference_dir}/outputs";
 
-		my $generated_code_dir = "${project_dir}/src";
+		my $generated_code_dir = "${project_dir}/build/src";
 		remove_tree $generated_code_dir;
 		make_path $generated_code_dir;
 
@@ -361,7 +387,7 @@ for my $model_dir (@model_dirs) {
 					"/p:Configuration=${modgen_configuration}",
 					"/p:Platform=${modgen_platform}",
 					"/p:MODGEN_VERSION=${modgen_version}",
-					"/p:SCENARIO_NAME=Base",
+					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:RUN_SCENARIO=0",
 					"/t:Rebuild",
 					);
@@ -404,54 +430,6 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 
-			# #####################################
-			# # Create Base scenario file (modgen)#
-			# #####################################
-			
-			# logmsg info, $model_dir, $flavour, "Create Base scenario file" if $verbosity >= 2;
-			
-			# # Base scenario will be run in target_dir (where model executable is located)
-			# chdir "${target_dir}";
-			
-			# # The odat Framework parameter file for the Base scenario.
-			# # Parameters in that file will be transformed into scenario settings in the Base.scex file
-			# my @Base_Framework_odat_candidates = glob "${parameters_dir}/Base/*Framework*.odat";
-			# if ( 0 + @Base_Framework_odat_candidates == 0 ) {
-				# logmsg error, $model_dir, $flavour, "Missing ompp Framework odat parameter file";
-				# next FLAVOUR;
-			# }
-			# if ( 0 + @Base_Framework_odat_candidates > 1 ) {
-				# logmsg error, $model_dir, $flavour, "Ambiguous ompp Framework odat parameter file";
-				# next FLAVOUR;
-			# }
-			# my $Base_Framework_odat = pop @Base_Framework_odat_candidates;
-
-			# # The ompp Framework model code file for the model
-			# # 'use' statements in that file are used to determine scenario settings in the Base.scex file
-			# my $ompp_framework_ompp = "${model_source_dir}/ompp_framework.ompp";
-			# if ( ! -e $ompp_framework_ompp ) {
-				# logmsg error, $model_dir, $flavour, "Missing ompp framework model code file: $ompp_framework_ompp";
-				# next FLAVOUR;
-			# }
-
-			# # The name of the Modgen Base scenario file
-			# # (will be created by this script, in the same directory as the model executable)
-			# my $modgen_Base_scex = "Base.scex";
-			# unlink $modgen_Base_scex;
-
-			# # List of all the .dat files in the Base scenario
-			# # with relative paths (so .scex file works independnent of ompp installation folder.
-			# my @modgen_Base_dats;
-			# push @modgen_Base_dats, glob("../../parameters/Base/*.dat");
-			# push @modgen_Base_dats, glob("../../parameters/Fixed/*.dat");
-
-			# # Create the Modgen scex scenario file
-			# modgen_create_scex($publish_scex, $Base_Framework_odat, $ompp_framework_ompp, $model_props, @modgen_Base_dats);
-			# if ( ! -e $modgen_Base_scex ) {
-				# logmsg error, $model_dir, $flavour, "Missing Base scenario file: $modgen_Base_scex";
-				# next FLAVOUR;
-			# }
-
 			my $elapsed_seconds = time - $start_seconds;
 			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
 			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $verbosity >= 1;
@@ -471,8 +449,8 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
 
 			# Delete output database to enable subsequent check for success
-			my $modgen_Base_mdb = "${publish_dir}/${scenario_name}(tbl).mdb";
-			unlink $modgen_Base_mdb;
+			my $modgen_scenario_mdb = "${publish_dir}/${scenario_name}(tbl).mdb";
+			unlink $modgen_scenario_mdb;
 
 			($merged, $retval) = capture_merged {
 				my @args = (
@@ -491,8 +469,8 @@ for my $model_dir (@model_dirs) {
 				logerrors $merged;
 				next FLAVOUR;
 			}
-			if ( ! -e $modgen_Base_mdb ) {
-				logmsg error, $model_dir, $flavour, "Missing Base scenario database: ${modgen_Base_mdb}";
+			if ( ! -e $modgen_scenario_mdb ) {
+				logmsg error, $model_dir, $flavour, "Missing scenario database: ${modgen_scenario_mdb}";
 				next FLAVOUR;
 			}
 
@@ -501,19 +479,19 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			# Copy model run log file to logs directory
-			my $modgen_Base_log_txt = "${publish_dir}/${scenario_name}(log).txt";
-			if (-s $modgen_Base_log_txt) {
-				copy $modgen_Base_log_txt, $current_logs_dir;
+			my $modgen_scenario_log_txt = "${publish_dir}/${scenario_name}(log).txt";
+			if (-s $modgen_scenario_log_txt) {
+				copy $modgen_scenario_log_txt, $current_logs_dir;
 			}
 			
 			# If present, copy event trace / case checksum file to results directory
-			my $modgen_Base_debug_txt = "${publish_dir}/${scenario_name}(debug).txt";
-			if (-e $modgen_Base_debug_txt) {
-				normalize_event_trace $modgen_Base_debug_txt, "${current_outputs_dir}/trace.txt";
+			my $modgen_scenario_debug_txt = "${publish_dir}/${scenario_name}(debug).txt";
+			if (-e $modgen_scenario_debug_txt) {
+				normalize_event_trace $modgen_scenario_debug_txt, "${current_outputs_dir}/trace.txt";
 			}
 			
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
-			if ( 0 != modgen_tables_to_csv($modgen_Base_mdb, $current_outputs_dir, $significant_digits)) {
+			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits)) {
 				next FLAVOUR;
 			}
 
@@ -534,7 +512,7 @@ for my $model_dir (@model_dirs) {
 			#####################################
 
 			# Change working directory to project directory for compilation.
-			chdir ${project_dir} || die;
+			chdir $project_dir || die;
 
 			# The property sheet containing user macros
 			my $model_props = "Model.props";
@@ -556,10 +534,20 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
+			# Determine fixed parameter folder from FIXED_PARAMETERS_FOLDER user macro in Model.props
+			my $fixed_parameters_folder = get_user_macro($model_props, 'FIXED_PARAMETERS_FOLDER');
+			# Use files in Fixed folder if not empty, independent of user macro ENABLE_FIXED_PARAMETERS
+			# This works around a consequence of propagate_invariant, which copies WizardCaseBased/ompp/Model.props,
+			# which does not use parameters/Fixed
+			my $enable_fixed_parameters = '0';
+			if ( -d $fixed_parameters_folder ) {
+				$enable_fixed_parameters = '1';
+			}
+			
 			# Project file
 			my $model_vcxproj = 'model.vcxproj';
 			
-			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and Base scenario" if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and scenario" if $verbosity >= 2;
 			my $build_log = "msbuild.log";
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
@@ -574,10 +562,12 @@ for my $model_dir (@model_dirs) {
 					"/p:Configuration=${ompp_configuration}",
 					"/p:Platform=${ompp_platform}",
 					"/p:GRID_COMPUTING=EMPTY",
-					"/p:SCENARIO_NAME=Base",
+					"/p:SCENARIO_NAME=${scenario_name}",
+					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
 					"/p:RUN_SCENARIO=0",
-					"/p:RUN_EXPORT=0",
-					"/p:RUN_EXCEL=0",
+					"/p:EXPORT_CSV=0",
+					"/p:EXPORT_EXCEL=0",
+					"/p:EXPORT_EXCEL_LAUNCH=0",
 					"/t:Rebuild"
 					);
 				system(@args);
@@ -639,8 +629,8 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
-			my $ompp_trace_txt = "Base_trace.txt";
-			my $ompp_log_txt = "Base_log.txt";
+			my $ompp_trace_txt = "${scenario_name}_trace.txt";
+			my $ompp_log_txt = "${scenario_name}_log.txt";
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${model_exe}",
@@ -648,12 +638,12 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.LogFilePath", $ompp_log_txt,
 					"-OpenM.TraceToFile", "true",
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
-					"-OpenM.Database", "Database=$publish_sqlite; Timeout=86400; OpenMode=ReadWrite;",
+					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
 					);
 				system(@args);
 			};
 			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "Run Base scenario failed";
+				logmsg error, $model_dir, $flavour, "Run ${scenario_name} scenario failed";
 				logerrors $merged;
 				next FLAVOUR;
 			}
@@ -752,10 +742,12 @@ for my $model_dir (@model_dirs) {
 			}
 			copy $build_log, $current_logs_dir;
 
-			# Data store generated by build
-			my $model_sqlite = "${target_dir}/${model_name}.sqlite";
-			if ( ! -e $model_sqlite ) {
-				logmsg error, $model_dir, $flavour, "Missing data store: $model_sqlite";
+			# Database generated by build (align with PUBLISH_DIR in makefile, .props
+			my $publish_dir = "${project_dir}/../output-linux";
+			my $publish_sqlite = "${publish_dir}/${model_name}_${scenario_name}.sqlite";
+			if ( ! -f $publish_sqlite ) {
+				logmsg error, $model_dir, $flavour, "Missing database: ${publish_sqlite}";
+				logerrors $merged;
 				next FLAVOUR;
 			}
 
@@ -775,13 +767,11 @@ for my $model_dir (@model_dirs) {
 			}
 
 			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
-			# Change working directory to target_dir where the executable and data store
-			# are located. This avoids having to specify the data connection string
-			# explicitly when launching the model.
+			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
-			my $ompp_trace_txt = "Base_trace.txt";
-			my $ompp_log_txt = "Base_log.txt";
+			my $ompp_trace_txt = "${scenario_name}_trace.txt";
+			my $ompp_log_txt = "${scenario_name}_log.txt";
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${model_exe}",
@@ -789,11 +779,12 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.LogFilePath", $ompp_log_txt,
 					"-OpenM.TraceToFile", "true",
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
+					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
 					);
 				system(@args);
 			};
 			if ($retval != 0) {
-				logmsg error, $model_dir, "ompp", "Run Base scenario failed";
+				logmsg error, $model_dir, "ompp", "Run ${scenario_name} scenario failed";
 				logerrors $merged;
 				next FLAVOUR;
 			}
@@ -803,7 +794,7 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;;
-			if ( 0 != ompp_tables_to_csv($model_sqlite, $current_outputs_dir, $significant_digits)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits)) {
 				next FLAVOUR;
 			}
 

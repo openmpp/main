@@ -1,6 +1,0 @@
-parameters {
-    cumrate Discrete1[EYE_COLOUR] = {
-        0, 35, 55, 10
-    };
-};
-

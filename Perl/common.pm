@@ -193,6 +193,9 @@ sub ompp_tables_to_csv
 			$round_value = 1;
 		}
 	}
+	
+	# Change slashes from \ to / for sqlite3
+	$dir =~ s@[\\]@/@g;
 
 	if (! -d $dir) {
 		if (!mkdir $dir) {
@@ -298,7 +301,7 @@ sub get_user_macro
 	while (<MODEL_PROPS>) {
 		chomp;
 		my $line = $_;
-		if ( $line =~ /<${user_macro}>(\w+)<\/${user_macro}>/ ) {
+		if ( $line =~ /<${user_macro}>(.*)<\/${user_macro}>/ ) {
 			$value = $1;
 			last;
 		}

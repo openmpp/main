@@ -16,6 +16,17 @@ classification ATTENTION
     BORED
 };
 
+parameters {
+	//EN Default emotion
+	EMOTION DefaultEmotion;
+
+	//EN Wellness weights
+	double WellnessWeights[EMOTION];
+
+	//EN Wellness weights (derived)
+	model_generated double WellnessWeights2[EMOTION];
+};
+
 actor Person
 {
     logical is_birthday;
@@ -70,7 +81,11 @@ void Person::helper()
     TIME the_time2 = WAIT(TIME_t(my_time));
     TIME wait_time = min((TIME_t)my_happy_time, (TIME_t)my_sad_time);
 
-    // sidestep g++ warnings
+	double wellness = WellnessWeights[DefaultEmotion];
+
+	double wellness2 = WellnessWeights2[DefaultEmotion];
+
+	// sidestep g++ warnings
     forever++;
     any_time++;
     the_time++;

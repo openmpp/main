@@ -95,15 +95,16 @@ if (!-d $src_dir) {
 		if ($line =~ /#define\s+MAIN_MODULE/) {
 			my $modified_line = "//".$line." // Commented by patch_modgen11_outputs after Modgen compilation.\n";
 			print $fh $modified_line;
-			print "patched ${file_name}: $modified_line";
+			print "patched ${file_name}: ${modified_line}";
 			# skip it
 			next;
 		}
 		if ($line =~ /poDerivedStates->Set_ssint_age\( int\(value\) \);/) {
-			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
+			my $original_line = "//".$line." // Modified by patch_modgen11_outputs after Modgen compilation.\n";
 			print $fh $original_line;
 			$line =~ s/ int/ std::floor/;
-			print "patched ${file_name}: ${line}";
+			$line .= " // Modified by patch_modgen11_outputs after Modgen compilation.";
+			print "patched ${file_name}: ${line}\n";
 		}
 		print $fh $line."\n";
 	}

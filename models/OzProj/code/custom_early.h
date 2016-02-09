@@ -12,7 +12,7 @@
 #include <string>
 typedef std::string std_string; // Can be used instead of std::string in model code, to avoid Modgen issues when using 'string' in model code.
 
-#include "microdata_csv.h"
+#include "omc/microdata_csv.h"
 
 #if defined(MODGEN)
 namespace mm {

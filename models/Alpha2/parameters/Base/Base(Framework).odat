@@ -1,5 +1,0 @@
-parameters {
-	int SimulationSeed = 16807;
-	long long SimulationCases = 1000;
-};
-
