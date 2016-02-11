@@ -140,9 +140,13 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 # models
 mkdir "${deploy_dir}/models" or die;
 
-# models bin: pre-built models binaries and sample database
-mkdir "${deploy_dir}/models/bin" or die;
+# models bin: pre-built models exe, database
 my $models_bin = "${deploy_dir}/models/bin";
+mkdir "${models_bin}" or die;
+
+# models sql: models sql scripts used to create database
+my $models_sql = "${deploy_dir}/models/sql";
+mkdir "${models_sql}" or die;
 
 $subdir = 'models/microdata';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
@@ -203,7 +207,7 @@ for my $model (@models) {
 	copy "${model_dir}/ompp/bin/${model}.exe", "${models_bin}" 
 		or die "Failed to copy ${model_dir}/ompp/bin/${model}.exe";
 		
-	# model db.sqlite, use default name for database file to open without explicit connection string
+	# model db.sqlite, use default name for database file in order to open without explicit connection string
 	copy "${model_dir}/output/${model}_Default.sqlite", "${models_bin}/${model}.sqlite" 
 		or die "Failed to copy ${model_dir}/output/${model}_Default.sqlite";
 	
@@ -211,7 +215,7 @@ for my $model (@models) {
 	$subdir = "${model_dir}/ompp/src";
 	my @files = glob("${subdir}/*.sql");
 	for my $file (@files) {
-		copy "${om_root}/${file}", "${models_bin}" or die "Failed to copy ${subdir}/${file}";
+		copy "${om_root}/${file}", "${models_sql}" or die "Failed to copy ${subdir}/${file}";
 	}
 }
 
@@ -239,7 +243,7 @@ copy "${model_dir}/ompp/bin/modelOne.exe", "${models_bin}" or die "Failed to cop
 
 my @files = glob("${model_dir}/*_sqlite.sql");
 for my $file (@files) {
-	copy "${file}", "${models_bin}" or die "Failed to copy ${file}";
+	copy "${file}", "${models_sql}" or die "Failed to copy ${file}";
 }
 	
 my $model_ini = "${model_dir}/modelOne.ini";
