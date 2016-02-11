@@ -157,6 +157,7 @@ for my $file (@files) {
 
 # Selected models
 @models = (
+	'Alpha1',
 	'IDMM',
 	'OzProj',
 	'OzProjGen',
