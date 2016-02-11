@@ -1,0 +1,102 @@
+//LABEL(Health, EN) Health
+
+/* NOTE(Movement, EN)  This module contains parameters, state variables, and events associated with health.  */
+
+range R_0_5	//EN 0 to 5
+{	0, 5 };
+
+range R_0_6	//EN 0 to 6
+{	0, 6 };
+
+range R_0_7 //EN 0 to 7
+{ 0, 7 }; 
+
+parameter_group HealthParameters //EN Health parameters
+{	HdelP,
+	HdelCuts,
+	HIncomeParam
+};
+
+parameters
+{	double HdelP[R_0_5];		//EN probability of health change
+	double HdelCuts[R_0_6]; 	//EN hDel cut range   
+	double HIncomeParam;        //EN health income parameter
+	model_generated double HealthRates[R_0_99]; //EN health change rates
+};
+
+actor Person
+{
+	//EN person's health [0, 1]
+	real health;
+	//EN for H: avgY of population near my age
+	double avgIncomeNearAge;
+	//EN for H: effect of Y on H
+	double HIncomeEffect;
+	//EN for H: random walk of H decline with age
+	double hDel; 
+
+
+	//EN Set health for newborn
+	void Start_Newborn_Health();
+	hook Start_Newborn_Health, Start_Newborn;
+
+	//EN Set health for Person in starting population
+	void Start_StartPop_Health();
+	hook Start_StartPop_Health, Start_StartPop;
+
+	//EN Change health on birthday
+	void ChangeHealth();
+	hook ChangeHealth, GetIncome;   // ultimately hooked to BirthdayEvent through an ordered chain
+};
+
+void Person::Start_Newborn_Health()
+{	health = 1.0;			// start life in perfect health  
+}
+
+void Person::Start_StartPop_Health()
+{	health = 1.0;			// To do some day -- develop a better distribution  
+}
+
+void Person::ChangeHealth()
+{	
+	auto paTicker = asAllTicker->Item(0);			// Get the Ticker actor
+	avgIncomeNearAge = paTicker->average_income_near_age[integer_age];
+	double randDraw = RandUniform(17); 	// random draw from [0, 1]
+	double cumP = 0; 
+	double dProportion = 0; 
+	int dInterval = 0; 
+	for ( int i=0; i<SIZE(R_0_5); i++) 
+	{
+		double cumPNext = cumP + HdelP[i]; 
+		if ( cumP <= randDraw && randDraw < cumPNext) {  // we are at the right interval
+			dInterval = i; 
+			dProportion = randDraw - cumP; 
+			break;  }
+		else { cumP = cumPNext; } 
+	}
+
+	hDel = ( age / 100 ) * ( HdelCuts[dInterval] + ( dProportion / HdelP[dInterval] ) * ( HdelCuts[dInterval + 1 ] - HdelCuts[dInterval] ));
+	// i.e. hDel is a random walk, and with default parms is biased toward health declines
+	HIncomeEffect = 0; 
+	// further additive effect on hDel associated with income
+	if ( income > 0 && avgIncomeNearAge > 0 ) {
+		HIncomeEffect = HIncomeParam * log ( income / avgIncomeNearAge ); 
+	}
+	double dNewHealth = health + hDel + HIncomeEffect; 
+	// truncate to 0 and 1
+	dNewHealth = (dNewHealth < 0.0 ) ? 0.0 : dNewHealth;
+	dNewHealth = (dNewHealth > 1.0 ) ? 1.0 : dNewHealth;
+	
+
+	if ( (int) integer_age > AdultAge && has_income == TRUE ) {
+	    cumH = cumH + health ; 
+		LifeAvgH = cumH / ((int) integer_age - AdultAge); 
+		if ( cumA > 0 ) { cumHcumA = cumH / cumA; }
+		else { cumHcumA = 0; }
+	}
+
+	health = dNewHealth;	
+
+    // hooked function call location (OpenM++)
+    hook_ChangeHealth();
+}

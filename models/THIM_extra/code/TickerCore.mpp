@@ -1,0 +1,117 @@
+//LABEL (TickerCore, EN) Definition and initialization of Ticker actor
+
+/*NOTE(TickerCore, EN)
+	This module contains core functionality for the Ticker actor.
+	One single Ticker actor is instantiated in a simulation.  It is used to synchronise
+	time among all of the actors in the population in order to ensure
+	accurate reports.
+*/
+
+actor_set Ticker asAllTicker; //EN All Ticker actors
+
+
+actor Ticker //EN Actor for synchronising population-level activities
+{
+	//EN Event count
+	int event_count;
+
+	//EN Event type
+	TICKER_EVENT_TYPE event_type;
+
+	//EN Report time
+	YEAR year = { -1 };
+	/*NOTE(Ticker.year, EN)
+		This is a bounded integer version of time.
+		The start value is -1 so that a transition to 0 occurs at the very start of the simulation,
+		before any substantive events occur.  The transition from -1 to 0 is used
+		to produce tables for the starting population.
+	*/
+
+	//EN Time of next Tick event
+	TIME next_tick;
+
+	//LABEL(Ticker.Start, EN) Starts the ticker
+	void	Start();
+
+	//LABEL(Ticker.Finish, EN) Finishes the actor
+	void	Finish();	
+
+	event	timeTickEvent, TickEvent, time_keeping; //EN Tick event
+};
+
+
+/* NOTE(Ticker.Start,EN) 
+	Initializes the Ticker actor.
+*/
+void Ticker::Start( )
+{
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+	time = (TIME) 0;
+	age = 0;
+	next_tick = 0;
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+}
+
+
+/*NOTE(Ticker.Finish, EN)
+	The Finish function terminates the simulation of the ticker actor.
+*/
+void Ticker::Finish()
+{
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+}
+
+
+/* NOTE(Ticker.TickEvent,EN)
+	Increments the clock and synchronizes actors for reporting purposes.
+*/
+TIME Ticker::timeTickEvent()
+{
+	return next_tick;
+}
+
+void Ticker::TickEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_TICKER_NONE;
+	event_type = EVT_TICKER_TICK;
+	event_count++;
+
+	// Increment report time
+	year = COERCE(YEAR, year + 1);
+
+	// Age all Neighborhood actors to the current time.
+	int nNeighborhood = asAllNeighborhood->Count();
+	for ( int nN = 0; nN < nNeighborhood; nN++ ) 
+	{
+		auto paNeighborhood = asAllNeighborhood->Item( nN );
+		paNeighborhood->year = year;
+	}
+
+	// Age all Person actors to the current time,
+	// and compute all aggregates.
+
+	int nPersonCount = asAllPerson->Count();
+	for ( int nJ = 0; nJ < nPersonCount; nJ++ ) 
+	{
+		auto paPerson = asAllPerson->Item( nJ );
+		paPerson->year = year;
+	}
+	
+	// Schedule the next tick.
+	// The next line spreads reporting times evenly over the simulation
+	//next_tick = next_tick + SIMULATION_END() / SIZE(YEAR);
+	// The next line sets reporting times at equal intervals of size 1.0
+	next_tick = next_tick + (TIME) 1.0;
+
+    // hooked function call location (OpenM++)
+    hook_TickEvent();
+}
+
+
+

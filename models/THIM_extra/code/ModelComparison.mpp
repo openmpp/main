@@ -1,0 +1,204 @@
+/*
+table Ticker AvgsForComp //EN AvgsForComp
+[ year_flash && year >= 450 && year < 500 ]
+{
+	{
+		value_in(average_education) / 50,		//EN Average education decimals=2       
+		value_in(average_income) / 50,			//EN Average income
+		value_in(average_health) / 50,			//EN Average health decimals=2
+		value_in(average_gs) / 50,				//EN Average gs decimals=2
+		value_in(average_sensitivity) / 50,		//EN Average sensitivity decimals=2
+		value_in(adultCount) / 50,  			//EN Adult Population
+		value_in(childCount) / 50               //EN Child Population
+	}
+};
+
+table Person DeathsByAgeForComp //EN DeathsByAgeForComp
+[ year >= 450 && year < 500 ]
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	* {
+		entrances (alive, FALSE), //EN Deaths during interval
+		value_at_entrances (alive, FALSE, age) //EN Average Age at Death decimals=2 
+		/ entrances (alive, FALSE)
+	}
+};
+
+
+table Person HavgByAgeForComp //EN HavgByAgeForComp
+[ year_flash && year >= 450 && year < 500 ]
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	* {
+		value_in(health) / unit, //EN mean health decimals=2
+		unit / 50					//EN Count
+	}
+};
+
+table Person YavgByAgeForComp //EN YavgByAgeForComp
+[ ( year_flash && year >= 450 && year < 500 ) && has_income ] 
+{
+	split(integer_age, AGE_GROUP_20)
+	* {
+		value_in(income) / unit, //EN Mean income (000's) scale=-3
+		unit / 50					//EN Count
+	}
+};
+
+table Neighborhood NbhdAvgsForComp_Raw //EN NbhdAvgsForComp (raw)
+[ year_flash && year >= 450 && year < 500 ]
+{
+	{
+		value_in(nbrhd_occupancy_factor) / 50,		//EN Occupancy factor decimals=2
+		value_in(normalized_avg_education) / 50,		//EN Normalized average education decimals=2
+		value_in(nbrhd_avg_education) / 50,          //EN Average education decimals=2
+		value_in(normalized_avg_income) / 50,		//EN Normalized average income decimals=2
+		value_in(nbrhd_avg_income) / 50,             //EN Average income decimals=2
+		value_in(normalized_avg_health) / 50,		//EN Normalized average health decimals=2
+		value_in(nbrhd_avg_health) / 50,             //EN Average health decimals=2
+		value_in(nbrhd_adult_count) / 50,			//EN Adult count
+		value_in(nbrhd_child_count) / 50,			//EN Child count
+		value_in(nbrhd_avg_age)	/ 50				//EN Average Age
+	}
+	* nbrhd_id
+};
+
+classification C_NBHD_INDICATORS //EN Neighbourhood indicators
+{
+	//EN Occupancy factor
+	NI_0,
+
+	//EN Normalized average education
+	NI_1,
+
+	//EN Average education
+	NI_2,
+
+	//EN Normalized average income 
+	NI_3,
+
+	//EN Average income
+	NI_4,
+
+	//EN Normalized average health 
+	NI_5,
+
+	//EN Average health
+	NI_6,
+
+	//EN Adult count
+	NI_7,
+
+	//EN Child count
+	NI_8,
+
+	//EN Average Age
+	NI_9
+
+};
+
+user_table NbhdAvgsForComp_Sorted //EN NbhdAvgsForComp (sorted)
+{
+	{
+		VALUE //EN Value decimals=2
+	}
+	* C_NBHD_INDICATORS
+	* RANGE_NEIGHBORHOOD
+};
+
+classification C_NBHD_SELECTED_RANKS //EN Selected Neighbourhood Ranks
+{
+	//EN Rank=1 (Min)
+	NR_1,
+
+	//EN Rank=5
+	NR_5,
+
+	//EN Rank=10
+	NR_10,
+
+	//EN Rank=25
+	NR_25,
+
+	//EN Rank=40
+	NR_40,
+
+	//EN Rank=45
+	NR_45,
+
+	//EN Rank=50 (Max)
+	NR_50
+};
+
+user_table NbhdAvgsForComp //EN NbhdAvgsForComp
+{
+	{
+		VALUE //EN Value decimals=2
+	}
+	* C_NBHD_INDICATORS
+	* C_NBHD_SELECTED_RANKS
+};
+
+
+// compare routine for qsort when sorting arrays of doubles
+int __cdecl DoubleCompare(const void *x1, const void *x2)
+{
+	double d1 = *(double *)x1;
+	double d2 = *(double *)x2;
+	int nResult = ( d1 < d2 ) ? -1 : ( d1 > d2 ) ? 1 : 0;
+	return nResult;
+}
+
+
+dependency(NbhdAvgsForComp_Sorted, NbhdAvgsForComp_Raw);
+dependency(NbhdAvgsForComp, NbhdAvgsForComp_Raw);
+void UserTables()
+{
+	double dNbhdValues[SIZE(RANGE_NEIGHBORHOOD)];
+
+	const int nNeighbourhoods = SIZE(RANGE_NEIGHBORHOOD);
+	const int nIndicators = SIZE(C_NBHD_INDICATORS);
+
+	for ( int nI = 0; nI < nIndicators; nI++ )
+	{
+		CString szName;
+		szName.Format("NbhdAvgsForComp_Raw.Expr%d", nI);
+
+		for ( int nN = 0; nN < nNeighbourhoods; nN++ )
+		{
+			double dValue = GetTableValue(szName, nN);
+			dNbhdValues[nN] = dValue;
+		}
+
+		// sort values of this indicator in ascending order
+		qsort( dNbhdValues, nNeighbourhoods, sizeof(double), DoubleCompare );
+
+		for ( int nN = 0; nN < nNeighbourhoods; nN++ )
+		{
+			double dValue = dNbhdValues[nN];
+			SetTableValue("NbhdAvgsForComp_Sorted.VALUE", dValue, nI, nN);
+		}
+
+		// values for selected neighbourhoods
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,0 )], nI, NR_1);
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,4 )], nI, NR_5);
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,9 )], nI, NR_10);
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,24)], nI, NR_25);
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,39)], nI, NR_40);
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,44)], nI, NR_45);
+		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,49)], nI, NR_50);
+	}
+}
+
+
+table Person LavgYLavgHForComp //EN LavgYLavgHForComp
+[ alive == FALSE && has_income && year >= 450 && year < 500 ]
+{
+	{
+		unit
+	}
+	* split(cumYcumA, INCOME_GROUP_20) //EN AvgLY
+	* split(cumHcumA, UNIT_INTERVAL_20)
+};
+
+*/

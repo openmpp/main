@@ -1,0 +1,148 @@
+//LABEL(Mortality, EN) Mortality of the Person actor
+
+/* NOTE(Mortality, EN)
+	This module contains parameters, state variables, and events associated with mortality.
+*/
+
+range RM_0_99	//EN 0 to 99
+{
+	0,
+	99
+};
+
+partition LIFE_LENGTH_GROUP
+{
+	0,
+	25,
+	50,
+	60,
+	70,
+	80,
+	90,
+	100
+};
+
+parameter_group MortalityParameters //EN Mortality parameters
+{
+	mortalityBetaA,
+	mortalityBetaB,
+	MRate,
+	MCuts,
+	mortalityAgeBand
+}; 
+
+parameters 
+{
+	//EN Mortality BetaA to determine weight of variables relating to mortality risk.
+	double mortalityBetaA; 
+	//EN Mortality BetaB to determine weight of variables relating to mortality risk.
+	double mortalityBetaB;
+	//EN Mortality rate Parameter
+	double MRate[R_0_6]; 
+	//EN Mortality rate cut intervals
+	int MCuts[R_0_7];
+	//EN Mortality age band
+	int mortalityAgeBand; 
+	//EN DeathRates
+	model_generated double DeathRate[RANGE_AGE];  
+	//EN DeathCounts
+	model_generated int DeathCount[RANGE_AGE]; 
+};
+
+
+void PreSimulation()
+{
+	for ( int j = 0; j < SIZE(R_0_5); j++ ){
+		int startI = MCuts[j];
+		int nextItem = j+1; 
+		int iEnd = ( MCuts[nextItem] ); 	
+		for ( int i = startI; i < iEnd; i++ ){ 
+			DeathRate[i] = MRate[j] + ( MRate[j+1] - MRate[j] ) * ( i - MCuts[j] ) / (MCuts[j+1] - MCuts[j]);
+		} 
+	}
+}
+
+actor Person            //EN Individual
+{
+	double healthRatio; //EN for M: relative health
+	double incomeRatio; //EN for M: relative income
+	double mRateA; //EN for M: baseline age-specific mRate
+	double relRisk; //EN for M: relative mRisk based on H and Y
+	int dieNow; 
+	void MortalityCalc();
+	hook MortalityCalc, ChangeHealth; 
+	event timeMortalityEvent, MortalityEvent;	//EN Mortality event
+};
+
+void Person::MortalityCalc(){
+	dieNow = 0; 
+	int maxIndex = SIZE(RANGE_AGE) - 1; 
+
+	if ( age < maxIndex ) {
+		// Get the Ticker actor
+		auto paTicker = asAllTicker->Item(0);
+		// global average health
+		double avgHealthGlobal = paTicker->average_health; 
+		// global average income near age within mortalityAgeBand
+		avgIncomeNearAge = paTicker->average_income_near_age[integer_age];
+		//double avgIncomeNearAge = paTicker->average_income; 
+		relRisk = 1; 
+		mRateA = DeathRate[integer_age]; 
+
+		double randDraw = RandUniform(13); 
+
+		if ( health > 0 ){
+			healthRatio = avgHealthGlobal / health; 
+			relRisk = relRisk * pow( healthRatio, mortalityBetaA );
+		}
+
+		if ( income > 0) {
+			incomeRatio = avgIncomeNearAge / income;
+			//double incomeRatio = paTicker->average_income;
+			relRisk = relRisk * pow(incomeRatio, mortalityBetaB); 
+			//CString str;
+			//str.Format("avgIncomeNearAge:%f", avgIncomeNearAge);
+			//WriteDebugLogEntry(str); 
+			//relRisk = relRisk * pow( incomeRatio, mortalityBetaB ); 
+		}
+
+		if ( randDraw < mRateA * relRisk ) {
+			dieNow = 1;
+			DeathCount[integer_age]++; 
+		}
+	}
+
+	else {
+		dieNow = 1;
+		DeathCount[maxIndex]++; 
+	}
+}
+
+// The time function of MortalityEvent
+TIME Person::timeMortalityEvent()
+{
+
+	TIME tEventTime = TIME_INFINITE;
+	
+	int testDeath = dieNow; 
+
+	if ( testDeath == 1 ) {
+		tEventTime = WAIT(0.0);
+	}
+
+	return tEventTime;
+}
+
+// The implement function of MortalityEvent
+void Person::MortalityEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_MORTALITY;
+	event_count++;
+
+	alive = FALSE;
+
+	// Remove the actor from the simulation.
+	Finish();
+}

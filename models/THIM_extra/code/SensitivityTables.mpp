@@ -1,0 +1,37 @@
+//LABEL(SensitivityTables, EN) Sensitivity tables
+
+/* NOTE(SensitivityTables, EN)
+	Contains optional tables associated with the Sensitivity module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+
+////////////////////
+// Summary tables //
+////////////////////
+
+/*
+table_group SensitivitySummaryTables //EN Sensitivity summary tables
+{
+	//AverageSensitivityByYear,
+	SdistByDec //SensitivityDistributionAtStartEnd
+};
+
+table_group SummaryTables //EN Summary tables
+{
+	SensitivitySummaryTables
+};
+
+table Person SdistByDec	//EN SdistByDec
+//[ flash_start || flash_end ]
+[ decade_flash ]
+{
+	{
+		unit	//EN Count
+	} 
+	* split(sensitivity, UNIT_INTERVAL_20)	//EN gs
+	* simulation_start_end
+};
+*/

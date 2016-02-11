@@ -1,0 +1,229 @@
+//LABEL(Common, EN) Common shared classifications
+
+/*NOTE(Common, EN)
+	This module contains ranges, classifications and partitions used in multiple modules.
+
+	It also contains derived state variables used for tabulation in mutliple modules.
+*/
+
+
+/*NOTE(YEAR, EN)
+	The state variable year is declared with this range.
+	The minimum value of this range, as well as the start value of
+	the state variable year is -1.
+	
+	Here's why: At the start of the simulation,
+	the very first event in the simulation is the TickEvent in Ticker,
+	which sets this value to 0.  The transition from -1 to 0 
+	allows the creation of the flash_start state variable,
+	which in turn allows tabulation of the starting properties of the population
+	before any substantive events occur.
+*/
+range YEAR  //EN Year
+{
+	-1, 500
+};
+
+range YEAR0  //EN Year
+{
+	0, 500
+};
+/*NOTE(YEAR0, EN)
+	This range is the same as YEAR, but drops the -1 value
+	for cleaner tables by year.
+*/
+
+
+/*NOTE(TICKER_EVENT_TYPE, EN)
+	This classification is used to report on events for the Ticker actor.
+*/
+classification TICKER_EVENT_TYPE	//EN Ticker Event Type
+{
+	//EN None
+	EVT_TICKER_NONE,
+
+	//EN Tick
+	EVT_TICKER_TICK
+};
+
+
+/*NOTE(PERSON_EVENT_TYPE, EN)
+	This classification is used to report on events for the Person actor.
+*/
+classification PERSON_EVENT_TYPE	//EN Person Event Type
+{
+	//EN None
+	EVT_PERSON_NONE,
+
+	//EN Birthday
+	EVT_PERSON_BIRTHDAY,
+
+	//EN Mortality
+	EVT_PERSON_MORTALITY,
+
+	//EN Reproduction
+	EVT_PERSON_REPRODUCTION
+};
+
+
+partition UNIT_INTERVAL_10	//EN Partition of unit interval
+{
+	0.1,
+	0.2,
+	0.3,
+	0.4,
+	0.5,
+	0.6,
+	0.7,
+	0.8,
+	0.9
+};
+
+partition UNIT_INTERVAL_20	//EN Partition of unit interval
+{
+	0.10,
+	0.15,
+	0.20,
+	0.25,
+	0.30,
+	0.35,
+	0.40,
+	0.45,
+	0.50,
+	0.55,
+	0.60,
+	0.65,
+	0.70,
+	0.75,
+	0.80,
+	0.85,
+	0.90,
+	0.95
+};
+
+classification SIMULATION_START_END	//EN Start/End of simulation
+{
+	//EN Start
+	SSE_START,
+
+	//EN End
+	SSE_END
+};
+
+range DECADE //EN Decade
+{
+	0, 50
+};
+
+
+actor Person
+{
+	//EN Flash state for start of simulation
+	logical flash_start = trigger_entrances(year, 0);
+	/*NOTE(Person.flash_start, EN)
+		This is used to create snapshot tables
+		that report on the state of the population at the start of the simulation.
+		See the documentation of the YEAR range for more information.
+	*/
+
+	//EN Is end year
+	logical is_end_year = ( year == EndYear ) ;
+
+	//EN Flash state for end of simulation
+	logical flash_end = trigger_entrances(is_end_year, TRUE);
+	/*NOTE(Person.flash_end, EN)
+		This is used to create snapshot tables
+		that report on the state of the population at the end of the simulation.
+	*/
+
+	//EN Start/End of simulation
+	SIMULATION_START_END simulation_start_end = (year == 0) ? SSE_START : SSE_END;
+
+	//EN Year
+	YEAR0 year0 = COERCE(YEAR0,year);
+	/*NOTE(Person.year0, EN)
+		This is a copy of year, with the start value of -1 coerced to 0.
+		It produces prettier tables than year,
+		which usually contain empty cells for year = -1
+	*/
+
+	//EN Year flash
+	logical year_flash = trigger_changes(year);
+	/*NOTE(Person.year_spell, EN)
+		This variable is always false except for a zero-length instant when year changes value.
+		When used as a filter in a table, it allows tabulations by year to record
+		the exact state of the population at the beginning of each year.
+	*/
+
+	//EN Year spell
+	logical year_spell = ! trigger_changes(year);
+	/*NOTE(Person.year_spell, EN)
+		This variable is always true except for a zero-length instant when year changes value.
+		It divides time into spells one year in length, and can be used to tabulate flows and durations
+		that occur within each year.
+	*/
+
+
+	//EN Is first year of decade
+	logical is_start_decade = ( year % 10 ) == 0;
+
+	//EN Decade flash
+	logical decade_flash = trigger_entrances(is_start_decade, TRUE);
+
+	//EN Decade
+	DECADE decade = year / 10;
+
+	//EN Adult Yes/No
+	logical is_adult = (integer_age >= AdultAge);
+};
+
+
+
+actor Neighborhood
+{
+	//EN Year
+	YEAR0 year0 = COERCE(YEAR0,year);
+	/*NOTE(Neighborhood.year0, EN)
+		This is a copy of year, with the start value of -1 coerced to 0.
+		It produces prettier tables than year,
+		which usually contain empty cells for year = -1
+	*/
+
+	//EN Year flash
+	logical year_flash = trigger_changes(year);
+	/*NOTE(Person.year_spell, EN)
+		This variable is always false except for a zero-length instant when year changes value.
+		When used as a filter in a table, it allows tabulations by year to record
+		the exact state of the population at the beginning of each year.
+	*/
+
+	//EN Is first year of decade
+	logical is_start_decade = ( year % 10 ) == 0;
+
+	//EN Decade flash
+	logical decade_flash = trigger_entrances(is_start_decade, TRUE);
+
+	//EN Decade
+	DECADE decade = year / 10;
+};
+
+
+actor Ticker
+{
+	//EN Year
+	YEAR0 year0 = COERCE(YEAR0,year);
+	/*NOTE(Ticker.year0, EN)
+		This is a copy of year, with the start value of -1 coerced to 0.
+		It produces prettier tables than year,
+		which usually contain empty cells for year = -1
+	*/
+
+	//EN Year flash
+	logical year_flash = trigger_changes(year);
+	/*NOTE(Person.year_spell, EN)
+		This variable is always false except for a zero-length instant when year changes value.
+		When used as a filter in a table, it allows tabulations by year to record
+		the exact state of the population at the beginning of each year.
+	*/
+
+};

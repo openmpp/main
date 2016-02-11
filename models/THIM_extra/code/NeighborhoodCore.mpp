@@ -1,0 +1,101 @@
+//LABEL(NeighborhoodCore, EN) Core functionality of the Neighborhood actor
+
+/* NOTE(NeighborhoodCore, EN)
+	This module contains core functionality for the Neighborhood actor.
+
+	The number of neighborhood actors is exactly equal to the number of distinct values in the
+	range RANGE_NEIGHBORHOOD.  To increase the number of neighborhoods, change the upper limit
+	of RANGE_NEIGHBORHOOD and recompile the model.
+*/
+
+range RANGE_NEIGHBORHOOD	//EN Neighborhood
+{
+	0,
+	99
+};
+/*NOTE(RANGE_NEIGHBORHOOD, EN)
+	Each neighborhood actor has a unique numeric ID from within the range RANGE_NEIGHBORHOOD.
+	A given neighborhood can be retrieved by selecting from the actor set asNeighborhoodByID.
+*/
+
+void CreateNeighborhoods(void)
+{
+	for (int nN=0; nN<SimulatedNeighborhoods; nN++)
+	{
+		Neighborhood *paNeighborhood = new Neighborhood();
+		// include the Neighborhood in the simulation
+		paNeighborhood->Start(nN);
+	}
+}
+
+//EN All Neighborhood actors
+actor_set Neighborhood asAllNeighborhood;
+
+//EN Neighborhood actors by ID
+actor_set Neighborhood asNeighborhoodByID[nbrhd_id];
+/*NOTE(asNeighborhoodByID, EN)
+	Each neighborhood has a unique numeric ID from within the range RANGE_NEIGHBORHOOD.
+	A given neighborhood can be retrieved by selecting from the actor set asNeighborhoodByID.
+*/
+
+actor Neighborhood //EN Neighborhood
+{
+	//EN Year
+	YEAR year = { -1 };
+	/*NOTE(Neighborhood.year, EN)
+		This is an integer version of time.
+		The Ticker actor is responsible for updating year at integer boundaries of time.
+		This synchronizes the internal time of all actors in the population when year changes.
+	*/
+
+	//EN id of the neighborhood
+	RANGE_NEIGHBORHOOD nbrhd_id;
+	/*NOTE(Neighborhood.nbrhd_id, EN)
+		Each neighborhood has a unique numeric ID from within the range RANGE_NEIGHBORHOOD.
+		A given neighborhood can be retrieved by selecting from the actor set asNeighborhoodByID.
+	*/
+
+	//LABEL(Neighborhood.Start, EN) Starts the actor
+	void Start(RANGE_NEIGHBORHOOD nN);
+
+	//LABEL(Neighborhood.Finish, EN) Finishes the actor
+	void Finish();
+};
+
+
+/*NOTE(Neighborhood.Start, EN)
+	The Start function initializes actor variables before simulation
+	of the actor commences.
+*/
+void Neighborhood::Start(RANGE_NEIGHBORHOOD nN)
+{
+	// Modgen initializes all actor variables
+	// before the code in this function is executed.
+
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+    age = (TIME) 0.0;
+	time = (TIME) 0.0;
+
+	nbrhd_id = nN;
+
+	// Set reporting time to integer part of time
+	year = COERCE(YEAR, ((int) time));
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+
+	// After the code in this function is executed,
+	// Modgen initializes events and tables for the actor.
+	// Modgen also outputs starting values to the tracking file if requested.
+}
+
+/*NOTE(Neighborhood.Finish, EN)
+	The Finish function terminates the simulation of an actor.
+*/
+void Neighborhood::Finish()
+{
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+}

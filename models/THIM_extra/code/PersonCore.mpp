@@ -1,0 +1,318 @@
+//LABEL(PersonCore, EN) Core functionality of the Person actor
+
+/* NOTE(PersonCore, EN)
+	This module contains core functionality for the Person actor.
+*/
+
+range RANGE_AGE	//EN Integer age
+{
+	0,
+	100
+};
+
+partition AGE_GROUP_20	//EN Age group (5 year)
+{
+	5,
+	10,
+	15,
+	20,
+	25,
+	30,
+	35,
+	40,
+	45,
+	50,
+	55,
+	60,
+	65,
+	70,
+	75,
+	80,
+	85,
+	90,
+	95
+};
+
+parameter_group PersonParameters //EN Person parameters
+{
+	StartingPopulationSize,
+	AdultAge
+};
+
+parameters 
+{
+	//EN Starting population size
+	int StartingPopulationSize;
+	/* NOTE(StartingPopulationSize, EN)
+		The actual population size may increase or decrease during the simulation.
+	*/
+
+	//EN Age at which to tabulate "adult years"
+	int AdultAge;
+
+	//EN Simulation end year
+	model_generated int EndYear;
+	/* NOTE(EndYear, EN)
+		Moves the simulation end time chosen in the user interface (scenario properties)
+		into a parameter that can be used in declarative model code,
+		in particular to create the state variable is_end_year.
+	*/
+
+
+};
+
+void PreSimulation(void)
+{
+	// Set model-generated EndYear to value set by user in scenario properties
+	EndYear = (int) (SIMULATION_END());
+}
+
+
+actor_set Person asAllPerson; //EN All Person actors
+
+
+actor Person            //EN Individual
+{
+	// The states time and age are automatically defined by Modgen.
+	// Model-specific labels and notes are supplied below.
+
+	//LABEL(Person.time, EN) Time
+	/*NOTE(Person.time, EN)
+		This state variable is created automatically by Modgen. 
+		In this model, time is a continuous real quantity.
+		A unit of time is a year.
+	*/
+
+	//LABEL(Person.age, EN) Age
+	/*NOTE(Person.age, EN)
+		This state variable is created automatically by Modgen. 
+		In this model, age is a continuous real quantity.
+		A unit of age is a year.
+	*/
+
+	//EN Event count
+	int event_count;
+	/*NOTE(Person.event_count, EN)
+		Every time an event occurs in the actor, this state variable is incremented.
+	*/
+
+	//EN Event type
+	PERSON_EVENT_TYPE event_type;
+	/*NOTE(Person.event_type, EN)
+		Every time an event occurs in the actor, this state variable is set to 0 (NONE),
+		and then set to a value that records the type of event.
+	*/
+
+	//EN Age
+	int integer_age;
+	/*NOTE(Person.integer_age, EN)
+		Integer part of age.   
+	*/
+	
+	//EN Total lifetime income
+	double cumY;
+
+	//EN Average lifetime income
+
+	double LAvgIncome; 
+	//EN hasIncome
+	logical has_income; 
+
+	//EN Average lifetime health
+
+	double LifeAvgH; 
+
+	//EN Total lifetime health
+	double cumH; 
+
+	//EN Total lifetime age
+	int cumA; 
+
+	//EN ratio cumY to cumA
+	double cumYcumA;
+
+	//EN ratio cumH to cumA
+	double cumHcumA; 
+
+	//EN Age
+	RANGE_AGE range_age = COERCE(RANGE_AGE, integer_age);
+	/*NOTE(Person.range_age, EN)
+		This is a bounded version of integer_age.
+		It is useful for tabulation and as a dimension for parameters.
+	*/
+
+	//EN Year
+	YEAR year = { -1 };
+	/*NOTE(Person.year, EN)
+		This is a bounded integer version of time.
+		The Ticker actor is responsible for updating year at integer boundaries of time.
+		This synchronizes the internal time of all actors in the population when year changes.
+		The start value is -1 so that a transition to 0 occurs at the very start of the simulation,
+		before any substantive events occur.  The transition from -1 to 0 can be used
+		to produce tables on the starting population.
+	*/
+
+	//EN Year of start
+	YEAR year_of_start = { -1 };
+	/*NOTE(Person.year_of_start, EN)
+		For the starting populaton, this is -1.  For all others, this is the year of birth.
+	*/
+
+	//EN Alive
+	logical alive = { TRUE };
+	/*NOTE(Person.alive, EN)
+		Set to TRUE when the actor starts, and to FALSE just before the actor finishes.
+		Since the numeric value of TRUE is 1 and FALSE is 0, this variable
+		can also be used to count actors in tables.
+	*/
+
+	//EN Time for next birthday event
+	TIME next_birthday_time;
+
+	event timeBirthdayEvent, BirthdayEvent; //EN Birthday event
+
+
+	//EN Stub function for hooking to Start for members of the starting population
+	void Start_StartPop();
+
+	//EN Stub function for hooking to Start for members of the starting population - priority 1
+	void Start_StartPopP1();
+
+	//EN Stub function for hooking to Start for persons born during the simulation
+	void Start_Newborn();
+
+	//EN Stub function for hooking to Start for persons born during the simulation - priority 1
+	void Start_NewbornP1();
+
+	//LABEL(Person.Start, EN) Starts the actor
+	void Start(double dAge, double dTime, Person *paParent);
+
+	//LABEL(Person.Finish, EN) Finishes the actor
+	void Finish();
+};
+
+TIME Person::timeBirthdayEvent()
+{
+	return next_birthday_time;
+}
+
+
+
+/* NOTE(Person.BirthdayEvent,EN)
+	Implements birthday.
+	Other events can hook to this event.
+*/
+void Person::BirthdayEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_BIRTHDAY;
+	event_count++;
+
+	integer_age++;
+	cumA = integer_age - 25; 
+
+	next_birthday_time = WAIT(1.000000);
+
+    // hooked function call location (OpenM++)
+    hook_BirthdayEvent();
+}
+
+
+/*NOTE(Person.Start, EN)
+	The Start function initializes actor variables before simulation
+	of the actor commences.
+*/
+void Person::Start(double dAge, double dTime, Person *paParent)
+{
+	// Modgen initializes all actor variables
+	// before the code in this function is executed.
+
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+	age = (TIME) dAge;
+
+	time = (TIME) dTime;
+
+	integer_age = (int) age;
+	// schedule the next birthday
+	next_birthday_time = WAIT( ( 1 + integer_age ) - age);
+
+	lParent = paParent;
+
+	// This is the starting value when the actor is first created.
+	at_home = ( paParent != NULL );
+
+	// Call appropriate stub to initialize other variables for the Person
+	// depending on whether this is a newborn or a member of the starting population
+	if ( dTime == 0.0 )
+	{
+		// Leave year at initial value of -1 for starting population
+		// to permit -1 to 0 transition for tabulation of starting population
+
+		Start_StartPop();
+	}
+	else
+	{
+		// Set year to integer part of time
+		year = COERCE(YEAR, ((int) time));
+
+		Start_Newborn();
+	}
+
+	// record year_of_start, will be -1 for starting population
+	year_of_start = year;
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+
+	// After the code in this function is executed,
+	// Modgen initializes events and tables for the actor.
+	// Modgen also outputs starting values to the tracking file if requested.
+}
+
+/*NOTE(Person.Finish, EN)
+	The Finish function terminates the simulation of an actor.
+*/
+void Person::Finish()
+{
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+}
+
+
+void Person::Start_StartPop()
+{
+	// Execute priority 1 hooks first
+	Start_StartPopP1();
+
+    // hooked function call location (OpenM++)
+    hook_Start_StartPop();
+
+	// functions hooking to Start_StartPop will be called here
+}
+
+void Person::Start_StartPopP1()
+{
+    // hooked function call location (OpenM++)
+    hook_Start_StartPopP1();
+}
+
+
+void Person::Start_Newborn()
+{
+	// Execute priority 1 hooks first
+	Start_NewbornP1();
+
+    // hooked function call location (OpenM++)
+    hook_Start_Newborn();
+
+	// functions hooking to Start_Newborn will be called here
+}
+
+void Person::Start_NewbornP1()
+{
+    // hooked function call location (OpenM++)
+    hook_Start_NewbornP1();
+}

@@ -17,7 +17,6 @@ time_type double;
 //real_type		float;
 //counter_type	ushort;
 //integer_type	short;
-//index_type		ushort;
 
 // The following option reduces memory use at the expense of speed
 //options packing_level=2;

@@ -1,0 +1,72 @@
+//LABEL(HealthTables, EN) Health tables
+
+/* NOTE(HealthTables, EN)
+	Contains optional tables associated with the Health module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+
+////////////////////
+// Summary tables //
+////////////////////
+
+table_group HealthSummaryTables //EN Health summary tables
+{
+	//AverageHealthByYear,
+	HavgByAgeDec, //HealthStatusByAge,
+	HdistByAgeDec, //HealthDistributionByAgeDecade,
+	HdistByIncDec, //HealthGradient,
+	//HealthDistributionAtStartEnd,
+	HdistByNbhdDec //HealthDistributionByNeighborhood
+};
+table_group SummaryTables //EN Summary tables
+{
+	HealthSummaryTables
+};
+
+table Person HdistByAgeDec
+[ decade_flash ] 
+{
+	split(health, UNIT_INTERVAL_20) //EN health
+	* {
+		unit //EN Count
+	}
+	*split(integer_age, AGE_GROUP_20)
+	*decade
+};
+
+table Person HavgByAgeDec //EN HavgByAgeDec
+[ decade_flash ] 
+{
+	split(integer_age, AGE_GROUP_20) //EN Age
+	* {
+		value_in(health) / unit, //EN mean health decimals=2
+		unit					//EN Count
+	}
+	* decade
+};
+
+table Person HdistByIncDec //EN HdistByIncDec
+[ decade_flash ] 
+{
+	split(income, INCOME_GROUP_20)
+	* {
+		value_in(health) / unit, //EN mean health decimals=2
+		unit					//EN Count
+	}
+	* decade
+};
+
+table Person HdistByNbhdDec //EN HdistByNbhdDec
+[ decade_flash ] 
+{
+	{
+		unit
+	}
+	* is_adult
+	* neighborhood
+	* split(health, UNIT_INTERVAL_20) //EN health
+	* decade
+};

@@ -1,0 +1,213 @@
+//LABEL(Movement, EN) Movement
+
+/* NOTE(Movement, EN)
+	This module contains parameters, state variables, and events associated with movement.
+*/
+parameter_group MovementParameters //EN Movement parameters
+{
+	SimulatedNeighborhoods,
+	StayPropIncDiff,
+	MovePropIncDiff,
+	MaxOccupancyFactor
+};
+
+parameters
+{
+	//EN Simulated neighborhoods
+	int SimulatedNeighborhoods;
+
+	//EN Proportional income difference below which people dont move
+	double StayPropIncDiff;
+
+	//EN Proportional income difference above which people move
+	double MovePropIncDiff;
+
+	//EN Maximum neighborhood occupancy factor
+	double MaxOccupancyFactor;
+
+	//EN Maximum adults in a neighborhood
+	model_generated int MaxAdultsInNeighborhood;
+
+};
+
+//EN Adults by neighborhood
+actor_set Person asAdultsByNeighborhood[neighborhood]
+filter integer_age >= AdultAge;
+/* NOTE(asAdultsByNeighborhood, EN)
+	This actor set is used to automatically maintain 
+	the current count of adults in each neighborhood.
+	That count is used to implement occupancy rate
+	restrictions when moving.
+*/
+
+
+
+actor Person
+{
+	//EN the neighborhood the person resides in
+	RANGE_NEIGHBORHOOD neighborhood;
+
+	//EN Set neighborhood for newborn
+	void Start_Newborn_Neigborhood();
+
+	// hook at "priority 1" so that my_nrhd is assigned before other hooks execute
+	hook Start_Newborn_Neigborhood, Start_NewbornP1;
+
+	//EN Set neighborhood for Person in starting population
+	void Start_StartPop_Neigborhood();
+
+	// hook at "priority 1" so that my_nrhd is assigned before other hooks execute
+	hook Start_StartPop_Neigborhood, Start_StartPopP1;
+
+	//EN Change neighbourhhod, for self and children
+	void ChangeNeighborhood(RANGE_NEIGHBORHOOD nNeighborhood);
+
+	//EN Move on birthday
+	void Move();
+	hook Move, GetIncome;   // ultimately hooked to BirthdayEvent through an ordered chain
+
+};
+
+
+
+void Person::Start_Newborn_Neigborhood()
+{
+	// newborn's neighborhood is parent's neighborhood
+	neighborhood = lParent->neighborhood;
+}
+
+
+void Person::Start_StartPop_Neigborhood()
+{
+	if ( lParent == NULL )
+	{
+		// not a child - assign random neighborhood
+		neighborhood = (RANGE_NEIGHBORHOOD) ( RandUniform(5) * SimulatedNeighborhoods );
+	}
+	else
+	{
+		// child lives with parent
+		neighborhood = lParent->neighborhood;
+	}
+}
+
+void Person::ChangeNeighborhood(RANGE_NEIGHBORHOOD nNeighborhood)
+{
+	neighborhood = nNeighborhood;
+
+	// note recursive call for children, grandchildren, etc.
+
+	int nIndex = -1;
+	auto paChild = mlChildren->GetNext( nIndex + 1, &nIndex );
+	while ( paChild != NULL ) {
+		if ( paChild->at_home )
+		{
+			paChild->ChangeNeighborhood( nNeighborhood );
+		}
+
+		paChild = mlChildren->GetNext( nIndex + 1, &nIndex );
+	}
+}
+
+
+void Person::Move()
+{
+	// There are two conditions that trigger movement:
+	// 1. moving out from parental home on completion of education
+	// 2. movement as adult
+
+	// will this person (and their children if any) move, or try to move?
+	bool bWillMove = false;
+
+	if ( integer_age < education + 1 )
+	{
+		bWillMove = false;
+	}
+	else if ( integer_age == education + 1 )
+	{
+		// initial move from parental home
+		bWillMove = true;
+		at_home = false; 
+	}
+	else if ( integer_age > education + 1 && has_income )
+	{
+		// based on TIM document
+
+		// Get the neighbourhood actor of this Person's neighborhood
+		auto paNeighborhood = asNeighborhoodByID[neighborhood]->Item(0);
+
+		// Find the proportional difference in income from neighborhood income
+		double dPropIncDiff = 0.0;
+		if ( paNeighborhood->nbrhd_avg_income > 0 )
+		{
+			dPropIncDiff = ( income - paNeighborhood->nbrhd_avg_income ) / paNeighborhood->nbrhd_avg_income;
+			dPropIncDiff = ( dPropIncDiff >= 0 ) ? dPropIncDiff : -dPropIncDiff;
+		}
+
+		if ( dPropIncDiff <= StayPropIncDiff )
+		{
+			// definitely stay
+			bWillMove = false;
+		}
+		else if ( dPropIncDiff >= MovePropIncDiff )
+		{
+			// definitely move
+			bWillMove = true;
+		}
+		else
+		{
+			// in between the two extremes, probability is interpolated
+			if ( MovePropIncDiff > StayPropIncDiff )
+			{
+				double dProbMove = ( dPropIncDiff - StayPropIncDiff ) / ( MovePropIncDiff - StayPropIncDiff );
+				bWillMove = ( dProbMove > RandUniform(20) );
+			}
+			else
+			{
+				// bad parameter values
+				bWillMove = false;
+			}
+		}
+	}
+
+
+	if ( bWillMove )
+	{
+		// determine which neighborhood fits best
+		double dBestPropIncDiff = 1;
+		int nBestNeighborhood = -1;
+		int nNeighborhood = asAllNeighborhood->Count();
+		for ( int nN = 0; nN < nNeighborhood; nN++ ) 
+		{
+			auto paNeighborhood = asAllNeighborhood->Item( nN );
+
+			// Use automatically-maintained actor set
+			// to get current count of adults in neighborhood.
+			int nAdultsInNeighborhood = asAdultsByNeighborhood[nN]->Count();
+
+			if ( nAdultsInNeighborhood > MaxAdultsInNeighborhood ) 
+			{
+				// ignore crowded neighborhoods in the search
+				continue;
+			}
+
+			if ( paNeighborhood->nbrhd_avg_income > 0 )
+			{
+				double dPropIncDiff = ( income - paNeighborhood->nbrhd_avg_income ) / paNeighborhood->nbrhd_avg_income;
+				dPropIncDiff = ( dPropIncDiff >= 0 ) ? dPropIncDiff : -dPropIncDiff;
+				if ( dPropIncDiff < dBestPropIncDiff )
+				{
+					dBestPropIncDiff = dPropIncDiff;
+					nBestNeighborhood = nN;
+				}
+			}
+		}
+
+		if ( nBestNeighborhood != -1 && dBestPropIncDiff <	StayPropIncDiff )
+		{
+			// found a better place to go
+			// move, with children, grand-children, etc.
+			ChangeNeighborhood(nBestNeighborhood);
+		}
+	}		
+}

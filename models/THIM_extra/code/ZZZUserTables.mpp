@@ -1,0 +1,90 @@
+//LABEL(ZZZUserTables, EN) User tables
+
+/* NOTE(ZZZUserTables, EN)
+	Contains optional summary tables which are dependent on 
+	previously calculated user tables in multiple modules.  This module starts
+	with ZZZ so that these tables are computed last, to ensure that dependent user tables
+	are calculated.  Modgen knows about dependencies of normal tables, but does
+	not handle dependencies of user tables in its design.
+
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+table_group SummaryTables //EN Summary tables
+{
+	NbhdStatsbyDec
+};
+
+dependency(NbhdStatsbyDec, YstatsByDecNbhd, NbhdAvgsByDec);
+user_table NbhdStatsbyDec //EN NbhdStatsbyDec
+{
+	{
+		// from NbhdAvgsByDec
+		OCCUPANCY_FACTOR,	  //EN Occupancy factor decimals=2
+		AVERAGE_HEALTH,	//EN Average health decimals=2
+		AVERAGE_EDUCATION, //EN Average education decimals=2
+		AVERAGE_INCOME, //EN Average income decimals=2
+		ADULT_COUNT, //EN Adult count
+		CHILD_COUNT, //EN Child count
+		AVERAGE_AGE, //EN Average Age
+
+
+		// from YstatsByDecNbhd
+		TOTAL_PERSONS,     //EN Persons
+		TOTAL_INCOME,     //EN Total Income
+		MEDIAN_INCOME,    //EN Median Income
+		TOTAL_INCOME_LT_MEDIAN, //EN Total Income less than median
+		MEDIAN_Y_SHARE //EN Median income share decimals=4
+	}
+	* RANGE_NEIGHBORHOOD
+	* DECADE
+};
+void UserTables()
+{
+	const int nNeighbourhoods = SimulatedNeighborhoods;
+	const int nDecades = SIZE(DECADE);
+
+	for ( int nN = 0; nN < nNeighbourhoods; nN++ )
+	{
+		for ( int nT = 0; nT < nDecades; nT++ )
+		{
+			// from NbhdAvgsByDec
+
+			double dOccupancyFactor  = GetTableValue("NbhdAvgsByDec.Expr0", nT, nN);
+			double dAverageHealth    = GetTableValue("NbhdAvgsByDec.Expr6", nT, nN);
+			double dAverageEducation = GetTableValue("NbhdAvgsByDec.Expr2", nT, nN);
+			double dAverageIncome    = GetTableValue("NbhdAvgsByDec.Expr4", nT, nN);
+			double dAdultCount       = GetTableValue("NbhdAvgsByDec.Expr7", nT, nN);
+			double dChildCount       = GetTableValue("NbhdAvgsByDec.Expr8", nT, nN);
+			double dAverageAge       = GetTableValue("NbhdAvgsByDec.Expr9", nT, nN);
+
+			SetTableValue("NbhdStatsbyDec.OCCUPANCY_FACTOR",  dOccupancyFactor, nN, nT);
+			SetTableValue("NbhdStatsbyDec.AVERAGE_HEALTH",    dAverageHealth, nN, nT);
+			SetTableValue("NbhdStatsbyDec.AVERAGE_EDUCATION", dAverageEducation, nN, nT);
+			SetTableValue("NbhdStatsbyDec.AVERAGE_INCOME",    dAverageIncome, nN, nT);
+			SetTableValue("NbhdStatsbyDec.ADULT_COUNT",       dAdultCount, nN, nT);
+			SetTableValue("NbhdStatsbyDec.CHILD_COUNT",       dChildCount, nN, nT);
+			SetTableValue("NbhdStatsbyDec.AVERAGE_AGE",       dAverageAge, nN, nT);
+
+			// from YstatsByDecNbhd
+
+			double dTotalPersons        = GetTableValue("YstatsByDecNbhd.TOTAL_PERSONS", nN, nT);
+			double dTotalIncome         = GetTableValue("YstatsByDecNbhd.TOTAL_INCOME", nN, nT);
+			double dMedianIncome        = GetTableValue("YstatsByDecNbhd.MEDIAN_INCOME", nN, nT);
+			double dTotaIncomeLtMedian  = GetTableValue("YstatsByDecNbhd.TOTAL_INCOME_LT_MEDIAN", nN, nT);
+			double dMedianYShare        = GetTableValue("YstatsByDecNbhd.MEDIAN_Y_SHARE", nN, nT);
+
+			SetTableValue("NbhdStatsbyDec.TOTAL_PERSONS",          dTotalPersons, nN, nT);
+			SetTableValue("NbhdStatsbyDec.TOTAL_INCOME",           dTotalIncome, nN, nT);
+			SetTableValue("NbhdStatsbyDec.MEDIAN_INCOME",          dMedianIncome, nN, nT);
+			SetTableValue("NbhdStatsbyDec.TOTAL_INCOME_LT_MEDIAN", dTotaIncomeLtMedian, nN, nT);
+			SetTableValue("NbhdStatsbyDec.MEDIAN_Y_SHARE",         dMedianYShare, nN, nT);
+
+		}
+	}
+}
+
+
+

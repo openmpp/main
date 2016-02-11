@@ -1,0 +1,274 @@
+//LABEL(Aggregates, EN) Global and neighborhood aggregates
+
+/* NOTE(Aggregates, EN)
+	This module maintains global and neighborhood aggregates used
+	in model dynamics.
+
+	Do not use this module for reporting.
+	Instead, use the Modgen table facility.
+
+	There are several approaches to maintaining aggregates in Modgen.
+	The approach used was selected to maximize memory and computational efficiency
+	for this particular model, as currently formulated.
+*/
+actor Ticker
+{
+	//EN Global average education
+	double average_education;
+
+	//EN Global average education at year = 0
+	double average_education_init;
+
+	//EN Global average income
+	double average_income;
+
+	//EN Global average income at year = 0
+	double average_income_init; 
+
+	//EN Global average health
+	double average_health;
+
+	//EN Global average health at year = 0
+	double average_health_init;
+
+	//EN Global average sensitivity
+	double average_sensitivity;
+
+	//En Global average sensitivity at year = 0
+	double average_sensitivity_init; 
+
+	//EN Global average gs
+	double average_gs;
+
+	//EN Global average gs at year = 0
+	double average_gs_init; 
+
+	//EN average income near age
+	double average_income_near_age[RANGE_AGE];
+
+	//EN number of adults during year 0
+	int adultCount_init;
+
+	//EN number of children during year 0
+	int childCount_init; 
+
+	//EN number of people used to compute averages
+	int adultCount; 
+
+	//EN number of children
+	int childCount;
+
+	//EN five year age counts
+	int fiveYearAgeCounts[RANGE_AGE]; 
+
+	//EN Maintain aggregates
+	void MaintainAggregates();
+
+	hook MaintainAggregates, TickEvent;
+};
+
+actor Neighborhood
+{
+	//EN Occupancy factor of neighborhood
+	real nbrhd_occupancy_factor;
+
+	//EN AvgE of agents in the nbrhd
+	real nbrhd_avg_education;
+
+	//EN AvgY of agents in the nbrhd
+	real nbrhd_avg_income;
+
+	//EN AvgH of agents in the nbrhd
+	real nbrhd_avg_health;
+
+	//EN Normalized avgE of agents in the nbrhd
+	real normalized_avg_education;
+
+	//EN Normalized avgY of agents in the nbrhd
+	real normalized_avg_income;
+
+	//EN Normalized avgH of agents in the nbrhd
+	real normalized_avg_health;
+
+	//EN Average age of agents in the nbrd
+	real nbrhd_avg_age; 
+
+	//EN Adult count
+	int nbrhd_adult_count;
+
+    //EN Child count
+	int nbrhd_child_count;
+};
+
+
+/* NOTE(Ticker.MaintainAggregates, EN)
+	This function calculates global and neighborhood aggregates used
+	in model dynamics.  Values are snapshots of the values for the
+	previous complete year.
+
+	This function is hooked to TickEvent in the Ticker actor
+	and is executed once at the beginning of each year.
+*/
+
+void Ticker::MaintainAggregates()
+{
+	// working arrays for neighbourhood totals
+	double adEducationTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+	double adIncomeTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+	double adHealthTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+    double adAgeTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)]; 
+	double anAdultCountByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+	double anChildCountByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)]; 
+	double anPersonCountByAgeByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+	// initialize neighborhood working arrays
+	int nNeighborhood = asAllNeighborhood->Count();
+	for ( int nN = 0; nN < nNeighborhood; nN++ ) 
+	{
+		auto paNeighborhood = asAllNeighborhood->Item( nN );
+
+		anAdultCountByNeighborhood[nN] = 0;
+		anChildCountByNeighborhood[nN] = 0; 
+		adEducationTotalByNeighborhood[nN] = 0.0;
+		adIncomeTotalByNeighborhood[nN] = 0.0;
+		adHealthTotalByNeighborhood[nN] = 0.0;
+		adAgeTotalByNeighborhood[nN] = 0.0; 
+		anPersonCountByAgeByNeighborhood[nN] = 0.0; 
+	}
+
+	// working arrays for age totals
+	double adIncomeTotalByAge[SIZE(RANGE_AGE)];
+	double adEducationTotalByAge[SIZE(RANGE_AGE)]; 
+	int anPersonCountByAge[SIZE(RANGE_AGE)];
+
+	// initialize age working arrays
+	for( int nA = 0; nA<SIZE(RANGE_AGE); nA++ )
+	{
+		adIncomeTotalByAge[nA] = 0.0;
+		anPersonCountByAge[nA] = 0;
+		fiveYearAgeCounts[nA] = 0; 
+		average_income_near_age[nA] = 0.0;
+	}
+
+	// compute all aggregates.
+	double dEducationTotal = 0;
+	double dIncomeTotal = 0;
+	double dHealthTotal = 0;
+	double dGsTotal = 0;
+	double dSensitivityTotal = 0; 
+	int nPersonCount = asAllPerson->Count();
+	adultCount = 0; 
+	childCount = 0; 
+	for ( int nJ = 0; nJ < nPersonCount; nJ++ ) 
+	{
+		auto paPerson = asAllPerson->Item( nJ );
+		int nN = paPerson->neighborhood; 
+		anPersonCountByAgeByNeighborhood[nN]++; 
+	    adAgeTotalByNeighborhood[nN] += paPerson->age; 
+		if ( paPerson->integer_age >= AdultAge )
+		{
+			// cumulate global totals
+			dEducationTotal   += paPerson->education;
+			dIncomeTotal      += paPerson->income;
+			dHealthTotal      += paPerson->health;
+			dSensitivityTotal += paPerson->sensitivity;
+			dGsTotal          += paPerson->gs;
+
+			// cumulate neighborhood totals
+			//int nN = paPerson->neighborhood;
+			anAdultCountByNeighborhood[nN]++;
+			adEducationTotalByNeighborhood[nN] += paPerson->education;
+			adIncomeTotalByNeighborhood[nN]    += paPerson->income;
+			adHealthTotalByNeighborhood[nN]    += paPerson->health;
+			// cumulate age totals
+			int nA = paPerson->range_age;
+			anPersonCountByAge[nA]++;
+			adEducationTotalByAge[nA] = paPerson->education;
+			adIncomeTotalByAge[nA] += paPerson->income;
+			adultCount++; 
+		}
+		else {
+			childCount++; 
+			anChildCountByNeighborhood[nN]++;
+		}
+	}
+
+
+	average_education   = dEducationTotal   / adultCount;
+	average_income      = dIncomeTotal      / adultCount;
+	average_health      = dHealthTotal      / adultCount;
+	average_gs		    = dGsTotal          / adultCount;
+	average_sensitivity = dSensitivityTotal / adultCount; 
+	
+	if ( year == 0 ) {
+		average_education_init		= average_education; 
+		average_income_init			= average_income;
+		average_health_init			= average_health;
+		average_gs_init				= average_gs;
+		average_sensitivity_init	= average_sensitivity;
+		adultCount_init             = adultCount;
+		childCount_init             = childCount; 
+	}
+
+	// update neighbourhood average state variables in Neighborhood actors
+	for ( int nN = 0; nN < nNeighborhood; nN++ ) 
+	{
+		auto paNeighborhood = asAllNeighborhood->Item( nN );
+
+		paNeighborhood->nbrhd_occupancy_factor = (double) anAdultCountByNeighborhood[nN] / ( (double) StationaryAdultPopulationSize / SimulatedNeighborhoods );
+
+		paNeighborhood->nbrhd_avg_education = adEducationTotalByNeighborhood[nN] / anAdultCountByNeighborhood[nN];
+		paNeighborhood->nbrhd_avg_income    = adIncomeTotalByNeighborhood[nN]    / anAdultCountByNeighborhood[nN];
+		paNeighborhood->nbrhd_avg_health    = adHealthTotalByNeighborhood[nN]    / anAdultCountByNeighborhood[nN];
+		paNeighborhood->nbrhd_avg_age = adAgeTotalByNeighborhood[nN] / anPersonCountByAgeByNeighborhood[nN];
+		paNeighborhood->normalized_avg_education = paNeighborhood->nbrhd_avg_education / average_education;
+		paNeighborhood->normalized_avg_income    = paNeighborhood->nbrhd_avg_income    / average_income;
+		paNeighborhood->normalized_avg_health    = paNeighborhood->nbrhd_avg_health    / average_health;
+
+		paNeighborhood->nbrhd_adult_count = anAdultCountByNeighborhood[nN];
+		paNeighborhood->nbrhd_child_count = anChildCountByNeighborhood[nN]; 
+	}
+
+	// update average_income_near_age array state in Ticker actor
+	for( int nA = 0; nA< SIZE(RANGE_AGE); nA++ )
+	{
+		double totalIncome = 0;
+		double totalCount = 0; 
+			
+		//figure out how far up and how far down we can go and hit limit
+		if ( nA - mortalityAgeBand < 0 ) {
+			// only go down to 0
+			int totDecrement = 0 + nA; 
+			// start at low end, increment to high end
+			int totFromBottom = totDecrement + mortalityAgeBand; 
+			for ( int i = 0; i < totFromBottom; i++ ) {
+				totalIncome += adIncomeTotalByAge[i];
+				totalCount += anPersonCountByAge[i]; 
+			}
+		}
+
+		else if ( nA + mortalityAgeBand >= SIZE(RANGE_AGE) ) {
+			int totIncrement = SIZE(RANGE_AGE) - nA;
+			int bottomEnd = nA - mortalityAgeBand; 
+			for ( int i = bottomEnd; i < SIZE(RANGE_AGE); i++ ) {
+				totalIncome += adIncomeTotalByAge[i];
+				totalCount += anPersonCountByAge[i];
+			}
+		}
+
+		else{
+			int bottomEnd = nA - mortalityAgeBand;
+			int topEnd = nA + mortalityAgeBand; 
+			for ( int i = bottomEnd; i < topEnd; i++ ) {
+				totalIncome += adIncomeTotalByAge[i];
+				totalCount += anPersonCountByAge[i];
+			}
+		}
+
+		if ( totalCount > 0 ) {
+			average_income_near_age[nA] = totalIncome / totalCount; 
+		}
+		else {
+			average_income_near_age[nA] = 0; 
+		}
+	}
+}

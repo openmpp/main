@@ -1,0 +1,26 @@
+//LABEL(ParameterVerification, EN) Parameter Verification
+
+/* NOTE(ZZZUserTables, EN)
+	Verifies some parameters to ensure that values fall within valid limits.
+*/
+
+
+
+//BOOL ValidateParameters( SCENARIO_EVENT eEvent )
+//{
+//	if ( eEvent == SCENARIO_RUN_EVENT )
+//	{
+//		// Coherence check on number of neighbourhoods.
+//		if ( SIZE(RANGE_NEIGHBORHOOD) < SimulatedNeighborhoods )
+//		{
+//			MessageValidationFailed("SimulatedNeighborhoods exceeds maximum number of neighborhoods");
+//			return false;
+//		}
+//	}
+//
+//	// otherwise, success
+//	return true;
+//}
+
+
+

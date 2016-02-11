@@ -1,0 +1,49 @@
+//LABEL(CommonTables, EN) Common tables
+
+/* NOTE(CommonTables, EN)
+	Contains optional tables associated with the Common module.
+	This entire module can be commented out or removed from the project
+	to increase memory and computational efficiency,
+	with no effect on results.
+*/
+
+
+/////////////////////////
+// Verification tables //
+/////////////////////////
+
+//table_group EventCountTables //EN Event count tables
+//{
+//	//TickerEvents,
+//	PersonEvents
+//};
+//table_group VerificationTables //EN Verification tables
+//{
+//	EventCountTables
+//};
+//
+//
+////table Ticker TickerEvents	//EN TEvent
+////{
+////	{
+////		event(event_count)	//EN Count
+////	}  
+////	* year
+////	* event_type
+////};
+//
+//
+//table Person PersonEvents	//EN PEvent
+//{
+//	{
+//		event(event_count)	//EN Count
+//	}  
+//	* year
+//	* event_type
+//};
+
+
+
+
+
+

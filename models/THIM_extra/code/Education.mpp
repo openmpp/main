@@ -1,0 +1,111 @@
+//LABEL(Education, EN) Education of the Person actor
+
+/* NOTE(Income, EN)  This module contains parameters, state variables, and events associated with education.  */
+
+range EDUCATION //EN Education
+{	0, 20  };
+
+partition EDUCATION_GROUP_20
+{
+	0,
+	1,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	8,
+	9,
+	10,
+	11,
+	12,
+	13,
+	14,
+	15,
+	16,
+	17,
+	18,
+	19,
+	20
+};
+
+partition EDUCATION_GROUP_5
+{
+	0,
+	5,
+	10,
+	15,
+	20
+};
+
+parameter_group EducationParameters //EN Education parameters
+{	MinimumYearsOfEducation,
+	MaximumYearsOfEducation,
+	EBa,
+	EBb, 
+	Esigma,
+	mEducation
+};
+
+
+parameters
+{	int MinimumYearsOfEducation;			//EN Minimum years of education
+	int MaximumYearsOfEducation;			//EN Maximum years of education
+	double EBa;								//EN Influence of relative neighbourhood income
+	double EBb; 							//EN Influence of relative individual parent income
+	double Esigma;							//EN Variance of education
+	double mEducation;						//EN User-defined mean education
+};
+
+actor Person
+{	
+	real education;					//EN person's education
+	double dF;						//EN for baseE: relative nbhdY + parentalY
+	double perturb;					//EN for baseE: perburb: (Esigma, RandNorm)
+
+
+	void Start_Newborn_Education();			//EN Set education for newborn
+	hook Start_Newborn_Education, Start_Newborn;
+
+	void Start_StartPop_Education();		//EN Set education for Person in starting population
+	hook Start_StartPop_Education, Start_StartPop;
+};
+
+void Person::Start_Newborn_Education()
+{	assert( lParent != NULL );
+
+	// Get the Ticker actor
+	auto paTicker = asAllTicker->Item(0);
+
+	// Get the neighbourhood actor of this Person's neighborhood
+	auto paNeighborhood = asNeighborhoodByID[neighborhood]->Item(0);
+
+	dF = 0.0;
+	if ( paTicker->average_income > 0.0 )				// protect from run-time exception division by zero
+	{	if ( lParent->income > 0.0 ) 					// parent has income, so include parental income factor
+		{	dF = EBb * log( lParent->income / paTicker->average_income ); 
+		}
+		if ( paNeighborhood->nbrhd_avg_income > 0.0 )	// nbhd has income, so bring in neighbourhood effect
+		{	dF = dF + EBa * log( paNeighborhood->nbrhd_avg_income / paTicker->average_income );
+		}
+	}
+
+	perturb = Esigma * RandNormal(11);
+
+	double nEducation =  mEducation + dF + perturb;	// mEducation is a parm for mean education
+
+	nEducation = ( nEducation < MinimumYearsOfEducation) ? MinimumYearsOfEducation : nEducation;
+	nEducation = ( nEducation > MaximumYearsOfEducation) ? MaximumYearsOfEducation : nEducation;
+	education = nEducation;
+
+}
+
+void Person::Start_StartPop_Education(void)
+{	// number of possible distinct values of years of education
+	int nNumberOfEducationValues = 1 + MaximumYearsOfEducation - MinimumYearsOfEducation;
+	// draw from a random uniform distribution that, when truncated, will produce
+	// all possible valid years of education, each equally probable.
+	int nEducation = (int) ( MinimumYearsOfEducation + nNumberOfEducationValues * RandUniform(15) );
+	education = nEducation;
+}

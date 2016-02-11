@@ -1,0 +1,308 @@
+//LABEL(Income, EN) Income of the Person actor
+
+/* NOTE(Income, EN)  This module contains parameters, state variables, and events associated with income.  */
+range R_0_99	//EN 0 to 99
+{	0, 	99 };
+
+range R_0_9	//EN 0 to 9
+{	0, 9 };
+
+range R_0_8	//EN 0 to 8
+{	0, 	8 };
+
+range R_0_4	//EN 0 to 4
+{	0, 4 };
+
+partition BASE_INCOME_GROUP
+{
+	0.1,
+    0.3,
+	0.5,
+	0.7,
+	0.9,
+	1.1,
+	1.3,
+	1.5,
+	1.7,
+	1.9,
+	2.1,
+	2.5,
+	2.9,
+	3.3,
+	3.7,
+	4.1,
+	4.5
+};
+
+partition INCOME_GROUP_20
+{
+	1,
+	5000,
+	10000,
+	15000,
+	20000,
+	25000,
+	30000,
+	35000,
+	40000,
+	45000,
+	50000,
+	55000,
+	60000,
+	65000,
+	70000,
+	75000,
+	80000,
+	90000,
+	100000,
+	110000,
+	120000,
+	130000,
+	140000,
+	150000,
+	175000,
+	200000,
+	250000,
+	300000,
+	350000
+};
+
+parameter_group IncomeParameters //EN Income parameters
+{
+	YinitParam,
+	YinitCut,
+	AgeIncomeProfileX,
+	AgeIncomeProfileY,
+	ChangeIncomesD,
+	YBa,
+	YBb,
+	YBc,
+	MinBaseIncome,
+	MaxBaseIncome
+};
+
+parameters
+{	double YinitCut[R_0_9];									//EN Yinit income values
+	double YinitParam[R_0_8];
+	double AgeIncomeProfileX[R_0_6];						//EN Age income profile values
+	double AgeIncomeProfileY[R_0_6]; 
+	double ChangeIncomesD;									//EN Standard deviation of perturbation term in annual income change equation
+
+	double YBa;												//EN Influence of relative educational attainment
+	double YBb;												//EN Influence of relative parental income
+	double YBc;												//EN Influence of relative neighbourhood income
+	double MinBaseIncome;
+	double MaxBaseIncome; 
+	model_generated double IncomeProfileRates[RANGE_AGE];	//EN Normalized Yinit abscissa values (income)		
+};
+
+void PreSimulation(void)
+{	double customFunctionArrayX[SIZE(R_0_99)];
+	double customFunctionArrayY[SIZE(R_0_99)];
+
+	double xA = AgeIncomeProfileX[0];
+	double yA = AgeIncomeProfileY[0];
+	double xB = AgeIncomeProfileX[1];
+	double yB = AgeIncomeProfileY[1];
+	double xC = AgeIncomeProfileX[2];
+	double yC = AgeIncomeProfileY[2];
+	double xD = AgeIncomeProfileX[3];
+	double yD = AgeIncomeProfileY[3];
+	double xE = AgeIncomeProfileX[4];
+	double yE = AgeIncomeProfileY[4];
+	double xF = AgeIncomeProfileX[5];
+    double yF = AgeIncomeProfileY[5];
+	double xG = AgeIncomeProfileX[6];
+	double yG = AgeIncomeProfileY[6];
+	
+	double xIncrement = ( ( xG - xA ) / 100 ); 
+
+	// calculate slopes, yintercepts, and x increment value based on user-given values
+	double slopeA = ( ( yB - yA ) / (xB - xA ) );
+	double slopeB = ( ( yC - yB ) / ( xC - xB ) );
+	double slopeC = ( ( yD - yC ) / ( xD - xC ) );
+	double slopeD = ( ( yE - yD ) / ( xE - xD ) ); 
+	double slopeE = ( ( yF - yE ) / ( xF - xE ) );
+	double slopeF = ( ( yG - yF ) / ( xG - xF ) ); 
+	double interceptA = ( yA - ( slopeA * xA ) );
+	double interceptB = ( yB - ( slopeB * xB ) );
+	double interceptC = ( yC - ( slopeC * xC ) );
+	double interceptD = ( yD - ( slopeD * xD ) ); 
+	double interceptE = ( yE - ( slopeE * xE ) );
+	double interceptF = ( yF - ( slopeF * xF ) ); 
+	double switchxA = (int) 1 + ( ( xB - xA ) / xIncrement );
+	double switchxB = (int) 1 + ( ( xC - xA ) / xIncrement );
+	double switchxC = (int) 1 + ( ( xD - xA ) / xIncrement ); 
+	double switchxD = (int) 1 + ( ( xE - xA ) / xIncrement );
+	double switchxE = (int) 1 + ( ( xF - xA ) / xIncrement ); 
+
+	double totalY = 0; 
+	
+	for ( int nJ=0; nJ<SIZE(R_0_99); nJ++ )
+	{
+		customFunctionArrayX[nJ] = ( xA + ( xIncrement * nJ ) );
+      if ( nJ <= switchxA )
+		{
+			customFunctionArrayY[nJ] = slopeA * customFunctionArrayX[nJ] + interceptA;
+		}
+      else if ( nJ <= switchxB && nJ > switchxA ) 
+		{
+			customFunctionArrayY[nJ] = slopeB * customFunctionArrayX[nJ] + interceptB;
+		}
+	  else if ( nJ <= switchxC && nJ > switchxB ) 
+		{
+			customFunctionArrayY[nJ] = slopeC * customFunctionArrayX[nJ] + interceptC;
+		}
+		
+	  else if ( nJ <= switchxD && nJ > switchxC ) 
+	  {
+		   customFunctionArrayY[nJ] = slopeD * customFunctionArrayX[nJ] + interceptD; 
+	  }
+	  
+	  else if ( nJ <= switchxE && nJ > switchxD )
+	  {
+		  customFunctionArrayY[nJ] = slopeE * customFunctionArrayX[nJ] + interceptE; 
+	  }
+
+	  else 
+	  {
+		  customFunctionArrayY[nJ] = slopeF * customFunctionArrayX[nJ] + interceptF; 
+	  }
+
+		totalY += customFunctionArrayY[nJ];
+	}
+
+	// move results to model-generated parameters for age-income profile (not normalized)
+	for ( int nJ=0; nJ<SIZE(R_0_99); nJ++ )
+	{
+		IncomeProfileRates[nJ] = customFunctionArrayY[nJ]; 
+	}
+}
+actor Person
+{	real income;						//EN person's income
+	double dEducationEffect;			//EN for baseY: E effect
+	double dPIncomeEffect;				//EN for baseY: parental effect
+	double dNbhdIncomeEffect;			//EN for baseY: nbrhd effect
+	double dY;							//EN for baseY: lognormal Y draw
+	double baseIncome;					//EN for baseY: base income
+	double dAgeFactor;					//EN for baseY: age effect
+	double dPerturbationFactor;			//EN for baseY: perturbation effect
+
+	//EN Set initial income on completing education
+	void LognormalRV(); 
+	void BaseIncome(); 
+
+	void GetIncome();					//EN Change income on birthday
+	hook GetIncome, BirthdayEvent;		// start of an ordered chain hooked to BirthdayEvent
+	
+	void Start_StartPop_Income();		//EN Set income for Person in starting population
+	hook Start_StartPop_Income, Start_StartPop;
+};
+
+void Person::LognormalRV()
+{	
+	double randDraw = RandUniform(12); 	// random draw from [0, 1]
+	double cumP = 0; 
+	double dProportion = 0; 
+	double cumPNext = 0; 
+	int dInterval = 0; 
+	for ( int i=0; i<SIZE(R_0_8); i++) {
+		cumPNext = cumP + YinitParam[i]; 
+		if ( cumP <= randDraw && randDraw < cumPNext) {		// we are at the right interval
+			dInterval = i; 
+			dProportion = randDraw - cumP; 
+			break;   }
+		else { cumP = cumPNext; } 
+	}
+
+	// check for YinitParam = 0
+	if ( YinitParam[dInterval] == 0 ) {
+		dY = exp( YinitCut[dInterval] + ( dProportion ) * ( YinitCut[dInterval + 1 ] - YinitCut[dInterval] ) );  }
+	else { 
+		dY = exp( YinitCut[dInterval] + ( dProportion / YinitParam[dInterval] ) * ( YinitCut[dInterval + 1 ] - YinitCut[dInterval] ) );  }
+}
+
+void Person::BaseIncome()
+{	
+	auto paTicker = asAllTicker->Item(0);			// Get the Ticker actor
+
+	// Get the neighbourhood actor of this Person's neighborhood
+	auto paNeighborhood = asNeighborhoodByID[neighborhood]->Item(0);
+	
+	// multiply by the relative education effect
+	if ( education > 0 && paTicker->average_education > 0 )
+		{ dEducationEffect = log( education / paTicker->average_education ); }
+	else
+		{ dEducationEffect = 0; }
+
+	// multiply by the relative income effect
+	if ( lParent != NULL && paTicker->average_income > 0 && lParent->income > 0) 
+		{ dPIncomeEffect = log( lParent->income / paTicker->average_income); }
+	else 
+		{ dPIncomeEffect = 0; } 
+
+	// multiply by the relative neighborhood income effect
+	if ( paNeighborhood->nbrhd_avg_income > 0 && paTicker->average_income > 0) 
+		{ dNbhdIncomeEffect = log( paNeighborhood->nbrhd_avg_income / paTicker->average_income ); } 
+	else
+		{ dNbhdIncomeEffect = 0; } 
+
+	baseIncome = dY + YBa * dEducationEffect + YBb * dPIncomeEffect + YBc * dNbhdIncomeEffect;
+
+	if ( baseIncome < MinBaseIncome || baseIncome > MaxBaseIncome ) {
+		int tryCounter = 0; 
+		int maxTries = 100; 
+		while ( ( baseIncome < MinBaseIncome || baseIncome > MaxBaseIncome ) && ( tryCounter < maxTries ) ) {
+			LognormalRV(); 
+			baseIncome = dY + YBa * dEducationEffect + YBb * dPIncomeEffect + YBc * dNbhdIncomeEffect;
+			tryCounter++;  
+		}
+		if ( tryCounter == maxTries ) { baseIncome = 1.0; }
+	}
+}
+
+
+void Person::GetIncome()
+{	
+	if ( (int) integer_age >= (int) education && has_income == FALSE)
+	{	
+		LognormalRV(); 
+		BaseIncome(); 	
+		has_income = TRUE; 
+	}
+
+	if ( (int) integer_age > (int) education && has_income == TRUE )
+	{	
+		// change income according to income-age profile, with perturbation
+		// make sure you don't catch newborns
+		dAgeFactor = IncomeProfileRates[range_age];
+		dPerturbationFactor = ( ChangeIncomesD == 0 ) ? 1.0 : exp(ChangeIncomesD * RandNormal(14) );
+		income = baseIncome * dAgeFactor * dPerturbationFactor;
+	}
+
+	if ( (int) integer_age > AdultAge && has_income == TRUE ) {
+		cumY = cumY + income; 
+		if ( cumA > 0 ) { cumYcumA = cumY / cumA; }
+		else { cumYcumA = 0; }  
+	}
+
+    // hooked function call location (OpenM++)
+    hook_GetIncome();
+}
+
+void Person::Start_StartPop_Income()
+{	// at startup, assign an income to everyone with completed education
+	// first draw from a lognormal distn to get a "permanent income"; n.b. mean = 1
+	// then use age to index into the age-income profile to get an avg income for that age
+	// multiply permanent income proportion by age specific dollar income and by a lognormal noise
+	if ( integer_age > education )
+	{	LognormalRV();
+		baseIncome = dY; 
+		dAgeFactor = IncomeProfileRates[range_age];
+		dPerturbationFactor = ( ChangeIncomesD == 0 ) ? 1.0 : exp(ChangeIncomesD * RandNormal(16) );
+		income = baseIncome * dAgeFactor * dPerturbationFactor;
+		has_income = TRUE;  }
+	else 
+	{	income = 0;  has_income = FALSE;  }   }
+
+
