@@ -157,13 +157,12 @@ for my $file (@files) {
 
 # Selected models
 @models = (
-	'Alpha1',
 	'IDMM',
 	'OzProj',
 	'OzProjGen',
 	'RiskPaths',
-	'WizardCaseBased',
-	'WizardTimeBased',
+	'NewCaseBased',
+	'NewTimeBased',
 	);
 for my $model (@models) {
 	my $model_dir = "models/${model}";

@@ -85,18 +85,18 @@ for my $model_dir (@model_dirs) {
 	# First element is the file, second is the model containing the definitive version to propagate.
 	# As a special case, if MODEL is in first element, it is replaced by the source and destination model
 	my @invariant_list = (
-		"makefile",                     "WizardCaseBased",
-		"MODEL-modgen.sln",             "WizardCaseBased",
-		"MODEL-ompp.sln",               "WizardCaseBased",
-		"modgen/Model.vcxproj",         "WizardCaseBased",
-		"modgen/Model.props",           "WizardCaseBased",
-		"modgen/Model.vcxproj.filters", "WizardCaseBased",
-		"ompp/Model.vcxproj",           "WizardCaseBased",
-		"ompp/Model.props",             "WizardCaseBased",
-		"ompp/Model.vcxproj.filters",   "WizardCaseBased",
-		"code/modgen_case_based.mpp",   "WizardCaseBased",
-		"code/case_based.h",            "WizardCaseBased",
-		"code/modgen_time_based.mpp",   "WizardTimeBased",
+		"makefile",                     "NewCaseBased",
+		"MODEL-modgen.sln",             "NewCaseBased",
+		"MODEL-ompp.sln",               "NewCaseBased",
+		"modgen/Model.vcxproj",         "NewCaseBased",
+		"modgen/Model.props",           "NewCaseBased",
+		"modgen/Model.vcxproj.filters", "NewCaseBased",
+		"ompp/Model.vcxproj",           "NewCaseBased",
+		"ompp/Model.props",             "NewCaseBased",
+		"ompp/Model.vcxproj.filters",   "NewCaseBased",
+		"code/modgen_case_based.mpp",   "NewCaseBased",
+		"code/case_based.h",            "NewCaseBased",
+		"code/modgen_time_based.mpp",   "NewTimeBased",
 	);
 	
 	my $any_propagated = 0;
