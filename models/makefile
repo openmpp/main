@@ -11,13 +11,13 @@ LOCAL_SQL_DIR    = $(LOCAL_OUT_PREFIX)sql
 
 MODEL_DIRS = \
   modelOne \
-  Alpha1 \
   IDMM \
+  NewCaseBased \
+  NewTimeBased \
   RiskPaths \
   OzProj \
   OzProjGen \
-  WizardCaseBased \
-  WizardTimeBased
+  Alpha1 
 #  Alpha2 \
 #  GiniProbe \
 #  IDMM_extra \

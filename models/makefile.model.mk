@@ -11,28 +11,14 @@ CPP = $(CC)
 AR = ar
 
 ifndef OM_ROOT
-  OM_ROOT = ../..
+  error $(error Environmemt variable OM_ROOT must be defined in order to build the model)
 endif
 
-ifndef OM_INC_DIR
-  OM_INC_DIR = $(OM_ROOT)/include
-endif
-
-ifndef OM_BIN_DIR
-  OM_BIN_DIR = $(OM_ROOT)/bin
-endif
-
-ifndef OM_LIB_DIR
-  OM_LIB_DIR = $(OM_ROOT)/lib
-endif
-
-ifndef OM_SQLITE_DIR
-  OMC_SQLITE_DIR = $(OM_ROOT)/sql/sqlite
-endif
-
-ifndef OMC_USE_DIR
-  OMC_USE_DIR = $(OM_ROOT)/use
-endif
+OM_INC_DIR = $(OM_ROOT)/include
+OM_BIN_DIR = $(OM_ROOT)/bin
+OM_LIB_DIR = $(OM_ROOT)/lib
+OMC_USE_DIR = $(OM_ROOT)/use
+OMC_SQLITE_DIR = $(OM_ROOT)/sql/sqlite
 
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
@@ -130,7 +116,7 @@ else
 endif
 
 #
-# location of output database
+# location and name of output database
 #
 ifndef PUBLISH_DIR
   PUBLISH_DIR = output-linux
@@ -139,15 +125,22 @@ else
   MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME).sqlite
 endif
 
+#
+# libraries and omc: openM++ compiler
+#
+OMC_EXE = $(OM_BIN_DIR)/omc
+
 ifndef OM_DB_LIB
 #  OM_DB_LIB = sqlite3
   OM_DB_LIB = sqlite
 endif
 
-OMC_EXE = $(OM_BIN_DIR)/omc
-
 LIBOPENM_A = libopenm.a
 LIBSQLITE_A = libsqlite.a
+
+#
+# rules and targets
+#
 
 # recognize dependency files
 SUFFIXES += .d
