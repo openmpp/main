@@ -226,7 +226,6 @@ run:
 .PHONY: clean
 clean:
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
-	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME)*.sql
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(OMC_OUT_DIR)/*
@@ -235,8 +234,8 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
-	@if [ -d $(PUBLISH_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(PUBLISH_DIR) ; fi 
 	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
+	@if [ -d $(PUBLISH_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(PUBLISH_DIR) ; fi 
 	@if [ -d $(OUT_PREFIX) ] ;  then rmdir --ignore-fail-on-non-empty $(OUT_PREFIX) ; fi 
 
 .PHONY: prepare

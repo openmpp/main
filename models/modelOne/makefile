@@ -107,23 +107,16 @@ ifndef OM_SQLITE_DIR
   OMC_SQLITE_DIR = ../../sql/sqlite
 endif
 
-.PHONY : model_sql
-model_sql : $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql
-
-$(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql :
-	cp -pf *_sqlite.sql $(OUT_BIN_DIR)
-
 .PHONY : publish
-publish : model_sql $(MODEL_SQLITE)
-	cp -pf $(MODEL_EXE).ini $(OUT_BIN_DIR)
+publish : $(MODEL_SQLITE)
 
 $(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_insert_param_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param_sqlite.sql
 
 #
 # run the model
