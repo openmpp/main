@@ -26,15 +26,11 @@ ifndef RELEASE
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
   OUT_LIB_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
-#  OUT_BIN_DIR = $(OUT_PREFIX)/bin/debug
-#  OUT_LIB_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
   OUT_LIB_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/release
-#  OUT_BIN_DIR = $(OUT_PREFIX)/bin/release
-#  OUT_LIB_DIR = $(OUT_PREFIX)/lib/release
 endif
 
 INCLUDE_DIR = ../../include

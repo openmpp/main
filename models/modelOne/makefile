@@ -15,7 +15,7 @@ ifndef BUILD_DIR
 endif
 
 ifndef OUT_PREFIX
-  OUT_PREFIX = ../bin
+  OUT_PREFIX = ..
 endif
 
 ifndef OM_INC_DIR
@@ -36,11 +36,11 @@ DEPS_DIR = $(MODEL_BUILD_DIR)/deps
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug
-  OUT_BIN_DIR = $(OUT_PREFIX)
+  OUT_BIN_DIR = $(OUT_PREFIX)/bin
 else
   BD_CFLAGS = -DNDEBUG -O3
   OBJ_DIR = $(MODEL_BUILD_DIR)/release
-  OUT_BIN_DIR = $(OUT_PREFIX)
+  OUT_BIN_DIR = $(OUT_PREFIX)/bin
 endif
 
 ifndef OM_DB_LIB
@@ -83,7 +83,7 @@ DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(root))
 all: model 
 
 .PHONY : model
-model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE) model_sql
+model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 
 $(OBJS): | prepare
 $(DEPS): | prepare
@@ -115,6 +115,7 @@ $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql :
 
 .PHONY : publish
 publish : model_sql $(MODEL_SQLITE)
+	cp -pf $(MODEL_EXE).ini $(OUT_BIN_DIR)
 
 $(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
@@ -123,6 +124,18 @@ $(MODEL_SQLITE) :
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_create_model_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OUT_BIN_DIR)/$(MODEL_NAME)_insert_param_sqlite.sql
+
+#
+# run the model
+#
+.PHONY : run
+run:
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) -General.Subsamples 4 -General.Threads 4 \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) -OpenM.TaskName taskOne \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:
@@ -136,6 +149,7 @@ clean:
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
 	rm -f $(MODEL_SQLITE)
+	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
 
 .PHONY: prepare
 prepare:

@@ -25,12 +25,10 @@ ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
-#  OUT_DIR = $(OUT_PREFIX)/lib/debug
 else
   BD_CFLAGS = -DNDEBUG -O3
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/release
-#  OUT_DIR = $(OUT_PREFIX)/lib/release
 endif
 
 INCLUDE_G_DIR = ../../include
