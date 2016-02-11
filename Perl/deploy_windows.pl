@@ -72,7 +72,7 @@ $subdir = 'bin';
 	'ompp_create_scex.exe',
 	'ompp_export_csv.exe',
 	'ompp_export_excel.exe',
-	'README.openm.win.txt',
+	'README_win.txt',
 	'patch_modgen11_outputs.exe',
 	'patch_modgen12_outputs.exe',
 	'sqlite3.exe',
