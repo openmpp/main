@@ -51,7 +51,8 @@ $(MODEL_DIRS) :
 .PHONY : publish
 publish :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(PUBLISH_DIR) -C $(d) publish;)
-	
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/src/*.sql $(LOCAL_OUT_DIR);)
+
 .PHONY : run
 run :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(PUBLISH_DIR) -C $(d) run;)
