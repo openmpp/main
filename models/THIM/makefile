@@ -4,5 +4,5 @@ endif
 
 export OM_ROOT
 
-include $(OM_ROOT)/models/makefile.model.mk
+include $(OM_ROOT)/models/makefile.model.mak
 

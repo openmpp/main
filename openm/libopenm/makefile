@@ -25,10 +25,12 @@ ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/release
+  BIN_POSTFIX = 
 endif
 
 INCLUDE_G_DIR = ../../include
@@ -50,10 +52,10 @@ CXXFLAGS = -Wall -std=c++11 -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) -D_R
   -I$(INCLUDE_G_DIR) -I$(INCLUDE_L_DIR) $(OM_DB_CFLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-LIBOPENM_NAME = libopenm
+LIBOPENM_NAME = libopenm$(BIN_POSTFIX)
 LIBOPENM_A = $(LIBOPENM_NAME).a
 
-LIB_OMC_NAME = libopenm_omc_db
+LIB_OMC_NAME = libopenm_omc_db$(BIN_POSTFIX)
 LIB_OMC_A = $(LIB_OMC_NAME).a
 
 LIBOPENM_CPPLIST = \
@@ -179,15 +181,15 @@ $(OUT_DIR)/$(LIB_OMC_A) : $(OMC_OBJS)
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_DIR)/$(LIBOPENM_A)
-	rm -f $(OUT_DIR)/$(LIB_OMC_A)
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
+	rm -f $(OUT_DIR)/$(LIBOPENM_A)
+	rm -f $(OUT_DIR)/$(LIB_OMC_A)
 	rm -rf $(BUILD_PROJ_DIR)
-	# rm -rf $(OUT_DIR)
+	@if [ -d $(OUT_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_DIR) ; fi 
 
 .PHONY: prepare
 prepare:

@@ -18,10 +18,12 @@ ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/release
+  BIN_POSTFIX = 
 endif
 
 # libsqlite specific
@@ -38,8 +40,7 @@ CXXFLAGS = -Wall -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD
 CCFLAGS = $(CXXFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-LIBSQLITE_NAME = libsqlite
-LIBSQLITE_A = $(LIBSQLITE_NAME).a
+LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 LIBSQLITE_CLIST := \
   sqlite3.c \
@@ -68,14 +69,14 @@ $(OUT_DIR)/$(LIBSQLITE_A) : $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_DIR)/libsqlite.a
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
+	rm -f $(OUT_DIR)/$(LIBSQLITE_A)
 	rm -rf $(BUILD_PROJ_DIR)
-	# rm -rf $(OUT_DIR)
+	@if [ -d $(OUT_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_DIR) ; fi 
 
 .PHONY: prepare
 prepare:

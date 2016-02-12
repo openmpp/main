@@ -7,7 +7,6 @@ BUILD_DIR = $(OUT_PREFIX)/build
 LOCAL_OUT_PREFIX = $(dir $(OUT_PREFIX))
 LOCAL_BIN_DIR    = $(LOCAL_OUT_PREFIX)bin
 LOCAL_BUILD_DIR  = $(LOCAL_OUT_PREFIX)build
-LOCAL_SQL_DIR    = $(LOCAL_OUT_PREFIX)sql
 
 MODEL_DIRS = \
   modelOne \
@@ -37,6 +36,14 @@ ifndef OM_MSG_USE
   OM_MSG_USE = EMPTY
 endif
 
+ifndef RELEASE
+  OMC_SRC_DIR = debug/src
+  LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sqlD
+else
+  OMC_SRC_DIR = release/src
+  LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql
+endif
+
 .PHONY : all
 .PHONY : $(MODEL_DIRS)
 
@@ -50,7 +57,7 @@ publish :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish;)
 	cp -pf modelOne/*_sqlite.sql $(LOCAL_SQL_DIR)
 	@if [ -e modelOne/modelOne.ini ] ; then cp -pf modelOne/modelOne.ini $(LOCAL_BIN_DIR) ; fi
-	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/src/*.sql $(LOCAL_SQL_DIR);)
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/$(OMC_SRC_DIR)/*.sql $(LOCAL_SQL_DIR);)
 
 .PHONY : run
 run :
@@ -70,4 +77,5 @@ clean:
 cleanall:
 	rm -rf $(LOCAL_BIN_DIR)
 	rm -rf $(LOCAL_BUILD_DIR)
-	rm -rf $(LOCAL_SQL_DIR)
+	@if [ -d $(LOCAL_OUT_PREFIX)sql ] ;  then rm -rf $(LOCAL_OUT_PREFIX)sql ; fi
+	@if [ -d $(LOCAL_OUT_PREFIX)sqlD ] ; then rm -rf $(LOCAL_OUT_PREFIX)sqlD ; fi

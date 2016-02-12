@@ -30,26 +30,42 @@ ifndef OM_LIB_DIR
   OM_LIB_DIR = ../../lib
 endif
 
-MODEL_BUILD_DIR = $(BUILD_DIR)/modelOne
-DEPS_DIR = $(MODEL_BUILD_DIR)/deps
+#
+# model name: current dir name by default
+#
+CUR_SUBDIR = $(notdir $(CURDIR))
+ifndef MODEL_NAME
+  MODEL_NAME = $(CUR_SUBDIR)
+endif
+
+#
+# build directories
+# if model build directory defined globally 
+#   then assume shared some/build/ location and use model name to avoid conflicts
+#
+MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
+  DEPS_DIR = $(MODEL_BUILD_DIR)/deps/debug
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
+  DEPS_DIR = $(MODEL_BUILD_DIR)/deps/release
   OBJ_DIR = $(MODEL_BUILD_DIR)/release
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  BIN_POSTFIX = 
 endif
 
 ifndef OM_DB_LIB
 #  OM_DB_LIB = sqlite3
-  OM_DB_LIB = sqlite
+  OM_DB_LIB = sqlite$(BIN_POSTFIX)
 endif
 
-LIBOPENM_A = libopenm.a
-LIBSQLITE_A = libsqlite.a
+LIBOPENM_A = libopenm$(BIN_POSTFIX).a
+LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 # recognize dependency files
 SUFFIXES += .d
@@ -57,15 +73,7 @@ SUFFIXES += .d
 CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-#
-# model executable name and model name:
-# by default model name same as executable name
-#
-MODEL_EXE = modelOne
-
-ifndef MODEL_NAME
-  MODEL_NAME = $(MODEL_EXE)
-endif
+MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)
 
 #MODEL_PATH = $(CURDIR)
 MODEL_CPPLIST = \
@@ -104,7 +112,7 @@ SQLITE_EXE = sqlite3
 MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
 ifndef OM_SQLITE_DIR
-  OMC_SQLITE_DIR = ../../sql/sqlite
+  OM_SQLITE_DIR = ../../sql/sqlite
 endif
 
 .PHONY : publish
@@ -112,8 +120,8 @@ publish : $(MODEL_SQLITE)
 
 $(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param_sqlite.sql
@@ -132,15 +140,13 @@ run:
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
-	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME)*.sql
-	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE).ini
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
 .PHONY: cleanall
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
+	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(MODEL_SQLITE)
 	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
 

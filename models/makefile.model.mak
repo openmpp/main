@@ -18,7 +18,7 @@ OM_INC_DIR = $(OM_ROOT)/include
 OM_BIN_DIR = $(OM_ROOT)/bin
 OM_LIB_DIR = $(OM_ROOT)/lib
 OMC_USE_DIR = $(OM_ROOT)/use
-OMC_SQLITE_DIR = $(OM_ROOT)/sql/sqlite
+OM_SQLITE_DIR = $(OM_ROOT)/sql/sqlite
 
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
@@ -37,15 +37,12 @@ ifdef THREADS
 endif
 
 #
-# model executable name: current dir name by default
-# model name: same as executable name by default
+# model name: current dir name by default
 #
-ifndef MODEL_EXE
-  MODEL_EXE = $(notdir $(CURDIR))
-endif
+CUR_SUBDIR = $(notdir $(CURDIR))
 
 ifndef MODEL_NAME
-  MODEL_NAME = $(MODEL_EXE)
+  MODEL_NAME = $(CUR_SUBDIR)
 endif
 
 #
@@ -100,43 +97,51 @@ endif
 ifndef BUILD_DIR
   MODEL_BUILD_DIR = ompp-linux/build
 else
-  MODEL_BUILD_DIR = $(BUILD_DIR)/$(MODEL_EXE)
+  MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
 endif
-DEPS_DIR = $(MODEL_BUILD_DIR)/deps
-OMC_OUT_DIR = $(MODEL_BUILD_DIR)/src
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
-  OBJ_DIR = $(MODEL_BUILD_DIR)/debug
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
+  OMC_OUT_DIR = $(MODEL_BUILD_DIR)/debug/src
+  OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
-  OBJ_DIR = $(MODEL_BUILD_DIR)/release
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
+  OMC_OUT_DIR = $(MODEL_BUILD_DIR)/release/src
+  OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
+  BIN_POSTFIX = 
 endif
+
+OUT_BIN_DIR = $(OUT_PREFIX)/bin
+
+# model exe name: model name and optional D postfix in case of debug
+MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)
 
 #
 # location and name of output database
 #
 ifndef PUBLISH_DIR
   PUBLISH_DIR = output-linux
-  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sqlite
+  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_EXE)_$(SCENARIO_NAME).sqlite
 else
-  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME).sqlite
+  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_EXE).sqlite
 endif
 
 #
 # libraries and omc: openM++ compiler
 #
+# OMC_EXE = $(OM_BIN_DIR)/omc$(BIN_POSTFIX)
 OMC_EXE = $(OM_BIN_DIR)/omc
 
 ifndef OM_DB_LIB
 #  OM_DB_LIB = sqlite3
-  OM_DB_LIB = sqlite
+  OM_DB_LIB = sqlite$(BIN_POSTFIX)
 endif
 
-LIBOPENM_A = libopenm.a
-LIBSQLITE_A = libsqlite.a
+LIBOPENM_A = libopenm$(BIN_POSTFIX).a
+LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 #
 # rules and targets
@@ -190,7 +195,7 @@ $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
+	$(CXX) -L$(OM_LIB_DIR) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
 #
 # create output SQLite database
@@ -202,8 +207,8 @@ publish : $(MODEL_SQLITE)
 
 $(MODEL_SQLITE) :
 	rm -f $(MODEL_SQLITE)
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/create_db_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_SQLITE_DIR)/optional_meta_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql
@@ -218,15 +223,15 @@ run:
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(OMC_OUT_DIR)/*
-	rm -f $(MODEL_SQLITE)
 
 .PHONY: cleanall
 cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
+	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
+	rm -f $(MODEL_SQLITE)
 	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
 	@if [ -d $(PUBLISH_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(PUBLISH_DIR) ; fi 
 	@if [ -d $(OUT_PREFIX) ] ;  then rmdir --ignore-fail-on-non-empty $(OUT_PREFIX) ; fi 
