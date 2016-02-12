@@ -21,16 +21,18 @@ endif
 BUILD_PROJ_DIR = $(BUILD_DIR)/libopenm
 DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
+ifndef BIN_POSTFIX
+  BIN_POSTFIX = 
+endif 
+
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
-  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/release
-  BIN_POSTFIX = 
 endif
 
 INCLUDE_G_DIR = ../../include

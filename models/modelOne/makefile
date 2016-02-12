@@ -47,16 +47,14 @@ MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
-  DEPS_DIR = $(MODEL_BUILD_DIR)/deps/debug
-  OBJ_DIR = $(MODEL_BUILD_DIR)/debug
+  DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
+  OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
-  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
-  DEPS_DIR = $(MODEL_BUILD_DIR)/deps/release
-  OBJ_DIR = $(MODEL_BUILD_DIR)/release
+  DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
+  OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
-  BIN_POSTFIX = 
 endif
 
 ifndef OM_DB_LIB
@@ -103,7 +101,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -lopenm -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
+	$(CXX) -L$(OM_LIB_DIR) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
 
 #
 # create model SQLite database
@@ -118,14 +116,19 @@ endif
 .PHONY : publish
 publish : $(MODEL_SQLITE)
 
-$(MODEL_SQLITE) :
+$(MODEL_SQLITE) : \
+  $(OM_SQLITE_DIR)/create_db_sqlite.sql \
+  $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
+  $(MODEL_NAME)_create_model_sqlite.sql \
+  $(MODEL_NAME)_insert_param_sqlite.sql \
+  $(MODEL_NAME)_optional_views_sqlite.sql
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/create_db_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param_sqlite.sql
-
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views_sqlite.sql
+	
 #
 # run the model
 #

@@ -20,6 +20,9 @@ ifndef OM_MSG_USE
   OM_MSG_USE = EMPTY
 endif
 
+#
+# targets and rules
+#
 .PHONY : all
 all: prepare libsqlite libopenm omc
 
@@ -53,3 +56,4 @@ cleanall:
 	rm -rf $(OUT_LIB_DIR)
 	@if [ -e $(OUT_BIN_DIR)/omc ] ;  then rm -f $(OUT_BIN_DIR)/omc ; fi 
 	@if [ -e $(OUT_BIN_DIR)/omcD ] ; then rm -f $(OUT_BIN_DIR)/omcD ; fi 
+	@if [ -e $(OUT_BIN_DIR)/omc$(BIN_POSTFIX) ] ; then rm -f $(OUT_BIN_DIR)/omc$(BIN_POSTFIX) ; fi 

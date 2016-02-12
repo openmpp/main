@@ -25,9 +25,8 @@ ifndef OUT_PREFIX
 endif
 
 #
-# default arguments for run control
+# arguments for run control
 #
-
 ifdef MEMBERS
   RUN_OPT_MEMBERS = -General.Subsamples $(MEMBERS)
 endif
@@ -46,15 +45,12 @@ ifndef MODEL_NAME
 endif
 
 #
-# scenario name
+# model default parameters: if SCENARIO_NAME subdirectory exist the use it
 #
 ifndef SCENARIO_NAME
   SCENARIO_NAME = Default
 endif
 
-#
-# model default parameters: if SCENARIO_NAME subdirectory exist the use it
-#
 ifndef OMC_DISABLE_AUTO_PARAM_DIR
   ifndef OMC_SCENARIO_PARAM_DIR
     ifneq (,$(wildcard parameters/$(SCENARIO_NAME)))
@@ -83,19 +79,12 @@ ifdef OMC_FIXED_PARAM_DIR
 endif
 
 #
-# source files subdirectory: .ompp .mpp .odat .dat
-#
-ifndef MODEL_CODE_DIR
-  MODEL_CODE_DIR = code
-endif
-
-#
 # build directories
 # if model build directory defined globally 
 #   then assume shared some/build/ location and use model name to avoid conflicts
 #
 ifndef BUILD_DIR
-  MODEL_BUILD_DIR = ompp-linux/build
+  MODEL_BUILD_DIR = $(OUT_PREFIX)/build
 else
   MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
 endif
@@ -105,13 +94,11 @@ ifndef RELEASE
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/debug/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
-  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/release/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
-  BIN_POSTFIX = 
 endif
 
 OUT_BIN_DIR = $(OUT_PREFIX)/bin
@@ -127,6 +114,13 @@ ifndef PUBLISH_DIR
   MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_EXE)_$(SCENARIO_NAME).sqlite
 else
   MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_EXE).sqlite
+endif
+
+#
+# source files subdirectory: .ompp .mpp .odat .dat .cpp
+#
+ifndef MODEL_CODE_DIR
+  MODEL_CODE_DIR = code
 endif
 
 #
@@ -205,13 +199,18 @@ SQLITE_EXE = sqlite3
 .PHONY : publish
 publish : $(MODEL_SQLITE)
 
-$(MODEL_SQLITE) :
+$(MODEL_SQLITE) : \
+  $(OM_SQLITE_DIR)/create_db_sqlite.sql \
+  $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql \
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql \
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/create_db_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
 
 #
 # run the model
