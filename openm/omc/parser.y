@@ -881,15 +881,20 @@ decl_classification:
                             $classification = new ClassificationSymbol( $classification, @classification );
                             // Set classification context for body of classification declaration
                             pc.set_classification_context( $classification );
-                            // initialize working counter used for classification levels
-                            pc.counter1 = 0;
+                            pc.reset_working_counters();
                         }
             "{" classification_levels "}" ";"
                         {
-                            // No valid classification context
+                            // Leaving classification context
                             pc.set_classification_context( nullptr );
+                            pc.reset_working_counters();
                         }
             | "classification" "{" error "}" ";"
+                        {
+                            // Leaving classification context
+                            pc.set_classification_context(nullptr);
+                            pc.reset_working_counters();
+                        }
             ;
 
 classification_levels:
@@ -946,8 +951,7 @@ decl_partition:
                             $partition = new PartitionSymbol( $partition, @partition );
                             // Set partition context for body of partition declaration
                             pc.set_partition_context($partition);
-                            // initialize working counter used for partition split points
-                            pc.counter1 = 0;
+                            pc.reset_working_counters();
                         }
             "{" partition_splitpoints "}"[last] ";"
                         {
@@ -958,10 +962,16 @@ decl_partition:
                             auto *sym = new PartitionEnumeratorSymbol(enumerator_name, enum_symbol, pc.counter1, upper_split_point, @last);
                             assert(sym);
 
-                            // No valid partition context
+                            // Leaving partition context
                             pc.set_partition_context( nullptr );
+                            pc.reset_working_counters();
                         }
             | "partition" "{" error "}" ";"
+                        {
+                            // Leaving partition context
+                            pc.set_partition_context(nullptr);
+                            pc.reset_working_counters();
+                        }
             ;
 
 partition_splitpoints:
@@ -1219,11 +1229,13 @@ decl_parameter:
                             // Set parameter context for gathering the dimension specification (if present)
                             // and initializer (if present).
                             pc.set_parameter_context( parm );
+                            pc.reset_working_counters();
                         }
             decl_dim_list parameter_initializer_expr ";"
                         {
-                            // No longer in parameter context
-                            pc.set_parameter_context( nullptr );
+                            // Leaving parameter context
+                            pc.set_parameter_context(nullptr);
+                            pc.reset_working_counters();
                         }
     | parameter_modifier_opt[pm_opt] "haz1rate" SYMBOL[parm]
                         {
@@ -1256,11 +1268,13 @@ decl_parameter:
                             // Set parameter context for gathering the dimension specification (if present)
                             // and initializer (if present).
                             pc.set_parameter_context( parm );
+                            pc.reset_working_counters();
                         }
             decl_dim_list parameter_initializer_expr ";"
                         {
-                            // No longer in parameter context
-                            pc.set_parameter_context( nullptr );
+                            // Leaving parameter context
+                            pc.set_parameter_context(nullptr);
+                            pc.reset_working_counters();
                         }
     | parameter_modifier_opt[pm_opt] "cumrate" cumrate_dimensions_opt[cumrate_dims] SYMBOL[parm]
                         {
@@ -1303,11 +1317,13 @@ decl_parameter:
                             // Set parameter context for gathering the dimension specification (if present)
                             // and initializer (if present).
                             pc.set_parameter_context( parm );
+                            pc.reset_working_counters();
                         }
             decl_dim_list parameter_initializer_expr ";"
                         {
-                            // No longer in parameter context
-                            pc.set_parameter_context( nullptr );
+                            // Leaving parameter context
+                            pc.set_parameter_context(nullptr);
+                            pc.reset_working_counters();
                         }
     | "file" SYMBOL[parm]
                         {
@@ -1332,16 +1348,13 @@ decl_parameter:
                             }
                             // Set parameter context for gathering the initializer (if present).
                             pc.set_parameter_context( parm );
+                            pc.reset_working_counters();
                         }
             parameter_initializer_expr ";"
                         {
                             // Leaving parameter context
                             pc.set_parameter_context( nullptr );
-                            // Reset working counters
-                            pc.counter1 = 0;
-                            pc.counter2 = 0;
-                            pc.counter3 = 0;
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
                         }
     | error ";"
                         {
@@ -1352,6 +1365,7 @@ decl_parameter:
                             pc.redeclaration = false;
                             // No valid parameter context
                             pc.set_parameter_context( nullptr );
+                            pc.reset_working_counters();
                         }
 	;
 
@@ -2099,18 +2113,22 @@ decl_entity_set: // Some code for decl_entity_set and decl_table is nearly ident
                             // Set agent context and entity set context for body of entity set declaration
                             pc.set_agent_context( $agent );
                             pc.set_entity_set_context( entity_set );
-                            // initialize working counter used for table dimensions
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
                         }
             entity_set_dimension_list_opt entity_set_filter_opt ";"
                         {
-                            // No valid agent or entity_set context
+                            // Leaving agent and entity_set context
                             pc.set_entity_set_context( nullptr );
                             pc.set_agent_context( nullptr );
-                            // Reset working counters
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
                         }
     | "entity_set" error ";"
+                        {
+                            // Leaving agent and entity_set context
+                            pc.set_entity_set_context(nullptr);
+                            pc.set_agent_context(nullptr);
+                            pc.reset_working_counters();
+                        }
     ;
 
 entity_set_dimension_list_opt:
@@ -2178,14 +2196,11 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             // Set agent context and table context for body of table declaration
                             pc.set_agent_context( $agent );
                             pc.set_table_context( table );
-                            // initialize working counter used for table expressions
-                            pc.counter1 = 0;
-                            // initialize working counter used for table accumulators
-                            pc.counter2 = 0;
-                            // initialize working counter used for table agentvars
-                            pc.counter3 = 0;
-                            // initialize working counter used for table classification dimensions
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
+                            // working counter1 used for table expressions
+                            // working counter2 used for table accumulators
+                            // working counter3 used for table agentvars
+                            // working counter4 used for table classification dimensions
                         }
             table_filter_opt
             "{" table_dimension_list "}" ";"
@@ -2193,13 +2208,15 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             // Leaving table and agent context
                             pc.set_table_context( nullptr );
                             pc.set_agent_context( nullptr );
-                            // Reset working counters
-                            pc.counter1 = 0;
-                            pc.counter2 = 0;
-                            pc.counter3 = 0;
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
                         }
     | "table" error ";"
+                        {
+                            // Leaving table and agent context
+                            pc.set_table_context(nullptr);
+                            pc.set_agent_context(nullptr);
+                            pc.reset_working_counters();
+                        }
     ;
 
 table_filter_opt:
@@ -2466,20 +2483,22 @@ decl_derived_table:
                             }
                             // Set derived table context for body of derived table declaration
                             pc.set_derived_table_context( derived_table );
-                            // initialize working counter used for derived table placeholders
-                            pc.counter1 = 0;
-                            // initialize working counter used for derived table classification dimensions
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
+                            // working counter1 used for derived table placeholders
+                            // working counter4 used for derived table classification dimensions
                         }
             "{" derived_table_dimension_list "}" ";"
                         {
                             // Leaving derived table context
                             pc.set_derived_table_context( nullptr );
-                            // Reset working counters
-                            pc.counter1 = 0;
-                            pc.counter4 = 0;
+                            pc.reset_working_counters();
                         }
     | "derived_table" error ";"
+                        {
+                            // Leaving derived table context
+                            pc.set_derived_table_context(nullptr);
+                            pc.reset_working_counters();
+                        }
     ;
 
 derived_table_dimension_list:

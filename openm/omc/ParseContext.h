@@ -48,6 +48,14 @@ public:
         // The default location constructor for comment_location is fine.
     }
 
+    void reset_working_counters()
+    {
+        counter1 = 0;
+        counter2 = 0;
+        counter3 = 0;
+        counter4 = 0;
+    }
+
     void set_agent_context( Symbol *agent )
     {
         if ( agent != nullptr ) {
