@@ -18,8 +18,8 @@ MODEL_DIRS = \
   NewTimeBased \
   RiskPaths \
   OzProj \
-  OzProjGen \
-  Alpha1 
+  OzProjGen 
+#  Alpha1 
 #  Alpha2 \
 #  GiniProbe \
 #  IDMM_extra \
