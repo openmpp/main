@@ -21,6 +21,10 @@ BUILD_PROJ_DIR = $(BUILD_DIR)/omc
 DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 BUILD_SRC_DIR = $(BUILD_PROJ_DIR)/src
 
+ifndef BIN_POSTFIX
+  BIN_POSTFIX = 
+endif 
+
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
@@ -34,7 +38,7 @@ else
 endif
 
 INCLUDE_DIR = ../../include
-LIB_OMC_A = libopenm_omc_db.a
+LIB_OMC_A = libopenm_omc_db$(BIN_POSTFIX).a
 
 # recognize dependency files
 SUFFIXES += .d
@@ -42,7 +46,7 @@ SUFFIXES += .d
 CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-OMC_EXE = omc
+OMC_EXE = omc$(BIN_POSTFIX)
 
 OMC_CPPLIST = \
 AttributeSymbol.cpp \
@@ -152,19 +156,19 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A)
-	$(CXX) -L$(OUT_LIB_DIR) -lstdc++ -lpthread -o $@ $(OBJS) -lopenm_omc_db
+	$(CXX) -L$(OUT_LIB_DIR) -lstdc++ -lpthread -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX)
 
 .PHONY: clean
 clean:
-	rm -f $(OUT_BIN_DIR)/$(OMC_EXE)
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(BUILD_SRC_DIR)/*
 
 .PHONY: cleanall
 cleanall: clean
+	rm -f $(OUT_BIN_DIR)/$(OMC_EXE)
 	rm -rf $(BUILD_PROJ_DIR)
-	# rm -rf $(OUT_BIN_DIR)
+	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
 
 .PHONY: prepare
 prepare:

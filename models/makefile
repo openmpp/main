@@ -7,8 +7,10 @@ BUILD_DIR = $(OUT_PREFIX)/build
 LOCAL_OUT_PREFIX = $(dir $(OUT_PREFIX))
 LOCAL_BIN_DIR    = $(LOCAL_OUT_PREFIX)bin
 LOCAL_BUILD_DIR  = $(LOCAL_OUT_PREFIX)build
-LOCAL_SQL_DIR    = $(LOCAL_OUT_PREFIX)sql
 
+#
+# models to build
+#
 MODEL_DIRS = \
   modelOne \
   IDMM \
@@ -16,8 +18,8 @@ MODEL_DIRS = \
   NewTimeBased \
   RiskPaths \
   OzProj \
-  OzProjGen \
-  Alpha1 
+  OzProjGen 
+#  Alpha1 
 #  Alpha2 \
 #  GiniProbe \
 #  IDMM_extra \
@@ -37,6 +39,16 @@ ifndef OM_MSG_USE
   OM_MSG_USE = EMPTY
 endif
 
+ifndef RELEASE
+  OMC_SRC_DIR = debug/src
+else
+  OMC_SRC_DIR = release/src
+endif
+LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX)
+
+#
+# targets and rules
+#
 .PHONY : all
 .PHONY : $(MODEL_DIRS)
 
@@ -46,14 +58,14 @@ $(MODEL_DIRS) :
 	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $@
 
 .PHONY : publish
-publish :
+publish : prepare
 	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish;)
 	cp -pf modelOne/*_sqlite.sql $(LOCAL_SQL_DIR)
 	@if [ -e modelOne/modelOne.ini ] ; then cp -pf modelOne/modelOne.ini $(LOCAL_BIN_DIR) ; fi
-	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/src/*.sql $(LOCAL_SQL_DIR);)
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/$(OMC_SRC_DIR)/*.sql $(LOCAL_SQL_DIR);)
 
 .PHONY : run
-run :
+run : prepare
 	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) run;)
 	
 .PHONY : prepare
@@ -70,4 +82,6 @@ clean:
 cleanall:
 	rm -rf $(LOCAL_BIN_DIR)
 	rm -rf $(LOCAL_BUILD_DIR)
-	rm -rf $(LOCAL_SQL_DIR)
+	@if [ -d $(LOCAL_OUT_PREFIX)sql ] ;  then rm -rf $(LOCAL_OUT_PREFIX)sql ; fi
+	@if [ -d $(LOCAL_OUT_PREFIX)sqlD ] ; then rm -rf $(LOCAL_OUT_PREFIX)sqlD ; fi
+	@if [ -d $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX) ] ; then rm -rf $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX) ; fi

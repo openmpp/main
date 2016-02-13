@@ -1,15 +1,13 @@
-ifndef BUILD_DIR
-  BUILD_DIR = ../build
-endif
-
 ifndef OUT_PREFIX
   OUT_PREFIX = ..
 endif
+OUT_LIB_DIR = $(OUT_PREFIX)/lib
+OUT_BIN_DIR = $(OUT_PREFIX)/bin
+BUILD_DIR   = $(OUT_PREFIX)/build
 
 LIBSQLITE_DIR = libsqlite
 LIBOPENM_DIR = libopenm
 OMC_DIR = omc
-OMC_EXE = omc
 
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
@@ -22,6 +20,9 @@ ifndef OM_MSG_USE
   OM_MSG_USE = EMPTY
 endif
 
+#
+# targets and rules
+#
 .PHONY : all
 all: prepare libsqlite libopenm omc
 
@@ -51,5 +52,8 @@ clean:
 .PHONY : cleanall
 cleanall:
 	$(MAKE) -C $(OMC_DIR) cleanall
-	rm -rf $(OUT_PREFIX)/lib
 	rm -rf $(BUILD_DIR)
+	rm -rf $(OUT_LIB_DIR)
+	@if [ -e $(OUT_BIN_DIR)/omc ] ;  then rm -f $(OUT_BIN_DIR)/omc ; fi 
+	@if [ -e $(OUT_BIN_DIR)/omcD ] ; then rm -f $(OUT_BIN_DIR)/omcD ; fi 
+	@if [ -e $(OUT_BIN_DIR)/omc$(BIN_POSTFIX) ] ; then rm -f $(OUT_BIN_DIR)/omc$(BIN_POSTFIX) ; fi 

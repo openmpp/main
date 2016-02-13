@@ -10,50 +10,36 @@ library("openMpp")
 #   UnionStatusPreg1: relative risks of union status on first pregnancy
 # Output value:
 #   T05_CohortFertility: Cohort fertility, expression 1
+
+##################################################################
+# To run this example please uncomment and/or change values below
+# to match your hardware and file system environment.
 #
-
-# The strings model_exe, model_sqlite, model_args, and scenario_cases
-# provide information to run this example in a particular hardware
-# and file system environment.
-# Comment all except one of each, and change to suit as desired.
-
-###################################################################
-# For running on a local machine using the working directory in R #
-###################################################################
-
+### For running on a local machine using the working directory in R 
+#
 # For the following values to work, you must first set the R Working directory
-# to the directory containing the Alpha1 executable and the SQLite database.
-# In RStudio Session > Set Working Directory > Choose Directory, then navigate to location, e.g.
-# /ompp_root/models/RiskPaths/ompp/bin
-
-model_exe = "RiskPaths"
+# to the directory containing the RiskPaths executable and the SQLite database.
+# In RStudio Session > Set Working Directory > Choose Directory, 
+# then navigate to location, e.g.: /ompp_root/models/RiskPaths/ompp/bin
+#
+model_exe = "./RiskPaths"
 model_sqlite = "RiskPaths.sqlite"
-# Default - One simulation member and one thread
-model_args = " "
-# 4 simulation members and 4 threads
-#model_args = " -General.Subsamples 4 -General.Threads 4"
-scenario_cases = 1000L
-
-
-###################################################################
-# For running on a local machine using explicit paths             #
-###################################################################
-
-#model_exe = "/path/to/executable/model/RiskPaths"
-#model_sqlite = "/path/to/SQLite/database/RiskPaths.sqlite"
-# Default - One simulation member and one thread
-#model_args = " "
-#scenario_cases = 1000L
-
-
-###################################################################
-# For running on cluster (change to match your cluster)           #
-###################################################################
-#model_exe = "/mirror/omrun"
-#model_sqlite = "/mirror/RiskPaths.sqlite"
-#model_args = "-n 16 /mirror/RiskPaths"
-#scenario_cases = 100000L
-
+#                8 simulation members and 4 threads
+model_args = " -General.Subsamples 8 -General.Threads 4" 
+#                default: 1 simulation member and 1 thread
+# model_args = " " 
+#
+### For running on a local machine using explicit paths
+#
+# model_exe = "/path/to/executable/model/RiskPaths"
+# model_sqlite = "/path/to/SQLite/database/RiskPaths.sqlite"
+#
+### For running on cluster (change to match your cluster)
+#
+# model_exe = "/mirror/omrun"
+# model_sqlite = "/mirror/RiskPaths.sqlite"
+# model_args = "-n 16 /mirror/RiskPaths -General.Subsamples 32 -General.Threads 4"
+##################################################################
 
 # 
 # connect to database to model databes
@@ -89,7 +75,7 @@ copyWorksetParameterFromRun(theDb, defRs, setId, baseRunId, list(name = "Simulat
 #
 # update number of simulation cases
 #
-updateWorksetParameter(theDb, defRs, setId, list(name = "SimulationCases", value = scenario_cases))
+updateWorksetParameter(theDb, defRs, setId, list(name = "SimulationCases", value = 1000L))
 
 #
 # analyze RiskPaths model varying AgeBaselineForm1 and UnionStatusPreg1 parameters
