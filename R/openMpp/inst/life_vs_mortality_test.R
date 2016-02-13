@@ -2,12 +2,20 @@
 library("openMpp")
 
 #
-# R integration example using NewCaseBased
+# R integration example using NewCaseBased model
+#   loop over MortalityHazard parameter 
+#   to analyze DurationOfLife
 #
 
 ##################################################################
 # To run this example please uncomment and/or change values below
-# to match your hardware and file system environment.
+# to match your hardware and file system environment:
+#
+# model_exe    <- path to the model executable, i.e.: "./NewCaseBased"
+# model_sqlite <- path to the model.sqlite database:  "NewCaseBased.sqlite"
+# model_args   <- optional arguments to control model run, for example:
+#       -General.Subsamples 8 <- number of simation members
+#       -General.Threads 4    <- number of computatinal threads
 #
 ### For running on a local machine using the working directory in R 
 #
@@ -18,10 +26,8 @@ library("openMpp")
 #
 model_exe = "./NewCaseBased"
 model_sqlite = "NewCaseBased.sqlite"
-#                8 simulation members and 4 threads
 model_args = " -General.Subsamples 8 -General.Threads 4" 
-#                default: 1 simulation member and 1 thread
-# model_args = " " 
+# model_args = " "  # default: 1 simulation member and 1 thread
 #
 ### For running on a local machine using explicit paths
 #
@@ -32,7 +38,7 @@ model_args = " -General.Subsamples 8 -General.Threads 4"
 #
 # model_exe = "/mirror/omrun"
 # model_sqlite = "/mirror/NewCaseBased.sqlite"
-# model_args = "-n 16 /mirror/NewCaseBased -General.Subsamples 32 -General.Threads 4"
+# model_args = "-n 16 /mirror/NewCaseBased -General.Subsamples 16 -General.Threads 4"
 ##################################################################
 
 #

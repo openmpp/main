@@ -58,6 +58,7 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
 # i_paramDef - data frame with:
 #   $setId - workset id
 #   $paramTableName - parameter table name
+#   $dimNames - vector dimension names
 # i_dimSize - vector of dimension sizes
 # i_value - workset parameter values
 #   it can be scalar value, vector or data frame
@@ -96,10 +97,11 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
   if (isFrame) {
     if (is.null(i_value$"value")) stop("value data frame must have $value column")
     if(valSize != length(i_value$value)) stop("invalid value size, expected: ", valSize)
+    if(dimCount != length(i_paramDef$dimNames)) stop("invalid number of dimension names, expected: ", dimCount)
     if (any(i_dimSize <= 0, na.rm = TRUE)) stop("size of dimensions must be a positive")
     
-    if (!all(paste("dim", 0:(dimCount - 1), sep = "") %in% names(i_value))) {
-      stop("value data frame must have dimension columns: ", paste("dim", 0:(dimCount - 1), sep = "", collapse=", "))
+    if (!all(i_paramDef$dimNames %in% names(i_value))) {
+      stop("value data frame must have dimension columns: ", paste(i_paramDef$dimNames, sep = "", collapse=", "))
     }
   }
   
@@ -114,7 +116,7 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
     
     # make items for all dimensions
     for (k in 1L:length(i_dimSize)) {
-      dbDf[paste("dim", k - 1L, sep="")] <- 
+      dbDf[i_paramDef$dimNames[k - 1L]] <- 
         rep(
           seq.int(from = 0L, length.out = i_dimSize[k]), 
           times = prod(head(i_dimSize, k - 1L)), 
@@ -151,11 +153,11 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
       paste(
         "INSERT INTO ", i_paramDef$paramTableName, 
         " (set_id, ",
-        paste("dim", 0L:(length(i_dimSize) - 1L), sep = "", collapse = ", "), ", ",
+        paste(i_paramDef$dimNames, sep = "", collapse=", "), ", ",
         " value)",
         " VALUES (",
         i_paramDef$setId, ", ",
-        paste(":dim", 0L:(length(i_dimSize) - 1L), sep = "", collapse = ", "), ", ",
+        paste(paste(":", i_paramDef$dimNames, sep = ""), sep = "", collapse = ", "), ", ",
         " :value)",
         sep = ""
       )

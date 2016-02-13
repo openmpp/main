@@ -90,7 +90,8 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
         paramTableName = paste(
             defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
             sep = ""
-          )
+          ),
+        dimNames = defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
       )
       
       # get size of dimensions vector if any dimensions exists for that parameter
@@ -237,7 +238,8 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
         paramTableName = paste(
             defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
             sep = ""
-          )
+          ),
+        dimNames = defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
       )
       
       # add parameter into workset
@@ -257,11 +259,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       # copy parameter values from run results table into workset table
       dimNames <- ifelse(
         paramRow$parameter_rank > 0, 
-        paste(
-          paste("dim", 0L:(paramRow$parameter_rank - 1L), sep = "", collapse = ", "), 
-          ", ",
-          sep = ""
-        ),
+        paste(paste(paramDef$dimNames, sep = "", collapse = ", "), ", ", sep = ""),
         ""
       )
       

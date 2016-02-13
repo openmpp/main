@@ -251,7 +251,8 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
         paramTableName = paste(
             defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
             sep = ""
-          )
+          ),
+        dimNames = defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
       )
       
       # get size of dimensions vector if any dimensions exists for that parameter

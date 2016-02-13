@@ -87,8 +87,11 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
       "SELECT ", 
       ifelse(nRank > 0L,
         paste(
-          paste("dim", 0L:(nRank - 1L), sep = "", collapse = ", "), ", ",
-          sep = ""
+          paste(
+            defRs$tableDims[which(defRs$tableDims$table_id == tableRow$table_id), "dim_name"],
+            sep = "", collapse = ", "
+          ),
+          ", ", sep = ""
         ),
         ""
       ),
@@ -193,7 +196,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   }
   
   # SELECT dim0, dim1, acc_id, sub_id, acc_value 
-  # FROM modelone_201208171604590148_f0_salarySex
+  # FROM modelone_201208171604590148_a0_salarySex
   # WHERE run_id = 2
   # AND acc_id = 4
   # ORDER BY 1, 2, 3, 4
@@ -203,8 +206,11 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
       "SELECT ", 
       ifelse(nRank > 0L,
         paste(
-          paste("dim", 0L:(nRank - 1L), sep = "", collapse = ", "), ", ",
-          sep = ""
+          paste(
+            defRs$tableDims[which(defRs$tableDims$table_id == tableRow$table_id), "dim_name"],
+            sep = "", collapse = ", "
+          ),
+          ", ", sep = ""
         ),
         ""
       ),
@@ -297,8 +303,11 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
       "SELECT ", 
       ifelse(nRank > 0L,
         paste(
-          paste("dim", 0L:(nRank - 1L), sep = "", collapse = ", "), ", ",
-          sep = ""
+          paste(
+            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"],
+            sep = "", collapse = ", "
+          ), 
+          ", ", sep = ""
         ),
         ""
       ),
