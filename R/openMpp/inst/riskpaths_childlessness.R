@@ -32,8 +32,8 @@ library("openMpp")
 #
 model_exe = "./RiskPaths"
 model_sqlite = "RiskPaths.sqlite"
-model_args = " -General.Subsamples 8 -General.Threads 4" 
-# model_args = " "  # default: 1 simulation member and 1 thread
+model_args = " "  # default: 1 simulation member and 1 thread
+# model_args = " -General.Subsamples 8 -General.Threads 4" 
 #
 ### For running on a local machine using explicit paths
 #
@@ -44,7 +44,7 @@ model_args = " -General.Subsamples 8 -General.Threads 4"
 #
 # model_exe = "/mirror/omrun"
 # model_sqlite = "/mirror/RiskPaths.sqlite"
-# model_args = "-n 16 /mirror/RiskPaths -General.Subsamples 16 -General.Threads 4"
+# model_args = "-n 8 /mirror/RiskPaths -General.Subsamples 16 -General.Threads 2"
 ##################################################################
 
 # 
@@ -158,8 +158,8 @@ persp(
   y = scaleValues,
   z = childlessnessMat,
   xlab = "Decreased union formation",
-  ylab="Decreased fertility", 
-  zlab="Childlessness", 
+  ylab = "Decreased fertility", 
+  zlab = "Childlessness", 
   theta = 30, phi = 30, expand = 0.5, ticktype = "detailed",
   col = "lightgreen",
   cex.axis = 0.7

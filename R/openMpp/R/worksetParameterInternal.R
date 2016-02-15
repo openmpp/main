@@ -8,7 +8,7 @@
 #
 # insert or update workset parameter notes
 # dbCon - database connection
-# i_paramDef - data frame with $setId and $paramId
+# i_paramDef - list with $setId and $paramId
 #   $setId - workset id
 #   $paramId - parameter id
 # i_wsParamTxt - workset parameter text:
@@ -55,20 +55,21 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
 #
 # insert or update workset parameter values
 # dbCon - database connection
-# i_paramDef - data frame with:
+# i_paramDef - list with:
 #   $setId - workset id
 #   $paramTableName - parameter table name
-#   $dimNames - vector dimension names
-# i_dimSize - vector of dimension sizes
+#   $dims - data frame for each dimension
+#     $name - dimension name
+#     $size - dimension size
 # i_value - workset parameter values
 #   it can be scalar value, vector or data frame
-#   if scalar then i_dimSize must be c(NA) or c(0) or c(1)
-#   if vector then prod(i_dimSize) must be equal to vector length
+#   if scalar then $dims$size must be c(NA) or c(0) or c(1)
+#   if vector then prod($dims$size) must be equal to vector length
 #   if data frame then 
 #     it must have $dim0, $dim1,..., $value columns
-#     and prod(i_dimSize) must be equal to length($value)
+#     and prod($dims$size) must be equal to length($value)
 #
-updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_value = NULL)
+updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
 {
   # exit if no data
   if (missing(i_value)) return(NULL)
@@ -84,8 +85,8 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
   
   # check value column size, it must be same as production of dimension sizes
   # for data frame check presence of $value and $dim0,... columns
-  valSize <- prod(i_dimSize, na.rm = TRUE)
-  dimCount <- length(i_dimSize)
+  dimCount <- length(i_paramDef$dims$size)
+  valSize <- prod(i_paramDef$dims$size, na.rm = TRUE)
   
   if (isScalar) {
     valSize <- ifelse(is.na(valSize) || valSize == 0L, 1L, valSize)
@@ -97,11 +98,10 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
   if (isFrame) {
     if (is.null(i_value$"value")) stop("value data frame must have $value column")
     if(valSize != length(i_value$value)) stop("invalid value size, expected: ", valSize)
-    if(dimCount != length(i_paramDef$dimNames)) stop("invalid number of dimension names, expected: ", dimCount)
-    if (any(i_dimSize <= 0, na.rm = TRUE)) stop("size of dimensions must be a positive")
+    if (any(i_paramDef$dims$size <= 0, na.rm = TRUE)) stop("size of dimensions must be a positive")
     
-    if (!all(i_paramDef$dimNames %in% names(i_value))) {
-      stop("value data frame must have dimension columns: ", paste(i_paramDef$dimNames, sep = "", collapse=", "))
+    if (!all(i_paramDef$dims$name %in% names(i_value))) {
+      stop("value data frame must have dimension columns: ", paste(i_paramDef$dims$name, sep = "", collapse=", "))
     }
   }
   
@@ -115,12 +115,12 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
     dbDf <- data.frame(value = i_value)
     
     # make items for all dimensions
-    for (k in 1L:length(i_dimSize)) {
-      dbDf[i_paramDef$dimNames[k - 1L]] <- 
+    for (k in 1L:dimCount) {
+      dbDf[i_paramDef$dims$name[k]] <- 
         rep(
-          seq.int(from = 0L, length.out = i_dimSize[k]), 
-          times = prod(head(i_dimSize, k - 1L)), 
-          each = prod(tail(i_dimSize, length(i_dimSize) - k))
+          seq.int(from = 0L, length.out = i_paramDef$dims$size[k]), 
+          times = prod(head(i_paramDef$dims$size, k - 1L)), 
+          each = prod(tail(i_paramDef$dims$size, dimCount - k))
         )
     }
   }
@@ -153,16 +153,16 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_dimSize = NULL, i_v
       paste(
         "INSERT INTO ", i_paramDef$paramTableName, 
         " (set_id, ",
-        paste(i_paramDef$dimNames, sep = "", collapse=", "), ", ",
+        paste(i_paramDef$dims$name, sep = "", collapse=", "), ", ",
         " value)",
         " VALUES (",
         i_paramDef$setId, ", ",
-        paste(paste(":", i_paramDef$dimNames, sep = ""), sep = "", collapse = ", "), ", ",
+        paste(paste(":", i_paramDef$dims$name, sep = ""), sep = "", collapse = ", "), ", ",
         " :value)",
         sep = ""
       )
     )
-
+  
   # execute delete and insert
   dbGetQuery(dbCon, sqlDel)
   dbGetPreparedQuery(dbCon, sqlIns, bind.data = dbDf)

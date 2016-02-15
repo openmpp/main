@@ -244,34 +244,41 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
         )
       )
       
+      # get name and size for each dimension if any dimensions exists for that parameter
+      dimNames <- c("")
+      dimLen <- c(0L)
+      if (paramRow$parameter_rank > 0) {
+     
+        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
+        
+        if (length(dimNames) != paramRow$parameter_rank) {
+          stop("invalid length of dimension names vector for parameter: ", paramRow$parameter_name)
+        }
+        
+        dimLen <- as.integer( 
+          table(defRs$typeEnum$mod_type_id)[as.character(
+            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "mod_type_id"]
+          )] 
+        )
+        
+        if (length(dimLen) != paramRow$parameter_rank) {
+          stop("invalid length of dimension size vector for parameter: ", paramRow$parameter_name)
+        }
+      }
+      
       # combine parameter definition to insert value and notes
-      paramDef <- data.frame(
+      paramDef <- list(
         setId = setId, 
         paramId = paramRow$parameter_id, 
         paramTableName = paste(
             defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
             sep = ""
           ),
-        dimNames = defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
+        dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)
       )
       
-      # get size of dimensions vector if any dimensions exists for that parameter
-      dimLen <- c(0L)
-      if (paramRow$parameter_rank > 0) {
-     
-        dimLen <- as.integer( 
-          table(defRs$typeEnum$mod_type_id)[as.character(
-            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "mod_type_id"]
-          )] 
-        )
-
-        if (length(dimLen) != paramRow$parameter_rank) {
-          stop("invalid length of dimension size vector for parameter: ", paramRow$parameter_name)
-        }
-      }
-      
       # update parameter value
-      updateWorksetParameterValue(dbCon, paramDef, dimLen, wsParam$value)
+      updateWorksetParameterValue(dbCon, paramDef, wsParam$value)
 
       # if parameter value notes not empty then update value notes
       if (!is.null(wsParam$txt)) {

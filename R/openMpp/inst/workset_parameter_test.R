@@ -109,7 +109,7 @@ paramSetTxt <- data.frame(
 #
 
 # create new working set of model parameters
-# it is a full set and includes all "modelOne" parameters: "ageSex" and "salaryAge"
+# it is a full set and includes all "modelOne" parameters: "ageSex", "salaryAge", "StartingSeed"
 #
 setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)

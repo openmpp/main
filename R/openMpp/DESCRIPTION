@@ -9,5 +9,3 @@ Description: Set input parameters and get output results of openM++ models using
 Depends: RSQLite
 Imports:
 License: MIT + file LICENSE
-NeedsCompilation: no
-Packaged: 2016-02-12 23:37:53 UTC; anatoly
