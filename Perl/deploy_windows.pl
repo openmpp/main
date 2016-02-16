@@ -54,6 +54,7 @@ print "Copying files and folders to ${deploy_dir}\n";
 $subdir = '.';
 @files = (
 	'README_win.txt',
+	'README.txt',
 	'LICENSE.txt',
 	'AUTHORS.txt',
 	);
@@ -109,8 +110,8 @@ for my $file (@files) {
 $subdir = 'include';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
-# openm/libopenm
-$subdir = 'openm/libopenm';
+# openm (omc can be excluded, the rest is required for debug)
+$subdir = 'openm';
 dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # props
