@@ -112,7 +112,11 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 
 # openm (omc can be excluded, the rest is required for debug)
 $subdir = 'openm';
-dircopy $subdir, "${deploy_dir}/${subdir}" || die;
+dircopy "${subdir}/libsqlite", "${deploy_dir}/${subdir}/libsqlite" || die;
+dircopy "${subdir}/libopenm", "${deploy_dir}/${subdir}/libopenm" || die;
+dircopy "${subdir}/omc", "${deploy_dir}/${subdir}/omc" || die;
+copy "${om_root}/${subdir}/openm.build.props", "${deploy_dir}/${subdir}" || die;
+copy "${om_root}/${subdir}/openm.sln", "${deploy_dir}/${subdir}" || die;
 
 # props
 $subdir = 'props';
