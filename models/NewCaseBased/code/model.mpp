@@ -40,7 +40,12 @@ void CaseSimulation(case_info &ci)
 }
 
 /**
- * Invoked at the beginning of the Simulation function.
+ * Invoked at the beginning of the simulation of a set of cases.
+ *
+ * In ompp, called before the simulation of the cases in each simulation member (sub-sample).
+ *
+ * In modgen, called at the start of each simulation thread. In modgen, a simulation thread
+ * may simulate cases from more than one simulation member (sub-sample), interleaved.
  *
  * @param [in,out] ci Additional information related to the case.
  */
@@ -50,7 +55,12 @@ void Simulation_start(case_info &ci)
 }
 
 /**
- * Invoked at the end of the Simulation function.
+ * Invoked at the end of the simulation of a set of cases.
+ *
+ * In ompp, called after the simulation of the cases in each simulation member (sub-sample).
+ *
+ * In modgen, called at the end of each simulation thread. In modgen, a simulation thread
+ * may simulate cases from more than one simulation member (sub-sample), interleaved.
  *
  * @param [in,out] ci Additional information related to the case.
  */
