@@ -74,7 +74,9 @@
     </PropertyGroup>
     <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
     <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
-    <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))" />
+    <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
+             Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
+    />
     <WriteLinesToFile 
         Condition="'$(USE_PCH)'=='1' And !Exists('$(PCH_CXX)')"
         File="$(PCH_CXX)"
