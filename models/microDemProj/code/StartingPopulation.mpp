@@ -1,0 +1,65 @@
+//LABEL(StartingPopulation, EN) Starting population
+
+/* NOTE(StartingPopulation, EN)
+	Implementation of the starting population
+*/
+
+/**
+* Microdata input csv object
+*/
+input_csv in_csv;
+
+/**
+* Microdata output csv object
+*/
+output_csv out_csv;
+
+
+classification PERSON_MICRODATA_COLUMNS											//EN fields in the microdata input file 
+{ 
+	PMC_BIRTH,																	//EN Time of birth
+	PMC_SEX																		//EN Sex
+};
+
+range	AGE_RANGE { 0, 100 };													//EN Age range	
+
+classification SEX																//EN Sex
+{
+	FEMALE,																		//EN Female
+	MALE																		//EN Male
+};
+
+parameters 
+{
+	file						PersonMicroDataFile;							//EN File name of starting population
+	
+	int							StartingPopulationSize;							//EN Starting population sample size
+	int							StartingPopulationRealSize;						//EN Starting population real size
+	logical						ScalePopulation;								//EN Scale output to population size Y/N
+};
+
+parameter_group PG01_StartPop													//EN Starting population
+{
+	PersonMicroDataFile, StartingPopulationSize, 
+	StartingPopulationRealSize, ScalePopulation
+};
+
+actor Person
+{
+	SEX			sex = { FEMALE };												//EN Sex
+	void		ReadBirthCharacteristics(long i_lLine);							//EN Read charcteristics at birth
+};
+
+void Person::ReadBirthCharacteristics(long i_lLine)
+{
+	// Read record
+    in_csv.read_record(i_lLine);
+
+	// Assigns values from record
+	time_of_birth		= in_csv[PMC_BIRTH];							// time of birth
+	if ((int)in_csv[PMC_SEX] == 1) sex = MALE;	else sex = FEMALE;		// sex 
+}
+
+
+	
+

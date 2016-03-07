@@ -1,5 +1,5 @@
 parameters {
 	int SimulationSeed = 16807;
-	Time SimulationEnd = 100.0;
+	Time SimulationEnd = 2163;
 };
 

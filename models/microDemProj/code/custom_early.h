@@ -13,3 +13,23 @@
 
 typedef std::string std_string; // Can be used instead of std::string in model code, to avoid Modgen issues when using 'string' in model code.
 
+#include "omc/microdata_csv.h"
+
+#if defined(MODGEN)
+namespace mm {
+#endif
+
+/**
+* Microdata input csv object
+*/
+extern input_csv in_csv;
+
+/**
+* Microdata output csv object
+*/
+extern output_csv out_csv;
+
+#if defined(MODGEN)
+}
+#endif
+

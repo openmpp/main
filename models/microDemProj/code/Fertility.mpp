@@ -1,0 +1,65 @@
+//LABEL(Fertility, EN) Fertility 
+
+/*	NOTE(Fertility, EN)
+	This module implements fertility.
+*/
+
+range FERTILE_AGE_RANGE { 15, 49 };															//EN Fertile age range
+range PARITY_RANGE { 0, 15 };	
+
+parameters
+{
+	double					AgeSpecificFertility[FERTILE_AGE_RANGE][SIM_YEAR_RANGE];		//EN Age specific fertility (distribution)
+	double					TotalFertilityRate[SIM_YEAR_RANGE];								//EN Total fertility rate
+	double					SexRatio[SIM_YEAR_RANGE];										//EN Sex ratio (male per 100 female)
+	model_generated	double	AgeSpecificFertilityRate[FERTILE_AGE_RANGE][SIM_YEAR_RANGE];	//EN Age specific fertility (rate)
+};
+
+parameter_group PG03_Fertility																//EN Fertility
+{	
+	AgeSpecificFertility, TotalFertilityRate, SexRatio
+};
+
+actor Person
+{
+	PARITY_RANGE	parity = { 0 };															//EN Parity
+	event			timeBirthEvent, BirthEvent;												//EN Birth event
+};
+
+TIME Person::timeBirthEvent()
+{
+	double dEventTime = TIME_INFINITE;
+	if ( sex == FEMALE && WITHIN(FERTILE_AGE_RANGE,integer_age) && WITHIN(SIM_YEAR_RANGE,calendar_year) && parity < MAX(PARITY_RANGE))
+	{
+		double dHazard = AgeSpecificFertilityRate[RANGE_POS(FERTILE_AGE_RANGE,integer_age)][RANGE_POS(SIM_YEAR_RANGE,calendar_year)];
+		if ( dHazard > 0.0 ) dEventTime = WAIT( - TIME( log( RandUniform(4) ) / dHazard ) );
+	}
+	return dEventTime;
+}
+
+void Person::BirthEvent()
+{
+	parity++;
+	Person *peChild = new Person;
+	peChild->Start(-1, this);
+}
+
+void PreSimulation()
+{
+	double dSum;
+	for ( int nYear = 0; nYear < SIZE( SIM_YEAR_RANGE ) ; nYear++ )
+	{
+		dSum = 0.0;
+		// check if distribution parameter adds up too 1 
+		for ( int nAge = 0; nAge < SIZE( FERTILE_AGE_RANGE ) ; nAge++ )
+		{
+			dSum = dSum + AgeSpecificFertility[nAge][nYear];
+		}
+		// scale distribution to 1 and convert to fertility rates; copy to model generated parameter
+		for ( int nAge = 0; nAge < SIZE( FERTILE_AGE_RANGE ) ; nAge++ )
+		{
+			if ( dSum > 0.0 ) AgeSpecificFertilityRate[nAge][nYear] = AgeSpecificFertility[nAge][nYear] / dSum * TotalFertilityRate[nYear];
+			else AgeSpecificFertilityRate[nAge][nYear] = 0.0;
+		}
+	}
+}

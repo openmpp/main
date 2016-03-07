@@ -1,0 +1,76 @@
+//LABEL(Tables, EN) Tables
+
+/*	NOTE(Tables, EN)
+	This module contains all output tables
+*/
+
+partition AGE_PART5 { 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80 };	//EN Age group
+
+actor Person
+{
+	SIM_YEAR_RANGE	tab_sim_year = COERCE(SIM_YEAR_RANGE, calendar_year);	//EN Year
+};
+
+table Person PopulationTableAverage					//EN Average Population by calendar year, age and sex
+[ WITHIN( SIM_YEAR_RANGE, calendar_year ) ]
+{
+	sex+ *
+	{
+		duration()									//EN Average Population
+	}									
+	* integer_age+
+	* tab_sim_year
+};
+
+table Person PopulationTableBeginning				//EN Population at beginning of year by calendar year, age and sex
+[ WITHIN( SIM_YEAR_RANGE, calendar_year ) && trigger_changes(calendar_year) ]
+{
+	sex+ *
+	{
+		unit										//EN Population at beginning of year
+	}									
+	* integer_age+
+	* tab_sim_year
+};
+
+table Person PopulationTable5Beginning				//EN Population at beginning of year by calendar year, age group and sex
+[ WITHIN( SIM_YEAR_RANGE, calendar_year ) && trigger_changes(calendar_year) ]
+{
+	tab_sim_year * 
+	{
+		unit										//EN Population 
+	}									
+	* split( integer_age, AGE_PART5 )+
+	* sex+ 
+};
+
+table Person PopulationTable5Average				//EN Average population by calendar year, age group and sex
+[ WITHIN( SIM_YEAR_RANGE, calendar_year )  ]
+{
+	tab_sim_year *
+	{
+		duration()									//EN Average Population 
+	}									
+	* split( integer_age, AGE_PART5 )+
+	* sex+ 
+};
+
+table Person NumberBirths							//EN Number of births
+[ WITHIN( SIM_YEAR_RANGE, calendar_year ) ]
+{
+	{
+		transitions(alive,FALSE, TRUE) 				//EN Births
+	}									
+	* tab_sim_year
+	* sex+
+};
+
+table Person NumberDeaths							//EN Number of deaths
+[ WITHIN( SIM_YEAR_RANGE, calendar_year ) ]
+{
+	{
+		transitions(alive,TRUE, FALSE)				//EN Deaths
+	}									
+	* tab_sim_year
+	* sex+
+};

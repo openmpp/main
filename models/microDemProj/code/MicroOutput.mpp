@@ -1,0 +1,42 @@
+//LABEL(MicroOutput, EN) Micro data output
+
+/*	NOTE(MicroOutput, EN)
+	This module implements micro data output.
+*/
+
+parameters 
+{
+	logical		WriteMicrodata;									//EN Write micro-data output file Y/N
+	double		TimeMicroOutput;								//EN Time of micro-data output
+	file		MicroRecordFileName;							//EN File name micro-data output file
+};
+
+parameter_group PG05_Files										//EN Microdata output
+{
+	WriteMicrodata, MicroRecordFileName, TimeMicroOutput
+};
+
+actor Person
+{
+	TIME	time_microdata_output = { 0.0 };					//EN Time for microdata output
+	event	timeWriteMicroRecord, WriteMicroRecord; 			//EN Write micro-data record event
+};
+
+
+TIME Person::timeWriteMicroRecord()
+{
+	if ( WriteMicrodata && time_microdata_output == 0.0 && TimeMicroOutput >= MIN(ALL_YEAR_RANGE)) return TimeMicroOutput;
+	else return TIME_INFINITE;
+}
+
+void Person::WriteMicroRecord()
+{
+    // Push the fields into the output record.
+    out_csv << time_of_birth;
+    out_csv << (int)sex;
+    // All fields have been pushed, now write the record.
+    out_csv.write_record();
+
+	time_microdata_output = TIME_INFINITE;
+}
+

@@ -1,0 +1,74 @@
+//LABEL(Mortality, EN) Mortality 
+
+/*	NOTE(Mortality, EN)
+	This module implements mortality.
+*/
+
+parameters 
+{
+	double					MortalityTable[AGE_RANGE][SEX];				//EN Standard Mortality Table
+	double					LifeExpectancy[SIM_YEAR_RANGE][SEX];		//EN Life Expectancy
+	model_generated double	MortalityTrend[SIM_YEAR_RANGE][SEX];		//EN Mortality trend
+};
+
+parameter_group PG02_Mortality											//EN Mortality
+{
+	MortalityTable, LifeExpectancy
+};
+
+actor Person            
+{
+	event	timeMortalityEvent, MortalityEvent;							//EN Mortality event
+};
+
+TIME Person::timeMortalityEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+	double dMortalityHazard = MortalityTable[integer_age][sex] * MortalityTrend[RANGE_POS(SIM_YEAR_RANGE,calendar_year)][sex];
+	if ( dMortalityHazard > 0.0 ) tEventTime = WAIT( - TIME( log( RandUniform(1) ) / dMortalityHazard ) );
+	if ( calendar_year < MIN( SIM_YEAR_RANGE ) ) tEventTime = TIME_INFINITE;
+	if ( integer_age == MAX( AGE_RANGE ) ) tEventTime = WAIT(0);
+
+	return tEventTime;
+}
+
+void Person::MortalityEvent()
+{
+	alive = FALSE;
+	Finish();
+}
+
+void PreSimulation()
+{
+	double	dLower, dUpper, dCenter, dResult, dTarget, dAlive, dDeaths;
+	int		nIterations;
+	for ( int nSex = 0; nSex < SIZE( SEX ) ; nSex++ )
+	{
+		for ( int nYear = 0; nYear < SIZE( SIM_YEAR_RANGE ) ; nYear++ )
+		{
+			nIterations = 0;
+			dResult = 500;
+			dTarget = LifeExpectancy[nYear][nSex];
+			dLower = 0.1;
+			dUpper = 3.0;
+			while ( abs( dResult - dTarget ) > 0.0001 && nIterations < 10000 )
+			{
+				nIterations++;
+				dCenter = ( dLower + dUpper ) / 2.0;
+
+				dResult = 0.0;
+				dAlive = 1.0;
+
+				for ( int nAge = 0; nAge < SIZE(AGE_RANGE); nAge++ )
+				{	
+					dDeaths = dAlive * ( 1 - exp(-MortalityTable[nAge][nSex] * dCenter ));
+					dAlive = dAlive - dDeaths;
+					dResult = dResult + dDeaths * 0.5 + dAlive;
+				}
+				if ( dTarget < dResult ) dLower = dCenter; 
+				else dUpper = dCenter;
+			}
+			MortalityTrend[nYear][nSex] = dCenter;
+		}
+	}
+}
