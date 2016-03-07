@@ -18,15 +18,38 @@ parameter_group PG05_Files										//EN Microdata output
 
 actor Person
 {
-	TIME	time_microdata_output = { 0.0 };					//EN Time for microdata output
-	event	timeWriteMicroRecord, WriteMicroRecord; 			//EN Write micro-data record event
+	TIME time_microdata_output = { TIME_INFINITE };				//EN Time for microdata output
+
+    void WriteMicroRecord_Start(); //EN Initialization for microdata output event
+    hook WriteMicroRecord_Start, Start;
+
+    event	timeWriteMicroRecord, WriteMicroRecord; 			//EN Write micro-data record event
 };
 
+void Person::WriteMicroRecord_Start()
+{
+    if (WriteMicrodata) {
+        if (TimeMicroOutput < MIN(ALL_YEAR_RANGE)) {
+            // disabled by value
+            time_microdata_output = TIME_INFINITE;
+        }
+        else if (TimeMicroOutput < time) {
+            // microdata output time is in the past at entity creation - do it immediately.
+            time_microdata_output = WAIT(0);
+        }
+        else {
+            time_microdata_output = TimeMicroOutput;
+        }
+    }
+    else {
+        // disabled
+        time_microdata_output = TIME_INFINITE;
+    }
+}
 
 TIME Person::timeWriteMicroRecord()
 {
-	if ( WriteMicrodata && time_microdata_output == 0.0 && TimeMicroOutput >= MIN(ALL_YEAR_RANGE)) return TimeMicroOutput;
-	else return TIME_INFINITE;
+    return time_microdata_output;
 }
 
 void Person::WriteMicroRecord()
@@ -37,6 +60,7 @@ void Person::WriteMicroRecord()
     // All fields have been pushed, now write the record.
     out_csv.write_record();
 
-	time_microdata_output = TIME_INFINITE;
+    // do only once
+    time_microdata_output = TIME_INFINITE;
 }
 

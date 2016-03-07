@@ -20,14 +20,22 @@ actor Ticker
 
 void Ticker::Start( )
 {
-	calendar_year		= MIN(ALL_YEAR_RANGE);
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+    calendar_year		= MIN(ALL_YEAR_RANGE);
 	time				= MIN(ALL_YEAR_RANGE);
 	time_next_year_end	= WAIT(1);
 	age					= 0.0;
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 void Ticker::Finish()
 {
+    // Exit the simulation (OpenM++).
+    exit_simulation();
 }
 
 TIME Ticker::timeYearEndEvent() { return time_next_year_end; }
@@ -36,7 +44,7 @@ void Ticker::YearEndEvent()
 	int nPerson = asAllPerson->Count();
 	for ( int nJ = 0; nJ < nPerson; nJ++ ) 
 	{
-		Person *paPerson = asAllPerson->Item( nJ );
+		auto paPerson = asAllPerson->Item( nJ );
 		paPerson->YearEnd();
 	}
 	time_next_year_end = time_next_year_end + 1;
@@ -51,7 +59,7 @@ void Ticker::NewYearEvent()
 	int nPerson = asAllPerson->Count();
 	for ( int nJ = 0; nJ < nPerson; nJ++ ) 
 	{
-		Person *paPerson = asAllPerson->Item( nJ );
+		auto paPerson = asAllPerson->Item( nJ );
 		paPerson->NewYear();
 	}
 	time_next_new_year = TIME_INFINITE;

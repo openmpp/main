@@ -9,7 +9,7 @@ actor_set Person asAllPerson filter alive;						//EN All Person actors
 
 actor Person 
 {
-	AGE_RANGE		integer_age = self_scheduling_int(age);		//EN Age in full years
+	AGE_RANGE		integer_age = COERCE(AGE_RANGE, self_scheduling_int(age));		//EN Age in full years
 
 	logical			alive = { FALSE };							//EN Alive
 	logical			ready_for_year_end_table = { FALSE };		//EN Ready for yearend accounting
@@ -49,7 +49,10 @@ void Person::NewYear()
 
 void Person::Start(long ActorNumber, Person *peMother)
 {
-	if ( ScalePopulation ) 
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+    if ( ScalePopulation )
 	{
 		Set_actor_weight( StartingPopulationRealSize / StartingPopulationSize );
 		Set_actor_subsample_weight( StartingPopulationRealSize / StartingPopulationSize );
@@ -71,9 +74,17 @@ void Person::Start(long ActorNumber, Person *peMother)
 	calendar_year = int(time);
 	year_of_birth = calendar_year;
 	time_set_alive = WAIT(0);
+
+    // Location to hook functions to Start
+    hook_Start();
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
 }
 
 void Person::Finish()
 {
+    // Exit the simulation (OpenM++).
+    exit_simulation();
 }
 
