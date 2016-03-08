@@ -1,0 +1,33 @@
+/**
+* @file    time_based_scaling_endogenous.ompp
+* Implementation of population scaling
+*
+*/
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+parameters{
+
+    //EN Starting population sample size
+    int StartingPopulationSize;
+
+    //EN Starting population real size
+    model_generated double StartingPopulationRealSize;
+
+};
+
+/**
+* The population scaling factor to use for this member of the simulation.
+*
+* This version scales the population to a value supplied through a parameter.
+*
+* In tables, the size of the population will be the starting sample population size
+* scaled to the real population size.  The real population size must be assigned
+* in a PreSimulation function.
+*
+* @return A double.
+*/
+double population_scaling_factor()
+{
+    return StartingPopulationRealSize / StartingPopulationSize;
+}

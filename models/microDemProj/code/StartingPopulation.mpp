@@ -34,7 +34,7 @@ parameters
 	file						PersonMicroDataFile;							//EN File name of starting population
 	
 	int							StartingPopulationSize;							//EN Starting population sample size
-	int							StartingPopulationRealSize;						//EN Starting population real size
+	double						StartingPopulationRealSize;						//EN Starting population real size
 	logical						ScalePopulation;								//EN Scale output to population size Y/N
 };
 

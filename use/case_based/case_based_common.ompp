@@ -3,7 +3,7 @@
 * Implementation of framework for case-based models
 *
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2016 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 parameters {
@@ -137,6 +137,18 @@ int GetSubSamples()
 long long GetCaseCounterInThread()
 {
     return fmk::member_case_counter;
+}
+
+void Set_actor_weight(double weight)
+{
+    // not implemented
+    // TODO emit run-time warning once 
+}
+
+void Set_actor_subsample_weight(double weight)
+{
+    // not implemented
+    // TODO emit run-time warning once 
 }
 
 void SimulateEvents()

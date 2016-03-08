@@ -49,7 +49,7 @@ double day_length();
 void time_to_date(double exact_time, int& year, int& month_in_year, int& day_in_month, int& day_in_week);
 double date_to_time(int year, int month_in_year, int day_in_month);
 
-// defined in use/calendar/modgen_leapless.ompp
+// defined in use/calendar/leapless_modgen.ompp
 int LeaplessCalendarToDay(int year, int month_in_year, int day_in_month);
 void LeaplessDayToCalendar(int day_number, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week);
 bool LeaplessIsLeapYear(int year);
@@ -60,11 +60,11 @@ double LeaplessDayLength();
 void LeaplessTimeToCalendar(double exact_time, int *p_year, int *p_month_in_year, int *p_day_in_month, int *p_day_in_week);
 double LeaplessCalendarToTime(int year, int month_in_year, int day_in_month);
 
-// defined in use/case_based/case_based_modgen.ompp
-//         or use/time_based/time_based_modgen.ompp
+// defined in use/case_based/case_based.ompp
+//         or use/time_based/time_based.ompp
 extern void RunSimulation(int mem_id, int mem_count);
 
-// defined in use/case_based/case_based_modgen.ompp
+// defined in use/case_based/case_based.ompp
 extern long long GetCaseID();
 extern double GetCaseSeed();
 extern int GetCaseSample();
@@ -72,11 +72,16 @@ extern int GetUserTableSubSample();
 extern long long GetAllCases();
 extern int GetSubSamples();
 
-// defined in use/time_based/time_based_modgen.ompp
+// defined in use/time_based/time_based.ompp
 extern int GetReplicate();
 extern int GetUserTableReplicate();
 extern int GetReplicates();
 extern double SIMULATION_END();
+
+// defined in use/case_based/case_based_common.ompp
+//         or use/time_based/time_based_common.ompp
+void Set_actor_weight(double weight);
+void Set_actor_subsample_weight(double weight);
 
 // defined in use/case_based/scaling_*.ompp
 //         or use/time_based/scaling_*.ompp

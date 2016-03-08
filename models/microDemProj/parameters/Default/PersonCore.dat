@@ -5,7 +5,7 @@ parameters {
 	logical	WriteMicrodata = TRUE; //EN Write micro-data output file Y/N
 	double	TimeMicroOutput = 2013.0; //EN Time of micro-data output
 	file	MicroRecordFileName = "$OM_ROOT/models/microDemProj/Parameters/Default/MyMicroFile.csv"; //EN File name micro-data output file
-	int	StartingPopulationRealSize = 3537365; //EN Starting population real size
+	double	StartingPopulationRealSize = 3537365; //EN Starting population real size
 
 	 //EN Age specific fertility (distribution)
 	double	AgeSpecificFertility[FERTILE_AGE_RANGE][SIM_YEAR_RANGE] = {

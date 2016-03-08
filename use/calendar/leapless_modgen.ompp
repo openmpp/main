@@ -1,6 +1,6 @@
 /**
 * @file    leapless_modgen.ompp
-* Implementation of Mpdgen leapless calendar functions
+* Implementation of Modgen leapless calendar functions
 * 
 * The artifical leapless calendar has exactly 365 days, with no leap years.
 * Years have a fixed length of 1.0.

@@ -54,6 +54,10 @@ void Person::Start(long ActorNumber, Person *peMother)
 
     if ( ScalePopulation )
 	{
+        // The following function calls implement population scaling for Modgen,
+        // using identical case weights for each entity in the simulation.
+        // These calls do nothing in OpenM++, which implements population scaling directly
+        // for time-based models.
 		Set_actor_weight( StartingPopulationRealSize / StartingPopulationSize );
 		Set_actor_subsample_weight( StartingPopulationRealSize / StartingPopulationSize );
 	}

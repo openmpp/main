@@ -16,7 +16,7 @@ use "common.ompp";
 use "common_modgen.ompp";
 use "random/random_lcg41.ompp";
 use "time_based/time_based_common.ompp";
-//use "time_based/time_based_scaling_none.ompp";
+use "time_based/time_based_scaling_exogenous.ompp";
 #endif
 
 namespace fmk {
@@ -26,13 +26,3 @@ namespace fmk {
      */
     const int model_streams = 15;
 }
-
-// The following are temporary, pending integration in ompp
-void Set_actor_weight(double weight) {};
-void Set_actor_subsample_weight(double weight) {};
-
-double population_scaling_factor()
-{
-    return StartingPopulationRealSize / StartingPopulationSize;
-}
-
