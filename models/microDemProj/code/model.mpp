@@ -37,8 +37,13 @@ void Simulation()
     LogSimulationStart();
 
     in_csv.open(PersonMicroDataFile);
+    // input csv file does not have a header
+    //std_string hdr = in_csv.read_header();
     if (WriteMicrodata) {
         out_csv.open(MicroRecordFileName);
+        // Set precision to 7 to obtain 3 digits after the decimal point for YoB.
+        out_csv.precision(7);
+        out_csv.write_header("time_of_birth,sex");
     }
 
     // Create the single Ticker entity.

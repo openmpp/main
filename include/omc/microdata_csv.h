@@ -148,6 +148,27 @@ public:
     }
 
     /**
+    * Reads an optional header at the beginning of the csv input file
+    *
+    * If a header is present, it must be read after opening the file
+    * and before reading any data records.  A header does not count
+    * as a record for record-numbering purposes.
+    */
+    std::string read_header()
+    {
+        if (!input_stream.is_open() || rec_num > 0) {
+            std::stringstream ss;
+            ss << "bad read_header at record " << rec_num << " in input csv file '" << file_name << "'";
+            ModelExit(ss.str().c_str());
+            // not reached, but keep the C++ compiler happy by returning something.
+            return "";
+        }
+        std::string line;
+        std::getline(input_stream, line);
+        return line;
+    }
+
+    /**
      * Array indexer operator.
      *
      * @param index Zero-based index for the fields
@@ -181,8 +202,9 @@ public:
     /**
      * Reads the given record and places values into fields.
      * 
-     * The record number of the first record is 0.  The target record cannot be earlier than the
-     * current record.  Reading beyond end-of-file is treated as an error.  Fields which are empty
+     * The record number of the first record (not including a possible header line) is 0.
+     * The target record cannot be earlier than the current record.
+     * Reading beyond end-of-file is treated as an error.  Fields which are empty
      * in the csv are read as a quiet NaN.
      *
      * @param target_record Number of the record to be read.
@@ -231,6 +253,8 @@ public:
      * Number of the current record.
      * 
      * This is the number of the record which will be read on the next call to read_record.
+     * The number of the first record is 0.
+     * A header, if present, is not considered to be a record.
      *
      * @return A long.
      */
@@ -345,6 +369,43 @@ public:
         output_stream.close();
         rec_num = 0;
         fields.clear();
+    }
+
+    /**
+    * Writes an optional header at the beginning of the csv output file
+    *
+    * A header must be written after opening the file
+    * and before writing any data records.  A header does not count
+    * as a record for record-numbering purposes.
+    */
+    void write_header(std::string hdr)
+    {
+        if (!output_stream.is_open() || rec_num > 0) {
+            std::stringstream ss;
+            ss << "bad write_header at record " << rec_num << " in output csv file '" << file_name << "'";
+            ModelExit(ss.str().c_str());
+            // not reached.
+            return;
+        }
+        output_stream << hdr << std::endl;
+    }
+
+    /**
+    * Specifies precision of output for all fields
+    *
+    * The default C++ stream precision is 6 digits.
+    * Call before writing any records.
+    */
+    void precision(int prec)
+    {
+        if (!output_stream.is_open() || rec_num > 0) {
+            std::stringstream ss;
+            ss << "bad precision at record " << rec_num << " in output csv file '" << file_name << "'";
+            ModelExit(ss.str().c_str());
+            // not reached.
+            return;
+        }
+        output_stream.precision(prec);
     }
 
     /**
