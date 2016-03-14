@@ -69,6 +69,7 @@ public:
 	void do_RunModel();
 	void do_ModelShutdown();
     void do_API_entries();
+    void do_ParameterNameSize(void);
 
     /**
      * CodeBlock for om_types0.h.

@@ -8,9 +8,11 @@
 #ifndef DB_EXEC_H
 #define DB_EXEC_H
 
+#include <mutex>
+using namespace std;
+
 #include "libopenm/omCommon.h"
 #include "libopenm/db/dbCommon.h"
-#include "helper.h"
 
 namespace openm
 {

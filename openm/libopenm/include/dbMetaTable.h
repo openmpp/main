@@ -985,14 +985,14 @@ namespace openm
         virtual ~ITaskRunSetTable() throw() = 0;
 
         /**
-        * select table rows sorted by primary key: task id, set id, run id.
+        * select table rows sorted by primary key: task run id, run id.
         *
         * if i_taskRunId > 0 then select only rows where task_run_id = i_taskRunId
         */
         static vector<TaskRunSetRow> select(IDbExec * i_dbExec, int i_taskRunId = 0);
 
-        /** select table row by primary key: task id, set id, run id. */
-        static vector<TaskRunSetRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_setId, int i_runId);
+        /** select table row by primary key: task run id, run id. */
+        static vector<TaskRunSetRow> byKey(IDbExec * i_dbExec, int i_taskRunId, int i_runId);
     };
 }
 

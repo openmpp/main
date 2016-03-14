@@ -22,18 +22,18 @@ namespace openm
         EmptyPackedAdapter(MsgTag i_tag) : msgTag(i_tag) { }
 
         /** return message tag */
-        MsgTag tag(void) const throw() { return msgTag; }
+        MsgTag tag(void) const throw() override { return msgTag; }
 
         /** pack vector of db rows into char vector: return empty vector. */
-        const vector<char> pack(const IRowBaseVec & /* i_rowVec */) const 
+        const vector<char> pack(const IRowBaseVec & /* i_rowVec */) const override
         { 
-            lock_guard<recursive_mutex> lck(rtMutex);
+            lock_guard<recursive_mutex> lck(msgMutex);
             vector<char> packedData;
             return packedData;
         }
 
         /** unpack from char[] into vector of rows (does nothing). */
-        void unpackTo(int /* i_packSize */, void * /* i_packedData */, IRowBaseVec & /* io_rowVec */) const { }
+        void unpackTo(int /* i_packSize */, void * /* i_packedData */, IRowBaseVec & /* io_rowVec */) const override { }
 
     private:
         MsgTag msgTag;  // message tag
@@ -56,76 +56,57 @@ namespace openm
         /** cleanup message passing resources (empty destructor). */
         ~MsgEmptyExec(void) throw() { }
 
-        /** return current process rank: always = 0. */
-        int rank(void) const throw() { return 0; }
-
         /** return total number of processes in world communicator: always = 1. */
-        int worldSize(void) const throw() { return 1; }
+        int worldSize(void) const override { return MsgExecBase::worldSize(); }
 
-        /** wait until all processes come to the barrier (does nothing). */
-        void waitOnBarrier(void) const { }
+        /** return current process rank: always = 0. */
+        int rank(void) const override { return MsgExecBase::rank(); }
 
-        /** broadcast value array from sender to all other processes (does nothing). */
-        void bcast(int /* i_sendFrom */, const type_info & /* i_type */, long long /* i_size */, void * /* io_valueArr */) { }
+        /** return rank in modeling group: always = 0. */
+        int groupRank(void) const throw() { return MsgExecBase::groupRank(); }
 
-        /** broadcast vector of db rows from sender to all other processes (does nothing). */
-        void bcastPacked(int /* i_sendFrom */, IRowBaseVec & /* io_rowVec */, const IPackedAdapter & /* i_adapter */) { }
+        /** create groups for parallel run of modeling task (does nothing). */
+        void createGroups(int /*i_groupSize*/, int /*i_groupCount*/) override { }
+
+        /** broadcast value array from root to all other processes (does nothing). */
+        void bcast(
+            int /*i_groupOne*/, const type_info & /* i_type */, long long /* i_size */, void * /* io_valueArr */
+            ) override { }
+
+        /** broadcast vector of db rows from root to all other processes (does nothing). */
+        void bcastPacked(
+            int /*i_groupOne*/, IRowBaseVec & /* io_rowVec */, const IPackedAdapter & /* i_adapter */
+            ) override { }
 
         /** start non-blocking send of value array to i_sendTo process. */
-        void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr)
-        {
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::startSend(i_sendTo, i_msgTag, i_type, i_size, i_valueArr);
-        }
+        void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr) override
+        { MsgExecBase::startSend(i_sendTo, i_msgTag, i_type, i_size, i_valueArr); }
 
         /** pack and start non-blocking send of vector of db rows to i_sendTo process. */
-        void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter)
-        {
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter);
-        }
+        void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter) override
+        { MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter); }
 
         /** initiate non-blocking recveive of value array into io_valueArr. */
-        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr)
-        {
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
-        }
+        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) override
+        { MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
         /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
-        void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter)
-        {
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter);
-        }
+        void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) override
+        { MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter); }
 
-        /** try to non-blocking receive value array, return return true if received. */
-        bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const
-        {
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
-        }
+        /** try to non-blocking receive and unpack vector of db rows, return true if completed. */
+        bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const override
+        { return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter); }
 
-        /** try to non-blocking receive and unpack vector of db rows, return return true if received. */
-        bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const
-        {
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter);
-        }
+        /** try to non-blocking receive value array, return true if completed. */
+        bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const override
+        { return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
         /** wait for all non-blocking send to be completed. */
-        void waitSendAll(void) 
-        { 
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::waitSendAll();
-        }
+        void waitSendAll(void) override { MsgExecBase::waitSendAll(); }
 
         /** wait for all non-blocking receive to be completed. */
-        void waitRecvAll(void) 
-        { 
-            lock_guard<recursive_mutex> lck(rtMutex);
-            return MsgExecBase::waitRecvAll();
-        }
+        void waitRecvAll(void) override { MsgExecBase::waitRecvAll(); }
 
     private:
         MsgEmptyExec(const MsgEmptyExec & i_exec) = delete;
@@ -178,7 +159,7 @@ namespace openm
 
     private:
         const type_info & valueType;    // type of value in array
-        long long arrSize;              // size of value array
+        long long arrSize;              // size of array
         void * valueArr;                // value array
 
     private:

@@ -19,13 +19,10 @@ namespace openm
         /** subsample staring number for current modeling process */
         int subFirstNumber;
 
-        /** number of subsamples for each child modeling process */
-        int subPerProcess;
-
         /** number of subsamples for current process */
         int selfSubCount;
 
-        /** number of modeling processes */
+        /** number of modeling processes: MPI world size */
         int processCount;
 
         /** create run controller, load metadata tables and broadcast it to all modeling processes. */
@@ -38,63 +35,54 @@ namespace openm
         virtual int nextRun(void) = 0;
 
         /** model run shutdown: save results and update run status. */
-        virtual void shutdownRun(void) = 0;
+        virtual void shutdownRun(int i_runId) = 0;
 
         /** model process shutdown: cleanup resources. */
-        virtual void shutdown(void) = 0;
+        virtual void shutdownWaitAll(void) = 0;
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) = 0;
 
-        /** receive accumulators of output tables subsamples and write into database. */
-        virtual bool receiveSubSamples(void) = 0;
+        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        virtual bool childExchange(void) = 0;
 
         /** write output table accumulators or send data to root process. */
         virtual void writeAccumulators(
             const RunOptions & i_runOpts,
-            bool i_isLast,
+            bool i_isLastTable,
             const char * i_name,
             long long i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) = 0;
 
     protected:
-        static const int processInitMsgSize = 4;    // initial message size at process startup
-
         /** create run controller */
-        RunController(int i_processCount, const ArgReader & i_argStore) : MetaLoader(i_argStore),
+        RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
             subFirstNumber(0),
-            subPerProcess(1),
             selfSubCount(0),
-            processCount(i_processCount)
+            processCount(1)
         { }
 
         /** get number of subsamples, read and broadcast metadata. */
         virtual void init(void) = 0;
 
-        // task item: workset, result run and status
-        struct TaskItem
+        // input set id, result run id and status
+        struct SetRunItem
         {
             int setId;              // set id of input parameters
             int runId;              // if >0 then run id
             ModelRunState state;    // run status
 
-            TaskItem(int i_setId) : setId(i_setId), runId(0) { }
+            SetRunItem(void) : setId(0), runId(0) { }
+            SetRunItem(int i_setId, int i_runId, ModelStatus i_status) : setId(i_setId), runId(i_runId)
+                { state.updateStatus(i_status); }
 
-        private:
-            TaskItem(void) = delete;
+            // return true if set or run undefined
+            bool isEmpty(void) { return setId <= 0 || runId <= 0; }
         };
 
-        /** read modeling task definition */
-        list<RunController::TaskItem> readTask(int i_taskId, const ModelDicRow * i_modelRow, IDbExec * i_dbExec);
-
-        /** find working set to run the model */
-        int nextSetId(int i_taskId, IDbExec * i_dbExec, const list<RunController::TaskItem> & i_taskRunLst);
-
         /** create new run, create input parameters and run options for input working sets */
-        int createNewRun(
-            int i_setId, int i_taskId, int i_taskRunId, IDbExec * i_dbExec, list<RunController::TaskItem> & io_taskRunLst
-            );
+        SetRunItem createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec) const;
 
         /** impelementation of model process shutdown if exiting without completion. */
         void doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec);
@@ -103,10 +91,7 @@ namespace openm
         void doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbExec);
 
         /** implementation model process shutdown. */
-        void doShutdown(int i_taskRunId, IDbExec * i_dbExec);
-
-        /** receive outstanding accumulators and wait until outstanding send completed. */
-        virtual void receiveSendLast(void) = 0;
+        void doShutdownAll(int i_taskRunId, IDbExec * i_dbExec);
 
         /** return accumulator message tag */
         static int accMsgTag(int i_subNumber, int i_subSampleCount, int i_accIndex)
@@ -122,17 +107,17 @@ namespace openm
             const char * i_name,
             long long i_size,
             forward_list<unique_ptr<double> > & io_accValues
-            );
+            ) const;
 
-        /** update subsample nubre to restart the run */
-        void updateRestartSubsample(int i_runId, IDbExec * i_dbExec, const vector<bool> & i_subDoneVec);
+        /** update subsample number to restart the run */
+        void updateRestartSubsample(int i_runId, IDbExec * i_dbExec, const vector<bool> & i_isSubDone);
 
     private:
         // create run options in run_option table
-        void createRunOptions(int i_runId, IDbExec * i_dbExec);
+        void createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
-        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const;
 
         /** write output tables aggregated values into database */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
@@ -147,11 +132,10 @@ namespace openm
     {
     public:
         /** create new single process run controller */
-        SingleController(const ArgReader & i_argStore, IDbExec * i_dbExec) : RunController(1, i_argStore),
-            runId(0),
-            setId(0),
+        SingleController(const ArgReader & i_argStore, IDbExec * i_dbExec) : RunController(i_argStore),
             taskId(0),
             taskRunId(0),
+            isWaitTaskRun(false),
             dbExec(i_dbExec)
         { }
 
@@ -169,39 +153,36 @@ namespace openm
         /** write output table accumulators. */
         virtual void writeAccumulators(
             const RunOptions & i_runOpts,
-            bool i_isLast,
+            bool i_isLastTable,
             const char * i_name,
             long long i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
         /** model run shutdown: save results and update run status. */
-        virtual void shutdownRun(void) override { doShutdownRun(runId, taskRunId, dbExec); }
+        virtual void shutdownRun(int i_runId) override { doShutdownRun(i_runId, taskRunId, dbExec); }
 
         /** model process shutdown: cleanup resources. */
-        virtual void shutdown(void) override { doShutdown(taskRunId, dbExec); }
+        virtual void shutdownWaitAll(void) override { doShutdownAll(taskRunId, dbExec); }
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
+        virtual void shutdownOnExit(ModelStatus i_status) override 
+            { doShutdownOnExit(i_status, nowSetRun.runId, taskRunId, dbExec); }
 
-        /** receive accumulators of output tables subsamples and write into database. */
-        virtual bool receiveSubSamples(void) override { return false; }
+        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        virtual bool childExchange(void) override { return false; }
 
     protected:
         /** initialize root modeling process. */
         virtual void init(void) override;
 
-        /** receive outstanding accumulators and wait until outstanding send completed. */
-        virtual void receiveSendLast(void) override { }
-
     private:
-        int runId;                  // if > 0 then model run id
-        int setId;                  // if > 0 then set id of source input parametes
         int taskId;                 // if > 0 then modeling task id
         int taskRunId;              // if > 0 then modeling task run id
+        bool isWaitTaskRun;         // if true then task run under external supervision
+        SetRunItem nowSetRun;       // current set id, run id and status
         IDbExec * dbExec;           // db-connection
-        vector<bool> subDoneVec;    // if true then all subsample accumulators save in database
-        list<TaskItem> taskRunLst;  // pairs of (set, run) for modeling task
+        vector<bool> isSubDone;     // if true then all subsample accumulators saved in database
 
     private:
         SingleController(const SingleController & i_runCtrl) = delete;
@@ -214,14 +195,15 @@ namespace openm
     public:
         /** create new root run controller */
         RootController(int i_processCount, const ArgReader & i_argStore, IDbExec * i_dbExec, IMsgExec * i_msgExec) :
-            RunController(i_processCount, i_argStore),
-            runId(0),
-            setId(0),
+            RunController(i_argStore),
             taskId(0),
             taskRunId(0),
+            isWaitTaskRun(false),
             dbExec(i_dbExec),
             msgExec(i_msgExec)
-        { }
+        {
+            processCount = i_processCount; 
+        }
 
         /** last cleanup */
         virtual ~RootController(void) throw() { }
@@ -237,87 +219,90 @@ namespace openm
         /** write output table accumulators. */
         virtual void writeAccumulators(
             const RunOptions & i_runOpts,
-            bool i_isLast,
+            bool i_isLastTable,
             const char * i_name,
             long long i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
         /** model run shutdown: save results and update run status. */
-        virtual void shutdownRun(void) override { doShutdownRun(runId, taskRunId, dbExec); }
+        virtual void shutdownRun(int i_runId) override;
 
-        /** model process shutdown: cleanup resources. */
-        virtual void shutdown(void) override { doShutdown(taskRunId, dbExec); }
+        /** model process shutdown: wait for all child to be completed and do final cleanup. */
+        virtual void shutdownWaitAll(void) override;
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
+        virtual void shutdownOnExit(ModelStatus i_status) override 
+            { doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec); }
 
-        /** receive accumulators of output tables subsamples and write into database. */
-        virtual bool receiveSubSamples(void) override;
+        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        virtual bool childExchange(void) override;
 
     protected:
         /** initialize root modeling process. */
         virtual void init(void) override;
 
-        /** receive outstanding accumulators and wait until outstanding send completed. */
-        virtual void receiveSendLast(void) override;
-
     private:
-        int runId;                  // if > 0 then model run id
-        int setId;                  // if > 0 then set id of source input parametes
-        int taskId;                 // if > 0 then modeling task id
-        int taskRunId;              // if > 0 then modeling task run id
-        IDbExec * dbExec;           // db-connection
-        IMsgExec * msgExec;         // message passing interface
-        vector<bool> subDoneVec;    // if true then all subsample accumulators save in database
-        list<TaskItem> taskRunLst;  // pairs of (set, run) for modeling task
-
+        int taskId;                     // if > 0 then modeling task id
+        int taskRunId;                  // if > 0 then modeling task run id
+        bool isWaitTaskRun;             // if true then task run under external supervision
+        IDbExec * dbExec;               // db-connection
+        IMsgExec * msgExec;             // message passing interface
+        ProcessGroupDef rootGroupDef;   // root process groups size, groups count and process rank in group
+        vector<RunGroup> runGroupVec;   // process groups run id and run state
+        
         // helper struct to receive output table values for each accumulator
         struct AccReceiveItem
         {
+            int runId;              // run id to receive
             int subNumber;          // subsample number to receive
             int tableId;            // output table id
             int accId;              // accumulator id
-            long long valueSize;    // size of accumulator data
+            long long valueCount;   // size of accumulator data
             bool isReceived;        // if true then data received
             int senderRank;         // sender rank: process where accumulator calculated
             int msgTag;             // accumulator message tag
 
             AccReceiveItem(
+                int i_runId,
                 int i_subNumber,
                 int i_subSampleCount,
-                int i_subPerProcess,
+                int i_senderRank,
                 int i_tableId,
                 int i_accId,
                 int i_accIndex,
-                long long i_valueSize
+                long long i_valueCount
                 ) :
+                runId(i_runId),
                 subNumber(i_subNumber),
                 tableId(i_tableId),
                 accId(i_accId),
-                valueSize(i_valueSize),
+                valueCount(i_valueCount),
                 isReceived(false),
-                senderRank(accFromRank(i_subNumber, i_subPerProcess)),
+                senderRank(i_senderRank),
                 msgTag(accMsgTag(i_subNumber, i_subSampleCount, i_accIndex))
             { }
-
-            // return accumulator sender rank
-            static int accFromRank(int i_subNumber, int i_subPerProcess)
-            {
-                return 1 + (i_subNumber / i_subPerProcess);
-            }
         };
 
-        vector<AccReceiveItem> accRecvVec;  // list of accumulators to be received
+        list<AccReceiveItem> accRecvLst;  // list of accumulators to be received
 
-        // send initial state and main control values to all child processes: subsample count, thread count
-        void sendInitialState(void);
+        // return root process run group: last run group
+        RunGroup & rootRunGroup(void) { return runGroupVec.back(); }
 
-        // create list of accumulators to be received from child modeling processes
-        void initAccReceiveList(void);
+        /** create new run and assign it to modeling group. */
+        int makeNextRun(RunGroup & i_runGroup);
 
-        /** receive outstanding accumulators. */
-        void receiveLast(void);
+        /** receive accumulators of output tables subsamples and write into database. */
+        void appendAccReceiveList(int i_runId, const RunGroup & i_runGroup);
+
+        /** read all input parameters by run id and broadcast to child processes. */
+        void readAllRunParameters(const RunGroup & i_runGroup) const;
+
+        /** receive accumulators of output tables subsamples and write into database. */
+        bool receiveSubSamples(void);
+
+        /** update restart subsample in database and list of accumulators to be received. */
+        void updateAccReceiveList(void);
 
     private:
         RootController(const RootController & i_runCtrl) = delete;
@@ -330,10 +315,12 @@ namespace openm
     public:
         /** create new child run controller */
         ChildController(int i_processCount, const ArgReader & i_argStore, IMsgExec * i_msgExec) :
-            RunController(i_processCount, i_argStore),
+            RunController(i_argStore),
             runId(0),
             msgExec(i_msgExec)
-        { }
+        {
+            processCount = i_processCount; 
+        }
 
         /** last cleanup */
         virtual ~ChildController(void) throw() { }
@@ -349,36 +336,31 @@ namespace openm
         /** send output table accumulators to root process. */
         virtual void writeAccumulators(
             const RunOptions & i_runOpts,
-            bool i_isLast,
+            bool i_isLastTable,
             const char * i_name,
             long long i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
         /** model run shutdown: save results and update run status. */
-        void shutdownRun(void) override { receiveSendLast(); }
+        virtual void shutdownRun(int i_runId) override;
 
         /** model process shutdown: cleanup resources. */
-        void shutdown(void) override { }
+        virtual void shutdownWaitAll(void) override { theModelRunState.updateStatus(ModelStatus::done); }
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        void shutdownOnExit(ModelStatus /*i_status*/) override { }
+        virtual void shutdownOnExit(ModelStatus i_status) override { theModelRunState.updateStatus(i_status); }
 
-        /** receive accumulators of output tables subsamples and write into database. */
-        virtual bool receiveSubSamples(void) override { return false; }
+        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        virtual bool childExchange(void) override { return false; }
 
     private:
         int runId;                  // if > 0 then model run id
+        ProcessGroupDef groupDef;   // child process groups size, groups count and process rank in group
         IMsgExec * msgExec;         // message passing interface
 
         /** initialize child modeling process. */
         virtual void init(void) override;
-
-        /** wait until outstanding send completed. */
-        virtual void receiveSendLast(void) override;
-
-        // receive initial state and main control values from root process: subsample count, thread count
-        ModelStatus receiveInitialState(void);
 
     private:
         ChildController(const ChildController & i_runCtrl) = delete;
@@ -390,7 +372,7 @@ namespace openm
     {
     public:
         /** create new "restart run" controller */
-        RestartController(const ArgReader & i_argStore, IDbExec * i_dbExec) : RunController(1, i_argStore),
+        RestartController(const ArgReader & i_argStore, IDbExec * i_dbExec) : RunController(i_argStore),
             runId(0),
             setId(0),
             dbExec(i_dbExec)
@@ -410,38 +392,35 @@ namespace openm
         /** write output table accumulators. */
         virtual void writeAccumulators(
             const RunOptions & i_runOpts,
-            bool i_isLast,
+            bool i_isLastTable,
             const char * i_name,
             long long i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
         /** model run shutdown: save results and update run status. */
-        void shutdownRun(void) override { doShutdownRun(runId, 0, dbExec); }
+        virtual void shutdownRun(int i_runId) override { doShutdownRun(i_runId, 0, dbExec); }
 
         /** model process shutdown: cleanup resources. */
-        void shutdown(void) override { doShutdown(0, dbExec); }
+        virtual void shutdownWaitAll(void) override { doShutdownAll(0, dbExec); }
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, 0, dbExec); }
+        virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, 0, dbExec); }
 
-        /** receive accumulators of output tables subsamples and write into database. */
-        virtual bool receiveSubSamples(void) override { return false; }
+        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        virtual bool childExchange(void) override { return false; }
 
     private:
         int runId;                  // if > 0 then model run id
         int setId;                  // if > 0 then set id of source input parametes
         IDbExec * dbExec;           // db-connection
-        vector<bool> subDoneVec;    // if true then all subsample accumulators save in database
+        vector<bool> isSubDone;     // if true then all subsample accumulators saved in database
 
         /** initialize "restart run" modeling process. */
         virtual void init(void) override;
 
         // find subsample to restart the run and update run status
         bool cleanupRestartSubsample(void);
-
-        /** receive outstanding accumulators and wait until outstanding send completed. */
-        virtual void receiveSendLast(void) override { }
 
     private:
         RestartController(const RestartController & i_runCtrl) = delete;

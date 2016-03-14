@@ -8,10 +8,13 @@ using namespace openm;
 namespace openm
 {
     /** i = initial status */
-    const char * RunStatus::init = "s";
+    const char * RunStatus::init = "i";
 
     /** p = run in progress */
     const char * RunStatus::progress = "p";
+
+    /** w = wait: run in progress, under external supervision */
+    const char * RunStatus::waitProgress = "w";
 
     /** s = completed successfully */
     const char * RunStatus::done = "s";
@@ -99,14 +102,34 @@ bool ModelRunState::isError(void)
     return isError(theStatus);
 }
 
+/** return true if model in shutdown state: modeling completed or one of exiting */
+bool ModelRunState::isShutdownOrExit(void)
+{
+    lock_guard<recursive_mutex> lck(mrsMutex);
+    return isShutdownOrExit(theStatus);
+}
+
 /** update modeling progress */
 int ModelRunState::updateProgress(void) 
 { 
     lock_guard<recursive_mutex> lck(mrsMutex);
     if (!isExit(theStatus)) {
-        theStatus = ModelStatus::progress;
+        theStatus = (theStatus == ModelStatus::waitProgress) ? ModelStatus::waitProgress : ModelStatus::progress;
         progressCount++;
         updateTime = chrono::system_clock::now();
     }
     return progressCount;
+}
+
+/** convert run status to model status */
+ModelStatus ModelRunState::fromRunStatus(const string & i_runStatus)
+{ 
+    if (i_runStatus == RunStatus::init) return ModelStatus::init;
+    if (i_runStatus == RunStatus::progress) return ModelStatus::progress;
+    if (i_runStatus == RunStatus::waitProgress) return ModelStatus::waitProgress;
+    if (i_runStatus == RunStatus::done) return ModelStatus::done;
+    if (i_runStatus == RunStatus::exit) return ModelStatus::exit;
+    if (i_runStatus == RunStatus::error) return ModelStatus::error;
+
+    return ModelStatus::undefined;
 }

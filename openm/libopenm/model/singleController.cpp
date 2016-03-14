@@ -32,7 +32,8 @@ using namespace openm;
 *   model.exe -General.Subsamples 8 -General.Threads 4 \n
 *   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
 *
-* Number of modeling processes expected to be 1
+* Number of modeling processes expected to be 1 \n
+* Number of subsamples calculated by process is same as total number of subsamples
 *
 * (b) merge command line and ini-file options with db profile table
 *------------------------------------------------------------------
@@ -63,8 +64,12 @@ using namespace openm;
 *
 *   model.exe -General.Subsamples 16 -OpenM.TaskName someTask \n
 *   model.exe -General.Subsamples 16 -OpenM.Taskid 1 \n
+*   model.exe -General.Subsamples 16 -OpenM.TaskName someTask -OpenM.TaskWait true
 *
-* if task specified then model would run for each input working set of parameters
+* if task specified then model would run for each input working set of parameters \n
+* if task "wait" is true then modeling task is run under external supervision: \n
+*   - model must wait until task status set as "completed" by other external process \n
+*   - external process can append new inputs into task_set table and model will continue to run \n
 */
 void SingleController::init(void)
 {
@@ -81,37 +86,29 @@ void SingleController::init(void)
     // get main run control values: number of subsamples, threads
     subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
     threadCount = argOpts().intOption(RunOptionsKey::threadCount, 1);       // max number of modeling threads
+    isWaitTaskRun = argOpts().boolOption(RunOptionsKey::taskWait);          // if true then task run under external supervision
 
     // basic validation: single process expected
     if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
-    if (processCount != 1) throw ModelException("Invalid number of modeling processes: %d (it must be 1)", processCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
-    //if (subSampleCount < processCount)
-    //    throw ModelException("Error: number of subsamples: %d less than number of processes: %d", subSampleCount, processCount);
+
+    // all subsamples calculated at current process
+    subFirstNumber = 0;
+    selfSubCount = subSampleCount;
 
     // if this is modeling task then find it in database
+    // and create task run entry in database
     taskId = findTask(dbExec, mdRow);
-
-    if (taskId > 0) {
-        taskRunLst = readTask(taskId, mdRow, dbExec);
-
-        // create task run entry in database
-        taskRunId = createTaskRun(taskId, dbExec);
-    }
+    if (taskId > 0) taskRunId = createTaskRun(taskId, dbExec);
 }
 
 /** create new run and input parameters in database.
 *
-* - (a) get number of subsamples calculated by current process
-* - (b) find id of source working set for input parameters
-* - (c) create new "run" in database (if required)
-* - (d) prepare model input parameters
+* - (a) find id of source working set for input parameters
+* - (b) create new "run" in database (if required)
+* - (c) prepare model input parameters
 *
-* (a) get number of subsamples calculated by current process
-* ----------------------------------------------------------
-* number of subsamples calculated by process is same as total number of subsamples
-*
-* (b) find id of source working set for input parameters
+* (a) find id of source working set for input parameters
 * ------------------------------------------------------
 * use following to find input parameters set id: \n
 *   - if task id or task name specified then find task id in task_lst \n
@@ -119,7 +116,7 @@ void SingleController::init(void)
 *   - if set name specified as run option then find set id by name \n
 *   - else use min(set id) as default set of model parameters
 *
-* (c) create new "run" in database
+* (b) create new "run" in database
 * --------------------------------
 * root process creates "new run" in database:
 *
@@ -127,7 +124,7 @@ void SingleController::init(void)
 *   - insert run options into run_option table under run_id
 *   - save run options in database
 *
-* (d) prepare model input parameters
+* (c) prepare model input parameters
 * ----------------------------------
 * it creates a copy of input paramters from source working set under destination run_id
 *
@@ -149,31 +146,22 @@ int SingleController::nextRun(void)
 {
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
+    // create new run:
     // find next working set of input parameters
     // if this is a modeling task then next set from that task
     // else if no run completed then get set by id or name or as default set for the model
-    setId = 0;
-    if (taskId > 0 || runId <= 0) setId = nextSetId(taskId, dbExec, taskRunLst);
+    nowSetRun = createNewRun(taskRunId, isWaitTaskRun, dbExec);
 
-    if (setId <= 0) return 0;       // all done: all sets from task or single run
+    ModelStatus mStatus = theModelRunState.updateStatus(nowSetRun.state.status());  // update model status: progress, wait, shutdown
 
-    // all subsamples calculated at current process
-    subFirstNumber = 0;
-    selfSubCount = subPerProcess = subSampleCount;
-
-    //if (subFirstNumber < 0 || subPerProcess <= 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
-    //    throw ModelException(
-    //        "Invalid first subsample number: %d or number of subsamples: %d or subsamples per process: %d", subFirstNumber, selfSubCount, subPerProcess
-    //        );
-
-    // create new run and load run_option table rows
-    runId = createNewRun(setId, taskId, taskRunId, dbExec, taskRunLst);
-    metaStore->runOption.reset(IRunOptionTable::create(dbExec, runId));
+    if (ModelRunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
+        return 0;   // all done: all sets from task or single run completed
+    }
 
     // reset write status for subsamples
-    subDoneVec.assign(subSampleCount, false);
+    isSubDone.assign(subSampleCount, false);
 
-    return runId;
+    return nowSetRun.runId;
 }
 
 /**
@@ -191,7 +179,7 @@ void SingleController::readParameter(const char * i_name, const type_info & i_ty
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(modelId, nowSetRun.runId, i_name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, i_type, i_size, io_valueArr);
     }
@@ -203,26 +191,26 @@ void SingleController::readParameter(const char * i_name, const type_info & i_ty
 /** write output table accumulators.
 *
 * @param[in]     i_runOpts      model run options
-* @param[in]     i_isLast       if true then it is last output table to write
+* @param[in]     i_isLastTable  if true then it is last output table to write
 * @param[in]     i_name         output table name
 * @param[in]     i_size         number of cells for each accumulator
 * @param[in,out] io_accValues   accumulator values
 */
 void SingleController::writeAccumulators(
     const RunOptions & i_runOpts,
-    bool i_isLast,
+    bool i_isLastTable,
     const char * i_name,
     long long i_size,
     forward_list<unique_ptr<double> > & io_accValues
     )
 {
     // write accumulators into database
-    doWriteAccumulators(runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
+    doWriteAccumulators(nowSetRun.runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
 
     // if all accumulators of subsample completed then update restart subsample number
-    if (i_isLast) {
-        subDoneVec[i_runOpts.subSampleNumber] = true;    // mark that subsample as completed
-        updateRestartSubsample(runId, dbExec, subDoneVec);
+    if (i_isLastTable) {
+        isSubDone[i_runOpts.subSampleNumber] = true;        // mark that subsample as completed
+        updateRestartSubsample(nowSetRun.runId, dbExec, isSubDone);
     }
 }
 

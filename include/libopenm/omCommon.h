@@ -97,16 +97,4 @@ extern openm::ITrace * theTrace;
     }
 #endif
 
-// add file and line number to debug log
-#ifdef _DEBUG
-    #define OM_DBG_STR(line)        #line
-    #define OM_DBG_TO_STR(s_line)   OM_DBG_STR(s_line)
-    #define OM_FILE_LINE            __FILE__ ":" OM_DBG_TO_STR( __LINE__ )
-#else
-//    #define OM_FILE_LINE 
-    #define OM_FILE_LINE            ""
-#endif  // _DEBUG
-
-//#define OM_LOG_MSG(msg)         msg OM_FILE_LINE
-
 #endif  // OM_COMMON_H

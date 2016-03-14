@@ -20,6 +20,7 @@ RunController::~RunController(void) throw() { }
 RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
 {
     int nProcess = i_isMpiUsed ? i_msgExec->worldSize() : 1;    // number of processes: MPI world size
+
     bool isTask = i_argOpts.intOption(RunOptionsKey::taskId, 0) > 0 || i_argOpts.strOption(RunOptionsKey::taskName) != "";
     bool isRunId = i_argOpts.intOption(RunOptionsKey::runId, 0) > 0;
 
@@ -51,62 +52,21 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
     return ctrl.release();
 }
 
-// read modeling task definition
-list<RunController::TaskItem> RunController::readTask(int i_taskId, const ModelDicRow * i_modelRow, IDbExec * i_dbExec)
-{
-    // initialize pairs of (set, run) for that task
-    vector<TaskSetRow> taskSetRows = ITaskSetTable::select(i_dbExec, i_taskId);
-    if (taskSetRows.size() <= 0) throw DbException("no input data sets found for the task: %d of model %s, id: %d", i_taskId, i_modelRow->name.c_str(), i_modelRow->modelId);
-
-    list<TaskItem> taskRunLst;          // pairs of (set, run) for modeling task
-
-    for (const TaskSetRow & tsRow : taskSetRows) {
-        taskRunLst.push_back(TaskItem(tsRow.setId));
-    }
-
-    return taskRunLst;
-}
-
+// create new run, create input parameters and run options for input working sets
 // find working set to run the model, it can be:
 //  next set of current modeling task
 //  set id or set name specified by run options (i.e. command line)
 //  default working set for that model
-int RunController::nextSetId(int i_taskId, IDbExec * i_dbExec, const list<RunController::TaskItem> & i_taskRunLst)
+RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec) const
 {
     // find the model
     const ModelDicRow * mdRow = metaStore->modelDic->byKey(modelId);
     if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
-    // if this is a modeling task then find next set without run
-    int nSetId = 0;
-    if (i_taskId > 0) {
-        const auto taskItemIt =
-            find_if(
-                i_taskRunLst.cbegin(),
-                i_taskRunLst.cend(),
-                [](const TaskItem & i_item) -> bool { return i_item.runId == 0; }
-        );
-
-        if (taskItemIt == i_taskRunLst.cend()) return 0;      // all sets completed
-
-        nSetId = taskItemIt->setId;
-        if (nSetId <= 0)
-            throw DbException("invalid set id: %d in the task: %d of the model %s, id: %d", nSetId, i_taskId, mdRow->name.c_str(), mdRow->modelId);
-    }
-
-    // find workset: next set of modeling task, set specified by model run options or default set
-    nSetId = findWorkset(nSetId, i_dbExec, mdRow);
-    return nSetId;
-}
-
-// create new run, create input parameters and run options for input working sets
-int RunController::createNewRun(
-    int i_setId, int i_taskId, int i_taskRunId, IDbExec * i_dbExec, list<RunController::TaskItem> & io_taskRunLst
-    )
-{
-    // find the model
-    const ModelDicRow * mdRow = metaStore->modelDic->byKey(modelId);
-    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+    // if this is not a part of task then and model status not "initial"
+    // then exit with "no more" data to signal all input completed because it was single input set
+    ModelStatus mStatus = theModelRunState.status();
+    if (i_taskRunId <= 0 && mStatus != ModelStatus::init) return SetRunItem(0, 0, ModelStatus::shutdown);
 
     // update in transaction scope
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
@@ -118,7 +78,68 @@ int RunController::createNewRun(
     if (nRunId <= 0)
         throw DbException("invalid run id: %d", nRunId);
 
+    // if this is a part of modeling task then find next input set from that task
+    int nSetId = 0;
     string dtStr = makeDateTime(chrono::system_clock::now());
+
+    if (i_taskRunId > 0) {
+        i_dbExec->update(
+            "UPDATE task_run_lst SET status =" \
+            " CASE" \
+            " WHEN status = 'i' THEN " + toQuoted(i_isWaitTaskRun ? RunStatus::waitProgress : RunStatus::progress) + 
+            " ELSE status" \
+            " END," +
+            " update_dt = " + toQuoted(dtStr) +
+            " WHERE task_run_id = " + to_string(i_taskRunId) + 
+            " AND status IN ('i', 'p', 'w')"
+            );
+        i_dbExec->update(
+            "INSERT INTO task_run_set (task_run_id, set_id, run_id, task_id)" \
+            " SELECT " +
+            to_string(i_taskRunId) + ", M.set_id, 0, M.task_id" +
+            " FROM" \
+            " (" \
+            " SELECT MIN(S.set_id) AS \"set_id\", S.task_id" \
+            " FROM task_set S" \
+            " INNER JOIN task_run_lst RL ON (RL.task_id = S.task_id)" \
+            " WHERE RL.task_run_id = " + to_string(i_taskRunId) + 
+            " AND RL.status IN  ('i', 'p', 'w')" \
+            " AND NOT EXISTS" \
+            " (" \
+            " SELECT RS.set_id FROM task_run_set RS" \
+            " WHERE RS.task_run_id = " + to_string(i_taskRunId) + 
+            " AND RS.set_id = S.set_id" +
+            " )" \
+            " ) AS M" \
+            " WHERE NOT M.set_id IS NULL"
+            );
+        string stat = i_dbExec->selectToStr(
+            "SELECT status FROM task_run_lst WHERE task_run_id = " + to_string(i_taskRunId)
+            );
+        nSetId = i_dbExec->selectToInt(
+            "SELECT set_id FROM task_run_set" \
+            " WHERE task_run_id = " + to_string(i_taskRunId) +
+            " AND run_id = 0",
+            -1);
+
+        // model status (task run status): progress, wait, shutdown or exit
+        mStatus = ModelRunState::fromRunStatus(stat);
+        if (mStatus <= ModelStatus::undefined) throw MsgException("invalid (undefined) model run status");
+
+        // no input sets exist: task completed or wait for additional input
+        if (nSetId <= 0) {                          
+
+            if (mStatus == ModelStatus::progress || (!i_isWaitTaskRun && mStatus == ModelStatus::init))
+                mStatus = ModelStatus::shutdown;    // task completed
+            
+            i_dbExec->rollback();                   // rollback all database changes
+            return SetRunItem(0, 0, mStatus);       // return empty data set and current model status: wait or exit
+        }
+    }
+
+    // if this is a task then input set is found at this point and model status is "in progress"
+    // else (not a task) then move run status from init to "in progress"
+    if (mStatus == ModelStatus::init) mStatus = ModelStatus::progress;
 
     // create new run
     i_dbExec->update(
@@ -126,7 +147,7 @@ int RunController::createNewRun(
         " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
-        to_string(modelId) + ", " +
+        to_string(mdRow->modelId) + ", " +
         toQuoted(string(OM_MODEL_NAME) + " " + dtStr) + ", " +
         to_string(subSampleCount) + ", " +
         to_string(subSampleCount) + ", " +
@@ -138,51 +159,31 @@ int RunController::createNewRun(
         );
 
     // if this is a next set of the modeling task then update task progress
-    if (i_taskId > 0) {
-
-        // update task item list status
-        auto taskItemIt =
-            find_if(
-                io_taskRunLst.begin(),
-                io_taskRunLst.end(),
-                [i_setId](const TaskItem & i_item) -> bool { return i_item.setId == i_setId; }
-        );
-        if (taskItemIt == io_taskRunLst.end())
-            throw DbException("invalid set id: %d in the task: %d of the model %s, id: %d", i_setId, i_taskId, mdRow->name.c_str(), mdRow->modelId);
-
-        taskItemIt->runId = nRunId;
-        taskItemIt->state.updateStatus(ModelStatus::progress);
-
-        // update task progress in database
+    if (i_taskRunId > 0) {
         i_dbExec->update(
-            "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::progress) + "," +
-            " update_dt = " + toQuoted(dtStr) +
-            " WHERE task_run_id = " + to_string(i_taskRunId)
-            );
-        i_dbExec->update(
-            "INSERT INTO task_run_set (task_id, set_id, run_id, task_run_id)" \
-            " VALUES (" +
-            to_string(i_taskId) + ", " +
-            to_string(i_setId) + ", " +
-            to_string(nRunId) + ", " +
-            to_string(i_taskRunId) + ")"
+            "UPDATE task_run_set SET run_id = " + to_string(nRunId) +
+            " WHERE task_run_id = " + to_string(i_taskRunId) + 
+            " AND set_id = " + to_string(nSetId) 
             );
     }
 
+    // find workset: next set of modeling task, set specified by model run options or default set
+    nSetId = findWorkset(nSetId, i_dbExec, mdRow);
+
     // save run options in run_option table
-    createRunOptions(nRunId, i_dbExec);
+    createRunOptions(nRunId, nSetId, i_dbExec);
 
     // copy input parameters from "base" run and working set into new run id
-    createRunParameters(nRunId, i_setId, i_dbExec, mdRow);
+    createRunParameters(nRunId, nSetId, i_dbExec, mdRow);
 
     // completed: commit the changes
     i_dbExec->commit();
 
-    return nRunId;
+    return SetRunItem(nSetId, nRunId, mStatus);
 }
 
 // create run options and save it in run_option table
-void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec)
+void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const
 {
     // save options in database
     for (NoCaseMap::const_iterator propIt = argOpts().args.cbegin(); propIt != argOpts().args.cend(); propIt++) {
@@ -198,6 +199,15 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec)
             to_string(i_runId) + ", " + toQuoted(propIt->first) + ", " + toQuoted(propIt->second) + ")"
             );
     }
+
+    // append working set name, if not explictly specified
+    if (!argOpts().isOptionExist(RunOptionsKey::setName)) {
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " SELECT " + to_string(i_runId) + ", " + toQuoted(RunOptionsKey::setName) + ", set_name" + 
+            " FROM workset_lst WHERE set_id = " + to_string(i_setId)
+            );
+    }
 }
 
 // copy input parameters from working set and "base" run into new run id
@@ -207,7 +217,7 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec)
 //   use value of parameter from working set of model parameters
 //   if working set based on model run then search by base run id to get parameter value
 //   else raise an exception
-void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
+void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const
 {
     // find input parameters workset
     if (i_setId <= 0) throw DbException("invalid set id or model working sets not found in database");
@@ -224,8 +234,8 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
     // validate workset: it must be read-only and must be from the same model
     if (!wsVec[0].isReadonly) throw DbException("workset must be read-only (set id: %d)", i_setId);
-    if (wsVec[0].modelId != modelId)
-        throw DbException("invalid workset model id: %d, expected: %d (set id: %d)", wsVec[0].modelId, modelId, i_setId);
+    if (wsVec[0].modelId != i_modelRow->modelId)
+        throw DbException("invalid workset model id: %d, expected: %d (set id: %d)", wsVec[0].modelId, i_modelRow->modelId, i_setId);
 
     // get list of model parameters and list of parameters included into workset
     vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
@@ -252,7 +262,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         // get dimensions name
         int nRank = paramIt->rank;
 
-        vector<ParamDimsRow> paramDimVec = metaStore->paramDims->byModelIdParamId(modelId, paramIt->paramId);
+        vector<ParamDimsRow> paramDimVec = metaStore->paramDims->byModelIdParamId(i_modelRow->modelId, paramIt->paramId);
         if (nRank < 0 || nRank != (int)paramDimVec.size())
             throw DbException("invalid parameter rank or dimensions not found for parameter: %s", paramIt->paramName.c_str());
 
@@ -266,7 +276,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         if (isArgOption) {
 
             // find parameter type 
-            const TypeDicRow * typeRow = metaStore->typeDic->byKey(modelId, paramIt->typeId);
+            const TypeDicRow * typeRow = metaStore->typeDic->byKey(i_modelRow->modelId, paramIt->typeId);
             if (typeRow == nullptr)
                 throw DbException("invalid (not found) type of parameter: %s", paramIt->paramName.c_str());
 
@@ -311,35 +321,36 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 /** impelementation of model process shutdown if exiting without completion. */
 void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
-    // update run status and task status
-    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+    theModelRunState.updateStatus(i_status);    // set model status
 
-    string sDt = makeDateTime(chrono::system_clock::now());
+    // update run status and task status in database
+    {
+        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
-    i_dbExec->update(
-        "UPDATE run_lst SET status = " +
-        (!ModelRunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
-        " update_dt = " + toQuoted(sDt) +
-        " WHERE run_id = " + to_string(i_runId)
-        );
+        string sDt = makeDateTime(chrono::system_clock::now());
 
-    if (i_taskRunId > 0) {
         i_dbExec->update(
-            "UPDATE task_run_lst SET status = " +
+            "UPDATE run_lst SET status = " +
             (!ModelRunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
             " update_dt = " + toQuoted(sDt) +
-            " WHERE task_run_id = " + to_string(i_taskRunId)
+            " WHERE run_id = " + to_string(i_runId)
             );
+
+        if (i_taskRunId > 0) {
+            i_dbExec->update(
+                "UPDATE task_run_lst SET status = " +
+                (!ModelRunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
+                " update_dt = " + toQuoted(sDt) +
+                " WHERE task_run_id = " + to_string(i_taskRunId)
+                );
+        }
+        i_dbExec->commit();
     }
-    i_dbExec->commit();
 }
 
 /** implementation of model run shutdown. */
 void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
-    // receive outstanding accumulators and wait until outstanding send completed
-    receiveSendLast();
-
     // update run status: all subsamples completed at this point
     string sDt = makeDateTime(chrono::system_clock::now());
     {
@@ -356,8 +367,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
         // update task progress
         if (i_taskRunId > 0) {
             i_dbExec->update(
-                "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::progress) + ", " +
-                " update_dt = " + toQuoted(sDt) +
+                "UPDATE task_run_lst SET update_dt = " + toQuoted(sDt) +
                 " WHERE task_run_id = " + to_string(i_taskRunId)
                 );
         }
@@ -385,8 +395,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
         // update task progress
         if (i_taskRunId > 0) {
             i_dbExec->update(
-                "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::progress) + ", " +
-                " update_dt = " + toQuoted(sDt) +
+                "UPDATE task_run_lst SET update_dt = " + toQuoted(sDt) +
                 " WHERE task_run_id = " + to_string(i_taskRunId)
                 );
         }
@@ -395,16 +404,17 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 }
 
 /** implementation model process shutdown: cleanup resources. */
-void RunController::doShutdown(int i_taskRunId, IDbExec * i_dbExec)
+void RunController::doShutdownAll(int i_taskRunId, IDbExec * i_dbExec)
 {
-    if (i_taskRunId <= 0) return;  // model run is not a part of modeling task
+    theModelRunState.updateStatus(ModelStatus::done);   // set model status as completed OK
 
-                                   // update task status as completed
-    i_dbExec->update(
-        "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::done) + ", " +
-        " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
-        " WHERE task_run_id = " + to_string(i_taskRunId)
-        );
+    if (i_taskRunId > 0) {      // update task status as completed
+        i_dbExec->update(
+            "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::done) + ", " +
+            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
+            " WHERE task_run_id = " + to_string(i_taskRunId)
+            );
+    }
 }
 
 /** write output tables aggregated values into database */
@@ -433,12 +443,13 @@ void RunController::doWriteAccumulators(
     const char * i_name,
     long long i_size,
     forward_list<unique_ptr<double> > & io_accValues
-    )
+    ) const
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
     if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
 
+    // find index of first accumulator: table rows ordered by model id, table id and accumulators id
     int nAcc = (int)metaStore->tableAcc->indexOf(
         [&](const TableAccRow & i_row) -> bool { return i_row.modelId == modelId && i_row.tableId == tblRow->tableId; }
     );
@@ -464,19 +475,19 @@ void RunController::doWriteAccumulators(
     }
 }
 
-/** update subsample nubre to restart the run */
-void RunController::updateRestartSubsample(int i_runId, IDbExec * i_dbExec, const vector<bool> & i_subDoneVec)
+/** update subsample number to restart the run */
+void RunController::updateRestartSubsample(int i_runId, IDbExec * i_dbExec, const vector<bool> & i_isSubDone)
 {
     // find first not completed subsample
     int nSub = 0;
     for (; nSub < subSampleCount; nSub++) {
-        if (!i_subDoneVec[nSub]) break;
+        if (!i_isSubDone[nSub]) break;
     }
 
     // update restart subsample number
     if (nSub > 0) {
         i_dbExec->update(
-            "UPDATE run_lst SET status = " + toQuoted(RunStatus::done) + "," +
+            "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + "," +
             " sub_restart = " + to_string(nSub) + "," +
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(i_runId)

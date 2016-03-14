@@ -59,7 +59,10 @@ namespace openm
         static string unpackStr(int i_packedSize, void * i_packedData, int & io_packPos);
 
         /** return an MPI_Pack'ed copy of source array. */
-        static unique_ptr<unsigned char> packArray(const type_info & i_type, long long i_size, void * i_valueArr);
+        static unique_ptr<char> packArray(const type_info & i_type, long long i_size, void * i_valueArr);
+
+        /** return MPI pack size for array of specified primitive type values. */
+        static int packedSize(const type_info & i_type, long long i_size);
 
         /** return MPI pack size for specified primitive type. */
         static int packedSize(const type_info & i_type);
@@ -116,16 +119,16 @@ namespace openm
     {
     public:
         /** return message tag */
-        MsgTag tag(void) const throw() { return rowMsgTag; }
+        MsgTag tag(void) const throw() override { return rowMsgTag; }
 
         /**
          * pack vector of metadata db rows into char vector.
          *
          * @param[in] i_rowVec source vector of metadata db rows
          */
-        const vector<char> pack(const IRowBaseVec & i_rowVec) const
+        const vector<char> pack(const IRowBaseVec & i_rowVec) const override
         {
-            lock_guard<recursive_mutex> lck(rtMutex);
+            lock_guard<recursive_mutex> lck(msgMutex);
 
             int packSize = packedSize(i_rowVec);
             vector<char> packedData(packSize);
@@ -147,9 +150,9 @@ namespace openm
          * @param[in]     i_packedData  source MPI message buffer to unpack
          * @param[in,out] io_rowVec     destination vector to append metadata db rows
          */
-        void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const
+        void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const override
         {
-            lock_guard<recursive_mutex> lck(rtMutex);
+            lock_guard<recursive_mutex> lck(msgMutex);
 
             int packPos = 0;
             int rowCount = MpiPacked::unpack<int>(i_packSize, i_packedData, packPos);

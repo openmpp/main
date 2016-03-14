@@ -69,8 +69,8 @@ void MpiSendBase::cleanup(void) throw()
 * @param[in] i_selfRank sender proccess rank (current process rank)
 * @param[in] i_sendTo   receiver proccess rank
 * @param[in] i_msgTag   tag to identify message content (parameter or output data)
-* @param[in] i_type     type of value array
-* @param[in] i_size     size of value array
+* @param[in] i_type     value type
+* @param[in] i_size     size of array
 * @param[in] i_valueArr value array to send
  */
 MpiSendArray::MpiSendArray(

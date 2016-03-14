@@ -14,7 +14,7 @@ namespace openm
     public:
         ~TaskRunSetTable() throw();
 
-        // select table rows by specified filter, sorted by primary key: task id, set id
+        // select table rows by specified filter, sorted by primary key: task run id, run id
         static vector<TaskRunSetRow> select(IDbExec * i_dbExec, const string & i_where);
 
     private:
@@ -24,10 +24,10 @@ namespace openm
 
     // Columns type for task_run_set row
     static const type_info * typeTaskRunSetRow[] = {
-        &typeid(decltype(TaskRunSetRow::taskId)),
-        &typeid(decltype(TaskRunSetRow::setId)),
+        &typeid(decltype(TaskRunSetRow::taskRunId)),
         &typeid(decltype(TaskRunSetRow::runId)),
-        &typeid(decltype(TaskRunSetRow::taskRunId))
+        &typeid(decltype(TaskRunSetRow::setId)),
+        &typeid(decltype(TaskRunSetRow::taskId))
     };
 
     // Size (number of columns) for task_run_set row
@@ -47,16 +47,16 @@ namespace openm
         {
             switch (i_column) {
             case 0:
-                dynamic_cast<TaskRunSetRow *>(i_row)->taskId = (*(int *)i_value);
+                dynamic_cast<TaskRunSetRow *>(i_row)->taskRunId = (*(int *)i_value);
                 break;
             case 1:
-                dynamic_cast<TaskRunSetRow *>(i_row)->setId = (*(int *)i_value);
-                break;
-            case 2:
                 dynamic_cast<TaskRunSetRow *>(i_row)->runId = (*(int *)i_value);
                 break;
+            case 2:
+                dynamic_cast<TaskRunSetRow *>(i_row)->setId = (*(int *)i_value);
+                break;
             case 3:
-                dynamic_cast<TaskRunSetRow *>(i_row)->taskRunId = (*(int *)i_value);
+                dynamic_cast<TaskRunSetRow *>(i_row)->taskId = (*(int *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -79,11 +79,10 @@ vector<TaskRunSetRow> ITaskRunSetTable::select(IDbExec * i_dbExec, int i_taskRun
         TaskRunSetTable::select(i_dbExec, sWhere);
 }
 
-// select table rows by task id, set id, run id
-vector<TaskRunSetRow> ITaskRunSetTable::byKey(IDbExec * i_dbExec, int i_taskId, int i_setId, int i_runId)
+// select table rows by task run id, run id
+vector<TaskRunSetRow> ITaskRunSetTable::byKey(IDbExec * i_dbExec, int i_taskRunId, int i_runId)
 {
-    string sWhere =
-        " WHERE task_id = " + to_string(i_taskId) + " AND set_id = " + to_string(i_setId) + " AND run_id = " + to_string(i_runId);
+    string sWhere = " WHERE task_run_id = " + to_string(i_taskRunId) + " AND run_id = " + to_string(i_runId);
     return
         TaskRunSetTable::select(i_dbExec, sWhere);
 }
@@ -95,7 +94,7 @@ vector<TaskRunSetRow> TaskRunSetTable::select(IDbExec * i_dbExec, const string &
 
     const IRowAdapter & adp = TaskRunSetRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT task_id, set_id, run_id, task_run_id FROM task_run_set " + i_where + " ORDER BY 1, 2, 3",
+        "SELECT task_run_id, run_id, set_id, task_id FROM task_run_set " + i_where + " ORDER BY 1, 2",
         adp
         );
     stable_sort(vec.begin(), vec.end(), TaskRunSetRow::keyLess);

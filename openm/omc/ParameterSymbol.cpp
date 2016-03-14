@@ -438,7 +438,59 @@ string ParameterSymbol::cxx_dimensions(bool use_zero) const
 CodeBlock ParameterSymbol::cxx_read_parameter()
 {
     CodeBlock c;
-    string typ; // storage type
+
+    // i_runBase is an argument (local variable) of the global function RunInit
+    if (pp_datatype->is_range()) {
+        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
+        assert(rng);
+        if (rng->lower_bound != 0) {
+            string typ = cxx_type_of_parameter();   // storage type
+            string cell_count = to_string(size());
+            c += "{";
+            c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
+            c += "long work[" + cell_count + "];";
+            c += "i_runBase->readParameter(" + cxx_parameter_name_type_size() + ", &work);";
+            c += typ + " *parm = (" + typ + " *) &" + alternate_name() + ";";
+            c += "for (size_t j = 0; j < " + cell_count + "; ++j) parm[j] = (" + typ + ") (work[j] + " + to_string(rng->lower_bound) + ");";
+            c += "}";
+        }
+        else {
+            // range starts at 0 so requires no transformation
+            c += "i_runBase->readParameter(" + cxx_parameter_name_type_size() + ", &" + alternate_name() + ");";
+        }
+    }
+    else {
+        c += "i_runBase->readParameter(" + cxx_parameter_name_type_size() + ", &" + alternate_name() + ");";
+    }
+
+    return c;
+}
+
+const string ParameterSymbol::cxx_parameter_name_type_size(void) const
+{
+    string result;
+
+    if (pp_datatype->is_range()) {
+        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
+        assert(rng);
+        if (rng->lower_bound != 0) {
+            result = "\"" + name + "\", typeid(long), " + to_string(size());
+        }
+        else {
+            // range starts at 0 so requires no transformation
+            result = "\"" + name + "\", typeid(" + cxx_type_of_parameter() + "), " + to_string(size());
+        }
+    }
+    else {
+        result = "\"" + name + "\", typeid(" + cxx_type_of_parameter() + "), " + to_string(size());
+    }
+    return result;
+}
+
+const string ParameterSymbol::cxx_type_of_parameter(void) const
+{
+    string typ;
+
     if (pp_datatype->is_time()) {
         // For Time, the type is wrapped
         auto ts = dynamic_cast<TimeSymbol *>(pp_datatype);
@@ -460,31 +512,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         assert(ens); // grammar guarantee
         typ = Symbol::token_to_string(ens->storage_type);
     }
-
-    // i_runBase is an argument (local variable) of the global function RunInit
-    if (pp_datatype->is_range()) {
-        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
-        assert(rng);
-        if (rng->lower_bound != 0) {
-            string cell_count = to_string(size());
-            c += "{";
-            c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
-            c += "long work[" + cell_count + "];";
-            c += "i_runBase->readParameter(\"" + name + "\", typeid(long), " + cell_count + ", &work);";
-            c += typ + " *parm = (" + typ + " *) &" + alternate_name() + ";";
-            c += "for (size_t j = 0; j < " + cell_count + "; ++j) parm[j] = (" + typ + ") (work[j] + " + to_string(rng->lower_bound) + ");";
-            c += "}";
-        }
-        else {
-            // range starts at 0 so requires no transformation
-            c += "i_runBase->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
-        }
-    }
-    else {
-        c += "i_runBase->readParameter(\"" + name + "\", typeid(" + typ + "), " + to_string(size()) + ", &" + alternate_name() + ");";
-    }
-
-    return c;
+    return typ;
 }
 
 string ParameterSymbol::cxx_initialize_cumrate()

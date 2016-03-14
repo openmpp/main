@@ -26,9 +26,8 @@ using namespace openm;
 * If more threads specified (i.e. by command-line argument) then subsamples run in parallel.
 *
 * For example: \n
-*   model.exe -General.Subsamples 8 \n
-*   model.exe -General.Subsamples 8 -General.Threads 4 \n
-*   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
+*   model.exe -OpenM.RunId 10 \n
+*   model.exe -OpenM.RunId 10 -General.Threads 4
 *
 * (b) merge command line and ini-file options with db profile table
 *------------------------------------------------------------------
@@ -58,7 +57,7 @@ void RestartController::init(void)
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
     // load metadata table rows, except of run_option, which is may not created yet
-    metaStore.reset(new MetaRunHolder);
+    metaStore.reset(new MetaRunHolder());
     const ModelDicRow * mdRow = readMetaTables(dbExec, metaStore.get());
     modelId = mdRow->modelId;
 
@@ -71,12 +70,12 @@ void RestartController::init(void)
     if (runId <= 0) throw ModelException("Invalid run id: %d", runId);
 
     // get main run control values: number of subsamples, threads
+    // if number of subsamples sepcified then it must be same as run_lst.sub_count database value
     threadCount = argOpts().intOption(RunOptionsKey::threadCount, 1);       // max number of modeling threads
     subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
 
     // basic validation: only single process allowed for "restart run"
     if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
-    if (processCount != 1) throw ModelException("Invalid number of modeling processes: %d (it must be 1)", processCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
 }
 
@@ -89,7 +88,7 @@ void RestartController::init(void)
 * (a) find model run and get number of outstanding subsamples
 * -----------------------------------------------------------
 * model run id supplied by command-line or ini-file argument and must exist in run_lst table. \n
-* subsample to restart from is valus of run_lst.sub_restart column.
+* subsample to restart from is value of run_lst.sub_restart column.
 *
 * number of outstanding subsamples = total number of subsamples - run_lst.sub_restart
 *
@@ -127,6 +126,7 @@ int RestartController::nextRun(void)
     // delete any existing output accumulators where sub_id >= restart subsample number
     // delete output aggregated values for that run id
     if (!cleanupRestartSubsample()) {
+        theModelRunState.updateStatus(ModelStatus::shutdown);
         runId = 0;
         return 0;           // run already completed
     }
@@ -134,18 +134,18 @@ int RestartController::nextRun(void)
     // if all subsamples calculated and run status not success 
     // then do run shutdown to re-calculate output aggregated values
     if (subFirstNumber >= subSampleCount) {
-        shutdownRun();
+
+        shutdownRun(runId);
+
+        theModelRunState.updateStatus(ModelStatus::shutdown);
         runId = 0;
         return 0;           // run completed
     }
 
-    // load run_option table rows
-    metaStore->runOption.reset(IRunOptionTable::create(dbExec, runId));
-
     // reset write status for subsamples and set for subsamples below restart
-    subDoneVec.assign(subSampleCount, false);
+    isSubDone.assign(subSampleCount, false);
     for (int k = 0; k < subFirstNumber; k++) {
-        subDoneVec[k] = true;
+        isSubDone[k] = true;
     }
 
     return runId;
@@ -178,7 +178,7 @@ bool RestartController::cleanupRestartSubsample(void)
     subFirstNumber = (runRow.subRestart > 0) ? runRow.subRestart : 0;
     if (subFirstNumber > subSampleCount) subFirstNumber = subSampleCount;
 
-    selfSubCount = subPerProcess = subSampleCount - subFirstNumber;     // all subsamples calculated by current process
+    selfSubCount = subSampleCount - subFirstNumber;     // all subsamples calculated by current process
 
 #ifdef _DEBUG
     theLog->logFormatted("Restart from subsample %d", subFirstNumber);
@@ -253,14 +253,14 @@ void RestartController::readParameter(const char * i_name, const type_info & i_t
 /** write output table accumulators.
 *
 * @param[in]     i_runOpts      model run options
-* @param[in]     i_isLast       if true then it is last output table to write
+* @param[in]     i_isLastTable  if true then it is last output table to write
 * @param[in]     i_name         output table name
 * @param[in]     i_size         number of cells for each accumulator
 * @param[in,out] io_accValues   accumulator values
 */
 void RestartController::writeAccumulators(
     const RunOptions & i_runOpts,
-    bool i_isLast,
+    bool i_isLastTable,
     const char * i_name,
     long long i_size,
     forward_list<unique_ptr<double> > & io_accValues
@@ -270,8 +270,8 @@ void RestartController::writeAccumulators(
     doWriteAccumulators(runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
 
     // if all accumulators of subsample completed then update restart subsample number
-    if (i_isLast) {
-        subDoneVec[i_runOpts.subSampleNumber] = true;    // mark that subsample as completed
-        updateRestartSubsample(runId, dbExec, subDoneVec);
+    if (i_isLastTable) {
+        isSubDone[i_runOpts.subSampleNumber] = true;        // mark that subsample as completed
+        updateRestartSubsample(runId, dbExec, isSubDone);
     }
 }

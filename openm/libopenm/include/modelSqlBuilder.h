@@ -10,8 +10,8 @@
 
 #include <fstream>
 #include <streambuf>
-#include "libopenm/db/modelBuilder.h"
 #include "helper.h"
+#include "libopenm/db/modelBuilder.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
 #include "modelAggregationSql.h"

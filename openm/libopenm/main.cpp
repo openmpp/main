@@ -21,8 +21,8 @@
 * - message passing part: sources are in openm/msg  
 * - common helper utilities part: sources are in openm/common  
 *  
-* Model part is a top level base class and IModel public interface for openM++ models.
-* It control model life cycle, creates data access and message passing objects to organize model execution.
+* Model part is a top level portion of runtime to control openM++ model model life cycle.
+* It implement IModel and IRun public interfaces to read model input, write output results, update progress, etc.
 * 
 * Data access and message passing are isolated parts of runtime and accessible through 
 * openm::IDbExec and openm::IMsgExec public interfaces.
@@ -62,6 +62,9 @@ static bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunCon
 // run modeling threads to calculate subsamples
 static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
+// communicate with child modeling processes or sleep if no child activity
+static void childExchangeOrSleep(RunController * i_runCtrl);
+
 /** main entry point */
 int main(int argc, char ** argv) 
 {
@@ -84,7 +87,7 @@ int main(int argc, char ** argv)
         string traceFilePath;
         if (argOpts.boolOption(RunOptionsKey::traceToFile)) {
             traceFilePath = argOpts.strOption(RunOptionsKey::traceFilePath);
-            if (traceFilePath.empty()) traceFilePath = argOpts.strOption(RunOptionsKey::setName) + ".txt";
+            if (traceFilePath.empty()) traceFilePath = makeDefaultPath(argv[0], ".trace.txt");
         }
         theTrace->init(
             argOpts.boolOption(RunOptionsKey::traceToConsole),
@@ -111,17 +114,15 @@ int main(int argc, char ** argv)
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
-        if (theModelRunState.isExit()) {        // exit if initial status not a continue status
-            if (theModelRunState.isError()) {
-                theLog->logMsg("Error at model initialization");
-                return EXIT_FAILURE;
-            }
-            theLog->logMsg("Done.");
-            return EXIT_SUCCESS;
-        }
-
         // run the model until modeling task completed
-        for (int runId = 0; (runId = runCtrl->nextRun()) > 0; ) {
+        while(!theModelRunState.isShutdownOrExit()) {
+
+            // create next run id: find model input data set
+            int runId = runCtrl->nextRun();
+            if (runId <= 0) {
+                childExchangeOrSleep(runCtrl.get());    // communicate with child processes, if any, or sleep
+                continue;                               // no input: completed or waiting for additional input
+            }
 
             // initilaze model run: read input parameters
             RunInitHandler(runCtrl.get());
@@ -133,12 +134,13 @@ int main(int argc, char ** argv)
                 throw ModelException("modeling FAILED");
             }
 
-            // model run completed OK, receive and write the data
-            runCtrl->shutdownRun();
+            // run completed OK, receive and write the data
+            runCtrl->shutdownRun(runId);
         }
 
-        // all model run completed OK, do final cleanup
-        runCtrl->shutdown();
+        // model completed OK at local process
+        // wait for all child to be completed and do final cleanup
+        runCtrl->shutdownWaitAll();
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -224,12 +226,10 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
     list<future<bool> > modelFutureLst;     // modeling threads
 
     int nextSub = 0;
-    int maxSub = i_runCtrl->selfSubCount;
-
-    while (nextSub < maxSub || modelFutureLst.size() > 0) {
+    while (nextSub < i_runCtrl->selfSubCount || modelFutureLst.size() > 0) {
 
         // create and start new modeling threads
-        while (nextSub < maxSub && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
+        while (nextSub < i_runCtrl->selfSubCount && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
             modelFutureLst.push_back(std::move(std::async(
                 launch::async,
                 modelThreadLoop,
@@ -246,7 +246,7 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         for (auto mfIt = modelFutureLst.begin(); mfIt != modelFutureLst.end(); ) {
 
             // skip thread if modeling not completed yet
-            if (mfIt->wait_for(chrono::milliseconds(OM_PROGRESS_WAIT_TIME)) != future_status::ready) {
+            if (mfIt->wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
                 ++mfIt;
                 continue;
             }
@@ -259,15 +259,29 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
             if (!isOk) return false;    // exit with error if model failed
         }
 
-        // try to receive output subsamples
-        i_runCtrl->receiveSubSamples();
-
         // wait if no modeling progress and any threads still running
         if (!isAnyCompleted && modelFutureLst.size() > 0) {
-            this_thread::sleep_for(chrono::milliseconds(OM_PROGRESS_SLEEP_TIME));
-            continue;
+            childExchangeOrSleep(i_runCtrl);            // communicate with child processes, if any, or sleep
         }
     }
 
     return true;    // modeling completed OK
+}
+
+// communicate with child modeling processes or sleep if no child activity
+void childExchangeOrSleep(RunController * i_runCtrl)
+{
+    long nExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
+
+    bool isAnyChildActivity = false;
+    do {
+        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes, if any
+
+        if (isAnyChildActivity) 
+            this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
+    }
+    while (isAnyChildActivity && --nExchange > 0);
+
+    if (nExchange > 0 && i_runCtrl->processCount > 1 && !theModelRunState.isShutdownOrExit()) 
+        this_thread::sleep_for(chrono::milliseconds(nExchange * OM_ACTIVE_SLEEP_TIME)); // sleep more if no child activity
 }

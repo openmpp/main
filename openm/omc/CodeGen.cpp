@@ -40,6 +40,7 @@ void CodeGen::do_all()
     do_RunModel();
     do_ModelShutdown();
     do_API_entries();
+    do_ParameterNameSize();
 
     *oat0 << t0;
     *oat1 << t1;
@@ -778,4 +779,30 @@ void CodeGen::do_API_entries()
 	c += "}";
 	c += "";
 	c.smart_indenting ( true );
+}
+
+void CodeGen::do_ParameterNameSize(void)
+{ 
+    size_t nParam = 0;
+    for (const auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter) nParam++;
+    }
+
+    c += "namespace openm";
+    c += "{";
+    c += "// size of parameters list: number of model input parameters";
+    c += "const size_t PARAMETER_NAME_ARR_LEN = " + to_string(nParam) + ";";
+    c += "";
+    c += "// list of model input parameters name, type and size";
+    c += "const ParameterNameSizeItem parameterNameSizeArr[PARAMETER_NAME_ARR_LEN] =";
+    c += "{";
+    size_t np = nParam;
+    for (const auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter) {
+            c += "{" + parameter->cxx_parameter_name_type_size() + ((--np > 0) ? "}," : "}");
+        }
+    }
+    c += "};";
+    c += "}";
+    c += "";
 }

@@ -55,6 +55,15 @@ namespace openm
         /** update modeling progress */
         int updateProgress(void);
 
+        /** return true if model in shutdown state: modeling completed or one of exiting */
+        bool isShutdownOrExit(void);
+
+        /** return true if model in shutdown state: modeling completed or one of exiting */
+        static bool isShutdownOrExit(ModelStatus i_status) { return i_status == ModelStatus::shutdown || isExit(i_status); }
+
+        /** convert run status to model status */
+        static ModelStatus fromRunStatus(const string & i_runStatus);
+
     private:
         ModelStatus theStatus;                          // current status
         int progressCount;                              // progress count

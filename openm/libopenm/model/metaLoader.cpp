@@ -44,6 +44,9 @@ namespace openm
 
     /** modeling task name */
     const char * RunOptionsKey::taskName = "OpenM.TaskName";
+        
+    /** modeling task under external supervision */
+    const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
 
     /** modeling task run id */
     const char * RunOptionsKey::taskRunId = "OpenM.TaskRunId";
@@ -140,6 +143,15 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
     return ar;
 }
 
+/** return basic model run options */
+const RunOptions MetaLoader::modelRunOptions(int i_subCount, int i_subNumber) const 
+{ 
+    RunOptions opts(baseRunOpts);
+    opts.subSampleCount = i_subCount;
+    opts.subSampleNumber = i_subNumber;
+    return opts; 
+}
+
 // read metadata tables from db, except of run_option table
 const ModelDicRow * MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
 {
@@ -149,69 +161,68 @@ const ModelDicRow * MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaRunHolder
     const ModelDicRow * mdRow = io_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
     if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
-    int mId = mdRow->modelId;
-
     // read metadata tables
-    io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, mId));
-    io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mId));
-    io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, mId));
-    io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, mId));
-    io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mId));
-    io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mId));
-    io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mId));
-    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mId));
+    io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mdRow->modelId));
 
     return mdRow;
 }
 
 // broadcast metadata tables from root to all modeling processes
-void MetaLoader::broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
+void MetaLoader::broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
     // broadcast metadata tables
-    broadcastMetaTable<IModelDicTable>(i_msgExec, MsgTag::modelDic, io_metaStore->modelDic);
-    broadcastMetaTable<ITypeDicTable>(i_msgExec, MsgTag::typeDic, io_metaStore->typeDic);
-    broadcastMetaTable<ITypeEnumLstTable>(i_msgExec, MsgTag::typeEnumLst, io_metaStore->typeEnumLst);
-    broadcastMetaTable<IParamDicTable>(i_msgExec, MsgTag::parameterDic, io_metaStore->paramDic);
-    broadcastMetaTable<IParamDimsTable>(i_msgExec, MsgTag::parameterDims, io_metaStore->paramDims);
-    broadcastMetaTable<ITableDicTable>(i_msgExec, MsgTag::tableDic, io_metaStore->tableDic);
-    broadcastMetaTable<ITableDimsTable>(i_msgExec, MsgTag::tableDims, io_metaStore->tableDims);
-    broadcastMetaTable<ITableAccTable>(i_msgExec, MsgTag::tableAcc, io_metaStore->tableAcc);
-    broadcastMetaTable<ITableExprTable>(i_msgExec, MsgTag::tableExpr, io_metaStore->tableExpr);
+    broadcastMetaTable<IModelDicTable>(i_groupOne, i_msgExec, MsgTag::modelDic, io_metaStore->modelDic);
+    broadcastMetaTable<ITypeDicTable>(i_groupOne, i_msgExec, MsgTag::typeDic, io_metaStore->typeDic);
+    broadcastMetaTable<ITypeEnumLstTable>(i_groupOne, i_msgExec, MsgTag::typeEnumLst, io_metaStore->typeEnumLst);
+    broadcastMetaTable<IParamDicTable>(i_groupOne, i_msgExec, MsgTag::parameterDic, io_metaStore->paramDic);
+    broadcastMetaTable<IParamDimsTable>(i_groupOne, i_msgExec, MsgTag::parameterDims, io_metaStore->paramDims);
+    broadcastMetaTable<ITableDicTable>(i_groupOne, i_msgExec, MsgTag::tableDic, io_metaStore->tableDic);
+    broadcastMetaTable<ITableDimsTable>(i_groupOne, i_msgExec, MsgTag::tableDims, io_metaStore->tableDims);
+    broadcastMetaTable<ITableAccTable>(i_groupOne, i_msgExec, MsgTag::tableAcc, io_metaStore->tableAcc);
+    broadcastMetaTable<ITableExprTable>(i_groupOne, i_msgExec, MsgTag::tableExpr, io_metaStore->tableExpr);
 }
 
-// temporary: work-in-progress
-// broadcast run id from root to all modeling processes
-void MetaLoader::broadcastRunId(IMsgExec * i_msgExec, int * io_runId)
+// broadcast int value from root to group of modeling processes
+void MetaLoader::broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_value)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    i_msgExec->bcast(i_msgExec->rootRank, typeid(int), 1, io_runId);
+    i_msgExec->bcast(i_groupOne, typeid(int), 1, io_value);
 }
 
-// temporary: work-in-progress
-// broadcast run options from root to all modeling processes
-void MetaLoader::broadcastRunOptions(IMsgExec * i_msgExec, unique_ptr<IRunOptionTable> & io_runOptionTbl)
+// broadcast run options from root to group of modeling processes
+void MetaLoader::broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    broadcastMetaTable<IRunOptionTable>(i_msgExec, MsgTag::runOption, io_runOptionTbl);
+    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subSampleCount);
+    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subSampleNumber);
+    i_msgExec->bcast(i_groupOne, typeid(bool), 1, &baseRunOpts.useSparse);
+    i_msgExec->bcast(i_groupOne, typeid(double), 1, &baseRunOpts.nullValue);
 }
 
 // broadcast meta table db rows
 template <typename MetaTbl>
-void MetaLoader::broadcastMetaTable(IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr)
+void MetaLoader::broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr)
 {
     unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(i_msgTag));
 
     if (i_msgExec->isRoot()) {
         IRowBaseVec & rv = io_tableUptr->rowsRef();
-        i_msgExec->bcastPacked(i_msgExec->rootRank, rv, *packAdp);
+        i_msgExec->bcastPacked(i_groupOne, rv, *packAdp);
     }
     else {
         IRowBaseVec rv;
-        i_msgExec->bcastPacked(i_msgExec->rootRank, rv, *packAdp);
+        i_msgExec->bcastPacked(i_groupOne, rv, *packAdp);
         io_tableUptr.reset(MetaTbl::create(rv));
     }
 }
@@ -222,12 +233,11 @@ void MetaLoader::broadcastMetaTable(IMsgExec * i_msgExec, MsgTag i_msgTag, uniqu
 // is not in the list of model input parameters or is not scalar
 void MetaLoader::mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
 {
-    // hard-coded default run options
-    RunOptions emptyOpts;
+    // initial values are hard-coded default run options
     NoCaseMap defaultOpt;
 
-    defaultOpt[RunOptionsKey::useSparse] = emptyOpts.useSparse ? "true" : "false";
-    defaultOpt[RunOptionsKey::sparseNull] = toString(emptyOpts.nullValue);
+    defaultOpt[RunOptionsKey::useSparse] = baseRunOpts.useSparse ? "true" : "false";
+    defaultOpt[RunOptionsKey::sparseNull] = toString(baseRunOpts.nullValue);
     defaultOpt[RunOptionsKey::threadCount] = "1";
 
     // load default run options from profile options, default profile name = model name
@@ -291,6 +301,10 @@ void MetaLoader::mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow
         // parameter value can not be empty
         if (propIt->second.empty()) throw ModelException("invalid (empty) value specified for parameter %s", sName.c_str());
     }
+
+    // merge model run options
+    baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
+    baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, DBL_EPSILON);
 }
 
 // create task run entry in database
@@ -315,8 +329,8 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
         to_string(taskRunId) + ", " +
         to_string(i_taskId) + ", " +
         to_string(subSampleCount) + ", " +
-        toQuoted(dtStr) + ", "
-        "'i', " +
+        toQuoted(dtStr) + ", " +
+        toQuoted(RunStatus::init) + ", " +
         toQuoted(dtStr) + ")"
         );
 
@@ -371,7 +385,7 @@ int MetaLoader::findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
 //   if set id specified as run option then use such set id
 //   if set name specified as run option then find set id by name
 //   else use min(set id) as default set of model parameters
-int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
+int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const
 {
     // find set id of parameters workset, default is first set id for that model
     int setId = (i_setId > 0) ? i_setId : argStore.intOption(RunOptionsKey::setId, 0);
@@ -404,16 +418,76 @@ int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow *
             throw DbException("model %s, id: %d must have at least one working set", i_modelRow->name.c_str(), i_modelRow->modelId);
     }
 
-    // find working set name, if not explictly specified
-    if (setName.empty()) {
-        setName = i_dbExec->selectToStr(
-            "SELECT set_name FROM workset_lst WHERE set_id = " + to_string(setId)
-            );
-    }
-
-    argStore.args[RunOptionsKey::setId] = to_string(setId);     // add set id to run options
-    argStore.args[RunOptionsKey::setName] = setName;            // add set name to run options
-
     return setId;
 }
 
+// set modeling groups size, group count and process rank in group
+ProcessGroupDef::ProcessGroupDef(int i_subSampleCount, int i_threadCount, int i_worldSize, int i_worldRank) :
+    ProcessGroupDef() 
+{
+    groupSize = i_subSampleCount / i_threadCount;
+    if (groupSize <= 0) groupSize = 1;
+    if (groupSize > i_worldSize) groupSize = i_worldSize;
+
+    groupCount = (groupSize > 1) ? i_worldSize / groupSize : (i_worldSize - 1) / groupSize;
+    if (groupCount <= 0) groupCount = 1;
+
+    // one-based group number, root is in the last group
+    groupOne = (i_worldRank > 0) ? 1 + (i_worldRank - 1) / groupSize : groupCount;
+
+    // "active" root: use root process for modeling, else dedicate it for data exchange only
+    isRootActive = groupSize > 1 && i_worldSize <= groupSize * groupCount;
+
+    // get process rank among other active modeling processes in the group
+    bool isInLastGroup = groupOne >= groupCount;
+
+    activeRank = 
+        (i_worldRank > 0 && (!isInLastGroup || !isRootActive)) ?
+        ((i_worldRank - 1) % groupSize) : 
+        i_worldRank % groupSize;
+
+    // is current process active: 
+    // "active" process means it is used for modeling 
+    // if process count == group size * group count then all processes used for modeliung, including root
+    // else root process dedicated to data exchange and children > (group size * group count) unused (not active)
+    // isActive = (i_worldRank == 0 && isRootActive) || (0 < i_worldRank && i_worldRank <= groupSize * groupCount);
+}
+
+// set initial run group size, assign process ranks and initial state state
+RunGroup::RunGroup(int i_groupOne, int i_subSampleCount, const ProcessGroupDef & i_rootGroupDef) : RunGroup() 
+{ 
+    groupOne = i_groupOne;
+    firstChildRank = 1 + (i_groupOne - 1) * i_rootGroupDef.groupSize;
+    childCount = 
+        (i_groupOne >= i_rootGroupDef.groupCount && i_rootGroupDef.isRootActive) ? 
+        i_rootGroupDef.groupSize - 1 : 
+        i_rootGroupDef.groupSize;
+
+    isUseRoot = (i_groupOne == i_rootGroupDef.groupOne) ? i_rootGroupDef.isRootActive : false;
+    isSubDone.assign(i_subSampleCount, false); 
+}
+
+// set group state for next run
+void RunGroup::nextRun(int i_runId, int i_setId, ModelStatus i_status, int i_subSampleCount)
+{ 
+    runId = i_runId;
+    setId = i_setId;
+    state.updateStatus(i_status);
+    isSubDone.assign(i_subSampleCount, false);
+}
+
+// return child world rank where subsample is calculated
+int RunGroup::rankBySubsampleNumber(int i_subNumber, int i_subSampleCount, int i_groupSize) const
+{
+    int nSubPerProc = i_subSampleCount / i_groupSize;   // subsamples per modeling process
+    int nProc = i_subNumber / nSubPerProc;              // process index in group
+    if (nProc >= i_groupSize) nProc = i_groupSize - 1;  // last process also calculate the rest
+
+    int nRank = firstChildRank + nProc;     // world rank to calculate subsample
+
+    // if root process is "active" (is used for modeling) then first subsamples calculated at root 
+    if (isUseRoot) {
+        nRank = i_subNumber < nSubPerProc ? 0 : firstChildRank + nProc - 1;
+    }
+    return nRank;
+}

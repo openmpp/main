@@ -59,7 +59,7 @@ namespace openm
         bool isCompleted(void) { return MpiSendBase::isCompleted(); }
 
     private:
-        unique_ptr<char> sendValueArr;   // copy of data to send
+        unique_ptr<char> sendValueArr;     // copy of data to send
 
     private:
         MpiSendArray(const MpiSendArray & i_send) = delete;
@@ -82,7 +82,7 @@ namespace openm
         bool isCompleted(void) { return MpiSendBase::isCompleted(); }
 
     private:
-        vector<char> packedData;    // data to send
+        vector<char> packedData;   // data to send
 
     private:
         MpiSendPacked(const MpiSendPacked & i_send) = delete;

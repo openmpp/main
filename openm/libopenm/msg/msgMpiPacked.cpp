@@ -59,31 +59,43 @@ string MpiPacked::unpackStr(int i_packedSize, void * i_packedData, int & io_pack
     mpiRet = MPI_Unpack(i_packedData, i_packedSize, &io_packPos, cBuf.get(), len, MPI_CHAR, MPI_COMM_WORLD);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
 
-    string sVal = cBuf.get();
+    string sVal = reinterpret_cast<char *>(cBuf.get());
     return sVal;
 }
 
 /**
 * return an MPI_Pack'ed copy of source array.
 *
-* @param[in]     i_type        type of value array
-* @param[in]     i_size        size of value array
-* @param[in]     i_valueArr    array of values to be packed
+* @param[in] i_type      value type
+* @param[in] i_size      size of array
+* @param[in] i_valueArr  array of values to be packed
 */
-unique_ptr<unsigned char> MpiPacked::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+unique_ptr<char> MpiPacked::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
 {
     if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
 
     int srcSize = (int)i_size;
-    int packSize = srcSize * packedSize(i_type);
+    int packSize = packedSize(i_type, i_size);
     int packPos = 0;
 
-    unique_ptr<unsigned char> packedData(new unsigned char[packSize]);
+    unique_ptr<char> packedData(new char[packSize]);
 
     int mpiRet = MPI_Pack(i_valueArr, srcSize, toMpiType(i_type), packedData.get(), packSize, &packPos, MPI_COMM_WORLD);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
 
     return packedData;
+}
+
+/** return MPI pack size for array of specified primitive type values. 
+*
+* @param[in] i_type      value type
+* @param[in] i_size      size of array
+*/
+int MpiPacked::packedSize(const type_info & i_type, long long i_size)
+{
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+    return 
+        (int)i_size * packedSize(i_type);
 }
 
 /**

@@ -228,7 +228,7 @@ namespace openm
         /** create_dt     VARCHAR(32) NOT NULL */
         string createDateTime;
 
-        /** run status: i=init p=progress s=success e=failed */
+        /** run status: i=init p=progress s=success e=error(failed) */
         string status;
 
         /** update_dt     VARCHAR(32)  NOT NULL */
@@ -1691,7 +1691,7 @@ namespace openm
         /** create_dt   VARCHAR(32) NOT NULL */
         string createDateTime;
 
-        /** task status: i=init p=progress s=success x=exit e=failed */
+        /** task status: i=init p=progress w=wait s=success x=exit e=error(failed) */
         string status;
 
         /** update_dt   VARCHAR(32) NOT NULL */
@@ -1725,41 +1725,39 @@ namespace openm
     /** task_run_set table row. */
     struct TaskRunSetRow : public IMetaRow<TaskRunSetRow>
     {
-        /** task_id     INT NOT NULL */
-        int taskId;
-
-        /** set_id      INT NOT NULL */
-        int setId;
+        /** task_run_id INT NOT NULL */
+        int taskRunId;
 
         /** run_id      INT NOT NULL */
         int runId;
 
-        /** task_run_id INT NOT NULL */
-        int taskRunId;
+        /** set_id      INT NOT NULL */
+        int setId;
+
+        /** task_id     INT NOT NULL */
+        int taskId;
 
         /** create row with supplied primary key field values. */
-        TaskRunSetRow(int i_taskId, int i_setId, int i_runId) :
-            taskId(i_taskId),
-            setId(i_setId),
+        TaskRunSetRow(int i_taskRunId, int i_runId) :
+            taskRunId(i_taskRunId),
             runId(i_runId),
-            taskRunId(0)
+            setId(0),
+            taskId(0)
         { }
 
         /** create row with default empty field values. */
-        TaskRunSetRow(void) : TaskRunSetRow(0, 0, 0) { }
+        TaskRunSetRow(void) : TaskRunSetRow(0, 0) { }
 
         ~TaskRunSetRow(void) throw() { }
 
-        /** less comparator by primary key: task id, set id, run id. */
+        /** less comparator by primary key: task run id, run id. */
         static bool isKeyLess(const TaskRunSetRow & i_left, const TaskRunSetRow & i_right);
 
-        /** equal comparator by primary key: task id, set id, run id. */
+        /** equal comparator by primary key: task run id, run id. */
         static bool isKeyEqual(const TaskRunSetRow & i_left, const TaskRunSetRow & i_right);
 
-        /** find row by primary key: task id, set id, run id. */
-        static vector<TaskRunSetRow>::const_iterator byKey(
-            int i_taskId, int i_setId, int i_runId, const vector<TaskRunSetRow> & i_rowVec
-            );
+        /** find row by primary key: task run id, run id. */
+        static vector<TaskRunSetRow>::const_iterator byKey(int i_taskRunId, int i_runId, const vector<TaskRunSetRow> & i_rowVec);
     };
 }
 

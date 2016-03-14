@@ -10,6 +10,7 @@
 
 using namespace std;
 
+#include "helper.h"
 #include "dbExec.h"
 
 namespace openm
@@ -45,13 +46,13 @@ namespace openm
         void releaseTransaction(void);
 
         /** return string value of connection property by key (case neutral) or empty "" string if key not found. */
-        string strConnProperty(const string & i_key);
+        string strConnProperty(const string & i_key) const;
 
         /** return true if value of connection property is 'true', 'yes', '1' (case neutral). */
-        bool boolConnProperty(const string & i_key);
+        bool boolConnProperty(const string & i_key) const;
 
         /** return long value of connection property or default value if key not found (case neutral). */
-        long long longConnProperty(const string & i_key, long i_default);
+        long long longConnProperty(const string & i_key, long i_default) const;
 
     private:
         /** parse connection string and return case-neutral map of key+value string pairs. */
@@ -67,6 +68,9 @@ namespace openm
         DbExecBase(const DbExecBase & i_dbExec) = delete;
         DbExecBase & operator=(const DbExecBase & i_dbExec) = delete;
     };
+
+    /** mutex to lock database operations */
+    extern recursive_mutex dbMutex;
 }
 
 #endif  // DB_EXEC_BASE_H

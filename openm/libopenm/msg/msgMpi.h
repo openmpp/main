@@ -9,7 +9,6 @@
 #define MSG_MPI_H
 
 #include "msg.h"
-#include "msgCommon.h"
 
 using namespace std;
 

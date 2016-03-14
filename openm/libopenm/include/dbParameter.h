@@ -36,7 +36,7 @@ namespace openm
          * read input parameter values.
          *
          * @param[in]     i_dbExec    database connection
-         * @param[in]     i_type      parameter type
+         * @param[in]     i_type      parameter value type
          * @param[in]     i_size      parameter size (number of parameter values)
          * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
          */

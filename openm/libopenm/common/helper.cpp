@@ -16,9 +16,6 @@
 // helper exception default error message
 const char openm::helperUnknownErrorMessage[] = "unknown error in helper method";
 
-// mutex to lock library operations
-recursive_mutex openm::rtMutex;
-
 // convert string to lower case
 void openm::toLower(string & io_str)
 {

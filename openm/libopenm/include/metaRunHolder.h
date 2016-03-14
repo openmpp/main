@@ -45,9 +45,6 @@ namespace openm
 
         /** table_expr table rows */
         unique_ptr<ITableExprTable> tableExpr;
-
-        /** run_option table rows */
-        unique_ptr<IRunOptionTable> runOption;
     };
 }
 

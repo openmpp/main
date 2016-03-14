@@ -28,13 +28,21 @@ IMsgRecvPacked::~IMsgRecvPacked(void) throw() { }
 // create new message passing interface.
 IMsgExec * IMsgExec::create(int argc, char **argv)
 {
-    lock_guard<recursive_mutex> lck(rtMutex);
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MpiExec(argc, argv);
 }
 
-// return new allocated and packed copy of source array.
-unique_ptr<unsigned char> IPackedAdapter::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+// return byte size to pack source array.
+size_t IPackedAdapter::packedSize(const type_info & i_type, long long i_size)
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
+    return MpiPacked::packedSize(i_type, i_size);
+}
+
+// return new allocated and packed copy of source array.
+unique_ptr<char> IPackedAdapter::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
     return MpiPacked::packArray(i_type, i_size, i_valueArr);
 }
 
@@ -43,6 +51,7 @@ IMsgSendArray * IMsgSendArray::create(
     int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MpiSendArray(i_selfRank, i_sendTo, i_msgTag, i_type, i_size, i_valueArr);
 }
 
@@ -51,6 +60,7 @@ IMsgSendPacked * IMsgSendPacked::create(
     int i_selfRank, int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MpiSendPacked(i_selfRank, i_sendTo, i_rowVec, i_adapter);
 }
 
@@ -59,6 +69,7 @@ IMsgRecvArray * IMsgRecvArray::create(
     int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MpiRecvArray(i_selfRank, i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
 }
 
@@ -67,6 +78,7 @@ IMsgRecvPacked * IMsgRecvPacked::create(
     int i_selfRank, int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MpiRecvPacked(i_selfRank, i_recvFrom, io_resultRowVec, i_adapter);
 }
 
@@ -112,20 +124,27 @@ const string MpiException::makeErrorMsg(int i_mpiReturn)
 // create new pack and unpack adapter for metadata table db rows
 IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag) 
 { 
-    lock_guard<recursive_mutex> lck(rtMutex);
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new EmptyPackedAdapter(i_msgTag);
 }
 
-/** return new allocated and packed copy of source array. */
-unique_ptr<unsigned char> IPackedAdapter::packArray(const type_info & /*i_type*/, long long /*i_size*/, void * /*i_valueArr*/)
+/** return byte size to pack source array: reurn always zero */
+size_t IPackedAdapter::packedSize(const type_info & /*i_type*/, long long /*i_size*/)
 {
-    throw MsgException("Invalid operation: not supported for empty message interface");
+    return 0;
+}
+
+/** return pack'ed copy of source array: return always empty. */
+unique_ptr<char> IPackedAdapter::packArray(const type_info & /*i_type*/, long long /*i_size*/, void * /*i_valueArr*/)
+{
+    unique_ptr<char> packedData(new char[0]);
+    return packedData;
 }
 
 // create new message passing interface.
 IMsgExec * IMsgExec::create(int argc, char **argv)
 {
-    lock_guard<recursive_mutex> lck(rtMutex);
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MsgEmptyExec(argc, argv);
 }
 
@@ -134,6 +153,7 @@ IMsgSendArray * IMsgSendArray::create(
     int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MsgEmptySendArray(i_selfRank, i_sendTo, i_msgTag, i_type, i_size, i_valueArr);
 }
 
@@ -142,6 +162,7 @@ IMsgSendPacked * IMsgSendPacked::create(
     int i_selfRank, int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MsgEmptySendPacked(i_selfRank, i_sendTo, i_rowVec, i_adapter);
 }
 
@@ -150,6 +171,7 @@ IMsgRecvArray * IMsgRecvArray::create(
     int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MsgEmptyRecvArray(i_selfRank, i_recvFrom, i_msgTag, i_type, i_size, io_valueArr);
 }
 
@@ -158,6 +180,7 @@ IMsgRecvPacked * IMsgRecvPacked::create(
     int i_selfRank, int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter
     )
 {
+    lock_guard<recursive_mutex> lck(msgMutex);
     return new MsgEmptyRecvPacked(i_selfRank, i_recvFrom, io_resultRowVec, i_adapter);
 }
 

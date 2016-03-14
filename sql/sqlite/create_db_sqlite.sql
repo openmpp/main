@@ -93,7 +93,7 @@ CREATE TABLE run_lst
   sub_completed INT          NOT NULL, -- number of subsamples completed
   sub_restart   INT          NOT NULL, -- subsample to restart from
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
-  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=failed
+  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
@@ -629,6 +629,9 @@ CREATE TABLE task_set
 
 --
 -- Task run history and status
+-- if status = w (wait) then 
+--    model wait and NOT completed until other process set status to one of finals: s,x,e
+--    model check if any new sets inserted into task_set and run it as they arrive
 --
 CREATE TABLE task_run_lst
 (
@@ -636,7 +639,7 @@ CREATE TABLE task_run_lst
   task_id     INT         NOT NULL, -- master key
   sub_count   INT         NOT NULL, -- subsamples count of task run
   create_dt   VARCHAR(32) NOT NULL, -- start date-time
-  status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress s=success x=exit e=failed
+  status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
   update_dt   VARCHAR(32) NOT NULL, -- last update date-time
   PRIMARY KEY (task_run_id),
   CONSTRAINT task_run_lst_mk 
@@ -648,17 +651,15 @@ CREATE TABLE task_run_lst
 --
 CREATE TABLE task_run_set
 (
-  task_id     INT NOT NULL, -- master key
-  set_id      INT NOT NULL, -- input working set id
-  run_id      INT NOT NULL, -- result run id
-  task_run_id INT NOT NULL, -- task run id
-  PRIMARY KEY (task_id, set_id, run_id),
+  task_run_id INT NOT NULL, -- master key
+  run_id      INT NOT NULL, -- if > 0 then result run id
+  set_id      INT NOT NULL, -- if > 0 then input working set id
+  task_id     INT NOT NULL, -- link to task list
+  PRIMARY KEY (task_run_id, run_id),
+  CONSTRAINT task_rs_un 
+             UNIQUE (task_run_id, set_id),
   CONSTRAINT task_rs_mk 
-             FOREIGN KEY (task_id) REFERENCES task_lst (task_id),
-  CONSTRAINT task_rs_set_fk 
-             FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
-  CONSTRAINT task_rs_run_fk 
-             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
+             FOREIGN KEY (task_run_id) REFERENCES task_run_lst (task_run_id)
 );
 
 --

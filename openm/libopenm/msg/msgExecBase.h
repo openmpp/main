@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 using namespace std;
 
 #include "msg.h"
@@ -23,11 +24,14 @@ namespace openm
         /** cleanup message passing resources. */
         virtual ~MsgExecBase(void) throw() { };
 
-        /** return current process rank. */
-        int rank(void) const throw() { return selfRank; }
+        /** return total number of processes in MPI world communicator. */
+        int worldSize(void) const;
 
-        /** return total number of processes in world communicator. */
-        int worldSize(void) const throw() { return worldCommSize; }
+        /** return current process rank. */
+        int rank(void) const;
+
+        /** return rank in modeling group. */
+        int groupRank(void) const;
 
         /** start non-blocking send of value array to i_sendTo process. */
         void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr);
@@ -54,11 +58,12 @@ namespace openm
         void waitRecvAll(void);
 
     protected:
-        MsgExecBase(void) : selfRank(0), worldCommSize(0) { }
+        MsgExecBase(void) : worldCommSize(1), worldRank(0), group_rank(0) { }
 
     protected:
-        int selfRank;           // rank of process itself
         int worldCommSize;      // total number of processes in world communicator
+        int worldRank;          // rank of process in world communicator
+        int group_rank;         // rank of process in group communicator
 
         vector<unique_ptr<IMsgSend> > sendVec;     // active send requests vector
         vector<unique_ptr<IMsgRecv> > recvVec;     // active receive requests vector
@@ -67,6 +72,9 @@ namespace openm
         MsgExecBase(const MsgExecBase & i_msgExec) = delete;
         MsgExecBase & operator=(const MsgExecBase & i_msgExec) = delete;
     };
+
+    /** mutex to lock messaging operations */
+    extern recursive_mutex msgMutex;
 }
 
 #endif  // MSG_EXEC_BASE_H

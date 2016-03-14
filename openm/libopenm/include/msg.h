@@ -146,8 +146,11 @@ namespace openm
          */
         virtual void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const = 0;
 
+        /** return byte size to pack source array. */
+        static size_t packedSize(const type_info & i_type, long long i_size);
+
         /** return new allocated and packed copy of source array. */
-        static unique_ptr<unsigned char> packArray(const type_info & i_type, long long i_size, void * i_valueArr);
+        static unique_ptr<char> packArray(const type_info & i_type, long long i_size, void * i_valueArr);
     };
 
     /** public interface for message passing */
@@ -169,43 +172,50 @@ namespace openm
         static const int rootRank = 0;
 
         /** if root process then true (root process rank == 0) */
-        bool isRoot(void) const throw() { return rank() == rootRank; }
-
-        /** return current process rank. */
-        virtual int rank(void) const throw() = 0;
+        bool isRoot(void) const { return rank() == rootRank; }
 
         /** return total number of processes in world communicator. */
-        virtual int worldSize(void) const throw() = 0;
+        virtual int worldSize(void) const = 0;
 
-        /** wait until all processes come to the barrier. */
-        virtual void waitOnBarrier(void) const = 0;
+        /** return current process rank. */
+        virtual int rank(void) const = 0;
+
+        /** return rank in modeling group. */
+        virtual int groupRank(void) const = 0;
+
+        /** create groups for parallel run of modeling task. 
+         *
+         * @param[in] i_groupSize   number of processes in each group
+         * @param[in] i_groupCount  number of groups
+        */
+        virtual void createGroups(int i_groupSize, int i_groupCount) = 0;
 
         /**
-         * broadcast value array from sender to all other processes.
+         * broadcast value array from root to all other processes.
          *
-         * @param[in]     i_sendFrom  sender proccess rank
-         * @param[in]     i_type      type of value array
-         * @param[in]     i_size      size of value array
+         * @param[in]     i_groupOne  if zero then worldwide else one-based group number
+         * @param[in]     i_type      value type
+         * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr value array to send or output buffer to receive
          */
-        virtual void bcast(int i_sendFrom, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
+        virtual void bcast(int i_groupOne, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
 
         /**
-         * broadcast vector of db rows from sender to all other processes.
+         * broadcast vector of db rows from root to all other processes.
          *
-         * @param[in]     i_sendFrom  sender proccess rank
+         * @param[in]     i_groupOne  if zero then worldwide else one-based group number
          * @param[in,out] io_rowVec   vector of db rows to send or vector to push back received db rows
          * @param[in]     i_adapter   adapter to pack and unpack db rows
          */
-        virtual void bcastPacked(int i_sendFrom, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) = 0;
+        virtual void bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) = 0;
 
         /**
          * start non-blocking send of value array to i_sendTo process.
          *
          * @param[in] i_sendTo    receiver proccess rank
          * @param[in] i_msgTag    tag to identify message content (parameter or output data)
-         * @param[in] i_type      type of value array
-         * @param[in] i_size      size of value array
+         * @param[in] i_type      value type
+         * @param[in] i_size      size of array
          * @param[in] i_valueArr  value array to send
          */
         virtual void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr) = 0;
@@ -224,8 +234,8 @@ namespace openm
          *
          * @param[in]     i_recvFrom  sender proccess rank
          * @param[in]     i_msgTag    tag to identify message content (parameter or output data)
-         * @param[in]     i_type      type of value array
-         * @param[in]     i_size      size of value array
+         * @param[in]     i_type      value type
+         * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr allocated buffer to recieve value array
          */
         virtual void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
@@ -244,8 +254,8 @@ namespace openm
          *
          * @param[in]     i_recvFrom  sender proccess rank
          * @param[in]     i_msgTag    tag to identify message content (parameter or output data)
-         * @param[in]     i_type      type of value array
-         * @param[in]     i_size      size of value array
+         * @param[in]     i_type      value type
+         * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr allocated buffer to recieve value array
          */
         virtual bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const = 0;
@@ -266,10 +276,5 @@ namespace openm
         virtual void waitRecvAll(void) = 0;
     };
 }
-
-#define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
-#define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
-#define OM_PROGRESS_WAIT_TIME 17L       /* msec, wait interval for modeling threads polling */
-#define OM_PROGRESS_SLEEP_TIME 131L     /* msec, sleep interval if no progress in modeling threads */
 
 #endif  // OM_MSG_H

@@ -13,7 +13,7 @@ using namespace openm;
 
 /** initialize child modeling process.
 *
-* - (a) get number of subsamples, processes, threads
+* - (a) get number of subsamples, processes, threads, groups
 * - (d) receive metadata tables from root processes
 *
 * Number of subsamples by default = 1 and it can be specified
@@ -28,71 +28,79 @@ using namespace openm;
 *   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
 *
 * Number of modeling processes = MPI world size \n
-* Number of subsamples per process = total number of subsamples / number of processes \n
-*   if total number of subsamples % number of processes != 0 then remainder calculated at root process \n
+*
+* Size of modeling group = number of subsamples / number of threads \n
+* Number of groups = number of processes / group size \n
+*   by default only one group which include all modeling processes \n
+*   group size always >= 1 therefore group always include at least one process \n
+*
+* Number of subsamples per child process = total number of subsamples / group size \n
+*   if total number of subsamples % group size != 0 then remainder calculated at last group process \n
 */
 void ChildController::init(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
 
-    // receive initial state and main control values from root process: subsample count, thread count
-    ModelStatus startStatus = receiveInitialState();
-    theModelRunState.updateStatus(startStatus);
-
-    if (ModelRunState::isExit(startStatus)) return;     // exit if received status not a continue
+    // broadcast basic run options from root to all other processes
+    broadcastInt(ProcessGroupDef::all, msgExec, &subSampleCount);
+    broadcastInt(ProcessGroupDef::all, msgExec, &threadCount);
+    broadcastInt(ProcessGroupDef::all, msgExec, &modelId);
 
     // basic validation: number of processes expected to be > 1
     if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
-    if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
-    if (subSampleCount < processCount)
-        throw ModelException("Error: number of subsamples: %d less than number of processes: %d", subSampleCount, processCount);
+    // if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
 
-    // broadcast metadata: subsample count and meta tables from root to all other processes
+    // create groups for parallel run of modeling task
+    groupDef = ProcessGroupDef(subSampleCount, threadCount, msgExec->worldSize(), msgExec->rank());
+
+    msgExec->createGroups(groupDef.groupSize, groupDef.groupCount);
+
+    // first subsample number and number of subsamples
+    subFirstNumber = groupDef.activeRank * threadCount;
+    selfSubCount = (groupDef.activeRank < groupDef.groupSize - 1) ? threadCount : subSampleCount - subFirstNumber;
+
+    if (subFirstNumber < 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
+        throw ModelException(
+            "Invalid first subsample number: %d or number of subsamples: %d", subFirstNumber, selfSubCount
+            );
+
+    // adjust number of active processes: exit from unused child processes
+    if (msgExec->rank() > groupDef.groupSize * groupDef.groupCount) {
+        theModelRunState.updateStatus(ModelStatus::exit);
+    }
+
+    // broadcast metadata tables from root to all other processes
     metaStore.reset(new MetaRunHolder);
-    broadcastMetaData(msgExec, metaStore.get());
+    broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
+
+    // receive model run options
+    broadcastRunOptions(ProcessGroupDef::all, msgExec);
 }
 
-// receive initial state and main control values from root process: subsample count, thread count
-ModelStatus ChildController::receiveInitialState(void)
-{
-    int initMsg[processInitMsgSize];
-    msgExec->startRecv(IMsgExec::rootRank, MsgTag::initial, typeid(int), processInitMsgSize, initMsg);
-    msgExec->waitRecvAll();
-
-    modelId = initMsg[1];
-    subSampleCount = initMsg[2];
-    threadCount = initMsg[3];
-    return 
-        static_cast<ModelStatus>(initMsg[0]);
-}
-
-/** next run for child process: receive run id, run options and input parameters from root process.
-*
-* Number of modeling processes = MPI world size \n
-* Number of subsamples per process = total number of subsamples / number of processes \n
-*   if total number of subsamples % number of processes != 0 then remainder calculated at root process \n
-*/
+/** next run for child process: receive run id, run options and input parameters from root process. */
 int ChildController::nextRun(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
-    
-    // get number of subsamples and first subsample number
-    selfSubCount = subPerProcess = subSampleCount / processCount;
-    subFirstNumber = (msgExec->rank() - 1) * subPerProcess;
 
-    if (subFirstNumber < 0 || subPerProcess <= 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
-        throw ModelException(
-            "Invalid first subsample number: %d or number of subsamples: %d or subsamples per process: %d", subFirstNumber, selfSubCount, subPerProcess
-            );
+    if (theModelRunState.isShutdownOrExit()) return 0;      // exit if status not a continue status
 
-    // broadcast metadata: run id and other run options from root to all other processes
-    broadcastRunId(msgExec, &runId);    // temporary: work-in-porogress
-    if (runId <= 0) return runId;       // temporary: work-in-porogress
+    // broadcast metadata: model status, run id and other run options from root to all other processes
+    // if run id received from the root <= 0 then all done, stop this child modeling process
+    ModelStatus mStatus;
+    broadcastInt(groupDef.groupOne, msgExec, (int *)&mStatus);
+    broadcastInt(groupDef.groupOne, msgExec, &runId);
 
-    broadcastRunOptions(msgExec, metaStore->runOption);
+    theModelRunState.updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit
 
     return runId;
+}
+
+/** model run shutdown: save results and update run status. */
+void ChildController::shutdownRun(int /*i_runId*/)
+{ 
+    // wait for send completion, if any outstanding
+    msgExec->waitSendAll();
 }
 
 /**
@@ -109,7 +117,7 @@ void ChildController::readParameter(const char * i_name, const type_info & i_typ
 
     try {
         // receive broadcasted parameter from root process
-        msgExec->bcast(msgExec->rootRank, i_type, i_size, io_valueArr);
+        msgExec->bcast(groupDef.groupOne, i_type, i_size, io_valueArr);
     }
     catch (exception & ex) {
         throw ModelException("Failed to read input parameter: %s. %s", i_name, ex.what());
@@ -119,14 +127,14 @@ void ChildController::readParameter(const char * i_name, const type_info & i_typ
 /** send output table accumulators to root process.
 *
 * @param[in]     i_runOpts      model run options
-* @param[in]     i_isLast       if true then it is last output table to send
+* @param[in]     i_isLastTable  if true then it is last output table to send
 * @param[in]     i_name         output table name
 * @param[in]     i_size         number of cells for each accumulator
 * @param[in,out] io_accValues   accumulator values
 */
 void ChildController::writeAccumulators(
     const RunOptions & i_runOpts, 
-    bool /*i_isLast*/,
+    bool /*i_isLastTable*/,
     const char * i_name, 
     long long i_size, 
     forward_list<unique_ptr<double> > & io_accValues
@@ -152,12 +160,4 @@ void ChildController::writeAccumulators(
             );
         accIndex++;
     }
-}
-
-/** receive outstanding accumulators and wait until outstanding send completed. */
-void ChildController::receiveSendLast(void)
-{
-    // receive outstanding subsamples: only at MPI root process
-    // wait for send completion, if any outstanding
-    msgExec->waitSendAll();
 }

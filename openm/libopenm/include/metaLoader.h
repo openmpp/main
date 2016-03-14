@@ -45,6 +45,9 @@ namespace openm
         /** modeling task name */
         static const char * taskName;
 
+        /** modeling task under external supervision */
+        static const char * taskWait;
+
         /** modeling task run id */
         static const char * taskRunId;
 
@@ -96,9 +99,6 @@ namespace openm
         /** last cleanup */
         virtual ~MetaLoader(void) throw() = 0;
 
-        /** model id in database */
-        int modelId;
-
         /** total number of subsamples */
         int subSampleCount;
 
@@ -111,31 +111,38 @@ namespace openm
         /** model metadata tables */
         const MetaRunHolder * meta(void) const { return metaStore.get(); }
 
+        /** return basic model run options */
+        const RunOptions modelRunOptions(int i_subCount, int i_subNumber) const;
+
         /** initialize run options from command line and ini-file */
         static const ArgReader getRunOptions(int argc, char ** argv);
 
     protected:
+        int modelId;                            // model id in database
         unique_ptr<MetaRunHolder> metaStore;    // metadata tables
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
-            modelId(0),
             subSampleCount(0),
             threadCount(1),
+            modelId(0),
             argStore(i_argStore)
         { }
+
+        // return basic model run options
+        const RunOptions & modelRunOptions(void) const { return baseRunOpts; }
 
         // read metadata tables from db, except of run_option table
         static const ModelDicRow * readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
 
         // broadcast metadata tables from root to all modeling processes
-        void broadcastMetaData(IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
+        void broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
 
-        // broadcast run options from root to all modeling processes
-        void broadcastRunId(IMsgExec * i_msgExec, int * io_runId);
+        // broadcast int value from root to group of modeling processes
+        void broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_value);
 
-        // broadcast run options from root to all modeling processes
-        void broadcastRunOptions(IMsgExec * i_msgExec, unique_ptr<IRunOptionTable> & io_runOptionTbl);
+        // broadcast run options from root to group of modeling processes
+        void broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec);
 
         // merge command line and ini-file arguments with profile_option table values
         void mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
@@ -147,18 +154,63 @@ namespace openm
         int findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
 
         // find source working set for input parameters
-        int findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+        int findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const;
 
     private:
-        ArgReader argStore;     // arguments as key-value string pairs with case-neutral search
+        RunOptions baseRunOpts;     // basic model run options
+        ArgReader argStore;         // arguments as key-value string pairs with case-neutral search
 
         // broadcast meta table db rows
         template <class MetaTbl>
-        static void broadcastMetaTable(IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
+        static void broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;
         MetaLoader & operator=(const MetaLoader & i_metaLoader) = delete;
+    };
+
+    // helper struct to define modeling groups size and count: groups of processes for parallel run of modeling task
+    struct ProcessGroupDef
+    {
+        int groupSize;          // size of modeling group
+        int groupCount;         // number of modeling group
+        int activeRank;         // active rank in group: process index among other modeling processes in the group
+        int groupOne;           // current process modeling group number, one based, not a zero based
+        bool isRootActive;      // if true then root process used for modeling else dedicated for data exchange
+
+        static const int all = 0;   // worldwide group, all processes
+
+        ProcessGroupDef(void) : groupSize(1), groupCount(0), activeRank(0), groupOne(0), isRootActive(true) { }
+
+        ProcessGroupDef(int i_subSampleCount, int i_threadCount, int i_worldSize, int i_worldRank);
+    };
+
+    // helper struct to hold modeling group run id and run state
+    struct RunGroup 
+    {
+        int groupOne;               // modeling group number, one based, not a zero based
+        int runId;                  // if > 0 then model run id
+        int setId;                  // if > 0 then set id of source input parametes
+        int firstChildRank;         // world rank of first child process
+        int childCount;             // number of child processes in group
+        bool isUseRoot;             // if true then root process used for modeling else dedicated for data exchange
+        ModelRunState state;        // group status and modeling progress
+        vector<bool> isSubDone;     // size of [subsample count], if true then all subsample accumulators saved in database
+
+        // set initial run group size, assign process ranks and initial state state
+        RunGroup(int i_groupOne, int i_subSampleCount, const ProcessGroupDef & i_rootGroupDef);
+
+        // set group state for next run
+        void nextRun(int i_runId, int i_setId, ModelStatus i_status, int i_subSampleCount);
+
+        // clear group state after run
+        void reset(int i_subSampleCount) { nextRun(0, 0, ModelStatus::init, i_subSampleCount); }
+
+        // return child world rank where subsample is calculated
+        int rankBySubsampleNumber(int i_subNumber, int i_subSampleCount, int i_groupSize) const;
+
+    private:
+        RunGroup(void) : groupOne(0), runId(0), setId(0), firstChildRank(0), childCount(0), isUseRoot(false) { }
     };
 }
 

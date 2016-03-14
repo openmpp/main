@@ -26,10 +26,7 @@ ModelBase::ModelBase(
     metaStore(i_metaStore)
 {
     // set model run options
-    runOpts.subSampleCount = i_subCount;
-    runOpts.subSampleNumber = i_subNumber;
-    runOpts.useSparse = metaStore->runOption->boolValue(RunOptionsKey::useSparse);
-    runOpts.nullValue = metaStore->runOption->doubleValue(RunOptionsKey::sparseNull, DBL_EPSILON);
+    runOpts = i_runCtrl->modelRunOptions(i_subCount, i_subNumber);
 
     // setup accumulators list of id's
     const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
@@ -117,14 +114,14 @@ void ModelBase::writeOutputTable(const char * i_name, long long i_size, forward_
         if (srcCount <= 0 || accCount != srcCount) throw DbException("invalid number of accumulators: %d for output table : %s", srcCount, i_name);
 
         // update table write status and check if all tables completed
-        bool isLast = true;
+        bool isLastTable = true;
         for (auto & td : tableDoneVec) {
             if (td.tableId == tblId) td.isDone = true;
-            if (!td.isDone) isLast = false;
+            if (!td.isDone) isLastTable = false;
         }
 
         // write subsample into database or start sending data to root process
-        runCtrl->writeAccumulators(runOpts, isLast, i_name, i_size, accValLst);
+        runCtrl->writeAccumulators(runOpts, isLastTable, i_name, i_size, accValLst);
     }
     catch (exception & ex) {
         throw ModelException("Failed to write output table: %s. %s", i_name, ex.what());

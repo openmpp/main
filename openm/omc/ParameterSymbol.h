@@ -106,11 +106,21 @@ public:
     string cxx_dimensions(bool use_zero = false) const;
 
     /**
-     * C++ code to read parameter from data store.
-     *
-     * @return A block of code.
-     */
+    * C++ code to read parameter from data store.
+    *
+    * @return A block of code.
+    */
     CodeBlock cxx_read_parameter();
+
+    /**
+    * return C++ type name of parameter value(s) to read from data store.
+    */
+    const string cxx_type_of_parameter(void) const;
+
+    /**
+    * return C++ code fragment with name, type and size of parameter to read from data store.
+    */
+    const string ParameterSymbol::cxx_parameter_name_type_size(void) const;
 
     /**
      * C++ code to initialize cumrate for parameter.

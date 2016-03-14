@@ -24,8 +24,8 @@ namespace openm
          * @param[in]     i_selfRank  receiver (current process MPI rank)
          * @param[in]     i_recvFrom  sender proccess MPI rank
          * @param[in]     i_msgTag    tag to identify message content (parameter or output data)
-         * @param[in]     i_type      type of value array
-         * @param[in]     i_size      size of value array
+         * @param[in]     i_type      value type
+         * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr allocated buffer to recieve value array
          */
         MpiRecvArray(

@@ -830,28 +830,24 @@ vector<TaskRunLstRow>::const_iterator TaskRunLstRow::byKey(int i_taskRunId, cons
     );
 }
 
-/** less comparator by primary key: task id, set id, run id. */
+/** less comparator by primary key: task run id, run id. */
 bool TaskRunSetRow::isKeyLess(const TaskRunSetRow & i_left, const TaskRunSetRow & i_right)
 {
-    return (i_left.taskId < i_right.taskId) || 
-        (i_left.taskId == i_right.taskId && i_left.setId < i_right.setId) ||
-        (i_left.taskId == i_right.taskId && i_left.setId == i_right.setId && i_left.runId < i_right.runId);
+    return (i_left.taskRunId < i_right.taskRunId) || (i_left.taskRunId == i_right.taskRunId && i_left.runId < i_right.runId);
 }
 
-/** equal comparator by primary key: task id, set id, run id. */
+/** equal comparator by primary key: task run id, run id. */
 bool TaskRunSetRow::isKeyEqual(const TaskRunSetRow & i_left, const TaskRunSetRow & i_right)
 {
-    return i_left.taskId == i_right.taskId && i_left.setId == i_right.setId && i_left.runId == i_right.runId;
+    return i_left.taskRunId == i_right.taskRunId && i_left.runId == i_right.runId;
 }
 
-/** find row by primary key: task id, set id, run id. */
-vector<TaskRunSetRow>::const_iterator TaskRunSetRow::byKey(int i_taskId, int i_setId, int i_runId, const vector<TaskRunSetRow> & i_rowVec)
+/** find row by primary key: task run id, run id. */
+vector<TaskRunSetRow>::const_iterator TaskRunSetRow::byKey(int i_taskRunId, int i_runId, const vector<TaskRunSetRow> & i_rowVec)
 {
     return find_if(
         i_rowVec.cbegin(),
         i_rowVec.cend(),
-        [i_taskId, i_setId, i_runId](const TaskRunSetRow & i_row) -> bool { 
-            return i_row.taskId == i_taskId && i_row.setId == i_setId && i_row.runId == i_runId;
-        }
+        [i_taskRunId, i_runId](const TaskRunSetRow & i_row) -> bool { return i_row.taskId == i_taskRunId && i_row.runId == i_runId; }
     );
 }

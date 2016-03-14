@@ -37,7 +37,7 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
     exit_guard<DbExecSqlite> onExit(this, &DbExecSqlite::cleanup);
 
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         validateConnectionProps();  // exception if connection properties is invalid
 
@@ -81,7 +81,7 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
 DbExecSqlite::~DbExecSqlite(void) throw()
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
         cleanup();
     }
     catch (...) { }
@@ -91,7 +91,7 @@ DbExecSqlite::~DbExecSqlite(void) throw()
 void DbExecSqlite::cleanup(void) throw()
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         releaseStatement();
         try { releaseTransaction(); }
@@ -120,7 +120,7 @@ void DbExecSqlite::cleanup(void) throw()
 void DbExecSqlite::releaseStatement(void) throw()
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theStmt != NULL) sqlite3_finalize(theStmt);
         theStmt = NULL;
@@ -252,7 +252,7 @@ template <typename TCvt>
 TCvt DbExecSqlite::selectTo(const string & i_sql, const TCvt & i_default, TCvt (DbExecSqlite::*ToRetType)(int))
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -296,7 +296,7 @@ TCvt DbExecSqlite::selectTo(const string & i_sql, const TCvt & i_default, TCvt (
 vector<string> DbExecSqlite::selectRowStr(const string & i_sql)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -347,7 +347,7 @@ vector<string> DbExecSqlite::selectRowStr(const string & i_sql)
 IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter & i_adapter)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -505,7 +505,7 @@ IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter 
 long long DbExecSqlite::selectColumn(const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -599,7 +599,7 @@ int rc = SQLITE_ROW;
 long long DbExecSqlite::update(const string & i_sql)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -625,7 +625,7 @@ long long DbExecSqlite::update(const string & i_sql)
 void DbExecSqlite::beginTransaction(void)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -654,7 +654,7 @@ void DbExecSqlite::beginTransaction(void)
 unique_lock<recursive_mutex> DbExecSqlite::beginTransactionThreaded(void)
 {
     try {
-        unique_lock<recursive_mutex> lck(rtMutex);
+        unique_lock<recursive_mutex> lck(dbMutex);
         beginTransaction();
         return lck;
     }
@@ -671,7 +671,7 @@ unique_lock<recursive_mutex> DbExecSqlite::beginTransactionThreaded(void)
 void DbExecSqlite::commit(void)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -702,7 +702,7 @@ void DbExecSqlite::commit(void)
 void DbExecSqlite::rollback(void)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -751,7 +751,7 @@ void DbExecSqlite::rollback(void)
 void DbExecSqlite::createStatement(const string & i_sql, int i_paramCount, const type_info ** i_typeArr)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt != NULL) throw DbException("db statement busy");
@@ -842,7 +842,7 @@ void DbExecSqlite::createStatement(const string & i_sql, int i_paramCount, const
 void DbExecSqlite::executeStatement(int i_paramCount, const DbValue * i_valueArr)
 {
     try {
-        lock_guard<recursive_mutex> lck(rtMutex);
+        lock_guard<recursive_mutex> lck(dbMutex);
 
         if (theDb == NULL) throw DbException("db connection is closed");
         if (theStmt == NULL) throw DbException("db statement not created");
