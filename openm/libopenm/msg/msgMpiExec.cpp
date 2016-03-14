@@ -19,9 +19,9 @@ using namespace openm;
 * @param[in,out] argv  main argv to pass to MPI_Init
 */
 MpiExec::MpiExec(int & argc, char ** & argv) :
+    MsgExecBase(),
     worldGroup(MPI_GROUP_NULL), 
-    groupComm(MPI_COMM_WORLD),
-    MsgExecBase()
+    groupComm(MPI_COMM_WORLD)
 {
     // cleanup resources on failure
     exit_guard<MpiExec> onExit(this, &MpiExec::cleanup);

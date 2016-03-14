@@ -44,6 +44,7 @@ namespace openm
     };
 }
 
+#include "msgExecBase.h"
 #include "msgMpiPacked.h"
 #include "msgMpiExec.h"
 #include "msgMpiSend.h"

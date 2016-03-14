@@ -120,7 +120,7 @@ public:
     /**
     * return C++ code fragment with name, type and size of parameter to read from data store.
     */
-    const string ParameterSymbol::cxx_parameter_name_type_size(void) const;
+    const string cxx_parameter_name_type_size(void) const;
 
     /**
      * C++ code to initialize cumrate for parameter.
