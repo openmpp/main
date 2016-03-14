@@ -79,16 +79,12 @@ void MpiExec::cleanup(void) throw()
             if (mc != MPI_COMM_NULL && mc != MPI_COMM_WORLD) MPI_Comm_free(&mc);
         }
         mpiCommVec.clear();
-
+        
         for (MPI_Group & mg : mpiGroupVec) { 
             if (mg != MPI_GROUP_NULL) MPI_Group_free(&mg);
         }
         mpiGroupVec.clear();
 
-        if (groupComm != MPI_COMM_NULL && groupComm != MPI_COMM_WORLD) {
-            MPI_Comm_free(&groupComm);
-            groupComm = MPI_COMM_NULL;
-        }
         if (worldGroup != MPI_GROUP_NULL) {
             MPI_Group_free(&worldGroup);
             worldGroup = MPI_GROUP_NULL;
@@ -108,15 +104,12 @@ void MpiExec::createGroups(int i_groupSize, int i_groupCount)
 
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        // get global group as base for all other sub-groups
-        int mpiRet = MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
-        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-
         // groups data
         vector<int> ranks;          // process ranks for group
         ranks.push_back(0);         // all groups include world root
         bool isSelf = false;        // if true this is current process group
         int nSize = 0;
+        int mpiRet = MPI_SUCCESS;
         MPI_Comm mComm = MPI_COMM_NULL;
 
         int nProc = 1;
