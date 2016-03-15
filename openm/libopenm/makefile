@@ -116,10 +116,11 @@ LIBOPENM_CPPLIST = \
   model/childController.cpp \
   model/metaLoader.cpp \
   model/modelBase.cpp \
+  model/modelHelper.cpp \
   model/modelRunState.cpp \
   model/restartController.cpp \
-  model/runController.cpp \
   model/rootController.cpp \
+  model/runController.cpp \
   model/singleController.cpp \
   msg/msgCommon.cpp \
   msg/msgExecBase.cpp \

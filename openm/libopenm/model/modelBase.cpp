@@ -1,17 +1,20 @@
-// OpenM++ modeling library: base class for model subsample run 
+/**
+ * @file
+ * OpenM++ modeling library: modeling thread implementation to calculate model subsample
+ */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
 using namespace openm;
 
-// model exception default error message
+/** model exception default error message */
 const char openm::modelUnknownErrorMessage[] = "unknown model error";
 
-// model subsample run public interface
+/** model subsample run public interface */
 IModel::~IModel() throw() { }
 
-// new model subsample run
+/** create new model subsample run base class */
 ModelBase::ModelBase(
     int i_modelId,
     int i_runId,
@@ -36,7 +39,7 @@ ModelBase::ModelBase(
     }
 }
 
-// create new model subsample run
+/** create new model subsample run */
 ModelBase * ModelBase::create(
     int i_runId,
     int i_subCount,

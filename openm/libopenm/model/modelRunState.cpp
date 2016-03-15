@@ -29,9 +29,6 @@ namespace openm
 // process-wide model run state holder
 ModelRunState openm::theModelRunState;
 
-// mutex to lock run state operations
-static recursive_mutex mrsMutex;
-
 /** initialize model run state */
 ModelRunState::ModelRunState(void) :
     theStatus(ModelStatus::init),
@@ -44,7 +41,7 @@ ModelRunState::ModelRunState(void) :
 /** initialize model run state */
 ModelRunState::ModelRunState(const ModelRunState && i_state)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     theStatus = i_state.theStatus;
     progressCount = i_state.progressCount;
     startTime = i_state.startTime;
@@ -55,7 +52,7 @@ ModelRunState::ModelRunState(const ModelRunState && i_state)
 ModelRunState & ModelRunState::operator=(const ModelRunState & i_state)
 {
     if (this != &i_state) {
-        lock_guard<recursive_mutex> lck(mrsMutex);
+        lock_guard<recursive_mutex> lck(theMutex);
         theStatus = i_state.theStatus;
         progressCount = i_state.progressCount;
         startTime = i_state.startTime;
@@ -67,14 +64,14 @@ ModelRunState & ModelRunState::operator=(const ModelRunState & i_state)
 /** get model status */
 ModelStatus ModelRunState::status(void)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     return theStatus;
 }
 
 /** set model status */
 ModelStatus ModelRunState::status(ModelStatus i_status)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     updateTime = chrono::system_clock::now();
     theStatus = i_status;
     return theStatus;
@@ -83,7 +80,7 @@ ModelStatus ModelRunState::status(ModelStatus i_status)
 /** set model status if not already set as one of exit status values */
 ModelStatus ModelRunState::updateStatus(ModelStatus i_status)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     if (!isExit(theStatus)) status(i_status);
     return theStatus;
 }
@@ -91,28 +88,28 @@ ModelStatus ModelRunState::updateStatus(ModelStatus i_status)
 /** return true if status is one of exiting: ie done, exit, error */
 bool ModelRunState::isExit(void)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     return isExit(theStatus);
 }
 
 /** return true if status is an error */
 bool ModelRunState::isError(void)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     return isError(theStatus);
 }
 
 /** return true if model in shutdown state: modeling completed or one of exiting */
 bool ModelRunState::isShutdownOrExit(void)
 {
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     return isShutdownOrExit(theStatus);
 }
 
 /** update modeling progress */
 int ModelRunState::updateProgress(void) 
 { 
-    lock_guard<recursive_mutex> lck(mrsMutex);
+    lock_guard<recursive_mutex> lck(theMutex);
     if (!isExit(theStatus)) {
         theStatus = (theStatus == ModelStatus::waitProgress) ? ModelStatus::waitProgress : ModelStatus::progress;
         progressCount++;

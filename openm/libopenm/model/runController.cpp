@@ -6,6 +6,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "modelHelper.h"
+#include "runControllerImpl.h"
 
 using namespace std;
 using namespace openm;
@@ -476,19 +478,13 @@ void RunController::doWriteAccumulators(
 }
 
 /** update subsample number to restart the run */
-void RunController::updateRestartSubsample(int i_runId, IDbExec * i_dbExec, const vector<bool> & i_isSubDone)
+void RunController::updateRestartSubsample(int i_runId, IDbExec * i_dbExec, size_t i_subRestart) const
 {
-    // find first not completed subsample
-    int nSub = 0;
-    for (; nSub < subSampleCount; nSub++) {
-        if (!i_isSubDone[nSub]) break;
-    }
-
     // update restart subsample number
-    if (nSub > 0) {
+    if (i_subRestart > 0) {
         i_dbExec->update(
             "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + "," +
-            " sub_restart = " + to_string(nSub) + "," +
+            " sub_restart = " + to_string(i_subRestart) + "," +
             " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
             " WHERE run_id = " + to_string(i_runId)
             );

@@ -63,7 +63,7 @@ static bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunCon
 static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
 // communicate with child modeling processes or sleep if no child activity
-static void childExchangeOrSleep(RunController * i_runCtrl);
+static void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl);
 
 /** main entry point */
 int main(int argc, char ** argv) 
@@ -120,8 +120,8 @@ int main(int argc, char ** argv)
             // create next run id: find model input data set
             int runId = runCtrl->nextRun();
             if (runId <= 0) {
-                childExchangeOrSleep(runCtrl.get());    // communicate with child processes, if any, or sleep
-                continue;                               // no input: completed or waiting for additional input
+                childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes, if any, or sleep
+                continue;                                                   // no input: completed or waiting for additional input
             }
 
             // initilaze model run: read input parameters
@@ -261,7 +261,7 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
 
         // wait if no modeling progress and any threads still running
         if (!isAnyCompleted && modelFutureLst.size() > 0) {
-            childExchangeOrSleep(i_runCtrl);            // communicate with child processes, if any, or sleep
+            childExchangeOrSleep(2L * OM_ACTIVE_SLEEP_TIME, i_runCtrl); // communicate with child processes, if any, or sleep
         }
     }
 
@@ -269,9 +269,9 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
 }
 
 // communicate with child modeling processes or sleep if no child activity
-void childExchangeOrSleep(RunController * i_runCtrl)
+void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl)
 {
-    long nExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
+    long nExchange = 1 + i_sleepTime / OM_ACTIVE_SLEEP_TIME;
 
     bool isAnyChildActivity = false;
     do {

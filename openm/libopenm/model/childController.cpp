@@ -7,6 +7,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "modelHelper.h"
+#include "runControllerImpl.h"
 
 using namespace std;
 using namespace openm;
@@ -57,8 +59,8 @@ void ChildController::init(void)
     msgExec->createGroups(groupDef.groupSize, groupDef.groupCount);
 
     // first subsample number and number of subsamples
-    subFirstNumber = groupDef.activeRank * threadCount;
-    selfSubCount = (groupDef.activeRank < groupDef.groupSize - 1) ? threadCount : subSampleCount - subFirstNumber;
+    subFirstNumber = groupDef.activeRank * groupDef.subPerProcess;
+    selfSubCount = groupDef.selfSubCount;
 
     if (subFirstNumber < 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
         throw ModelException(
@@ -153,7 +155,7 @@ void ChildController::writeAccumulators(
     for (auto & ap : io_accValues) {
         msgExec->startSend(
             IMsgExec::rootRank,
-            (MsgTag)(RunController::accMsgTag(i_runOpts.subSampleNumber, subSampleCount, accIndex)),
+            (MsgTag)(AccReceive::accMsgTag(i_runOpts.subSampleNumber, subSampleCount, accIndex)),
             typeid(double),
             i_size,
             ap.release()

@@ -159,6 +159,8 @@
     <ClInclude Include="include\modelRunState.h" />
     <ClInclude Include="include\msg.h" />
     <ClInclude Include="include\runController.h" />
+    <ClInclude Include="model\modelHelper.h" />
+    <ClInclude Include="model\runControllerImpl.h" />
     <ClInclude Include="msg\msgCommon.h" />
     <ClInclude Include="msg\msgEmpty.h" />
     <ClInclude Include="msg\msgExecBase.h" />
@@ -222,6 +224,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\childController.cpp" />
     <ClCompile Include="model\metaLoader.cpp" />
+    <ClCompile Include="model\modelHelper.cpp" />
     <ClCompile Include="model\restartController.cpp" />
     <ClCompile Include="model\modelBase.cpp" />
     <ClCompile Include="model\modelRunState.cpp" />

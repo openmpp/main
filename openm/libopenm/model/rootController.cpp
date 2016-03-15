@@ -7,6 +7,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "modelHelper.h"
+#include "runControllerImpl.h"
 
 using namespace std;
 using namespace openm;
@@ -111,7 +113,7 @@ void RootController::init(void)
     // basic validation: number of processes expected to be > 1
     if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
-    // if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
+    if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
 
     // create groups for parallel run of modeling task
     // "is root active": root may be used for modeling in last group
@@ -122,22 +124,17 @@ void RootController::init(void)
     msgExec->createGroups(rootGroupDef.groupSize, rootGroupDef.groupCount);
 
     for (int nGroup = 0; nGroup < rootGroupDef.groupCount; nGroup++) {
-        runGroupVec.push_back(RunGroup(1 + nGroup, subSampleCount, rootGroupDef));
+        runGroupLst.emplace_back(1 + nGroup, subSampleCount, rootGroupDef);
     }
 
     // first subsample number and number of subsamples
-    subFirstNumber = rootGroupDef.activeRank * threadCount;
-    selfSubCount = (rootGroupDef.activeRank < rootGroupDef.groupSize - 1) ? threadCount : subSampleCount - subFirstNumber;
+    subFirstNumber = 0;
+    selfSubCount = rootGroupDef.selfSubCount;
 
     if (subFirstNumber < 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
         throw ModelException(
             "Invalid first subsample number: %d or number of subsamples: %d", subFirstNumber, selfSubCount
             );
-
-    // adjust number of active processes: make root process dedicated to data exchange, if possible
-    //if (!groupDef.isRootActive) {
-    //    theModelRunState.updateStatus(ModelStatus::exit);
-    //}
 
     // broadcast metadata tables from root to all other processes
     broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
@@ -215,7 +212,7 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
 
     ModelStatus mStatus = theModelRunState.updateStatus(nowSetRun.state.status());  // update model status: progress, wait, shutdown
 
-    i_runGroup.nextRun(nowSetRun.runId, nowSetRun.setId, mStatus, subSampleCount);
+    i_runGroup.nextRun(nowSetRun.runId, nowSetRun.setId, mStatus);
 
     // broadcast metadata: run id and other run options from root to all other processes
     broadcastInt(i_runGroup.groupOne, msgExec, (int *)&mStatus);
@@ -244,7 +241,7 @@ bool RootController::childExchange(void)
     // find modeling groups where all subsamples completed and finalize run results
     bool isCompleted = false;
 
-    for (RunGroup & rg : runGroupVec) {
+    for (RunGroup & rg : runGroupLst) {
 
         // if root is "active" then skip root modeling group, it is done from main()
         if (rootGroupDef.isRootActive && rg.groupOne == rootRunGroup().groupOne) continue;
@@ -252,17 +249,10 @@ bool RootController::childExchange(void)
 
         // check if all run subsamples completed then finalize run completed in database
         if (rg.runId > 0) {
-
-            bool isAll = std::all_of(
-                rg.isSubDone.cbegin(),
-                rg.isSubDone.cend(),
-                [](bool i_isDone) -> bool { return i_isDone; }
-            );
-
-            if (isAll) {
+            if (rg.isSubDone.isAll()) {
                 isCompleted = true;
-                doShutdownRun(rg.runId, taskRunId, dbExec);  // run completed
-                rg.reset(subSampleCount);                    // group is ready for next run
+                doShutdownRun(rg.runId, taskRunId, dbExec); // run completed
+                rg.reset();                                 // group is ready for next run
             }
         }
     }
@@ -270,7 +260,7 @@ bool RootController::childExchange(void)
     // create new run and assign it to idle modeling group
     bool isNewRun = false;
 
-    for (RunGroup & rg : runGroupVec) {
+    for (RunGroup & rg : runGroupLst) {
 
         // if root is "active" then skip root modeling group, it is done from main()
         if (rootGroupDef.isRootActive && rg.groupOne == rootRunGroup().groupOne) continue;
@@ -305,7 +295,7 @@ void RootController::shutdownWaitAll(void)
         isAnyToRecv = std::any_of(
             accRecvLst.cbegin(),
             accRecvLst.cend(),
-            [](AccReceiveItem i_recv) -> bool { return !i_recv.isReceived; }
+            [](AccReceive i_recv) -> bool { return !i_recv.isReceived; }
         );
 
         // no data received: if any accumulators outstanding then sleep before try again
@@ -320,19 +310,14 @@ void RootController::shutdownWaitAll(void)
     int zeroRunId = 0;
     ModelStatus mStatus = ModelStatus::done;
 
-    for (RunGroup & rg : runGroupVec) {
+    for (RunGroup & rg : runGroupLst) {
 
         // skip if group already shutdown
         if (rg.state.isShutdownOrExit()) continue;
 
         // check if all run subsamples completed then finalize run completed in database
         if (rg.runId > 0) {
-            bool isAll = std::all_of(
-                rg.isSubDone.cbegin(),
-                rg.isSubDone.cend(),
-                [](bool i_isDone) -> bool { return i_isDone; }
-            );
-            if (isAll) doShutdownRun(rg.runId, taskRunId, dbExec);  // run completed
+            if (rg.isSubDone.isAll()) doShutdownRun(rg.runId, taskRunId, dbExec);  // run completed
         }
 
         // send "done" to the group and update group final status
@@ -356,7 +341,7 @@ void RootController::shutdownRun(int i_runId)
         isAnyToRecv = std::any_of(
             accRecvLst.cbegin(),
             accRecvLst.cend(),
-            [i_runId](AccReceiveItem i_recv) -> bool { return i_recv.runId == i_runId && !i_recv.isReceived; }
+            [i_runId](AccReceive i_recv) -> bool { return i_recv.runId == i_runId && !i_recv.isReceived; }
         );
 
         // no data received: if any accumulators outstanding then sleep before try again
@@ -369,7 +354,7 @@ void RootController::shutdownRun(int i_runId)
 
     // run completed
     doShutdownRun(i_runId, taskRunId, dbExec);
-    rootRunGroup().reset(subSampleCount);
+    rootRunGroup().reset();
 }
 
 // append to list of accumulators to be received from child modeling processes
@@ -389,11 +374,11 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
 
         for (int nSub = 0; nSub < subSampleCount; nSub++) {
 
-            int nRank = i_runGroup.rankBySubsampleNumber(nSub, subSampleCount, rootGroupDef.groupSize);
+            int nRank = i_runGroup.rankBySubsampleNumber(nSub);
             if (nRank == msgExec->rootRank) continue;
 
             accRecvLst.push_back(
-                AccReceiveItem(i_runId, nSub, subSampleCount, nRank, tblId, accVec[nAcc].accId, nAcc, valCount)
+                AccReceive(i_runId, nSub, subSampleCount, nRank, tblId, accVec[nAcc].accId, nAcc, valCount)
                 );
         }
     }
@@ -468,8 +453,8 @@ void RootController::writeAccumulators(
 
     // if all accumulators of subsample completed then update restart subsample number
     if (i_isLastTable) {
-        rootRunGroup().isSubDone[i_runOpts.subSampleNumber] = true;        // mark that subsample as completed
-        updateRestartSubsample(rootRunGroup().runId, dbExec, rootRunGroup().isSubDone);
+        rootRunGroup().isSubDone.setAt(i_runOpts.subSampleNumber);      // mark that subsample as completed
+        updateRestartSubsample(rootRunGroup().runId, dbExec, rootRunGroup().isSubDone.countFirst());
     }
 }
 
@@ -482,7 +467,7 @@ bool RootController::receiveSubSamples(void)
     // try to receive and save accumulators
     bool isAnyReceived = false;
 
-    for (AccReceiveItem & accRecv : accRecvLst) {
+    for (AccReceive & accRecv : accRecvLst) {
 
         if (!accRecv.isReceived) {      // if accumulator not yet received
 
@@ -538,7 +523,7 @@ void RootController::updateAccReceiveList(void)
     };
     vector<RunSubDone> rsdVec;
 
-    for (AccReceiveItem & accRecv : accRecvLst) {
+    for (AccReceive & accRecv : accRecvLst) {
 
         auto rsd = find_if(
             rsdVec.begin(),
@@ -555,7 +540,7 @@ void RootController::updateAccReceiveList(void)
     }
 
     // update modeling groups "subsample done" status
-    for (RunGroup & rg : runGroupVec) {
+    for (RunGroup & rg : runGroupLst) {
 
         // for each subsample of that run check if all accumulators received
         bool isAny = false;
@@ -569,17 +554,17 @@ void RootController::updateAccReceiveList(void)
             );
 
             if (rsd != rsdVec.end() && rsd->isDone) {
-                rg.isSubDone[rsd->subNumber] = true;    // "done" for that subsample of that run id
+                rg.isSubDone.setAt(rsd->subNumber);     // "done" for that subsample of that run id
                 isAny = true;
             }
         }
 
         // if any changes in subsample "done" status then update restart subsample in database
         if (isAny) {
-            updateRestartSubsample(rg.runId, dbExec, rg.isSubDone);
+            updateRestartSubsample(rg.runId, dbExec, rg.isSubDone.countFirst());
         }
     }
 
     // remove accumulators which received from the list
-    accRecvLst.remove_if([](AccReceiveItem i_recv) -> bool { return i_recv.isReceived; });
+    accRecvLst.remove_if([](AccReceive i_recv) -> bool { return i_recv.isReceived; });
 }

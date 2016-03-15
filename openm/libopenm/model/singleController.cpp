@@ -7,6 +7,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "modelHelper.h"
+#include "runControllerImpl.h"
 
 using namespace std;
 using namespace openm;
@@ -95,6 +97,7 @@ void SingleController::init(void)
     // all subsamples calculated at current process
     subFirstNumber = 0;
     selfSubCount = subSampleCount;
+    isSubDone.init(subSampleCount);
 
     // if this is modeling task then find it in database
     // and create task run entry in database
@@ -159,7 +162,7 @@ int SingleController::nextRun(void)
     }
 
     // reset write status for subsamples
-    isSubDone.assign(subSampleCount, false);
+    isSubDone.reset();
 
     return nowSetRun.runId;
 }
@@ -209,8 +212,8 @@ void SingleController::writeAccumulators(
 
     // if all accumulators of subsample completed then update restart subsample number
     if (i_isLastTable) {
-        isSubDone[i_runOpts.subSampleNumber] = true;        // mark that subsample as completed
-        updateRestartSubsample(nowSetRun.runId, dbExec, isSubDone);
+        isSubDone.setAt(i_runOpts.subSampleNumber);     // mark that subsample as completed
+        updateRestartSubsample(nowSetRun.runId, dbExec, isSubDone.countFirst());
     }
 }
 

@@ -7,6 +7,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "modelHelper.h"
+#include "runControllerImpl.h"
 
 using namespace std;
 using namespace openm;
@@ -77,6 +79,8 @@ void RestartController::init(void)
     // basic validation: only single process allowed for "restart run"
     if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
+
+    isSubDone.init(subSampleCount);     // reset write status for subsamples
 }
 
 /** restart existing model run.
@@ -143,9 +147,9 @@ int RestartController::nextRun(void)
     }
 
     // reset write status for subsamples and set for subsamples below restart
-    isSubDone.assign(subSampleCount, false);
+    isSubDone.init(subSampleCount);
     for (int k = 0; k < subFirstNumber; k++) {
-        isSubDone[k] = true;
+        isSubDone.setAt(k);
     }
 
     return runId;
@@ -271,7 +275,7 @@ void RestartController::writeAccumulators(
 
     // if all accumulators of subsample completed then update restart subsample number
     if (i_isLastTable) {
-        isSubDone[i_runOpts.subSampleNumber] = true;        // mark that subsample as completed
-        updateRestartSubsample(runId, dbExec, isSubDone);
+        isSubDone.setAt(i_runOpts.subSampleNumber);     // mark that subsample as completed
+        updateRestartSubsample(runId, dbExec, isSubDone.countFirst());
     }
 }

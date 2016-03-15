@@ -65,6 +65,7 @@ namespace openm
         static ModelStatus fromRunStatus(const string & i_runStatus);
 
     private:
+        recursive_mutex theMutex;                       // mutex to lock status upadte operations
         ModelStatus theStatus;                          // current status
         int progressCount;                              // progress count
         chrono::system_clock::time_point startTime;     // process start time

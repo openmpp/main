@@ -129,6 +129,12 @@
     <ClInclude Include="include\runController.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="model\modelHelper.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\runControllerImpl.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -327,6 +333,9 @@
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="model\singleController.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\modelHelper.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
   </ItemGroup>
