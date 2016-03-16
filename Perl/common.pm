@@ -91,13 +91,6 @@ if (!defined(which($sqlite3_exe))) {
 	$sqlite3_exe = 'sqlite3.exe';
 }
 if (!defined(which($sqlite3_exe))) {
-	# Try absolute path to Linux executable in ompp bin relative to this script location.
-	$sqlite3_exe = File::Spec->catfile(dirname($0), "../bin/sqlite3");
-	if (-e $sqlite3_exe) {
-		$sqlite3_exe = abs_path($sqlite3_exe);
-	}
-}
-if (!defined(which($sqlite3_exe))) {
 	# Try absolute path to Windows executable in ompp bin relative to this script location.
 	$sqlite3_exe = File::Spec->catfile(dirname($0), "../bin/sqlite3.exe");
 	if (-e $sqlite3_exe) {
@@ -107,6 +100,13 @@ if (!defined(which($sqlite3_exe))) {
 if (!defined(which($sqlite3_exe))) {
 	# Look in bin subdir of OM_ROOT for Windows executable.
 	$sqlite3_exe = File::Spec->catfile(dirname($0), "%OM_ROOT%/bin/sqlite3.exe");
+	if (-e $sqlite3_exe) {
+		$sqlite3_exe = abs_path($sqlite3_exe);
+	}
+}
+if (!defined(which($sqlite3_exe))) {
+	# Try absolute path to Linux executable in ompp bin relative to this script location.
+	$sqlite3_exe = File::Spec->catfile(dirname($0), "../bin/sqlite3");
 	if (-e $sqlite3_exe) {
 		$sqlite3_exe = abs_path($sqlite3_exe);
 	}
