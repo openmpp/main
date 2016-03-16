@@ -4,6 +4,7 @@
 /*/ompp/bin/
 /*/ompp/build/
 /*/ompp/src/
+/*/test_models/
 *.vcxproj.user
 *.suo
 *.sdf
