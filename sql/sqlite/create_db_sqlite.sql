@@ -511,14 +511,18 @@ CREATE TABLE run_option
 );
 
 --
--- Working set (workset): 
---   working set is a full set or subset of values for model input parameters
---   if this is a subset (not a full set) then it must be based on specified run id (not NULL)
--- each model must have "default" workset
+-- Workset (working set of model parameters):
+--   it can be a full set, which include all model parameters 
+--   or subset and include only some parameters
+-- each model must have "default" workset:
 --   default workset must include ALL model parameters (it is a full set)
---   default workset is where set_id = min(set_id) for that model
--- working set id must be different from run id (use id_lst to get it)
--- working set can be editable or read-only
+--   default workset is a first workset of the model: set_id = min(set_id)
+-- if workset is a subset (does not include all model parameters)
+--   then it must be based on model run results, specified by run_id (not NULL)
+-- workset can be editable or read-only
+--   if workset is editable then you can modify input parameters or workset description, notes, etc.
+--   if workset is read-only then you can run the model using that workset as input
+-- Important: working set_id must be different from run_id (use id_lst to get it)
 -- Important: always update parameter values inside of transaction scope
 -- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
 --
