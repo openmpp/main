@@ -11,7 +11,7 @@ library("openMpp")
 # To run this example please uncomment and/or change values below
 # to match your hardware and file system environment:
 #
-# model_exe    <- path to the model executable, i.e.: "./NewCaseBased"
+# model_exe    <- path to the model executable, i.e.: "./NewCaseBased" or "NewCaseBased.exe"
 # model_sqlite <- path to the model.sqlite database:  "NewCaseBased.sqlite"
 # model_args   <- optional arguments to control model run, for example:
 #       -General.Subsamples 16 <- number of simation members
@@ -77,7 +77,7 @@ paramSetTxt <- data.frame(
 # connect to database and create new working set of model parameters
 #
 theDb <- dbConnect(RSQLite::SQLite(), model_sqlite, synchronous = "full")
-invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
+invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))   # recommended
 
 defRs <- getModel(theDb, "NewCaseBased")      # find NewCaseBased model in database
 

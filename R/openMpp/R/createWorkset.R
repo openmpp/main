@@ -147,7 +147,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
   if (length(wsParamLst) > 0 && !validateParameterValueLst(defRs$langLst, TRUE, wsParamLst)) return(0L)
 
   # validate workset text
-  isAnyWsTxt <- validateWorksetTxt(defRs$langLst, worksetTxt)
+  isAnyWsTxt <- validateTxtFrame("workset text", defRs$langLst, worksetTxt)
 
   # check if supplied parameters are in model: parameter_name in parameter_dic table
   # if all parameters required then check if ALL parameters supplied
@@ -203,7 +203,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       )
     )
     
-    # insert workset text rows where laguage and description non-mpty
+    # insert workset text rows where laguage and description non-empty
     if (isAnyWsTxt) {
       sqlInsTxt <-
         paste(

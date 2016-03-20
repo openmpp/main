@@ -40,7 +40,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 amc1999
 }
 \note{
-To run examples you must have modelOne database modelOne.sqlite in your home directory
+To run examples you must have modelOne database modelOne.sqlite in current directory
 }
 
 \seealso{
@@ -53,8 +53,8 @@ To run examples you must have modelOne database modelOne.sqlite in your home dir
   #
   # connect to database
   #
-  theDb <- dbConnect("SQLite", "~/modelOne.sqlite", synchronous = 2)
-  invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
+  theDb <- dbConnect(RSQLite::SQLite(), "modelOne.sqlite", synchronous = "full")
+  invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400")) # recommended
   
   # get definition for "modelOne" model
   #

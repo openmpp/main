@@ -171,49 +171,6 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
 # 
 # For internal use only
 #
-# Validate workset text parameter
-#   stop if invalid, return FALSE if empty, return TRUE if any data
-#
-# i_langRs - lang_lst table rows
-# i_wsTxt - (optional) workset text data frame:
-#   $name  - working set name
-#   $lang  - language code
-#   $descr - working set description
-#   $note  - (optional) working set notes
-#
-validateWorksetTxt <- function(i_langRs, i_wsTxt)
-{
-  # validate data frame itself, exit if empty
-  if (missing(i_wsTxt)) return(FALSE)
-  if (is.null(i_wsTxt) || is.na(i_wsTxt)) return(FALSE)
-  if (!is.data.frame(i_wsTxt)) stop("workset text must be a data frame")
-  if (nrow(i_wsTxt) <= 0L) return(FALSE)
-  
-  # workset text must have $name, $lang, $descr, $note column
-  if (is.null(i_wsTxt$"name") || is.null(i_wsTxt$"lang") || 
-      is.null(i_wsTxt$"descr") || is.null(i_wsTxt$"note")) {
-    stop("workset text must have $name, $lang, $descr, $note columns")
-  }
-  
-  # workset text language code must NOT NULL and in the lang_lst table
-  if (any(is.na(i_wsTxt$"lang"))) {
-    stop("workset text must have $lang NOT NULL")
-  }
-  if (!all(i_wsTxt$"lang" %in% i_langRs$lang_code)) {
-    stop("invalid (or empty) language of workset text")
-  }
-
-  # workset description must NOT NULL
-  if (any(is.na(i_wsTxt$"descr"))) {
-    stop("workset text must have $descr NOT NULL")
-  }
-  
-  return(TRUE)  # valid and not empty
-}
-
-# 
-# For internal use only
-#
 # Validate list of workset parameters
 #   stop if invalid, return FALSE if empty, return TRUE if any data
 #

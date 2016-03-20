@@ -1,14 +1,16 @@
-# it should be generic import(DBI)
+import(DBI)
 import(RSQLite)
 
 export(
+  createTask,
   createWorkset,
   createWorksetBasedOnRun,
   copyWorksetParameterFromRun,
+  getDefaultWorksetId,
   getFirstRunId,
   getLanguages,
   getModel,
-  getDefaultWorksetId,
+  getTaskIdByName,
   getWorksetIdByName,
   getWorksetRunIds,
   selectRunAccumulator,
@@ -16,6 +18,7 @@ export(
   selectRunParameter,
   setReadonlyDefaultWorkset,
   setReadonlyWorkset,
-  toQuoted,
-  updateWorksetParameter
+  updateTask,
+  updateWorksetParameter,
+  toQuoted
 )

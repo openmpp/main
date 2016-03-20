@@ -4,25 +4,21 @@
 ##
 
 # 
-# Update parameters working set with new values and value notes
+# Copy parameters to working set from existing model run results 
+# and (optional) add value notes
 #   return set id of updated workset or 0 on error
 #
 # dbCon     - database connection
 # defRs     - model definition database rows
 # worksetId - id of parameters working set
-# ...       - list of parameters value and (optional) value notes
-#   each element is also a list of $name, $value and $txt
-#   $name - parameter name (character)
-#   $value - parameter value
-#     it can be scalar value, vector or data frame
-#     size of $value must be equal to production of dimension sizes
-#     if data frame then 
-#       it must have $dim0, $dim1,..., $value columns
-#       and each column length is equal to production of dimension sizes
-#   $txt - (optional) workset parameter text:
+# baseRunId - id of model run results
+# ...       - list of parameters and (optional) value notes
+#   each element is also a list of $name and $txt
+#   $name  - parameter name (character)
+#   $txt   - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
+copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -34,13 +30,31 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
   if (missing(worksetId)) stop("invalid (missing) workset id")
   if (is.null(worksetId) || is.na(worksetId) || !is.integer(worksetId)) stop("invalid or empty workset id")
   if (worksetId <= 0L) stop("workset id must be positive: ", worksetId)
-
+  
+  if (missing(baseRunId)) stop("invalid (missing) base run id")
+  if (is.null(baseRunId)) stop("invalid (missing) base run id")
+  if (is.na(baseRunId) || !is.integer(baseRunId) || baseRunId <= 0L) {
+    stop("invalid (missing) base run id: ", baseRunId)
+  }
+  
   # get list of languages and validate parameters data
   wsParamLst <- list(...)
   if (length(wsParamLst) <= 0) stop("invalid (missing) workset parameters list")
-
+  
   if (!validateParameterValueLst(defRs$langLst, FALSE, wsParamLst)) return(0L)
-
+  
+  # check if base run id is belong to the model
+  runRs <- dbGetQuery(
+    dbCon, 
+    paste(
+      "SELECT run_id, model_id FROM run_lst WHERE run_id = ", baseRunId,
+      sep = ""
+    )
+  )
+  if (nrow(runRs) != 1L || runRs$model_id != defRs$modelDic$model_id) {
+    stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  }
+  
   # execute in transaction scope
   isTrxCompleted <- FALSE;
   tryCatch({
@@ -53,7 +67,7 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
     }
     
     # check if supplied parameters are in model: parameter_name in parameter_dic table
-    # check if supplied parameters are in workset: parameter_id in workset_parameter table
+    # check if supplied parameters are not in workset: parameter_id in workset_parameter table
     setParamRs <- dbGetQuery(
       dbCon, 
       paste(
@@ -70,13 +84,13 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
       
       paramRow <- defRs$paramDic[which(defRs$paramDic$parameter_name == wsParam$name), ]
       
-      if (!paramRow$parameter_id %in% setParamRs$parameter_id) {
-        stop("parameter is not in workset: ", wsParam$name)
+      if (paramRow$parameter_id %in% setParamRs$parameter_id) {
+        stop("parameter already in workset: ", wsParam$name)
       }
     }
 
     #
-    # update parameters value and value notes
+    # copy parameters value and update value notes
     #
     for (wsParam in wsParamLst) {
       
@@ -116,9 +130,44 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)
       )
       
-      # update parameter value
-      updateWorksetParameterValue(dbCon, paramDef, wsParam$value)
-
+      # add parameter into workset
+      dbGetQuery(
+        dbCon, 
+        paste(
+          "INSERT INTO workset_parameter (set_id, model_id, parameter_id)",
+          " VALUES (",
+          worksetId, ", ",
+          defRs$modelDic$model_id, ", ",
+          paramRow$parameter_id,
+          " )",
+          sep = ""
+        )
+      )
+      
+      # copy parameter values from run results table into workset table
+      nameCs <- ifelse(
+        paramRow$parameter_rank > 0, 
+        paste(paste(paramDef$dims$name, sep = "", collapse = ", "), ", ", sep = ""),
+        ""
+      )
+      
+      dbGetQuery(
+        dbCon, 
+        paste(
+          "INSERT INTO ", paramDef$paramTableName, 
+          " (set_id, ", nameCs, " value)",
+          " SELECT ", 
+          worksetId, ", ", nameCs, " value",
+          " FROM ", 
+            paste(
+              defRs$modelDic$model_prefix, defRs$modelDic$parameter_prefix, paramRow$db_name_suffix, 
+              sep = ""
+            ), 
+          " WHERE run_id = ", baseRunId,
+          sep = ""
+        )
+      )
+      
       # if parameter value notes not empty then update value notes
       if (!is.null(wsParam$txt)) {
         updateWorksetParameterTxt(dbCon, paramDef, wsParam$txt)

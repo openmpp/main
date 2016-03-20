@@ -17,7 +17,7 @@ library("openMpp")
 # To run this example please uncomment and/or change values below
 # to match your hardware and file system environment:
 #
-# model_exe    <- path to the model executable, i.e.: "./RiskPaths"
+# model_exe    <- path to the model executable, i.e.: "./RiskPaths" or "RiskPaths.exe"
 # model_sqlite <- path to the model.sqlite database:  "RiskPaths.sqlite"
 # model_args   <- optional arguments to control model run, for example:
 #       -General.Subsamples 8 <- number of simation members
@@ -51,7 +51,7 @@ model_args = " "  # default: 1 simulation member and 1 thread
 # connect to database to model databes
 #
 theDb <- dbConnect(RSQLite::SQLite(), model_sqlite, synchronous = "full")
-invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))
+invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))   # recommended
 
 defRs <- getModel(theDb, "RiskPaths")       # find RiskPaths model in database
 
