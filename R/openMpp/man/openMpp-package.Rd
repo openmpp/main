@@ -35,6 +35,15 @@ License: \tab MIT license\cr
     \item{getFirstRunId}{
       Return id of first model run results
     }
+    \item{getLastRunId}{
+      Return id of last model run results
+    }
+    \item{getTaskFirstRunId}{
+      Return first id of modeling task run
+    }
+    \item{getTaskLastRunId}{
+      Return last id of modeling task run
+    }
     \item{getLanguages}{
       Return language rows from lang_lst table
     }
@@ -58,6 +67,18 @@ License: \tab MIT license\cr
     }
     \item{selectRunParameter}{
       Select parameter values from model run result
+    }
+    \item{selectTask}{
+      Select modeling task text (name, description, notes) and input workset id's
+    }
+    \item{selectTaskList}{
+      Select list of modeling tasks for the model
+    }
+    \item{selectTaskRun}{
+      Select modeling task run: status and results
+    }
+    \item{selectTaskRunList}{
+      Select list of modeling task runs
     }
     \item{setReadonlyDefaultWorkset}{
       Set or clear read-only status of default working set
@@ -91,14 +112,23 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
   \code{\link{createWorkset}}
   \code{\link{createWorksetBasedOnRun}}
   \code{\link{copyWorksetParameterFromRun}}
+  \code{\link{getDefaultWorksetId}}
+  \code{\link{getFirstRunId}}
+  \code{\link{getLastRunId}}
   \code{\link{getLanguages}}
   \code{\link{getModel}}
   \code{\link{getTaskIdByName}}
+  \code{\link{getTaskFirstRunId}}
+  \code{\link{getTaskLastRunId}}
   \code{\link{getWorksetIdByName}}
   \code{\link{getWorksetRunIds}}
   \code{\link{selectRunAccumulator}}
   \code{\link{selectRunOutputValue}}
   \code{\link{selectRunParameter}}
+  \code{\link{selectTask}}
+  \code{\link{selectTaskList}}
+  \code{\link{selectTaskRun}}
+  \code{\link{selectTaskRunList}}
   \code{\link{setReadonlyDefaultWorkset}}
   \code{\link{setReadonlyWorkset}}
   \code{\link{updateTask}}

@@ -34,6 +34,10 @@ defRs <- getModel(theDb, "modelOne", "_201208171604590148_")
 #
 runId <- getFirstRunId(theDb, defRs)
 
+# get model last (mot recent) run id, positive integer expected
+lastRunId <- getLastRunId(theDb, defRs)
+if (lastRunId <= 0L) stop("model run(s) not found: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+
 # select output table expression(s) values of "salarySex" from model run results
 #  
 salarySex_expr2Rs <- selectRunOutputValue(theDb, defRs, runId, "salarySex", "expr2")
@@ -241,11 +245,6 @@ if (taskId <= 0L) stop("task: ", taskName, " not found for model: ", defRs$model
 taskId <- getTaskIdByName(theDb, NA, taskName)
 if (taskId <= 0L) stop("task not found by name: ", taskName)
 
-# update task with additional input worksets set_id = c(2, 4)
-# it is most likely does nothing because task already contains those worksets
-taskId <- updateTask(theDb, defRs, taskId, setIds = c(2, 4))
-if (taskId <= 0L) stop("task update failed, id: ", taskId, ", ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
-
 # 
 # create new modeling task
 #
@@ -260,6 +259,37 @@ myTaskTxt <- data.frame(
 # create new task, initially empty
 taskId <- createTask(theDb, defRs, myTaskTxt, c(2, 4))
 if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+
+# update task with additional input worksets set_id = c(2, 4)
+# it is does nothing because task already contains those worksets
+taskId <- updateTask(theDb, defRs, taskId, setIds = c(2, 4))
+if (taskId <= 0L) stop("task update failed, id: ", taskId, ", ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+
+#
+# select list of modeling tasks and task run(s)
+#
+taskName <- "taskOne"
+taskId <- getTaskIdByName(theDb, defRs, taskName)
+
+firstId <- getTaskFirstRunId(theDb, taskId)
+if (firstId <= 0L) stop("task run(s) not found, task: ", taskId, " ", taskName)
+
+lastId <- getTaskLastRunId(theDb, taskId)
+if (lastId <= 0L) stop("task run(s) not found, task: ", taskId, " ", taskName)
+
+# select task name, description and input list
+taskId <- getTaskIdByName(theDb, defRs, "taskOne")
+
+taskRs <- selectTask(theDb, taskId)
+
+# select list of all tasks for the model
+taskLstRs <- selectTaskList(theDb, defRs)
+
+# select task run status, input and output
+taskRunRs <- selectTaskRun(theDb, lastId)
+
+# select list of all task runs
+taskRunLstRs <- selectTaskRunList(theDb, taskId)
 
 #
 # all done: release database connection

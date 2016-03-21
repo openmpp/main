@@ -18,7 +18,7 @@ getFirstRunId(dbCon, defRs)
   }
 }
 \details{
-Return first model run results id and it is positive integer.
+Return id of first model run results id, it is positive integer.
 If model does not have any run results (model never executed) then return negative value.
 }
 \value{
@@ -35,8 +35,9 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 }
 
 \seealso{
+  \code{\link{getLastRunId}}
   \code{\link{getModel}}
-  \code{\link{getWorksetRunIds}}
+  \code{\link{getTaskIdByName}}
 }
 \examples{
   theDb <- dbConnect(RSQLite::SQLite(), "modelOne.sqlite", synchronous = "full")
@@ -47,7 +48,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 
   # get first run id of that model
   runId <- getFirstRunId(theDb, defRs)
-  if (runId <= 0L) warning("model run results not found: ", "myData")
+  if (runId <= 0L) warning("model run results not found")
 
   dbDisconnect(theDb)
 }

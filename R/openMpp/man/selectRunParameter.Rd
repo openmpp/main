@@ -46,6 +46,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 \seealso{
   \code{\link{getModel}}
   \code{\link{getFirstRunId}}
+  \code{\link{getLastRunId}}
   \code{\link{selectRunAccumulator}}
   \code{\link{selectRunOutputValue}}
 }
@@ -64,10 +65,12 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   #
   defRs <- getModel(theDb, "modelOne")
   
-  # select parameter "ageSex" value from model run results with id = 11L
-  #  
-  runId <- 11L
+  # get first run id of that model
+  runId <- getFirstRunId(theDb, defRs)
+  if (runId <= 0L) stop("model run results not found")
   
+  # select parameter "ageSex" value from model run results
+  #  
   paramValueRs <- selectRunParameter(theDb, defRs, runId, "ageSex")
   
   dbDisconnect(theDb)

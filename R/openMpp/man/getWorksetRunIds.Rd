@@ -44,6 +44,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   \code{\link{createTask}}
   \code{\link{getModel}}
   \code{\link{getFirstRunId}}
+  \code{\link{getLastRunId}}
   \code{\link{getDefaultWorksetId}}
   \code{\link{getWorksetIdByName}}
   \code{\link{selectRunParameter}}

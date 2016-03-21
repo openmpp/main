@@ -1,13 +1,13 @@
-\name{getDefaultWorksetId}
-\alias{getDefaultWorksetId}
+\name{getLastRunId}
+\alias{getLastRunId}
 \title{
-Return default working set id
+Return id of last model run results
 }
 \description{
-Return default working set id for the model
+Return id of last model run results
 }
 \usage{
-getDefaultWorksetId(dbCon, defRs)
+getLastRunId(dbCon, defRs)
 }
 \arguments{
   \item{dbCon}{
@@ -18,15 +18,11 @@ getDefaultWorksetId(dbCon, defRs)
   }
 }
 \details{
-Return id of model "default" working set of parameters. 
-
-If model have no default working set then execution stops.
-
-Each model must have "default" workset. 
-Default workset is a first workset of the model with set_id = min(set_id) for that model. 
+Return last (most recent) id of model run results, it is positive integer.
+If model does not have any run results (model never executed) then return negative value.
 }
 \value{
-  Working set id: positive integer on success or negative on error. Stop if not found.
+  Run id: positive integer on success or negative on if not found.
 }
 \references{
 OpenM++ documentation: http://ompp.sourceforge.net/wiki/
@@ -39,10 +35,8 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 }
 
 \seealso{
-  \code{\link{getModel}}
   \code{\link{getFirstRunId}}
-  \code{\link{getLastRunId}}
-  \code{\link{getWorksetIdByName}}
+  \code{\link{getModel}}
   \code{\link{getWorksetRunIds}}
 }
 \examples{
@@ -52,12 +46,9 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   # get model by name: use such call if you have only one version of the model
   defRs <- getModel(theDb, "modelOne")
 
-  # get default working set id by name, it expected to be exist
-  setId <- getDefaultWorksetId(theDb, defRs)
-  
-  # try to find "myData" working set id
-  setId <- getWorksetIdByName(theDb, defRs, "myData")
-  if (setId <= 0L) warning("workset not found: ", "myData")
+  # get first run id of that model
+  runId <- getLastRunId(theDb, defRs)
+  if (runId <= 0L) warning("model run results not found")
 
   dbDisconnect(theDb)
 }

@@ -54,6 +54,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 \seealso{
   \code{\link{getModel}}
   \code{\link{getFirstRunId}}
+  \code{\link{getLastRunId}}
   \code{\link{selectRunAccumulator}}
   \code{\link{selectRunParameter}}
 }
@@ -72,10 +73,12 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   #
   defRs <- getModel(theDb, "modelOne")
   
-  # select output table expression(s) value of "salarySex" from model run results with id = 11L
-  #  
-  runId <- 11L
+  # get first run id of that model
+  runId <- getFirstRunId(theDb, defRs)
+  if (runId <= 0L) stop("model run results not found")
   
+  # select output table expression(s) value of "salarySex" from model run results
+  #  
   expr2_ValueRs <- selectRunOutputValue(theDb, defRs, runId, "salarySex", "expr2")
   allExprValueRs <- selectRunOutputValue(theDb, defRs, runId, "salarySex")
   

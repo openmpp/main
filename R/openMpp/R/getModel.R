@@ -20,8 +20,8 @@
 #   $tableAcc  - table_acc rows of the model
 #   $tableExpr - table_expr rows of the model
 #
-# dbCon - database connection
-# modelName - model name, ie: "modelOne"
+# dbCon          - database connection
+# modelName      - model name, ie: "modelOne"
 # modelTimestamp - model timestamp, ie: "_201208171604590148_"
 #
 getModel <- function(dbCon, modelName, modelTimestamp = NA) 
