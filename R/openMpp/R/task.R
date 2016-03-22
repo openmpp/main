@@ -76,7 +76,7 @@ createTask <- function(dbCon, defRs, taskTxt = NA, setIds = NA)
 #   update task text (name, description, notes)
 #   insert additional workset ids as task input
 #
-# Return task id of new task or <= 0 on error
+# Return task id task or <= 0 on error
 #
 # dbCon    - database connection
 # defRs    - model definition database rows
@@ -101,6 +101,8 @@ updateTask <- function(dbCon, defRs, taskId, taskTxt = NA, setIds = NA)
   
   if (missing(defRs)) stop("invalid (missing) model definition")
   if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
+  
+  if (missing(taskId) || is.null(taskId) || !is.numeric(taskId)) stop("invalid or empty modeling task id")
   
   # update existing task in transaction scope
   isTrxCompleted <- FALSE;
@@ -129,4 +131,49 @@ updateTask <- function(dbCon, defRs, taskId, taskTxt = NA, setIds = NA)
     ifelse(isTrxCompleted, dbCommit(dbCon), dbRollback(dbCon))
   })
   return(ifelse(isTrxCompleted, taskId, 0L))
+}
+
+# 
+# Set modeling task "wait completed" status
+#
+# Return task run id or <= 0 on error
+#
+# dbCon           - database connection
+# taskRunId       - id of modeling task
+# isWaitCompleted - if TRUE then task ready to be completed
+#
+setTaskWaitCompleted <- function(dbCon, taskRunId, isWaitCompleted = FALSE)
+{
+  # validate input parameters
+  if (missing(dbCon)) stop("invalid (missing) database connection")
+  if (is.null(dbCon) || !is(dbCon, "DBIConnection")) stop("invalid database connection")
+  
+  if (missing(taskRunId) || is.null(taskRunId) || !is.numeric(taskRunId)) stop("invalid or empty task run id")
+  
+  # update task in transaction scope
+  isTrxCompleted <- FALSE;
+  
+  tryCatch({
+    dbBegin(dbCon)
+    
+    # check if task exist
+    dbGetQuery(dbCon, 
+      paste(
+        "UPDATE task_run_lst", 
+        " SET status = CASE",
+        " WHEN status = 'w' THEN ", ifelse(isWaitCompleted, "'p'", "'w'"),
+        " ELSE status",
+        " END,",
+        " update_dt = ", toQuoted(format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+        " WHERE task_run_id = ", taskRunId, 
+        sep = ""
+      )
+    )
+
+    isTrxCompleted <- TRUE; # completed OK
+  },
+  finally = {
+    ifelse(isTrxCompleted, dbCommit(dbCon), dbRollback(dbCon))
+  })
+  return(ifelse(isTrxCompleted, taskRunId, 0L))
 }

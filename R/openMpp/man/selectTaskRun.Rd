@@ -19,6 +19,21 @@ selectTaskRun(dbCon, taskRunId)
 }
 \details{
 This call return task run status, time and id's of input working sets and output results.
+
+Task run status can be one of:
+\itemize{
+  \item \code{i} = not yet started
+  \item \code{p} = run in progress
+  \item \code{w} = run in progress, wait for additional input
+  \item \code{s} = completed successfully
+  \item \code{e} = failed (error)
+  \item \code{x} = reserved
+}
+  
+Status \code{w} means task can be dynamically updated by external script.
+Model executable is waiting for additional input into or for "ready to be completed" signal.
+Use \code{setTaskWaitCompleted} function to mark task as "ready to be completed".
+Use \code{updateTask} function to insert additional task input.
 }
 \value{
   List of database rows:
@@ -43,6 +58,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   \code{\link{selectTask}}
   \code{\link{selectTaskList}}
   \code{\link{selectTaskRunList}}
+  \code{\link{setTaskWaitCompleted}}
 }
 \examples{
   #

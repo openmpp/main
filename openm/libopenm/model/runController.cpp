@@ -202,6 +202,14 @@ void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExe
             );
     }
 
+    // append working set id, if not explictly specified
+    if (!argOpts().isOptionExist(RunOptionsKey::setId)) {
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " SELECT " + to_string(i_runId) + ", " + toQuoted(RunOptionsKey::setId) + ", set_id" + 
+            " FROM workset_lst WHERE set_id = " + to_string(i_setId)
+            );
+    }
     // append working set name, if not explictly specified
     if (!argOpts().isOptionExist(RunOptionsKey::setName)) {
         i_dbExec->update(

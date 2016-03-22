@@ -131,9 +131,8 @@ updateTaskSetIds <- function(dbCon, i_taskId, i_setIds = NA)
   )
   
   idRs <- dbFetch(res, 10)
-  if (nrow(idRs) > 0L) stop("invalid (non-existing) workset id's (up to first 10): ", paste(idRs$set_id, collapse = ", "))
-
   dbClearResult(res)
+  if (nrow(idRs) > 0L) stop("invalid (non-existing) workset id's (up to first 10): ", paste(idRs$set_id, collapse = ", "))
 
   #
   # append workset into task_set if not already exists

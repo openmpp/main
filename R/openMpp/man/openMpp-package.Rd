@@ -12,8 +12,8 @@ Read and write OpenM++ database from R
 \tabular{ll}{
 Package: \tab openMpp\cr
 Type: \tab Package\cr
-Version: \tab 0.6\cr
-Date: \tab 2014-09-17\cr
+Version: \tab 0.7\cr
+Date: \tab 2016-03-22\cr
 License: \tab MIT license\cr
 }
   \describe{
@@ -86,6 +86,9 @@ License: \tab MIT license\cr
     \item{setReadonlyWorkset}{
       Set or clear read-only status for default working set of model parameters
     }
+    \item{setTaskWaitCompleted}{
+      Set modeling task "wait completed" status
+    }
     \item{updateTask}{
       Update modeling task with new text (name, description, notes) or additional input working sets
     }
@@ -131,6 +134,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
   \code{\link{selectTaskRunList}}
   \code{\link{setReadonlyDefaultWorkset}}
   \code{\link{setReadonlyWorkset}}
+  \code{\link{setTaskWaitCompleted}}
   \code{\link{updateTask}}
   \code{\link{updateWorksetParameter}}
   \code{\link{toQuoted}}

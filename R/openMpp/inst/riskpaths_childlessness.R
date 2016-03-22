@@ -57,46 +57,46 @@ defRs <- getModel(theDb, "RiskPaths")       # find RiskPaths model in database
 
 #
 # create a copy of default model parameters
-# assuming first run of the model done with default set of parameters
 #
 baseRunId <- getFirstRunId(theDb, defRs)
 if (baseRunId <= 0) 
   stop("no run results found for the model ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
-paramSetTxt <- data.frame(      # name, description and notes for new working set
-  name  = "RiskPathsDataSet",
+#
+# get default values for AgeBaselineForm1 and UnionStatusPreg1 parameters 
+# by reading it from first model run results
+# assuming first run of the model done with default set of parameters
+#
+ageFirstUnionRs <- selectRunParameter(theDb, defRs, baseRunId, "AgeBaselineForm1")
+unionStatusPregRs <- selectRunParameter(theDb, defRs, baseRunId, "UnionStatusPreg1")
+
+#
+# create modeling task with
+# all input parameters same as model default except of
+# AgeBaselineForm1, UnionStatusPreg1 and SimulationCases parameters
+#
+casesParam <- list(name = "SimulationCases", value = 1000L) # number of simulation cases
+
+taskTxt <- data.frame(      # name, description and notes for the task
+  name  = "Childlessness",
   lang  = "EN",
   descr = "Analyzing childlessness",
   note  = NA,
   stringsAsFactors = FALSE
 )
 
-setId <- createWorksetBasedOnRun(     # new working set of parameters
-  theDb, defRs, baseRunId, paramSetTxt
-  )
-copyWorksetParameterFromRun(theDb, defRs, setId, baseRunId, list(name = "AgeBaselineForm1"))
-copyWorksetParameterFromRun(theDb, defRs, setId, baseRunId, list(name = "UnionStatusPreg1"))
-copyWorksetParameterFromRun(theDb, defRs, setId, baseRunId, list(name = "SimulationCases"))
+taskId <- createTask(theDb, defRs, taskTxt)
+if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
 
-#
-# update number of simulation cases
-#
-updateWorksetParameter(theDb, defRs, setId, list(name = "SimulationCases", value = 1000L))
-
-#
-# analyze RiskPaths model varying AgeBaselineForm1 and UnionStatusPreg1 parameters
-#
+# parameters scale
 scaleValues <- seq(from = 0.44, to = 1.00, by = 0.02)
-
-ageFirstUnionRs <- selectRunParameter(theDb, defRs, baseRunId, "AgeBaselineForm1")
-unionStatusPregRs <- selectRunParameter(theDb, defRs, baseRunId, "UnionStatusPreg1")
 
 for (scAgeBy in scaleValues)
 {
+  print(c("Scale age: ", scAgeBy))
+  
   for (scUnionBy in scaleValues)
   {
-    print(c("Scale: ", scAgeBy, " ", scUnionBy))
-    
     ageParam <- list(name = "AgeBaselineForm1", value = ageFirstUnionRs$value * scAgeBy)
     
     unionParam <- list(         # scale first two values of parameter vector
@@ -110,31 +110,36 @@ for (scAgeBy in scaleValues)
         )
     )
     
-    # update model parameters
-    setReadonlyWorkset(theDb, defRs, FALSE, setId)
-    updateWorksetParameter(theDb, defRs, setId, ageParam, unionParam)
+    # append new working set of parameters into the task
+    setId <- createWorksetBasedOnRun(theDb, defRs, baseRunId, NA, ageParam, unionParam, casesParam)
     setReadonlyWorkset(theDb, defRs, TRUE, setId)
-
-    # run the model on cluster using 16 subsamples
-    # consult your cluster admin on how to use computational grid
-    system2(
-      model_exe, 
-      paste(
-        model_args,
-        " -OpenM.SetId ", setId, 
-        " -OpenM.LogToConsole false",
-        " -OpenM.LogToFile true",
-        sep = ""
-      )
-    )
+    
+    taskId <- updateTask(theDb, defRs, taskId, setIds = setId)
   }
 }
 
 #
-# read final results from database
+# run the model on cluster or local desktop
+# consult your cluster admin on how to use computational grid
+print(paste("Run the model:", model_exe, "...please wait..."))
+
+system2(
+  model_exe, 
+  paste(
+    model_args,
+    " -OpenM.TaskId ", taskId, 
+    " -OpenM.LogToConsole false",
+    " -OpenM.LogToFile true",
+    sep = ""
+  )
+)
+
+#
+# read results of task run from database
 #   cohort fertility: T05_CohortFertility.expr1
 #
-runIdRs <- getWorksetRunIds(theDb, setId)   # get result id's
+taskRunId <- getTaskLastRunId(theDb, taskId)  # most recent task run id
+taskRunRs <- selectTaskRun(theDb, taskRunId)  # get result id's
 
 scaleLen <- length(scaleValues)
 childlessnessMat <- matrix(data = NA, nrow = scaleLen, ncol = scaleLen, byrow = TRUE)
@@ -144,11 +149,14 @@ for (k in 1:scaleLen)
 {
   for (j in 1:scaleLen)
   {
-    expr1Rs <- selectRunOutputValue(theDb, defRs, runIdRs$run_id[runPos], "T05_CohortFertility", "expr1")
+    # cohort fertility: T05_CohortFertility.expr1
+    expr1Rs <- selectRunOutputValue(theDb, defRs, taskRunRs$taskRunSet$run_id[runPos], "T05_CohortFertility", "expr1")
     childlessnessMat[k, j] = expr1Rs$value
     runPos <- runPos + 1
   }
 }
+
+dbDisconnect(theDb)   # close database connection
 
 #
 # display the results

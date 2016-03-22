@@ -25,6 +25,7 @@ export(
   selectTaskRunList,
   setReadonlyDefaultWorkset,
   setReadonlyWorkset,
+  setTaskWaitCompleted,
   updateTask,
   updateWorksetParameter,
   toQuoted

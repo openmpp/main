@@ -49,7 +49,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 \seealso{
   \code{\link{getModel}}
   \code{\link{createTask}}
-  \code{\link{getTask}}
+  \code{\link{selectTask}}
   \code{\link{selectTaskRun}}
 }
 \examples{
