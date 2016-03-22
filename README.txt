@@ -11,7 +11,10 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
-2016_02_15:
+2016_03_22:
+    minor release to improve modeling task support and R package
+
+2016_02_16:
     compiler and openM++ model code is stable now
     support modeling task: run model with 1000x sets of input parameters
       Linux build:   g++ version 4.8.5
