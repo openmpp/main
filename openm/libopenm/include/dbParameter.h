@@ -29,6 +29,16 @@ namespace openm
             const MetaRunHolder * i_metaStore
             );
 
+        /** input parameter reader factory */
+        static IParameterReader * create(
+            int i_modelId, 
+            int i_runId,
+            const char * i_name, 
+            IDbExec * i_dbExec, 
+            const MetaRunHolder * i_metaStore,
+            const vector<RunParamRow> & i_runParamVec
+            );
+        
         /** return input parameter size: total number of values in the table */
         virtual long long sizeOf(void) const throw() = 0;
 

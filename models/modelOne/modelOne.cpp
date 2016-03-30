@@ -19,7 +19,7 @@ void RunModel(IModel * const i_model)
 {
     theLog->logMsg("Running Simulation");
 
-    // calculte salary by sex accumulator 0: sum
+    // calculte salary by sex, accumulator 0: sum
     size_t nCell = 0;
 
     for (size_t nSalary = 0; nSalary < salarySize; nSalary++) {
@@ -32,7 +32,7 @@ void RunModel(IModel * const i_model)
         }
     }
 
-    // calculte salary by sex accumulator 1: count
+    // calculte salary by sex, accumulator 1: count
     nCell = 0;
 
     for (size_t nSalary = 0; nSalary < salarySize; nSalary++) {

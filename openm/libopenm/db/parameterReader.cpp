@@ -16,7 +16,9 @@ namespace openm
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore
+            const MetaRunHolder * i_metaStore,
+            bool i_isBaseRunIdSelected = false,
+            int i_baseRunId = 0
             );
 
         // input parameter reader cleanup
@@ -54,9 +56,41 @@ IParameterReader * IParameterReader::create(
     return new ParameterReader(i_modelId, i_runId, i_name, i_dbExec, i_metaStore);
 }
 
+// input parameter reader factory: create new reader using preloaded base run id rows
+IParameterReader * IParameterReader::create(
+    int i_modelId,  
+    int i_runId, 
+    const char * i_name,  
+    IDbExec * i_dbExec, 
+    const MetaRunHolder * i_metaStore, 
+    const vector<RunParamRow> & i_runParamVec
+    )
+{
+    // check parameters
+    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
+    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
+    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
+
+    // find parameter id
+    const ParamDicRow * paramRow = i_metaStore->paramDic->byModelIdName(i_modelId, i_name);
+    if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+
+    // find base run id, if exist
+    int baseRunId = RunParamRow::findBaseRunId(i_runId, paramRow->paramId, i_runParamVec);
+
+    // create new parameter reader
+    return new ParameterReader(i_modelId, i_runId, i_name, i_dbExec, i_metaStore, true, baseRunId);
+}
+
 // new input parameter reader
 ParameterReader::ParameterReader(
-    int i_modelId,  int i_runId, const char * i_name,  IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
+    int i_modelId,  
+    int i_runId, 
+    const char * i_name,  
+    IDbExec * i_dbExec, 
+    const MetaRunHolder * i_metaStore,
+    bool i_isBaseRunIdSelected,
+    int i_baseRunId
     ) :
     runId(i_runId),
     paramId(0),
@@ -99,6 +133,17 @@ ParameterReader::ParameterReader(
 
     if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
 
+    // if parameter from base run then select actual run id
+    int actualRunId = 0;
+    if (i_isBaseRunIdSelected) {
+        actualRunId = i_baseRunId;
+    }
+    else {
+        actualRunId = IRunParamTable::selectBaseRunId(i_dbExec, i_runId, paramId);
+    }
+
+    if (actualRunId <= 0) actualRunId = i_runId;    // no base run id: parameter value stored under current run id
+
     // make sql to select parameter value
     // SELECT dim0, dim1, value FROM model_1_paramName WHERE run_id = 4 ORDER BY 1, 2
     string sDimLst;
@@ -111,7 +156,7 @@ ParameterReader::ParameterReader(
 
     selectValueSql = "SELECT " + sDimLst + " value" + 
         " FROM "  + mdRow->modelPrefix + mdRow->paramPrefix + paramRow->dbNameSuffix + 
-        " WHERE run_id = " + to_string(i_runId) +
+        " WHERE run_id = " + to_string(actualRunId) +
         ((dimCount > 0) ? " ORDER BY " + sOrder : "");
 }
 

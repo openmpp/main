@@ -125,7 +125,7 @@ paramSetTxt <- data.frame(
 # 
 # create new working set of model parameters
 #
-# workset (working set of model parameters):
+# workset (working set of model input parameters):
 #   it can be a full set, which include all model parameters 
 #   or subset and include only some parameters
 # each model must have "default" workset:

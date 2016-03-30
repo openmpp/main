@@ -28,16 +28,6 @@ INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First 
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, 'First model (fr)', NULL);
 
 -- 
--- modelOne default profile: default run options
---
-INSERT INTO profile_lst (profile_name) VALUES ('modelOne');
-
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'Parameter.StartingSeed', '4095');
-INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'OpenM.SparseOutput', 'true');
--- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'OpenM.SparseNullValue', '');
--- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'General.Subsamples', '1');
-
--- 
 -- modelOne simple types
 --
 INSERT INTO type_dic (model_id, mod_type_id, mod_type_name, dic_id, total_enum_id) VALUES (1, 0, 'char', 0, 1);

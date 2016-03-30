@@ -12,10 +12,20 @@
 -- INSERT INTO id_lst (id_key, id_value) VALUES ('model_id', 10);
 -- INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 10);
 
+-- 
+-- modelOne default profile: default run options
+--
+INSERT INTO profile_lst (profile_name) VALUES ('modelOne');
+
+INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'Parameter.StartingSeed', '1023');
+INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'OpenM.SparseOutput', 'true');
+-- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'OpenM.SparseNullValue', '');
+-- INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('modelOne', 'General.Subsamples', '1');
+
 --
 -- modelOne default set of parameters: must include ALL model parameters
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt) VALUES (2, NULL, 1, 'modelOne', 1, '2013-05-29 23:55:07.1234');
+INSERT INTO workset_lst (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) VALUES (2, NULL, 1, 'modelOne', 1, '2013-05-29 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 0, 'Model One default set of parameters', NULL);
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) Model One default set of parameters', NULL);
@@ -35,7 +45,7 @@ INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note
 -- use this workset for test only: it is INVALID set 
 -- workset must either contain all parameters or have base run_id not null
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt) VALUES (3, NULL, 1, 'modelOne_modified', 0, '2013-05-30 23:55:07.1234');
+INSERT INTO workset_lst (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) VALUES (3, NULL, 1, 'modelOne_modified', 0, '2013-05-30 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (3, 1, 0, 'modelOne modified set of parameters', NULL);
 
@@ -47,7 +57,7 @@ INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note
 -- modelOne other set of parameters
 -- it is not based on model run and therefore must include ALL model parameters
 --
-INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt) VALUES (4, NULL, 1, 'modelOne_other', 1, '2013-05-29 23:55:07.1234');
+INSERT INTO workset_lst (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) VALUES (4, NULL, 1, 'modelOne_other', 1, '2013-05-29 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (4, 1, 0, 'Model One other set of parameters', NULL);
 INSERT INTO workset_txt(set_id, model_id, lang_id, descr, note) VALUES (4, 1, 1, '(FR) Model One other set of parameters', NULL);

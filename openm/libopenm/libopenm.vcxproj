@@ -199,6 +199,7 @@
     <ClCompile Include="db\profileOptionTable.cpp" />
     <ClCompile Include="db\runLstTable.cpp" />
     <ClCompile Include="db\runOptionTable.cpp" />
+    <ClCompile Include="db\runParamTable.cpp" />
     <ClCompile Include="db\runTxtTable.cpp" />
     <ClCompile Include="db\tableAccTable.cpp" />
     <ClCompile Include="db\tableAccTxtTable.cpp" />

@@ -215,39 +215,6 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
-    /** run_lst table public interface. */
-    struct IRunLstTable : public IMetaTable<RunLstRow>
-    {
-        virtual ~IRunLstTable() throw() = 0;
-
-        /** 
-        * select table rows sorted by primary key: run id.
-        * 
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
-        */
-        static vector<RunLstRow> select(IDbExec * i_dbExec, int i_modelId = 0);
-
-        /** select table row by primary key: run id. */
-        static vector<RunLstRow> byKey(IDbExec * i_dbExec, int i_runId);
-    };
-
-    /** run_txt table public interface. */
-    struct IRunTxtTable : public IMetaTable<RunTxtRow>
-    {
-        virtual ~IRunTxtTable() throw() = 0;
-
-        /** 
-        * select table rows and sorted by primary key: run id and language id.
-        * 
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
-        * if i_langId >= 0 then select only rows where lang_id = i_langId
-        */
-        static vector<RunTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
-
-        /** select table row by primary key: run id and language id. */
-        static vector<RunTxtRow> byKey(IDbExec * i_dbExec, int i_runId, int i_langId);
-    };
-
     /** type_dic table public interface. */
     struct ITypeDicTable : public IMetaLoadedTable<TypeDicRow>
     {
@@ -399,29 +366,6 @@ namespace openm
 
         /** create new table rows by swap with supplied vector of rows. */
         static IParamDicTxtTable * create(IRowBaseVec & io_rowVec);
-
-        /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) = 0;
-    };
-
-    /** parameter_run_txt table public interface. */
-    struct IParamRunTxtTable : public IMetaLoadedTable<ParamRunTxtRow>
-    {
-        virtual ~IParamRunTxtTable() throw() = 0;
-
-        /** 
-        * create new table object and load table rows sorted by primary key: run id, parameter id, language id.
-        * 
-        * if i_runId > 0 then select only rows where run_id = i_runId
-        * if i_langId >= 0 then select only rows where lang_id = i_langId
-        */
-        static IParamRunTxtTable * create(IDbExec * i_dbExec, int i_runId = 0, int i_langId = -1);
-
-        /** binary search row by primary key: run id, parameter id, language id; return NULL if not found. */
-        virtual const ParamRunTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const = 0;
-
-        /** create new table rows by swap with supplied vector of rows. */
-        static IParamRunTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;
@@ -792,6 +736,39 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
+    /** run_lst table public interface. */
+    struct IRunLstTable : public IMetaTable<RunLstRow>
+    {
+        virtual ~IRunLstTable() throw() = 0;
+
+        /** 
+        * select table rows sorted by primary key: run id.
+        * 
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static vector<RunLstRow> select(IDbExec * i_dbExec, int i_modelId = 0);
+
+        /** select table row by primary key: run id. */
+        static vector<RunLstRow> byKey(IDbExec * i_dbExec, int i_runId);
+    };
+
+    /** run_txt table public interface. */
+    struct IRunTxtTable : public IMetaTable<RunTxtRow>
+    {
+        virtual ~IRunTxtTable() throw() = 0;
+
+        /** 
+        * select table rows and sorted by primary key: run id and language id.
+        * 
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static vector<RunTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** select table row by primary key: run id and language id. */
+        static vector<RunTxtRow> byKey(IDbExec * i_dbExec, int i_runId, int i_langId);
+    };
+
     /** run_option table public interface. */
     struct IRunOptionTable : public IMetaLoadedTable<RunOptionRow>
     {
@@ -842,6 +819,46 @@ namespace openm
 
         /** create new table rows by swap with supplied vector of rows. */
         static IRunOptionTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** run_parameter table public interface. */
+    struct IRunParamTable : public IMetaTable<RunParamRow>
+    {
+        virtual ~IRunParamTable() throw() = 0;
+
+        /** 
+        * select table rows by run id sorted by primary key: run id, parameter id.
+        */
+        static vector<RunParamRow> select(IDbExec * i_dbExec, int i_runId);
+
+        /** select table row by primary key: run id, parameter id. */
+        static vector<RunParamRow> byKey(IDbExec * i_dbExec, int i_runId, int i_paramId);
+
+        /** select base run id by run id and parameter id, return zero if not exist. */
+        static int selectBaseRunId(IDbExec * i_dbExec, int i_runId, int i_paramId);
+    };
+
+    /** parameter_run_txt table public interface. */
+    struct IParamRunTxtTable : public IMetaLoadedTable<ParamRunTxtRow>
+    {
+        virtual ~IParamRunTxtTable() throw() = 0;
+
+        /** 
+        * create new table object and load table rows sorted by primary key: run id, parameter id, language id.
+        * 
+        * if i_runId > 0 then select only rows where run_id = i_runId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static IParamRunTxtTable * create(IDbExec * i_dbExec, int i_runId = 0, int i_langId = -1);
+
+        /** binary search row by primary key: run id, parameter id, language id; return NULL if not found. */
+        virtual const ParamRunTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IParamRunTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;

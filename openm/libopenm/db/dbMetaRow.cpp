@@ -71,50 +71,6 @@ bool ModelDicTxtLangRow::uniqueLangKeyEqual(const ModelDicTxtLangRow & i_left, c
     return i_left.modelId == i_right.modelId && i_left.langName == i_right.langName;
 }
 
-// run_lst row less comparator by primary key: run id.
-bool RunLstRow::isKeyLess(const RunLstRow & i_left, const RunLstRow & i_right)
-{
-    return i_left.runId < i_right.runId;
-}
-
-// run_lst row equal comparator by primary key: run id.
-bool RunLstRow::isKeyEqual(const RunLstRow & i_left, const RunLstRow & i_right)
-{
-    return i_left.runId == i_right.runId;
-}
-
-// run_lst table find row by primary key: run id.
-vector<RunLstRow>::const_iterator RunLstRow::byKey(int i_runId, const vector<RunLstRow> & i_rowVec)
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_runId](const RunLstRow & i_row) -> bool { return i_row.runId == i_runId; }
-    );
-}
-
-// run_txt row less comparator by primary key: run id and language id.
-bool RunTxtRow::isKeyLess(const RunTxtRow & i_left, const RunTxtRow & i_right)
-{
-    return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.langId < i_right.langId);
-}
-
-// run_txt row equal comparator by primary key: run id and language id.
-bool RunTxtRow::isKeyEqual(const RunTxtRow & i_left, const RunTxtRow & i_right)
-{
-    return i_left.runId == i_right.runId && i_left.langId == i_right.langId;
-}
-
-// run_txt table find row by primary key: run id and language id.
-vector<RunTxtRow>::const_iterator RunTxtRow::byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec)
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_runId, i_langId](const RunTxtRow & i_row) -> bool { return i_row.runId == i_runId && i_row.langId == i_langId; }
-    );
-}
-
 // type_dic row less comparator by primary key: model id, type id.
 bool TypeDicRow::isKeyLess(const TypeDicRow & i_left, const TypeDicRow & i_right)
 {
@@ -249,21 +205,6 @@ bool ParamDicTxtLangRow::uniqueLangKeyLess(const ParamDicTxtLangRow & i_left, co
 bool ParamDicTxtLangRow::uniqueLangKeyEqual(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.langName == i_right.langName;
-}
-
-// parameter_run_txt row less comparator by primary key: run id, parameter id, language id.
-bool ParamRunTxtRow::isKeyLess(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right)
-{
-    return
-        (i_left.runId < i_right.runId) ||
-        (i_left.runId == i_right.runId && i_left.paramId < i_right.paramId) ||
-        (i_left.runId == i_right.runId && i_left.paramId == i_right.paramId && i_left.langId < i_right.langId);
-}
-
-// parameter_run_txt row equal comparator by primary key: run id, parameter id, language id.
-bool ParamRunTxtRow::isKeyEqual(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right)
-{
-    return i_left.runId == i_right.runId && i_left.paramId == i_right.paramId && i_left.langId == i_right.langId;
 }
 
 // parameter_dims row less comparator by primary key: model id, parameter id, dimension id.
@@ -592,6 +533,50 @@ bool ProfileOptionRow::isKeyEqual(const ProfileOptionRow & i_left, const Profile
     return i_left.name == i_right.name && i_left.key == i_right.key;
 }
 
+// run_lst row less comparator by primary key: run id.
+bool RunLstRow::isKeyLess(const RunLstRow & i_left, const RunLstRow & i_right)
+{
+    return i_left.runId < i_right.runId;
+}
+
+// run_lst row equal comparator by primary key: run id.
+bool RunLstRow::isKeyEqual(const RunLstRow & i_left, const RunLstRow & i_right)
+{
+    return i_left.runId == i_right.runId;
+}
+
+// run_lst table find row by primary key: run id.
+vector<RunLstRow>::const_iterator RunLstRow::byKey(int i_runId, const vector<RunLstRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_runId](const RunLstRow & i_row) -> bool { return i_row.runId == i_runId; }
+    );
+}
+
+// run_txt row less comparator by primary key: run id and language id.
+bool RunTxtRow::isKeyLess(const RunTxtRow & i_left, const RunTxtRow & i_right)
+{
+    return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.langId < i_right.langId);
+}
+
+// run_txt row equal comparator by primary key: run id and language id.
+bool RunTxtRow::isKeyEqual(const RunTxtRow & i_left, const RunTxtRow & i_right)
+{
+    return i_left.runId == i_right.runId && i_left.langId == i_right.langId;
+}
+
+// run_txt table find row by primary key: run id and language id.
+vector<RunTxtRow>::const_iterator RunTxtRow::byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_runId, i_langId](const RunTxtRow & i_row) -> bool { return i_row.runId == i_runId && i_row.langId == i_langId; }
+    );
+}
+
 // run_option row less comparator by primary key: run id, option key.
 bool RunOptionRow::isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right)
 {
@@ -602,6 +587,54 @@ bool RunOptionRow::isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i
 bool RunOptionRow::isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right)
 {
     return i_left.runId == i_right.runId && i_left.key == i_right.key;
+}
+
+// run_parameter row less comparator by primary key: run id, parameter id.
+bool RunParamRow::isKeyLess(const RunParamRow & i_left, const RunParamRow & i_right)
+{
+    return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.paramId < i_right.paramId);
+}
+
+// run_parameter row equal comparator by primary key: run id, parameter id.
+bool RunParamRow::isKeyEqual(const RunParamRow & i_left, const RunParamRow & i_right)
+{
+    return i_left.runId == i_right.runId && i_left.paramId == i_right.paramId;
+}
+
+// find row by primary key: run id, parameter id. 
+vector<RunParamRow>::const_iterator RunParamRow::byKey(int i_runId, int i_paramId, const vector<RunParamRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_runId, i_paramId](const RunParamRow & i_row) -> bool { return i_row.runId == i_runId && i_row.paramId == i_paramId; }
+    );
+}
+
+// select base run id by run id and parameter id, return zero if not exist
+int RunParamRow::findBaseRunId(int i_runId, int i_paramId, const vector<RunParamRow> & i_rowVec)
+{
+    int baseRunId = 0;
+
+    auto rpIt = byKey(i_runId, i_paramId, i_rowVec);
+    if (rpIt != i_rowVec.cend()) baseRunId = rpIt->baseRunId;
+
+    return baseRunId;
+}
+
+// parameter_run_txt row less comparator by primary key: run id, parameter id, language id.
+bool ParamRunTxtRow::isKeyLess(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right)
+{
+    return
+        (i_left.runId < i_right.runId) ||
+        (i_left.runId == i_right.runId && i_left.paramId < i_right.paramId) ||
+        (i_left.runId == i_right.runId && i_left.paramId == i_right.paramId && i_left.langId < i_right.langId);
+}
+
+// parameter_run_txt row equal comparator by primary key: run id, parameter id, language id.
+bool ParamRunTxtRow::isKeyEqual(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right)
+{
+    return i_left.runId == i_right.runId && i_left.paramId == i_right.paramId && i_left.langId == i_right.langId;
 }
 
 // workset_lst row less comparator by primary key: set id.
