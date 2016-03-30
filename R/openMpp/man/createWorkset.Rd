@@ -4,7 +4,7 @@
 Create new working set of model parameters
 }
 \description{
-Create new working set of model parameters
+Create new workset FULL set of model parameters, it must include ALL model parameters 
 }
 \usage{
 createWorkset(dbCon, defRs, worksetTxt, ...)
@@ -61,6 +61,9 @@ in order to create workset using parameters from previous model run and supply s
 
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
+
+You can create subset of model parameters ONLY based on run results of full set.
+Other words: you can not create subset based on run results of other subset.
 
 Each workset has unique set id (positive integer) and also may have a name. 
 To find set id by name use \code{\link{getWorksetIdByName}} call.

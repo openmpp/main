@@ -4,7 +4,7 @@
 Create new working set of model parameters
 }
 \description{
-Create new working set of model parameters
+Create new workset as SUBSET of model parameters based on parameters from existing model run 
 }
 \usage{
 createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
@@ -51,7 +51,7 @@ createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
 That call allow you to create new working set of model parameters as combination of 
 existing parameters from previous model run and some new parameters passed through \dots argument(s)
 
-Workset is a working set of model parameters and can be a full set, 
+Workset is a working set of model input parameters and can be a full set, 
 which include values of all model parameters or subset and include only some parameters.
 
 Each model must have "default" workset. 
@@ -67,6 +67,9 @@ in order to create workset using parameters from previous model run and supply s
 
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
+
+You can create subset of model parameters ONLY based on run results of full set.
+Other words: you can not create subset based on run results of other subset.
 
 Each workset has unique set id (positive integer) and also may have a name. 
 To find set id by name use \code{\link{getWorksetIdByName}} call.
