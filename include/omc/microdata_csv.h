@@ -391,6 +391,24 @@ public:
     }
 
     /**
+    * Writes a line to the output file and increments the record count
+    *
+    * This function bypasses numeric field handling.
+    */
+    void write_line(std::string line)
+    {
+        if (!output_stream.is_open() || fields.size() != 0) {
+            std::stringstream ss;
+            ss << "bad write_line at record " << rec_num << " in output csv file '" << file_name << "'";
+            ModelExit(ss.str().c_str());
+            // not reached.
+            return;
+        }
+        output_stream << line << std::endl;
+        ++rec_num;
+    }
+
+    /**
     * Specifies precision of output for all fields
     *
     * The default C++ stream precision is 6 digits.
@@ -411,7 +429,7 @@ public:
     /**
      * Push a field into the record.
      * 
-     * The record will be written by a sunsequent call to write_record
+     * The record will be written by a subsequent call to write_record
      *
      * @param val The value.
      */

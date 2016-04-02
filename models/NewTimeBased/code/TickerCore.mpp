@@ -26,7 +26,7 @@ actor Ticker //EN Actor for synchronising population-level activities
 	//LABEL(Ticker.Finish, EN) Finishes the actor
 	void	Finish();	
 
-	event	timeTickEvent, TickEvent; //EN Tick event
+	event	timeTickEvent, TickEvent, time_keeping; //EN Tick event
 };
 
 /* NOTE(Ticker.Start,EN) 
