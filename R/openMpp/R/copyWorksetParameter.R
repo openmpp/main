@@ -145,6 +145,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       )
       
       # copy parameter values from run results table into workset table
+      # use base run id if run is not a full run and parameter value(s) stored under base run id
       nameCs <- ifelse(
         paramRow$parameter_rank > 0, 
         paste(paste(paramDef$dims$name, sep = "", collapse = ", "), ", ", sep = ""),
@@ -163,7 +164,14 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
               defRs$modelDic$model_prefix, defRs$modelDic$parameter_prefix, paramRow$db_name_suffix, 
               sep = ""
             ), 
-          " WHERE run_id = ", baseRunId,
+          " WHERE run_id = ", 
+          " CASE",
+          "   WHEN EXISTS",
+          "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_id = ", paramRow$parameter_id, ")",
+          "   THEN",
+          "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_id = ", paramRow$parameter_id, ")",
+          "   ELSE ", baseRunId,
+          " END",
           sep = ""
         )
       )

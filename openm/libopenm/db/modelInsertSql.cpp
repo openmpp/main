@@ -633,11 +633,11 @@ template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
     // creating new workset: get new set id from id_lst
     io_wr.write(
         "INSERT INTO workset_lst" \
-        " (set_id, run_id, model_id, set_name, is_readonly, update_dt)" \
+        " (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)" \
         " SELECT" \
         " RSL.id_value, ");
     io_wr.outFs << 
-        (i_row.runId <= 0 ? "NULL" : to_string(i_row.runId)) << "," <<
+        (i_row.baseRunId <= 0 ? "NULL" : to_string(i_row.baseRunId)) << "," <<
         " (SELECT MD.model_id FROM model_dic MD WHERE MD.model_prefix = ";
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_mdRow.modelPrefix);

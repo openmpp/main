@@ -4,7 +4,7 @@
 ##
 
 # 
-# Create new working set of model parameters
+# Create new workset FULL set of model parameters
 # workset must include ALL model parameters 
 #
 # Return set id of new workset or <= 0 on error
@@ -43,11 +43,13 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
 }
 
 # 
-# Create new working set of model parameters
+# Create new workset as SUBSET of model parameters
 # based on parameters from existing model run 
 # created workset will be combination of:
 #   new parameters passed through ... argument(s)
 #   and existing parameters from previous model run
+# you can NOT create subset based on run results of other subset.
+# base run id must be run results of full set.
 #
 # Return set id of new workset or <= 0 on error
 #
@@ -96,6 +98,19 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
   )
   if (nrow(runRs) != 1L || runRs$model_id != defRs$modelDic$model_id) {
     stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  }
+
+  # check if base run id is full run (run of full workset)
+  # you can not create subset based on run of other subset
+  rpRs <- dbGetQuery(
+    dbCon, 
+    paste(
+      "SELECT COUNT(*) AS \"rpc\" FROM run_parameter WHERE run_id = ", baseRunId,
+      sep = ""
+    )
+  )
+  if (rpRs$rpc > 0L) {
+    stop("base run id=", baseRunId, " must contain values of ALL parameters, missing: ", rpRs$rpc, " parameters included by reference")
   }
 
   # create new workset
@@ -190,7 +205,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
     dbGetQuery(
       dbCon, 
       paste(
-        "INSERT INTO workset_lst (set_id, run_id, model_id, set_name, is_readonly, update_dt)",
+        "INSERT INTO workset_lst (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)",
         " VALUES (",
         setId, ", ",
         ifelse(i_isRunBased, i_baseRunId, "NULL"), ", ",

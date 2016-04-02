@@ -338,5 +338,8 @@
     <ClCompile Include="model\modelHelper.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="db\runParamTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

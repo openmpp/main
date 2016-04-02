@@ -91,6 +91,7 @@ LIBOPENM_CPPLIST = \
   db/profileOptionTable.cpp \
   db/runLstTable.cpp \
   db/runOptionTable.cpp \
+  db/runParamTable.cpp \
   db/runTxtTable.cpp \
   db/tableAccTable.cpp \
   db/tableAccTxtTable.cpp \

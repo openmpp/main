@@ -63,9 +63,15 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
   
   # SELECT dim0, dim1, value 
   # FROM modelone_201208171604590148_p0_ageSex
-  # WHERE run_id = 2
+  # WHERE run_id = 
+  #   CASE
+  #     WHEN EXISTS
+  #       (SELECT base_run_id FROM run_parameter WHERE run_id = 1234 AND parameter_id = 0)
+  #     THEN
+  #       (SELECT base_run_id FROM run_parameter WHERE run_id = 1234 AND parameter_id = 0)
+  #     ELSE 1234
+  #   END
   # ORDER BY 1, 2, 3
-  #
   sqlSel <-
     paste(
       "SELECT ", 
@@ -81,7 +87,14 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
       ),
       " value",
       " FROM ", dbTableName, 
-      " WHERE run_id = ", runId,
+      " WHERE run_id = ", 
+      " CASE",
+      "   WHEN EXISTS",
+      "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", runId, " AND parameter_id = ", paramRow$parameter_id, ")",
+      "   THEN",
+      "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", runId, " AND parameter_id = ", paramRow$parameter_id, ")",
+      "   ELSE ", runId,
+      " END",
       ifelse(nRank > 0L,
         paste(" ORDER BY ",
           paste(1L:nRank, sep = "", collapse = ", "),

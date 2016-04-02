@@ -252,12 +252,16 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     vector<WorksetParamRow> wsParamVec = IWorksetParamTable::select(i_dbExec, i_setId);
 
     // if base run does not exist then workset must include all model parameters
-    int baseRunId = wsVec[0].runId;
+    int baseRunId = wsVec[0].baseRunId;
     bool isBaseRunExist = baseRunId > 0;
     // if (!isBaseRunExist && paramVec.size() != wsParamVec.size()) throw DbException("workset must include all model parameters (set id: %d)", setId);
 
-    // copy parameters from run options, source set or base run into destination run
+    // copy parameters into destination run:
+    //   insert new values from run options or source set
+    //   if parameter from base run then insert link to it into run_parameter table
     string sRunId = to_string(i_runId);
+    string sModelId = to_string(i_modelRow->modelId);
+    string sBaseRunId = to_string(baseRunId);
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
 
@@ -294,7 +298,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             string sVal = argOpts().strOption(argName.c_str());
             if (equalNoCase(typeRow->name.c_str(), "file")) sVal = toQuoted(sVal);  // "file" type is VARCHAR
 
-                                                                                    // insert the value
+            // insert the value
             i_dbExec->update(
                 "INSERT INTO " + paramTblName + " (run_id, value) VALUES (" + sRunId + ", " + sVal + ")"
                 );
@@ -310,11 +314,21 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         }
         if (!isInserted && isBaseRunExist) {
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, " + sDimLst + " value)" +
-                " SELECT " + sRunId + ", " + sDimLst + " value" +
-                " FROM " + paramTblName + " WHERE run_id = " + to_string(baseRunId)
+                "INSERT INTO run_parameter (run_id, model_id, parameter_id, base_run_id)" \
+                " VALUES (" + sRunId + ", " + sModelId + ", " + to_string(paramIt->paramId) + ", " + sBaseRunId + ")"
                 );
             isInserted = true;
+
+            // vlaidate: parameter must exist in base run and not a pointer to another base run
+            int nBase = i_dbExec->selectToInt(
+                "SELECT base_run_id FROM run_parameter" \
+                " WHERE run_id = " + sBaseRunId + " AND parameter_id = " + to_string(paramIt->paramId),
+                0);
+            if (nBase > 0)
+                throw DbException(
+                    "parameter %d: %s must be included in run (id: %d) by value, not by reference to other run (id: %d) ", 
+                    paramIt->paramId, paramIt->paramName.c_str(), baseRunId, nBase);
+
         }
         if (!isInserted) {
             if (nRank <= 0)

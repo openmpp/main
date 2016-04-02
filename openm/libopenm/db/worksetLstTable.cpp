@@ -25,7 +25,7 @@ namespace openm
     // Columns type for workset_lst row
     static const type_info * typeWorksetLstRow[] = { 
         &typeid(decltype(WorksetLstRow::setId)), 
-        &typeid(decltype(WorksetLstRow::runId)), 
+        &typeid(decltype(WorksetLstRow::baseRunId)), 
         &typeid(decltype(WorksetLstRow::modelId)), 
         &typeid(decltype(WorksetLstRow::name)),
         &typeid(decltype(WorksetLstRow::isReadonly)),
@@ -52,7 +52,7 @@ namespace openm
                 dynamic_cast<WorksetLstRow *>(i_row)->setId = (*(int *)i_value);
                 break;
             case 1:
-                dynamic_cast<WorksetLstRow *>(i_row)->runId = (*(int *)i_value);
+                dynamic_cast<WorksetLstRow *>(i_row)->baseRunId = (*(int *)i_value);
                 break;
             case 2:
                 dynamic_cast<WorksetLstRow *>(i_row)->modelId = (*(int *)i_value);
@@ -102,7 +102,7 @@ vector<WorksetLstRow> WorksetLstTable::select(IDbExec * i_dbExec, const string &
 
     const IRowAdapter & adp = WorksetLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT set_id, run_id, model_id, set_name, is_readonly, update_dt FROM workset_lst " + i_where + " ORDER BY 1", 
+        "SELECT set_id, base_run_id, model_id, set_name, is_readonly, update_dt FROM workset_lst " + i_where + " ORDER BY 1", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), WorksetLstRow::keyLess);

@@ -44,29 +44,14 @@ namespace openm
         /** model_dic db rows */
         modelDic,
 
-        /** model_dic_txt db rows */
-        modelDicTxt,
-
         /** type_dic db rows */
         typeDic,
-
-        /** type_dic_txt db rows */
-        typeDicTxt,
 
         /** type_enum_lst db rows */
         typeEnumLst,
 
-        /** type_enum_txt db rows */
-        typeEnumTxt,
-
         /** parameter_dic db rows */
         parameterDic,
-
-        /** parameter_dic_txt db rows */
-        parameterDicTxt,
-
-        /** parameter_run_txt db rows */
-        parameterRunTxt,
 
         /** parameter_dims db rows */
         parameterDims,
@@ -74,32 +59,17 @@ namespace openm
         /** table_dic db rows */
         tableDic,
 
-        /** table_dic_txt db rows */
-        tableDicTxt,
-
         /** table_dims db rows */
         tableDims,
-
-        /** table_dims_txt db rows */
-        tableDimsTxt,
 
         /** table_acc db rows */
         tableAcc,
 
-        /** table_acc_txt db rows */
-        tableAccTxt,
-
         /** table_expr db rows */
         tableExpr,
 
-        /** table_expr_txt db rows */
-        tableExprTxt,
-
         /** group_lst db rows */
         groupLst,
-
-        /** group_txt db rows */
-        groupTxt,
 
         /** group_pc db rows */
         groupPc,

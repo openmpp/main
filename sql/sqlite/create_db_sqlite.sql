@@ -78,45 +78,6 @@ CREATE TABLE model_dic_txt
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
---
--- Model run's list
--- Run id must be different from working set id (use id_lst to get it)
--- Model run is completed (all data saved in database) when sub_completed = sub_count
---
-CREATE TABLE run_lst
-(
-  run_id        INT          NOT NULL, -- unique run id
-  model_id      INT          NOT NULL, -- model id
-  run_name      VARCHAR(255) NOT NULL, -- model run name
-  sub_count     INT          NOT NULL, -- subsamples count
-  sub_started   INT          NOT NULL, -- number of subsamples started
-  sub_completed INT          NOT NULL, -- number of subsamples completed
-  sub_restart   INT          NOT NULL, -- subsample to restart from
-  create_dt     VARCHAR(32)  NOT NULL, -- start date-time
-  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
-  update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
-  PRIMARY KEY (run_id),
-  CONSTRAINT run_lst_mk 
-             FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
-);
-
---
--- Model run's text results
---
-CREATE TABLE run_txt
-(
-  run_id   INT             NOT NULL, -- master key
-  model_id INT             NOT NULL, -- model id
-  lang_id  INT             NOT NULL, -- language id
-  descr    VARCHAR(255)    NOT NULL, -- model run description
-  note     VARCHAR(32000),           -- model run notes
-  PRIMARY KEY (run_id, lang_id),
-  CONSTRAINT run_txt_mk 
-             FOREIGN KEY (run_id) REFERENCES run_lst(run_id),
-  CONSTRAINT run_txt_lang 
-             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
-);
-
 -- 
 -- Types dictionary for model parameters
 -- 
@@ -218,25 +179,6 @@ CREATE TABLE parameter_dic_txt
   CONSTRAINT parameter_dic_txt_mk
              FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id),
   CONSTRAINT parameter_dic_txt_lang_fk
-             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
-);
-
---
--- Parameter run text: parameter run value notes
---
-CREATE TABLE parameter_run_txt
-(
-  run_id       INT NOT NULL,   -- model run id
-  model_id     INT NOT NULL,   -- master key
-  parameter_id INT NOT NULL,   -- master key
-  lang_id      INT NOT NULL,   -- language id
-  note         VARCHAR(32000), -- parameter value notes
-  PRIMARY KEY (run_id, parameter_id, lang_id),
-  CONSTRAINT parameter_run_txt_mk 
-             FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id),
-  CONSTRAINT parameter_run_txt_run_fk 
-             FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
-  CONSTRAINT parameter_run_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -496,6 +438,45 @@ CREATE TABLE profile_option
 );
 
 --
+-- Model run's list
+-- Run id must be different from working set id (use id_lst to get it)
+-- Model run is completed (all data saved in database) when sub_completed = sub_count
+--
+CREATE TABLE run_lst
+(
+  run_id        INT          NOT NULL, -- unique run id
+  model_id      INT          NOT NULL, -- model id
+  run_name      VARCHAR(255) NOT NULL, -- model run name
+  sub_count     INT          NOT NULL, -- subsamples count
+  sub_started   INT          NOT NULL, -- number of subsamples started
+  sub_completed INT          NOT NULL, -- number of subsamples completed
+  sub_restart   INT          NOT NULL, -- subsample to restart from
+  create_dt     VARCHAR(32)  NOT NULL, -- start date-time
+  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
+  update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
+  PRIMARY KEY (run_id),
+  CONSTRAINT run_lst_mk 
+             FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
+);
+
+--
+-- Model run's text results
+--
+CREATE TABLE run_txt
+(
+  run_id   INT             NOT NULL, -- master key
+  model_id INT             NOT NULL, -- model id
+  lang_id  INT             NOT NULL, -- language id
+  descr    VARCHAR(255)    NOT NULL, -- model run description
+  note     VARCHAR(32000),           -- model run notes
+  PRIMARY KEY (run_id, lang_id),
+  CONSTRAINT run_txt_mk 
+             FOREIGN KEY (run_id) REFERENCES run_lst(run_id),
+  CONSTRAINT run_txt_lang 
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
 -- Run options: options used to run the model
 -- model options priority:
 -- from command line, ini-file, profile_option or default values
@@ -511,7 +492,48 @@ CREATE TABLE run_option
 );
 
 --
--- Workset (working set of model parameters):
+-- Parameter run base: where to select run value of parameter
+-- some parameter values does not change from one model run to another
+-- in that case it is possible to store it only once under "base run id"
+-- if record exists for (run id, parameter id) 
+-- then parameter value must be selected from base run id
+--
+CREATE TABLE run_parameter
+(
+  run_id       INT NOT NULL, -- model run id
+  model_id     INT NOT NULL, -- master key
+  parameter_id INT NOT NULL, -- master key
+  base_run_id  INT NOT NULL, -- source run id to select parameter value
+  PRIMARY KEY (run_id, parameter_id),
+  CONSTRAINT run_parameter_mk 
+             FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id),
+  CONSTRAINT run_parameter_run_fk 
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
+  CONSTRAINT run_parameter_base_fk 
+             FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id)
+);
+
+--
+-- Parameter run text: parameter run value notes
+--
+CREATE TABLE parameter_run_txt
+(
+  run_id       INT NOT NULL,   -- model run id
+  model_id     INT NOT NULL,   -- master key
+  parameter_id INT NOT NULL,   -- master key
+  lang_id      INT NOT NULL,   -- language id
+  note         VARCHAR(32000), -- parameter value notes
+  PRIMARY KEY (run_id, parameter_id, lang_id),
+  CONSTRAINT parameter_run_txt_mk 
+             FOREIGN KEY (model_id, parameter_id) REFERENCES parameter_dic (model_id, parameter_id),
+  CONSTRAINT parameter_run_txt_run_fk 
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
+  CONSTRAINT parameter_run_txt_lang_fk
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Workset (working set of model input parameters):
 --   it can be a full set, which include all model parameters 
 --   or subset and include only some parameters
 -- each model must have "default" workset:
@@ -529,14 +551,14 @@ CREATE TABLE run_option
 CREATE TABLE workset_lst
 (
   set_id      INT          NOT NULL, -- unique working set id
-  run_id      INT          NULL,     -- if not NULL and positive then base run id (source run id)
+  base_run_id INT,                   -- if not NULL and positive then base run id (source run id)
   model_id    INT          NOT NULL, -- model id
   set_name    VARCHAR(255) NOT NULL, -- working set name
   is_readonly SMALLINT     NOT NULL, -- if non-zero then working set is read-only
   update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (set_id),
   CONSTRAINT workset_lst_mk 
-             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
+             FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id)
 );
 
 --

@@ -414,6 +414,9 @@ void RootController::readParameter(const char * i_name, const type_info & i_type
 /** read all input parameters by run id and broadcast to child processes. */
 void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 {
+    // preload run_parameter rows
+    vector<RunParamRow> rpVec = IRunParamTable::select(dbExec, i_runGroup.runId);
+
     unique_ptr<char> packedData;
     for (size_t k = 0; k < PARAMETER_NAME_ARR_LEN; k++) {
 
@@ -423,7 +426,7 @@ void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, i_runGroup.runId, parameterNameSizeArr[k].name, dbExec, metaStore.get())
+            IParameterReader::create(modelId, i_runGroup.runId, parameterNameSizeArr[k].name, dbExec, metaStore.get(), rpVec)
             );
         reader->readParameter(dbExec, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, packedData.get());
 
