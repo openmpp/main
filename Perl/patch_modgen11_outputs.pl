@@ -139,6 +139,13 @@ if (!-d $src_dir) {
 			print $fh $modified_line;
 			print "patched ${file_name}: $modified_line";
 		}
+		if ($line =~ /\tcounter\tssint_age;/ || $line =~ /\tcounter\tssint_time;/ ) {
+			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
+			print $fh $original_line;
+			$line =~ s/\tcounter\t/\tinteger\t/;
+			$line .= " // Modified by patch_modgen12_outputs after Modgen compilation.";
+			print "patched ${file_name}: ${line}\n";
+		}
 		if ($line eq "// classifications") {
 			$in_classifications = 1;
 		}

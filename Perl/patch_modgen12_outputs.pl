@@ -73,5 +73,37 @@ if (!-d $src_dir) {
 	copy $filename, $actors_cpp;
 	unlink $filename;
 }
+#
+# ACTORS.H
+#
+
+{
+	my $file_name = 'ACTORS.H';
+	my $actors_h = "${src_dir}/${file_name}";
+	if (!-f $actors_h) {
+		logmsg error, $script_name, "File ${actors_h} not found\n";
+		exit 1;
+	}
+	(my $fh, my $filename) = tempfile();
+	open ACTORS_H, "<".$actors_h;
+	my $in_classifications = 0;
+	my $classification_name = '';
+	while (<ACTORS_H>) {
+		chomp;
+		my $line = $_;
+		if ($line =~ /\tcounter\tssint_age;/ || $line =~ /\tcounter\tssint_time;/ ) {
+			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
+			print $fh $original_line;
+			$line =~ s/\tcounter\t/\tinteger\t/;
+			$line .= " // Modified by patch_modgen12_outputs after Modgen compilation.";
+			print "patched ${file_name}: ${line}\n";
+		}
+		print $fh $line."\n";
+	}
+	close $fh;
+	close ACTORS_H;
+	copy $filename, $actors_h;
+	unlink $filename;
+}
 
 exit 0;
