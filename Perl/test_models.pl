@@ -3,13 +3,50 @@
 
 # Script to test multiple models in ompp, ompp-linux, and modgen
 
-# usage: perl test_models.pl [-newref] [-nomodgen] [-noompp] models
-# If models is not specified, all models will be processed.
+use strict;
+use warnings;
+
+my $script_name = "test_models";
+my $script_version = '1.2';
+
+use Getopt::Long::Descriptive;
+
+my ($opt, $usage) = describe_options(
+	$script_name.' %o model...',
+	[ 'help|h'    => 'print usage message and exit' ],
+	[ 'version|v' => 'print version and exit' ],
+	[ 'models_root|m=s'  => 'directory containing models (default is ../models)',
+		{ default => '../models' } ],
+	[ 'newref' => 'replace existing reference files' ],
+	[ 'nocleanup' => 'leave intermediate build files' ],
+	[ 'noompp' => 'skip OpenM++ build and run' ],
+	[ 'ompp_config=s' => 'OpenM++ config: Debug or Release(default)',
+		{ default => 'Release' } ],
+	[ 'ompp_platform=s' => 'OpenM++ platform: Win32(default) or x64',
+		{ default => 'Win32' } ],
+	[ 'nomodgen' => 'skip Modgen build and run' ],
+	[ 'modgen_version=i' => 'Modgen version: 11 or 12(default)',
+		{ default => 12 } ],
+	[ 'modgen_config=s' => 'Modgen config: Debug or Release(default)',
+		{ default => 'Release' } ],
+	[ 'modgen_platform=s' => 'Modgen platform: Win32(default) or x64',
+		{ default => 'Win32' } ],
+);
+
+if ($opt->version) {
+	print $script_name.' version '.$script_version."\n";
+	exit 0;
+}
+
+if ($opt->help) {
+	print $usage->text;
+	exit 0;
+}
 
 use Cwd qw(abs_path);
 my $script_path = abs_path($0);
 $script_path =~ s@[^/\\]*$@@;
-print "script_path=".$script_path."\n";
+#print "script_path=".$script_path."\n";
 
 
 #####################
@@ -34,12 +71,19 @@ my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omcD.exe';
 #my $omc_exe = 'omc64.exe';
 #my $omc_exe = 'omc64D.exe';
-	
-#my $ompp_configuration = "Debug";
-my $ompp_configuration = "Release";
 
-my $ompp_platform = "Win32";
-#my $ompp_platform = "x64";
+my $ompp_config = $opt->ompp_config;
+if ($ompp_config ne 'Debug' && $ompp_config ne 'Release') {
+	print "Invalid ompp_config=$ompp_config must be Debug or Release";
+	exit 1;
+} 
+
+my $ompp_platform = $opt->ompp_platform;
+if ($ompp_platform ne 'Win32' && $ompp_platform ne 'x64') {
+	print "Invalid ompp_platform=$ompp_platform must be Win32 or x64";
+	exit 1;
+} 
+
 
 #####################
 # ompp-linux settings
@@ -52,13 +96,23 @@ my $ompp_linux_configuration = "release";
 # modgen settings
 #####################
 
-my $modgen_version = 12;
+my $modgen_version = $opt->modgen_version;
+if ($modgen_version != 11 && $modgen_version != 12) {
+	print "Invalid modgen_version=$modgen_version must be 11 or 12";
+	exit 1;
+} 
 
-#my $modgen_configuration = "Debug";
-my $modgen_configuration = "Release";
+my $modgen_config = $opt->modgen_config;
+if ($modgen_config ne 'Debug' && $modgen_config ne 'Release') {
+	print "Invalid modgen_config=$modgen_config must be Debug or Release";
+	exit 1;
+} 
 
-my $modgen_platform = "Win32";
-#my $modgen_platform = "x64";
+my $modgen_platform = $opt->modgen_platform;
+if ($modgen_platform ne 'Win32' && $modgen_platform ne 'x64') {
+	print "Invalid modgen_platform=$modgen_platform must be Win32 or x64";
+	exit 1;
+} 
 
 #####################
 # There are no configuration settings in subsequent code in this script
@@ -80,23 +134,10 @@ else {
 	-d $om_root || die "directory not found OM_ROOT='${om_root}'\n";
 }
 
-
 # Default location assumes script is invoked from OM_ROOT/Perl.
-my $models_root = "../models";
-
-# Check for and process -m <model-folder> option
-if ($#ARGV >= 0) {
-	if ( $ARGV[0] eq "-m") {
-		# discard -m argument
-		shift @ARGV;
-		# get immediately following value
-		$models_root = @ARGV[0];
-		shift @ARGV;
-	}
-}
-
+my $models_root = $opt->models_root;
 chdir $models_root || die "Folder ${models_root} not found";
-my $models_root = getcwd; # to ensure is absolute path
+$models_root = getcwd; # to ensure is absolute path
 
 #####################
 # file locations
@@ -159,42 +200,10 @@ if ($is_windows) {
 # Determine flavours and options
 ###############
 
-my $new_ref = 0;
-my $do_cleanup = 1;
-my $do_modgen = 1;
-my $do_ompp = 1;
-
-# Check for and process -newref flag (replace reference by current)
-if ($#ARGV >= 0) {
-	if ( $ARGV[0] eq "-newref") {
-		shift @ARGV;
-		$new_ref = 1;
-	}
-}
-
-# Check for and process -nocleanup flag
-if ($#ARGV >= 0) {
-	if ( $ARGV[0] eq "-nocleanup") {
-		shift @ARGV;
-		$do_cleanup = 0;
-	}
-}
-
-# Check for and process -nomodgen flag
-if ($#ARGV >= 0) {
-	if ( $ARGV[0] eq "-nomodgen") {
-		shift @ARGV;
-		$do_modgen = 0;
-	}
-}
-
-# Check for and process -noompp flag
-if ($#ARGV >= 0) {
-	if ( $ARGV[0] eq "-noompp") {
-		shift @ARGV;
-		$do_ompp = 0;
-	}
-}
+my $new_ref = ($opt->newref) ? 1 : 0;
+my $do_cleanup = ($opt->nocleanup) ? 0 : 1;
+my $do_modgen = ($opt->nomodgen) ? 0 : 1;
+my $do_ompp = ($opt->noompp) ? 0 : 1;
 
 my @model_dirs;
 
@@ -226,7 +235,7 @@ if ($is_windows) {
 		my $modgen_version = modgen_version($modgen_exe);
 		my $sb = stat($modgen_exe);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
-		push @flavours_tombstone, "version=${modgen_version} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_configuration}";
+		push @flavours_tombstone, "version=${modgen_version} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_config}";
 	}
 	if ($do_ompp) {
 		if ( ! -e $create_db_sqlite_sql ) {
@@ -242,7 +251,7 @@ if ($is_windows) {
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
-		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${ompp_platform} configuration=${ompp_configuration}";
+		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${ompp_platform} configuration=${ompp_config}";
 	}
 }
 else { # linux
@@ -255,16 +264,14 @@ else { # linux
 	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${ompp_linux_configuration}";
 }
 	
-my $version = "1.1";
-
 logmsg info, "=========================";
-logmsg info, " test_models.pl ${version} ";
+logmsg info, " test_models.pl ${script_version} ";
 logmsg info, "=========================";
 logmsg info, " ";
 logmsg info, "Testing model folders: ".join(", ", @model_dirs);
 
 for (my $j = 0; $j <= $#flavours; $j++) {
-	logmsg info, "@flavours[$j] settings: @flavours_tombstone[$j]";
+	logmsg info, "$flavours[$j] settings: $flavours_tombstone[$j]";
 }
 logmsg info, " ";
 
@@ -295,8 +302,8 @@ for my $model_dir (@model_dirs) {
 	FLAVOUR:
 	for (my $j = 0; $j <= $#flavours; $j++) {
 		my $start_seconds = time;
-		my $flavour = @flavours[$j];
-		my $tombstone = @flavours_tombstone[$j];
+		my $flavour = $flavours[$j];
+		my $tombstone = $flavours_tombstone[$j];
 		my $reference_dir = "${model_path}/test_models/reference/${flavour}";
 		my $current_dir = "${model_path}/test_models/current/${flavour}";
 		my $project_dir = "${model_path}/${flavour}";
@@ -384,7 +391,7 @@ for my $model_dir (@model_dirs) {
 					"/fileLogger",
 					"/flp:Verbosity=normal",
 					"/p:OM_ROOT=${om_root}",
-					"/p:Configuration=${modgen_configuration}",
+					"/p:Configuration=${modgen_config}",
 					"/p:Platform=${modgen_platform}",
 					"/p:MODGEN_VERSION=${modgen_version}",
 					"/p:SCENARIO_NAME=${scenario_name}",
@@ -407,7 +414,7 @@ for my $model_dir (@model_dirs) {
 			if ($modgen_platform eq 'x64') {
 				$build_suffix .= '64';
 			}
-			if ($modgen_configuration eq 'Debug') {
+			if ($modgen_config eq 'Debug') {
 				$build_suffix .= 'D';
 			}
 
@@ -474,8 +481,8 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			# Copy model run log file to logs directory
@@ -559,7 +566,7 @@ for my $model_dir (@model_dirs) {
 					"/clp:ForceNoAlign",
 					"/p:OM_ROOT=${om_root}",
 					"/p:OMC_EXE=${omc_exe}",
-					"/p:Configuration=${ompp_configuration}",
+					"/p:Configuration=${ompp_config}",
 					"/p:Platform=${ompp_platform}",
 					"/p:GRID_COMPUTING=EMPTY",
 					"/p:SCENARIO_NAME=${scenario_name}",
@@ -586,7 +593,7 @@ for my $model_dir (@model_dirs) {
 			if ($ompp_platform eq 'x64') {
 				$build_suffix .= '64';
 			}
-			if ($ompp_configuration eq 'Debug') {
+			if ($ompp_config eq 'Debug') {
 				$build_suffix .= 'D';
 			}
 
@@ -648,8 +655,8 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
@@ -795,8 +802,8 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;;
