@@ -3151,7 +3151,18 @@ void
 yy::parser::error (const yy::parser::location_type& l,
                           const std::string& m)
 {
-    drv.error (l, m);
+    // modify bison-generated message to help VS detect error message
+    std::string m2;
+    const std::string s1("syntax error, unexpected");
+    const std::string s2("syntax error : unexpected");
+    if (0 == m.compare(0, s1.length(), s1)) {
+        m2 = s2 + m.substr(s1.length());
+    }
+    else {
+        m2 = m;
+    }
+     
+    drv.error (l, m2);
 }
 
 
