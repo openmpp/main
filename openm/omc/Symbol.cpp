@@ -598,7 +598,7 @@ void Symbol::post_parse(int pass)
                 else {
                     // The source code contained an agent-qualified name token which was never declared,
                     // and no global with the same name exists.
-                    pp_error("error : '" + name + "' was never declared");
+                    pp_warning("warning : '" + name + "' was never declared");
                     // OK to continue
                 }
             }
@@ -948,7 +948,7 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
             else {
                 // The source code contained an agent-qualified name token which was never declared,
                 // and no global with the same name exists.
-                pp_error(sym->decl_loc, "error : '" + sym->name + "' was never declared");
+                sym->pp_warning("warning : '" + sym->name + "' was never declared");
                 // OK to continue
             }
         }
