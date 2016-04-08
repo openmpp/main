@@ -1735,15 +1735,15 @@ void DerivedAttributeSymbol::create_side_effects()
             // There are 4 distinct cases to handle
             if (tok == token::TK_self_scheduling_int && av->name == "age") {
                 blk += "// Initial value is the largest integer less than or equal to age.";
-                blk += "ss_attr.set(std::floor(age.get()));";
+                blk += "ss_attr.set((int)std::floor(age.get()));";
                 blk += "// Time to wait for next change is the fraction of time remaining to the next integer boundary";
                 blk += "ss_time = time + (1 - (age.get() - (int)age.get()));";
             }
             else if (tok == token::TK_self_scheduling_int && av->name == "time") {
                 blk += "// Initial value is the largest integer less than or equal to time.";
-                blk += "ss_attr.set(std::floor(om_new));";
+                blk += "ss_attr.set((int)std::floor(om_new));";
                 blk += "// Time of next change is next integer time";
-                blk += "ss_time = 1 + std::floor(om_new);";
+                blk += "ss_time = 1 + (int)std::floor(om_new);";
             }
             else if (tok == token::TK_self_scheduling_split && av->name == "age") {
                 blk += "// Initial value is the corresponding partition interval.";
