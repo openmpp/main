@@ -50,3 +50,6 @@
 
 // map MFC BOOL to int
 #define BOOL int
+
+// map actor_id to entity_id (allows use of actor_id member in C++ model code)
+#define actor_id entity_id
