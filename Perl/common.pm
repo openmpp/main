@@ -562,6 +562,11 @@ sub normalize_event_trace
 		my $time = $5;
 		my $key = sprintf("%s %10d", $function, $entity_id);
 		
+		# Replace very large times with a fixed smaller value, to avoid
+		# reporting spurious precision-related differences due to magnitude of large times
+		if ($time > 99999.0) {
+			$time = 99999.0;
+		}
 		# Reformat time at lower precision
 		$time = sprintf("%13.6f", $time);
 		
