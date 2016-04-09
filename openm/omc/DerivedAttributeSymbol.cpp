@@ -1737,7 +1737,7 @@ void DerivedAttributeSymbol::create_side_effects()
                 blk += "// Initial value is the largest integer less than or equal to age.";
                 blk += "ss_attr.set((int)std::floor(age.get()));";
                 blk += "// Time to wait for next change is the fraction of time remaining to the next integer boundary";
-                blk += "ss_time = time + (1 - (age.get() - (int)age.get()));";
+                blk += "ss_time = time + (1 - (age.get() - (int)std::floor(age.get())));";
             }
             else if (tok == token::TK_self_scheduling_int && av->name == "time") {
                 blk += "// Initial value is the largest integer less than or equal to time.";
