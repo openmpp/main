@@ -26,7 +26,7 @@ public:
      * @param agent The agent.
      */
     TypeOfLinkSymbol(const Symbol *agent, bool single)
-        : TypeSymbol((single ? "link_ptr<" : "multi_link<") + agent->name + ">")
+        : TypeSymbol((single ? "entity_ptr<" : "multi_link<") + agent->name + ">")
         , single(single)
     {
     }

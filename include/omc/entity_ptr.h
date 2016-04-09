@@ -1,6 +1,6 @@
 /**
- * @file    link_ptr.h
- * Declares the link_ptr class and associated classes and templates
+ * @file    entity_ptr.h
+ * Declares the entity_ptr class and associated classes and templates
  *         
  */
 // Copyright (c) 2013-2016 OpenM++ contributors
@@ -15,14 +15,14 @@
 using namespace std;
 
 template <class A>
-class link_ptr
+class entity_ptr
 {
     // Storage for the real pointer to the agent
     A* ptr;
 
 public:
     // constructor
-    link_ptr(A* p = nullptr)
+    entity_ptr(A* p = nullptr)
         : ptr(p)
     {
     }
@@ -50,7 +50,7 @@ public:
             return ptr;
         }
         else {
-            // link_ptr is nullptr, return pointer to the 'null' agent
+            // entity_ptr is nullptr, return pointer to the 'null' agent
             return &A::om_null_agent;
         }
     }
@@ -66,21 +66,21 @@ public:
             return *ptr;
         }
         else {
-            // link_ptr is nullptr, return reference to the 'null' agent
+            // entity_ptr is nullptr, return reference to the 'null' agent
             return A::om_null_agent;
         }
     }
 };
 
 template <class A>
-inline bool operator==(const link_ptr<A>& lhs, const link_ptr<A>& rhs) { return lhs.get() == rhs.get(); }
+inline bool operator==(const entity_ptr<A>& lhs, const entity_ptr<A>& rhs) { return lhs.get() == rhs.get(); }
 
 template <class A>
-inline bool operator==(link_ptr<A>& lhs, link_ptr<A>& rhs) { return lhs.get() == rhs.get(); }
+inline bool operator==(entity_ptr<A>& lhs, entity_ptr<A>& rhs) { return lhs.get() == rhs.get(); }
 
 template <class A>
-inline bool operator!=(const link_ptr<A>& lhs, const link_ptr<A>& rhs) { return !(lhs == rhs); }
+inline bool operator!=(const entity_ptr<A>& lhs, const entity_ptr<A>& rhs) { return !(lhs == rhs); }
 
 template <class A>
-inline bool operator!=(link_ptr<A>& lhs, link_ptr<A>& rhs) { return !(lhs == rhs); }
+inline bool operator!=(entity_ptr<A>& lhs, entity_ptr<A>& rhs) { return !(lhs == rhs); }
 

@@ -17,7 +17,7 @@
 #endif
 
 #include "omc/less_deref.h"
-#include "omc/link_ptr.h"
+#include "omc/entity_ptr.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ using namespace std;
 /** Comparison operator for link<E> */
 template<typename E>
 struct linkE_comp {
-  bool operator() (const link_ptr<E>& lhs, const link_ptr<E>& rhs) const
+  bool operator() (const entity_ptr<E>& lhs, const entity_ptr<E>& rhs) const
   { return *lhs.get() < *rhs.get(); }
 };
 
@@ -69,7 +69,7 @@ public:
         return size();
     }
 
-    link_ptr<E> at(size_t index)
+    entity_ptr<E> at(size_t index)
     {
         if (index < 0 || index >= entities.size()) {
             return nullptr;
@@ -92,12 +92,12 @@ public:
     }
 
     // For Modgen compatibility
-    link_ptr<E> Item(size_t index)
+    entity_ptr<E> Item(size_t index)
     {
         return at(index);
     }
 
-    link_ptr<E> GetRandom(double uniform_draw)
+    entity_ptr<E> GetRandom(double uniform_draw)
     {
         if (entities.size() > 0) {
             size_t index = (size_t) (uniform_draw * entities.size());
@@ -113,7 +113,7 @@ public:
     void insert(E * entity)
     {
 #if RB_TREE
-        auto tmp = new rb_node<link_ptr<E>>(link_ptr<E>(entity), entities.NIL);
+        auto tmp = new rb_node<entity_ptr<E>>(entity_ptr<E>(entity), entities.NIL);
 	    entities.rb_insert(tmp);
 #else
         entities.insert(entity);
@@ -163,12 +163,12 @@ private:
 
     //* storage - a set of entity links, ordered by entity_id
 #if RB_TREE
-    rb_tree<link_ptr<E>, linkE_comp<E> > entities;
+    rb_tree<entity_ptr<E>, linkE_comp<E> > entities;
 #else
-    set<link_ptr<E>, linkE_comp<E> > entities;
+    set<entity_ptr<E>, linkE_comp<E> > entities;
 
     //* storage - a vector (for random access) of entity links, ordered as in entities
-    vector<link_ptr<E> > entities_ra;
+    vector<entity_ptr<E> > entities_ra;
 
     //* indicates that entities_ra requires reconstruction
     bool is_dirty;
