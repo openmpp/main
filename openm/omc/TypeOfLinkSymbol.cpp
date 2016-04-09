@@ -12,7 +12,7 @@ using namespace std;
 TypeOfLinkSymbol *TypeOfLinkSymbol::get_single(const Symbol *agent)
 {
     TypeOfLinkSymbol *ls = nullptr;
-    string type_name = "link<" + agent->name + ">";
+    string type_name = "link_ptr<" + agent->name + ">";
     Symbol *sym = get_symbol(type_name);
     if (sym) ls = dynamic_cast<TypeOfLinkSymbol *>(sym);
     else ls = new TypeOfLinkSymbol(agent, true);

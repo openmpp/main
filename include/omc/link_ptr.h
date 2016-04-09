@@ -1,9 +1,9 @@
 /**
- * @file    Link.h
- * Declares the Link class and associated classes and templates
+ * @file    link_ptr.h
+ * Declares the link_ptr class and associated classes and templates
  *         
  */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2016 OpenM++ contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -15,14 +15,14 @@
 using namespace std;
 
 template <class A>
-class link
+class link_ptr
 {
     // Storage for the real pointer to the agent
     A* ptr;
 
 public:
     // constructor
-    link(A* p = nullptr)
+    link_ptr(A* p = nullptr)
         : ptr(p)
     {
     }
@@ -50,7 +50,7 @@ public:
             return ptr;
         }
         else {
-            // link is nullptr, return pointer to the 'null' agent
+            // link_ptr is nullptr, return pointer to the 'null' agent
             return &A::om_null_agent;
         }
     }
@@ -66,21 +66,21 @@ public:
             return *ptr;
         }
         else {
-            // link is nullptr, return reference to the 'null' agent
+            // link_ptr is nullptr, return reference to the 'null' agent
             return A::om_null_agent;
         }
     }
 };
 
 template <class A>
-inline bool operator==(const link<A>& lhs, const link<A>& rhs) { return lhs.get() == rhs.get(); }
+inline bool operator==(const link_ptr<A>& lhs, const link_ptr<A>& rhs) { return lhs.get() == rhs.get(); }
 
 template <class A>
-inline bool operator==(link<A>& lhs, link<A>& rhs) { return lhs.get() == rhs.get(); }
+inline bool operator==(link_ptr<A>& lhs, link_ptr<A>& rhs) { return lhs.get() == rhs.get(); }
 
 template <class A>
-inline bool operator!=(const link<A>& lhs, const link<A>& rhs) { return !(lhs == rhs); }
+inline bool operator!=(const link_ptr<A>& lhs, const link_ptr<A>& rhs) { return !(lhs == rhs); }
 
 template <class A>
-inline bool operator!=(link<A>& lhs, link<A>& rhs) { return !(lhs == rhs); }
+inline bool operator!=(link_ptr<A>& lhs, link_ptr<A>& rhs) { return !(lhs == rhs); }
 

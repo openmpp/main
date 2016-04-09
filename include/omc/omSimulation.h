@@ -20,7 +20,7 @@
 #include "omc/globals0.h"
 
 #include "om_types0.h" // fundamental model types
-#include "omc/link.h"
+#include "omc/link_ptr.h"
 #include "omc/Range.h"
 #include "omc/Partition.h"
 #include "omc/Classification.h"

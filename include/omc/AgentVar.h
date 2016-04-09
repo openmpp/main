@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "link.h"
+#include "link_ptr.h"
 
 using namespace std;
 
@@ -463,7 +463,7 @@ public:
     //}
 
     // operator: pointer
-    // Pass it on the contained <link>
+    // Pass it on the contained <link_ptr>
     T operator->()
     {
         auto val = this->get();
@@ -471,7 +471,7 @@ public:
     }
 
     // operator: dereference
-    // Pass it on the contained <link>
+    // Pass it on the contained <link_ptr>
     T operator*()
     {
         auto val = this->get();

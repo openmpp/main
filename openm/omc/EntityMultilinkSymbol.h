@@ -29,7 +29,7 @@ public:
      *
      * @param [in,out] sym Symbol to be morphed.
      * @param agent        The containing agent.
-     * @param type         The type of the link in the set, e.g. link<Thing>
+     * @param type         The type of the link in the set, e.g. link_ptr<Thing>
      * @param decl_loc     (Optional) the declaration location.
      */
     EntityMultilinkSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())

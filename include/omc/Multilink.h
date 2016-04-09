@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "link.h"
+#include "link_ptr.h"
 
 using namespace std;
 
@@ -69,10 +69,10 @@ public:
         return non_empty;
     }
 
-    void insert(link<B> lnk)
+    void insert(link_ptr<B> lnk)
     {
         bool found = false;
-        link<B> *hole = nullptr; // pointer to the first hole in the vector, if there is one
+        link_ptr<B> *hole = nullptr; // pointer to the first hole in the vector, if there is one
 
 	    for (auto &item : storage) {
 		    if (item  == lnk) {
@@ -101,7 +101,7 @@ public:
 	    }
     }
 
-    void erase(link<B> lnk)
+    void erase(link_ptr<B> lnk)
     {
         for (auto &item : storage) {
             if (item == lnk) {
@@ -129,21 +129,21 @@ public:
     }
 
     // Modgen member functions for multilinks
-    void Add(link<B> lnk)
+    void Add(link_ptr<B> lnk)
     {
         insert(lnk);
     }
 
-    void Remove(link<B> lnk)
+    void Remove(link_ptr<B> lnk)
     {
         erase(lnk);
     }
 
-    link<B> GetNext(int start, int *next_pos)
+    link_ptr<B> GetNext(int start, int *next_pos)
     {
         int	index;
-        link<B>	lnk;
-        link<B>	next_lnk = nullptr;
+        link_ptr<B>	lnk;
+        link_ptr<B>	next_lnk = nullptr;
 
         *next_pos = -1;
         for ( index = start; index < (int)storage.size(); ++index ) {
@@ -178,7 +178,7 @@ public:
     // TODO provide access to embedded iterator in std::vector
 
     // storage
-    vector<link<B>> storage;
+    vector<link_ptr<B>> storage;
 
 	// offset to containing agent
 	static size_t offset_in_agent;
