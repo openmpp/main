@@ -41,38 +41,6 @@ if (!-d $src_dir) {
 }
 
 #
-# MODEL.H
-#
-# Insert #include "custom_early.h"
-#
-
-{
-	my $file_name = 'MODEL.H';
-	my $model_h = "${src_dir}/${file_name}";
-	if (!-f $model_h) {
-		logmsg error, $script_name, "File ${model_h} not found\n";
-		exit 1;
-	}
-	(my $fh, my $filename) = tempfile();
-	# Insert a line in model.h to include custom_early.h before actors.h
-	open MODEL_H, "<".$model_h;
-	while (<MODEL_H>) {
-		chomp;
-		my $line = $_;
-		if ($line =~ /actors/) {
-			my $modified_line = "#include \"custom_early.h\" // Inserted by patch_modgen11_outputs after Modgen compilation.\n";
-			print $fh $modified_line;
-			print "patched ${file_name}: $modified_line";
-		}
-		print $fh $line."\n";
-	}
-	close $fh;
-	close MODEL_CPP;
-	copy $filename, $model_h;
-	unlink $filename;
-}
-
-#
 # ACTORS.CPP
 #
 # Comment #define MAIN_MODULE
@@ -117,6 +85,9 @@ if (!-d $src_dir) {
 #
 # ACTORS.H
 #
+# Also, build list of entity names in the model for subsequent patches
+#
+my @entities;
 
 {
 	my $file_name = 'ACTORS.H';
@@ -132,6 +103,12 @@ if (!-d $src_dir) {
 	while (<ACTORS_H>) {
 		chomp;
 		my $line = $_;
+		
+		if ($line =~ /^class (\w+);$/ ) {
+			# build list of entity names
+			push @entities, $1;
+		}
+		
 		print $fh $line."\n";
 		if ($line =~ /^typedef\s+(\w+)\s+TIME;$/) {
 			my $typ = $1;
@@ -170,5 +147,46 @@ if (!-d $src_dir) {
 	copy $filename, $actors_h;
 	unlink $filename;
 }
+
+#
+# MODEL.H
+#
+
+{
+	my $file_name = 'MODEL.H';
+	my $model_h = "${src_dir}/${file_name}";
+	if (!-f $model_h) {
+		logmsg error, $script_name, "File ${model_h} not found\n";
+		exit 1;
+	}
+	(my $fh, my $filename) = tempfile();
+	open MODEL_H, "<".$model_h;
+	while (<MODEL_H>) {
+		chomp;
+		my $line = $_;
+		if ($line =~ /actors/) {
+			# insert forward declarations for entities before #include "custom_early.h"
+			print $fh "// The following block was inserted by patch_modgenXX_outputs after Modgen compilation:\n";
+			print $fh "namespace mm {\n";
+			for my $entity (@entities) {
+				print $fh "\tclass ${entity};\n";
+				print $fh "\ttypedef ${entity} * ${entity}_ptr;\n";
+			}
+			print $fh "};\n";
+			print "patched ${file_name}: inserted forward declarations for entities in MODEL.H\n";
+
+			# Insert a line in model.h to include custom_early.h before actors.h
+			my $modified_line = "#include \"custom_early.h\" // Inserted by patch_modgen11_outputs after Modgen compilation.\n";
+			print $fh $modified_line;
+			print "patched ${file_name}: $modified_line";
+		}
+		print $fh $line."\n";
+	}
+	close $fh;
+	close MODEL_CPP;
+	copy $filename, $model_h;
+	unlink $filename;
+}
+
 
 exit 0;

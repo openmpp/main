@@ -8,7 +8,7 @@ use File::Temp qw(tempfile);
 use File::Copy;
 
 
-my $version = 0.1;
+my $version = 0.2;
 
 if ( $#ARGV != 0 ) {
 	# must have 1 argument
@@ -60,10 +60,10 @@ if (!-d $src_dir) {
 		chomp;
 		my $line = $_;
 		if ($line =~ /poDerivedStates->Set_ssint_age\( int\(value\) \);/) {
-			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
+			my $original_line = "//".$line." // Modified by patch_modgenXX_outputs after Modgen compilation.\n";
 			print $fh $original_line;
 			$line =~ s/ int/ std::floor/;
-			$line .= " // Modified by patch_modgen12_outputs after Modgen compilation.";
+			$line .= " // Modified by patch_modgenXX_outputs after Modgen compilation.";
 			print "patched ${file_name}: ${line}\n";
 		}
 		print $fh $line."\n";
@@ -76,6 +76,9 @@ if (!-d $src_dir) {
 #
 # ACTORS.H
 #
+# Also, build list of entity names in the model for subsequent patches
+#
+my @entities;
 
 {
 	my $file_name = 'ACTORS.H';
@@ -91,11 +94,17 @@ if (!-d $src_dir) {
 	while (<ACTORS_H>) {
 		chomp;
 		my $line = $_;
+		
+		if ($line =~ /^class (\w+);$/ ) {
+			# build list of entity names
+			push @entities, $1;
+		}
+		
 		if ($line =~ /\tcounter\tssint_age;/ || $line =~ /\tcounter\tssint_time;/ ) {
-			my $original_line = "//".$line." // Modified by patch_modgen12_outputs after Modgen compilation.\n";
+			my $original_line = "//".$line." // Modified by patch_modgenXX_outputs after Modgen compilation.\n";
 			print $fh $original_line;
 			$line =~ s/\tcounter\t/\tinteger\t/;
-			$line .= " // Modified by patch_modgen12_outputs after Modgen compilation.";
+			$line .= " // Modified by patch_modgenXX_outputs after Modgen compilation.";
 			print "patched ${file_name}: ${line}\n";
 		}
 		print $fh $line."\n";
@@ -103,6 +112,41 @@ if (!-d $src_dir) {
 	close $fh;
 	close ACTORS_H;
 	copy $filename, $actors_h;
+	unlink $filename;
+}
+
+#
+# MODEL.H
+#
+
+{
+	my $file_name = 'MODEL.H';
+	my $model_h = "${src_dir}/${file_name}";
+	if (!-f $model_h) {
+		logmsg error, $script_name, "File ${model_h} not found\n";
+		exit 1;
+	}
+	(my $fh, my $filename) = tempfile();
+	open MODEL_H, "<".$model_h;
+	while (<MODEL_H>) {
+		chomp;
+		my $line = $_;
+		if ($line eq '#include "custom_early.h"' ) {
+			# insert forward declarations for entities before #include "custom_early.h"
+			print $fh "// The following block was inserted by patch_modgenXX_outputs after Modgen compilation:\n";
+			print $fh "namespace mm {\n";
+			for my $entity (@entities) {
+				print $fh "\tclass ${entity};\n";
+				print $fh "\ttypedef ${entity} * ${entity}_ptr;\n";
+			}
+			print $fh "};\n";
+			print "patched ${file_name}: inserted forward declarations for entities in MODEL.H\n";
+		}
+		print $fh $line."\n";
+	}
+	close $fh;
+	close MODEL_H;
+	copy $filename, $model_h;
 	unlink $filename;
 }
 

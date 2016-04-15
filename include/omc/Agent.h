@@ -11,6 +11,7 @@
 #include <forward_list>
 #include <sstream>
 #include <cassert>
+#include "globals0.h" // for ModelExit
 #include "om_types0.h" // for Time
 
 using namespace std;

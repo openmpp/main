@@ -105,6 +105,7 @@ void CodeGen::do_preamble()
     t1 += "#include \"omc/Range.h\"";
     t1 += "#include \"omc/Partition.h\"";
     t1 += "#include \"omc/Classification.h\"";
+    t1 += "#include \"omc/entity_ptr.h\"";
     t1 += "";
 
     // om_declarations.h
@@ -539,6 +540,13 @@ void CodeGen::do_ModelShutdown()
 
 void CodeGen::do_agents()
 {
+    // early forward declarations of entity classes and pointers
+    t1 += "// early forward declarations of entity classes and pointers\n";
+    for (auto agent : Symbol::pp_all_agents) {
+        t1 += "class " + agent->name + ";";
+        t1 += "typedef entity_ptr<" + agent->name + "> " + agent->name + "_ptr;";
+    }
+
 	h += "// forward declarations of model agent classes (for links)";
     for (auto agent : Symbol::pp_all_agents) {
         h += "class " + agent->name + ";";
