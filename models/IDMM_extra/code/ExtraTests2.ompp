@@ -1,0 +1,42 @@
+actor Host
+{
+    //EN Lifetime birthdays
+    int lifetime_birthdays;
+
+    //EN Lifetime New Year's
+    int lifetime_new_years;
+
+    //EN Lifetime party cleanups
+    int lifetime_party_cleanups;
+
+    //EN Celebrate birthday
+    void celebrate_birthday();
+
+    //EN Celebrate New Year's
+    void celebrate_new_year();
+
+    //EN Cleanup after party
+    void party_clean_up();
+
+    hook celebrate_birthday, self_scheduling_int(age), 1;
+    hook celebrate_new_year, self_scheduling_int(time), 2;
+
+    hook party_clean_up, self_scheduling_int(age), 3;
+    hook party_clean_up, self_scheduling_int(time), 4;
+};
+
+void Host::celebrate_birthday()
+{
+    lifetime_birthdays++;
+}
+
+void Host::celebrate_new_year()
+{
+    lifetime_new_years++;
+}
+
+void Host::party_clean_up()
+{
+    lifetime_party_cleanups++;
+}
+

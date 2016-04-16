@@ -1606,11 +1606,21 @@ void DerivedAttributeSymbol::create_side_effects()
             assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
             CodeBlock& cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
             cxx += injection_description();
+            if (any_to_hooks) {
+                cxx += "bool " + flag_name() + " = false;";
+            }
             cxx += "{";
             cxx += "// Maintain " + pretty_name();
             cxx += "auto & ss_attr = " + name + ";";
             cxx += "auto & ss_time = " + ait->name + ";";
+            if (any_to_hooks) {
+                cxx += "auto & ss_flag = " + flag_name() + ";";
+            }
             cxx += "if (current_time == ss_time) {";
+            if (any_to_hooks) {
+                cxx += "// Set local flag to call hooked function(s) below";
+                cxx += "ss_flag = true;";
+            }
 
             // attribute-specific code (begin)
             switch (tok) {
@@ -1780,9 +1790,18 @@ void DerivedAttributeSymbol::create_side_effects()
 
             // Code injection: self-scheduling event implement function
             cif += injection_description();
+            if (any_to_hooks) {
+                cif += "bool " + flag_name() + " = false;";
+            }
             cif += "if (current_time == " + ait->name + ") {";
             cif += "auto & ss_attr = " + name + ";";
             cif += "auto & ss_time = " + ait->name + ";";
+            if (any_to_hooks) {
+                cif += "auto & ss_flag = " + flag_name() + ";";
+                cif += "";
+                cif += "// Set local flag to call hooked function(s) below";
+                cif += "ss_flag = true;";
+            }
             if (tok == token::TK_self_scheduling_split) {
                 cif += "auto part = ss_attr.get(); // working copy of partition";
             }
@@ -2007,9 +2026,18 @@ void DerivedAttributeSymbol::create_side_effects()
 
             // Code injection: self-scheduling event implement function
             cif += injection_description();
+            if (any_to_hooks) {
+                cif += "bool " + flag_name() + " = false;";
+            }
             cif += "if (current_time == " + ait->name + ") {";
             cif += "auto & ss_attr = " + name + ";";
             cif += "auto & ss_time = " + ait->name + ";";
+            if (any_to_hooks) {
+                cif += "auto & ss_flag = " + flag_name() + ";";
+                cif += "";
+                cif += "// Set local flag to call hooked function(s) below";
+                cif += "ss_flag = true;";
+            }
             if (tok == token::TK_self_scheduling_split) {
                 cif += "auto part = ss_attr.get(); // working copy of partition";
             }

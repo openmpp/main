@@ -65,6 +65,7 @@ public:
         , dav(nullptr)
         , ait(nullptr)
         , numeric_id(0)
+        , any_to_hooks(false)
     {
         validate();
         assign_sorting_group();
@@ -413,6 +414,16 @@ public:
      */
     bool is_self_scheduling() const;
 
+    /**
+     * Name for local flag variable used in implement function of self-scheduling event
+     *
+     * @return The name
+     */
+    string flag_name() const
+    {
+        return "flag_" + name;
+    }
+
     string pp_modgen_name() const;
 
     void post_parse(int pass);
@@ -523,9 +534,14 @@ public:
     /**
      * Numeric identifier for the symbol.
      * 
-     * Used to hold nuemric id for self-scheduling agentvars which appear in generated code and in
+     * Used to hold numeric id for self-scheduling agentvars which appear in generated code and in
      * event trace logs.
      */
     int numeric_id;
+
+    /**
+     * Indicates if there are any hooks to this derived attribute
+     */
+    bool any_to_hooks;
 };
 

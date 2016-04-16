@@ -8,6 +8,7 @@
 #pragma once
 #include "Symbol.h"
 #include "EntityFuncSymbol.h"
+#include "DerivedAttributeSymbol.h"
 
 using namespace std;
 
@@ -26,7 +27,9 @@ public:
         , from(from->stable_rp())
         , pp_from(nullptr)
         , to(to->stable_rp())
-        , pp_to(nullptr)
+        , to_is_self_scheduling(false)
+        , pp_to_fn(nullptr)
+        , pp_to_ss(nullptr)
         , hook_fn(nullptr)
         , order(order)
     {
@@ -92,9 +95,24 @@ public:
     Symbol*& to;
 
     /**
-     * The 'to' function for the hook (typed pointer)
+     * The 'to' target is a self-scheduling attribute
      */
-    EntityFuncSymbol *pp_to;
+    bool to_is_self_scheduling;
+
+    /**
+     * The name used for the 'to' target
+     */
+    string to_name;
+
+    /**
+     * The 'to' function for the hook (if function)
+     */
+    EntityFuncSymbol *pp_to_fn;
+
+    /**
+     * The 'to' function for the hook (if self-scheduling attribute)
+     */
+    DerivedAttributeSymbol *pp_to_ss;
 
     /**
      * The hook implement function for the 'to' function
