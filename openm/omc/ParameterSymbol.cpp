@@ -8,6 +8,7 @@
 #include <cassert>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "ParameterSymbol.h"
 #include "LanguageSymbol.h"
 #include "NumericSymbol.h"
@@ -63,6 +64,17 @@ void ParameterSymbol::post_parse(int pass)
         pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
         if (!pp_datatype) {
             pp_error("error : '" + datatype->name + "' is not a datatype in parameter '" + name + "'");
+        }
+        if (datatype2) {
+            // redeclaration
+            assert(!pp_datatype2); // no use allowed in parse phase
+            pp_datatype2 = dynamic_cast<TypeSymbol *>(pp_symbol(datatype2));
+            if (!pp_datatype2) {
+                pp_error("error : '" + (*datatype2)->name + "' is not a datatype in parameter '" + name + "'");
+            }
+            if (pp_datatype != pp_datatype2) {
+                pp_error("error : parameter '" + name + "' declared with type '" + pp_datatype->name + "' but initialized with type '" + pp_datatype2->name + "'");
+            }
         }
         break;
     }
@@ -122,6 +134,22 @@ void ParameterSymbol::post_parse(int pass)
         }
         // clear the parse version to avoid inadvertant use post-parse
         enumeration_list2.clear();
+
+        // check that declaration and initializer dimensions are identical
+        if (source == fixed_parameter || source == scenario_parameter) {
+            // rank check
+            if (pp_enumeration_list.size() != pp_enumeration_list2.size()) {
+                pp_error("error : parameter '" + name + "'"
+                    " declared with rank " + to_string(pp_enumeration_list.size()) +
+                    " but initialized with rank " + to_string(pp_enumeration_list2.size()));
+            }
+            else {
+                if (!std::equal(pp_enumeration_list.begin(), pp_enumeration_list.end(), pp_enumeration_list2.begin())) {
+                    pp_error("error : parameter '" + name + "'"
+                        " declaration dimensions differ from initializion dimensions");
+                }
+            }
+        }
 
         // add this parameter to the complete list of parameters
         pp_all_parameters.push_back(this);

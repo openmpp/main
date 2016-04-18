@@ -32,6 +32,8 @@ public:
         , pp_datatype(nullptr)
         , lookup_fn(nullptr)
         , haz1rate(false)
+        , datatype2(nullptr)
+        , pp_datatype2(nullptr)
         , pp_parameter_id(0)
     {
     }
@@ -311,6 +313,16 @@ public:
      * True if parameter declared as haz1rate
      */
     bool haz1rate;
+
+    /**
+     * The data type of the parameter contents - redeclaration
+     */
+    Symbol ** datatype2;
+
+    /**
+     * The data type of the parameter contents - redeclaration
+     */
+    TypeSymbol *pp_datatype2;
 
     /**
      * Numeric identifier of the parameter. Used for communicating with the metadata API.
