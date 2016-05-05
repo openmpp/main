@@ -20,7 +20,17 @@
 * Functionality shared by input_csv and output_csv.
 */
 class core_csv {
+
+    // allow access to private members from derived classes
+    friend class input_csv;
+    friend class output_csv;
+
 public:
+
+    core_csv()
+        : rec_num(0)
+    {
+    }
 
 	/**
 	* Expand leading $XYZ/the/file.csv using environment variable XYZ
@@ -41,6 +51,23 @@ public:
 			}
 		}
 	}
+
+    /**
+     * Get the file name.
+     *
+     * @param index Zero-based index for the fields
+     *
+     * @return The file name (expanded if leading $env)
+     */
+    std::string get_file_name() const
+    {
+        return file_name;
+    }
+
+private:
+    std::string file_name;
+    std::vector<double> fields;
+    long rec_num;
 };
 
 
@@ -50,12 +77,11 @@ public:
  * A csv file can be opened for forward reading, one record at a time.  Forward seek capability
  * is implemented. A record is split into numeric values which can be accessed by index using the [] operator.
  */
-class input_csv : core_csv {
+class input_csv : public core_csv {
 
 public:
     // ctor
     input_csv()
-        : rec_num(0)
     {
     }
 
@@ -264,10 +290,7 @@ public:
     }
 
 private:
-    std::string file_name;
-    std::vector<double> fields;
     std::ifstream input_stream;
-    long rec_num;
 };
 
 /**
@@ -278,12 +301,11 @@ private:
  * number of the record which would be written next, or equivalently the number of records
  * written so far. Fields with non-finite values are output as empty values in the csv.
  */
-class output_csv : core_csv {
+class output_csv : public core_csv {
 
 public:
     // ctor
     output_csv()
-        : rec_num(0)
     {
     }
 
@@ -496,8 +518,5 @@ public:
     }
 
 	private:
-    std::string file_name;
-    std::vector<double> fields;
     std::ofstream output_stream;
-    long rec_num;
 };
