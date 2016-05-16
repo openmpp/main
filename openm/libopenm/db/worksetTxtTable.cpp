@@ -25,7 +25,6 @@ namespace openm
     // Columns type for workset_txt row
     static const type_info * typeWorksetTxtRow[] = { 
         &typeid(decltype(WorksetTxtRow::setId)), 
-        &typeid(decltype(WorksetTxtRow::modelId)), 
         &typeid(decltype(WorksetTxtRow::langId)), 
         &typeid(decltype(WorksetTxtRow::descr)),
         &typeid(decltype(WorksetTxtRow::note))
@@ -42,7 +41,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new WorksetTxtRow(); }
         int size(void) const { return sizeWorksetTxtRow; }
-        const type_info ** columnTypes(void) const { return typeWorksetTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeWorksetTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -51,15 +50,12 @@ namespace openm
                 dynamic_cast<WorksetTxtRow *>(i_row)->setId = (*(int *)i_value);
                 break;
             case 1:
-                dynamic_cast<WorksetTxtRow *>(i_row)->modelId = (*(int *)i_value);
-                break;
-            case 2:
                 dynamic_cast<WorksetTxtRow *>(i_row)->langId = (*(int *)i_value);
                 break;
-            case 3:
+            case 2:
                 dynamic_cast<WorksetTxtRow *>(i_row)->descr = ((const char *)i_value);
                 break;
-            case 4:
+            case 3:
                 dynamic_cast<WorksetTxtRow *>(i_row)->note = ((const char *)i_value);
                 break;
             default:
@@ -76,12 +72,10 @@ IWorksetTxtTable::~IWorksetTxtTable(void) throw() { }
 WorksetTxtTable::~WorksetTxtTable(void) throw() { }
 
 // select table rows
-vector<WorksetTxtRow> IWorksetTxtTable::select(IDbExec * i_dbExec, int i_modelId, int i_langId)
+vector<WorksetTxtRow> IWorksetTxtTable::select(IDbExec * i_dbExec, int i_langId)
 {
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
 
     return 
         WorksetTxtTable::select(i_dbExec, sWhere);
@@ -101,8 +95,8 @@ vector<WorksetTxtRow> WorksetTxtTable::select(IDbExec * i_dbExec, const string &
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = WorksetTxtRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT set_id, model_id, lang_id, descr, note FROM workset_txt " + i_where + " ORDER BY 1, 3", 
+    IRowBaseVec vec = i_dbExec->selectRowVector(
+        "SELECT set_id, lang_id, descr, note FROM workset_txt " + i_where + " ORDER BY 1, 2", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), WorksetTxtRow::keyLess);

@@ -115,7 +115,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "meas" + to_string(expr->index);
-        tableExpr.src = "OM_AVG(acc" + to_string(expr->index) + ")";
+        tableExpr.srcExpr = "OM_AVG(acc" + to_string(expr->index) + ")";
         metaRows.tableExpr.push_back(tableExpr);
 
         // Labels and notes for measures

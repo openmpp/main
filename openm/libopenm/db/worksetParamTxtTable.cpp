@@ -1,4 +1,4 @@
-// OpenM++ data library: workset_parameter_txt table
+// OpenM++ data library: workset_parameter_txt join to model_parameter_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // workset_parameter_txt table implementation
+    // workset_parameter_txt join to model_parameter_dic table implementation
     class WorksetParamTxtTable : public IWorksetParamTxtTable
     {
     public:
@@ -22,7 +22,7 @@ namespace openm
         WorksetParamTxtTable & operator=(const WorksetParamTxtTable & i_table) = delete;
     };
 
-    // Columns type for workset_parameter_txt row
+    // Columns type for workset_parameter_txt join to model_parameter_dic row
     static const type_info * typeWorksetParamTxtRow[] = { 
         &typeid(decltype(WorksetParamTxtRow::setId)), 
         &typeid(decltype(WorksetParamTxtRow::modelId)), 
@@ -31,7 +31,7 @@ namespace openm
         &typeid(decltype(WorksetParamTxtRow::note))
     };
 
-    // Size (number of columns) for workset_parameter_txt row
+    // Size (number of columns) for workset_parameter_txt join to model_parameter_dic row
     static const int sizeWorksetParamTxtRow = sizeof(typeWorksetParamTxtRow) / sizeof(const type_info *);
 
     // Row adapter to select workset_parameter_txt rows
@@ -42,7 +42,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new WorksetParamTxtRow(); }
         int size(void) const { return sizeWorksetParamTxtRow; }
-        const type_info ** columnTypes(void) const { return typeWorksetParamTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeWorksetParamTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -79,9 +79,9 @@ WorksetParamTxtTable::~WorksetParamTxtTable(void) throw() { }
 vector<WorksetParamTxtRow> IWorksetParamTxtTable::select(IDbExec * i_dbExec, int i_setId, int i_langId)
 {
     string sWhere = "";
-    if (i_setId > 0 && i_langId < 0) sWhere = " WHERE set_id = " + to_string(i_setId);
-    if (i_setId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_setId > 0 && i_langId >= 0) sWhere = " WHERE set_id = " + to_string(i_setId) + " AND lang_id = " + to_string(i_langId);
+    if (i_setId > 0 && i_langId < 0) sWhere = " WHERE T.set_id = " + to_string(i_setId);
+    if (i_setId <= 0 && i_langId >= 0) sWhere = " WHERE T.lang_id = " + to_string(i_langId);
+    if (i_setId > 0 && i_langId >= 0) sWhere = " WHERE T.set_id = " + to_string(i_setId) + " AND T.lang_id = " + to_string(i_langId);
 
     return 
         WorksetParamTxtTable::select(i_dbExec, sWhere);
@@ -91,7 +91,7 @@ vector<WorksetParamTxtRow> IWorksetParamTxtTable::select(IDbExec * i_dbExec, int
 vector<WorksetParamTxtRow> IWorksetParamTxtTable::byKey(IDbExec * i_dbExec, int i_setId, int i_paramId, int i_langId)
 {
     string sWhere = 
-        " WHERE set_id = " + to_string(i_setId) + " AND parameter_id = " + to_string(i_paramId) + " AND lang_id = " + to_string(i_langId);
+        " WHERE T.set_id = " + to_string(i_setId) + " AND M.model_parameter_id = " + to_string(i_paramId) + " AND T.lang_id = " + to_string(i_langId);
     return 
         WorksetParamTxtTable::select(i_dbExec, sWhere);
 }
@@ -102,8 +102,12 @@ vector<WorksetParamTxtRow> WorksetParamTxtTable::select(IDbExec * i_dbExec, cons
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = WorksetParamTxtRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT set_id, model_id, parameter_id, lang_id, note FROM workset_parameter_txt " + i_where + " ORDER BY 1, 3, 4", 
+    IRowBaseVec vec = i_dbExec->selectRowVector(
+        "SELECT T.set_id, M.model_id, M.model_parameter_id, T.lang_id, T.note" \
+        " FROM workset_parameter_txt T" \
+        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = T.parameter_hid)" +
+        i_where + 
+        " ORDER BY 1, 3, 4", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), WorksetParamTxtRow::keyLess);

@@ -61,10 +61,6 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
 //  default working set for that model
 RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec) const
 {
-    // find the model
-    const ModelDicRow * mdRow = metaStore->modelDic->byKey(modelId);
-    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
-
     // if this is not a part of task then and model status not "initial"
     // then exit with "no more" data to signal all input completed because it was single input set
     ModelStatus mStatus = theModelRunState.status();
@@ -149,7 +145,7 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
         " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
-        to_string(mdRow->modelId) + ", " +
+        to_string(modelId) + ", " +
         toQuoted(string(OM_MODEL_NAME) + " " + dtStr) + ", " +
         to_string(subSampleCount) + ", " +
         to_string(subSampleCount) + ", " +
@@ -170,13 +166,13 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     }
 
     // find workset: next set of modeling task, set specified by model run options or default set
-    nSetId = findWorkset(nSetId, i_dbExec, mdRow);
+    nSetId = findWorkset(nSetId, i_dbExec);
 
     // save run options in run_option table
     createRunOptions(nRunId, nSetId, i_dbExec);
 
     // copy input parameters from "base" run and working set into new run id
-    createRunParameters(nRunId, nSetId, i_dbExec, mdRow);
+    createRunParameters(nRunId, nSetId, i_dbExec);
 
     // completed: commit the changes
     i_dbExec->commit();
@@ -188,17 +184,17 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
 void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const
 {
     // save options in database
-    for (NoCaseMap::const_iterator propIt = argOpts().args.cbegin(); propIt != argOpts().args.cend(); propIt++) {
+    for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
         // skip run id and connection string: it is already in database
-        if (propIt->first == RunOptionsKey::runId || propIt->first == RunOptionsKey::dbConnStr) continue;
+        if (optIt->first == RunOptionsKey::runId || optIt->first == RunOptionsKey::dbConnStr) continue;
 
         // remove subsample count from run_option, it is stored in run_lst
-        // if (propIt->first == RunOptionsKey::subSampleCount) continue;
+        // if (optIt->first == RunOptionsKey::subSampleCount) continue;
 
         i_dbExec->update(
             "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
-            to_string(i_runId) + ", " + toQuoted(propIt->first) + ", " + toQuoted(propIt->second) + ")"
+            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second) + ")"
             );
     }
 
@@ -227,7 +223,7 @@ void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExe
 //   use value of parameter from working set of model parameters
 //   if working set based on model run then search by base run id to get parameter value
 //   else raise an exception
-void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const
+void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const
 {
     // find input parameters workset
     if (i_setId <= 0) throw DbException("invalid set id or model working sets not found in database");
@@ -239,44 +235,49 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
     // workset must exist
     vector<WorksetLstRow> wsVec = IWorksetLstTable::byKey(i_dbExec, i_setId);
-    if (wsVec.empty())
-        throw DbException("workset must exist (set id: %d)", i_setId);
+    if (wsVec.empty()) throw DbException("workset must exist (set id: %d)", i_setId);
+
+    const WorksetLstRow & wsRow = wsVec[0];
 
     // validate workset: it must be read-only and must be from the same model
-    if (!wsVec[0].isReadonly) throw DbException("workset must be read-only (set id: %d)", i_setId);
-    if (wsVec[0].modelId != i_modelRow->modelId)
-        throw DbException("invalid workset model id: %d, expected: %d (set id: %d)", wsVec[0].modelId, i_modelRow->modelId, i_setId);
+    if (!wsRow.isReadonly) throw DbException("workset must be read-only (set id: %d)", i_setId);
+    if (wsRow.modelId != modelId)
+        throw DbException("invalid workset model id: %d, expected: %d (set id: %d)", wsRow.modelId, modelId, i_setId);
 
     // get list of model parameters and list of parameters included into workset
     vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
     vector<WorksetParamRow> wsParamVec = IWorksetParamTable::select(i_dbExec, i_setId);
 
     // if base run does not exist then workset must include all model parameters
-    int baseRunId = wsVec[0].baseRunId;
-    bool isBaseRunExist = baseRunId > 0;
+    int baseWsRunId = wsRow.baseRunId;
+    bool isBaseWsRun = baseWsRunId > 0;
+    // if base run does not exist then workset must include all model parameters
     // if (!isBaseRunExist && paramVec.size() != wsParamVec.size()) throw DbException("workset must include all model parameters (set id: %d)", setId);
 
-    // copy parameters into destination run:
-    //   insert new values from run options or source set
-    //   if parameter from base run then insert link to it into run_parameter table
+    // copy parameters into destination run, searching it by following order:
+    //   from run options (command-line, ini-file, profile_option table)
+    //   from workset parameter value table
+    //   if workset based on run then as link to base run of workset
+    // calculate parameter values digest and store only single copy of parameter values
     string sRunId = to_string(i_runId);
-    string sModelId = to_string(i_modelRow->modelId);
-    string sBaseRunId = to_string(baseRunId);
+    string sModelId = to_string(modelId);
+    string sBaseWsRunId = to_string(baseWsRunId);
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
 
-        string paramTblName = i_modelRow->modelPrefix + i_modelRow->paramPrefix + paramIt->dbNameSuffix;
-        string setTblName = i_modelRow->modelPrefix + i_modelRow->setPrefix + paramIt->dbNameSuffix;
+        string paramTblName = paramIt->dbPrefix + metaStore->modelRow->paramPrefix + paramIt->dbSuffix;
+        string setTblName = paramIt->dbPrefix + metaStore->modelRow->setPrefix + paramIt->dbSuffix;
         string argName = string(RunOptionsKey::parameterPrefix) + "." + paramIt->paramName;
 
         // calculate parameter source: command line (or ini-file), workset, based run, run options
-        bool isFromSet = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
         bool isArgOption = argOpts().isOptionExist(argName.c_str());
+        bool isFromSet = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
+        bool isFromBaseRun = false;
 
         // get dimensions name
         int nRank = paramIt->rank;
 
-        vector<ParamDimsRow> paramDimVec = metaStore->paramDims->byModelIdParamId(i_modelRow->modelId, paramIt->paramId);
+        vector<ParamDimsRow> paramDimVec = metaStore->paramDims->byModelIdParamId(modelId, paramIt->paramId);
         if (nRank < 0 || nRank != (int)paramDimVec.size())
             throw DbException("invalid parameter rank or dimensions not found for parameter: %s", paramIt->paramName.c_str());
 
@@ -285,12 +286,12 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             sDimLst += paramDimVec[nDim].name + ", ";
         }
 
-        // execute insert to copy parameter from run parameters, workset or base run
+        // insert parameter from run options
         bool isInserted = false;
         if (isArgOption) {
 
             // find parameter type 
-            const TypeDicRow * typeRow = metaStore->typeDic->byKey(i_modelRow->modelId, paramIt->typeId);
+            const TypeDicRow * typeRow = metaStore->typeDic->byKey(modelId, paramIt->typeId);
             if (typeRow == nullptr)
                 throw DbException("invalid (not found) type of parameter: %s", paramIt->paramName.c_str());
 
@@ -300,41 +301,67 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             // insert the value
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, value) VALUES (" + sRunId + ", " + sVal + ")"
+                "INSERT INTO " + paramTblName + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
                 );
             isInserted = true;
         }
+
+        // copy parameter from workset parameter value table
         if (!isInserted && isFromSet) {
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, " + sDimLst + " value)" +
-                " SELECT " + sRunId + ", " + sDimLst + " value" +
+                "INSERT INTO " + paramTblName + " (run_id, " + sDimLst + " param_value)" +
+                " SELECT " + sRunId + ", " + sDimLst + " param_value" +
                 " FROM " + setTblName + " WHERE set_id = " + to_string(i_setId)
                 );
             isInserted = true;
         }
-        if (!isInserted && isBaseRunExist) {
-            i_dbExec->update(
-                "INSERT INTO run_parameter (run_id, model_id, parameter_id, base_run_id)" \
-                " VALUES (" + sRunId + ", " + sModelId + ", " + to_string(paramIt->paramId) + ", " + sBaseRunId + ")"
-                );
-            isInserted = true;
 
-            // vlaidate: parameter must exist in base run and not a pointer to another base run
+        // insert link to parameter values from workset base run
+        if (!isInserted && isBaseWsRun) {
+
+            i_dbExec->update(
+                "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, run_digest)" \
+                " SELECT " + sRunId + ", E.parameter_hid, E.base_run_id, E.run_digest" \
+                " FROM run_parameter E"
+                " WHERE E.run_id = " + sBaseWsRunId + " AND E.parameter_hid = " + to_string(paramIt->paramHid)
+            );
+
+            // validate: parameter must exist in workset base run
             int nBase = i_dbExec->selectToInt(
                 "SELECT base_run_id FROM run_parameter" \
-                " WHERE run_id = " + sBaseRunId + " AND parameter_id = " + to_string(paramIt->paramId),
+                " WHERE run_id = " + sRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
                 0);
-            if (nBase > 0)
-                throw DbException(
-                    "parameter %d: %s must be included in run (id: %d) by value, not by reference to other run (id: %d) ", 
-                    paramIt->paramId, paramIt->paramName.c_str(), baseRunId, nBase);
+            if (nBase <= 0)
+                throw DbException("parameter %d: %s must be included in run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), baseWsRunId);
 
+            isInserted = isFromBaseRun = true;
         }
+
+        // parameter values must be inserted from one of above sources
         if (!isInserted) {
             if (nRank <= 0)
                 throw DbException("parameter %d not found: %s, it must specified as model run option or be included in workset (set id: %d), ", paramIt->paramId, paramIt->paramName.c_str(), i_setId);
             else
                 throw DbException("parameter %d not found: %s, workset (set id: %d) must include this parameter", paramIt->paramId, paramIt->paramName.c_str(), i_setId);
+        }
+
+        // if new value of parameter inserted then calculte parameter values digest
+        if (!isFromBaseRun) {
+
+            // find parameter type
+            const ParameterNameSizeItem * endItem = parameterNameSizeArr + PARAMETER_NAME_ARR_LEN;
+            const ParameterNameSizeItem * pi = find_if(
+                parameterNameSizeArr,
+                endItem,
+                [&paramIt](const ParameterNameSizeItem & i_item) -> bool { return paramIt->paramName == i_item.name; }
+            );
+            if (pi == endItem) throw ModelException("parameter %d: %s not found in model parameters", paramIt->paramId, paramIt->paramName.c_str());
+
+            // calculate parameter values digest and store only single copy of parameter values
+            unique_ptr<IParameterRunWriter> writer(
+                IParameterRunWriter::create(i_runId, paramIt->paramName.c_str(), i_dbExec, metaStore.get())
+            );
+            writer->digestParameter(i_dbExec, pi->typeOf);
         }
     }
 
@@ -448,14 +475,16 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
 
     for (const TableDicRow & tblRow : tblVec) {
         unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-            modelId,
             i_runId,
             tblRow.tableName.c_str(),
             i_dbExec,
             metaStore.get(),
             subSampleCount
             ));
-        writer->writeAllExpressions(i_dbExec);
+            writer->writeAllExpressions(i_dbExec);
+
+            // calculate output table values digest and store only single copy of output values
+            writer->digestOutput(i_dbExec);
     }
 }
 
@@ -481,7 +510,6 @@ void RunController::doWriteAccumulators(
 
     // write accumulators into database
     unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-        modelId,
         i_runId,
         i_name,
         i_dbExec,

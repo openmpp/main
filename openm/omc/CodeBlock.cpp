@@ -68,6 +68,14 @@ CodeBlock & CodeBlock::operator += (const CodeBlock & append_block)
     return *this;
 }
 
+void CodeBlock::push_header(const CodeBlock & push_block)
+{
+    // no indent for push front
+    for (auto lineIt = push_block.crbegin(); lineIt != push_block.crend(); ++lineIt) {
+        push_front(*lineIt);
+    }
+}
+
 void CodeBlock::smart_indenting(bool val)
 {
     raw_mode = !val;

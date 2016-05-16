@@ -93,8 +93,6 @@ public:
      */
     CodeBlock dat_definition() const;
 
-    string metadata_signature() const;
-
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

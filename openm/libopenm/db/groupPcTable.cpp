@@ -54,7 +54,7 @@ namespace openm
     public:
         IRowBase * createRow(void) const { return new GroupPcRow(); }
         int size(void) const { return sizeGroupPcRow; }
-        const type_info ** columnTypes(void) const { return typeGroupPcRow; }
+        const type_info * const * columnTypes(void) const { return typeGroupPcRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {

@@ -14,6 +14,9 @@ using namespace std;
 
 namespace openm
 {
+    /**  SQLite db-provider name */
+    extern const char * SQLITE_DB_PROVIDER;
+
     /** db-exception default error message: "unknown db error" */
     extern const char dbUnknownErrorMessage[];   
 
@@ -32,6 +35,9 @@ namespace openm
     /** db rows: vector of unique pointers to db row */
     typedef vector<IRowBaseUptr> IRowBaseVec;
 
+    /** db rows: list of unique pointers to db row */
+    typedef list<IRowBaseUptr> IRowBaseList;
+
     /** row factory and setter interface to select row from database */
     class IRowAdapter
     {
@@ -45,7 +51,7 @@ namespace openm
         virtual int size(void) const = 0;
 
         /** array[rowSize] of type_info for each column, used to convert from db-type to target type */
-        virtual const type_info ** columnTypes(void) const = 0;
+        virtual const type_info *const * columnTypes(void) const = 0;
 
         /**
          * @brief   field value setter: i_row[i_column] = *i_value 
@@ -58,6 +64,16 @@ namespace openm
          * this method called only if db-field value NOT IS NULL.
          */
         virtual void set(IRowBase * i_row, int i_column, const void * i_value) const = 0;
+    };
+
+    /** public interafce for row processing during select, ie: select and append to row list */
+    class IRowProcessor
+    {
+    public:
+        virtual ~IRowProcessor(void) throw() { }
+
+        /** process row, ie: append to row list or aggregate. */
+        virtual void processRow(IRowBaseUptr & i_row) = 0;
     };
 
     /** union to pass value to database methods */
@@ -74,29 +90,32 @@ namespace openm
         /** value of boolean type */
         bool isVal;
 
+        /** value of float type */
+        float fVal;
+
         /** value of double type */
         double dVal;
 
         /** value of long double type */
         long double dlVal;
 
-        /** c-style string value */
-        char * szVal;
+        /** c-style string */
+        const char * szVal;
 
         /** zero initialized value */
         DbValue(void) { clear(); }
 
         /** value initialized by supplied integer */
-        DbValue(int i_value) : DbValue((long long)i_value) { }
+        DbValue(int i_value) : DbValue(static_cast<long long>(i_value)) { }
 
         /** value initialized by supplied unsigned integer */
-        DbValue(unsigned int i_value) : DbValue((unsigned long long)i_value) { }
+        DbValue(unsigned int i_value) : DbValue(static_cast<unsigned long long>(i_value)) { }
 
         /** value initialized by supplied long */
-        DbValue(long i_value) : DbValue((long long)i_value) { }
+        DbValue(long i_value) : DbValue(static_cast<long long>(i_value)) { }
 
         /** value initialized by supplied unsigned long */
-        DbValue(unsigned long i_value) : DbValue((unsigned long long)i_value) { }
+        DbValue(unsigned long i_value) : DbValue(static_cast<unsigned long long>(i_value)) { }
 
         /** value initialized by supplied long */
         DbValue(long long i_value) {
@@ -108,6 +127,12 @@ namespace openm
         DbValue(unsigned long long i_value) {
             clear();
             ullVal = i_value;
+        }
+
+        /** value initialized by supplied float */
+        DbValue(float i_value) { 
+            clear(); 
+            fVal = i_value; 
         }
 
         /** value initialized by supplied double */
@@ -129,13 +154,16 @@ namespace openm
         }
 
         /** value initialized by supplied c-style string */
-        DbValue(char * i_value) {
+        DbValue(const char * i_value) {
             clear();
             szVal = i_value;
         }
 
         /** clear value with zeros */
         void clear(void);
+
+        /** cast between float, double and long double */
+        template<typename TSrc, typename TDst> static TDst castDouble(const DbValue & i_value);
     };
 }
 

@@ -133,28 +133,28 @@ namespace openm
         const RunOptions & modelRunOptions(void) const { return baseRunOpts; }
 
         // read metadata tables from db, except of run_option table
-        static const ModelDicRow * readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
+        static int readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
 
         // broadcast metadata tables from root to all modeling processes
-        void broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
+        static int broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
 
         // broadcast int value from root to group of modeling processes
-        void broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_value);
+        static void broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_value);
 
         // broadcast run options from root to group of modeling processes
         void broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec);
 
         // merge command line and ini-file arguments with profile_option table values
-        void mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+        void mergeProfile(IDbExec * i_dbExec);
 
         // create task run entry in database
         int createTaskRun(int i_taskId, IDbExec * i_dbExec);
 
         // find modeling task, if specified
-        int findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow);
+        int findTask(IDbExec * i_dbExec);
 
         // find source working set for input parameters
-        int findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const;
+        int findWorkset(int i_setId, IDbExec * i_dbExec) const;
 
     private:
         RunOptions baseRunOpts;     // basic model run options

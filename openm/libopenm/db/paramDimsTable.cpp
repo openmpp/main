@@ -1,4 +1,4 @@
-// OpenM++ data library: parameter_dims table
+// OpenM++ data library: parameter_dims join to model_parameter_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // parameter_dims table implementation
+    // parameter_dims join to model_parameter_dic table implementation
     class ParamDimsTable : public IParamDimsTable
     {
     public:
@@ -22,11 +22,11 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, parameter id, dimension id
-        const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const;
+        // find row by unique key: model id,  model parameter id, dimension id
+        const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const override;
 
         // get list of rows by model id and parameter id
-        vector<ParamDimsRow> byModelIdParamId(int i_modelId, int i_paramId) const;
+        vector<ParamDimsRow> byModelIdParamId(int i_modelId, int i_paramId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -36,7 +36,7 @@ namespace openm
         ParamDimsTable & operator=(const ParamDimsTable & i_table) = delete;
     };
 
-    // Columns type for parameter_dims row
+    // Columns type for parameter_dims join to model_parameter_dic row
     static const type_info * typeParamDimsRow[] = { 
         &typeid(decltype(ParamDimsRow::modelId)), 
         &typeid(decltype(ParamDimsRow::paramId)), 
@@ -45,16 +45,16 @@ namespace openm
         &typeid(decltype(ParamDimsRow::typeId)) 
     };
 
-    // Size (number of columns) for parameter_dims row
+    // Size (number of columns) for parameter_dims join to model_parameter_dic row
     static const int sizeParamDimsRow = sizeof(typeParamDimsRow) / sizeof(const type_info *);
 
-    // Row adapter to select parameter_dims rows
+    // Row adapter to select parameter_dims join to model_parameter_dic rows
     class ParamDimsRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new ParamDimsRow(); }
         int size(void) const { return sizeParamDimsRow; }
-        const type_info ** columnTypes(void) const { return typeParamDimsRow; }
+        const type_info * const * columnTypes(void) const { return typeParamDimsRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -102,9 +102,11 @@ ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = ParamDimsRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, parameter_id, dim_id, dim_name, mod_type_id" \
-        " FROM parameter_dims" + 
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " M.model_id, M.model_parameter_id, dim_id, dim_name, T.model_type_id" \
+        " FROM parameter_dims D" \
+        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
+        " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -114,7 +116,7 @@ ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 ParamDimsTable::~ParamDimsTable(void) throw() { }
 
-// Find row by primary key: model id, parameter id, dimension id
+// Find row by unique key: model id,  model parameter id, dimension id
 const ParamDimsRow * ParamDimsTable::byKey(int i_modelId, int i_paramId, int i_dimId) const
 {
     const IRowBaseUptr keyRow(new ParamDimsRow(i_modelId, i_paramId, i_dimId));

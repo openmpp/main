@@ -211,7 +211,7 @@ void MsgExecBase::waitSendAll(void)
             }
 
             // sleep if any outstanding request exist
-            if (!isAllDone) sleepMilli(OM_SEND_SLEEP_TIME);
+            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_SEND_SLEEP_TIME));
         }
         while (!isAllDone);
         
@@ -244,7 +244,7 @@ void MsgExecBase::waitRecvAll(void)
             }
 
             // sleep if any outstanding request exist
-            if (!isAllDone) sleepMilli(OM_RECV_SLEEP_TIME);
+            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
         }
         while (!isAllDone);
         

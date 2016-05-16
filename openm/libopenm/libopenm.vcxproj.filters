@@ -135,6 +135,12 @@
     <ClInclude Include="model\runControllerImpl.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
+    <ClInclude Include="include\md5.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="db\dbValue.h">
+      <Filter>Source Files\db</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -182,9 +188,6 @@
     <ClCompile Include="common\utf8Convert.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="db\dbExec.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="db\dbExecSqlite.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
@@ -225,9 +228,6 @@
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\parameterReader.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
-    <ClCompile Include="db\paramRunTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\profileLstTable.cpp">
@@ -338,7 +338,19 @@
     <ClCompile Include="model\modelHelper.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
-    <ClCompile Include="db\runParamTable.cpp">
+    <ClCompile Include="db\dbExecProvider.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\dbExec.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\runParamTxtTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="common\md5.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="db\dbValue.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>

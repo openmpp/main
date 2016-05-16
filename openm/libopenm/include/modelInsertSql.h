@@ -9,168 +9,206 @@
 #define MODEL_INSERT_SQL_H
 
 #include "libopenm/db/dbMetaRow.h"
+#include "libopenm/db/modelBuilder.h"
 #include "modelSqlWriter.h"
 using namespace std;
 
 namespace openm
 {
-    /** class to produce insert sql statements from metadata rows. */
+    /** class to produce sql statements from metadata rows. */
     class ModelInsertSql
     {
     public:
         /**
         * write sql to insert i_row values to create new model.
         *
-        * if new model created or workset then model id selected from id_lst \n
+        * if new model or workset created then model id selected from id_lst \n
         * it must be done in transaction scope and sql statements can look like: \n
         * 
         * @code
         * BEGIN TRANSACTION; 
         * 
-        * UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'model_id'; 
+        * UPDATE id_lst SET id_value = 
+        *   CASE
+        *     WHEN 
+        *       NOT EXISTS (SELECT * FROM model_dic WHERE model_digest = '1234abcd') THEN id_value + 1 
+        *     ELSE id_value
+        *   END
+        * WHERE id_key = 'model_id';
         *
         * INSERT INTO model_dic (model_id, ...) 
         * SELECT 
         *     IL.id_value, 
         *     ... 
-        * FROM id_lst IL WHERE IL.id_key = 'model_id';
+        * FROM id_lst IL WHERE IL.id_key = 'model_id'
+        * AND NOT EXISTS
+        * (
+        *   SELECT * FROM model_dic WHERE model_digest = '1234abcd'
+        * );
         * 
         * ...
         * COMMIT;
         * @endcode
         */
-        template<class TRow> static void insertSql(const TRow & i_row, ModelSqlWriter & io_wr);
+        template<class TRow> static void insertTopSql(const TRow & i_row, ModelSqlWriter & io_wr);
 
         /**
-        * write sql to insert i_row values to create new workset.
+        * write sql to insert i_row values into details table.
         *
-        * if new workset created then workset id selected from id_lst \n
-        * it must be done in transaction scope and sql statements can look like: \n
+        * it must be done in transaction scope. \n
+        * digest from "master" row to avoid select corresponding id, i.e.: model id, type id, etc.
+        */
+        template<class TMasterRow, class TRow> static void insertDetailSql(
+            const TMasterRow & i_masterRow, const TRow & i_row, ModelSqlWriter & io_wr
+            );
+
+        /** 
+        * write sql to insert i_row values into workset metadata table.
         *
-        * @code
-        * BEGIN TRANSACTION;
-        *
-        * UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id';
-        *
-        * INSERT INTO workset_lst (set_id, ...)
-        * SELECT
-        *     RSL.id_value,
-        *     ...
-        * FROM id_lst RSL WHERE RSL.id_key = 'run_id_set_id';
-        *
-        * ...
-        * COMMIT;
-        * @endcode
+        * it must be done in transaction scope.
         */
         template<class TRow> static void insertSetSql(
-            const ModelDicRow & i_mdRow, const TRow & i_row, ModelSqlWriter & io_wr
-            );
-
-        /** create view sql for parameter compatibility view */
-        static const void paramCompatibilityViewBody(
-            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
-            );
-
-        /** create view sql for output table compatibility view */
-        static const void outputCompatibilityViewBody(
-            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
-            );
+            const string & i_modelDigestQuoted, const string & i_worksetNameQuoted, const TRow & i_row, ModelSqlWriter & io_wr
+        );
     };
-
+    
     /** write sql to insert into model_dic table. */
-    template<> void ModelInsertSql::insertSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr);
     
     /** write sql to insert into model_dic_txt table. */
-    template<> void ModelInsertSql::insertSql<ModelDicTxtLangRow>(const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ModelDicTxtLangRow>(
+        const ModelDicRow & i_modelRow, const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
-    /** write sql to insert into type_dic table. */
-    template<> void ModelInsertSql::insertSql<TypeDicRow>(const TypeDicRow & i_row, ModelSqlWriter & io_wr);
+    /** write sql to insert into type_dic and model_type_dic tables. */
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TypeDicRow>(
+        const ModelDicRow & i_modelRow, const TypeDicRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into type_dic_txt table. */
-    template<> void ModelInsertSql::insertSql<TypeDicTxtLangRow>(const TypeDicTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeDicTxtLangRow>(
+        const TypeDicRow & i_typeRow, const TypeDicTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into type_enum_lst table. */
-    template<> void ModelInsertSql::insertSql<TypeEnumLstRow>(const TypeEnumLstRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumLstRow>(
+        const TypeDicRow & i_typeRow, const TypeEnumLstRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into type_enum_txt table. */
-    template<> void ModelInsertSql::insertSql<TypeEnumTxtLangRow>(const TypeEnumTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
+        const TypeDicRow & i_typeRow, const TypeEnumTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into parameter_dic table. */
-    template<> void ModelInsertSql::insertSql<ParamDicRow>(const ParamDicRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
+        const ModelDicRow & i_modelRow, const ParamDicRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into parameter_dic_txt table. */
-    template<> void ModelInsertSql::insertSql<ParamDicTxtLangRow>(const ParamDicTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDicTxtLangRow>(
+        const ParamDicRow & i_paramRow, const ParamDicTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into parameter_dims table. */
-    template<> void ModelInsertSql::insertSql<ParamDimsRow>(const ParamDimsRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsRow>(
+        const ParamDicRow & i_paramRow, const ParamDimsRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into parameter_dims_txt table. */
-    template<> void ModelInsertSql::insertSql<ParamDimsTxtLangRow>(const ParamDimsTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow>(
+        const ParamDicRow & i_paramRow, const ParamDimsTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_dic table. */
-    template<> void ModelInsertSql::insertSql<TableDicRow>(const TableDicRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
+        const ModelDicRow & i_modelRow, const TableDicRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_dic_txt table. */
-    template<> void ModelInsertSql::insertSql<TableDicTxtLangRow>(const TableDicTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDicTxtLangRow>(
+        const TableDicRow & i_tableRow, const TableDicTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_dims table. */
-    template<> void ModelInsertSql::insertSql<TableDimsRow>(const TableDimsRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsRow>(
+        const TableDicRow & i_tableRow, const TableDimsRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_dims_txt table. */
-    template<> void ModelInsertSql::insertSql<TableDimsTxtLangRow>(const TableDimsTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow>(
+        const TableDicRow & i_tableRow, const TableDimsTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_acc table. */
-    template<> void ModelInsertSql::insertSql<TableAccRow>(const TableAccRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccRow>(
+        const TableDicRow & i_tableRow, const TableAccRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_acc_txt table. */
-    template<> void ModelInsertSql::insertSql<TableAccTxtLangRow>(const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>(
+        const TableDicRow & i_tableRow, const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_expr table. */
-    template<> void ModelInsertSql::insertSql<TableExprRow>(const TableExprRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprRow>(
+        const TableDicRow & i_tableRow, const TableExprRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into table_expr_txt table. */
-    template<> void ModelInsertSql::insertSql<TableExprTxtLangRow>(const TableExprTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow>(
+        const TableDicRow & i_tableRow, const TableExprTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into group_lst table. */
-    template<> void ModelInsertSql::insertSql<GroupLstRow>(const GroupLstRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupLstRow>(
+        const ModelDicRow & i_modelRow, const GroupLstRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into group_txt table. */
-    template<> void ModelInsertSql::insertSql<GroupTxtLangRow>(const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr);
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
+        const ModelDicRow & i_modelRow, const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr
+        );
 
     /** write sql to insert into group_pc table.  
     *
     * negative value of i_row.childGroupId or i_row.leafId treated as db-NULL
     */
-    template<> void ModelInsertSql::insertSql<GroupPcRow>(const GroupPcRow & i_row, ModelSqlWriter & io_wr);
-
-    /** write sql to insert into workset_lst table.   
-    * 
-    * if i_row.runId <= 0 then it treated as db-NULL
-    */
-    template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
-        const ModelDicRow & i_mdRow, const WorksetLstRow & i_row, ModelSqlWriter & io_wr
+    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupPcRow>(
+        const ModelDicRow & i_modelRow, const GroupPcRow & i_row, ModelSqlWriter & io_wr
         );
 
+    /**  write sql to insert into workset_lst table. */
+    template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
+        const string & i_modelDigestQuoted,
+        const string & i_worksetNameQuoted,
+        const WorksetLstRow & i_row,
+        ModelSqlWriter & io_wr
+        );
+  
     /** write sql to insert into workset_txt table. */
     template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
-        const ModelDicRow & i_mdRow, const WorksetTxtLangRow & i_row, ModelSqlWriter & io_wr
+        const string & i_modelDigestQuoted,
+        const string & i_worksetNameQuoted,
+        const WorksetTxtLangRow & i_row,
+        ModelSqlWriter & io_wr
         );
 
     /** write sql to insert into workset_parameter table. */
     template<> void ModelInsertSql::insertSetSql<WorksetParamRow>(
-        const ModelDicRow & i_mdRow, const WorksetParamRow & i_row, ModelSqlWriter & io_wr
+        const string & i_modelDigestQuoted,
+        const string & i_worksetNameQuoted,
+        const WorksetParamRow & i_row, 
+        ModelSqlWriter & io_wr
         );
 
     /** write sql to insert into workset_parameter_txt table. */
     template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
-        const ModelDicRow & i_mdRow, const WorksetParamTxtLangRow & i_row, ModelSqlWriter & io_wr
+        const string & i_modelDigestQuoted,
+        const string & i_worksetNameQuoted,
+        const WorksetParamTxtLangRow & i_row, 
+        ModelSqlWriter & io_wr
         );
 }
-
-/** max allowed size for table type prefix: parameter_prefix, workset_prefix, acc_prefix, value_prefix */
-#define OM_DB_TABLE_TYPE_PREFIX_LEN         1
-
-/** max type id for built-int types, ie: int, double, logical */
-#define OM_MAX_BUILTIN_TYPE_ID              25
 
 #endif  // MODEL_INSERT_SQL_H

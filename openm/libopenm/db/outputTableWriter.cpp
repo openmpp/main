@@ -2,7 +2,9 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "dbValue.h"
 #include "dbOutputTable.h"
+
 using namespace openm;
 
 namespace openm
@@ -12,7 +14,6 @@ namespace openm
     {
     public:
         OutputTableWriter(
-            int i_modelId, 
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
@@ -26,22 +27,26 @@ namespace openm
         ~OutputTableWriter(void) throw() { }
 
         // return total number of values for each accumulator
-        long long sizeOf(void) const throw() { return totalSize; }
+        long long sizeOf(void) const throw() override { return totalSize; }
 
         // return number of output aggregated expressions
-        int expressionCount(void) const throw() { return exprCount; }
+        int expressionCount(void) const throw() override { return exprCount; }
 
         // write output table accumulator values
-        void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr);
+        void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr) override;
 
         // write all output table values: aggregate subsamples using table expressions
-        void writeAllExpressions(IDbExec * i_dbExec);
+        void writeAllExpressions(IDbExec * i_dbExec) override;
 
         // write output table value: aggregated output expression value
-        void writeExpression(IDbExec * i_dbExec, int i_nExpression);
+        void writeExpression(IDbExec * i_dbExec, int i_nExpression) override;
+
+        // calculate output table values digest and store only single copy of output values
+        void digestOutput(IDbExec * i_dbExec) override;
 
     private:
         int runId;                      // destination run id
+        int modelId;                    // model id in database
         int tableId;                    // output table id
         int numSubSamples;              // number of subsamples in model run
         int dimCount;                   // number of dimensions
@@ -50,7 +55,8 @@ namespace openm
         long long totalSize;            // total number of values in the table
         bool isSparseTable;             // if true then use sparse output to database
         double nullValue;               // if is sparse and abs(value) <= nullValue then value not stored
-        const ModelDicRow * modelRow;   // model db row
+        string accDbTable;              // db table name for accumulators
+        string valueDbTable;            // db table name for aggregated expressions
         const TableDicRow * tableRow;   // table db row
         vector<TableDimsRow> tableDims; // table dimensions
         vector<TableAccRow> tableAcc;   // table accumulators
@@ -67,7 +73,6 @@ IOutputTableWriter::~IOutputTableWriter(void) throw() { }
 
 // Output table writer factory: create new writer
 IOutputTableWriter * IOutputTableWriter::create(
-    int i_modelId, 
     int i_runId,
     const char * i_name, 
     IDbExec * i_dbExec, 
@@ -78,13 +83,12 @@ IOutputTableWriter * IOutputTableWriter::create(
     )
 {
     return new OutputTableWriter(
-        i_modelId, i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_isSparseGlobal, i_nullValue
+        i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_isSparseGlobal, i_nullValue
         );
 }
 
 // New output table writer
 OutputTableWriter::OutputTableWriter(
-    int i_modelId, 
     int i_runId,
     const char * i_name, 
     IDbExec * i_dbExec, 
@@ -94,6 +98,7 @@ OutputTableWriter::OutputTableWriter(
     double i_nullValue
     ) :
     runId(i_runId),
+    modelId(0),
     tableId(0),
     numSubSamples(i_numSubSamples),
     dimCount(0),
@@ -102,32 +107,33 @@ OutputTableWriter::OutputTableWriter(
     totalSize(0),
     isSparseTable(i_isSparseGlobal),
     nullValue(i_nullValue >= 0.0 ? i_nullValue : DBL_EPSILON),
-    modelRow(nullptr),
     tableRow(nullptr)
 { 
     // check parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
-    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) output table name");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
+    if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) output table name");
 
     // get table dimensions, accumulators and aggregation expressions
-    modelRow = i_metaStore->modelDic->byKey(i_modelId);
-    if (modelRow == NULL) throw DbException("model not found in the database");
+    modelId = i_metaStore->modelRow->modelId;
 
-    tableRow = i_metaStore->tableDic->byModelIdName(i_modelId, i_name);
-    if (tableRow == NULL) throw DbException("output table not found in table dictionary: %s", i_name);
+    tableRow = i_metaStore->tableDic->byModelIdName(modelId, i_name);
+    if (tableRow == nullptr) throw DbException("output table not found in table dictionary: %s", i_name);
 
     tableId = tableRow->tableId;
     dimCount = tableRow->rank;
 
-    tableDims = i_metaStore->tableDims->byModelIdTableId(i_modelId, tableId);
+    accDbTable = tableRow->dbPrefix + i_metaStore->modelRow->accPrefix + tableRow->dbSuffix;
+    valueDbTable = tableRow->dbPrefix + i_metaStore->modelRow->valuePrefix + tableRow->dbSuffix;
+
+    tableDims = i_metaStore->tableDims->byModelIdTableId(modelId, tableId);
     if (dimCount < 0 || dimCount != (int)tableDims.size()) throw DbException("invalid table rank or dimensions not found for table: %s", i_name);
 
-    tableAcc = i_metaStore->tableAcc->byModelIdTableId(i_modelId, tableId);
+    tableAcc = i_metaStore->tableAcc->byModelIdTableId(modelId, tableId);
     accCount = (int)tableAcc.size();
     if (accCount <= 0) throw DbException("output table accumulators not found for table: %s", i_name);
 
-    tableExpr = i_metaStore->tableExpr->byModelIdTableId(i_modelId, tableId);
+    tableExpr = i_metaStore->tableExpr->byModelIdTableId(modelId, tableId);
     exprCount = (int)tableExpr.size();
 
     // calculate total number of values for each accumulator
@@ -140,17 +146,19 @@ OutputTableWriter::OutputTableWriter(
 }
 
 // calculate output table size: total number of values for each accumulator
-long long IOutputTableWriter::sizeOf(int i_modelId, const MetaRunHolder * i_metaStore, int i_tableId)
+long long IOutputTableWriter::sizeOf(const MetaRunHolder * i_metaStore, int i_tableId)
 { 
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
+    if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
 
     // get dimensions size, including expr dimension
-    const TableDicRow * tblRow = i_metaStore->tableDic->byKey(i_modelId, i_tableId);
-    if (tblRow == NULL) throw DbException("table not found in table dictionary, id: %d", i_tableId);
+    int mId = i_metaStore->modelRow->modelId;
+
+    const TableDicRow * tblRow = i_metaStore->tableDic->byKey(mId, i_tableId);
+    if (tblRow == nullptr) throw DbException("table not found in table dictionary, id: %d", i_tableId);
 
     int dimCount = tblRow->rank;
 
-    vector<TableDimsRow> tblDimVec = i_metaStore->tableDims->byModelIdTableId(i_modelId, i_tableId);
+    vector<TableDimsRow> tblDimVec = i_metaStore->tableDims->byModelIdTableId(mId, i_tableId);
     if (dimCount < 0 || dimCount != (int)tblDimVec.size()) throw DbException("invalid table rank or dimensions not found for table: %s", tblRow->tableName.c_str());
 
     // calculate table total size
@@ -168,17 +176,17 @@ long long IOutputTableWriter::sizeOf(int i_modelId, const MetaRunHolder * i_meta
 void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr)
 {
     // validate parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_nSubSample < 0 || i_nSubSample >= numSubSamples) throw DbException("invalid sub-sample index: %d for output table: %s", i_nSubSample, tableRow->tableName.c_str());
     if (i_accId < 0 || i_accId >= accCount) throw DbException("invalid accumulator number: %d for output table: %s", i_accId, tableRow->tableName.c_str());
     if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for output table: %s", i_size, tableRow->tableName.c_str());
 
-    if (i_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for output table: %s", tableRow->tableName.c_str());
+    if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for output table: %s", tableRow->tableName.c_str());
 
     // build sql:
-    // INSERT INTO modelone_201208171604590148_a0_salarySex
+    // INSERT INTO salarySex_a201208171604590148
     //   (run_id, dim0, dim1, acc_id, sub_id, acc_value) VALUES (2 , ?, ?, 15, 4, ?)
-    string sql = "INSERT INTO " + modelRow->modelPrefix + modelRow->accPrefix + tableRow->dbNameSuffix + " (run_id";
+    string sql = "INSERT INTO " + accDbTable + " (run_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", " + dim.name;
@@ -186,12 +194,11 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
 
     sql += ", acc_id, sub_id, acc_value) VALUES (" + to_string(runId);
 
-    // build sql, append: , ?, ?, ?, 15, ?)
-    // dimensions parameter placeholder(s), sub-sample index, accumulator index placeholder, value placeholder
+    // build sql, append: , ?, ?, ?, 2, 15, ?)
+    // dimensions parameter placeholder(s), accumulator index, sub-sample index, value placeholder
     for (int nDim = 0; nDim < dimCount; nDim++) {
         sql += ", ?";
     }
-    
     sql += ", " + to_string(i_accId) + ", " + to_string(i_nSubSample) + ", ?)";
 
     // set parameters type: dimensions and accumulator value
@@ -262,7 +269,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
 // write all output table values: aggregate subsamples using table expressions
 void OutputTableWriter::writeAllExpressions(IDbExec * i_dbExec)
 {
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
 
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
@@ -276,39 +283,170 @@ void OutputTableWriter::writeAllExpressions(IDbExec * i_dbExec)
 void OutputTableWriter::writeExpression(IDbExec * i_dbExec, int i_nExpression)
 {
     // validate parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_nExpression < 0 || i_nExpression >= exprCount) throw DbException("invalid expression index: %d for output table: %s", i_nExpression, tableRow->tableName.c_str());
+
+    // check if update is in transaction scope
+    if (!i_dbExec->isTransaction()) throw DbException("output table update must be in transaction scope");
     
     // build sql:
-    // INSERT INTO modelone_201208171604590148_v0_salarySex 
-    //  (run_id, dim0, dim1, expr_id, value)
+    // INSERT INTO salarySex_v201208171604590148 
+    //  (run_id, dim0, dim1, expr_id, expr_value)
     // SELECT
     //  F.run_id, F.dim0, F.dim1, 2, F.expr2
     // FROM
     // (
     //  SELECT
     //    M1.run_id, M1.dim0, M1.dim1, SUM(M1.acc0) AS expr2
-    //  FROM modelone_201208171604590148_a0_salarySex M1
+    //  FROM salarySex_a201208171604590148 M1
     //  GROUP BY M1.run_id, M1.dim0, M1.dim1
     // ) F
     // WHERE F.run_id = 15
     // 
-    string sql = "INSERT INTO " + modelRow->modelPrefix + modelRow->valuePrefix + tableRow->dbNameSuffix + " (run_id";
+    string sql = "INSERT INTO " + valueDbTable + " (run_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", " + dim.name;
     }
 
-    sql += ", expr_id, value) SELECT F.run_id";
+    sql += ", expr_id, expr_value) SELECT F.run_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", F." + dim.name;
     }
     sql += ", " + to_string(i_nExpression) + ", F." + tableExpr[i_nExpression].name +
         " FROM (" +
-        tableExpr[i_nExpression].expr +
+        tableExpr[i_nExpression].sqlExpr +
         ") F WHERE F.run_id = " + to_string(runId);
 
     // do the insert
     i_dbExec->update(sql);
+}
+
+// calculate output table values digest and store only single copy of output values
+void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
+{
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+
+    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+
+    // insert run_table dictionary record
+    string sHid = to_string(tableRow->tableHid);
+    string sRunId = to_string(runId);
+
+    i_dbExec->update(
+        "INSERT INTO run_table (run_id, table_hid, base_run_id, run_digest)" \
+        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + toQuoted(tableRow->digest) + ")"
+        );
+
+    // build sql to select accumulators and expressions values:
+    //
+    // SELECT dim0, dim1, acc_id, sub_id, acc_value
+    // FROM salarySex_a201208171604590148
+    // WHERE run_id = 11
+    // ORDER BY 1, 2, 3, 4
+    //
+    string accSql = "SELECT ";
+
+    for (const TableDimsRow & dim : tableDims) {
+        accSql += dim.name + ", ";
+    }
+
+    accSql += "acc_id, sub_id, acc_value" \
+        " FROM " + accDbTable +
+        " WHERE run_id = " + to_string(runId) +
+        " ORDER BY ";
+
+    for (int nDim = 0; nDim < dimCount; nDim++) {
+        accSql += to_string(nDim + 1) + ", ";
+    }
+    accSql += to_string(dimCount + 1) + ", " + to_string(dimCount + 2);
+
+    // build sql to expressions values:
+    //
+    // SELECT dim0, dim1, expr_id, expr_value
+    // FROM salarySex_v201208171604590148
+    // WHERE run_id = 11
+    // ORDER BY 1, 2, 3
+    //
+    string exprSql = "SELECT ";
+
+    for (const TableDimsRow & dim : tableDims) {
+        exprSql += dim.name + ", ";
+    }
+
+    exprSql += "expr_id, expr_value" \
+        " FROM " + valueDbTable +
+        " WHERE run_id = " + to_string(runId) +
+        " ORDER BY ";
+
+    for (int nDim = 0; nDim < dimCount; nDim++) {
+        exprSql += to_string(nDim + 1) + ", ";
+    }
+    exprSql += to_string(dimCount + 1);
+
+    // select accumulator values and calculate digest
+    MD5 md5;
+
+    string sLine = tableRow->digest + "\n";
+    md5.add(sLine.c_str(), sLine.length()); // start from metadata digest
+
+    ValueRowDigester md5AccRd(dimCount + 2, typeid(double), &md5);   // +2 columns: acc_id, sub_id
+    ValueRowAdapter accAdp(dimCount + 2, typeid(double));
+
+    i_dbExec->selectToRowProcessor(accSql, accAdp, md5AccRd);
+
+    // select expression values and append to the digest
+    md5.add("exp_value\n", strlen("exp_value\n")); // expression values delimiter
+
+    ValueRowDigester md5EexprRd(dimCount + 1, typeid(double), &md5); // +1 column: expr_id
+    ValueRowAdapter exprAdp(dimCount + 1, typeid(double));
+
+    i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5EexprRd);
+
+    string sDigest = md5.getHash();     // digest of metadata and values of accumulators and expressions
+
+    // update digest and base run id
+    //
+    // UPDATE run_table SET run_digest = '22ee44cc' WHERE run_id = 11 table_hid = 456
+    //
+    // UPDATE run_table SET 
+    //   base_run_id =
+    //   (
+    //     SELECT MIN(E.run_id) FROM run_table E
+    //     WHERE E.table_hid = 456
+    //     AND E.run_digest = '22ee44cc'
+    //   )
+    // WHERE run_id = 11 AND table_hid = 456
+    //
+    i_dbExec->update(
+        "UPDATE run_table SET run_digest = " + toQuoted(sDigest) + 
+        " WHERE run_id = " + sRunId + " AND table_hid = " + sHid
+        );
+
+    i_dbExec->update(
+        "UPDATE run_table SET base_run_id =" \
+        " (" \
+        " SELECT MIN(E.run_id) FROM run_table E" \
+        " WHERE E.table_hid = " + sHid +
+        " AND E.run_digest = " + toQuoted(sDigest) +
+        " )" \
+        " WHERE run_id = " + sRunId + " AND table_hid = " + sHid
+        );
+
+    // if same digest already exists then delete current run value rows
+    int nBase = i_dbExec->selectToInt(
+        "SELECT base_run_id FROM run_table WHERE run_id = " + sRunId + " AND table_hid = " + sHid,
+        0);
+
+    if (nBase > 0 && nBase != runId) {
+        i_dbExec->update(
+            "DELETE FROM " + accDbTable + " WHERE run_id = " + sRunId
+            );
+        i_dbExec->update(
+            "DELETE FROM " + valueDbTable + " WHERE run_id = " + sRunId
+            );
+    }
+
+    i_dbExec->commit();     // completed
 }

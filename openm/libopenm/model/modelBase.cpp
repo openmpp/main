@@ -51,12 +51,8 @@ ModelBase * ModelBase::create(
     if (i_metaStore == NULL) throw ModelException("invalid (NULL) model metadata");
     if (i_runCtrl == NULL) throw ModelException("invalid (NULL) run controller interface");
 
-    // find model in metadata tables
-    const ModelDicRow * mdRow = i_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
-    if (mdRow == NULL) throw ModelException("model not found in the database");
-
     // create the model subsample run
-    return new ModelBase(mdRow->modelId, i_runId, i_subCount, i_subNumber, i_runCtrl, i_metaStore);
+    return new ModelBase(i_metaStore->modelRow->modelId, i_runId, i_subCount, i_subNumber, i_runCtrl, i_metaStore);
 }
 
 /**

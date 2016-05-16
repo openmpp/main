@@ -97,23 +97,23 @@ namespace openm
     /** model_dic table row. */
     struct ModelDicRow : public IMetaRow<ModelDicRow>
     {
-        /** model_id       INT          NOT NULL */
+        /** model_id         INT          NOT NULL */
         int modelId;
 
-        /** model_name     VARCHAR(255) NOT NULL */
+        /** model_name       VARCHAR(255) NOT NULL */
         string name;
 
-        /** model_type     INT          NOT NULL */
+        /** model_digest     VARCHAR(32) NOT NULL */
+        string digest;
+
+        /** model_type       INT          NOT NULL */
         int type;
 
-        /** model_ver      VARCHAR(255) NOT NULL */
+        /** model_ver        VARCHAR(32) NOT NULL */
         string version;
 
-        /** model_ts       VARCHAR(32)  NOT NULL */
-        string timestamp;
-
-        /** model_prefix   VARCHAR(32)  NOT NULL */
-        string modelPrefix;
+        /** create_dt        VARCHAR(32)  NOT NULL */
+        string createDateTime;
 
         /** parameter_prefix VARCHAR(4) NOT NULL, -- parameter tables prefix: p */
         string paramPrefix;
@@ -131,10 +131,10 @@ namespace openm
         ModelDicRow(int i_modelId) : 
             modelId(i_modelId), 
             name(""), 
+            digest(""), 
             type(0),
             version(""),
-            timestamp(""),
-            modelPrefix(""),
+            createDateTime(""),
             paramPrefix(""),
             setPrefix(""),
             accPrefix(""),
@@ -162,7 +162,7 @@ namespace openm
         /** lang_id  INT NOT NULL */
         int langId;
 
-        /** descr VARCHAR(255) NOT NULL */
+        /** descr    VARCHAR(255) NOT NULL */
         string descr;
 
         /** note     VARCHAR(32000) */
@@ -201,25 +201,28 @@ namespace openm
         static bool uniqueLangKeyEqual(const ModelDicTxtLangRow & i_left, const ModelDicTxtLangRow & i_right);
     };
 
-    /** type_dic table row. */
+    /** type_dic join to model_type_dic table row. */
     struct TypeDicRow : public IMetaRow<TypeDicRow>
     {
-        /** model_id      INT          NOT NULL */
+        /** model_id      INT NOT NULL */
         int modelId;
 
-        /** mod_type_id   INT          NOT NULL */
+        /** model_type_id INT NOT NULL */
         int typeId;
 
-        /** mod_type_name VARCHAR(255) NOT NULL, -- type name: int, double, etc. */
+        /** type_name     VARCHAR(255) NOT NULL, -- type name: int, double, etc. */
         string name;
 
-        /** dic_id INT NOT NULL, -- dictionary id: 0=simple 1=logical 2=classification 3=range 4=partition 5=link */
+        /** type_digest   VARCHAR(32)  NOT NULL */
+        string digest;
+
+        /** dic_id        INT NOT NULL, -- dictionary id: 0=simple 1=logical 2=classification 3=range 4=partition 5=link */
         int dicId;
 
         /** total_enum_id INT NOT NULL, -- if total enabled this is enum_value of total item =max+1 */
         int totalEnumId;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied unique key field values. */
         TypeDicRow(int i_modelId, int i_typeId) : 
             modelId(i_modelId), 
             typeId(i_typeId), 
@@ -228,37 +231,40 @@ namespace openm
             totalEnumId(0)
         { }
 
-        /** create row with default empty field values. */
+        /** create row with default empty key values. */
         TypeDicRow(void) : TypeDicRow(0, 0) { }
 
         ~TypeDicRow(void) throw() { }
 
-        /** less comparator by primary key: model id, type id. */
+        /** less comparator by unique key: model id, model type id. */
         static bool isKeyLess(const TypeDicRow & i_left, const TypeDicRow & i_right);
 
-        /** equal comparator by primary key: model id, type id. */
+        /** equal comparator by unique key: model id, model type id. */
         static bool isKeyEqual(const TypeDicRow & i_left, const TypeDicRow & i_right);
+
+        /** find row by unique key: model id and model type id. */
+        static vector<TypeDicRow>::const_iterator byKey(int i_modelId, int i_typeId, const vector<TypeDicRow> & i_rowVec);
     };
 
-    /** type_dic_txt table row. */
+    /** type_dic_txt join to model_type_dic table row. */
     struct TypeDicTxtRow : public IMetaRow<TypeDicTxtRow>
     {
-        /** model_id    INT NOT NULL */
+        /** model_id      INT NOT NULL */
         int modelId;
-        
-        /** mod_type_id INT NOT NULL */
+
+        /** model_type_id INT NOT NULL */
         int typeId;
-        
-        /** lang_id     INT NOT NULL */
+
+        /** lang_id       INT NOT NULL */
         int langId;
         
-        /** descr       VARCHAR(255) NOT NULL */
+        /** descr         VARCHAR(255) NOT NULL */
         string descr;
         
-        /** note        VARCHAR(32000) */
+        /** note          VARCHAR(32000) */
         string note;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied unique key field values. */
         TypeDicTxtRow(int i_modelId, int i_typeId, int i_langId) : 
             modelId(i_modelId), 
             typeId(i_typeId), 
@@ -272,42 +278,42 @@ namespace openm
 
         ~TypeDicTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, type id, language id. */
+        /** less comparator by unique key: model id, model type id, language id. */
         static bool isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, type id, language id. */
+        /** equal comparator by unique key: model id, model type id, language id. */
         static bool isKeyEqual(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right);
     };
 
-    /** type_dic_txt table row and language name. */
+    /** type_dic_txt join to model_type_dic table row and language name. */
     struct TypeDicTxtLangRow : public TypeDicTxtRow
     {
         /** language name */
         string langName;
 
-        /** less comparator by unique key: model id, type id, language name. */
+        /** less comparator by unique key: model id, model type id, language name. */
         static bool uniqueLangKeyLess(const TypeDicTxtLangRow & i_left, const TypeDicTxtLangRow & i_right);
 
-        /** equal comparator by unique key: model id, type id, language name. */
+        /** equal comparator by unique key: model id, model type id, language name. */
         static bool uniqueLangKeyEqual(const TypeDicTxtLangRow & i_left, const TypeDicTxtLangRow & i_right);
     };
 
-    /** type_enum_lst table row. */
+    /** type_enum_lst join to model_type_dic table row. */
     struct TypeEnumLstRow : public IMetaRow<TypeEnumLstRow>
     {
-        /** model_id    INT          NOT NULL */
+        /** model_id      INT NOT NULL */
         int modelId;
 
-        /** mod_type_id INT          NOT NULL */
+        /** model_type_id INT NOT NULL */
         int typeId;
 
-        /** enum_id     INT          NOT NULL */
+        /** enum_id       INT NOT NULL */
         int enumId;
 
-        /** enum_name   VARCHAR(255) NOT NULL */
+        /** enum_name     VARCHAR(255) NOT NULL */
         string name;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied unique key field values. */
         TypeEnumLstRow(int i_modelId, int i_typeId, int i_enumId) : 
             modelId(i_modelId), 
             typeId(i_typeId), 
@@ -320,35 +326,35 @@ namespace openm
 
         ~TypeEnumLstRow(void) throw() { }
 
-        /** less comparator by primary key: model id, type id, enum id. */
+        /** less comparator by unique key: model id, model type id, enum id. */
         static bool isKeyLess(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right);
 
-        /** equal comparator by primary key: model id, type id, enum id. */
+        /** equal comparator by unique key: model id, model type id, enum id. */
         static bool isKeyEqual(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right);
     };
 
-    /** type_enum_txt table row. */
+    /** type_enum_txt join to model_type_dic table row. */
     struct TypeEnumTxtRow : public IMetaRow<TypeEnumTxtRow>
     {
-        /** model_id    INT NOT NULL */
+        /** model_id      INT NOT NULL */
         int modelId;
-        
-        /** mod_type_id INT NOT NULL */
+
+        /** model_type_id INT NOT NULL */
         int typeId;
-        
-        /** enum_id     INT NOT NULL */
+
+        /** enum_id       INT NOT NULL */
         int enumId;
         
-        /** lang_id     INT NOT NULL */
+        /** lang_id       INT NOT NULL */
         int langId;
         
-        /** descr       VARCHAR(255) NOT NULL */
+        /** descr         VARCHAR(255) NOT NULL */
         string descr;
         
-        /** note        VARCHAR(32000) */
+        /** note          VARCHAR(32000) */
         string note;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied unique key field values. */
         TypeEnumTxtRow(int i_modelId, int i_typeId, int i_enumId, int i_langId) : 
             modelId(i_modelId), 
             typeId(i_typeId), 
@@ -363,62 +369,74 @@ namespace openm
 
         ~TypeEnumTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, type id, enum id, language id. */
+        /** less comparator by unique key: model id, model type id, enum id, language id. */
         static bool isKeyLess(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, type id, enum id, language id. */
+        /** equal comparator by unique key: model id, model type id, enum id, language id. */
         static bool isKeyEqual(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right);
     };
 
-    /** type_enum_txt table row and language name. */
+    /** type_enum_txt join to model_type_dic table row and language name. */
     struct TypeEnumTxtLangRow : public TypeEnumTxtRow
     {
         /** language name */
         string langName;
 
-        /** less comparator by unique key: model id, type id, enum id, language name. */
+        /** less comparator by unique key: model id, model type id, enum id, language name. */
         static bool uniqueLangKeyLess(const TypeEnumTxtLangRow & i_left, const TypeEnumTxtLangRow & i_right);
 
-        /** equal comparator by unique key: model id, type id, enum id, language name. */
+        /** equal comparato by unique key: model id, model type id, enum id, language name. */
         static bool uniqueLangKeyEqual(const TypeEnumTxtLangRow & i_left, const TypeEnumTxtLangRow & i_right);
     };
 
-    /** parameter_dic table row. */
+    /** parameter_dic join to model_parameter_dic table row. */
     struct ParamDicRow : public IMetaRow<ParamDicRow>
     {
-        /** model_id       INT          NOT NULL */
+        /** model_id           INT          NOT NULL */
         int modelId;
 
-        /** parameter_id   INT          NOT NULL */
+        /** model_parameter_id INT          NOT NULL */
         int paramId;
 
-        /** db_name_suffix VARCHAR(32)  NOT NULL */
-        string dbNameSuffix;
-
-        /** parameter_name VARCHAR(255) NOT NULL */
+        /** parameter_name     VARCHAR(255) NOT NULL */
         string paramName;
 
-        /** parameter_rank INT          NOT NULL */
+        /** parameter_hid    INT          NOT NULL, -- unique parameter id */
+        int paramHid;
+
+        /** parameter_digest   VARCHAR(32)  NOT NULL */
+        string digest;
+
+        /** db_prefix          VARCHAR(20) NOT NULL */
+        string dbPrefix;
+
+        /** db_suffix          VARCHAR(8)  NOT NULL */
+        string dbSuffix;
+
+        /** parameter_rank     INT         NOT NULL */
         int rank;
 
-        /** mod_type_id    INT          NOT NULL */
+        /** model_type_id     INT          NOT NULL */
         int typeId;
 
-        /** is_hidden      SMALLINT     NOT NULL */
+        /** is_hidden         SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** is_generated   SMALLINT     NOT NULL */
+        /** is_generated      SMALLINT     NOT NULL */
         bool isGenerated;
 
-        /** num_cumulated  INT          NOT NULL */
+        /** num_cumulated     INT          NOT NULL */
         int numCumulated;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied unique key field values. */
         ParamDicRow(int i_modelId, int i_paramId) : 
             modelId(i_modelId), 
             paramId(i_paramId), 
-            dbNameSuffix(""),
             paramName(""),
+            paramHid(0),
+            digest(""),
+            dbPrefix(""),
+            dbSuffix(""),
             rank(0),
             typeId(0),
             isHidden(false),
@@ -431,32 +449,35 @@ namespace openm
 
         ~ParamDicRow(void) throw() { }
 
-        /** less comparator by primary key: model id, parameter id. */
+        /** less comparator by unique key: model id, model parameter id. */
         static bool isKeyLess(const ParamDicRow & i_left, const ParamDicRow & i_right);
 
-        /** equal comparator by primary key: model id, parameter id. */
+        /** equal comparator by unique key: model id, model parameter id. */
         static bool isKeyEqual(const ParamDicRow & i_left, const ParamDicRow & i_right);
+
+        /** find row by unique key: model id, model parameter id. */
+        static vector<ParamDicRow>::const_iterator byKey(int i_modelId, int i_paramId, const vector<ParamDicRow> & i_rowVec);
     };
 
-    /** parameter_dic_txt table row. */
+    /** parameter_dic_txt join to model_parameter_dic table row. */
     struct ParamDicTxtRow : public IMetaRow<ParamDicTxtRow>
     {
-        /** model_id     INT NOT NULL */
+        /** model_id           INT NOT NULL */
         int modelId;
-        
-        /** parameter_id INT NOT NULL */
+
+        /** model_parameter_id INT NOT NULL */
         int paramId;
-        
-        /** lang_id      INT NOT NULL */
+
+        /** lang_id            INT NOT NULL */
         int langId;
         
-        /** descr        VARCHAR(255) NOT NULL */
+        /** descr              VARCHAR(255) NOT NULL */
         string descr;
         
-        /** note         VARCHAR(32000) */
+        /** note               VARCHAR(32000) */
         string note;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied unique key field values. */
         ParamDicTxtRow(int i_modelId, int i_paramId, int i_langId) : 
             modelId(i_modelId), 
             paramId(i_paramId), 
@@ -470,14 +491,14 @@ namespace openm
 
         ~ParamDicTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, parameter id, language id. */
+        /** less comparator by unique key: model id, model parameter id, language id. */
         static bool isKeyLess(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, parameter id, language id. */
+        /** equal comparator by unique key: model id, model parameter id, language id. */
         static bool isKeyEqual(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right);
     };
 
-    /** parameter_dic_txt table row and language name. */
+    /** parameter_dic_txt join to model_parameter_dic table row and language name. */
     struct ParamDicTxtLangRow : public ParamDicTxtRow
     {
         /** language name */
@@ -490,25 +511,25 @@ namespace openm
         static bool uniqueLangKeyEqual(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right);
     };
 
-    /** parameter_dims table row. */
+    /** parameter_dims join to model_parameter_dic table row. */
     struct ParamDimsRow : public IMetaRow<ParamDimsRow>
     {
-        /** model_id     INT NOT NULL */
+        /** model_id           INT NOT NULL */
         int modelId;
-        
-        /** parameter_id INT NOT NULL */
+
+        /** model_parameter_id INT NOT NULL */
         int paramId;
-        
-        /** dim_id      INT NOT NULL */
+
+        /** dim_id             INT NOT NULL */
         int dimId;
 
-        /** dim_name     VARCHAR(8) NOT NULL */
+        /** dim_name           VARCHAR(8) NOT NULL */
         string name;
         
-        /** mod_type_id  INT NOT NULL */
+        /** model_type_id      INT NOT NULL */
         int typeId;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         ParamDimsRow(int i_modelId, int i_paramId, int i_dimId) : 
             modelId(i_modelId), 
             paramId(i_paramId), 
@@ -522,36 +543,36 @@ namespace openm
 
         ~ParamDimsRow(void) throw() { }
 
-        /** less comparator by primary key: model id, parameter id, dimension id. */
+        /** less comparator by unique key: model id, model parameter id, dimension id. */
         static bool isKeyLess(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
 
-        /** equal comparator by primary key: model id, parameter id, dimension id. */
+        /** equal comparator by unique key: model id, model parameter id, dimension id. */
         static bool isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
     };
 
 
-    /** parameter_dims_txt table row. */
+    /** parameter_dims_txt join to model_parameter_dic table row. */
     struct ParamDimsTxtRow : public IMetaRow<ParamDimsTxtRow>
     {
-        /** model_id INT          NOT NULL */
+        /** model_id           INT NOT NULL */
         int modelId;
 
-        /** parameter_id INT      NOT NULL */
+        /** model_parameter_id INT NOT NULL */
         int paramId;
 
-        /** dim_id   INT          NOT NULL */
+        /** dim_id             INT NOT NULL */
         int dimId;
 
-        /** lang_id  INT          NOT NULL */
+        /** lang_id            INT NOT NULL */
         int langId;
 
-        /** descr    VARCHAR(255) NOT NULL */
+        /** descr              VARCHAR(255) NOT NULL */
         string descr;
 
-        /** note     VARCHAR(32000) */
+        /** note               VARCHAR(32000) */
         string note;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         ParamDimsTxtRow(int i_modelId, int i_paramId, int i_dimId, int i_langId) :
             modelId(i_modelId),
             paramId(i_paramId),
@@ -566,10 +587,10 @@ namespace openm
 
         ~ParamDimsTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, parameter id, dimension id, language id. */
+        /** less comparator by unique key: model id, model parameter id, dimension id, language id. */
         static bool isKeyLess(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, parameter id, dimension id, language id. */
+        /** equal comparator by unique key: model id, model parameter id, dimension id, language id. */
         static bool isKeyEqual(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right);
     };
 
@@ -595,11 +616,20 @@ namespace openm
         /** table_id       INT NOT NULL          */
         int tableId;
         
-        /** db_name_suffix VARCHAR(64) NOT NULL  */
-        string dbNameSuffix;
-        
         /** table_name     VARCHAR(255) NOT NULL */
         string tableName;
+        
+        /** table_hid      INT         NOT NULL, -- unique table id */
+        int tableHid;
+
+        /** table_digest   VARCHAR(32) NOT NULL  */
+        string digest;
+        
+        /** db_prefix      VARCHAR(32)  NOT NULL  */
+        string dbPrefix;
+        
+        /** db_suffix      VARCHAR(32)  NOT NULL  */
+        string dbSuffix;
         
         /** is_user        SMALLINT NOT NULL     */
         bool isUser;
@@ -616,12 +646,15 @@ namespace openm
         /** expr_dim_pos   INT      NOT NULL     */
         int exprPos;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableDicRow(int i_modelId, int i_tableId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
-            dbNameSuffix(""),
             tableName(""),
+            tableHid(0),
+            digest(""),
+            dbPrefix(""),
+            dbSuffix(""),
             isUser(false),
             rank(1),
             isSparse(false),
@@ -634,11 +667,14 @@ namespace openm
 
         ~TableDicRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id. */
+        /** less comparator by unique key: model id, model table id. */
         static bool isKeyLess(const TableDicRow & i_left, const TableDicRow & i_right);
 
         /** equal comparator by primary key: model id, table id. */
         static bool isKeyEqual(const TableDicRow & i_left, const TableDicRow & i_right);
+
+        /** find row by unique key: model id, model table id. */
+        static vector<TableDicRow>::const_iterator byKey(int i_modelId, int i_tableId, const vector<TableDicRow> & i_rowVec);
     };
 
     /** table_dic_txt table row. */
@@ -665,7 +701,7 @@ namespace openm
         /** expr_note  VARCHAR(32000) */
         string exprNote;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableDicTxtRow(int i_modelId, int i_tableId, int i_langId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
@@ -681,10 +717,10 @@ namespace openm
 
         ~TableDicTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, language id. */
+        /** less comparator by unique key: model id, model table id, language id. */
         static bool isKeyLess(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, language id. */
+        /** equal comparator by unique key: model id, model table id, language id. */
         static bool isKeyEqual(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right);
     };
 
@@ -725,7 +761,7 @@ namespace openm
         /** dim_size    INT NOT NULL */
         int dimSize;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableDimsRow(int i_modelId, int i_tableId, int i_dimId) :
             modelId(i_modelId), 
             tableId(i_tableId), 
@@ -741,10 +777,10 @@ namespace openm
 
         ~TableDimsRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, dimension id. */
+        /** less comparator by unique key: model id, model table id, dimension id. */
         static bool isKeyLess(const TableDimsRow & i_left, const TableDimsRow & i_right);
         
-        /** equal comparator by primary key: model id, table id, dimension id. */
+        /** equal comparator by unique key: model id, model table id, dimension id. */
         static bool isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right);
     };
 
@@ -769,7 +805,7 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableDimsTxtRow(int i_modelId, int i_tableId, int i_dimId, int i_langId) :
             modelId(i_modelId), 
             tableId(i_tableId), 
@@ -784,10 +820,10 @@ namespace openm
 
         ~TableDimsTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, dimension id, language id. */
+        /** less comparator by unique key: model id, model table id, dimension id, language id. */
         static bool isKeyLess(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, dimension id, language id. */
+        /** equal comparator by unique key: model id, model table id, dimension id, language id. */
         static bool isKeyEqual(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
     };
 
@@ -822,7 +858,7 @@ namespace openm
         /** acc_expr VARCHAR(255) NOT NULL */
         string expr;
         
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableAccRow(int i_modelId, int i_tableId, int i_accid) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
@@ -836,10 +872,10 @@ namespace openm
 
         ~TableAccRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, accumulator id. */
+        /** less comparator by unique key: model id, model table id, accumulator id. */
         static bool isKeyLess(const TableAccRow & i_left, const TableAccRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, accumulator id. */
+        /** equal comparator by unique key: model id, model table id, accumulator id. */
         static bool isKeyEqual(const TableAccRow & i_left, const TableAccRow & i_right);
     };
 
@@ -864,7 +900,7 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableAccTxtRow(int i_modelId, int i_tableId, int i_accId, int i_langId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
@@ -879,10 +915,10 @@ namespace openm
 
         ~TableAccTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, accumulator id, language id. */
+        /** less comparator by unique key: model id, model table id, accumulator id, language id. */
         static bool isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, accumulator id, language id. */
+        /** equal comparator by unique key: model id, model table id, accumulator id, language id. */
         static bool isKeyEqual(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right);
     };
 
@@ -918,20 +954,20 @@ namespace openm
         int decimals;
         
         /** expr_src      VARCHAR(255)  NOT NULL */
-        string src;
+        string srcExpr;
 
         /** expr_sql      VARCHAR(2048) NOT NULL */
-        string expr;
+        string sqlExpr;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableExprRow(int i_modelId, int i_tableId, int i_exprId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
             exprId(i_exprId), 
             name(""),
             decimals(0),
-            src(""),
-            expr("")
+            srcExpr(""),
+            sqlExpr("")
         { }
 
         /** create row with default empty field values. */
@@ -939,10 +975,10 @@ namespace openm
 
         ~TableExprRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, expr id. */
+        /** less comparator by unique key: model id, model table id, expr id. */
         static bool isKeyLess(const TableExprRow & i_left, const TableExprRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, expr id. */
+        /** equal comparator by unique key: model id, model table id, expr id. */
         static bool isKeyEqual(const TableExprRow & i_left, const TableExprRow & i_right);
     };
 
@@ -967,7 +1003,7 @@ namespace openm
         /** note     VARCHAR(32000) */
         string note;
 
-        /** create row with supplied primary key field values. */
+        /** create row with supplied key field values. */
         TableExprTxtRow(int i_modelId, int i_tableId, int i_exprId, int i_langId) : 
             modelId(i_modelId), 
             tableId(i_tableId), 
@@ -982,10 +1018,10 @@ namespace openm
 
         ~TableExprTxtRow(void) throw() { }
 
-        /** less comparator by primary key: model id, table id, expr id, language id. */
+        /** less comparator by unique key: model id, model table id, expr id, language id. */
         static bool isKeyLess(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right);
 
-        /** equal comparator by primary key: model id, table id, expr id, language id. */
+        /** equal comparator by unique key: model id, model table id, expr id, language id. */
         static bool isKeyEqual(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right);
     };
 
@@ -1323,49 +1359,8 @@ namespace openm
         static bool isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right);
     };
 
-    /** run_parameter table row. */
-    struct RunParamRow : public IMetaRow<RunParamRow>
-    {
-        /** run_id       INT NOT NULL */
-        int runId;
-        
-        /** model_id     INT NOT NULL */
-        int modelId;
-        
-        /** parameter_id INT NOT NULL */
-        int paramId;
-        
-        /** base_run_id  INT NOT NULL */
-        int baseRunId;
-        
-        /** create row with supplied primary key field values. */
-        RunParamRow(int i_runId, int i_paramId) : 
-            runId(i_runId), 
-            modelId(0), 
-            paramId(i_paramId), 
-            baseRunId(0)
-        { }
-
-        /** create row with default empty field values. */
-        RunParamRow(void) : RunParamRow(0, 0) { }
-
-        ~RunParamRow(void) throw() { }
-
-        /** less comparator by primary key: run id, parameter id. */
-        static bool isKeyLess(const RunParamRow & i_left, const RunParamRow & i_right);
-
-        /** equal comparator by primary key: run id, parameter id. */
-        static bool isKeyEqual(const RunParamRow & i_left, const RunParamRow & i_right);
-
-        /** find row by primary key: run id, parameter id. */
-        static vector<RunParamRow>::const_iterator byKey(int i_runId, int i_paramId, const vector<RunParamRow> & i_rowVec);
-
-        /** select base run id by run id and parameter id, return zero if not exist. */
-        static int findBaseRunId(int i_runId, int i_paramId, const vector<RunParamRow> & i_rowVec);
-    };
-
-    /** parameter_run_txt table row. */
-    struct ParamRunTxtRow : public IMetaRow<ParamRunTxtRow>
+    /** run_parameter_txt join to model_parameter_dic table row. */
+    struct RunParamTxtRow : public IMetaRow<RunParamTxtRow>
     {
         /** run_id       INT NOT NULL */
         int runId;
@@ -1383,7 +1378,7 @@ namespace openm
         string note;
         
         /** create row with supplied primary key field values. */
-        ParamRunTxtRow(int i_runId, int i_paramId, int i_langId) : 
+        RunParamTxtRow(int i_runId, int i_paramId, int i_langId) : 
             runId(i_runId), 
             modelId(0), 
             paramId(i_paramId), 
@@ -1392,19 +1387,19 @@ namespace openm
         { }
 
         /** create row with default empty field values. */
-        ParamRunTxtRow(void) : ParamRunTxtRow(0, 0, 0) { }
+        RunParamTxtRow(void) : RunParamTxtRow(0, 0, 0) { }
 
-        ~ParamRunTxtRow(void) throw() { }
+        ~RunParamTxtRow(void) throw() { }
 
         /** less comparator by primary key: run id, parameter id, language id. */
-        static bool isKeyLess(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right);
+        static bool isKeyLess(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right);
 
         /** equal comparator by primary key: run id, parameter id, language id. */
-        static bool isKeyEqual(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right);
+        static bool isKeyEqual(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right);
     };
 
-    /** parameter_run_txt table row and language name. */
-    struct ParamRunTxtLangRow : public ParamRunTxtRow
+    /** run_parameter_txt table row and language name. */
+    struct RunParamTxtLangRow : public RunParamTxtRow
     {
         /** language name */
         string langName;
@@ -1424,7 +1419,7 @@ namespace openm
 
         /** set_name    VARCHAR(255) NOT NULL */
         string name;
-
+  
         /** is_readonly SMALLINT     NOT NULL */
         bool isReadonly;
 
@@ -1462,9 +1457,6 @@ namespace openm
         /** set_id   INT          NOT NULL */
         int setId;
 
-        /** model_id INT          NOT NULL */
-        int modelId;
-
         /** lang_id  INT          NOT NULL */
         int langId;
 
@@ -1477,7 +1469,6 @@ namespace openm
         /** create row with supplied primary key field values. */
         WorksetTxtRow(int i_setId, int i_langId) :
             setId(i_setId),
-            modelId(0),
             langId(i_langId),
             descr(""),
             note("")
@@ -1511,7 +1502,7 @@ namespace openm
         static bool uniqueLangKeyEqual(const WorksetTxtLangRow & i_left, const WorksetTxtLangRow & i_right);
     };
 
-    /** workset_parameter table row. */
+    /** workset_parameter join to model_parameter_dic table row. */
     struct WorksetParamRow : public IMetaRow<WorksetParamRow>
     {
         /** set_id       INT NOT NULL */
@@ -1545,7 +1536,7 @@ namespace openm
         static vector<WorksetParamRow>::const_iterator byKey(int i_setId, int i_paramId, const vector<WorksetParamRow> & i_rowVec);
     };
 
-    /** workset_parameter_txt table row. */
+    /** workset_parameter_txt join to model_parameter_dic table row. */
     struct WorksetParamTxtRow : public IMetaRow<WorksetParamTxtRow>
     {
         /** set_id       INT        NOT NULL */

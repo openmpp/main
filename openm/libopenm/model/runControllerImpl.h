@@ -8,6 +8,8 @@
 #ifndef RUN_CTRL_IMPL_H
 #define RUN_CTRL_IMPL_H
 
+#include <iterator>
+
 using namespace std;
 
 namespace openm

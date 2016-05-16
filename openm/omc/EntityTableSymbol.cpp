@@ -782,7 +782,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "expr" + to_string(expr->index);
-        tableExpr.src = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql);
+        tableExpr.srcExpr = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql);
         metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {

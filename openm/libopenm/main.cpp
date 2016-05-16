@@ -108,7 +108,7 @@ int main(int argc, char ** argv)
 
         // open db-connection
         unique_ptr<IDbExec> dbExec(
-            (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(connectionStr) : nullptr
+            (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
             );
 
         // load metadata tables and broadcast it to all modeling processes

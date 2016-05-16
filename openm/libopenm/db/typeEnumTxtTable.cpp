@@ -1,4 +1,4 @@
-// OpenM++ data library: type_enum_txt table
+// OpenM++ data library: type_enum_txt join to model_type_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // type_enum_txt table implementation
+    // type_enum_txt join to model_type_dic table implementation
     class TypeEnumTxtTable : public ITypeEnumTxtTable
     {
     public:
@@ -22,11 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, type id, enum id, language id
-        const TypeEnumTxtRow * byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const;
-
-        // get list of rows by model id and type id
-        vector<TypeEnumTxtRow> byModelIdTypeId(int i_modelId, int i_typeId) const;
+        // find row by unique key: model id, model type id, enum id, language id
+        const TypeEnumTxtRow * byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -36,26 +33,26 @@ namespace openm
         TypeEnumTxtTable & operator=(const TypeEnumTxtTable & i_table) = delete;
     };
 
-    // Columns type for type_enum_txt row
+    // Columns type for type_enum_txt join to model_type_dic row
     static const type_info * typeTypeEnumTxtRow[] = { 
-        &typeid(decltype(TypeEnumTxtRow::modelId)), 
-        &typeid(decltype(TypeEnumTxtRow::typeId)), 
+        &typeid(decltype(TypeDicTxtRow::modelId)), 
+        &typeid(decltype(TypeDicTxtRow::typeId)), 
         &typeid(decltype(TypeEnumTxtRow::enumId)), 
         &typeid(decltype(TypeEnumTxtRow::langId)), 
         &typeid(decltype(TypeEnumTxtRow::descr)), 
         &typeid(decltype(TypeEnumTxtRow::note))
     };
 
-    // Size (number of columns) for type_enum_txt row
+    // Size (number of columns) for type_enum_txt join to model_type_dic row
     static const int sizeTypeEnumTxtRow = sizeof(typeTypeEnumTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select type_enum_txt rows
+    // Row adapter to select type_enum_txt join to model_type_dic rows
     class TypeEnumTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TypeEnumTxtRow(); }
         int size(void) const { return sizeTypeEnumTxtRow; }
-        const type_info ** columnTypes(void) const { return typeTypeEnumTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeTypeEnumTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -104,13 +101,16 @@ ITypeEnumTxtTable * ITypeEnumTxtTable::create(IRowBaseVec & io_rowVec)
 TypeEnumTxtTable::TypeEnumTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)   
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE D.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TypeEnumTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, mod_type_id, enum_id, lang_id, descr, note FROM type_enum_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
+        "SELECT  M.model_id, M.model_type_id, D.enum_id, D.lang_id, D.descr, D.note" \
+        " FROM type_enum_txt D" \
+        " INNER JOIN model_type_dic M ON (M.type_hid = D.type_hid)" +
+        sWhere + " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
         );
@@ -119,19 +119,9 @@ TypeEnumTxtTable::TypeEnumTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 // Table never unloaded
 TypeEnumTxtTable::~TypeEnumTxtTable(void) throw() { }
 
-// Find row by primary key: model id, type id, language id
+// Find row by unique key: model id, model type id, language id
 const TypeEnumTxtRow * TypeEnumTxtTable::byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TypeEnumTxtRow(i_modelId, i_typeId, i_enumId, i_langId) );
     return findKey(keyRow);
-}
-
-// get list of rows by model id and type id
-vector<TypeEnumTxtRow> TypeEnumTxtTable::byModelIdTypeId(int i_modelId, int i_typeId) const
-{
-    return findAll(
-        [i_modelId, i_typeId](const TypeEnumTxtRow & i_row) -> bool { 
-            return i_row.modelId == i_modelId && i_row.typeId == i_typeId;
-        }
-    );
 }

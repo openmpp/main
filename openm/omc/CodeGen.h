@@ -11,6 +11,7 @@
 #include "CodeBlock.h"
 
 #include "libopenm/db/metaModelHolder.h"
+#include "libopenm/db/modelBuilder.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ public:
         ofstream *oac_arg,
         ofstream *oaz_arg,
         CodeBlock & missing_dat,
-        const string & i_timestamp,
+        const openm::IModelBuilder * i_builder,
         bool no_line_directives,
         string c_fname,
         openm::MetaModelHolder & io_metaRows 
@@ -37,7 +38,7 @@ public:
 		, oaz(oaz_arg)
         , m(missing_dat)
         , no_line_directives(no_line_directives)
-        , time_stamp(i_timestamp)
+        , modelBuilder(i_builder)
         , metaRows(io_metaRows)
 
 	{
@@ -49,8 +50,6 @@ public:
 
 	void do_all();
 	void do_preamble();
-	void do_model_name();
-	void do_time_stamp();
 	void do_types();
 	void do_aggregations();
 	void do_parameters();
@@ -58,6 +57,7 @@ public:
 	void do_entity_sets();
 	void do_entity_tables();
 	void do_derived_tables();
+    void do_name_digest(void);
 
     /**
      * Generate model-specific helper code for the table read/write model developer API.
@@ -123,6 +123,6 @@ public:
 	bool no_line_directives;
 
 private:
-    const string time_stamp;        // model compilation timestamp
-    openm::MetaModelHolder & metaRows;  // model metadata rows
+    const openm::IModelBuilder * modelBuilder;  // model builder to make sql from meta rows
+    openm::MetaModelHolder & metaRows;          // model metadata rows
 };

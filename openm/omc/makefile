@@ -89,7 +89,6 @@ IdentityAttributeSymbol.cpp \
 LanguageSymbol.cpp \
 LinkAttributeSymbol.cpp \
 LinkToAttributeSymbol.cpp \
-md5.cpp \
 ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
 MultilinkAttributeSymbol.cpp \

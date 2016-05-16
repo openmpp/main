@@ -1,4 +1,4 @@
-// OpenM++ data library: table_dims_txt table
+// OpenM++ data library: table_dims_txt join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_dims_txt table implementation
+    // table_dims_txt join to model_table_dic table implementation
     class TableDimsTxtTable : public ITableDimsTxtTable
     {
     public:
@@ -22,8 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, dimension id, language id
-        const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const;
+        // find row by unique key: model id, model table id, dimension id, language id
+        const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -33,7 +33,7 @@ namespace openm
         TableDimsTxtTable & operator=(const TableDimsTxtTable & i_table) = delete;
     };
 
-    // Columns type for table_dims_txt row
+    // Columns type for table_dims_txt join to model_table_dic row
     static const type_info * typeTableDimsTxtRow[] = { 
         &typeid(decltype(TableDimsTxtRow::modelId)), 
         &typeid(decltype(TableDimsTxtRow::tableId)), 
@@ -43,16 +43,16 @@ namespace openm
         &typeid(decltype(TableDimsTxtRow::note)) 
     };
 
-    // Size (number of columns) for table_dims_txt row
+    // Size (number of columns) for table_dims_txt join to model_table_dic row
     static const int sizeTableDimsTxtRow = sizeof(typeTableDimsTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_dims_txt rows
+    // Row adapter to select table_dims_txt join to model_table_dic rows
     class TableDimsTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableDimsTxtRow(); }
         int size(void) const { return sizeTableDimsTxtRow; }
-        const type_info ** columnTypes(void) const { return typeTableDimsTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeTableDimsTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -101,13 +101,17 @@ ITableDimsTxtTable * ITableDimsTxtTable::create(IRowBaseVec & io_rowVec)
 TableDimsTxtTable::TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)   
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE D.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableDimsTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, table_id, dim_id, lang_id, descr, note FROM table_dims_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
+        "SELECT M.model_id, M.model_table_id, D.dim_id, D.lang_id, D.descr, D.note" \
+        " FROM table_dims_txt D" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
+        sWhere + 
+        " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
         );
@@ -116,7 +120,7 @@ TableDimsTxtTable::TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 // Table never unloaded
 TableDimsTxtTable::~TableDimsTxtTable(void) throw() { }
 
-// Find row by primary key: model id, table id, dimension id, language id
+// Find row by unique key: model id, model table id, dimension id, language id
 const TableDimsTxtRow * TableDimsTxtTable::byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableDimsTxtRow(i_modelId, i_tableId, i_dimId, i_langId) );

@@ -94,11 +94,10 @@ void RootController::init(void)
 
     // load metadata table rows, except of run_option, which is may not created yet
     metaStore.reset(new MetaRunHolder);
-    const ModelDicRow * mdRow = readMetaTables(dbExec, metaStore.get());
-    modelId = mdRow->modelId;
+    modelId = readMetaTables(dbExec, metaStore.get());
 
     // merge command line and ini-file arguments with profile_option table values
-    mergeProfile(dbExec, mdRow);
+    mergeProfile(dbExec);
 
     // get main run control values: number of subsamples, threads
     subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
@@ -144,7 +143,7 @@ void RootController::init(void)
 
     // if this is modeling task then find it in database
     // and create task run entry in database
-    taskId = findTask(dbExec, mdRow);
+    taskId = findTask(dbExec);
     if (taskId > 0) taskRunId = createTaskRun(taskId, dbExec);
 }
 
@@ -369,7 +368,7 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
         // get accumulator data size
         if (tblId != accVec[nAcc].tableId) {
             tblId = accVec[nAcc].tableId;
-            valCount = IOutputTableWriter::sizeOf(modelId, metaStore.get(), tblId);
+            valCount = IOutputTableWriter::sizeOf(metaStore.get(), tblId);
         }
 
         for (int nSub = 0; nSub < subSampleCount; nSub++) {
@@ -399,7 +398,7 @@ void RootController::readParameter(const char * i_name, const type_info & i_type
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, rootRunGroup().runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(rootRunGroup().runId, i_name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, i_type, i_size, io_valueArr);
 
@@ -414,9 +413,6 @@ void RootController::readParameter(const char * i_name, const type_info & i_type
 /** read all input parameters by run id and broadcast to child processes. */
 void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 {
-    // preload run_parameter rows
-    vector<RunParamRow> rpVec = IRunParamTable::select(dbExec, i_runGroup.runId);
-
     unique_ptr<char> packedData;
     for (size_t k = 0; k < PARAMETER_NAME_ARR_LEN; k++) {
 
@@ -426,7 +422,7 @@ void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, i_runGroup.runId, parameterNameSizeArr[k].name, dbExec, metaStore.get(), rpVec)
+            IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[k].name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, packedData.get());
 
@@ -489,7 +485,6 @@ bool RootController::receiveSubSamples(void)
             if (tblRow == nullptr) throw new DbException("output table not found in table dictionary, id: %d", accRecv.tableId);
 
             unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-                modelId,
                 accRecv.runId,
                 tblRow->tableName.c_str(),
                 dbExec,

@@ -7,6 +7,10 @@
 
 using namespace openm;
 
+// template instantions
+template struct ModelStreamWriter<ofstream>;
+template struct ModelStreamWriter<ostringstream>;
+
 /** create new sql script file */
 ModelSqlWriter::ModelSqlWriter(const string & i_filePath)
 {
@@ -31,14 +35,22 @@ ModelSqlWriter::~ModelSqlWriter() throw()
     try { outFs.close(); } catch (...) { }
 }
 
+/** create new digest string writer */
+ModelDigestWriter::ModelDigestWriter(const string & i_name)
+{
+    outFilePath = "digest of " + i_name;    // for error messages
+    defaultLoc = locale("");
+    outFs.imbue(locale::classic());         // for double and float output
+}
+
 /** throw exception on output stream fail */
-void ModelSqlWriter::throwOnFail(void) const
+template<class Tostream> void ModelStreamWriter<Tostream>::throwOnFail(void) const
 {
     if (outFs.fail()) throw HelperException("Failed to write into file: %s", outFilePath.c_str());
 }
 
-/** write string into sql script file */
-void ModelSqlWriter::write(const char * i_str)
+/** write string into output stream */
+template<class Tostream> void ModelStreamWriter<Tostream>::write(const char * i_str)
 {
     if (i_str == nullptr) return;   // nothing to write
 
@@ -46,15 +58,15 @@ void ModelSqlWriter::write(const char * i_str)
     if (outFs.fail()) throw HelperException("Failed to write into file: %s", outFilePath.c_str());
 }
 
-/** write line into sql script file */
-void ModelSqlWriter::writeLine(const string & i_line)
+/** write line into output stream */
+template<class Tostream> void ModelStreamWriter<Tostream>::writeLine(const string & i_line)
 {
     outFs << i_line << '\n';
     if (outFs.fail()) throw HelperException("Failed to write into file: %s", outFilePath.c_str());
 }
 
 /** write string value sql-quoted: O'Brien -> 'O''Brien' */
-void ModelSqlWriter::writeQuoted(const string & i_str, bool i_isAppendComma)
+template<class Tostream> void ModelStreamWriter<Tostream>::writeQuoted(const string & i_str, bool i_isAppendComma)
 {
     writeQuoted(i_str.cbegin(), i_str.cend());
     if (i_isAppendComma) {
@@ -64,7 +76,7 @@ void ModelSqlWriter::writeQuoted(const string & i_str, bool i_isAppendComma)
 }
 
 /** write substring from i_begin until i_end as sql-quoted */
-void ModelSqlWriter::writeQuoted(string::const_iterator i_begin, string::const_iterator i_end)
+template<class Tostream> void ModelStreamWriter<Tostream>::writeQuoted(string::const_iterator i_begin, string::const_iterator i_end)
 {
     outFs << '\'';
     if (outFs.fail()) throw HelperException("Failed to write into file: %s", outFilePath.c_str());
@@ -81,7 +93,7 @@ void ModelSqlWriter::writeQuoted(string::const_iterator i_begin, string::const_i
 }
 
 /** write string value space trimed and sql-quoted */
-void ModelSqlWriter::writeTrimQuoted(const string & i_str, bool i_isAppendComma)
+template<class Tostream> void ModelStreamWriter<Tostream>::writeTrimQuoted(const string & i_str, bool i_isAppendComma)
 {
     const ctype<char> & chType = use_facet<ctype<char> >(defaultLoc);
 
@@ -107,3 +119,4 @@ void ModelSqlWriter::writeTrimQuoted(const string & i_str, bool i_isAppendComma)
         if (outFs.fail()) throw HelperException("Failed to write into file: %s", outFilePath.c_str());
     }
 }
+

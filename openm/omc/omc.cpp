@@ -261,14 +261,14 @@ int main(int argc, char * argv[])
         string model_name = argStore.strOption(OmcArgKey::modelName);
         if (model_name.empty()) {
             model_name = "Model";
-            theLog->logMsg("Model name not specified - using default name 'Model'.  Use -m option to specify model name.");
+            theLog->logMsg("Model name not specified - using default name 'Model'. Use -m option to specify model name.");
         }
 
         // get scenario name
         string scenario_name = argStore.strOption(OmcArgKey::scenarioName);
         if (scenario_name.empty()) {
-            scenario_name = "Base";
-            theLog->logMsg("Scenario name not specified - using default name 'Base'.  Use -s option to specify scenario name.");
+            scenario_name = model_name;
+            theLog->logFormatted("Scenario name not specified - using default: %s. Use -s option to specify scenario name.", model_name.c_str());
         }
 
         // get list of source file names in specified directory or current directory by default
@@ -504,8 +504,9 @@ int main(int argc, char * argv[])
         om_fixed_parms_cpp << "\xEF\xBB\xBF";
 #endif
         // collect model metadata during code generation
+        // use SQLITE db-provider, (it may be omc command-line parameter in the future)
         MetaModelHolder metaRows;
-        unique_ptr<IModelBuilder> builder(IModelBuilder::create(outDir));
+        unique_ptr<IModelBuilder> builder(IModelBuilder::create(openm::SQLITE_DB_PROVIDER, outDir));
 
         CodeBlock missing_param_defs; // Generated definitions for missing parameters
         CodeGen cg(
@@ -515,7 +516,7 @@ int main(int argc, char * argv[])
             &om_definitions_cpp,
             &om_fixed_parms_cpp,
             missing_param_defs,
-            builder->timeStamp(),
+            builder.get(),
             no_line_directives,
             om_definitions_cpp_fname,
             metaRows
@@ -550,11 +551,12 @@ int main(int argc, char * argv[])
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);
         
+        // Create default working set
         theLog->logMsg("Scenario processing");
 
-        // Create default working set
-        MetaSetLangHolder metaSet;  // default working set metadata
+        MetaSetLangHolder metaSet;          // default working set metadata
         metaSet.worksetRow.name = scenario_name;
+
         // TODO Add Scenario description and notes - pending addition of 'scenario' statement
         int scenario_parameters_count = 0;
         for (auto param : Symbol::pp_all_parameters) {
@@ -575,10 +577,10 @@ int main(int argc, char * argv[])
             if (param->source != ParameterSymbol::scenario_parameter) continue;
             auto lst = param->initializer_for_storage();
             if (param->rank() == 0) {
-                builder->addWorksetParameter(metaRows, param->name, lst.front());
+                builder->addWorksetParameter(metaRows, metaSet, param->name, lst.front());
             }
             else {
-                builder->addWorksetParameter(metaRows, param->name, lst);
+                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);
             }
             scenario_parameters_done++;
             if (0 == scenario_parameters_done % 10) {
@@ -590,7 +592,7 @@ int main(int argc, char * argv[])
         }
 
         // complete model default working set sql script
-        builder->endWorkset();
+        builder->endWorkset(metaSet);
 
         // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);

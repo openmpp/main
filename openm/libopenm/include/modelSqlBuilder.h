@@ -11,6 +11,9 @@
 #include <fstream>
 #include <streambuf>
 #include "helper.h"
+#include "crc32.h"
+#include "md5.h"
+#include "dbExec.h"
 #include "libopenm/db/modelBuilder.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
@@ -25,37 +28,42 @@ namespace openm
     {
     public:
         /** create new model builder. */
-        ModelSqlBuilder(const string & i_outputDir);
+        ModelSqlBuilder(const string & i_sqlProvider, const string & i_outputDir);
 
         /** release builder resources. */
         ~ModelSqlBuilder() throw() { }
 
-        /** return timestamp string, ie: _201208171604590148_  result does not changed during object lifetime. */
-        const string timeStamp(void) const { return modelTs; }
+        /** set meta rows values and calculate digests for types, parameters, tables and model */
+        void setModelMetaRows(MetaModelHolder & io_metaRows) const override;
 
         /** update metadata and write sql script to create new model from supplied metadata rows */
-        void build(MetaModelHolder & io_metaRows);
+        void build(MetaModelHolder & io_metaRows) override;
 
         /** start sql script to create new working set */
-        void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
+        void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) override;
 
         /** append scalar parameter value to sql script for new working set  creation */
-        void addWorksetParameter(const MetaModelHolder & i_metaRows, const string & i_name, const string & i_value);
+        void addWorksetParameter(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value) override;
 
         /** append parameter values to sql script for new working set  creation */
         void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const string & i_name, const list<string> & i_valueLst
-            );
+            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
+            ) override;
 
         /** finish sql script to create new working set */
-        void endWorkset(void) const;
+        void endWorkset(const MetaSetLangHolder & i_metaSet) const override;
 
         /** write sql script to create backward compatibility views */
-        void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const;
+        void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const override;
 
     private:
-        string modelTs;                     // model timestamp string, ie: _201208171604590148_
+        bool isCrc32Name;                   // if true then use crc32 as db table name suffix
+        int dbPrefixSize;                   // db table prefix name size
+        int dbSuffixSize;                   // db table prefix name size
+        string sqlProvider;                 // db provider name, ie: SQLITE
         string outputDir;                   // output directory to write sql script files
+        string modelDigestQuoted;           // sql-quoted model digest
+        string worksetNameQuoted;           // sql-quoted workset name
         unique_ptr<ModelSqlWriter> setWr;   // workset sql writer
 
         /** helper struct to collect info for db table */
@@ -123,25 +131,35 @@ namespace openm
         /** create new workset and write workset metadata */
         void createWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
 
+        /** delete existing workset parameter values and workset metadata */
+        void deleteWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
+
         /** create table sql for parameter */
-        const void paramCreateTableBody(
+        const void paramCreateTable(
             const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
-            ) const;
+        ) const;
 
         /** create table sql for accumulator table */
-        const void accCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        const void accCreateTable(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
         /** create table sql for value table: aggregated table expressions */
-        const void valueCreateTableBody(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        const void valueCreateTable(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
-        /** set names for dimension and accumulator columns */
-        void setDimAccNames(MetaModelHolder & io_metaRows);
+        /** create view sql for parameter compatibility view */
+        const void paramCompatibilityView(
+            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+        ) const;
 
-        /** set field values for model_dic table row */
-        void setModelDicRow(ModelDicRow & io_mdRow) const;
+        /** create view sql for output table compatibility view */
+        const void outputCompatibilityView(
+            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+        ) const;
 
         /** set field values for workset_lst table row */
-        void setWorksetRow(const ModelDicRow & i_mdRow, WorksetLstRow & io_wsRow) const;
+        void setWorksetRow(WorksetLstRow & io_wsRow) const;
+
+        /** setup type rows, i.e. type digest */
+        void setTypeDicRows(MetaModelHolder & io_metaRows) const;
 
         /** collect info for db parameter tables */
         void setParamTableInfo(MetaModelHolder & io_metaRows);
@@ -149,11 +167,46 @@ namespace openm
         /** collect info for db subsample tables and value views */
         void setOutTableInfo(MetaModelHolder & io_metaRows);
 
-        /** make model prefix from model name and timestamp. */
-        static const string makeModelPrefix(const string & i_name, const string & i_timestamp);
+        /** set parameter meta rows and calculate digests */
+        void setParamDicRows(MetaModelHolder & io_metaRows) const;
 
-        /** make unique part of db table name for parameter or output table, ie: 1234_ageSex */
-        static const string makeDbNameSuffix(int i_id, const string & i_src);
+        /** set output tables meta rows and calculate digests */
+        void setTableDicRows(MetaModelHolder & io_metaRows) const;
+
+        /** sort model metadata rows */
+        static void sortModelRows(MetaModelHolder & io_metaRows);
+
+        /** sort workset metadata rows */
+        static void sortWorksetRows(MetaSetLangHolder & io_metaSet);
+
+        /** set names for dimension, accumulator, expression columns */
+        static void setColumnNames(MetaModelHolder & io_metaRows);
+
+        /** set field values for model_dic table row */
+        void setModelDicRow(ModelDicRow & io_mdRow) const;
+
+        /** make prefix part of db table name by shorten source name, ie: ageSexProvince => ageSexPr */
+        const string makeDbNamePrefix(int i_id, const string & i_src) const;
+
+        /** make unique part of db table name by using digest or crc32(digest) */
+        const string makeDbNameSuffix(int i_id, const string & i_src, const string i_digest) const;
+
+        /** calculate type digest */
+        static const string makeTypeDigest(const TypeDicRow & i_typeRow, const MetaModelHolder & i_metaRows);
+
+        /** calculate parameter metadata digest */
+        static const string makeParamDigest(const ParamDicRow & i_paramRow, const MetaModelHolder & i_metaRows);
+        
+        /** calculate output table metadata digest */
+        static const string makeOutTableDigest(const TableDicRow i_tableRow, const MetaModelHolder & i_metaRows);
+
+        /** calculate model metadata digest */
+        static const string makeModelDigest(const MetaModelHolder & i_metaRows);
+
+        /** calculate workset metadata digest */
+        static const string makeWorksetDigest(
+            const WorksetLstRow & i_wsRow, const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet
+        );
     };
 }
 

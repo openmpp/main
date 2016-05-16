@@ -69,11 +69,17 @@
     <ClInclude Include="..\..\include\libopenm\omCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\modelSqlWriter.h">
-      <Filter>Header Files\db</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\db\metaSetHolder.h">
       <Filter>Header Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="include\crc32.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\md5.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\modelSqlWriter.h">
+      <Filter>Source Files\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +114,18 @@
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="db\modelSqlWriter.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="common\crc32.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\md5.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="db\modelSqlBuilderPrepare.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\dbExec.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>

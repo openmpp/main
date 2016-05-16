@@ -14,6 +14,7 @@
 #include <ctime>
 #include <chrono>
 #include <functional>
+#include <list>
 #include <locale>
 #include <map>
 #include <memory>
@@ -79,9 +80,6 @@ namespace openm
 
     /** make date-time string from timestamp string, ie: _20120817_160459_0148 => 2012-08-17 16:04:59.0148 */
     extern const string toDateTimeString(const string & i_timestamp);
-
-    /** sleep for specified number miliiseconds (exist only to fix gcc 4.4, it is fixed in gcc 4.8) */
-    extern void sleepMilli(long i_sleepTime);
 
     /** format message into supplied buffer using vsnprintf() */
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);

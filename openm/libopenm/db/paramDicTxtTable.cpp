@@ -1,4 +1,4 @@
-// OpenM++ data library: parameter_dic_txt table
+// OpenM++ data library: parameter_dic_txt join to model_parameter_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // parameter_dic_txt table implementation
+    // parameter_dic_txt join to model_parameter_dic table implementation
     class ParamDicTxtTable : public IParamDicTxtTable
     {
     public:
@@ -18,11 +18,12 @@ namespace openm
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, parameter id, language id
-        const ParamDicTxtRow * byKey(int i_modelId, int i_paramId, int i_langId) const;
+        // find row by unique key: model id,  model parameter id, language id
+        const ParamDicTxtRow * byKey(int i_modelId, int i_paramId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -32,7 +33,7 @@ namespace openm
         ParamDicTxtTable & operator=(const ParamDicTxtTable & i_table) = delete;
     };
 
-    // Columns type for parameter_dic_txt row
+    // Columns type for parameter_dic_txt join to model_parameter_dic row
     static const type_info * typeParamDicTxtRow[] = { 
         &typeid(decltype(ParamDicTxtRow::modelId)), 
         &typeid(decltype(ParamDicTxtRow::paramId)), 
@@ -41,16 +42,16 @@ namespace openm
         &typeid(decltype(ParamDicTxtRow::note))
     };
 
-    // Size (number of columns) for parameter_dic_txt row
+    // Size (number of columns) for parameter_dic_txt join to model_parameter_dic row
     static const int sizeParamDicTxtRow = sizeof(typeParamDicTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select parameter_dic_txt rows
+    // Row adapter to select parameter_dic_txt join to model_parameter_dic rows
     class ParamDicTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new ParamDicTxtRow(); }
         int size(void) const { return sizeParamDicTxtRow; }
-        const type_info ** columnTypes(void) const { return typeParamDicTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeParamDicTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -96,13 +97,17 @@ IParamDicTxtTable * IParamDicTxtTable::create(IRowBaseVec & io_rowVec)
 ParamDicTxtTable::ParamDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)   
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE D.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = ParamDicTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, parameter_id, lang_id, descr, note FROM parameter_dic_txt" + sWhere + " ORDER BY 1, 2, 3", 
+        "SELECT M.model_id, M.model_parameter_id, D.lang_id, D.descr, D.note" \
+        " FROM parameter_dic_txt D" \
+        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" +
+        sWhere + 
+        " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
         );
@@ -111,7 +116,7 @@ ParamDicTxtTable::ParamDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 // Table never unloaded
 ParamDicTxtTable::~ParamDicTxtTable(void) throw() { }
 
-// Find row by primary key: model id, parameter id, language id
+// Find row by unique key: model id,  model parameter id, language id
 const ParamDicTxtRow * ParamDicTxtTable::byKey(int i_modelId, int i_paramId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new ParamDicTxtRow(i_modelId, i_paramId, i_langId) );

@@ -1,4 +1,4 @@
-// OpenM++ data library: table_expr_txt table
+// OpenM++ data library: table_expr_txt join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_expr_txt table implementation
+    // table_expr_txt join to model_table_dic table implementation
     class TableExprTxtTable : public ITableExprTxtTable
     {
     public:
@@ -22,8 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, expr id, language id
-        const TableExprTxtRow * byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const;
+        // find row by unique key: model id, model table id, expr id, language id
+        const TableExprTxtRow * byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -33,7 +33,7 @@ namespace openm
         TableExprTxtTable & operator=(const TableExprTxtTable & i_table) = delete;
     };
 
-    // Columns type for table_expr_txt row
+    // Columns type for table_expr_txt join to model_table_dic row
     static const type_info * typeTableExprTxtRow[] = { 
         &typeid(decltype(TableExprTxtRow::modelId)), 
         &typeid(decltype(TableExprTxtRow::tableId)), 
@@ -43,16 +43,16 @@ namespace openm
         &typeid(decltype(TableExprTxtRow::note)) 
     };
 
-    // Size (number of columns) for table_expr_txt row
+    // Size (number of columns) for table_expr_txt join to model_table_dic row
     static const int sizeTableExprTxtRow = sizeof(typeTableExprTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_expr_txt rows
+    // Row adapter to select table_expr_txt join to model_table_dic rows
     class TableExprTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableExprTxtRow(); }
         int size(void) const { return sizeTableExprTxtRow; }
-        const type_info ** columnTypes(void) const { return typeTableExprTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeTableExprTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -107,7 +107,11 @@ TableExprTxtTable::TableExprTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 
     const IRowAdapter & adp = TableExprTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, table_id, expr_id, lang_id, descr, note FROM table_expr_txt" +  sWhere + " ORDER BY 1, 2, 3, 4", 
+        "SELECT M.model_id, M.model_table_id, D.expr_id, D.lang_id, D.descr, D.note" \
+        " FROM table_expr_txt D" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
+        sWhere + 
+        " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
         );
@@ -116,7 +120,7 @@ TableExprTxtTable::TableExprTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 // Table never unloaded
 TableExprTxtTable::~TableExprTxtTable(void) throw() { }
 
-// Find row by primary key: model id, table id, expr id, language id
+// Find row by unique key: model id, model table id, expr id, language id
 const TableExprTxtRow * TableExprTxtTable::byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableExprTxtRow(i_modelId, i_tableId, i_exprId, i_langId) );

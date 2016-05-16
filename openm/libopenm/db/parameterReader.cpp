@@ -12,13 +12,10 @@ namespace openm
     {
     public:
         ParameterReader(
-            int i_modelId, 
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore,
-            bool i_isBaseRunIdSelected = false,
-            int i_baseRunId = 0
+            const MetaRunHolder * i_metaStore
             );
 
         // input parameter reader cleanup
@@ -33,11 +30,13 @@ namespace openm
             );
 
     private:
-        int runId;              // source run id
-        int paramId;            // parameter id
-        int dimCount;           // number of dimensions
-        long long totalSize;    // total number of values in the table
-        string selectValueSql;  // sql to select value
+        int runId;                      // source run id
+        int paramId;                    // parameter id
+        int dimCount;                   // number of dimensions
+        long long totalSize;            // total number of values in the table
+        string paramDbTable;            // db table name for run values of parameter
+        const ParamDicRow * paramRow;   // parameter metadata row
+        vector<ParamDimsRow> paramDims; // parameter dimensions
 
     private:
         ParameterReader(const ParameterReader & i_reader) = delete;
@@ -50,47 +49,18 @@ IParameterReader::~IParameterReader(void) throw() { }
 
 // input parameter reader factory: create new reader
 IParameterReader * IParameterReader::create(
-    int i_modelId,  int i_runId, const char * i_name,  IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
+     int i_runId, const char * i_name,  IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
     )
 {
-    return new ParameterReader(i_modelId, i_runId, i_name, i_dbExec, i_metaStore);
-}
-
-// input parameter reader factory: create new reader using preloaded base run id rows
-IParameterReader * IParameterReader::create(
-    int i_modelId,  
-    int i_runId, 
-    const char * i_name,  
-    IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore, 
-    const vector<RunParamRow> & i_runParamVec
-    )
-{
-    // check parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
-    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
-
-    // find parameter id
-    const ParamDicRow * paramRow = i_metaStore->paramDic->byModelIdName(i_modelId, i_name);
-    if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
-
-    // find base run id, if exist
-    int baseRunId = RunParamRow::findBaseRunId(i_runId, paramRow->paramId, i_runParamVec);
-
-    // create new parameter reader
-    return new ParameterReader(i_modelId, i_runId, i_name, i_dbExec, i_metaStore, true, baseRunId);
+    return new ParameterReader(i_runId, i_name, i_dbExec, i_metaStore);
 }
 
 // new input parameter reader
 ParameterReader::ParameterReader(
-    int i_modelId,  
     int i_runId, 
     const char * i_name,  
     IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore,
-    bool i_isBaseRunIdSelected,
-    int i_baseRunId
+    const MetaRunHolder * i_metaStore
     ) :
     runId(i_runId),
     paramId(0),
@@ -98,76 +68,76 @@ ParameterReader::ParameterReader(
     totalSize(0)
 { 
     // check parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
-    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
-
-    // find model in metadata tables
-    const ModelDicRow * mdRow = i_metaStore->modelDic->byKey(i_modelId);
-    if (mdRow == NULL) throw DbException("model not found in the database");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
+    if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
     // get parameter, parameter type and dimensions list
-    const ParamDicRow * paramRow = i_metaStore->paramDic->byModelIdName(i_modelId, i_name);
-    if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+    int mId = i_metaStore->modelRow->modelId;
+
+    paramRow = i_metaStore->paramDic->byModelIdName(mId, i_name);
+    if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
     paramId = paramRow->paramId;
     dimCount = paramRow->rank;
+    paramDbTable = paramRow->dbPrefix + i_metaStore->modelRow->paramPrefix + paramRow->dbSuffix;
 
-    vector<ParamDimsRow> dimVec = i_metaStore->paramDims->byModelIdParamId(i_modelId, paramId);
-    if (dimCount < 0 || dimCount != (int)dimVec.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
+    paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
+    if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
-    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(i_modelId, paramRow->typeId);
-    if (paramTypeRow == NULL) throw DbException("type not found for parameter: %s", i_name);
+    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
+    if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
     totalSize = 1;
-    for (const ParamDimsRow & dim : dimVec) {
+    for (const ParamDimsRow & dim : paramDims) {
 
-        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(i_modelId, dim.typeId);
-        if (typeRow == NULL) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
+        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(mId, dim.typeId);
+        if (typeRow == nullptr) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
 
-        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(i_modelId, dim.typeId).size();
+        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(mId, dim.typeId).size();
 
         if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
     }
 
     if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
-
-    // if parameter from base run then select actual run id
-    int actualRunId = 0;
-    if (i_isBaseRunIdSelected) {
-        actualRunId = i_baseRunId;
-    }
-    else {
-        actualRunId = IRunParamTable::selectBaseRunId(i_dbExec, i_runId, paramId);
-    }
-
-    if (actualRunId <= 0) actualRunId = i_runId;    // no base run id: parameter value stored under current run id
-
-    // make sql to select parameter value
-    // SELECT dim0, dim1, value FROM model_1_paramName WHERE run_id = 4 ORDER BY 1, 2
-    string sDimLst;
-    string sOrder;
-
-    for (int k = 0; k < dimCount; k++) {
-        sDimLst += dimVec[k].name + ", ";
-        sOrder += to_string(k + 1) + ((k < dimCount - 1) ? ", " : "");
-    }
-
-    selectValueSql = "SELECT " + sDimLst + " value" + 
-        " FROM "  + mdRow->modelPrefix + mdRow->paramPrefix + paramRow->dbNameSuffix + 
-        " WHERE run_id = " + to_string(actualRunId) +
-        ((dimCount > 0) ? " ORDER BY " + sOrder : "");
 }
 
 // read input parameter values
 void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * io_valueArr)
 {
     // validate parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %ld for output table id: %d", i_size, paramId);
-    if (io_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %ld for parameter id: %d", i_size, paramId);
+    if (io_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+
+    // make sql to select parameter value
+    //
+    // SELECT dim0, dim1, param_value 
+    // FROM ageSex_p201208171604590148 
+    // WHERE run_id = 
+    // (
+    //   SELECT R.base_run_id FROM run_parameter R WHERE R.run_id = 4 AND R.parameter_hid = 654
+    // )
+    // ORDER BY 1, 2
+    //
+    string sDimLst;
+    string sOrder;
+
+    for (int k = 0; k < dimCount; k++) {
+        sDimLst += paramDims[k].name + ", ";
+        sOrder += to_string(k + 1) + ((k < dimCount - 1) ? ", " : "");
+    }
+
+    string sql = "SELECT " + sDimLst + " param_value" + 
+        " FROM "  + paramDbTable  + 
+        " WHERE run_id = " \
+        " (" \
+        " SELECT R.base_run_id FROM run_parameter R" \
+        " WHERE R.run_id = " + to_string(runId) + " AND R.parameter_hid = " + to_string(paramRow->paramHid) +
+        " )" +
+        ((dimCount > 0) ? " ORDER BY " + sOrder : "");
 
     // select parameter and return value column
-    i_dbExec->selectColumn(selectValueSql, dimCount, i_type,  i_size,  io_valueArr);
+    i_dbExec->selectColumn(sql, dimCount, i_type,  i_size,  io_valueArr);
 }

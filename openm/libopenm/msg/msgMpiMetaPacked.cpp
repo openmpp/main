@@ -20,16 +20,16 @@ namespace openm
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->digest, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->type)>(val->type, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->version, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->timestamp, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->modelPrefix, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->createDateTime, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->paramPrefix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->setPrefix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->accPrefix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->valuePrefix, i_packedSize, io_packedData, io_packPos);
     }
-    
+
     // model_dic: unpack MPI message into db row
     template<>
     void RowMpiPackedAdapter<ModelDicRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
@@ -38,10 +38,10 @@ namespace openm
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->digest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->type = MpiPacked::unpack<decltype(val->type)>(i_packedSize, i_packedData, io_packPos);
         val->version = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->timestamp = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->modelPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->createDateTime = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->paramPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->setPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->accPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
@@ -56,47 +56,14 @@ namespace openm
         return 
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(val->name) +
+            MpiPacked::packedSize(val->digest) +
             MpiPacked::packedSize(typeid(int)) +
             MpiPacked::packedSize(val->version) +
-            MpiPacked::packedSize(val->timestamp) +
-            MpiPacked::packedSize(val->modelPrefix) +
+            MpiPacked::packedSize(val->createDateTime) +
             MpiPacked::packedSize(val->paramPrefix) +
             MpiPacked::packedSize(val->setPrefix) +
             MpiPacked::packedSize(val->accPrefix) +
             MpiPacked::packedSize(val->valuePrefix);
-    }
-
-    // run_option: pack db row into MPI message
-    template<>
-    void RowMpiPackedAdapter<RunOptionRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
-    {
-        const RunOptionRow * val = dynamic_cast<const RunOptionRow *>(i_row.get());
-
-        MpiPacked::pack<decltype(val->runId)>(val->runId, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->key, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->value, i_packedSize, io_packedData, io_packPos);
-    }
-
-    // run_option: unpack MPI message into db row
-    template<>
-    void RowMpiPackedAdapter<RunOptionRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
-    {
-        RunOptionRow * val = static_cast<RunOptionRow *>(io_row.get());
-
-        val->runId = MpiPacked::unpack<decltype(val->runId)>(i_packedSize, i_packedData, io_packPos);
-        val->key = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->value = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-    }
-
-    // run_option: return byte size to pack db row into MPI message
-    template<>
-    int RowMpiPackedAdapter<RunOptionRow>::packedSize(const IRowBaseUptr & i_row)
-    {
-        const RunOptionRow * val = dynamic_cast<const RunOptionRow *>(i_row.get());
-        return
-            MpiPacked::packedSize(typeid(val->runId)) +
-            MpiPacked::packedSize(val->key) +
-            MpiPacked::packedSize(val->value);
     }
 
     // type_dic: pack db row into MPI message
@@ -108,6 +75,7 @@ namespace openm
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->typeId)>(val->typeId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->digest, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->dicId)>(val->dicId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->totalEnumId)>(val->totalEnumId, i_packedSize, io_packedData, io_packPos);
     }
@@ -121,6 +89,7 @@ namespace openm
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->typeId = MpiPacked::unpack<decltype(val->typeId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->digest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->dicId = MpiPacked::unpack<decltype(val->dicId)>(i_packedSize, i_packedData, io_packPos);
         val->totalEnumId = MpiPacked::unpack<decltype(val->totalEnumId)>(i_packedSize, i_packedData, io_packPos);
     }
@@ -134,6 +103,7 @@ namespace openm
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(typeid(val->typeId)) +
             MpiPacked::packedSize(val->name) +
+            MpiPacked::packedSize(val->digest) +
             MpiPacked::packedSize(typeid(val->dicId)) +
             MpiPacked::packedSize(typeid(val->totalEnumId));
     }
@@ -182,8 +152,10 @@ namespace openm
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->paramId)>(val->paramId, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->dbNameSuffix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->paramName, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->digest, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbPrefix, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbSuffix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->typeId)>(val->typeId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
@@ -199,8 +171,10 @@ namespace openm
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->paramId = MpiPacked::unpack<decltype(val->paramId)>(i_packedSize, i_packedData, io_packPos);
-        val->dbNameSuffix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->paramName = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->digest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbSuffix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->typeId = MpiPacked::unpack<decltype(val->typeId)>(i_packedSize, i_packedData, io_packPos);
         val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
@@ -216,8 +190,10 @@ namespace openm
         return
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(typeid(val->paramId)) +
-            MpiPacked::packedSize(val->dbNameSuffix) +
             MpiPacked::packedSize(val->paramName) +
+            MpiPacked::packedSize(val->digest) +
+            MpiPacked::packedSize(val->dbPrefix) +
+            MpiPacked::packedSize(val->dbSuffix) +
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->typeId)) +
             MpiPacked::packedSize(typeid(val->isHidden)) +
@@ -272,8 +248,10 @@ namespace openm
 
         MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->tableId)>(val->tableId, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->dbNameSuffix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->tableName, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->digest, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbPrefix, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbSuffix, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isUser)>(val->isUser, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isSparse)>(val->isSparse, i_packedSize, io_packedData, io_packPos);
@@ -289,8 +267,10 @@ namespace openm
 
         val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
         val->tableId = MpiPacked::unpack<decltype(val->tableId)>(i_packedSize, i_packedData, io_packPos);
-        val->dbNameSuffix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->tableName = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->digest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbPrefix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbSuffix = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->isUser = MpiPacked::unpack<decltype(val->isUser)>(i_packedSize, i_packedData, io_packPos);
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->isSparse = MpiPacked::unpack<decltype(val->isSparse)>(i_packedSize, i_packedData, io_packPos);
@@ -306,8 +286,10 @@ namespace openm
         return
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(typeid(val->tableId)) +
-            MpiPacked::packedSize(val->dbNameSuffix) +
             MpiPacked::packedSize(val->tableName) +
+            MpiPacked::packedSize(val->digest) +
+            MpiPacked::packedSize(val->dbPrefix) +
+            MpiPacked::packedSize(val->dbSuffix) +
             MpiPacked::packedSize(typeid(val->isUser)) +
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->isSparse)) +
@@ -410,8 +392,8 @@ namespace openm
         MpiPacked::pack<decltype(val->exprId)>(val->exprId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->decimals)>(val->decimals, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->src, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->expr, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->srcExpr, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->sqlExpr, i_packedSize, io_packedData, io_packPos);
     }
 
     // table_expr: unpack MPI message into db row
@@ -425,8 +407,8 @@ namespace openm
         val->exprId = MpiPacked::unpack<decltype(val->exprId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->decimals = MpiPacked::unpack<decltype(val->decimals)>(i_packedSize, i_packedData, io_packPos);
-        val->src = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->expr = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->srcExpr = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->sqlExpr = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
     // table_expr: return byte size to pack db row into MPI message
@@ -440,8 +422,8 @@ namespace openm
             MpiPacked::packedSize(typeid(val->exprId)) +
             MpiPacked::packedSize(val->name) +
             MpiPacked::packedSize(typeid(val->decimals)) +
-            MpiPacked::packedSize(val->src) +
-            MpiPacked::packedSize(val->expr);
+            MpiPacked::packedSize(val->srcExpr) +
+            MpiPacked::packedSize(val->sqlExpr);
     }
 
     // group_lst: pack db row into MPI message
@@ -523,6 +505,39 @@ namespace openm
             MpiPacked::packedSize(typeid(val->childPos)) +
             MpiPacked::packedSize(typeid(val->childGroupId)) +
             MpiPacked::packedSize(typeid(val->leafId));
+    }
+
+    // run_option: pack db row into MPI message
+    template<>
+    void RowMpiPackedAdapter<RunOptionRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
+    {
+        const RunOptionRow * val = dynamic_cast<const RunOptionRow *>(i_row.get());
+
+        MpiPacked::pack<decltype(val->runId)>(val->runId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->key, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->value, i_packedSize, io_packedData, io_packPos);
+    }
+
+    // run_option: unpack MPI message into db row
+    template<>
+    void RowMpiPackedAdapter<RunOptionRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
+    {
+        RunOptionRow * val = static_cast<RunOptionRow *>(io_row.get());
+
+        val->runId = MpiPacked::unpack<decltype(val->runId)>(i_packedSize, i_packedData, io_packPos);
+        val->key = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->value = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+    }
+
+    // run_option: return byte size to pack db row into MPI message
+    template<>
+    int RowMpiPackedAdapter<RunOptionRow>::packedSize(const IRowBaseUptr & i_row)
+    {
+        const RunOptionRow * val = dynamic_cast<const RunOptionRow *>(i_row.get());
+        return
+            MpiPacked::packedSize(typeid(val->runId)) +
+            MpiPacked::packedSize(val->key) +
+            MpiPacked::packedSize(val->value);
     }
 }
 

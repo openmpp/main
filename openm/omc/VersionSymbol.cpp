@@ -20,6 +20,5 @@ void VersionSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     super::populate_metadata(metaRows);
 
     // Perform operations specific to this level in the Symbol hierarchy.
-
     metaRows.modelDic.version = formatted_value();
 };

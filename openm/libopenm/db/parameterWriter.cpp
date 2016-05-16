@@ -2,17 +2,40 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "dbValue.h"
 #include "dbParameter.h"
+
 using namespace openm;
 
 namespace openm
 {
-    // input parameter writer implementation
-    class ParameterWriter : public IParameterWriter
+    // input parameter writer base class
+    class ParameterWriter
     {
     public:
-        ParameterWriter(
-            int i_modelId,
+        ParameterWriter(const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore);
+
+        // Parameter writer cleanup
+        virtual ~ParameterWriter(void) throw() { }
+
+    protected:
+        int paramId;                    // parameter id
+        int dimCount;                   // number of dimensions
+        long long totalSize;            // total number of values in the table
+        vector<int> dimSizeVec;         // size of each parameter dimension
+        const ParamDicRow * paramRow;   // parameter metadata row
+        vector<ParamDimsRow> paramDims; // parameter dimensions
+
+    private:
+        ParameterWriter(const ParameterWriter & i_writer) = delete;
+        ParameterWriter & operator=(const ParameterWriter & i_writer) = delete;
+    };
+
+    // input parameter writer into workset
+    class ParameterSetWriter : public ParameterWriter, public IParameterSetWriter
+    {
+    public:
+        ParameterSetWriter(
             int i_setId,
             const char * i_name,
             IDbExec * i_dbExec,
@@ -21,35 +44,56 @@ namespace openm
             );
 
         // Parameter writer cleanup
-        ~ParameterWriter(void) throw() { }
+        ~ParameterSetWriter(void) throw() override { }
 
         // return total number of values
-        long long sizeOf(void) const throw() { return totalSize; }
+        virtual long long sizeOf(void) const throw() override { return totalSize; }
 
-        // write parameter values
-        void writeParameter(IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr);
-
-    private:
-        int setId;                  // destination workset id
-        int paramId;                // parameter id
-        int dimCount;               // number of dimensions
-        long long totalSize;        // total number of values in the table
-        vector<int> dimSizeVec;     // parameter dimensions
-        string insertValueSql;      // sql to insert parameter value
-        string deleteValueSql;      // sql to delete parameter value
+        // write workset parameter values
+        void writeParameter(
+            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr
+            ) override;
 
     private:
-        ParameterWriter(const ParameterWriter & i_writer) = delete;
-        ParameterWriter & operator=(const ParameterWriter & i_writer) = delete;
+        int setId;              // destination workset id
+        string paramSetDbTable; // db table name for workset values of parameter
+
+    private:
+        ParameterSetWriter(const ParameterSetWriter & i_writer) = delete;
+        ParameterSetWriter & operator=(const ParameterSetWriter & i_writer) = delete;
+    };
+
+    // input parameter writer for model run
+    class ParameterRunWriter : public ParameterWriter, public IParameterRunWriter
+    {
+    public:
+        ParameterRunWriter(int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore);
+
+        // Parameter writer cleanup
+        ~ParameterRunWriter(void) throw() override { }
+
+        // return total number of values
+        virtual long long sizeOf(void) const throw() override { return totalSize; }
+
+        // calculate run parameter values digest and store only single copy of parameter values
+        void digestParameter(IDbExec * i_dbExec, const type_info & i_type) override;
+
+    private:
+        int runId;              // model run id
+        string paramRunDbTable; // db table name for run values of parameter
+
+    private:
+        ParameterRunWriter(const ParameterRunWriter & i_writer) = delete;
+        ParameterRunWriter & operator=(const ParameterRunWriter & i_writer) = delete;
     };
 }
 
 // Parameter writer cleanup
-IParameterWriter::~IParameterWriter(void) throw() { }
+IParameterSetWriter::~IParameterSetWriter(void) throw() { }
+IParameterRunWriter::~IParameterRunWriter(void) throw() { }
 
-// Parameter writer factory: create new writer
-IParameterWriter * IParameterWriter::create(
-    int i_modelId,
+// Parameter writer factory: create new writer for workset parameter
+IParameterSetWriter * IParameterSetWriter::create(
     int i_setId,
     const char * i_name,
     IDbExec * i_dbExec,
@@ -57,62 +101,57 @@ IParameterWriter * IParameterWriter::create(
     const MetaSetHolder * i_metaSet
     )
 {
-    return new ParameterWriter(i_modelId, i_setId, i_name, i_dbExec, i_metaStore, i_metaSet);
+    return new ParameterSetWriter(i_setId, i_name, i_dbExec, i_metaStore, i_metaSet);
+}
+
+// Parameter writer factory: create new writer for model run parameter
+IParameterRunWriter * IParameterRunWriter::create(
+    int i_runId,
+    const char * i_name,
+    IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore
+    )
+{
+    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore);
 }
 
 // New parameter writer
 ParameterWriter::ParameterWriter(
-    int i_modelId,
-    int i_setId,
-    const char * i_name,
-    IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore,
-    const MetaSetHolder * i_metaSet
+    const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
     ) :
-    setId(i_setId),
     paramId(0),
     dimCount(0),
     totalSize(0)
 {
     // check parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
-    if (i_metaStore == NULL) throw DbException("invalid (NULL) model metadata");
-    if (i_metaSet == NULL) throw DbException("invalid (NULL) workset parameters metadata");
-    if (i_name == NULL || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
+    if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
     // find model, parameter and parameter type in metadata tables
-    const ModelDicRow * mdRow = i_metaStore->modelDic->byKey(i_modelId);
-    if (mdRow == NULL) throw DbException("model not found in the database, id: %d", i_modelId);
+    int mId = i_metaStore->modelRow->modelId;
 
-    const ParamDicRow * paramRow = i_metaStore->paramDic->byModelIdName(i_modelId, i_name);
-    if (paramRow == NULL) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+    paramRow = i_metaStore->paramDic->byModelIdName(mId, i_name);
+    if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
     paramId = paramRow->paramId;
     dimCount = paramRow->rank;
 
-    // check if workset belong to model and parameter is part of the workset
-    if (i_metaSet->worksetRow.setId != setId) throw DbException("invalid workset id: %d, expected: %d", i_metaSet->worksetRow.setId, setId);
-    if (i_metaSet->worksetRow.modelId != i_modelId) throw DbException("workset %d does not belong to model: %s", setId, mdRow->name.c_str());
-    if (i_metaSet->worksetRow.isReadonly) throw DbException("workset %d is read-only", setId);
-
-    vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(setId, paramId, i_metaSet->worksetParam);
-    if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", setId, i_name);
-
     // get dimensions list
-    vector<ParamDimsRow> dimVec = i_metaStore->paramDims->byModelIdParamId(i_modelId, paramId);
-    if (dimCount < 0 || dimCount != (int)dimVec.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
+    paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
+    if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
-    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(i_modelId, paramRow->typeId);
-    if (paramTypeRow == NULL) throw DbException("type not found for parameter: %s", i_name);
+    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
+    if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
     totalSize = 1;
-    for (const ParamDimsRow & dim : dimVec) {
+    for (const ParamDimsRow & dim : paramDims) {
 
-        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(i_modelId, dim.typeId);
-        if (typeRow == NULL) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
+        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(mId, dim.typeId);
+        if (typeRow == nullptr) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
 
-        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(i_modelId, dim.typeId).size();
+        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(mId, dim.typeId).size();
 
         if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
 
@@ -120,43 +159,59 @@ ParameterWriter::ParameterWriter(
     }
 
     if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
-
-    // make sql to insert parameter value
-    // INSERT INTO modelone_201208171604590148_w0_ageSex (set_id, dim0, dim1, value) VALUES (2, ?, ?, ?)
-    string tblName = mdRow->modelPrefix + mdRow->setPrefix + paramRow->dbNameSuffix;
-
-    insertValueSql = "INSERT INTO " + tblName + " (set_id";
-
-    for (const ParamDimsRow & dim : dimVec) {
-        insertValueSql += ", " + dim.name;
-    }
-
-    insertValueSql += ", value) VALUES (" + to_string(setId);
-
-    for (int nDim = 0; nDim < dimCount; nDim++) {
-        insertValueSql += ", ?";
-    }
-
-    insertValueSql += ", ?)";
-
-    // make sql to delete parameter value
-    deleteValueSql = "DELETE FROM " + tblName + " WHERE set_id = " + to_string(setId);
 }
 
-// Parameter value casting
-template<typename TValue> void setDbValue(long long i_cellOffset, void * i_valueArr, DbValue & o_dbVal)
+// create new writer for workset parameter
+ParameterSetWriter::ParameterSetWriter(
+    int i_setId,
+    const char * i_name,
+    IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore,
+    const MetaSetHolder * i_metaSet
+    ) :
+    setId(i_setId),
+    ParameterWriter(i_name, i_dbExec, i_metaStore)
 {
-    TValue val = static_cast<TValue *>(i_valueArr)[i_cellOffset];
+    if (i_metaSet == nullptr) throw DbException("invalid (NULL) workset parameters metadata");
+
+    // check if workset belong to model and parameter is part of the workset
+    if (i_metaSet->worksetRow.setId != i_setId) throw DbException("invalid workset id: %d, expected: %d", i_metaSet->worksetRow.setId, i_setId);
+    if (i_metaSet->worksetRow.modelId != i_metaStore->modelRow->modelId) throw DbException("workset %d does not belong to model %s", i_setId, i_metaStore->modelRow->name.c_str());
+    if (i_metaSet->worksetRow.isReadonly) throw DbException("workset %d is read-only", i_setId);
+
+    vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(i_setId, paramId, i_metaSet->worksetParam);
+    if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", i_setId, paramRow->paramName);
+
+    // name of workset parameter value table
+    paramSetDbTable = paramRow->dbPrefix + i_metaStore->modelRow->setPrefix + paramRow->dbSuffix;
+}
+
+// create new writer for model run parameter
+ParameterRunWriter::ParameterRunWriter(
+    int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
+    ) :
+    runId(i_runId),
+    ParameterWriter(i_name, i_dbExec, i_metaStore)
+{
+    paramRunDbTable = paramRow->dbPrefix + i_metaStore->modelRow->paramPrefix + paramRow->dbSuffix;
+}
+
+// parameter value casting from array cell
+template<typename TValue> void setDbValue(long long i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)
+{
+    TValue val = static_cast<const TValue *>(i_valueArr)[i_cellOffset];
     o_dbVal = DbValue(val);
 }
 
-// write parameter values
-void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr)
+// write workset parameter values
+void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr)
 {
-    // validate parameters
-    if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+
     if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for parameter, id: %d", i_size, paramId);
-    if (i_valueArr == NULL) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+    if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+
+    if (!i_dbExec->isTransaction()) throw DbException("workset update must be in transaction scope");
 
     // set parameter columns type: dimensions and value
     vector<const type_info *> typeArr;
@@ -166,7 +221,7 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
     typeArr.push_back(&i_type);         // type of value
 
     // set parameter column conversion handler
-    function<void (long long i_cellOffset, void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
+    function<void (long long i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
 
     if (i_type == typeid(char)) doSetValue = setDbValue<char>;
     if (i_type == typeid(unsigned char)) doSetValue = setDbValue<unsigned char>;
@@ -192,19 +247,32 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
     if (i_type == typeid(long double)) doSetValue = setDbValue<long double>;
     if (i_type == typeid(char *)) doSetValue = setDbValue<char *>;
 
-    if (doSetValue == NULL) throw DbException("invalid type to use as input parameter");    // conversion to target parameter type is not supported
+    if (doSetValue == nullptr) throw DbException("invalid type to use as input parameter");    // conversion to target parameter type is not supported
 
-    // check if update is in transaction scope
-    if (!i_dbExec->isTransaction()) throw DbException("workset update must be in transaction scope");
+    // make sql to insert parameter value
+    // INSERT INTO ageSex_w201208171604590148 (set_id, dim0, dim1, param_value) VALUES (2, ?, ?, ?)
+    //
+    string insSql = "INSERT INTO " + paramSetDbTable + " (set_id";
+
+    for (const ParamDimsRow & dim : paramDims) {
+        insSql += ", " + dim.name;
+    }
+
+    insSql += ", param_value) VALUES (" + to_string(setId);
+
+    for (int nDim = 0; nDim < dimCount; nDim++) {
+        insSql += ", ?";
+    }
+    insSql += ", ?)";
 
     // delete existing parameter values
-    i_dbExec->update(deleteValueSql);
+    i_dbExec->update("DELETE FROM " + paramSetDbTable + " WHERE set_id = " + to_string(setId));
 
     // do insert values
     {
         // prepare insert statement
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
-        i_dbExec->createStatement(insertValueSql, (int)typeArr.size(), typeArr.data());
+        i_dbExec->createStatement(insSql, (int)typeArr.size(), typeArr.data());
 
         // storage for dimension items and db row values
         unique_ptr<int> cellArrUptr(new int[dimCount]);
@@ -246,3 +314,88 @@ void ParameterWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_typ
     }
     // done with insert
 }
+
+// calculate parameter values digest and store only single copy of parameter values
+void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i_type)
+{
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope");
+
+    // insert run_parameter dictionary record
+    string sHid = to_string(paramRow->paramHid);
+    string sRunId = to_string(runId);
+
+    i_dbExec->update(
+        "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, run_digest)" \
+        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + toQuoted(paramRow->digest) + ")"
+        );
+
+    // build sql to select parameter values:
+    //
+    // SELECT dim0, dim1, param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2
+    //
+    string sql = "SELECT ";
+
+    for (const ParamDimsRow & dim : paramDims) {
+        sql += dim.name + ", ";
+    }
+    sql += "param_value FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
+
+    if (dimCount > 0) {
+        sql += " ORDER BY ";
+        for (int nDim = 0; nDim < dimCount; nDim++) {
+            sql += ((nDim > 0) ? ", " : "") + to_string(nDim + 1);
+        }
+    }
+
+    // select parameter values and calculate digest
+    MD5 md5;
+
+    string sLine = paramRow->digest + "\n";
+    md5.add(sLine.c_str(), sLine.length()); // start from metadata digest
+
+    ValueRowDigester md5Rd(dimCount, i_type, &md5);
+    ValueRowAdapter adp(dimCount, i_type);
+
+    i_dbExec->selectToRowProcessor(sql, adp, md5Rd);
+
+    string sDigest = md5.getHash();     // digest of parameter metadata and values
+
+    // update digest and base run id
+    //
+    // UPDATE run_parameter SET run_digest = '22ee44cc' WHERE run_id = 11 parameter_hid = 456
+    //
+    // UPDATE run_parameter SET 
+    //   base_run_id =
+    //   (
+    //     SELECT MIN(E.run_id) FROM run_parameter E
+    //     WHERE E.parameter_hid = 456
+    //     AND E.run_digest = '22ee44cc'
+    //   )
+    // WHERE run_id = 11 AND parameter_hid = 456
+    //
+    i_dbExec->update(
+        "UPDATE run_parameter SET run_digest = " + toQuoted(sDigest) + 
+        " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
+        );
+
+    i_dbExec->update(
+        "UPDATE run_parameter SET base_run_id =" \
+        " (" \
+        " SELECT MIN(E.run_id) FROM run_parameter E" \
+        " WHERE E.parameter_hid = " + sHid +
+        " AND E.run_digest = " + toQuoted(sDigest) +
+        " )" \
+        " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
+        );
+
+    // if same digest already exists then delete current run value rows
+    int nBase = i_dbExec->selectToInt(
+        "SELECT base_run_id FROM run_parameter WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid,
+        0);
+
+    if (nBase > 0 && nBase != runId) {
+        i_dbExec->update("DELETE FROM " + paramRunDbTable + " WHERE run_id = " + sRunId);
+    }
+}
+

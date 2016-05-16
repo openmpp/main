@@ -79,11 +79,10 @@ void SingleController::init(void)
 
     // load metadata table rows, except of run_option, which is may not created yet
     metaStore.reset(new MetaRunHolder);
-    const ModelDicRow * mdRow = readMetaTables(dbExec, metaStore.get());
-    modelId = mdRow->modelId;
+    modelId = readMetaTables(dbExec, metaStore.get());
 
     // merge command line and ini-file arguments with profile_option table values
-    mergeProfile(dbExec, mdRow);
+    mergeProfile(dbExec);
 
     // get main run control values: number of subsamples, threads
     subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
@@ -101,7 +100,7 @@ void SingleController::init(void)
 
     // if this is modeling task then find it in database
     // and create task run entry in database
-    taskId = findTask(dbExec, mdRow);
+    taskId = findTask(dbExec);
     if (taskId > 0) taskRunId = createTaskRun(taskId, dbExec);
 }
 
@@ -182,7 +181,7 @@ void SingleController::readParameter(const char * i_name, const type_info & i_ty
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, nowSetRun.runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(nowSetRun.runId, i_name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, i_type, i_size, io_valueArr);
     }

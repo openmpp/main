@@ -111,7 +111,7 @@ namespace openm
         void createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
-        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const;
+        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         /** write output tables aggregated values into database */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;

@@ -41,7 +41,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new TaskTxtRow(); }
         int size(void) const { return sizeTaskTxtRow; }
-        const type_info ** columnTypes(void) const { return typeTaskTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeTaskTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -72,46 +72,29 @@ ITaskTxtTable::~ITaskTxtTable(void) throw() { }
 TaskTxtTable::~TaskTxtTable(void) throw() { }
 
 // select table rows
-vector<TaskTxtRow> ITaskTxtTable::select(IDbExec * i_dbExec, int i_modelId, int i_langId)
+vector<TaskTxtRow> ITaskTxtTable::select(IDbExec * i_dbExec, int i_langId)
 {
-    string sFromWhere = " FROM task_txt T";
-
-    if (i_modelId > 0 && i_langId < 0) {
-        sFromWhere = 
-            " FROM task_lst M INNER JOIN task_txt T ON (T.task_id = M.task_id)" \
-            " WHERE M.model_id = " + to_string(i_modelId);
-    }
-    if (i_modelId <= 0 && i_langId >= 0) {
-        sFromWhere = 
-            " FROM task_txt T WHERE T.lang_id = " + to_string(i_langId);
-    }
-    if (i_modelId > 0 && i_langId >= 0) {
-        sFromWhere =
-            " FROM task_lst M INNER JOIN task_txt T ON (T.task_id = M.task_id)" \
-            " WHERE M.model_id = " + to_string(i_modelId) +
-            " AND T.lang_id = " + to_string(i_langId);
-    }
-
+    string sWhere = (i_langId >= 0) ? " WHERE lang_id = " + to_string(i_langId) : "";
     return 
-        TaskTxtTable::select(i_dbExec, sFromWhere);
+        TaskTxtTable::select(i_dbExec, sWhere);
 }
 
 // select table rows by task id and language id
 vector<TaskTxtRow> ITaskTxtTable::byKey(IDbExec * i_dbExec, int i_taskId, int i_langId)
 {
-    string sFromWhere = " FROM task_txt T WHERE T.task_id = " + to_string(i_taskId) + " AND T.lang_id = " + to_string(i_langId);
+    string sWhere = " WHERE task_id = " + to_string(i_taskId) + " AND lang_id = " + to_string(i_langId);
     return 
-        TaskTxtTable::select(i_dbExec, sFromWhere);
+        TaskTxtTable::select(i_dbExec, sWhere);
 }
 
 // select table rows by specified filter
-vector<TaskTxtRow> TaskTxtTable::select(IDbExec * i_dbExec, const string & i_fromWhere)
+vector<TaskTxtRow> TaskTxtTable::select(IDbExec * i_dbExec, const string & i_where)
 {
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = TaskTxtRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT T.task_id, T.lang_id, T.descr, T.note " + i_fromWhere + " ORDER BY 1, 2",
+    IRowBaseVec vec = i_dbExec->selectRowVector(
+        "SELECT task_id, lang_id, descr, note FROM task_txt" + i_where + " ORDER BY 1, 2",
         adp
         );
     stable_sort(vec.begin(), vec.end(), TaskTxtRow::keyLess);

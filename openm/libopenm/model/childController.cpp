@@ -74,7 +74,7 @@ void ChildController::init(void)
 
     // broadcast metadata tables from root to all other processes
     metaStore.reset(new MetaRunHolder);
-    broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
+    modelId = broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
 
     // receive model run options
     broadcastRunOptions(ProcessGroupDef::all, msgExec);

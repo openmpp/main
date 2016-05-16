@@ -69,6 +69,14 @@ public:
     CodeBlock & operator+=(const CodeBlock & append_block);
 
     /**
+     * Push block of code at the top of the list.
+     * No indentation applied (assuming zero indent at the top)
+     *
+     * @param   push_block The block of code to be inserted.
+     */
+    void push_header(const CodeBlock & push_block);
+
+    /**
      * Control smart indenting.
      * Default is true.
      *

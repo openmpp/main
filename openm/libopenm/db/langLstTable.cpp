@@ -54,7 +54,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new LangLstRow(); }
         int size(void) const { return sizeLangLstRow; }
-        const type_info ** columnTypes(void) const { return typeLangLstRow; }
+        const type_info * const * columnTypes(void) const { return typeLangLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
