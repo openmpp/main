@@ -9,6 +9,10 @@ LIBSQLITE_DIR = libsqlite
 LIBOPENM_DIR = libopenm
 OMC_DIR = omc
 
+ifndef BIN_POSTFIX
+  BIN_POSTFIX = 
+endif 
+
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
 # EMPTY - use empty version of the library which does nothing

@@ -30,6 +30,10 @@ ifndef OM_LIB_DIR
   OM_LIB_DIR = ../../lib
 endif
 
+ifndef BIN_POSTFIX
+  BIN_POSTFIX = 
+endif 
+
 #
 # model name: current dir name by default
 #
@@ -101,7 +105,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
+	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
 
 #
 # create model SQLite database

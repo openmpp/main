@@ -169,8 +169,8 @@ ParameterSetWriter::ParameterSetWriter(
     const MetaRunHolder * i_metaStore,
     const MetaSetHolder * i_metaSet
     ) :
-    setId(i_setId),
-    ParameterWriter(i_name, i_dbExec, i_metaStore)
+    ParameterWriter(i_name, i_dbExec, i_metaStore),
+    setId(i_setId)
 {
     if (i_metaSet == nullptr) throw DbException("invalid (NULL) workset parameters metadata");
 
@@ -180,7 +180,7 @@ ParameterSetWriter::ParameterSetWriter(
     if (i_metaSet->worksetRow.isReadonly) throw DbException("workset %d is read-only", i_setId);
 
     vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(i_setId, paramId, i_metaSet->worksetParam);
-    if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", i_setId, paramRow->paramName);
+    if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", i_setId, paramRow->paramName.c_str());
 
     // name of workset parameter value table
     paramSetDbTable = paramRow->dbPrefix + i_metaStore->modelRow->setPrefix + paramRow->dbSuffix;
@@ -190,8 +190,8 @@ ParameterSetWriter::ParameterSetWriter(
 ParameterRunWriter::ParameterRunWriter(
     int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
     ) :
-    runId(i_runId),
-    ParameterWriter(i_name, i_dbExec, i_metaStore)
+    ParameterWriter(i_name, i_dbExec, i_metaStore),
+    runId(i_runId)
 {
     paramRunDbTable = paramRow->dbPrefix + i_metaStore->modelRow->paramPrefix + paramRow->dbSuffix;
 }

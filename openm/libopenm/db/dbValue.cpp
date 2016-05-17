@@ -6,42 +6,44 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "dbValue.h"
-
 using namespace openm;
 
 /** NULL value constant for digest calculation */
 const char * ValueRowDigester::nullValueForDigest = "_NULL_";
 
-/** clear value with zeros */
-void DbValue::clear(void)
+namespace openm
 {
-    isVal = false;
-    fVal = 0.0;
-    dVal = 0.0; 
-    dlVal = 0.0; 
-    llVal = 0;
-    ullVal = 0;
-    szVal = nullptr;
-}
+    /** clear value with zeros */
+    void DbValue::clear(void)
+    {
+        isVal = false;
+        fVal = 0.0;
+        dVal = 0.0; 
+        dlVal = 0.0; 
+        llVal = 0;
+        ullVal = 0;
+        szVal = nullptr;
+    }
+    
+    /** return double part of db value */
+    template<> double DbValue::castDouble<double, double>(const DbValue & i_value)
+    {
+        return i_value.dVal;
+    }
 
-/** return double part of db value */
-template<> double DbValue::castDouble<double, double>(const DbValue & i_value)
-{
-    return i_value.dVal;
-}
+    /** cast to double and return float part of db value */
+    template<> double openm::DbValue::castDouble<float, double>(const DbValue & i_value)
+    {
+        double dVal = static_cast<double>(i_value.fVal);
+        return dVal;
+    }
 
-/** cast to double and return float part of db value */
-template<> double DbValue::castDouble<float, double>(const DbValue & i_value)
-{
-    double dVal = static_cast<double>(i_value.fVal);
-    return dVal;
-}
-
-/** cast to double and return long double part of db value */
-template<> double DbValue::castDouble<long double, double>(const DbValue & i_value)
-{
-    double dVal = static_cast<double>(i_value.dlVal);
-    return dVal;
+    /** cast to double and return long double part of db value */
+    template<> double openm::DbValue::castDouble<long double, double>(const DbValue & i_value)
+    {
+        double dVal = static_cast<double>(i_value.dlVal);
+        return dVal;
+    }
 }
 
 /** create empty row of value table */

@@ -155,7 +155,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A)
-	$(CXX) -L$(OUT_LIB_DIR) -lstdc++ -lpthread -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX)
+	$(CXX) -L$(OUT_LIB_DIR) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -lstdc++ -lpthread
 
 .PHONY: clean
 clean:
