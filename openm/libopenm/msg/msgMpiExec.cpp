@@ -185,6 +185,8 @@ MPI_Comm MpiExec::commByGroupOne(int i_groupOne)
 * @param[in]     i_type      value type
 * @param[in]     i_size      size of array
 * @param[in,out] io_valueArr value array to send or output buffer to receive
+*
+* array of strings are not supported, i_size =1 expected if i_type is string
 */
 void MpiExec::bcast(int i_groupOne, const type_info & i_type, long long i_size, void * io_valueArr)
 {
