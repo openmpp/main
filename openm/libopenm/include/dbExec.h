@@ -134,8 +134,8 @@ namespace openm
          * if target type is string then io_valueArray expected to be string[] \n
          * it may throw exception if selected row count not equal i_size
          */
-        virtual long long selectColumn(
-            const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr
+        virtual size_t selectColumn(
+            const string & i_sql, int i_column, const type_info & i_type, size_t i_size, void * io_valueArr
             ) = 0;
 
         /**
@@ -145,7 +145,7 @@ namespace openm
          *
          * @return   number of affected rows (db-provider specific).
          */
-        virtual long long update(const string & i_sql) = 0;
+        virtual size_t update(const string & i_sql) = 0;
 
         /** begin transaction. */
         virtual void beginTransaction(void) = 0;

@@ -35,7 +35,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr
+            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** write output table accumulators. */
@@ -43,7 +43,7 @@ namespace openm
             const RunOptions & i_runOpts,
             bool i_isLastTable,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
@@ -101,7 +101,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr
+            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** write output table accumulators. */
@@ -109,7 +109,7 @@ namespace openm
             const RunOptions & i_runOpts,
             bool i_isLastTable,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
@@ -184,7 +184,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr
+            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** send output table accumulators to root process. */
@@ -192,7 +192,7 @@ namespace openm
             const RunOptions & i_runOpts,
             bool i_isLastTable,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 
@@ -241,7 +241,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr
+            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** write output table accumulators. */
@@ -249,7 +249,7 @@ namespace openm
             const RunOptions & i_runOpts,
             bool i_isLastTable,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) override;
 

@@ -21,7 +21,7 @@ namespace openm
     protected:
         int paramId;                    // parameter id
         int dimCount;                   // number of dimensions
-        long long totalSize;            // total number of values in the table
+        size_t totalSize;               // total number of values in the table
         vector<int> dimSizeVec;         // size of each parameter dimension
         const ParamDicRow * paramRow;   // parameter metadata row
         vector<ParamDimsRow> paramDims; // parameter dimensions
@@ -47,11 +47,11 @@ namespace openm
         ~ParameterSetWriter(void) throw() override { }
 
         // return total number of values
-        virtual long long sizeOf(void) const throw() override { return totalSize; }
+        virtual size_t sizeOf(void) const throw() override { return totalSize; }
 
         // write workset parameter values
         void writeParameter(
-            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * i_valueArr
             ) override;
 
     private:
@@ -73,7 +73,7 @@ namespace openm
         ~ParameterRunWriter(void) throw() override { }
 
         // return total number of values
-        virtual long long sizeOf(void) const throw() override { return totalSize; }
+        virtual size_t sizeOf(void) const throw() override { return totalSize; }
 
         // calculate run parameter values digest and store only single copy of parameter values
         void digestParameter(IDbExec * i_dbExec, const type_info & i_type) override;
@@ -197,14 +197,14 @@ ParameterRunWriter::ParameterRunWriter(
 }
 
 // parameter value casting from array cell
-template<typename TValue> void setDbValue(long long i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)
+template<typename TValue> void setDbValue(size_t i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)
 {
     TValue val = static_cast<const TValue *>(i_valueArr)[i_cellOffset];
     o_dbVal = DbValue(val);
 }
 
 // write workset parameter values
-void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr)
+void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * i_valueArr)
 {
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
 
@@ -221,7 +221,7 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
     typeArr.push_back(&i_type);         // type of value
 
     // set parameter column conversion handler
-    function<void (long long i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
+    function<void (size_t i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
 
     if (i_type == typeid(char)) doSetValue = setDbValue<char>;
     if (i_type == typeid(unsigned char)) doSetValue = setDbValue<unsigned char>;
@@ -287,7 +287,7 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
         DbValue * valVec = valVecUptr.get();
 
         // loop through all dimensions and store cell values
-        for (long long cellOffset = 0; cellOffset < i_size; cellOffset++) {
+        for (size_t cellOffset = 0; cellOffset < i_size; cellOffset++) {
 
             // set dimension items
             for (int k = 0; k < dimCount; k++) {

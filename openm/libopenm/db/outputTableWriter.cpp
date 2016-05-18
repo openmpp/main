@@ -27,13 +27,13 @@ namespace openm
         ~OutputTableWriter(void) throw() { }
 
         // return total number of values for each accumulator
-        long long sizeOf(void) const throw() override { return totalSize; }
+        size_t sizeOf(void) const throw() override { return totalSize; }
 
         // return number of output aggregated expressions
         int expressionCount(void) const throw() override { return exprCount; }
 
         // write output table accumulator values
-        void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr) override;
+        void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, size_t i_size, const double * i_valueArr) override;
 
         // write all output table values: aggregate subsamples using table expressions
         void writeAllExpressions(IDbExec * i_dbExec) override;
@@ -52,7 +52,7 @@ namespace openm
         int dimCount;                   // number of dimensions
         int accCount;                   // number of accumulators
         int exprCount;                  // number of aggregated expressions
-        long long totalSize;            // total number of values in the table
+        size_t totalSize;               // total number of values in the table
         bool isSparseTable;             // if true then use sparse output to database
         double nullValue;               // if is sparse and abs(value) <= nullValue then value not stored
         string accDbTable;              // db table name for accumulators
@@ -146,7 +146,7 @@ OutputTableWriter::OutputTableWriter(
 }
 
 // calculate output table size: total number of values for each accumulator
-long long IOutputTableWriter::sizeOf(const MetaRunHolder * i_metaStore, int i_tableId)
+size_t IOutputTableWriter::sizeOf(const MetaRunHolder * i_metaStore, int i_tableId)
 { 
     if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
 
@@ -167,13 +167,13 @@ long long IOutputTableWriter::sizeOf(const MetaRunHolder * i_metaStore, int i_ta
         if (dim.dimSize <= 0) throw DbException("invalid size of dimension %s for table: %s", dim.name.c_str(), tblRow->tableName.c_str());
         nTotal *= dim.dimSize;
     }
-    if (nTotal <= 0) throw DbException("invalid size of the table: %s", tblRow->tableName.c_str());
+    if (nTotal <= 0 || nTotal > SIZE_MAX) throw DbException("invalid size of the table: %s", tblRow->tableName.c_str());
 
-    return nTotal;
+    return (size_t)nTotal;
 }
 
 // write output table accumulator values
-void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr)
+void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, size_t i_size, const double * i_valueArr)
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
@@ -229,7 +229,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
         DbValue * valVec = valVecUptr.get();
 
         // loop through all dimensions and store cell values
-        for (long long cellOffset = 0; cellOffset < i_size; cellOffset++) {
+        for (size_t cellOffset = 0; cellOffset < i_size; cellOffset++) {
 
             // set parameter values: dimension items
             for (int k = 0; k < dimCount; k++) {

@@ -41,13 +41,13 @@ namespace openm
         void createGroups(int i_groupSize, int i_groupCount) override;
 
         /** broadcast value array from root to all other processes. */
-        void bcast(int i_groupOne, const type_info & i_type, long long i_size, void * io_valueArr) override;
+        void bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) override;
 
         /** broadcast vector of db rows from root to all other processes. */
         void bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) override;
 
         /** start non-blocking send of value array to i_sendTo process. */
-        void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr) override
+        void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr) override
         { MsgExecBase::startSend(i_sendTo, i_msgTag, i_type, i_size, i_valueArr); }
 
         /** pack and start non-blocking send of vector of db rows to i_sendTo process. */
@@ -55,7 +55,7 @@ namespace openm
         { MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter); }
 
         /** initiate non-blocking recveive of value array into io_valueArr. */
-        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) override
+        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) override
         { MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
         /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
@@ -67,7 +67,7 @@ namespace openm
         { return MsgExecBase::tryReceive(i_recvFrom, io_resultRowVec, i_adapter); }
 
         /** try to non-blocking receive value array, return true if completed. */
-        bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const override
+        bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const override
         { return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
         /** wait for all non-blocking send to be completed. */

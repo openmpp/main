@@ -54,12 +54,12 @@ namespace openm
         void selectToRowProcessor(const string & i_sql, const IRowAdapter & i_adapter, IRowProcessor & i_processor) override;
 
         /** select column into io_valueArray[i_size] buffer and return row count. */
-        long long selectColumn(
-            const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr
+        size_t selectColumn(
+            const string & i_sql, int i_column, const type_info & i_type, size_t i_size, void * io_valueArr
         ) override;
 
         /** execute sql statement (update, insert, delete, create, etc). */
-        long long update(const string & i_sql) override;
+        size_t update(const string & i_sql) override;
 
         /** begin transaction, throw exception if transaction already active or statement is active. */
         void beginTransaction(void) override;
@@ -106,7 +106,7 @@ namespace openm
 
         // retrieve single column field values into io_valueArray[i_size] buffer and return row count
         template <typename TCol>
-        long long retrieveColumnTo(int i_column, long long i_size, void* io_valueArr, TCol (DbExecSqlite::*ToRetType)(int));
+        size_t retrieveColumnTo(int i_column, size_t i_size, void* io_valueArr, TCol (DbExecSqlite::*ToRetType)(int));
 
         // bind integer sql parameter at specified position
         void bindLong(int i_position, const DbValue & i_value);

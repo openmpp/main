@@ -523,7 +523,7 @@ void DbExecSqlite::selectToRowProcessor(const string & i_sql, const IRowAdapter 
 * if target type is string then io_valueArray expected to be string[] \n
 * it may throw exception if selected row count not equal i_size
 */
-long long DbExecSqlite::selectColumn(const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr)
+size_t DbExecSqlite::selectColumn(const string & i_sql, int i_column, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -585,9 +585,9 @@ long long DbExecSqlite::selectColumn(const string & i_sql, int i_column, const t
 
 // Retrieve single column field values into io_valueArray[i_size] buffer and return row count
 template <typename TCol>
-long long DbExecSqlite::retrieveColumnTo(int i_column, long long i_size, void * io_valueArr, TCol (DbExecSqlite::*ToRetType)(int))
+size_t DbExecSqlite::retrieveColumnTo(int i_column, size_t i_size, void * io_valueArr, TCol (DbExecSqlite::*ToRetType)(int))
 {
-long long nRow = 0;
+size_t nRow = 0;
 int rc = SQLITE_ROW;
 
     for (nRow = 0; nRow < i_size && rc == SQLITE_ROW; nRow++) {
@@ -617,7 +617,7 @@ int rc = SQLITE_ROW;
 *
 * @return   number of affected rows (db-vendor specific).
 */
-long long DbExecSqlite::update(const string & i_sql)
+size_t DbExecSqlite::update(const string & i_sql)
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -1010,7 +1010,7 @@ void DbExecSqlite::bindStr(int i_position, const DbValue & i_value)
         if (sqlite3_bind_null(theStmt, i_position) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
     }
     else {
-        int nLen = strnlen(i_value.szVal, OM_STRLEN_MAX);   // 
+        int nLen = (int)strnlen(i_value.szVal, OM_STRLEN_MAX);
         if (sqlite3_bind_text(theStmt, i_position, i_value.szVal, nLen, SQLITE_STATIC) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
     }
 }

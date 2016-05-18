@@ -97,7 +97,7 @@ namespace openm
         virtual ~IRunBase(void) throw() = 0;
 
         /** read model parameter */
-        virtual void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
+        virtual void readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
     };
 
     /** model subsample run public interface */
@@ -118,7 +118,7 @@ namespace openm
         virtual int updateProgress(void) = 0;
 
         /** write output result table: subsample value */
-        virtual void writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
+        virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
     };
 
     /** model input parameter name, type and size */
@@ -131,7 +131,7 @@ namespace openm
         const type_info & typeOf;
 
         /** parameter size(number of parameter values) */
-        const long long size;
+        const size_t size;
     };
 
     /** size of parameters list: number of model input parameters */

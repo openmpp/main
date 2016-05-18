@@ -117,10 +117,10 @@ namespace openm
         virtual void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const = 0;
 
         /** return byte size to pack source array. */
-        static size_t packedSize(const type_info & i_type, long long i_size);
+        static size_t packedSize(const type_info & i_type, size_t i_size);
 
         /** return new allocated and packed copy of source array. */
-        static unique_ptr<char> packArray(const type_info & i_type, long long i_size, void * i_valueArr);
+        static unique_ptr<char> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
     };
 
     /** public interface for message passing */
@@ -168,7 +168,7 @@ namespace openm
          * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr value array to send or output buffer to receive
          */
-        virtual void bcast(int i_groupOne, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
+        virtual void bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
 
         /**
          * broadcast vector of db rows from root to all other processes.
@@ -188,7 +188,7 @@ namespace openm
          * @param[in] i_size      size of array
          * @param[in] i_valueArr  value array to send
          */
-        virtual void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr) = 0;
+        virtual void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr) = 0;
 
         /**
          * pack and start non-blocking send of vector of db rows to i_sendTo process.
@@ -208,7 +208,7 @@ namespace openm
          * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr allocated buffer to recieve value array
          */
-        virtual void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
+        virtual void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
 
         /**
          * initiate non-blocking recveive of vector of db rows into io_rowVec.
@@ -228,7 +228,7 @@ namespace openm
          * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr allocated buffer to recieve value array
          */
-        virtual bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const = 0;
+        virtual bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const = 0;
 
         /**
          * try to non-blocking receive and unpack vector of db rows, return true if completed.

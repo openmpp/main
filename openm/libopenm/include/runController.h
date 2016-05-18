@@ -51,7 +51,7 @@ namespace openm
             const RunOptions & i_runOpts,
             bool i_isLastTable,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) = 0;
 
@@ -99,7 +99,7 @@ namespace openm
             IDbExec * i_dbExec,
             const RunOptions & i_runOpts,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) const;
 

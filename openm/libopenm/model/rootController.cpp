@@ -362,7 +362,7 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
     const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
 
     int tblId = -1;
-    long long valCount = 0;
+    size_t valCount = 0;
     for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
 
         // get accumulator data size
@@ -391,7 +391,7 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void RootController::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
+void RootController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
@@ -413,21 +413,31 @@ void RootController::readParameter(const char * i_name, const type_info & i_type
 /** read all input parameters by run id and broadcast to child processes. */
 void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 {
-    unique_ptr<char> packedData;
+    unique_ptr<char> byteArr;
+    unique_ptr<string> strArr;
+    void * paramData = nullptr;
+
     for (size_t k = 0; k < PARAMETER_NAME_ARR_LEN; k++) {
 
         // allocate memory to read parameter
-        size_t packSize = IPackedAdapter::packedSize(parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size);
-        packedData.reset(new char[packSize]);
+        if (parameterNameSizeArr[k].typeOf == typeid(string)) {
+            strArr.reset(new string[parameterNameSizeArr[k].size]);
+            paramData = strArr.get();
+        }
+        else {
+            size_t packSize = IPackedAdapter::packedSize(parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size);
+            byteArr.reset(new char[packSize]);
+            paramData = byteArr.get();
+        }
 
         // read parameter from db
         unique_ptr<IParameterReader> reader(
             IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[k].name, dbExec, metaStore.get())
             );
-        reader->readParameter(dbExec, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, packedData.get());
+        reader->readParameter(dbExec, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, paramData);
 
         // broadcast parameter to all child modeling processes
-        msgExec->bcast(i_runGroup.groupOne, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, packedData.get());
+        msgExec->bcast(i_runGroup.groupOne, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, paramData);
     }
 }
 
@@ -443,7 +453,7 @@ void RootController::writeAccumulators(
     const RunOptions & i_runOpts,
     bool i_isLastTable,
     const char * i_name,
-    long long i_size,
+    size_t i_size,
     forward_list<unique_ptr<double> > & io_accValues
     )
 {

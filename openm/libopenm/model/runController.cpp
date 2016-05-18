@@ -494,7 +494,7 @@ void RunController::doWriteAccumulators(
     IDbExec * i_dbExec,
     const RunOptions & i_runOpts,
     const char * i_name,
-    long long i_size,
+    size_t i_size,
     forward_list<unique_ptr<double> > & io_accValues
     ) const
 {

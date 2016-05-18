@@ -113,7 +113,7 @@ void ChildController::shutdownRun(int /*i_runId*/)
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void ChildController::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
+void ChildController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
@@ -138,7 +138,7 @@ void ChildController::writeAccumulators(
     const RunOptions & i_runOpts, 
     bool /*i_isLastTable*/,
     const char * i_name, 
-    long long i_size, 
+    size_t i_size, 
     forward_list<unique_ptr<double> > & io_accValues
     )
 {

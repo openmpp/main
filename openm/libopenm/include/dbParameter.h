@@ -29,7 +29,7 @@ namespace openm
             );
         
         /** return input parameter size: total number of values in the table */
-        virtual long long sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const throw() = 0;
 
         /**
          * read input parameter values.
@@ -40,7 +40,7 @@ namespace openm
          * @param[in,out] io_valueArr array to return parameter values, size must be =i_size, use io_valueArr[i_size] of std::string for string parameters
          */
         virtual void readParameter(
-            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * io_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * io_valueArr
             ) = 0;
     };
 
@@ -59,7 +59,7 @@ namespace openm
             );
 
         /** return input parameter size: total number of values in the table */
-        virtual long long sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const throw() = 0;
 
         /**
         * write input parameter values.
@@ -70,7 +70,7 @@ namespace openm
         * @param[in,out] i_valueArr array of parameter values, size must be =i_size
         */
         virtual void writeParameter(
-            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * i_valueArr
             ) = 0;
     };
 
@@ -88,7 +88,7 @@ namespace openm
             );
 
         /** return input parameter size: total number of values in the table */
-        virtual long long sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const throw() = 0;
 
         /**
         * calculate run parameter values digest and store only single copy of parameter values.

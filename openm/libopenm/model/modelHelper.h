@@ -100,7 +100,7 @@ namespace openm
         int subNumber;          // subsample number to receive
         int tableId;            // output table id
         int accId;              // accumulator id
-        long long valueCount;   // size of accumulator data
+        size_t valueCount;      // size of accumulator data
         bool isReceived;        // if true then data received
         int senderRank;         // sender rank: process where accumulator calculated
         int msgTag;             // accumulator message tag
@@ -113,7 +113,7 @@ namespace openm
             int i_tableId,
             int i_accId,
             int i_accIndex,
-            long long i_valueCount
+            size_t i_valueCount
             ) :
             runId(i_runId),
             subNumber(i_subNumber),

@@ -22,18 +22,18 @@ namespace openm
         ~ParameterReader(void) throw() { }
 
         // return input parameter size: total number of values in the table
-        long long sizeOf(void) const throw() { return totalSize; }
+        size_t sizeOf(void) const throw() { return totalSize; }
 
         // read input parameter values
         void readParameter(
-            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * io_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * io_valueArr
             );
 
     private:
         int runId;                      // source run id
         int paramId;                    // parameter id
         int dimCount;                   // number of dimensions
-        long long totalSize;            // total number of values in the table
+        size_t totalSize;               // total number of values in the table
         string paramDbTable;            // db table name for run values of parameter
         const ParamDicRow * paramRow;   // parameter metadata row
         vector<ParamDimsRow> paramDims; // parameter dimensions
@@ -104,7 +104,7 @@ ParameterReader::ParameterReader(
 }
 
 // read input parameter values
-void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * io_valueArr)
+void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
