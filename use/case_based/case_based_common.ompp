@@ -186,6 +186,19 @@ void RunSimulation(int mem_id, int mem_count)
     // Initialize the entity counter for this simulation member
     member_entity_counter = 0;
 
+    // The number of member simulations in the sample of simulations
+    simulation_members = mem_count;
+
+    // The member to simulate of the sample of simulations
+    simulation_member = mem_id;
+
+    report_simulation_progress(simulation_member, 0);
+
+    // number of progress reporting steps
+    const int progress_steps = 10;
+    // current reporting step
+    int current_step = 0;
+
     // Create the case information communication object
     case_info ci;
 
@@ -194,15 +207,6 @@ void RunSimulation(int mem_id, int mem_count)
 
 	// Perform operations at the start of Simulation
 	Simulation_start(ci);
-
-    string msg = "Running Simulation - member=" + to_string(mem_id);
-    theLog->logMsg(msg.c_str());
-
-    // The number of member simulations in the sample of simulations
-    simulation_members = mem_count;
-
-    // The member to simulate of the sample of simulations
-    simulation_member = mem_id;
 
     int seed = SimulationSeed; // framework input parameter
     all_cases = SimulationCases; // framework input parameter
@@ -268,6 +272,18 @@ void RunSimulation(int mem_id, int mem_count)
             product *= case_seed;
             case_seed = product % mg_modulus;
         }
+
+        // Compute progress and report periodically
+        {
+            double progress_fraction = (double)thisCase / (double)member_cases;
+            int the_step = (int)(progress_fraction * progress_steps);
+            if (the_step > current_step) {
+                // Note that rapid progress can skip over steps.
+                current_step = the_step;
+                int percent_done = (100 / progress_steps) * current_step;
+                report_simulation_progress(simulation_member, percent_done);
+            };
+        }
     } // cases
 
 	// Perform operations at the end of Simulation
@@ -278,6 +294,11 @@ void RunSimulation(int mem_id, int mem_count)
 
     // Reset CaseInfo API
     CaseInfo(nullptr, true);
+
+    if (current_step < progress_steps) {
+        // final progress message
+        report_simulation_progress(simulation_member, 100);
+    }
 }
 
 case_info* CaseInfo(case_info* ci, bool reset)

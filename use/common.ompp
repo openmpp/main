@@ -88,9 +88,21 @@ void ModelExit(const char* msg)
 }
 
 /**
+ * Report simulation progress.
+ * 
+ */
+void report_simulation_progress(int member, int percent)
+{
+    string msg = "Running simulation: member=" + to_string(member) + " progress=" + to_string(percent) + "%";
+    theLog->logMsg(msg.c_str());
+}
+
+
+/**
  * In Modgen, displays a progress message in the UI.
  *
  * See Modgen Developer's Guide for more information.
+ * Not used in ompp.
  * 
  * @param fmt The format string
  */
@@ -100,9 +112,10 @@ void ProgressMsg(const char* msg)
 }
 
 /**
- * Communicates current simulation time to UI to display progress.
+ * In Modgen, communicates current simulation time to UI to display progress.
  *
  * See Modgen Developer's Guide for more information.
+ * Not used in ompp.
  * 
  * @param tm The time.
  */

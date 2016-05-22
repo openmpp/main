@@ -94,10 +94,17 @@ void Set_actor_subsample_weight(double weight)
     // since entities in time-based models have identical weights.
 }
 
-
 void SimulateEvents()
 {
     using namespace fmk;
+
+    bool is_first_event = true;
+    Time time_first_event(0); // used to calculate progress
+
+    // number of progress reporting steps
+    const int progress_steps = 10;
+    // current reporting step
+    int current_step = 0;
 
     // Simulate the population
     while ( true ) {
@@ -107,16 +114,45 @@ void SimulateEvents()
             fmk::do_exit_simulation_all = false;
             break;
         }
-        if (BaseEvent::time_next_event() > simulation_end) {
+
+        // get the time of the next event in the event queue
+        Time the_time = BaseEvent::time_next_event();
+
+        if (is_first_event) {
+            // Note the time of the first event to compute % progress subsequently
+            time_first_event = the_time;
+            is_first_event = false;
+        }
+
+        if (the_time > simulation_end) {
             // The next event would exceed the maximum simulation time
             BaseAgent::age_all_agents(simulation_end);
             BaseAgent::exit_simulation_all();
             break;
         }
+
+        // Implement the event
         if (!BaseEvent::do_next_event()) {
             // no more events
             break;
         }
+
+        // Compute progress and report periodically
+        if (simulation_end - time_first_event > 0) {
+            double progress_fraction = (the_time - time_first_event) / (simulation_end - time_first_event);
+            int the_step = (int)(progress_fraction * progress_steps);
+            if (the_step > current_step) {
+                // Note that rapid progress can skip over steps.
+                current_step = the_step;
+                int percent_done = (100 / progress_steps) * current_step;
+                report_simulation_progress(simulation_member, percent_done);
+            };
+        }
+    }
+
+    if (current_step < progress_steps) {
+        // final progress message
+        report_simulation_progress(simulation_member, 100);
     }
 }
 
@@ -135,14 +171,13 @@ void RunSimulation(int mem_id, int mem_count)
     // Initialize the entity counter for this simulation member
     member_entity_counter = 0;
 
-    string msg = "Running Simulation - member=" + to_string(mem_id);
-    theLog->logMsg(msg.c_str());
-
     // The number of simulations in the sample of simulations (not used)
     simulation_members = mem_count;
 
     // The member to simulate of the sample of simulations
     simulation_member = mem_id;
+
+    report_simulation_progress(simulation_member, 0);
 
     int seed = SimulationSeed; // framework input parameter
     simulation_end = SimulationEnd; // framework input parameter
