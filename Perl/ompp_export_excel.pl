@@ -288,9 +288,20 @@ for my $record (split(/\n/, $result)) {
 
 # Create table_worksheet names by mangling table_names
 my @table_worksheet_names;
+my $worksheet_name_mangle_counter = 0;
 for my $table_id (@table_ids) {
 	my $table_worksheet_name = $table_names[$table_id];
-	# TODO - mangle name to shorten
+	my $max_sheet_name_length = 31;
+	if (length($table_worksheet_name) > $max_sheet_name_length) {
+		# Truncate and mangle name to 31 characters (maximum Excel sheet name length).
+		# Mangled name will look something like 'MyVeryLongNameWasBadlyTrunca#42'.
+		# The '#' character cannot be part of a table name, so this approach is general,
+		# works for any number of long names, and guarantees no clash of mangled names,
+		# because the mangle counter is unique over all long table names.
+		$worksheet_name_mangle_counter++;
+		my $mangle_suffix = '#'.$worksheet_name_mangle_counter;
+		$table_worksheet_name = substr($table_worksheet_name, 0, $max_sheet_name_length - length($mangle_suffix)).$mangle_suffix;
+	}
 	$table_worksheet_names[$table_id] = $table_worksheet_name; 
 }
 
