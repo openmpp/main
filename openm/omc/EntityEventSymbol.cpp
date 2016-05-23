@@ -211,7 +211,8 @@ CodeBlock EntityEventSymbol::cxx_declaration_agent()
 
     int event_id = pp_event_id;
     int modgen_event_num = pp_modgen_event_num;
-    h += "Event<" + agent->name + ", "
+    h += (event_memory ? "MemoryEvent<" : "Event<")
+        + agent->name + ", "
         + to_string(event_id) + ", "
         + to_string(event_priority) + ", "
         + to_string(modgen_event_num) + ", "

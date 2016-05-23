@@ -3,7 +3,7 @@
  * Declares the Event class and associated classes and templates
  *         
  */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -32,6 +32,7 @@ public:
     void initialize( Time initial_value = time_infinite )
     {
 		event_time = initial_value;
+        memory = 0;
         in_queue = false;
         is_dirty = false;
         is_zombie = false;
@@ -63,11 +64,60 @@ public:
 
     virtual int get_entity_id() = 0;
 
-    virtual void implement_event() = 0;
+    virtual Time get_time() = 0;
 
-    virtual void clean() = 0;
+    virtual void call_implement_func() = 0;
 
-    virtual void age_agent() = 0;
+    virtual Time call_time_func() = 0;
+
+    virtual void call_age_agent() = 0;
+
+    /**
+     * Verify time, then age the entity of this event to the time of event occurrence.
+     */
+    void verified_age_agent()
+    {
+        if (event_time < get_time()) {
+            // The time of this event is in the local past of the entity within which the event occurs.
+            // This is an error in model logic.
+            std::stringstream ss;
+            ss << "Error - Event time " << event_time
+                << " is earlier than current time " << get_time()
+                << " in event " << get_event_id()
+                << " in entity with entity_id " << get_entity_id();
+            ModelExit(ss.str().c_str());
+        }
+        call_age_agent();
+    }
+
+    /**
+     * Cleans this event. Removes if zombie and updates event time if dirty.
+     */
+    void clean()
+    {
+        assert(event_queue);
+        if ( is_zombie && in_queue ) {
+            event_queue->erase( this );
+            in_queue = false;
+        }
+        else if ( is_dirty ) {
+            Time new_event_time = call_time_func();
+            if ( in_queue ) {
+                if ( new_event_time != event_time ) {
+                    event_queue->erase( this );
+                    event_time = new_event_time;
+                    event_queue->insert( this );
+                }
+            }
+            else // ! in_queue
+            {
+                event_time = new_event_time;
+                event_queue->insert( this );
+                in_queue = true;
+            }
+        }
+        is_dirty = false;
+    }
 
     /**
      * event comparison. This is a true observer function but is not declared as const due to issues
@@ -192,7 +242,7 @@ public:
 
         if (just_in_time) {
             // age the agent to the time of the event
-            evt->age_agent();
+            evt->verified_age_agent();
         }
         else {
             // Age all agents to the time of the event.
@@ -207,7 +257,7 @@ public:
         if (event_checksum_enabled && evt->get_event_priority() != openm::event_priority_self_scheduling) evt->event_checksum_update();
 
         // implement the event
-        evt->implement_event();
+        evt->call_implement_func();
 
         // mark the event as requiring recalculation of occurrence time
         evt->make_dirty();
@@ -239,6 +289,11 @@ public:
      * Scheduled time of event.
      */
     Time event_time;
+
+    /**
+     * Storage for memory events.
+     */
+    int memory;
 
     /**
      * Event is in \a event_queue.
@@ -356,7 +411,7 @@ private:
 };
 
 /**
- * An event.
+ * An event, within a given kind of entity
  *
  * @tparam A                          The entity class.
  * @tparam event_id                   The constant event identifier.
@@ -402,57 +457,25 @@ public:
         return (agent()->om_get_entity_id)();
     }
 
-    void implement_event()
+    Time get_time()
+    {
+        return agent()->time.get();
+    }
+
+    void call_implement_func()
     {
         // Note that implement_function is not a class member.
         // It is a compile-time constant supplied as a template argument.
         (agent()->*implement_function)();
     }
 
-    /**
-     * Cleans this event. Removes if zombie and updates event time if dirty.
-     */
-    void clean()
+    Time call_time_func()
     {
-        assert(event_queue);
-        if ( is_zombie && in_queue ) {
-            event_queue->erase( this );
-            in_queue = false;
-        }
-        else if ( is_dirty ) {
-            Time new_event_time = (agent()->*time_function)();
-            if ( in_queue ) {
-                if ( new_event_time != event_time ) {
-                    event_queue->erase( this );
-                    event_time = new_event_time;
-                    event_queue->insert( this );
-                }
-            }
-            else // ! in_queue
-            {
-                event_time = new_event_time;
-                event_queue->insert( this );
-                in_queue = true;
-            }
-        }
-        is_dirty = false;
+        return (agent()->*time_function)();
     }
 
-    /**
-     * Age the entity of this event to the time of event occurrence.
-     */
-    void age_agent()
+    void call_age_agent()
     {
-        if (event_time < agent()->time.get()) {
-            // The time of this event is in the local past of the entity within which the event occurs.
-            // This is an error in model logic.
-            std::stringstream ss;
-            ss << "Error - Event time " << event_time
-                << " is earlier than current time " << agent()->time.get()
-                << " in event " << get_event_id()
-                << " in entity with entity_id " << agent()->entity_id.get();
-            ModelExit(ss.str().c_str());
-        }
         agent()->age_agent(event_time);
     }
 
@@ -465,4 +488,84 @@ public:
 */
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(), Time(A::*time_function)()>
 size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_agent = 0;
+
+
+/**
+ * A memory event, within a given kind of entity
+ *
+ * @tparam A                          The entity class.
+ * @tparam event_id                   The constant event identifier.
+ * @tparam event_priority             The constant event priority.
+ * @tparam modgen_event_num           The constant modgen event number.
+ * @tparam (A::*implement_function)(int) The constant implement function for the event.
+ * @tparam (A::*time_function)(int *)    The constant time function for the event.
+ */
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(int), Time (A::*time_function)(int *)>
+class MemoryEvent : public BaseEvent
+{
+public:
+
+    int get_event_id() const
+    {
+        // Note that event_id is not a class member.
+        // It is a compile-time constant supplied as a template argument.
+        return event_id;
+    }
+
+    int get_event_priority() const
+    {
+        // Note that event_priority is not a class member.
+        // It is a compile-time constant supplied as a template argument.
+        return event_priority;
+    }
+
+    int get_modgen_event_num() const
+    {
+        // Note modgen_event_num is not a class member.
+        // It is a compile-time constant supplied as a template argument.
+        return modgen_event_num;
+    }
+
+    // get pointer to containing agent
+    A *agent()
+    {
+        return (A *) ( (char *)this - offset_in_agent );
+    }
+
+    int get_entity_id()
+    {
+        return (agent()->om_get_entity_id)();
+    }
+
+    Time get_time()
+    {
+        return agent()->time.get();
+    }
+
+    void call_implement_func()
+    {
+        // Note that implement_function is not a class member.
+        // It is a compile-time constant supplied as a template argument.
+        (agent()->*implement_function)(memory);
+    }
+
+    Time call_time_func()
+    {
+        return (agent()->*time_function)(&memory);
+    }
+
+    void call_age_agent()
+    {
+        agent()->age_agent(event_time);
+    }
+
+	// offset to containing agent
+	static size_t offset_in_agent;
+};
+
+/**
+* MemoryEvent offset in Agent (definition)
+*/
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(int), Time(A::*time_function)(int *)>
+size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_agent = 0;
 
