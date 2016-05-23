@@ -196,6 +196,7 @@ public:
         cxx_suppress = false;
         cxx_memfunc_gather = false;
         cxx_memfunc_name = "";
+        cxx_memfunc_parmlist.clear();
 
         InitializeForCxx();
     }
@@ -269,6 +270,11 @@ public:
      * Qualified name of the C++ member function. Example: "Person::MortalityEvent".
      */
     string cxx_memfunc_name;
+
+    /**
+     * Parameter argument list of the C++ member function. Example: "int * p_destination".
+     */
+    vector<string> cxx_memfunc_parmlist;
 
     /**
      * A count of the number of omc parse errors in the model source files.

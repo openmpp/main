@@ -438,6 +438,12 @@ blank       [ \t\r]
 "{"         {
 				pc.brace_level++;
 				if ( pc.brace_level == 1 ) {
+                    if (pc.cxx_memfunc_gather) {
+                        /* record the now-complete function declaration parameter list */
+                        Symbol::memfunc_parmlist.emplace(pc.cxx_memfunc_name, pc.cxx_memfunc_parmlist);
+                        pc.cxx_memfunc_parmlist.clear();
+                    }
+
 				    /* transition to C++ code, inside braces */
 				    BEGIN(cxx_inside);
 				}
@@ -456,6 +462,7 @@ blank       [ \t\r]
                         /* no longer in function body, stop gathering identifiers */
                         pc.cxx_memfunc_gather = false;
                         pc.cxx_memfunc_name = "";
+                        pc.cxx_memfunc_parmlist.clear();
                     }
 				}
 			}
@@ -468,6 +475,7 @@ blank       [ \t\r]
                 /* prepare to gather identifiers from function body */
                 pc.cxx_memfunc_gather = true;
                 pc.cxx_memfunc_name = yytext;
+                pc.cxx_memfunc_parmlist.clear();
 
 				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
             }
@@ -486,6 +494,11 @@ blank       [ \t\r]
                     /* feed token to parser */
                     return tok;
     			}
+
+                if (pc.cxx_memfunc_gather) {
+                    /* build the member function parameter list declaration */
+                    pc.cxx_memfunc_parmlist.push_back(yytext);
+                }
 
                 /* Working string copy of the word which may be modified by mark-up code below */
                 string word = yytext;
@@ -513,6 +526,11 @@ blank       [ \t\r]
 
 .           {
 				/* all other C++ code */
+                if (pc.cxx_memfunc_gather) {
+                    /* build the member function parameter list declaration */
+                    pc.cxx_memfunc_parmlist.push_back(yytext);
+                }
+
 				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
 			}
 

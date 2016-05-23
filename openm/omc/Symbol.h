@@ -297,18 +297,25 @@ public:
      */
 
     enum post_parse_pass {
+
         ///< post-parse pass to create missing symbols
         eCreateMissingSymbols,
+
         ///< post-parse pass to assign labels, etc.
         eAssignLabel,
+
         ///< post-parse pass to assign pp_ members, etc.
         eAssignMembers,
+
         ///< post-parse pass to resolve data types of derived agentvars, etc.
         eResolveDataTypes,
+
         ///< post-parse pass to populate pp_ collections, etc.
         ePopulateCollections,
+
         ///< post-parse pass to populate dependencies, etc.
         ePopulateDependencies,
+
     };
 
     /**
@@ -1021,9 +1028,20 @@ public:
     /**
      * Map of member function qualified names to all identifiers used in the body of the function.
      * 
-     * An example entry might be "Person::Mortality" ==> "alive".
+     * An example entry might be "Person::MortalityEvent" ==> "alive".
      */
     static multimap<string, string> memfunc_bodyids;
+
+    /**
+     * Map of member function qualified names to the parameter list of each (as a vector of strings).
+     * 
+     * The parentheses are included in the list.
+     * Example entries:
+     *
+     * "Person::timeMortality" ==> ( )
+     * "Person::timeMoveEvent" ==> ( int * p_destination )
+     */
+    static map<string, vector<string> > memfunc_parmlist;
 
     /**
      * A map of all the C++ style single line comments in the model source code, indexed by location

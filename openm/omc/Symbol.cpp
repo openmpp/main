@@ -111,6 +111,8 @@ list<AggregationSymbol *> Symbol::pp_all_aggregations;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
+map<string, vector<string> > Symbol::memfunc_parmlist;
+
 /**
 * Map from a token to the preferred string representation of that token.
 *

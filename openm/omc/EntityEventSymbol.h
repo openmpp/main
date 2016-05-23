@@ -33,6 +33,7 @@ public:
         : EntityDataMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
         , event_priority(event_priority)
+        , event_memory(false)
         , is_developer_supplied(is_developer_supplied)
         , pp_event_id(0)
         , pp_modgen_event_num(0)
@@ -95,6 +96,14 @@ public:
      * Used to break ties if two events are scheduled to occur at the same time.
      */
     const int event_priority;
+
+    /**
+     * Event memory indicator.
+     * 
+     * If true, the event has auxiliary information stored as an int.
+     * If true, prototypes for the event time and implement functions have specific arguments.
+     */
+    bool event_memory;
 
     /**
      * true if this object is developer-supplied, rather than generated (self-scheduling event)

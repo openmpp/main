@@ -49,6 +49,64 @@ void EntityEventSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
+        // First determine if this is an event with memory or not,
+        // since if so the members of the event trace cover function symbols 
+        // possibly created below will depend on that.
+        bool time_func_defined = false;
+        bool time_func_memory = false;
+        {
+            assert(time_func); // logic guarantee
+            auto search = memfunc_parmlist.find(time_func->unique_name);
+            if (search == memfunc_parmlist.end()) {
+                time_func_defined = false; // this is an error
+            }
+            else {
+                time_func_defined = true;
+                auto parmlist = search->second;
+                // see if time function parmlist starts with '( int *'
+                if (parmlist.size() >= 3 && parmlist[1] == "int" && parmlist[2] == "*") {
+                    time_func_memory = true;
+                }
+            }
+        }
+
+        bool implement_func_defined = false;
+        bool implement_func_memory = false;
+        {
+            assert(implement_func); // logic guarantee
+            auto search = memfunc_parmlist.find(implement_func->unique_name);
+            if (search == memfunc_parmlist.end()) {
+                implement_func_defined = false; // this is an error
+            }
+            else {
+                implement_func_defined = true;
+                auto parmlist = search->second;
+                // see if implement function parmlist starts with '( int '
+                if (parmlist.size() >= 3 && parmlist[1] == "int" && parmlist[2] != "*") {
+                    implement_func_memory = true;
+                }
+            }
+        }
+
+        if (!time_func_defined) {
+            pp_error("error : Missing definition for event time function '" + time_func->unique_name + "'");
+        }
+        if (!implement_func_defined) {
+            pp_error("error : Missing definition for event implement function '" + implement_func->unique_name + "'");
+        }
+        if (time_func_memory != implement_func_memory) {
+            pp_error("error : Mismatching arguments in event time function '" + time_func->unique_name + "' and event implement function '" + implement_func->unique_name + "'");
+        }
+
+        // Now record the conclusion of the preceding chunk of code.
+        event_memory = time_func_memory;
+
+        if (event_memory) {
+            // Change the declaration argument lists (were empty strings)
+            time_func->arg_list_decl = "int *";
+            implement_func->arg_list_decl = "int";
+        }
+
         if (Symbol::option_event_trace) {
             // The event_trace option is on, so create cover functions
             // for the time and implement functions of the event,
@@ -58,10 +116,16 @@ void EntityEventSymbol::post_parse(int pass)
 
             // Create an EntityFuncSymbol for the time 'cover' function
             string cover_time_func_name = "om_cover_" + time_func->name;
-            auto cover_time_func = new EntityFuncSymbol(cover_time_func_name, agent, "Time", "", false);
+            auto cover_time_func = new EntityFuncSymbol(
+                cover_time_func_name,
+                agent,
+                "Time",
+                event_memory ? "int * p_event_mem" : "",
+                false
+            );
             cover_time_func->doc_block = doxygen_short("Logging cover function: Return the time to the event " + event_name + " in the " + agent->name + " agent.");
             CodeBlock & ct = cover_time_func->func_body;
-            ct += "Time event_time = " + time_func->name + "();";
+            ct += "Time event_time = " + time_func->name + (event_memory ? "(p_event_mem);" : "();");
             ct += "if (BaseEvent::trace_event_on) "
                 "BaseEvent::event_trace_msg("
                 "\"" + agent->name + "\", "
@@ -76,7 +140,13 @@ void EntityEventSymbol::post_parse(int pass)
 
             // Create an EntityFuncSymbol for the implement 'cover' function
             string cover_implement_func_name = "om_cover_" + implement_func->name;
-            auto cover_implement_func = new EntityFuncSymbol(cover_implement_func_name, agent, "void", "", false);
+            auto cover_implement_func = new EntityFuncSymbol(
+                cover_implement_func_name,
+                agent,
+                "void",
+                event_memory ? "int event_mem" : "",
+                false
+            );
             cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " agent.");
             CodeBlock & ci = cover_implement_func->func_body;
             ci += "if (BaseEvent::trace_event_on) "
@@ -87,7 +157,7 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + agent->name + "." + event_name + "\", "
                 "time);"
                 ;
-            ci += implement_func->name + "();";
+            ci += implement_func->name + (event_memory ? "(event_mem);" : "();");
             // Plug it in
             implement_func = cover_implement_func;
             // push the names into the pass #1 ignore hash
