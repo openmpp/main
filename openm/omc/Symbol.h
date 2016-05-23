@@ -1158,6 +1158,11 @@ public:
     static bool option_case_checksum;
 
     /**
+     * Code page to use for source file conversion
+     */
+    static string code_page;
+
+    /**
      * True to disable inserted #line directives in generated files
      */
     static bool no_line_directives;

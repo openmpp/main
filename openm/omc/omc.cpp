@@ -15,6 +15,7 @@
 * * -Omc.UseDir        use/dir/with/ompp/files
 * * -Omc.ParamDir      input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir      input/dir/to/find/fixed/parameter/files/
+* * -Omc.CodePage      code page for converting source files, e.g. windows-1252
 * * -Omc.NoLineDirectives suppress #line directives in generated cpp files
 * * -Omc.TraceScanning detailed tracing from scanner
 * * -Omc.TraceParsing  detailed tracing from parser
@@ -95,6 +96,9 @@ namespace openm
         /** omc input directory with OpenM++ fixed parameter files */
         static const char * fixedDir;
 
+        /** omc code page for source files */
+        static const char * codePage;
+
         /** omc suppress #line directives in generated cpp files */
         static const char * noLineDirectives;
 
@@ -154,6 +158,9 @@ namespace openm
     /** omc input directory for OpenM++ fixed parameter files */
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
+    /** omc code page option */
+    const char * OmcArgKey::codePage = "Omc.CodePage";
+
     /** omc no #line directives option */
     const char * OmcArgKey::noLineDirectives = "Omc.NoLineDirectives";
 
@@ -196,6 +203,7 @@ namespace openm
         OmcArgKey::useDir,
         OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
+        OmcArgKey::codePage,
         OmcArgKey::noLineDirectives,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
@@ -341,6 +349,14 @@ int main(int argc, char * argv[])
 				}
 			}
 		}
+
+        // Obtain information on code page
+        string code_page;
+        if (argStore.isOptionExist(OmcArgKey::codePage)) {
+            code_page = argStore.strOption(OmcArgKey::codePage);
+        }
+        // make available globally in static member of Symbol
+        Symbol::code_page = code_page;
 
         // Obtain information on generation of #line directives
         bool no_line_directives = false;

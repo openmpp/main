@@ -530,6 +530,8 @@ bool Symbol::option_event_trace = false;
 
 bool Symbol::option_case_checksum = false;
 
+string Symbol::code_page;
+
 bool Symbol::no_line_directives = false;
 
 bool Symbol::trace_parsing = false;

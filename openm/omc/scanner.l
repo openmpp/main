@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
+#include "libopenm/common/omFile.h"  // for fileToUtf8
 #include "Driver.h"
 #include "ParseContext.h"
 #include "ast.h"
@@ -566,29 +567,27 @@ blank       [ \t\r]
 
 %%
 
-void Driver::scan_begin ()
+// Use globals to manage string and flex buffer lifecycle/persistence
+namespace openm
+{
+    string the_string;
+    yy_buffer_state * the_buffer;
+};
+
+void Driver::scan_begin()
 {
     yy_flex_debug = trace_scanning;
-    if (file.empty () || file == "-")
-        yyin = stdin;
-    else if (!(yyin = fopen (file.c_str (), "r"))) {
-        error ("cannot open " + file + ": " + strerror(errno));
-        exit (EXIT_FAILURE);
-    }
 
-    // detect and discard UTF-8 BOM if present
-    const char *bom = "\xEF\xBB\xBF";
-    char first_three[4];
-    first_three[3] = '\0';
-    fread(first_three, 1, 3, yyin);
-    if ( 0 != strcmp(first_three, bom) ) {
-        // bom not present, rewind
-        fseek(yyin, 0L, SEEK_SET);
-    }
+    openm::the_string = fileToUtf8(file.c_str(), Symbol::code_page.c_str());
+
+    // Tell flex to use a const char * string for input instead of a file.
+    // It returns the buffer so we can clean up after all's done.
+    openm::the_buffer = yy_scan_string(openm::the_string.c_str());
 }
 
-void Driver::scan_end ()
+void Driver::scan_end()
 {
-  fclose (yyin);
+    // Tell flex to clean up its buffer
+    yy_delete_buffer(openm::the_buffer);
 }
 

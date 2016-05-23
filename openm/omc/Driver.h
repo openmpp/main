@@ -49,8 +49,8 @@ public:
     int result;
 
     // Handling the scanner.
-    void scan_begin ();
-    void scan_end ();
+    void scan_begin();
+    void scan_end();
     bool trace_scanning;
 
     // Run the parser.  Return 0 on success.
@@ -64,5 +64,7 @@ public:
     void error (const string& m);
 
 private:
+
+    // Parse context
     ParseContext &pc;
 };
