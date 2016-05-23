@@ -7,4 +7,7 @@
  */
 
 #pragma once
+
+#include <cassert>
+
 #include "case_based.h"

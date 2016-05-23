@@ -1,0 +1,29 @@
+parameters {
+    //EN Hazard of moving
+    double MoveHazard = 0.05;
+
+    //EN Threshold for fast moves (to nearest region)
+    double FastMoveThreshold = 0.5;
+
+    //EN Region X coordinate
+    double RegionX[CITY] =
+    {
+        2.340,
+        5.370,
+        4.830,
+        1.450,
+        7.270
+    };
+
+    //EN Region Y coordinate
+    double RegionY[CITY] =
+    {
+        48.860,
+        43.310,
+        45.760,
+        43.620,
+        43.700
+    };
+
+};
+

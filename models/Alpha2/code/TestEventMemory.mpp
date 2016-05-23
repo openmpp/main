@@ -1,0 +1,150 @@
+//
+// Notional illustration and test of events with memory
+// 
+// People move from city to city with a particular hazard.
+// If the time to move is less than a threshold value
+// the move is to the city nearest to the current city.
+// Otherwise, the destination is chosen randomly from all
+// other cities.
+
+classification CITY { //EN City
+    //EN Paris
+    PARIS,
+
+    //EN Marseille
+    MARSEILLE,
+
+    //EN Lyon
+    LYON,
+
+    //EN Toulouse
+    TOULOUSE,
+
+    //EN Nice
+    NICE
+};
+
+range YEARS_FROM_START { //EN Years from simulation start
+    0, 100
+};
+
+parameters {
+
+    //EN Hazard of moving
+    double MoveHazard;
+
+    //EN Threshold for fast moves (to nearest region)
+    double FastMoveThreshold;
+
+    //EN City X coordinate
+    double RegionX[CITY];
+
+    //EN City Y coordinate
+    double RegionY[CITY];
+
+    //EN Nearest city to each city
+    model_generated CITY NearestCity[CITY];
+};
+
+void PreSimulation()
+{
+    // Determine nearest region to each region
+    for (int i = 0; i < SIZE(CITY); ++i) {
+        int nearest_city = -1;
+        double nearest_distance = 1.0e10;
+        for (int j = 0; j < SIZE(CITY); ++j) {
+            if (i != j) {
+                double dX = RegionX[i] - RegionX[j];
+                double dY = RegionY[i] - RegionY[j];
+                double dist = sqrt(dX * dX + dY * dY);
+                if (dist < nearest_distance) {
+                    nearest_city = j;
+                    nearest_distance = dist;
+                }
+            }
+        }
+        assert(nearest_city >= 0 && nearest_city < SIZE(CITY));
+        NearestCity[i] = (CITY)nearest_city;
+    }
+}
+
+actor Person
+{
+    //EN Integer time
+    int integer_time = self_scheduling_int(time);
+
+    //EN Years from start of simulation
+    YEARS_FROM_START years_from_start = COERCE(YEARS_FROM_START, integer_time);
+
+    //EN City of residence
+    CITY city = { PARIS };
+
+    //EN Moves to nearest city
+    int nearest_city_moves;
+
+    //EN Moves
+    int moves;
+
+	event timeMoveEvent, MoveEvent;
+};
+
+TIME Person::timeMoveEvent(int * p_destination)
+{
+    int destination = 0;
+
+    TIME delta_t = TIME_INFINITE;
+        
+    // draw waiting time to move
+    if (MoveHazard > 0) {
+        delta_t = - log(RandUniform(8)) / MoveHazard;
+    }
+
+    if (delta_t <= FastMoveThreshold) {
+        // a fast move to the nearest region
+        destination = NearestCity[city];
+    }
+    else {
+        // a liesurely move to a random region
+        destination = (int)(RandUniform(9) * (SIZE(CITY) - 1));
+        if (destination >= city) {
+            destination++;
+        }
+    }
+    assert(destination >= 0 && destination < SIZE(CITY));
+
+    // Record the pre-destined destination with the event
+    *p_destination = destination;
+
+	return WAIT(delta_t);
+}
+
+void Person::MoveEvent(int destination)
+{
+    assert(destination >= 0 && destination < SIZE(CITY) && destination != city);
+
+    moves++;
+
+    if (destination == NearestCity[city]) {
+        nearest_city_moves++;
+    }
+
+    city = (CITY) destination;
+};
+
+table Person Movement //EN Movement
+{
+    {
+        moves, //EN Moves
+        nearest_city_moves, //EN Moves to nearest city
+        nearest_city_moves / moves //EN Proportion moves to nearest city decimals=3
+    }
+};
+
+table Person PopulationByCity //EN Population by city
+{
+    {
+        duration() // PY's
+    }
+    * years_from_start
+    * city
+};
