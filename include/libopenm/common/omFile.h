@@ -26,6 +26,9 @@ namespace openm
     /** convert bytes from current user (or specified) code page to UTF-8 string. */
     extern string toUtf8(size_t i_size, const char * i_byteArr, const char * i_codePageName = NULL);
 
+    /** return true if bytes are valid UTF-8 */
+    extern bool isUtf8(size_t i_size, const char * i_byteArr);
+
     /** read file and return content as UTF-8 as string */
     extern string fileToUtf8(const char * i_filePath, const char * i_codePageName = NULL);
 }

@@ -30,6 +30,7 @@ static const unsigned char BOM_UTF32LE[] = {0xFF, 0xFE, 0x00, 0x00};
 static const unsigned char BOM_UTF32BE[] = {0x00, 0x00, 0xFE, 0xFF};
 
 static const long long bomMaxLen = 4;   // max size of BOM
+static const long long utf8ProbeLen = 10000;   // max bytes used to probe for valid UTF-8
 
 #define IN_CVT_SIZE  10000  /* input conversion buffer size, must be even on Windows */
 #define OUT_CVT_SIZE 65536  /* output conversion buffer size, must be at least 4*input buffer size */
@@ -411,6 +412,100 @@ string openm::toUtf8(size_t i_size, const char * i_byteArr, const char * i_codeP
 }
 
 /**
+* return true if bytes are valid UTF-8.
+*     
+* See table in Description section of article https://en.wikipedia.org/wiki/UTF-8
+*
+* @param[in] i_size         number of bytes to convert
+* @param[in] i_byteArr      source bytes
+*
+* @return true if valid UTF-8.
+*/
+bool openm::isUtf8(size_t i_size, const char * i_byteArr)
+{
+    bool result = true;
+
+    // beginning of possible UTF-8 sequence in buffer
+    unsigned char * curr = (unsigned char *) i_byteArr;
+
+    size_t bytes_left = i_size;
+    size_t continuation_bytes = 0;
+
+    while (bytes_left > 0) {
+        // Binary literals require C++14,
+        // but are already supported by ompp targeted compilers.
+
+        unsigned char the_byte = *curr;
+
+        if (continuation_bytes == 0) {
+            // Check for valid lead byte of a UTF-8 sequence
+            if ((the_byte & 0b10000000) == 0b00000000) {
+                // Lead byte is 0xxxxxxx
+                // Lead byte of a 1-byte UTF-8 sequence (7 bits)
+                // 0 continuation bytes, accept
+                curr++;
+                bytes_left--;
+                continue;
+            }
+            else if ((the_byte & 0b11100000) == 0b11000000) {
+                // Lead byte is 110xxxxx
+                // Lead byte of a 2-byte UTF-8 sequence (11 bits)
+                // Check for 1 valid continuation bytes
+                curr++;
+                bytes_left--;
+                continuation_bytes = 1;
+                continue;
+            }
+            else if ((the_byte & 0b11110000) == 0b11100000) {
+                // Byte #1 is 1110xxxx
+                // Lead byte of a 3-byte UTF-8 sequence (16 bits)
+                // Check for 2 valid continuation bytes
+                curr++;
+                bytes_left--;
+                continuation_bytes = 2;
+                continue;
+            }
+            else if ((the_byte & 0b11111000) == 0b11110000) {
+                // Byte #1 is 11110xxx
+                // Lead byte of a 4-byte UTF-8 sequence (21 bits)
+                // Check for 3 valid continuation bytes
+                curr++;
+                bytes_left--;
+                continuation_bytes = 3;
+                continue;
+            }
+            else {
+                // Invalid lead byte for UTF-8
+                result = false;
+                break;
+            }
+        }
+        else { // continuation_bytes > 0
+            // Check that current byte is a valid continuation byte of a UTF-8 sequence
+            if (bytes_left == 0) {
+                // UTF-8 sequence truncated at end of buffer, accept
+                break;
+            }
+            if ((the_byte & 0b11000000) == 0b10000000) {
+                // Continuation byte is 10xxxxxx
+                // Valid continuation byte of a UTF-8 sequence
+                curr++;
+                bytes_left--;
+                continuation_bytes--;
+                continue;
+            }
+            else {
+                // Invalid continuation byte for UTF-8
+                result = false;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
 * read file and return content as UTF-8 as string.
 *     
 * @param[in] i_filePath     path to the file
@@ -472,7 +567,26 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
             bomSize = sizeof(BOM_UTF32BE);
     }
 
-    // if no BOM and code page name specified then use the page for conversion
+    // if no BOM, probe content to see if it appears to be UTF-8
+    if (bomSize == 0) {
+        unsigned char utf8ProbeBuf[utf8ProbeLen];
+
+        // No BOM, rewind file to beginning
+        inpSt.clear();
+        inpSt.seekg(0);
+
+        inpSt.read((char *)utf8ProbeBuf, utf8ProbeLen);
+        if (inpSt.bad()) throw HelperException("Error at file read");
+        long long probeSize = inpSt.gcount();
+
+        if (isUtf8((size_t)probeSize, (const char *)utf8ProbeBuf)) {
+            // looks like UTF-8, treat as if so
+            fromChar = CharCvtFrom::utf8;
+            bomSize = 0;
+        }
+    }
+
+    // if no BOM and UTF-8 probe fails and code page name specified then use the page for conversion
     if (fromChar == CharCvtFrom::defaultPage && i_codePageName != NULL && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
 
     // create converter
