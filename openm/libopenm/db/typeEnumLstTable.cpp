@@ -1,4 +1,4 @@
-// OpenM++ data library: type_enum_lst table
+// OpenM++ data library: type_enum_lst join to model_type_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // type_enum_lst table implementation
+    // type_enum_lst join to model_type_dic table implementation
     class TypeEnumLstTable : public ITypeEnumLstTable
     {
     public:
@@ -22,13 +22,13 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, type id, enum id
+        // find row by unique key: model id, model type id, enum id
         const TypeEnumLstRow * byKey(int i_modelId, int i_typeId, int i_enumId) const;
 
         // get list of rows by model id
         vector<TypeEnumLstRow> byModelId(int i_modelId) const;
 
-        // get list of rows by model id and type id
+        // get list of rows by model id and model type id
         vector<TypeEnumLstRow> byModelIdTypeId(int i_modelId, int i_typeId) const;
 
     private:
@@ -39,24 +39,24 @@ namespace openm
         TypeEnumLstTable & operator=(const TypeEnumLstTable & i_table) = delete;
     };
 
-    // Columns type for type_enum_lst row
+    // Columns type for type_enum_lst join to model_type_dic row
     static const type_info * typeTypeEnumLstRow[] = { 
-        &typeid(decltype(TypeEnumLstRow::modelId)), 
-        &typeid(decltype(TypeEnumLstRow::typeId)), 
+        &typeid(decltype(TypeDicTxtRow::modelId)), 
+        &typeid(decltype(TypeDicTxtRow::typeId)), 
         &typeid(decltype(TypeEnumLstRow::enumId)), 
         &typeid(decltype(TypeEnumLstRow::name)) 
     };
 
-    // Size (number of columns) for type_enum_lst row
+    // Size (number of columns) for type_enum_lst join to model_type_dic row
     static const int sizeTypeEnumLstRow = sizeof(typeTypeEnumLstRow) / sizeof(const type_info *);
 
-    // Row adapter to select type_enum_lst rows
+    // Row adapter to select type_enum_lst join to model_type_dic rows
     class TypeEnumLstRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TypeEnumLstRow(); }
         int size(void) const { return sizeTypeEnumLstRow; }
-        const type_info ** columnTypes(void) const { return typeTypeEnumLstRow; }
+        const type_info * const * columnTypes(void) const { return typeTypeEnumLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -101,9 +101,10 @@ TypeEnumLstTable::TypeEnumLstTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TypeEnumLstRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, mod_type_id, enum_id, enum_name" \
-        " FROM type_enum_lst" +
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " M.model_id, M.model_type_id, D.enum_id, D.enum_name" \
+        " FROM type_enum_lst D" \
+        " INNER JOIN model_type_dic M ON (M.type_hid = D.type_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -113,7 +114,7 @@ TypeEnumLstTable::TypeEnumLstTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 TypeEnumLstTable::~TypeEnumLstTable(void) throw() { }
 
-// Find row by primary key: model id, type id, enum id
+// Find row by unique key: model id, model type id, enum id
 const TypeEnumLstRow * TypeEnumLstTable::byKey(int i_modelId, int i_typeId, int i_enumId) const
 {
     const IRowBaseUptr keyRow( new TypeEnumLstRow(i_modelId, i_typeId, i_enumId) );
@@ -128,7 +129,7 @@ vector<TypeEnumLstRow> TypeEnumLstTable::byModelId(int i_modelId) const
     );
 }
 
-// get list of rows by model id and type id
+// get list of rows by model id and model type id
 vector<TypeEnumLstRow> TypeEnumLstTable::byModelIdTypeId(int i_modelId, int i_typeId) const
 {
     return findAll(

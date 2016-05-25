@@ -67,10 +67,13 @@ LIBOPENM_CPPLIST = \
   common/helper.cpp \
   common/iniReader.cpp \
   common/log.cpp \
+  common/md5.cpp \
   common/utf8Convert.cpp \
   db/dbExec.cpp \
+  db/dbExecProvider.cpp \
   db/dbExecSqlite.cpp \
   db/dbMetaRow.cpp \
+  db/dbValue.cpp \
   db/groupLstTable.cpp \
   db/groupPcTable.cpp \
   db/groupTxtTable.cpp \
@@ -86,12 +89,11 @@ LIBOPENM_CPPLIST = \
   db/paramDimsTxtTable.cpp \
   db/parameterReader.cpp \
   db/parameterWriter.cpp \
-  db/paramRunTxtTable.cpp \
   db/profileLstTable.cpp \
   db/profileOptionTable.cpp \
   db/runLstTable.cpp \
   db/runOptionTable.cpp \
-  db/runParamTable.cpp \
+  db/runParamTxtTable.cpp \
   db/runTxtTable.cpp \
   db/tableAccTable.cpp \
   db/tableAccTxtTable.cpp \
@@ -133,15 +135,19 @@ LIBOPENM_CPPLIST = \
 
 LIB_OMC_CPPLIST = \
   common/argReader.cpp \
+  common/crc32.cpp \
   common/file.cpp \
   common/helper.cpp \
   common/iniReader.cpp \
   common/log.cpp \
+  common/md5.cpp \
   common/utf8Convert.cpp \
+  db/dbExec.cpp \
   db/dbMetaRow.cpp \
   db/modelAggregationSql.cpp \
   db/modelInsertSql.cpp \
   db/modelSqlBuilder.cpp \
+  db/modelSqlBuilderPrepare.cpp \
   db/modelSqlWriter.cpp
 
 RT_OBJS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))

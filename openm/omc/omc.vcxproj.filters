@@ -386,9 +386,6 @@
     <ClCompile Include="TableMeasureSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="md5.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EntityIncrementSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

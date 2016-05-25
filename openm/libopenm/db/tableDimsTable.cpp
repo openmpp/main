@@ -1,4 +1,4 @@
-// OpenM++ data library: table_dims table
+// OpenM++ data library: table_dims join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_dims table implementation
+    // table_dims join to model_table_dic table implementation
     class TableDimsTable : public ITableDimsTable
     {
     public:
@@ -22,11 +22,11 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, dimension id
-        const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const;
+        // find row by unique key: model id, model table id, dimension id
+        const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const override;
 
         // get list of rows by model id and table id
-        vector<TableDimsRow> byModelIdTableId(int i_modelId, int i_tableId) const;
+        vector<TableDimsRow> byModelIdTableId(int i_modelId, int i_tableId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -36,7 +36,7 @@ namespace openm
         TableDimsTable & operator=(const TableDimsTable & i_table) = delete;
     };
 
-    // Columns type for table_dims row
+    // Columns type for table_dims join to model_table_dic row
     static const type_info * typeTableDimsRow[] = { 
         &typeid(decltype(TableDimsRow::modelId)), 
         &typeid(decltype(TableDimsRow::tableId)), 
@@ -47,16 +47,16 @@ namespace openm
         &typeid(decltype(TableDimsRow::dimSize))
     };
 
-    // Size (number of columns) for table_dims row
+    // Size (number of columns) for table_dims join to model_table_dic row
     static const int sizeTableDimsRow = sizeof(typeTableDimsRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_dims rows
+    // Row adapter to select table_dims join to model_table_dic rows
     class TableDimsRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableDimsRow(); }
         int size(void) const { return sizeTableDimsRow; }
-        const type_info ** columnTypes(void) const { return typeTableDimsRow; }
+        const type_info * const * columnTypes(void) const { return typeTableDimsRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -110,9 +110,11 @@ TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TableDimsRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, table_id, dim_id, dim_name, mod_type_id, is_total, dim_size" \
-        " FROM table_dims" + 
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " M.model_id, M.model_table_id, D.dim_id, D.dim_name, T.model_type_id, D.is_total, D.dim_size" \
+        " FROM table_dims D" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" \
+        " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -122,7 +124,7 @@ TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 TableDimsTable::~TableDimsTable(void) throw() { }
 
-// Find row by primary key: model id, table id, dimension id
+// Find row by unique key: model id, model table id, dimension id
 const TableDimsRow * TableDimsTable::byKey(int i_modelId, int i_tableId, int i_dimId) const
 {
     const IRowBaseUptr keyRow( new TableDimsRow(i_modelId, i_tableId, i_dimId) );

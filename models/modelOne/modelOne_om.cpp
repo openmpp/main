@@ -8,8 +8,10 @@ using namespace openm;
 // model name
 const char * OM_MODEL_NAME = "modelOne";
 
-// model timestamp: compilation date-time
-const char * OM_MODEL_TIMESTAMP = "_201208171604590148_";
+// model metadata digest: unique model key
+// model metadata digest expected to be 32 digits hex
+// modelOne is using special test value instead of actual digest
+const char * OM_MODEL_DIGEST = "20120817_1604590148";
 
 namespace openm
 {

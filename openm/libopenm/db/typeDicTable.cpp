@@ -1,4 +1,4 @@
-// OpenM++ data library: type_dic table
+// OpenM++ data library: type_dic join to model_type_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // type_dic table implementation
+    // type_dic join to model_type_dic table row implementation
     class TypeDicTable : public ITypeDicTable
     {
     public:
@@ -22,14 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id and type id
-        const TypeDicRow * byKey(int i_modelId, int i_typeId) const;
-
-        // get list of rows by model id
-        vector<TypeDicRow> byModelId(int i_modelId) const;
-
-        // find first row by model id and type name or NULL if not found
-        const TypeDicRow * byModelIdName(int i_modelId, const string & i_name) const;
+        // find row by unique key: model id, model type id
+        const TypeDicRow * byKey(int i_modelId, int i_typeId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -39,16 +33,17 @@ namespace openm
         TypeDicTable & operator=(const TypeDicTable & i_table) = delete;
     };
 
-    // Columns type for type_dic row
+    // Columns type for type_dic join to model_type_dic
     static const type_info * typeTypeDicRow[] = { 
         &typeid(decltype(TypeDicRow::modelId)), 
         &typeid(decltype(TypeDicRow::typeId)), 
         &typeid(decltype(TypeDicRow::name)), 
+        &typeid(decltype(TypeDicRow::digest)), 
         &typeid(decltype(TypeDicRow::dicId)), 
         &typeid(decltype(TypeDicRow::totalEnumId))
     };
 
-    // Size (number of columns) for type_dic row
+    // Size (number of columns) for type_dic join to model_type_dic
     static const int sizeTypeDicRow = sizeof(typeTypeDicRow) / sizeof(const type_info *);
 
     // Row adapter to select type_dic rows
@@ -57,7 +52,7 @@ namespace openm
     public:
         IRowBase * createRow(void) const { return new TypeDicRow(); }
         int size(void) const { return sizeTypeDicRow; }
-        const type_info ** columnTypes(void) const { return typeTypeDicRow; }
+        const type_info * const * columnTypes(void) const { return typeTypeDicRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -72,9 +67,12 @@ namespace openm
                 dynamic_cast<TypeDicRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 3:
-                dynamic_cast<TypeDicRow *>(i_row)->dicId = (*(int *)i_value);
+                dynamic_cast<TypeDicRow *>(i_row)->digest = ((const char *)i_value);
                 break;
             case 4:
+                dynamic_cast<TypeDicRow *>(i_row)->dicId = (*(int *)i_value);
+                break;
+            case 5:
                 dynamic_cast<TypeDicRow *>(i_row)->totalEnumId = (*(int *)i_value);
                 break;
             default:
@@ -105,9 +103,10 @@ TypeDicTable::TypeDicTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TypeDicRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, mod_type_id, mod_type_name, dic_id, total_enum_id" \
-        " FROM type_dic" +
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " M.model_id, M.model_type_id, H.type_name, H.type_digest, H.dic_id, H.total_enum_id" \
+        " FROM type_dic H" \
+        " INNER JOIN model_type_dic M ON (M.type_hid = H.type_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2", 
         i_dbExec,
         adp
@@ -117,27 +116,10 @@ TypeDicTable::TypeDicTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 TypeDicTable::~TypeDicTable(void) throw() { }
 
-// Find row by primary key: model id and type id
-const TypeDicRow * TypeDicTable::byKey(int i_modelId, int i_typeId) const
+// find row by unique key: model id, model type id
+const TypeDicRow * TypeDicTable::byKey(int i_modelId, int i_typeId) const 
 {
     const IRowBaseUptr keyRow( new TypeDicRow(i_modelId, i_typeId) );
     return findKey(keyRow);
 }
 
-// get list of rows by model id
-vector<TypeDicRow> TypeDicTable::byModelId(int i_modelId) const
-{
-    return findAll(
-        [i_modelId](const TypeDicRow & i_row) -> bool { return i_row.modelId == i_modelId; }
-    );
-}
-
-// find first row by model id and type name or NULL if not found
-const TypeDicRow * TypeDicTable::byModelIdName(int i_modelId, const string & i_name) const
-{
-    return findFirst(
-        [i_modelId, i_name](const TypeDicRow & i_row) -> bool {
-                return i_row.modelId == i_modelId && i_row.name == i_name;
-            }
-        );
-}

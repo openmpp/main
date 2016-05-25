@@ -67,7 +67,7 @@ namespace openm
         int updateProgress(void) { return runState.updateProgress(); }
 
         /** write result into output table and release accumulators memory. */
-        void writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues);
+        void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues);
 
     private:
         int modelId;                        // model id in database

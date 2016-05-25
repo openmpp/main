@@ -1,6 +1,6 @@
 /**
  * @file
- * OpenM++ data library: base class for db connection wrapper
+ * OpenM++ data library: common classes for db connection wrapper
  */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -19,10 +19,10 @@ namespace openm
     class DbExecBase
     {
     public:
-        /** create new db-connection. */
+        /** prepare to open new db-connection. */
         DbExecBase(const string & i_connectionStr);
 
-        /** close db-connection and cleanup connection resources. */
+        /** cleanup connection resources. */
         ~DbExecBase(void) throw() { }
 
         /** return true in transaction scope. */
@@ -67,6 +67,19 @@ namespace openm
     private:
         DbExecBase(const DbExecBase & i_dbExec) = delete;
         DbExecBase & operator=(const DbExecBase & i_dbExec) = delete;
+    };
+
+    /** row processor to append rows to sequence container, ie: to list or vector */
+    template<typename TContainer> 
+    class RowContainerInserter : public IRowProcessor 
+    {
+    public:
+
+        /** append row to sequence container, ie: to list or vector */
+        void processRow(IRowBaseUptr & i_row) override { rowContainer.push_back(std::move(i_row)); };
+
+        /** row container */
+        TContainer rowContainer;
     };
 
     /** mutex to lock database operations */

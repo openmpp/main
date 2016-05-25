@@ -66,8 +66,6 @@ public:
      */
     string cxx_measure_name_initializer_list() const;
 
-    string metadata_signature() const;
-
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

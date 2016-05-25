@@ -22,6 +22,8 @@ using namespace openm;
 */
 void MpiPacked::pack(const string & i_value, int i_packedSize, void * io_packedData, int & io_packPos)
 {
+    if (io_packedData == nullptr) throw MsgException("Invalid (nullptr) to pack data");
+
     char zeroChar = '\0';
     int len = (int)i_value.length() + 1;
 
@@ -45,8 +47,8 @@ void MpiPacked::pack(const string & i_value, int i_packedSize, void * io_packedD
 */
 string MpiPacked::unpackStr(int i_packedSize, void * i_packedData, int & io_packPos)
 {
-    if (io_packPos >= i_packedSize) 
-        throw MsgException("Unpack error: position=%d out of range=%d", io_packPos, i_packedSize);
+    if (io_packPos >= i_packedSize) throw MsgException("Unpack error: position=%d out of range=%d", io_packPos, i_packedSize);
+    if (i_packedData == nullptr) throw MsgException("Invalid (nullptr) to unpack data");
 
     int len;
     int mpiRet = MPI_Unpack(i_packedData, i_packedSize, &io_packPos, &len, 1, MPI_INT, MPI_COMM_WORLD);
@@ -70,9 +72,10 @@ string MpiPacked::unpackStr(int i_packedSize, void * i_packedData, int & io_pack
 * @param[in] i_size      size of array
 * @param[in] i_valueArr  array of values to be packed
 */
-unique_ptr<char> MpiPacked::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+unique_ptr<char> MpiPacked::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
 {
-    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
+    if (i_valueArr == nullptr) throw MsgException("Invalid (nullptr) to array to send");
 
     int srcSize = (int)i_size;
     int packSize = packedSize(i_type, i_size);
@@ -86,14 +89,71 @@ unique_ptr<char> MpiPacked::packArray(const type_info & i_type, long long i_size
     return packedData;
 }
 
+/**
+* return an MPI_Pack'ed copy of source string array.
+*
+* @param[in] i_type      value type
+* @param[in] i_size      size of array
+* @param[in] i_valueArr  array of strings to be packed
+*/
+const vector<char> MpiPacked::packArray(size_t i_size, const string * i_valueArr)
+{
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
+    if (i_valueArr == nullptr) throw MsgException("Invalid (nullptr) to array to send");
+
+    // size is row count size and each packed string size
+    int nSize = MpiPacked::packedSize(typeid(int));
+    for (size_t k = 0; k < i_size; k++) {
+        nSize += packedSize(i_valueArr[k]);
+    }
+
+    // pack row count and all strings
+    vector<char> packedData(nSize);
+
+    int nPos = 0;
+    int nCount = (int)i_size;
+    MpiPacked::pack<int>(nCount, nSize, packedData.data(), nPos);
+
+    for (size_t k = 0; k < i_size; k++) {
+        pack(i_valueArr[k], nSize, packedData.data(), nPos);
+    }
+    return packedData;
+}
+
+/** 
+* unpack MPI_Pack'ed string array from i_packedData into supplied io_valueArr. 
+*
+* @param[in]     i_packedSize   total size in bytes of i_packedData buffer
+* @param[in]     i_packedData   source MPI message buffer to unpack: i_packedData[i_packedSize]
+* @param[in]     i_size         size of array
+* @param[in,out] io_valueArr    supplied array of string[i_size] to unpack results
+*/
+void MpiPacked::unpackArray(int i_packedSize, void * i_packedData, size_t i_size, string * io_valueArr)
+{ 
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to receive: %zu", i_size);
+    if (i_packedData == nullptr) throw MsgException("Invalid (nullptr) to array of received data");
+    if (io_valueArr == nullptr) throw MsgException("Invalid (nullptr) to unpack received data");
+
+    // check source array size: number of strings expected
+    int nPos = 0;
+    int nCount = MpiPacked::unpack<int>(i_packedSize, i_packedData, nPos);
+
+    if ((size_t)nCount != i_size) throw MsgException("Invalid size of array received: %d, expected: %zu", nCount, i_size);
+
+    // unpack strings
+    for (size_t k = 0; k < i_size; k++) {
+        io_valueArr[k] = unpackStr(i_packedSize, i_packedData, nPos);
+    }
+}
+
 /** return MPI pack size for array of specified primitive type values. 
 *
 * @param[in] i_type      value type
 * @param[in] i_size      size of array
 */
-int MpiPacked::packedSize(const type_info & i_type, long long i_size)
+int MpiPacked::packedSize(const type_info & i_type, size_t i_size)
 {
-    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
     return 
         (int)i_size * packedSize(i_type);
 }

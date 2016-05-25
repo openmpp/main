@@ -49,7 +49,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new ProfileLstRow(); }
         int size(void) const { return sizeProfileLstRow; }
-        const type_info ** columnTypes(void) const { return typeProfileLstRow; }
+        const type_info * const * columnTypes(void) const { return typeProfileLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {

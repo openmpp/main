@@ -372,27 +372,6 @@ CodeBlock ParameterSymbol::dat_definition() const
     return d;
 }
 
-
-
-string ParameterSymbol::metadata_signature() const
-{
-    // Hook into the hierarchical calling chain
-    string sig = super::metadata_signature();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    sig += "content: " + pp_datatype->metadata_signature();
-    sig += "dimensions: " + to_string(rank()) + "\n";
-    int dim_index = 0;
-    for (auto enumeration : pp_enumeration_list) {
-        sig += "dimension " + to_string(dim_index) + ":\n";
-        sig += enumeration->metadata_signature();
-        dim_index++;
-    }
-    sig += "\n";
-
-    return sig;
-}
-
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Only external parameters have metadata

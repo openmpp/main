@@ -43,7 +43,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new WorksetLstRow(); }
         int size(void) const { return sizeWorksetLstRow; }
-        const type_info ** columnTypes(void) const { return typeWorksetLstRow; }
+        const type_info * const * columnTypes(void) const { return typeWorksetLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -101,8 +101,10 @@ vector<WorksetLstRow> WorksetLstTable::select(IDbExec * i_dbExec, const string &
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = WorksetLstRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT set_id, base_run_id, model_id, set_name, is_readonly, update_dt FROM workset_lst " + i_where + " ORDER BY 1", 
+    IRowBaseVec vec = i_dbExec->selectRowVector(
+        "SELECT set_id, base_run_id, model_id, set_name, is_readonly, update_dt FROM workset_lst " + 
+        i_where + 
+        " ORDER BY 1", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), WorksetLstRow::keyLess);

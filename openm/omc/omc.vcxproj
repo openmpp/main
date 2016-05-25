@@ -283,7 +283,6 @@
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAttributeSymbol.cpp" />
     <ClCompile Include="LinkToAttributeSymbol.cpp" />
-    <ClCompile Include="md5.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="MultilinkAttributeSymbol.cpp" />

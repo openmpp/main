@@ -43,9 +43,11 @@ int MsgExecBase::groupRank(void) const
 * @param[in] i_size      size of array
 * @param[in] i_valueArr  value array to send
 */
-void MsgExecBase::startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr)
+void MsgExecBase::startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr)
 {
     try {
+        if (i_valueArr == nullptr) throw MsgException("Invalid (null) value array to send");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         sendVec.push_back(unique_ptr<IMsgSend>(
@@ -97,9 +99,11 @@ void MsgExecBase::startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, co
 * @param[in]     i_size      size of array
 * @param[in,out] io_valueArr allocated buffer to recieve value array
 */
-void MsgExecBase::startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr)
+void MsgExecBase::startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to recieve");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         recvVec.push_back(unique_ptr<IMsgRecv>(
@@ -151,9 +155,11 @@ void MsgExecBase::startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec,
 * @param[in]     i_size      size of array
 * @param[in,out] io_valueArr allocated buffer to recieve value array
 */
-bool MsgExecBase::tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const
+bool MsgExecBase::tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const
 {
     try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to recieve");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         unique_ptr<IMsgRecv> rcv(IMsgRecvArray::create(rank(), i_recvFrom, i_msgTag, i_type, i_size, io_valueArr));
@@ -211,7 +217,7 @@ void MsgExecBase::waitSendAll(void)
             }
 
             // sleep if any outstanding request exist
-            if (!isAllDone) sleepMilli(OM_SEND_SLEEP_TIME);
+            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_SEND_SLEEP_TIME));
         }
         while (!isAllDone);
         
@@ -244,7 +250,7 @@ void MsgExecBase::waitRecvAll(void)
             }
 
             // sleep if any outstanding request exist
-            if (!isAllDone) sleepMilli(OM_RECV_SLEEP_TIME);
+            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
         }
         while (!isAllDone);
         

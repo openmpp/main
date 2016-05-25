@@ -50,7 +50,7 @@ namespace openm
         * @param[in] i_valueArr value array to send
         */
         static IMsgSendArray * create(
-            int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
+            int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr
             );
     };
 
@@ -103,7 +103,7 @@ namespace openm
         * @param[in,out] io_valueArr allocated buffer to recieve value array
         */
         static IMsgRecvArray * create(
-            int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
+            int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr
             );
     };
 

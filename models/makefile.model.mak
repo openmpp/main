@@ -24,6 +24,10 @@ ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
 endif
 
+ifndef BIN_POSTFIX
+  BIN_POSTFIX = 
+endif 
+
 #
 # arguments for run control
 #
@@ -189,7 +193,7 @@ $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread -o $@ $(OBJS)
+	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
 
 #
 # create output SQLite database

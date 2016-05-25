@@ -22,47 +22,35 @@ namespace openm
 
         /** input parameter reader factory */
         static IParameterReader * create(
-            int i_modelId, 
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
             const MetaRunHolder * i_metaStore
             );
-
-        /** input parameter reader factory */
-        static IParameterReader * create(
-            int i_modelId, 
-            int i_runId,
-            const char * i_name, 
-            IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore,
-            const vector<RunParamRow> & i_runParamVec
-            );
         
         /** return input parameter size: total number of values in the table */
-        virtual long long sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const throw() = 0;
 
         /**
          * read input parameter values.
          *
          * @param[in]     i_dbExec    database connection
-         * @param[in]     i_type      parameter value type
+         * @param[in]     i_type      parameter value type, use std::string for string parameters
          * @param[in]     i_size      parameter size (number of parameter values)
-         * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
+         * @param[in,out] io_valueArr array to return parameter values, size must be =i_size, use io_valueArr[i_size] of std::string for string parameters
          */
         virtual void readParameter(
-            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * io_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * io_valueArr
             ) = 0;
     };
 
-    /** input parameter writer public interface */
-    struct IParameterWriter
+    /** public interface of input parameter writer into workset */
+    struct IParameterSetWriter
     {
-        virtual ~IParameterWriter() throw() = 0;
+        virtual ~IParameterSetWriter() throw() = 0;
 
         /** input parameter writer factory */
-        static IParameterWriter * create(
-            int i_modelId,
+        static IParameterSetWriter * create(
             int i_setId,
             const char * i_name,
             IDbExec * i_dbExec,
@@ -71,7 +59,7 @@ namespace openm
             );
 
         /** return input parameter size: total number of values in the table */
-        virtual long long sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const throw() = 0;
 
         /**
         * write input parameter values.
@@ -82,8 +70,33 @@ namespace openm
         * @param[in,out] i_valueArr array of parameter values, size must be =i_size
         */
         virtual void writeParameter(
-            IDbExec * i_dbExec, const type_info & i_type, long long i_size, void * i_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * i_valueArr
             ) = 0;
+    };
+
+    /** public interface of input parameter writer for model run */
+    struct IParameterRunWriter
+    {
+        virtual ~IParameterRunWriter() throw() = 0;
+
+        /** input parameter writer factory */
+        static IParameterRunWriter * create(
+            int i_runId,
+            const char * i_name,
+            IDbExec * i_dbExec,
+            const MetaRunHolder * i_metaStore
+            );
+
+        /** return input parameter size: total number of values in the table */
+        virtual size_t sizeOf(void) const throw() = 0;
+
+        /**
+        * calculate run parameter values digest and store only single copy of parameter values.
+        *
+        * @param[in] i_dbExec   database connection
+        * @param[in] i_type     parameter type, use char * for string parameters
+        */
+        virtual void digestParameter(IDbExec * i_dbExec, const type_info & i_type) = 0;
     };
 }
 

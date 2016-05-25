@@ -97,7 +97,7 @@ namespace openm
         virtual ~IRunBase(void) throw() = 0;
 
         /** read model parameter */
-        virtual void readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr) = 0;
+        virtual void readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
     };
 
     /** model subsample run public interface */
@@ -118,7 +118,7 @@ namespace openm
         virtual int updateProgress(void) = 0;
 
         /** write output result table: subsample value */
-        virtual void writeOutputTable(const char * i_name, long long i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
+        virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
     };
 
     /** model input parameter name, type and size */
@@ -131,7 +131,7 @@ namespace openm
         const type_info & typeOf;
 
         /** parameter size(number of parameter values) */
-        const long long size;
+        const size_t size;
     };
 
     /** size of parameters list: number of model input parameters */
@@ -140,11 +140,6 @@ namespace openm
     /** model input parameters name, type and size */
     extern const ParameterNameSizeItem parameterNameSizeArr[];
 }
-
-// VC++ 2013: define thread_local to comply with c++11 standard
-#ifdef _WIN32
-    #define thread_local __declspec(thread)
-#endif  // _WIN32
 
 //
 // modeling library import and export
@@ -156,8 +151,8 @@ namespace openm
 /** model name */
 extern const char * OM_MODEL_NAME;
 
-/** model timestamp: compilation date-time */
-extern const char * OM_MODEL_TIMESTAMP;
+/** model metadata digest: unique model key */
+extern const char * OM_MODEL_DIGEST;
 
 /** main entry point */
 int main(int argc, char ** argv);

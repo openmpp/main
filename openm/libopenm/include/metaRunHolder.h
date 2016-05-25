@@ -19,8 +19,11 @@ namespace openm
     struct MetaRunHolder
     {
     public:
+        /** model_dic row for the model */
+        const ModelDicRow * modelRow;
+
         /** model_dic table rows */
-        unique_ptr<IModelDicTable> modelDic;
+        unique_ptr<IModelDicTable> modelTable;
 
         /** type_dic table rows */
         unique_ptr<ITypeDicTable> typeDic;
@@ -45,6 +48,9 @@ namespace openm
 
         /** table_expr table rows */
         unique_ptr<ITableExprTable> tableExpr;
+
+        /** create empty model metadata holder */
+        MetaRunHolder(void) : modelRow(nullptr) { }
     };
 }
 

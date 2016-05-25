@@ -60,11 +60,10 @@ void RestartController::init(void)
 
     // load metadata table rows, except of run_option, which is may not created yet
     metaStore.reset(new MetaRunHolder());
-    const ModelDicRow * mdRow = readMetaTables(dbExec, metaStore.get());
-    modelId = mdRow->modelId;
+    modelId = readMetaTables(dbExec, metaStore.get());
 
     // merge command line and ini-file arguments with profile_option table values
-    mergeProfile(dbExec, mdRow);
+    mergeProfile(dbExec);
 
     // "restart run": run id must be defined
     runId = argOpts().intOption(RunOptionsKey::runId, 0);
@@ -157,13 +156,11 @@ int RestartController::nextRun(void)
 
 // find subsample to restart the run and update run status
 // delete any existing output accumulators where sub_id >= restart subsample number
+// delete run_table rows for that run_id
 // delete output aggregated values for that run id
 bool RestartController::cleanupRestartSubsample(void)
 {
-    // get model info and current status of that run
-    const ModelDicRow * mdRow = metaStore->modelDic->byKey(modelId);
-    if (mdRow == nullptr) throw DbException("model %s not found in the database by id: %d", OM_MODEL_NAME, modelId);
-    
+    // get current status of that run
     vector<RunLstRow> runVec = IRunLstTable::byKey(dbExec, runId);
     if (runVec.empty()) throw DbException("run id: %d not found in the database", runId);
 
@@ -189,44 +186,51 @@ bool RestartController::cleanupRestartSubsample(void)
 #endif      
 
     // update in transaction scope
-    unique_lock<recursive_mutex> lck = dbExec->beginTransactionThreaded();
+    {
+        unique_lock<recursive_mutex> lck = dbExec->beginTransactionThreaded();
 
-    string sRunId = to_string(runId);
-    string dtStr = makeDateTime(chrono::system_clock::now());
+        string sRunId = to_string(runId);
+        string dtStr = makeDateTime(chrono::system_clock::now());
 
-    dbExec->update(
-        "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + "," +
-        " sub_started = " + to_string(subSampleCount) + "," +
-        " sub_completed = " + to_string(subFirstNumber) + "," +
-        " sub_restart = " + to_string(subFirstNumber) + "," +
-        " update_dt = " + toQuoted(dtStr) +
-        " WHERE run_id = " + sRunId
+        dbExec->update(
+            "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + "," +
+            " sub_started = " + to_string(subSampleCount) + "," +
+            " sub_completed = " + to_string(subFirstNumber) + "," +
+            " sub_restart = " + to_string(subFirstNumber) + "," +
+            " update_dt = " + toQuoted(dtStr) +
+            " WHERE run_id = " + sRunId
         );
 
-    // delete all output aggregated values
-    const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
-
-    for (const TableDicRow & tblRow : tblVec) {
+        // delete all run_table rows to remove potentially incomplete output values digests
         dbExec->update(
-            "DELETE FROM " + mdRow->modelPrefix + mdRow->valuePrefix + tblRow.dbNameSuffix +
-            " WHERE run_id = " + to_string(runId)
-            );
-    }
+            "DELETE FROM run_table WHERE run_id = " + to_string(runId)
+        );
 
-    // delete all accumulators starting from first subsample number
-    if (subFirstNumber < subSampleCount) {
+        // delete all output aggregated values
+        const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
 
         for (const TableDicRow & tblRow : tblVec) {
             dbExec->update(
-                "DELETE FROM " + mdRow->modelPrefix + mdRow->accPrefix + tblRow.dbNameSuffix +
-                " WHERE run_id = " + to_string(runId) +
-                " AND sub_id >= " + to_string(subFirstNumber)
-                );
+                "DELETE FROM " + tblRow.dbPrefix + metaStore->modelRow->valuePrefix + tblRow.dbSuffix +
+                " WHERE run_id = " + to_string(runId)
+            );
         }
-    }
 
-    // completed: commit the changes
-    dbExec->commit();
+        // delete all accumulators starting from first subsample number
+        if (subFirstNumber < subSampleCount) {
+
+            for (const TableDicRow & tblRow : tblVec) {
+                dbExec->update(
+                    "DELETE FROM " + tblRow.dbPrefix + metaStore->modelRow->accPrefix + tblRow.dbSuffix +
+                    " WHERE run_id = " + to_string(runId) +
+                    " AND sub_id >= " + to_string(subFirstNumber)
+                );
+            }
+        }
+
+        // completed: commit the changes
+        dbExec->commit();
+    }
     return true;
 }
 
@@ -238,14 +242,14 @@ bool RestartController::cleanupRestartSubsample(void)
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void RestartController::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
+void RestartController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(runId, i_name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, i_type, i_size, io_valueArr);
     }
@@ -266,7 +270,7 @@ void RestartController::writeAccumulators(
     const RunOptions & i_runOpts,
     bool i_isLastTable,
     const char * i_name,
-    long long i_size,
+    size_t i_size,
     forward_list<unique_ptr<double> > & io_accValues
     )
 {

@@ -43,7 +43,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new TaskRunLstRow(); }
         int size(void) const { return sizeTaskRunLstRow; }
-        const type_info ** columnTypes(void) const { return typeTaskRunLstRow; }
+        const type_info * const * columnTypes(void) const { return typeTaskRunLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -101,7 +101,7 @@ vector<TaskRunLstRow> TaskRunLstTable::select(IDbExec * i_dbExec, const string &
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = TaskRunLstRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
+    IRowBaseVec vec = i_dbExec->selectRowVector(
         "SELECT task_run_id, task_id, sub_count, create_dt, status, update_dt" \
         " FROM task_run_lst " + i_where + " ORDER BY 1", 
         adp

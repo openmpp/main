@@ -29,7 +29,7 @@ namespace openm
          * @param[in,out] io_valueArr allocated buffer to recieve value array
          */
         MpiRecvArray(
-            int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
+            int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr
             ) :
             msgTag((int)i_msgTag),
             isReceived(false),
@@ -50,7 +50,7 @@ namespace openm
         bool isReceived;        // if true the data received and unpacked
         int selfRank;           // destination (ourself) MPI process rank
         int recvFromRank;       // source MPI process rank
-        long long resultSize;   // expected size of array
+        size_t resultSize;      // expected size of array
         void * resultValueArr;  // received data
         MPI_Datatype mpiType;   // MPI type to receive
 

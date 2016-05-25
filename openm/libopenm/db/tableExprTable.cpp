@@ -1,4 +1,4 @@
-// OpenM++ data library: table_expr table
+// OpenM++ data library: table_expr join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_expr table implementation
+    // table_expr join to model_table_dic table implementation
     class TableExprTable : public ITableExprTable
     {
     public:
@@ -22,14 +22,14 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, expr id
-        const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const;
+        // find row by unique key: model id, model table id, expr id
+        const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const override;
 
         // get list of rows by model id
-        vector<TableExprRow> byModelId(int i_modelId) const;
+        vector<TableExprRow> byModelId(int i_modelId) const override;
 
         // get list of rows by model id and table id
-        vector<TableExprRow> byModelIdTableId(int i_modelId, int i_tableId) const;
+        vector<TableExprRow> byModelIdTableId(int i_modelId, int i_tableId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -39,27 +39,27 @@ namespace openm
         TableExprTable & operator=(const TableExprTable & i_table) = delete;
     };
 
-    // Columns type for table_expr row
+    // Columns type for table_expr join to model_table_dic row
     static const type_info * typeTableExprRow[] = { 
         &typeid(decltype(TableExprRow::modelId)), 
         &typeid(decltype(TableExprRow::tableId)), 
         &typeid(decltype(TableExprRow::exprId)), 
         &typeid(decltype(TableExprRow::name)), 
         &typeid(decltype(TableExprRow::decimals)),
-        &typeid(decltype(TableExprRow::src)), 
-        &typeid(decltype(TableExprRow::expr)) 
+        &typeid(decltype(TableExprRow::srcExpr)), 
+        &typeid(decltype(TableExprRow::sqlExpr)) 
     };
 
-    // Size (number of columns) for table_expr row
+    // Size (number of columns) for table_expr join to model_table_dic row
     static const int sizeTableExprRow = sizeof(typeTableExprRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_expr rows
+    // Row adapter to select table_expr join to model_table_dic rows
     class TableExprRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableExprRow(); }
         int size(void) const { return sizeTableExprRow; }
-        const type_info ** columnTypes(void) const { return typeTableExprRow; }
+        const type_info * const * columnTypes(void) const { return typeTableExprRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -80,10 +80,10 @@ namespace openm
                 dynamic_cast<TableExprRow *>(i_row)->decimals = (*(int *)i_value);
                 break;
             case 5:
-                dynamic_cast<TableExprRow *>(i_row)->src = ((const char *)i_value);
+                dynamic_cast<TableExprRow *>(i_row)->srcExpr = ((const char *)i_value);
                 break;
             case 6:
-                dynamic_cast<TableExprRow *>(i_row)->expr = ((const char *)i_value);
+                dynamic_cast<TableExprRow *>(i_row)->sqlExpr = ((const char *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -113,9 +113,10 @@ TableExprTable::TableExprTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TableExprRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, table_id, expr_id, expr_name, expr_decimals, expr_src, expr_sql" \
-        " FROM table_expr" + 
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " M.model_id, M.model_table_id, D.expr_id, D.expr_name, D.expr_decimals, D.expr_src, D.expr_sql" \
+        " FROM table_expr D" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -125,7 +126,7 @@ TableExprTable::TableExprTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 TableExprTable::~TableExprTable(void) throw() { }
 
-// Find row by primary key: model id, table id, expr id
+// Find row by unique key: model id, model table id, expr id
 const TableExprRow * TableExprTable::byKey(int i_modelId, int i_tableId, int i_exprId) const
 {
     const IRowBaseUptr keyRow( new TableExprRow(i_modelId, i_tableId, i_exprId) );

@@ -39,7 +39,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new TaskSetRow(); }
         int size(void) const { return sizeTaskSetRow; }
-        const type_info ** columnTypes(void) const { return typeTaskSetRow; }
+        const type_info * const * columnTypes(void) const { return typeTaskSetRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -85,7 +85,7 @@ vector<TaskSetRow> TaskSetTable::select(IDbExec * i_dbExec, const string & i_whe
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = TaskSetRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
+    IRowBaseVec vec = i_dbExec->selectRowVector(
         "SELECT task_id, set_id FROM task_set " + i_where + " ORDER BY 1, 2", 
         adp
         );

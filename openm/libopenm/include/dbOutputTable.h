@@ -22,7 +22,6 @@ namespace openm
 
         /** output table writer factory */
         static IOutputTableWriter * create(
-            int i_modelId, 
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
@@ -33,10 +32,10 @@ namespace openm
             );
 
         /** return total number of values for each accumulator */
-        virtual long long sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const throw() = 0;
 
         /** return total number of values for each accumulator */
-        static long long sizeOf(int i_modelId, const MetaRunHolder * i_metaStore, int i_tableId);
+        static size_t sizeOf(const MetaRunHolder * i_metaStore, int i_tableId);
 
         /** return number of output aggregated expressions */
         virtual int expressionCount(void) const throw() = 0;
@@ -51,7 +50,7 @@ namespace openm
         * @param[in] i_valueArr    array of accumulator values
         */
         virtual void writeAccumulator(
-            IDbExec * i_dbExec, int i_nSubSample, int i_accId, long long i_size, const double * i_valueArr
+            IDbExec * i_dbExec, int i_nSubSample, int i_accId, size_t i_size, const double * i_valueArr
             ) = 0;
 
         /** write all output table values: aggregate subsamples using table expressions */
@@ -64,6 +63,9 @@ namespace openm
          * @param[in] i_nExpression aggregation expression number
          */
         virtual void writeExpression(IDbExec * i_dbExec, int i_nExpression) = 0;
+
+        /** calculate output table values digest and store only single copy of output values */
+        virtual void digestOutput(IDbExec * i_dbExec) = 0;
     };
 }
 

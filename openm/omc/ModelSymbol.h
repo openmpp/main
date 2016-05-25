@@ -29,15 +29,6 @@ public:
 
     CodeBlock cxx_definition_global();
 
-    string metadata_signature() const;
-
     void populate_metadata(openm::MetaModelHolder & metaRows);
-
-    string time_stamp;
-
-    /**
-     * The model digest.
-     */
-    string model_digest;
 };
 

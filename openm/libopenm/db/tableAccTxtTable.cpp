@@ -1,4 +1,4 @@
-// OpenM++ data library: table_acc_txt table
+// OpenM++ data library: table_acc_txt join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_acc_txt table implementation
+    // table_acc_txt join to model_table_dic table implementation
     class TableAccTxtTable : public ITableAccTxtTable
     {
     public:
@@ -22,8 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, accumulator id, language id
-        const TableAccTxtRow * byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const;
+        // find row by unique key: model id, model table id, accumulator id, language id
+        const TableAccTxtRow * byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -33,7 +33,7 @@ namespace openm
         TableAccTxtTable & operator=(const TableAccTxtTable & i_table) = delete;
     };
 
-    // Columns type for table_acc_txt row
+    // Columns type for table_acc_txt join to model_table_dic row
     static const type_info * typeTableAccTxtRow[] = { 
         &typeid(decltype(TableAccTxtRow::modelId)), 
         &typeid(decltype(TableAccTxtRow::tableId)), 
@@ -43,16 +43,16 @@ namespace openm
         &typeid(decltype(TableAccTxtRow::note)) 
     };
 
-    // Size (number of columns) for table_acc_txt row
+    // Size (number of columns) for table_acc_txt join to model_table_dic row
     static const int sizeTableAccTxtRow = sizeof(typeTableAccTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_acc_txt rows
+    // Row adapter to select table_acc_txt join to model_table_dic rows
     class TableAccTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableAccTxtRow(); }
         int size(void) const { return sizeTableAccTxtRow; }
-        const type_info ** columnTypes(void) const { return typeTableAccTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeTableAccTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -101,13 +101,17 @@ ITableAccTxtTable * ITableAccTxtTable::create(IRowBaseVec & io_rowVec)
 TableAccTxtTable::TableAccTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE D.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableAccTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, table_id, acc_id, lang_id, descr, note FROM table_acc_txt" +  sWhere + " ORDER BY 1, 2, 3, 4", 
+        "SELECT M.model_id, M.model_table_id, D.acc_id, D.lang_id, D.descr, D.note" \
+        " FROM table_acc_txt D" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
+        sWhere + 
+        " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
         );
@@ -116,7 +120,7 @@ TableAccTxtTable::TableAccTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 // Table never unloaded
 TableAccTxtTable::~TableAccTxtTable(void) throw() { }
 
-// Find row by primary key: model id, table id, accumulator name, language id
+// Find row by unique key: model id, model table id, accumulator name, language id
 const TableAccTxtRow * TableAccTxtTable::byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableAccTxtRow(i_modelId, i_tableId, i_accId, i_langId) );

@@ -9,55 +9,109 @@
 #include "dbExecBase.h"
 using namespace openm;
 
+/**  SQLite db-provider name */
+const char * openm::SQLITE_DB_PROVIDER = "SQLITE";
+
+/** max size of db table name */
+static const int maxDbTableNameLen = 30;
+
 // mutex to lock database operations
 recursive_mutex openm::dbMutex;
 
 /** close db-connection and release connection resources. */
 IDbExec::~IDbExec(void) throw() { }
 
-/** clear value with zeros */
-void DbValue::clear(void)
+/** return max length of db table or view name. */
+int IDbExec::maxDbTableNameSize(const string & /*i_sqlProvider*/)
 {
-    szVal = NULL;
-    isVal = false;
-    dVal = 0.0; 
-    dlVal = 0.0; 
-    llVal = 0;
-    ullVal = 0;
+    return maxDbTableNameLen;
 }
 
-//
-// Define db-provider and connection factory
-//
-#ifdef OM_DB_SQLITE
-
-#include "dbExecSqlite.h"
-
-/**
-* db-connection factory: create new db-connection.
-*
-* @param[in]   i_connectionStr database connection string.
-*/
-IDbExec * IDbExec::create(const string & i_connectionStr)
+/** return sql statement to begin transaction (db-provider specific). */
+string IDbExec::makeSqlBeginTransaction(const string & i_sqlProvider)
 {
-    lock_guard<recursive_mutex> lck(dbMutex);
-    return new DbExecSqlite(i_connectionStr);
+    try {
+        if (i_sqlProvider == SQLITE_DB_PROVIDER) { 
+            return "BEGIN TRANSACTION";
+        }
+        throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
 }
 
-#else   // OM_DB_SQLITE
-#error No database providers defined
-#endif  // OM_DB_SQLITE
+/** return sql statement to commit transaction (db-provider specific). */
+string IDbExec::makeSqlCommitTransaction(const string & i_sqlProvider)
+{
+    try {
+        if (i_sqlProvider == SQLITE_DB_PROVIDER) { 
+            return "COMMIT";
+        }
+        throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
 
-/**
-* create new db-connection.
-*
-* @param[in]   i_connectionStr database connection string.
-*/
+/**  make sql statement to create table if not exists. */
+string IDbExec::makeSqlCreateTableIfNotExist(
+    const string & i_sqlProvider, const string & i_tableName, const string & i_tableBodySql
+)
+{
+    try {
+        if (i_sqlProvider == SQLITE_DB_PROVIDER) {
+            return "CREATE TABLE IF NOT EXISTS " + i_tableName + " " + i_tableBodySql;
+        }
+        throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+/** make sql statement to create view if not exists. */
+string IDbExec::makeSqlCreateViewIfNotExist(
+    const string & i_sqlProvider, const string & i_viewName, const string & i_viewBodySql
+)
+{
+    try {
+        if (i_sqlProvider == SQLITE_DB_PROVIDER) {
+            return "CREATE VIEW IF NOT EXISTS " + i_viewName + " AS " + i_viewBodySql;
+        }
+        throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+/** prepare to open new db-connection. */
 DbExecBase::DbExecBase(const string & i_connectionStr)
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
-
         connProps = parseConnectionStr(i_connectionStr);
     }
     catch (DbException & ex) {

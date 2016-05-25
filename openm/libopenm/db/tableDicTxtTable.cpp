@@ -1,4 +1,4 @@
-// OpenM++ data library: table_dic_txt table
+// OpenM++ data library: table_dic_txt join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_dic_txt table implementation
+    // table_dic_txt join to model_table_dic table implementation
     class TableDicTxtTable : public ITableDicTxtTable
     {
     public:
@@ -22,8 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, language id
-        const TableDicTxtRow * byKey(int i_modelId, int i_tableId, int i_langId) const;
+        // find row by unique key: model id, model table id, language id
+        const TableDicTxtRow * byKey(int i_modelId, int i_tableId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -33,7 +33,7 @@ namespace openm
         TableDicTxtTable & operator=(const TableDicTxtTable & i_table) = delete;
     };
 
-    // Columns type for table_dic_txt row
+    // Columns type for table_dic_txt join to model_table_dic row
     static const type_info * typeTableDicTxtRow[] = { 
         &typeid(decltype(TableDicTxtRow::modelId)), 
         &typeid(decltype(TableDicTxtRow::tableId)), 
@@ -44,16 +44,16 @@ namespace openm
         &typeid(decltype(TableDicTxtRow::exprNote))
     };
 
-    // Size (number of columns) for table_dic_txt row
+    // Size (number of columns) for table_dic_txt join to model_table_dic row
     static const int sizeTableDicTxtRow = sizeof(typeTableDicTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_dic_txt rows
+    // Row adapter to select table_dic_txt join to model_table_dic rows
     class TableDicTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableDicTxtRow(); }
         int size(void) const { return sizeTableDicTxtRow; }
-        const type_info ** columnTypes(void) const { return typeTableDicTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeTableDicTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -105,13 +105,17 @@ ITableDicTxtTable * ITableDicTxtTable::create(IRowBaseVec & io_rowVec)
 TableDicTxtTable::TableDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE T.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND T.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = TableDicTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, table_id, lang_id, descr, note, expr_descr, expr_note FROM table_dic_txt" +  sWhere + " ORDER BY 1, 2, 3", 
+        "SELECT M.model_id, M.model_table_id, T.lang_id, T.descr, T.note, T.expr_descr, T.expr_note" \
+        " FROM table_dic_txt T" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = T.table_hid)" +
+        sWhere + 
+        " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
         );
@@ -120,7 +124,7 @@ TableDicTxtTable::TableDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 // Table never unloaded
 TableDicTxtTable::~TableDicTxtTable(void) throw() { }
 
-// Find row by primary key: model id, table id, language id
+// Find row by unique key: model id, model table id, language id
 const TableDicTxtRow * TableDicTxtTable::byKey(int i_modelId, int i_tableId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new TableDicTxtRow(i_modelId, i_tableId, i_langId) );

@@ -51,7 +51,7 @@ namespace openm
             const RunOptions & i_runOpts,
             bool i_isLastTable,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) = 0;
 
@@ -99,7 +99,7 @@ namespace openm
             IDbExec * i_dbExec,
             const RunOptions & i_runOpts,
             const char * i_name,
-            long long i_size,
+            size_t i_size,
             forward_list<unique_ptr<double> > & io_accValues
             ) const;
 
@@ -111,7 +111,7 @@ namespace openm
         void createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
-        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const;
+        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         /** write output tables aggregated values into database */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;

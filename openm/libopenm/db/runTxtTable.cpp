@@ -25,7 +25,6 @@ namespace openm
     // Columns type for run_txt row
     static const type_info * typeRunTxtRow[] = { 
         &typeid(decltype(RunTxtRow::runId)), 
-        &typeid(decltype(RunTxtRow::modelId)), 
         &typeid(decltype(RunTxtRow::langId)), 
         &typeid(decltype(RunTxtRow::descr)),
         &typeid(decltype(RunTxtRow::note))
@@ -42,7 +41,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new RunTxtRow(); }
         int size(void) const { return sizeRunTxtRow; }
-        const type_info ** columnTypes(void) const { return typeRunTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeRunTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -51,15 +50,12 @@ namespace openm
                 dynamic_cast<RunTxtRow *>(i_row)->runId = (*(int *)i_value);
                 break;
             case 1:
-                dynamic_cast<RunTxtRow *>(i_row)->modelId = (*(int *)i_value);
-                break;
-            case 2:
                 dynamic_cast<RunTxtRow *>(i_row)->langId = (*(int *)i_value);
                 break;
-            case 3:
+            case 2:
                 dynamic_cast<RunTxtRow *>(i_row)->descr = ((const char *)i_value);
                 break;
-            case 4:
+            case 3:
                 dynamic_cast<RunTxtRow *>(i_row)->note = ((const char *)i_value);
                 break;
             default:
@@ -76,12 +72,10 @@ IRunTxtTable::~IRunTxtTable(void) throw() { }
 RunTxtTable::~RunTxtTable(void) throw() { }
 
 // select table rows
-vector<RunTxtRow> IRunTxtTable::select(IDbExec * i_dbExec, int i_modelId, int i_langId)
+vector<RunTxtRow> IRunTxtTable::select(IDbExec * i_dbExec, int i_langId)
 {
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
 
     return 
         RunTxtTable::select(i_dbExec, sWhere);
@@ -101,8 +95,8 @@ vector<RunTxtRow> RunTxtTable::select(IDbExec * i_dbExec, const string & i_where
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = RunTxtRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
-        "SELECT run_id, model_id, lang_id, descr, note FROM run_txt " + i_where + " ORDER BY 1, 3", 
+    IRowBaseVec vec = i_dbExec->selectRowVector(
+        "SELECT run_id, lang_id, descr, note FROM run_txt " + i_where + " ORDER BY 1, 2", 
         adp
         );
     stable_sort(vec.begin(), vec.end(), RunTxtRow::keyLess);

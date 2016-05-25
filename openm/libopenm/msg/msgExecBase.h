@@ -34,19 +34,19 @@ namespace openm
         int groupRank(void) const;
 
         /** start non-blocking send of value array to i_sendTo process. */
-        void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr);
+        void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr);
 
         /** pack and start non-blocking send of vector of db rows to i_sendTo process. */
         void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter);
 
         /** initiate non-blocking recveive of value array into io_valueArr. */
-        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr);
+        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr);
 
         /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
         void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter);
 
         /** try to non-blocking receive value array, return return true if completed. */
-        bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr) const;
+        bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const;
 
         /** try to non-blocking receive and unpack vector of db rows, return return true if completed. */
         bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const;

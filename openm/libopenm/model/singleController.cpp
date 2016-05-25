@@ -79,11 +79,10 @@ void SingleController::init(void)
 
     // load metadata table rows, except of run_option, which is may not created yet
     metaStore.reset(new MetaRunHolder);
-    const ModelDicRow * mdRow = readMetaTables(dbExec, metaStore.get());
-    modelId = mdRow->modelId;
+    modelId = readMetaTables(dbExec, metaStore.get());
 
     // merge command line and ini-file arguments with profile_option table values
-    mergeProfile(dbExec, mdRow);
+    mergeProfile(dbExec);
 
     // get main run control values: number of subsamples, threads
     subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
@@ -101,7 +100,7 @@ void SingleController::init(void)
 
     // if this is modeling task then find it in database
     // and create task run entry in database
-    taskId = findTask(dbExec, mdRow);
+    taskId = findTask(dbExec);
     if (taskId > 0) taskRunId = createTaskRun(taskId, dbExec);
 }
 
@@ -175,14 +174,14 @@ int SingleController::nextRun(void)
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void SingleController::readParameter(const char * i_name, const type_info & i_type, long long i_size, void * io_valueArr)
+void SingleController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(modelId, nowSetRun.runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(nowSetRun.runId, i_name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, i_type, i_size, io_valueArr);
     }
@@ -203,7 +202,7 @@ void SingleController::writeAccumulators(
     const RunOptions & i_runOpts,
     bool i_isLastTable,
     const char * i_name,
-    long long i_size,
+    size_t i_size,
     forward_list<unique_ptr<double> > & io_accValues
     )
 {

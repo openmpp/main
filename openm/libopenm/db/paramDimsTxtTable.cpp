@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // parameter_dims_txt table implementation
+    // parameter_dims_txt join to model_parameter_dic table implementation
     class ParamDimsTxtTable : public IParamDimsTxtTable
     {
     public:
@@ -22,8 +22,8 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id,  parameter id, dimension id, language id
-        const ParamDimsTxtRow * byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const;
+        // find row by unique key: model id,  model parameter id, dimension id, language id
+        const ParamDimsTxtRow * byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -33,7 +33,7 @@ namespace openm
         ParamDimsTxtTable & operator=(const ParamDimsTxtTable & i_table) = delete;
     };
 
-    // Columns type for parameter_dims_txt row
+    // Columns type for parameter_dims_txt join to model_parameter_dic row
     static const type_info * typeParamDimsTxtRow[] = { 
         &typeid(decltype(ParamDimsTxtRow::modelId)), 
         &typeid(decltype(ParamDimsTxtRow::paramId)), 
@@ -43,16 +43,16 @@ namespace openm
         &typeid(decltype(ParamDimsTxtRow::note)) 
     };
 
-    // Size (number of columns) for parameter_dims_txt row
+    // Size (number of columns) for parameter_dims_txt join to model_parameter_dic row
     static const int sizeParamDimsTxtRow = sizeof(typeParamDimsTxtRow) / sizeof(const type_info *);
 
-    // Row adapter to select parameter_dims_txt rows
+    // Row adapter to select parameter_dims_txt join to model_parameter_dic rows
     class ParamDimsTxtRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new ParamDimsTxtRow(); }
         int size(void) const { return sizeParamDimsTxtRow; }
-        const type_info ** columnTypes(void) const { return typeParamDimsTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeParamDimsTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -101,13 +101,17 @@ IParamDimsTxtTable * IParamDimsTxtTable::create(IRowBaseVec & io_rowVec)
 ParamDimsTxtTable::ParamDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)   
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE model_id = " + to_string(i_modelId);
-    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE model_id = " + to_string(i_modelId) + " AND lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE D.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = ParamDimsTxtRowAdapter();
     rowVec = load(
-        "SELECT model_id, parameter_id, dim_id, lang_id, descr, note FROM parameter_dims_txt" + sWhere + " ORDER BY 1, 2, 3, 4", 
+        "SELECT M.model_id, M.model_parameter_id, D.dim_id, D.lang_id, D.descr, D.note" \
+        " FROM parameter_dims_txt D" \
+        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" +
+        sWhere + 
+        " ORDER BY 1, 2, 3, 4", 
         i_dbExec,
         adp
         );
@@ -116,7 +120,7 @@ ParamDimsTxtTable::ParamDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 // Table never unloaded
 ParamDimsTxtTable::~ParamDimsTxtTable(void) throw() { }
 
-// Find row by primary key: model id, parameter id, dimension id, language id
+// Find row by unique key: model id,  model parameter id, dimension id, language id
 const ParamDimsTxtRow * ParamDimsTxtTable::byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const
 {
     const IRowBaseUptr keyRow( new ParamDimsTxtRow(i_modelId, i_paramId, i_dimId, i_langId) );

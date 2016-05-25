@@ -153,34 +153,36 @@ const RunOptions MetaLoader::modelRunOptions(int i_subCount, int i_subNumber) co
 }
 
 // read metadata tables from db, except of run_option table
-const ModelDicRow * MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
+int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
 {
-    // find model and set model id
-    io_metaStore->modelDic.reset(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_TIMESTAMP));
+    // find model by name digest
+    io_metaStore->modelTable.reset(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_DIGEST));
 
-    const ModelDicRow * mdRow = io_metaStore->modelDic->byNameTimeStamp(OM_MODEL_NAME, OM_MODEL_TIMESTAMP);
-    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+    io_metaStore->modelRow = io_metaStore->modelTable->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
+    if (io_metaStore->modelRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+
+    int mId = io_metaStore->modelRow->modelId;
 
     // read metadata tables
-    io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mdRow->modelId));
-    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mdRow->modelId));
+    io_metaStore->typeDic.reset(ITypeDicTable::create(i_dbExec, mId));
+    io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mId));
+    io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, mId));
+    io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, mId));
+    io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mId));
+    io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mId));
+    io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mId));
+    io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mId));
 
-    return mdRow;
+    return mId;
 }
 
 // broadcast metadata tables from root to all modeling processes
-void MetaLoader::broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
+int MetaLoader::broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
     // broadcast metadata tables
-    broadcastMetaTable<IModelDicTable>(i_groupOne, i_msgExec, MsgTag::modelDic, io_metaStore->modelDic);
+    broadcastMetaTable<IModelDicTable>(i_groupOne, i_msgExec, MsgTag::modelDic, io_metaStore->modelTable);
     broadcastMetaTable<ITypeDicTable>(i_groupOne, i_msgExec, MsgTag::typeDic, io_metaStore->typeDic);
     broadcastMetaTable<ITypeEnumLstTable>(i_groupOne, i_msgExec, MsgTag::typeEnumLst, io_metaStore->typeEnumLst);
     broadcastMetaTable<IParamDicTable>(i_groupOne, i_msgExec, MsgTag::parameterDic, io_metaStore->paramDic);
@@ -189,6 +191,12 @@ void MetaLoader::broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRun
     broadcastMetaTable<ITableDimsTable>(i_groupOne, i_msgExec, MsgTag::tableDims, io_metaStore->tableDims);
     broadcastMetaTable<ITableAccTable>(i_groupOne, i_msgExec, MsgTag::tableAcc, io_metaStore->tableAcc);
     broadcastMetaTable<ITableExprTable>(i_groupOne, i_msgExec, MsgTag::tableExpr, io_metaStore->tableExpr);
+
+    // find model by name digest
+    io_metaStore->modelRow = io_metaStore->modelTable->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
+    if (io_metaStore->modelRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+
+    return io_metaStore->modelRow->modelId;
 }
 
 // broadcast int value from root to group of modeling processes
@@ -231,7 +239,7 @@ void MetaLoader::broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag
 // use default values for basic run options, i.e. SparseOutput = false
 // raise exception if any of "Parameter." run option name 
 // is not in the list of model input parameters or is not scalar
-void MetaLoader::mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
+void MetaLoader::mergeProfile(IDbExec * i_dbExec)
 {
     // initial values are hard-coded default run options
     NoCaseMap defaultOpt;
@@ -282,24 +290,24 @@ void MetaLoader::mergeProfile(IDbExec * i_dbExec, const ModelDicRow * i_modelRow
     string parPrefix = string(RunOptionsKey::parameterPrefix) + ".";
     size_t nPrefix = parPrefix.length();
 
-    for (NoCaseMap::const_iterator propIt = argStore.args.cbegin(); propIt != argStore.args.cend(); propIt++) {
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
-        if (!equalNoCase(propIt->first.c_str(), parPrefix.c_str(), nPrefix)) continue;  // it is not a "Parameter."
+        if (!equalNoCase(optIt->first.c_str(), parPrefix.c_str(), nPrefix)) continue;   // it is not a "Parameter."
 
-        if (propIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified");
+        if (optIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified");
 
         // find parameter by name: it must be a model parameter
-        string sName = propIt->first.substr(nPrefix);
+        string sName = optIt->first.substr(nPrefix);
 
-        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(i_modelRow->modelId, sName);
+        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, sName);
         if (paramRow == nullptr)
-            throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), i_modelRow->name.c_str(), i_modelRow->modelId);
+            throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
         // check the rank: it must scalar
         if (paramRow->rank != 0) throw DbException("parameter %s is not a scalar", sName.c_str());
 
         // parameter value can not be empty
-        if (propIt->second.empty()) throw ModelException("invalid (empty) value specified for parameter %s", sName.c_str());
+        if (optIt->second.empty()) throw ModelException("invalid (empty) value specified for parameter %s", sName.c_str());
     }
 
     // merge model run options
@@ -342,7 +350,7 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
 }
 
 // find modeling task, if specified
-int MetaLoader::findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
+int MetaLoader::findTask(IDbExec * i_dbExec)
 {
     // find task id or name if specified as run options
     int taskId = argStore.intOption(RunOptionsKey::taskId, 0);
@@ -358,11 +366,11 @@ int MetaLoader::findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
 
         if (!taskName.empty()) {
             taskId = i_dbExec->selectToInt(
-                "SELECT MIN(task_id) FROM task_lst WHERE model_id = " + to_string(i_modelRow->modelId) +
+                "SELECT MIN(task_id) FROM task_lst WHERE model_id = " + to_string(modelId) +
                 " AND task_name = " + toQuoted(taskName),
                 0);
             if (taskId <= 0)
-                throw DbException("model %s, id: %d does not contain task with name: %s", i_modelRow->name.c_str(), i_modelRow->modelId, taskName.c_str());
+                throw DbException("model %s, id: %d does not contain task with name: %s", metaStore->modelRow->name.c_str(), modelId, taskName.c_str());
         }
     }
 
@@ -385,7 +393,7 @@ int MetaLoader::findTask(IDbExec * i_dbExec, const ModelDicRow * i_modelRow)
 //   if set id specified as run option then use such set id
 //   if set name specified as run option then find set id by name
 //   else use min(set id) as default set of model parameters
-int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow * i_modelRow) const
+int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec) const
 {
     // find set id of parameters workset, default is first set id for that model
     int setId = (i_setId > 0) ? i_setId : argStore.intOption(RunOptionsKey::setId, 0);
@@ -401,21 +409,21 @@ int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec, const ModelDicRow *
 
         if (!setName.empty()) {
             setId = i_dbExec->selectToInt(
-                "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(i_modelRow->modelId) +
+                "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(modelId) +
                 " AND set_name = " + toQuoted(setName),
                 0);
             if (setId <= 0)
-                throw DbException("model %s, id: %d does not contain working set with name: %s", i_modelRow->name.c_str(), i_modelRow->modelId, setName.c_str());
+                throw DbException("model %s, id: %d does not contain working set with name: %s", metaStore->modelRow->name.c_str(), modelId, setName.c_str());
         }
     }
 
     // if set id not defined then use default working set for the model
     if (setId <= 0) {
         setId = i_dbExec->selectToInt(
-            "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(i_modelRow->modelId), 0
+            "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(modelId), 0
             );
         if (setId <= 0)
-            throw DbException("model %s, id: %d must have at least one working set", i_modelRow->name.c_str(), i_modelRow->modelId);
+            throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
     }
 
     return setId;

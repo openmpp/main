@@ -388,7 +388,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
 */
 string openm::toUtf8(const char * i_byteArr, const char * i_codePageName)
 {
-    return (i_byteArr != NULL) ? toUtf8(strlen(i_byteArr), i_byteArr, i_codePageName) : "";
+    return (i_byteArr != NULL) ? toUtf8(strnlen(i_byteArr, OM_STRLEN_MAX), i_byteArr, i_codePageName) : "";
 }
 
 /**

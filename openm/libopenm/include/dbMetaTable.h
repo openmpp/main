@@ -115,7 +115,7 @@ namespace openm
         {
             if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
 
-            IRowBaseVec vec = i_dbExec->selectRowList(i_sqlSelect, i_adapter);
+            IRowBaseVec vec = i_dbExec->selectRowVector(i_sqlSelect, i_adapter);
             stable_sort(vec.begin(), vec.end(), TRow::keyLess);
             return vec;
         }
@@ -175,15 +175,15 @@ namespace openm
         /** 
         * create new table object and load table rows sorted by primary key: model id.  
         * 
-        * if name and/or timestamp specified then select only rows where model_name = i_name and model_ts = i_timestamp
+        * if name and/or digest specified then select only rows where model_name = i_name and model_digest = i_digest
         */
-        static IModelDicTable * create(IDbExec * i_dbExec, const char * i_name = nullptr, const char * i_timestamp = nullptr);
+        static IModelDicTable * create(IDbExec * i_dbExec, const char * i_name = nullptr, const char * i_digest = nullptr);
 
         /** binary search row by primary key: model id, return NULL if not found. */
         virtual const ModelDicRow * byKey(int i_modelId) const = 0;
 
-        /** get first row by model name and timestamp or NULL if not found. */
-        virtual const ModelDicRow * byNameTimeStamp(const string & i_name, const string & i_timestamp) const = 0;
+        /** get find first row by model name and digest or NULL if not found. */
+        virtual const ModelDicRow * byNameDigest(const string & i_name, const string & i_digest) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static IModelDicTable * create(IRowBaseVec & io_rowVec);
@@ -221,20 +221,14 @@ namespace openm
         virtual ~ITypeDicTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id and type id.
+        * create new table object and load table rows sorted by primary key: type_hid.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITypeDicTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id and type id, return NULL if not found. */
+        /** binary search row by unique key: model id, model type id, return NULL if not found. */
         virtual const TypeDicRow * byKey(int i_modelId, int i_typeId) const = 0;
-
-        /** get list of rows by model id. */
-        virtual vector<TypeDicRow> byModelId(int i_modelId) const = 0;
-
-        /** get first row by model id and type name or NULL if not found. */
-        virtual const TypeDicRow * byModelIdName(int i_modelId, const string & i_name) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static ITypeDicTable * create(IRowBaseVec & io_rowVec);
@@ -249,14 +243,14 @@ namespace openm
         virtual ~ITypeDicTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, type id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model type id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITypeDicTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, type id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model type id, language id; return NULL if not found. */
         virtual const TypeDicTxtRow * byKey(int i_modelId, int i_typeId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -272,19 +266,19 @@ namespace openm
         virtual ~ITypeEnumLstTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, type id, enum id.
+        * create new table object and load table rows sorted by unique key: model id, model type id, enum id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITypeEnumLstTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, type id, enum id return NULL if not found. */
+        /** binary search row by unique key: model id, model type id, enum id return NULL if not found. */
         virtual const TypeEnumLstRow * byKey(int i_modelId, int i_typeId, int i_enumId) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<TypeEnumLstRow> byModelId(int i_modelId) const = 0;
 
-        /** get list of rows by model id and type id. */
+        /** get list of rows by model id, model type id. */
         virtual vector<TypeEnumLstRow> byModelIdTypeId(int i_modelId, int i_typeId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -300,18 +294,15 @@ namespace openm
         virtual ~ITypeEnumTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, type id, enum id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model type id, enum id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITypeEnumTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, type id, enum id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model type id, enum id, language id; return NULL if not found. */
         virtual const TypeEnumTxtRow * byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const = 0;
-
-        /** get list of rows by model id and type id. */
-        virtual vector<TypeEnumTxtRow> byModelIdTypeId(int i_modelId, int i_typeId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static ITypeEnumTxtTable * create(IRowBaseVec & io_rowVec);
@@ -326,13 +317,13 @@ namespace openm
         virtual ~IParamDicTable() throw() = 0;
 
         /**
-        * create new table object and load table rows sorted by primary key: model id and parameter id.
+        * create new table object and load table rows sorted by unique key: model id and model parameter id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static IParamDicTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id and parameter id, return NULL if not found. */
+        /** binary search row by unique key: model id and model parameter id, return NULL if not found. */
         virtual const ParamDicRow * byKey(int i_modelId, int i_paramId) const = 0;
 
         /** get list of rows by model id. */
@@ -354,14 +345,14 @@ namespace openm
         virtual ~IParamDicTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, parameter id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model parameter id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static IParamDicTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, parameter id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model parameter id, language id; return NULL if not found. */
         virtual const ParamDicTxtRow * byKey(int i_modelId, int i_paramId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -377,13 +368,13 @@ namespace openm
         virtual ~IParamDimsTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, parameter id, dimension id.
+        * create new table object and load table rows sorted by unique key: model id, model parameter id, dimension id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static IParamDimsTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, parameter id, dimension id; return NULL if not found. */
+        /** binary search row by unique key: model id, model parameter id, dimension id; return NULL if not found. */
         virtual const ParamDimsRow * byKey(int i_modelId, int i_paramId, int i_dimId) const = 0;
 
         /** get list of rows by model id and parameter id. */
@@ -402,14 +393,14 @@ namespace openm
         virtual ~IParamDimsTxtTable() throw() = 0;
 
         /**
-        * create new table object and load table rows sorted by primary key: model id, parameter id, dimension id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model parameter id, dimension id, language id.
         *
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static IParamDimsTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, parameter id, dimension id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model parameter id, dimension id, language id; return NULL if not found. */
         virtual const ParamDimsTxtRow * byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -425,13 +416,13 @@ namespace openm
         virtual ~ITableDicTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id and table id.
+        * create new table object and load table rows sorted by unique key: model id, model table id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITableDicTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id and table id, return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, return NULL if not found. */
         virtual const TableDicRow * byKey(int i_modelId, int i_tableId) const = 0;
 
         /** get list of rows by model id. */
@@ -453,14 +444,14 @@ namespace openm
         virtual ~ITableDicTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITableDicTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, table id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, language id; return NULL if not found. */
         virtual const TableDicTxtRow * byKey(int i_modelId, int i_tableId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -476,13 +467,13 @@ namespace openm
         virtual ~ITableDimsTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, dimension id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, dimension id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITableDimsTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, table id, dimension id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, dimension id; return NULL if not found. */
         virtual const TableDimsRow * byKey(int i_modelId, int i_tableId, int i_dimId) const = 0;
 
         /** get list of rows by model id and table id. */
@@ -501,14 +492,14 @@ namespace openm
         virtual ~ITableDimsTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, dimension id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, dimension id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITableDimsTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, table id, dimension id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, dimension id, language id; return NULL if not found. */
         virtual const TableDimsTxtRow * byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -524,13 +515,13 @@ namespace openm
         virtual ~ITableAccTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, accumulator id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, accumulator id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITableAccTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, table id, accumulator id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, accumulator id; return NULL if not found. */
         virtual const TableAccRow * byKey(int i_modelId, int i_tableId, int i_accId) const = 0;
 
         /** get list of rows by model id. */
@@ -552,14 +543,14 @@ namespace openm
         virtual ~ITableAccTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, accumulator id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, accumulator id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITableAccTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, table id, accumulator id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, accumulator id, language id; return NULL if not found. */
         virtual const TableAccTxtRow * byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -575,13 +566,13 @@ namespace openm
         virtual ~ITableExprTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, expr id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, expr id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static ITableExprTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by primary key: model id, table id, expr id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, expr id; return NULL if not found. */
         virtual const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const = 0;
 
         /** get list of rows by model id. */
@@ -603,14 +594,14 @@ namespace openm
         virtual ~ITableExprTxtTable() throw() = 0;
 
         /** 
-        * create new table object and load table rows sorted by primary key: model id, table id, expr id, language id.
+        * create new table object and load table rows sorted by unique key: model id, model table id, expr id, language id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
         static ITableExprTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
-        /** binary search row by primary key: model id, table id, expr id, language id; return NULL if not found. */
+        /** binary search row by unique key: model id, model table id, expr id, language id; return NULL if not found. */
         virtual const TableExprTxtRow * byKey(int i_modelId, int i_tableId, int i_exprId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
@@ -760,10 +751,9 @@ namespace openm
         /** 
         * select table rows and sorted by primary key: run id and language id.
         * 
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static vector<RunTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+        static vector<RunTxtRow> select(IDbExec * i_dbExec, int i_langId = -1);
 
         /** select table row by primary key: run id and language id. */
         static vector<RunTxtRow> byKey(IDbExec * i_dbExec, int i_runId, int i_langId);
@@ -824,27 +814,10 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
-    /** run_parameter table public interface. */
-    struct IRunParamTable : public IMetaTable<RunParamRow>
+    /** run_parameter_txt table public interface. */
+    struct IRunParamTxtTable : public IMetaLoadedTable<RunParamTxtRow>
     {
-        virtual ~IRunParamTable() throw() = 0;
-
-        /** 
-        * select table rows by run id sorted by primary key: run id, parameter id.
-        */
-        static vector<RunParamRow> select(IDbExec * i_dbExec, int i_runId);
-
-        /** select table row by primary key: run id, parameter id. */
-        static vector<RunParamRow> byKey(IDbExec * i_dbExec, int i_runId, int i_paramId);
-
-        /** select base run id by run id and parameter id, return zero if not exist. */
-        static int selectBaseRunId(IDbExec * i_dbExec, int i_runId, int i_paramId);
-    };
-
-    /** parameter_run_txt table public interface. */
-    struct IParamRunTxtTable : public IMetaLoadedTable<ParamRunTxtRow>
-    {
-        virtual ~IParamRunTxtTable() throw() = 0;
+        virtual ~IRunParamTxtTable() throw() = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: run id, parameter id, language id.
@@ -852,13 +825,13 @@ namespace openm
         * if i_runId > 0 then select only rows where run_id = i_runId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static IParamRunTxtTable * create(IDbExec * i_dbExec, int i_runId = 0, int i_langId = -1);
+        static IRunParamTxtTable * create(IDbExec * i_dbExec, int i_runId = 0, int i_langId = -1);
 
         /** binary search row by primary key: run id, parameter id, language id; return NULL if not found. */
-        virtual const ParamRunTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const = 0;
+        virtual const RunParamTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static IParamRunTxtTable * create(IRowBaseVec & io_rowVec);
+        static IRunParamTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;
@@ -888,10 +861,9 @@ namespace openm
         /**
         * select table rows and sorted by primary key: set id and language id.
         *
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_langId = -1);
 
         /** select table row by primary key: set id and language id. */
         static vector<WorksetTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_langId);
@@ -955,10 +927,9 @@ namespace openm
         /**
         * select table rows and sorted by primary key: task id and language id.
         *
-        * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static vector<TaskTxtRow> select(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+        static vector<TaskTxtRow> select(IDbExec * i_dbExec, int i_langId = -1);
 
         /** select table row by primary key: task id and language id. */
         static vector<TaskTxtRow> byKey(IDbExec * i_dbExec, int i_taskId, int i_langId);

@@ -30,7 +30,7 @@ bool MpiRecvArray::tryReceive(void)
     int recvSize;
     mpiRet = MPI_Get_count(&mpiStatus, mpiType, &recvSize);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, selfRank);
-    if (recvSize <= 0 || recvSize != resultSize) 
+    if (recvSize <= 0 || (size_t)recvSize != resultSize) 
         throw MsgException("Invalid size of array received: %d, expected: %d", recvSize, resultSize);
 
     // receive the message

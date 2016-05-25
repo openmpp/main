@@ -24,6 +24,9 @@ using namespace std;
     #endif 
 #endif 
 
+/** max string length supported */
+#define OM_STRLEN_MAX   INT_MAX
+
 #define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
 #define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
 #define OM_RUN_POLL_TIME 17L            /* msec, wait interval for modeling threads polling */

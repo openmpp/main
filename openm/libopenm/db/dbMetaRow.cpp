@@ -71,19 +71,30 @@ bool ModelDicTxtLangRow::uniqueLangKeyEqual(const ModelDicTxtLangRow & i_left, c
     return i_left.modelId == i_right.modelId && i_left.langName == i_right.langName;
 }
 
-// type_dic row less comparator by primary key: model id, type id.
+// type_dic row less comparator by unique key: model id, model type id.
 bool TypeDicRow::isKeyLess(const TypeDicRow & i_left, const TypeDicRow & i_right)
 {
     return (i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId);
 }
 
-// type_dic row equal comparator by primary key: model id, type id.
+// type_dic row equal comparator by unique key: model id, model type id.
 bool TypeDicRow::isKeyEqual(const TypeDicRow & i_left, const TypeDicRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId;
 }
 
-// type_dic_txt row less comparator by primary key: model id, type id, language id.
+// type_dic join model_type_dic table find row by unique key: model id, model type id.
+vector<TypeDicRow>::const_iterator TypeDicRow::byKey(int i_modelId, int i_typeId, const vector<TypeDicRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_modelId, i_typeId](const TypeDicRow & i_row) -> bool 
+            { return i_row.modelId == i_modelId && i_row.typeId == i_typeId; }
+    );
+}
+
+// type_dic_txt join model_type_dic row less comparator by unique key: model id, model type id, language id.
 bool TypeDicTxtRow::isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right)
 {
     return
@@ -92,14 +103,13 @@ bool TypeDicTxtRow::isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow 
         (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.langId < i_right.langId);
 }
 
-// type_dic_txt row equal comparator by primary key: model id, type id, language id.
+// type_dic_txt join model_type_dic row equal comparator by unique key: model id, model type id, language id.
 bool TypeDicTxtRow::isKeyEqual(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right)
 {
-    return
-        i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.langId == i_right.langId;
+    return i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.langId == i_right.langId;
 }
 
-// type_dic_txt row less comparator by unique key: model id, type id, language name. 
+// type_dic_txt join model_type_dic row less comparator by unique key: type_hid, language name. 
 bool TypeDicTxtLangRow::uniqueLangKeyLess(const TypeDicTxtLangRow & i_left, const TypeDicTxtLangRow & i_right)
 { 
     return
@@ -108,14 +118,14 @@ bool TypeDicTxtLangRow::uniqueLangKeyLess(const TypeDicTxtLangRow & i_left, cons
         (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.langName < i_right.langName);
 }
 
-// type_dic_txt row equal comparator by unique key: model id, type id, language name.
+// type_dic_txt join model_type_dic row equal comparator by unique key: model id, model type id, language name.
 bool TypeDicTxtLangRow::uniqueLangKeyEqual(const TypeDicTxtLangRow & i_left, const TypeDicTxtLangRow & i_right)
 { 
     return
         i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.langName == i_right.langName;
 }
 
-// type_enum_lst row less comparator by primary key: model id, type id, enum id.
+// type_enum_lst join model_type_dic row less comparator by unique key: model id, model type id, enum id.
 bool TypeEnumLstRow::isKeyLess(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right)
 {
     return
@@ -124,14 +134,13 @@ bool TypeEnumLstRow::isKeyLess(const TypeEnumLstRow & i_left, const TypeEnumLstR
         (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId < i_right.enumId);
 }
 
-// type_enum_lst row equal comparator by primary key: model id, type id, enum id.
+// type_enum_lst join model_type_dic row equal comparator by unique key: model id, model type id, enum id.
 bool TypeEnumLstRow::isKeyEqual(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right)
 {
-    return
-        i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId;
+    return i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId;
 }
 
-// type_enum_txt row less comparator by primary key: model id, type id, enum id, language id.
+// type_enum_txt join model_type_dic row less comparatorby unique key: model id, model type id, language id.
 bool TypeEnumTxtRow::isKeyLess(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right)
 {
     return
@@ -141,14 +150,14 @@ bool TypeEnumTxtRow::isKeyLess(const TypeEnumTxtRow & i_left, const TypeEnumTxtR
         (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId && i_left.langId < i_right.langId);
 }
 
-// type_enum_txt row equal comparator by primary key: model id, type id, enum id, language id.
+// type_enum_txt row equal comparator by unique key: model id, model type id, language id.
 bool TypeEnumTxtRow::isKeyEqual(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId && i_left.langId == i_right.langId;
 }
 
-// type_enum_txt row less comparator by unique key: model id, type id, enum id, language name. 
+// type_enum_txt join model_type_dic row less comparator by unique key: model id, model type id, enum id, language name. 
 bool TypeEnumTxtLangRow::uniqueLangKeyLess(const TypeEnumTxtLangRow & i_left, const TypeEnumTxtLangRow & i_right)
 { 
     return
@@ -158,26 +167,36 @@ bool TypeEnumTxtLangRow::uniqueLangKeyLess(const TypeEnumTxtLangRow & i_left, co
         (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId && i_left.langName < i_right.langName);
 }
 
-// type_enum_txt row equal comparator by unique key: model id, type id, enum id, language name. 
+// type_enum_txt row equal comparator by unique key: model id, model type id, enum id, language name. 
 bool TypeEnumTxtLangRow::uniqueLangKeyEqual(const TypeEnumTxtLangRow & i_left, const TypeEnumTxtLangRow & i_right)
 {
-    return
+    return 
         i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId && i_left.langName == i_right.langName;
 }
 
-// parameter_dic row less comparator by primary key: model id, parameter id.
+// parameter_dic join model_parameter_dic row less comparator by unique key: model id, model parameter id.
 bool ParamDicRow::isKeyLess(const ParamDicRow & i_left, const ParamDicRow & i_right)
 {
     return(i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
 }
 
-// parameter_dic row equal comparator by primary key: model id, parameter id.
+// parameter_dic join model_parameter_dic row equal comparator by unique key: model id, model parameter id.
 bool ParamDicRow::isKeyEqual(const ParamDicRow & i_left, const ParamDicRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId;
 }
 
-// parameter_dic_txt row less comparator by primary key: model id, parameter id, language id.
+// find row by unique key: model id, model parameter id.
+vector<ParamDicRow>::const_iterator ParamDicRow::byKey(int i_modelId, int i_paramId, const vector<ParamDicRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_modelId, i_paramId](const ParamDicRow & i_row) -> bool { return i_row.modelId == i_modelId && i_row.paramId == i_paramId; }
+    );
+}
+
+// parameter_dic_txt join to model_parameter_dic row less comparator by unique key: model id, model parameter id, language id.
 bool ParamDicTxtRow::isKeyLess(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right)
 {
     return
@@ -186,13 +205,13 @@ bool ParamDicTxtRow::isKeyLess(const ParamDicTxtRow & i_left, const ParamDicTxtR
         (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.langId < i_right.langId);
 }
 
-// parameter_dic_txt row equal comparator by primary key: model id, parameter id, language id.
+// parameter_dic_txt join to model_parameter_dic row equal comparator by unique key: model id, model parameter id, language id.
 bool ParamDicTxtRow::isKeyEqual(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.langId == i_right.langId;
 }
 
-// parameter_dic_txt row less comparator by unique key: model id, parameter id, language name.
+// parameter_dic_txt join to model_parameter_dic row less comparator by unique key: model id, parameter id, language name.
 bool ParamDicTxtLangRow::uniqueLangKeyLess(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right)
 {
     return
@@ -201,13 +220,13 @@ bool ParamDicTxtLangRow::uniqueLangKeyLess(const ParamDicTxtLangRow & i_left, co
         (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.langName < i_right.langName);
 }
 
-// parameter_dic_txt row equal comparator by unique key: model id, parameter id, language name.
+// parameter_dic_txt join to model_parameter_dic row equal comparator by unique key: model id, parameter id, language name.
 bool ParamDicTxtLangRow::uniqueLangKeyEqual(const ParamDicTxtLangRow & i_left, const ParamDicTxtLangRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.langName == i_right.langName;
 }
 
-// parameter_dims row less comparator by primary key: model id, parameter id, dimension id.
+// parameter_dims join to model_parameter_dic row less comparator by unique key: model id, model parameter id, dimension id.
 bool ParamDimsRow::isKeyLess(const ParamDimsRow & i_left, const ParamDimsRow & i_right)
 {
     return
@@ -216,13 +235,13 @@ bool ParamDimsRow::isKeyLess(const ParamDimsRow & i_left, const ParamDimsRow & i
         (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId < i_right.dimId);
 }
 
-// parameter_dims row equal comparator by primary key: model id, parameter id, dimension id.
+// parameter_dims join to model_parameter_dic row equal comparator by unique key: model id, model parameter id, dimension id.
 bool ParamDimsRow::isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId;
 }
 
-// parameter_dims_txt row less comparator by primary key: model id, parameter id, dimension id, language id.
+// parameter_dims_txt join to model_parameter_dic row less comparator by unique key: model id, model parameter id, dimension id, language id.
 bool ParamDimsTxtRow::isKeyLess(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right)
 {
     return
@@ -232,14 +251,14 @@ bool ParamDimsTxtRow::isKeyLess(const ParamDimsTxtRow & i_left, const ParamDimsT
         (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId && i_left.langId < i_right.langId);
 }
 
-// parameter_dims_txt row equal comparator by primary key: model id, parameter id, dimension id, language id.
+// parameter_dims_txt join to model_parameter_dic row equal comparator by unique key: model id, model parameter id, dimension id, language id.
 bool ParamDimsTxtRow::isKeyEqual(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId && i_left.langId == i_right.langId;
 }
 
-// parameter_dims_txt row less comparator by unique key : model id, parameter id, dimension id, language name.
+// parameter_dims_txt join to model_parameter_dic row less comparator by unique key : model id, parameter id, dimension id, language name.
 bool ParamDimsTxtLangRow::uniqueLangKeyLess(const ParamDimsTxtLangRow & i_left, const ParamDimsTxtLangRow & i_right)
 {
     return
@@ -249,27 +268,37 @@ bool ParamDimsTxtLangRow::uniqueLangKeyLess(const ParamDimsTxtLangRow & i_left, 
         (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId && i_left.langName < i_right.langName);
 }
 
-// parameter_dims_txt row equal comparator by unique key : model id, parameter id, dimension id, language name.
+// parameter_dims_txt join to model_parameter_dic row equal comparator by unique key : model id, parameter id, dimension id, language name.
 bool ParamDimsTxtLangRow::uniqueLangKeyEqual(const ParamDimsTxtLangRow & i_left, const ParamDimsTxtLangRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId && i_left.langName == i_right.langName;
 }
 
-// table_dic row less comparator by primary key: model id, table id.
+// table_dic join to model_table_dic row less comparator by unique key: model id, model table id.
 bool TableDicRow::isKeyLess(const TableDicRow & i_left, const TableDicRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.tableId < i_right.tableId);
 }
 
-// table_dic row equal comparator by primary key: model id, table id.
+// table_dic join to model_table_dic row equal comparator by unique key: model id, model table id.
 bool TableDicRow::isKeyEqual(const TableDicRow & i_left, const TableDicRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId;
 }
 
-// table_dic_txt row less comparator by primary key: model id, table id, language id.
+// find row by unique key: model id, model table id.
+vector<TableDicRow>::const_iterator TableDicRow::byKey(int i_modelId, int i_tableId, const vector<TableDicRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_modelId, i_tableId](const TableDicRow & i_row) -> bool { return i_row.modelId == i_modelId && i_row.tableId == i_tableId; }
+    );
+}
+
+// table_dic_txt join to model_table_dic row less comparator by unique key: model id, model table id, language id.
 bool TableDicTxtRow::isKeyLess(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right)
 {
     return
@@ -278,14 +307,14 @@ bool TableDicTxtRow::isKeyLess(const TableDicTxtRow & i_left, const TableDicTxtR
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.langId < i_right.langId);
 }
 
-// table_dic_txt row equal comparator by primary key: model id, table id, language id.
+// table_dic_txt join to model_table_dic row equal comparator by unique key: model id, model table id, language id.
 bool TableDicTxtRow::isKeyEqual(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.langId == i_right.langId;
 }
 
-// table_dic_txt row less comparator by unique key: model id, table id, language name.
+// table_dic_txt join to model_table_dic row less comparator by unique key: model id, table id, language name.
 bool TableDicTxtLangRow::uniqueLangKeyLess(const TableDicTxtLangRow & i_left, const TableDicTxtLangRow & i_right)
 {
     return
@@ -294,14 +323,14 @@ bool TableDicTxtLangRow::uniqueLangKeyLess(const TableDicTxtLangRow & i_left, co
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.langName < i_right.langName);
 }
 
-// table_dic_txt row equal comparator by unique key: model id, table id, language name.
+// table_dic_txt join to model_table_dic row equal comparator by unique key: model id, table id, language name.
 bool TableDicTxtLangRow::uniqueLangKeyEqual(const TableDicTxtLangRow & i_left, const TableDicTxtLangRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.langName == i_right.langName;
 }
 
-// table_dims row less comparator by primary key: model id, table id, dimension id.
+// table_dims join to model_table_dic row less comparator by unique key: model id, model table id, dimension id.
 bool TableDimsRow::isKeyLess(const TableDimsRow & i_left, const TableDimsRow & i_right)
 {
     return
@@ -310,14 +339,14 @@ bool TableDimsRow::isKeyLess(const TableDimsRow & i_left, const TableDimsRow & i
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId < i_right.dimId);
 }
 
-// table_dims row equal comparator by primary key: model id, table id, dimension id.
+// table_dims join to model_table_dic row equal comparator by unique key: model id, model table id, dimension id.
 bool TableDimsRow::isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId;
 }
 
-// table_dims_txt row less comparator by primary key: model id, table id, dimension id, language id.
+// table_dims_txt join to model_table_dic row less comparator by unique key: model id, model table id, dimension id, language id.
 bool TableDimsTxtRow::isKeyLess(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right)
 {
     return
@@ -327,14 +356,14 @@ bool TableDimsTxtRow::isKeyLess(const TableDimsTxtRow & i_left, const TableDimsT
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId && i_left.langId < i_right.langId);
 }
 
-// table_dims_txt row equal comparator by primary key: model id, table id, dimension id, language id.
+// table_dims_txt join to model_table_dic row equal comparator by unique key: model id, model table id, dimension id, language id.
 bool TableDimsTxtRow::isKeyEqual(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId && i_left.langId == i_right.langId;
 }
 
-// table_dims_txt row less comparator by unique key : model id, table id, dimension id, language name.
+// table_dims_txt join to model_table_dic row less comparator by unique key : model id, table id, dimension id, language name.
 bool TableDimsTxtLangRow::uniqueLangKeyLess(const TableDimsTxtLangRow & i_left, const TableDimsTxtLangRow & i_right)
 { 
     return
@@ -344,14 +373,14 @@ bool TableDimsTxtLangRow::uniqueLangKeyLess(const TableDimsTxtLangRow & i_left, 
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId && i_left.langName < i_right.langName);
 }
 
-// table_dims_txt row equal comparator by unique key : model id, table id, dimension id, language name.
+// table_dims_txt join to model_table_dic row equal comparator by unique key : model id, table id, dimension id, language name.
 bool TableDimsTxtLangRow::uniqueLangKeyEqual(const TableDimsTxtLangRow & i_left, const TableDimsTxtLangRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId && i_left.langName == i_right.langName;
 }
 
-// table_acc row less comparator by primary key: model id, table id, accumulator id.
+// table_acc join to model_table_dic row less comparator by unique key: model id, model table id, accumulator id.
 bool TableAccRow::isKeyLess(const TableAccRow & i_left, const TableAccRow & i_right)
 {
     return
@@ -360,13 +389,13 @@ bool TableAccRow::isKeyLess(const TableAccRow & i_left, const TableAccRow & i_ri
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId < i_right.accId);
 }
 
-// table_acc row equal comparator by primary key: model id, table id, accumulator id.
+// table_acc join to model_table_dic row equal comparator by unique key: model id, model table id, accumulator id.
 bool TableAccRow::isKeyEqual(const TableAccRow & i_left, const TableAccRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId == i_right.accId;
 }
 
-// table_acc_txt row less comparator by primary key: model id, table id, accumulator id, language id.
+// table_acc_txt join to model_table_dic row less comparator by unique key: model id, model table id, accumulator id, language id.
 bool TableAccTxtRow::isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right)
 {
     return
@@ -376,14 +405,14 @@ bool TableAccTxtRow::isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtR
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId == i_right.accId && i_left.langId < i_right.langId);
 }
 
-// table_acc_txt row equal comparator by primary key: model id, table id, accumulator id, language id.
+// table_acc_txt join to model_table_dic row equal comparator by unique key: model id, model table id, accumulator id, language id.
 bool TableAccTxtRow::isKeyEqual(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId == i_right.accId && i_left.langId == i_right.langId;
 }
 
-// table_acc_txt row less comparator by unique key: model id, table id, accumulator id, language name.
+// table_acc_txt join to model_table_dic row less comparator by unique key: model id, table id, accumulator id, language name.
 bool TableAccTxtLangRow::uniqueLangKeyLess(const TableAccTxtLangRow & i_left, const TableAccTxtLangRow & i_right)
 {
     return
@@ -393,14 +422,14 @@ bool TableAccTxtLangRow::uniqueLangKeyLess(const TableAccTxtLangRow & i_left, co
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId == i_right.accId && i_left.langName < i_right.langName);
 }
 
-// table_acc_txt row equal comparator by unique key: model id, table id, accumulator id, language name. 
+// table_acc_txt join to model_table_dic row equal comparator by unique key: model id, table id, accumulator id, language name. 
 bool TableAccTxtLangRow::uniqueLangKeyEqual(const TableAccTxtLangRow & i_left, const TableAccTxtLangRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId == i_right.accId && i_left.langName == i_right.langName;
 }
 
-// table_expr row less comparator by primary key: model id, table id, expr id.
+// table_expr join to model_table_dic row less comparator by unique key: model id, model table id, expr id.
 bool TableExprRow::isKeyLess(const TableExprRow & i_left, const TableExprRow & i_right)
 {
     return
@@ -409,14 +438,14 @@ bool TableExprRow::isKeyLess(const TableExprRow & i_left, const TableExprRow & i
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId < i_right.exprId);
 }
 
-// table_expr row equal comparator by primary key: model id, table id, expr id.
+// table_expr join to model_table_dic row equal comparator by unique key: model id, model table id, expr id.
 bool TableExprRow::isKeyEqual(const TableExprRow & i_left, const TableExprRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId == i_right.exprId;
 }
 
-// table_expr_txt row less comparator by primary key: model id, table id, expr id, language id.
+// table_expr_txt join to model_table_dic row less comparator by unique key: model id, model table id, expr id, language id.
 bool TableExprTxtRow::isKeyLess(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right)
 {
     return
@@ -426,14 +455,14 @@ bool TableExprTxtRow::isKeyLess(const TableExprTxtRow & i_left, const TableExprT
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId == i_right.exprId && i_left.langId < i_right.langId);
 }
 
-// table_expr_txt row equal comparator by primary key: model id, table id, expr id, language id.
+// table_expr_txt join to model_table_dic row equal comparator by unique key: model id, model table id, expr id, language id.
 bool TableExprTxtRow::isKeyEqual(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId == i_right.exprId && i_left.langId == i_right.langId;
 }
 
-// table_expr_txt row less comparator by unique key: model id, table id, expr id, language name. 
+// table_expr_txt join to model_table_dic row less comparator by unique key: model id, table id, expr id, language name. 
 bool TableExprTxtLangRow::uniqueLangKeyLess(const TableExprTxtLangRow & i_left, const TableExprTxtLangRow & i_right)
 {
     return
@@ -443,7 +472,7 @@ bool TableExprTxtLangRow::uniqueLangKeyLess(const TableExprTxtLangRow & i_left, 
         (i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId == i_right.exprId && i_left.langName < i_right.langName);
 }
 
-// table_expr_txt row equal comparator by unique key: model id, table id, expr id, language name. 
+// table_expr_txt join to model_table_dic row equal comparator by unique key: model id, table id, expr id, language name. 
 bool TableExprTxtLangRow::uniqueLangKeyEqual(const TableExprTxtLangRow & i_left, const TableExprTxtLangRow & i_right)
 {
     return
@@ -589,41 +618,8 @@ bool RunOptionRow::isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & 
     return i_left.runId == i_right.runId && i_left.key == i_right.key;
 }
 
-// run_parameter row less comparator by primary key: run id, parameter id.
-bool RunParamRow::isKeyLess(const RunParamRow & i_left, const RunParamRow & i_right)
-{
-    return (i_left.runId < i_right.runId) || (i_left.runId == i_right.runId && i_left.paramId < i_right.paramId);
-}
-
-// run_parameter row equal comparator by primary key: run id, parameter id.
-bool RunParamRow::isKeyEqual(const RunParamRow & i_left, const RunParamRow & i_right)
-{
-    return i_left.runId == i_right.runId && i_left.paramId == i_right.paramId;
-}
-
-// find row by primary key: run id, parameter id. 
-vector<RunParamRow>::const_iterator RunParamRow::byKey(int i_runId, int i_paramId, const vector<RunParamRow> & i_rowVec)
-{
-    return find_if(
-        i_rowVec.cbegin(),
-        i_rowVec.cend(),
-        [i_runId, i_paramId](const RunParamRow & i_row) -> bool { return i_row.runId == i_runId && i_row.paramId == i_paramId; }
-    );
-}
-
-// select base run id by run id and parameter id, return zero if not exist
-int RunParamRow::findBaseRunId(int i_runId, int i_paramId, const vector<RunParamRow> & i_rowVec)
-{
-    int baseRunId = 0;
-
-    auto rpIt = byKey(i_runId, i_paramId, i_rowVec);
-    if (rpIt != i_rowVec.cend()) baseRunId = rpIt->baseRunId;
-
-    return baseRunId;
-}
-
-// parameter_run_txt row less comparator by primary key: run id, parameter id, language id.
-bool ParamRunTxtRow::isKeyLess(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right)
+// run_parameter_txt row less comparator by primary key: run id, parameter id, language id.
+bool RunParamTxtRow::isKeyLess(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right)
 {
     return
         (i_left.runId < i_right.runId) ||
@@ -631,8 +627,8 @@ bool ParamRunTxtRow::isKeyLess(const ParamRunTxtRow & i_left, const ParamRunTxtR
         (i_left.runId == i_right.runId && i_left.paramId == i_right.paramId && i_left.langId < i_right.langId);
 }
 
-// parameter_run_txt row equal comparator by primary key: run id, parameter id, language id.
-bool ParamRunTxtRow::isKeyEqual(const ParamRunTxtRow & i_left, const ParamRunTxtRow & i_right)
+// run_parameter_txt row equal comparator by primary key: run id, parameter id, language id.
+bool RunParamTxtRow::isKeyEqual(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right)
 {
     return i_left.runId == i_right.runId && i_left.paramId == i_right.paramId && i_left.langId == i_right.langId;
 }

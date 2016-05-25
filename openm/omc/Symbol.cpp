@@ -13,7 +13,7 @@
 #include <set>
 #include "location.hh"
 #include "libopenm/omCommon.h"
-#include "../libopenm/include/modelSqlBuilder.h" // for OM_MAX_BUILTIN_TYPE_ID
+#include "libopenm/db/modelBuilder.h"   // for OM_MAX_BUILTIN_TYPE_ID
 #include "CodeBlock.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
@@ -55,8 +55,6 @@
 #include "GlobalFuncSymbol.h"
 #include "AggregationSymbol.h"
 #include "ModelSymbol.h"
-
-#include "md5.h"
 
 using namespace std;
 using namespace openm;
@@ -653,18 +651,6 @@ CodeBlock Symbol::cxx_definition_global()
 {
     // An empty CodeBlock to start with
     return CodeBlock();
-}
-
-string Symbol::metadata_signature() const
-{
-    return name + "\n";
-}
-
-string Symbol::metadata_digest() const
-{
-    MD5 md5;
-    string digest = md5(metadata_signature());
-    return digest;
 }
 
 void Symbol::populate_metadata(openm::MetaModelHolder & metaRows)

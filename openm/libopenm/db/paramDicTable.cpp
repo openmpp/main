@@ -1,4 +1,4 @@
-// OpenM++ data library: parameter_dic table
+// OpenM++ data library: parameter_dic join to model_parameter_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // parameter_dic table implementation
+    // parameter_dic join to model_parameter_dic table implementation
     class ParamDicTable : public IParamDicTable
     {
     public:
@@ -22,14 +22,14 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id and parameter id
-        const ParamDicRow * byKey(int i_modelId, int i_paramId) const;
+        // find row by unique key: model id and model parameter id
+        const ParamDicRow * byKey(int i_modelId, int i_paramId) const override;
 
         // get list of rows by model id
-        vector<ParamDicRow> byModelId(int i_modelId) const;
+        vector<ParamDicRow> byModelId(int i_modelId) const override;
 
         // find first row by model id and parameter name or NULL if not found
-        const ParamDicRow * byModelIdName(int i_modelId, const string & i_name) const;
+        const ParamDicRow * byModelIdName(int i_modelId, const string & i_name) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -39,12 +39,15 @@ namespace openm
         ParamDicTable & operator=(const ParamDicTable & i_table) = delete;
     };
 
-    // Columns type for parameter_dic row
+    // Columns type for parameter_dic join to model_parameter_dic row
     static const type_info * typeParamDicRow[] = { 
         &typeid(decltype(ParamDicRow::modelId)), 
         &typeid(decltype(ParamDicRow::paramId)), 
-        &typeid(decltype(ParamDicRow::dbNameSuffix)), 
         &typeid(decltype(ParamDicRow::paramName)), 
+        &typeid(decltype(ParamDicRow::paramHid)), 
+        &typeid(decltype(ParamDicRow::digest)), 
+        &typeid(decltype(ParamDicRow::dbPrefix)), 
+        &typeid(decltype(ParamDicRow::dbSuffix)), 
         &typeid(decltype(ParamDicRow::rank)), 
         &typeid(decltype(ParamDicRow::typeId)), 
         &typeid(decltype(ParamDicRow::isHidden)), 
@@ -52,7 +55,7 @@ namespace openm
         &typeid(decltype(ParamDicRow::numCumulated))
     };
 
-    // Size (number of columns) for parameter_dic row
+    // Size (number of columns) for parameter_dic join to model_parameter_dic row
     static const int sizeParamDicRow = sizeof(typeParamDicRow) / sizeof(const type_info *);
 
     // Row adapter to select parameter_dic rows
@@ -61,7 +64,7 @@ namespace openm
     public:
         IRowBase * createRow(void) const { return new ParamDicRow(); }
         int size(void) const { return sizeParamDicRow; }
-        const type_info ** columnTypes(void) const { return typeParamDicRow; }
+        const type_info * const * columnTypes(void) const { return typeParamDicRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -73,24 +76,33 @@ namespace openm
                 dynamic_cast<ParamDicRow *>(i_row)->paramId = (*(int *)i_value);
                 break;
             case 2:
-                dynamic_cast<ParamDicRow *>(i_row)->dbNameSuffix = ((const char *)i_value);
-                break;
-            case 3:
                 dynamic_cast<ParamDicRow *>(i_row)->paramName = ((const char *)i_value);
                 break;
+            case 3:
+                dynamic_cast<ParamDicRow *>(i_row)->paramHid = (*(int *)i_value);
+                break;
             case 4:
-                dynamic_cast<ParamDicRow *>(i_row)->rank = (*(int *)i_value);
+                dynamic_cast<ParamDicRow *>(i_row)->digest = ((const char *)i_value);
                 break;
             case 5:
-                dynamic_cast<ParamDicRow *>(i_row)->typeId = (*(int *)i_value);
+                dynamic_cast<ParamDicRow *>(i_row)->dbPrefix = ((const char *)i_value);
                 break;
             case 6:
-                dynamic_cast<ParamDicRow *>(i_row)->isHidden = (*(bool *)i_value);
+                dynamic_cast<ParamDicRow *>(i_row)->dbSuffix = ((const char *)i_value);
                 break;
             case 7:
-                dynamic_cast<ParamDicRow *>(i_row)->isGenerated = (*(bool *)i_value);
+                dynamic_cast<ParamDicRow *>(i_row)->rank = (*(int *)i_value);
                 break;
             case 8:
+                dynamic_cast<ParamDicRow *>(i_row)->typeId = (*(int *)i_value);
+                break;
+            case 9:
+                dynamic_cast<ParamDicRow *>(i_row)->isHidden = (*(bool *)i_value);
+                break;
+            case 10:
+                dynamic_cast<ParamDicRow *>(i_row)->isGenerated = (*(bool *)i_value);
+                break;
+            case 11:
                 dynamic_cast<ParamDicRow *>(i_row)->numCumulated = (*(int *)i_value);
                 break;
             default:
@@ -121,9 +133,12 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = ParamDicRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id, is_hidden, is_generated, num_cumulated" \
-        " FROM parameter_dic" +
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        " M.model_id, M.model_parameter_id, D.parameter_name, D.parameter_hid, D.parameter_digest," \
+        " D.db_prefix, D.db_suffix, D.parameter_rank, T.model_type_id, M.is_hidden, M.is_generated, D.num_cumulated" \
+        " FROM parameter_dic D" \
+        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
+        " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2", 
         i_dbExec,
         adp
@@ -133,7 +148,7 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 ParamDicTable::~ParamDicTable(void) throw() { }
 
-// Find row by primary key: model id and parameter id
+// Find row by unique key: model id and model parameter id
 const ParamDicRow * ParamDicTable::byKey(int i_modelId, int i_paramId) const
 {
     const IRowBaseUptr keyRow( new ParamDicRow(i_modelId, i_paramId) );

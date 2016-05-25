@@ -50,7 +50,7 @@ namespace openm
     public:
         IRowBase * createRow(void) const { return new ModelDicTxtRow(); }
         int size(void) const { return sizeModelDicTxtRow; }
-        const type_info ** columnTypes(void) const { return typeModelDicTxtRow; }
+        const type_info * const * columnTypes(void) const { return typeModelDicTxtRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {

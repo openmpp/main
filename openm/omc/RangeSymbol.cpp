@@ -65,17 +65,6 @@ CodeBlock RangeSymbol::cxx_declaration_global()
     return h;
 }
 
-string RangeSymbol::metadata_signature() const
-{
-    // Hook into the hierarchical calling chain
-    string sig = super::metadata_signature();
-
-    // Perform operations specific to this level in the Symbol hierarchy.
-    sig += "range: " + to_string(lower_bound) + " to " + to_string(upper_bound) + "\n";
-
-    return sig;
-}
-
 void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Hook into the hierarchical calling chain

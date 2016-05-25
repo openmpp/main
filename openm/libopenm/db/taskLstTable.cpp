@@ -40,7 +40,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new TaskLstRow(); }
         int size(void) const { return sizeTaskLstRow; }
-        const type_info ** columnTypes(void) const { return typeTaskLstRow; }
+        const type_info * const * columnTypes(void) const { return typeTaskLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -89,7 +89,7 @@ vector<TaskLstRow> TaskLstTable::select(IDbExec * i_dbExec, const string & i_whe
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = TaskLstRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
+    IRowBaseVec vec = i_dbExec->selectRowVector(
         "SELECT task_id, model_id, task_name FROM task_lst " + i_where + " ORDER BY 1", 
         adp
         );

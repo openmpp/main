@@ -33,14 +33,14 @@ IMsgExec * IMsgExec::create(int argc, char **argv)
 }
 
 // return byte size to pack source array.
-size_t IPackedAdapter::packedSize(const type_info & i_type, long long i_size)
+size_t IPackedAdapter::packedSize(const type_info & i_type, size_t i_size)
 {
     lock_guard<recursive_mutex> lck(msgMutex);
     return MpiPacked::packedSize(i_type, i_size);
 }
 
 // return new allocated and packed copy of source array.
-unique_ptr<char> IPackedAdapter::packArray(const type_info & i_type, long long i_size, void * i_valueArr)
+unique_ptr<char> IPackedAdapter::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
 {
     lock_guard<recursive_mutex> lck(msgMutex);
     return MpiPacked::packArray(i_type, i_size, i_valueArr);
@@ -48,7 +48,7 @@ unique_ptr<char> IPackedAdapter::packArray(const type_info & i_type, long long i
 
 // create new value array sender.
 IMsgSendArray * IMsgSendArray::create(
-    int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
+    int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr
     )
 {
     lock_guard<recursive_mutex> lck(msgMutex);
@@ -66,7 +66,7 @@ IMsgSendPacked * IMsgSendPacked::create(
 
 // create new receiver for value array.
 IMsgRecvArray * IMsgRecvArray::create(
-    int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
+    int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr
     )
 {
     lock_guard<recursive_mutex> lck(msgMutex);
@@ -129,13 +129,13 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
 }
 
 /** return byte size to pack source array: reurn always zero */
-size_t IPackedAdapter::packedSize(const type_info & /*i_type*/, long long /*i_size*/)
+size_t IPackedAdapter::packedSize(const type_info & /*i_type*/, size_t /*i_size*/)
 {
     return 0;
 }
 
 /** return pack'ed copy of source array: return always empty. */
-unique_ptr<char> IPackedAdapter::packArray(const type_info & /*i_type*/, long long /*i_size*/, void * /*i_valueArr*/)
+unique_ptr<char> IPackedAdapter::packArray(const type_info & /*i_type*/, size_t /*i_size*/, void * /*i_valueArr*/)
 {
     unique_ptr<char> packedData(new char[0]);
     return packedData;
@@ -150,7 +150,7 @@ IMsgExec * IMsgExec::create(int argc, char **argv)
 
 // create new value array sender.
 IMsgSendArray * IMsgSendArray::create(
-    int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
+    int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr
     )
 {
     lock_guard<recursive_mutex> lck(msgMutex);
@@ -168,7 +168,7 @@ IMsgSendPacked * IMsgSendPacked::create(
 
 // create new receiver for value array.
 IMsgRecvArray * IMsgRecvArray::create(
-    int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * io_valueArr
+    int i_selfRank, int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr
     )
 {
     lock_guard<recursive_mutex> lck(msgMutex);

@@ -8,6 +8,10 @@ LOCAL_OUT_PREFIX = $(dir $(OUT_PREFIX))
 LOCAL_BIN_DIR    = $(LOCAL_OUT_PREFIX)bin
 LOCAL_BUILD_DIR  = $(LOCAL_OUT_PREFIX)build
 
+ifndef BIN_POSTFIX
+  BIN_POSTFIX = 
+endif 
+
 #
 # models to build
 #

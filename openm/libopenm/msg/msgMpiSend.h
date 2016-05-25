@@ -49,7 +49,7 @@ namespace openm
     public:
         /** create non-blocking MPI sender for value array and call MPI_Isend. */
         MpiSendArray(
-            int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, long long i_size, void * i_valueArr
+            int i_selfRank, int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr
             );
 
         /** cleanup message sender resources. */

@@ -1,4 +1,4 @@
-// OpenM++ data library: table_acc table
+// OpenM++ data library: table_acc join to model_table_dic table
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -8,7 +8,7 @@ using namespace openm;
 
 namespace openm
 {
-    // table_acc table implementation
+    // table_acc join to model_table_dic table implementation
     class TableAccTable : public ITableAccTable
     {
     public:
@@ -22,14 +22,14 @@ namespace openm
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
-        // find row by primary key: model id, table id, accumulator id
-        const TableAccRow * byKey(int i_modelId, int i_tableId, int i_accId) const;
+        // find row by unique key: model id, model table id, accumulator id
+        const TableAccRow * byKey(int i_modelId, int i_tableId, int i_accId) const override;
 
         // get list of rows by model id
-        vector<TableAccRow> byModelId(int i_modelId) const;
+        vector<TableAccRow> byModelId(int i_modelId) const override;
 
         // get list of rows by model id and table id
-        vector<TableAccRow> byModelIdTableId(int i_modelId, int i_tableId) const;
+        vector<TableAccRow> byModelIdTableId(int i_modelId, int i_tableId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -39,7 +39,7 @@ namespace openm
         TableAccTable & operator=(const TableAccTable & i_table) = delete;
     };
 
-    // Columns type for table_acc row
+    // Columns type for table_acc join to model_table_dic row
     static const type_info * typeTableAccRow[] = { 
         &typeid(decltype(TableAccRow::modelId)), 
         &typeid(decltype(TableAccRow::tableId)), 
@@ -48,16 +48,16 @@ namespace openm
         &typeid(decltype(TableAccRow::expr))
     };
 
-    // Size (number of columns) for table_acc row
+    // Size (number of columns) for table_acc join to model_table_dic row
     static const int sizeTableAccRow = sizeof(typeTableAccRow) / sizeof(const type_info *);
 
-    // Row adapter to select table_acc rows
+    // Row adapter to select table_acc join to model_table_dic rows
     class TableAccRowAdapter : public IRowAdapter
     {
     public:
         IRowBase * createRow(void) const { return new TableAccRow(); }
         int size(void) const { return sizeTableAccRow; }
-        const type_info ** columnTypes(void) const { return typeTableAccRow; }
+        const type_info * const * columnTypes(void) const { return typeTableAccRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -104,8 +104,10 @@ TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId)
 { 
     const IRowAdapter & adp = TableAccRowAdapter();
     rowVec = load(
-        "SELECT model_id, table_id, acc_id, acc_name, acc_expr FROM table_acc" + 
-        ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
+        "SELECT M.model_id, M.model_table_id, D.acc_id, D.acc_name, D.acc_expr" \
+        " FROM table_acc D" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
+        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
@@ -115,7 +117,7 @@ TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId)
 // Table never unloaded
 TableAccTable::~TableAccTable(void) throw() { }
 
-// Find row by primary key: model id, table id, accumulator id
+// Find row by unique key: model id, model table id, accumulator id
 const TableAccRow * TableAccTable::byKey(int i_modelId, int i_tableId, int i_accId) const
 {
     const IRowBaseUptr keyRow( new TableAccRow(i_modelId, i_tableId, i_accId) );

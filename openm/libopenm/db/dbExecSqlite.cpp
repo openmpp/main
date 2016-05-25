@@ -344,7 +344,30 @@ vector<string> DbExecSqlite::selectRowStr(const string & i_sql)
 *
 * @return  vector of rows
 */
-IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter & i_adapter)
+IRowBaseVec DbExecSqlite::selectRowVector(const string & i_sql, const IRowAdapter & i_adapter)
+{
+    RowContainerInserter<IRowBaseVec> inserter;
+    selectToRowProcessor(i_sql, i_adapter, inserter);
+    return std::move(inserter.rowContainer);
+}
+
+/** 
+* select list of rows, each row created and field values set by row adapter. 
+*
+* @param[in]   i_sql       select sql query
+* @param[in]   i_adapter   row adapter class to create rows and set values
+*
+* @return  list of rows
+*/
+IRowBaseList DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter & i_adapter)
+{ 
+    RowContainerInserter<IRowBaseList> inserter;
+    selectToRowProcessor(i_sql, i_adapter, inserter);
+    return std::move(inserter.rowContainer);
+}
+
+/** select and process rows: each row created by row adapter and passed to processor. */
+void DbExecSqlite::selectToRowProcessor(const string & i_sql, const IRowAdapter & i_adapter, IRowProcessor & i_processor)
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -362,14 +385,14 @@ IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter 
 
         int rowSize = sqlite3_column_count(theStmt);
 
-        if (rowSize <= 0) return IRowBaseVec();   // empty row: no columns in sql query
+        if (rowSize <= 0) return;   // empty row: no columns in sql query
 
         // check db-row size: it must be the same as target row size
         if (rowSize != i_adapter.size()) 
             throw DbException("invalid db row size: sql query return %d columns, expected: %d", rowSize, i_adapter.size());
 
         // for each column find method to set field value
-        const type_info ** colType = i_adapter.columnTypes();
+        const type_info * const * colType = i_adapter.columnTypes();
         vector<SetFieldHandler> setterVec;
 
         for (int nCol = 0; nCol < rowSize; nCol++) {
@@ -448,8 +471,6 @@ IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter 
         }
 
         // retrieve all rows
-        IRowBaseVec rowVec;
-
         int rc = SQLITE_OK;
         do {
             // get next row, if available
@@ -470,11 +491,11 @@ IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter 
                 (this->*(setterVec[nCol]))(row.get(), nCol, i_adapter);
             }
 
-            rowVec.push_back(std::move(row));   // append to output row list
+            i_processor.processRow(row);    // process row, ie: append to output row list
         }
         while (rc == SQLITE_ROW);
         
-        return rowVec;
+        // row processing completed
     }
     catch (DbException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -502,7 +523,7 @@ IRowBaseVec DbExecSqlite::selectRowList(const string & i_sql, const IRowAdapter 
 * if target type is string then io_valueArray expected to be string[] \n
 * it may throw exception if selected row count not equal i_size
 */
-long long DbExecSqlite::selectColumn(const string & i_sql, int i_column, const type_info & i_type, long long i_size, void * io_valueArr)
+size_t DbExecSqlite::selectColumn(const string & i_sql, int i_column, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -564,9 +585,9 @@ long long DbExecSqlite::selectColumn(const string & i_sql, int i_column, const t
 
 // Retrieve single column field values into io_valueArray[i_size] buffer and return row count
 template <typename TCol>
-long long DbExecSqlite::retrieveColumnTo(int i_column, long long i_size, void * io_valueArr, TCol (DbExecSqlite::*ToRetType)(int))
+size_t DbExecSqlite::retrieveColumnTo(int i_column, size_t i_size, void * io_valueArr, TCol (DbExecSqlite::*ToRetType)(int))
 {
-long long nRow = 0;
+size_t nRow = 0;
 int rc = SQLITE_ROW;
 
     for (nRow = 0; nRow < i_size && rc == SQLITE_ROW; nRow++) {
@@ -596,7 +617,7 @@ int rc = SQLITE_ROW;
 *
 * @return   number of affected rows (db-vendor specific).
 */
-long long DbExecSqlite::update(const string & i_sql)
+size_t DbExecSqlite::update(const string & i_sql)
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -734,7 +755,7 @@ void DbExecSqlite::rollback(void)
 *
 * @param[in] i_sql        sql to create statement
 * @param[in] i_paramCount number of parameters
-* @param[in] i_typeArr    array of parameters type
+* @param[in] i_typeArr    array of parameters type, use char * for strings
 *            
 * usage example: \n
 * @code
@@ -797,10 +818,11 @@ void DbExecSqlite::createStatement(const string & i_sql, int i_paramCount, const
             if (*ti == typeid(int64_t)) bindFnc = &DbExecSqlite::bindLong;
             if (*ti == typeid(uint64_t)) bindFnc = &DbExecSqlite::bindLong;
             if (*ti == typeid(bool)) bindFnc = &DbExecSqlite::bindBool;
-            if (*ti == typeid(float)) bindFnc = &DbExecSqlite::bindDbl;
-            if (*ti == typeid(double)) bindFnc = &DbExecSqlite::bindDbl;
-            if (*ti == typeid(long double)) bindFnc = &DbExecSqlite::bindDbl;
-            // if (ti == typeid(string)) not supported
+            if (*ti == typeid(float)) bindFnc = &DbExecSqlite::bindDbl<float>;
+            if (*ti == typeid(double)) bindFnc = &DbExecSqlite::bindDbl<double>;
+            if (*ti == typeid(long double)) bindFnc = &DbExecSqlite::bindDbl<long double>;
+            if (*ti == typeid(char *)) bindFnc = &DbExecSqlite::bindStr;
+            // if (*ti == typeid(string)) not supported
 
             if (bindFnc == NULL) throw DbException("invalid type to use as sql parameter"); // conversion to target parameter type is not supported
 
@@ -961,9 +983,10 @@ void DbExecSqlite::bindLong(int i_position, const DbValue & i_value)
 }
 
 // bind double sql parameter at specified position, use NULL if double value not is finite
+template<typename TDbl>
 void DbExecSqlite::bindDbl(int i_position, const DbValue & i_value)
 {
-    double dVal = static_cast<double>(i_value.dVal);
+    double dVal = DbValue::castDouble<TDbl, double>(i_value);
 
     if (isfinite(dVal)) {
         if (sqlite3_bind_double(theStmt, i_position, dVal) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
@@ -979,3 +1002,16 @@ void DbExecSqlite::bindBool(int i_position, const DbValue & i_value)
     sqlite3_int64 nVal = i_value.isVal ? 1 : 0;
     if (sqlite3_bind_int64(theStmt, i_position, nVal) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
 }
+
+// bind string sql parameter at specified position, length of source string expected to be less than OM_STRLEN_MAX
+void DbExecSqlite::bindStr(int i_position, const DbValue & i_value)
+{
+    if (i_value.szVal == nullptr) {
+        if (sqlite3_bind_null(theStmt, i_position) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
+    }
+    else {
+        int nLen = (int)strnlen(i_value.szVal, OM_STRLEN_MAX);
+        if (sqlite3_bind_text(theStmt, i_position, i_value.szVal, nLen, SQLITE_STATIC) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
+    }
+}
+

@@ -32,7 +32,7 @@ void openm::toLower(string & io_str)
 void openm::toLower(char * io_str)
 {
     if (io_str != NULL) 
-        use_facet<ctype<char> >(locale("")).tolower(io_str, io_str + strlen(io_str));
+        use_facet<ctype<char> >(locale("")).tolower(io_str, io_str + strnlen(io_str, OM_STRLEN_MAX));
 }
 
 // convert string to upper case
@@ -51,7 +51,7 @@ void openm::toUpper(string & io_str)
 void openm::toUpper(char * io_str)
 {
     if (io_str != NULL) 
-        use_facet<ctype<char> >(locale("")).toupper(io_str, io_str + strlen(io_str));
+        use_facet<ctype<char> >(locale("")).toupper(io_str, io_str + strnlen(io_str, OM_STRLEN_MAX));
 }
 
 // case neutral string comparison
@@ -73,7 +73,7 @@ bool openm::endWithNoCase(const string & i_str, const char * i_end)
 {
     if (i_end == NULL) return false;
 
-    string::size_type len = strlen(i_end);
+    string::size_type len = strnlen(i_end, OM_STRLEN_MAX);
     return 
         (i_str.length() >= len) && 
         0 == compareNoCase(i_str.c_str() + (i_str.length() - len), i_end);
@@ -177,7 +177,7 @@ const string openm::replaceAll(const string & i_src, const char * i_oldValue, co
     if (i_oldValue == NULL || i_oldValue[0] == '\0') return i_src;  // nothing to find
     if (i_newValue == NULL || i_newValue[0] == '\0') return i_src;  // nothing to replace
 
-    size_t len = strlen(i_oldValue);
+    size_t len = strnlen(i_oldValue, OM_STRLEN_MAX);
     string dst = i_src;
 
     bool isFound = false;
@@ -240,20 +240,6 @@ const string openm::toDateTimeString(const string & i_timestamp)
     }
 
     return dtStr;
-}
-
-// sleep for specified number miliiseconds (exist only to fix gcc 4.4, it is fixed in gcc 4.8)
-void openm::sleepMilli(long i_sleepTime)
-{
-#ifdef _WIN32
-    chrono::milliseconds ms(i_sleepTime); 
-    this_thread::sleep_for(ms);
-#else
-    timespec ms;
-    ms.tv_sec = 0;
-    ms.tv_nsec = i_sleepTime * 1000000L;
-    nanosleep(&ms, NULL);
-#endif  // _WIN32
 }
 
 // format message into supplied buffer using vsnprintf()

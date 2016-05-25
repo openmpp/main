@@ -47,7 +47,7 @@ namespace openm
 
         IRowBase * createRow(void) const { return new RunLstRow(); }
         int size(void) const { return sizeRunLstRow; }
-        const type_info ** columnTypes(void) const { return typeRunLstRow; }
+        const type_info * const * columnTypes(void) const { return typeRunLstRow; }
 
         void set(IRowBase * i_row, int i_column, const void * i_value) const
         {
@@ -117,7 +117,7 @@ vector<RunLstRow> RunLstTable::select(IDbExec * i_dbExec, const string & i_where
     if (i_dbExec == NULL) throw DbException("invalid (NULL) database connection");
 
     const IRowAdapter & adp = RunLstRowAdapter();
-    IRowBaseVec vec = i_dbExec->selectRowList(
+    IRowBaseVec vec = i_dbExec->selectRowVector(
         "SELECT" \
         " run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt" \
         " FROM run_lst " + i_where + " ORDER BY 1", 
