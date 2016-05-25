@@ -46,6 +46,8 @@ int MsgExecBase::groupRank(void) const
 void MsgExecBase::startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr)
 {
     try {
+        if (i_valueArr == nullptr) throw MsgException("Invalid (null) value array to send");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         sendVec.push_back(unique_ptr<IMsgSend>(
@@ -100,6 +102,8 @@ void MsgExecBase::startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, co
 void MsgExecBase::startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to recieve");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         recvVec.push_back(unique_ptr<IMsgRecv>(
@@ -154,6 +158,8 @@ void MsgExecBase::startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec,
 bool MsgExecBase::tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const
 {
     try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to recieve");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         unique_ptr<IMsgRecv> rcv(IMsgRecvArray::create(rank(), i_recvFrom, i_msgTag, i_type, i_size, io_valueArr));

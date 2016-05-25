@@ -189,6 +189,8 @@ MPI_Comm MpiExec::commByGroupOne(int i_groupOne)
 void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to broadcast");
+
         lock_guard<recursive_mutex> lck(msgMutex);
 
         // select communicator: group or worldwide
@@ -197,7 +199,7 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
         // if this is a sender then send it by broadcast
         if (isRoot()) {
 
-            if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to broadcast: %d", i_size);
+            if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to broadcast: %zu", i_size);
 
             if (i_type != typeid(string)) {
 
@@ -212,13 +214,13 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
             }
             else {  // pack string array
 
-                string * srcArr = reinterpret_cast<string *>(io_valueArr);
+                const string * srcArr = reinterpret_cast<const string *>(io_valueArr);
                 vector<char> packedData = MpiPacked::packArray(i_size, srcArr);
 
-                if (packedData.size() <= 0 || packedData.size() >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %d", packedData.size());
+                if (packedData.size() <= 0 || packedData.size() >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %zu", packedData.size());
 
                 // send byte size of packed string array
-                int sendSize = (int)i_size;
+                int sendSize = (int)packedData.size();
                 int mpiRet = MPI_Bcast(&sendSize, 1, MPI_INT, rootRank, mComm);
                 if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
@@ -237,7 +239,7 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
             // receive array data: array of primitive type or packed array of strings
             if (i_type != typeid(string)) {
 
-                if (recvSize <= 0 || (size_t)recvSize != i_size) throw MsgException("Invalid size of array broadcasted: %d, expected: %d", recvSize, i_size);
+                if (recvSize <= 0 || (size_t)recvSize != i_size) throw MsgException("Invalid size of array broadcasted: %d, expected: %zu", recvSize, i_size);
 
                 // receive value array
                 mpiRet = MPI_Bcast(io_valueArr, recvSize, MpiPacked::toMpiType(i_type), rootRank, mComm);
@@ -292,7 +294,7 @@ void MpiExec::bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPacked
 
             // send size of packed data
             if (packedData.size() <= 0 || packedData.size() >= INT_MAX) 
-                throw MsgException("Invalid size of data to broadcast: %d", packedData.size());
+                throw MsgException("Invalid size of data to broadcast: %zu", packedData.size());
 
             int packedSize = (int)packedData.size();
             int mpiRet = MPI_Bcast(&packedSize, 1, MPI_INT, rootRank, mComm);

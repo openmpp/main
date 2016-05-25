@@ -74,7 +74,7 @@ string MpiPacked::unpackStr(int i_packedSize, void * i_packedData, int & io_pack
 */
 unique_ptr<char> MpiPacked::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
 {
-    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
     if (i_valueArr == nullptr) throw MsgException("Invalid (nullptr) to array to send");
 
     int srcSize = (int)i_size;
@@ -98,7 +98,7 @@ unique_ptr<char> MpiPacked::packArray(const type_info & i_type, size_t i_size, v
 */
 const vector<char> MpiPacked::packArray(size_t i_size, const string * i_valueArr)
 {
-    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
     if (i_valueArr == nullptr) throw MsgException("Invalid (nullptr) to array to send");
 
     // size is row count size and each packed string size
@@ -111,7 +111,8 @@ const vector<char> MpiPacked::packArray(size_t i_size, const string * i_valueArr
     vector<char> packedData(nSize);
 
     int nPos = 0;
-    MpiPacked::pack<int>(i_size, nSize, packedData.data(), nPos);
+    int nCount = (int)i_size;
+    MpiPacked::pack<int>(nCount, nSize, packedData.data(), nPos);
 
     for (size_t k = 0; k < i_size; k++) {
         pack(i_valueArr[k], nSize, packedData.data(), nPos);
@@ -129,7 +130,7 @@ const vector<char> MpiPacked::packArray(size_t i_size, const string * i_valueArr
 */
 void MpiPacked::unpackArray(int i_packedSize, void * i_packedData, size_t i_size, string * io_valueArr)
 { 
-    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to receive: %d", i_size);
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to receive: %zu", i_size);
     if (i_packedData == nullptr) throw MsgException("Invalid (nullptr) to array of received data");
     if (io_valueArr == nullptr) throw MsgException("Invalid (nullptr) to unpack received data");
 
@@ -137,7 +138,7 @@ void MpiPacked::unpackArray(int i_packedSize, void * i_packedData, size_t i_size
     int nPos = 0;
     int nCount = MpiPacked::unpack<int>(i_packedSize, i_packedData, nPos);
 
-    if ((size_t)nCount != i_size) throw MsgException("Invalid size of array received: %d, expected: %d", nCount, i_size);
+    if ((size_t)nCount != i_size) throw MsgException("Invalid size of array received: %d, expected: %zu", nCount, i_size);
 
     // unpack strings
     for (size_t k = 0; k < i_size; k++) {
@@ -152,7 +153,7 @@ void MpiPacked::unpackArray(int i_packedSize, void * i_packedData, size_t i_size
 */
 int MpiPacked::packedSize(const type_info & i_type, size_t i_size)
 {
-    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %d", i_size);
+    if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
     return 
         (int)i_size * packedSize(i_type);
 }
