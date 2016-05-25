@@ -30,10 +30,11 @@ static const unsigned char BOM_UTF32LE[] = {0xFF, 0xFE, 0x00, 0x00};
 static const unsigned char BOM_UTF32BE[] = {0x00, 0x00, 0xFE, 0xFF};
 
 static const long long bomMaxLen = 4;   // max size of BOM
-static const long long utf8ProbeLen = 10000;   // max bytes used to probe for valid UTF-8
 
 #define IN_CVT_SIZE  10000  /* input conversion buffer size, must be even on Windows */
 #define OUT_CVT_SIZE 65536  /* output conversion buffer size, must be at least 4*input buffer size */
+
+static const long long utf8ProbeLen = OUT_CVT_SIZE;     // max bytes used to probe for valid UTF-8
 
 /** openM++ namespace */
 namespace openm
@@ -577,6 +578,7 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
 
         inpSt.read((char *)utf8ProbeBuf, utf8ProbeLen);
         if (inpSt.bad()) throw HelperException("Error at file read");
+
         long long probeSize = inpSt.gcount();
 
         if (isUtf8((size_t)probeSize, (const char *)utf8ProbeBuf)) {
