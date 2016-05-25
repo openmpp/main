@@ -164,11 +164,13 @@ logmsg info, $script_name, "lang_code=${lang_code}" if $verbosity >= 1;
 # Get table_ids, table_names, table_ranks from table_dic
 logmsg info, $script_name, "Get table_ids, table_names, table_ranks from table_dic" if $verbosity >= 1;
 $sql = "
-  Select table_id, table_name, table_rank
-  From table_dic
-  Where ( model_id = ${model_id} )
+  Select MT.model_table_id, TD.table_name, TD.table_rank
+  From table_dic TD
+  Inner Join model_table_dic MT ON (MT.table_hid = TD.table_hid)
+  Where ( MT.model_id = ${model_id} )
   ;
 ";
+
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
@@ -185,11 +187,13 @@ for my $record (split(/\n/, $result)) {
 # Get table_labels from table_dic_txt
 logmsg info, $script_name, "Get table_labels from table_dic_txt" if $verbosity >= 1;
 $sql = "
-  Select table_id, descr As table_description
-  From table_dic_txt
-  Where ( model_id = ${model_id} And lang_id = ${lang_id} )
+  Select MT.model_table_id, TXT.descr As table_description
+  From model_table_dic MT
+  Inner Join table_dic_txt TXT ON (TXT.table_hid = MT.table_hid)
+  Where ( MT.model_id = ${model_id} And TXT.lang_id = ${lang_id} )
   ;
 ";
+
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
@@ -202,10 +206,11 @@ for my $record (split(/\n/, $result)) {
 # Get table_expr_sizes from table_expr
 logmsg info, $script_name, "Get table_expr_sizes from table_expr" if $verbosity >= 1;
 $sql = "
-  Select table_id, count(expr_id) As table_expr_size
-  From table_expr
-  Where ( model_id = ${model_id} )
-  Group By table_id";
+  Select MT.model_table_id, count(EX.expr_id) As table_expr_size
+  From model_table_dic MT
+  Inner Join table_expr EX ON (EX.table_hid = MT.table_hid)
+  Where ( MT.model_id = ${model_id} )
+  Group By MT.model_table_id";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
@@ -218,9 +223,10 @@ for my $record (split(/\n/, $result)) {
 # Get table_expr_labels from table_expr_txt
 logmsg info, $script_name, "Get table_expr_descriptions from table_expr_txt" if $verbosity >= 1;
 $sql = "
-  Select table_id, expr_id AS expr_id, descr As table_expr_label
-  From table_expr_txt
-  Where (model_id = ${model_id} And lang_id = ${lang_id} )
+  Select MT.model_table_id, TXT.expr_id AS expr_id, TXT.descr As table_expr_label
+  From model_table_dic MT
+  Inner Join table_expr_txt TXT ON (TXT.table_hid = MT.table_hid)
+  Where (MT.model_id = ${model_id} And TXT.lang_id = ${lang_id} )
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
@@ -235,9 +241,11 @@ for my $record (split(/\n/, $result)) {
 # Get table_dim_types and table_dim_margin from table_dims
 logmsg info, $script_name, "Get table_dim_types and table_dim_margin from table_dims" if $verbosity >= 1;
 $sql = "
-  Select table_id, dim_id, mod_type_id As type_id, is_total As table_dim_margin
-  From table_dims
-  Where ( model_id = ${model_id} )
+  Select MT.model_table_id, D.dim_id, T.model_type_id As type_id, D.is_total As table_dim_margin
+  From model_table_dic MT
+  Inner Join table_dims D ON (D.table_hid = MT.table_hid)
+  Inner Join model_type_dic T ON (T.model_id = MT.model_id AND T.type_hid = D.type_hid)
+  Where ( MT.model_id = ${model_id} )
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
@@ -254,9 +262,10 @@ for my $record (split(/\n/, $result)) {
 # Get table_dim_labels from table_dims_txt
 logmsg info, $script_name, "Get table_dim_labels from table_dims_txt" if $verbosity >= 1;
 $sql = "
-  Select table_id, dim_id, descr As table_dim_label
-  From table_dims_txt
-  Where ( model_id = ${model_id} And lang_id = ${lang_id} )
+  Select MT.model_table_id, TXT.dim_id, TXT.descr As table_dim_label
+  From model_table_dic MT
+  Inner Join table_dims_txt TXT ON (TXT.table_hid = MT.table_hid)
+  Where ( MT.model_id = ${model_id} And TXT.lang_id = ${lang_id} )
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
@@ -272,9 +281,10 @@ for my $record (split(/\n/, $result)) {
 # Get enum_labels from type_enum_txt
 logmsg info, $script_name, "Get enum_labels from type_enum_txt" if $verbosity >= 1;
 $sql = "
-  Select mod_type_id As type_id, enum_id, descr As enum_label
-  From type_enum_txt
-  Where ( model_id = ${model_id} And lang_id = ${lang_id} )
+  Select T.model_type_id As type_id, TXT.enum_id, TXT.descr As enum_label
+  From model_type_dic T
+  Inner Join type_enum_txt TXT ON (TXT.type_hid = T.type_hid)
+  Where ( T.model_id = ${model_id} And TXT.lang_id = ${lang_id} )
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
@@ -297,9 +307,10 @@ for my $table_id (@table_ids) {
 # Get parameter_ids, parameter_names from parameter_dic
 logmsg info, $script_name, "Get parameter_ids, parameter_names from parameter_dic" if $verbosity >= 1;
 $sql = "
-  Select parameter_id, parameter_name
-  From parameter_dic
-  Where ( model_id = ${model_id} )
+  Select MP.model_parameter_id, P.parameter_name
+  From parameter_dic P
+  Inner Join model_parameter_dic MP ON (MP.parameter_hid = P.parameter_hid)
+  Where ( MP.model_id = ${model_id} )
   ;
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
@@ -328,20 +339,29 @@ chomp $result;
 (my $run_id, my $run_date_time, my $pieces) = split(/[|]/, $result);
 logmsg info, $script_name, "run_id=${run_id} run_date_time=${run_date_time} pieces=${pieces}" if $verbosity >= 1;
 
-# Get set_id and set_name from workset_lst
-logmsg info, $script_name, "Get set_id and set_name from workset_lst" if $verbosity >= 1;
+# Get set_id from run_option
+logmsg info, $script_name, "Get set_id" if $verbosity >= 1;
 $sql = "
-  Select set_id, set_name
-  From workset_lst
-  Where model_id = ${model_id} And set_id = (Select Min(WL.set_id) From workset_lst WL);
-  ;
+  Select option_value From run_option Where run_id = ${run_id} And option_key = 'OpenM.SetId';
 ";
 logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 chomp $result;
-(my $set_id, my $set_name) = split(/[|]/, $result);
-logmsg info, $script_name, "set_id=${set_id} set_name=${set_name}" if $verbosity >= 1;
+(my $set_id) = split(/[|]/, $result);
+logmsg info, $script_name, "set_id=${set_id}" if $verbosity >= 1;
+
+# Get set_name from run_option
+logmsg info, $script_name, "Get set_id and set_name from run_option" if $verbosity >= 1;
+$sql = "
+  Select option_value From run_option Where run_id = ${run_id} And option_key = 'OpenM.SetName';
+";
+logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
+$result = run_sqlite_statement $db, $sql, $failure;
+exit 1 if $failure;
+chomp $result;
+(my $set_name) = split(/[|]/, $result);
+logmsg info, $script_name, "set_name=${set_name}" if $verbosity >= 1;
 
 # Determine time-based or case-based using presence of specific ompp foundational parameters
 my $time_based = 0;
