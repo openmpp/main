@@ -414,7 +414,7 @@ void RootController::readParameter(const char * i_name, const type_info & i_type
 void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 {
     unique_ptr<char> byteArr;
-    unique_ptr<string> strArr;
+    unique_ptr<string[]> strArr;
     void * paramData = nullptr;
 
     for (size_t k = 0; k < PARAMETER_NAME_ARR_LEN; k++) {
