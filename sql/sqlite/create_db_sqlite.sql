@@ -472,7 +472,6 @@ CREATE TABLE profile_option
 --
 -- Model run's list
 -- Run id must be different from working set id (use id_lst to get it)
--- Model run is completed (all data saved in database) when sub_completed = sub_count
 --
 CREATE TABLE run_lst
 (
