@@ -52,7 +52,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
     )
   )
   if (nrow(runRs) != 1L || runRs$model_id != defRs$modelDic$model_id) {
-    stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+    stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   }
   
   # execute in transaction scope
@@ -67,11 +67,11 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
     }
     
     # check if supplied parameters are in model: parameter_name in parameter_dic table
-    # check if supplied parameters are not in workset: parameter_id in workset_parameter table
+    # check if supplied parameters are not in workset_parameter table
     setParamRs <- dbGetQuery(
       dbCon, 
       paste(
-        "SELECT set_id, parameter_id FROM workset_parameter WHERE set_id = ", worksetId, 
+        "SELECT set_id, parameter_hid FROM workset_lst WHERE set_id = ", worksetId, 
         sep=""
       )
     )
@@ -84,7 +84,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       
       paramRow <- defRs$paramDic[which(defRs$paramDic$parameter_name == wsParam$name), ]
       
-      if (paramRow$parameter_id %in% setParamRs$parameter_id) {
+      if (paramRow$parameter_hid %in% setParamRs$parameter_hid) {
         stop("parameter already in workset: ", wsParam$name)
       }
     }
@@ -102,15 +102,15 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       dimLen <- c(0L)
       if (paramRow$parameter_rank > 0) {
      
-        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
+        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "dim_name"]
         
         if (length(dimNames) != paramRow$parameter_rank) {
           stop("invalid length of dimension names vector for parameter: ", paramRow$parameter_name)
         }
         
         dimLen <- as.integer( 
-          table(defRs$typeEnum$mod_type_id)[as.character(
-            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "mod_type_id"]
+          table(defRs$typeEnum$type_hid)[as.character(
+            defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "type_hid"]
           )] 
         )
         
@@ -122,9 +122,9 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       # combine parameter definition to insert value and notes
       paramDef <- list(
         setId = worksetId, 
-        paramId = paramRow$parameter_id, 
-        paramTableName = paste(
-            defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
+        paramHid = paramRow$parameter_hid, 
+        dbTableName = paste(
+            paramRow$db_prefix, defRs$modelDic$workset_prefix, paramRow$db_suffix, 
             sep = ""
           ),
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)
@@ -134,12 +134,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       dbGetQuery(
         dbCon, 
         paste(
-          "INSERT INTO workset_parameter (set_id, model_id, parameter_id)",
-          " VALUES (",
-          worksetId, ", ",
-          defRs$modelDic$model_id, ", ",
-          paramRow$parameter_id,
-          " )",
+          "INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (", worksetId, ", ", paramDef$paramHid, " )",
           sep = ""
         )
       )
@@ -155,23 +150,19 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       dbGetQuery(
         dbCon, 
         paste(
-          "INSERT INTO ", paramDef$paramTableName, 
-          " (set_id, ", nameCs, " value)",
+          "INSERT INTO ", paramDef$dbTableName, 
+          " (set_id, ", nameCs, " param_value)",
           " SELECT ", 
-          worksetId, ", ", nameCs, " value",
+          worksetId, ", ", nameCs, " param_value",
           " FROM ", 
             paste(
-              defRs$modelDic$model_prefix, defRs$modelDic$parameter_prefix, paramRow$db_name_suffix, 
+              paramRow$db_prefix, defRs$modelDic$parameter_prefix, paramRow$db_suffix, 
               sep = ""
             ), 
           " WHERE run_id = ", 
-          " CASE",
-          "   WHEN EXISTS",
-          "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_id = ", paramRow$parameter_id, ")",
-          "   THEN",
-          "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_id = ", paramRow$parameter_id, ")",
-          "   ELSE ", baseRunId,
-          " END",
+          " (", 
+          " SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_hid = ", paramDef$paramHid, 
+          " )",
           sep = ""
         )
       )

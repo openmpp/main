@@ -16,18 +16,18 @@ invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))   # recommended
 
 # find the model: get model definition from database
 #
-# model can be found by name and (optional) timestamp
-# timestamp is used to identify exact version of the model 
-# in case of multiple versions of the model with the same name
-# if timestamp is missing or NA or NULL and database has multiple model versions
-# then min(timestamp) is used to find first version of the model
+# model can be found by name and (optional) digest
+# digest is used to identify exact version of the model 
+# if digest is missing or NA or NULL 
+# and there are multiple versions of the model with the same name
+# then first model with min(model_id) is used
 #
 
 # get model by name: use such call if you have only one version of the model
 defRs <- getModel(theDb, "modelOne")
 
-# use model timestamp to identify exact version of the model
-defRs <- getModel(theDb, "modelOne", "_201208171604590148_")
+# use model digest to identify exact version of the model
+defRs <- getModel(theDb, "modelOne", "20120817_1604590148")
 
 # 
 # get model run results (first run of that model, usually run id = 11)
@@ -36,7 +36,7 @@ runId <- getFirstRunId(theDb, defRs)
 
 # get model last (mot recent) run id, positive integer expected
 lastRunId <- getLastRunId(theDb, defRs)
-if (lastRunId <= 0L) stop("model run(s) not found: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (lastRunId <= 0L) stop("model run(s) not found: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # select output table expression(s) values of "salarySex" from model run results
 #  
@@ -142,7 +142,7 @@ paramSetTxt <- data.frame(
 # it is a full set and includes all "modelOne" parameters: "ageSex", "salaryAge", "StartingSeed"
 #
 setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
-if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # find working set id by name
 #
@@ -157,7 +157,7 @@ paramSetTxt$descr <- c("other set of parameters", "FR other set of parameters")
 paramSetTxt$note <- NA
 
 setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
-if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # 
 # create new working set of model parameters based on existing model run results
@@ -169,7 +169,7 @@ if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " 
 runId <- getFirstRunId(theDb, defRs)
 
 setId <- createWorksetBasedOnRun(theDb, defRs, runId, NA, salaryAge)
-if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # 
 # create new working set of model parameters based on existing model run results
@@ -184,7 +184,7 @@ paramSetTxt$name <- "otherSet"
 paramSetTxt$descr <- c("initially empty set of parameters")
 
 setId <- createWorksetBasedOnRun(theDb, defRs, runId, paramSetTxt)
-if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 #
 # copy ageSex parameter values from other model run (run_id = 12)
@@ -210,10 +210,10 @@ copyWorksetParameterFromRun(theDb, defRs, setId, otherRunId, ageSexCopy)
 #   and make workset read-only after update
 #
 setId <- getDefaultWorksetId(theDb, defRs)
-if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 if (setReadonlyWorkset(theDb, defRs, FALSE, setId) != setId) {
-  stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 }
 
 updateWorksetParameter(theDb, defRs, setId, ageSex)
@@ -225,7 +225,7 @@ setReadonlyWorkset(theDb, defRs, TRUE, setId)
 #   default workset always include ALL model parameters
 #
 setId <- setReadonlyDefaultWorkset(theDb, defRs, FALSE)
-if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 updateWorksetParameter(theDb, defRs, setId, ageSex, startingSeed)
 setReadonlyDefaultWorkset(theDb, defRs, TRUE)
@@ -239,7 +239,7 @@ setReadonlyDefaultWorkset(theDb, defRs, TRUE)
 taskName <- "taskOne"
 
 taskId <- getTaskIdByName(theDb, defRs, taskName)
-if (taskId <= 0L) stop("task: ", taskName, " not found for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (taskId <= 0L) stop("task: ", taskName, " not found for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # find modeling task id by name for any model
 taskId <- getTaskIdByName(theDb, NA, taskName)
@@ -258,12 +258,12 @@ myTaskTxt <- data.frame(
   
 # create new task, initially empty
 taskId <- createTask(theDb, defRs, myTaskTxt, c(2, 4))
-if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # update task with additional input worksets set_id = c(2, 4)
 # it is does nothing because task already contains those worksets
 taskId <- updateTask(theDb, defRs, taskId, setIds = c(2, 4))
-if (taskId <= 0L) stop("task update failed, id: ", taskId, ", ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (taskId <= 0L) stop("task update failed, id: ", taskId, ", ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 #
 # select list of modeling tasks and task run(s)

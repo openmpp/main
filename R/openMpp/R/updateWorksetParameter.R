@@ -53,11 +53,11 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
     }
     
     # check if supplied parameters are in model: parameter_name in parameter_dic table
-    # check if supplied parameters are in workset: parameter_id in workset_parameter table
+    # check if supplied parameters are in workset_parameter table
     setParamRs <- dbGetQuery(
       dbCon, 
       paste(
-        "SELECT set_id, parameter_id FROM workset_parameter WHERE set_id = ", worksetId, 
+        "SELECT set_id, parameter_hid FROM workset_parameter WHERE set_id = ", worksetId, 
         sep=""
       )
     )
@@ -70,7 +70,7 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
       
       paramRow <- defRs$paramDic[which(defRs$paramDic$parameter_name == wsParam$name), ]
       
-      if (!paramRow$parameter_id %in% setParamRs$parameter_id) {
+      if (!paramRow$parameter_hid %in% setParamRs$parameter_hid) {
         stop("parameter is not in workset: ", wsParam$name)
       }
     }
@@ -88,15 +88,15 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
       dimLen <- c(0L)
       if (paramRow$parameter_rank > 0) {
      
-        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
+        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "dim_name"]
         
         if (length(dimNames) != paramRow$parameter_rank) {
           stop("invalid length of dimension names vector for parameter: ", paramRow$parameter_name)
         }
-        
+       
         dimLen <- as.integer( 
-          table(defRs$typeEnum$mod_type_id)[as.character(
-            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "mod_type_id"]
+          table(defRs$typeEnum$type_hid)[as.character(
+            defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "type_hid"]
           )] 
         )
         
@@ -108,9 +108,9 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
       # combine parameter definition to insert value and notes
       paramDef <- list(
         setId = worksetId, 
-        paramId = paramRow$parameter_id, 
-        paramTableName = paste(
-            defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
+        paramHid = paramRow$parameter_hid, 
+        dbTableName = paste(
+            paramRow$db_prefix, defRs$modelDic$workset_prefix, paramRow$db_suffix, 
             sep = ""
           ),
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)

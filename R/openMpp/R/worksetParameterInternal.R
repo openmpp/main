@@ -8,9 +8,9 @@
 #
 # insert or update workset parameter notes
 # dbCon - database connection
-# i_paramDef - list with $setId and $paramId
+# i_paramDef - list with $setId and $paramHid
 #   $setId - workset id
-#   $paramId - parameter id
+#   $paramHid - parameter Hid
 # i_wsParamTxt - workset parameter text:
 #   data frame with $lang=language code and $note=parameter notes
 #
@@ -24,10 +24,10 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
   # insert rows where notes defined
   sqlIns <-
     paste(
-      "INSERT INTO workset_parameter_txt (set_id, model_id, parameter_id, lang_id, note)",
+      "INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)",
       " SELECT", 
-      " set_id, model_id, ", 
-      i_paramDef$paramId, ", ",
+      " set_id, ", 
+      i_paramDef$paramHid, ", ",
       " :lang, :note",
       " FROM workset_lst",
       " WHERE set_id = ", i_paramDef$setId,
@@ -37,7 +37,7 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
     paste(
       "DELETE FROM workset_parameter_txt",
       " WHERE set_id = ", i_paramDef$setId, 
-      " AND parameter_id = ", i_paramDef$paramId, 
+      " AND parameter_hid = ", i_paramDef$paramHid, 
       sep = ""
     )
     
@@ -57,7 +57,7 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
 # dbCon - database connection
 # i_paramDef - list with:
 #   $setId - workset id
-#   $paramTableName - parameter table name
+#   $dbTableName - workset parameter table name
 #   $dims - data frame for each dimension
 #     $name - dimension name
 #     $size - dimension size
@@ -133,28 +133,28 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
   #
   # DELETE FROM param_tbl WHERE set_id = 1234
   #
-  # INSERT INTO param_tbl (set_id, dim0, dim1, value) 
+  # INSERT INTO param_tbl (set_id, dim0, dim1, param_value) 
   # VALUES (1234, :dim0, :dim1, :value)
   #
   sqlDel <-
     paste(
-      "DELETE FROM ", i_paramDef$paramTableName, 
+      "DELETE FROM ", i_paramDef$dbTableName, 
       " WHERE set_id = ", i_paramDef$setId,
       sep = ""
     )
   sqlIns <-
     ifelse(isScalar,
       paste(
-        "INSERT INTO ", i_paramDef$paramTableName, " (set_id, value)",
+        "INSERT INTO ", i_paramDef$dbTableName, " (set_id, param_value)",
         " VALUES", 
         " (", i_paramDef$setId, ", :value)",
         sep = ""
       ),
       paste(
-        "INSERT INTO ", i_paramDef$paramTableName, 
+        "INSERT INTO ", i_paramDef$dbTableName, 
         " (set_id, ",
         paste(i_paramDef$dims$name, sep = "", collapse=", "), ", ",
-        " value)",
+        " param_value)",
         " VALUES (",
         i_paramDef$setId, ", ",
         paste(paste(":", i_paramDef$dims$name, sep = ""), sep = "", collapse = ", "), ", ",

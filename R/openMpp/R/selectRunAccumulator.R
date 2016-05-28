@@ -46,7 +46,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   
   nRank <- tableRow$table_rank
   dbTableName <- paste(
-    defRs$modelDic$model_prefix, defRs$modelDic$acc_prefix, tableRow$db_name_suffix, 
+    tableRow$db_prefix, defRs$modelDic$acc_prefix, tableRow$db_suffix, 
     sep = ""
   )
   
@@ -57,7 +57,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
       stop("invalid or empty output accumulator name")
     }
 
-    accRow <- defRs$tableAcc[which(defRs$tableAcc$table_id == tableRow$table_id & defRs$tableAcc$acc_name == accName), ]
+    accRow <- defRs$tableAcc[which(defRs$tableAcc$table_hid == tableRow$table_hid & defRs$tableAcc$acc_name == accName), ]
     
     if (nrow(accRow) != 1) {
       stop("output table ", tableName, " does not contain accumulator: ", accName)
@@ -82,7 +82,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   }
   
   # SELECT dim0, dim1, acc_id, sub_id, acc_value 
-  # FROM modelone_201208171604590148_a0_salarySex
+  # FROM salarySex_a2012_820
   # WHERE run_id = 2
   # AND acc_id = 4
   # ORDER BY 1, 2, 3, 4
@@ -93,7 +93,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
       ifelse(nRank > 0L,
         paste(
           paste(
-            defRs$tableDims[which(defRs$tableDims$table_id == tableRow$table_id), "dim_name"],
+            defRs$tableDims[which(defRs$tableDims$table_hid == tableRow$table_hid), "dim_name"],
             sep = "", collapse = ", "
           ),
           ", ", sep = ""

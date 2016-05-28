@@ -45,7 +45,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
   
   nRank <- tableRow$table_rank
   dbTableName <- paste(
-    defRs$modelDic$model_prefix, defRs$modelDic$value_prefix, tableRow$db_name_suffix, 
+    tableRow$db_prefix, defRs$modelDic$value_prefix, tableRow$db_suffix, 
     sep = ""
   )
   
@@ -54,7 +54,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
   if (!missing(exprName) && !is.na(exprName)) {
     if (!is.character(exprName) || length(exprName) <= 0) stop("invalid or empty output expression name")
     
-    uRow <- defRs$tableExpr[which(defRs$tableExpr$table_id == tableRow$table_id & defRs$tableExpr$expr_name == exprName), ]
+    uRow <- defRs$tableExpr[which(defRs$tableExpr$table_hid == tableRow$table_hid & defRs$tableExpr$expr_name == exprName), ]
     
     if (nrow(uRow) != 1) {
       stop("output table ", tableName, " does not contain expression: ", exprName)
@@ -69,7 +69,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
       "SELECT run_id FROM run_lst",
       " WHERE run_id = ", runId,
       " AND model_id = ", defRs$modelDic$model_id,
-      " AND sub_completed = sub_count",
+      " AND status = 's'",
       sep=""
     )
   )
@@ -77,8 +77,8 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # SELECT dim0, dim1, expr_id, value 
-  # FROM modelone_201208171604590148_v0_salarySex
+  # SELECT dim0, dim1, expr_id, expr_value 
+  # FROM salarySex_v2012_820
   # WHERE run_id = 2 AND expr_id = 3
   # ORDER BY 1, 2, 3
   #
@@ -88,14 +88,14 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
       ifelse(nRank > 0L,
         paste(
           paste(
-            defRs$tableDims[which(defRs$tableDims$table_id == tableRow$table_id), "dim_name"],
+            defRs$tableDims[which(defRs$tableDims$table_hid == tableRow$table_hid), "dim_name"],
             sep = "", collapse = ", "
           ),
           ", ", sep = ""
         ),
         ""
       ),
-      " expr_id, value",
+      " expr_id, expr_value",
       " FROM ", dbTableName, 
       " WHERE run_id = ", runId,
       ifelse(!is.na(exprId), 

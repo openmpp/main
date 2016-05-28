@@ -136,7 +136,7 @@ It must contain run_id = 11 and 12 (see runId usage below)
   # for all parameters use previous model run with id = 11 
   #
   setId <- createWorksetBasedOnRun(theDb, defRs, 11L, paramSetTxt)
-  if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   #
   # copy ageSex parameter value from model run with id = 12

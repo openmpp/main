@@ -69,7 +69,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   #
   # use model name only to identify the model
   # if there are multiple versions of the model in database 
-  # then first one is selected: where timestamp = min(timestamp) for "modelOne"
+  # then first one is selected: where model id = min(model_id) for "modelOne"
   #
   defRs <- getModel(theDb, "modelOne")
   

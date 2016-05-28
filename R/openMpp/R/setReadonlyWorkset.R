@@ -75,11 +75,11 @@ setReadonlyDefaultWorkset <- function(dbCon, defRs, isReadonly)
   tryCatch({
     dbBegin(dbCon)
     
-    # set readonly flag by model name and timestamp
+    # set readonly flag by model name and digest
     rdOnlyVal <- ifelse(isReadonly, 1L, 0L)
     setRs <- lockWorksetUsingReadonly(dbCon, defRs, FALSE, 0, FALSE, rdOnlyVal)
     if (is.null(setRs) || setRs$is_readonly != rdOnlyVal) {
-      stop("workset not found or has invalid read-only status, model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+      stop("workset not found or has invalid read-only status, model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
     }
     
     setId <- setRs$set_id
@@ -99,7 +99,7 @@ setReadonlyDefaultWorkset <- function(dbCon, defRs, isReadonly)
 #
 # dbCon           - database connection
 # i_defRs         - model definition database rows
-# i_isSetId       - if true then use set id else model name and timestamp
+# i_isSetId       - if true then use set id else model id
 # i_setId         - id of parameters working set
 # i_isAddValue    - if TRUE then add value to is_readonly else set
 # i_readonlyValue - integer to set is_readonly
@@ -135,7 +135,7 @@ lockWorksetUsingReadonly <- function(dbCon, i_defRs, i_isSetId, i_setId, i_isAdd
     )
     # one row expected else set id is invalid
     if (is.null(setRs) || nrow(setRs) != 1 || setRs$model_id != i_defRs$modelDic$model_id) {
-      stop("workset not found: ", i_setId, " or not belong to model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+      stop("workset not found: ", i_setId, " or not belong to model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
     }
   }
   else {    # use model id
@@ -163,7 +163,7 @@ lockWorksetUsingReadonly <- function(dbCon, i_defRs, i_isSetId, i_setId, i_isAdd
     )
     # one row expected else model id is invalid
     if (is.null(setRs) || nrow(setRs) != 1) {
-      stop("no worksets not found for model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+      stop("no worksets not found for model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
     }
   }
   

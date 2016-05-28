@@ -97,7 +97,7 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
     )
   )
   if (nrow(runRs) != 1L || runRs$model_id != defRs$modelDic$model_id) {
-    stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+    stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   }
 
   # check if base run id is full run (run of full workset)
@@ -249,12 +249,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       dbGetQuery(
         dbCon, 
         paste(
-          "INSERT INTO workset_parameter (set_id, model_id, parameter_id)",
-          " VALUES (",
-          setId, ", ",
-          defRs$modelDic$model_id, ", ",
-          paramRow$parameter_id,
-          " )",
+          "INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (", setId, ", ", paramRow$parameter_hid, " )",
           sep = ""
         )
       )
@@ -264,15 +259,15 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       dimLen <- c(0L)
       if (paramRow$parameter_rank > 0) {
      
-        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"]
+        dimNames <- defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "dim_name"]
         
         if (length(dimNames) != paramRow$parameter_rank) {
           stop("invalid length of dimension names vector for parameter: ", paramRow$parameter_name)
         }
         
         dimLen <- as.integer( 
-          table(defRs$typeEnum$mod_type_id)[as.character(
-            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "mod_type_id"]
+          table(defRs$typeEnum$type_hid)[as.character(
+            defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "type_hid"]
           )] 
         )
         
@@ -284,9 +279,9 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       # combine parameter definition to insert value and notes
       paramDef <- list(
         setId = setId, 
-        paramId = paramRow$parameter_id, 
-        paramTableName = paste(
-            defRs$modelDic$model_prefix, defRs$modelDic$workset_prefix, paramRow$db_name_suffix, 
+        paramHid = paramRow$parameter_hid, 
+        dbTableName = paste(
+            paramRow$db_prefix, defRs$modelDic$workset_prefix, paramRow$db_suffix, 
             sep = ""
           ),
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)

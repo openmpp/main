@@ -92,7 +92,7 @@ getDefaultWorksetId <- function(dbCon, defRs)
   )
   # one row expected else model id is invalid
   if (is.null(setRs) || nrow(setRs) != 1) {
-    stop("no worksets not found for model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+    stop("no worksets not found for model: ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   }
   
   return(ifelse(!is.na(setRs[1,1]), as.integer(setRs[1,1]), -1L))
@@ -124,7 +124,7 @@ getWorksetRunIds <- function(dbCon, worksetId)
       "SELECT RL.run_id",
       " FROM run_lst RL",
       " INNER JOIN run_option RO ON (RO.run_id = RL.run_id)",
-      " WHERE RL.sub_completed = RL.sub_count",
+      " WHERE RL.status = 's'",
       " AND RO.option_key = 'OpenM.SetId'",
       " AND RO.option_value = ", toQuoted(worksetId),
       " ORDER BY 1",
@@ -268,7 +268,7 @@ getTaskFirstRunId <- function(dbCon, taskId)
   runRs <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT MIN(task_run_id ) FROM task_run_lst WHERE task_id = ", taskId,
+      "SELECT MIN(task_run_id) FROM task_run_lst WHERE task_id = ", taskId,
       sep=""
     )
   )
@@ -300,7 +300,7 @@ getTaskLastRunId <- function(dbCon, taskId)
   runRs <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT MAX(task_run_id ) FROM task_run_lst WHERE task_id = ", taskId,
+      "SELECT MAX(task_run_id) FROM task_run_lst WHERE task_id = ", taskId,
       sep=""
     )
   )

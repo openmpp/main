@@ -7,7 +7,7 @@ Find OpenM++ model definition in database
 Find model in database and return OpenM++ model definition (input parameters and output tables)
 }
 \usage{
-getModel(dbCon, modelName, modelTimestamp = NA)
+getModel(dbCon, modelName, modelDigest = NA)
 }
 \arguments{
   \item{dbCon}{
@@ -16,17 +16,17 @@ getModel(dbCon, modelName, modelTimestamp = NA)
   \item{modelName}{
     model name, ie: "modelOne"
   }
-  \item{modelTimestamp}{
-    (optional) model timestamp, ie: "_201208171604590148_"
-    if timestamp is missing or NA or NULL then MIN(timestamp) is used
+  \item{modelDigest}{
+    (optional) model digest, ie: "20120817_1604590148"
+    if digest is NA or NULL then first model with min(model_id) is used
   }
 }
 \details{
 Find model in database and return OpenM++ model definition (input parameters and output tables).
 
-Model can be identified by by name and model timestamp string, which serves as model version. 
-If you have only one version of the model in database then you can omit timestamp argument. 
-In that case first version of the model with MIN(timestamp) will be used.
+Model can be identified by by name and model digest string, which serves as model version. 
+If you have only one version of the model in database then you can omit digest argument. 
+If there are multiple models with same name in database and digest is NA or NULL then first model with min(model_id) is used.
 }
 \value{
   List of database rows describing model parameters:
@@ -60,18 +60,18 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   
   # find the model: get model definition from database
   #
-  # model can be found by name and (optional) timestamp
-  # timestamp is used to identify exact version of the model 
-  # in case of multiple versions of the model with the same name
-  # if timestamp is missing or NA or NULL and database has multiple model versions
-  # then min(timestamp) is used to find first version of the model
+  # model can be found by name and (optional) digest
+  # digest is used to identify exact version of the model 
+  # if digest is missing or NA or NULL 
+  # and there are multiple versions of the model with the same name
+  # then first model with min(model_id) is used
   #
   
   # get model by name: use such call if you have only one version of the model
   defRs <- getModel(theDb, "modelOne")
   
-  # use model timestamp to identify exact version of the model
-  def2012August17 <- getModel(theDb, "modelOne", "_201208171604590148_")
+  # use model digest to identify exact version of the model
+  def2012August17 <- getModel(theDb, "modelOne", "20120817_1604590148")
   
   dbDisconnect(theDb)
 }
