@@ -82,6 +82,13 @@ ifdef OMC_FIXED_PARAM_DIR
   OMC_FIXED_OPT = -f $(OMC_FIXED_PARAM_DIR)
 endif
 
+# 
+# convert source files to utf-8 from Windows code page
+#
+ifdef OMC_CODE_PAGE
+  OMC_CODE_PAGE_OPT = -Omc.CodePage $(OMC_CODE_PAGE)
+endif
+
 #
 # build directories
 # if model build directory defined globally 
@@ -178,7 +185,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 $(MODEL_OMC_CPP) : $(MODEL_MPP)
-	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT)
+	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
