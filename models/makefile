@@ -12,6 +12,10 @@ ifndef BIN_POSTFIX
   BIN_POSTFIX = 
 endif 
 
+ifndef OMC_CODE_PAGE
+  OMC_CODE_PAGE = WINDOWS-1252
+endif
+
 #
 # models to build
 #
@@ -59,7 +63,7 @@ LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX)
 all : prepare $(MODEL_DIRS)
 
 $(MODEL_DIRS) :
-	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $@
+	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) OMC_CODE_PAGE=$(OMC_CODE_PAGE) -C $@
 
 .PHONY : publish
 publish : prepare
