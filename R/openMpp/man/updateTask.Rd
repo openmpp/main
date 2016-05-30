@@ -85,11 +85,11 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   
   # create new task, initially empty
   taskId <- createTask(theDb, defRs)
-  if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   # update task with new text (name, description, notes) and two input data set_id = c(2, 4)
   taskId <- updateTask(theDb, defRs, taskId, myTaskTxt, c(2, 4))
-  if (taskId <= 0L) stop("task update failed, id: ", taskId, ", ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (taskId <= 0L) stop("task update failed, id: ", taskId, ", ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
   dbDisconnect(theDb)
   #

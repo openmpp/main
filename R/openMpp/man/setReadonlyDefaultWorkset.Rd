@@ -64,7 +64,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   
   # reset read-only status of default workset  
   setId <- setReadonlyDefaultWorkset(theDb, defRs, FALSE)
-  if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
   # you can update model parameters now:
   #

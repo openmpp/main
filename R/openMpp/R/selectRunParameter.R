@@ -42,7 +42,7 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
   
   nRank <- paramRow$parameter_rank
   dbTableName <- paste(
-    defRs$modelDic$model_prefix, defRs$modelDic$parameter_prefix, paramRow$db_name_suffix, 
+    paramRow$db_prefix, defRs$modelDic$parameter_prefix, paramRow$db_suffix, 
     sep = ""
   )
   
@@ -61,16 +61,9 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # SELECT dim0, dim1, value 
-  # FROM modelone_201208171604590148_p0_ageSex
-  # WHERE run_id = 
-  #   CASE
-  #     WHEN EXISTS
-  #       (SELECT base_run_id FROM run_parameter WHERE run_id = 1234 AND parameter_id = 0)
-  #     THEN
-  #       (SELECT base_run_id FROM run_parameter WHERE run_id = 1234 AND parameter_id = 0)
-  #     ELSE 1234
-  #   END
+  # SELECT dim0, dim1, param_value 
+  # FROM ageSex_p2012_817
+  # WHERE run_id = (SELECT base_run_id FROM run_parameter WHERE run_id = 1234 AND parameter_hid = 1)
   # ORDER BY 1, 2, 3
   sqlSel <-
     paste(
@@ -78,23 +71,17 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
       ifelse(nRank > 0L,
         paste(
           paste(
-            defRs$paramDims[which(defRs$paramDims$parameter_id == paramRow$parameter_id), "dim_name"],
+            defRs$paramDims[which(defRs$paramDims$parameter_hid == paramRow$parameter_hid), "dim_name"],
             sep = "", collapse = ", "
           ), 
           ", ", sep = ""
         ),
         ""
       ),
-      " value",
+      " param_value",
       " FROM ", dbTableName, 
       " WHERE run_id = ", 
-      " CASE",
-      "   WHEN EXISTS",
-      "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", runId, " AND parameter_id = ", paramRow$parameter_id, ")",
-      "   THEN",
-      "     (SELECT base_run_id FROM run_parameter WHERE run_id = ", runId, " AND parameter_id = ", paramRow$parameter_id, ")",
-      "   ELSE ", runId,
-      " END",
+      " (SELECT base_run_id FROM run_parameter WHERE run_id = ", runId, " AND parameter_hid = ", paramRow$parameter_hid, ")",
       ifelse(nRank > 0L,
         paste(" ORDER BY ",
           paste(1L:nRank, sep = "", collapse = ", "),

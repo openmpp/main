@@ -60,7 +60,7 @@ defRs <- getModel(theDb, "RiskPaths")       # find RiskPaths model in database
 #
 baseRunId <- getFirstRunId(theDb, defRs)
 if (baseRunId <= 0) 
-  stop("no run results found for the model ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  stop("no run results found for the model ", i_defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 #
 # get default values for AgeBaselineForm1 and UnionStatusPreg1 parameters 
@@ -86,7 +86,7 @@ taskTxt <- data.frame(      # name, description and notes for the task
 )
 
 taskId <- createTask(theDb, defRs, taskTxt)
-if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # parameters scale
 scaleValues <- seq(from = 0.44, to = 1.00, by = 0.02)

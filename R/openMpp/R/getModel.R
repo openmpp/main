@@ -5,8 +5,8 @@
 
 #
 # Return model metadata: parameters and output tables definition
-#   model defined by name and (optional) timestamp
-#   if timestamp is NA or NULL then min(timestamp) is used
+#   model defined by name and (optional) digest
+#   if digest is NA or NULL then first model with min(model_id) is used
 #
 # return list of database rows describing model:
 #   $modelDic  - model_dic row 
@@ -20,11 +20,11 @@
 #   $tableAcc  - table_acc rows of the model
 #   $tableExpr - table_expr rows of the model
 #
-# dbCon          - database connection
-# modelName      - model name, ie: "modelOne"
-# modelTimestamp - model timestamp, ie: "_201208171604590148_"
+# dbCon       - database connection
+# modelName   - model name, ie: "modelOne"
+# modelDigest - model digest, ie: "20120817_1604590148"
 #
-getModel <- function(dbCon, modelName, modelTimestamp = NA) 
+getModel <- function(dbCon, modelName, modelDigest = NA) 
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -36,24 +36,22 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
 
   # get model_dic row: single row expected
   sql <- ifelse(
-    !missing(modelTimestamp) && !is.null(modelTimestamp) && !is.na(modelTimestamp),
+    !missing(modelDigest) && !is.null(modelDigest) && !is.na(modelDigest),
     paste(
-      "SELECT",
-      " model_id, model_name, model_ts, model_prefix, parameter_prefix, workset_prefix, acc_prefix, value_prefix",
+      "SELECT model_id, model_name, model_digest, parameter_prefix, workset_prefix, acc_prefix, value_prefix",
       " FROM model_dic",
       " WHERE model_name = ", toQuoted(modelName),
-      " AND model_ts = ", toQuoted(modelTimestamp),
+      " AND model_digest = ", toQuoted(modelDigest),
       " ORDER BY 1",
       sep=""
     ),
     paste(
-      "SELECT",
-      " model_id, model_name, model_ts, model_prefix, parameter_prefix, workset_prefix, acc_prefix, value_prefix",
+      "SELECT model_id, model_name, model_digest, parameter_prefix, workset_prefix, acc_prefix, value_prefix",
       " FROM model_dic",
       " WHERE model_name = ", toQuoted(modelName),
-      " AND model_ts = ",
+      " AND model_id = ",
       " (",
-      " SELECT MIN(MMD.model_ts) FROM model_dic MMD WHERE MMD.model_name = " , toQuoted(modelName),
+      " SELECT MIN(MMD.model_id) FROM model_dic MMD WHERE MMD.model_name = " , toQuoted(modelName),
       " )",
       " ORDER BY 1",
       sep=""
@@ -61,7 +59,7 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   )
   defRs <- list(modelDic = dbGetQuery(dbCon, sql))
 
-  if (nrow(defRs$modelDic) != 1) stop("model not found: ", modelName, " ", modelTimestamp)
+  if (nrow(defRs$modelDic) != 1) stop("model not found: ", modelName, " ", modelDigest)
 
   # get languages
   defRs[["langLst"]] <- getLanguages(dbCon)
@@ -70,9 +68,9 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["typeDic"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, mod_type_id, mod_type_name, dic_id",
-      " FROM type_dic",
-      " WHERE model_id = ", defRs$modelDic$model_id,
+      "SELECT MT.model_id, MT.model_type_id, T.type_hid, T.type_name, T.dic_id",
+      " FROM type_dic T",
+      " INNER JOIN model_type_dic MT ON (MT.type_hid = T.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
       " ORDER BY 1, 2",
       sep = ""
     )
@@ -82,10 +80,10 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["typeEnum"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, mod_type_id, enum_id, enum_name",
-      " FROM type_enum_lst",
-      " WHERE model_id = ", defRs$modelDic$model_id,
-      " ORDER BY 1, 2, 3",
+      "SELECT MT.model_id, MT.model_type_id, T.type_hid, T.enum_id, T.enum_name",
+      " FROM type_enum_lst T",
+      " INNER JOIN model_type_dic MT ON (MT.type_hid = T.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
+      " ORDER BY 1, 2, 4",
       sep = ""
     )
   )
@@ -95,10 +93,12 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["paramDic"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, parameter_id, db_name_suffix, parameter_name, parameter_rank, mod_type_id",
-      " FROM parameter_dic",
-      " WHERE model_id = ", defRs$modelDic$model_id,
-      " AND is_generated = 0",
+      "SELECT",
+      " MP.model_id, MP.model_parameter_id, P.parameter_hid, P.parameter_name, P.db_prefix, P.db_suffix, P.parameter_rank, P.type_hid, MT.model_type_id",
+      " FROM parameter_dic P",
+      " INNER JOIN model_parameter_dic MP ON (MP.parameter_hid = P.parameter_hid AND MP.model_id = ", defRs$modelDic$model_id, ")",
+      " INNER JOIN model_type_dic MT ON (MT.type_hid = P.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
+      " WHERE MP.is_generated = 0",
       " ORDER BY 1, 2",
       sep = ""
     )
@@ -109,10 +109,11 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["paramDims"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, parameter_id, dim_name, mod_type_id",
-      " FROM parameter_dims",
-      " WHERE model_id = ", defRs$modelDic$model_id,
-      " ORDER BY 1, 2, 3",
+      "SELECT MP.model_id, MP.model_parameter_id, D.parameter_hid, D.dim_name, D.type_hid, MT.model_type_id",
+      " FROM parameter_dims D",
+      " INNER JOIN model_parameter_dic MP ON (MP.parameter_hid = D.parameter_hid AND MP.model_id = ", defRs$modelDic$model_id, ")",
+      " INNER JOIN model_type_dic MT ON (MT.type_hid = D.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
+      " ORDER BY 1, 2, 4",
       sep = ""
     )
   )
@@ -121,12 +122,12 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   #   dimension must be in parameter_dims
   #   dimension type must be type_enum_lst
   if (!all(
-      defRs$paramDic[which(defRs$paramDic$parameter_rank > 0), ]$parameter_id %in% 
-      defRs$paramDims$parameter_id
+      defRs$paramDic[which(defRs$paramDic$parameter_rank > 0), ]$parameter_hid %in% 
+      defRs$paramDims$parameter_hid
     )) {
     stop("parameter dimension(s) not found")
   }
-  if (!all(defRs$paramDims$mod_type_id %in% defRs$typeEnum$mod_type_id)) {
+  if (!all(defRs$paramDims$type_hid %in% defRs$typeEnum$type_hid)) {
     stop("parameter dimension type(s) not found")
   }
   
@@ -134,9 +135,9 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["tableDic"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, table_id, db_name_suffix, table_name, table_rank, is_sparse",
-      " FROM table_dic",
-      " WHERE model_id = ", defRs$modelDic$model_id,
+      "SELECT M.model_id, M.model_table_id, T.table_hid, T.table_name, T.db_prefix, T.db_suffix, T.table_rank, T.is_sparse",
+      " FROM table_dic T",
+      " INNER JOIN model_table_dic M ON (M.table_hid = T.table_hid AND M.model_id = ", defRs$modelDic$model_id, ")",
       " ORDER BY 1, 2",
       sep = ""
     )
@@ -147,10 +148,11 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["tableDims"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, table_id, dim_name, mod_type_id, is_total, dim_size",
-      " FROM table_dims",
-      " WHERE model_id = ", defRs$modelDic$model_id,
-      " ORDER BY 1, 2, 3",
+      "SELECT M.model_id, M.model_table_id, D.table_hid, D.dim_name, D.type_hid, MT.model_type_id, D.is_total, D.dim_size",
+      " FROM table_dims D",
+      " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid AND M.model_id = ", defRs$modelDic$model_id, ")",
+      " INNER JOIN model_type_dic MT ON (MT.type_hid = D.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
+      " ORDER BY 1, 2, 4",
       sep = ""
     )
   )
@@ -159,12 +161,12 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   #   dimension must be in table_dims
   #   dimension type must be type_enum_lst
   if (!all(
-      defRs$tableDic[which(defRs$tableDic$table_rank > 0), ]$table_id %in% 
-      defRs$tableDims$table_id
+      defRs$tableDic[which(defRs$tableDic$table_rank > 0), ]$table_hid %in% 
+      defRs$tableDims$table_hid
     )) {
     stop("output table dimension(s) not found")
   }
-  if (!all(defRs$tableDims$mod_type_id %in% defRs$typeEnum$mod_type_id)) {
+  if (!all(defRs$tableDims$type_hid %in% defRs$typeEnum$type_hid)) {
     stop("output table dimension(s) not found")
   }
 
@@ -172,10 +174,10 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["tableAcc"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, table_id, acc_id, acc_name",
-      " FROM table_acc",
-      " WHERE model_id = ", defRs$modelDic$model_id,
-      " ORDER BY 1, 2, 3",
+      "SELECT M.model_id, M.model_table_id, A.table_hid, A.acc_id, A.acc_name",
+      " FROM table_acc A",
+      " INNER JOIN model_table_dic M ON (M.table_hid = A.table_hid AND M.model_id = ", defRs$modelDic$model_id, ")",
+      " ORDER BY 1, 2, 4",
       sep = ""
     )
   )
@@ -185,10 +187,10 @@ getModel <- function(dbCon, modelName, modelTimestamp = NA)
   defRs[["tableExpr"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT model_id, table_id, expr_id, expr_name, expr_decimals",
-      " FROM table_expr",
-      " WHERE model_id = ", defRs$modelDic$model_id,
-      " ORDER BY 1, 2, 3",
+      "SELECT M.model_id, M.model_table_id, E.table_hid, E.expr_id, E.expr_name, E.expr_decimals",
+      " FROM table_expr E",
+      " INNER JOIN model_table_dic M ON (M.table_hid = E.table_hid AND M.model_id = ", defRs$modelDic$model_id, ")",
+      " ORDER BY 1, 2, 4",
       sep = ""
     )
   )

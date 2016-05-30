@@ -175,7 +175,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   
   # create new workset with ALL model parameters
   setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
-  if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   # make workset read-only in order to run the model
   setReadonlyWorkset(theDb, defRs, TRUE, setId)

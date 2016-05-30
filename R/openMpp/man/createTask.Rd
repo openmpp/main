@@ -83,7 +83,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   
   # create new task with two input data set_id = c(2, 4)
   taskId <- createTask(theDb, defRs, myTaskTxt, c(2, 4))
-  if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   dbDisconnect(theDb)
   #

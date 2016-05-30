@@ -71,12 +71,12 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   #
   # use model name only to identify the model
   # if there are multiple versions of the model in database 
-  # then first one is selected: where timestamp = min(timestamp) for "modelOne"
+  # then first one is selected: where model id = min(model_id) for "modelOne"
   #
   defRs <- getModel(theDb, "modelOne")
   
   taskId <- getTaskIdByName(theDb, defRs, "taskOne")
-  if (taskId <= 0L) stop("task: ", "taskOne", " not found for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+  if (taskId <= 0L) stop("task: ", "taskOne", " not found for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   # last (most recent) run of that task
   lastId <- getTaskLastRunId(theDb, taskId)

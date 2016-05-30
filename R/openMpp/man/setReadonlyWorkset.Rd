@@ -68,7 +68,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   # reset read-only status of workset  
   setId <- 3L
   if (setReadonlyWorkset(theDb, defRs, FALSE, setId) <= 0L) {
-    stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_ts)
+    stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   }
   
   # you can update model parameters now:
