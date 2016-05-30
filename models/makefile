@@ -19,22 +19,9 @@ endif
 #
 # models to build
 #
-MODEL_DIRS = \
-  modelOne \
-  IDMM \
-  NewCaseBased \
-  NewTimeBased \
-  RiskPaths \
-  OzProj \
-  OzProjGen 
-#  Alpha1 
-#  Alpha2 \
-#  GiniProbe \
-#  IDMM_extra \
-#  TableProbe1 \
-#  TestEx \
-#  THIM \
-#  TypeProbe1 \
+ifndef MODEL_DIRS
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased RiskPaths OzProj OzProjGen 
+endif
 
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
