@@ -93,7 +93,7 @@ void ModelExit(const char* msg)
  */
 void report_simulation_progress(int member, int percent)
 {
-    string msg = "Running simulation: member=" + to_string(member) + " progress=" + to_string(percent) + "%";
+    string msg = "member=" + to_string(member) + " simulation progress=" + to_string(percent) + "%";
     theLog->logMsg(msg.c_str());
 }
 

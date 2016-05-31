@@ -334,7 +334,7 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    c += "theLog->logMsg(\"Preparing fixed and missing parameters\");";
+    c += "theLog->logMsg(\"Getting fixed and missing parameters\");";
     // Missing parameters are done here, since they are handled identically to fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -366,7 +366,7 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    c += "theLog->logMsg(\"Reading scenario parameters\");";
+    c += "theLog->logMsg(\"Getting scenario parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
             c += parameter->cxx_type_check();
@@ -461,6 +461,9 @@ void CodeGen::do_ModelShutdown()
 	c += "// Model shutdown method: outputs";
 	c += "void ModelShutdown(IModel * const i_model)";
 	c += "{";
+    c += "// obtain simulation member to use for log messages";
+    c += "int simulation_member = i_model->subSampleNumber();";
+    c += "";
     c += "// extract accumulators, and scale them to population size";
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "the" + table->name + "->extract_accumulators();";
@@ -477,7 +480,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::post_simulation;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logMsg(\"Running post-simulation\");";
+            c += "theLog->logFormatted(\"member=%d Running post-simulation\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -491,7 +494,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::derived_tables;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logMsg(\"Computing derived tables\");";
+            c += "theLog->logFormatted(\"member=%d Computing derived tables\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -502,7 +505,7 @@ void CodeGen::do_ModelShutdown()
         }
     }
 
-	c += "theLog->logMsg(\"Writing Output Tables\");";
+    c += "theLog->logFormatted(\"member=%d Writing Output Tables - Start\", simulation_member);";
     c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
         c += "i_model->writeOutputTable(\"" +
@@ -520,6 +523,7 @@ void CodeGen::do_ModelShutdown()
     }
     c += "// at this point any kind of table->measure[k][j] will cause memory access violation";
     c += "";
+    c += "theLog->logFormatted(\"member=%d Writing Output Tables - Finish\", simulation_member);";
 
     c += "// Entity table destruction";
     for (auto table : Symbol::pp_all_entity_tables) {
