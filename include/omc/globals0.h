@@ -8,7 +8,10 @@
 #pragma once
 
 // The following global functions are defined in framework modules,
-// as indicated. They are mostly documented in the Modgen Developer's Guide.
+// as indicated.
+// They are declared early to allow use in templates, e.g. <Event>
 
 // defined in use/common.ompp
-extern void ModelExit(const char * msg); // declare early for error handling in fundamental classes, e.g. Event.h
+void handle_backwards_time(double the_event_time, double the_current_time, int the_event, int the_entity);
+
+

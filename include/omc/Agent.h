@@ -142,12 +142,12 @@ public:
     /**
      * Age all agents to the given time.
      * 
-     * If originating_entity_id is not supplied, no check for time runnign backwards is performed
+     * If originating_entity_id is not supplied, no check for time running backwards is performed
      * 
      * @param t                     The target time.
      * @param originating_entity_id Identifier of the entity within which the event occurred.
      */
-    static void age_all_agents( Time t, int originating_entity_id = -1)
+    static void age_all_agents( Time t, int originating_entity_id = -1, int originating_event_id = -1)
     {
         assert(agents);
         for ( auto agent : *agents ) {
@@ -157,11 +157,13 @@ public:
                 if (t < agent->om_get_time()) {
                     // The time of this event is in the local past of the entity within which the event occurs.
                     // This is an error in model logic.
-                    std::stringstream ss;
-                    ss << "Error - Event time " << t
-                        << " is earlier than current time " << agent->om_get_time()
-                        << " in entity with entity_id " << agent->om_get_entity_id();
-                    ModelExit(ss.str().c_str());
+                    // Write log message and throw run-time exception.
+                    handle_backwards_time(
+                        t,
+                        agent->om_get_time(),
+                        originating_event_id,
+                        originating_entity_id
+                    );
                 }
             }
             agent->age_agent( t );

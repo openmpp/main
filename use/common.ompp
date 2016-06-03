@@ -26,6 +26,11 @@ namespace fmk {
     thread_local long member_entity_counter = 0;
 
     /**
+     * The seed encoded, with high order bits containing the simulation member id.
+     */
+    thread_local long long combined_seed = 0;
+
+    /**
      * The value for population scaling.
      * 
      * Specified by model code through a call to SetPopulation() in a PreSimulation function.
@@ -38,6 +43,44 @@ namespace fmk {
      * Set by model code through a call to signal_exit_simulation_all().
      */
     thread_local bool do_exit_simulation_all = false;
+}
+
+/**
+ * Gets the combined seed.
+ * 
+ * Returns long long instead of double returned by GetCaseSeed()
+ * For case-based models, the case seed, for time-based models, the global seed.
+ * For both, the simulation member is in high order bits.
+ *
+ * @return The seed, with the simulation member in high order bits
+ */
+long long get_combined_seed()
+{
+    // Time-based models have no concept of case seed.
+    // Return 0 when used in common run-time errors or warnings.
+    return fmk::combined_seed;
+}
+
+/**
+ * Handles situation where time is running backwards within an entity.
+ */
+void handle_backwards_time(
+    double the_event_time,
+    double the_current_time, 
+    int the_event, 
+    int the_entity)
+{
+    // The time of this event is in the local past of the entity within which the event occurs.
+    // This is an error in model logic.
+    std::stringstream ss;
+    ss << "Error - Event time " << the_event_time
+        << " is earlier than current time " << the_current_time
+        << " in simulation member " << get_simulation_member()
+        << " in event " << the_event
+        << " in entity_id " << the_entity
+        << " with combined seed " << get_combined_seed()
+        ;
+    ModelExit(ss.str().c_str());
 }
 
 /**

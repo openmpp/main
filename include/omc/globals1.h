@@ -15,8 +15,10 @@ const double UNDEF_VALUE = numeric_limits<double>::quiet_NaN();
 // as indicated. They are mostly documented in the Modgen Developer's Guide.
 
 // defined in use/common.ompp
+extern void ModelExit(const char * msg);
 extern int get_simulation_members();
 extern int get_simulation_member();
+extern long long get_combined_seed();
 extern int get_next_entity_id();
 extern void SetMaxTime(double max_value);
 extern void StartEventTrace();

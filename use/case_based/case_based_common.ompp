@@ -44,11 +44,6 @@ namespace fmk {
     thread_local long long member_cases = 0;
 
     /**
-     * The case seed encoded, with high order bits containing the sample member id.
-     */
-    thread_local double case_seed_encoded = 0.0;
-
-    /**
      * The case counter in this simulation member.
      */
     thread_local long long member_case_counter = 0;
@@ -78,7 +73,7 @@ long long GetCaseID()
  */
 double GetCaseSeed()
 {
-    return fmk::case_seed_encoded;
+    return (double) get_combined_seed();
 }
 
 /**
@@ -244,7 +239,7 @@ void RunSimulation(int mem_id, int mem_count)
         BaseEvent::set_global_time(0);
 
         // record the encoded case seed (case_seed + simulation_member in high order bits)
-        case_seed_encoded = case_seed + simulation_member * ((double)mg_modulus + 1);
+        combined_seed = case_seed + simulation_member * ((long long)mg_modulus + 1);
 
         // record the case counter within the current simulation member
         member_case_counter = thisCase;

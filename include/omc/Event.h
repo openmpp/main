@@ -80,12 +80,13 @@ public:
         if (event_time < get_time()) {
             // The time of this event is in the local past of the entity within which the event occurs.
             // This is an error in model logic.
-            std::stringstream ss;
-            ss << "Error - Event time " << event_time
-                << " is earlier than current time " << get_time()
-                << " in event " << get_event_id()
-                << " in entity with entity_id " << get_entity_id();
-            ModelExit(ss.str().c_str());
+            // Write log message and throw run-time exception.
+            handle_backwards_time(
+                event_time,
+                get_time(),
+                get_event_id(),
+                get_entity_id()
+            );
         }
         call_age_agent();
     }
@@ -246,11 +247,12 @@ public:
         }
         else {
             // Age all agents to the time of the event.
-            // The first argument in age_all_agents is the time of the event.
-            // The second argument in age_all_agents is the entity_id of the entity within which the event occurred.
+            // The first argument is the time of the event.
+            // The second argument is the entity_id of the entity within which the event occurred.
+            // The third argument is the event_id of the event in entity_id.
             // The second argument allows age_all_agents to detect the model error condition
             // in which time is running backwards in the entity within which the event occurred.
-            BaseAgent::age_all_agents(evt->event_time, evt->get_entity_id());
+            BaseAgent::age_all_agents(evt->event_time, evt->get_entity_id(), evt->get_event_id());
         }
 
         // update the global event checksum

@@ -21,15 +21,13 @@ namespace fmk {
      */
     Time simulation_end;
 
-    // The case seed encoded, with high order bits containing the sample member id
-    thread_local double case_seed_encoded = 0.0;
-
 } // namespace fmk
 
 double GetCaseSeed()
 {
     // Time-based models have no concept of case seed.
     // Return 0 for compatibility with Modgen trace output.
+    // and for run-time errors or warnings.
     return 0;
 }
 
@@ -185,8 +183,8 @@ void RunSimulation(int mem_id, int mem_count)
     // The master seed to simulate this member of the 'sample' of simulations
     long master_seed = seed + simulation_member;
 
-    // record the encoded 'case' seed (master_seed + simulation_member in high order bits)
-    case_seed_encoded = master_seed + simulation_member * ((double)mg_modulus + 1);
+    // record the encoded combined seed (master_seed + simulation_member in high order bits)
+    combined_seed = master_seed + simulation_member * ((long long)mg_modulus + 1);
 
 	// Create random stream generator objects
 	new_streams();
