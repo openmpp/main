@@ -120,7 +120,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDic.isUser = true;
         tableDic.rank = dimension_count();
         tableDic.isSparse = true;   // do not store zeroes
-        tableDic.isHidden = false;
+        tableDic.isHidden = false; // necessarily true, since hidden tables are not writen to DB
         tableDic.exprPos = measures_position;
         metaRows.tableDic.push_back(tableDic);
 

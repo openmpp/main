@@ -390,7 +390,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
     paramDic.rank = rank();
     paramDic.typeId = pp_datatype->type_id;
-    paramDic.isHidden = false; // TODO: not implemented
+    paramDic.isHidden = is_hidden;
     paramDic.isGenerated = false; // TODO: not implemented
     paramDic.numCumulated = 0; //TODO: not implemented
     metaRows.paramDic.push_back(paramDic);

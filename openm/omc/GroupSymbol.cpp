@@ -17,7 +17,7 @@ void GroupSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateCollections:
+    case eAssignMembers:
     {
         // create post-parse collection of groups and symbols
         for (auto sym : symbol_list) {
@@ -27,7 +27,39 @@ void GroupSymbol::post_parse(int pass)
         }
         break;
     }
+    case eResolveDataTypes:
+    {
+        // verify non-circularity
+        if (is_circular()) {
+            pp_error("error : group '" + name + "' contains circular reference");
+        }
+        break;
+    }
     default:
         break;
     }
 }
+
+
+bool GroupSymbol::is_circular() const
+{
+    //TODO implement circular check of groups in pp_symbol_list
+    // Recurse through list, building set of group symbol names.
+    // If hit a name already encountered, return true.
+    // otherwise return false.
+    return false;
+}
+
+
+list<Symbol *> GroupSymbol::expanded_list() const
+{
+    list<Symbol *> exp_list = pp_symbol_list;
+
+    // if circular, return an empty list
+    if (!is_circular()) {
+        //TODO - expand the list, recursively
+    }
+
+    return exp_list;
+}
+

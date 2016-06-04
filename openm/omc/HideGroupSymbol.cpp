@@ -7,6 +7,8 @@
 
 #include <cassert>
 #include "HideGroupSymbol.h"
+#include "ParameterSymbol.h"
+#include "TableSymbol.h"
 
 using namespace std;
 
@@ -21,6 +23,24 @@ void HideGroupSymbol::post_parse(int pass)
     {
         // add this to the complete list of table groups
         pp_all_hide_groups.push_back(this);
+        break;
+    }
+    case ePopulateDependencies:
+    {
+        // Iterate expanded list and set is_hidden / is_internal attribute for tables and parameters
+        for (auto sym : expanded_list()) {
+            auto ps = dynamic_cast<ParameterSymbol *>(sym);
+            if (ps) {
+                ps->is_hidden = true;
+                continue;
+            }
+            auto ts = dynamic_cast<TableSymbol *>(sym);
+            if (ts) {
+                ts->is_internal = true;
+                continue;
+            }
+            pp_error("error : '" + sym->name + "' in hide list is not a parameter or table");
+        }
         break;
     }
     default:

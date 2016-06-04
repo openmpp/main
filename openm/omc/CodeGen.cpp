@@ -508,20 +508,24 @@ void CodeGen::do_ModelShutdown()
     c += "theLog->logFormatted(\"member=%d Writing Output Tables - Start\", simulation_member);";
     c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
-        c += "i_model->writeOutputTable(\"" +
-            table->name + "\", the" + table->name + "->n_cells, the" + table->name + "->acc_storage);";
+        if (!table->is_internal) {
+            c += "i_model->writeOutputTable(\"" +
+                table->name + "\", the" + table->name + "->n_cells, the" + table->name + "->acc_storage);";
+        }
     }
-    c += "// at this point any kind of table->acc[k][j] will cause memory access violation";
+    c += "// at this point table->acc[k][j] will cause memory access violation";
     c += "";
 
     c += "// write derived tables (measures) and release measures memory";
     for ( auto derived_table : Symbol::pp_all_derived_tables ) {
-        c += "i_model->writeOutputTable(\"" +
-            derived_table->name + "\", " + 
-            derived_table->cxx_instance + "->n_cells, " + 
-            derived_table->cxx_instance + "->measure_storage);";
+        if (!derived_table->is_internal) {
+            c += "i_model->writeOutputTable(\"" +
+                derived_table->name + "\", " + 
+                derived_table->cxx_instance + "->n_cells, " + 
+                derived_table->cxx_instance + "->measure_storage);";
+        }
     }
-    c += "// at this point any kind of table->measure[k][j] will cause memory access violation";
+    c += "// at this point table->measure[k][j] will cause memory access violation";
     c += "";
     c += "theLog->logFormatted(\"member=%d Writing Output Tables - Finish\", simulation_member);";
 
@@ -711,7 +715,9 @@ void CodeGen::do_entity_tables()
 	for ( auto table : Symbol::pp_all_entity_tables ) {
         h += table->cxx_declaration_global();
         c += table->cxx_definition_global();
-        table->populate_metadata(metaRows);
+        if (!table->is_internal) {
+            table->populate_metadata(metaRows);
+        }
     }
 }
 
@@ -720,10 +726,12 @@ void CodeGen::do_derived_tables()
 	h += "// derived tables";
 	c += "// derived tables";
 
-	for ( auto derived_table : Symbol::pp_all_derived_tables ) {
+	for (auto derived_table : Symbol::pp_all_derived_tables) {
         h += derived_table->cxx_declaration_global();
         c += derived_table->cxx_definition_global();
-        derived_table->populate_metadata(metaRows);
+        if (!derived_table->is_internal) {
+            derived_table->populate_metadata(metaRows);
+        }
     }
 
     h += "";

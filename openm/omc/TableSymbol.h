@@ -34,6 +34,7 @@ public:
     TableSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
         , measures_position(0)
+        , is_internal(false)
         , pp_table_id(-1)
     {
         cxx_type = name;
@@ -134,6 +135,11 @@ public:
      * The name of the unitary global instance of the table.
      */
     string cxx_instance;
+
+    /**
+     * True if the table is internal
+     */
+    bool is_internal;
 
     /**
      * Numeric identifier. Used for communicating with metadata API.

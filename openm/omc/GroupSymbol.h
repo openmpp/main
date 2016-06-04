@@ -44,6 +44,10 @@ public:
 
     void post_parse(int pass);
 
+    bool is_circular() const;
+
+    list<Symbol *> expanded_list() const;
+
     /**
      * List of symbols.
      */
