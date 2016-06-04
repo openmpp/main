@@ -7,10 +7,10 @@ use strict;
 
 use File::Compare;
 
-my $utility_exe = '../../bin/ompp_export_excel.exe';
+my $utility_exe = '..\..\..\bin\ompp_export_excel.exe';
 
 my $out1_correct = 'Correct.xlsx';
-my $in1 = 'RiskPaths.sqlite';
+my $in1 = 'RiskPaths_Default.sqlite';
 
 for my $file ($in1, $out1_correct) {
 	if (! -e $file) {
