@@ -27,11 +27,11 @@ void GroupSymbol::post_parse(int pass)
         }
         break;
     }
-    case eResolveDataTypes:
+    case ePopulateCollections:
     {
         // verify non-circularity
         if (is_circular()) {
-            pp_error("error : group '" + name + "' contains circular reference");
+            pp_error("error : circular reference in group '" + name + "'");
         }
         break;
     }
@@ -40,26 +40,59 @@ void GroupSymbol::post_parse(int pass)
     }
 }
 
-
 bool GroupSymbol::is_circular() const
 {
-    //TODO implement circular check of groups in pp_symbol_list
-    // Recurse through list, building set of group symbol names.
-    // If hit a name already encountered, return true.
-    // otherwise return false.
+    return is_circular_helper(name);
+}
+
+
+bool GroupSymbol::is_circular_helper(const string & name) const
+{
+    for (auto sym : pp_symbol_list) {
+        auto gs = dynamic_cast<GroupSymbol *>(sym);
+        if (gs) {
+            if (name == gs->name) {
+                return true;
+            }
+            else {
+                if (gs->is_circular_helper(name)) {
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
 
 
 list<Symbol *> GroupSymbol::expanded_list() const
 {
-    list<Symbol *> exp_list = pp_symbol_list;
+    list<Symbol *> result = pp_symbol_list;
 
-    // if circular, return an empty list
+    // Protect from recursive stak overflow
+    // by performing circularity check.
+    // If circular, return an empty list.
     if (!is_circular()) {
-        //TODO - expand the list, recursively
+        // expand the list, recursively
+        result = expand_group();
     }
 
-    return exp_list;
+    return result;
 }
 
+list<Symbol *> GroupSymbol::expand_group() const
+{
+    list<Symbol *> result;
+
+    for (auto sym : pp_symbol_list) {
+        auto gs = dynamic_cast<GroupSymbol *>(sym);
+        if (gs) {
+            result.splice(result.end(), gs->expand_group());
+        }
+        else {
+            result.push_back(sym);
+        }
+    }
+
+    return result;
+}

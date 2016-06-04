@@ -66,6 +66,28 @@ parameters
 
 };
 
+parameter_group PG_some {
+    a_long,
+    a_float
+};
+
+parameter_group PG_more {
+    PG_some,
+    a_double,
+    a_switch
+};
+
+parameter_group PG_yet_more {
+    PG_more,
+    //PG_yet_more2, // test to trigger circular error
+    a_sex
+};
+
+parameter_group PG_yet_more2 {
+    PG_yet_more,
+    a_years
+};
+
 actor Person            //EN Individual
 {
     uint my_uint = { 0 };

@@ -44,9 +44,25 @@ public:
 
     void post_parse(int pass);
 
+    /**
+     * Return true if group contains any circular references.
+     */
     bool is_circular() const;
 
+    /**
+     * Recursive helper function for is_circular.
+     */
+    bool is_circular_helper(const string & name) const;
+
+    /**
+     * Return list with all groups expanded.
+     */
     list<Symbol *> expanded_list() const;
+
+    /**
+     * Return a group, expanded.
+     */
+    list<Symbol *> expand_group() const;
 
     /**
      * List of symbols.

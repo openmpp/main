@@ -186,6 +186,8 @@ public:
     ~EntityTableWithObs()
     {
         // Empty observation collections in all cells
+        // Note: This is not necessary, since C++ will call the forward_list destructor
+        // for each element of coll when the EntityTableWithObs is destroyed.
         for (int cell = 0; cell < Tcells; ++cell) {
             for (int j = 0; j < n_collections; ++j) {
                 coll[cell][j].clear();
