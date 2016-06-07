@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
                 continue;                                                   // no input: completed or waiting for additional input
             }
 
-            // initilaze model run: read input parameters
+            // initialize model run: read input parameters
             RunInitHandler(runCtrl.get());
 
             // do the modeling: run modeling threads to calculate subsamples
@@ -162,7 +162,7 @@ int main(int argc, char ** argv)
         theLog->logErr(ex);
         return EXIT_FAILURE;
     }
-    catch(...) {    // exit with faulure on unhandled exception
+    catch(...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
         return EXIT_FAILURE;
     }
@@ -208,11 +208,15 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunController
         theLog->logErr(ex, "Model error");
         return false;
     }
+    catch (SimulationException & ex) {
+        theLog->logErr(ex, "Simulation error");
+        return false;
+    }
     catch (exception & ex) {
         theLog->logErr(ex);
         return false;
     }
-    catch (...) {    // exit with faulure on unhandled exception
+    catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
         return false;
     }
@@ -252,7 +256,7 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
             }
             isAnyCompleted = true;
 
-            // modeling completed: get result sucess and remove thread form the list
+            // modeling completed: get result success and remove thread from the list
             bool isOk = mfIt->get();
             mfIt = modelFutureLst.erase(mfIt);
 

@@ -80,7 +80,7 @@ void handle_backwards_time(
         << " in entity_id " << the_entity
         << " with combined seed " << get_combined_seed()
         ;
-    ModelExit(ss.str().c_str());
+    throw openm::SimulationException(ss.str().c_str());
 }
 
 /**
@@ -127,7 +127,7 @@ int get_next_entity_id()
 void ModelExit(const char* msg)
 {
     theLog->logMsg(msg);
-    exit(-1);
+    throw openm::SimulationException(msg);
 }
 
 /**

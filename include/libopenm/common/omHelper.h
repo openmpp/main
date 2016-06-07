@@ -173,6 +173,12 @@ namespace openm
 
     /** helper library exception */
     typedef OpenmException<4000, helperUnknownErrorMessage> HelperException;
+
+    /** simulation exception default error message: "unknown error in simulation" */
+    extern const char simulationUnknownErrorMessage[];   
+
+    /** simulation exception */
+    typedef OpenmException<4000, simulationUnknownErrorMessage> SimulationException;
 }
 
 #endif  // OM_HELPER_H

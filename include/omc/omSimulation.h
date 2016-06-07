@@ -15,6 +15,7 @@
 #include <random>
 #include <forward_list> // for observation collections in tables
 #include "libopenm/omModel.h"
+#include "libopenm/common/omHelper.h" // for openm::SimulationException
 #include "omc/fixed_precision_float.h"
 
 #include "omc/globals0.h"
@@ -82,5 +83,6 @@ namespace openm {
             ::ModelShutdownHandler = i_ModelShutdownHandler;  // link model shutdown function
         }
     };
+
 }
 
