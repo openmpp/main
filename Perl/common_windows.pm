@@ -68,18 +68,23 @@ sub run_jet_statement {
 # arg0 - the Modgen database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
+# arg3 - flag to create non-rounded version of csv (optional)
 # returns - 0 for success, otherwise non-zero
 sub modgen_tables_to_csv
 {
 	my $db = shift(@_);
 	my $dir = shift(@_);
-	my $round_value = 0;
+	my $do_rounding = 0;
+	my $do_unrounded_file = 0;
 	my $round_prec = 0;
-	if ($#_ == 0) {
+	if ($#_ >= 0) {
 		$round_prec = shift(@_);
 		if ($round_prec > 0) {
-			$round_value = 1;
+			$do_rounding = 1;
 		}
+	}
+	if ($#_ >= 0) {
+		$do_unrounded_file = shift(@_);
 	}
 	my $retval;
 	
@@ -142,8 +147,17 @@ sub modgen_tables_to_csv
 		my $table_id = @table_ids[$j];
 		my $user_table_flag = @user_table_flags[$j];
 		
-		if (!open CSV, ">${dir}/${table}.csv") {
-			logmsg error, "error opening >${dir}/${table}.csv";
+		my $out_csv = "${dir}/${table}.csv";
+		if (!open OUT_CSV, ">${out_csv}") {
+			logmsg error, "unable to open ${out_csv}";
+			return 1;
+		}
+		if ($do_unrounded_file) {
+			my $out_csv_unrounded = "${dir}/_${table}.csv";
+			if (!open OUT_CSV_UNROUNDED, ">${out_csv_unrounded}") {
+				logmsg error, "unable to open ${out_csv_unrounded}";
+				return 1;
+			};
 		}
 
 		# For each classification dimension of the table, determine if it has a margin
@@ -232,40 +246,60 @@ sub modgen_tables_to_csv
 		# This is to generate csv's which look like those from ompp,
 		# where the analysis dimension is always last.
 		for (my $dim = 0; $dim < $rank; ++$dim) {
-			print CSV "Dim${dim},";
+			print OUT_CSV "Dim${dim},";
+			print OUT_CSV_UNROUNDED "Dim${dim}," if $do_unrounded_file;
 		}
-		print CSV "Value\n";
+		print OUT_CSV "Value\n";
+		print OUT_CSV_UNROUNDED "Value\n" if $do_unrounded_file;
 
 		# data lines
 		while ( !$ADO_RS->EOF ) {
-			my $out_line;
+			my @fields;
 			my $suppress_line = 0;
+			my $value;
+			my $unrounded_value;
 			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
-				my $value = $ADO_RS->Fields($field_ordinal)->value;
-				if (length($value) && $round_value && $field_ordinal == $fields - 1) {
+				$value = $ADO_RS->Fields($field_ordinal)->value;
+				$unrounded_value = $value;
+				if (length($value) && $field_ordinal == $fields - 1) {
 					if ($value eq '-1.#IND' ) {
-						# is a NaN, output in CSV as an empty field (NULL)
+						# is a NaN, output in OUT_CSV as an empty field (NULL)
 						$value = '';
+						$unrounded_value = $value;
 					}
 					else {
-						$value = $value + 0.0;
-						if ($round_value) {
-							$value = 0.0 + sprintf("%.${round_prec}g", $value);
+						$unrounded_value = $value;
+						if ($do_rounding) {
+							$value = $value + 0.0;
+							# standard rounding
+							# $value = sprintf("%.${round_prec}g", $value);
+							
+							# 2-stage rounding
+							$value = sprintf("%.15g", $value);
+							$value = sprintf("%.${round_prec}g", $value);
+						
+							# hierarchical rounding
+							#for (my $j = 15; $j >= $round_prec; $j--) {
+							#	$value = sprintf("%.*g", $j, $value);
+							#}
+							$value = 0.0 + $value;
 						}
 						# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 						$value =~ s/e([-+])0(\d\d)/e\1\2/;
+						$unrounded_value =~ s/e([-+])0(\d\d)/e\1\2/ if ($do_rounding);
 					}
 				}
 				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];
-				$out_line .= "${value}";
 				if ($field_ordinal < $fields - 1) {
-					$out_line .= ",";
+					push @fields, $value;
 				}
 			}
-			print CSV "${out_line}\n" if ! $suppress_line;
+			print OUT_CSV join(',', @fields).','.$value."\n" if !$suppress_line;
+			print OUT_CSV_UNROUNDED join(',', @fields).','.$unrounded_value."\n" if $do_unrounded_file && !$suppress_line;
 			$ADO_RS->MoveNext;
 		}
-		close CSV;
+		close OUT_CSV;
+		close OUT_CSV_UNROUNDED if $do_unrounded_file;
 	}
 
 	# Success

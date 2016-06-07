@@ -19,6 +19,9 @@ my ($opt, $usage) = describe_options(
 		{ default => '../models' } ],
 	[ 'newref' => 'replace existing reference files' ],
 	[ 'nocleanup' => 'leave intermediate build files' ],
+	[ 'significant_digits=i' => 'significant digits (default 7)',
+		{ default => 7 } ],
+	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
 	[ 'ompp_config=s' => 'OpenM++ config: Debug or Release(default)',
 		{ default => 'Release' } ],
@@ -60,7 +63,12 @@ $script_path =~ s@[^/\\]*$@@;
 my $verbosity = 3;
 
 # Number of significant digits to retain in the output csv files (0 means full precision)
-my $significant_digits = 7;
+my $significant_digits = $opt->significant_digits;
+
+# Also create an non-rounded version of each output csv table
+my $unrounded_tables = 1;
+$unrounded_tables = 0 if $opt->nounroundedtables;
+
 
 #####################
 # ompp settings for Windows
@@ -498,7 +506,7 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
-			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits)) {
+			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $unrounded_tables)) {
 				next FLAVOUR;
 			}
 
@@ -660,7 +668,7 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $unrounded_tables)) {
 				next FLAVOUR;
 			}
 		
@@ -807,7 +815,7 @@ for my $model_dir (@model_dirs) {
 			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, 1)) {
 				next FLAVOUR;
 			}
 
@@ -848,7 +856,7 @@ for my $model_dir (@model_dirs) {
 		# Create digests of outputs
 		logmsg info, $model_dir, $flavour, "Create digests of current outputs" if $verbosity >= 2;
 		chdir "${current_outputs_dir}";
-		my $digests = create_digest(glob "*.csv *.txt");
+		my $digests = create_digest(glob "[a-zA-Z]*.csv *.txt");
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;

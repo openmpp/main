@@ -179,19 +179,24 @@ sub run_sqlite_statement {
 # arg0 - the SQLite database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
+# arg3 - flag to create non-rounded version of csv (optional)
 # returns - 0 for success, otherwise non-zero
 sub ompp_tables_to_csv
 {
 	my $db = shift(@_);
 	my $dir = shift(@_);
 	my $retval;
-	my $round_value = 0;
+	my $do_rounding = 0;
+	my $do_unrounded_file = 0;
 	my $round_prec = 0;
-	if ($#_ == 0) {
+	if ($#_ >= 0) {
 		$round_prec = shift(@_);
 		if ($round_prec > 0) {
-			$round_value = 1;
+			$do_rounding = 1;
 		}
+	}
+	if ($#_ >= 0) {
+		$do_unrounded_file = shift(@_);
 	}
 	
 	# Change slashes from \ to / for sqlite3
@@ -247,10 +252,18 @@ sub ompp_tables_to_csv
 			logmsg error, "unable to open ${out_csv}";
 			return 1;
 		};
+		if ($do_unrounded_file) {
+			my $out_csv_unrounded = "${dir}/_${table}.csv";
+			if (!open OUT_CSV_UNROUNDED, ">${out_csv_unrounded}") {
+				logmsg error, "unable to open ${out_csv_unrounded}";
+				return 1;
+			};
+		}
 		my $header_line = 1;
 		while (<IN_CSV>) {
 			if ($header_line) {
 				print OUT_CSV;
+				print OUT_CSV_UNROUNDED if $do_unrounded_file;
 				$header_line = 0;
 				next;
 			}
@@ -261,19 +274,36 @@ sub ompp_tables_to_csv
 				my @fields = split /,/, $line;
 				# get the last (value) field
 				my $value = pop @fields;
-				$value = $value + 0.0;
-				if ($round_value) {
-					$value = 0.0 + sprintf("%.${round_prec}g", $value);
+				my $unrounded_value = 0.0 + $value;
+				if ($do_rounding) {
+					$value = $value + 0.0;
+					# standard rounding
+					# $value = sprintf("%.${round_prec}g", $value);
+					
+					# 2-stage rounding
+					$value = sprintf("%.15g", $value);
+					$value = sprintf("%.${round_prec}g", $value);
+				
+					# hierarchical rounding
+					#for (my $j = 15; $j >= $round_prec; $j--) {
+					#	$value = sprintf("%.*g", $j, $value);
+					#}
+					$value = 0.0 + $value;
 				}
 				# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 				$value =~ s/e([-+])0(\d\d)/e\1\2/;
-				push @fields, $value;
-				$line = join(',', @fields);
+				$unrounded_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_rounding;
+				print OUT_CSV join(',', @fields).','.$value."\n";
+				print OUT_CSV_UNROUNDED join(',', @fields).','.$unrounded_value."\n" if $do_unrounded_file;
 			}
-			print OUT_CSV $line."\n";
+			else {
+				print OUT_CSV $line."\n";
+				print OUT_CSV_UNROUNDED $line."\n" if $do_unrounded_file;
+			}
 		}
 		close IN_CSV;
 		close OUT_CSV;
+		close OUT_CSV_UNROUNDED if $do_unrounded_file;
 		unlink $in_csv;
 	}
 	
