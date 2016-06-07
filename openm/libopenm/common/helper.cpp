@@ -16,9 +16,6 @@
 // helper exception default error message
 const char openm::helperUnknownErrorMessage[] = "unknown error in helper method";
 
-// simulation exception default error message
-const char openm::simulationUnknownErrorMessage[] = "unknown error in simulation";
-
 // convert string to lower case
 void openm::toLower(string & io_str)
 {
