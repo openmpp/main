@@ -710,7 +710,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
     io_wr.writeLine(");");
 
     // INSERT INTO model_table_dic 
-    //   (model_id, model_table_id, table_hid, is_user, is_hidden, expr_dim_pos)
+    //   (model_id, model_table_id, table_hid, is_user, expr_dim_pos)
     // SELECT 
     //   M.model_id, 0, D.table_hid, 0, 0, 1
     // FROM table_dic D, model_dic M
@@ -721,13 +721,12 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
     //   SELECT * FROM model_table_dic E WHERE E.model_id = M.model_id AND E.model_table_id = 0
     // );
     io_wr.outFs <<
-        "INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, is_hidden, expr_dim_pos)" \
+        "INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos)" \
         " SELECT" \
         " M.model_id, " <<
         i_row.tableId << "," <<
         " D.table_hid," <<
         (i_row.isUser ? "1, " : "0, ") <<
-        (i_row.isHidden ? "1, " : "0, ") <<
         i_row.exprPos <<
         " FROM table_dic D, model_dic M" \
         " WHERE D.table_digest = ";

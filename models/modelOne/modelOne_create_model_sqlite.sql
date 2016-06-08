@@ -123,7 +123,7 @@ INSERT INTO table_dic
 VALUES 
   (2, 'salarySex', '2012817_16_04590141', 'salarySex', '2012_820', 2, 1);
 
-INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, is_hidden, expr_dim_pos) VALUES (1, 0, 2, 0, 0, 1);
+INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (1, 0, 2, 0, 1);
   
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)

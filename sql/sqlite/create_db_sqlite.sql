@@ -267,7 +267,6 @@ CREATE TABLE model_table_dic
   model_table_id INT      NOT NULL, -- model table id
   table_hid      INT      NOT NULL, -- master key
   is_user        SMALLINT NOT NULL, -- if <> 0 then "user" table
-  is_hidden      SMALLINT NOT NULL, -- if <> 0 then table is hidden
   expr_dim_pos   INT      NOT NULL, -- table expressions dimension (analysis dimension) position
   PRIMARY KEY (model_id, model_table_id),
   CONSTRAINT model_table_dic_un UNIQUE (model_id, table_hid),

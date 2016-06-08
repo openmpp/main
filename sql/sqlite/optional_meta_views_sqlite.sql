@@ -306,7 +306,7 @@ SELECT
   T.expr_descr     AS "AnalysisDimensionDescription",
   T.expr_note      AS "AnalysisDimensionNote",
   L.is_sparse      AS "Sparse",
-  M.is_hidden      AS "Hidden",
+  0                AS "Hidden",
   T.lang_id        AS "LanguageID" 
 FROM table_dic L
 INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)
@@ -326,7 +326,7 @@ SELECT
   T.expr_descr     AS "AnalysisDimensionDescription",
   T.expr_note      AS "AnalysisDimensionNote",
   L.is_sparse      AS "Sparse",
-  M.is_hidden      AS "Hidden",
+  0                AS "Hidden",
   T.lang_id        AS "LanguageID" 
 FROM table_dic L
 INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)

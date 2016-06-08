@@ -51,7 +51,6 @@ namespace openm
         &typeid(decltype(TableDicRow::rank)), 
         &typeid(decltype(TableDicRow::isSparse)),
         &typeid(decltype(TableDicRow::isUser)), 
-        &typeid(decltype(TableDicRow::isHidden)),
         &typeid(decltype(TableDicRow::exprPos))
     };
 
@@ -100,9 +99,6 @@ namespace openm
                 dynamic_cast<TableDicRow *>(i_row)->isUser = (*(bool *)i_value);
                 break;
             case 10:
-                dynamic_cast<TableDicRow *>(i_row)->isHidden = (*(bool *)i_value);
-                break;
-            case 11:
                 dynamic_cast<TableDicRow *>(i_row)->exprPos = (*(int *)i_value);
                 break;
             default:
@@ -134,7 +130,7 @@ TableDicTable::TableDicTable(IDbExec * i_dbExec, int i_modelId)
     rowVec = load(
         "SELECT" \
         " M.model_id, M.model_table_id, D.table_name, D.table_hid, D.table_digest," \
-        " D.db_prefix, D.db_suffix, D.table_rank, D.is_sparse, M.is_user, M.is_hidden, M.expr_dim_pos" \
+        " D.db_prefix, D.db_suffix, D.table_rank, D.is_sparse, M.is_user, M.expr_dim_pos" \
         " FROM table_dic D" \
         " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +

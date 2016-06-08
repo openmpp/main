@@ -640,9 +640,6 @@ namespace openm
         /** is_sparse      SMALLINT NOT NULL     */
         bool isSparse;
         
-        /** is_hidden      SMALLINT NOT NULL     */
-        bool isHidden;
-
         /** expr_dim_pos   INT      NOT NULL     */
         int exprPos;
 
@@ -658,7 +655,6 @@ namespace openm
             isUser(false),
             rank(1),
             isSparse(false),
-            isHidden(false),
             exprPos(-1)
         { }
 
