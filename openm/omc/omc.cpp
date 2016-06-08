@@ -52,7 +52,6 @@
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
-#include "libopenm/common/omHelper.h"
 #include "libopenm/common/argReader.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"

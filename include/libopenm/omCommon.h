@@ -8,7 +8,6 @@
 #ifndef OM_COMMON_H
 #define OM_COMMON_H
 
-#include <cfloat>
 #include <string>
 using namespace std;
 

@@ -8,7 +8,7 @@
 #ifndef OM_FILE_H
 #define OM_FILE_H
 
-#include "libopenm/common/omHelper.h"
+#include "omHelper.h"
 
 using namespace std;
 

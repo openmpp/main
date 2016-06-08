@@ -111,9 +111,6 @@
     <ClInclude Include="db\dbExecSqlite.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\libopenm\omModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="msg\msgMpi.h">
       <Filter>Source Files\msg</Filter>
     </ClInclude>
@@ -140,6 +137,12 @@
     </ClInclude>
     <ClInclude Include="db\dbValue.h">
       <Filter>Source Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\omModel.h">
+      <Filter>Header Files\libopenm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\omError.h">
+      <Filter>Header Files\libopenm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

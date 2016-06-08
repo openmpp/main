@@ -9,9 +9,9 @@
 #define MODEL_BUILDER_H
 
 #include <list>
-#include "libopenm/db/dbMetaRow.h"
-#include "libopenm/db/metaModelHolder.h"
-#include "libopenm/db/metaSetHolder.h"
+#include "dbMetaRow.h"
+#include "metaModelHolder.h"
+#include "metaSetHolder.h"
 
 using namespace std;
 

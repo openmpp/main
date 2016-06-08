@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#include "libopenm/db/dbMetaRow.h"
+#include "dbMetaRow.h"
 
 namespace openm
 {

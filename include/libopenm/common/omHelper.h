@@ -9,7 +9,6 @@
 #define OM_HELPER_H
 
 #include <algorithm>
-#include <cstdarg>
 #include <cstring>
 #include <ctime>
 #include <chrono>
@@ -132,53 +131,6 @@ namespace openm
         exit_guard(const exit_guard & i_guard) = delete;
         exit_guard & operator=(const exit_guard & i_guard) = delete;
     };
-
-    /** openM++ exceptions */
-    template <size_t maxMsgSize, const char * defaultMessage>
-    class OpenmException : public exception
-    {
-    public:
-
-        /** create openM++ exception.  
-        *
-        * if i_format is NULL then use default error message \n
-        * else make formatted message by vsnprintf()
-        */
-        OpenmException(const char * i_format, ...)
-        {
-            try {
-                if (i_format == NULL) {
-                    strncpy(msg, defaultMessage, maxMsgSize);
-                }
-                else {
-                    va_list args;
-                    va_start(args, i_format);
-                    formatTo(maxMsgSize, msg, i_format, args);
-                    va_end(args);
-                }
-                msg[maxMsgSize - 1] = '\0';
-            } 
-            catch (...) { }
-        }
-
-        /** return error message */
-        const char * what(void) const throw() { return msg; }
-
-    private:
-        char msg[maxMsgSize];   // error message
-    };
-
-    /** helper library exception default error message: "unknown error in helper method" */
-    extern const char helperUnknownErrorMessage[];   
-
-    /** helper library exception */
-    typedef OpenmException<4000, helperUnknownErrorMessage> HelperException;
-
-    /** simulation exception default error message: "unknown error in simulation" */
-    extern const char simulationUnknownErrorMessage[];   
-
-    /** simulation exception */
-    typedef OpenmException<4000, simulationUnknownErrorMessage> SimulationException;
 }
 
 #endif  // OM_HELPER_H

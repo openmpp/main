@@ -6,7 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include "libopenm/common/omHelper.h"
+#include "libopenm/omError.h"
 #include "DerivedAttributeSymbol.h"
 #include "EntitySymbol.h"
 #include "AttributeSymbol.h"

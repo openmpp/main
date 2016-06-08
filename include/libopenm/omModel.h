@@ -13,6 +13,7 @@
 using namespace std;
 
 #include "omCommon.h"
+#include "omError.h"
 
 namespace openm
 {
@@ -139,6 +140,18 @@ namespace openm
 
     /** model input parameters name, type and size */
     extern const ParameterNameSizeItem parameterNameSizeArr[];
+
+    /** default error message: "unknown model error" */
+    extern const char modelUnknownErrorMessage[];   
+
+    /** modeling library exception */
+    typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
+
+    /** simulation exception default error message: "unknown error in simulation" */
+    extern const char simulationUnknownErrorMessage[];   
+
+    /** simulation exception */
+    typedef OpenmException<4000, simulationUnknownErrorMessage> SimulationException;
 }
 
 //

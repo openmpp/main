@@ -33,12 +33,6 @@ using namespace std;
 
 namespace openm
 {
-    /** default error message: "unknown model error" */
-    extern const char modelUnknownErrorMessage[];   
-
-    /** modeling library exception */
-    typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
-
     /** model subsample run base class */
     class ModelBase : public IModel
     {

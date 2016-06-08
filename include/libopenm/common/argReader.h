@@ -8,7 +8,7 @@
 #ifndef OM_ARG_READER_H
 #define OM_ARG_READER_H
 
-#include "libopenm/common/omHelper.h"
+#include "omHelper.h"
 
 using namespace std;
 

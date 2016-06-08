@@ -5,6 +5,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "libopenm/omError.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/argReader.h"
 #include "iniReader.h"

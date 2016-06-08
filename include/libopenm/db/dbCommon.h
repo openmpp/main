@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#include "libopenm/common/omHelper.h"
+#include "libopenm/omError.h"
 
 namespace openm
 {
