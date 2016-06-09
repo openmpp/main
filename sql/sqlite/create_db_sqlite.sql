@@ -186,7 +186,7 @@ CREATE TABLE model_parameter_dic
   PRIMARY KEY (model_id, model_parameter_id),
   CONSTRAINT model_parameter_dic_un UNIQUE (model_id, parameter_hid),
   CONSTRAINT model_parameter_dic_mk 
-             FOREIGN KEY (parameter_hid) REFERENCES type_dic (parameter_hid),
+             FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid),
   CONSTRAINT model_parameter_dic_fk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
@@ -271,7 +271,7 @@ CREATE TABLE model_table_dic
   PRIMARY KEY (model_id, model_table_id),
   CONSTRAINT model_table_dic_un UNIQUE (model_id, table_hid),
   CONSTRAINT model_table_dic_mk 
-             FOREIGN KEY (table_hid) REFERENCES type_dic (table_hid),
+             FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
   CONSTRAINT model_table_dic_fk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
