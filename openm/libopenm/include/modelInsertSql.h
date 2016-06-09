@@ -8,6 +8,7 @@
 #ifndef MODEL_INSERT_SQL_H
 #define MODEL_INSERT_SQL_H
 
+#include <cfloat>
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/db/modelBuilder.h"
 #include "modelSqlWriter.h"

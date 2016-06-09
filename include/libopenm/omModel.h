@@ -10,6 +10,7 @@
 
 #include <typeinfo>
 #include <memory>
+#include <cfloat>
 using namespace std;
 
 #include "omCommon.h"
