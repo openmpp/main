@@ -18,7 +18,8 @@ OM_INC_DIR = $(OM_ROOT)/include
 OM_BIN_DIR = $(OM_ROOT)/bin
 OM_LIB_DIR = $(OM_ROOT)/lib
 OMC_USE_DIR = $(OM_ROOT)/use
-OM_SQLITE_DIR = $(OM_ROOT)/sql/sqlite
+OM_SQL_DIR = $(OM_ROOT)/sql
+OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
 
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
@@ -211,13 +212,13 @@ SQLITE_EXE = sqlite3
 publish : $(MODEL_SQLITE)
 
 $(MODEL_SQLITE) : \
-  $(OM_SQLITE_DIR)/create_db_sqlite.sql \
+  $(OM_SQL_DIR)/create_db.sql \
   $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
   $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql \
   $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql \
   $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
 	rm -f $(MODEL_SQLITE)
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql

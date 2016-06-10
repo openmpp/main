@@ -112,8 +112,8 @@
           >
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(PUBLISH_SQLITE)" />
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/create_db_sqlite.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/create_db.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/create_db.sql" />
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model.sql" />

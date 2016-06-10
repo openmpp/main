@@ -154,7 +154,7 @@ $models_root = getcwd; # to ensure is absolute path
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
 my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
-my $create_db_sqlite_sql = "${om_root}/sql/sqlite/create_db_sqlite.sql";
+my $create_db_sqlite_sql = "${om_root}/sql/create_db.sql";
 
 
 # determine if running on windows or linux
