@@ -1,5 +1,5 @@
 --
--- Copyright (c) 2014 OpenM++
+-- Copyright (c) 2013 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
 
@@ -88,129 +88,139 @@ CREATE VIEW SimulationInfoDic AS SELECT * FROM ModelInfoDic;
 
 CREATE VIEW TypeDic AS
 SELECT
-  M.mod_type_id AS "TypeID", 
-  M.dic_id      AS "DicID"
-FROM type_dic M
+  M.model_type_id AS "TypeID", 
+  L.dic_id        AS "DicID"
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
 CREATE VIEW SimpleTypeDic AS
 SELECT
-  M.mod_type_id    AS "TypeID", 
-  M.mod_type_name  AS "Name"
-FROM type_dic M
+  M.model_type_id AS "TypeID", 
+  L.type_name     AS "Name"
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 0;
+AND L.dic_id = 0;
 
 CREATE VIEW LogicalDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
-  M.mod_type_name AS "Name",
+  M.model_type_id AS "TypeID", 
+  L.type_name     AS "Name",
   E.enum_id       AS "Value",
   E.enum_name     AS "ValueName",
   ET.descr        AS "ValueDescription",
   ET.lang_id      AS "LanguageID"
-FROM type_dic M
-INNER JOIN type_enum_lst E ON (E.model_id = M.model_id AND E.mod_type_id = M.mod_type_id)
-INNER JOIN type_enum_txt ET ON (ET.model_id = E.model_id AND ET.mod_type_id = E.mod_type_id AND ET.enum_id = E.enum_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_enum_lst E ON (E.type_hid = L.type_hid)
+INNER JOIN type_enum_txt ET ON (ET.type_hid = E.type_hid AND ET.enum_id = E.enum_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 1;
+AND L.dic_id = 1;
 
 CREATE VIEW ClassificationDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
-  M.mod_type_name AS "Name",
+  M.model_type_id AS "TypeID", 
+  L.type_name     AS "Name",
   MT.descr        AS "Description",
   MT.note         AS "Note",
-  M.total_enum_id AS "NumberOfValues",
+  L.total_enum_id AS "NumberOfValues",
   MT.lang_id      AS "LanguageID"
-FROM type_dic M
-INNER JOIN type_dic_txt MT ON (MT.model_id = M.model_id AND MT.mod_type_id = M.mod_type_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_dic_txt MT ON (MT.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 2;
+AND L.dic_id = 2;
 
 CREATE VIEW ClassificationValueDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
+  M.model_type_id AS "TypeID", 
   E.enum_id       AS "EnumValue",
   E.enum_name     AS "Name",
   ET.descr        AS "Description",
   ET.note         AS "Note",
   ET.lang_id      AS "LanguageID"
-FROM type_dic M
-INNER JOIN type_enum_lst E ON (E.model_id = M.model_id AND E.mod_type_id = M.mod_type_id)
-INNER JOIN type_enum_txt ET ON (ET.model_id = E.model_id AND ET.mod_type_id = E.mod_type_id AND ET.enum_id = E.enum_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_enum_lst E ON (E.type_hid = M.type_hid)
+INNER JOIN type_enum_txt ET ON (ET.type_hid = E.type_hid AND ET.enum_id = E.enum_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 2;
+AND L.dic_id = 2;
 
 CREATE VIEW RangeDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
-  M.mod_type_name AS "Name",
+  M.model_type_id AS "TypeID", 
+  L.type_name     AS "Name",
   MT.descr        AS "Description",
   MT.note         AS "Note",
   (
-    SELECT MIN(EN.enum_name) FROM type_enum_lst EN WHERE EN.model_id = M.model_id AND EN.mod_type_id = M.mod_type_id
+    SELECT MIN(EN.enum_name) FROM type_enum_lst EN WHERE EN.type_hid = M.type_hid
   )
   AS "Min",
   (
-    SELECT MAX(EX.enum_name) FROM type_enum_lst EX WHERE EX.model_id = M.model_id AND EX.mod_type_id = M.mod_type_id
+    SELECT MAX(EX.enum_name) FROM type_enum_lst EX WHERE EX.type_hid = M.type_hid
   )
   AS "Max",
   MT.lang_id      AS "LanguageID"
-FROM type_dic M
-INNER JOIN type_dic_txt MT ON (MT.model_id = M.model_id AND MT.mod_type_id = M.mod_type_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_dic_txt MT ON (MT.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 3;
+AND L.dic_id = 3;
 
 CREATE VIEW RangeValueDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
+  M.model_type_id AS "TypeID", 
   E.enum_name     AS "Value"
-FROM type_dic M
-INNER JOIN type_enum_lst E ON (E.model_id = M.model_id AND E.mod_type_id = M.mod_type_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_enum_lst E ON (E.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 3;
+AND L.dic_id = 3;
 
 CREATE VIEW PartitionDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
-  M.mod_type_name AS "Name",
+  M.model_type_id AS "TypeID", 
+  L.type_name     AS "Name",
   MT.descr        AS "Description",
   MT.note         AS "Note",
-  M.total_enum_id AS "NumberOfValues",
+  L.total_enum_id AS "NumberOfValues",
   MT.lang_id      AS "LanguageID"
-FROM type_dic M
-INNER JOIN type_dic_txt MT ON (MT.model_id = M.model_id AND MT.mod_type_id = M.mod_type_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_dic_txt MT ON (MT.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 4;
+AND L.dic_id = 4;
 
 CREATE VIEW PartitionValueDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
+  M.model_type_id AS "TypeID", 
   E.enum_id       AS "Position",
   E.enum_name     AS "Value",
   E.enum_name     AS "StringValue"
-FROM type_dic M
-INNER JOIN type_enum_lst E ON (E.model_id = M.model_id AND E.mod_type_id = M.mod_type_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_enum_lst E ON (E.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 4;
+AND L.dic_id = 4;
 
 CREATE VIEW PartitionIntervalDic AS
 SELECT
-  M.mod_type_id   AS "TypeID", 
+  M.model_type_id AS "TypeID", 
   E.enum_id       AS "Position",
   ET.descr        AS "Description",
   ET.lang_id      AS "LanguageID"
-FROM type_dic M
-INNER JOIN type_enum_lst E ON (E.model_id = M.model_id AND E.mod_type_id = M.mod_type_id)
-INNER JOIN type_enum_txt ET ON (ET.model_id = E.model_id AND ET.mod_type_id = E.mod_type_id AND ET.enum_id = E.enum_id)
+FROM type_dic L
+INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
+INNER JOIN type_enum_lst E ON (E.type_hid = M.type_hid)
+INNER JOIN type_enum_txt ET ON (ET.type_hid = E.type_hid AND ET.enum_id = E.enum_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
-AND M.dic_id = 4;
+AND L.dic_id = 4;
 
 -- CREATE VIEW LinkTypeDic AS
 -- SELECT
---   M.mod_type_id   AS "TypeID", 
---   M.mod_type_name AS "Name",
+--   M.model_type_id AS "TypeID", 
+--   M.type_name     AS "Name",
 --   NULL            AS "LinkedActorID"
 -- FROM type_dic M
 -- WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
@@ -218,37 +228,35 @@ AND M.dic_id = 4;
 
 CREATE VIEW ParameterDic AS
 SELECT
-  M.parameter_id   AS "ParameterID", 
-  M.parameter_name AS "Name", 
-  DT.descr         AS "Description",
-  DT.note          AS "Note",
-  RT.note          AS "ValueNote",
-  M.mod_type_id    AS "TypeID", 
-  M.parameter_rank AS "Rank",
-  M.num_cumulated  AS "NumberOfCumulatedDimensions",
-  M.is_generated   AS "ModelGenerated",
-  M.is_hidden      AS "Hidden",
-  DT.lang_id       AS "LanguageID" 
-FROM parameter_dic M
-INNER JOIN parameter_dic_txt DT ON (DT.model_id = M.model_id AND DT.parameter_id = M.parameter_id)
-LEFT OUTER JOIN parameter_run_txt RT ON 
-  (
-    RT.model_id = DT.model_id AND RT.parameter_id = DT.parameter_id AND RT.lang_id = DT.lang_id
-    AND RT.run_id = 
-    (
-      SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = M.model_id
-    )
-  )
-WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
+  M.model_parameter_id AS "ParameterID", 
+  L.parameter_name     AS "Name", 
+  DT.descr             AS "Description",
+  DT.note              AS "Note",
+  RT.note              AS "ValueNote",
+  MTD.model_type_id    AS "TypeID", 
+  L.parameter_rank     AS "Rank",
+  L.num_cumulated      AS "NumberOfCumulatedDimensions",
+  M.is_generated       AS "ModelGenerated",
+  M.is_hidden          AS "Hidden",
+  DT.lang_id           AS "LanguageID" 
+FROM parameter_dic L
+INNER JOIN model_parameter_dic M ON (M.parameter_hid = L.parameter_hid)
+INNER JOIN parameter_dic_txt DT ON (DT.parameter_hid = M.parameter_hid)
+INNER JOIN model_type_dic MTD ON (MTD.type_hid = L.type_hid)
+LEFT OUTER JOIN run_parameter_txt RT ON (RT.parameter_hid = DT.parameter_hid AND RT.lang_id = DT.lang_id)
+WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
+AND RT.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = M.model_id);
 
 CREATE VIEW ParameterDimensionDic AS
 SELECT
-  M.parameter_id AS "ParameterID", 
-  D.dim_pos      AS "DisplayPosition", 
-  D.mod_type_id  AS "TypeID", 
-  D.dim_pos      AS "Position"
-FROM parameter_dic M
-INNER JOIN parameter_dims D ON (D.model_id = M.model_id AND D.parameter_id = M.parameter_id)
+  M.model_parameter_id AS "ParameterID", 
+  D.dim_id             AS "DisplayPosition", 
+  MTD.model_type_id    AS "TypeID", 
+  D.dim_id             AS "Position"
+FROM parameter_dic L
+INNER JOIN model_parameter_dic M ON (M.parameter_hid = L.parameter_hid)
+INNER JOIN parameter_dims D ON (D.parameter_hid = M.parameter_hid)
+INNER JOIN model_type_dic MTD ON (MTD.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
 CREATE VIEW ParameterGroupDic AS
@@ -278,69 +286,74 @@ AND M.is_parameter <> 0;
 
 CREATE VIEW TableDic AS
 SELECT
-  M.table_id       AS "TableID", 
-  M.table_name     AS "Name", 
+  M.model_table_id AS "TableID", 
+  L.table_name     AS "Name", 
   T.descr          AS "Description",
   T.note           AS "Note",
-  M.table_rank + 1 AS "Rank",
+  L.table_rank + 1 AS "Rank",
   M.expr_dim_pos   AS "AnalysisDimensionPosition", 
-  CONCAT(M.table_name, '.DimA') AS "AnalysisDimensionName", 
+  CONCAT(L.table_name, '.DimA') AS "AnalysisDimensionName", 
   T.expr_descr     AS "AnalysisDimensionDescription",
   T.expr_note      AS "AnalysisDimensionNote",
-  M.is_sparse      AS "Sparse",
-  M.is_hidden      AS "Hidden",
+  L.is_sparse      AS "Sparse",
+  0                AS "Hidden",
   T.lang_id        AS "LanguageID" 
-FROM table_dic M
-INNER JOIN table_dic_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id)
+FROM table_dic L
+INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)
+INNER JOIN table_dic_txt T ON (T.table_hid = M.table_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_user = 0;
 
 CREATE VIEW UserTableDic AS
 SELECT
-  M.table_id       AS "TableID", 
-  M.table_name     AS "Name", 
+  M.model_table_id AS "TableID", 
+  L.table_name     AS "Name", 
   T.descr          AS "Description",
   T.note           AS "Note",
-  M.table_rank + 1 AS "Rank",
+  L.table_rank + 1 AS "Rank",
   M.expr_dim_pos   AS "AnalysisDimensionPosition", 
-  CONCAT(M.table_name, '.DimA') AS "AnalysisDimensionName", 
+  CONCAT(L.table_name, '.DimA') AS "AnalysisDimensionName", 
   T.expr_descr     AS "AnalysisDimensionDescription",
   T.expr_note      AS "AnalysisDimensionNote",
-  M.is_sparse      AS "Sparse",
-  M.is_hidden      AS "Hidden",
+  L.is_sparse      AS "Sparse",
+  0                AS "Hidden",
   T.lang_id        AS "LanguageID" 
-FROM table_dic M
-INNER JOIN table_dic_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id)
+FROM table_dic L
+INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)
+INNER JOIN table_dic_txt T ON (T.table_hid = M.table_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_user <> 0;
 
 CREATE VIEW TableClassDic AS
 SELECT
-  M.table_id    AS "TableID", 
-  M.dim_pos     AS "Position",
-  CONCAT(TD.table_name, '.', M.dim_name) AS "Name", 
-  T.descr       AS "Description",
-  T.note        AS "Note",
-  M.mod_type_id AS "TypeID", 
-  M.is_total    AS "Totals",
-  T.lang_id     AS "LanguageID" 
-FROM table_dims M
-INNER JOIN table_dic TD ON (TD.model_id = M.model_id AND TD.table_id = M.table_id)
-INNER JOIN table_dims_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id AND T.dim_name = M.dim_name)
+  M.model_table_id  AS "TableID", 
+  D.dim_id          AS "Position",
+  CONCAT(L.table_name, '.', D.dim_name) AS "Name", 
+  T.descr           AS "Description",
+  T.note            AS "Note",
+  MTD.model_type_id AS "TypeID", 
+  D.is_total        AS "Totals",
+  T.lang_id         AS "LanguageID" 
+FROM table_dic L
+INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)
+INNER JOIN table_dims D ON (D.table_hid = L.table_hid)
+INNER JOIN model_type_dic MTD ON (MTD.type_hid = D.type_hid)
+INNER JOIN table_dims_txt T ON (T.table_hid = D.table_hid AND T.dim_id = D.dim_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
 CREATE VIEW TableExpressionDic AS
 SELECT
-  M.table_id      AS "TableID", 
-  M.expr_id       AS "ExpressionID", 
-  CONCAT(TD.table_name, '.', M.expr_name) AS "Name", 
-  T.descr         AS "Description",
-  T.note          AS "Note",
-  M.expr_decimals AS "Decimals",
-  T.lang_id
-FROM table_expr M
-INNER JOIN table_dic TD ON (TD.model_id = M.model_id AND TD.table_id = M.table_id)
-INNER JOIN table_expr_txt T ON (T.model_id = M.model_id AND T.table_id = M.table_id AND T.expr_id = M.expr_id)
+  M.model_table_id AS "TableID", 
+  E.expr_id        AS "ExpressionID", 
+  CONCAT(L.table_name, '.', E.expr_name) AS "Name", 
+  T.descr          AS "Description",
+  T.note           AS "Note",
+  E.expr_decimals  AS "Decimals",
+  T.lang_id        AS "LanguageID" 
+FROM table_dic L
+INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)
+INNER JOIN table_expr E ON (E.table_hid = L.table_hid)
+INNER JOIN table_expr_txt T ON (T.table_hid = M.table_hid AND T.expr_id = E.expr_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
 CREATE VIEW TableGroupDic AS

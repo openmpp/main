@@ -65,7 +65,7 @@ CREATE TABLE model_dic_txt
   model_id INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- model description
-  note     VARCHAR(32000),           -- model notes
+  note     TEXT,                     -- model notes
   PRIMARY KEY (model_id, lang_id),
   CONSTRAINT model_dic_txt_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
@@ -111,7 +111,7 @@ CREATE TABLE type_dic_txt
   type_hid    INT             NOT NULL, -- master key
   lang_id     INT             NOT NULL, -- language id
   descr       VARCHAR(255)    NOT NULL, -- type description
-  note        VARCHAR(32000),           -- type notes
+  note        TEXT,                     -- type notes
   PRIMARY KEY (type_hid, lang_id),
   CONSTRAINT type_dic_txt_mk 
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid),
@@ -141,7 +141,7 @@ CREATE TABLE type_enum_txt
   enum_id     INT             NOT NULL, -- master key
   lang_id     INT             NOT NULL, -- language
   descr       VARCHAR(255)    NOT NULL, -- value description
-  note        VARCHAR(32000),           -- value notes
+  note        TEXT,                     -- value notes
   PRIMARY KEY (type_hid, enum_id, lang_id),
   CONSTRAINT type_enum_txt_mk 
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid),
@@ -182,7 +182,7 @@ CREATE TABLE model_parameter_dic
   PRIMARY KEY (model_id, model_parameter_id),
   CONSTRAINT model_parameter_dic_un UNIQUE (model_id, parameter_hid),
   CONSTRAINT model_parameter_dic_mk 
-             FOREIGN KEY (parameter_hid) REFERENCES type_dic (parameter_hid),
+             FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid),
   CONSTRAINT model_parameter_dic_fk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
@@ -195,7 +195,7 @@ CREATE TABLE parameter_dic_txt
   parameter_hid INT             NOT NULL, -- master key
   lang_id       INT             NOT NULL, -- language id
   descr         VARCHAR(255)    NOT NULL, -- parameter description
-  note          VARCHAR(32000),           -- parameter notes
+  note          TEXT,                     -- parameter notes
   PRIMARY KEY (parameter_hid, lang_id),
   CONSTRAINT parameter_dic_txt_mk
              FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid),
@@ -229,7 +229,7 @@ CREATE TABLE parameter_dims_txt
   dim_id        INT             NOT NULL, -- master key
   lang_id       INT             NOT NULL, -- language id
   descr         VARCHAR(255)    NOT NULL, -- table dimension description
-  note          VARCHAR(32000),           -- table dimension notes
+  note          TEXT,                     -- table dimension notes
   PRIMARY KEY (parameter_hid, dim_id, lang_id),
   CONSTRAINT parameter_dims_txt_mk 
              FOREIGN KEY (parameter_hid, dim_id) REFERENCES parameter_dims (parameter_hid, dim_id),
@@ -267,7 +267,7 @@ CREATE TABLE model_table_dic
   PRIMARY KEY (model_id, model_table_id),
   CONSTRAINT model_table_dic_un UNIQUE (model_id, table_hid),
   CONSTRAINT model_table_dic_mk 
-             FOREIGN KEY (table_hid) REFERENCES type_dic (table_hid),
+             FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
   CONSTRAINT model_table_dic_fk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
@@ -280,9 +280,9 @@ CREATE TABLE table_dic_txt
   table_hid  INT             NOT NULL, -- master key
   lang_id    INT             NOT NULL, -- language id
   descr      VARCHAR(255)    NOT NULL, -- table description
-  note       VARCHAR(32000),           -- table notes
+  note       TEXT,                     -- table notes
   expr_descr VARCHAR(255)    NOT NULL, -- table expressions (analysis dimension) description
-  expr_note  VARCHAR(32000),           -- table expressions (analysis dimension) notes
+  expr_note  TEXT,                     -- table expressions (analysis dimension) notes
   PRIMARY KEY (table_hid, lang_id),
   CONSTRAINT table_dic_txt_mk 
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
@@ -318,7 +318,7 @@ CREATE TABLE table_dims_txt
   dim_id    INT             NOT NULL, -- master key
   lang_id   INT             NOT NULL, -- language id
   descr     VARCHAR(255)    NOT NULL, -- table dimension description
-  note      VARCHAR(32000),           -- table dimension notes
+  note      TEXT,                     -- table dimension notes
   PRIMARY KEY (table_hid, dim_id, lang_id),
   CONSTRAINT table_dims_txt_mk 
              FOREIGN KEY (table_hid, dim_id) REFERENCES table_dims (table_hid, dim_id),
@@ -350,7 +350,7 @@ CREATE TABLE table_acc_txt
   acc_id    INT          NOT NULL, -- master key
   lang_id   INT          NOT NULL, -- language id
   descr     VARCHAR(255) NOT NULL, -- item description
-  note      VARCHAR(32000),        -- item notes
+  note      TEXT,                  -- item notes
   PRIMARY KEY (table_hid, acc_id, lang_id),
   CONSTRAINT table_acc_txt_mk 
              FOREIGN KEY (table_hid, acc_id) REFERENCES table_acc (table_hid, acc_id),
@@ -384,7 +384,7 @@ CREATE TABLE table_expr_txt
   expr_id   INT          NOT NULL, -- master key
   lang_id   INT          NOT NULL, -- language id
   descr     VARCHAR(255) NOT NULL, -- item description
-  note      VARCHAR(32000),        -- item notes
+  note      TEXT,                  -- item notes
   PRIMARY KEY (table_hid, expr_id, lang_id),
   CONSTRAINT table_expr_txt_mk 
              FOREIGN KEY (table_hid, expr_id) REFERENCES table_expr (table_hid, expr_id),
@@ -417,7 +417,7 @@ CREATE TABLE group_txt
   group_id INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- group description
-  note     VARCHAR(32000),           -- group notes
+  note     TEXT,                     -- group notes
   PRIMARY KEY (model_id, group_id, lang_id),
   CONSTRAINT group_txt_mk 
              FOREIGN KEY (model_id, group_id) REFERENCES group_lst (model_id, group_id),
@@ -493,7 +493,7 @@ CREATE TABLE run_txt
   run_id   INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- model run description
-  note     VARCHAR(32000),           -- model run notes
+  note     TEXT,                     -- model run notes
   PRIMARY KEY (run_id, lang_id),
   CONSTRAINT run_txt_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst(run_id),
@@ -543,7 +543,7 @@ CREATE TABLE run_parameter_txt
   run_id        INT NOT NULL,   -- model run id
   parameter_hid INT NOT NULL,   -- master key
   lang_id       INT NOT NULL,   -- language id
-  note          VARCHAR(32000), -- parameter value notes
+  note          TEXT,           -- parameter value notes
   PRIMARY KEY (run_id, parameter_hid, lang_id),
   CONSTRAINT run_parameter_txt_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
@@ -612,7 +612,7 @@ CREATE TABLE workset_txt
   set_id   INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- working set description
-  note     VARCHAR(32000),           -- working set notes
+  note     TEXT,                     -- working set notes
   PRIMARY KEY (set_id, lang_id),
   CONSTRAINT workset_txt_mk 
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
@@ -642,7 +642,7 @@ CREATE TABLE workset_parameter_txt
   set_id        INT             NOT NULL, -- master key
   parameter_hid INT             NOT NULL, -- master key
   lang_id       INT             NOT NULL, -- language id
-  note          VARCHAR(32000),           -- parameter value note
+  note          TEXT,                     -- parameter value note
   PRIMARY KEY (set_id, parameter_hid, lang_id),
   CONSTRAINT workset_parameter_txt_mk 
              FOREIGN KEY (set_id, parameter_hid) REFERENCES workset_parameter (set_id, parameter_hid),
@@ -671,7 +671,7 @@ CREATE TABLE task_txt
   task_id INT             NOT NULL, -- master key
   lang_id INT             NOT NULL, -- language id
   descr   VARCHAR(255)    NOT NULL, -- task description
-  note    VARCHAR(32000),           -- task notes
+  note    TEXT,                     -- task notes
   PRIMARY KEY (task_id, lang_id),
   CONSTRAINT task_txt_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst(task_id),
