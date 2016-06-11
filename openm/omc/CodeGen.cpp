@@ -315,7 +315,7 @@ void CodeGen::do_RunInit()
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
 
-    c += "theLog->logMsg(\"Initializing invariant entity data\");";
+    c += "theLog->logMsg(\"Initialize invariant entity data\");";
 
     c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
     for (auto agent : Symbol::pp_all_agents) {
@@ -334,7 +334,7 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    c += "theLog->logMsg(\"Getting fixed and missing parameters\");";
+    c += "theLog->logMsg(\"Get fixed and missing parameters\");";
     // Missing parameters are done here, since they are handled identically to fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -366,7 +366,7 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    c += "theLog->logMsg(\"Getting scenario parameters\");";
+    c += "theLog->logMsg(\"Get scenario parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
             c += parameter->cxx_type_check();
@@ -383,7 +383,7 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    c += "theLog->logMsg(\"Computing derived parameters\");";
+    c += "theLog->logMsg(\"compute derived parameters\");";
     c += "// TODO Re-initialize derived parameters";
     auto & sg = Symbol::pre_simulation;
     if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
@@ -505,7 +505,7 @@ void CodeGen::do_ModelShutdown()
         }
     }
 
-    c += "theLog->logFormatted(\"member=%d Writing Output Tables - Start\", simulation_member);";
+    c += "theLog->logFormatted(\"member=%d writing output tables - start\", simulation_member);";
     c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
         if (!table->is_internal) {
@@ -527,7 +527,7 @@ void CodeGen::do_ModelShutdown()
     }
     c += "// at this point table->measure[k][j] will cause memory access violation";
     c += "";
-    c += "theLog->logFormatted(\"member=%d Writing Output Tables - Finish\", simulation_member);";
+    c += "theLog->logFormatted(\"member=%d write output tables - finish\", simulation_member);";
 
     c += "// Entity table destruction";
     for (auto table : Symbol::pp_all_entity_tables) {

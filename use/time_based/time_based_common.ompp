@@ -69,8 +69,11 @@ int GetReplicates()
 
 void LogSimulationStart()
 {
-    // TODO
+    // Default global start time
     BaseEvent::set_global_time(0);
+
+    string msg = "Member=" + to_string(fmk::simulation_member) + " create start population";
+    theLog->logMsg(msg.c_str());
 }
 
 double SIMULATION_END()
@@ -98,6 +101,9 @@ void SimulateEvents()
 
     bool is_first_event = true;
     Time time_first_event(0); // used to calculate progress
+
+    // initial simulation progress message (0%)
+    report_simulation_progress(simulation_member, 0);
 
     // number of progress reporting steps
     const int progress_steps = 10;
@@ -174,8 +180,6 @@ void RunSimulation(int mem_id, int mem_count)
 
     // The member to simulate of the sample of simulations
     simulation_member = mem_id;
-
-    report_simulation_progress(simulation_member, 0);
 
     int seed = SimulationSeed; // framework input parameter
     simulation_end = SimulationEnd; // framework input parameter
