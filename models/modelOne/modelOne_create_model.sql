@@ -2,10 +2,6 @@
 -- Copyright (c) 2013-2015 OpenM++
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
--- keep dummy sql below to prevent sqlite3 failure due to UTF-8 BOM
--- it is typical problem if .sql saved by Windows text editors
---
-SELECT * FROM sqlite_master WHERE 0 = 1;
 
 --
 -- list of ids: values < 10 reserved for development and testing
@@ -171,7 +167,7 @@ INSERT INTO table_expr
 VALUES 
   (2, 3, 'expr3', 3, 'OM_AVG(acc0 * acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value * A1.acc1) AS expr3 FROM salarySex_a2012_820 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a2012_820 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
-);
+  );
   
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 0, 'Average acc0', 'Average on acc0 notes');
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 1, 'Average acc0 (fr)', 'Average on acc0 notes (fr)');
