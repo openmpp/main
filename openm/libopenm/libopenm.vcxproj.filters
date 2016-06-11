@@ -81,9 +81,6 @@
     <ClInclude Include="include\metaRunHolder.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\libopenm\omCommon.h">
-      <Filter>Header Files\libopenm</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h">
       <Filter>Header Files\libopenm\common</Filter>
     </ClInclude>
@@ -142,6 +139,9 @@
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\libopenm\omError.h">
+      <Filter>Header Files\libopenm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\omLog.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
   </ItemGroup>

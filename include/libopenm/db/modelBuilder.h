@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef MODEL_BUILDER_H
-#define MODEL_BUILDER_H
+#ifndef OM_MODEL_BUILDER_H
+#define OM_MODEL_BUILDER_H
 
 #include <list>
 #include "dbMetaRow.h"
@@ -59,4 +59,4 @@ namespace openm
 /** max type id for built-int types, ie: int, double, logical */
 #define OM_MAX_BUILTIN_TYPE_ID              30
 
-#endif  // MODEL_BUILDER_H
+#endif  // OM_MODEL_BUILDER_H

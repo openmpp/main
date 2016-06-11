@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_HELPER_H
-#define OM_HELPER_H
+#ifndef OM_OM_HELPER_H
+#define OM_OM_HELPER_H
 
 #include <algorithm>
 #include <cstring>
@@ -133,4 +133,4 @@ namespace openm
     };
 }
 
-#endif  // OM_HELPER_H
+#endif  // OM_OM_HELPER_H

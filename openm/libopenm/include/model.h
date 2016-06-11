@@ -16,7 +16,7 @@
 #include <forward_list>
 using namespace std;
 
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/common/argReader.h"

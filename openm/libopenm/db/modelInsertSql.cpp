@@ -35,14 +35,14 @@ template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_
     // SET id_value = 
     //   CASE
     //     WHEN 
-    //       NOT EXISTS (SELECT * FROM model_dic WHERE model_digest = '1234abcd') THEN id_value + 1 
+    //       0 = (SELECT COUNT(*) FROM model_dic WHERE model_digest = '1234abcd') THEN id_value + 1 
     //     ELSE id_value
     //   END
     // WHERE id_key = 'model_id';
     io_wr.outFs <<
         "UPDATE id_lst SET id_value =" \
         " CASE" \
-        " WHEN NOT EXISTS (SELECT * FROM model_dic WHERE model_digest = "; 
+        " WHEN 0 = (SELECT COUNT(*) FROM model_dic WHERE model_digest = "; 
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_row.digest);
     io_wr.outFs <<
@@ -144,14 +144,14 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TypeDicRow>(
 
     // UPDATE id_lst SET id_value = 
     //   CASE
-    //     WHEN NOT EXISTS (SELECT * FROM type_dic WHERE type_digest = 'abcdef') THEN id_value + 1 
+    //     WHEN 0 = (SELECT COUNT(*) FROM type_dic WHERE type_digest = 'abcdef') THEN id_value + 1 
     //     ELSE id_value
     //   END
     // WHERE id_key = 'type_hid';
     io_wr.outFs <<
         "UPDATE id_lst SET id_value =" \
         " CASE" \
-        " WHEN NOT EXISTS (SELECT * FROM type_dic WHERE type_digest = "; 
+        " WHEN 0 = (SELECT COUNT(*) FROM type_dic WHERE type_digest = "; 
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_row.digest);
     io_wr.outFs <<
@@ -376,14 +376,14 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
 
     // UPDATE id_lst SET id_value = 
     //   CASE
-    //     WHEN NOT EXISTS (SELECT * FROM parameter_dic WHERE parameter_digest = 'cd1234ab') THEN id_value + 1 
+    //     WHEN 0 = (SELECT COUNT(*) FROM parameter_dic WHERE parameter_digest = 'cd1234ab') THEN id_value + 1 
     //     ELSE id_value
     //   END
     // WHERE id_key = 'parameter_hid';
     io_wr.outFs <<
         "UPDATE id_lst SET id_value =" \
         " CASE" \
-        " WHEN NOT EXISTS (SELECT * FROM parameter_dic WHERE parameter_digest = "; 
+        " WHEN 0 = (SELECT COUNT(*) FROM parameter_dic WHERE parameter_digest = "; 
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_row.digest);
     io_wr.outFs <<
@@ -662,14 +662,14 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
 
     // UPDATE id_lst SET id_value = 
     //   CASE
-    //     WHEN NOT EXISTS (SELECT * FROM table_dic WHERE table_digest = '987654ab') THEN id_value + 1 
+    //     WHEN 0 = (SELECT COUNT(*) FROM table_dic WHERE table_digest = '987654ab') THEN id_value + 1 
     //     ELSE id_value
     //   END
     // WHERE id_key = 'table_hid';
     io_wr.outFs <<
         "UPDATE id_lst SET id_value =" \
         " CASE" \
-        " WHEN NOT EXISTS (SELECT * FROM table_dic WHERE table_digest = "; 
+        " WHEN 0 = (SELECT COUNT(*) FROM table_dic WHERE table_digest = "; 
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_row.digest);
     io_wr.outFs <<
@@ -1290,9 +1290,9 @@ template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
 
     // UPDATE id_lst SET id_value = 
     //   CASE
-    //     WHEN NOT EXISTS 
+    //     WHEN 0 = 
     //       (
-    //       SELECT * FROM workset_lst EW 
+    //       SELECT COUNT(*) FROM workset_lst EW 
     //       INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)
     //       WHERE EW.set_name = 'modelOne'
     //       AND EM.model_digest = '1234abcd'
@@ -1304,9 +1304,9 @@ template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
     io_wr.outFs <<
         "UPDATE id_lst SET id_value =" \
         " CASE" \
-        " WHEN NOT EXISTS" \
+        " WHEN 0 =" \
         " (" \
-        " SELECT * FROM workset_lst EW" \
+        " SELECT COUNT(*) FROM workset_lst EW" \
         " INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)" \
         " WHERE EW.set_name = " << i_worksetNameQuoted <<
         " AND EM.model_digest = " << i_modelDigestQuoted <<

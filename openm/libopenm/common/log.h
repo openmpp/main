@@ -18,7 +18,7 @@
 #include <cstdarg>
 using namespace std;
 
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 #include "libopenm/omError.h"
 #include "libopenm/common/omHelper.h"
 #include "helper.h"

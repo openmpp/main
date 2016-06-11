@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef META_MODEL_HOLDER_H
-#define META_MODEL_HOLDER_H
+#ifndef OM_META_MODEL_HOLDER_H
+#define OM_META_MODEL_HOLDER_H
 
 using namespace std;
 
@@ -83,4 +83,4 @@ namespace openm
     };
 }
 
-#endif  // META_MODEL_HOLDER_H
+#endif  // OM_META_MODEL_HOLDER_H
