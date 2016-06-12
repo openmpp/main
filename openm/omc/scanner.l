@@ -478,7 +478,7 @@ blank       [ \t]
 <cxx_outside>{ /* outer level of C++ code, i.e. outside of all braces */
 
 {word}::{word} { /*  possible function member definition */
-                /* prepare to gather identifiers from function body */
+                /* prepare to gather argument parmlist and identifiers in function body */
                 pc.cxx_memfunc_gather = true;
                 pc.cxx_memfunc_name = yytext;
                 pc.cxx_memfunc_parmlist.clear();
@@ -531,7 +531,7 @@ blank       [ \t]
 			}
 
 .           {
-				/* all other C++ code */
+				/* all other C++ code outside braces */
                 if (pc.cxx_memfunc_gather) {
                     /* build the member function parameter list declaration */
                     pc.cxx_memfunc_parmlist.push_back(yytext);
@@ -560,7 +560,7 @@ blank       [ \t]
             }
 
 .           {
-				/* all other C++ code */
+				/* all other C++ code inside braces */
 				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
 			}
 

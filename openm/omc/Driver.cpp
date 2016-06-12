@@ -11,7 +11,7 @@
 #include "ParseContext.h"
 #include "location.hh"
 #include "ModuleSymbol.h"
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 
 using namespace std;
 

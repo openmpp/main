@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef HELPER_H
-#define HELPER_H
+#ifndef OM_HELPER_H
+#define OM_HELPER_H
 
 #include "libopenm/common/omHelper.h"
 
@@ -45,4 +45,4 @@ using namespace std;
 
 //#define OM_LOG_MSG(msg)         msg OM_FILE_LINE
 
-#endif  // HELPER_H
+#endif  // OM_HELPER_H

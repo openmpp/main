@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <set>
 #include "location.hh"
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 #include "libopenm/db/modelBuilder.h"   // for OM_MAX_BUILTIN_TYPE_ID
 #include "CodeBlock.h"
 #include "Symbol.h"
@@ -572,7 +572,7 @@ void Symbol::post_parse(int pass)
             string key = name + "," + lang_sym->name;
             auto search = explicit_labels.find(key);
             if (search != explicit_labels.end()) {
-                pp_labels[j] = search->second;
+                pp_labels[j] = trim(search->second);
             }
         }
 
@@ -708,7 +708,7 @@ bool Symbol::process_symbol_label(const yy::position& pos)
             if (lang_search != LanguageSymbol::name_to_id.end()) {
                 // The comment starts with a valid language code
                 // TODO skip white space, handle corner condition of no text
-                pp_labels[lang_search->second] = cmt.substr(lang_code.size() + 1);
+                pp_labels[lang_search->second] = trim(cmt.substr(lang_code.size() + 1));
                 // Remove matched label comment from map to allow subsequent
                 // identification of dangling labels on line immediately preceding a declaration.
                 cxx_comments.erase(cmt_search);

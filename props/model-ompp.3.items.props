@@ -27,7 +27,7 @@
     <OMC_OUTPUTS Include="@(OMC_CPP_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_SQL_OUTPUTS)" />
     
-    <SQLITE_INPUTS Include="$(OM_SQL_DIR)/sqlite/create_db_sqlite.sql" />
+    <SQLITE_INPUTS Include="$(OM_SQL_DIR)/create_db.sql" />
     <SQLITE_INPUTS Include="$(OM_SQL_DIR)/sqlite/optional_meta_views_sqlite.sql" />
     <SQLITE_INPUTS Include="@(OMC_SQL_OUTPUTS)" />
 

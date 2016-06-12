@@ -16,7 +16,7 @@
 #include <forward_list>
 using namespace std;
 
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/common/argReader.h"
@@ -33,12 +33,6 @@ using namespace std;
 
 namespace openm
 {
-    /** default error message: "unknown model error" */
-    extern const char modelUnknownErrorMessage[];   
-
-    /** modeling library exception */
-    typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
-
     /** model subsample run base class */
     class ModelBase : public IModel
     {

@@ -9,6 +9,7 @@
 #define DB_OUTPUT_TABLE_H
 
 #include <cmath>
+#include <cfloat>
 #include "libopenm/db/dbCommon.h"
 #include "dbExec.h"
 #include "metaRunHolder.h"

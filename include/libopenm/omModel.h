@@ -5,15 +5,16 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_MODEL_H
-#define OM_MODEL_H
+#ifndef OM_OM_MODEL_H
+#define OM_OM_MODEL_H
 
 #include <typeinfo>
 #include <memory>
+#include <cfloat>
 using namespace std;
 
-#include "omCommon.h"
-#include "common/omHelper.h"
+#include "omLog.h"
+#include "omError.h"
 
 namespace openm
 {
@@ -141,7 +142,13 @@ namespace openm
     /** model input parameters name, type and size */
     extern const ParameterNameSizeItem parameterNameSizeArr[];
 
-    /** simulation exception default error message: "unknown simulation error" */
+    /** default error message: "unknown model error" */
+    extern const char modelUnknownErrorMessage[];   
+
+    /** modeling library exception */
+    typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
+
+    /** simulation exception default error message: "unknown error in simulation" */
     extern const char simulationUnknownErrorMessage[];   
 
     /** simulation exception */
@@ -184,4 +191,4 @@ extern OM_SHUTDOWN_HANDLER ModelShutdownHandler;
     }
 #endif
 
-#endif  // OM_MODEL_H
+#endif  // OM_OM_MODEL_H

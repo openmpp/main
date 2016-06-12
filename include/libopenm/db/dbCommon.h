@@ -5,12 +5,12 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef DB_COMMON_H
-#define DB_COMMON_H
+#ifndef OM_DB_COMMON_H
+#define OM_DB_COMMON_H
 
 using namespace std;
 
-#include "libopenm/common/omHelper.h"
+#include "libopenm/omError.h"
 
 namespace openm
 {
@@ -167,4 +167,4 @@ namespace openm
     };
 }
 
-#endif  // DB_COMMON_H
+#endif  // OM_DB_COMMON_H

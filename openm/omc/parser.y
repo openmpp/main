@@ -42,7 +42,6 @@ class ExprForTable;
 #include "Driver.h"
 #include "ParseContext.h"
 #include "ast.h"
-#include "libopenm/omCommon.h"
 #include "libopenm/common/omFile.h"
 	// last item found by flex.  Used in grammar to provide error information
 // TODO check and eliminate use

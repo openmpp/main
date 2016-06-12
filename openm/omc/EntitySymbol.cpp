@@ -6,7 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 #include "EntitySymbol.h"
 #include "BuiltinAttributeSymbol.h"
 #include "EntityInternalSymbol.h"

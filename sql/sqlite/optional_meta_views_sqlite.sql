@@ -247,15 +247,9 @@ FROM parameter_dic L
 INNER JOIN model_parameter_dic M ON (M.parameter_hid = L.parameter_hid)
 INNER JOIN parameter_dic_txt DT ON (DT.parameter_hid = M.parameter_hid)
 INNER JOIN model_type_dic MTD ON (MTD.type_hid = L.type_hid)
-LEFT OUTER JOIN run_parameter_txt RT ON 
-  (
-    RT.parameter_hid = DT.parameter_hid AND RT.lang_id = DT.lang_id
-    AND RT.run_id = 
-    (
-      SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = M.model_id
-    )
-  )
-WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
+LEFT OUTER JOIN run_parameter_txt RT ON (RT.parameter_hid = DT.parameter_hid AND RT.lang_id = DT.lang_id)
+WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
+AND RT.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = M.model_id);
 
 CREATE VIEW ParameterDimensionDic AS
 SELECT
@@ -306,7 +300,7 @@ SELECT
   T.expr_descr     AS "AnalysisDimensionDescription",
   T.expr_note      AS "AnalysisDimensionNote",
   L.is_sparse      AS "Sparse",
-  M.is_hidden      AS "Hidden",
+  0                AS "Hidden",
   T.lang_id        AS "LanguageID" 
 FROM table_dic L
 INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)
@@ -326,7 +320,7 @@ SELECT
   T.expr_descr     AS "AnalysisDimensionDescription",
   T.expr_note      AS "AnalysisDimensionNote",
   L.is_sparse      AS "Sparse",
-  M.is_hidden      AS "Hidden",
+  0                AS "Hidden",
   T.lang_id        AS "LanguageID" 
 FROM table_dic L
 INNER JOIN model_table_dic M ON (M.table_hid = L.table_hid)

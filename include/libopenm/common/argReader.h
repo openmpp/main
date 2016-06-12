@@ -5,10 +5,10 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_ARG_READER_H
-#define OM_ARG_READER_H
+#ifndef OM_OM_ARG_READER_H
+#define OM_OM_ARG_READER_H
 
-#include "libopenm/common/omHelper.h"
+#include "omHelper.h"
 
 using namespace std;
 
@@ -111,4 +111,4 @@ namespace openm
     };
 }
 
-#endif  // OM_ARG_READER_H
+#endif  // OM_OM_ARG_READER_H

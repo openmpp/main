@@ -13,9 +13,6 @@
     #define strNcmpNoCase   strncasecmp
 #endif  // _WIN32
 
-// helper exception default error message
-const char openm::helperUnknownErrorMessage[] = "unknown error in helper method";
-
 // convert string to lower case
 void openm::toLower(string & io_str)
 {
@@ -87,7 +84,7 @@ string openm::trimLeft(const string & i_str)
 
     for (string::const_iterator it = i_str.begin(); it != i_str.end(); ++it) {
         if (!chType.is(ctype<char>::space, *it)) 
-            return i_str.substr(i_str.begin() - it);
+            return i_str.substr(it - i_str.begin());
     }
     return "";  // string is empty or has only space chars
 }
@@ -123,7 +120,7 @@ string openm::trim(const string & i_str)
         if (!chType.is(ctype<char>::space, *endIt)) break;
     }
 
-    return i_str.substr(begIt - i_str.begin(), i_str.rend() - endIt);
+    return i_str.substr(begIt - i_str.begin(), (i_str.rend() - endIt) - (begIt - i_str.begin()));
 }
 
 // make sql quoted string, ie: 'O''Brien'

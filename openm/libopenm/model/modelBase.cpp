@@ -12,7 +12,7 @@ using namespace openm;
 const char openm::modelUnknownErrorMessage[] = "unknown model error";
 
 /** simulation exception default error message */
-const char openm::simulationUnknownErrorMessage[] = "unknown simulation error";
+const char openm::simulationUnknownErrorMessage[] = "unknown error in simulation";
 
 /** model subsample run public interface */
 IModel::~IModel() throw() { }

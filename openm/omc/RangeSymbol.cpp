@@ -12,7 +12,7 @@
 #include "libopenm/db/metaModelHolder.h"
 
 #include "location.hh"
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 
 using namespace std;
 using namespace openm;

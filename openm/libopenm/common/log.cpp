@@ -18,6 +18,9 @@ using namespace openm;
     #include <unistd.h>
 #endif  // _WIN32
 
+/** helper exception default error message */
+const char openm::helperUnknownErrorMessage[] = "unknown error in helper method";
+
 /** actual log instance: initialize default log before main */
 static Log defaultLog(true, "openm.log");
 

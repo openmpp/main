@@ -142,7 +142,8 @@
     <ClInclude Include="..\..\include\libopenm\common\omHelper.h" />
     <ClInclude Include="..\..\include\libopenm\db\dbCommon.h" />
     <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h" />
-    <ClInclude Include="..\..\include\libopenm\omCommon.h" />
+    <ClInclude Include="..\..\include\libopenm\omError.h" />
+    <ClInclude Include="..\..\include\libopenm\omLog.h" />
     <ClInclude Include="..\..\include\libopenm\omModel.h" />
     <ClInclude Include="common\log.h" />
     <ClInclude Include="common\iniReader.h" />

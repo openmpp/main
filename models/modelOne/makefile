@@ -114,20 +114,24 @@ SQLITE_EXE = sqlite3
 MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
 ifndef OM_SQLITE_DIR
-  OM_SQLITE_DIR = ../../sql/sqlite
+  OM_SQL_DIR = ../../sql
+endif
+
+ifndef OM_SQLITE_DIR
+  OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
 endif
 
 .PHONY : publish
 publish : $(MODEL_SQLITE)
 
 $(MODEL_SQLITE) : \
-  $(OM_SQLITE_DIR)/create_db_sqlite.sql \
+  $(OM_SQL_DIR)/create_db.sql \
   $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
   $(MODEL_NAME)_create_model_sqlite.sql \
   $(MODEL_NAME)_insert_param_sqlite.sql \
   $(MODEL_NAME)_optional_views_sqlite.sql
 	rm -f $(MODEL_SQLITE)
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/create_db_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param_sqlite.sql

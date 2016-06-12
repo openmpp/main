@@ -200,7 +200,7 @@ namespace openm
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->typeId)) +
             MpiPacked::packedSize(typeid(val->isHidden)) +
-            MpiPacked::packedSize(typeid(val->isHidden)) +
+            MpiPacked::packedSize(typeid(val->isGenerated)) +
             MpiPacked::packedSize(typeid(val->numCumulated));
     }
 
@@ -259,7 +259,6 @@ namespace openm
         MpiPacked::pack<decltype(val->isUser)>(val->isUser, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isSparse)>(val->isSparse, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->exprPos)>(val->exprPos, i_packedSize, io_packedData, io_packPos);
     }
 
@@ -279,7 +278,6 @@ namespace openm
         val->isUser = MpiPacked::unpack<decltype(val->isUser)>(i_packedSize, i_packedData, io_packPos);
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->isSparse = MpiPacked::unpack<decltype(val->isSparse)>(i_packedSize, i_packedData, io_packPos);
-        val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
         val->exprPos = MpiPacked::unpack<decltype(val->exprPos)>(i_packedSize, i_packedData, io_packPos);
     }
 
@@ -299,7 +297,6 @@ namespace openm
             MpiPacked::packedSize(typeid(val->isUser)) +
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->isSparse)) +
-            MpiPacked::packedSize(typeid(val->isHidden)) +
             MpiPacked::packedSize(typeid(val->exprPos));
     }
 

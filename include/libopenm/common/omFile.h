@@ -5,10 +5,10 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_FILE_H
-#define OM_FILE_H
+#ifndef OM_OM_FILE_H
+#define OM_OM_FILE_H
 
-#include "libopenm/common/omHelper.h"
+#include "omHelper.h"
 
 using namespace std;
 
@@ -33,4 +33,4 @@ namespace openm
     extern string fileToUtf8(const char * i_filePath, const char * i_codePageName = NULL);
 }
 
-#endif  // OM_FILE_H
+#endif  // OM_OM_FILE_H

@@ -11,7 +11,7 @@
 #include <mutex>
 using namespace std;
 
-#include "libopenm/omCommon.h"
+#include "libopenm/omLog.h"
 #include "libopenm/db/dbCommon.h"
 
 namespace openm
