@@ -550,7 +550,9 @@ void Symbol::post_parse(int pass)
         // Create default values of symbol labels and notes for all languages
         for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
             auto lang_sym = LanguageSymbol::id_to_sym[j];
-            pp_labels.push_back(default_label(*lang_sym));
+            auto def_lab = default_label(*lang_sym);
+            assert(def_lab.length() > 0);
+            pp_labels.push_back(def_lab);
             pp_notes.push_back("");
         }
 
@@ -695,7 +697,7 @@ bool Symbol::process_symbol_label(const yy::position& pos)
 {
     auto cmt_search = cxx_comments.find(pos);
     if (cmt_search != cxx_comments.end()) {
-        // There was a comment on the source line.
+        // There was a // comment on the given line.
         string cmt = cmt_search->second;
         // Extract a possible leading language code.
         string lang_code;
@@ -707,11 +709,16 @@ bool Symbol::process_symbol_label(const yy::position& pos)
             auto lang_search = LanguageSymbol::name_to_id.find(lang_code);
             if (lang_search != LanguageSymbol::name_to_id.end()) {
                 // The comment starts with a valid language code
-                // TODO skip white space, handle corner condition of no text
-                pp_labels[lang_search->second] = trim(cmt.substr(lang_code.size() + 1));
                 // Remove matched label comment from map to allow subsequent
                 // identification of dangling labels on line immediately preceding a declaration.
                 cxx_comments.erase(cmt_search);
+                string lbl = trim(cmt.substr(lang_code.size() + 1));
+                if (lbl.length() > 0) {
+                    pp_labels[lang_search->second] = lbl;
+                }
+                else {
+                    // ignore empty label
+                }
                 return true;
             }
         }
@@ -1354,7 +1361,7 @@ void Symbol::process_cxx_comment(const string& cmt, const yy::location& loc)
         // Extract label
         p = cmt.find_first_not_of(") \t", q);
         if (p == std::string::npos) {
-            //TODO report syntax error on //LABEL
+            // ignore empty label
             return;
         }
         string lab = cmt.substr(p);
