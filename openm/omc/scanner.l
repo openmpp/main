@@ -305,7 +305,7 @@ blank       [ \t]
 				*drv.outside << yytext;
 			}
 
-"//"[^\r]*    {
+"//"[^\r\n]*    {
 				/* single line comment */
                 /* pattern does not include trailing newline */
                 /* so matches a // comment at eof even if no trailing newline */
