@@ -304,6 +304,7 @@ string openm::regexReplace(const string & i_srcText, const char * i_pattern, con
 #else
 
 #include <regex.h>
+#include "libopenm/omError.h"
 
 #define MAX_RE_ERROR_MSG    1024
 
