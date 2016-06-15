@@ -97,6 +97,10 @@ string IDbExec::makeSqlBeginTransaction(const string & i_sqlProvider)
         if (i_sqlProvider == MYSQL_DB_PROVIDER) { 
             return "START TRANSACTION";
         }
+        if (i_sqlProvider == ORACLE_DB_PROVIDER ||
+            i_sqlProvider == DB2_DB_PROVIDER) { 
+            return "-- BEGIN TRANSACTION";
+        }
         throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
     }
     catch (DbException & ex) {
@@ -116,7 +120,9 @@ string IDbExec::makeSqlCommitTransaction(const string & i_sqlProvider)
         if (i_sqlProvider == SQLITE_DB_PROVIDER || 
             i_sqlProvider == PGSQL_DB_PROVIDER || 
             i_sqlProvider == MYSQL_DB_PROVIDER || 
-            i_sqlProvider == MSSQL_DB_PROVIDER) {
+            i_sqlProvider == MSSQL_DB_PROVIDER ||
+            i_sqlProvider == ORACLE_DB_PROVIDER ||
+            i_sqlProvider == DB2_DB_PROVIDER) { 
             return "COMMIT";
         }
         throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
@@ -147,6 +153,10 @@ string IDbExec::makeSqlCreateTableIfNotExist(
                 "IF NOT EXISTS" \
                 " (SELECT * FROM INFORMATION_SCHEMA.TABLES T WHERE T.TABLE_NAME = " + toQuoted(i_tableName) + ")\n" +
                 " CREATE TABLE " + i_tableName + " " + i_tableBodySql;
+        }
+        if (i_sqlProvider == ORACLE_DB_PROVIDER ||
+            i_sqlProvider == DB2_DB_PROVIDER) { 
+            return "CREATE TABLE " + i_tableName + " " + i_tableBodySql;
         }
         throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
     }
@@ -181,6 +191,10 @@ string IDbExec::makeSqlCreateViewReplace(
                 " GO\n"
                 " CREATE VIEW " + i_viewName + " AS " + i_viewBodySql + "\n" +
                 " GO";
+        }
+        if (i_sqlProvider == ORACLE_DB_PROVIDER ||
+            i_sqlProvider == DB2_DB_PROVIDER) { 
+            return "CREATE OR REPLACE VIEW " + i_viewName + " AS " + i_viewBodySql;
         }
         throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
     }

@@ -890,8 +890,13 @@ const void ModelSqlBuilder::paramCreateTable(
         sqlBody += dimName + " INT NOT NULL, ";
     }
 
+    string tname = 
+        (i_sqlProvider == ORACLE_DB_PROVIDER && equalNoCase(i_tblInfo.valueTypeName.c_str(), "BIGINT")) ? 
+        "NUMBER(19)" : 
+        i_tblInfo.valueTypeName;
+
     sqlBody +=
-        "param_value " + i_tblInfo.valueTypeName + " NOT NULL, " +
+        "param_value " + tname + " NOT NULL, " +
         "PRIMARY KEY (" + i_runSetId;
 
     for (const string & dimName : i_tblInfo.dimNameVec) {

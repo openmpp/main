@@ -19,7 +19,7 @@
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
 * * -Omc.TraceScanning  detailed tracing from scanner
 * * -Omc.TraceParsing   detailed tracing from parser
-* * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,PostgreSQL,MysSQL,MSSQL,Oracle,DB2, default: SQLite
+* * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,PostgreSQL,MySQL,MSSQL,Oracle,DB2, default: SQLite
 * * -OpenM.OptionsFile  some/optional/omc.ini
 * 
 * Short form of command line arguments:
