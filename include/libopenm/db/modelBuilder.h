@@ -23,8 +23,8 @@ namespace openm
     public:
         virtual ~IModelBuilder() throw() = 0;
 
-        /** create new model builder. */
-        static IModelBuilder * create(const string & i_sqlProvider, const string & i_outputDir);
+        /** new model builder to create sql script specific to each db-provider. */
+        static IModelBuilder * create(const string & i_providerNames, const string & i_outputDir);
 
         /** set meta rows values and calculate digests for types, parameters, tables and model */
         virtual void setModelMetaRows(MetaModelHolder & io_metaRows) const = 0;
@@ -35,18 +35,18 @@ namespace openm
         /** start sql script to create new working set */
         virtual void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) = 0;
 
-        /** append scalar parameter value to sql script for new working set  creation */
+        /** append scalar parameter value to sql script for new working set creation */
         virtual void addWorksetParameter(
             const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value
         ) = 0;
 
-        /** append parameter values to sql script for new working set  creation */
+        /** append parameter values to sql script for new working set creation */
         virtual void addWorksetParameter(
             const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
             ) = 0;
 
         /** finish sql script to create new working set */
-        virtual void endWorkset(const MetaSetLangHolder & i_metaSet) const = 0;
+        virtual void endWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) = 0;
 
         /** write sql script to create backward compatibility views */
         virtual void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const = 0;

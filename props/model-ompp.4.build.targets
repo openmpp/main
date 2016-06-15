@@ -116,12 +116,14 @@
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/create_db.sql" />
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model.sql" />
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views.sql" />
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME).sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME).sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_model_sqlite.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_tables_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_create_tables_sqlite.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
+    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME)_sqlite.sql" />
+    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_$(SCENARIO_NAME)_sqlite.sql" />
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
             />
@@ -136,10 +138,10 @@
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -General.Subsamples $(MEMBERS)</MODEL_OPTS>
-    <MODEL_OPTS Condition="'$(PROCESSES)' != ''">$(MODEL_OPTS) -n $(PROCESSES) </MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -General.Threads $(THREADS)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
     <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
+    <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
 
   <Target Name="RunModel"
@@ -157,7 +159,23 @@
             AlwaysCreate="true"
             />
   </Target>
-
+<!--  
+  <Target Name="RunModel"
+          Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'MPI'" 
+          Inputs="$(PUBLISH_TICKLE)"
+          Outputs="$(RUN_MODEL_TICKLE)"
+          AfterTargets="SQLitePublish"
+          >
+    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
+    <Exec WorkingDirectory="$(TargetDir)"
+          Command="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
+          />
+    <Touch  Files="$(RUN_MODEL_TICKLE)"
+            AlwaysCreate="true"
+            />
+  </Target>
+-->
 
   <!--
   ExportCsv

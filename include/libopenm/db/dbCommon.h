@@ -14,8 +14,23 @@ using namespace std;
 
 namespace openm
 {
-    /**  SQLite db-provider name */
+    /** SQLite db-provider name */
     extern const char * SQLITE_DB_PROVIDER;
+
+    /** PostgreSQL db-provider name */
+    extern const char * PGSQL_DB_PROVIDER;
+
+    /** MySQL db-provider name */
+    extern const char * MYSQL_DB_PROVIDER;
+
+    /** MS SQL db-provider name */
+    extern const char * MSSQL_DB_PROVIDER;
+
+    /** Oracle db-provider name */
+    extern const char * ORACLE_DB_PROVIDER;
+
+    /** DB2 db-provider name */
+    extern const char * DB2_DB_PROVIDER;
 
     /** db-exception default error message: "unknown db error" */
     extern const char dbUnknownErrorMessage[];   

@@ -22,11 +22,19 @@ using namespace openm;
     #include <xlocale.h>
 #endif  // OM_UCVT_ICONV
 
-// byte order mark bytes
+/** UTF-8 byte order mark bytes */
 static const unsigned char BOM_UTF8[] = {0xEF, 0xBB, 0xBF};
+
+/** UTF-16LE byte order mark bytes */
 static const unsigned char BOM_UTF16LE[] = {0xFF, 0xFE};
+
+/** UTF-16BE byte order mark bytes */
 static const unsigned char BOM_UTF16BE[] = {0xFE, 0xFF};
+
+/** UTF-32LE byte order mark bytes */
 static const unsigned char BOM_UTF32LE[] = {0xFF, 0xFE, 0x00, 0x00};
+
+/** UTF-32BE byte order mark bytes */
 static const unsigned char BOM_UTF32BE[] = {0x00, 0x00, 0xFE, 0xFF};
 
 static const long long bomMaxLen = 4;   // max size of BOM

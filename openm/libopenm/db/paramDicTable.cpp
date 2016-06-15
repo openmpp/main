@@ -51,7 +51,6 @@ namespace openm
         &typeid(decltype(ParamDicRow::rank)), 
         &typeid(decltype(ParamDicRow::typeId)), 
         &typeid(decltype(ParamDicRow::isHidden)), 
-        &typeid(decltype(ParamDicRow::isGenerated)),
         &typeid(decltype(ParamDicRow::numCumulated))
     };
 
@@ -100,9 +99,6 @@ namespace openm
                 dynamic_cast<ParamDicRow *>(i_row)->isHidden = (*(bool *)i_value);
                 break;
             case 10:
-                dynamic_cast<ParamDicRow *>(i_row)->isGenerated = (*(bool *)i_value);
-                break;
-            case 11:
                 dynamic_cast<ParamDicRow *>(i_row)->numCumulated = (*(int *)i_value);
                 break;
             default:
@@ -134,7 +130,7 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
     rowVec = load(
         "SELECT" \
         " M.model_id, M.model_parameter_id, D.parameter_name, D.parameter_hid, D.parameter_digest," \
-        " D.db_prefix, D.db_suffix, D.parameter_rank, T.model_type_id, M.is_hidden, M.is_generated, D.num_cumulated" \
+        " D.db_prefix, D.db_suffix, D.parameter_rank, T.model_type_id, M.is_hidden, D.num_cumulated" \
         " FROM parameter_dic D" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
         " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +

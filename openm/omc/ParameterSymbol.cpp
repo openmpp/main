@@ -391,7 +391,6 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     paramDic.rank = rank();
     paramDic.typeId = pp_datatype->type_id;
     paramDic.isHidden = is_hidden;
-    paramDic.isGenerated = false; // TODO: not implemented
     paramDic.numCumulated = 0; //TODO: not implemented
     metaRows.paramDic.push_back(paramDic);
 

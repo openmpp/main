@@ -6,28 +6,36 @@
 
 using namespace openm;
 
-// create new model builder
-IModelBuilder * IModelBuilder::create(const string & i_sqlProvider, const string & i_outputDir)
+// new model builder to create sql script specific to each db-provider
+IModelBuilder * IModelBuilder::create(const string & i_providerNames, const string & i_outputDir)
 {
-    return new ModelSqlBuilder(i_sqlProvider, i_outputDir);
+    return new ModelSqlBuilder(i_providerNames, i_outputDir);
 }
 
 // release builder resources
 IModelBuilder::~IModelBuilder() throw() { }
 
 // create new model builder and set db table name prefix and suffix rules
-ModelSqlBuilder::ModelSqlBuilder(const string & i_sqlProvider, const string & i_outputDir) : 
+ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_outputDir) : 
     isCrc32Name(false),
     dbPrefixSize(0),
     dbSuffixSize(0),
-    sqlProvider(i_sqlProvider),
     outputDir(i_outputDir) 
 {
+    // parse and validate provider names
+    dbProviderLst = IDbExec::parseListOfProviderNames(i_providerNames);
+
+    // find smallest of max size of db table name
+    int minSize = 256;
+    for (const string providerName : dbProviderLst) {
+        int nSize = IDbExec::maxDbTableNameSize(providerName);
+        if (nSize < minSize) minSize = nSize;
+    }
+
     // if max size of db table name is too short then use crc32(md5) digest
-    int nSize = IDbExec::maxDbTableNameSize(i_sqlProvider);
-    isCrc32Name = nSize < 50;
+    isCrc32Name = minSize < 50;
     dbSuffixSize = isCrc32Name ? 8 : 32;
-    dbPrefixSize = nSize - (OM_DB_TABLE_TYPE_PREFIX_LEN + dbSuffixSize);
+    dbPrefixSize = minSize - (OM_DB_TABLE_TYPE_PREFIX_LEN + dbSuffixSize);
 
     if (dbPrefixSize < 2 || dbSuffixSize < 8)
         throw DbException("invalid db table name prefix size: %d or suffix size: %d", dbPrefixSize, dbSuffixSize);
@@ -44,10 +52,15 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         setParamTableInfo(io_metaRows);
         setOutTableInfo(io_metaRows);
 
-        // write into file sql script to create new model from supplied metadata rows
-        ModelSqlWriter wr(outputDir + io_metaRows.modelDic.name + "_create_model.sql");
+        // write sql script to insert new model metadata 
+        // write sql script to create new model tables
+        for (const string providerName : dbProviderLst) {
+            buildCreateModel(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_create_model_" + providerName + ".sql");
+            buildCreateModelTables(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_create_tables_" + providerName + ".sql");
+        }
 
-        buildCreateModel(io_metaRows, wr);
+        // write sql script to drop model tables
+        buildDropModelTables(io_metaRows, outputDir + io_metaRows.modelDic.name + "_drop_tables.sql");
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -63,202 +76,260 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
     }
 }
 
-// write sql script to create new model from supplied metadata rows 
-void ModelSqlBuilder::buildCreateModel(const MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const
+// write sql script to insert new model metadata
+void ModelSqlBuilder::buildCreateModel(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const
 {
     // start transaction and get new model id
-    io_wr.outFs << 
+    ModelSqlWriter wr(i_filePath);
+    wr.outFs << 
         "--\n" <<
         "-- create new model: " << i_metaRows.modelDic.name << '\n' <<
         "-- model digest:     " << i_metaRows.modelDic.digest << '\n' <<
         "-- script created:   " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
         "--\n\n";
-    io_wr.throwOnFail();
+    wr.throwOnFail();
 
-    string sqlBeginTrx = IDbExec::makeSqlBeginTransaction(sqlProvider);
-    io_wr.writeLine("--");
-    io_wr.writeLine("-- make sure all below is done inside of TRANSACTION");
-    io_wr.writeLine("--");
-    if (!sqlBeginTrx.empty()) io_wr.writeLine(sqlBeginTrx + ";\n");
+    string sqlBeginTrx = IDbExec::makeSqlBeginTransaction(i_sqlProvider);
+    wr.writeLine("--");
+    wr.writeLine("-- make sure all below is done inside of TRANSACTION");
+    wr.writeLine("--");
+    if (!sqlBeginTrx.empty()) wr.writeLine(sqlBeginTrx + ";\n");
 
     // model header
-    io_wr.write(
+    wr.write(
         "--\n" \
         "-- model description\n" \
         "--\n"
         );
-    ModelInsertSql::insertTopSql(i_metaRows.modelDic, io_wr);
-    io_wr.write("\n");
+    ModelInsertSql::insertTopSql(i_metaRows.modelDic, wr);
+    wr.write("\n");
 
     for (const ModelDicTxtLangRow & row : i_metaRows.modelTxt) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     // model types
-    io_wr.write(
+    wr.write(
         "--\n" \
         "-- model types\n" \
         "--\n"
         );
     for (const TypeDicRow & row : i_metaRows.typeDic) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TypeDicTxtLangRow & row : i_metaRows.typeTxt) {
         auto typeRowIt = TypeDicRow::byKey(row.modelId, row.typeId, i_metaRows.typeDic);
-        ModelInsertSql::insertDetailSql(*typeRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*typeRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TypeEnumLstRow & row : i_metaRows.typeEnum) {
         auto typeRowIt = TypeDicRow::byKey(row.modelId, row.typeId, i_metaRows.typeDic);
-        ModelInsertSql::insertDetailSql(*typeRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*typeRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TypeEnumTxtLangRow & row : i_metaRows.typeEnumTxt) {
         auto typeRowIt = TypeDicRow::byKey(row.modelId, row.typeId, i_metaRows.typeDic);
-        ModelInsertSql::insertDetailSql(*typeRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*typeRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     // model input parameters
-    io_wr.write(
+    wr.write(
         "--\n" \
         "-- model input parameters\n" \
         "--\n"
         );
     for (const ParamDicRow & row : i_metaRows.paramDic) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const ParamDicTxtLangRow & row : i_metaRows.paramTxt) {
         auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, i_metaRows.paramDic);
-        ModelInsertSql::insertDetailSql(*paramRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*paramRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const ParamDimsRow & row : i_metaRows.paramDims) {
         auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, i_metaRows.paramDic);
-        ModelInsertSql::insertDetailSql(*paramRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*paramRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const ParamDimsTxtLangRow & row : i_metaRows.paramDimsTxt) {
         auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, i_metaRows.paramDic);
-        ModelInsertSql::insertDetailSql(*paramRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*paramRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     // model output tables
-    io_wr.write(
+    wr.write(
         "--\n" \
         "-- model output tables\n" \
         "--\n"
         );
     for (const TableDicRow & row : i_metaRows.tableDic) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableDicTxtLangRow & row : i_metaRows.tableTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableDimsRow & row : i_metaRows.tableDims) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableDimsTxtLangRow & row : i_metaRows.tableDimsTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableAccRow & row : i_metaRows.tableAcc) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableAccTxtLangRow & row : i_metaRows.tableAccTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableExprRow & row : i_metaRows.tableExpr) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     for (const TableExprTxtLangRow & row : i_metaRows.tableExprTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, io_wr);
+        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     // group of parameters or output tables
     if (i_metaRows.groupLst.size() > 0) {
 
-        io_wr.write(
+        wr.write(
             "--\n" \
             "-- group of parameters or output tables\n" \
             "--\n"
             );
         for (const GroupLstRow & row : i_metaRows.groupLst) {
-            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
         }
-        io_wr.write("\n");
+        wr.write("\n");
 
         for (const GroupTxtLangRow & row : i_metaRows.groupTxt) {
-            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
         }
-        io_wr.write("\n");
+        wr.write("\n");
 
         for (const GroupPcRow & row : i_metaRows.groupPc) {
-            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, io_wr);
+            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
         }
-        io_wr.write("\n");
+        wr.write("\n");
     }
 
+    string sqlCommitTrx = IDbExec::makeSqlCommitTransaction(i_sqlProvider);
+    wr.writeLine("--");
+    wr.writeLine("-- make sure all above done inside of TRANSACTION");
+    wr.writeLine("--");
+    if (!sqlCommitTrx.empty()) wr.writeLine(sqlCommitTrx + ";");
+}
+
+// write sql script to create new model tables
+void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const MetaModelHolder & i_metaRows,  const string & i_filePath) const
+{
+    // script header
+    ModelSqlWriter wr(i_filePath);
+    wr.outFs <<
+        "--\n" <<
+        "-- create model tables: " << i_metaRows.modelDic.name << '\n' <<
+        "-- model digest:        " << i_metaRows.modelDic.digest << '\n' <<
+        "-- script created:      " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+        "--\n\n";
+    wr.throwOnFail();
+
     // create tables for model input parameters
-    io_wr.write(
+    wr.write(
         "--\n" \
-        "-- model input parameters\n" \
+        "-- create model input parameters\n" \
         "--\n"
         );
     for (const ParamTblInfo & tblInfo : paramInfoVec) {
-        paramCreateTable(tblInfo.paramTableName, "run_id", tblInfo, io_wr);
-        paramCreateTable(tblInfo.setTableName, "set_id", tblInfo, io_wr);
+        paramCreateTable(i_sqlProvider, tblInfo.paramTableName, "run_id", tblInfo, wr);
+        paramCreateTable(i_sqlProvider, tblInfo.setTableName, "set_id", tblInfo, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
 
     // create tables for model output tables
-    io_wr.write(
+    wr.write(
         "--\n" \
-        "-- model output tables\n" \
+        "-- create model output tables\n" \
         "--\n"
         );
     for (const OutTblInfo & tblInfo : outInfoVec) {
-        accCreateTable(tblInfo, io_wr);
-        valueCreateTable(tblInfo, io_wr);
+        accCreateTable(i_sqlProvider, tblInfo, wr);
+        valueCreateTable(i_sqlProvider, tblInfo, wr);
     }
-    io_wr.write("\n");
+    wr.write("\n");
+}
 
-    string sqlCommitTrx = IDbExec::makeSqlCommitTransaction(sqlProvider);
-    io_wr.writeLine("--");
-    io_wr.writeLine("-- make sure all above done inside of TRANSACTION");
-    io_wr.writeLine("--");
-    if (!sqlCommitTrx.empty()) io_wr.writeLine(sqlCommitTrx + ";");
+// write sql script to drop model tables
+void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  const string & i_filePath) const
+{
+    // script header
+    ModelSqlWriter wr(i_filePath);
+    wr.outFs <<
+        "--\n"
+        "-- drop model tables: " << i_metaRows.modelDic.name << '\n' <<
+        "-- model digest:      " << i_metaRows.modelDic.digest << '\n' <<
+        "-- script created:    " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+        "--\n" <<
+        "-- DROP MODEL TABLES" << '\n' <<
+        "-- DO NOT USE THIS SQL UNLESS YOU HAVE TO" << '\n' <<
+        "-- IT WILL DELETE ALL MODEL DATA" << '\n' <<
+        "--\n\n";
+    wr.throwOnFail();
+
+    // drop model output tables
+    wr.write(
+        "--\n" \
+        "-- drop model output tables\n" \
+        "--\n"
+        );
+    for (const OutTblInfo & tblInfo : outInfoVec) {
+        wr.writeLine("DROP TABLE " + tblInfo.accTableName + ";");
+        wr.writeLine("DROP TABLE " + tblInfo.valueTableName + ";");
+    }
+    wr.write("\n");
+
+    // drop model parameters tables
+    wr.write(
+        "--\n" \
+        "-- drop model input parameters tables\n" \
+        "--\n"
+        );
+    for (const ParamTblInfo & tblInfo : paramInfoVec) {
+        wr.writeLine("DROP TABLE " + tblInfo.paramTableName + ";");
+        wr.writeLine("DROP TABLE " + tblInfo.setTableName + ";");
+    }
+    wr.write("\n");
+
 }
 
 // start sql script to create new working set
@@ -277,26 +348,9 @@ void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLa
         }
 
         // create sql script to insert workset metadata and parameter values
-        setWr.reset(new ModelSqlWriter(
-            outputDir + i_metaRows.modelDic.name + "_" + io_metaSet.worksetRow.name + ".sql"
-            ));
+        bodySqlPath = outputDir + i_metaRows.modelDic.name + "_" + io_metaSet.worksetRow.name + theLog->timeStampSuffix() + ".sql";
 
-        // start transaction
-        ModelSqlWriter & wr = *setWr.get();
-        wr.outFs <<
-            "--\n" <<
-            "-- create working set of parameters: " << io_metaSet.worksetRow.name << '\n' <<
-            "-- model name:     " << i_metaRows.modelDic.name << '\n' <<
-            "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
-            "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
-            "--\n\n";
-        wr.throwOnFail();
-
-        string sqlBeginTrx = IDbExec::makeSqlBeginTransaction(sqlProvider);
-        wr.writeLine("--");
-        wr.writeLine("-- make sure all below is done inside of TRANSACTION");
-        wr.writeLine("--");
-        if (!sqlBeginTrx.empty()) wr.writeLine(sqlBeginTrx + ";\n");
+        setWr.reset(new ModelSqlWriter(bodySqlPath));
 
         // delete existing workset values and metadata
         modelDigestQuoted = toQuoted(i_metaRows.modelDic.digest);
@@ -394,10 +448,17 @@ void ModelSqlBuilder::createWorkset(const MetaModelHolder & /*i_metaRows*/, cons
         ModelInsertSql::insertSetSql(modelDigestQuoted, worksetNameQuoted, row, wr);
     }
     wr.write("\n");
+
+    // header comment for parameter values
+    wr.write(
+        "--\n" \
+        "-- insert values of parameters\n" \
+        "--\n"
+        );
 }
 
 /** finish sql script to create new working set */
-void ModelSqlBuilder::endWorkset(const MetaSetLangHolder & /*i_metaSet*/) const
+void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet)
 {
     try {
         // validate workset parameters: all parameters must be added to workset
@@ -406,26 +467,63 @@ void ModelSqlBuilder::endWorkset(const MetaSetLangHolder & /*i_metaSet*/) const
                 throw DbException("workset must include all model parameters, missing: %d: %s", tblInfo.id, tblInfo.name.c_str());
         }
 
-        // mark workset as readonly
-        ModelSqlWriter & wr = *setWr.get();
+        // close workset sql body file
+        setWr.reset();
 
-        wr.write(
-            "--\n" \
-            "-- mark working set as readonly\n" \
-            "--\n"
-        );
-        wr.writeLine(
-            "UPDATE workset_lst SET is_readonly = 1" \
-            " WHERE set_name = " + worksetNameQuoted +
-            " AND model_id = (SELECT M.model_id FROM model_dic M WHERE M.model_digest = " + modelDigestQuoted + ");"
-        );
-        wr.write("\n");
+        // for each provider create sql script file and copy sql body into transaction scope
+        for (const string & providerName : dbProviderLst) {
 
-        string sqlCommitTrx = IDbExec::makeSqlCommitTransaction(sqlProvider);
-        wr.writeLine("--");
-        wr.writeLine("-- make sure all above done inside of TRANSACTION");
-        wr.writeLine("--");
-        if (!sqlCommitTrx.empty()) wr.writeLine(sqlCommitTrx + ";");
+            // create provider sql file and put header
+            ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_" + i_metaSet.worksetRow.name + "_" + providerName + ".sql");
+            wr.outFs <<
+                "--\n" <<
+                "-- create working set of parameters: " << i_metaSet.worksetRow.name << '\n' <<
+                "-- model name:     " << i_metaRows.modelDic.name << '\n' <<
+                "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
+                "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+                "--\n\n";
+            wr.throwOnFail();
+
+            // start transaction
+            string sqlBeginTrx = IDbExec::makeSqlBeginTransaction(providerName);
+            wr.writeLine("--");
+            wr.writeLine("-- make sure all below is done inside of TRANSACTION");
+            wr.writeLine("--");
+            if (!sqlBeginTrx.empty()) wr.writeLine(sqlBeginTrx + ";\n");
+
+            // copy sql body
+            {
+                ifstream bodyFs(bodySqlPath.c_str(), ios::in);
+                if (bodyFs.fail()) throw HelperException("Failed to create file: %s", bodySqlPath.c_str());
+
+                wr.outFs << bodyFs.rdbuf();
+                wr.throwOnFail();
+            }
+            wr.write("\n");
+
+            // mark workset as readonly
+            wr.write(
+                "--\n" \
+                "-- mark working set as readonly\n" \
+                "--\n"
+            );
+            wr.writeLine(
+                "UPDATE workset_lst SET is_readonly = 1" \
+                " WHERE set_name = " + worksetNameQuoted +
+                " AND model_id = (SELECT M.model_id FROM model_dic M WHERE M.model_digest = " + modelDigestQuoted + ");"
+            );
+            wr.write("\n");
+
+            string sqlCommitTrx = IDbExec::makeSqlCommitTransaction(providerName);
+            wr.writeLine("--");
+            wr.writeLine("-- make sure all above done inside of TRANSACTION");
+            wr.writeLine("--");
+            if (!sqlCommitTrx.empty()) wr.writeLine(sqlCommitTrx + ";");
+            wr.write("\n");
+        }
+
+        // delete sql body file, treat file delete error as warning
+        if (std::remove(bodySqlPath.c_str())) theLog->logFormatted("File delete error: %s", bodySqlPath.c_str());
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -441,7 +539,7 @@ void ModelSqlBuilder::endWorkset(const MetaSetLangHolder & /*i_metaSet*/) const
     }
 }
 
-// append scalar parameter value to sql script for new working set  creation 
+// append scalar parameter value to sql script for new working set creation 
 void ModelSqlBuilder::addWorksetParameter(
     const MetaModelHolder & /*i_metaRows*/, const MetaSetLangHolder & /*i_metaSet*/, const string & i_name, const string & i_value
     )
@@ -457,12 +555,25 @@ void ModelSqlBuilder::addWorksetParameter(
     );
     if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
-    if (paramInfo->dimNameVec.size() != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
+    // create sql to insert value of scalar paarameter
+    doAddScalarWorksetParameter(paramInfo, i_name, i_value);
+
+    paramInfo->isAdded = true;  // done
+}
+
+// impelementation of append scalar parameter value to sql script
+void ModelSqlBuilder::doAddScalarWorksetParameter(
+    const vector<ParamTblInfo>::const_iterator & i_paramInfo, const string & i_name, const string & i_value
+    )
+{
+    // scalar parameter expected: check number of dimensions
+    if (i_paramInfo->dimNameVec.size() != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
 
     // if parameter value is string type then it must be sql-quoted
-    bool isQuote = 
-        equalNoCase(paramInfo->valueTypeName.c_str(), "VARCHAR") ||
-        equalNoCase(paramInfo->valueTypeName.c_str(), "CHAR");
+    bool isQuote =
+        equalNoCase(i_paramInfo->valueTypeName.c_str(), "VARCHAR") ||
+        equalNoCase(i_paramInfo->valueTypeName.c_str(), "CHAR") ||
+        equalNoCase(i_paramInfo->valueTypeName.c_str(), "TEXT");
 
     // make sql to insert parameter value
     // INSERT INTO StartingSeed_w20120819 (set_id, param_value) 
@@ -473,7 +584,7 @@ void ModelSqlBuilder::addWorksetParameter(
     // AND M.model_digest = '1234abcd';
     ModelSqlWriter & wr = *setWr.get();
     wr.outFs <<
-        "INSERT INTO " << paramInfo->setTableName << " (set_id, param_value)" <<
+        "INSERT INTO " << i_paramInfo->setTableName << " (set_id, param_value)" <<
         " SELECT W.set_id, ";
     wr.throwOnFail();
 
@@ -492,11 +603,9 @@ void ModelSqlBuilder::addWorksetParameter(
         " WHERE W.set_name = " << worksetNameQuoted <<
         " AND M.model_digest = " << modelDigestQuoted << ";\n";
     wr.throwOnFail();
-
-    paramInfo->isAdded = true;  // done
 }
 
-// append scalar parameter value to sql script for new working set creation 
+// append parameter values to sql script for new working set creation 
 void ModelSqlBuilder::addWorksetParameter(
     const MetaModelHolder & i_metaRows, const MetaSetLangHolder & /*i_metaSet*/, const string & i_name, const list<string> & i_valueLst
     )
@@ -513,12 +622,19 @@ void ModelSqlBuilder::addWorksetParameter(
     if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
     int dimCount = (int)paramInfo->dimNameVec.size();
-    if (dimCount <= 0) throw DbException("invalid parameter rank for parameter: %s", i_name.c_str());
+
+    // if this is scalar parameter then use simplified version of sql
+    if (dimCount <= 0) {
+        doAddScalarWorksetParameter(paramInfo, i_name, i_valueLst.front());
+        paramInfo->isAdded = true;
+        return;                     // done with this scalar parameter
+    }
 
     // if parameter value is string type then it must be sql-quoted
     bool isQuote =
         equalNoCase(paramInfo->valueTypeName.c_str(), "VARCHAR") ||
-        equalNoCase(paramInfo->valueTypeName.c_str(), "CHAR");
+        equalNoCase(paramInfo->valueTypeName.c_str(), "CHAR") ||
+        equalNoCase(paramInfo->valueTypeName.c_str(), "TEXT");
 
     // get dimensions list
     int mId = i_metaRows.modelDic.modelId;
@@ -658,12 +774,55 @@ void ModelSqlBuilder::addWorksetParameter(
 void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
 {
     try {
-        // put descriptive header
-        ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_optional_views.sql");
+        // write sql script to cerate views for each provider
+        for (const string providerName : dbProviderLst) {
 
+            // put descriptive header
+            ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_optional_views_" + providerName + ".sql");
+
+            wr.outFs <<
+                "--\n" <<
+                "-- compatibility views for model: " << i_metaRows.modelDic.name << '\n' <<
+                "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
+                "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+                "--\n" <<
+                "-- Dear user:\n" <<
+                "--   this part of database is optional and NOT used by openM++\n" <<
+                "--   if you want it for any reason please enjoy else just ignore it\n" <<
+                "-- Or other words:\n" <<
+                "--   if you don't know what is this then you don't need it\n" <<
+                "--\n\n";
+            wr.throwOnFail();
+
+            // input parameters compatibility views
+            wr.write(
+                "--\n" \
+                "-- input parameters compatibility views\n" \
+                "--\n"
+            );
+            for (const ParamTblInfo & tblInfo : paramInfoVec) {
+                paramCompatibilityView(providerName, i_metaRows.modelDic, tblInfo.name, tblInfo.paramTableName, tblInfo.dimNameVec, wr);
+            }
+            wr.write("\n");
+
+            // output tables compatibility views
+            wr.write(
+                "--\n" \
+                "-- output tables compatibility views\n" \
+                "--\n"
+            );
+            for (const OutTblInfo & tblInfo : outInfoVec) {
+                outputCompatibilityView(providerName, i_metaRows.modelDic, tblInfo.name, tblInfo.valueTableName, tblInfo.dimNameVec, wr);
+            }
+            wr.write("\n");
+
+        }
+
+        // write sql script to drop compatibility views
+        ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_drop_optional_views.sql");
         wr.outFs <<
             "--\n" <<
-            "-- compatibility views for model: " << i_metaRows.modelDic.name << '\n' <<
+            "-- drop compatibility views for model: " << i_metaRows.modelDic.name << '\n' <<
             "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
             "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
             "--\n" <<
@@ -675,25 +834,25 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
             "--\n\n";
         wr.throwOnFail();
 
-        // input parameters compatibility views
+        // drop input parameters compatibility views
         wr.write(
             "--\n" \
-            "-- input parameters compatibility views\n" \
+            "-- drop input parameters compatibility views\n" \
             "--\n"
             );
         for (const ParamTblInfo & tblInfo : paramInfoVec) {
-            paramCompatibilityView(i_metaRows.modelDic, tblInfo.name, tblInfo.paramTableName, tblInfo.dimNameVec, wr);
+            wr.writeLine("DROP VIEW " + tblInfo.name + ";");
         }
         wr.write("\n");
 
-        // output tables compatibility views
+        // drop output tables compatibility views
         wr.write(
             "--\n" \
-            "-- output tables compatibility views\n" \
+            "-- drop output tables compatibility views\n" \
             "--\n"
             );
         for (const OutTblInfo & tblInfo : outInfoVec) {
-            outputCompatibilityView(i_metaRows.modelDic, tblInfo.name, tblInfo.valueTableName, tblInfo.dimNameVec, wr);
+            wr.writeLine("DROP VIEW " + tblInfo.name + ";");
         }
         wr.write("\n");
     }
@@ -721,7 +880,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 //  PRIMARY KEY (run_id, dim0, dim1)  -- set_id for worset parameter
 // );
 const void ModelSqlBuilder::paramCreateTable(
-    const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+    const string & i_sqlProvider, const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "(" + 
@@ -740,7 +899,7 @@ const void ModelSqlBuilder::paramCreateTable(
     }
     sqlBody += "));";
 
-    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(sqlProvider, i_dbTableName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
 }
 
 // create table sql for accumulator table:
@@ -754,7 +913,7 @@ const void ModelSqlBuilder::paramCreateTable(
 //  acc_value FLOAT NULL,
 //  PRIMARY KEY (run_id, dim0, dim1, acc_id, sub_id)
 // );
-const void ModelSqlBuilder::accCreateTable(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
+const void ModelSqlBuilder::accCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
     string sqlBody = "(run_id INT NOT NULL, ";
 
@@ -773,7 +932,7 @@ const void ModelSqlBuilder::accCreateTable(const OutTblInfo & i_tblInfo, ModelSq
     }
     sqlBody += ", acc_id, sub_id));";
 
-    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(sqlProvider, i_tblInfo.accTableName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_tblInfo.accTableName, sqlBody) << "\n";
 }
 
 // create table sql for value table:
@@ -786,7 +945,7 @@ const void ModelSqlBuilder::accCreateTable(const OutTblInfo & i_tblInfo, ModelSq
 //  expr_value FLOAT NULL,
 //  PRIMARY KEY (run_id, dim0, dim1, expr_id)
 // );
-const void ModelSqlBuilder::valueCreateTable(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
+const void ModelSqlBuilder::valueCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
 {
     string sqlBody = "(run_id INT NOT NULL, ";
 
@@ -803,7 +962,7 @@ const void ModelSqlBuilder::valueCreateTable(const OutTblInfo & i_tblInfo, Model
     }
     sqlBody += ", expr_id));";
 
-    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(sqlProvider, i_tblInfo.valueTableName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_tblInfo.valueTableName, sqlBody) << "\n";
 }
 
 // write body of create view sql for parameter compatibility view:
@@ -821,7 +980,12 @@ const void ModelSqlBuilder::valueCreateTable(const OutTblInfo & i_tblInfo, Model
 //  WHERE M.model_digest = '1234abcd'
 // );
 const void ModelSqlBuilder::paramCompatibilityView(
-    const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+    const string & i_sqlProvider, 
+    const ModelDicRow & i_modelRow, 
+    const string & i_viewName, 
+    const string & i_srcTableName, 
+    const vector<string> & i_dimNames, 
+    ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "SELECT";
@@ -840,7 +1004,7 @@ const void ModelSqlBuilder::paramCompatibilityView(
         " INNER JOIN model_dic M ON (M.model_id = RL.model_id)" \
         " WHERE M.model_digest = " + toQuoted(i_modelRow.digest) + ");";
 
-    io_wr.outFs << IDbExec::makeSqlCreateViewIfNotExist(sqlProvider, i_viewName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateViewReplace(i_sqlProvider, i_viewName, sqlBody) << "\n";
 }
 
 // return body of create view sql for output table compatibility view:
@@ -859,7 +1023,12 @@ const void ModelSqlBuilder::paramCompatibilityView(
 //  WHERE M.model_digest = '1234abcd'
 // );
 const void ModelSqlBuilder::outputCompatibilityView(
-    const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+    const string & i_sqlProvider, 
+    const ModelDicRow & i_modelRow, 
+    const string & i_viewName, 
+    const string & i_srcTableName, 
+    const vector<string> & i_dimNames, 
+    ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "SELECT";
@@ -881,6 +1050,6 @@ const void ModelSqlBuilder::outputCompatibilityView(
         " INNER JOIN model_dic M ON (M.model_id = RL.model_id)" \
         " WHERE M.model_digest = " + toQuoted(i_modelRow.digest) + ");";
 
-    io_wr.outFs << IDbExec::makeSqlCreateViewIfNotExist(sqlProvider, i_viewName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateViewReplace(i_sqlProvider, i_viewName, sqlBody) << "\n";
 }
 

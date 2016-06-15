@@ -211,7 +211,7 @@ bool LogBase::logFileCreate(const string & i_path) throw()
         ofstream logSt;
         exit_guard<ofstream> onExit(&logSt, &ofstream::close);  // close on exit
 
-        logSt.open(i_path, ios_base::out | ios_base::trunc);
+        logSt.open(i_path, ios::out | ios::trunc);
         bool isCreated = !logSt.fail();
         return isCreated;
     }
@@ -351,7 +351,7 @@ bool Log::logToFile(
         ofstream logSt;
         exit_guard<ofstream> onExit(&logSt, &ofstream::close);  // close on exit
 
-        logSt.open((i_isToStamped ? stampedPath : lastPath), ios_base::out | ios_base::app);
+        logSt.open((i_isToStamped ? stampedPath : lastPath), ios::out | ios::app);
         bool isOk = !logSt.fail();
         if (isOk) {
             writeToLog(logSt, i_msgTime, i_msg, i_extra);
@@ -403,7 +403,7 @@ bool TraceLog::logToFile(
         ofstream & logSt = i_isToStamped ? stampedSt : lastSt;
 
         if (!logSt.is_open()) {
-            logSt.open((i_isToStamped ? stampedPath : lastPath), ios_base::out | ios_base::app);
+            logSt.open((i_isToStamped ? stampedPath : lastPath), ios::out | ios::app);
             if (logSt.fail()) return false;
         }
 

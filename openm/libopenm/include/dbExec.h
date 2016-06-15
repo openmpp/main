@@ -221,6 +221,12 @@ namespace openm
          */
         virtual void executeStatement(int i_paramCount, const DbValue * i_valueArr) = 0;
 
+        /** return list of provider names from supplied comma or semicolon separated string or exception on invalid name or empty list. */
+        static list<string> parseListOfProviderNames(const string & i_sqlProviderNames);
+
+        /** check if provider name is valid. */
+        static bool isValidProviderName(const char * i_sqlProvider);
+
         /** return max length of db table or view name. */
         static int maxDbTableNameSize(const string & i_sqlProvider);
 
@@ -249,7 +255,7 @@ namespace openm
         );
 
         /**
-         * make sql statement to create view if not exists.
+         * make sql statement to create or replace view.
          *
          * @param[in] i_sqlProvider   sql provider name, ie: SQLITE
          * @param[in] i_viewName      view name to create
@@ -260,9 +266,11 @@ namespace openm
          * it does return db-provider specific sql to create view if not already exists, for example: \n
          * @code
          *      CREATE VIEW IF NOT EXISTS viewName AS ...select or other view body deifinition sql...
+         * or:
+         *      CREATE OR REPLACE VIEW viewName AS ...select or other view body deifinition sql...
          * @endcode
          */
-        static string makeSqlCreateViewIfNotExist(
+        static string makeSqlCreateViewReplace(
             const string & i_sqlProvider, const string & i_viewName, const string & i_viewBodySql
         );
     };

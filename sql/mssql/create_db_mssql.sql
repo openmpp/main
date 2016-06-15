@@ -178,7 +178,6 @@ CREATE TABLE model_parameter_dic
   model_parameter_id INT      NOT NULL, -- model parameter id
   parameter_hid      INT      NOT NULL, -- unique parameter id
   is_hidden          SMALLINT NOT NULL, -- if <> 0 then parameter is hidden
-  is_generated       SMALLINT NOT NULL, -- if <> 0 then parameter is model generated
   PRIMARY KEY (model_id, model_parameter_id),
   CONSTRAINT model_parameter_dic_un UNIQUE (model_id, parameter_hid),
   CONSTRAINT model_parameter_dic_mk 
@@ -402,7 +401,6 @@ CREATE TABLE group_lst
   is_parameter SMALLINT     NOT NULL, -- if <> 0 then parameter group else output table group
   group_name   VARCHAR(255) NOT NULL, -- group name
   is_hidden    SMALLINT     NOT NULL, -- if <> 0 then group is hidden
-  is_generated SMALLINT     NOT NULL, -- if <> 0 then group is model generated
   PRIMARY KEY (model_id, group_id),
   CONSTRAINT group_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)

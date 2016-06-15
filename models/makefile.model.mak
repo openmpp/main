@@ -214,15 +214,17 @@ publish : $(MODEL_SQLITE)
 $(MODEL_SQLITE) : \
   $(OM_SQL_DIR)/create_db.sql \
   $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model_sqlite.sql \
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_create_tables_sqlite.sql \
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME)_sqlite.sql \
+  $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_model_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_create_tables_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME)_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
 
 #
 # run the model

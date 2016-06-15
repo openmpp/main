@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_OM_MODEL_H
-#define OM_OM_MODEL_H
+#ifndef OM_H_MODEL_H
+#define OM_H_MODEL_H
 
 #include <typeinfo>
 #include <memory>
@@ -191,4 +191,4 @@ extern OM_SHUTDOWN_HANDLER ModelShutdownHandler;
     }
 #endif
 
-#endif  // OM_OM_MODEL_H
+#endif  // OM_H_MODEL_H

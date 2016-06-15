@@ -28,7 +28,7 @@ namespace openm
     {
     public:
         /** create new model builder. */
-        ModelSqlBuilder(const string & i_sqlProvider, const string & i_outputDir);
+        ModelSqlBuilder(const string & i_providerNames, const string & i_outputDir);
 
         /** release builder resources. */
         ~ModelSqlBuilder() throw() { }
@@ -42,16 +42,16 @@ namespace openm
         /** start sql script to create new working set */
         void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) override;
 
-        /** append scalar parameter value to sql script for new working set  creation */
+        /** append scalar parameter value to sql script for new working set creation */
         void addWorksetParameter(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value) override;
 
-        /** append parameter values to sql script for new working set  creation */
+        /** append parameter values to sql script for new working set creation */
         void addWorksetParameter(
             const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
             ) override;
 
         /** finish sql script to create new working set */
-        void endWorkset(const MetaSetLangHolder & i_metaSet) const override;
+        void endWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) override;
 
         /** write sql script to create backward compatibility views */
         void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const override;
@@ -60,10 +60,11 @@ namespace openm
         bool isCrc32Name;                   // if true then use crc32 as db table name suffix
         int dbPrefixSize;                   // db table prefix name size
         int dbSuffixSize;                   // db table prefix name size
-        string sqlProvider;                 // db provider name, ie: SQLITE
         string outputDir;                   // output directory to write sql script files
+        string bodySqlPath;                 // workset body sql file path
         string modelDigestQuoted;           // sql-quoted model digest
         string worksetNameQuoted;           // sql-quoted workset name
+        list<string> dbProviderLst;         // list of db provider names, ie: sqlite,postgresql,mysql
         unique_ptr<ModelSqlWriter> setWr;   // workset sql writer
 
         /** helper struct to collect info for db table */
@@ -122,8 +123,14 @@ namespace openm
         /** sort and validate metadata rows for uniqueness and referential integrity */
         void prepare(MetaModelHolder & io_metaRows) const;
 
-        /** write sql script to create new model from supplied metadata rows */
-        void buildCreateModel(const MetaModelHolder & i_metaRows, ModelSqlWriter & io_wr) const;
+        /** write sql script to insert new model metadata */
+        void buildCreateModel(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const;
+
+        /** write sql script to create new model tables */
+        void buildCreateModelTables(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const;
+
+        /** write sql script to drop model tables */
+        void buildDropModelTables(const MetaModelHolder & i_metaRows, const string & i_filePath) const;
 
         /** sort and validate workset metadata for uniqueness and referential integrity */
         void prepareWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const;
@@ -134,25 +141,44 @@ namespace openm
         /** delete existing workset parameter values and workset metadata */
         void deleteWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
 
+        /** impelementation of append scalar parameter value to sql script */
+        void doAddScalarWorksetParameter(
+            const vector<ParamTblInfo>::const_iterator & i_paramInfo, const string & i_name, const string & i_value
+        );
+
         /** create table sql for parameter */
         const void paramCreateTable(
-            const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+            const string & i_sqlProvider, 
+            const string i_dbTableName, 
+            const string & i_runSetId, 
+            const ParamTblInfo & i_tblInfo, 
+            ModelSqlWriter & io_wr
         ) const;
 
         /** create table sql for accumulator table */
-        const void accCreateTable(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        const void accCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
         /** create table sql for value table: aggregated table expressions */
-        const void valueCreateTable(const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        const void valueCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
 
         /** create view sql for parameter compatibility view */
         const void paramCompatibilityView(
-            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+            const string & i_sqlProvider, 
+            const ModelDicRow & i_modelRow,
+            const string & i_viewName, 
+            const string & i_srcTableName, 
+            const vector<string> & i_dimNames, 
+            ModelSqlWriter & io_wr
         ) const;
 
         /** create view sql for output table compatibility view */
         const void outputCompatibilityView(
-            const ModelDicRow & i_modelRow, const string & i_viewName, const string & i_srcTableName, const vector<string> & i_dimNames, ModelSqlWriter & io_wr
+            const string & i_sqlProvider, 
+            const ModelDicRow & i_modelRow, 
+            const string & i_viewName, 
+            const string & i_srcTableName, 
+            const vector<string> & i_dimNames, 
+            ModelSqlWriter & io_wr
         ) const;
 
         /** set field values for workset_lst table row */

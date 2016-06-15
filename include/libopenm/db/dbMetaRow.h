@@ -422,9 +422,6 @@ namespace openm
         /** is_hidden         SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** is_generated      SMALLINT     NOT NULL */
-        bool isGenerated;
-
         /** num_cumulated     INT          NOT NULL */
         int numCumulated;
 
@@ -440,7 +437,6 @@ namespace openm
             rank(0),
             typeId(0),
             isHidden(false),
-            isGenerated(false),
             numCumulated(0)
         { }
 
@@ -1052,17 +1048,13 @@ namespace openm
         /** is_hidden    SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** is_generated SMALLINT     NOT NULL */
-        bool isGenerated;
-
         /** create row with supplied primary key field values. */
         GroupLstRow(int i_modelId, int i_groupId) : 
             modelId(i_modelId), 
             groupId(i_groupId), 
             isParam(false),
             name(""),
-            isHidden(false),
-            isGenerated(false)
+            isHidden(false)
         { }
 
         /** create row with default empty field values. */

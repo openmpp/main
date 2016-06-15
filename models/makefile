@@ -55,7 +55,7 @@ $(MODEL_DIRS) :
 .PHONY : publish
 publish : prepare
 	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish;)
-	cp -pf modelOne/*_sqlite.sql $(LOCAL_SQL_DIR)
+	cp -pf modelOne/*.sql $(LOCAL_SQL_DIR)
 	@if [ -e modelOne/modelOne.ini ] ; then cp -pf modelOne/modelOne.ini $(LOCAL_BIN_DIR) ; fi
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/$(OMC_SRC_DIR)/*.sql $(LOCAL_SQL_DIR);)
 

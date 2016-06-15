@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_OM_LOG_H
-#define OM_OM_LOG_H
+#ifndef OM_H_LOG_H
+#define OM_H_LOG_H
 
 #include <string>
 using namespace std;
@@ -96,4 +96,4 @@ extern openm::ITrace * theTrace;
     }
 #endif
 
-#endif  // OM_OM_LOG_H
+#endif  // OM_H_LOG_H

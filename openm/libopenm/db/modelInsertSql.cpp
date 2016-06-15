@@ -441,7 +441,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
     io_wr.writeLine(");");
 
     // INSERT INTO model_parameter_dic 
-    //   (model_id, model_parameter_id, parameter_hid, is_hidden, is_generated)
+    //   (model_id, model_parameter_id, parameter_hid, is_hidden)
     // SELECT 
     //   M.model_id, 44, D.parameter_hid, 0, 0
     // FROM parameter_dic D, model_dic M
@@ -452,13 +452,12 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
     //   SELECT * FROM model_parameter_dic E WHERE E.model_id = M.model_id AND E.model_parameter_id = 44
     // );
     io_wr.outFs <<
-        "INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden, is_generated)" \
+        "INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden)" \
         " SELECT" \
         " M.model_id, " <<
         i_row.paramId << "," <<
         " D.parameter_hid," <<
-        (i_row.isHidden ? " 1," : " 0,") <<
-        (i_row.isGenerated ? " 1" : " 0") <<
+        (i_row.isHidden ? " 1" : " 0") <<
         " FROM parameter_dic D, model_dic M" \
         " WHERE D.parameter_digest = ";
     io_wr.throwOnFail();
@@ -1147,7 +1146,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupLstRow>(
     if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) group name, id: %d", i_row.groupId);
     if (i_row.name.length() > 255) throw DbException("invalid (too long) group name: %s", i_row.name.c_str());
     
-    // INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden, is_generated)
+    // INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden)
     // SELECT 
     //   M.model_id, 0, 0, 'TableGroup', 0, 0
     // FROM model_dic M
@@ -1157,7 +1156,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupLstRow>(
     //   SELECT * FROM group_lst E WHERE E.model_id = M.model_id AND E.group_id = 0
     // );
     io_wr.outFs <<
-        "INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden, is_generated)" \
+        "INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden)" \
         " SELECT" \
         " M.model_id, " <<
         i_row.groupId << ", " <<
@@ -1165,8 +1164,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupLstRow>(
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.name, true);
     io_wr.outFs <<
-        (i_row.isHidden ? "1, " : "0, ") <<
-        (i_row.isGenerated ? "1" : "0") <<
+        (i_row.isHidden ? "1" : "0") <<
         " FROM model_dic M" \
         " WHERE M.model_digest = ";
     io_wr.throwOnFail();

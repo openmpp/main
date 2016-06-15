@@ -181,6 +181,7 @@
     <ClCompile Include="common\log.cpp" />
     <ClCompile Include="common\md5.cpp" />
     <ClCompile Include="common\utf8Convert.cpp" />
+    <ClCompile Include="db\dbExecBase.cpp" />
     <ClCompile Include="db\dbValue.cpp" />
     <ClCompile Include="db\dbExecProvider.cpp" />
     <ClCompile Include="db\dbExec.cpp" />

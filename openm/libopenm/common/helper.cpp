@@ -253,3 +253,100 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
     vsnprintf(io_buffer, i_size, i_format, io_args);
     io_buffer[i_size - 1] = '\0';
 }
+
+// this function exists only because g++ below 4.9 does not support std::regex
+/**   
+* split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
+*
+* @param[in] i_values       source string of comma separated values.
+* @param[in] i_delimiters   list of delimiters, default: comma.
+*/
+list<string> openm::splitCsv(const string & i_values, const char * i_delimiters)
+{
+    list<string> resultLst;
+    string srcValues = trim(i_values);
+    string::size_type nSrcLen = srcValues.length();
+
+    if (nSrcLen <= 0) return resultLst;     // source string is empty: return empty list
+
+    // no delimiters: return entire source string as first element of result list
+    if (i_delimiters == nullptr || 0 == strnlen(i_delimiters, OM_STRLEN_MAX)) {
+        resultLst.push_back(srcValues);
+        return resultLst;
+    }
+
+    // find delimiter(s) and append non-empty values into output list
+    for (string::size_type nowPos = 0; nowPos < nSrcLen; nowPos++) {
+
+        string::size_type delimPos = srcValues.find_first_of(i_delimiters, nowPos);
+
+        if (delimPos == string::npos) delimPos = nSrcLen;   // last delimiter: use the rest of the string
+
+        // trim spaces and append value if not empty
+        string sVal = trim(srcValues.substr(nowPos, delimPos - nowPos));
+        if (!sVal.empty()) resultLst.push_back(sVal);
+
+        nowPos = delimPos;  // skip delimiter and continue
+    }
+
+    return resultLst;
+}
+
+// this function exists only because g++ below 4.9 does not support std::regex
+#ifdef _WIN32
+
+string openm::regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)
+{
+    regex pat(i_pattern);
+    return regex_replace(i_srcText, pat, i_replaceWith);
+}
+
+#else
+
+#include <regex.h>
+
+#define MAX_RE_ERROR_MSG    1024
+
+string openm::regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)
+{
+    // prepare regex
+    regex_t re;
+
+    int nRet = regcomp(&re, i_pattern, REG_EXTENDED | REG_NEWLINE);
+    if (nRet != 0) {
+        char errMsg[MAX_RE_ERROR_MSG + 1];
+        regerror(nRet, &re, errMsg, sizeof(errMsg));
+        throw HelperException("Regular expression error: %s", errMsg);
+    }
+
+    // replace first occurrence of pattern in source text
+    string sResult;
+    regmatch_t matchPos;
+
+    nRet = regexec(&re, i_srcText.c_str(), 1, &matchPos, 0);
+    if (nRet == REG_NOMATCH) {
+        regfree(&re);           // cleanup
+        return i_srcText;       // pattern not found - return source text as is
+    }
+    if (nRet != 0) {            // error 
+        regfree(&re);           // cleanup
+        throw HelperException("Regular expression FAILED: %s", i_pattern);
+    }
+    // at this point nRet == 0 and we can replace first occurrence with replacement string
+    if (matchPos.rm_so >= 0 && matchPos.rm_so < (int)i_srcText.length()) {
+
+        string sResult =
+            i_srcText.substr(0, matchPos.rm_so) +
+            i_replaceWith +
+            ((matchPos.rm_eo >= 0 && matchPos.rm_eo < (int)i_srcText.length()) ? i_srcText.substr(matchPos.rm_eo) : "");
+
+        regfree(&re);       // cleanup
+        return sResult;
+    }
+    else {                  // starting offset out of range - pattern not found
+        regfree(&re);       // cleanup
+        return i_srcText;   // return source text as is
+    }
+}
+
+#endif // _WIN32

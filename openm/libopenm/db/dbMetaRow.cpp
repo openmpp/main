@@ -5,9 +5,6 @@
 #include "libopenm/db/dbMetaRow.h"
 using namespace openm;
 
-/** db-exception default error message: "unknown db error" */
-const char openm::dbUnknownErrorMessage[] = "unknown db error";
-
 // db-row base class
 IRowBase::~IRowBase(void) throw() { }
 

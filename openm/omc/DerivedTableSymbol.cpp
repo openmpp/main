@@ -6,7 +6,6 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include <regex>
 #include "DerivedTableSymbol.h"
 #include "LanguageSymbol.h"
 #include "CodeBlock.h"
@@ -14,9 +13,6 @@
 
 using namespace std;
 using namespace openm;
-
-// this function exist only because g++ below 4.9 does not support std::regex
-static string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
 
 void DerivedTableSymbol::post_parse(int pass)
 {
@@ -136,65 +132,3 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
     }
 }
-
-// this function exists only because g++ below 4.9 does not support std::regex
-#ifdef _WIN32
-
-string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)
-{
-    regex pat(i_pattern);
-    return regex_replace(i_srcText, pat, i_replaceWith);
-}
-
-#else
-
-#include <regex.h>
-
-#define MAX_RE_ERROR_MSG    1024
-
-string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)
-{
-    // prepare regex
-    regex_t re;
-
-    int nRet = regcomp(&re, i_pattern, REG_EXTENDED | REG_NEWLINE);
-    if (nRet != 0) {
-        char errMsg[MAX_RE_ERROR_MSG + 1];
-        regerror(nRet, &re, errMsg, sizeof(errMsg));
-        throw HelperException("Regular expression error: %s", errMsg);
-    }
-
-    // replace first occurrence of pattern in source text
-    string sResult;
-    regmatch_t matchPos;
-
-    nRet = regexec(&re, i_srcText.c_str(), 1, &matchPos, 0);
-    if (nRet == REG_NOMATCH) {
-        regfree(&re);           // cleanup
-        return i_srcText;       // pattern not found - return source text as is
-    }
-    if (nRet != 0) {            // error 
-        regfree(&re);           // cleanup
-        throw HelperException("Regular expression FAILED: %s", i_pattern);
-    }
-    // at this point nRet == 0 and we can replace first occurrence with replacement string
-    if (matchPos.rm_so >= 0 && matchPos.rm_so < (int)i_srcText.length()) {
-
-        string sResult =
-            i_srcText.substr(0, matchPos.rm_so) +
-            i_replaceWith +
-            ((matchPos.rm_eo >= 0 && matchPos.rm_eo < (int)i_srcText.length()) ? i_srcText.substr(matchPos.rm_eo) : "");
-
-        regfree(&re);       // cleanup
-        return sResult;
-    }
-    else {                  // starting offset out of range - pattern not found
-        regfree(&re);       // cleanup
-        return i_srcText;   // return source text as is
-    }
-}
-
-#endif // _WIN32
-
-
-

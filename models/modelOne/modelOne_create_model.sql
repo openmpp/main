@@ -89,9 +89,9 @@ INSERT INTO parameter_dic
 VALUES
   (6, 'StartingSeed', '2012_817_1604590133', 'StartingSeed', '2012_819', 0, 3, 0);
 
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden, is_generated) VALUES (1, 0, 4, 0, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden, is_generated) VALUES (1, 1, 5, 0, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden, is_generated) VALUES (1, 2, 6, 0, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 6, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, 'Age by Sex (fr)', NULL);

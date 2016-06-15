@@ -5,14 +5,10 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "libopenm/common/omFile.h"
 #include "dbExecSqlite.h"
-using namespace openm;
 
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <unistd.h>
-#endif  // _WIN32
+using namespace openm;
 
 /**
 * create new db-connection.
@@ -44,8 +40,8 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
         // if DeleteExisting=true then delete existing file
         string dbName = strConnProperty("Database");
 
-        if (boolConnProperty("DeleteExisting") && !access(dbName.c_str(), 0)) {
-            if (unlink(dbName.c_str())) 
+        if (boolConnProperty("DeleteExisting") && isFileExists(dbName.c_str())) {
+            if (std::remove(dbName.c_str())) 
                 throw DbException("File delete error: %s", dbName.c_str());
         }
 

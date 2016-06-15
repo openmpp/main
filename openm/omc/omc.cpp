@@ -8,18 +8,19 @@
 * 
 *
 * The following command line arguments are supported by omc:
-* * -Omc.ModelName     name/of/model/executable, e.g. RiskPaths
-* * -Omc.ScenarioName  name/of/base/scenario, e.g. Base
-* * -Omc.InputDir      input/dir/to/find/source/files
-* * -Omc.OutputDir     output/dir/to/place/compiled/cpp_and_h_and_sql/files
-* * -Omc.UseDir        use/dir/with/ompp/files
-* * -Omc.ParamDir      input/dir/to/find/parameter/files/for/scenario
-* * -Omc.FixedDir      input/dir/to/find/fixed/parameter/files/
-* * -Omc.CodePage      code page for converting source files, e.g. windows-1252
-* * -Omc.NoLineDirectives suppress #line directives in generated cpp files
-* * -Omc.TraceScanning detailed tracing from scanner
-* * -Omc.TraceParsing  detailed tracing from parser
-* * -OpenM.OptionsFile some/optional/omc.ini
+* * -Omc.ModelName      name/of/model/executable, e.g. RiskPaths
+* * -Omc.ScenarioName   name/of/base/scenario, e.g. Base
+* * -Omc.InputDir       input/dir/to/find/source/files
+* * -Omc.OutputDir      output/dir/to/place/compiled/cpp_and_h_and_sql/files
+* * -Omc.UseDir         use/dir/with/ompp/files
+* * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario
+* * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
+* * -Omc.CodePage       code page for converting source files, e.g. windows-1252
+* * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
+* * -Omc.TraceScanning  detailed tracing from scanner
+* * -Omc.TraceParsing   detailed tracing from parser
+* * -Omc.DbProviders    db-provider names to create sql scripts, comma separated, default: sqlite
+* * -OpenM.OptionsFile  some/optional/omc.ini
 * 
 * Short form of command line arguments:
 * * -m short form of -Omc.ModelName
@@ -106,6 +107,9 @@ namespace openm
 
         /** omc generate detailed output from scanner */
         static const char * traceScanning;
+
+        /** omc list of db-provider names to create sql scripts */
+        static const char * dbProviderNames;
     };
 
     /** keys for omc options (short form) */
@@ -169,6 +173,9 @@ namespace openm
     /** omc trace scanning option */
     const char * OmcArgKey::traceScanning = "Omc.TraceScanning";
 
+    /** omc list of db-provider names to create sql scripts */
+    const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
+
     /** short name for options file name: -s fileName.ini */
     const char * OmcShortKey::optionsFile = "ini";
 
@@ -206,6 +213,7 @@ namespace openm
         OmcArgKey::noLineDirectives,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
+        OmcArgKey::dbProviderNames,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -281,7 +289,7 @@ int main(int argc, char * argv[])
         // get list of source file names in specified directory or current directory by default
         string inpDir = argStore.strOption(OmcArgKey::inputDir);
         // normalize path separators (to avoid escaping \ in #line directives)
-        std::replace( inpDir.begin(), inpDir.end(), '\\', '/'); 
+        std::replace(inpDir.begin(), inpDir.end(), '\\', '/'); 
         bool isFromCurrent = inpDir == "" || inpDir == ".";
 
         if (!isFromCurrent) theLog->logFormatted("Compile source from: %s", inpDir.c_str());
@@ -349,39 +357,21 @@ int main(int argc, char * argv[])
 			}
 		}
 
-        // Obtain information on code page
-        string code_page;
-        if (argStore.isOptionExist(OmcArgKey::codePage)) {
-            code_page = argStore.strOption(OmcArgKey::codePage);
-        }
-        // make available globally in static member of Symbol
-        Symbol::code_page = code_page;
+        // Obtain information on code page name, default: empty "" name (= system default code page)
+        Symbol::code_page = argStore.strOption(OmcArgKey::codePage);
 
-        // Obtain information on generation of #line directives
-        bool no_line_directives = false;
-        if (argStore.isOptionExist(OmcArgKey::noLineDirectives)) {
-            no_line_directives = argStore.boolOption(OmcArgKey::noLineDirectives);
-        }
-        // make available globally in static member of Symbol
-        Symbol::no_line_directives = no_line_directives;
+        // Obtain information on generation of #line directives, default: false
+        Symbol::no_line_directives = argStore.boolOption(OmcArgKey::noLineDirectives);
 
-        // Obtain information on detailed parsing option
-        if (argStore.isOptionExist(OmcArgKey::traceParsing)) {
-            Symbol::trace_parsing = argStore.boolOption(OmcArgKey::traceParsing);
-        }
-        else {
-            // default value
-            Symbol::trace_parsing = false;
-        }
+        // Obtain information on detailed parsing option, default: false
+        Symbol::trace_parsing = argStore.boolOption(OmcArgKey::traceParsing);
 
-        // Obtain information on detailed scanning option
-        if (argStore.isOptionExist(OmcArgKey::traceScanning)) {
-            Symbol::trace_scanning = argStore.boolOption(OmcArgKey::traceScanning);
-        }
-        else {
-            // default value
-            Symbol::trace_scanning = false;
-        }
+        // Obtain information on detailed scanning option, default: false
+        Symbol::trace_scanning = argStore.boolOption(OmcArgKey::traceScanning);
+
+        // get comma- or semicolon- separated list of SQL provider names to create model sql scripts
+        // use SQLite as default
+        string sqlProviders = argStore.strOption(OmcArgKey::dbProviderNames, openm::SQLITE_DB_PROVIDER);
 
         // Populate symbol table with default symbols
         Symbol::populate_default_symbols(model_name);
@@ -390,7 +380,7 @@ int main(int argc, char * argv[])
         ParseContext pc;
 
         // open & prepare pass-through / markup stream om_developer.cpp
-        ofstream om_developer_cpp(outDir + "om_developer.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_developer_cpp(outDir + "om_developer.cpp", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_developer_cpp(&om_developer_cpp, &ofstream::close);   // close on exit
         if (om_developer_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_developer.cpp");
 
@@ -489,24 +479,24 @@ int main(int argc, char * argv[])
         theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code
-        ofstream om_types0_h(outDir + "om_types0.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_types0_h(outDir + "om_types0.h", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_types0_h(&om_types0_h, &ofstream::close);   // close on exit
         if (om_types0_h.fail()) throw HelperException("Unable to open %s for writing", "om_types0.h");
 
-        ofstream om_types1_h(outDir + "om_types1.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_types1_h(outDir + "om_types1.h", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_types1_h(&om_types1_h, &ofstream::close);   // close on exit
         if (om_types1_h.fail()) throw HelperException("Unable to open %s for writing", "om_types1.h");
 
-        ofstream om_declarations_h(outDir + "om_declarations.h", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_declarations_h(outDir + "om_declarations.h", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_declarations_h(&om_declarations_h, &ofstream::close);   // close on exit
         if (om_declarations_h.fail()) throw HelperException("Unable to open %s for writing", "om_declarations.h");
 
         string om_definitions_cpp_fname = outDir + "om_definitions.cpp";
-        ofstream om_definitions_cpp(om_definitions_cpp_fname, ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_definitions_cpp(om_definitions_cpp_fname, ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_definitions_cpp(&om_definitions_cpp, &ofstream::close);   // close on exit
         if (om_definitions_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
 
-        ofstream om_fixed_parms_cpp(outDir + "om_fixed_parms.cpp", ios_base::out | ios_base::trunc | ios_base::binary);
+        ofstream om_fixed_parms_cpp(outDir + "om_fixed_parms.cpp", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_fixed_parms_cpp(&om_fixed_parms_cpp, &ofstream::close);   // close on exit
         if (om_fixed_parms_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_fixed_parms.cpp");
 
@@ -519,9 +509,8 @@ int main(int argc, char * argv[])
         om_fixed_parms_cpp << "\xEF\xBB\xBF";
 #endif
         // collect model metadata during code generation
-        // use SQLITE db-provider, (it may be omc command-line parameter in the future)
         MetaModelHolder metaRows;
-        unique_ptr<IModelBuilder> builder(IModelBuilder::create(openm::SQLITE_DB_PROVIDER, outDir));
+        unique_ptr<IModelBuilder> builder(IModelBuilder::create(sqlProviders, outDir));
 
         CodeBlock missing_param_defs; // Generated definitions for missing parameters
         CodeGen cg(
@@ -532,7 +521,7 @@ int main(int argc, char * argv[])
             &om_fixed_parms_cpp,
             missing_param_defs,
             builder.get(),
-            no_line_directives,
+            Symbol::no_line_directives,
             om_definitions_cpp_fname,
             metaRows
             );
@@ -543,7 +532,7 @@ int main(int argc, char * argv[])
             // Some generated output for one or more missing parameters present.
             if (argStore.isOptionExist(OmcArgKey::paramDir)) {
                 // open output stream for generated definitions for missing parameters
-                ofstream Missing_dat(paramDir + Missing_dat_name, ios_base::out | ios_base::trunc | ios_base::binary);
+                ofstream Missing_dat(paramDir + Missing_dat_name, ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
                 if (Missing_dat.fail()) throw HelperException("Unable to open %s for writing", "Missing.dat.tmp");
                 Missing_dat << missing_param_defs;
@@ -591,23 +580,17 @@ int main(int argc, char * argv[])
         for (auto param : Symbol::pp_all_parameters) {
             if (param->source != ParameterSymbol::scenario_parameter) continue;
             auto lst = param->initializer_for_storage();
-            if (param->rank() == 0) {
-                builder->addWorksetParameter(metaRows, metaSet, param->name, lst.front());
-            }
-            else {
-                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);
-            }
+            builder->addWorksetParameter(metaRows, metaSet, param->name, lst);
             scenario_parameters_done++;
             if (0 == scenario_parameters_done % 10) {
                 theLog->logFormatted("%d of %d parameters processed", scenario_parameters_done, scenario_parameters_count);
             }
         }
-        if (0 != scenario_parameters_count % 10) {
-            theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
-        }
+        theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
 
         // complete model default working set sql script
-        builder->endWorkset(metaSet);
+        theLog->logFormatted("Finalize scenario processing");
+        builder->endWorkset(metaRows, metaSet);
 
         // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);

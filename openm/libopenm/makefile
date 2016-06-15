@@ -70,6 +70,7 @@ LIBOPENM_CPPLIST = \
   common/md5.cpp \
   common/utf8Convert.cpp \
   db/dbExec.cpp \
+  db/dbExecBase.cpp \
   db/dbExecProvider.cpp \
   db/dbExecSqlite.cpp \
   db/dbMetaRow.cpp \

@@ -42,8 +42,7 @@ namespace openm
         &typeid(decltype(GroupLstRow::groupId)), 
         &typeid(decltype(GroupLstRow::isParam)), 
         &typeid(decltype(GroupLstRow::name)), 
-        &typeid(decltype(GroupLstRow::isHidden)), 
-        &typeid(decltype(GroupLstRow::isGenerated))
+        &typeid(decltype(GroupLstRow::isHidden))
     };
 
     // Size (number of columns) for group_lst row
@@ -75,9 +74,6 @@ namespace openm
             case 4:
                 dynamic_cast<GroupLstRow *>(i_row)->isHidden = (*(bool *)i_value);
                 break;
-            case 5:
-                dynamic_cast<GroupLstRow *>(i_row)->isGenerated = (*(bool *)i_value);
-                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -106,7 +102,7 @@ GroupLstTable::GroupLstTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = GroupLstRowAdapter();
     rowVec = load(
         "SELECT" \
-        " model_id, group_id, is_parameter, group_name, is_hidden, is_generated" \
+        " model_id, group_id, is_parameter, group_name, is_hidden" \
         " FROM group_lst" +
         ((i_modelId > 0) ? " WHERE model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2", 

@@ -85,9 +85,10 @@
     <ClInclude Include="$(MODEL_SRC_DIR)/modelOne_om.h" />
   </ItemGroup>
   <ItemGroup>
-    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_create_model_sqlite.sql" />
-    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_insert_param_sqlite.sql" />
-    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_optional_views_sqlite.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_create_model.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_insert_param.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_optional_views.sql" />
+    <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_drop_tables_views.sql" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -17,7 +17,7 @@ ModelSqlWriter::ModelSqlWriter(const string & i_filePath)
     // open file
     exit_guard<ofstream> onExit(&outFs, &ofstream::close);   // close on exit
 
-    outFs.open(outFilePath, ios_base::out | ios_base::trunc);
+    outFs.open(outFilePath, ios::out | ios::trunc);
     if (outFs.fail()) throw HelperException("Failed to create file: %s", outFilePath.c_str());
 
     outFs.imbue(locale::classic());     // for double and float output

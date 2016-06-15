@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_OM_HELPER_H
-#define OM_OM_HELPER_H
+#ifndef OM_H_HELPER_H
+#define OM_H_HELPER_H
 
 #include <algorithm>
 #include <cstring>
@@ -24,6 +24,7 @@
 #include <sstream>
 #include <climits>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -83,6 +84,17 @@ namespace openm
     /** format message into supplied buffer using vsnprintf() */
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);
 
+    // this function exist only because g++ below 4.9 does not support std::regex
+    extern string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
+
+    /**   
+    * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
+    *
+    * @param[in] i_values       source string of comma separated values.
+    * @param[in] i_delimiters   list of delimiters, default: comma.
+    */
+    extern list<string> splitCsv(const string & i_values, const char * i_delimiters = ",");
+
     /** case neutral less comparator for strings */
     struct LessNoCase
     {
@@ -133,4 +145,4 @@ namespace openm
     };
 }
 
-#endif  // OM_OM_HELPER_H
+#endif  // OM_H_HELPER_H

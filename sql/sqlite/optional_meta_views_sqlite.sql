@@ -240,7 +240,7 @@ SELECT
   MTD.model_type_id    AS "TypeID", 
   L.parameter_rank     AS "Rank",
   L.num_cumulated      AS "NumberOfCumulatedDimensions",
-  M.is_generated       AS "ModelGenerated",
+  0                    AS "ModelGenerated",
   M.is_hidden          AS "Hidden",
   DT.lang_id           AS "LanguageID" 
 FROM parameter_dic L
@@ -269,7 +269,7 @@ SELECT
   M.group_name   AS "Name", 
   GT.descr       AS "Description",
   GT.note        AS "Note",
-  M.is_generated AS "ModelGenerated", 
+  0              AS "ModelGenerated", 
   M.is_hidden    AS "Hidden", 
   GT.lang_id     AS "LanguageID" 
 FROM group_lst M

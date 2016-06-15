@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_OM_ERROR_H
-#define OM_OM_ERROR_H
+#ifndef OM_H_ERROR_H
+#define OM_H_ERROR_H
 
 #include <cstdarg>
 #include "common/omHelper.h"   // define formatTo
@@ -56,4 +56,4 @@ namespace openm
     typedef OpenmException<4000, helperUnknownErrorMessage> HelperException;
 }
 
-#endif  // OM_OM_ERROR_H
+#endif  // OM_H_ERROR_H

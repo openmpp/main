@@ -127,9 +127,9 @@ publish : $(MODEL_SQLITE)
 $(MODEL_SQLITE) : \
   $(OM_SQL_DIR)/create_db.sql \
   $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
-  $(MODEL_NAME)_create_model_sqlite.sql \
-  $(MODEL_NAME)_insert_param_sqlite.sql \
-  $(MODEL_NAME)_optional_views_sqlite.sql
+  $(MODEL_NAME)_create_model.sql \
+  $(MODEL_NAME)_insert_param.sql \
+  $(MODEL_NAME)_optional_views.sql
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
