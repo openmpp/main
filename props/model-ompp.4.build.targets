@@ -63,7 +63,6 @@
   Build
   -->
   
-  
   <Target Name="OmcCompile"
           Inputs="@(OMC_INPUTS)"
           Outputs="@(OMC_OUTPUTS)"

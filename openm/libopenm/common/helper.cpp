@@ -6,10 +6,8 @@
 #include "helper.h"
 
 #ifdef _WIN32
-    #define strcmpNoCase    stricmp
     #define strNcmpNoCase   strnicmp
 #else
-    #define strcmpNoCase    strcasecmp
     #define strNcmpNoCase   strncasecmp
 #endif  // _WIN32
 
@@ -54,9 +52,8 @@ void openm::toUpper(char * io_str)
 // case neutral string comparison
 int openm::compareNoCase(const char * i_left, const char * i_right, size_t i_length)
 {
-    return (i_length <= 0) ?
-        strcmpNoCase(i_left != NULL ? i_left : "", i_right != NULL ? i_right : "") :
-        strNcmpNoCase(i_left != NULL ? i_left : "", i_right != NULL ? i_right : "", i_length);
+    return
+        strNcmpNoCase(i_left != NULL ? i_left : "", i_right != NULL ? i_right : "", ((i_length > 0) ? i_length : OM_STRLEN_MAX));
 }
 
 // case neutral string equal comparison
