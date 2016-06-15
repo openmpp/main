@@ -89,7 +89,7 @@ getModel <- function(dbCon, modelName, modelDigest = NA)
   )
   # if (nrow(defRs$typeEnum) <= 0) stop("no model types found")
 
-  # model parameter rows, except of generated: parameter_dic
+  # model parameter rows
   defRs[["paramDic"]] <- dbGetQuery(
     dbCon, 
     paste(
@@ -98,7 +98,6 @@ getModel <- function(dbCon, modelName, modelDigest = NA)
       " FROM parameter_dic P",
       " INNER JOIN model_parameter_dic MP ON (MP.parameter_hid = P.parameter_hid AND MP.model_id = ", defRs$modelDic$model_id, ")",
       " INNER JOIN model_type_dic MT ON (MT.type_hid = P.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
-      " WHERE MP.is_generated = 0",
       " ORDER BY 1, 2",
       sep = ""
     )
