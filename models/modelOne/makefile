@@ -18,21 +18,19 @@ ifndef OUT_PREFIX
   OUT_PREFIX = ..
 endif
 
-ifndef OM_INC_DIR
-  OM_INC_DIR = ../../include
-endif
-
-ifndef OM_BIN_DIR
-  OM_BIN_DIR = ../../bin
-endif
-
-ifndef OM_LIB_DIR
-  OM_LIB_DIR = ../../lib
-endif
-
 ifndef BIN_POSTFIX
   BIN_POSTFIX = 
 endif 
+
+ifndef OM_ROOT
+  OM_ROOT = ../..
+endif
+
+OM_INC_DIR = $(OM_ROOT)/include
+OM_BIN_DIR = $(OM_ROOT)/bin
+OM_LIB_DIR = $(OM_ROOT)/lib
+OM_SQL_DIR = $(OM_ROOT)/sql
+OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
 
 #
 # model name: current dir name by default
@@ -113,14 +111,6 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 SQLITE_EXE = sqlite3
 MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
-ifndef OM_SQLITE_DIR
-  OM_SQL_DIR = ../../sql
-endif
-
-ifndef OM_SQLITE_DIR
-  OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
-endif
-
 .PHONY : publish
 publish : $(MODEL_SQLITE)
 
@@ -133,9 +123,9 @@ $(MODEL_SQLITE) : \
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views_sqlite.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views.sql
 	
 #
 # run the model
