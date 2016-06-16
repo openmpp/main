@@ -247,7 +247,7 @@ for my $file (@files) {
 my $model_dir = "${om_root}/models/modelOne";
 copy "${model_dir}/ompp/bin/modelOne.exe", "${models_bin}" or die "Failed to copy ${model_dir}/ompp/bin/modelOne.exe";
 
-my @files = glob("${model_dir}/*_sqlite.sql");
+my @files = glob("${model_dir}/*.sql");
 for my $file (@files) {
 	copy "${file}", "${models_sql}" or die "Failed to copy ${file}";
 }
