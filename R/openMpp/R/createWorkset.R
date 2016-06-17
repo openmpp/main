@@ -222,12 +222,8 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
     if (isAnyWsTxt) {
       sqlInsTxt <-
         paste(
-          "INSERT INTO workset_txt (set_id, model_id, lang_id, descr, note)",
-          " VALUES (", 
-          setId, ", ",
-          defRs$modelDic$model_id, ", ",
-          " :lang, :descr, :note",
-          " )",
+          "INSERT INTO workset_txt (set_id, lang_id, descr, note)",
+          " VALUES (", setId, ", ", " :lang, :descr, :note", " )",
           sep = ""
         )
       dbGetPreparedQuery(
