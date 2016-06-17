@@ -113,9 +113,12 @@ startingSeed <- list(
 
 #
 # name, description and notes for this set of model parameters
+# for test only: make workset name unique
 #
+setName <- format(Sys.time(), "myData_%Y_%m_%d_%H_%M_%S")
+
 paramSetTxt <- data.frame(
-  name = "myData",
+  name = setName,
   lang = c("EN", "FR"),
   descr = c("default set of parameters", "FR default set of parameters"),
   note = c("default set of parameters notes", NA),
@@ -146,8 +149,8 @@ if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " 
 
 # find working set id by name
 #
-setId <- getWorksetIdByName(theDb, defRs, "myData")
-if (setId <= 0L) warning("workset not found: ", "myData")
+setId <- getWorksetIdByName(theDb, defRs, setName)
+if (setId <= 0L) warning("workset not found: ", setName)
 
 # create another workset with different description and notes in English an French
 # workset name will be generated automatically
@@ -174,13 +177,15 @@ if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " 
 # 
 # create new working set of model parameters based on existing model run results
 #
-# that new workset is a subset, which does not include any parameters yet
+# that new workset is an empty subset, which does not include any parameters yet
 # it is based on some existing model run 
 # and all model parameters (i.e.: "ageSex") would get values from that run
 #
 runId <- getFirstRunId(theDb, defRs)
 
-paramSetTxt$name <- "otherSet"
+# for test only: make workset name unique
+setName <- format(Sys.time(), "otherSet_%Y_%m_%d_%H_%M_%S")
+paramSetTxt$name <- setName
 paramSetTxt$descr <- c("initially empty set of parameters")
 
 setId <- createWorksetBasedOnRun(theDb, defRs, runId, paramSetTxt)

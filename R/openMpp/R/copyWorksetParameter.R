@@ -67,11 +67,11 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
     }
     
     # check if supplied parameters are in model: parameter_name in parameter_dic table
-    # check if supplied parameters are not in workset_parameter table
+    # check if supplied parameters are not already in workset_parameter table
     setParamRs <- dbGetQuery(
       dbCon, 
       paste(
-        "SELECT set_id, parameter_hid FROM workset_lst WHERE set_id = ", worksetId, 
+        "SELECT set_id, parameter_hid FROM workset_parameter WHERE set_id = ", worksetId, 
         sep=""
       )
     )

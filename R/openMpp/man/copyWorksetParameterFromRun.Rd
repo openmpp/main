@@ -34,7 +34,7 @@ copyWorksetParameterFromRun(dbCon, defRs, worksetId, baseRunId, ...)
   }
 }
 \details{
-That call allow you to add a of copy input parameter value from existing model run into workset and update value notes.
+That call allow you to add a copy of input parameter value from existing model run into workset and update value notes.
 
 Workset is a working set of model parameters and can be a full set, 
 which include values of all model parameters or subset and include only some parameters.
@@ -52,9 +52,6 @@ in order to create workset using parameters from previous model run and supply s
 
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
-
-You can create subset of model parameters ONLY based on run results of full set.
-Other words: you can not create subset based on run results of other subset.
 
 Each workset has unique set id (positive integer) and also may have a name. 
 To find set id by name use \code{\link{getWorksetIdByName}} call.

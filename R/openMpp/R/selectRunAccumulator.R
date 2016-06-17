@@ -83,7 +83,10 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   
   # SELECT dim0, dim1, acc_id, sub_id, acc_value 
   # FROM salarySex_a2012_820
-  # WHERE run_id = 2
+  # WHERE run_id = 
+  # (
+  #   SELECT base_run_id FROM run_table WHERE run_id = 2 AND table_hid = 12345
+  # )
   # AND acc_id = 4
   # ORDER BY 1, 2, 3, 4
   #
@@ -101,7 +104,10 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
         ""
       ),
       " acc_id, sub_id, acc_value FROM ", dbTableName, 
-      " WHERE run_id = ", runId,
+      " WHERE run_id = ", 
+      " (", 
+      " SELECT base_run_id FROM run_table WHERE run_id = ", runId, " AND table_hid = ", tableRow$table_hid, 
+      " )",
       ifelse(!is.na(accId), 
         paste(" AND acc_id = ", accId, sep = ""), 
         ""
@@ -116,7 +122,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
       ),
       sep = ""
     )
-
+    
   selRs <- dbGetQuery(dbCon, sqlSel)
   return(selRs)
 }

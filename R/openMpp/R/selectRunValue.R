@@ -79,7 +79,11 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
   
   # SELECT dim0, dim1, expr_id, expr_value 
   # FROM salarySex_v2012_820
-  # WHERE run_id = 2 AND expr_id = 3
+  # WHERE run_id = 
+  # (
+  #   SELECT base_run_id FROM run_table WHERE run_id = 2 AND table_hid = 12345
+  # )
+  # AND expr_id = 3
   # ORDER BY 1, 2, 3
   #
   sqlSel <-
@@ -97,7 +101,10 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
       ),
       " expr_id, expr_value",
       " FROM ", dbTableName, 
-      " WHERE run_id = ", runId,
+      " WHERE run_id = ", 
+      " (", 
+      " SELECT base_run_id FROM run_table WHERE run_id = ", runId, " AND table_hid = ", tableRow$table_hid, 
+      " )",
       ifelse(!is.na(exprId), 
         paste(" AND expr_id = ", exprId, sep = ""), 
         ""

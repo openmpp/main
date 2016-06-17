@@ -48,8 +48,6 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
 # created workset will be combination of:
 #   new parameters passed through ... argument(s)
 #   and existing parameters from previous model run
-# you can NOT create subset based on run results of other subset.
-# base run id must be run results of full set.
 #
 # Return set id of new workset or <= 0 on error
 #
@@ -98,19 +96,6 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
   )
   if (nrow(runRs) != 1L || runRs$model_id != defRs$modelDic$model_id) {
     stop("base run id not found: ", baseRunId, " or not belong to model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
-  }
-
-  # check if base run id is full run (run of full workset)
-  # you can not create subset based on run of other subset
-  rpRs <- dbGetQuery(
-    dbCon, 
-    paste(
-      "SELECT COUNT(*) AS \"rpc\" FROM run_parameter WHERE run_id = ", baseRunId,
-      sep = ""
-    )
-  )
-  if (rpRs$rpc > 0L) {
-    stop("base run id=", baseRunId, " must contain values of ALL parameters, missing: ", rpRs$rpc, " parameters included by reference")
   }
 
   # create new workset

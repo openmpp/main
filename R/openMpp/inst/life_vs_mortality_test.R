@@ -135,7 +135,7 @@ dbDisconnect(theDb)   # close database connection
 #
 plot(
   mortalityData$value, 
-  lifeDurationData$value, 
+  lifeDurationData$expr_value, 
   type = "o",
   xlab = "Mortality Hazard", 
   ylab = "Duration of Life", 
