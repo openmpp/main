@@ -34,6 +34,8 @@ public:
         , index(index)
         , table(table->stable_rp())
         , pp_table(nullptr)
+        , decimals(0)
+        , scale(0)
     {
     }
 
@@ -44,6 +46,14 @@ public:
     void post_parse(int pass);
 
     string pretty_name() const;
+
+    /**
+     * Return the measure scale transformed into a decimal number
+     */
+    string scale_as_factor() const
+    {
+        return "1.0E" + to_string(scale);
+    }
 
     /**
      * Name of the measure
@@ -68,4 +78,14 @@ public:
      * Only valid after post-parse phase 1.
      */
     TableSymbol* pp_table;
+
+    /**
+     * The default display decimals of this measure
+     */
+    int decimals;
+
+    /**
+     * The decimal scaling to applyt o this measure
+     */
+    int scale;
 };

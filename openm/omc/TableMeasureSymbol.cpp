@@ -8,8 +8,10 @@
 #include <cassert>
 #include "DerivedTableSymbol.h"
 #include "TableMeasureSymbol.h"
+#include "libopenm/common/omHelper.h"
 
 using namespace std;
+using namespace openm;
 
 // static
 string TableMeasureSymbol::symbol_name(const Symbol* table, int index)
@@ -40,6 +42,70 @@ void TableMeasureSymbol::post_parse(int pass)
 
         // Add this measure to the table's list of measures
         pp_table->pp_measures.push_back(this);
+
+        break;
+    }
+    case eResolveDataTypes:
+    {
+        // Process additional information in expression label
+        // Symbols labels are only complete after pass eAssignMembers,
+        // so do this in the next pass, which is eResolveDataTypes
+
+        for (auto & lbl : pp_labels) {
+
+            // process decimals= specifier
+            {
+                //TODO use regexp when possible
+                string srch("decimals=");
+                auto p = lbl.find(srch);
+                if (p != std::string::npos) {
+                    auto q = p + srch.length();
+                    if (q < lbl.length()) {
+                        string value;
+                        for (auto i = q; q < lbl.length(); ++i) {
+                            auto ch = lbl[i];
+                            if (isdigit(ch)) value += ch;
+                            else break;
+                        }
+                        if (value.length() > 0) {
+                            decimals = stoi(value);
+                        }
+                    }
+                    // remove decimals=nnn from label
+                    lbl = regexReplace(lbl, "[[:space:]]+decimals=[[:digit:]]+", "");
+                }
+            }
+
+            // process scale= specifier
+            {
+                //TODO use regexp when possible
+                string srch("scale=");
+                auto p = lbl.find(srch);
+                if (p != std::string::npos) {
+                    pp_warning("warning : scale= in label of table measure is deprecated");
+                    auto q = p + srch.length();
+                    if (q < lbl.length()) {
+                        string value;
+                        for (auto i = q; q < lbl.length(); ++i) {
+                            auto ch = lbl[i];
+                            // handle leading - sign
+                            if (i == q && ch == '-') {
+                                value += ch;
+                                continue;
+                            }
+                            if (isdigit(ch)) value += ch;
+                            else break;
+                        }
+                        if (value.length() > 0) {
+                            scale = stoi(value);
+                        }
+                    }
+                    // remove scale=nnn from label
+                    lbl = regexReplace(lbl, "[[:space:]]+scale=[[:digit:]]+", "");
+                }
+            }
+        }
+        
         break;
     }
     default:

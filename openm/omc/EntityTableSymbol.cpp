@@ -510,11 +510,16 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     for (auto measure : pp_measures) {
         auto etm = dynamic_cast<EntityTableMeasureSymbol *>(measure);
         assert(etm); // logic guarantee
+        // construct scale part, e.g. "1.0E-3 * "
+        string scale_part;
+        if (measure->scale != 0) {
+            scale_part = measure->scale_as_factor() + " * ";
+        }
         // E.g.  // SUM_BEFORE( acc0 )
         c += "// " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql);
         // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
         c += "for (int cell = 0; cell < n_cells; cell++ ) "
-            "measure[" + to_string(etm->index) + "][cell] = " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
+            "measure[" + to_string(etm->index) + "][cell] = " + scale_part + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
         c += "";
     }
     c += "}";
@@ -778,7 +783,13 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "expr" + to_string(expr->index);
-        tableExpr.srcExpr = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql);
+        tableExpr.decimals = expr->decimals;
+        // construct scale part, e.g. "1.0E-3 * "
+        string scale_part;
+        if (measure->scale != 0) {
+            scale_part = measure->scale_as_factor() + " * ";
+        }
+        tableExpr.srcExpr = scale_part + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql);
         metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {
@@ -788,8 +799,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             tableExprTxt.langName = lang->name;
 
-            // construct label by removing decimals=nnn from string if present
-            tableExprTxt.descr = regexReplace(expr->label(*lang), "[[:space:]]+decimals=[[:digit:]]+", "");
+            tableExprTxt.descr = expr->label(*lang);
             
             tableExprTxt.note = expr->note(*lang);
             metaRows.tableExprTxt.push_back(tableExprTxt);

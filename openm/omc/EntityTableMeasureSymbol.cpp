@@ -25,20 +25,6 @@ void EntityTableMeasureSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // scale= is not supported in ompp (bad Modgen language design feature)
-        for (auto lbl : pp_labels) {
-            if (std::string::npos != lbl.find("scale=")) {
-                pp_error("error : scale= in label of table measure is not supported");
-            }
-        }
-        
-        //// assign direct pointer to table for post-parse use
-        //pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
-        //assert(pp_table); // parser guarantee
-
-        //// Add this table expression to the table's list of expressions
-        //pp_table->pp_expressions.push_back(this);
-
         // Perform post-parse operation to each element of the expression
         post_parse_traverse(root);
         break;

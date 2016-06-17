@@ -102,7 +102,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
     }
 
-    // 'expressions' for derived table
+    // measures for derived table
     // Just average the values across simulation members
     for (auto expr : pp_measures) {
 
@@ -111,7 +111,13 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
         tableExpr.name = "meas" + to_string(expr->index);
-        tableExpr.srcExpr = "OM_AVG(acc" + to_string(expr->index) + ")";
+        tableExpr.decimals = expr->decimals;
+        // construct scale part, e.g. "1.0E-3 * "
+        string scale_part;
+        if (expr->scale != 0) {
+            scale_part = expr->scale_as_factor() + " * ";
+        }
+        tableExpr.srcExpr = scale_part + "OM_AVG(acc" + to_string(expr->index) + ")";
         metaRows.tableExpr.push_back(tableExpr);
 
         // Labels and notes for measures
@@ -124,8 +130,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             tableExprTxt.langName = lang->name;
 
-            // construct label by removing decimals=nnn from string if present
-            tableExprTxt.descr = regexReplace(expr->label(*lang), "[[:space:]]+decimals=[[:digit:]]+", "");
+            tableExprTxt.descr = expr->label(*lang);
             
             tableExprTxt.note = expr->note(*lang);
             metaRows.tableExprTxt.push_back(tableExprTxt);
