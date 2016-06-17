@@ -118,9 +118,11 @@ table Person DurationOfLife //EN Duration of Life
 {
 	{
 		value_in(alive),				//EN Population size
+		value_in(alive),				//EN Population size (000's) scale=-3 decimals=1
 		min_value_out(duration()),		//EN Minimum duration of life decimals=4
 		max_value_out(duration()),		//EN Maximum duration of life decimals=4
 		duration() / value_in(alive)	//EN Life expectancy decimals=4
 
 	}	//EN Demographic characteristics
 };
+

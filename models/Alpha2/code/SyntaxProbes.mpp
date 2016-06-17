@@ -297,7 +297,7 @@ user_table ut1 //EN User table #1
     * {
           ANALYSIS1,
           ANALYSIS2,
-          ANALYSIS3
+          ANALYSIS3 //EN scale=-3 decimals=3
     }
 };
 
