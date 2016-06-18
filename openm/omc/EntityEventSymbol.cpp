@@ -64,7 +64,7 @@ void EntityEventSymbol::post_parse(int pass)
                 time_func_defined = true;
                 auto parmlist = search->second;
                 // see if time function parmlist starts with '( int *'
-                if (parmlist.size() >= 3 && parmlist[1] == "int" && parmlist[2] == "*") {
+                if (parmlist.size() >= 2 && parmlist[0] == "int" && parmlist[1] == "*") {
                     time_func_memory = true;
                 }
             }
@@ -82,7 +82,7 @@ void EntityEventSymbol::post_parse(int pass)
                 implement_func_defined = true;
                 auto parmlist = search->second;
                 // see if implement function parmlist starts with '( int '
-                if (parmlist.size() >= 3 && parmlist[1] == "int" && parmlist[2] != "*") {
+                if (parmlist.size() >= 2 && parmlist[0] == "int" && parmlist[1] != "*") {
                     implement_func_memory = true;
                 }
             }

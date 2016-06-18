@@ -96,6 +96,7 @@ NumericSymbol.cpp \
 omc.cpp \
 ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
+ParseContext.cpp \
 PartitionSymbol.cpp \
 RangeSymbol.cpp \
 RealSymbol.cpp \

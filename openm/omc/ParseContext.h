@@ -24,7 +24,6 @@ public:
         , brace_level (0)
         , parenthesis_level (0)
         , bracket_level (0)
-        , cxx_suppress (false)
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
@@ -193,13 +192,19 @@ public:
         comment_body = "";
         literal_length = 0;
         literal_specification = "";
-        cxx_suppress = false;
         cxx_memfunc_gather = false;
         cxx_memfunc_name = "";
-        cxx_memfunc_parmlist.clear();
+        cxx_tokens.clear();
 
         InitializeForCxx();
     }
+
+    /**
+     * Process a token in C++ code.
+     *
+     * Return possibly modified version of tok_str
+     */
+    string cxx_process_token(token_type tok, const string tok_str, yy::location * loc);
 
     /**
      * comment location.
@@ -237,11 +242,6 @@ public:
 	int bracket_level;
 
     /**
-     * Suppress C++ code found in model source until next outermost brace.
-     */
-   	bool cxx_suppress;
-
-    /**
      * working counter #1 for parsing.
      */
 	int counter1;
@@ -270,11 +270,6 @@ public:
      * Qualified name of the C++ member function. Example: "Person::MortalityEvent".
      */
     string cxx_memfunc_name;
-
-    /**
-     * Parameter argument list of the C++ member function. Example: "int * p_destination".
-     */
-    vector<string> cxx_memfunc_parmlist;
 
     /**
      * A count of the number of omc parse errors in the model source files.
@@ -371,4 +366,9 @@ private:
      * so the parameter has already been morphed to a ParameterSymbol if not already done.
      */
     ParameterSymbol *parameter_context;
+
+    /**
+     * list of tokens in C++ code
+     */
+    list<pair<token_type,string>> cxx_tokens;
 };

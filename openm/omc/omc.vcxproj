@@ -291,6 +291,7 @@
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
     <ClCompile Include="ParameterGroupSymbol.cpp" />
     <ClCompile Include="ParameterSymbol.cpp" />
+    <ClCompile Include="ParseContext.cpp" />
     <ClCompile Include="PartitionSymbol.cpp" />
     <ClCompile Include="RangeSymbol.cpp" />
     <ClCompile Include="RealSymbol.cpp" />

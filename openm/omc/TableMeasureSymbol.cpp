@@ -82,7 +82,7 @@ void TableMeasureSymbol::post_parse(int pass)
                 string srch("scale=");
                 auto p = lbl.find(srch);
                 if (p != std::string::npos) {
-                    pp_warning("warning : scale= in label of table measure is deprecated");
+                    //pp_warning("warning : scale= in label of table measure is deprecated");
                     auto q = p + srch.length();
                     if (q < lbl.length()) {
                         string value;

@@ -12,7 +12,7 @@
 #include "ParseContext.h"
 #include "ast.h"
 
-/* Copyright (c) 2013-2015 OpenM++
+/* Copyright (c) 2013-2016 OpenM++
 * This code is licensed under MIT license (see LICENSE.txt for details)
 */
 
@@ -46,9 +46,8 @@ blank       [ \t]
 %x comment
 %x string_literal
 %x character_literal
-%x om_decl
-%x cxx_outside
-%x cxx_inside
+%x om_code
+%x cxx_code
 
 %%
 
@@ -61,11 +60,7 @@ blank       [ \t]
                 /* This code block is executed on every call to scanner */
 				if (yylloc->begin.line == 1 && yylloc->begin.column == 1 && yylloc->end.line == 1 && yylloc->end.column == 1 ) {
 					/* transition to C++ exterior code (beginning of file) */
-					BEGIN(cxx_outside);
-
-					/* mark-up file - maintain correspondence of line numbers with source file */
-					/* this does not work with windows back-slashed paths */
-					/* *drv.outside << "#line 1 \"" << *yylloc->end.filename << "\"\n"; */
+					BEGIN(cxx_code);
 				}
 			}
 
@@ -74,7 +69,7 @@ blank       [ \t]
                 ;
             }
 
-<om_decl,cxx_inside,cxx_outside>"/*" {
+<om_code,cxx_code>"/*" {
                 /* start of C-style comment */
 
                 /* note location of comment body */
@@ -91,7 +86,7 @@ blank       [ \t]
 				yy_push_state(comment);
 			}
 
-<om_decl,cxx_inside,cxx_outside>\" {
+<om_code,cxx_code>\" {
                 /* starting quote of string literal */
 				yylloc->step();
 
@@ -103,7 +98,7 @@ blank       [ \t]
 				yy_push_state(string_literal);
             }
 
-<om_decl,cxx_inside,cxx_outside>\' {
+<om_code,cxx_code>\' {
                 /* starting quote of character literal */
 				yylloc->step();
 
@@ -127,13 +122,14 @@ blank       [ \t]
                 /* transition out of string literal to previous state */
 				yy_pop_state();
 
-                /* mark-up file */
-                if ( ( YY_START == cxx_outside || YY_START == cxx_inside ) && ! pc.cxx_suppress ) *drv.outside << pc.literal_specification;
-
-                /* om declarative island */
-				if ( YY_START == om_decl ) {
+				token_type tok = token::STRING_LITERAL;
+				if (YY_START == om_code) {
                     yylval->pval_StringLiteral = new StringLiteral ( pc.literal_specification.c_str() );
-                    return token::STRING_LITERAL;
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code); // logic guarantee
+                    *drv.outside << pc.cxx_process_token(tok, pc.literal_specification, yylloc);
                 }
             }
 
@@ -160,13 +156,14 @@ blank       [ \t]
                 /* transition out of character literal to previous state */
 				yy_pop_state();
 
-                /* mark-up file */
-				if ( ( YY_START == cxx_outside || YY_START == cxx_inside ) && ! pc.cxx_suppress ) *drv.outside << pc.literal_specification;
-
-                /* om declarative island */
-				if ( YY_START == om_decl ) {
+				token_type tok = token::CHARACTER_LITERAL;
+				if ( YY_START == om_code ) {
                     yylval->pval_CharacterLiteral = new CharacterLiteral ( pc.literal_specification.c_str() );
-                    return token::CHARACTER_LITERAL;
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code); // logic guarantee
+                    *drv.outside << pc.cxx_process_token(tok, pc.literal_specification, yylloc);
                 }
             }
 
@@ -190,9 +187,6 @@ blank       [ \t]
 
                 /* transition out of string or character literal to previous state */
 				yy_pop_state();
-
-                /* mark-up file */
-				if ( ( YY_START == cxx_outside || YY_START == cxx_inside ) && ! pc.cxx_suppress ) *drv.outside << pc.literal_specification;
             }
 
 \\[0-7]{1,3} {
@@ -286,14 +280,14 @@ blank       [ \t]
 			}
 }
 
-<om_decl,cxx_inside,cxx_outside>{ /* whitespace and single-line comments */
+<om_code,cxx_code>{ /* whitespace and single-line comments */
 
 {blank}+	{
 				/* step over blanks in location tracking */
 				yylloc->step();
 
 				/* mark-up file - output whitespace in C++ for syntactic significance */
-				if ( YY_START == cxx_outside || YY_START == cxx_inside ) *drv.outside << yytext;
+				if (YY_START == cxx_code) *drv.outside << yytext;
 			}
 
 [\n]+       {
@@ -310,7 +304,7 @@ blank       [ \t]
                 /* pattern does not include trailing newline */
                 /* so matches a // comment at eof even if no trailing newline */
 
-                /* note location of comment body */
+                /* note start location of comment body */
                 pc.comment_location = *yylloc;
 
                 /* location maintenance */
@@ -321,11 +315,12 @@ blank       [ \t]
 
                 Symbol::process_cxx_comment(pc.comment_body, pc.comment_location);
 			}
-}
+} /* <om_code,cxx_code> */
 
-<om_decl>{ /* interior of openM++ declarative islands */
+<om_code>{ /* ompp declarative islands */
 	
 {word}      {
+                yylloc->step();
                 string word = yytext;
 
                 /* special hack to silently interpret 'actor_id' as 'entity_id' */
@@ -366,7 +361,7 @@ blank       [ \t]
                         sym = Symbol::get_symbol(word, agent);
                         if (!sym) sym = new Symbol(word, agent, *yylloc);
                         /* Possibly this was a global name not yet encountered in the source code. */
-                        /* This case is handled by fix-up in Symbol::post_parse(eCreateMissingSymbols) */
+                        /* This case is handled by fix-up in first pass of Symbol::post_parse() */
                     }
                 }
 				yylval->pval_Symbol = sym;
@@ -374,6 +369,7 @@ blank       [ \t]
 			}
 
 "{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
+                yylloc->step();
                 switch ( *yytext ) {
                     case '{': pc.brace_level++; break;
                     case '}': pc.brace_level--; break;
@@ -381,6 +377,7 @@ blank       [ \t]
                     case ')': pc.parenthesis_level--; break;
                     case '[': pc.bracket_level++; break;
                     case ']': pc.bracket_level--; break;
+                    default: assert(false);
                 }
 				
 				token_type tok = Symbol::string_to_token(yytext);
@@ -388,21 +385,9 @@ blank       [ \t]
                 return tok;
 			}
 
-";"         {
-				if ( pc.brace_level == 0 ) {
-					/* transition to C++ outermost brace level */
-					BEGIN(cxx_outside);
-					/* mark-up file - maintain correspondence of line numbers to source file */
-					/* this does not work with windows back-slashed pathes */
-					/* *drv.outside << std::endl << "#line " << yylloc->end.line << " \"" << *yylloc->end.filename << "\"" << std::endl; */
-				}
-				token_type tok = Symbol::string_to_token(yytext);
-                yylval->val_token = tok;
-                return tok;
-			}
-
 "->*"|"<<="|">>="|"..." {
 				/* three character C++ operators */
+                yylloc->step();
 				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
@@ -410,90 +395,103 @@ blank       [ \t]
 
 "::"|"++"|"--"|"->"|".*"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"^="|"|=" {
 				/* two character C++ operator */
+                yylloc->step();
 				token_type tok = Symbol::string_to_token(yytext);
                 yylval->val_token = tok;
                 return tok;
 			}
 
-"."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
+";"|"."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
 				/* one character C++ operator */
+                yylloc->step();
 				token_type tok = Symbol::string_to_token(yytext);
+				if ((YY_START == om_code) && (tok == token::TK_SEMICOLON) && (pc.brace_level == 0)) {
+					/* transition to C++ */
+					BEGIN(cxx_code);
+				}
                 yylval->val_token = tok;
                 return tok;
 			}
 
 {floating}  {
+                yylloc->step();
+				token_type tok = token::FLOATING_POINT_LITERAL;
                 yylval->pval_FloatingPointLiteral = new FloatingPointLiteral ( yytext );
-                return token::FLOATING_POINT_LITERAL;
+                return tok;
 			}
 
 {integer}   {
+                yylloc->step();
+				token_type tok = token::INTEGER_LITERAL;
                 yylval->pval_IntegerLiteral = new IntegerLiteral ( yytext );
-                return token::INTEGER_LITERAL;
+                return tok;
 			}
 
 .           {
-				/* error */
+				/* error (will be detected and handled in parser) */
 				return (token_type) *yytext;
 			}
+} /* <om_code> */
 
-}
+<cxx_code>{ /* C++ code */
 
-<cxx_outside,cxx_inside>{ /* C++ code */
-
-"{"         {
-				pc.brace_level++;
-				if ( pc.brace_level == 1 ) {
-                    if (pc.cxx_memfunc_gather) {
-                        /* record the now-complete function declaration parameter list */
-                        Symbol::memfunc_parmlist.emplace(pc.cxx_memfunc_name, pc.cxx_memfunc_parmlist);
-                        pc.cxx_memfunc_parmlist.clear();
-                    }
-
-				    /* transition to C++ code, inside braces */
-				    BEGIN(cxx_inside);
-				}
-				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
+"{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
+                yylloc->step();
+                switch ( *yytext ) {
+                    case '{': pc.brace_level++; break;
+                    case '}': pc.brace_level--; break;
+                    case '(': pc.parenthesis_level++; break;
+                    case ')': pc.parenthesis_level--; break;
+                    case '[': pc.bracket_level++; break;
+                    case ']': pc.bracket_level--; break;
+                    default: assert(false);
+                }
+				token_type tok = Symbol::string_to_token(yytext);
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
 			}
 
-"}"         {
-				pc.brace_level--;
-				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
-				if ( pc.brace_level == 0 ) {
-					/* transition to C++ code, outside braces */
-					BEGIN(cxx_outside);
-                    /* no longer in function body, stop any code suppression */
-					if ( pc.cxx_suppress ) pc.cxx_suppress = false;
-                    if ( pc.cxx_memfunc_gather ) {
-                        /* no longer in function body, stop gathering identifiers */
-                        pc.cxx_memfunc_gather = false;
-                        pc.cxx_memfunc_name = "";
-                        pc.cxx_memfunc_parmlist.clear();
-                    }
-				}
+"->*"|"<<="|">>="|"..." {
+				/* three character C++ operators */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
 			}
 
-}
+"::"|"++"|"--"|"->"|".*"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"^="|"|=" {
+				/* two character C++ operator */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+			}
 
-<cxx_outside>{ /* outer level of C++ code, i.e. outside of all braces */
+";"|"."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
+				/* one character C++ operator */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+			}
 
-{word}::{word} { /*  possible function member definition */
-                /* prepare to gather argument parmlist and identifiers in function body */
-                pc.cxx_memfunc_gather = true;
-                pc.cxx_memfunc_name = yytext;
-                pc.cxx_memfunc_parmlist.clear();
+{floating}  {
+                yylloc->step();
+				token_type tok = token::FLOATING_POINT_LITERAL;
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+			}
 
-				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
-            }
+{integer}   {
+                yylloc->step();
+				token_type tok = token::INTEGER_LITERAL;
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+			}
 
 {word}      {
+                yylloc->step();
 			    token_type tok = Symbol::string_to_token( yytext );
                 /* tok has value TK_error if not a keyword */
-                if ( Symbol::is_om_outer_keyword( tok ) ) {
+                if ( Symbol::is_om_outer_keyword( tok ) && pc.brace_level == 0) {
                     /* transition to openM++ declarative island */
-    				BEGIN(om_decl);
+    				BEGIN(om_code);
                     yylval->val_token = tok;
-                    /* special case to force a 'word' look-ahead token following 'options' to be STRING */
+                    /* special case to force a string look-ahead token following 'options' to be STRING */
                     if (tok == token::TK_options) {
                         pc.next_word_is_string = true;
                     }
@@ -501,73 +499,23 @@ blank       [ \t]
                     return tok;
     			}
 
-                if (pc.cxx_memfunc_gather) {
-                    /* build the member function parameter list declaration */
-                    pc.cxx_memfunc_parmlist.push_back(yytext);
+                if (tok == token::TK_error) {
+                    /* not a keyword, therefor a symbol */
+                    tok = token::SYMBOL;
                 }
-
-                /* Working string copy of the word which may be modified by mark-up code below */
-                string word = yytext;
-
-                for (auto sg : {&Symbol::pre_simulation, &Symbol::post_simulation, &Symbol::derived_tables}) {
-                    /* Detect and handle special global function definitions */
-                    //auto sg = &Symbol::pre_simulation;
-                    if (sg->prefix == word.substr(0, sg->prefix.length())) {
-                        /* starts with prefix */
-                        if (word == sg->prefix) {
-                            /* No suffix, so substitute a disambiguated name based on order encountered in code */
-                            word = sg->disambiguated_name(sg->ambiguous_count);
-                            ++sg->ambiguous_count;
-                        }
-                        else {
-                            /* Has a suffix */
-                            string suffix = word.substr(sg->prefix.length());
-                            sg->suffixes.push_back(suffix);
-                        }
-                    }
-                }
-
-    			if ( ! pc.cxx_suppress ) *drv.outside << word;
+                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
 			}
 
 .           {
-				/* all other C++ code outside braces */
-                if (pc.cxx_memfunc_gather) {
-                    /* build the member function parameter list declaration */
-                    pc.cxx_memfunc_parmlist.push_back(yytext);
-                }
-
-				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
+				/* all other C++ code */
+				*drv.outside << yytext;
 			}
 
-}
+} /* <cxx_code> */
 
-<cxx_inside>{ /* an inner level of C++ code, i.e. inside {} */
-
-{word}      {
-                string word = yytext;
-                /* Add the identifier to the set of all identifiers in the model source code. */
-                Symbol::identifiers_in_model_source.insert(word);
-
-                if ( pc.cxx_memfunc_gather ) {
-			        token_type tok = Symbol::string_to_token( yytext );
-                    if ( tok == token::TK_error ) {
-                        /* word is not a token, so it must be an identifier */
-                        Symbol::memfunc_bodyids.insert( pair<string, string>(pc.cxx_memfunc_name, yytext) );
-                    }
-                }
-   				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
-            }
 
 .           {
-				/* all other C++ code inside braces */
-				if ( ! pc.cxx_suppress ) *drv.outside << yytext;
-			}
-
-}
-
-
-.           { /* not reached, hopefully */
+                assert(false);  /* not reached */
 			}
 
 %%
@@ -584,6 +532,9 @@ void Driver::scan_begin()
     yy_flex_debug = trace_scanning;
 
     openm::the_string = fileToUtf8(file.c_str(), Symbol::code_page.c_str());
+
+    // TODO normalize line endings by converting \r\n to \n (Windows) and \r to \n (Apple)
+    // (easier to do here rather than through tricky modifications to scanner patterns and rules).
 
     // Tell flex to use a const char * string for input instead of a file.
     // It returns the buffer so we can clean up after all's done.
