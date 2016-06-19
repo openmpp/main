@@ -97,16 +97,16 @@ for (scAgeBy in scaleValues)
   
   for (scUnionBy in scaleValues)
   {
-    ageParam <- list(name = "AgeBaselineForm1", value = ageFirstUnionRs$value * scAgeBy)
+    ageParam <- list(name = "AgeBaselineForm1", value = ageFirstUnionRs$param_value * scAgeBy)
     
     unionParam <- list(         # scale first two values of parameter vector
       name = "UnionStatusPreg1", 
       value = 
         sapply(
-          1:length(unionStatusPregRs$value), 
+          1:length(unionStatusPregRs$param_value), 
           function(k, sc, vec) ifelse(k <= 2, vec[k] * sc, vec[k]), 
           sc = scUnionBy, 
-          vec = unionStatusPregRs$value
+          vec = unionStatusPregRs$param_value
         )
     )
     
@@ -151,7 +151,7 @@ for (k in 1:scaleLen)
   {
     # cohort fertility: T05_CohortFertility.expr1
     expr1Rs <- selectRunOutputValue(theDb, defRs, taskRunRs$taskRunSet$run_id[runPos], "T05_CohortFertility", "expr1")
-    childlessnessMat[k, j] = expr1Rs$value
+    childlessnessMat[k, j] = expr1Rs$expr_value
     runPos <- runPos + 1
   }
 }

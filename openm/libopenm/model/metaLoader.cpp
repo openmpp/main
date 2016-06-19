@@ -130,7 +130,9 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
 {
     // get command line options
     ArgReader ar;
-    ar.parseCommandLine(argc, argv, true, false, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr);
+    ar.parseCommandLine(
+        argc, argv, true, false, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr, RunOptionsKey::parameterPrefix
+        );
 
     // load options from ini-file and append parameters section
     ar.loadIniFile(

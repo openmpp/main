@@ -131,9 +131,9 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
   if (is.logical(dbDf$value)) dbDf$value <- ifelse(dbDf$value, 1, 0)
   
   #
-  # DELETE FROM param_tbl WHERE set_id = 1234
+  # DELETE FROM param_workset_tbl WHERE set_id = 1234
   #
-  # INSERT INTO param_tbl (set_id, dim0, dim1, param_value) 
+  # INSERT INTO param_workset_tbl (set_id, dim0, dim1, param_value) 
   # VALUES (1234, :dim0, :dim1, :value)
   #
   sqlDel <-
