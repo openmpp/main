@@ -11,7 +11,6 @@
 #include "ParseContext.h"
 #include "location.hh"
 #include "ModuleSymbol.h"
-#include "libopenm/omLog.h"
 
 using namespace std;
 
@@ -50,22 +49,16 @@ int Driver::parse(string * in_filename, const string & module_name, const string
 
 void Driver::error(const yy::location & l, const string & m)
 {
-    pc.parse_errors++;
-    theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
-    //cerr << l << ": " << m << endl;
+    pc.error(l, m);
 }
 
 void Driver::warning(const yy::location & l, const string & m)
 {
-    pc.parse_warnings++;
-    theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
-    //cerr << l << ": " << m << endl;
+    pc.warning(l, m);
 }
 
 void Driver::error(const string & m)
 {
-    pc.parse_errors++;
-    theLog->logFormatted("%s", m.c_str());
-    //cerr << m << endl;
+    pc.error(m);
 }
 

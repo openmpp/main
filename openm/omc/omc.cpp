@@ -49,6 +49,7 @@
 #include <cctype>
 #include <algorithm>
 #include "Symbol.h"
+#include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
@@ -560,8 +561,17 @@ int main(int argc, char * argv[])
 
         MetaSetLangHolder metaSet;          // default working set metadata
         metaSet.worksetRow.name = scenario_name;
+        for (auto lang : Symbol::pp_all_languages) {
+            WorksetTxtLangRow worksetTxt;
+            //auto lang_id = lang->language_id;
+            auto lang_name = lang->name;
+            worksetTxt.langName = lang_name;
+            // TODO Add real Scenario description and notes - pending addition of 'scenario' statement
+            worksetTxt.descr = scenario_name + " (label)"; // TODO
+            worksetTxt.note = scenario_name + " (note)"; // TODO
+            metaSet.worksetTxt.push_back(worksetTxt);
+        }
 
-        // TODO Add Scenario description and notes - pending addition of 'scenario' statement
         int scenario_parameters_count = 0;
         for (auto param : Symbol::pp_all_parameters) {
             if (param->source != ParameterSymbol::scenario_parameter) continue;
@@ -569,7 +579,21 @@ int main(int argc, char * argv[])
             WorksetParamRow wsParam;
             wsParam.paramId = param->pp_parameter_id;
             metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
-            // TODO Add parameter value notes
+            // value notes for the parameter
+            const bool do_param_value_notes = false; // TODO - remove when resolved
+            for (auto lang : Symbol::pp_all_languages) {
+                WorksetParamTxtLangRow worksetParamTxt;
+                auto lang_id = lang->language_id;
+                auto lang_name = lang->name;
+                assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
+                string value_note = param->pp_value_notes[lang_id];
+                if (do_param_value_notes && value_note.length() > 0) {
+                    worksetParamTxt.paramId = wsParam.paramId;
+                    worksetParamTxt.langName = lang_name;
+                    worksetParamTxt.note = value_note;
+                    metaSet.worksetParamTxt.push_back(worksetParamTxt);
+                }
+            }
         }
 
         // start model default working set sql script

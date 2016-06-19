@@ -56,6 +56,24 @@ void ParameterSymbol::post_parse(int pass)
         }
         break;
     }
+    case eAssignLabel:
+    {
+        // Create default values for parameter value note for all languages
+        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+            pp_value_notes.push_back("");
+        }
+
+        // Check for a value note specified using NOTE comment, for each language
+        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+            auto lang_sym = LanguageSymbol::id_to_sym[j];
+            string key = unique_name + "," + lang_sym->name;
+            auto search = notes_input.find(key);
+            if (search != notes_input.end()) {
+                pp_value_notes[j] = search->second;
+            }
+        }
+        break;
+    }
     case eAssignMembers:
     {
         // assign direct pointer to type symbol for use post-parse

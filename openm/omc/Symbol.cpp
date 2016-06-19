@@ -510,6 +510,10 @@ comment_map_type Symbol::c_comments;
 
 unordered_map<string, string> Symbol::explicit_labels;
 
+unordered_map<string, string> Symbol::notes_source;
+
+unordered_map<string, string> Symbol::notes_input;
+
 SpecialGlobal Symbol::pre_simulation("PreSimulation");
 
 SpecialGlobal Symbol::post_simulation("PostSimulation");
@@ -571,10 +575,20 @@ void Symbol::post_parse(int pass)
         // Check for an explicit label specified using //LABEL, for each language
         for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
             auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = name + "," + lang_sym->name;
+            string key = unique_name + "," + lang_sym->name;
             auto search = explicit_labels.find(key);
             if (search != explicit_labels.end()) {
                 pp_labels[j] = trim(search->second);
+            }
+        }
+
+        // Check for a note specified using NOTE comment, for each language
+        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+            auto lang_sym = LanguageSymbol::id_to_sym[j];
+            string key = unique_name + "," + lang_sym->name;
+            auto search = notes_source.find(key);
+            if (search != notes_source.end()) {
+                pp_notes[j] = search->second;
             }
         }
 
@@ -745,7 +759,8 @@ string Symbol::label() const
 string Symbol::note(const LanguageSymbol & language) const
 {
     // placeholder implementation
-    return name + " note (" + language.name + ")";
+    //return name + " note (" + language.name + ")";
+    return pp_notes[language.language_id];
 }
 
 void Symbol::populate_default_symbols(const string &model_name)
@@ -848,7 +863,6 @@ void Symbol::invalidate_symbols()
         pr.second = nullptr;
     }
 }
-
 
 bool Symbol::exists( const string& unm )
 {
@@ -1321,67 +1335,6 @@ void Symbol::parse_options()
         }
     }
 
-}
-
-void Symbol::process_cxx_comment(const string& cmt, const yy::location& loc)
-{
-    // Parse //LABEL comments
-    if (cmt.length() >= 5 && cmt.substr(0, 5) == "LABEL") {
-        //TODO use regex!
-        std::string::size_type p = 5;
-        std::string::size_type q = 5;
-
-        // Extract symbol name
-        p = cmt.find_first_not_of("( \t", p);
-        if (p == std::string::npos) {
-            //TODO report syntax error on //LABEL
-            return;
-        }
-        q = cmt.find_first_of(", \t", p);
-        if (q == std::string::npos) {
-            //TODO report syntax error on //LABEL
-            return;
-        }
-        string sym_name = cmt.substr(p, q - p);
-
-        // Extract language code
-        p = cmt.find_first_not_of(", \t", q);
-        if (p == std::string::npos) {
-            //TODO report syntax error on //LABEL
-            return;
-        }
-        q = cmt.find_first_of(") \t", p);
-        if (q == std::string::npos) {
-            //TODO report syntax error on //LABEL
-            return;
-        }
-        string lang_code = cmt.substr(p, q - p);
-        string key = sym_name + "," + lang_code;
-
-        // Extract label
-        p = cmt.find_first_not_of(") \t", q);
-        if (p == std::string::npos) {
-            // ignore empty label
-            return;
-        }
-        string lab = cmt.substr(p);
-        
-        // Insert label into map of all explicit //LABEL comments
-        explicit_labels.emplace(key, lab);
-    }
-
-    // Construct key based on the beginning of the line containing the comment.
-    yy::position pos(loc.begin.filename, loc.begin.line, 0);
-    comment_map_value_type element(pos, cmt);
-    cxx_comments.insert(element);
-}
-
-void Symbol::process_c_comment(const string& cmt, const yy::location& loc)
-{
-    // Construct key based on the start position of the comment.
-    yy::position pos(loc.begin);
-    comment_map_value_type element(pos, cmt);
-    c_comments.insert(element);
 }
 
 bool Symbol::is_om_outer_keyword(const token_type& tok)

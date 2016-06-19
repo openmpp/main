@@ -139,3 +139,191 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, yy:
     // Return possibly modified version of the token.
     return result;
 }
+
+void ParseContext::process_cxx_comment(const string& cmt, const yy::location& loc)
+{
+    // Parse //LABEL comments
+    if (cmt.length() >= 5 && cmt.substr(0, 5) == "LABEL") {
+        //TODO use regex!
+        std::string::size_type p = 5;
+        std::string::size_type q = 5;
+
+        // Extract symbol name
+        p = cmt.find_first_not_of("( \t", p);
+        if (p == std::string::npos) {
+            warning(loc, "warning : problem (#1) with LABEL comment - not processed");
+            return;
+        }
+        q = cmt.find_first_of(", \t", p);
+        if (q == std::string::npos) {
+            warning(loc, "warning : problem (#2) with LABEL comment - not processed");
+            return;
+        }
+        string sym_name = cmt.substr(p, q - p);
+        // Change . to :: to align with Symbol unique_name
+        // e.g. Person.age to Person::age
+        auto r = sym_name.find(".");
+        if (r != string::npos) {
+            sym_name.replace(r, 1, "::");
+        }
+
+        // Extract language code
+        p = cmt.find_first_not_of(", \t", q);
+        if (p == std::string::npos) {
+            warning(loc, "warning : problem (#3) with LABEL comment - not processed");
+            return;
+        }
+        q = cmt.find_first_of(") \t", p);
+        if (q == std::string::npos) {
+            warning(loc, "warning : problem (#4) with LABEL comment - not processed");
+            return;
+        }
+        string lang_code = cmt.substr(p, q - p);
+        string key = sym_name + "," + lang_code;
+
+        // Extract label
+        p = cmt.find_first_not_of(") \t", q);
+        if (p == std::string::npos) {
+            // ignore empty label
+            return;
+        }
+        string lab = cmt.substr(p);
+        
+        // Insert label into map of all explicit //LABEL comments
+        Symbol::explicit_labels.emplace(key, lab);
+
+        // Don't place //LABEL comments into list of all cxx_comments,
+        // which is used for //EN, etc.
+        return;
+    }
+
+    // Construct key based on the beginning of the line containing the comment.
+    yy::position pos(loc.begin.filename, loc.begin.line, 0);
+    comment_map_value_type element(pos, cmt);
+    Symbol::cxx_comments.insert(element);
+}
+
+void ParseContext::process_c_comment(const string& cmt, const yy::location& loc)
+{
+    // Parse NOTE comments.  Assume starts as /*NOTE or /* NOTE
+    if ((cmt.length() > 4) && ((cmt.substr(0, 4) == "NOTE") || (cmt.substr(0, 5) == " NOTE"))) {
+        //TODO use regex!
+        std::string::size_type p = 4;
+        std::string::size_type q = 4;
+        if ((cmt.substr(0, 5) == " NOTE")) {
+            p = 5;
+            q = 5;
+        }
+
+        // Extract symbol name
+        p = cmt.find_first_not_of("( \t", p);
+        if (p == std::string::npos) {
+            warning(loc, "warning : problem (#1) with NOTE comment - not processed");
+            return;
+        }
+        q = cmt.find_first_of(", \t", p);
+        if (q == std::string::npos) {
+            warning(loc, "warning : problem (#2) with NOTE comment - not processed");
+            return;
+        }
+        string sym_name = cmt.substr(p, q - p);
+        // Change . to :: to align with Symbol unique_name
+        // e.g. Person.age to Person::age
+        auto r = sym_name.find(".");
+        if (r != string::npos) {
+            sym_name.replace(r, 1, "::");
+        }
+
+        // Extract language code
+        p = cmt.find_first_not_of(", \t", q);
+        if (p == std::string::npos) {
+            warning(loc, "warning : problem (#3) with NOTE comment - not processed");
+            return;
+        }
+        q = cmt.find_first_of(") \t", p);
+        if (q == std::string::npos) {
+            warning(loc, "warning : problem (#4) with NOTE comment - not processed");
+            return;
+        }
+        string lang_code = cmt.substr(p, q - p);
+        string key = sym_name + "," + lang_code;
+
+        // Extract note
+        p = cmt.find_first_not_of(") \t\n", q);
+        if (p == std::string::npos) {
+            // ignore empty label
+            return;
+        }
+        string note = normalize_note(cmt.substr(p));
+        
+        // Insert note into appropriate map of NOTE comments
+        if (is_scenario_parameter_value || is_fixed_parameter_value) {
+            Symbol::notes_input.emplace(key, note);
+        }
+        else {
+            Symbol::notes_source.emplace(key, note);
+        }
+    }
+
+    // Construct key based on the start position of the comment.
+    yy::position pos(loc.begin);
+    comment_map_value_type element(pos, cmt);
+    Symbol::c_comments.insert(element);
+}
+
+string ParseContext::normalize_note(const string & txt)
+{
+    string result;
+    result.reserve(txt.length());
+
+    auto lines = openm::splitCsv(txt, "\n");
+    // trim leading and trailing white space
+    for (auto & line : lines) {
+        line = openm::trim(line);
+    }
+
+    bool prev_empty = true; // previous line is empty
+    for (auto & line : lines) {
+        if (line[0] == '>') {
+            if (!prev_empty) {
+                // terminate previous text block
+                result += '\n';
+            }
+            // start new text block
+            // append contents following '>'
+            result += line.substr(1);
+            prev_empty = false;
+        }
+        else if (line[0] == '-') {
+            if (!prev_empty) {
+                // terminate previous text block
+                result += '\n';
+            }
+            // start new text block
+            // append contents
+            result += line;
+            prev_empty = false;
+        }
+        else if (line.length() == 0) {
+            if (!prev_empty) {
+                // terminate previous text block
+                result += '\n';
+            }
+            prev_empty = true;
+        }
+        else {
+            if (!prev_empty) {
+                // append line to previous text block
+                result += ' ' + line;
+            }
+            else {
+                // start new text block
+                result += line;
+            }
+            prev_empty = false;
+        }
+    }
+
+    return result;
+}
+

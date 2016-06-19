@@ -789,22 +789,6 @@ public:
     static void parse_options();
 
     /**
-     * Store a C++ style single-line comment for later use.
-     *
-     * @param cmt The comment.
-     * @param loc The source code location.
-     */
-    static void process_cxx_comment(const string& cmt, const yy::location& loc);
-
-    /**
-     * Store a C style comment for later use.
-     *
-     * @param cmt The comment.
-     * @param loc The source code location.
-     */
-    static void process_c_comment(const string& cmt, const yy::location& loc);
-
-    /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
      * 
      * For example the tokens for 'agent' and 'table' are outer level keywords, but the token for
@@ -1041,12 +1025,28 @@ public:
     static comment_map_type c_comments;
 
     /**
-     * Map of //LABEL statements to associated labels.
+     * Map of LABEL from symbol name to label.
      * 
      * This maps "symbol,language" as a key to the associated label specified
      * explicitly by a //LABEL statement in the model source code.
      */
     static unordered_map<string, string> explicit_labels;
+
+    /**
+     * Map of NOTE from symbol name to note (model source)
+     * 
+     * This maps "symbol,language" as a key to the associated note specified
+     * explicitly by a NOTE statement in the model source code.
+     */
+    static unordered_map<string, string> notes_source;
+
+    /**
+     * Map of NOTE from symbol name to note (parameter input values)
+     * 
+     * This maps "symbol,language" as a key to the associated note specified
+     * explicitly by a NOTE statement in the model source code.
+     */
+    static unordered_map<string, string> notes_input;
 
     /**
      * Map from a token to the preferred string representation of that token.

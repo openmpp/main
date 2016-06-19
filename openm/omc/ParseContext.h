@@ -10,6 +10,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include "libopenm/omLog.h"
+#include "libopenm/common/omHelper.h"
 #include "location.hh"
 #include "Symbol.h"
 
@@ -200,11 +202,69 @@ public:
     }
 
     /**
+     * Handle parse error.
+     *
+     * @param m The error message
+     */
+    void error(const string & m)
+    {
+        parse_errors++;
+        theLog->logFormatted("%s", m.c_str());
+    }
+
+    /**
+     * Handle parse error at code location.
+     *
+     * @param l The location
+     * @param m The error message
+     */
+    void error(const yy::location & l, const string & m)
+    {
+        parse_errors++;
+        theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    }
+
+    /**
+     * Handle parse warning at code location.
+     *
+     * @param l The location
+     * @param m The error message
+     */
+    void warning(const yy::location & l, const string & m)
+    {
+        parse_warnings++;
+        theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    }
+
+    /**
      * Process a token in C++ code.
      *
      * Return possibly modified version of tok_str
      */
     string cxx_process_token(token_type tok, const string tok_str, yy::location * loc);
+
+    /**
+     * Process a C++ single-line comment.
+     *
+     * @param cmt The comment.
+     * @param loc The source code location.
+     */
+    void process_cxx_comment(const string& cmt, const yy::location& loc);
+
+    /**
+     * Process a C-style comment.
+     *
+     * @param cmt The comment.
+     * @param loc The source code location.
+     */
+    void process_c_comment(const string& cmt, const yy::location& loc);
+
+    /**
+     * Normalize a NOTE.
+     *
+     * @param cmt The comment.
+     */
+    string normalize_note(const string & txt);
 
     /**
      * comment location.

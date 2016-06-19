@@ -101,9 +101,18 @@ void TableMeasureSymbol::post_parse(int pass)
                         }
                     }
                     // remove scale=nnn from label
-                    lbl = regexReplace(lbl, "[[:space:]]+scale=[[:digit:]]+", "");
+                    lbl = regexReplace(lbl, "(^|[[:space:]]+)scale=-?[[:digit:]]+", "");
                 }
             }
+
+            // label cannot be empty, so provide something.
+            // This can occur if label consists only of decimals=, etc.
+            // TODO Should perhaps call default_label() instead, but requires language code
+            // and re-working containing loop.
+            if (lbl.length() == 0) {
+                lbl = name;
+            }
+
         }
         
         break;

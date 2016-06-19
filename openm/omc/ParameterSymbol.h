@@ -94,6 +94,11 @@ public:
      */
     CodeBlock dat_definition() const;
 
+    /**
+     * The parameter value notes for each language.
+     */
+    vector<string> pp_value_notes;
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**

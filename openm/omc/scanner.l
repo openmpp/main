@@ -270,7 +270,7 @@ blank       [ \t]
                 /* note end position of comment body */
                 pc.comment_location.end = yylloc->end;
 
-                Symbol::process_c_comment(pc.comment_body, pc.comment_location);
+                pc.process_c_comment(pc.comment_body, pc.comment_location);
 
                 /* position maintenance */
 				yylloc->step();
@@ -313,7 +313,7 @@ blank       [ \t]
                 /* build comment body, does not include comment introducer or trailing newline */
                 pc.comment_body = yytext + 2;
 
-                Symbol::process_cxx_comment(pc.comment_body, pc.comment_location);
+                pc.process_cxx_comment(pc.comment_body, pc.comment_location);
 			}
 } /* <om_code,cxx_code> whitespace and single-line comments */
 
