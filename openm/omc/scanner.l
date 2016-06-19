@@ -64,7 +64,7 @@ blank       [ \t]
 				}
 			}
 
-<*>\r {
+<*>\r       {
                 /* silently ignore ASCII return (strip from input) */
                 ;
             }
@@ -236,7 +236,7 @@ blank       [ \t]
 
 <comment>{ /* interior of C-style comment */
 
-[^*\n]*     {
+[^*\r\n]*     {
 				/* comment interior - not a * or newline */
 				yylloc->step();
 
@@ -244,7 +244,7 @@ blank       [ \t]
                 pc.comment_body += yytext;
 			}
 
-"*"+[^*/\n]* {
+"*"+[^*/\r\n]* {
 				/* comment interior - a * followed by 0 or more ordinary characters */
 				yylloc->step();
 
@@ -547,9 +547,6 @@ void Driver::scan_begin()
 
     openm::the_string = fileToUtf8(file.c_str(), Symbol::code_page.c_str());
 
-    // TODO normalize line endings by converting \r\n to \n (Windows) and \r to \n (Apple)
-    // (easier to do here rather than through tricky modifications to scanner patterns and rules).
-
     // Tell flex to use a const char * string for input instead of a file.
     // It returns the buffer so we can clean up after all's done.
     openm::the_buffer = yy_scan_string(openm::the_string.c_str());
@@ -559,5 +556,7 @@ void Driver::scan_end()
 {
     // Tell flex to clean up its buffer
     yy_delete_buffer(openm::the_buffer);
+
+    openm::the_string.clear();
 }
 
