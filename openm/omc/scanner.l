@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
-#include "libopenm/common/omFile.h"  // for fileToUtf8
+#include "libopenm/common/omFile.h"  /* for fileToUtf8 */
 #include "Driver.h"
 #include "ParseContext.h"
 #include "ast.h"
@@ -59,7 +59,7 @@ blank       [ \t]
 			{
                 /* This code block is executed on every call to scanner */
 				if (yylloc->begin.line == 1 && yylloc->begin.column == 1 && yylloc->end.line == 1 && yylloc->end.column == 1 ) {
-					/* transition to C++ exterior code (beginning of file) */
+					/* initial state at beginning of file is C++ code */
 					BEGIN(cxx_code);
 				}
 			}
@@ -110,7 +110,7 @@ blank       [ \t]
 				yy_push_state(character_literal);
             }
 
-<string_literal>{
+<string_literal>{ /* interior of string literal */
 
 \"          {
                 /* ending quote of string literal */
@@ -128,7 +128,7 @@ blank       [ \t]
                     return tok;
                 }
                 else {
-                    assert(YY_START == cxx_code); // logic guarantee
+                    assert(YY_START == cxx_code); /* logic guarantee */
                     *drv.outside << pc.cxx_process_token(tok, pc.literal_specification, yylloc);
                 }
             }
@@ -141,9 +141,9 @@ blank       [ \t]
                 pc.literal_specification += yytext;
                 pc.literal_length++;
             }
-}
+} /* <string_literal> interior of string literal */
 
-<character_literal>{
+<character_literal>{ /* interior of character literal */
 
 \'          {
                 /* ending quote of character literal */
@@ -162,7 +162,7 @@ blank       [ \t]
                     return tok;
                 }
                 else {
-                    assert(YY_START == cxx_code); // logic guarantee
+                    assert(YY_START == cxx_code); /* logic guarantee */
                     *drv.outside << pc.cxx_process_token(tok, pc.literal_specification, yylloc);
                 }
             }
@@ -175,7 +175,7 @@ blank       [ \t]
                 pc.literal_specification += yytext;
                 pc.literal_length++;
             }
-}
+} /* <character_literal> interior of character literal */
 
 <string_literal,character_literal>{ /* escape sequences and common code for string and character literals */
 
@@ -232,9 +232,9 @@ blank       [ \t]
                 pc.literal_specification += yytext;
                 pc.literal_length++;
             }
-}
+} /* <string_literal,character_literal> escape sequences and common code for string and character literals */
 
-<comment>{ /* C-style comment */
+<comment>{ /* interior of C-style comment */
 
 [^*\n]*     {
 				/* comment interior - not a * or newline */
@@ -278,7 +278,7 @@ blank       [ \t]
                 /* transition out of comment to previous state */
 				yy_pop_state();
 			}
-}
+} /* <comment> interior of C-style comment */
 
 <om_code,cxx_code>{ /* whitespace and single-line comments */
 
@@ -302,7 +302,7 @@ blank       [ \t]
 "//"[^\r\n]*    {
 				/* single line comment */
                 /* pattern does not include trailing newline */
-                /* so matches a // comment at eof even if no trailing newline */
+                /* so matches a single-line C++ comment at eof even if no trailing newline */
 
                 /* note start location of comment body */
                 pc.comment_location = *yylloc;
@@ -315,9 +315,9 @@ blank       [ \t]
 
                 Symbol::process_cxx_comment(pc.comment_body, pc.comment_location);
 			}
-} /* <om_code,cxx_code> */
+} /* <om_code,cxx_code> whitespace and single-line comments */
 
-<om_code>{ /* ompp declarative islands */
+<om_code>{ /* identifiers and keywords in ompp declarative islands */
 	
 {word}      {
                 yylloc->step();
@@ -368,151 +368,165 @@ blank       [ \t]
 				return token::SYMBOL;
 			}
 
-"{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
-                yylloc->step();
-                switch ( *yytext ) {
-                    case '{': pc.brace_level++; break;
-                    case '}': pc.brace_level--; break;
-                    case '(': pc.parenthesis_level++; break;
-                    case ')': pc.parenthesis_level--; break;
-                    case '[': pc.bracket_level++; break;
-                    case ']': pc.bracket_level--; break;
-                    default: assert(false);
-                }
-				
-				token_type tok = Symbol::string_to_token(yytext);
-                yylval->val_token = tok;
-                return tok;
-			}
+} /* <om_code> identifiers and keywords in ompp declarative islands */
 
-"->*"|"<<="|">>="|"..." {
-				/* three character C++ operators */
-                yylloc->step();
-				token_type tok = Symbol::string_to_token(yytext);
-                yylval->val_token = tok;
-                return tok;
-			}
-
-"::"|"++"|"--"|"->"|".*"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"^="|"|=" {
-				/* two character C++ operator */
-                yylloc->step();
-				token_type tok = Symbol::string_to_token(yytext);
-                yylval->val_token = tok;
-                return tok;
-			}
-
-";"|"."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
-				/* one character C++ operator */
-                yylloc->step();
-				token_type tok = Symbol::string_to_token(yytext);
-				if ((YY_START == om_code) && (tok == token::TK_SEMICOLON) && (pc.brace_level == 0)) {
-					/* transition to C++ */
-					BEGIN(cxx_code);
-				}
-                yylval->val_token = tok;
-                return tok;
-			}
-
-{floating}  {
-                yylloc->step();
-				token_type tok = token::FLOATING_POINT_LITERAL;
-                yylval->pval_FloatingPointLiteral = new FloatingPointLiteral ( yytext );
-                return tok;
-			}
-
-{integer}   {
-                yylloc->step();
-				token_type tok = token::INTEGER_LITERAL;
-                yylval->pval_IntegerLiteral = new IntegerLiteral ( yytext );
-                return tok;
-			}
-
-.           {
-				/* error (will be detected and handled in parser) */
-				return (token_type) *yytext;
-			}
-} /* <om_code> */
-
-<cxx_code>{ /* C++ code */
-
-"{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
-                yylloc->step();
-                switch ( *yytext ) {
-                    case '{': pc.brace_level++; break;
-                    case '}': pc.brace_level--; break;
-                    case '(': pc.parenthesis_level++; break;
-                    case ')': pc.parenthesis_level--; break;
-                    case '[': pc.bracket_level++; break;
-                    case ']': pc.bracket_level--; break;
-                    default: assert(false);
-                }
-				token_type tok = Symbol::string_to_token(yytext);
-                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
-			}
-
-"->*"|"<<="|">>="|"..." {
-				/* three character C++ operators */
-                yylloc->step();
-				token_type tok = Symbol::string_to_token(yytext);
-                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
-			}
-
-"::"|"++"|"--"|"->"|".*"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"^="|"|=" {
-				/* two character C++ operator */
-                yylloc->step();
-				token_type tok = Symbol::string_to_token(yytext);
-                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
-			}
-
-";"|"."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
-				/* one character C++ operator */
-                yylloc->step();
-				token_type tok = Symbol::string_to_token(yytext);
-                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
-			}
-
-{floating}  {
-                yylloc->step();
-				token_type tok = token::FLOATING_POINT_LITERAL;
-                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
-			}
-
-{integer}   {
-                yylloc->step();
-				token_type tok = token::INTEGER_LITERAL;
-                *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
-			}
+<cxx_code>{ /* identifiers and keywords in C++ code */
 
 {word}      {
                 yylloc->step();
 			    token_type tok = Symbol::string_to_token( yytext );
                 /* tok has value TK_error if not a keyword */
-                if ( Symbol::is_om_outer_keyword( tok ) && pc.brace_level == 0) {
-                    /* transition to openM++ declarative island */
-    				BEGIN(om_code);
-                    yylval->val_token = tok;
-                    /* special case to force a string look-ahead token following 'options' to be STRING */
-                    if (tok == token::TK_options) {
-                        pc.next_word_is_string = true;
+                if (Symbol::is_om_outer_keyword(tok)) {
+                    if (pc.brace_level == 0) {
+                        /* transition to openM++ declarative island */
+    				    BEGIN(om_code);
+                        yylval->val_token = tok;
+                        /* special case to force a string look-ahead token following 'options' to be STRING */
+                        if (tok == token::TK_options) {
+                            pc.next_word_is_string = true;
+                        }
+                        /* feed token to parser */
+                        return tok;
                     }
-                    /* feed token to parser */
-                    return tok;
+                    else {
+                        /* treat ompp keywords inside braces as identifiers */
+                        tok = token::SYMBOL;
+                    }
     			}
 
                 if (tok == token::TK_error) {
-                    /* not a keyword, therefor a symbol */
+                    /* not a keyword, therefore a symbol */
                     tok = token::SYMBOL;
                 }
                 *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
 			}
 
-.           {
-				/* all other C++ code */
-				*drv.outside << yytext;
+} /* <cxx_code> identifiers and keywords in C++ code */
+
+<om_code,cxx_code>{ /* elements of C++ syntax common to ompp and C++ */
+
+"#"[^\r\n]* { /* pre-processor directive */
+				token_type tok = token::TK_error;
+                if (YY_START == om_code) {
+    				/* Let parser raise syntax error. */
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    /* Let C++ compiler handle it */
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+            }
+
+"{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
+                yylloc->step();
+                switch ( *yytext ) {
+                    case '{': pc.brace_level++; break;
+                    case '}': pc.brace_level--; break;
+                    case '(': pc.parenthesis_level++; break;
+                    case ')': pc.parenthesis_level--; break;
+                    case '[': pc.bracket_level++; break;
+                    case ']': pc.bracket_level--; break;
+                    default: assert(false);
+                }
+				token_type tok = Symbol::string_to_token(yytext);
+                if (YY_START == om_code) {
+                    yylval->val_token = tok;
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
 			}
 
-} /* <cxx_code> */
+"->*"|"<<="|">>="|"..." {
+				/* three character C++ operators */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                if (YY_START == om_code) {
+                    yylval->val_token = tok;
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+			}
 
+"::"|"++"|"--"|"->"|".*"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"^="|"|=" {
+				/* two character C++ operator */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                if (YY_START == om_code) {
+                    yylval->val_token = tok;
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+			}
+
+";"|"."|"+"|"-"|"!"|"~"|"*"|"&"|"/"|"%"|"<"|">"|"^"|"|"|"?"|":"|"="|","|"("|")"|"["|"]" {
+				/* one character C++ operator */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                if (YY_START == om_code) {
+				    if ((tok == token::TK_SEMICOLON) && (pc.brace_level == 0)) {
+					    /* transition to C++ code */
+					    BEGIN(cxx_code);
+				    }
+                    yylval->val_token = tok;
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+			}
+
+{floating}  {
+                yylloc->step();
+				token_type tok = token::FLOATING_POINT_LITERAL;
+                if (YY_START == om_code) {
+                    yylval->pval_FloatingPointLiteral = new FloatingPointLiteral(yytext);
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+			}
+
+{integer}   {
+                yylloc->step();
+				token_type tok = token::INTEGER_LITERAL;
+                if (YY_START == om_code) {
+                    yylval->pval_IntegerLiteral = new IntegerLiteral(yytext);
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+			}
+
+.           {
+				/* unrecognized token */
+				token_type tok = token::TK_error;
+                if (YY_START == om_code) {
+    				/* Let parser raise syntax error. */
+                    return tok;
+                }
+                else {
+                    assert(YY_START == cxx_code);
+                    /* Let C++ compiler handle it, as appropriate */
+                    *drv.outside << pc.cxx_process_token(tok, yytext, yylloc);
+                }
+			}
+
+} /* <om_code,cxx_code> elements of C++ syntax common to ompp and C++ */
 
 .           {
                 assert(false);  /* not reached */
