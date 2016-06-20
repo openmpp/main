@@ -1,14 +1,10 @@
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
-//LABEL(model, EN) Model settings
-
-/* NOTE(model, EN)
+//LABEL(model_core, EN) Core simulation functionality
+/* NOTE(model_core, EN)
 	This module contains model settings and the central simulation function.
 */
-
-// The model version number
-version 1, 0, 0, 0;
 
 // The model type
 model_type case_based;

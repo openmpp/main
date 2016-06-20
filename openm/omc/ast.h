@@ -12,6 +12,7 @@
 #include "LanguageSymbol.h"
 #include "StringSymbol.h"
 #include "ModelSymbol.h"
+#include "ScenarioSymbol.h"
 #include "ModuleSymbol.h"
 #include "VersionSymbol.h"
 #include "ModelTypeSymbol.h"

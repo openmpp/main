@@ -1,6 +1,6 @@
-//LABEL(model, EN) Core simulation functions
+//LABEL(model_core, EN) Core simulation functions
 
-/* NOTE(model, EN)
+/* NOTE(model_core, EN)
 	This module contains core simulation functions and definitions.
 */
 

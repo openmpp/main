@@ -55,6 +55,7 @@
 #include "GlobalFuncSymbol.h"
 #include "AggregationSymbol.h"
 #include "ModelSymbol.h"
+#include "ScenarioSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -763,14 +764,18 @@ string Symbol::note(const LanguageSymbol & language) const
     return pp_notes[language.language_id];
 }
 
-void Symbol::populate_default_symbols(const string &model_name)
+void Symbol::populate_default_symbols(const string &model_name, const string &scenario_name)
 {
     Symbol *sym = nullptr;
     sym = new VersionSymbol( 1, 0, 0, 0 );
     assert(sym);
     sym = new ModelTypeSymbol(token::TK_case_based, false);
     assert(sym);
-    sym = new ModelSymbol(model_name);
+    // ModelSymbol has fixed name "model" for associating label and note
+    sym = new ModelSymbol("model", model_name);
+    assert(sym);
+    // ScenarioSymbol has fixed name "scenario" for associating label and note
+    sym = new ScenarioSymbol("scenario", scenario_name);
     assert(sym);
 
 

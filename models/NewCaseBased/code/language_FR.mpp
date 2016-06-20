@@ -7,6 +7,11 @@
 	This module contains French translations of labels and notes.
 */
 
+//LABEL(model, FR) Simple modèle case-based
+/* NOTE(model, FR)
+Ce modèle peut servir comme point de départ pour construire un modèle case-based plus complexe.
+*/
+
 
 
 //==============================/
@@ -180,9 +185,15 @@
 //                              /
 //==============================/
 
-//LABEL ( model, FR ) Fonctions de simulation de base
+//LABEL ( model_core, FR ) Fonctions de simulation de base
 
-/* NOTE ( model, FR )	Ce module contient les définitions et fonctions de simulation de base.
+/* NOTE ( model_core, FR )	Ce module contient les définitions et fonctions de simulation de base.
+*/
+
+//LABEL(model_info, FR) Model information sur le modèle
+
+/* NOTE(model_info, EN)
+	Ce mdoule contient la version, la description, et les notes du modèle.
 */
 
 //LABEL (language_FR, FR) Traduction française des chaînes du modèle.

@@ -219,6 +219,7 @@
     <ClInclude Include="PartitionSymbol.h" />
     <ClInclude Include="RangeSymbol.h" />
     <ClInclude Include="RealSymbol.h" />
+    <ClInclude Include="ScenarioSymbol.h" />
     <ClInclude Include="SimpleAttributeEnumSymbol.h" />
     <ClInclude Include="SimpleAttributeSymbol.h" />
     <ClInclude Include="SpecialGlobal.h" />
@@ -295,6 +296,7 @@
     <ClCompile Include="PartitionSymbol.cpp" />
     <ClCompile Include="RangeSymbol.cpp" />
     <ClCompile Include="RealSymbol.cpp" />
+    <ClCompile Include="ScenarioSymbol.cpp" />
     <ClCompile Include="SimpleAttributeEnumSymbol.cpp" />
     <ClCompile Include="SimpleAttributeSymbol.cpp" />
     <ClCompile Include="StringSymbol.cpp" />

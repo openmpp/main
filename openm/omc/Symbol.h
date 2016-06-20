@@ -721,7 +721,7 @@ public:
      * with name 'Time'.  By default, the type is double, but this can be overridden by the model
      * developer using the time_type statement in the model source code.
      */
-    static void populate_default_symbols(const string &model_name);
+    static void populate_default_symbols(const string &model_name, const string &scenario_name);
 
     /**
      * Invalidate the parse phase symbol table.

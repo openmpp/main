@@ -30,7 +30,7 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     super::populate_metadata(metaRows);
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    metaRows.modelDic.name = name;
+    metaRows.modelDic.name = external_name;
 
     for (auto lang : Symbol::pp_all_languages) {
         ModelDicTxtLangRow modelTxt;

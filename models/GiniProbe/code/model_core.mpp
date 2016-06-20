@@ -1,10 +1,10 @@
-// Copyright (c) 2013-2014 OpenM++
+// Copyright (c) 2013-2015 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-//LABEL(model, EN) Model settings
+//LABEL(model_core, EN) Core simulation functions
 
-/* NOTE(model, EN)
-	This module contains model settings and the central simulation function.
+/* NOTE(model_core, EN)
+	This module contains core simulation functions and definitions.
 */
 
 // The model version number
@@ -18,8 +18,7 @@ time_type double;
 
 // Supported languages
 languages {
-	EN, // English
-	FR	// Français
+	EN // English
 };
 
 /**
@@ -29,14 +28,9 @@ languages {
  */
 void CaseSimulation(case_info &ci)
 {
-    extern void SimulateEvents(); // defined in a simulation framework module
-
-	// Initialize the person actor
 	auto prPerson = new Person();
 	prPerson->Start();
-
-	// Simulate events until there are no more.
-    SimulateEvents();
+	prPerson->Finish();
 }
 
 /**

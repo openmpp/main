@@ -22,13 +22,22 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    ModelSymbol(string nm)
+    ModelSymbol(string nm, string enm)
         : Symbol(nm)
+        , external_name(enm)
     {
     }
 
     CodeBlock cxx_definition_global();
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
+
+    /**
+     * The external name of the published scenario.
+     * 
+     * The external name of the published scenario
+     * is given by the -s option when omc is invoked.
+     */
+    string external_name;
 };
 

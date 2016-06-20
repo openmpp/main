@@ -100,6 +100,7 @@ ParseContext.cpp \
 PartitionSymbol.cpp \
 RangeSymbol.cpp \
 RealSymbol.cpp \
+ScenarioSymbol.cpp \
 SimpleAttributeEnumSymbol.cpp \
 SimpleAttributeSymbol.cpp \
 StringSymbol.cpp \

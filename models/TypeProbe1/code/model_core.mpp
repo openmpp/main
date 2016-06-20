@@ -1,9 +1,9 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
-//LABEL(model, EN) Model settings
+//LABEL(model_core, EN) Model settings
 
-/* NOTE(model, EN)
+/* NOTE(model_core, EN)
 	This module contains model settings and the central simulation function.
 */
 
@@ -18,10 +18,9 @@ time_type double;
 
 // Supported languages
 languages {
-	EN // English
+	EN, // English
+	FR	// Français
 };
-
-options case_checksum=on event_trace=on;
 
 /**
  * Simulates a single case.

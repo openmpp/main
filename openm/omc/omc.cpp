@@ -51,6 +51,7 @@
 #include "Symbol.h"
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
+#include "ScenarioSymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -283,8 +284,8 @@ int main(int argc, char * argv[])
         // get scenario name
         string scenario_name = argStore.strOption(OmcArgKey::scenarioName);
         if (scenario_name.empty()) {
-            scenario_name = model_name;
-            theLog->logFormatted("Scenario name not specified - using default: %s. Use -s option to specify scenario name.", model_name.c_str());
+            scenario_name = "Default";
+            theLog->logFormatted("Scenario name not specified - using default name 'Default'. Use -s option to specify scenario name.");
         }
 
         // get list of source file names in specified directory or current directory by default
@@ -375,7 +376,7 @@ int main(int argc, char * argv[])
         string sqlProviders = argStore.strOption(OmcArgKey::dbProviderNames, openm::SQLITE_DB_PROVIDER);
 
         // Populate symbol table with default symbols
-        Symbol::populate_default_symbols(model_name);
+        Symbol::populate_default_symbols(model_name, scenario_name);
 
         // create unique instance of ParseContext
         ParseContext pc;
@@ -556,19 +557,21 @@ int main(int argc, char * argv[])
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);
         
-        // Create default working set
+        // Create working set for published scenario
         theLog->logMsg("Scenario processing");
 
-        MetaSetLangHolder metaSet;          // default working set metadata
+        // Get the scenario symbol
+        ScenarioSymbol *scenario_symbol = dynamic_cast<ScenarioSymbol *>(Symbol::find_a_symbol(typeid(ScenarioSymbol)));
+        assert(scenario_symbol);
+
+        MetaSetLangHolder metaSet;    // metadata for working set
         metaSet.worksetRow.name = scenario_name;
         for (auto lang : Symbol::pp_all_languages) {
             WorksetTxtLangRow worksetTxt;
-            //auto lang_id = lang->language_id;
             auto lang_name = lang->name;
             worksetTxt.langName = lang_name;
-            // TODO Add real Scenario description and notes - pending addition of 'scenario' statement
-            worksetTxt.descr = scenario_name + " (label)"; // TODO
-            worksetTxt.note = scenario_name + " (note)"; // TODO
+            worksetTxt.descr = scenario_symbol->label(*lang);
+            worksetTxt.note = scenario_symbol->note(*lang);
             metaSet.worksetTxt.push_back(worksetTxt);
         }
 
