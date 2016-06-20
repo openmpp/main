@@ -1,0 +1,15 @@
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(model_info, EN) Model information
+/* NOTE(model_info, EN)
+	This module contains the model version, description, and notes.
+*/
+
+// The model version number
+version 1, 0, 0, 0;
+
+//LABEL(model, EN) Simple case-based model
+/* NOTE(model, EN)
+This model can serve as a starting point for more complex case-based models.
+*/
