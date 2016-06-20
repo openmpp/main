@@ -583,14 +583,13 @@ int main(int argc, char * argv[])
             wsParam.paramId = param->pp_parameter_id;
             metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
             // value notes for the parameter
-            const bool do_param_value_notes = false; // TODO - remove when resolved
             for (auto lang : Symbol::pp_all_languages) {
                 WorksetParamTxtLangRow worksetParamTxt;
                 auto lang_id = lang->language_id;
                 auto lang_name = lang->name;
                 assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
                 string value_note = param->pp_value_notes[lang_id];
-                if (do_param_value_notes && value_note.length() > 0) {
+                if (value_note.length() > 0) {
                     worksetParamTxt.paramId = wsParam.paramId;
                     worksetParamTxt.langName = lang_name;
                     worksetParamTxt.note = value_note;

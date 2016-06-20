@@ -1458,7 +1458,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
     io_wr.outFs <<
         "INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)" \
         " SELECT" \
-        " W.set_id, P.parameter_hid" \
+        " W.set_id, P.parameter_hid, " \
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
     io_wr.writeTrimQuoted(i_row.langName);

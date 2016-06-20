@@ -64,6 +64,7 @@ namespace openm
         string bodySqlPath;                 // workset body sql file path
         string modelDigestQuoted;           // sql-quoted model digest
         string worksetNameQuoted;           // sql-quoted workset name
+        int worksetFileIndex;               // sequential number for workset sql file names
         list<string> dbProviderLst;         // list of db provider names, ie: sqlite,postgresql,mysql
         unique_ptr<ModelSqlWriter> setWr;   // workset sql writer
 
