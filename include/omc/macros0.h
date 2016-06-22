@@ -1,8 +1,8 @@
 /**
-* @file    macros.h
-* Macros available to all models.
+* @file    macros0.h
+* Macros available to all models (early)
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #define TRUE true
@@ -24,15 +24,6 @@
 // Ignore IMPLEMENT_HOOK 
 #define IMPLEMENT_HOOK()
 
-// override std:min and std::max to enable type conversion of arguments
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
 
@@ -44,12 +35,6 @@
 
 // Fixed precision time arithmetic is implemented using the wrapped Time typoe in ompp.
 #define CoarsenMantissa(x) Time(x)
-
-// map logical to bool (for local variable declarations in Modgen models)
-#define logical bool
-
-// map MFC BOOL to int
-#define BOOL int
 
 // map actor_id to entity_id (allows use of actor_id member in C++ model code)
 #define actor_id entity_id

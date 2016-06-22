@@ -44,10 +44,15 @@
 
 #include "omc/globals1.h"
 
+#include "omc/macros0.h"
+
 #include "custom_early.h" // model-specific declarations and includes (early)
 
 // Make logical a synonym for bool in C++ model code.
 typedef bool logical;
+
+// map MFC BOOL to int
+typedef int BOOL;
 
 // Make some (deprecated) uses in model code of the MS CString class work portably
 typedef std::string CString;
@@ -56,7 +61,7 @@ typedef std::string CString;
 
 #include "custom.h" // model-specific declarations and includes (late)
 
-#include "omc/macros.h" // includes min/max macros which can break std headers if not included last
+#include "omc/macros1.h" // includes min/max macros which can break std headers if not included last
 
 
 namespace openm {
