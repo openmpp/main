@@ -112,6 +112,8 @@ multimap<string, string> Symbol::memfunc_bodyids;
 
 map<string, vector<string> > Symbol::memfunc_parmlist;
 
+map<string, yy::location> Symbol::memfunc_defn_loc;
+
 /**
 * Map from a token to the preferred string representation of that token.
 *
@@ -1041,6 +1043,18 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
         string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
         theLog->logFormatted(msg.c_str());
         throw HelperException("fatal error: stopping post parse processing");
+    }
+}
+
+// static
+void Symbol::pp_logmsg(const yy::location& loc, const string& msg)
+{
+    yy::location l = loc;
+    if (l.begin.filename) {
+        theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    }
+    else {
+        theLog->logFormatted("%s", msg.c_str());
     }
 }
 

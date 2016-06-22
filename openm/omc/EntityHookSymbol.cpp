@@ -122,6 +122,7 @@ void EntityHookSymbol::post_parse(int pass)
                         pp_to_fn->body_identifiers.end(),
                         [nm](string id){ return nm == id; })) {
                 pp_error("error : the target function '" + pp_to_fn->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
+                Symbol::pp_logmsg(pp_to_fn->defn_loc, " see definition of target function '" + pp_to_fn->unique_name + "'");
             }
         }
 

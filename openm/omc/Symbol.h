@@ -765,7 +765,14 @@ public:
     static void modgen_sort_pp_symbols2();
 
     /**
-     * Process a semantic error encountered during the post-parse phase.
+     * Output a log message with source location.
+     * 
+     * @param msg The message.
+     */
+    static void pp_logmsg(const yy::location& loc, const string& msg);
+
+    /**
+     * Process an error encountered during the post-parse phase.
      * 
      * @param msg The message.
      */
@@ -1002,13 +1009,17 @@ public:
     /**
      * Map of member function qualified names to the parameter list of each (as a vector of strings).
      * 
-     * The parentheses are included in the list.
-     * Example entries:
+     * Examples:
      *
-     * "Person::timeMortality" ==> ( )
-     * "Person::timeMoveEvent" ==> ( int * p_destination )
+     * "Person::timeMortality" ==> <empty>
+     * "Person::timeMoveEvent" ==> int * p_destination
      */
     static map<string, vector<string> > memfunc_parmlist;
+
+    /**
+     * Map of member function qualified names to the definition location.
+     */
+    static map<string, yy::location> memfunc_defn_loc;
 
     /**
      * A map of all the C++ style single line comments in the model source code, indexed by location

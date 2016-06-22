@@ -94,6 +94,7 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, yy:
             cxx_memfunc_name = name1 + "::" + name2;
             reverse(parmlist.begin(), parmlist.end());
             Symbol::memfunc_parmlist.emplace(cxx_memfunc_name, parmlist);
+            Symbol::memfunc_defn_loc.emplace(cxx_memfunc_name, *loc);
         }
     }
 

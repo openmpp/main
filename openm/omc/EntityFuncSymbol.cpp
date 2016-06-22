@@ -20,8 +20,18 @@ void EntityFuncSymbol::post_parse(int pass)
     case eAssignMembers:
     {
         if (suppress_defn) {
-            // For developer-supplied functions,
-            // construct the set of all identifiers used in the function body.
+            // Is a developer-supplied entity member function.
+
+            // Note the definition location
+            auto search = memfunc_defn_loc.find(unique_name);
+            if (search != memfunc_defn_loc.end()) {
+                defn_loc = search->second;
+            }
+            else {
+                pp_warning("warning : Entity member function '" + unique_name + "' was declared but has no definition.");
+            }
+
+            // Construct the set of all identifiers used in the function body.
             auto rng = memfunc_bodyids.equal_range(unique_name);
             for_each(rng.first,
                     rng.second,

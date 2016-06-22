@@ -192,13 +192,6 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "return time.get();" ;
     }
 
-    // The om_Start_custom() member function
-    {
-        // no code generation for definition
-        auto *fn = new EntityFuncSymbol("om_Start_custom", this, "void", "", true);
-        fn->doc_block = doxygen_short("Model-specific customizations before simulating entity.");
-    }
-
     // The assign_member_offsets member function
     {
         assert(!assign_member_offsets_fn); // initialization guarantee

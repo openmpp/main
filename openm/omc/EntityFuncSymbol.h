@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <set>
+#include "location.hh"
 #include "EntityMemberSymbol.h"
 #include "CodeBlock.h"
 
@@ -131,6 +132,13 @@ public:
      * The function body (if generated)
      */
     CodeBlock func_body;
+
+    /**
+     * The definition location (if supplied)
+     * 
+     * Set using location information of syntactic elements during parsing.
+     */
+    yy::location defn_loc;
 
     /**
      * The identifiers in the function body (if developer-suppied)
