@@ -20,7 +20,8 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     isCrc32Name(false),
     dbPrefixSize(0),
     dbSuffixSize(0),
-    outputDir(i_outputDir) 
+    outputDir(i_outputDir),
+    worksetFileIndex(0)
 {
     // parse and validate provider names
     dbProviderLst = IDbExec::parseListOfProviderNames(i_providerNames);
@@ -55,8 +56,8 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         // write sql script to insert new model metadata 
         // write sql script to create new model tables
         for (const string providerName : dbProviderLst) {
-            buildCreateModel(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_create_model_" + providerName + ".sql");
-            buildCreateModelTables(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_create_tables_" + providerName + ".sql");
+            buildCreateModel(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_1_create_model_" + providerName + ".sql");
+            buildCreateModelTables(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_2_create_tables_" + providerName + ".sql");
         }
 
         // write sql script to drop model tables
@@ -474,7 +475,7 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaS
         for (const string & providerName : dbProviderLst) {
 
             // create provider sql file and put header
-            ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_" + i_metaSet.worksetRow.name + "_" + providerName + ".sql");
+            ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_" + to_string(worksetFileIndex + 3) + "_" + i_metaSet.worksetRow.name + "_" + providerName + ".sql");
             wr.outFs <<
                 "--\n" <<
                 "-- create working set of parameters: " << i_metaSet.worksetRow.name << '\n' <<
@@ -521,6 +522,7 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaS
             if (!sqlCommitTrx.empty()) wr.writeLine(sqlCommitTrx + ";");
             wr.write("\n");
         }
+        worksetFileIndex++;     // next workset sql file number
 
         // delete sql body file, treat file delete error as warning
         if (std::remove(bodySqlPath.c_str())) theLog->logFormatted("File delete error: %s", bodySqlPath.c_str());
