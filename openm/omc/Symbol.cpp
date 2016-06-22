@@ -687,13 +687,18 @@ CodeBlock Symbol::injection_description()
     return c;
 }
 
-
 void Symbol::pp_error(const string& msg)
 {
     post_parse_errors++;
     yy::location l = decl_loc;
-    assert(l.begin.filename);
-    theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    if (l.begin.filename) {
+        theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    }
+    else {
+        // This Symbol has no declaration location, append pretty_name() instead
+        string nm = pretty_name();
+        theLog->logFormatted("%s - %s", msg.c_str(), nm.c_str());
+    }
     if (post_parse_errors >= max_error_count) {
         string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
         theLog->logFormatted(msg.c_str());
@@ -705,7 +710,14 @@ void Symbol::pp_warning(const string& msg)
 {
     post_parse_warnings++;
     yy::location l = decl_loc;
-    theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    if (l.begin.filename) {
+        theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    }
+    else {
+        // This Symbol has no declaration location, append pretty_name() instead
+        string nm = pretty_name();
+        theLog->logFormatted("%s - %s", msg.c_str(), nm.c_str());
+    }
 }
 
 bool Symbol::process_symbol_label(const yy::position& pos)

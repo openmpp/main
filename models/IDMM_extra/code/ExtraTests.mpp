@@ -78,6 +78,7 @@ actor Host
 {
     real hui = (disease_phase == DP_INFECTIOUS) ? 0.8 : 1.0;
     real qaly = weighted_duration(hui);
+    real discount_factor = pow(0.99, int(report_time));
 
     real v00 = weighted_duration(hui);
     real v01 = weighted_duration(disease_phase, DP_IMMUNE, hui);
@@ -126,6 +127,7 @@ actor Host
     counter v44 = self_scheduling_split(duration(disease_phase, DP_LATENT), MY_PART);
     counter v45 = self_scheduling_int(duration());
     counter v46 = self_scheduling_split(duration(), MY_PART);
+    double v47 = weighted_cumulation(v12, discount_factor);
 
     //EN 10+ years
     logical year_ge_10 = (report_time >= 10) ? TRUE : FALSE;
@@ -232,7 +234,8 @@ table Host ZZZ_01
         v43, //EN v43
         v44, //EN v44
         v45, //EN v45
-        v46 //EN v46
+        v46, //EN v46
+        v47 //EN v47 decimals=2
   }
     * year_ge_10
 };

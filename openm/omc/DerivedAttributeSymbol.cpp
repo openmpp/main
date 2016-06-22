@@ -579,7 +579,7 @@ void DerivedAttributeSymbol::assign_sorting_group()
 
 void DerivedAttributeSymbol::create_auxiliary_symbols()
 {
-    // Create associated identity agentvar for expression "av1 == k1"
+    // Create associated identity attribute for expression "av1 == k1"
     switch (tok) {
     case token::TK_duration:
     case token::TK_weighted_duration:
@@ -606,7 +606,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     break;
     }
 
-    // Create associated derived agentvar
+    // Create associated derived attribute
     switch (tok) {
     case token::TK_value_at_first_entrance:
     {
@@ -929,8 +929,22 @@ void DerivedAttributeSymbol::create_side_effects()
     }
     case token::TK_weighted_cumulation:
     {
-        // TODO (or almost certainly not!)
-        pp_warning("warning : not implemented (value never changes) - " + Symbol::token_to_string(tok) + "( ... )");
+        // weighted_cumulation(av, wgt)
+        auto *av = pp_av1;
+        auto *wgt = pp_av2;
+        assert(av);
+        assert(wgt);
+        CodeBlock& c = av->side_effects_fn->func_body;
+        c += injection_description();
+        c += "// Maintain " + pretty_name();
+        c += "{";
+        c += "auto delta = om_new - om_old;";
+        c += "auto wgt = " + wgt->name + ".get();";
+        c += "auto curr = " + name + ".get();";
+        c += "auto next = curr + (real) delta * wgt;";
+        c += name + ".set(next);";
+        c += "}";
+
         break;
     }
     case token::TK_active_spell_duration:
