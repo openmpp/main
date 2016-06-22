@@ -416,6 +416,13 @@ for my $model_dir (@model_dirs) {
 				logerrors $merged;
 				next FLAVOUR;
 			}
+			
+			# Extract warning count 
+			$merged =~ /^ *([0-9]+) Warning\(s\)/m;
+			my $warning_count = $1;
+			if ($warning_count) {
+				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log}";
+			}
 
 			# Executable suffix for platform/configuration: nothing, D, 64, 64D
 			my $build_suffix = "";
@@ -594,6 +601,13 @@ for my $model_dir (@model_dirs) {
 				logmsg error, $model_dir, $flavour, "build failed";
 				logerrors $merged;
 				next FLAVOUR;
+			}
+			
+			# Extract warning count 
+			$merged =~ /^ *([0-9]+) Warning\(s\)/m;
+			my $warning_count = $1;
+			if ($warning_count) {
+				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log}";
 			}
 			
 			# Executable suffix for platform/configuration: nothing, D, 64, 64D
