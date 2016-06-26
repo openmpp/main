@@ -1,0 +1,49 @@
+/*****************************************************************************
+*	IDMM™: Infectious Disease Microsimulation Model
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | SFG | 02/02/19 | Created                                                 |
+* | SFG | 03/11/28 | Cosmetic changes                                        |
+* +-----+----------+---------------------------------------------------------+
+*
+******************************************************************************/
+
+//LABEL (TestTables, EN) Tables for testing model
+
+/* NOTE(TestTables, EN)
+	This file contains test tables. 
+*/
+
+
+
+table Host X01_History //EN History of the disease
+{
+	{
+		duration()	//EN Duration
+	}  
+	* report_time	//EN Report time
+	* disease_phase	//EN Current disease phase
+};
+
+
+table Host X02_Host_Events //EN Events for Hosts
+{
+	{
+		event(event_count)		//EN Count
+	}  
+	* report_time				//EN Report time
+	* event_type				//EN Event type
+};
+
+table Ticker X03_Ticker_Events //EN Events for Ticker
+{
+	{
+		event(event_count)		//EN Count
+	}  
+	* report_time				//EN Report time
+	* event_type				//EN Event type
+};
+

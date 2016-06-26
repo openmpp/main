@@ -1,0 +1,117 @@
+/*****************************************************************************
+*	IDMM™: Infectious Disease Microsimulation Model
+*
+*Revisions:
+* +-----+----------+---------------------------------------------------------+
+* | Who |   Date   | Description                                             |
+* +-----+----------+---------------------------------------------------------+
+* | SFG | 02/02/22 | Created                                                 |
+* | SFG | 03/11/28 | Cosmetic changes                                        |
+* +-----+----------+---------------------------------------------------------+
+*
+******************************************************************************/
+
+//LABEL (TickerCore, EN) Definition and initialization of Ticker actor
+
+/*NOTE(TickerCore, EN)
+	This module contains the basic information associated with a Ticker actor.
+	One single Ticker actor is instantiated in a simulation.  It is used to synchronise
+	time among all of the actors in the population in order to ensure
+	accurate reports.
+*/
+
+classification TICKER_EVENT_TYPE	//EN Ticker Event Type
+{
+
+	//EN None
+	TET_NONE,
+
+	//EN Tick event
+	TET_TICK
+};
+
+
+range REPORT_TIME {0, 20}; 		//EN Reporting intervals
+
+actor Ticker				 		//EN Actor for synchronising population-level activities
+{
+	//EN Event count
+	int event_count = { 0 };
+
+	//EN Event type
+	TICKER_EVENT_TYPE event_type = { TET_NONE };
+
+	//EN Report time
+	REPORT_TIME report_time = { 0 };
+
+	//EN Time of next Tick event
+	TIME next_tick;
+
+	void	Start();	//EN Starts the ticker
+	void	Finish();	//EN Finishes the actor
+
+	event	timeTickEvent, TickEvent, time_keeping;	//EN Tick event
+};
+
+/* NOTE(Ticker.Start,EN) 
+	Initializes the Ticker actor.
+*/
+void Ticker::Start()
+{
+    // Initialize all attributes (OpenM++).
+    initialize_attributes();
+
+	time = 0;
+	age = 0;
+	next_tick = 0; // Arrange that the first tick occurs at the beginning of the simulation
+
+    // Have the entity enter the simulation (OpenM++).
+    enter_simulation();
+}
+
+
+/* NOTE(Ticker.Finish,EN) 
+	Performs any additional processing when closing a Ticker actor.
+*/
+void Ticker::Finish()
+{
+    // Have the entity exit the simulation (OpenM++).
+    exit_simulation();
+}
+
+
+/* NOTE(Ticker.TickEvent,EN)
+	Increments the clock and synchronizes actors for reporting purposes.
+*/
+TIME Ticker::timeTickEvent()
+{
+	return next_tick;
+}
+
+void Ticker::TickEvent()
+{
+	// For reporting on event counts
+	event_type = TET_NONE;
+	event_type = TET_TICK;
+	event_count++;
+
+    // Don't increment report_time or synchronize hosts at the start of the simulation.
+    if ( age > 0 ) {
+	    report_time = COERCE(REPORT_TIME, report_time + 1);
+	    // Synchronize all hosts to the current time for reporting purposes
+	    int nHosts = asAllHosts->Count();
+	    for ( int nJ=0; nJ<nHosts; nJ++ ) 
+	    {
+		    auto prHost = asAllHosts->Item( nJ );
+		    prHost->report_time = report_time;
+	    }
+    }
+
+	// Schedule the next tick.
+	// The next line spreads reporting times evenly over the simulation
+	//next_tick = next_tick + SIMULATION_END() / SIZE(REPORT_TIME);
+	// The next line sets reporting times at equal intervals of size 1.0
+	next_tick = next_tick + (TIME) 1.0;
+}
+
+

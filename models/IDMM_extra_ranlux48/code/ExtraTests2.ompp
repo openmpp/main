@@ -1,0 +1,124 @@
+
+// Example #1
+
+actor Host
+{
+    //EN Integer age
+    int integer_age = (actor_id % 50) + self_scheduling_int(age);
+
+    //EN Year
+    int calendar_year = 2016 + self_scheduling_int(time);
+
+    //EN year of most recent birthday
+    int year_of_birthday;
+    
+    //EN Lifetime birthdays
+    int lifetime_birthdays;
+
+    //EN Lifetime New Year's
+    int lifetime_new_years;
+
+    //EN Lifetime party cleanups
+    int lifetime_party_cleanups;
+
+    //EN Celebrate birthday
+    void celebrate_birthday();
+
+    //EN Celebrate New Year's
+    void celebrate_new_year();
+
+    //EN Cleanup after party
+    void party_clean_up();
+
+    hook celebrate_birthday, self_scheduling_int(age), 1;
+    hook celebrate_new_year, self_scheduling_int(time), 2;
+
+    hook party_clean_up, self_scheduling_int(age), 3;
+    hook party_clean_up, self_scheduling_int(time), 4;
+};
+
+void Host::celebrate_birthday()
+{
+    year_of_birthday = calendar_year;
+    lifetime_birthdays++;
+}
+
+void Host::celebrate_new_year()
+{
+    lifetime_new_years++;
+}
+
+void Host::party_clean_up()
+{
+    lifetime_party_cleanups++;
+}
+
+// Example #2
+
+actor Host
+{
+    //EN Medical follow-ups
+    int medical_follow_ups;
+
+    //EN Medical follow-up exam conducted one week after infectious symptoms appear
+    void medical_follow_up();
+
+    hook medical_follow_up,
+         duration_counter(disease_phase, DP_INFECTIOUS, 7.0, 1),
+         5;
+};
+
+void Host::medical_follow_up()
+{
+    medical_follow_ups++;
+}
+
+// Example #3
+
+actor Host
+{
+    //EN Inform Public Health Authority of a new case
+    void PHA_new_case();
+
+    //EN Inform Public Health Authority of a cleared case
+    void PHA_cleared_case();
+
+    hook PHA_new_case,
+         trigger_transitions(disease_phase, DP_LATENT, DP_INFECTIOUS),
+         5;
+
+    hook PHA_cleared_case,
+         trigger_transitions(disease_phase, DP_INFECTIOUS, DP_IMMUNE),
+         6;
+};
+
+// The single global Ticker entity also implements the Public Health Authority
+actor Ticker
+{
+    //EN Number of current active cases in epidemic
+    int active_cases;
+};
+
+//EN Entity set containing the single Ticker entity
+actor_set Ticker TheTicker;
+
+void Host::PHA_new_case()
+{
+    auto ticker = TheTicker->Item(0);
+    ticker->active_cases++;
+}
+
+void Host::PHA_cleared_case()
+{
+    auto ticker = TheTicker->Item(0);
+    ticker->active_cases--;
+}
+
+table Ticker PHA_ActiveCases //EN Active Cases
+[ trigger_changes(report_time) ]
+{
+    report_time *
+    {
+        value_in(active_cases) //EN Active cases
+    }
+};
