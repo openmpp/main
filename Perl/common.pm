@@ -578,7 +578,7 @@ sub normalize_event_trace
 			printf OUT "Seed: %15d Sample: %2d Checksum: %s\n", $case_seed, $case_sample, $checksum_formatted;
 			next;
 		}
-		my $is_trace_line = ($line =~ /^(\w+) - actor_id=(\d+) - case_seed=(\d+) -  : event=(.*) - time=([\d.]+)$/);
+		my $is_trace_line = ($line =~ /^(\w+) - actor_id=(\d+) - case_seed=(\d+) -  : event=(.*) - time=(.*)$/);
 		if (!$is_trace_line) {
 			# pass through anything unrecognised
 			printf OUT "${line}\n";
@@ -592,9 +592,9 @@ sub normalize_event_trace
 		my $time = $5;
 		my $key = sprintf("%s %10d", $function, $entity_id);
 		
-		# Replace very large times with a fixed smaller value, to avoid
+		# Replace very large times (or inf) with a fixed smaller value, to avoid
 		# reporting spurious precision-related differences due to magnitude of large times
-		if ($time > 99999.0) {
+		if ($time eq "inf" || $time > 99999.0) {
 			$time = 99999.0;
 		}
 		# Reformat time at lower precision
