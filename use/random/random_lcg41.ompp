@@ -122,6 +122,12 @@ double RandUniform(int strm)
     using namespace fmk;
 
     assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+    if (strm > model_streams) {
+        // The stream number exceeds the maximum number of streams.
+        handle_streams_exceeded(strm, model_streams);
+        // not reached
+    }
+
     long seed = stream_seeds[strm];
     long long product = stream_generator;
     product *= seed;
@@ -135,6 +141,11 @@ double RandNormal(int strm)
     using namespace fmk;
 
     assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+    if (strm > model_streams) {
+        // The stream number exceeds the maximum number of streams.
+        handle_streams_exceeded(strm, model_streams);
+        // not reached
+    }
 
     if (other_normal_valid[strm]) {
         other_normal_valid[strm] = false;
@@ -163,6 +174,12 @@ double RandLogistic(int strm)
     using namespace fmk;
 
     assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
+    if (strm > model_streams) {
+        // The stream number exceeds the maximum number of streams.
+        handle_streams_exceeded(strm, model_streams);
+        // not reached
+    }
+
     double p = RandUniform(strm);
     double odds_ratio = p / (1.0 - p);
     double x = log(odds_ratio);
