@@ -61,6 +61,7 @@ CodeBlock RangeSymbol::cxx_declaration_global()
 
     h += doxygen("Range: " + name);
     h += "typedef Range<" + token_to_string(storage_type) + ", " + to_string(lower_bound) + ", " + to_string(upper_bound) + "> " + name + "; " ;
+    h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     return h;
 }

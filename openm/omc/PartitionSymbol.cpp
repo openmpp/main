@@ -101,6 +101,7 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
         + "om_" + name + "_lower, "
         + "om_" + name + "_upper, "
         + "om_" + name + "_splitter> " + name + ";" ;
+    h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     return h;
 }
