@@ -1,0 +1,18 @@
+//LABEL(TypeTests_extra, EN) Various tests of types - classifications, ranges, partitions
+
+/* NOTE(TypeTests_extra, EN)
+	This module contains various tests (only for ompp).
+*/
+
+aggregation EMOTION3, EMOTION
+{
+    E3_HAPPY, HAPPY,
+    E3_SAD,   SAD
+};
+
+actor Person
+{
+    EMOTION3 z07a = aggregate(z07, EMOTION3);
+    EMOTION3 z07b = is_night ? E3_NEUTRAL : EMOTION3_t(aggregate(z07, EMOTION3));
+};
+

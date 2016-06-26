@@ -10,10 +10,11 @@ classification EMOTION
     SAD
 };
 
-classification ATTENTION
+classification EMOTION3
 {
-    INTERESTED,
-    BORED
+    E3_NEUTRAL,
+    E3_HAPPY,
+    E3_SAD
 };
 
 parameters {
@@ -31,6 +32,7 @@ actor Person
 {
     logical is_birthday;
     logical is_morning;
+    logical is_night;
     EMOTION morning_emotion;
     EMOTION afternoon_emotion;
 
@@ -51,6 +53,13 @@ actor Person
                  is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
     // The following generates C++ compile error due to overload resolution ambiguity
     //EMOTION z11 = is_birthday ? morning_emotion : afternoon_emotion;
+
+    // The following does not work, due to ambiguous constructor - Classification(int val) or Classification(T val)
+    //EMOTION z12 = EMOTION(morning_emotion);
+
+    // The following does not work (like z12 above)
+    //EMOTION z15 = is_birthday ? HAPPY :
+    //             is_morning ? EMOTION(morning_emotion) : EMOTION(afternoon_emotion);
 
     TIME my_happy_time;
     TIME my_sad_time;
