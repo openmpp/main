@@ -89,8 +89,11 @@ my @entities;
 	}
 	(my $fh, my $filename) = tempfile();
 	open ACTORS_H, "<".$actors_h;
+	
 	my $in_classifications = 0;
 	my $classification_name = '';
+	my $in_ranges = 0;
+	my $in_partitions = 0;
 	while (<ACTORS_H>) {
 		chomp;
 		my $line = $_;
@@ -98,6 +101,36 @@ my @entities;
 		if ($line =~ /^class (\w+);$/ ) {
 			# build list of entity names
 			push @entities, $1;
+		}
+
+		# detect classification, range, partition block for subsequent patching
+		if ($line eq "// classifications") {
+			$in_classifications = 1;
+		}
+		if ($line eq "// ranges") {
+			$in_classifications = 0;
+			$in_ranges = 1;
+		}
+		if ($line eq "// partitions") {
+			$in_partitions = 1;
+			$in_ranges = 0;
+		}
+		if ($line eq "class Parameters {") {
+			$in_partitions = 0;
+		}
+		
+		if ($in_ranges || $in_partitions) {
+			if ($line =~ /^typedef\s+(\w+)\s+(\w+);$/) {
+				my $typ = $1;
+				my $name = $2;
+
+				# construct _t typedef
+				my $line2 = "typedef ${name} ${name}_t; // Inserted by patch_modgenXX_outputs after Modgen compilation.";
+
+				# Append line with _t typedef
+				$line = $line."\n".$line2;
+				print "patched ${file_name}: $line2\n";
+			}
 		}
 		
 		if ($line =~ /\tcounter\tssint_age;/ || $line =~ /\tcounter\tssint_time;/ ) {
@@ -107,6 +140,8 @@ my @entities;
 			$line .= " // Modified by patch_modgenXX_outputs after Modgen compilation.";
 			print "patched ${file_name}: ${line}\n";
 		}
+		
+		# Print the line (perhaps modified)
 		print $fh $line."\n";
 	}
 	close $fh;
