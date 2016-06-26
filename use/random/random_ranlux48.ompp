@@ -84,9 +84,9 @@ void initialize_stream(int model_stream, int member, long seed)
 double RandUniform(int strm)
 {
 	assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
-    if (strm > model_streams) {
+    if (strm > fmk::model_streams) {
         // The stream number exceeds the maximum number of streams.
-        handle_streams_exceeded(strm, model_streams);
+        handle_streams_exceeded(strm, fmk::model_streams);
         // not reached
     }
 

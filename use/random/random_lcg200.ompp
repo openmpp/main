@@ -377,7 +377,7 @@ double RandLogistic(int strm)
 
 
 
-// C++ code to find complementary multipliers (primitve roots).  See article for method and math.
+// C++ code to find complementary multipliers (primitive roots).  See article for method and math.
 //
 
 //#include "iostream"
