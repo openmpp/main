@@ -61,7 +61,7 @@ public:
         if (ptr) {
             // update time of target agent at *ptr
             // using the global time (just-in-time algorithm)
-            if (BaseEvent::just_in_time) ptr->time.set(BaseEvent::global_time);
+            if (BaseEvent::just_in_time) ptr->time.set(BaseEvent::get_global_time());
             // return reference to agent
             return *ptr;
         }

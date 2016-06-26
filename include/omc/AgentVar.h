@@ -463,7 +463,7 @@ public:
     //}
 
     // operator: pointer
-    // Pass it on the contained <entity_ptr>
+    // Pass it on to the contained <entity_ptr>
     T operator->()
     {
         auto val = this->get();
@@ -471,8 +471,8 @@ public:
     }
 
     // operator: dereference
-    // Pass it on the contained <entity_ptr>
-    T operator*()
+    // Pass it on to the contained <entity_ptr>
+    B& operator*()
     {
         auto val = this->get();
         return *val;
