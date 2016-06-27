@@ -100,6 +100,16 @@ void Thing::Finish()
 
 TIME Thing::timeBeingGoodEvent()
 {
+    // The following generates an error in Modgen (pointer operators are not allowed in event time function).
+    //bool flg = other_thing->making_trouble;
+
+    // But the following sidesteps Modgen's prohibition on pointer operators
+    //auto what_is_this1 = *other_thing;
+    //bool flg = (*other_thing).making_trouble;
+
+    //auto what_is_this2 = *spawner;
+    //auto var = (*spawner).eye_colour;
+
 	return making_trouble ? WAIT(10 * RandUniform(5)) : TIME_INFINITE;
 }
 
