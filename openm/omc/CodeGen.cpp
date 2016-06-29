@@ -611,7 +611,7 @@ void CodeGen::do_agents()
             if (func_member->has_line_directive) {
                 c += 
                     (no_line_directives ? "//#line " : "#line ")
-                    + to_string(c.size() + 2)
+                    + to_string(c.size() + 2 + 8) // additional 8 lines for subsequently inserted header
                     + " \""
                     + c_fname
                     + "\"";
