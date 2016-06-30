@@ -66,6 +66,9 @@ void AggregationSymbol::post_parse(int pass)
             }
             else { // second
                 from_enumerator = enumerator;
+                if (pp_enumerator_map.count(from_enumerator) != 0) {
+                    pp_error("error : '" + from_enumerator->name + "' specified more than once in the aggregation");
+                }
                 // insert into the map
                 pp_enumerator_map.emplace(from_enumerator, to_enumerator);
             }
