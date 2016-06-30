@@ -858,8 +858,8 @@ void DerivedAttributeSymbol::create_side_effects()
     CodeBlock& init_cxx = pp_agent->initialize_derived_attributes_fn->func_body;
 
     // The local variable reset_cxx is used to inject code into the function reset_derived_attributes().
-    // That function is called after developer code in Start() to remove any side-effects which may have compromised
-    // the initial value of a derived attribute.
+    // That function is called before the entity enters the simulation (generally after developer code in Start),
+    // to remove any side-effects which may have compromised the initial value of a derived attribute.
     // For example, changes(attr) must record the number of changes in 'attr' as a result of events
     // in the simulation, and not side effects from assignment to 'attr' in developer code in Start() 
     // before the entity enters the simulation.  So value of changes(attr) needs to be reset to 0 after 
@@ -1483,7 +1483,7 @@ void DerivedAttributeSymbol::create_side_effects()
             // Code injection into the om_reset_derived_attributes function.
 
             // This function runs after developer initialization just before the entity enters the simulation.
-            // The local variable reset_cxx is declared at the beginning of this function.
+            // The local variable reset_cxx is declared above.
             reset_cxx += injection_description();
             reset_cxx += "{";
             reset_cxx += "auto & ss_attr = " + name + ";";
@@ -1496,16 +1496,39 @@ void DerivedAttributeSymbol::create_side_effects()
             case token::TK_trigger_exits:
             case token::TK_trigger_transitions:
             case token::TK_trigger_changes:
-            case token::TK_duration_trigger:
             reset_cxx += "// There is no change in the triggering condition when the entity enters the simulation.";
             reset_cxx += "ss_time = time_infinite;";
             reset_cxx += "ss_attr.set(false);";
             break;
 
+            case token::TK_duration_trigger:
             case token::TK_duration_counter:
-            reset_cxx += "// There is no change in the triggering condition when the entity enters the simulation.";
+            assert(pp_av1);
+            reset_cxx += "// Special case for duration_trigger - active if condition satisfied when entity enters the simulation.";
+            reset_cxx += "auto & observed = " + pp_av1->name +";";
+            reset_cxx += "if (observed == " + k1->value() + ") {";
+            reset_cxx += "// Start the timer for " + pretty_name();
+            reset_cxx += "ss_time = time + " + k2->value() + ";";
+            reset_cxx += "ss_attr.set(false);";
+            reset_cxx += "}";
+            reset_cxx += "else {";
+            reset_cxx += "ss_time = time_infinite;";
+            reset_cxx += "ss_attr.set(false);";
+            reset_cxx += "}";
+            break;
+
+            assert(pp_av1);
+            reset_cxx += "// Special case for duration_counter - active if condition satisfied when entity enters the simulation.";
+            reset_cxx += "auto & observed = " + pp_av1->name +";";
+            reset_cxx += "if (observed == " + k1->value() + ") {";
+            reset_cxx += "// Start the timer for " + pretty_name();
+            reset_cxx += "ss_time = time + " + k2->value() + ";";
+            reset_cxx += "ss_attr.set(0);";
+            reset_cxx += "}";
+            reset_cxx += "else {";
             reset_cxx += "ss_time = time_infinite;";
             reset_cxx += "ss_attr.set(0);";
+            reset_cxx += "}";
             break;
 
             default:
