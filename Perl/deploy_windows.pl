@@ -5,15 +5,60 @@
 
 # Should be re-factored to use subroutines rather than all that repetitive copying...
 
-# Check for and process -no64 flag (makes a smaller package)
-my $no64 = 0;
-if ($#ARGV == 0 && $ARGV[0] eq '-no64') {
-	$no64 = 1;
-	shift @ARGV;
+use strict;
+use warnings;
+
+my $script_name = "deploy_windows";
+my $script_version = '1.1';
+
+use Getopt::Long::Descriptive;
+
+my ($opt, $usage) = describe_options(
+	$script_name.' %o model...',
+	[ 'help|h'    => 'print usage message and exit' ],
+	[ 'version|v' => 'print version and exit' ],
+	[ 'no64' => 'do not include 64-bit components' ],
+);
+
+if ($opt->version) {
+	print $script_name.' version '.$script_version."\n";
+	exit 0;
 }
 
-print "Rebuilding tools and utilities\n";
+if ($opt->help) {
+	print $usage->text;
+	exit 0;
+}
+
+# Check for and process -no64 flag (makes a smaller package)
+my $no64 = 0;
+if ($opt->no64) {
+	$no64 = 1;
+}
+
+chdir "..";
+use Cwd qw(getcwd);
+my $om_root = getcwd;
+
+print "Build tools and utilities\n";
+chdir 'Perl';
 do 'build_tools.pl' || die;
+chdir $om_root;
+
+# Deployed models
+my @models = (
+	'IDMM',
+	'OzProj',
+	'OzProjGen',
+	'RiskPaths',
+	'NewCaseBased',
+	'NewTimeBased',
+	);
+
+print "Build deployed models\n";
+chdir 'Perl';
+system 'perl', 'test_models.pl', '--nomodgen', '--noclean', @models;
+chdir $om_root;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 use File::Copy;
@@ -30,10 +75,6 @@ use POSIX qw(strftime);
 #  1 - timing and success
 #  2 - chatty
 my $verbosity = 3;
-
-chdir "..";
-use Cwd qw(getcwd);
-my $om_root = getcwd;
 
 # Preliminary check of source folder structure
 for my $subdir ('licenses', 'bin', 'include', 'openm', 'lib', 'props', 'R', 'Excel', 'sql', 'use', 'models') {
@@ -165,17 +206,10 @@ for my $file (@files) {
 	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }
 
-# Selected models
-@models = (
-	'IDMM',
-	'OzProj',
-	'OzProjGen',
-	'RiskPaths',
-	'NewCaseBased',
-	'NewTimeBased',
-	);
 for my $model (@models) {
 	my $model_dir = "models/${model}";
+	-d $model_dir or print "folder for model ${model} not found.\n";
+	
 	mkdir "${deploy_dir}/${model_dir}" or die;
 	
 	# code
@@ -188,7 +222,7 @@ for my $model (@models) {
 	
 	# solution files
 	$subdir = "${model_dir}";
-	my @files = glob("${subdir}/*.sln");
+	@files = glob("${subdir}/*.sln");
 	for my $file (@files) {
 		copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 	}
@@ -196,7 +230,7 @@ for my $model (@models) {
 	# modgen project files
 	$subdir = "${model_dir}/modgen";
 	mkdir "${deploy_dir}/${subdir}" or die;
-	my @files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters ${subdir}/*.props");
+	@files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters ${subdir}/*.props");
 	for my $file (@files) {
 		copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 	}
@@ -204,7 +238,7 @@ for my $model (@models) {
 	# ompp project files
 	$subdir = "${model_dir}/ompp";
 	mkdir "${deploy_dir}/${subdir}" or die;
-	my @files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters ${subdir}/*.props");
+	@files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters ${subdir}/*.props");
 	for my $file (@files) {
 		copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 	}
@@ -219,7 +253,7 @@ for my $model (@models) {
 	
 	# model sql files
 	$subdir = "${model_dir}/ompp/src";
-	my @files = glob("${subdir}/*.sql");
+	@files = glob("${subdir}/*.sql");
 	for my $file (@files) {
 		copy "${om_root}/${file}", "${models_sql}" or die "Failed to copy ${subdir}/${file}";
 	}
@@ -229,7 +263,7 @@ for my $model (@models) {
 # modelOne
 $subdir = "models/modelOne";
 mkdir "${deploy_dir}/${subdir}" or die;
-my @files = glob("${subdir}/*.*");
+@files = glob("${subdir}/*.*");
 for my $file (@files) {
 	copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 }
@@ -238,7 +272,7 @@ unlink "${deploy_dir}/${subdir}/modelOne.sdf";
 
 $subdir = "models/modelOne/ompp";
 mkdir "${deploy_dir}/${subdir}" or die;
-my @files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters");
+@files = glob("${subdir}/*.vcxproj ${subdir}/*.vcxproj.filters");
 for my $file (@files) {
 	copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 }
@@ -247,7 +281,7 @@ for my $file (@files) {
 my $model_dir = "${om_root}/models/modelOne";
 copy "${model_dir}/ompp/bin/modelOne.exe", "${models_bin}" or die "Failed to copy ${model_dir}/ompp/bin/modelOne.exe";
 
-my @files = glob("${model_dir}/*.sql");
+@files = glob("${model_dir}/*.sql");
 for my $file (@files) {
 	copy "${file}", "${models_sql}" or die "Failed to copy ${file}";
 }
@@ -275,13 +309,13 @@ if (-e $seven_zip) {
 	my $archive = "openmpp_win_${time_stamp}.zip";
 	print "Constructing archive $archive\n";
 	unlink $archive;
-	($stdout, $stderr) = capture {
+	(my $stdout, my $stderr) = capture {
 		my @args = ("$seven_zip", "a", "-tzip", '"'.$archive.'"',
 			'".\\*"',
 			);
 		system(@args);
 	};
-	($last_line) = $stdout =~ /\n(.*)$/;
+	(my $last_line) = $stdout =~ /\n(.*)$/;
 	print "  7zip: |$last_line|\n" if ( $last_line ne "Everything is Ok" );
 }
 else {
