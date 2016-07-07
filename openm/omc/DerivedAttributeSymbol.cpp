@@ -520,7 +520,7 @@ void DerivedAttributeSymbol::assign_sorting_group()
 {
 
     // The sorting_group affects the order of injection of side-effect code 
-    // for related derived agentvars with inter-dependencies (in a side-effect of the same agentvar).
+    // for related derived attributes with inter-dependencies (in a side-effect of the same attribute).
     // Code injection is ordered by sorting group, then lexicographically by unique_name.
     // 
     // The ordering requirements are as follows:
@@ -678,7 +678,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
         assert(k1);
         assert(av2); // observed
         assert(iav);
-        // create derived agentvar to hold value of observed agentvar at beginning of spell
+        // create derived attribute to hold value of observed attribute at beginning of spell
         dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_value_at_latest_entrance, iav, true_cnst, *av2);
         assert(dav);
         break;
@@ -687,9 +687,9 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     break;
     }
 
-    // Create the internal symbol for the event time of the self-scheduling derived agentvar.
+    // Create the internal symbol for the event time of the self-scheduling derived attribute.
     if (is_self_scheduling()) {
-        // create the internal symbol for the event time of the self-scheduling derived agentvar
+        // create the internal symbol for the event time of the self-scheduling derived attribute
         ait = new EntityInternalSymbol("om_ss_time_" + name, agent, NumericSymbol::find(token::TK_Time), "time_infinite");
     }
 }
@@ -806,7 +806,7 @@ void DerivedAttributeSymbol::assign_data_type()
     }
 
     default:
-        assert(false); // A type for each kind of derived agentvar should have been assigned above.
+        assert(false); // A type for each kind of derived attribute should have been assigned above.
     break;
     }
 
@@ -876,10 +876,13 @@ void DerivedAttributeSymbol::create_side_effects()
             // add side-effect to time
             auto *av = pp_agent->pp_time;
             assert(av);
-            CodeBlock& c = av->side_effects_fn->func_body;
-            c += injection_description();
-            c += "// Advance time for " + pretty_name();
-            c += "if (om_active) " + name + ".set(" + name + ".get() + om_delta);";
+            CodeBlock& time_cxx = av->side_effects_fn->func_body;
+            time_cxx += injection_description();
+
+            time_cxx += "if (om_active) {";
+            time_cxx += "// Advance time for " + pretty_name();
+            time_cxx += name + ".set(" + name + ".get() + om_delta);";
+            time_cxx += "}";
         }
         else {
             // duration(av, value)
@@ -887,12 +890,14 @@ void DerivedAttributeSymbol::create_side_effects()
             auto *av = pp_agent->pp_time;
             assert(av);
             assert(iav);
-            CodeBlock& c = av->side_effects_fn->func_body;
-            c += injection_description();
-            c += "// Advance time for " + pretty_name();
-            c += "if (om_active && " + iav->name + ") {";
-            c += name + ".set(" + name + ".get() + om_delta);";
-            c += "}";
+            CodeBlock& time_cxx = av->side_effects_fn->func_body;
+            time_cxx += injection_description();
+            time_cxx += "if (om_active) {";
+            time_cxx += "if (" + iav->name + ") {";
+            time_cxx += "// Advance time for " + pretty_name();
+            time_cxx += name + ".set(" + name + ".get() + om_delta);";
+            time_cxx += "}";
+            time_cxx += "}";
         }
         break;
     }
@@ -905,10 +910,10 @@ void DerivedAttributeSymbol::create_side_effects()
             auto *wgt = pp_av2;
             assert(av);
             assert(wgt);
-            CodeBlock& c = av->side_effects_fn->func_body;
-            c += injection_description();
-            c += "// Advance time for " + pretty_name();
-            c += "if (om_active) " + name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+            CodeBlock& time_cxx = av->side_effects_fn->func_body;
+            time_cxx += injection_description();
+            time_cxx += "// Advance time for " + pretty_name();
+            time_cxx += "if (om_active) " + name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
         }
         else {
             // weighted_duration(av, value)
@@ -918,12 +923,14 @@ void DerivedAttributeSymbol::create_side_effects()
             assert(av);
             assert(iav);
             assert(wgt);
-            CodeBlock& c = av->side_effects_fn->func_body;
-            c += injection_description();
-            c += "// Advance time for " + pretty_name();
-            c += "if (om_active && " + iav->name + ") {";
-            c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
-            c += "}";
+            CodeBlock& time_cxx = av->side_effects_fn->func_body;
+            time_cxx += injection_description();
+            time_cxx += "if (om_active) {";
+            time_cxx += "if (" + iav->name + ") {";
+            time_cxx += "// Advance time for " + pretty_name();
+            time_cxx += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+            time_cxx += "}";
+            time_cxx += "}";
         }
         break;
     }
@@ -934,16 +941,17 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *wgt = pp_av2;
         assert(av);
         assert(wgt);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "{";
-        c += "auto delta = om_new - om_old;";
-        c += "auto wgt = " + wgt->name + ".get();";
-        c += "auto curr = " + name + ".get();";
-        c += "auto next = curr + (real) delta * wgt;";
-        c += name + ".set(next);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "auto delta = om_new - om_old;";
+        observed_cxx += "auto wgt = " + wgt->name + ".get();";
+        observed_cxx += "auto curr = " + name + ".get();";
+        observed_cxx += "auto next = curr + (real) delta * wgt;";
+        observed_cxx += "";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += name + ".set(next);";
+        observed_cxx += "}";
 
         break;
     }
@@ -953,33 +961,35 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *av = pp_agent->pp_time;
         assert(av);
         assert(iav);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Advance time for " + pretty_name();
-        c += "if (om_active && " + iav->name + ") {";
-        c += name + ".set(" + name + ".get() + om_delta);";
-        c += "}";
+        CodeBlock& time_cxx = av->side_effects_fn->func_body;
+        time_cxx += injection_description();
+        time_cxx += "if (om_active) {";
+        time_cxx += "if (" + iav->name + ") {";
+        time_cxx += "// Advance time for " + pretty_name();
+        time_cxx += name + ".set(" + name + ".get() + om_delta);";
+        time_cxx += "}";
+        time_cxx += "}";
 
-        // add side-effect to identity agentvar (condition)
-        CodeBlock& c2 = iav->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "if (om_new == false) {";
-        c2 += "// Active spell is ending, set " + pretty_name() + " to zero.";
-        c2 += name + ".set(0);";
-        c2 += "}";
+        // add side-effect to identity attribute (condition)
+        CodeBlock& identity_cxx = iav->side_effects_fn->func_body;
+        identity_cxx += injection_description();
+        identity_cxx += "if (om_new == false) {";
+        identity_cxx += "// Active spell is ending, set " + pretty_name() + " to zero.";
+        identity_cxx += name + ".set(0);";
+        identity_cxx += "}";
         break;
     }
     case token::TK_completed_spell_duration:
     {
         assert(iav);
         assert(dav); // active spell value
-        // add side-effect to identity agentvar (condition)
-        CodeBlock& c2 = iav->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// If spell ending, move active spell value to " + pretty_name();
-        c2 += "if (om_new == false) {";
-        c2 += name + ".set(" + dav->name + ");";
-        c2 += "}";
+        // add side-effect to identity attribute (condition)
+        CodeBlock& identity_cxx = iav->side_effects_fn->func_body;
+        identity_cxx += injection_description();
+        identity_cxx += "if (om_new == false) {";
+        identity_cxx += "// Spell ending, move active spell value to " + pretty_name();
+        identity_cxx += name + ".set(" + dav->name + ");";
+        identity_cxx += "}";
         break;
     }
     case token::TK_active_spell_weighted_duration:
@@ -990,69 +1000,73 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(iav);
         assert(wgt);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Advance time for " + pretty_name();
-        c += "if (om_active && " + iav->name + ") {";
-        c += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
-        c += "}";
+        CodeBlock& time_cxx = av->side_effects_fn->func_body;
+        time_cxx += injection_description();
+        time_cxx += "if (om_active) {";
+        time_cxx += "if (" + iav->name + ") {";
+        time_cxx += "// Advance time for " + pretty_name();
+        time_cxx += name + ".set(" + name + ".get() + om_delta * " + wgt->name + ".get());";
+        time_cxx += "}";
+        time_cxx += "}";
 
-        // add side-effect to identity agentvar (condition)
-        CodeBlock& c2 = iav->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// If spell ending, reset " + pretty_name();
-        c2 += "if (om_new == false) {";
-        c2 += name + ".set(0);";
-        c2 += "}";
+        // add side-effect to identity attribute (condition)
+        CodeBlock& identity_cxx = iav->side_effects_fn->func_body;
+        identity_cxx += injection_description();
+        identity_cxx += "if (om_new == false) {";
+        identity_cxx += "// Spell ending, reset " + pretty_name();
+        identity_cxx += name + ".set(0);";
+        identity_cxx += "}";
         break;
     }
     case token::TK_completed_spell_weighted_duration:
     {
         assert(iav);
         assert(dav); // active spell value
-        // add side-effect to identity agentvar (condition)
-        CodeBlock& c2 = iav->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// If spell ending, move active spell value to " + pretty_name();
-        c2 += "if (om_new == false) {";
-        c2 += name + ".set(" + dav->name + ");";
-        c2 += "}";
+        // add side-effect to identity attribute (condition)
+        CodeBlock& identity_cxx = iav->side_effects_fn->func_body;
+        identity_cxx += injection_description();
+        identity_cxx += "if (om_new == false) {";
+        identity_cxx += "// Spell ending, move active spell value to " + pretty_name();
+        identity_cxx += name + ".set(" + dav->name + ");";
+        identity_cxx += "}";
         break;
     }
     case token::TK_active_spell_delta:
     {
         assert(iav); // spell condition
-        assert(pp_av2); // observed agentvar
-        assert(dav); // holds value of observed agentvar at beginning of spell
+        assert(pp_av2); // observed attribute
+        assert(dav); // holds value of observed attribute at beginning of spell
 
         // add side-effect to observed attribute
-        CodeBlock& c = pp_av2->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain value for " + pretty_name();
-        c += "if (om_active && " + iav->name + ") {";
-        c += name + ".set(" + pp_av2->name + ".get() - " + dav->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = pp_av2->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "if (om_active) {";
+        observed_cxx += "if (" + iav->name + ") {";
+        observed_cxx += "// Maintain value for " + pretty_name();
+        observed_cxx += name + ".set(" + pp_av2->name + ".get() - " + dav->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
 
-        // add side-effect to identity agentvar (condition)
-        CodeBlock& c2 = iav->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// If spell ending, reset " + pretty_name();
-        c2 += "if (om_new == false) {";
-        c2 += name + ".set(0);";
-        c2 += "}";
+        // add side-effect to identity attribute (condition)
+        CodeBlock& identity_cxx = iav->side_effects_fn->func_body;
+        identity_cxx += injection_description();
+        identity_cxx += "if (om_new == false) {";
+        identity_cxx += "// Spell ending, reset " + pretty_name();
+        identity_cxx += name + ".set(0);";
+        identity_cxx += "}";
         break;
     }
     case token::TK_completed_spell_delta:
     {
         assert(iav);
         assert(dav); // active spell value
-        // add side-effect to identity agentvar (condition)
-        CodeBlock& c2 = iav->side_effects_fn->func_body;
-        c2 += injection_description();
-        c2 += "// If spell ending, move active spell value to " + pretty_name();
-        c2 += "if (om_new == false) {";
-        c2 += name + ".set(" + dav->name + ");";
-        c2 += "}";
+        // add side-effect to identity attribute (condition)
+        CodeBlock& identity_cxx = iav->side_effects_fn->func_body;
+        identity_cxx += injection_description();
+        identity_cxx += "if (om_new == false) {";
+        identity_cxx += "// Spell ending, move active spell value to " + pretty_name();
+        identity_cxx += name + ".set(" + dav->name + ");";
+        identity_cxx += "}";
         break;
     }
     case token::TK_undergone_entrance:
@@ -1064,12 +1078,14 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av);
         assert(k1);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + name + ".get() && om_new == " + k1->value() + ") {";
-        c += name + ".set(true);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + name + ".get() && om_new == " + k1->value() + ") {";
+        observed_cxx += name + ".set(true);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_undergone_exit:
@@ -1081,12 +1097,14 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av);
         assert(k1);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + name + ".get() && om_old == " + k1->value() + ") {";
-        c += name + ".set(true);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + name + ".get() && om_old == " + k1->value() + ") {";
+        observed_cxx += name + ".set(true);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_undergone_transition:
@@ -1099,12 +1117,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(k1);
         assert(k2);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + name + ".get() && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        c += name + ".set(true);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + name + ".get() && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        observed_cxx += name + ".set(true);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_undergone_change:
@@ -1115,12 +1135,14 @@ void DerivedAttributeSymbol::create_side_effects()
 
         auto *av = pp_av1;
         assert(av);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + name + ".get()) {";
-        c += name + ".set(true);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + name + ".get()) {";
+        observed_cxx += name + ".set(true);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_entrances:
@@ -1132,12 +1154,14 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av);
         assert(k1);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_new == " + k1->value() + ") {";
-        c += name + ".set(" + name + ".get() + 1);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_new == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + name + ".get() + 1);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_exits:
@@ -1149,12 +1173,14 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *av = pp_av1;
         assert(av);
         assert(k1);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_old == " + k1->value() + ") {";
-        c += name + ".set(" + name + ".get() + 1);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_old == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + name + ".get() + 1);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_transitions:
@@ -1167,12 +1193,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(k1);
         assert(k2);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        c += name + ".set(" + name + ".get() + 1);";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        observed_cxx += name + ".set(" + name + ".get() + 1);";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_changes:
@@ -1183,10 +1211,12 @@ void DerivedAttributeSymbol::create_side_effects()
 
         auto *av = pp_av1;
         assert(av);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += name + ".set(" + name + ".get() + 1);";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += name + ".set(" + name + ".get() + 1);";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_first_entrance:
@@ -1202,12 +1232,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(k1);
         assert(noted);
         assert(undergone);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + undergone->name + " && om_new == " + k1->value() + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + undergone->name + " && om_new == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_latest_entrance:
@@ -1221,12 +1253,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(k1);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_new == " + k1->value() + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_new == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_first_exit:
@@ -1242,12 +1276,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(k1);
         assert(noted);
         assert(undergone);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + undergone->name + " && om_old == " + k1->value() + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + undergone->name + " && om_old == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_latest_exit:
@@ -1261,12 +1297,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(k1);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_old == " + k1->value() + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_old == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_first_transition:
@@ -1283,12 +1321,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(k2);
         assert(noted);
         assert(undergone);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + undergone->name + " && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + undergone->name + " && om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_latest_transition:
@@ -1303,12 +1343,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(k1);
         assert(k2);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_first_change:
@@ -1323,12 +1365,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(noted);
         assert(undergone);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (!" + undergone->name + ") {";
-        c += name + ".set(" + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (!" + undergone->name + ") {";
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_latest_change:
@@ -1341,10 +1385,12 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *noted = pp_av2;
         assert(av);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += name + ".set(" + noted->name + ".get());";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += name + ".set(" + noted->name + ".get());";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_entrances:
@@ -1358,12 +1404,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(k1);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_new == " + k1->value() + ") {";
-        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_new == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_exits:
@@ -1377,12 +1425,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(av);
         assert(k1);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_old == " + k1->value() + ") {";
-        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_old == " + k1->value() + ") {";
+        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_transitions:
@@ -1397,12 +1447,14 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(k1);
         assert(k2);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
-        c += "}";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
+        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += "}";
+        observed_cxx += "}";
         break;
     }
     case token::TK_value_at_changes:
@@ -1415,10 +1467,12 @@ void DerivedAttributeSymbol::create_side_effects()
         auto *noted = pp_av2;
         assert(av);
         assert(noted);
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += "}";
         break;
     }
     case token::TK_split:
@@ -1428,13 +1482,17 @@ void DerivedAttributeSymbol::create_side_effects()
         assert(pp_prt);
 
         init_cxx += injection_description();
+        init_cxx += "{";
         init_cxx += "// Set initial value based on dependent attribute";
         init_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";;
+        init_cxx += "}";
 
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
+        observed_cxx += "}";
         break;
     }
     case token::TK_aggregate:
@@ -1459,13 +1517,17 @@ void DerivedAttributeSymbol::create_side_effects()
         }
 
         init_cxx += injection_description();
+        init_cxx += "{";
         init_cxx += "// Set initial value based on dependent attribute";
         init_cxx += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
+        init_cxx += "}";
 
-        CodeBlock& c = av->side_effects_fn->func_body;
-        c += injection_description();
-        c += "// Maintain " + pretty_name();
-        c += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
+        CodeBlock& observed_cxx = av->side_effects_fn->func_body;
+        observed_cxx += injection_description();
+        observed_cxx += "{";
+        observed_cxx += "// Maintain " + pretty_name();
+        observed_cxx += name + ".set(" + agg->name + ".find(" + av->name + ")->second);";
+        observed_cxx += "}";
         break;
     }
     case token::TK_trigger_entrances:
@@ -1477,7 +1539,7 @@ void DerivedAttributeSymbol::create_side_effects()
     {
         auto *av = pp_av1; // the triggering attribute
         assert(av);
-        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
+        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling attribute
 
         {
             // Code injection into the om_reset_derived_attributes function.
@@ -1486,8 +1548,9 @@ void DerivedAttributeSymbol::create_side_effects()
             // The local variable reset_cxx is declared above.
             reset_cxx += injection_description();
             reset_cxx += "{";
-            reset_cxx += "auto & ss_attr = " + name + ";";
-            reset_cxx += "auto & ss_time = " + ait->name + ";";
+            reset_cxx += "auto & ss_attr = " + name + "; // the self-scheduling attribute being maintained";
+            reset_cxx += "auto & ss_time = " + ait->name + "; // The scheduled time of maintenance of this self-scheduling attribute";
+            reset_cxx += "";
 
             // attribute-specific code (begin)
             switch (tok) {
@@ -1502,13 +1565,15 @@ void DerivedAttributeSymbol::create_side_effects()
             break;
 
             case token::TK_duration_trigger:
-            case token::TK_duration_counter:
             assert(pp_av1);
             reset_cxx += "// Special case for duration_trigger - active if condition satisfied when entity enters the simulation.";
-            reset_cxx += "auto & observed = " + pp_av1->name +";";
-            reset_cxx += "if (observed == " + k1->value() + ") {";
+            reset_cxx += "auto & observed = " + pp_av1->name +"; // the observed attribute";
+            reset_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            reset_cxx += "const Time k2 = " + k2->value() + "; // the second constant";
+            reset_cxx += "";
+            reset_cxx += "if (observed == k1) {";
             reset_cxx += "// Start the timer for " + pretty_name();
-            reset_cxx += "ss_time = time + " + k2->value() + ";";
+            reset_cxx += "ss_time = time + k2;";
             reset_cxx += "ss_attr.set(false);";
             reset_cxx += "}";
             reset_cxx += "else {";
@@ -1517,12 +1582,16 @@ void DerivedAttributeSymbol::create_side_effects()
             reset_cxx += "}";
             break;
 
+            case token::TK_duration_counter:
             assert(pp_av1);
             reset_cxx += "// Special case for duration_counter - active if condition satisfied when entity enters the simulation.";
-            reset_cxx += "auto & observed = " + pp_av1->name +";";
-            reset_cxx += "if (observed == " + k1->value() + ") {";
+            reset_cxx += "auto & observed = " + pp_av1->name +"; // the observed attribute";
+            reset_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            reset_cxx += "const Time k2 = " + k2->value() + "; // the second constant";
+            reset_cxx += "";
+            reset_cxx += "if (observed == k1) {";
             reset_cxx += "// Start the timer for " + pretty_name();
-            reset_cxx += "ss_time = time + " + k2->value() + ";";
+            reset_cxx += "ss_time = time + k2;";
             reset_cxx += "ss_attr.set(0);";
             reset_cxx += "}";
             reset_cxx += "else {";
@@ -1540,93 +1609,105 @@ void DerivedAttributeSymbol::create_side_effects()
         }
 
         {
-            // Code injection into the side-effect function of the triggering agentvar
+            // Code injection into the side-effect function of the triggering attribute
 
-            CodeBlock& cxx = av->side_effects_fn->func_body;
+            CodeBlock& observed_cxx = av->side_effects_fn->func_body;
             assert(pp_agent->ss_event);
-            cxx += injection_description();
-            cxx += "if (om_active) {";
-            cxx += "auto & ss_attr = " + name + ";";
-            cxx += "auto & ss_time = " + ait->name + ";";
-            cxx += "auto & ss_event = " + pp_agent->ss_event->name + ";";
+            observed_cxx += injection_description();
+            observed_cxx += "if (om_active) {";
+            observed_cxx += "auto & ss_attr = " + name + "; // the self-scheduling attribute being maintained";
+            observed_cxx += "auto & ss_time = " + ait->name + "; // the scheduled time of maintenance of this self-scheduling attribute";
+            observed_cxx += "auto & ss_event = " + pp_agent->ss_event->name + "; // the single event in the entity which maintains all self-scheduling attributes";
 
             // attribute-specific code (begin)
             switch (tok) {
 
             case token::TK_trigger_entrances:
-            cxx += "if (om_new == " + k1->value() + ") {";
-            cxx += "// Activate trigger " + pretty_name();
-            cxx += "ss_attr.set(true);";
-            cxx += "// Set the self-scheduling event to reset the trigger immediately";
-            cxx += "ss_time = time;";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
+            observed_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            observed_cxx += "";
+            observed_cxx += "if (om_new == k1) {";
+            observed_cxx += "// Activate trigger " + pretty_name();
+            observed_cxx += "ss_attr.set(true);";
+            observed_cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            observed_cxx += "ss_time = time;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
             break;
 
             case token::TK_trigger_exits:
-            cxx += "if (om_old == " + k1->value() + ") {";
-            cxx += "// Activate trigger " + pretty_name();
-            cxx += "ss_attr.set(true);";
-            cxx += "// Set the self-scheduling event to reset the trigger immediately";
-            cxx += "ss_time = time;";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
+            observed_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            observed_cxx += "";
+            observed_cxx += "if (om_old == k1) {";
+            observed_cxx += "// Activate trigger " + pretty_name();
+            observed_cxx += "ss_attr.set(true);";
+            observed_cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            observed_cxx += "ss_time = time;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
             break;
 
             case token::TK_trigger_transitions:
-            cxx += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-            cxx += "// Activate trigger " + pretty_name();
-            cxx += "ss_attr.set(true);";
-            cxx += "// Set the self-scheduling event to reset the trigger immediately";
-            cxx += "ss_time = time;";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
+            observed_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            observed_cxx += "const " + av->data_type->name + " k2 = " + k2->value() + "; // the second constant";
+            observed_cxx += "";
+            observed_cxx += "if (om_old == k1 && om_new == k2) {";
+            observed_cxx += "// Activate trigger " + pretty_name();
+            observed_cxx += "ss_attr.set(true);";
+            observed_cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            observed_cxx += "ss_time = time;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
             break;
 
             case token::TK_trigger_changes:
-            cxx += "{";
-            cxx += "// Activate trigger " + pretty_name();
-            cxx += "ss_attr.set(true);";
-            cxx += "// Set the self-scheduling event to reset the trigger immediately";
-            cxx += "ss_time = time;";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
+            observed_cxx += "";
+            observed_cxx += "// Activate trigger " + pretty_name();
+            observed_cxx += "ss_attr.set(true);";
+            observed_cxx += "// Set the self-scheduling event to reset the trigger immediately";
+            observed_cxx += "ss_time = time;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
             break;
 
             case token::TK_duration_trigger:
-            cxx += "if (om_new == " + k1->value() + ") {";
-            cxx += "// Start the timer for " + pretty_name();
-            cxx += "ss_time = time + " + k2->value() + ";";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
-            cxx += "else if (om_old == " + k1->value() + ") {";
-            cxx += "// The condition is no longer satisfied for " + pretty_name();
-            cxx += "ss_attr.set(false);";
-            cxx += "ss_time = time_infinite;";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
+            observed_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            observed_cxx += "const Time k2 = " + k2->value() + "; // the second constant";
+            observed_cxx += "";
+            observed_cxx += "if (om_new == k1) {";
+            observed_cxx += "// Start the timer for " + pretty_name();
+            observed_cxx += "ss_time = time + k2;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
+            observed_cxx += "else if (om_old == k1) {";
+            observed_cxx += "// The condition is no longer satisfied for " + pretty_name();
+            observed_cxx += "ss_attr.set(false);";
+            observed_cxx += "ss_time = time_infinite;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
             break;
 
             case token::TK_duration_counter:
-            cxx += "if (om_new == " + k1->value() + ") {";
-            cxx += "// Start the timer for " + pretty_name();
-            cxx += "ss_time = time + " + k2->value() + ";";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
-            cxx += "else if (om_old == " + k1->value() + ") {";
-            cxx += "// The condition is no longer satisfied for " + pretty_name();
-            cxx += "ss_attr.set(0);";
-            cxx += "ss_time = time_infinite;";
-            cxx += "// Mark the entity's self-scheduling event for recalculation";
-            cxx += "ss_event.make_dirty();";
-            cxx += "}";
+            observed_cxx += "const " + av->data_type->name + " k1 = " + k1->value() + "; // the first constant";
+            observed_cxx += "const Time k2 = " + k2->value() + "; // the second constant";
+            observed_cxx += "";
+            observed_cxx += "if (om_new == k1) {";
+            observed_cxx += "// Start the timer for " + pretty_name();
+            observed_cxx += "ss_time = time + k2;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
+            observed_cxx += "else if (om_old == k1) {";
+            observed_cxx += "// The condition is no longer satisfied for " + pretty_name();
+            observed_cxx += "ss_attr.set(0);";
+            observed_cxx += "ss_time = time_infinite;";
+            observed_cxx += "// Mark the entity's self-scheduling event for recalculation";
+            observed_cxx += "ss_event.make_dirty();";
+            observed_cxx += "}";
             break;
 
             default:
@@ -1634,29 +1715,29 @@ void DerivedAttributeSymbol::create_side_effects()
             }
             // attribute-specific code (end)
 
-            cxx += "}";
+            observed_cxx += "}";
         }
 
         {
             // Code injection into the implement function of self-scheduling events
 
-            assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
-            CodeBlock& cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
-            cxx += injection_description();
+            assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the agent
+            CodeBlock& ss_implement_cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+            ss_implement_cxx += injection_description();
             if (any_to_hooks) {
-                cxx += "bool " + flag_name() + " = false;";
+                ss_implement_cxx += "bool " + flag_name() + " = false;";
             }
-            cxx += "{";
-            cxx += "// Maintain " + pretty_name();
-            cxx += "auto & ss_attr = " + name + ";";
-            cxx += "auto & ss_time = " + ait->name + ";";
+            ss_implement_cxx += "{";
+            ss_implement_cxx += "// Maintain " + pretty_name();
+            ss_implement_cxx += "auto & ss_attr = " + name + ";";
+            ss_implement_cxx += "auto & ss_time = " + ait->name + ";";
             if (any_to_hooks) {
-                cxx += "auto & ss_flag = " + flag_name() + ";";
+                ss_implement_cxx += "auto & ss_flag = " + flag_name() + ";";
             }
-            cxx += "if (current_time == ss_time) {";
+            ss_implement_cxx += "if (current_time == ss_time) {";
             if (any_to_hooks) {
-                cxx += "// Set local flag to call hooked function(s) below";
-                cxx += "ss_flag = true;";
+                ss_implement_cxx += "// Set local flag to call hooked function(s) below";
+                ss_implement_cxx += "ss_flag = true;";
             }
 
             // attribute-specific code (begin)
@@ -1666,30 +1747,30 @@ void DerivedAttributeSymbol::create_side_effects()
             case token::TK_trigger_exits:
             case token::TK_trigger_transitions:
             case token::TK_trigger_changes:
-            cxx += "ss_attr.set(false);";
-            cxx += "ss_time = time_infinite;";
+            ss_implement_cxx += "ss_attr.set(false);";
+            ss_implement_cxx += "ss_time = time_infinite;";
             break;
 
             case token::TK_duration_trigger:
-            cxx += "ss_attr.set(true);";
-            cxx += "ss_time = time_infinite;";
+            ss_implement_cxx += "ss_attr.set(true);";
+            ss_implement_cxx += "ss_time = time_infinite;";
             break;
 
             case token::TK_duration_counter:
             if (k3) {
                 // variant with counter limit
-                cxx += "ss_attr.set(1 + ss_attr.get());";
-                cxx += "if (ss_attr.get() < " + k3->value() + ") {";
-                cxx += "ss_time = time + " + k2->value() + ";";
-                cxx += "}";
-                cxx += "else {";
-                cxx += "ss_time = time_infinite;";
-                cxx += "}";
+                ss_implement_cxx += "ss_attr.set(1 + ss_attr.get());";
+                ss_implement_cxx += "if (ss_attr.get() < " + k3->value() + ") {";
+                ss_implement_cxx += "ss_time = time + " + k2->value() + ";";
+                ss_implement_cxx += "}";
+                ss_implement_cxx += "else {";
+                ss_implement_cxx += "ss_time = time_infinite;";
+                ss_implement_cxx += "}";
             }
             else {
                 // variant with no counter limit
-                cxx += "ss_attr.set(1 + ss_attr.get());";
-                cxx += "ss_time = time + " + k2->value() + ";";
+                ss_implement_cxx += "ss_attr.set(1 + ss_attr.get());";
+                ss_implement_cxx += "ss_time = time + " + k2->value() + ";";
             }
             break;
 
@@ -1699,9 +1780,9 @@ void DerivedAttributeSymbol::create_side_effects()
             // attribute-specific code (end)
 
             if (Symbol::option_event_trace) {
-                cxx += "// Dump event time information to trace log";
+                ss_implement_cxx += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
-                cxx += "if (BaseEvent::trace_event_on) "
+                ss_implement_cxx += "if (BaseEvent::trace_event_on) "
                     "BaseEvent::event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
@@ -1710,24 +1791,26 @@ void DerivedAttributeSymbol::create_side_effects()
                     " (double) time);"
                     ;
             }
-            cxx += "}";  // end of the block started at "if (current_time == ..."
-            cxx += "}";  // end of the block for this code injection
+            ss_implement_cxx += "}";  // end of the block started at "if (current_time == ..."
+            ss_implement_cxx += "}";  // end of the block for this code injection
         }
 
         {
             // Code injection into the time function of self-scheduling events
 
-            assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
-            CodeBlock& cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
-            // The generated code minimizes the working variable 'et' with the next time of this self-scheduling agentvar
-            // The required 'return et;' statement in the body of the event time function is generated elsewhere
-            // after all code injection to this function is complete.
-            cxx += injection_description();
-            cxx += "{";
-            cxx += "// Check scheduled time for " + pretty_name();
-            cxx += "auto & ss_time = " + ait->name + ";";
-            cxx += "if (ss_time < et) et = ss_time;";
-            cxx += "}";
+            assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the agent
+            CodeBlock& ss_time_cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
+            // The generated code minimizes the local working variable 'et' with the next time of this self-scheduling attribute
+            // The required 'Time et = time_infinite;' statement at the start of the body of the event time function is generated elsewhere.
+            // The required 'return et;' statement at the end of the body of the event time function is generated elsewhere.
+            // after all code injection to the event time function is complete.
+            ss_time_cxx += injection_description();
+            ss_time_cxx += "{";
+            ss_time_cxx += "auto & ss_time = " + ait->name + ";";
+            ss_time_cxx += "";
+            ss_time_cxx += "// Compare minimum time against scheduled time for " + pretty_name();
+            ss_time_cxx += "if (ss_time < et) et = ss_time;";
+            ss_time_cxx += "}";
         }
 
         break;
@@ -1735,138 +1818,138 @@ void DerivedAttributeSymbol::create_side_effects()
     case token::TK_self_scheduling_int:
     case token::TK_self_scheduling_split:
     {
-        // Common variables and code for all self-scheduling agentvars
+        // Common variables and code for all self-scheduling attributes
         auto *av = pp_av1;
-        assert(av); // the agentvar being integerized or split, e.g. "age", "time", etc.
-        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling agentvar
+        assert(av); // the attribute being integerized or split, e.g. "age", "time", etc.
+        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling attribute
         assert(pp_agent->ss_event); // the event for self-scheduling attributes
-        assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling agentvars in the agent
-        assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling agentvars in the agent
-        CodeBlock& ctf = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
-        CodeBlock& cif = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+        assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the agent
+        assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the agent
+        CodeBlock& ss_time_cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
+        CodeBlock& ss_implement_cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
 
-        // The generated code minimizes the working variable 'et' with the next time of this self-scheduling agentvar
+        // The generated code minimizes the working variable 'et' with the next time of this self-scheduling attribute
         // The required 'return et;' statement in the body of the event time function is generated elsewhere
         // after all code injection to this function is complete.
-        ctf += injection_description();
-        // Inject code to the event time function which minimizes the working variable 'et' with the next time of this self-scheduling agentvar
-        ctf += "{";
-        ctf += "// Check scheduled time for " + pretty_name();
-        ctf += "auto & ss_time = " + ait->name + ";";
-        ctf += "if (ss_time < et) et = ss_time;";
-        ctf += "}";
+        ss_time_cxx += injection_description();
+        // Inject code to the event time function which minimizes the working variable 'et' with the next time of this self-scheduling attribute
+        ss_time_cxx += "{";
+        ss_time_cxx += "// Check scheduled time for " + pretty_name();
+        ss_time_cxx += "auto & ss_time = " + ait->name + ";";
+        ss_time_cxx += "if (ss_time < et) et = ss_time;";
+        ss_time_cxx += "}";
 
-        // Code for specific variants of self_scheduling_int() and self_scheduling_split() agentvars
+        // Code for specific variants of self_scheduling_int() and self_scheduling_split() attributes
         if (av->name == "age" || av->name == "time") {
 
             // Code injection: age/time side-effects, for use in Start
             // get the side-effect call-back function for age / time
             assert(av->side_effects_fn);
-            CodeBlock& cse = av->side_effects_fn->func_body; // body of the C++ side-effect function for the argument attribute (e.g. "age")
+            CodeBlock& time_or_age_cxx = av->side_effects_fn->func_body; // body of the C++ side-effect function for the argument attribute (e.g. "age")
             // For self_scheduling_int(age), the side-effects for initial assignment need to be injected into
             // both age and time, in case time is assigned after age.  So we build the side effect code block separately
-            // into a local CodeBlock named blk, and then inject it after it's build in the right place(s).
+            // into a local CodeBlock named blk_cxx, and then inject it after it's build in the right place(s).
             // Note that if the block is for 'age', the code needs to use age.get() rather than om_new, since
             // it will be injected into the side-effect function for time as well as age.  In the side-effect function for time
             // om_new is the new value of time, not age, which is why we need to use age.get() instead in the following code.
-            CodeBlock blk;
-            blk += injection_description();
-            blk += "if (!om_active) {";
-            blk += "// Initial values are being assigned.";
-            blk += "auto & ss_attr = " + name + ";";
-            blk += "auto & ss_time = " + ait->name + ";";
+            CodeBlock blk_cxx;
+            blk_cxx += injection_description();
+            blk_cxx += "if (!om_active) {";
+            blk_cxx += "// Initial values are being assigned.";
+            blk_cxx += "auto & ss_attr = " + name + ";";
+            blk_cxx += "auto & ss_time = " + ait->name + ";";
             if (tok == token::TK_self_scheduling_split) {
-                blk += "auto part = ss_attr.get(); // working copy of partition";
+                blk_cxx += "auto part = ss_attr.get(); // working copy of partition";
             }
 
             // There are 4 distinct cases to handle
             if (tok == token::TK_self_scheduling_int && av->name == "age") {
-                blk += "// Initial value is the largest integer less than or equal to age.";
-                blk += "ss_attr.set((int)std::floor(age.get()));";
-                blk += "// Time to wait for next change is the fraction of time remaining to the next integer boundary";
-                blk += "ss_time = time + (1 - (age.get() - (int)std::floor(age.get())));";
+                blk_cxx += "// Initial value is the largest integer less than or equal to age.";
+                blk_cxx += "ss_attr.set((int)std::floor(age.get()));";
+                blk_cxx += "// Time to wait for next change is the fraction of time remaining to the next integer boundary";
+                blk_cxx += "ss_time = time + (1 - (age.get() - (int)std::floor(age.get())));";
             }
             else if (tok == token::TK_self_scheduling_int && av->name == "time") {
-                blk += "// Initial value is the largest integer less than or equal to time.";
-                blk += "ss_attr.set((int)std::floor(om_new));";
-                blk += "// Time of next change is next integer time";
-                blk += "ss_time = 1 + (int)std::floor(om_new);";
+                blk_cxx += "// Initial value is the largest integer less than or equal to time.";
+                blk_cxx += "ss_attr.set((int)std::floor(om_new));";
+                blk_cxx += "// Time of next change is next integer time";
+                blk_cxx += "ss_time = 1 + (int)std::floor(om_new);";
             }
             else if (tok == token::TK_self_scheduling_split && av->name == "age") {
-                blk += "// Initial value is the corresponding partition interval.";
-                blk += "part.set_from_value(age.get());";
-                blk += "ss_attr.set(part);";
-                blk += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
-                blk += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                blk += "else ss_time = time + (part.upper() - age.get());";
+                blk_cxx += "// Initial value is the corresponding partition interval.";
+                blk_cxx += "part.set_from_value(age.get());";
+                blk_cxx += "ss_attr.set(part);";
+                blk_cxx += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
+                blk_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                blk_cxx += "else ss_time = time + (part.upper() - age.get());";
             }
             else if (tok == token::TK_self_scheduling_split && av->name == "time") {
-                blk += "// Initial value is the corresponding partition interval.";
-                blk += "part.set_from_value(om_new);";
-                blk += "ss_attr.set(part);";
-                blk += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
-                blk += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                blk += "else ss_time = time + (part.upper() - om_new);";
+                blk_cxx += "// Initial value is the corresponding partition interval.";
+                blk_cxx += "part.set_from_value(om_new);";
+                blk_cxx += "ss_attr.set(part);";
+                blk_cxx += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
+                blk_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                blk_cxx += "else ss_time = time + (part.upper() - om_new);";
             }
             else {
                 assert(false);
             }
-            blk += "}";
+            blk_cxx += "}";
             // inject the side-effect block for self_scheduling_QQQ(time) into time, and self_scheduling_QQQ(age) into age
-            cse += blk;
+            time_or_age_cxx += blk_cxx;
             // For self_scheduling_QQQ(age), inject the side-effect block into time as well.
             if (av->name == "age") {
                 // find the attribute for time
                 auto attr_time = av->pp_agent->pp_time;
                 assert(attr_time);
                 // get the body of the C++ side-effect function for "time"
-                CodeBlock& cse_time = attr_time->side_effects_fn->func_body; 
+                CodeBlock& time_cxx = attr_time->side_effects_fn->func_body; 
                 // inject the fragment into time
-                cse_time += blk;
+                time_cxx += blk_cxx;
             }
 
             // Code injection: self-scheduling event implement function
-            cif += injection_description();
+            ss_implement_cxx += injection_description();
             if (any_to_hooks) {
-                cif += "bool " + flag_name() + " = false;";
+                ss_implement_cxx += "bool " + flag_name() + " = false;";
             }
-            cif += "if (current_time == " + ait->name + ") {";
-            cif += "auto & ss_attr = " + name + ";";
-            cif += "auto & ss_time = " + ait->name + ";";
+            ss_implement_cxx += "if (current_time == " + ait->name + ") {";
+            ss_implement_cxx += "auto & ss_attr = " + name + ";";
+            ss_implement_cxx += "auto & ss_time = " + ait->name + ";";
             if (any_to_hooks) {
-                cif += "auto & ss_flag = " + flag_name() + ";";
-                cif += "";
-                cif += "// Set local flag to call hooked function(s) below";
-                cif += "ss_flag = true;";
+                ss_implement_cxx += "auto & ss_flag = " + flag_name() + ";";
+                ss_implement_cxx += "";
+                ss_implement_cxx += "// Set local flag to call hooked function(s) below";
+                ss_implement_cxx += "ss_flag = true;";
             }
             if (tok == token::TK_self_scheduling_split) {
-                cif += "auto part = ss_attr.get(); // working copy of partition";
+                ss_implement_cxx += "auto part = ss_attr.get(); // working copy of partition";
             }
-            cif += "";
+            ss_implement_cxx += "";
 
             // There are 2 distinct cases to handle
             if (tok == token::TK_self_scheduling_int) {
-                cif += "// Update the value";
-                cif += "ss_attr.set(ss_attr.get() + 1);";
-                cif += "// Update the time of next change";
-                cif += "ss_time += 1;";
+                ss_implement_cxx += "// Update the value";
+                ss_implement_cxx += "ss_attr.set(ss_attr.get() + 1);";
+                ss_implement_cxx += "// Update the time of next change";
+                ss_implement_cxx += "ss_time += 1;";
             }
             else if (tok == token::TK_self_scheduling_split) {
-                cif += "// Update the value";
-                cif += "part++; // Advance to the next interval in the partition.";
-                cif += "ss_attr.set(part);";
-                cif += "// Update the time of next change by the width of that new interval.";
-                cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                cif += "else ss_time += part.width();";
+                ss_implement_cxx += "// Update the value";
+                ss_implement_cxx += "part++; // Advance to the next interval in the partition.";
+                ss_implement_cxx += "ss_attr.set(part);";
+                ss_implement_cxx += "// Update the time of next change by the width of that new interval.";
+                ss_implement_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                ss_implement_cxx += "else ss_time += part.width();";
             }
             else {
                 assert(false);
             }
 
             if (Symbol::option_event_trace) {
-                cif += "// Dump event time information to trace log";
+                ss_implement_cxx += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
-                cif += "if (BaseEvent::trace_event_on) "
+                ss_implement_cxx += "if (BaseEvent::trace_event_on) "
                     "BaseEvent::event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
@@ -1875,7 +1958,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     " (double) time);"
                     ;
             }
-            cif += "}";
+            ss_implement_cxx += "}";
         }
         else {
             // The argument of self_scheduling_XXX is a derived attribute, either active_spell_duration(attr,val), duration(), or duration(attr,val)
@@ -1968,141 +2051,141 @@ void DerivedAttributeSymbol::create_side_effects()
                 // We're here except if a self_scheduling of unconditioned duration
                 assert(dav->iav); // the identity attribute which holds the spell condition
                 assert(dav->iav->side_effects_fn); // the side-effects function of the identity attribute which holds the spell condition
-                CodeBlock& cse = dav->iav->side_effects_fn->func_body; // the function body of that side-effects function
+                CodeBlock& identity_cxx = dav->iav->side_effects_fn->func_body; // the function body of that side-effects function
  
                 // Inject code into the spell condition side-effects function.
-                cse += injection_description();
-                cse += "if (om_active) {";
-                cse += "auto & ss_attr = " + name + ";";
-                cse += "auto & ss_time = " + ait->name + ";";
-                cse += "auto & ss_event = " + pp_agent->ss_event->name + ";";
+                identity_cxx += injection_description();
+                identity_cxx += "if (om_active) {";
+                identity_cxx += "auto & ss_attr = " + name + ";";
+                identity_cxx += "auto & ss_time = " + ait->name + ";";
+                identity_cxx += "auto & ss_event = " + pp_agent->ss_event->name + ";";
                 if (dav->tok == token::TK_duration) {
-                    cse += "auto & ss_dur = " + dav->name + ";";
+                    identity_cxx += "auto & ss_dur = " + dav->name + ";";
                 }
                 if (tok == token::TK_self_scheduling_split) {
-                    cse += "auto part = ss_attr.get(); // working copy of partition";
+                    identity_cxx += "auto part = ss_attr.get(); // working copy of partition";
                 }
-                cse += "// The self-scheduling event will require recalculation";
-                cse += "ss_event.make_dirty();";
-                cse += "";
+                identity_cxx += "// The self-scheduling event will require recalculation";
+                identity_cxx += "ss_event.make_dirty();";
+                identity_cxx += "";
 
                 // There are 4 distinct cases to handle
                 if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_active_spell_duration) {
                     // spell start
-                    cse += "if (om_new == true) {";
-                    cse += "// Active spell is starting, initialize self-scheduling attribute";
-                    cse += "// Set the integerized duration to zero.";
-                    cse += "ss_attr.set(0);";
-                    cse += "// The time to wait is one interval of time from current time.";
-                    cse += "ss_time = time + 1;";
-                    cse += "}";
+                    identity_cxx += "if (om_new == true) {";
+                    identity_cxx += "// Active spell is starting, initialize self-scheduling attribute";
+                    identity_cxx += "// Set the integerized duration to zero.";
+                    identity_cxx += "ss_attr.set(0);";
+                    identity_cxx += "// The time to wait is one interval of time from current time.";
+                    identity_cxx += "ss_time = time + 1;";
+                    identity_cxx += "}";
                     // spell end
-                    cse += "else { // om_new == false";
-                    cse += "// The active spell is ending, so reset self-scheduling attribute.";
-                    cse += "// Set the integerized duration to zero.";
-                    cse += "ss_attr.set(0);";
-                    cse += "// There is no next change scheduled.";
-                    cse += "ss_time = time_infinite;";
-                    cse += "}";
+                    identity_cxx += "else { // om_new == false";
+                    identity_cxx += "// The active spell is ending, so reset self-scheduling attribute.";
+                    identity_cxx += "// Set the integerized duration to zero.";
+                    identity_cxx += "ss_attr.set(0);";
+                    identity_cxx += "// There is no next change scheduled.";
+                    identity_cxx += "ss_time = time_infinite;";
+                    identity_cxx += "}";
                 }
                 else if (tok == token::TK_self_scheduling_int && dav->tok == token::TK_duration) {
                     // spell start
-                    cse += "if (om_new == true) {";
-                    cse += "// Spell is starting.";
-                    cse += "// The time to wait is the time remaining to the next integer boundary of duration.";
-                    cse += "ss_time = time + (1 - (ss_dur - (int)ss_dur));";
-                    cse += "}";
+                    identity_cxx += "if (om_new == true) {";
+                    identity_cxx += "// Spell is starting.";
+                    identity_cxx += "// The time to wait is the time remaining to the next integer boundary of duration.";
+                    identity_cxx += "ss_time = time + (1 - (ss_dur - (int)ss_dur));";
+                    identity_cxx += "}";
                     // spell end
-                    cse += "else {";
-                    cse += "// Spell is ending.";
-                    cse += "// There is no next change scheduled.";
-                    cse += "ss_time = time_infinite;";
-                    cse += "}";
+                    identity_cxx += "else {";
+                    identity_cxx += "// Spell is ending.";
+                    identity_cxx += "// There is no next change scheduled.";
+                    identity_cxx += "ss_time = time_infinite;";
+                    identity_cxx += "}";
                 }
                 else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_active_spell_duration) {
                     // spell start
-                    cse += "if (om_new == true) {";
-                    cse += "// Active spell is starting, initialize self-scheduling attribute";
-                    cse += "// Set the partitioned duration to the interval containing zero.";
-                    cse += "part.set_from_value(0);";
-                    cse += "ss_attr.set(part);";
-                    cse += "// The time to wait is the upper bound of the current interval in the partition.";
-                    cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                    cse += "else ss_time = time + part.upper();";
-                    cse += "}";
+                    identity_cxx += "if (om_new == true) {";
+                    identity_cxx += "// Active spell is starting, initialize self-scheduling attribute";
+                    identity_cxx += "// Set the partitioned duration to the interval containing zero.";
+                    identity_cxx += "part.set_from_value(0);";
+                    identity_cxx += "ss_attr.set(part);";
+                    identity_cxx += "// The time to wait is the upper bound of the current interval in the partition.";
+                    identity_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                    identity_cxx += "else ss_time = time + part.upper();";
+                    identity_cxx += "}";
                     // spell end
-                    cse += "else {";
-                    cse += "// The active spell is ending, so reset self-scheduling attribute.";
-                    cse += "// Set the partitioned duration to the interval containing zero.";
-                    cse += "part.set_from_value(0);";
-                    cse += "ss_attr.set(part);";
-                    cse += "// There is no next change scheduled.";
-                    cse += "ss_time = time_infinite;";
-                    cse += "}";
+                    identity_cxx += "else {";
+                    identity_cxx += "// The active spell is ending, so reset self-scheduling attribute.";
+                    identity_cxx += "// Set the partitioned duration to the interval containing zero.";
+                    identity_cxx += "part.set_from_value(0);";
+                    identity_cxx += "ss_attr.set(part);";
+                    identity_cxx += "// There is no next change scheduled.";
+                    identity_cxx += "ss_time = time_infinite;";
+                    identity_cxx += "}";
                 }
                 else if (tok == token::TK_self_scheduling_split && dav->tok == token::TK_duration) {
                     // spell start
-                    cse += "if (om_new == true) {";
-                    cse += "// Spell is starting";
-                    cse += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
-                    cse += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                    cse += "else ss_time = time + part.upper() - ss_dur;";
-                    cse += "}";
+                    identity_cxx += "if (om_new == true) {";
+                    identity_cxx += "// Spell is starting";
+                    identity_cxx += "// Time to wait for next change is the remaining time to get to upper bound of current interval in partition.";
+                    identity_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                    identity_cxx += "else ss_time = time + part.upper() - ss_dur;";
+                    identity_cxx += "}";
                     // spell end
-                    cse += "else {";
-                    cse += "// Spell is ending.";
-                    cse += "// There is no next change scheduled.";
-                    cse += "ss_time = time_infinite;";
-                    cse += "}";
+                    identity_cxx += "else {";
+                    identity_cxx += "// Spell is ending.";
+                    identity_cxx += "// There is no next change scheduled.";
+                    identity_cxx += "ss_time = time_infinite;";
+                    identity_cxx += "}";
                 }
                 else {
                     assert(false);
                 }
-                cse += "} // if (om_active)";
+                identity_cxx += "} // if (om_active)";
             }
 
             // Code injection: self-scheduling event implement function
-            cif += injection_description();
+            ss_implement_cxx += injection_description();
             if (any_to_hooks) {
-                cif += "bool " + flag_name() + " = false;";
+                ss_implement_cxx += "bool " + flag_name() + " = false;";
             }
-            cif += "if (current_time == " + ait->name + ") {";
-            cif += "auto & ss_attr = " + name + ";";
-            cif += "auto & ss_time = " + ait->name + ";";
+            ss_implement_cxx += "if (current_time == " + ait->name + ") {";
+            ss_implement_cxx += "auto & ss_attr = " + name + ";";
+            ss_implement_cxx += "auto & ss_time = " + ait->name + ";";
             if (any_to_hooks) {
-                cif += "auto & ss_flag = " + flag_name() + ";";
-                cif += "";
-                cif += "// Set local flag to call hooked function(s) below";
-                cif += "ss_flag = true;";
+                ss_implement_cxx += "auto & ss_flag = " + flag_name() + ";";
+                ss_implement_cxx += "";
+                ss_implement_cxx += "// Set local flag to call hooked function(s) below";
+                ss_implement_cxx += "ss_flag = true;";
             }
             if (tok == token::TK_self_scheduling_split) {
-                cif += "auto part = ss_attr.get(); // working copy of partition";
+                ss_implement_cxx += "auto part = ss_attr.get(); // working copy of partition";
             }
-            cif += "";
+            ss_implement_cxx += "";
 
             // There are 2 distinct cases to handle
             if (tok == token::TK_self_scheduling_int) {
-                cif += "// Increment the integerized duration.";
-                cif += "ss_attr.set(ss_attr.get() + 1);";
-                cif += "// The time to wait is one interval of time.";
-                cif += "ss_time = time + 1;";
+                ss_implement_cxx += "// Increment the integerized duration.";
+                ss_implement_cxx += "ss_attr.set(ss_attr.get() + 1);";
+                ss_implement_cxx += "// The time to wait is one interval of time.";
+                ss_implement_cxx += "ss_time = time + 1;";
             }
             else if (tok == token::TK_self_scheduling_split) {
-                cif += "// Set the partitioned duration to the next interval.";
-                cif += "part++;";
-                cif += "ss_attr.set(part);";
-                cif += "// The time to wait is the width of the current interval in the partition.";
-                cif += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
-                cif += "else ss_time = time + part.width();";
+                ss_implement_cxx += "// Set the partitioned duration to the next interval.";
+                ss_implement_cxx += "part++;";
+                ss_implement_cxx += "ss_attr.set(part);";
+                ss_implement_cxx += "// The time to wait is the width of the current interval in the partition.";
+                ss_implement_cxx += "if (part.upper() == REAL_MAX) ss_time = time_infinite;";
+                ss_implement_cxx += "else ss_time = time + part.width();";
             }
             else {
                 assert(false);
             }
 
             if (Symbol::option_event_trace) {
-                cif += "// Dump event time information to trace log";
+                ss_implement_cxx += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
-                cif += "if (BaseEvent::trace_event_on) "
+                ss_implement_cxx += "if (BaseEvent::trace_event_on) "
                     "BaseEvent::event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
@@ -2111,7 +2194,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     " (double) time);"
                     ;
             }
-            cif += "}";
+            ss_implement_cxx += "}";
         }
         break;
     }

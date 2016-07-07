@@ -23,13 +23,15 @@ void BuiltinAttributeSymbol::post_parse(int pass)
     case ePopulateDependencies:
         {
             if (name == "age") {
-                // add side-effect to time agentvar
+                // add side-effect to attribute 'time'
                 AttributeSymbol *av = pp_agent->pp_time;
                 assert(av);
-                CodeBlock& c = av->side_effects_fn->func_body;
-                c += injection_description();
-                c += "// Advance time for the age agentvar";
-                c += "if (om_active) age.set(age.get() + om_delta);";
+                CodeBlock& time_cxx = av->side_effects_fn->func_body;
+                time_cxx += injection_description();
+                time_cxx += "if (om_active) {";
+                time_cxx += "// Advance time for the attribute 'age'";
+                time_cxx += "age.set(age.get() + om_delta);";
+                time_cxx += "}";
             }
         }
         break;
