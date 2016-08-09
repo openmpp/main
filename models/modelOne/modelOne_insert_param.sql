@@ -89,41 +89,41 @@ INSERT INTO task_set (task_id, set_id) VALUES (1, 4);
 --
 
 -- age by sex default values, set id = 2
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 10, 0, 0.1);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 10, 1, 0.2);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 20, 0, 0.3);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 20, 1, 0.4);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 30, 0, 0.5);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 30, 1, 0.6);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 40, 0, 0.7);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 40, 1, 0.8);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 0, 0, 0.1);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 0, 1, 0.2);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 1, 0, 0.3);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 1, 1, 0.4);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 2, 0, 0.5);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 2, 1, 0.6);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 3, 0, 0.7);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (2, 3, 1, 0.8);
 
 -- salary by age default values, set id = 2
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 10, 10);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 20, 20);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 30, 30);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 40, 40);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 10, 11);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 20, 21);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 30, 31);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 40, 41);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 10, 12);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 20, 22);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 30, 32);
-INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 40, 42);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 0, 10);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 1, 20);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 2, 30);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 3, 40);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 0, 11);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 1, 21);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 2, 31);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 3, 41);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 0, 12);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 1, 22);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 2, 32);
+INSERT INTO salaryAge_w2012_818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 3, 42);
 
 -- random values starting seed, set id = 2 
 INSERT INTO StartingSeed_w2012_819 (set_id, param_value) VALUES (2, 8191);
 
 -- age by sex, set id = 3
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 10, 0, 1.1);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 10, 1, 1.2);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 20, 0, 1.3);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 20, 1, 1.4);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 30, 0, 1.5);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 30, 1, 1.6);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 40, 0, 1.7);
-INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 40, 1, 1.8);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 0, 0, 1.1);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 0, 1, 1.2);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 1, 0, 1.3);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 1, 1, 1.4);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 2, 0, 1.5);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 2, 1, 1.6);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 3, 0, 1.7);
+INSERT INTO ageSex_w2012_817 (set_id, dim0, dim1, param_value) VALUES (3, 3, 1, 1.8);
 
 -- age by sex values, set id = 4
 INSERT INTO ageSex_w2012_817 
