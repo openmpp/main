@@ -730,6 +730,7 @@ CREATE TABLE task_run_set
 -- list of ids, must be positive.
 -- values < 10 reserved for development and testing
 --
+INSERT INTO id_lst (id_key, id_value) VALUES ('openmpp',       10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id',       10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('model_id',      10);
 INSERT INTO id_lst (id_key, id_value) VALUES ('type_hid',      30);
