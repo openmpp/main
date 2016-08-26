@@ -265,8 +265,6 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
 
-        string paramTblName = paramIt->dbPrefix + metaStore->modelRow->paramPrefix + paramIt->dbSuffix;
-        string setTblName = paramIt->dbPrefix + metaStore->modelRow->setPrefix + paramIt->dbSuffix;
         string argName = string(RunOptionsKey::parameterPrefix) + "." + paramIt->paramName;
 
         // calculate parameter source: command line (or ini-file), workset, based run, run options
@@ -301,17 +299,25 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             // insert the value
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
                 );
             isInserted = true;
         }
 
         // copy parameter from workset parameter value table
+        // copy parameter value notes from workset parameter text table
         if (!isInserted && isFromSet) {
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, " + sDimLst + " param_value)" +
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, " + sDimLst + " param_value)" +
                 " SELECT " + sRunId + ", " + sDimLst + " param_value" +
-                " FROM " + setTblName + " WHERE set_id = " + to_string(i_setId)
+                " FROM " + paramIt->dbSetTable + " WHERE set_id = " + to_string(i_setId)
+                );
+            i_dbExec->update(
+                "INSERT INTO run_parameter_txt (run_id, parameter_hid, lang_id, note)" \
+                " SELECT " + sRunId + ", parameter_hid, lang_id, note" +
+                " FROM workset_parameter_txt" +
+                " WHERE set_id = " + to_string(i_setId) +
+                " AND parameter_hid = " + to_string(paramIt->paramHid)
                 );
             isInserted = true;
         }

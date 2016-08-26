@@ -123,10 +123,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       paramDef <- list(
         setId = worksetId, 
         paramHid = paramRow$parameter_hid, 
-        dbTableName = paste(
-            paramRow$db_prefix, defRs$modelDic$workset_prefix, paramRow$db_suffix, 
-            sep = ""
-          ),
+        dbTableName = paramRow$db_set_table,
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)
       )
       
@@ -154,11 +151,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
           " (set_id, ", nameCs, " param_value)",
           " SELECT ", 
           worksetId, ", ", nameCs, " param_value",
-          " FROM ", 
-            paste(
-              paramRow$db_prefix, defRs$modelDic$parameter_prefix, paramRow$db_suffix, 
-              sep = ""
-            ), 
+          " FROM ", paramRow$db_set_table,
           " WHERE run_id = ", 
           " (", 
           " SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_hid = ", paramDef$paramHid, 

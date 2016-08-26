@@ -183,7 +183,7 @@ ParameterSetWriter::ParameterSetWriter(
     if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", i_setId, paramRow->paramName.c_str());
 
     // name of workset parameter value table
-    paramSetDbTable = paramRow->dbPrefix + i_metaStore->modelRow->setPrefix + paramRow->dbSuffix;
+    paramSetDbTable = paramRow->dbSetTable;
 }
 
 // create new writer for model run parameter
@@ -193,7 +193,7 @@ ParameterRunWriter::ParameterRunWriter(
     ParameterWriter(i_name, i_dbExec, i_metaStore),
     runId(i_runId)
 {
-    paramRunDbTable = paramRow->dbPrefix + i_metaStore->modelRow->paramPrefix + paramRow->dbSuffix;
+    paramRunDbTable = paramRow->dbRunTable;
 }
 
 // parameter value casting from array cell

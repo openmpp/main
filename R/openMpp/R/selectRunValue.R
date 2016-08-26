@@ -44,10 +44,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
   }
   
   nRank <- tableRow$table_rank
-  dbTableName <- paste(
-    tableRow$db_prefix, defRs$modelDic$value_prefix, tableRow$db_suffix, 
-    sep = ""
-  )
+  dbTableName <- tableRow$db_expr_table
   
   # find output expression id by name, if specified
   exprId <- NA

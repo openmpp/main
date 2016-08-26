@@ -27,11 +27,13 @@ void ModelSqlBuilder::setModelMetaRows(MetaModelHolder & io_metaRows) const
 // set parameter meta rows and calculate digests
 void ModelSqlBuilder::setParamDicRows(MetaModelHolder & io_metaRows) const
 {
-    // make parameter digest and db table parts
+    // make parameter digest and name db tables
     for (ParamDicRow & paramRow : io_metaRows.paramDic) {
         paramRow.digest = makeParamDigest(paramRow, io_metaRows);
-        paramRow.dbPrefix = makeDbNamePrefix(paramRow.paramId, paramRow.paramName);
-        paramRow.dbSuffix = makeDbNameSuffix(paramRow.paramId, paramRow.paramName, paramRow.digest);
+        string p = makeDbNamePrefix(paramRow.paramId, paramRow.paramName);
+        string s = makeDbNameSuffix(paramRow.paramId, paramRow.paramName, paramRow.digest);
+        paramRow.dbRunTable = p + "_p" + s;
+        paramRow.dbSetTable = p + "_w" + s;
     }
 }
 
@@ -41,8 +43,10 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
     // make parameter digest and db table parts
     for (TableDicRow & tableRow : io_metaRows.tableDic) {
         tableRow.digest = makeOutTableDigest(tableRow, io_metaRows);
-        tableRow.dbPrefix = makeDbNamePrefix(tableRow.tableId, tableRow.tableName);
-        tableRow.dbSuffix = makeDbNameSuffix(tableRow.tableId, tableRow.tableName, tableRow.digest);
+        string p = makeDbNamePrefix(tableRow.tableId, tableRow.tableName);
+        string s = makeDbNameSuffix(tableRow.tableId, tableRow.tableName, tableRow.digest);
+        tableRow.dbExprTable = p + "_v" + s;
+        tableRow.dbAccTable = p + "_a" + s;
     }
 }
 
@@ -632,25 +636,6 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
 
     // set model create date-time, if required
     if (io_mdRow.createDateTime.empty()) io_mdRow.createDateTime = toDateTimeString(theLog->timeStampSuffix());
-
-    // validate table prefixes: it must not exceed max size and must be unique
-    io_mdRow.paramPrefix = !io_mdRow.paramPrefix.empty() ? io_mdRow.paramPrefix : "_p";
-    io_mdRow.setPrefix = !io_mdRow.setPrefix.empty() ? io_mdRow.setPrefix : "_w";
-    io_mdRow.accPrefix = !io_mdRow.accPrefix.empty() ? io_mdRow.accPrefix : "_a";
-    io_mdRow.valuePrefix = !io_mdRow.valuePrefix.empty() ? io_mdRow.valuePrefix : "_v";
-
-    if (io_mdRow.paramPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) parameter tables prefix: %s", io_mdRow.paramPrefix.c_str());
-    if (io_mdRow.setPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) workset tables prefix: %s", io_mdRow.setPrefix.c_str());
-    if (io_mdRow.accPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator tables prefix: %s", io_mdRow.accPrefix.c_str());
-    if (io_mdRow.valuePrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) value tables prefix: %s", io_mdRow.valuePrefix.c_str());
-
-    if (io_mdRow.paramPrefix == io_mdRow.setPrefix || io_mdRow.paramPrefix == io_mdRow.accPrefix || io_mdRow.paramPrefix == io_mdRow.valuePrefix || 
-        io_mdRow.setPrefix == io_mdRow.accPrefix || io_mdRow.setPrefix == io_mdRow.valuePrefix || 
-        io_mdRow.accPrefix == io_mdRow.valuePrefix)
-        throw DbException(
-            "invalid (not unique) table prefixes: %s %s %s %s, model name: %s", 
-            io_mdRow.paramPrefix.c_str(), io_mdRow.setPrefix.c_str(), io_mdRow.accPrefix.c_str(), io_mdRow.valuePrefix.c_str(), io_mdRow.name.c_str()
-            );
 }
 
 // set workset_lst row field values: readonly status and creation date-time
@@ -686,12 +671,9 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
     // collect table information for all parameters
     for (ParamDicRow & paramRow : io_metaRows.paramDic) {
 
-        // make db table names
         ParamTblInfo tblInf;
         tblInf.id = paramRow.paramId;
         tblInf.name = paramRow.paramName;
-        tblInf.paramTableName = paramRow.dbPrefix + io_metaRows.modelDic.paramPrefix + paramRow.dbSuffix;
-        tblInf.setTableName = paramRow.dbPrefix + io_metaRows.modelDic.setPrefix + paramRow.dbSuffix;
 
         // collect dimension names
         tblInf.dimNameVec.clear();
@@ -761,12 +743,9 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
     // collect information for all output tables
     for (TableDicRow & tableRow : io_metaRows.tableDic) {
 
-        // make db table names
         OutTblInfo tblInf;
         tblInf.id = tableRow.tableId;
         tblInf.name = tableRow.tableName;
-        tblInf.accTableName = tableRow.dbPrefix + io_metaRows.modelDic.accPrefix + tableRow.dbSuffix;
-        tblInf.valueTableName = tableRow.dbPrefix + io_metaRows.modelDic.valuePrefix + tableRow.dbSuffix;
 
         // collect dimension names
         tblInf.dimNameVec.clear();
@@ -786,7 +765,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
             throw DbException("output table accumulators not found for table: %s", tableRow.tableName.c_str());
 
         // translate expressions into sql
-        ModelAggregationSql aggr(tblInf.accTableName, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
+        ModelAggregationSql aggr(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
 
         for (TableExprRow & exprRow : io_metaRows.tableExpr) {
             if (exprRow.tableId == tblInf.id) {

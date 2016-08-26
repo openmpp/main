@@ -46,8 +46,8 @@ namespace openm
         &typeid(decltype(ParamDicRow::paramName)), 
         &typeid(decltype(ParamDicRow::paramHid)), 
         &typeid(decltype(ParamDicRow::digest)), 
-        &typeid(decltype(ParamDicRow::dbPrefix)), 
-        &typeid(decltype(ParamDicRow::dbSuffix)), 
+        &typeid(decltype(ParamDicRow::dbRunTable)), 
+        &typeid(decltype(ParamDicRow::dbSetTable)), 
         &typeid(decltype(ParamDicRow::rank)), 
         &typeid(decltype(ParamDicRow::typeId)), 
         &typeid(decltype(ParamDicRow::isHidden)), 
@@ -84,10 +84,10 @@ namespace openm
                 dynamic_cast<ParamDicRow *>(i_row)->digest = ((const char *)i_value);
                 break;
             case 5:
-                dynamic_cast<ParamDicRow *>(i_row)->dbPrefix = ((const char *)i_value);
+                dynamic_cast<ParamDicRow *>(i_row)->dbRunTable = ((const char *)i_value);
                 break;
             case 6:
-                dynamic_cast<ParamDicRow *>(i_row)->dbSuffix = ((const char *)i_value);
+                dynamic_cast<ParamDicRow *>(i_row)->dbSetTable = ((const char *)i_value);
                 break;
             case 7:
                 dynamic_cast<ParamDicRow *>(i_row)->rank = (*(int *)i_value);
@@ -130,7 +130,7 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
     rowVec = load(
         "SELECT" \
         " M.model_id, M.model_parameter_id, D.parameter_name, D.parameter_hid, D.parameter_digest," \
-        " D.db_prefix, D.db_suffix, D.parameter_rank, T.model_type_id, M.is_hidden, D.num_cumulated" \
+        " D.db_run_table, D.db_set_table, D.parameter_rank, T.model_type_id, M.is_hidden, D.num_cumulated" \
         " FROM parameter_dic D" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
         " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +

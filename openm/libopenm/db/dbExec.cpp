@@ -82,7 +82,12 @@ bool IDbExec::isValidProviderName(const char * i_sqlProvider)
 /** return max length of db table or view name. */
 int IDbExec::maxDbTableNameSize(const string & /*i_sqlProvider*/)
 {
-    return maxDbTableNameLen;
+    return 30;  // use Oracle name limit to simplify data transfer between providers
+    /* 
+    if (i_sqlProvider == PGSQL_DB_PROVIDER) return 63;
+    if (i_sqlProvider == ORACLE_DB_PROVIDER) return 30;
+    return 64;
+    */
 }
 
 /** return sql statement to begin transaction (db-provider specific). */

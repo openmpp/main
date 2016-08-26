@@ -45,10 +45,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   }
   
   nRank <- tableRow$table_rank
-  dbTableName <- paste(
-    tableRow$db_prefix, defRs$modelDic$acc_prefix, tableRow$db_suffix, 
-    sep = ""
-  )
+  dbTableName <- tableRow$db_acc_table
   
   # find output accumulator id by name, if specified
   accId <- NA

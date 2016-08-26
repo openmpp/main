@@ -123,8 +123,8 @@ OutputTableWriter::OutputTableWriter(
     tableId = tableRow->tableId;
     dimCount = tableRow->rank;
 
-    accDbTable = tableRow->dbPrefix + i_metaStore->modelRow->accPrefix + tableRow->dbSuffix;
-    valueDbTable = tableRow->dbPrefix + i_metaStore->modelRow->valuePrefix + tableRow->dbSuffix;
+    accDbTable = tableRow->dbAccTable;
+    valueDbTable = tableRow->dbExprTable;
 
     tableDims = i_metaStore->tableDims->byModelIdTableId(modelId, tableId);
     if (dimCount < 0 || dimCount != (int)tableDims.size()) throw DbException("invalid table rank or dimensions not found for table: %s", i_name);

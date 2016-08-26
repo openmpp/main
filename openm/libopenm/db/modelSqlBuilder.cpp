@@ -34,9 +34,13 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     }
 
     // if max size of db table name is too short then use crc32(md5) digest
+    // table name is: paramNameAsPrefix + _p + md5Suffix, for example: ageSex_p12345678
+    // prefix based on parameter name or output table name
+    // suffix is 32 chars of md5 or 8 chars of crc32
+    // there is extra 2 chars: _p, _w, _v, _a in table name between prefix and suffix
     isCrc32Name = minSize < 50;
     dbSuffixSize = isCrc32Name ? 8 : 32;
-    dbPrefixSize = minSize - (OM_DB_TABLE_TYPE_PREFIX_LEN + dbSuffixSize);
+    dbPrefixSize = minSize - (2 + dbSuffixSize);
 
     if (dbPrefixSize < 2 || dbSuffixSize < 8)
         throw DbException("invalid db table name prefix size: %d or suffix size: %d", dbPrefixSize, dbSuffixSize);
@@ -271,9 +275,9 @@ void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const
         "-- create model input parameters\n" \
         "--\n"
         );
-    for (const ParamTblInfo & tblInfo : paramInfoVec) {
-        paramCreateTable(i_sqlProvider, tblInfo.paramTableName, "run_id", tblInfo, wr);
-        paramCreateTable(i_sqlProvider, tblInfo.setTableName, "set_id", tblInfo, wr);
+    for (size_t k = 0; k < i_metaRows.paramDic.size(); k++) {
+        paramCreateTable(i_sqlProvider, i_metaRows.paramDic[k].dbRunTable, "run_id", paramInfoVec[k], wr);
+        paramCreateTable(i_sqlProvider, i_metaRows.paramDic[k].dbSetTable, "set_id", paramInfoVec[k], wr);
     }
     wr.write("\n");
 
@@ -283,9 +287,9 @@ void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const
         "-- create model output tables\n" \
         "--\n"
         );
-    for (const OutTblInfo & tblInfo : outInfoVec) {
-        accCreateTable(i_sqlProvider, tblInfo, wr);
-        valueCreateTable(i_sqlProvider, tblInfo, wr);
+    for (size_t k = 0; k < i_metaRows.tableDic.size(); k++) {
+        accCreateTable(i_sqlProvider, i_metaRows.tableDic[k].dbAccTable, outInfoVec[k], wr);
+        valueCreateTable(i_sqlProvider, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k], wr);
     }
     wr.write("\n");
 }
@@ -313,9 +317,9 @@ void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  
         "-- drop model output tables\n" \
         "--\n"
         );
-    for (const OutTblInfo & tblInfo : outInfoVec) {
-        wr.writeLine("DROP TABLE " + tblInfo.accTableName + ";");
-        wr.writeLine("DROP TABLE " + tblInfo.valueTableName + ";");
+    for (const TableDicRow & tblRow : i_metaRows.tableDic) {
+        wr.writeLine("DROP TABLE " + tblRow.dbAccTable + ";");
+        wr.writeLine("DROP TABLE " + tblRow.dbExprTable + ";");
     }
     wr.write("\n");
 
@@ -325,9 +329,9 @@ void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  
         "-- drop model input parameters tables\n" \
         "--\n"
         );
-    for (const ParamTblInfo & tblInfo : paramInfoVec) {
-        wr.writeLine("DROP TABLE " + tblInfo.paramTableName + ";");
-        wr.writeLine("DROP TABLE " + tblInfo.setTableName + ";");
+    for (const ParamDicRow & paramRow : i_metaRows.paramDic) {
+        wr.writeLine("DROP TABLE " + paramRow.dbRunTable + ";");
+        wr.writeLine("DROP TABLE " + paramRow.dbSetTable + ";");
     }
     wr.write("\n");
 
@@ -399,7 +403,7 @@ void ModelSqlBuilder::deleteWorkset(const MetaModelHolder & i_metaRows, const Me
 
     // DELETE FROM StartingSeed_w20120819 WHERE set_id = ... ;
     for (const ParamDicRow & row : i_metaRows.paramDic) {
-        wr.outFs << "DELETE FROM " << row.dbPrefix + i_metaRows.modelDic.setPrefix + row.dbSuffix << whereSetId << ";\n";
+        wr.outFs << "DELETE FROM " << row.dbSetTable << whereSetId << ";\n";
     }
 
     // delete workset metadata except of workset_lst master row
@@ -543,13 +547,20 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaS
 
 // append scalar parameter value to sql script for new working set creation 
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & /*i_metaRows*/, const MetaSetLangHolder & /*i_metaSet*/, const string & i_name, const string & i_value
+    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & /*i_metaSet*/, const string & i_name, const string & i_value
     )
 {
     // check parameter name
     if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
 
-    // find parameter table info
+    // find parameter info
+    auto paramRow = std::find_if(
+        i_metaRows.paramDic.cbegin(),
+        i_metaRows.paramDic.cend(),
+        [i_name](const ParamDicRow & i_row) -> bool { return i_row.paramName == i_name; }
+    );
+    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
+
     auto paramInfo = std::find_if(
         paramInfoVec.begin(), 
         paramInfoVec.end(),
@@ -558,14 +569,17 @@ void ModelSqlBuilder::addWorksetParameter(
     if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
     // create sql to insert value of scalar paarameter
-    doAddScalarWorksetParameter(paramInfo, i_name, i_value);
+    doAddScalarWorksetParameter(i_name, paramRow->dbSetTable, paramInfo, i_value);
 
     paramInfo->isAdded = true;  // done
 }
 
 // impelementation of append scalar parameter value to sql script
 void ModelSqlBuilder::doAddScalarWorksetParameter(
-    const vector<ParamTblInfo>::const_iterator & i_paramInfo, const string & i_name, const string & i_value
+    const string & i_name, 
+    const string & i_dbTableName, 
+    const vector<ParamTblInfo>::const_iterator & i_paramInfo, 
+    const string & i_value
     )
 {
     // scalar parameter expected: check number of dimensions
@@ -586,7 +600,7 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
     // AND M.model_digest = '1234abcd';
     ModelSqlWriter & wr = *setWr.get();
     wr.outFs <<
-        "INSERT INTO " << i_paramInfo->setTableName << " (set_id, param_value)" <<
+        "INSERT INTO " << i_dbTableName << " (set_id, param_value)" <<
         " SELECT W.set_id, ";
     wr.throwOnFail();
 
@@ -615,7 +629,14 @@ void ModelSqlBuilder::addWorksetParameter(
     // check parameters
     if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
 
-    // find parameter table info
+    // find parameter info
+    auto paramRow = std::find_if(
+        i_metaRows.paramDic.cbegin(),
+        i_metaRows.paramDic.cend(),
+        [i_name](const ParamDicRow & i_row) -> bool { return i_row.paramName == i_name; }
+    );
+    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
+
     auto paramInfo = std::find_if(
         paramInfoVec.begin(),
         paramInfoVec.end(),
@@ -627,7 +648,7 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // if this is scalar parameter then use simplified version of sql
     if (dimCount <= 0) {
-        doAddScalarWorksetParameter(paramInfo, i_name, i_valueLst.front());
+        doAddScalarWorksetParameter(i_name, paramRow->dbSetTable, paramInfo, i_valueLst.front());
         paramInfo->isAdded = true;
         return;                     // done with this scalar parameter
     }
@@ -716,7 +737,7 @@ void ModelSqlBuilder::addWorksetParameter(
         }
 
         // make constant portion of insert
-        string insertPrefix = "INSERT INTO " + paramInfo->setTableName + " (set_id, ";
+        string insertPrefix = "INSERT INTO " + paramRow->dbSetTable + " (set_id, ";
 
         for (const string & dimName : paramInfo->dimNameVec) {
             insertPrefix += dimName + ", ";
@@ -802,8 +823,10 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
                 "-- input parameters compatibility views\n" \
                 "--\n"
             );
-            for (const ParamTblInfo & tblInfo : paramInfoVec) {
-                paramCompatibilityView(providerName, i_metaRows.modelDic, tblInfo.name, tblInfo.paramTableName, tblInfo.dimNameVec, wr);
+            for (size_t k = 0; k < i_metaRows.paramDic.size(); k++) {
+                paramCompatibilityView(
+                    providerName, i_metaRows.modelDic, i_metaRows.paramDic[k].paramName, i_metaRows.paramDic[k].dbRunTable, paramInfoVec[k].dimNameVec, wr
+                );
             }
             wr.write("\n");
 
@@ -813,8 +836,10 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
                 "-- output tables compatibility views\n" \
                 "--\n"
             );
-            for (const OutTblInfo & tblInfo : outInfoVec) {
-                outputCompatibilityView(providerName, i_metaRows.modelDic, tblInfo.name, tblInfo.valueTableName, tblInfo.dimNameVec, wr);
+            for (size_t k = 0; k < i_metaRows.tableDic.size(); k++) {
+                outputCompatibilityView(
+                    providerName, i_metaRows.modelDic, i_metaRows.tableDic[k].tableName, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k].dimNameVec, wr
+                );
             }
             wr.write("\n");
 
@@ -875,14 +900,14 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 // create table sql for parameter run or workset:
 // CREATE TABLE ageSex_p20120817
 // (
-//  run_id      INT   NOT NULL,  -- set_id for worset parameter
+//  run_id      INT   NOT NULL,  -- set_id for workset parameter
 //  dim0        INT   NOT NULL,
 //  dim1        INT   NOT NULL,
 //  param_value FLOAT NOT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1)  -- set_id for worset parameter
+//  PRIMARY KEY (run_id, dim0, dim1)  -- set_id for workset parameter
 // );
 const void ModelSqlBuilder::paramCreateTable(
-    const string & i_sqlProvider, const string i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+    const string & i_sqlProvider, const string & i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "(" + 
@@ -920,7 +945,9 @@ const void ModelSqlBuilder::paramCreateTable(
 //  acc_value FLOAT NULL,
 //  PRIMARY KEY (run_id, dim0, dim1, acc_id, sub_id)
 // );
-const void ModelSqlBuilder::accCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
+const void ModelSqlBuilder::accCreateTable(
+    const string & i_sqlProvider, const string & i_dbTableName, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+    ) const
 {
     string sqlBody = "(run_id INT NOT NULL, ";
 
@@ -939,7 +966,7 @@ const void ModelSqlBuilder::accCreateTable(const string & i_sqlProvider, const O
     }
     sqlBody += ", acc_id, sub_id));";
 
-    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_tblInfo.accTableName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
 }
 
 // create table sql for value table:
@@ -952,7 +979,9 @@ const void ModelSqlBuilder::accCreateTable(const string & i_sqlProvider, const O
 //  expr_value FLOAT NULL,
 //  PRIMARY KEY (run_id, dim0, dim1, expr_id)
 // );
-const void ModelSqlBuilder::valueCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const
+const void ModelSqlBuilder::valueCreateTable(
+    const string & i_sqlProvider, const string & i_dbTableName, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr
+    ) const
 {
     string sqlBody = "(run_id INT NOT NULL, ";
 
@@ -969,7 +998,7 @@ const void ModelSqlBuilder::valueCreateTable(const string & i_sqlProvider, const
     }
     sqlBody += ", expr_id));";
 
-    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_tblInfo.valueTableName, sqlBody) << "\n";
+    io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
 }
 
 // write body of create view sql for parameter compatibility view:

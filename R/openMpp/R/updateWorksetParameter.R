@@ -109,10 +109,7 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
       paramDef <- list(
         setId = worksetId, 
         paramHid = paramRow$parameter_hid, 
-        dbTableName = paste(
-            paramRow$db_prefix, defRs$modelDic$workset_prefix, paramRow$db_suffix, 
-            sep = ""
-          ),
+        dbTableName = paramRow$db_set_table,
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)
       )
       

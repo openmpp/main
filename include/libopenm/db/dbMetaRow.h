@@ -115,18 +115,6 @@ namespace openm
         /** create_dt        VARCHAR(32)  NOT NULL */
         string createDateTime;
 
-        /** parameter_prefix VARCHAR(4) NOT NULL, -- parameter tables prefix: p */
-        string paramPrefix;
-
-        /** workset_prefix   VARCHAR(4) NOT NULL, -- workset tables prefix: w */
-        string setPrefix;
-
-        /** acc_prefix       VARCHAR(4) NOT NULL, -- accumulator table prefix: a */
-        string accPrefix;
-
-        /** value_prefix     VARCHAR(4) NOT NULL, -- value tables prefix: v */
-        string valuePrefix;
-
         /** create row with supplied primary key field values. */
         ModelDicRow(int i_modelId) : 
             modelId(i_modelId), 
@@ -134,11 +122,7 @@ namespace openm
             digest(""), 
             type(0),
             version(""),
-            createDateTime(""),
-            paramPrefix(""),
-            setPrefix(""),
-            accPrefix(""),
-            valuePrefix("")
+            createDateTime("")
         { }
 
         /** create row with default empty field values. */
@@ -392,37 +376,37 @@ namespace openm
     /** parameter_dic join to model_parameter_dic table row. */
     struct ParamDicRow : public IMetaRow<ParamDicRow>
     {
-        /** model_id           INT          NOT NULL */
+        /** model_id         INT          NOT NULL */
         int modelId;
 
         /** model_parameter_id INT          NOT NULL */
         int paramId;
 
-        /** parameter_name     VARCHAR(255) NOT NULL */
+        /** parameter_name   VARCHAR(255) NOT NULL */
         string paramName;
 
         /** parameter_hid    INT          NOT NULL, -- unique parameter id */
         int paramHid;
 
-        /** parameter_digest   VARCHAR(32)  NOT NULL */
+        /** parameter_digest VARCHAR(32)  NOT NULL */
         string digest;
 
-        /** db_prefix          VARCHAR(20) NOT NULL */
-        string dbPrefix;
+        /** db_run_table     VARCHAR(64)  NOT NULL */
+        string dbRunTable;
 
-        /** db_suffix          VARCHAR(8)  NOT NULL */
-        string dbSuffix;
+        /** db_set_table     VARCHAR(64)  NOT NULL */
+        string dbSetTable;
 
-        /** parameter_rank     INT         NOT NULL */
+        /** parameter_rank   INT         NOT NULL */
         int rank;
 
-        /** model_type_id     INT          NOT NULL */
+        /** model_type_id    INT          NOT NULL */
         int typeId;
 
-        /** is_hidden         SMALLINT     NOT NULL */
+        /** is_hidden        SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** num_cumulated     INT          NOT NULL */
+        /** num_cumulated    INT          NOT NULL */
         int numCumulated;
 
         /** create row with supplied unique key field values. */
@@ -432,8 +416,8 @@ namespace openm
             paramName(""),
             paramHid(0),
             digest(""),
-            dbPrefix(""),
-            dbSuffix(""),
+            dbRunTable(""),
+            dbSetTable(""),
             rank(0),
             typeId(0),
             isHidden(false),
@@ -620,13 +604,13 @@ namespace openm
 
         /** table_digest   VARCHAR(32) NOT NULL  */
         string digest;
-        
-        /** db_prefix      VARCHAR(32)  NOT NULL  */
-        string dbPrefix;
-        
-        /** db_suffix      VARCHAR(32)  NOT NULL  */
-        string dbSuffix;
-        
+
+        /** db_expr_table    VARCHAR(64)  NOT NULL */
+        string dbExprTable;
+
+        /** db_acc_table     VARCHAR(64)  NOT NULL */
+        string dbAccTable;
+
         /** is_user        SMALLINT NOT NULL     */
         bool isUser;
         
@@ -646,8 +630,8 @@ namespace openm
             tableName(""),
             tableHid(0),
             digest(""),
-            dbPrefix(""),
-            dbSuffix(""),
+            dbExprTable(""),
+            dbAccTable(""),
             isUser(false),
             rank(1),
             isSparse(false),

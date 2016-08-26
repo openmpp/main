@@ -38,7 +38,7 @@ getModel <- function(dbCon, modelName, modelDigest = NA)
   sql <- ifelse(
     !missing(modelDigest) && !is.null(modelDigest) && !is.na(modelDigest),
     paste(
-      "SELECT model_id, model_name, model_digest, parameter_prefix, workset_prefix, acc_prefix, value_prefix",
+      "SELECT model_id, model_name, model_digest, model_type, model_ver, create_dt",
       " FROM model_dic",
       " WHERE model_name = ", toQuoted(modelName),
       " AND model_digest = ", toQuoted(modelDigest),
@@ -46,7 +46,7 @@ getModel <- function(dbCon, modelName, modelDigest = NA)
       sep=""
     ),
     paste(
-      "SELECT model_id, model_name, model_digest, parameter_prefix, workset_prefix, acc_prefix, value_prefix",
+      "SELECT model_id, model_name, model_digest, model_type, model_ver, create_dt",
       " FROM model_dic",
       " WHERE model_name = ", toQuoted(modelName),
       " AND model_id = ",
@@ -94,7 +94,7 @@ getModel <- function(dbCon, modelName, modelDigest = NA)
     dbCon, 
     paste(
       "SELECT",
-      " MP.model_id, MP.model_parameter_id, P.parameter_hid, P.parameter_name, P.db_prefix, P.db_suffix, P.parameter_rank, P.type_hid, MT.model_type_id",
+      " MP.model_id, MP.model_parameter_id, P.parameter_hid, P.parameter_name, P.db_run_table, P.db_set_table, P.parameter_rank, P.type_hid, MT.model_type_id",
       " FROM parameter_dic P",
       " INNER JOIN model_parameter_dic MP ON (MP.parameter_hid = P.parameter_hid AND MP.model_id = ", defRs$modelDic$model_id, ")",
       " INNER JOIN model_type_dic MT ON (MT.type_hid = P.type_hid AND MT.model_id = ", defRs$modelDic$model_id, ")",
@@ -134,7 +134,7 @@ getModel <- function(dbCon, modelName, modelDigest = NA)
   defRs[["tableDic"]] <- dbGetQuery(
     dbCon, 
     paste(
-      "SELECT M.model_id, M.model_table_id, T.table_hid, T.table_name, T.db_prefix, T.db_suffix, T.table_rank, T.is_sparse",
+      "SELECT M.model_id, M.model_table_id, T.table_hid, T.table_name, T.db_expr_table, T.db_acc_table, T.table_rank, T.is_sparse",
       " FROM table_dic T",
       " INNER JOIN model_table_dic M ON (M.table_hid = T.table_hid AND M.model_id = ", defRs$modelDic$model_id, ")",
       " ORDER BY 1, 2",

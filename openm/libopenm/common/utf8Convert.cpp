@@ -576,8 +576,11 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
             bomSize = sizeof(BOM_UTF32BE);
     }
 
-    // if no BOM, probe content to see if it appears to be UTF-8
-    if (bomSize == 0) {
+    // if no BOM and code page name specified then use the page for conversion
+    if (fromChar == CharCvtFrom::defaultPage && i_codePageName != NULL && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
+
+    // if no BOM and no explicit code page name, probe content to see if it appears to be UTF-8
+    if (fromChar == CharCvtFrom::defaultPage) {
         unsigned char utf8ProbeBuf[utf8ProbeLen];
 
         // No BOM, rewind file to beginning
@@ -596,9 +599,6 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
         }
     }
 
-    // if no BOM and UTF-8 probe fails and code page name specified then use the page for conversion
-    if (fromChar == CharCvtFrom::defaultPage && i_codePageName != NULL && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
-
     // create converter
     unique_ptr<IUtf8Converter> cvt(IUtf8Converter::create(fromChar, i_codePageName));
 
@@ -606,8 +606,9 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
     inpSt.clear();
     inpSt.seekg(bomSize);
 
-    // read until eof, convert bytes to UTF-8 and append result to output string
-    string fileStr;
+    // read until eof, convert bytes to UTF-8
+    list<string> contentLst;
+    string::size_type totalSize = 0;
     char rdBuf[IN_CVT_SIZE];
 
     while (inpSt) {
@@ -616,11 +617,19 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
         long long rdSize = inpSt.gcount();
 
         if (rdSize > 0) {
-            fileStr += cvt->next(rdSize, rdBuf);
+            contentLst.push_back(cvt->next(rdSize, rdBuf));
+            totalSize += contentLst.back().length();
         }
     }
     if (inpSt.bad()) throw HelperException("Error at file read");
 
+    // append result to output string
+    string fileStr;
+    fileStr.reserve(totalSize + 1);
+
+    for (const string & s : contentLst) {
+        fileStr += s;
+    }
     return fileStr;
 }
 

@@ -15,9 +15,9 @@
 -- model digest: not a real digest (32 digits hex)
 --
 INSERT INTO model_dic
-  (model_id, model_name, model_digest, model_type, model_ver, create_dt, parameter_prefix, workset_prefix, acc_prefix, value_prefix)
+  (model_id, model_name, model_digest, model_type, model_ver, create_dt)
 VALUES
-  (1, 'modelOne', '20120817_1604590148', 0, '1.0', '2012-08-17 16:04:59.0148', '_p', '_w', '_a', '_v');
+  (1, 'modelOne', '20120817_1604590148', 0, '1.0', '2012-08-17 16:04:59.0148');
   
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', NULL);
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, 'First model (fr)', NULL);
@@ -75,19 +75,19 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (28, 
 -- db suffix: not a real value (8 digits hex)
 --
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_prefix, db_suffix, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
 VALUES
-  (4, 'ageSex', '2012_817_1604590131', 'ageSex', '2012_817', 2, 13, 0);
+  (4, 'ageSex', '2012_817_1604590131', 'ageSex_p2012_817', 'ageSex_w2012_817', 2, 13, 0);
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_prefix, db_suffix, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
 VALUES
-  (5, 'salaryAge', '2012_817_1604590132', 'salaryAge', '2012_818', 2, 3, 0);
+  (5, 'salaryAge', '2012_817_1604590132', 'salaryAge_p2012_818', 'salaryAge_w2012_818', 2, 3, 0);
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_prefix, db_suffix, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
 VALUES
-  (6, 'StartingSeed', '2012_817_1604590133', 'StartingSeed', '2012_819', 0, 3, 0);
+  (6, 'StartingSeed', '2012_817_1604590133', 'StartingSeed_p2012_819', 'StartingSeed_w2012_819', 0, 3, 0);
 
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
@@ -115,9 +115,9 @@ INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VAL
 -- db suffix: not a real value (8 digits hex)
 --
 INSERT INTO table_dic 
-  (table_hid, table_name, table_digest, db_prefix, db_suffix, table_rank, is_sparse) 
+  (table_hid, table_name, table_digest, db_expr_table, db_acc_table, table_rank, is_sparse) 
 VALUES 
-  (2, 'salarySex', '2012817_16_04590141', 'salarySex', '2012_820', 2, 1);
+  (2, 'salarySex', '2012817_16_04590141', 'salarySex_v2012_820', 'salarySex_a2012_820', 2, 1);
 
 INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (1, 0, 2, 0, 1);
   
@@ -174,6 +174,18 @@ INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2,
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sum acc1', NULL);
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 2, 0, 'Min acc0', NULL);
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 3, 0, 'Average acc0 * acc1', NULL);
+
+INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 1, 1, 'all_parameters', 0);
+INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 2, 1, 'age_sex_parameters', 0);
+
+INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 0, 'All parameters', 'All model parameters group');
+INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 1, '(fr) All parameters', NULL);
+INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 2, 0, 'Age and Sex parameters', 'Age and Sex model parameters group');
+
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 1, 2, NULL);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 2, NULL, 2);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 1, NULL, 0);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 2, NULL, 1);
 
 --
 -- modelOne input parameters

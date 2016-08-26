@@ -49,12 +49,8 @@ CREATE TABLE model_dic
   model_type       INT          NOT NULL, -- model type: 0 = case based, 1 = time based
   model_ver        VARCHAR(32)  NOT NULL, -- model version
   create_dt        VARCHAR(32)  NOT NULL, -- create date-time
-  parameter_prefix VARCHAR(4)   NOT NULL, -- parameter tables prefix: _p
-  workset_prefix   VARCHAR(4)   NOT NULL, -- workset tables prefix: _w
-  acc_prefix       VARCHAR(4)   NOT NULL, -- accumulator tables prefix: _a
-  value_prefix     VARCHAR(4)   NOT NULL, -- value tables prefix: _v
   PRIMARY KEY (model_id), 
-  CONSTRAINT model_dic_un_1 UNIQUE (model_digest)
+  CONSTRAINT model_dic_un UNIQUE (model_digest)
 );
 
 --
@@ -157,14 +153,13 @@ CREATE TABLE parameter_dic
   parameter_hid    INT          NOT NULL, -- unique parameter id
   parameter_name   VARCHAR(255) NOT NULL, -- parameter name
   parameter_digest VARCHAR(32)  NOT NULL, -- parameter digest
-  db_prefix        VARCHAR(32)  NOT NULL, -- parameter name part for db table name: ageSex
-  db_suffix        VARCHAR(32)  NOT NULL, -- unique part for db table name: 12345678
+  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
+  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   parameter_rank   INT          NOT NULL, -- parameter rank
   type_hid         INT          NOT NULL, -- parameter type id
   num_cumulated    INT          NOT NULL, -- number of cumulated dimensions
   PRIMARY KEY (parameter_hid),
-  CONSTRAINT parameter_dic_un_1 UNIQUE (db_prefix, db_suffix),
-  CONSTRAINT parameter_dic_un_2 UNIQUE (parameter_digest),
+  CONSTRAINT parameter_dic_un UNIQUE (parameter_digest),
   CONSTRAINT parameter_dic_type_fk
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid)
 );
@@ -241,16 +236,15 @@ CREATE TABLE parameter_dims_txt
 --
 CREATE TABLE table_dic
 (
-  table_hid    INT          NOT NULL, -- unique table id
-  table_name   VARCHAR(255) NOT NULL, -- table name
-  table_digest VARCHAR(32)  NOT NULL, -- output table digest
-  db_prefix    VARCHAR(32)  NOT NULL, -- name part for db table name: salaryBySex
-  db_suffix    VARCHAR(32)  NOT NULL, -- unique part for db table name: 12345678
-  table_rank   INT          NOT NULL, -- table rank
-  is_sparse    SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
+  table_hid     INT          NOT NULL, -- unique table id
+  table_name    VARCHAR(255) NOT NULL, -- table name
+  table_digest  VARCHAR(32)  NOT NULL, -- output table digest
+  db_expr_table VARCHAR(64)  NOT NULL, -- run values db table name: salaryBySex_v12345678
+  db_acc_table  VARCHAR(64)  NOT NULL, -- accumulator values db table name: salaryBySex_a12345678
+  table_rank    INT          NOT NULL, -- table rank
+  is_sparse     SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
   PRIMARY KEY (table_hid),
-  CONSTRAINT table_dic_un_1 UNIQUE (db_prefix, db_suffix),
-  CONSTRAINT table_dic_un_2 UNIQUE (table_digest)
+  CONSTRAINT table_dic_un UNIQUE (table_digest)
 );
 
 --
@@ -747,11 +741,11 @@ INSERT INTO lang_lst (lang_id, lang_code, lang_name) VALUES (0, 'EN', 'English')
 INSERT INTO lang_lst (lang_id, lang_code, lang_name) VALUES (1, 'FR', 'Français');
 
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'all', 'All');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'min', 'min');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'max', 'max');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'min', 'Min');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'max', 'Max');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'all', 'Toutes');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'min', 'min');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'max', 'max');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'min', 'Min');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'max', 'Max');
 
 --
 -- built-in types: type name used as unique type digest

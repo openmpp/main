@@ -86,12 +86,6 @@ namespace openm
         /** helper struct to collect info for db parameter table */
         struct ParamTblInfo : DbTblInfo
         {
-            /** db name of parameter table */
-            string paramTableName;
-
-            /** db name of parameter workset table */
-            string setTableName;
-
             /** db type of value column to store parameter */
             string valueTypeName;
 
@@ -102,12 +96,6 @@ namespace openm
         /** helper struct to collect info for db subsample table and value view */
         struct OutTblInfo : DbTblInfo
         {
-            /** db name of accumulator table */
-            string accTableName;
-
-            /** db name of aggregated value view: table expressions */
-            string valueTableName;
-
             /** accumulator ids */
             vector<int> accIdVec;
 
@@ -144,23 +132,36 @@ namespace openm
 
         /** impelementation of append scalar parameter value to sql script */
         void doAddScalarWorksetParameter(
-            const vector<ParamTblInfo>::const_iterator & i_paramInfo, const string & i_name, const string & i_value
+            const string & i_name, 
+            const string & i_dbTableName, 
+            const vector<ParamTblInfo>::const_iterator & i_paramInfo, 
+            const string & i_value
         );
 
         /** create table sql for parameter */
         const void paramCreateTable(
             const string & i_sqlProvider, 
-            const string i_dbTableName, 
+            const string & i_dbTableName, 
             const string & i_runSetId, 
             const ParamTblInfo & i_tblInfo, 
             ModelSqlWriter & io_wr
         ) const;
 
         /** create table sql for accumulator table */
-        const void accCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        const void accCreateTable(
+            const string & i_sqlProvider, 
+            const string & i_dbTableName, 
+            const OutTblInfo & i_tblInfo, 
+            ModelSqlWriter & io_wr
+        ) const;
 
         /** create table sql for value table: aggregated table expressions */
-        const void valueCreateTable(const string & i_sqlProvider, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr) const;
+        const void valueCreateTable(
+            const string & i_sqlProvider, 
+            const string & i_dbTableName, 
+            const OutTblInfo & i_tblInfo, 
+            ModelSqlWriter & io_wr
+        ) const;
 
         /** create view sql for parameter compatibility view */
         const void paramCompatibilityView(

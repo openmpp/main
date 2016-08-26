@@ -261,10 +261,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       paramDef <- list(
         setId = setId, 
         paramHid = paramRow$parameter_hid, 
-        dbTableName = paste(
-            paramRow$db_prefix, defRs$modelDic$workset_prefix, paramRow$db_suffix, 
-            sep = ""
-          ),
+        dbTableName = paramRow$db_set_table,
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)
       )
       
