@@ -151,7 +151,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
           " (set_id, ", nameCs, " param_value)",
           " SELECT ", 
           worksetId, ", ", nameCs, " param_value",
-          " FROM ", paramRow$db_set_table,
+          " FROM ", paramRow$db_run_table,
           " WHERE run_id = ", 
           " (", 
           " SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_hid = ", paramDef$paramHid, 
