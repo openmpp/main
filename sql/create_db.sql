@@ -532,10 +532,10 @@ CREATE TABLE run_parameter
 --
 CREATE TABLE run_parameter_txt
 (
-  run_id        INT NOT NULL,   -- model run id
-  parameter_hid INT NOT NULL,   -- master key
-  lang_id       INT NOT NULL,   -- language id
-  note          VARCHAR(32000), -- parameter value notes
+  run_id        INT             NOT NULL, -- model run id
+  parameter_hid INT             NOT NULL, -- master key
+  lang_id       INT             NOT NULL, -- language id
+  note          VARCHAR(32000),           -- parameter value notes
   PRIMARY KEY (run_id, parameter_hid, lang_id),
   CONSTRAINT run_parameter_txt_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
