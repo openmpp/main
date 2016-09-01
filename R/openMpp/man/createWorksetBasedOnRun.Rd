@@ -23,7 +23,7 @@ createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
   \item{worksetTxt}{
     if not NA then workset text data frame:
     \itemize{
-      \item \code{$name} (optional) working set name
+      \item \code{$name} working set name, must be unique
       \item \code{$lang} language code 
       \item \code{$descr} working set description 
       \item \code{$note} (optional) working set notes 
@@ -68,7 +68,7 @@ in order to create workset using parameters from previous model run and supply s
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
 
-Each workset has unique set id (positive integer) and also may have a name. 
+Each workset has unique set id (positive integer) and unique name. 
 To find set id by name use \code{\link{getWorksetIdByName}} call.
 
 Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
@@ -130,6 +130,7 @@ It must contain run_id = 11 and 12 (see runId usage below)
   
   #
   # name, description and notes for this set of model parameters
+  # name MUST be unique
   #
   paramSetTxt <- data.frame(
     name = "myOtherData",

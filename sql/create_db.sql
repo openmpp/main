@@ -576,6 +576,7 @@ CREATE TABLE run_table
 -- workset can be editable or read-only
 --   if workset is editable then you can modify input parameters or workset description, notes, etc.
 --   if workset is read-only then you can run the model using that workset as input
+-- workset name + model id must be unique (model cannot have multiple workset with same name)
 -- Important: working set_id must be different from run_id (use id_lst to get it)
 -- Important: always update parameter values inside of transaction scope
 -- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
@@ -589,7 +590,7 @@ CREATE TABLE workset_lst
   is_readonly SMALLINT     NOT NULL, -- if non-zero then working set is read-only
   update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (set_id),
-  CONSTRAINT workset_lst_un_1 UNIQUE (model_id, set_name),
+  CONSTRAINT workset_lst_un UNIQUE (model_id, set_name),
   CONSTRAINT workset_lst_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
   CONSTRAINT workset_lst_fk
@@ -644,6 +645,7 @@ CREATE TABLE workset_parameter_txt
 
 --
 -- Modelling task: named set of model inputs (of working sets)
+-- task name + model id must be unique (model cannot have multiple tasks with same name)
 --
 CREATE TABLE task_lst
 (
@@ -651,6 +653,7 @@ CREATE TABLE task_lst
   model_id  INT          NOT NULL, -- master key
   task_name VARCHAR(255) NOT NULL, -- task name
   PRIMARY KEY (task_id),
+  CONSTRAINT task_lst_un UNIQUE (model_id, task_name),
   CONSTRAINT task_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );

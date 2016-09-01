@@ -19,7 +19,7 @@ createTask(dbCon, defRs, taskTxt = NA, setIds = NA)
   \item{taskTxt}{
     if not NA then modeling task text data frame:
     \itemize{
-      \item \code{$name} (optional) modeling task name
+      \item \code{$name} modeling task name, must be unique
       \item \code{$lang} language code 
       \item \code{$descr} modeling task description 
       \item \code{$note} (optional) modeling task notes 
@@ -66,6 +66,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 \examples{
   #
   # name, description and notes for new modeling task
+  # name MUST be unique
   #
   myTaskTxt <- data.frame(
     name = "myTask",

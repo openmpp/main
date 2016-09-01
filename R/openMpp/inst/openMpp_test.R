@@ -252,15 +252,16 @@ if (taskId <= 0L) stop("task not found by name: ", taskName)
 
 # 
 # create new modeling task
+# task name will be generated automatically
 #
 myTaskTxt <- data.frame(
-  name = "myTask",
+  name = NA,
   lang = c("EN", "FR"),
   descr = c("my first modeling task", "description in French"),
   note = c("this is a test task and include two model input data sets with id 2 and 4", NA),
   stringsAsFactors = FALSE
 )
-  
+
 # create new task, initially empty
 taskId <- createTask(theDb, defRs, myTaskTxt, c(2, 4))
 if (taskId <= 0L) stop("task creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
