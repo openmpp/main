@@ -185,21 +185,21 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
 
     // build sql:
     // INSERT INTO salarySex_a201208171604590148
-    //   (run_id, dim0, dim1, acc_id, sub_id, acc_value) VALUES (2 , ?, ?, 15, 4, ?)
-    string sql = "INSERT INTO " + accDbTable + " (run_id";
+    //   (run_id, acc_id, sub_id, dim0, dim1, acc_value) VALUES (2, 15, 4, ?, ?, ?)
+    string sql = "INSERT INTO " + accDbTable + " (run_id, acc_id, sub_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", " + dim.name;
     }
 
-    sql += ", acc_id, sub_id, acc_value) VALUES (" + to_string(runId);
+    sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_nSubSample);
 
-    // build sql, append: , ?, ?, ?, 2, 15, ?)
-    // dimensions parameter placeholder(s), accumulator index, sub-sample index, value placeholder
+    // build sql, append: , ?, ?, ?)
+    // as dimensions parameter placeholder(s), value placeholder
     for (int nDim = 0; nDim < dimCount; nDim++) {
         sql += ", ?";
     }
-    sql += ", " + to_string(i_accId) + ", " + to_string(i_nSubSample) + ", ?)";
+    sql += ", ?)";
 
     // set parameters type: dimensions and accumulator value
     vector<const type_info *> tv;
@@ -341,26 +341,25 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
 
     // build sql to select accumulators and expressions values:
     //
-    // SELECT dim0, dim1, acc_id, sub_id, acc_value
+    // SELECT acc_id, sub_id, dim0, dim1, acc_value
     // FROM salarySex_a201208171604590148
     // WHERE run_id = 11
     // ORDER BY 1, 2, 3, 4
     //
-    string accSql = "SELECT ";
+    string accSql = "SELECT acc_id, sub_id, ";
 
     for (const TableDimsRow & dim : tableDims) {
         accSql += dim.name + ", ";
     }
 
-    accSql += "acc_id, sub_id, acc_value" \
+    accSql += "acc_value" \
         " FROM " + accDbTable +
         " WHERE run_id = " + to_string(runId) +
-        " ORDER BY ";
+        " ORDER BY 1, 2";
 
     for (int nDim = 0; nDim < dimCount; nDim++) {
-        accSql += to_string(nDim + 1) + ", ";
+        accSql += ", " + to_string(nDim + 3);
     }
-    accSql += to_string(dimCount + 1) + ", " + to_string(dimCount + 2);
 
     // build sql to expressions values:
     //
@@ -369,21 +368,20 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     // WHERE run_id = 11
     // ORDER BY 1, 2, 3
     //
-    string exprSql = "SELECT ";
+    string exprSql = "SELECT expr_id, ";
 
     for (const TableDimsRow & dim : tableDims) {
         exprSql += dim.name + ", ";
     }
 
-    exprSql += "expr_id, expr_value" \
+    exprSql += "expr_value" \
         " FROM " + valueDbTable +
         " WHERE run_id = " + to_string(runId) +
-        " ORDER BY ";
+        " ORDER BY 1";
 
     for (int nDim = 0; nDim < dimCount; nDim++) {
-        exprSql += to_string(nDim + 1) + ", ";
+        exprSql += ", " + to_string(nDim + 2);
     }
-    exprSql += to_string(dimCount + 1);
 
     // select accumulator values and calculate digest
     MD5 md5;
@@ -399,10 +397,10 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     // select expression values and append to the digest
     md5.add("exp_value\n", strlen("exp_value\n")); // expression values delimiter
 
-    ValueRowDigester md5EexprRd(dimCount + 1, typeid(double), &md5); // +1 column: expr_id
+    ValueRowDigester md5ExprRd(dimCount + 1, typeid(double), &md5); // +1 column: expr_id
     ValueRowAdapter exprAdp(dimCount + 1, typeid(double));
 
-    i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5EexprRd);
+    i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5ExprRd);
 
     string sDigest = md5.getHash();     // digest of metadata and values of accumulators and expressions
 

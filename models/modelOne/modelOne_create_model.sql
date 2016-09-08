@@ -246,20 +246,20 @@ CREATE TABLE StartingSeed_w_2012819
 CREATE TABLE salarySex_a_2012820
 (
   run_id    INT   NOT NULL,
-  dim0      INT   NOT NULL, 
-  dim1      INT   NOT NULL, 
   acc_id    INT   NOT NULL, 
   sub_id    INT   NOT NULL, 
+  dim0      INT   NOT NULL, 
+  dim1      INT   NOT NULL, 
   acc_value FLOAT NULL,
-  PRIMARY KEY (run_id, dim0, dim1, acc_id, sub_id)
+  PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE salarySex_v_2012820
 (
   run_id     INT   NOT NULL,
+  expr_id    INT   NOT NULL, 
   dim0       INT   NOT NULL, 
   dim1       INT   NOT NULL, 
-  expr_id    INT   NOT NULL, 
   expr_value FLOAT NULL,
-  PRIMARY KEY (run_id, dim0, dim1, expr_id)
+  PRIMARY KEY (run_id, expr_id, dim0, dim1)
 );

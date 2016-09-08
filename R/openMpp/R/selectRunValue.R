@@ -14,8 +14,8 @@
 #             if missing or NA then return all expressions
 #
 # return data frame of output table rows:
-#   $dim0,... - dimension item enum ids (not returned if rank is zero)
 #   $expr_id  - output table expression id
+#   $dim0,... - dimension item enum ids (not returned if rank is zero)
 #   $value    - output table value
 #
 selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
@@ -74,7 +74,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # SELECT dim0, dim1, expr_id, expr_value 
+  # SELECT expr_id, dim0, dim1, expr_value 
   # FROM salarySex_v2012_820
   # WHERE run_id = 
   # (
@@ -85,7 +85,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
   #
   sqlSel <-
     paste(
-      "SELECT ", 
+      "SELECT expr_id, ", 
       ifelse(nRank > 0L,
         paste(
           paste(
@@ -96,7 +96,7 @@ selectRunOutputValue <- function(dbCon, defRs, runId, tableName, exprName = NA)
         ),
         ""
       ),
-      " expr_id, expr_value",
+      " expr_value",
       " FROM ", dbTableName, 
       " WHERE run_id = ", 
       " (", 

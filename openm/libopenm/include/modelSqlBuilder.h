@@ -230,11 +230,6 @@ namespace openm
 
         /** calculate model metadata digest */
         static const string makeModelDigest(const MetaModelHolder & i_metaRows);
-
-        /** calculate workset metadata digest */
-        static const string makeWorksetDigest(
-            const WorksetLstRow & i_wsRow, const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet
-        );
     };
 }
 

@@ -14,9 +14,9 @@
 #             if missing or NA then return all accumulators
 #
 # return data frame of output table rows:
-#   $dim0,... - dimension item enum ids (not returned if rank is zero)
 #   $acc_id   - output table accumulator id
 #   $sub_id   - subsample number
+#   $dim0,... - dimension item enum ids (not returned if rank is zero)
 #   $acc0,... - output table accumulator value(s)
 #
 selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
@@ -78,7 +78,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # SELECT dim0, dim1, acc_id, sub_id, acc_value 
+  # SELECT acc_id, sub_id, dim0, dim1, acc_value 
   # FROM salarySex_a2012_820
   # WHERE run_id = 
   # (
@@ -89,7 +89,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   #
   sqlSel <-
     paste(
-      "SELECT ", 
+      "SELECT acc_id, sub_id, ", 
       ifelse(nRank > 0L,
         paste(
           paste(
@@ -100,7 +100,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
         ),
         ""
       ),
-      " acc_id, sub_id, acc_value FROM ", dbTableName, 
+      " acc_value FROM ", dbTableName, 
       " WHERE run_id = ", 
       " (", 
       " SELECT base_run_id FROM run_table WHERE run_id = ", runId, " AND table_hid = ", tableRow$table_hid, 
@@ -112,7 +112,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
       " ORDER BY 1, 2",
       ifelse(nRank > 0L,
         paste(", ",
-          paste(2L:(nRank + 1L), sep = "", collapse = ", "),
+          paste(3L:(nRank + 2L), sep = "", collapse = ", "),
           sep = ""
         ),
         ""

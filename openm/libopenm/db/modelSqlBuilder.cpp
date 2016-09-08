@@ -938,33 +938,32 @@ const void ModelSqlBuilder::paramCreateTable(
 // CREATE TABLE salarySex_a20120820
 // (
 //  run_id    INT   NOT NULL,
-//  dim0      INT   NOT NULL,
-//  dim1      INT   NOT NULL,
 //  acc_id    INT   NOT NULL,
 //  sub_id    INT   NOT NULL,
+//  dim0      INT   NOT NULL,
+//  dim1      INT   NOT NULL,
 //  acc_value FLOAT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1, acc_id, sub_id)
+//  PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
 // );
 const void ModelSqlBuilder::accCreateTable(
     const string & i_sqlProvider, const string & i_dbTableName, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr
     ) const
 {
-    string sqlBody = "(run_id INT NOT NULL, ";
+    string sqlBody = "(run_id INT NOT NULL, " \
+        "acc_id INT NOT NULL, " \
+        "sub_id INT NOT NULL, ";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += dimName + " INT NOT NULL, ";
     }
 
-    sqlBody +=
-        "acc_id INT NOT NULL, " \
-        "sub_id INT NOT NULL, " \
-        "acc_value FLOAT NULL, " \
-        "PRIMARY KEY (run_id";
+    sqlBody += "acc_value FLOAT NULL, " \
+        "PRIMARY KEY (run_id, acc_id, sub_id";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += ", " + dimName;
     }
-    sqlBody += ", acc_id, sub_id));";
+    sqlBody += "));";
 
     io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
 }
@@ -973,30 +972,30 @@ const void ModelSqlBuilder::accCreateTable(
 // CREATE TABLE salarySex_v20120820
 // (
 //  run_id     INT   NOT NULL,
+//  expr_id    INT   NOT NULL,
 //  dim0       INT   NOT NULL,
 //  dim1       INT   NOT NULL,
-//  expr_id    INT   NOT NULL,
 //  expr_value FLOAT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1, expr_id)
+//  PRIMARY KEY (run_id, expr_id, dim0, dim1)
 // );
 const void ModelSqlBuilder::valueCreateTable(
     const string & i_sqlProvider, const string & i_dbTableName, const OutTblInfo & i_tblInfo, ModelSqlWriter & io_wr
     ) const
 {
-    string sqlBody = "(run_id INT NOT NULL, ";
+    string sqlBody = "(run_id INT NOT NULL, " \
+        "expr_id INT NOT NULL,";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += dimName + " INT NOT NULL, ";
     }
 
-    sqlBody += "expr_id INT NOT NULL," \
-        " expr_value FLOAT NULL," \
-        " PRIMARY KEY (run_id";
+    sqlBody += " expr_value FLOAT NULL," \
+        " PRIMARY KEY (run_id, expr_id";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += ", " + dimName;
     }
-    sqlBody += ", expr_id));";
+    sqlBody += "));";
 
     io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
 }
