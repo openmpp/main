@@ -153,8 +153,8 @@ CREATE TABLE parameter_dic
   parameter_hid    INT          NOT NULL, -- unique parameter id
   parameter_name   VARCHAR(255) NOT NULL, -- parameter name
   parameter_digest VARCHAR(32)  NOT NULL, -- parameter digest
-  db_run_table     VARCHAR(30)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
-  db_set_table     VARCHAR(30)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
+  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
+  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   parameter_rank   INT          NOT NULL, -- parameter rank
   type_hid         INT          NOT NULL, -- parameter type id
   num_cumulated    INT          NOT NULL, -- number of cumulated dimensions
@@ -239,8 +239,8 @@ CREATE TABLE table_dic
   table_hid     INT          NOT NULL, -- unique table id
   table_name    VARCHAR(255) NOT NULL, -- table name
   table_digest  VARCHAR(32)  NOT NULL, -- output table digest
-  db_expr_table VARCHAR(30)  NOT NULL, -- run values db table name: salaryBySex_v12345678
-  db_acc_table  VARCHAR(30)  NOT NULL, -- accumulator values db table name: salaryBySex_a12345678
+  db_expr_table VARCHAR(64)  NOT NULL, -- run values db table name: salaryBySex_v12345678
+  db_acc_table  VARCHAR(64)  NOT NULL, -- accumulator values db table name: salaryBySex_a12345678
   table_rank    INT          NOT NULL, -- table rank
   is_sparse     SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
   PRIMARY KEY (table_hid),
