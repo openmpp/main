@@ -936,11 +936,11 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
         ++rowIt) {
 
         // add accumulator to digest: id, name, expression
-        sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + rowIt->expr + "\n";
+        sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + trim(rowIt->expr) + "\n";
         md5.add(sLine.c_str(), sLine.length());
     }
 
-    // add output table expressions: id, name, expression
+    // add output table expressions: id, name, source expression
     md5.add("expr_id,expr_name,expr_src\n", strlen("expr_id,expr_name,expr_src\n"));
 
     TableExprRow exprFkRow(i_tableRow.modelId, i_tableRow.tableId, 0);
@@ -955,7 +955,7 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
         ++rowIt) {
 
         // add table expression to output table digest: id, name, source expression
-        sLine = to_string(rowIt->exprId) + "," + rowIt->name + "," + rowIt->srcExpr + "\n";
+        sLine = to_string(rowIt->exprId) + "," + rowIt->name + "," + trim(rowIt->srcExpr) + "\n";
         md5.add(sLine.c_str(), sLine.length());
     }
 
