@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_HELPER_H
-#define OM_HELPER_H
+#ifndef OM_I_HELPER_H
+#define OM_I_HELPER_H
 
 #include "libopenm/common/omHelper.h"
 
@@ -24,8 +24,8 @@ using namespace std;
     #endif 
 #endif 
 
-/** max string length supported */
-#define OM_STRLEN_MAX   INT_MAX
+#define OM_STRLEN_MAX   INT_MAX         /** max string length supported */
+#define OM_STR_DB_MAX   32000           /** max database string length: notes varchar (clob, text) */
 
 #define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
 #define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
@@ -45,4 +45,4 @@ using namespace std;
 
 //#define OM_LOG_MSG(msg)         msg OM_FILE_LINE
 
-#endif  // OM_HELPER_H
+#endif  // OM_I_HELPER_H

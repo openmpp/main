@@ -52,6 +52,7 @@ list<string> IDbExec::parseListOfProviderNames(const string & i_sqlProviderNames
         // convert provider name into lowercase
         // validate each name in the list and check if list is not empty
         for (string & sName : nameLst) {
+            if (sName.empty()) continue;
             toLower(sName);
             if (!isValidProviderName(sName.c_str())) throw DbException("invalid db-provider name: %s", sName.c_str());
         }

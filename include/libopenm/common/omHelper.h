@@ -60,8 +60,11 @@ namespace openm
     /** trim leading and trailing blank and space characters */
     extern string trim(const string & i_str);
 
-    /** make sql quoted string, ie: 'O''Brien' */
-    extern const string toQuoted(const string & i_str);
+    /** make quoted string using sql single ' quote by default, ie: 'O''Brien' */
+    extern const string toQuoted(const string & i_str, char i_quote = '\'');
+
+    /** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
+    extern const string toUnQuoted(const string & i_str, char i_quote = '\'');
 
     /** convert float type to string: exist to fix std::to_string conversion losses. */
     extern const string toString(double i_val);
@@ -90,10 +93,14 @@ namespace openm
     /**   
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
     *
+    * RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
+    *
     * @param[in] i_values       source string of comma separated values.
     * @param[in] i_delimiters   list of delimiters, default: comma.
+    * @param[in] i_isUnquote    if true then do "unquote ""csv"" ", default: false.
+    * @param[in] i_quote        quote character, default: sql single ' quote.
     */
-    extern list<string> splitCsv(const string & i_values, const char * i_delimiters = ",");
+    extern list<string> splitCsv(const string & i_values, const char * i_delimiters = ",", bool i_isUnquote = false, char i_quote = '\'');
 
     /** case neutral less comparator for strings */
     struct LessNoCase

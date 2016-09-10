@@ -120,15 +120,43 @@ string openm::trim(const string & i_str)
     return i_str.substr(begIt - i_str.begin(), (i_str.rend() - endIt) - (begIt - i_str.begin()));
 }
 
-// make sql quoted string, ie: 'O''Brien'
-const string openm::toQuoted(const string & i_str)
+/** make quoted string using sql single ' quote by default, ie: 'O''Brien' */
+const string openm::toQuoted(const string & i_str, char i_quote)
 {
     string sRet;
     for (string::const_iterator it = i_str.begin(); it != i_str.end(); ++it) {
         sRet += *it;
-        if (*it == '\'') sRet += '\'';
+        if (*it == i_quote) sRet += i_quote;
     }
-    return '\'' + sRet + '\'';
+    return i_quote + sRet + i_quote;
+}
+
+/** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
+const string openm::toUnQuoted(const string & i_str, char i_quote)
+{
+    // trim and remove surrounding quotes
+    string sVal = trim(i_str);
+
+    size_t nLen = sVal.length();
+    bool isQuoted = nLen >= 2 && sVal[0] == i_quote && sVal[nLen - 1] == i_quote;
+
+    if (!isQuoted) return sVal;         // string is not quoted
+    sVal = sVal.substr(1, nLen - 2);    // remove surrounding quotes
+
+    string sRet;
+    bool isPrevQuote = false;
+ 
+    for (string::const_iterator it = sVal.begin(); it != sVal.end(); ++it) {
+        if (*it != i_quote) {
+            sRet += *it;
+            isPrevQuote = false;
+        }
+        else {
+            if (!isPrevQuote) sRet += *it;
+            isPrevQuote = !isPrevQuote;
+        }
+    }
+     return sRet;
 }
 
 /** convert float type to string: exist to fix std::to_string conversion losses. */
@@ -240,7 +268,7 @@ const string openm::toDateTimeString(const string & i_timestamp)
 void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args)
 {
     // if buffer is null or too short or too large (error in size) then exit
-    if (i_size < 1 || i_size >= INT_MAX || io_buffer == NULL) return;
+    if (i_size < 1 || i_size >= OM_STRLEN_MAX || io_buffer == NULL) return;
 
     // if format is empty then return empty "" string
     io_buffer[0] = '\0';
@@ -255,11 +283,16 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
 /**   
 * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
 *
+* RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
+*
 * @param[in] i_values       source string of comma separated values.
 * @param[in] i_delimiters   list of delimiters, default: comma.
+* @param[in] i_isUnquote    if true then do "unquote ""csv"" ", default: false.
+* @param[in] i_quote        quote character, default: sql single ' quote.
 */
-list<string> openm::splitCsv(const string & i_values, const char * i_delimiters)
+list<string> openm::splitCsv(const string & i_values, const char * i_delimiters, bool i_isUnquote, char i_quote)
 {
+    // trim source and return empty result if source line empty or space only
     list<string> resultLst;
     string srcValues = trim(i_values);
     string::size_type nSrcLen = srcValues.length();
@@ -267,23 +300,53 @@ list<string> openm::splitCsv(const string & i_values, const char * i_delimiters)
     if (nSrcLen <= 0) return resultLst;     // source string is empty: return empty list
 
     // no delimiters: return entire source string as first element of result list
-    if (i_delimiters == nullptr || 0 == strnlen(i_delimiters, OM_STRLEN_MAX)) {
+    size_t nDelimLen = (i_delimiters != nullptr) ? strnlen(i_delimiters, OM_STRLEN_MAX) : 0;
+    if (0 == nDelimLen) {
         resultLst.push_back(srcValues);
         return resultLst;
     }
 
-    // find delimiter(s) and append non-empty values into output list
-    for (string::size_type nowPos = 0; nowPos < nSrcLen; nowPos++) {
+    // find delimiter(s) and append values into output list
+    string::size_type nStart = 0;
+    bool isInside = false;
+    bool isDelim = false;
 
-        string::size_type delimPos = srcValues.find_first_of(i_delimiters, nowPos);
+    for (string::size_type nPos = 0; nPos < nSrcLen; nPos++) {
 
-        if (delimPos == string::npos) delimPos = nSrcLen;   // last delimiter: use the rest of the string
+        char chNow = srcValues[nPos];
 
-        // trim spaces and append value if not empty
-        string sVal = trim(srcValues.substr(nowPos, delimPos - nowPos));
-        if (!sVal.empty()) resultLst.push_back(sVal);
+        // if unquote required and this is quote then toogle 'inside '' quote' status
+        if (i_isUnquote && chNow == i_quote) {
+            isInside = !isInside;
+        }
 
-        nowPos = delimPos;  // skip delimiter and continue
+        // if not 'inside' of quoted value then check for any of delimiters
+        if (!isInside) {
+            isDelim = any_of(
+                i_delimiters,
+                i_delimiters + nDelimLen,
+                [chNow](const char i_delim) -> bool { return chNow == i_delim; }
+            );
+        }
+
+        // if this is delimiter or end of string then unquote value and append to the list
+        if (isDelim || nPos == nSrcLen - 1) {
+
+            // trim spaces and unquote value if required
+            size_t nLen = (nPos == nSrcLen - 1 && !isDelim) ? nSrcLen - nStart : nPos - nStart;
+
+            string sVal = i_isUnquote ?
+                toUnQuoted(srcValues.substr(nStart, nLen), i_quote) :
+                trim(srcValues.substr(nStart, nLen));
+
+            resultLst.push_back(sVal);
+
+            // if this is like: a,b, where delimiter at the end of line then append empty "" value
+            if (nPos == nSrcLen - 1 && isDelim) resultLst.push_back("");
+
+            nStart = nPos + 1;  // skip delimiter and continue
+            isDelim = false;
+        }
     }
 
     return resultLst;

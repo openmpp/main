@@ -39,8 +39,8 @@ static const unsigned char BOM_UTF32BE[] = {0x00, 0x00, 0xFE, 0xFF};
 
 static const long long bomMaxLen = 4;   // max size of BOM
 
-#define IN_CVT_SIZE  10000  /* input conversion buffer size, must be even on Windows */
-#define OUT_CVT_SIZE 65536  /* output conversion buffer size, must be at least 4*input buffer size */
+#define IN_CVT_SIZE  OM_STR_DB_MAX      /* input conversion buffer size, must be even on Windows */
+#define OUT_CVT_SIZE (4 * IN_CVT_SIZE)  /* output conversion buffer size, must be at least 4*input buffer size */
 
 static const long long utf8ProbeLen = OUT_CVT_SIZE;     // max bytes used to probe for valid UTF-8
 

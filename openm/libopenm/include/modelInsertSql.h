@@ -11,6 +11,7 @@
 #include <cfloat>
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/db/modelBuilder.h"
+#include "helper.h"
 #include "modelSqlWriter.h"
 using namespace std;
 
