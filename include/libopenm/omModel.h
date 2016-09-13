@@ -38,7 +38,7 @@ namespace openm
             subSampleCount(1),
             subSampleNumber(0),
             useSparse(false),
-            nullValue(DBL_EPSILON)
+            nullValue(FLT_MIN)
         { }
         ~RunOptions(void) throw() { }
     };

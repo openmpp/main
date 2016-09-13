@@ -487,7 +487,7 @@ bool RootController::receiveSubSamples(void)
             // try to received
             accRecv.isReceived = msgExec->tryReceive(
                 accRecv.senderRank, (MsgTag)accRecv.msgTag, typeid(double), accRecv.valueCount, valueArr
-                );
+            );
             if (!accRecv.isReceived) continue;
 
             // accumulator received: write it into database
@@ -502,7 +502,7 @@ bool RootController::receiveSubSamples(void)
                 subSampleCount,
                 modelRunOptions().useSparse,
                 modelRunOptions().nullValue
-                ));
+            ));
             writer->writeAccumulator(dbExec, accRecv.subNumber, accRecv.accId, accRecv.valueCount, valueArr);
 
             isAnyReceived = true;

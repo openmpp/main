@@ -44,7 +44,7 @@ namespace openm
 
     /** modeling task name */
     const char * RunOptionsKey::taskName = "OpenM.TaskName";
-        
+
     /** modeling task under external supervision */
     const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
 
@@ -59,6 +59,12 @@ namespace openm
 
     /** sparse NULL value */
     const char * RunOptionsKey::sparseNull = "OpenM.SparseNullValue";
+
+    /**  convert to string format for float and double */
+    const char * RunOptionsKey::doubleFormat = "OpenM.DoubleFormat";
+
+    /**  convert to string format for long double */
+    const char * RunOptionsKey::longDoubleFormat = "OpenM.LongDoubleFormat";
 
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -95,6 +101,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::profile,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
+    RunOptionsKey::doubleFormat,
+    RunOptionsKey::longDoubleFormat,
     RunOptionsKey::traceToConsole,
     RunOptionsKey::traceToFile,
     RunOptionsKey::traceFilePath,
@@ -314,7 +322,7 @@ void MetaLoader::mergeProfile(IDbExec * i_dbExec)
 
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
-    baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, DBL_EPSILON);
+    baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, FLT_MIN);
 }
 
 // create task run entry in database

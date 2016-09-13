@@ -60,6 +60,12 @@ namespace openm
         /** sparse null value */
         static const char * sparseNull;
 
+        /** convert to string format for float and double */
+        static const char * doubleFormat;
+
+        /** convert to string format for long double */
+        static const char * longDoubleFormat;
+
         /** trace log to console */
         static const char * traceToConsole;
 

@@ -67,7 +67,14 @@ namespace openm
     class ParameterRunWriter : public ParameterWriter, public IParameterRunWriter
     {
     public:
-        ParameterRunWriter(int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore);
+        ParameterRunWriter(
+            int i_runId, 
+            const char * i_name, 
+            IDbExec * i_dbExec, 
+            const MetaRunHolder * i_metaStore,
+            const char * i_doubleFormat = "",
+            const char * i_longDoubleFormat = ""
+        );
 
         // Parameter writer cleanup
         ~ParameterRunWriter(void) throw() override { }
@@ -80,6 +87,8 @@ namespace openm
 
     private:
         int runId;              // model run id
+        string doubleFmt;       // printf format for float and double
+        string longDoubleFmt;   // printf format for long double
         string paramRunDbTable; // db table name for run values of parameter
 
     private:
@@ -109,10 +118,12 @@ IParameterRunWriter * IParameterRunWriter::create(
     int i_runId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore
+    const MetaRunHolder * i_metaStore,
+    const char * i_doubleFormat,
+    const char * i_longDoubleFormat
     )
 {
-    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore);
+    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore, i_doubleFormat, i_longDoubleFormat);
 }
 
 // New parameter writer
@@ -188,12 +199,19 @@ ParameterSetWriter::ParameterSetWriter(
 
 // create new writer for model run parameter
 ParameterRunWriter::ParameterRunWriter(
-    int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
-    ) :
+    int i_runId,
+    const char * i_name,
+    IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore,
+    const char * i_doubleFormat,
+    const char * i_longDoubleFormat
+) :
     ParameterWriter(i_name, i_dbExec, i_metaStore),
     runId(i_runId)
 {
     paramRunDbTable = paramRow->dbRunTable;
+    doubleFmt = (i_doubleFormat != nullptr) ? i_doubleFormat : "";
+    longDoubleFmt = (i_longDoubleFormat != nullptr) ? i_longDoubleFormat : "";
 }
 
 // parameter value casting from array cell
@@ -332,14 +350,15 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
 
     // build sql to select parameter values:
     //
-    // SELECT dim0, dim1, param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2
+    // SELECT dim0,dim1,param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2
     //
-    string sql = "SELECT ";
-
+    string nameCsv;
     for (const ParamDimsRow & dim : paramDims) {
-        sql += dim.name + ", ";
+        nameCsv += dim.name + ",";
     }
-    sql += "param_value FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
+    nameCsv += "param_value";
+
+    string sql = "SELECT " + nameCsv +" FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
 
     if (dimCount > 0) {
         sql += " ORDER BY ";
@@ -351,10 +370,14 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
     // select parameter values and calculate digest
     MD5 md5;
 
-    string sLine = paramRow->digest + "\n";
-    md5.add(sLine.c_str(), sLine.length()); // start from metadata digest
+    md5.add("parameter_name,parameter_digest\n", sizeof("parameter_name,parameter_digest\n"));  // start from metadata digest
+    string sLine = paramRow->paramName + "," + paramRow->digest + "\n";
+    md5.add(sLine.c_str(), sLine.length());
 
-    ValueRowDigester md5Rd(dimCount, i_type, &md5);
+    sLine = nameCsv + "\n";
+    md5.add(sLine.c_str(), sLine.length()); // append values header
+
+    ValueRowDigester md5Rd(dimCount, i_type, &md5, doubleFmt.c_str(), longDoubleFmt.c_str());
     ValueRowAdapter adp(dimCount, i_type);
 
     i_dbExec->selectToRowProcessor(sql, adp, md5Rd);

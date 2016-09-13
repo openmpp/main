@@ -21,16 +21,27 @@ namespace openm
     {
         virtual ~IOutputTableWriter() throw() = 0;
 
-        /** output table writer factory */
+        /** output table writer factory to write accumulators */
         static IOutputTableWriter * create(
             int i_runId,
-            const char * i_name, 
-            IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore, 
+            const char * i_name,
+            IDbExec * i_dbExec,
+            const MetaRunHolder * i_metaStore,
             int i_numSubSamples,
-            bool i_isSparse = false, 
-            double i_nullValue = DBL_EPSILON
-            );
+            bool i_isSparse = false,
+            double i_nullValue = FLT_MIN
+        );
+
+        /** output table writer factory to write expressions*/
+        static IOutputTableWriter * create(
+            int i_runId,
+            const char * i_name,
+            IDbExec * i_dbExec,
+            const MetaRunHolder * i_metaStore,
+            int i_numSubSamples,
+            const char * i_doubleFormat = "",
+            const char * i_longDoubleFormat = ""
+        );
 
         /** return total number of values for each accumulator */
         virtual size_t sizeOf(void) const throw() = 0;

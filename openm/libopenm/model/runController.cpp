@@ -140,13 +140,15 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     if (mStatus == ModelStatus::init) mStatus = ModelStatus::progress;
 
     // create new run
+    string sn = toAlphaNumeric(string(OM_MODEL_NAME) + "_" + dtStr + "_" + to_string(nRunId));
+
     i_dbExec->update(
         "INSERT INTO run_lst" \
         " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
-        toQuoted(string(OM_MODEL_NAME) + " " + dtStr) + ", " +
+        toQuoted(sn) + ", " +
         to_string(subSampleCount) + ", " +
         to_string(subSampleCount) + ", " +
         "0, " +
@@ -364,9 +366,14 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             if (pi == endItem) throw ModelException("parameter %d: %s not found in model parameters", paramIt->paramId, paramIt->paramName.c_str());
 
             // calculate parameter values digest and store only single copy of parameter values
-            unique_ptr<IParameterRunWriter> writer(
-                IParameterRunWriter::create(i_runId, paramIt->paramName.c_str(), i_dbExec, metaStore.get())
-            );
+            unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
+                i_runId,
+                paramIt->paramName.c_str(),
+                i_dbExec,
+                metaStore.get(),
+                argOpts().strOption(RunOptionsKey::doubleFormat).c_str(),
+                argOpts().strOption(RunOptionsKey::longDoubleFormat).c_str()
+            ));
             writer->digestParameter(i_dbExec, pi->typeOf);
         }
     }
@@ -485,12 +492,14 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
             tblRow.tableName.c_str(),
             i_dbExec,
             metaStore.get(),
-            subSampleCount
-            ));
-            writer->writeAllExpressions(i_dbExec);
+            subSampleCount,
+            argOpts().strOption(RunOptionsKey::doubleFormat).c_str(),
+            argOpts().strOption(RunOptionsKey::longDoubleFormat).c_str()
+        ));
+        writer->writeAllExpressions(i_dbExec);
 
-            // calculate output table values digest and store only single copy of output values
-            writer->digestOutput(i_dbExec);
+        // calculate output table values digest and store only single copy of output values
+        writer->digestOutput(i_dbExec);
     }
 }
 
@@ -502,7 +511,7 @@ void RunController::doWriteAccumulators(
     const char * i_name,
     size_t i_size,
     forward_list<unique_ptr<double> > & io_accValues
-    ) const
+) const
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
@@ -523,12 +532,12 @@ void RunController::doWriteAccumulators(
         subSampleCount,
         i_runOpts.useSparse,
         i_runOpts.nullValue
-        ));
+    ));
 
     for (const auto & apc : io_accValues) {
         writer->writeAccumulator(
             i_dbExec, i_runOpts.subSampleNumber, metaStore->tableAcc->byIndex(nAcc)->accId, i_size, apc.get()
-            );
+        );
         nAcc++;
     }
 }
