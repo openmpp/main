@@ -169,118 +169,93 @@ namespace
 }
 
 /** new converter for value column, use std::string type for VARCHAR input parameters */
-ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFormat, const char * i_longDoubleFormat) : 
-    typeOf(i_type), 
-    doFormatValue(nullptr),
-    doFormatDbValue(nullptr)
-{ 
+ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFormat, const char * i_longDoubleFormat) :
+    typeOf(i_type),
+    doFormatValue(nullptr)
+{
     if (typeOf == typeid(char)) {
         doFormatValue = bind(FormatHandler<char>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhd");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(unsigned char)) {
         doFormatValue = bind(FormatHandler<unsigned char>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(short)) {
         doFormatValue = bind(FormatHandler<short>, placeholders::_1, placeholders::_2, placeholders::_3, "%hd");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(unsigned short)) {
         doFormatValue = bind(FormatHandler<unsigned short>, placeholders::_1, placeholders::_2, placeholders::_3, "%hu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(int)) {
         doFormatValue = bind(FormatHandler<int>, placeholders::_1, placeholders::_2, placeholders::_3, "%d");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(unsigned int)) {
         doFormatValue = bind(FormatHandler<unsigned int>, placeholders::_1, placeholders::_2, placeholders::_3, "%u");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(long)) {
         doFormatValue = bind(FormatHandler<long>, placeholders::_1, placeholders::_2, placeholders::_3, "%ld");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(unsigned long)) {
         doFormatValue = bind(FormatHandler<unsigned long>, placeholders::_1, placeholders::_2, placeholders::_3, "%lu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(long long)) {
         doFormatValue = bind(FormatHandler<long long>, placeholders::_1, placeholders::_2, placeholders::_3, "%lld");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(unsigned long long)) {
         doFormatValue = bind(FormatHandler<unsigned long long>, placeholders::_1, placeholders::_2, placeholders::_3, "%llu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(int8_t)) {
         doFormatValue = bind(FormatHandler<int8_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhd");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(uint8_t)) {
         doFormatValue = bind(FormatHandler<uint8_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(int16_t)) {
         doFormatValue = bind(FormatHandler<int16_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hd");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(uint16_t)) {
         doFormatValue = bind(FormatHandler<uint16_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(int32_t)) {
         doFormatValue = bind(FormatHandler<int32_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%d");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(uint32_t)) {
         doFormatValue = bind(FormatHandler<uint32_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%u");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(int64_t)) {
         doFormatValue = bind(FormatHandler<int64_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%lld");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).llVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(uint64_t)) {
         doFormatValue = bind(FormatHandler<uint64_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%llu");
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).ullVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(bool)) {
-        doFormatValue = BoolFormatHandler;
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).isVal, placeholders::_2, placeholders::_3);
-    }
+        doFormatValue = BoolFormatHandler;    }
     if (typeOf == typeid(float)) {
         doFormatValue = bind(
-            FormatHandler<float>, 
-            placeholders::_1, placeholders::_2, placeholders::_3, 
+            FormatHandler<float>,
+            placeholders::_1, placeholders::_2, placeholders::_3,
             ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%g")
         );
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).fVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(double)) {
         doFormatValue = bind(
-            FormatHandler<double>, 
-            placeholders::_1, placeholders::_2, placeholders::_3, 
+            FormatHandler<double>,
+            placeholders::_1, placeholders::_2, placeholders::_3,
             ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
         );
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).dVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(long double)) {
         doFormatValue = bind(
-            FormatHandler<long double>, 
-            placeholders::_1, placeholders::_2, placeholders::_3, 
+            FormatHandler<long double>,
+            placeholders::_1, placeholders::_2, placeholders::_3,
             ((i_longDoubleFormat != nullptr && i_longDoubleFormat[0] != '\0') ? i_longDoubleFormat : "%.17g")
         );
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).dlVal, placeholders::_2, placeholders::_3);
     }
     if (typeOf == typeid(string)) {
         doFormatValue = StrFormatHandler;
-        doFormatDbValue = bind(doFormatValue, &((const DbValue &)placeholders::_1).szVal, placeholders::_2, placeholders::_3);
     }
 
-    if (doFormatValue == nullptr || doFormatDbValue == nullptr) 
-        throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported
+    if (doFormatValue == nullptr)
+        throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported}
 }
 
 /** convert value to string using snprintf. */
@@ -289,15 +264,6 @@ const char * ValueFormatter::formatValue(const void * i_value, bool i_isNull)
     if (i_isNull) return nullValueString;
 
     doFormatValue(i_value, sizeof(valueStr), valueStr);
-    return valueStr;
-}
-
-/** convert DbValue to string using snprintf. */
-const char * ValueFormatter::formatValue(const DbValue & i_value, bool i_isNull)
-{
-    if (i_isNull) return nullValueString;
-
-    doFormatDbValue(i_value, sizeof(valueStr), valueStr);
     return valueStr;
 }
 
@@ -313,12 +279,10 @@ ValueRowDigester::ValueRowDigester(int i_idCount, const type_info & i_type, MD5 
 /** append row to digest */
 void ValueRowDigester::processRow(IRowBaseUptr & i_row)
 {
-
     ValueRow * row = dynamic_cast<ValueRow *>(i_row.get());
 
     // append expression id, accumulator id, subsample number and dimensions to digest
     char buf[numeric_limits<long>::digits10 + 1];
-
     for (int k = 0; k < idCount; k++) {
         int n = snprintf(buf, sizeof(buf), "%d,", row->idArr[k]);
         md5->add(buf, n);
@@ -326,7 +290,7 @@ void ValueRowDigester::processRow(IRowBaseUptr & i_row)
 
     // append value
     if (typeOf != typeid(string)) {
-        const char * sv = fmtValue->formatValue(row->dbVal, !row->isNotNull);
+        const char * sv = fmtValue->formatValue((void *)&row->dbVal, !row->isNotNull);
         md5->add(sv, strnlen(sv, OM_STR_DB_MAX));
     }
     else {

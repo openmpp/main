@@ -186,16 +186,6 @@ namespace openm
          * @return value converted to string, result must be copied before next call.
          */
         virtual const char * formatValue(const void * i_value, bool i_isNull = false) = 0;
-
-        /**
-         * convert DbValue to string using snprintf.
-         *
-         * @param[in] i_value   db-field value, casted to the target column type
-         * @param[in] i_isNull  if true then value is NULL and return is "null"
-         *
-         * @return value converted to string, must be copied before next call.
-         */
-        virtual const char * formatValue(const DbValue & i_value, bool i_isNull = false) = 0;
     };
 
 

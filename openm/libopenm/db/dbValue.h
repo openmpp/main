@@ -107,16 +107,6 @@ namespace openm
          */
         const char * formatValue(const void * i_value, bool i_isNull = false) override;
 
-        /**
-         * IValueFormatter interface implementation: convert DbValue to string using snprintf.
-         *
-         * @param[in] i_value   db-field value, casted to the target column type
-         * @param[in] i_isNull  if true then value is NULL and return is "null"
-         *
-         * @return value converted to string, must be copied before next call.
-         */
-        const char * formatValue(const DbValue & i_value, bool i_isNull = false) override;
-
     private:
         /** value type, use std::string type for VARCHAR input parameters */
         const type_info & typeOf;
@@ -126,9 +116,6 @@ namespace openm
 
         // value to string converter handler
         function<int (const void * i_value, size_t i_size, char * io_buffer)> doFormatValue;
-
-        // value to string converter handler
-        function<int (const DbValue & i_value, size_t i_size, char * io_buffer)> doFormatDbValue;
 
     private:
         ValueFormatter(const ValueFormatter &) = delete;
