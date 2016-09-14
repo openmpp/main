@@ -28,6 +28,21 @@
 
 using namespace std;
 
+// define max size of file path
+#ifdef PATH_MAX
+    #define OM_PATH_MAX (FILENAME_MAX < PATH_MAX ? FILENAME_MAX : PATH_MAX)
+#endif
+#ifndef OM_PATH_MAX
+    #ifdef _MAX_PATH
+        #define OM_PATH_MAX (FILENAME_MAX < _MAX_PATH ? FILENAME_MAX : _MAX_PATH)
+    #else
+        #define OM_PATH_MAX (FILENAME_MAX < 4096 ? FILENAME_MAX : 4096)
+    #endif 
+#endif 
+
+#define OM_STRLEN_MAX   INT_MAX         /** max string length supported */
+#define OM_STR_DB_MAX   32000           /** max database string length: notes varchar (clob, text) */
+
 namespace openm
 {
     /** convert string to lower case */
@@ -47,6 +62,9 @@ namespace openm
 
     /** case neutral string equal comparison */
     extern bool equalNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
+
+    /** check if string start with i_start, using case neutral string comparison */
+    extern bool startWithNoCase(const string & i_str, const char * i_start);
 
     /** check if string end with i_end, using case neutral string comparison */
     extern bool endWithNoCase(const string & i_str, const char * i_end);

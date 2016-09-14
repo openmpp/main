@@ -62,6 +62,17 @@ bool openm::equalNoCase(const char * i_left, const char * i_right, size_t i_leng
     return compareNoCase(i_left, i_right, i_length) == 0;
 }
 
+// check if string start with i_start, using case neutral string comparison
+bool openm::startWithNoCase(const string & i_str, const char * i_start)
+{
+    if (i_start == NULL) return false;
+
+    string::size_type len = strnlen(i_start, OM_STRLEN_MAX);
+    return 
+        (i_str.length() >= len) && 
+        0 == compareNoCase(i_str.c_str(), i_start, len);
+}
+
 // check if string end with i_end, using case neutral string comparison
 bool openm::endWithNoCase(const string & i_str, const char * i_end)
 {

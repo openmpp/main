@@ -12,21 +12,6 @@
 
 using namespace std;
 
-// define max size of file path
-#ifdef PATH_MAX
-    #define OM_PATH_MAX (FILENAME_MAX < PATH_MAX ? FILENAME_MAX : PATH_MAX)
-#endif
-#ifndef OM_PATH_MAX
-    #ifdef _MAX_PATH
-        #define OM_PATH_MAX (FILENAME_MAX < _MAX_PATH ? FILENAME_MAX : _MAX_PATH)
-    #else
-        #define OM_PATH_MAX (FILENAME_MAX < 4096 ? FILENAME_MAX : 4096)
-    #endif 
-#endif 
-
-#define OM_STRLEN_MAX   INT_MAX         /** max string length supported */
-#define OM_STR_DB_MAX   32000           /** max database string length: notes varchar (clob, text) */
-
 #define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
 #define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
 #define OM_RUN_POLL_TIME 17L            /* msec, wait interval for modeling threads polling */

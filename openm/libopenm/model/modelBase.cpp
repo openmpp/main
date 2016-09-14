@@ -90,7 +90,7 @@ ModelBase * ModelBase::create(
 void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) output table name");
-    if (io_accValues.empty() || i_size <= 0) throw ModelException("invalid (empty) accumulators or size: %lld for output table %s", i_size, i_name);
+    if (io_accValues.empty() || i_size <= 0) throw ModelException("invalid (empty) accumulators or size: %zd for output table %s", i_size, i_name);
 
     try {
         forward_list<unique_ptr<double> > accValLst;

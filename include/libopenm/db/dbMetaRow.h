@@ -14,6 +14,9 @@ using namespace std;
 #include "libopenm/omLog.h"
 #include "dbCommon.h"
 
+/** max type id for built-int types, ie: int, double, logical */
+#define OM_MAX_BUILTIN_TYPE_ID              100
+
 namespace openm
 {
     /** base class for model metadata db-rows */
@@ -228,6 +231,21 @@ namespace openm
 
         /** find row by unique key: model id and model type id. */
         static vector<TypeDicRow>::const_iterator byKey(int i_modelId, int i_typeId, const vector<TypeDicRow> & i_rowVec);
+
+        /** return true if model type is boolean (logical) */
+        bool isBool(void) const;
+
+        /** return true if model type is string (varchar) */
+        bool isString(void) const;
+
+        /** return true if model type is float (float, real, numeric) */
+        bool isFloat(void) const;
+
+        /** return true if model type is integer (not float, string or boolean) */
+        bool isInt(void) const;
+
+        /** return true if model type is built-in, ie: int, double, logical */
+        bool isBuiltIn(void) const;
     };
 
     /** type_dic_txt join to model_type_dic table row. */

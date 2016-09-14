@@ -256,6 +256,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     // if base run does not exist then workset must include all model parameters
     // if (!isBaseRunExist && paramVec.size() != wsParamVec.size()) throw DbException("workset must include all model parameters (set id: %d)", setId);
 
+    // check if parameters csv directory specified and accessible
+    string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
+    bool isParamDir = isFileExists(paramDir.c_str());
+
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
     //   from workset parameter value table
@@ -304,6 +308,27 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                 "INSERT INTO " + paramIt->dbRunTable + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
                 );
             isInserted = true;
+        }
+
+        // insert from parameter.csv file if csv directory specified
+        if (!isInserted && isParamDir) {
+
+            // if parameter.csv exist then copy it into parameter value table
+            string csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".csv");
+
+            if (isFileExists(csvPath.c_str())) {
+
+                // read from csv file, parse csv lines and insert values into parameter run table
+                unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
+                    i_runId,
+                    paramIt->paramName.c_str(),
+                    i_dbExec,
+                    metaStore.get()
+                ));
+                writer->loadCsvParameter(i_dbExec, csvPath.c_str());
+
+                isInserted = true;
+            }
         }
 
         // copy parameter from workset parameter value table

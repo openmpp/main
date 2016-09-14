@@ -53,7 +53,4 @@ namespace openm
     };
 }
 
-/** max type id for built-int types, ie: int, double, logical */
-#define OM_MAX_BUILTIN_TYPE_ID              100
-
 #endif  // OM_MODEL_BUILDER_H

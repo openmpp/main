@@ -20,6 +20,7 @@ using namespace std;
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/common/argReader.h"
+#include "libopenm/common/omFile.h"
 #include "helper.h"
 #include "dbExec.h"
 #include "dbMetaTable.h"

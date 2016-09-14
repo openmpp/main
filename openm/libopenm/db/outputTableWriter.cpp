@@ -204,7 +204,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_nSubSample < 0 || i_nSubSample >= numSubSamples) throw DbException("invalid sub-sample index: %d for output table: %s", i_nSubSample, tableRow->tableName.c_str());
     if (i_accId < 0 || i_accId >= accCount) throw DbException("invalid accumulator number: %d for output table: %s", i_accId, tableRow->tableName.c_str());
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for output table: %s", i_size, tableRow->tableName.c_str());
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for output table: %s", i_size, tableRow->tableName.c_str());
 
     if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for output table: %s", tableRow->tableName.c_str());
 

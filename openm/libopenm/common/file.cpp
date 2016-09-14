@@ -23,7 +23,7 @@ using namespace openm;
 #endif  // _WIN32
 
 
-/** return true if file exists  */
+/** return true if file or directory exists  */
 bool openm::isFileExists(const char * i_filePath)
 {
     return i_filePath != NULL && i_filePath[0] != '\0' && !access(i_filePath, 0);
@@ -41,7 +41,7 @@ bool openm::isFileExists(const char * i_filePath)
  */
 string openm::makeDefaultPath(const char * i_exePath, const char * i_extension)
 {
-char cwd[OM_PATH_MAX +1];
+char cwd[OM_PATH_MAX + 1];
 
     // get current working directory
     string curDir;
@@ -58,4 +58,58 @@ char cwd[OM_PATH_MAX +1];
     // combine: current/working/directory/basename.log
     string sPath = (!curDir.empty() ? curDir + "/" : "") + (!baseName.empty() ? baseName : "openm") + (i_extension != NULL ? i_extension : "");
     return sPath;
+}
+
+/**
+ * make path by join directory, file name and specified extension.
+ *
+ * @param   i_dirPath   path or directory.
+ * @param   i_name      file name.
+ * @param   i_extension file extension.
+ *
+ * @return  path combined as directory/name.extension
+ *
+ * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\
+ * For example: 
+ *   input\ ageSex csv => input/ageSex.csv
+*    \\host\share ageSex.csv => \\host/share.ageSex.csv
+ */
+string openm::makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension)
+{
+    // make directory: replace all \ by / except of leading \\ and append trailng/
+    string path = (i_dirPath != nullptr) ? i_dirPath : "";
+
+    if (path.length() > 0) {
+        std::replace(
+            ((path.length() >= 2 && path[0] == '\\' && path[1] == '\\') ? path.begin() + 2 : path.begin()),
+            path.end(),
+            '\\', '/'
+        );
+        if (path.length() >= 2 && path != "\\\\" && path.back() != '/') path += '/';
+    }
+
+    // make name: remove final dot. 
+    // if path not empty then remove leading / and replace all \ by /
+    // if path empty then replace all \ by / except of leading \\ 
+    string name = (i_name != nullptr) ? i_name : "";
+
+    if (!name.empty() && name.back() == '.') name = name.substr(0, name.length() - 1);
+
+    if (!path.empty()) {
+        std::replace(name.begin(), name.end(), '\\', '/');
+        if (!name.empty() && name[0] == '/') name = name.substr(1);
+    }
+    else {
+        std::replace(
+            ((name.length() >= 2 && name[0] == '\\' && name[1] == '\\') ? name.begin() + 2 : name.begin()),
+            name.end(),
+            '\\', '/'
+        );
+    }
+
+    // make extension: add leading .dot
+    string ext = (i_extension != nullptr) ? i_extension : "";
+    if (!ext.empty() && ext[0] != '.') ext = '.' + ext;
+
+    return path + name + ext;
 }

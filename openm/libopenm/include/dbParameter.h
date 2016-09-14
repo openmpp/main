@@ -9,6 +9,7 @@
 #define DB_PARAMETER_H
 
 #include "libopenm/db/dbCommon.h"
+#include "libopenm/common/omFile.h"
 #include "dbExec.h"
 #include "metaRunHolder.h"
 #include "libopenm/db/metaSetHolder.h"
@@ -91,6 +92,13 @@ namespace openm
 
         /** return input parameter size: total number of values in the table */
         virtual size_t sizeOf(void) const throw() = 0;
+
+        /** load parameter values from csv file into run table. 
+        *
+        * @param[in] i_dbExec   database connection
+        * @param[in] i_filePath path to parameter.csv file
+        */
+        virtual void loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath) = 0;
 
         /**
         * calculate run parameter values digest and store only single copy of parameter values.

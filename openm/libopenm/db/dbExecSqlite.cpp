@@ -601,7 +601,7 @@ int rc = SQLITE_ROW;
         static_cast<TCol *>(io_valueArr)[nRow] = std::move( (this->*ToRetType)(i_column) );
     }
 
-    if (nRow != i_size) throw DbException("no data found: expected %lld rows, selected: %lld", i_size, nRow);   // row count less than expected
+    if (nRow != i_size) throw DbException("no data found: expected %zd rows, selected: %zd", i_size, nRow);   // row count less than expected
         
     return nRow;
 }

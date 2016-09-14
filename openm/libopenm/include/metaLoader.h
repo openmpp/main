@@ -39,6 +39,9 @@ namespace openm
         /** working set name to get input parameters */
         static const char * setName;
 
+        /** input/dir/to/find/parameter.csv/files */
+        static const char *paramDir;
+
         /** modeling task id */
         static const char * taskId;
 
@@ -91,11 +94,11 @@ namespace openm
     /** keys for model run options (short form) */
     struct RunShortKey
     {
-        /** compatibility short name for options file name: -s fileName.ini */
+        /** short name for options file name: -ini fileName.ini */
         static const char * optionsFile;
 
-        /** short name for options file name: -ini fileName.ini */
-        static const char * optionsFileIni;
+        /** short name for: -p input/dir/to/find/parameter.csv/files */
+        static const char *paramDir;
     };
 
     /** model metadata loader: read and broadcast metadata and run options. */
