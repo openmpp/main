@@ -85,9 +85,9 @@ namespace openm
     class ValueFormatter : public IValueFormatter 
     {
     public:
-        static const char * nullValueString;                    /** NULL value as string */
-        static const char * ValueFormatter::trueValueString;    /** true boolean value as string */
-        static const char * ValueFormatter::falseValueString;   /** false boolean value as string */
+        static const char * nullValueString;    /** NULL value as string */
+        static const char * trueValueString;    /** true boolean value as string */
+        static const char * falseValueString;   /** false boolean value as string */
 
         /** new converter for value column.
          *
