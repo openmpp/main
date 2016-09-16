@@ -28,7 +28,7 @@ namespace openm
      *
      * @return  path combined as directory/name.extension
      *
-     * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\
+     * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\ slashes
      * For example:
      *   input\ ageSex csv => input/ageSex.csv
      *    \\host\share ageSex.csv => \\host/share.ageSex.csv

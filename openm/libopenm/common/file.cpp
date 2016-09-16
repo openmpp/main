@@ -69,14 +69,14 @@ char cwd[OM_PATH_MAX + 1];
  *
  * @return  path combined as directory/name.extension
  *
- * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\
+ * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\ slashes
  * For example: 
  *   input\ ageSex csv => input/ageSex.csv
 *    \\host\share ageSex.csv => \\host/share.ageSex.csv
  */
 string openm::makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension)
 {
-    // make directory: replace all \ by / except of leading \\ and append trailng/
+    // make directory: replace all \ by / except of leading \\ and append trailng/ separator
     string path = (i_dirPath != nullptr) ? i_dirPath : "";
 
     if (path.length() > 0) {
@@ -89,8 +89,8 @@ string openm::makeFilePath(const char * i_dirPath, const char * i_name, const ch
     }
 
     // make name: remove final dot. 
-    // if path not empty then remove leading / and replace all \ by /
-    // if path empty then replace all \ by / except of leading \\ 
+    // if path not empty then remove leading / and replace all \ by / separator
+    // if path empty then replace all \ by / except of leading \\ slashes
     string name = (i_name != nullptr) ? i_name : "";
 
     if (!name.empty() && name.back() == '.') name = name.substr(0, name.length() - 1);
