@@ -36,6 +36,9 @@ namespace openm
     /** working set name to get input parameters */
     const char * RunOptionsKey::setName = "OpenM.SetName";
 
+    /** short name for: -s working set name to get input parameters */
+    const char * RunShortKey::setName = "s";
+    
     /** dir/to/read/input/parameter.csv */
     const char * RunOptionsKey::paramDir = "OpenM.ParamDir";
 
@@ -126,6 +129,7 @@ static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);
 static const pair<const char *, const char *> shortPairArr[] = 
 {
     make_pair(RunShortKey::optionsFile, ArgKey::optionsFile),
+    make_pair(RunShortKey::setName, RunOptionsKey::setName),
     make_pair(RunShortKey::paramDir, RunOptionsKey::paramDir)
 };
 static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);

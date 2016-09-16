@@ -94,6 +94,9 @@ namespace openm
         /** short name for options file name: -ini fileName.ini */
         static const char * optionsFile;
 
+        /** short name for: -s working set name to get input parameters */
+        static const char * setName;
+
         /** short name for: -p dir/to/read/input/parameter.csv */
         static const char *paramDir;
     };
