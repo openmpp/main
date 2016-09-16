@@ -30,7 +30,7 @@ namespace openm
         /** database connection string */
         static const char * dbConnStr;
 
-        /** model run id */
+        /** model run id to restart model run */
         static const char * runId;
 
         /** working set id to get input parameters */
@@ -39,7 +39,7 @@ namespace openm
         /** working set name to get input parameters */
         static const char * setName;
 
-        /** input/dir/to/find/parameter.csv/files */
+        /** dir/to/read/input/parameter.csv */
         static const char *paramDir;
 
         /** modeling task id */
@@ -63,11 +63,8 @@ namespace openm
         /** sparse null value */
         static const char * sparseNull;
 
-        /** convert to string format for float and double */
+        /** convert to string format for float, double, long double */
         static const char * doubleFormat;
-
-        /** convert to string format for long double */
-        static const char * longDoubleFormat;
 
         /** trace log to console */
         static const char * traceToConsole;
@@ -97,7 +94,7 @@ namespace openm
         /** short name for options file name: -ini fileName.ini */
         static const char * optionsFile;
 
-        /** short name for: -p input/dir/to/find/parameter.csv/files */
+        /** short name for: -p dir/to/read/input/parameter.csv */
         static const char *paramDir;
     };
 

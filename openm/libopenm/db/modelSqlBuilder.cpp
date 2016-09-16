@@ -38,7 +38,9 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     // prefix based on parameter name or output table name
     // suffix is 32 chars of md5 or 8 chars of crc32
     // there is extra 2 chars: _p, _w, _v, _a in table name between prefix and suffix
-    isCrc32Name = minSize < 50;
+    // always use short crc32 name suffix
+    // isCrc32Name = minSize < 50;
+    isCrc32Name = true;
     dbSuffixSize = isCrc32Name ? 8 : 32;
     dbPrefixSize = minSize - (2 + dbSuffixSize);
 
@@ -690,7 +692,7 @@ void ModelSqlBuilder::addWorksetParameter(
 
         // find dimension size as number of enums in type_enum_lst table, if type is not simple type
         int dimSize = 0;
-        if (dimTypeRow->typeId > OM_MAX_BUILTIN_TYPE_ID) {
+        if (!dimTypeRow->isBuiltIn()) {
 
             TypeEnumLstRow eRow(mId, dimTypeRow->typeId, 0);
             auto enumRange = std::equal_range(

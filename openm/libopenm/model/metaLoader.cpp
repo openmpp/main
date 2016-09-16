@@ -27,7 +27,7 @@ namespace openm
     /** database connection string */
     const char * RunOptionsKey::dbConnStr = "OpenM.Database";
 
-    /** model run id */
+    /** model run id to restart model run */
     const char * RunOptionsKey::runId = "OpenM.RunId";
 
     /** working set id to get input parameters */
@@ -36,10 +36,10 @@ namespace openm
     /** working set name to get input parameters */
     const char * RunOptionsKey::setName = "OpenM.SetName";
 
-    /** input/dir/to/find/parameter.csv/files */
+    /** dir/to/read/input/parameter.csv */
     const char * RunOptionsKey::paramDir = "OpenM.ParamDir";
 
-    /** short version: -p input/dir/to/find/parameter.csv/files */
+    /** short version: -p dir/to/read/input/parameter.csv */
     const char * RunShortKey::paramDir = "p";
 
     /** modeling task id */
@@ -63,11 +63,8 @@ namespace openm
     /** sparse NULL value */
     const char * RunOptionsKey::sparseNull = "OpenM.SparseNullValue";
 
-    /**  convert to string format for float and double */
+    /** convert to string format for float, double, long double */
     const char * RunOptionsKey::doubleFormat = "OpenM.DoubleFormat";
-
-    /**  convert to string format for long double */
-    const char * RunOptionsKey::longDoubleFormat = "OpenM.LongDoubleFormat";
 
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -106,7 +103,6 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     RunOptionsKey::doubleFormat,
-    RunOptionsKey::longDoubleFormat,
     RunOptionsKey::traceToConsole,
     RunOptionsKey::traceToFile,
     RunOptionsKey::traceFilePath,

@@ -86,8 +86,7 @@ namespace openm
             const char * i_name,
             IDbExec * i_dbExec,
             const MetaRunHolder * i_metaStore,
-            const char * i_doubleFormat = "",
-            const char * i_longDoubleFormat = ""
+            const char * i_doubleFormat = ""
             );
 
         /** return input parameter size: total number of values in the table */

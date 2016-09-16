@@ -396,8 +396,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                 paramIt->paramName.c_str(),
                 i_dbExec,
                 metaStore.get(),
-                argOpts().strOption(RunOptionsKey::doubleFormat).c_str(),
-                argOpts().strOption(RunOptionsKey::longDoubleFormat).c_str()
+                argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
             ));
             writer->digestParameter(i_dbExec, pi->typeOf);
         }
@@ -518,8 +517,7 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
             i_dbExec,
             metaStore.get(),
             subSampleCount,
-            argOpts().strOption(RunOptionsKey::doubleFormat).c_str(),
-            argOpts().strOption(RunOptionsKey::longDoubleFormat).c_str()
+            argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
         ));
         writer->writeAllExpressions(i_dbExec);
 

@@ -725,7 +725,7 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
             }
 
             // model specific types: it must be enum
-            if (typeRowIt->typeId > OM_MAX_BUILTIN_TYPE_ID) {
+            if (!typeRowIt->isBuiltIn()) {
                 tblInf.valueTypeName = "INT";
             }
         }
@@ -801,7 +801,7 @@ const string ModelSqlBuilder::makeDbNameSuffix(int i_id, const string & i_src, c
 const string ModelSqlBuilder::makeTypeDigest(const TypeDicRow & i_typeRow, const MetaModelHolder & i_metaRows)
 {
     // for built-in types use _name_ as digest, ie: _int_ or _Time_
-    if (i_typeRow.typeId <= OM_MAX_BUILTIN_TYPE_ID) return "_" + i_typeRow.name + "_";
+    if (i_typeRow.isBuiltIn()) return "_" + i_typeRow.name + "_";
 
     // make type digest header as type name and kind of type
     MD5 md5;

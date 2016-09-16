@@ -20,7 +20,6 @@ namespace openm
             const MetaRunHolder * i_metaStore, 
             int i_numSubSamples,
             const char * i_doubleFormat = "",
-            const char * i_longDoubleFormat = "",
             bool i_isSparse = false,
             double i_nullValue = FLT_MIN
             );
@@ -40,9 +39,6 @@ namespace openm
         // write all output table values: aggregate subsamples using table expressions
         void writeAllExpressions(IDbExec * i_dbExec) override;
 
-        // write output table value: aggregated output expression value
-        void writeExpression(IDbExec * i_dbExec, int i_nExpression) override;
-
         // calculate output table values digest and store only single copy of output values
         void digestOutput(IDbExec * i_dbExec) override;
 
@@ -56,7 +52,6 @@ namespace openm
         int exprCount;                  // number of aggregated expressions
         size_t totalSize;               // total number of values in the table
         string doubleFmt;               // printf format for float and double
-        string longDoubleFmt;           // printf format for long double
         bool isSparseTable;             // if true then use sparse output to database
         double nullValue;               // if is sparse and abs(value) <= nullValue then value not stored
         string accDbTable;              // db table name for accumulators
@@ -65,6 +60,14 @@ namespace openm
         vector<TableDimsRow> tableDims; // table dimensions
         vector<TableAccRow> tableAcc;   // table accumulators
         vector<TableExprRow> tableExpr; // table aggregation expressions
+
+        /**
+         * write output table value: aggregated output expression value
+         *
+         * @param[in] i_dbExec      database connection
+         * @param[in] i_nExpression aggregation expression number
+         */
+        void writeExpression(IDbExec * i_dbExec, int i_nExpression);
 
     private:
         OutputTableWriter(const OutputTableWriter & i_writer) = delete;
@@ -86,9 +89,7 @@ IOutputTableWriter * IOutputTableWriter::create(
     double i_nullValue
     )
 {
-    return new OutputTableWriter(
-        i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, "", "", i_isSparseGlobal, i_nullValue
-        );
+    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, "", i_isSparseGlobal, i_nullValue);
 }
 
 // Output table writer factory: create new writer
@@ -98,13 +99,10 @@ IOutputTableWriter * IOutputTableWriter::create(
     IDbExec * i_dbExec, 
     const MetaRunHolder * i_metaStore, 
     int i_numSubSamples, 
-    const char * i_doubleFormat,
-    const char * i_longDoubleFormat
+    const char * i_doubleFormat
     )
 {
-    return new OutputTableWriter(
-        i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_doubleFormat, i_longDoubleFormat
-        );
+    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_doubleFormat);
 }
 
 // New output table writer
@@ -115,7 +113,6 @@ OutputTableWriter::OutputTableWriter(
     const MetaRunHolder * i_metaStore,
     int i_numSubSamples,
     const char * i_doubleFormat,
-    const char * i_longDoubleFormat,
     bool i_isSparseGlobal,
     double i_nullValue
 ) :
@@ -137,7 +134,6 @@ OutputTableWriter::OutputTableWriter(
     if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) output table name");
 
     doubleFmt = (i_doubleFormat != nullptr) ? i_doubleFormat : "";
-    longDoubleFmt = (i_longDoubleFormat != nullptr) ? i_longDoubleFormat : "";
 
     // get table dimensions, accumulators and aggregation expressions
     modelId = i_metaStore->modelRow->modelId;
@@ -411,15 +407,16 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     // select accumulator values and calculate digest
     MD5 md5;
 
-    md5.add("table_name,table_digest\n", sizeof("table_name,table_digest\n"));  // start from metadata digest
-    string sLine = tableRow->tableName + "," + tableRow->digest + "\n";
+    // start from metadata digest
+    string sLine = "table_name,table_digest\n" + tableRow->tableName + "," + tableRow->digest + "\n";
     md5.add(sLine.c_str(), sLine.length());
 
+    // append accumulators header
     sLine = accCsv + "\n";
-    md5.add(sLine.c_str(), sLine.length()); // append accumulators header
+    md5.add(sLine.c_str(), sLine.length());
 
     // +2 columns: acc_id, sub_id
-    ValueRowDigester md5AccRd(dimCount + 2, typeid(double), &md5, doubleFmt.c_str(), longDoubleFmt.c_str());
+    ValueRowDigester md5AccRd(dimCount + 2, typeid(double), &md5, doubleFmt.c_str());
     ValueRowAdapter accAdp(dimCount + 2, typeid(double));
 
     i_dbExec->selectToRowProcessor(accSql, accAdp, md5AccRd);
@@ -429,7 +426,7 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     md5.add(sLine.c_str(), sLine.length()); // append expressions header
 
     // +1 column: expr_id
-    ValueRowDigester md5ExprRd(dimCount + 1, typeid(double), &md5, doubleFmt.c_str(), longDoubleFmt.c_str());
+    ValueRowDigester md5ExprRd(dimCount + 1, typeid(double), &md5, doubleFmt.c_str());
     ValueRowAdapter exprAdp(dimCount + 1, typeid(double));
 
     i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5ExprRd);

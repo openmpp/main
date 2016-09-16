@@ -151,12 +151,11 @@ namespace
         bool isVal = *static_cast<const bool *>(i_value);
         if (isVal) {
             strncpy(io_buffer, ValueFormatter::trueValueString, i_size);
-            return sizeof(ValueFormatter::trueValueString);
         }
         else {
             strncpy(io_buffer, ValueFormatter::falseValueString, i_size);
-            return sizeof(ValueFormatter::falseValueString);
         }
+        return (int)strnlen(io_buffer, i_size);
     }
 
     // convert varchar value to string: make a copy of source string
@@ -169,7 +168,7 @@ namespace
 }
 
 /** new converter for value column, use std::string type for VARCHAR input parameters */
-ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFormat, const char * i_longDoubleFormat) :
+ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFormat) :
     typeOf(i_type),
     doFormatValue(nullptr)
 {
@@ -228,12 +227,13 @@ ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFo
         doFormatValue = bind(FormatHandler<uint64_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%llu");
     }
     if (typeOf == typeid(bool)) {
-        doFormatValue = BoolFormatHandler;    }
+        doFormatValue = BoolFormatHandler;
+    }
     if (typeOf == typeid(float)) {
         doFormatValue = bind(
             FormatHandler<float>,
             placeholders::_1, placeholders::_2, placeholders::_3,
-            ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%g")
+            ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
         );
     }
     if (typeOf == typeid(double)) {
@@ -247,7 +247,7 @@ ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFo
         doFormatValue = bind(
             FormatHandler<long double>,
             placeholders::_1, placeholders::_2, placeholders::_3,
-            ((i_longDoubleFormat != nullptr && i_longDoubleFormat[0] != '\0') ? i_longDoubleFormat : "%.17g")
+            ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
         );
     }
     if (typeOf == typeid(string)) {
@@ -268,12 +268,12 @@ const char * ValueFormatter::formatValue(const void * i_value, bool i_isNull)
 }
 
 /** new row digester for value table row, use std::string type for VARCHAR input parameters */
-ValueRowDigester::ValueRowDigester(int i_idCount, const type_info & i_type, MD5 * io_md5, const char * i_doubleFormat, const char * i_longDoubleFormat) :
+ValueRowDigester::ValueRowDigester(int i_idCount, const type_info & i_type, MD5 * io_md5, const char * i_doubleFormat) :
     idCount(i_idCount),
     typeOf(i_type),
     md5(io_md5)
 {
-    fmtValue.reset(new ValueFormatter(i_type, i_doubleFormat, i_longDoubleFormat));
+    fmtValue.reset(new ValueFormatter(i_type, i_doubleFormat));
 }
 
 /** append row to digest */
@@ -298,9 +298,10 @@ void ValueRowDigester::processRow(IRowBaseUptr & i_row)
             md5->add(row->strVal.c_str(), row->strVal.length());
         }
         else {
-            md5->add(ValueFormatter::nullValueString, sizeof(ValueFormatter::nullValueString));
+            md5->add(ValueFormatter::nullValueString, strnlen(ValueFormatter::nullValueString, OM_STR_DB_MAX));
         }
     }
 
-    md5->add("\n", sizeof("\n"));   // row delimiter
+    md5->add("\n", 1);   // row delimiter
 }
+

@@ -73,8 +73,7 @@ namespace openm
             const char * i_name, 
             IDbExec * i_dbExec, 
             const MetaRunHolder * i_metaStore,
-            const char * i_doubleFormat = "",
-            const char * i_longDoubleFormat = ""
+            const char * i_doubleFormat = ""
         );
 
         // Parameter writer cleanup
@@ -92,7 +91,6 @@ namespace openm
     private:
         int runId;              // model run id
         string doubleFmt;       // printf format for float and double
-        string longDoubleFmt;   // printf format for long double
         string paramRunDbTable; // db table name for run values of parameter
 
     private:
@@ -123,11 +121,10 @@ IParameterRunWriter * IParameterRunWriter::create(
     const char * i_name,
     IDbExec * i_dbExec,
     const MetaRunHolder * i_metaStore,
-    const char * i_doubleFormat,
-    const char * i_longDoubleFormat
+    const char * i_doubleFormat
     )
 {
-    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore, i_doubleFormat, i_longDoubleFormat);
+    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore, i_doubleFormat);
 }
 
 // New parameter writer
@@ -207,15 +204,13 @@ ParameterRunWriter::ParameterRunWriter(
     const char * i_name,
     IDbExec * i_dbExec,
     const MetaRunHolder * i_metaStore,
-    const char * i_doubleFormat,
-    const char * i_longDoubleFormat
+    const char * i_doubleFormat
 ) :
     ParameterWriter(i_name, i_dbExec, i_metaStore),
     runId(i_runId)
 {
     paramRunDbTable = paramRow->dbRunTable;
     doubleFmt = (i_doubleFormat != nullptr) ? i_doubleFormat : "";
-    longDoubleFmt = (i_longDoubleFormat != nullptr) ? i_longDoubleFormat : "";
 }
 
 // parameter value casting from array cell
@@ -472,14 +467,16 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
     // select parameter values and calculate digest
     MD5 md5;
 
-    md5.add("parameter_name,parameter_digest\n", sizeof("parameter_name,parameter_digest\n"));  // start from metadata digest
-    string sLine = paramRow->paramName + "," + paramRow->digest + "\n";
+    // start from metadata digest
+    string sLine = "parameter_name,parameter_digest\n" + paramRow->paramName + "," + paramRow->digest + "\n";
     md5.add(sLine.c_str(), sLine.length());
 
+    // append values header
     sLine = nameCsv + "\n";
-    md5.add(sLine.c_str(), sLine.length()); // append values header
+    md5.add(sLine.c_str(), sLine.length());
 
-    ValueRowDigester md5Rd(dimCount, i_type, &md5, doubleFmt.c_str(), longDoubleFmt.c_str());
+    // append parameter values digest
+    ValueRowDigester md5Rd(dimCount, i_type, &md5, doubleFmt.c_str());
     ValueRowAdapter adp(dimCount, i_type);
 
     i_dbExec->selectToRowProcessor(sql, adp, md5Rd);

@@ -92,10 +92,9 @@ namespace openm
         /** new converter for value column.
          *
          * @param[in] i_type             value type, use std::string type for VARCHAR input parameters
-         * @param[in] i_doubleFormat     if not null or empty then printf format for float and double, default float: %g, double: %.15g
-         * @param[in] i_longDoubleFormat if not null or empty then printf format for long double, default: %.17g
+         * @param[in] i_doubleFormat     if not null or empty then printf format for float and doubles, default: %.15g
          */
-        ValueFormatter(const type_info & i_type, const char * i_doubleFormat = "", const char * i_longDoubleFormat = "");
+        ValueFormatter(const type_info & i_type, const char * i_doubleFormat = "");
 
         /**
          * IValueFormatter interface implementation: convert value to string using snprintf.
@@ -127,7 +126,7 @@ namespace openm
     {
     public:
         /** new row digester for value table row, use std::string type for VARCHAR input parameters */
-        ValueRowDigester(int i_idCount, const type_info & i_type, MD5 * io_md5, const char * i_doubleFormat = "", const char * i_longDoubleFormat = "");
+        ValueRowDigester(int i_idCount, const type_info & i_type, MD5 * io_md5, const char * i_doubleFormat = "");
 
         /** IRowProcessor implementation: append row to digest */
         void processRow(IRowBaseUptr & i_row) override;
