@@ -30,7 +30,7 @@ namespace openm
         /** database connection string */
         static const char * dbConnStr;
 
-        /** model run id */
+        /** model run id to restart model run */
         static const char * runId;
 
         /** working set id to get input parameters */
@@ -38,6 +38,9 @@ namespace openm
 
         /** working set name to get input parameters */
         static const char * setName;
+
+        /** dir/to/read/input/parameter.csv */
+        static const char *paramDir;
 
         /** modeling task id */
         static const char * taskId;
@@ -59,6 +62,9 @@ namespace openm
 
         /** sparse null value */
         static const char * sparseNull;
+
+        /** convert to string format for float, double, long double */
+        static const char * doubleFormat;
 
         /** trace log to console */
         static const char * traceToConsole;
@@ -85,11 +91,14 @@ namespace openm
     /** keys for model run options (short form) */
     struct RunShortKey
     {
-        /** compatibility short name for options file name: -s fileName.ini */
+        /** short name for options file name: -ini fileName.ini */
         static const char * optionsFile;
 
-        /** short name for options file name: -ini fileName.ini */
-        static const char * optionsFileIni;
+        /** short name for: -s working set name to get input parameters */
+        static const char * setName;
+
+        /** short name for: -p dir/to/read/input/parameter.csv */
+        static const char *paramDir;
     };
 
     /** model metadata loader: read and broadcast metadata and run options. */

@@ -41,10 +41,7 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
   }
   
   nRank <- paramRow$parameter_rank
-  dbTableName <- paste(
-    paramRow$db_prefix, defRs$modelDic$parameter_prefix, paramRow$db_suffix, 
-    sep = ""
-  )
+  dbTableName <- paramRow$db_run_table
   
   # check if run id is belong the model and completed
   rlRow <- dbGetQuery(

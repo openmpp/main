@@ -12,11 +12,8 @@ using namespace openm;
 
 namespace openm
 {
-    /** compatibility short name for options file name: -s fileName.ini */
-    const char * RunShortKey::optionsFile = "s";
-
     /** short name for options file name: -ini fileName.ini */
-    const char * RunShortKey::optionsFileIni = "ini";
+    const char * RunShortKey::optionsFile = "ini";
 
     /** parameters started with "Parameter." treated as value of model scalar input parameters */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
@@ -30,7 +27,7 @@ namespace openm
     /** database connection string */
     const char * RunOptionsKey::dbConnStr = "OpenM.Database";
 
-    /** model run id */
+    /** model run id to restart model run */
     const char * RunOptionsKey::runId = "OpenM.RunId";
 
     /** working set id to get input parameters */
@@ -39,12 +36,21 @@ namespace openm
     /** working set name to get input parameters */
     const char * RunOptionsKey::setName = "OpenM.SetName";
 
+    /** short name for: -s working set name to get input parameters */
+    const char * RunShortKey::setName = "s";
+    
+    /** dir/to/read/input/parameter.csv */
+    const char * RunOptionsKey::paramDir = "OpenM.ParamDir";
+
+    /** short version: -p dir/to/read/input/parameter.csv */
+    const char * RunShortKey::paramDir = "p";
+
     /** modeling task id */
     const char * RunOptionsKey::taskId = "OpenM.TaskId";
 
     /** modeling task name */
     const char * RunOptionsKey::taskName = "OpenM.TaskName";
-        
+
     /** modeling task under external supervision */
     const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
 
@@ -59,6 +65,9 @@ namespace openm
 
     /** sparse NULL value */
     const char * RunOptionsKey::sparseNull = "OpenM.SparseNullValue";
+
+    /** convert to string format for float, double, long double */
+    const char * RunOptionsKey::doubleFormat = "OpenM.DoubleFormat";
 
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -90,11 +99,13 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::runId,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
+    RunOptionsKey::paramDir,
     RunOptionsKey::taskId,
     RunOptionsKey::taskName,
     RunOptionsKey::profile,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
+    RunOptionsKey::doubleFormat,
     RunOptionsKey::traceToConsole,
     RunOptionsKey::traceToFile,
     RunOptionsKey::traceFilePath,
@@ -118,7 +129,8 @@ static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);
 static const pair<const char *, const char *> shortPairArr[] = 
 {
     make_pair(RunShortKey::optionsFile, ArgKey::optionsFile),
-    make_pair(RunShortKey::optionsFileIni, ArgKey::optionsFile)
+    make_pair(RunShortKey::setName, RunOptionsKey::setName),
+    make_pair(RunShortKey::paramDir, RunOptionsKey::paramDir)
 };
 static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 
@@ -314,7 +326,7 @@ void MetaLoader::mergeProfile(IDbExec * i_dbExec)
 
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
-    baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, DBL_EPSILON);
+    baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, FLT_MIN);
 }
 
 // create task run entry in database

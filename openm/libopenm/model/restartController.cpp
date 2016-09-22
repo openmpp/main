@@ -211,8 +211,7 @@ bool RestartController::cleanupRestartSubsample(void)
 
         for (const TableDicRow & tblRow : tblVec) {
             dbExec->update(
-                "DELETE FROM " + tblRow.dbPrefix + metaStore->modelRow->valuePrefix + tblRow.dbSuffix +
-                " WHERE run_id = " + to_string(runId)
+                "DELETE FROM " + tblRow.dbExprTable + " WHERE run_id = " + to_string(runId)
             );
         }
 
@@ -221,7 +220,7 @@ bool RestartController::cleanupRestartSubsample(void)
 
             for (const TableDicRow & tblRow : tblVec) {
                 dbExec->update(
-                    "DELETE FROM " + tblRow.dbPrefix + metaStore->modelRow->accPrefix + tblRow.dbSuffix +
+                    "DELETE FROM " + tblRow.dbAccTable +
                     " WHERE run_id = " + to_string(runId) +
                     " AND sub_id >= " + to_string(subFirstNumber)
                 );

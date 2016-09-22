@@ -81,6 +81,9 @@
     <ClInclude Include="include\modelSqlWriter.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\helper.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\file.cpp">

@@ -5,27 +5,12 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef OM_HELPER_H
-#define OM_HELPER_H
+#ifndef OM_I_HELPER_H
+#define OM_I_HELPER_H
 
 #include "libopenm/common/omHelper.h"
 
 using namespace std;
-
-// define max size of file path
-#ifdef PATH_MAX
-    #define OM_PATH_MAX (FILENAME_MAX < PATH_MAX ? FILENAME_MAX : PATH_MAX)
-#endif
-#ifndef OM_PATH_MAX
-    #ifdef _MAX_PATH
-        #define OM_PATH_MAX (FILENAME_MAX < _MAX_PATH ? FILENAME_MAX : _MAX_PATH)
-    #else
-        #define OM_PATH_MAX (FILENAME_MAX < 4096 ? FILENAME_MAX : 4096)
-    #endif 
-#endif 
-
-/** max string length supported */
-#define OM_STRLEN_MAX   INT_MAX
 
 #define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
 #define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
@@ -45,4 +30,4 @@ using namespace std;
 
 //#define OM_LOG_MSG(msg)         msg OM_FILE_LINE
 
-#endif  // OM_HELPER_H
+#endif  // OM_I_HELPER_H

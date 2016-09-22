@@ -11,7 +11,7 @@ const char * OM_MODEL_NAME = "modelOne";
 // model metadata digest: unique model key
 // model metadata digest expected to be 32 digits hex
 // modelOne is using special test value instead of actual digest
-const char * OM_MODEL_DIGEST = "20120817_1604590148";
+const char * OM_MODEL_DIGEST = "_201208171604590148_";
 
 namespace openm
 {

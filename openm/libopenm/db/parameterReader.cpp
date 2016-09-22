@@ -80,7 +80,7 @@ ParameterReader::ParameterReader(
 
     paramId = paramRow->paramId;
     dimCount = paramRow->rank;
-    paramDbTable = paramRow->dbPrefix + i_metaStore->modelRow->paramPrefix + paramRow->dbSuffix;
+    paramDbTable = paramRow->dbRunTable;
 
     paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
     if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);

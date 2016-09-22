@@ -18,19 +18,6 @@ template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_
 
     if (i_row.version.length() > 32) throw DbException("invalid (too long) model version: %s", i_row.version.c_str());
 
-    if (i_row.paramPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) parameter tables prefix: %s", i_row.paramPrefix.c_str());
-    if (i_row.setPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) workset tables prefix: %s", i_row.setPrefix.c_str());
-    if (i_row.accPrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) accumulator tables prefix: %s", i_row.accPrefix.c_str());
-    if (i_row.valuePrefix.length() > OM_DB_TABLE_TYPE_PREFIX_LEN) throw DbException("invalid (too long) value tables prefix: %s", i_row.valuePrefix.c_str());
-
-    if (i_row.paramPrefix == i_row.setPrefix || i_row.paramPrefix == i_row.accPrefix || i_row.paramPrefix == i_row.valuePrefix || 
-        i_row.setPrefix == i_row.accPrefix || i_row.setPrefix == i_row.valuePrefix || 
-        i_row.accPrefix == i_row.valuePrefix)
-        throw DbException(
-            "invalid (not unique) table prefixes: %s %s %s %s, model name: %s", 
-            i_row.paramPrefix.c_str(), i_row.setPrefix.c_str(), i_row.accPrefix.c_str(), i_row.valuePrefix.c_str(), i_row.name.c_str()
-            );
-
     // UPDATE id_lst 
     // SET id_value = 
     //   CASE
@@ -53,8 +40,8 @@ template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_
     io_wr.throwOnFail();
     
     // INSERT INTO model_dic 
-    //   (model_id, model_name, model_digest, model_type, model_ver, create_dt, parameter_prefix, workset_prefix, acc_prefix, value_prefix) 
-    // SELECT IL.id_value, 'modelOne', '1234abcd', 0, '1.0.0.0', '2012-08-17 16:04:59.0148', 'p', 'w', 'a', 'v'
+    //   (model_id, model_name, model_digest, model_type, model_ver, create_dt) 
+    // SELECT IL.id_value, 'modelOne', '1234abcd', 0, '1.0.0.0', '2012-08-17 16:04:59.0148'
     // FROM id_lst IL 
     // WHERE IL.id_key = 'model_id'
     // AND NOT EXISTS
@@ -63,8 +50,7 @@ template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_
     // );
     io_wr.write(
         "INSERT INTO model_dic" \
-        " (model_id, model_name, model_digest, model_type, model_ver," \
-        " create_dt, parameter_prefix, workset_prefix, acc_prefix, value_prefix)" \
+        " (model_id, model_name, model_digest, model_type, model_ver, create_dt)" \
         " SELECT" \
         " IL.id_value, ");
     io_wr.writeQuoted(i_row.name, true);
@@ -72,11 +58,7 @@ template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_
     io_wr.outFs << i_row.type << ", ";
     io_wr.throwOnFail();
     io_wr.writeQuoted(i_row.version, true);
-    io_wr.writeQuoted(i_row.createDateTime, true);
-    io_wr.writeQuoted(i_row.paramPrefix, true);
-    io_wr.writeQuoted(i_row.setPrefix, true);
-    io_wr.writeQuoted(i_row.accPrefix, true);
-    io_wr.writeQuoted(i_row.valuePrefix);
+    io_wr.writeQuoted(i_row.createDateTime);
     io_wr.throwOnFail();
     io_wr.write(
         " FROM id_lst IL WHERE IL.id_key = 'model_id'" \
@@ -96,7 +78,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ModelDicTxtLangRow>
     // validate field values
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name");
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description");
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes");
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes");
 
     // INSERT INTO model_dic_txt (model_id, lang_id, descr, note) 
     // SELECT 
@@ -226,7 +208,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeDicTxtLangRow>(
     // validate field values
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, type: %s", i_typeRow.name.c_str());
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, type: %s", i_typeRow.name.c_str());
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, type: %s", i_typeRow.name.c_str());
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, type: %s", i_typeRow.name.c_str());
 
     // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) 
     // SELECT 
@@ -311,7 +293,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
 
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
 
     // INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) 
     // SELECT 
@@ -366,8 +348,8 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
     if (i_row.paramName.length() > 255) throw DbException("invalid (too long) parameter name: %s", i_row.paramName.c_str());
     
     if (i_row.digest.empty() || i_row.digest.length() > 32) throw DbException("invalid (or empty) digest, parameter: %s", i_row.paramName.c_str());
-    if (i_row.dbPrefix.empty() || i_row.dbPrefix.length() > 32) throw DbException("invalid (or empty) db name prefix, parameter: %s", i_row.paramName.c_str());
-    if (i_row.dbSuffix.empty() || i_row.dbSuffix.length() > 32) throw DbException("invalid (or empty) db name suffix, parameter: %s", i_row.paramName.c_str());
+    if (i_row.dbRunTable.empty() || i_row.dbRunTable.length() > 64 || i_row.dbSetTable.empty() || i_row.dbSetTable.length() > 64) 
+        throw DbException("invalid (or empty) db table name, parameter: %s", i_row.paramName.c_str());
 
     if (i_row.rank < 0) throw DbException("invalid (negative) parameter %s rank: %d", i_row.paramName.c_str(), i_row.rank);
     if (i_row.typeId < 0) throw DbException("invalid (negative) parameter %s type id: %d", i_row.paramName.c_str(), i_row.typeId);
@@ -394,7 +376,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
     io_wr.throwOnFail();
 
     // INSERT INTO parameter_dic
-    //   (parameter_hid, parameter_name, parameter_digest, db_prefix, db_suffix, parameter_rank, type_hid, num_cumulated)
+    //   (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
     // SELECT 
     //   IL.id_value, 
     //   'ageSex', 'cd1234ab', 'ageSex', '87654321', 2, 
@@ -414,12 +396,12 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
     // );
     io_wr.write(
         "INSERT INTO parameter_dic" \
-        " (parameter_hid, parameter_name, parameter_digest, db_prefix, db_suffix, parameter_rank, type_hid, num_cumulated)" \
+        " (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)" \
         " SELECT IL.id_value, ");
     io_wr.writeTrimQuoted(i_row.paramName, true);
     io_wr.writeQuoted(i_row.digest, true);
-    io_wr.writeQuoted(i_row.dbPrefix, true);
-    io_wr.writeQuoted(i_row.dbSuffix, true);
+    io_wr.writeQuoted(i_row.dbRunTable, true);
+    io_wr.writeQuoted(i_row.dbSetTable, true);
     io_wr.outFs <<
         i_row.rank << "," <<
         " (" <<
@@ -481,7 +463,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDicTxtLangRow>
     // validate field values
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, parameter: %s", i_paramRow.paramName.c_str());
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, parameter: %s", i_paramRow.paramName.c_str());
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, parameter: %s", i_paramRow.paramName.c_str());
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, parameter: %s", i_paramRow.paramName.c_str());
 
     // INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) 
     // SELECT 
@@ -596,7 +578,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow
     if (i_row.descr.empty() || i_row.descr.length() < 1)
         throw DbException("invalid (empty) description, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), i_row.dimId);
 
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000)
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX)
         throw DbException("invalid (too long) description or notes, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), i_row.dimId);
 
     // INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) 
@@ -653,8 +635,8 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
     if (i_row.tableName.length() > 255) throw DbException("invalid (too long) output table name: %s", i_row.tableName.c_str());
 
     if (i_row.digest.empty() || i_row.digest.length() > 32) throw DbException("invalid (or empty) digest, parameter: %s", i_row.tableName.c_str());
-    if (i_row.dbPrefix.empty() || i_row.dbPrefix.length() > 32) throw DbException("invalid (or empty) db name prefix, parameter: %s", i_row.tableName.c_str());
-    if (i_row.dbSuffix.empty() || i_row.dbSuffix.length() > 32) throw DbException("invalid (or empty) db name suffix, parameter: %s", i_row.tableName.c_str());
+    if (i_row.dbExprTable.empty() || i_row.dbExprTable.length() > 64 || i_row.dbAccTable.empty() || i_row.dbAccTable.length() > 64) 
+        throw DbException("invalid (or empty) db table name for output table: %s", i_row.tableName.c_str());
 
     if (i_row.rank < 0) throw DbException("invalid (negative) output table %s rank: %d", i_row.tableName.c_str(), i_row.rank);
     if (i_row.exprPos < -1 || i_row.exprPos > i_row.rank - 1) throw DbException("invalid output table %s analysis dimension position: %d", i_row.tableName.c_str(), i_row.exprPos);
@@ -679,7 +661,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
     io_wr.throwOnFail();
 
     // INSERT INTO table_dic
-    //   (table_hid, table_name, table_digest, db_prefix, db_suffix, table_rank, is_sparse)
+    //   (table_hid, table_name, table_digest, db_expr_table, db_acc_table, table_rank, is_sparse)
     // SELECT 
     //   IL.id_value, 
     //   'salarySex', '98765432', 'salarySex', 'ffeeddcc', 2, 0
@@ -691,12 +673,12 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
     // );
     io_wr.write(
         "INSERT INTO table_dic" \
-        " (table_hid, table_name, table_digest, db_prefix, db_suffix, table_rank, is_sparse)" \
+        " (table_hid, table_name, table_digest, db_expr_table, db_acc_table, table_rank, is_sparse)" \
         " SELECT IL.id_value, ");
     io_wr.writeTrimQuoted(i_row.tableName, true);
     io_wr.writeQuoted(i_row.digest, true);
-    io_wr.writeQuoted(i_row.dbPrefix, true);
-    io_wr.writeQuoted(i_row.dbSuffix, true);
+    io_wr.writeQuoted(i_row.dbExprTable, true);
+    io_wr.writeQuoted(i_row.dbAccTable, true);
     io_wr.outFs <<
         i_row.rank << ", " <<
         (i_row.isSparse ? "1" : "0") <<
@@ -751,10 +733,10 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDicTxtLangRow>
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, output table: %s", i_tableRow.tableName.c_str());
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, output table: %s", i_tableRow.tableName.c_str());
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, output table: %s", i_tableRow.tableName.c_str());
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, output table: %s", i_tableRow.tableName.c_str());
 
     if (i_row.exprDescr.empty() || i_row.exprDescr.length() < 1) throw DbException("invalid (empty) analysis dimension description, output table: %s", i_tableRow.tableName.c_str());
-    if (i_row.exprDescr.length() > 255 || i_row.exprNote.length() > 32000) throw DbException("invalid (too long) analysis dimension description or notes, output table: %s", i_tableRow.tableName.c_str());
+    if (i_row.exprDescr.length() > 255 || i_row.exprNote.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) analysis dimension description or notes, output table: %s", i_tableRow.tableName.c_str());
 
     // INSERT INTO table_dic_txt (table_hid, lang_id, descr, note, expr_descr, expr_note) 
     // SELECT 
@@ -874,7 +856,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow
     if (i_row.descr.empty() || i_row.descr.length() < 1) 
         throw DbException("invalid (empty) description, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), i_row.dimId);
 
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) 
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) 
         throw DbException("invalid (too long) description or notes, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), i_row.dimId);
 
     // INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) 
@@ -977,7 +959,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>
     if (i_row.descr.empty() || i_row.descr.length() < 1) 
         throw DbException("invalid (empty) description, accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
 
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) 
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) 
         throw DbException("invalid (too long) description or notes, accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
 
     // INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) 
@@ -1090,7 +1072,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow
     if (i_row.descr.empty() || i_row.descr.length() < 1)
         throw DbException("invalid (empty) description, expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000)
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX)
         throw DbException("invalid (too long) description or notes, expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
     // INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) 
@@ -1189,7 +1171,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, group id: %d", i_row.groupId);
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, group id: %d", i_row.groupId);
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) description or notes, group id: %d", i_row.groupId);
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, group id: %d", i_row.groupId);
 
     // INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) 
     // SELECT 
@@ -1368,7 +1350,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
     // validate field values
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name for workset description and notes");
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) workset description");
-    if (i_row.descr.length() > 255 || i_row.note.length() > 32000) throw DbException("invalid (too long) workset description or notes");
+    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) workset description or notes");
 
     // INSERT INTO workset_txt (set_id, lang_id, descr, note) 
     // SELECT 
@@ -1443,7 +1425,7 @@ template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
     if (i_row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", i_row.paramId);
 
     if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, workset parameter id: %d", i_row.paramId);
-    if (i_row.note.length() > 32000) throw DbException("invalid (too long) notes, workset parameter id: %d", i_row.paramId);
+    if (i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) notes, workset parameter id: %d", i_row.paramId);
 
     // INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)
     // SELECT 

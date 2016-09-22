@@ -19,8 +19,9 @@ namespace openm
             IDbExec * i_dbExec, 
             const MetaRunHolder * i_metaStore, 
             int i_numSubSamples,
-            bool i_isSparse = false, 
-            double i_nullValue = DBL_EPSILON
+            const char * i_doubleFormat = "",
+            bool i_isSparse = false,
+            double i_nullValue = FLT_MIN
             );
 
         // Output table writer cleanup
@@ -38,9 +39,6 @@ namespace openm
         // write all output table values: aggregate subsamples using table expressions
         void writeAllExpressions(IDbExec * i_dbExec) override;
 
-        // write output table value: aggregated output expression value
-        void writeExpression(IDbExec * i_dbExec, int i_nExpression) override;
-
         // calculate output table values digest and store only single copy of output values
         void digestOutput(IDbExec * i_dbExec) override;
 
@@ -53,6 +51,7 @@ namespace openm
         int accCount;                   // number of accumulators
         int exprCount;                  // number of aggregated expressions
         size_t totalSize;               // total number of values in the table
+        string doubleFmt;               // printf format for float and double
         bool isSparseTable;             // if true then use sparse output to database
         double nullValue;               // if is sparse and abs(value) <= nullValue then value not stored
         string accDbTable;              // db table name for accumulators
@@ -61,6 +60,14 @@ namespace openm
         vector<TableDimsRow> tableDims; // table dimensions
         vector<TableAccRow> tableAcc;   // table accumulators
         vector<TableExprRow> tableExpr; // table aggregation expressions
+
+        /**
+         * write output table value: aggregated output expression value
+         *
+         * @param[in] i_dbExec      database connection
+         * @param[in] i_nExpression aggregation expression number
+         */
+        void writeExpression(IDbExec * i_dbExec, int i_nExpression);
 
     private:
         OutputTableWriter(const OutputTableWriter & i_writer) = delete;
@@ -71,7 +78,7 @@ namespace openm
 // Output table writer cleanup
 IOutputTableWriter::~IOutputTableWriter(void) throw() { }
 
-// Output table writer factory: create new writer
+// Output table writer factory: create new accumulators writer
 IOutputTableWriter * IOutputTableWriter::create(
     int i_runId,
     const char * i_name, 
@@ -82,21 +89,33 @@ IOutputTableWriter * IOutputTableWriter::create(
     double i_nullValue
     )
 {
-    return new OutputTableWriter(
-        i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_isSparseGlobal, i_nullValue
-        );
+    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, "", i_isSparseGlobal, i_nullValue);
 }
 
-// New output table writer
-OutputTableWriter::OutputTableWriter(
+// Output table writer factory: create new writer
+IOutputTableWriter * IOutputTableWriter::create(
     int i_runId,
     const char * i_name, 
     IDbExec * i_dbExec, 
     const MetaRunHolder * i_metaStore, 
     int i_numSubSamples, 
-    bool i_isSparseGlobal, 
+    const char * i_doubleFormat
+    )
+{
+    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_doubleFormat);
+}
+
+// New output table writer
+OutputTableWriter::OutputTableWriter(
+    int i_runId,
+    const char * i_name,
+    IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore,
+    int i_numSubSamples,
+    const char * i_doubleFormat,
+    bool i_isSparseGlobal,
     double i_nullValue
-    ) :
+) :
     runId(i_runId),
     modelId(0),
     tableId(0),
@@ -106,13 +125,15 @@ OutputTableWriter::OutputTableWriter(
     exprCount(0),
     totalSize(0),
     isSparseTable(i_isSparseGlobal),
-    nullValue(i_nullValue >= 0.0 ? i_nullValue : DBL_EPSILON),
+    nullValue(i_nullValue >= 0.0 ? i_nullValue : FLT_MIN),
     tableRow(nullptr)
-{ 
+{
     // check parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
     if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) output table name");
+
+    doubleFmt = (i_doubleFormat != nullptr) ? i_doubleFormat : "";
 
     // get table dimensions, accumulators and aggregation expressions
     modelId = i_metaStore->modelRow->modelId;
@@ -123,8 +144,8 @@ OutputTableWriter::OutputTableWriter(
     tableId = tableRow->tableId;
     dimCount = tableRow->rank;
 
-    accDbTable = tableRow->dbPrefix + i_metaStore->modelRow->accPrefix + tableRow->dbSuffix;
-    valueDbTable = tableRow->dbPrefix + i_metaStore->modelRow->valuePrefix + tableRow->dbSuffix;
+    accDbTable = tableRow->dbAccTable;
+    valueDbTable = tableRow->dbExprTable;
 
     tableDims = i_metaStore->tableDims->byModelIdTableId(modelId, tableId);
     if (dimCount < 0 || dimCount != (int)tableDims.size()) throw DbException("invalid table rank or dimensions not found for table: %s", i_name);
@@ -179,27 +200,27 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_nSubSample < 0 || i_nSubSample >= numSubSamples) throw DbException("invalid sub-sample index: %d for output table: %s", i_nSubSample, tableRow->tableName.c_str());
     if (i_accId < 0 || i_accId >= accCount) throw DbException("invalid accumulator number: %d for output table: %s", i_accId, tableRow->tableName.c_str());
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for output table: %s", i_size, tableRow->tableName.c_str());
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for output table: %s", i_size, tableRow->tableName.c_str());
 
     if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for output table: %s", tableRow->tableName.c_str());
 
     // build sql:
     // INSERT INTO salarySex_a201208171604590148
-    //   (run_id, dim0, dim1, acc_id, sub_id, acc_value) VALUES (2 , ?, ?, 15, 4, ?)
-    string sql = "INSERT INTO " + accDbTable + " (run_id";
+    //   (run_id, acc_id, sub_id, dim0, dim1, acc_value) VALUES (2, 15, 4, ?, ?, ?)
+    string sql = "INSERT INTO " + accDbTable + " (run_id, acc_id, sub_id";
 
     for (const TableDimsRow & dim : tableDims) {
         sql += ", " + dim.name;
     }
 
-    sql += ", acc_id, sub_id, acc_value) VALUES (" + to_string(runId);
+    sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_nSubSample);
 
-    // build sql, append: , ?, ?, ?, 2, 15, ?)
-    // dimensions parameter placeholder(s), accumulator index, sub-sample index, value placeholder
+    // build sql, append: , ?, ?, ?)
+    // as dimensions parameter placeholder(s), value placeholder
     for (int nDim = 0; nDim < dimCount; nDim++) {
         sql += ", ?";
     }
-    sql += ", " + to_string(i_accId) + ", " + to_string(i_nSubSample) + ", ?)";
+    sql += ", ?)";
 
     // set parameters type: dimensions and accumulator value
     vector<const type_info *> tv;
@@ -341,68 +362,74 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
 
     // build sql to select accumulators and expressions values:
     //
-    // SELECT dim0, dim1, acc_id, sub_id, acc_value
+    // SELECT acc_id,sub_id,dim0,dim1,acc_value
     // FROM salarySex_a201208171604590148
     // WHERE run_id = 11
     // ORDER BY 1, 2, 3, 4
     //
-    string accSql = "SELECT ";
+    string accCsv = "acc_id,sub_id,";
 
     for (const TableDimsRow & dim : tableDims) {
-        accSql += dim.name + ", ";
+        accCsv += dim.name + ",";
     }
+    accCsv += "acc_value";
 
-    accSql += "acc_id, sub_id, acc_value" \
-        " FROM " + accDbTable +
-        " WHERE run_id = " + to_string(runId) +
-        " ORDER BY ";
+    string accSql = 
+        "SELECT " + accCsv + " FROM " + accDbTable + " WHERE run_id = " + to_string(runId) +
+        " ORDER BY 1, 2";
 
     for (int nDim = 0; nDim < dimCount; nDim++) {
-        accSql += to_string(nDim + 1) + ", ";
+        accSql += ", " + to_string(nDim + 3);
     }
-    accSql += to_string(dimCount + 1) + ", " + to_string(dimCount + 2);
 
     // build sql to expressions values:
     //
-    // SELECT dim0, dim1, expr_id, expr_value
+    // SELECT expr_id,dim0,dim1,expr_value
     // FROM salarySex_v201208171604590148
     // WHERE run_id = 11
     // ORDER BY 1, 2, 3
     //
-    string exprSql = "SELECT ";
+    string exprCsv = "expr_id,";
 
     for (const TableDimsRow & dim : tableDims) {
-        exprSql += dim.name + ", ";
+        exprCsv += dim.name + ",";
     }
+    exprCsv += "expr_value";
 
-    exprSql += "expr_id, expr_value" \
-        " FROM " + valueDbTable +
-        " WHERE run_id = " + to_string(runId) +
-        " ORDER BY ";
+    string exprSql = 
+        "SELECT "+ exprCsv + " FROM " + valueDbTable + " WHERE run_id = " + to_string(runId) +
+        " ORDER BY 1";
 
     for (int nDim = 0; nDim < dimCount; nDim++) {
-        exprSql += to_string(nDim + 1) + ", ";
+        exprSql += ", " + to_string(nDim + 2);
     }
-    exprSql += to_string(dimCount + 1);
 
     // select accumulator values and calculate digest
     MD5 md5;
 
-    string sLine = tableRow->digest + "\n";
-    md5.add(sLine.c_str(), sLine.length()); // start from metadata digest
+    // start from metadata digest
+    string sLine = "table_name,table_digest\n" + tableRow->tableName + "," + tableRow->digest + "\n";
+    md5.add(sLine.c_str(), sLine.length());
 
-    ValueRowDigester md5AccRd(dimCount + 2, typeid(double), &md5);   // +2 columns: acc_id, sub_id
+    // append accumulators header
+    sLine = accCsv + "\n";
+    md5.add(sLine.c_str(), sLine.length());
+
+    // +2 columns: acc_id, sub_id
+    ValueRowDigester md5AccRd(dimCount + 2, typeid(double), &md5, doubleFmt.c_str());
     ValueRowAdapter accAdp(dimCount + 2, typeid(double));
 
     i_dbExec->selectToRowProcessor(accSql, accAdp, md5AccRd);
 
     // select expression values and append to the digest
-    md5.add("exp_value\n", strlen("exp_value\n")); // expression values delimiter
+    sLine = exprCsv + "\n";
+    md5.add(sLine.c_str(), sLine.length()); // append expressions header
 
-    ValueRowDigester md5EexprRd(dimCount + 1, typeid(double), &md5); // +1 column: expr_id
+    // +1 column: expr_id
+    ValueRowDigester md5ExprRd(dimCount + 1, typeid(double), &md5, doubleFmt.c_str());
     ValueRowAdapter exprAdp(dimCount + 1, typeid(double));
 
-    i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5EexprRd);
+    i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5ExprRd);
 
     string sDigest = md5.getHash();     // digest of metadata and values of accumulators and expressions
 

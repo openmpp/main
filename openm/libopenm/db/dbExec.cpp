@@ -52,6 +52,7 @@ list<string> IDbExec::parseListOfProviderNames(const string & i_sqlProviderNames
         // convert provider name into lowercase
         // validate each name in the list and check if list is not empty
         for (string & sName : nameLst) {
+            if (sName.empty()) continue;
             toLower(sName);
             if (!isValidProviderName(sName.c_str())) throw DbException("invalid db-provider name: %s", sName.c_str());
         }
@@ -80,9 +81,11 @@ bool IDbExec::isValidProviderName(const char * i_sqlProvider)
 }
 
 /** return max length of db table or view name. */
-int IDbExec::maxDbTableNameSize(const string & /*i_sqlProvider*/)
+int IDbExec::maxDbTableNameSize(const string & i_sqlProvider)
 {
-    return maxDbTableNameLen;
+    if (i_sqlProvider == PGSQL_DB_PROVIDER) return 63;
+    if (i_sqlProvider == ORACLE_DB_PROVIDER) return 30;
+    return 64;
 }
 
 /** return sql statement to begin transaction (db-provider specific). */

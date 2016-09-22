@@ -81,16 +81,6 @@ namespace openm
         virtual void set(IRowBase * i_row, int i_column, const void * i_value) const = 0;
     };
 
-    /** public interafce for row processing during select, ie: select and append to row list */
-    class IRowProcessor
-    {
-    public:
-        virtual ~IRowProcessor(void) throw() { }
-
-        /** process row, ie: append to row list or aggregate. */
-        virtual void processRow(IRowBaseUptr & i_row) = 0;
-    };
-
     /** union to pass value to database methods */
     union DbValue
     {
@@ -179,6 +169,34 @@ namespace openm
 
         /** cast between float, double and long double */
         template<typename TSrc, typename TDst> static TDst castDouble(const DbValue & i_value);
+    };
+
+    /** converter for value column (parameter, accumulator or expression value) to string */
+    class IValueFormatter
+    {
+    public:
+        virtual ~IValueFormatter(void) throw() { }
+
+        /**
+         * convert value to string using snprintf.
+         *
+         * @param[in] i_value   db-field value, casted to the target column type
+         * @param[in] i_isNull  if true then value is NULL and return is "null"
+         *
+         * @return value converted to string, result must be copied before next call.
+         */
+        virtual const char * formatValue(const void * i_value, bool i_isNull = false) = 0;
+    };
+
+
+    /** public interafce for row processing during select, ie: select and append to row list */
+    class IRowProcessor
+    {
+    public:
+        virtual ~IRowProcessor(void) throw() { }
+
+        /** process row, ie: append to row list or aggregate. */
+        virtual void processRow(IRowBaseUptr & i_row) = 0;
     };
 }
 

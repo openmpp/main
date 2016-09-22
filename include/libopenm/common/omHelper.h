@@ -28,6 +28,21 @@
 
 using namespace std;
 
+// define max size of file path
+#ifdef PATH_MAX
+    #define OM_PATH_MAX (FILENAME_MAX < PATH_MAX ? FILENAME_MAX : PATH_MAX)
+#endif
+#ifndef OM_PATH_MAX
+    #ifdef _MAX_PATH
+        #define OM_PATH_MAX (FILENAME_MAX < _MAX_PATH ? FILENAME_MAX : _MAX_PATH)
+    #else
+        #define OM_PATH_MAX (FILENAME_MAX < 4096 ? FILENAME_MAX : 4096)
+    #endif 
+#endif 
+
+#define OM_STRLEN_MAX   INT_MAX         /** max string length supported */
+#define OM_STR_DB_MAX   32000           /** max database string length: notes varchar (clob, text) */
+
 namespace openm
 {
     /** convert string to lower case */
@@ -48,6 +63,9 @@ namespace openm
     /** case neutral string equal comparison */
     extern bool equalNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
 
+    /** check if string start with i_start, using case neutral string comparison */
+    extern bool startWithNoCase(const string & i_str, const char * i_start);
+
     /** check if string end with i_end, using case neutral string comparison */
     extern bool endWithNoCase(const string & i_str, const char * i_end);
 
@@ -60,8 +78,11 @@ namespace openm
     /** trim leading and trailing blank and space characters */
     extern string trim(const string & i_str);
 
-    /** make sql quoted string, ie: 'O''Brien' */
-    extern const string toQuoted(const string & i_str);
+    /** make quoted string using sql single ' quote by default, ie: 'O''Brien' */
+    extern const string toQuoted(const string & i_str, char i_quote = '\'');
+
+    /** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
+    extern const string toUnQuoted(const string & i_str, char i_quote = '\'');
 
     /** convert float type to string: exist to fix std::to_string conversion losses. */
     extern const string toString(double i_val);
@@ -90,10 +111,14 @@ namespace openm
     /**   
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
     *
+    * RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
+    *
     * @param[in] i_values       source string of comma separated values.
     * @param[in] i_delimiters   list of delimiters, default: comma.
+    * @param[in] i_isUnquote    if true then do "unquote ""csv"" ", default: false.
+    * @param[in] i_quote        quote character, default: sql single ' quote.
     */
-    extern list<string> splitCsv(const string & i_values, const char * i_delimiters = ",");
+    extern list<string> splitCsv(const string & i_values, const char * i_delimiters = ",", bool i_isUnquote = false, char i_quote = '\'');
 
     /** case neutral less comparator for strings */
     struct LessNoCase

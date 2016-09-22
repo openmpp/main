@@ -77,8 +77,8 @@ unionStatusPregRs <- selectRunParameter(theDb, defRs, baseRunId, "UnionStatusPre
 #
 casesParam <- list(name = "SimulationCases", value = 1000L) # number of simulation cases
 
-taskTxt <- data.frame(      # name, description and notes for the task
-  name  = "Childlessness",
+taskTxt <- data.frame(      # name (auto generated), description and notes for the task
+  name  = NA,
   lang  = "EN",
   descr = "Analyzing childlessness",
   note  = NA,

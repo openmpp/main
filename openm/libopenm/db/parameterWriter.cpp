@@ -19,12 +19,13 @@ namespace openm
         virtual ~ParameterWriter(void) throw() { }
 
     protected:
-        int paramId;                    // parameter id
-        int dimCount;                   // number of dimensions
-        size_t totalSize;               // total number of values in the table
-        vector<int> dimSizeVec;         // size of each parameter dimension
-        const ParamDicRow * paramRow;   // parameter metadata row
-        vector<ParamDimsRow> paramDims; // parameter dimensions
+        int paramId;                        // parameter id
+        int dimCount;                       // number of dimensions
+        size_t totalSize;                   // total number of values in the table
+        vector<int> dimSizeVec;             // size of each parameter dimension
+        const ParamDicRow * paramRow;       // parameter metadata row
+        const TypeDicRow * paramTypeRow;    // parameter type
+        vector<ParamDimsRow> paramDims;     // parameter dimensions
 
     private:
         ParameterWriter(const ParameterWriter & i_writer) = delete;
@@ -67,7 +68,13 @@ namespace openm
     class ParameterRunWriter : public ParameterWriter, public IParameterRunWriter
     {
     public:
-        ParameterRunWriter(int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore);
+        ParameterRunWriter(
+            int i_runId, 
+            const char * i_name, 
+            IDbExec * i_dbExec, 
+            const MetaRunHolder * i_metaStore,
+            const char * i_doubleFormat = ""
+        );
 
         // Parameter writer cleanup
         ~ParameterRunWriter(void) throw() override { }
@@ -75,11 +82,15 @@ namespace openm
         // return total number of values
         virtual size_t sizeOf(void) const throw() override { return totalSize; }
 
+        // load parameter values from csv file into run table
+        virtual void loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath) override;
+
         // calculate run parameter values digest and store only single copy of parameter values
         void digestParameter(IDbExec * i_dbExec, const type_info & i_type) override;
 
     private:
         int runId;              // model run id
+        string doubleFmt;       // printf format for float and double
         string paramRunDbTable; // db table name for run values of parameter
 
     private:
@@ -109,10 +120,11 @@ IParameterRunWriter * IParameterRunWriter::create(
     int i_runId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore
+    const MetaRunHolder * i_metaStore,
+    const char * i_doubleFormat
     )
 {
-    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore);
+    return new ParameterRunWriter(i_runId, i_name, i_dbExec, i_metaStore, i_doubleFormat);
 }
 
 // New parameter writer
@@ -141,7 +153,7 @@ ParameterWriter::ParameterWriter(
     paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
     if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
-    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
+    paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
     if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
@@ -183,17 +195,22 @@ ParameterSetWriter::ParameterSetWriter(
     if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", i_setId, paramRow->paramName.c_str());
 
     // name of workset parameter value table
-    paramSetDbTable = paramRow->dbPrefix + i_metaStore->modelRow->setPrefix + paramRow->dbSuffix;
+    paramSetDbTable = paramRow->dbSetTable;
 }
 
 // create new writer for model run parameter
 ParameterRunWriter::ParameterRunWriter(
-    int i_runId, const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
-    ) :
+    int i_runId,
+    const char * i_name,
+    IDbExec * i_dbExec,
+    const MetaRunHolder * i_metaStore,
+    const char * i_doubleFormat
+) :
     ParameterWriter(i_name, i_dbExec, i_metaStore),
     runId(i_runId)
 {
-    paramRunDbTable = paramRow->dbPrefix + i_metaStore->modelRow->paramPrefix + paramRow->dbSuffix;
+    paramRunDbTable = paramRow->dbRunTable;
+    doubleFmt = (i_doubleFormat != nullptr) ? i_doubleFormat : "";
 }
 
 // parameter value casting from array cell
@@ -208,7 +225,7 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
 {
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
 
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %lld for parameter, id: %d", i_size, paramId);
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter, id: %d", i_size, paramId);
     if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
 
     if (!i_dbExec->isTransaction()) throw DbException("workset update must be in transaction scope");
@@ -315,6 +332,104 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
     // done with insert
 }
 
+// load parameter values from csv file into run table
+void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath)
+{
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_filePath == nullptr) throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
+    if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope for parameter: %d %s", paramId, paramRow->paramName.c_str());
+
+    // check if special parameter value handling required: quoted for string or bool conversion to 0/1
+    bool isBool = paramTypeRow->isBool();
+    bool isStr = paramTypeRow->isString();
+
+    // make prefix of sql to insert parameter value:
+    //
+    // INSERT INTO ageSex_p201208171604590148 (run_id, dim0,dim1,param_value) VALUES (2,
+    //
+    string nameLst;
+    for (const ParamDimsRow & dim : paramDims) {
+        nameLst += dim.name + ",";
+    }
+    nameLst += "param_value";
+
+    string insPrefix = "INSERT INTO " + paramRunDbTable + " (run_id, " + nameLst + ") VALUES (" + to_string(runId) + ", ";
+
+    // read csv file into list of strings
+    list<string> csvLines = fileToUtf8Lines(i_filePath);
+    if (csvLines.size() <= 0)
+        throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
+
+    // do insert values
+    size_t rowCount = 0;
+    int rowSize = dimCount + 1;
+    string insSql;
+
+    for (const string & line : csvLines) {
+
+        // check header, expected: dim0,dim1,param_value
+        if (rowCount == 0) {
+            
+            if (!startWithNoCase(csvLines.front(), nameLst.c_str()))
+                throw DbException("invalid parameter.csv file header, expected: %s for parameter: %d %s", nameLst.c_str(), paramId, paramRow->paramName.c_str());
+            
+            rowCount++;
+            continue;       // done with csv file header
+        }
+
+        if (line.empty()) continue;     // skip empty lines
+
+        // split to columns, unquote and check row size
+        list<string> csvCols = splitCsv(line, ",", true, '"');
+        if (csvCols.size() < (size_t)rowSize)
+            throw DbException("invalid parameter.csv file at line %zd, expected: %d columns for parameter: %d %s", rowCount, rowSize, paramId, paramRow->paramName.c_str());
+
+        // make insert sql: append dimensions, it cannot be empty
+        insSql = insPrefix;
+
+        list<string>::const_iterator col = csvCols.cbegin();
+        for (int k = 0; k < dimCount; k++) {
+
+            if (col->empty())
+                throw DbException("invalid parameter.csv file at line %zd dimension is empty at column %d for parameter: %d %s", rowCount, k, paramId, paramRow->paramName.c_str());
+
+            insSql += *col + ", ";
+            ++col;
+        }
+
+        // make insert sql: append parameter value, it cannot be empty
+        if (col->empty())
+            throw DbException("invalid parameter.csv file at line %zd, value is empty at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+
+        if (!isStr && !isBool) {
+            insSql += *col + ")";
+        }
+        if (isStr) {
+            insSql += toQuoted(*col) + ")";
+        }
+        if (isBool) {
+            bool isOk = false;
+            if (equalNoCase(col->c_str(), "1") || equalNoCase(col->c_str(), "true") ||
+                equalNoCase(col->c_str(), "t") || equalNoCase(col->c_str(), "-1")) {
+                insSql += "1)";
+                isOk = true;
+            }
+            if (equalNoCase(col->c_str(), "0") || equalNoCase(col->c_str(), "false") || equalNoCase(col->c_str(), "f")) {
+                insSql += "0)";
+                isOk = true;
+            }
+            if (!isOk) throw DbException("invalid parameter.csv file at line %zd, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+        }
+
+        // do insert into parameter value table
+        i_dbExec->update(insSql);
+        rowCount++;
+    }
+
+    // done with insert
+    if (rowCount <= 0 || totalSize + 1 != rowCount) throw DbException("invalid parameter.csv size: %zd, expected: %zd for parameter: %d %s ", rowCount, totalSize, paramId, paramRow->paramName.c_str());
+}
+
 // calculate parameter values digest and store only single copy of parameter values
 void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i_type)
 {
@@ -332,14 +447,15 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
 
     // build sql to select parameter values:
     //
-    // SELECT dim0, dim1, param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2
+    // SELECT dim0,dim1,param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2
     //
-    string sql = "SELECT ";
-
+    string nameCsv;
     for (const ParamDimsRow & dim : paramDims) {
-        sql += dim.name + ", ";
+        nameCsv += dim.name + ",";
     }
-    sql += "param_value FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
+    nameCsv += "param_value";
+
+    string sql = "SELECT " + nameCsv +" FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
 
     if (dimCount > 0) {
         sql += " ORDER BY ";
@@ -351,10 +467,16 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
     // select parameter values and calculate digest
     MD5 md5;
 
-    string sLine = paramRow->digest + "\n";
-    md5.add(sLine.c_str(), sLine.length()); // start from metadata digest
+    // start from metadata digest
+    string sLine = "parameter_name,parameter_digest\n" + paramRow->paramName + "," + paramRow->digest + "\n";
+    md5.add(sLine.c_str(), sLine.length());
 
-    ValueRowDigester md5Rd(dimCount, i_type, &md5);
+    // append values header
+    sLine = nameCsv + "\n";
+    md5.add(sLine.c_str(), sLine.length());
+
+    // append parameter values digest
+    ValueRowDigester md5Rd(dimCount, i_type, &md5, doubleFmt.c_str());
     ValueRowAdapter adp(dimCount, i_type);
 
     i_dbExec->selectToRowProcessor(sql, adp, md5Rd);

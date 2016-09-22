@@ -182,16 +182,16 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     //   SELECT 
     //     M1.run_id, M1.dim0, M1.dim1, 
     //     SUM(M1.acc_value + 0.5 * T2.ex2) AS ex1
-    //   FROM out8_acc M1
+    //   FROM age_acc M1
     //   INNER JOIN 
     //   (
     //     SELECT 
     //       M2.run_id, M2.dim0, M2.dim1, 
     //       AVG(M2.acc_value + A4.acc4 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
-    //     FROM out8_acc M2
+    //     FROM age_acc M2
     //     INNER JOIN
     //     (
-    //       SELECT run_id, dim0, dim1, sub_id, acc_value AS acc4 FROM out8_acc WHERE acc_id = 4
+    //       SELECT run_id, dim0, dim1, sub_id, acc_value AS acc4 FROM age_acc WHERE acc_id = 4
     //     ) L2A4
     //     ON (L2A4.run_id = M2.run_id AND L2A4.dim0 = M2.dim0 AND L2A4.dim1 = M2.dim1 AND L2A4.sub_id = M2.sub_id)
     //     INNER JOIN 
@@ -200,10 +200,10 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     //         M3.run_id, M3.dim0, M3.dim1, 
     //         MAX(M3.acc_value) AS ex31, 
     //         MIN(A3.acc1) AS ex32
-    //       FROM out8_acc M3
+    //       FROM age_acc M3
     //       INNER JOIN
     //       (
-    //         SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM out8_acc WHERE acc_id = 1
+    //         SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM age_acc WHERE acc_id = 1
     //       ) L3A1
     //       ON (L3A1.run_id = M3.run_id AND L3A1.dim0 = M3.dim0 AND L3A1.dim1 = M3.dim1 AND L3A1.sub_id = M3.sub_id)
     //       WHERE M3.acc_id = 0

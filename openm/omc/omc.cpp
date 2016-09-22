@@ -117,7 +117,7 @@ namespace openm
     /** keys for omc options (short form) */
     struct OmcShortKey
     {
-        /** short name for options file name: -s fileName.ini */
+        /** short name for options file name: -ini fileName.ini */
         static const char * optionsFile;
 
         /** short name for omc model name */
@@ -178,7 +178,7 @@ namespace openm
     /** omc list of db-provider names to create sql scripts */
     const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
 
-    /** short name for options file name: -s fileName.ini */
+    /** short name for options file name: -ini fileName.ini */
     const char * OmcShortKey::optionsFile = "ini";
 
     /** short name for omc model name  */

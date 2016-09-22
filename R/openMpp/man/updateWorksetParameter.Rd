@@ -56,7 +56,7 @@ in order to create workset using parameters from previous model run and supply s
 You can create subset of model parameters ONLY based on existing run results. 
 Otherwise you have to pass ALL (full set) of parameters in order to create workset.
 
-Each workset has unique set id (positive integer) and also may have a name. 
+Each workset has unique set id (positive integer) and unique name. 
 To find set id by name use \code{\link{getWorksetIdByName}} call.
 
 Working set must be not read-only in order to update parameters by \code{\link{updateWorksetParameter}}.

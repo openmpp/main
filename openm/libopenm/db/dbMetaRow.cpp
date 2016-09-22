@@ -91,6 +91,39 @@ vector<TypeDicRow>::const_iterator TypeDicRow::byKey(int i_modelId, int i_typeId
     );
 }
 
+/** return true if model type is boolean (logical) */
+bool TypeDicRow::isBool(void) const
+{
+    return equalNoCase(name.c_str(), "bool");
+}
+
+/** return true if model type is string (varchar) */
+bool TypeDicRow::isString(void) const
+{
+    return equalNoCase(name.c_str(), "file");
+}
+
+/** return true if model type is float (float, real, numeric) */
+bool TypeDicRow::isFloat(void) const
+{
+    return
+        equalNoCase(name.c_str(), "float") || equalNoCase(name.c_str(), "double") ||
+        equalNoCase(name.c_str(), "ldouble") || equalNoCase(name.c_str(), "time") ||
+        equalNoCase(name.c_str(), "real");
+}
+
+/** return true if model type is integer: not float, string, boolean or not built-in */
+bool TypeDicRow::isInt(void) const
+{
+    return  !isBool() && !isString() && !isFloat();
+}
+
+/** return true if model type is built-in, ie: int, double, logical */
+bool TypeDicRow::isBuiltIn(void) const
+{
+    return typeId <= OM_MAX_BUILTIN_TYPE_ID;
+}
+
 // type_dic_txt join model_type_dic row less comparator by unique key: model id, model type id, language id.
 bool TypeDicTxtRow::isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right)
 {

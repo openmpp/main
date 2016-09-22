@@ -4,10 +4,14 @@ OpenM++ contributors
 
 Original version created in 2013 by:
                                                           Contributing
-                    User ID    E-mail                     Organization
-                    ---------  -------------------------  ------------
-Steve Gribble       esseffgee  steve.gribble@hotmail.com  uOttawa
-Anatoly Cherkassky  amc1999    anatoly@beyond2020.com     uOttawa
+                    User ID     E-mail                     Organization
+                    ---------   -------------------------  ------------
+Steve Gribble       esseffgee   steve.gribble@hotmail.com  uOttawa
+Anatoly Cherkassky  amc1999     anatoly@beyond2020.com     uOttawa
+
+Contributors:
+
+De Gouffe, Julien   jd-statcan  julien.degouffe@canada.ca  StatCan
 
 --------------------------
 Contributing Organizations
@@ -16,6 +20,7 @@ Contributing Organizations
 Following organizations are intellectual property holders of OpenM++:
 
 uOttawa: University of Ottawa, www.uottawa.ca
+StatCan: Statistics Canada,    www.statcan.gc.ca
 
 ----------
 Contact Us

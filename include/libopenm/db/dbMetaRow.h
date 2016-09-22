@@ -14,6 +14,9 @@ using namespace std;
 #include "libopenm/omLog.h"
 #include "dbCommon.h"
 
+/** max type id for built-int types, ie: int, double, logical */
+#define OM_MAX_BUILTIN_TYPE_ID              100
+
 namespace openm
 {
     /** base class for model metadata db-rows */
@@ -115,18 +118,6 @@ namespace openm
         /** create_dt        VARCHAR(32)  NOT NULL */
         string createDateTime;
 
-        /** parameter_prefix VARCHAR(4) NOT NULL, -- parameter tables prefix: p */
-        string paramPrefix;
-
-        /** workset_prefix   VARCHAR(4) NOT NULL, -- workset tables prefix: w */
-        string setPrefix;
-
-        /** acc_prefix       VARCHAR(4) NOT NULL, -- accumulator table prefix: a */
-        string accPrefix;
-
-        /** value_prefix     VARCHAR(4) NOT NULL, -- value tables prefix: v */
-        string valuePrefix;
-
         /** create row with supplied primary key field values. */
         ModelDicRow(int i_modelId) : 
             modelId(i_modelId), 
@@ -134,11 +125,7 @@ namespace openm
             digest(""), 
             type(0),
             version(""),
-            createDateTime(""),
-            paramPrefix(""),
-            setPrefix(""),
-            accPrefix(""),
-            valuePrefix("")
+            createDateTime("")
         { }
 
         /** create row with default empty field values. */
@@ -244,6 +231,21 @@ namespace openm
 
         /** find row by unique key: model id and model type id. */
         static vector<TypeDicRow>::const_iterator byKey(int i_modelId, int i_typeId, const vector<TypeDicRow> & i_rowVec);
+
+        /** return true if model type is boolean (logical) */
+        bool isBool(void) const;
+
+        /** return true if model type is string (varchar) */
+        bool isString(void) const;
+
+        /** return true if model type is float (float, real, numeric) */
+        bool isFloat(void) const;
+
+        /** return true if model type is integer (not float, string or boolean) */
+        bool isInt(void) const;
+
+        /** return true if model type is built-in, ie: int, double, logical */
+        bool isBuiltIn(void) const;
     };
 
     /** type_dic_txt join to model_type_dic table row. */
@@ -392,37 +394,37 @@ namespace openm
     /** parameter_dic join to model_parameter_dic table row. */
     struct ParamDicRow : public IMetaRow<ParamDicRow>
     {
-        /** model_id           INT          NOT NULL */
+        /** model_id         INT          NOT NULL */
         int modelId;
 
         /** model_parameter_id INT          NOT NULL */
         int paramId;
 
-        /** parameter_name     VARCHAR(255) NOT NULL */
+        /** parameter_name   VARCHAR(255) NOT NULL */
         string paramName;
 
         /** parameter_hid    INT          NOT NULL, -- unique parameter id */
         int paramHid;
 
-        /** parameter_digest   VARCHAR(32)  NOT NULL */
+        /** parameter_digest VARCHAR(32)  NOT NULL */
         string digest;
 
-        /** db_prefix          VARCHAR(20) NOT NULL */
-        string dbPrefix;
+        /** db_run_table     VARCHAR(64)  NOT NULL */
+        string dbRunTable;
 
-        /** db_suffix          VARCHAR(8)  NOT NULL */
-        string dbSuffix;
+        /** db_set_table     VARCHAR(64)  NOT NULL */
+        string dbSetTable;
 
-        /** parameter_rank     INT         NOT NULL */
+        /** parameter_rank   INT         NOT NULL */
         int rank;
 
-        /** model_type_id     INT          NOT NULL */
+        /** model_type_id    INT          NOT NULL */
         int typeId;
 
-        /** is_hidden         SMALLINT     NOT NULL */
+        /** is_hidden        SMALLINT     NOT NULL */
         bool isHidden;
 
-        /** num_cumulated     INT          NOT NULL */
+        /** num_cumulated    INT          NOT NULL */
         int numCumulated;
 
         /** create row with supplied unique key field values. */
@@ -432,8 +434,8 @@ namespace openm
             paramName(""),
             paramHid(0),
             digest(""),
-            dbPrefix(""),
-            dbSuffix(""),
+            dbRunTable(""),
+            dbSetTable(""),
             rank(0),
             typeId(0),
             isHidden(false),
@@ -620,13 +622,13 @@ namespace openm
 
         /** table_digest   VARCHAR(32) NOT NULL  */
         string digest;
-        
-        /** db_prefix      VARCHAR(32)  NOT NULL  */
-        string dbPrefix;
-        
-        /** db_suffix      VARCHAR(32)  NOT NULL  */
-        string dbSuffix;
-        
+
+        /** db_expr_table    VARCHAR(64)  NOT NULL */
+        string dbExprTable;
+
+        /** db_acc_table     VARCHAR(64)  NOT NULL */
+        string dbAccTable;
+
         /** is_user        SMALLINT NOT NULL     */
         bool isUser;
         
@@ -646,8 +648,8 @@ namespace openm
             tableName(""),
             tableHid(0),
             digest(""),
-            dbPrefix(""),
-            dbSuffix(""),
+            dbExprTable(""),
+            dbAccTable(""),
             isUser(false),
             rank(1),
             isSparse(false),

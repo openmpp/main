@@ -49,12 +49,8 @@ CREATE TABLE model_dic
   model_type       INT          NOT NULL, -- model type: 0 = case based, 1 = time based
   model_ver        VARCHAR(32)  NOT NULL, -- model version
   create_dt        VARCHAR(32)  NOT NULL, -- create date-time
-  parameter_prefix VARCHAR(4)   NOT NULL, -- parameter tables prefix: _p
-  workset_prefix   VARCHAR(4)   NOT NULL, -- workset tables prefix: _w
-  acc_prefix       VARCHAR(4)   NOT NULL, -- accumulator tables prefix: _a
-  value_prefix     VARCHAR(4)   NOT NULL, -- value tables prefix: _v
   PRIMARY KEY (model_id), 
-  CONSTRAINT model_dic_un_1 UNIQUE (model_digest)
+  CONSTRAINT model_dic_un UNIQUE (model_digest)
 );
 
 --
@@ -157,14 +153,13 @@ CREATE TABLE parameter_dic
   parameter_hid    INT          NOT NULL, -- unique parameter id
   parameter_name   VARCHAR(255) NOT NULL, -- parameter name
   parameter_digest VARCHAR(32)  NOT NULL, -- parameter digest
-  db_prefix        VARCHAR(32)  NOT NULL, -- parameter name part for db table name: ageSex
-  db_suffix        VARCHAR(32)  NOT NULL, -- unique part for db table name: 12345678
+  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
+  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   parameter_rank   INT          NOT NULL, -- parameter rank
   type_hid         INT          NOT NULL, -- parameter type id
   num_cumulated    INT          NOT NULL, -- number of cumulated dimensions
   PRIMARY KEY (parameter_hid),
-  CONSTRAINT parameter_dic_un_1 UNIQUE (db_prefix, db_suffix),
-  CONSTRAINT parameter_dic_un_2 UNIQUE (parameter_digest),
+  CONSTRAINT parameter_dic_un UNIQUE (parameter_digest),
   CONSTRAINT parameter_dic_type_fk
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid)
 );
@@ -241,16 +236,15 @@ CREATE TABLE parameter_dims_txt
 --
 CREATE TABLE table_dic
 (
-  table_hid    INT          NOT NULL, -- unique table id
-  table_name   VARCHAR(255) NOT NULL, -- table name
-  table_digest VARCHAR(32)  NOT NULL, -- output table digest
-  db_prefix    VARCHAR(32)  NOT NULL, -- name part for db table name: salaryBySex
-  db_suffix    VARCHAR(32)  NOT NULL, -- unique part for db table name: 12345678
-  table_rank   INT          NOT NULL, -- table rank
-  is_sparse    SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
+  table_hid     INT          NOT NULL, -- unique table id
+  table_name    VARCHAR(255) NOT NULL, -- table name
+  table_digest  VARCHAR(32)  NOT NULL, -- output table digest
+  db_expr_table VARCHAR(64)  NOT NULL, -- run values db table name: salaryBySex_v12345678
+  db_acc_table  VARCHAR(64)  NOT NULL, -- accumulator values db table name: salaryBySex_a12345678
+  table_rank    INT          NOT NULL, -- table rank
+  is_sparse     SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
   PRIMARY KEY (table_hid),
-  CONSTRAINT table_dic_un_1 UNIQUE (db_prefix, db_suffix),
-  CONSTRAINT table_dic_un_2 UNIQUE (table_digest)
+  CONSTRAINT table_dic_un UNIQUE (table_digest)
 );
 
 --
@@ -582,6 +576,7 @@ CREATE TABLE run_table
 -- workset can be editable or read-only
 --   if workset is editable then you can modify input parameters or workset description, notes, etc.
 --   if workset is read-only then you can run the model using that workset as input
+-- workset name + model id must be unique (model cannot have multiple workset with same name)
 -- Important: working set_id must be different from run_id (use id_lst to get it)
 -- Important: always update parameter values inside of transaction scope
 -- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
@@ -595,7 +590,7 @@ CREATE TABLE workset_lst
   is_readonly SMALLINT     NOT NULL, -- if non-zero then working set is read-only
   update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (set_id),
-  CONSTRAINT workset_lst_un_1 UNIQUE (model_id, set_name),
+  CONSTRAINT workset_lst_un UNIQUE (model_id, set_name),
   CONSTRAINT workset_lst_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
   CONSTRAINT workset_lst_fk
@@ -650,6 +645,7 @@ CREATE TABLE workset_parameter_txt
 
 --
 -- Modelling task: named set of model inputs (of working sets)
+-- task name + model id must be unique (model cannot have multiple tasks with same name)
 --
 CREATE TABLE task_lst
 (
@@ -657,6 +653,7 @@ CREATE TABLE task_lst
   model_id  INT          NOT NULL, -- master key
   task_name VARCHAR(255) NOT NULL, -- task name
   PRIMARY KEY (task_id),
+  CONSTRAINT task_lst_un UNIQUE (model_id, task_name),
   CONSTRAINT task_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
@@ -728,16 +725,18 @@ CREATE TABLE task_run_set
 
 --
 -- list of ids, must be positive.
--- values < 10 reserved for development and testing
+-- id < 100 reserved for development and testing
+-- also for types id < 100 reserved for bult-in types
 --
-INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id',       10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('model_id',      10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('type_hid',      30);
-INSERT INTO id_lst (id_key, id_value) VALUES ('parameter_hid', 10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('table_hid',     10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('task_id',       10);
-INSERT INTO id_lst (id_key, id_value) VALUES ('task_run_id',   10);
+INSERT INTO id_lst (id_key, id_value) VALUES ('openmpp',       100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id',       100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('model_id',      100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('type_hid',      100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('parameter_hid', 100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('table_hid',     100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('task_id',       100);
+INSERT INTO id_lst (id_key, id_value) VALUES ('task_run_id',   100);
 
 --
 -- Languages and word list
@@ -746,49 +745,49 @@ INSERT INTO lang_lst (lang_id, lang_code, lang_name) VALUES (0, 'EN', 'English')
 INSERT INTO lang_lst (lang_id, lang_code, lang_name) VALUES (1, 'FR', 'Français');
 
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'all', 'All');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'min', 'min');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'max', 'max');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'min', 'Min');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'max', 'Max');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'all', 'Toutes');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'min', 'min');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'max', 'max');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'min', 'Min');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'max', 'Max');
 
 --
 -- built-in types: type name used as unique type digest
 --
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (0, 'char',  '_char_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (1, 'schar', '_schar_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (2, 'short', '_short_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (3, 'int',   '_int_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (4, 'long',  '_long_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (5, 'llong', '_llong_', 0, 1);
--- INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (6, 'bool',  '_bool_', 1, 2);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (7, 'uchar',    '_uchar_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (8, 'ushort',   '_ushort_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (9, 'uint',     '_uint_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (10, 'ulong',   '_ulong_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (11, 'ullong',  '_ullong_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (12, 'float',   '_float_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (13, 'double',  '_double_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (14, 'ldouble', '_ldouble_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (15, 'Time',    '_time_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (16, 'real',    '_real_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (17, 'integer', '_integer_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (18, 'counter', '_counter_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (19, 'big_counter', '_big_counter_', 0, 1);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (20, 'file',    '_file_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (1, 'char',  '_char_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (2, 'schar', '_schar_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (3, 'short', '_short_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (4, 'int',   '_int_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (5, 'long',  '_long_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (6, 'llong', '_llong_', 0, 1);
+-- INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (7, 'bool',  '_bool_', 1, 2);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (8, 'uchar',    '_uchar_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (9, 'ushort',   '_ushort_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (10, 'uint',     '_uint_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (11, 'ulong',   '_ulong_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (12, 'ullong',  '_ullong_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (13, 'float',   '_float_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (14, 'double',  '_double_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (15, 'ldouble', '_ldouble_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (16, 'Time',    '_Time_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (17, 'real',    '_real_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (18, 'integer', '_integer_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (19, 'counter', '_counter_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (20, 'big_counter', '_big_counter_', 0, 1);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (21, 'file',    '_file_', 0, 1);
 
 -- 
 -- built-in types: logical type
 --
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (6, 'bool', '_bool_', 1, 2);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (7, 'bool', '_bool_', 1, 2);
 
-INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (6, 0, 'logical type', NULL);
-INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (6, 1, 'logical type [no label (FR)]', NULL);
+INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7, 0, 'logical type', NULL);
+INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7, 1, 'logical type [no label (FR)]', NULL);
 
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (6, 0, 'false');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (6, 1, 'true');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (7, 0, 'false');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (7, 1, 'true');
 
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (6, 0, 0, 'False', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (6, 0, 1, 'Faux', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (6, 1, 0, 'True', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (6, 1, 1, 'Vrai', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 0, 0, 'False', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 0, 1, 'Faux', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 1, 0, 'True', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 1, 1, 'Vrai', NULL);

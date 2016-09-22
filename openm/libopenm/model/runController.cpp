@@ -140,13 +140,15 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     if (mStatus == ModelStatus::init) mStatus = ModelStatus::progress;
 
     // create new run
+    string sn = toAlphaNumeric(string(OM_MODEL_NAME) + "_" + dtStr + "_" + to_string(nRunId));
+
     i_dbExec->update(
         "INSERT INTO run_lst" \
         " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
-        toQuoted(string(OM_MODEL_NAME) + " " + dtStr) + ", " +
+        toQuoted(sn) + ", " +
         to_string(subSampleCount) + ", " +
         to_string(subSampleCount) + ", " +
         "0, " +
@@ -254,6 +256,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     // if base run does not exist then workset must include all model parameters
     // if (!isBaseRunExist && paramVec.size() != wsParamVec.size()) throw DbException("workset must include all model parameters (set id: %d)", setId);
 
+    // check if parameters csv directory specified and accessible
+    string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
+    bool isParamDir = isFileExists(paramDir.c_str());
+
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
     //   from workset parameter value table
@@ -265,8 +271,6 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
 
-        string paramTblName = paramIt->dbPrefix + metaStore->modelRow->paramPrefix + paramIt->dbSuffix;
-        string setTblName = paramIt->dbPrefix + metaStore->modelRow->setPrefix + paramIt->dbSuffix;
         string argName = string(RunOptionsKey::parameterPrefix) + "." + paramIt->paramName;
 
         // calculate parameter source: command line (or ini-file), workset, based run, run options
@@ -301,17 +305,46 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             // insert the value
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
                 );
             isInserted = true;
         }
 
+        // insert from parameter.csv file if csv directory specified
+        if (!isInserted && isParamDir) {
+
+            // if parameter.csv exist then copy it into parameter value table
+            string csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".csv");
+
+            if (isFileExists(csvPath.c_str())) {
+
+                // read from csv file, parse csv lines and insert values into parameter run table
+                unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
+                    i_runId,
+                    paramIt->paramName.c_str(),
+                    i_dbExec,
+                    metaStore.get()
+                ));
+                writer->loadCsvParameter(i_dbExec, csvPath.c_str());
+
+                isInserted = true;
+            }
+        }
+
         // copy parameter from workset parameter value table
+        // copy parameter value notes from workset parameter text table
         if (!isInserted && isFromSet) {
             i_dbExec->update(
-                "INSERT INTO " + paramTblName + " (run_id, " + sDimLst + " param_value)" +
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, " + sDimLst + " param_value)" +
                 " SELECT " + sRunId + ", " + sDimLst + " param_value" +
-                " FROM " + setTblName + " WHERE set_id = " + to_string(i_setId)
+                " FROM " + paramIt->dbSetTable + " WHERE set_id = " + to_string(i_setId)
+                );
+            i_dbExec->update(
+                "INSERT INTO run_parameter_txt (run_id, parameter_hid, lang_id, note)" \
+                " SELECT " + sRunId + ", parameter_hid, lang_id, note" +
+                " FROM workset_parameter_txt" +
+                " WHERE set_id = " + to_string(i_setId) +
+                " AND parameter_hid = " + to_string(paramIt->paramHid)
                 );
             isInserted = true;
         }
@@ -358,9 +391,13 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             if (pi == endItem) throw ModelException("parameter %d: %s not found in model parameters", paramIt->paramId, paramIt->paramName.c_str());
 
             // calculate parameter values digest and store only single copy of parameter values
-            unique_ptr<IParameterRunWriter> writer(
-                IParameterRunWriter::create(i_runId, paramIt->paramName.c_str(), i_dbExec, metaStore.get())
-            );
+            unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
+                i_runId,
+                paramIt->paramName.c_str(),
+                i_dbExec,
+                metaStore.get(),
+                argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
+            ));
             writer->digestParameter(i_dbExec, pi->typeOf);
         }
     }
@@ -479,12 +516,13 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
             tblRow.tableName.c_str(),
             i_dbExec,
             metaStore.get(),
-            subSampleCount
-            ));
-            writer->writeAllExpressions(i_dbExec);
+            subSampleCount,
+            argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
+        ));
+        writer->writeAllExpressions(i_dbExec);
 
-            // calculate output table values digest and store only single copy of output values
-            writer->digestOutput(i_dbExec);
+        // calculate output table values digest and store only single copy of output values
+        writer->digestOutput(i_dbExec);
     }
 }
 
@@ -496,7 +534,7 @@ void RunController::doWriteAccumulators(
     const char * i_name,
     size_t i_size,
     forward_list<unique_ptr<double> > & io_accValues
-    ) const
+) const
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
@@ -517,12 +555,12 @@ void RunController::doWriteAccumulators(
         subSampleCount,
         i_runOpts.useSparse,
         i_runOpts.nullValue
-        ));
+    ));
 
     for (const auto & apc : io_accValues) {
         writer->writeAccumulator(
             i_dbExec, i_runOpts.subSampleNumber, metaStore->tableAcc->byIndex(nAcc)->accId, i_size, apc.get()
-            );
+        );
         nAcc++;
     }
 }
