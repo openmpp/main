@@ -144,7 +144,7 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
 
     i_dbExec->update(
         "INSERT INTO run_lst" \
-        " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt)" \
+        " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_digest)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
@@ -155,7 +155,8 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
         "0, " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::progress) + ", " +
-        toQuoted(dtStr) + ")"
+        toQuoted(dtStr) + 
+        ", NULL)"
         );
 
     // if this is a next set of the modeling task then update task progress
@@ -417,13 +418,27 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
 
         string sDt = makeDateTime(chrono::system_clock::now());
 
-        i_dbExec->update(
-            "UPDATE run_lst SET status = " +
-            (!ModelRunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
-            " update_dt = " + toQuoted(sDt) +
-            " WHERE run_id = " + to_string(i_runId)
+        // if error then update run status only else update run status and run digest
+        if (ModelRunState::isError(i_status)) {
+            i_dbExec->update(
+                "UPDATE run_lst SET status = " + toQuoted(RunStatus::error) + "," +
+                " update_dt = " + toQuoted(sDt) +
+                " WHERE run_id = " + to_string(i_runId)
             );
+        }
+        else {
 
+            string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
+
+            i_dbExec->update(
+                "UPDATE run_lst SET status = " + toQuoted(RunStatus::exit) + "," +
+                " update_dt = " + toQuoted(sDt) + "," +
+                " run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+                " WHERE run_id = " + to_string(i_runId)
+            );
+        }
+
+        // update task run progress
         if (i_taskRunId > 0) {
             i_dbExec->update(
                 "UPDATE task_run_lst SET status = " +
@@ -474,9 +489,12 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
     {
         unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
+        string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
+
         i_dbExec->update(
             "UPDATE run_lst SET status = " + toQuoted(RunStatus::done) + "," +
-            " update_dt = " + toQuoted(sDt) +
+            " update_dt = " + toQuoted(sDt) + "," +
+            " run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
             " WHERE run_id = " + to_string(i_runId)
             );
 

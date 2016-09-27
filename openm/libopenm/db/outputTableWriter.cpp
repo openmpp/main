@@ -357,7 +357,7 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
 
     i_dbExec->update(
         "INSERT INTO run_table (run_id, table_hid, base_run_id, run_digest)" \
-        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + toQuoted(tableRow->digest) + ")"
+        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", NULL)"
         );
 
     // build sql to select accumulators and expressions values:

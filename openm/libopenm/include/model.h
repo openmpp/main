@@ -13,7 +13,6 @@
 #include <mutex>
 #include <future>
 #include <list>
-#include <forward_list>
 using namespace std;
 
 #include "libopenm/omLog.h"

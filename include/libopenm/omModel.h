@@ -11,6 +11,7 @@
 #include <typeinfo>
 #include <memory>
 #include <cfloat>
+#include <forward_list>
 using namespace std;
 
 #include "omLog.h"

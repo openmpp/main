@@ -741,6 +741,9 @@ namespace openm
 
         /** select table row by primary key: run id. */
         static vector<RunLstRow> byKey(IDbExec * i_dbExec, int i_runId);
+
+        /** calculate run digest, including run parameters and output table values digest */
+        static string digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId);
     };
 
     /** run_txt table public interface. */

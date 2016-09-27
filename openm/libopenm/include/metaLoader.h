@@ -33,6 +33,9 @@ namespace openm
         /** model run id to restart model run */
         static const char * runId;
 
+        /** model run name to restart model run */
+        static const char * runName;
+
         /** working set id to get input parameters */
         static const char * setId;
 

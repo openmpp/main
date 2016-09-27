@@ -30,6 +30,9 @@ namespace openm
     /** model run id to restart model run */
     const char * RunOptionsKey::runId = "OpenM.RunId";
 
+    /** model run name to restart model run */
+    const char * RunOptionsKey::runName = "OpenM.RunName";
+
     /** working set id to get input parameters */
     const char * RunOptionsKey::setId = "OpenM.SetId";
 
@@ -97,6 +100,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::threadCount,
     RunOptionsKey::dbConnStr,
     RunOptionsKey::runId,
+    RunOptionsKey::runName,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
     RunOptionsKey::paramDir,

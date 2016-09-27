@@ -4,6 +4,9 @@
 
 #include "libopenm/db/dbMetaRow.h"
 #include "dbMetaTable.h"
+#include "libopenm/omModel.h"
+#include "md5.h"
+
 using namespace openm;
 
 namespace openm
@@ -126,4 +129,95 @@ vector<RunLstRow> RunLstTable::select(IDbExec * i_dbExec, const string & i_where
     stable_sort(vec.begin(), vec.end(), RunLstRow::keyLess);
 
     return IMetaTable<RunLstRow>::rows(vec);
+}
+
+// calculate run digest, including run parameters and output table values digest
+string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
+{
+    // if no run record then return empty "" digest
+    vector<RunLstRow> rv = byKey(i_dbExec, i_runId);
+    if (rv.size() != 1) return "";
+
+    // start from metadata digest
+    MD5 md5;
+
+    string sLine = "run_name,sub_count,sub_completed,status\n" +
+        rv[0].name + "," + to_string(rv[0].subCount) + "," + to_string(rv[0].subCompleted) + "," + rv[0].status + "\n";
+
+    md5.add(sLine.c_str(), sLine.length());
+
+    // append run parameters value digest header
+    sLine = "run_digest\n";
+    md5.add(sLine.c_str(), sLine.length());
+
+    // select count of run parameters value digest to allocate buffer for digest select
+    size_t nRow = i_dbExec->selectToInt(
+        "SELECT COUNT(*)" \
+        " FROM run_parameter R" \
+        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = R.parameter_hid)" \
+        " WHERE M.model_id = " + to_string(i_modelId) +
+        " ORDER BY 1",
+        0);
+
+    // select run parameters value digest and append to run digest
+    if (nRow > 0) {
+
+        unique_ptr<string[]> strArr(new string[nRow]);
+        void * digestData = strArr.get();
+
+        string sql = "SELECT M.model_parameter_id, R.run_digest" \
+            " FROM run_parameter R" \
+            " INNER JOIN model_parameter_dic M ON (M.parameter_hid = R.parameter_hid)" \
+            " WHERE M.model_id = " + to_string(i_modelId) +
+            " ORDER BY 1";
+
+        i_dbExec->selectColumn(sql, 1, typeid(string), nRow, digestData);
+
+        // append run parameters values digest to run digest
+        for (size_t k = 0; k < nRow; k++) {
+            sLine = strArr[k] + "\n";
+            md5.add(sLine.c_str(), sLine.length());
+        }
+    }
+
+    // if run not completed succesfully then do not append output tables value digest
+    if (rv[0].status != RunStatus::done) {
+        return md5.getHash();
+    }
+
+    // append output tables value digest header
+    sLine = "run_digest\n";
+    md5.add(sLine.c_str(), sLine.length());
+
+    // select count of run output tables value digest to allocate buffer for digest select
+    nRow = i_dbExec->selectToInt(
+        "SELECT COUNT(*)" \
+        " FROM run_table R" \
+        " INNER JOIN model_table_dic M ON (M.table_hid = R.table_hid)" \
+        " WHERE M.model_id = " + to_string(i_modelId) +
+        " ORDER BY 1",
+        0);
+
+    // select output tables value digest and append to run digest
+    if (nRow > 0) {
+
+        unique_ptr<string[]> strArr(new string[nRow]);
+        void * digestData = strArr.get();
+
+        string sql = "SELECT M.model_table_id, R.run_digest" \
+            " FROM run_table R" \
+            " INNER JOIN model_table_dic M ON (M.table_hid = R.table_hid)" \
+            " WHERE M.model_id = " + to_string(i_modelId) +
+            " ORDER BY 1";
+
+        i_dbExec->selectColumn(sql, 1, typeid(string), nRow, digestData);
+
+        // append output tables values digest to run digest
+        for (size_t k = 0; k < nRow; k++) {
+            sLine = strArr[k] + "\n";
+            md5.add(sLine.c_str(), sLine.length());
+        }
+    }
+
+    return md5.getHash();
 }

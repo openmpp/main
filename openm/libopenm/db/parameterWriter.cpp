@@ -442,7 +442,7 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
 
     i_dbExec->update(
         "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, run_digest)" \
-        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + toQuoted(paramRow->digest) + ")"
+        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", NULL)"
         );
 
     // build sql to select parameter values:
@@ -455,7 +455,7 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, const type_info & i
     }
     nameCsv += "param_value";
 
-    string sql = "SELECT " + nameCsv +" FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
+    string sql = "SELECT " + nameCsv + " FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
 
     if (dimCount > 0) {
         sql += " ORDER BY ";
