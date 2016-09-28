@@ -11,6 +11,13 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
+2016_09_28:
+    support for model "publish": 
+      import-export into and from json and csv files for model, input parameters set, run results
+      direct copy between databases (eg: model using SQLite local.db and central storage is MySQL)
+    model can directly use csv file(s) for input parameters, no database required
+    data access library, API in Go, import-export tools (alpha)
+
 2016_03_22:
     minor release to improve modeling task support and R package
 
