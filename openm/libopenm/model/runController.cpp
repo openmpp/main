@@ -427,13 +427,16 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
             );
         }
         else {
+            i_dbExec->update(
+                "UPDATE run_lst SET status = " + toQuoted(RunStatus::exit) + "," +
+                " update_dt = " + toQuoted(sDt) +
+                " WHERE run_id = " + to_string(i_runId)
+            );
 
             string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
 
             i_dbExec->update(
-                "UPDATE run_lst SET status = " + toQuoted(RunStatus::exit) + "," +
-                " update_dt = " + toQuoted(sDt) + "," +
-                " run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+                "UPDATE run_lst SET run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
                 " WHERE run_id = " + to_string(i_runId)
             );
         }
@@ -465,14 +468,14 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
             " sub_restart = sub_count,"
             " update_dt = " + toQuoted(sDt) +
             " WHERE run_id = " + to_string(i_runId)
-            );
+        );
 
         // update task progress
         if (i_taskRunId > 0) {
             i_dbExec->update(
                 "UPDATE task_run_lst SET update_dt = " + toQuoted(sDt) +
                 " WHERE task_run_id = " + to_string(i_taskRunId)
-                );
+            );
         }
 
         i_dbExec->commit();
@@ -489,21 +492,25 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
     {
         unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
+        i_dbExec->update(
+            "UPDATE run_lst SET status = " + toQuoted(RunStatus::done) + "," +
+            " update_dt = " + toQuoted(sDt) +
+            " WHERE run_id = " + to_string(i_runId)
+        );
+
         string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
 
         i_dbExec->update(
-            "UPDATE run_lst SET status = " + toQuoted(RunStatus::done) + "," +
-            " update_dt = " + toQuoted(sDt) + "," +
-            " run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+            "UPDATE run_lst SET run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
             " WHERE run_id = " + to_string(i_runId)
-            );
+        );
 
         // update task progress
         if (i_taskRunId > 0) {
             i_dbExec->update(
                 "UPDATE task_run_lst SET update_dt = " + toQuoted(sDt) +
                 " WHERE task_run_id = " + to_string(i_taskRunId)
-                );
+            );
         }
         i_dbExec->commit();
     }

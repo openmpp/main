@@ -140,7 +140,6 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
 
     // start from metadata digest
     MD5 md5;
-
     string sLine = "run_name,sub_count,sub_completed,status\n" +
         rv[0].name + "," + to_string(rv[0].subCount) + "," + to_string(rv[0].subCompleted) + "," + rv[0].status + "\n";
 
@@ -156,6 +155,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
         " FROM run_parameter R" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = R.parameter_hid)" \
         " WHERE M.model_id = " + to_string(i_modelId) +
+        " AND R.run_id = " + to_string(i_runId) +
         " ORDER BY 1",
         0);
 
@@ -169,6 +169,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
             " FROM run_parameter R" \
             " INNER JOIN model_parameter_dic M ON (M.parameter_hid = R.parameter_hid)" \
             " WHERE M.model_id = " + to_string(i_modelId) +
+            " AND R.run_id = " + to_string(i_runId) +
             " ORDER BY 1";
 
         i_dbExec->selectColumn(sql, 1, typeid(string), nRow, digestData);
@@ -195,6 +196,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
         " FROM run_table R" \
         " INNER JOIN model_table_dic M ON (M.table_hid = R.table_hid)" \
         " WHERE M.model_id = " + to_string(i_modelId) +
+        " AND R.run_id = " + to_string(i_runId) +
         " ORDER BY 1",
         0);
 
@@ -208,6 +210,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
             " FROM run_table R" \
             " INNER JOIN model_table_dic M ON (M.table_hid = R.table_hid)" \
             " WHERE M.model_id = " + to_string(i_modelId) +
+            " AND R.run_id = " + to_string(i_runId) +
             " ORDER BY 1";
 
         i_dbExec->selectColumn(sql, 1, typeid(string), nRow, digestData);
