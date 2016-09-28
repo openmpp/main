@@ -3,6 +3,7 @@ Windows users:
 
 This directory may contain extra binaries for Windows, such as:
 
+dbcopy.exe:                 command-line utility to import-export models, input paramaters or run results to/from database
 ompp_export_excel.exe:      command-line utility to create Excel workbook from model_scenario.sqlite database
 ompp_export_csv.exe:        command-line utility to create CSV files from model_scenario.sqlite database
 ompp_create_scex.exe:       command-line utility to create Modgen scex scenario file for x-compatible development
