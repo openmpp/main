@@ -27,7 +27,7 @@ invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))   # recommended
 defRs <- getModel(theDb, "modelOne")
 
 # use model digest to identify exact version of the model
-defRs <- getModel(theDb, "modelOne", "20120817_1604590148")
+defRs <- getModel(theDb, "modelOne", "_201208171604590148_")
 
 # 
 # get model run results (first run of that model, usually run id = 11)
