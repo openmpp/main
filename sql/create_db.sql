@@ -472,6 +472,7 @@ CREATE TABLE run_lst
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
+  run_digest    VARCHAR(32)  NULL,     -- digest of the run
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
@@ -517,7 +518,7 @@ CREATE TABLE run_parameter
   run_id        INT         NOT NULL, -- master key
   parameter_hid INT         NOT NULL, -- parameter unique id
   base_run_id   INT         NOT NULL, -- source run id to select parameter value
-  run_digest    VARCHAR(32) NOT NULL, -- digest of parameter value for the run
+  run_digest    VARCHAR(32) NULL,     -- digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
   CONSTRAINT run_parameter_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
@@ -554,7 +555,7 @@ CREATE TABLE run_table
   run_id      INT         NOT NULL, -- master key
   table_hid   INT         NOT NULL, -- output table unique id
   base_run_id INT         NOT NULL, -- source run id to select output table value
-  run_digest  VARCHAR(32) NOT NULL, -- digest of table value for the run
+  run_digest  VARCHAR(32) NULL,     -- digest of table value for the run
   PRIMARY KEY (run_id, table_hid),
   CONSTRAINT run_table_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),

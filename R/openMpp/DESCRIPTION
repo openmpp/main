@@ -8,4 +8,4 @@ Maintainer: amc1999 <openmpp99@gmail.com>
 Description: Set input parameters and get output results of openM++ models using R.
 Depends: DBI, RSQLite
 Imports:
-License: MIT + file LICENSE
+License: MIT

@@ -108,7 +108,7 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %ld for parameter id: %d", i_size, paramId);
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter id: %d", i_size, paramId);
     if (io_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
 
     // make sql to select parameter value
@@ -139,5 +139,5 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type
         ((dimCount > 0) ? " ORDER BY " + sOrder : "");
 
     // select parameter and return value column
-    i_dbExec->selectColumn(sql, dimCount, i_type,  i_size,  io_valueArr);
+    i_dbExec->selectColumn(sql, dimCount, i_type, i_size, io_valueArr);
 }
