@@ -209,10 +209,19 @@ sub ompp_tables_to_csv
 		}
 	}
 
-	# Get all of the output table names
-	my $tables = run_sqlite_statement $db, "Select table_name From table_dic Order By table_name;", $retval;
+	# Get all output table names and ranks
+	my $temp = run_sqlite_statement $db, "Select table_name, table_rank From table_dic Order By table_name;", $retval;
 	if ($retval != 0) {
 		return $retval;
+	}
+
+	# create array of table names and hash table_name ==> rank
+	my %ranks;
+	my @tables;
+	for my $record (split(/\n/, $temp)) {
+		(my $col1, my $col2) = split(/\|/, $record);
+		push @tables, $col1;
+		$ranks{$col1} = $col2;
 	}
 	
 	# Create SQLite script in temporary file to extract all result tables
@@ -223,9 +232,16 @@ sub ompp_tables_to_csv
 	};
 	print TEMP_SQL ".mode csv\n";
 	print TEMP_SQL ".headers on\n";
-	for my $table (split(/\n/, $tables)) {
+	for my $table (@tables) {
+		my $rank = $ranks{$table};
+		my $order_clause = "Order By ";
+		for my $dim (0..$rank) {
+			$order_clause .= 'Dim'.$dim;
+			$order_clause .= ',' if $dim < $rank;
+		}
+		#print "table=${table} order=${order}\n";
 		print TEMP_SQL ".output ${dir}/in_${table}.csv\n";
-		print TEMP_SQL "Select * From ${table};\n";
+		print TEMP_SQL "Select * From ${table} ${order_clause};\n";
 	}
 	close TEMP_SQL;
 	
@@ -241,7 +257,7 @@ sub ompp_tables_to_csv
 	}
 
 	# Normalize the numeric value (last field in each line) for comparison purposes
-	for my $table (split(/\n/, $tables)) {
+	for my $table (@tables) {
 		my $in_csv = "${dir}/in_${table}.csv";
 		if (!open IN_CSV, "<${in_csv}") {
 			logmsg error, "unable to open ${in_csv}";
