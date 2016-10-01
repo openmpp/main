@@ -48,4 +48,4 @@ chdir "${om_root}/R";
 	system(@args);
 };
 
-
+chdir "${om_root}/Perl";
