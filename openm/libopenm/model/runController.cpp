@@ -221,8 +221,8 @@ void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExe
 
 // copy input parameters from working set and "base" run into new run id
 // search for input parameter value in following order:
-//   use value of parameter specified as command line or ini-file argument
-//   use value of parameter from profile_option table or any other run options source
+//   use value of parameter specified in run options: (command-line, ini-file, profile_option table)
+//   use parameter.csv file if parameters csv directory specified
 //   use value of parameter from working set of model parameters
 //   if working set based on model run then search by base run id to get parameter value
 //   else raise an exception
@@ -263,6 +263,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
+    //   from parameter.csv file if exist
     //   from workset parameter value table
     //   if workset based on run then as link to base run of workset
     // calculate parameter values digest and store only single copy of parameter values

@@ -175,9 +175,9 @@ void RootController::init(void)
 * it creates a copy of input paramters from source working set under destination run_id
 * 
 * search for input parameter value in following order: \n
-*   - use value of parameter specified as command line or ini-file argument
+*   - use value of parameter specified as command line or ini-file argument or from profile_option table
+*   - use parameter.csv file if parameters csv directory specified
 *   - use value of parameter from working set of model parameters
-*   - use value of parameter from profile_option table or any other run options source
 *   - if working set based on model run then search by base run id to get parameter value
 *   - else raise an exception
 *
