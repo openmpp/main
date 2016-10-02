@@ -294,7 +294,9 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
 /**   
 * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
 *
-* RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
+* RFC 4180 difference: 
+* skip space-only lines, trim values unless it is " quoted ",
+* line can end with CRLF or LF, multi-line strings not supported.
 *
 * @param[in] i_values       source string of comma separated values.
 * @param[in] i_delimiters   list of delimiters, default: comma.
