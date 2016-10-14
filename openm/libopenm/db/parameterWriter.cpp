@@ -19,13 +19,14 @@ namespace openm
         virtual ~ParameterWriter(void) throw() { }
 
     protected:
-        int paramId;                        // parameter id
-        int dimCount;                       // number of dimensions
-        size_t totalSize;                   // total number of values in the table
-        vector<int> dimSizeVec;             // size of each parameter dimension
-        const ParamDicRow * paramRow;       // parameter metadata row
-        const TypeDicRow * paramTypeRow;    // parameter type
-        vector<ParamDimsRow> paramDims;     // parameter dimensions
+        int paramId;                                // parameter id
+        int dimCount;                               // number of dimensions
+        size_t totalSize;                           // total number of values in the table
+        vector<int> dimSizeVec;                     // size of each parameter dimension
+        const ParamDicRow * paramRow;               // parameter metadata row
+        const TypeDicRow * paramTypeRow;            // parameter type
+        vector<ParamDimsRow> paramDims;             // parameter dimensions
+        vector<vector<TypeEnumLstRow>> dimEnums;    // enums for each dimension
 
     private:
         ParameterWriter(const ParameterWriter & i_writer) = delete;
@@ -163,7 +164,9 @@ ParameterWriter::ParameterWriter(
         const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(mId, dim.typeId);
         if (typeRow == nullptr) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
 
-        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(mId, dim.typeId).size();
+        vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(mId, dim.typeId);
+        int dimSize = (int)de.size();
+        dimEnums.push_back(de);
 
         if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
 
@@ -393,7 +396,26 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
             if (col->empty())
                 throw DbException("invalid parameter.csv file at line %zd dimension is empty at column %d for parameter: %d %s", rowCount, k, paramId, paramRow->paramName.c_str());
 
-            insSql += *col + ", ";
+            // if dimension is a simple type (integer) then use column value to insert
+            // if dimension is enum-based then find enum id by code
+            if (dimSizeVec[k] <= 0) {
+                insSql += *col + ", ";  // simple dimension type: insert csv value
+            }
+            else { // csv contains code, find enum id by code
+
+                int mId = paramDims[k].modelId;
+                int tId = paramDims[k].typeId;
+
+                auto eIt = find_if(
+                    dimEnums[k].cbegin(),
+                    dimEnums[k].cend(),
+                    [mId, tId, col](const TypeEnumLstRow & i_row) -> bool { return i_row.modelId == mId && i_row.typeId == tId && i_row.name == *col; }
+                );
+                if (eIt == dimEnums[k].cend())
+                    throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k, paramId, paramRow->paramName.c_str(), col->c_str());
+
+                insSql += to_string(eIt->enumId) + ", ";  // insert enum id
+            }
             ++col;
         }
 

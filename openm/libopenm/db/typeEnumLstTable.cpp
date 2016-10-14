@@ -23,13 +23,13 @@ namespace openm
         IRowBaseVec & rowsRef(void) { return rowVec; }
 
         // find row by unique key: model id, model type id, enum id
-        const TypeEnumLstRow * byKey(int i_modelId, int i_typeId, int i_enumId) const;
-
+        const TypeEnumLstRow * byKey(int i_modelId, int i_typeId, int i_enumId) const override;
+        
         // get list of rows by model id
-        vector<TypeEnumLstRow> byModelId(int i_modelId) const;
+        vector<TypeEnumLstRow> byModelId(int i_modelId) const override;
 
         // get list of rows by model id and model type id
-        vector<TypeEnumLstRow> byModelIdTypeId(int i_modelId, int i_typeId) const;
+        vector<TypeEnumLstRow> byModelIdTypeId(int i_modelId, int i_typeId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows

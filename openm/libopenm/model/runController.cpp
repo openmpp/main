@@ -259,7 +259,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
     // check if parameters csv directory specified and accessible
     string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
-    bool isParamDir = isFileExists(paramDir.c_str());
+    bool isParamDir = !paramDir.empty() && isFileExists(paramDir.c_str());
 
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)

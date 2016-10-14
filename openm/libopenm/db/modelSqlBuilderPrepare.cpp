@@ -145,6 +145,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
     // type_enum_lst table
     // unique: model id, type id, enum id; master key: model id, type id
+    // unique: model id, type id, enum name; 
     for (vector<TypeEnumLstRow>::const_iterator rowIt = io_metaRows.typeEnum.cbegin(); rowIt != io_metaRows.typeEnum.cend(); ++rowIt) {
 
         TypeDicRow mkRow(rowIt->modelId, rowIt->typeId);
@@ -160,6 +161,17 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
         if (nextIt != io_metaRows.typeEnum.cend() && TypeEnumLstRow::isKeyEqual(*rowIt, *nextIt))
             throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum id: %d", rowIt->modelId, rowIt->typeId, rowIt->enumId);
+
+        if (std::any_of(
+            io_metaRows.typeEnum.cbegin(),
+            io_metaRows.typeEnum.cend(),
+            [rowIt](const TypeEnumLstRow & i_row) -> bool {
+                return 
+                    i_row.modelId == rowIt->modelId && i_row.typeId == rowIt->typeId && 
+                    i_row.enumId != rowIt->enumId && i_row.name == rowIt->name;
+            }
+            ))
+            throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum name: %s", rowIt->modelId, rowIt->typeId, rowIt->name.c_str());
     }
 
     // type_enum_txt table

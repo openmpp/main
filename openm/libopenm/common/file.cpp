@@ -86,6 +86,7 @@ string openm::makeFilePath(const char * i_dirPath, const char * i_name, const ch
             '\\', '/'
         );
         if (path.length() >= 2 && path != "\\\\" && path.back() != '/') path += '/';
+        if (path.length() == 1 && path.back() != '/') path += '/';
     }
 
     // make name: remove final dot. 
