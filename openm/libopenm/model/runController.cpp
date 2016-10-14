@@ -319,7 +319,9 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             string csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".csv");
 
             if (isFileExists(csvPath.c_str())) {
-
+#ifdef _DEBUG
+        theLog->logMsg("Read", csvPath.c_str());
+#endif      
                 // read from csv file, parse csv lines and insert values into parameter run table
                 unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
                     i_runId,

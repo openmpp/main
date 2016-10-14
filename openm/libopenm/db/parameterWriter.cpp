@@ -25,6 +25,7 @@ namespace openm
         vector<int> dimSizeVec;                     // size of each parameter dimension
         const ParamDicRow * paramRow;               // parameter metadata row
         const TypeDicRow * paramTypeRow;            // parameter type
+        vector<TypeEnumLstRow> paramEnums;          // enums for parameter value, if parameter value type is enum based
         vector<ParamDimsRow> paramDims;             // parameter dimensions
         vector<vector<TypeEnumLstRow>> dimEnums;    // enums for each dimension
 
@@ -150,12 +151,15 @@ ParameterWriter::ParameterWriter(
     paramId = paramRow->paramId;
     dimCount = paramRow->rank;
 
+    // parameter type and enums for parameter values, if parameter is enum-based
+    paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
+    if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
+
+    if (!paramTypeRow->isBuiltIn()) paramEnums = i_metaStore->typeEnumLst->byModelIdTypeId(mId, paramTypeRow->typeId);
+
     // get dimensions list
     paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
     if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
-
-    paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
-    if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
     totalSize = 1;
@@ -342,9 +346,11 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
     if (i_filePath == nullptr) throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
     if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope for parameter: %d %s", paramId, paramRow->paramName.c_str());
 
-    // check if special parameter value handling required: quoted for string or bool conversion to 0/1
+    // check if special parameter value handling required: 
+    // bool conversion to 0/1 or quoted for string or enum code to id
     bool isBool = paramTypeRow->isBool();
     bool isStr = paramTypeRow->isString();
+    bool isEnum = !paramTypeRow->isBuiltIn();
 
     // make prefix of sql to insert parameter value:
     //
@@ -423,13 +429,15 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
         if (col->empty())
             throw DbException("invalid parameter.csv file at line %zd, value is empty at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
 
-        if (!isStr && !isBool) {
+        if (!isStr && !isBool && !isEnum) {     // default: no conversion required, insert value as is
             insSql += *col + ")";
         }
+
         if (isStr) {
-            insSql += toQuoted(*col) + ")";
+            insSql += toQuoted(*col) + ")";     // string parameter: use 'sql quotes'
         }
-        if (isBool) {
+
+        if (isBool) {           // boolean make 0/1 from false/true
             bool isOk = false;
             if (equalNoCase(col->c_str(), "1") || equalNoCase(col->c_str(), "true") ||
                 equalNoCase(col->c_str(), "t") || equalNoCase(col->c_str(), "-1")) {
@@ -441,6 +449,22 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
                 isOk = true;
             }
             if (!isOk) throw DbException("invalid parameter.csv file at line %zd, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+        }
+
+        if (isEnum) {       // enum-based parameter value: csv contains code, find enum id by code
+
+            int mId = paramTypeRow->modelId;
+            int tId = paramTypeRow->typeId;
+
+            auto eIt = find_if(
+                paramEnums.cbegin(),
+                paramEnums.cend(),
+                [mId, tId, col](const TypeEnumLstRow & i_row) -> bool { return i_row.modelId == mId && i_row.typeId == tId && i_row.name == *col; }
+            );
+            if (eIt == paramEnums.cend())
+                throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
+
+            insSql += to_string(eIt->enumId) + ")";  // insert enum id
         }
 
         // do insert into parameter value table
