@@ -123,6 +123,7 @@ int main(int argc, char ** argv)
                 childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes, if any, or sleep
                 continue;                                                   // no input: completed or waiting for additional input
             }
+            theLog->logFormatted("Run: %d", runId);
 
             // initialize model run: read input parameters
             RunInitHandler(runCtrl.get());
