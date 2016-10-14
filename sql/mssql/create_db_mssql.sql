@@ -117,6 +117,7 @@ CREATE TABLE type_dic_txt
 
 --
 -- List of values for enum types, i.e. enum values for classification dictionary
+-- Enum names must be unique, even no such constraint defined
 --
 CREATE TABLE type_enum_lst
 (

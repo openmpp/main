@@ -36,9 +36,9 @@ INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) V
 INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (97, 'sex', '_20128171604590122', 2, 2);
 INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (98, 'salary', '_20128171604590123', 2, 3);
 
-INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 31, 96);
-INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 32, 97);
-INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 33, 98);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 101, 96);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 102, 97);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 103, 98);
 
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (96, 0, 'Age', NULL);
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (96, 1, 'Age (fr)', NULL);
