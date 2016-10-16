@@ -34,12 +34,14 @@ INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 1, '(FR) Model 
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 4);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 5);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 6);
+INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 7);
 
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 4, 0, 'Age by Sex default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 4, 1, '(FR) Age by Sex default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 5, 0, 'Salary by Age default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 5, 1, '(FR) Salary by Age default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 6, 0, 'Starting seed default value');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 7, 0, 'Full or part time by Salary default values');
 
 --
 -- modelOne modified set of parameters
@@ -72,6 +74,7 @@ INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (4, 1, '(FR) Model 
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 4);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 5);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 6);
+INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 7);
 
 --
 -- modelOne modelling tasks
@@ -89,41 +92,50 @@ INSERT INTO task_set (task_id, set_id) VALUES (1, 4);
 --
 
 -- age by sex default values, set id = 2
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 0, 0, 0.1);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 0, 1, 0.2);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 1, 0, 0.3);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 1, 1, 0.4);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 2, 0, 0.5);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 2, 1, 0.6);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 3, 0, 0.7);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 3, 1, 0.8);
+-- enum ids for age not a zero based
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 10, 0, 0.1);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 10, 1, 0.2);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 20, 0, 0.3);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 20, 1, 0.4);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 30, 0, 0.5);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 30, 1, 0.6);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 40, 0, 0.7);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (2, 40, 1, 0.8);
 
 -- salary by age default values, set id = 2
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 0, 10);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 1, 20);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 2, 30);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 0, 3, 40);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 0, 11);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 1, 21);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 2, 31);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 1, 3, 41);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 0, 12);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 1, 22);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 2, 32);
-INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 2, 3, 42);
+-- enum ids for age and salary not a zero based
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 100, 10, 10);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 100, 20, 20);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 100, 30, 30);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 100, 40, 40);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 200, 10, 11);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 200, 20, 21);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 200, 30, 31);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 200, 40, 41);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 300, 10, 12);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 300, 20, 22);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 300, 30, 32);
+INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 300, 40, 42);
 
 -- random values starting seed, set id = 2 
 INSERT INTO StartingSeed_w_2012819 (set_id, param_value) VALUES (2, 8191);
 
--- age by sex, set id = 3
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 0, 0, 1.1);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 0, 1, 1.2);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 1, 0, 1.3);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 1, 1, 1.4);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 2, 0, 1.5);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 2, 1, 1.6);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 3, 0, 1.7);
-INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 3, 1, 1.8);
+-- full or part time by salary default values, set id = 2
+-- enum ids for salary not a zero based
+-- parameter type is enum based, enum ids: 22, 33
+INSERT INTO salaryFull_w_2012812 (set_id, dim0, param_value) VALUES (2, 100, 33);
+INSERT INTO salaryFull_w_2012812 (set_id, dim0, param_value) VALUES (2, 200, 22);
+INSERT INTO salaryFull_w_2012812 (set_id, dim0, param_value) VALUES (2, 300, 22);
+
+-- age by sex, set id = 3, enum ids for age not a zero based
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 10, 0, 1.1);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 10, 1, 1.2);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 20, 0, 1.3);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 20, 1, 1.4);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 30, 0, 1.5);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 30, 1, 1.6);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 40, 0, 1.7);
+INSERT INTO ageSex_w_2012817 (set_id, dim0, dim1, param_value) VALUES (3, 40, 1, 1.8);
 
 -- age by sex values, set id = 4
 INSERT INTO ageSex_w_2012817 
@@ -142,3 +154,9 @@ FROM salaryAge_w_2012818 WHERE set_id = 2;
 -- random values starting seed, set id = 4
 INSERT INTO StartingSeed_w_2012819 (set_id, param_value) VALUES (4, 4095);
 
+-- full or part time by salary level values, set id = 4
+INSERT INTO salaryFull_w_2012812
+  (set_id, dim0, param_value) 
+SELECT 
+  4, dim0, param_value
+FROM salaryFull_w_2012812 WHERE set_id = 2;

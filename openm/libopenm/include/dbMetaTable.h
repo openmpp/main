@@ -88,7 +88,7 @@ namespace openm
             return (0 <= i_index && i_index < rowCount()) ? dynamic_cast<TRow *>(rowsCRef()[i_index].get()) : nullptr;
         }
 
-        /** get first row by predicate or NULL if not found: first row where comparator to i_row return true. */
+        /** get first row by predicate or -1 if not found: first row where comparator to i_row return true. */
         IRowBaseVec::difference_type indexOf(RowEqual i_cmp, IRowBaseVec::difference_type i_startPos = 0) const
         {
             if (i_startPos >= 0) {

@@ -20,7 +20,7 @@ VALUES
   (1, 'modelOne', '_201208171604590148_', 0, '1.0', '2012-08-17 16:04:59.0148');
   
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', NULL);
-INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, 'First model (fr)', NULL);
+INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, '(FR) First model', NULL);
 
 -- 
 -- modelOne simple types: reference to built-in types
@@ -32,47 +32,58 @@ INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 14, 14
 -- modelOne classifcation types
 -- type digest: not a real digest (32 digits hex)
 --
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (96, 'age', '_20128171604590121', 2, 4);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (97, 'sex', '_20128171604590122', 2, 2);
-INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (98, 'salary', '_20128171604590123', 2, 3);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (96, 'age', '_20128171604590121', 2, 50);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (97, 'sex', '_20128171604590122', 2, 800);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (98, 'salary', '_20128171604590123', 2, 400);
+INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (99, 'full', '_20128171604590124', 2, 44);
 
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 101, 96);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 102, 97);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 103, 98);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 104, 99);
 
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (96, 0, 'Age', NULL);
-INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (96, 1, 'Age (fr)', NULL);
+INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (96, 1, '(FR) Age', NULL);
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (97, 0, 'Sex', NULL);
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (98, 0, 'Salary', NULL);
+INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (99, 0, 'Full or part time', NULL);
 
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 0, '10');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 1, '20');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 2, '30');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 3, '40');
+--
+-- enums for model-specific types, age, salary and full-or-part enum id's not zero-based
+--
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 10, '10-20');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 20, '20-30');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 30, '30-40');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (96, 40, '40+');
 INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (97, 0, 'M');
 INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (97, 1, 'F');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (98, 0, 'L');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (98, 1, 'M');
-INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (98, 2, 'H');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (98, 100, 'L');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (98, 200, 'M');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (98, 300, 'H');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (99, 22, 'Full');
+INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (99, 33, 'Part');
 
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 0, 0, 'age 10', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 0, 1, 'age 10 (fr)', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 1, 0, 'age 20', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 1, 1, 'age 20 (fr)', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 2, 0, 'age 30', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 2, 1, 'age 30 (fr)', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 3, 0, 'age 40', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 3, 1, 'age 40 (fr)', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 10, 0, 'age 10-20', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 10, 1, '(FR) age 10-20', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 20, 0, 'age 20-30', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 20, 1, '(FR) age 20-30', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 30, 0, 'age 30-40', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 30, 1, '(FR) age 30-40', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 40, 0, 'age 40+', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (96, 40, 1, '(FR) age 40+', NULL);
 INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (97, 0, 0, 'Male', NULL);
 INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (97, 1, 0, 'Female', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (98, 0, 0, 'Low', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (98, 1, 0, 'Medium', NULL);
-INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (98, 2, 0, 'High', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (98, 100, 0, 'Low', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (98, 200, 0, 'Medium', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (98, 300, 0, 'High', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 22, 0, 'Full-time', NULL);
+INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 33, 0, 'Part-time', NULL);
 
 -- 
 -- modelOne input parameters
 -- parameter digest: not a real digest (32 digits hex)
 -- db suffix: not a real value (8 digits hex)
+-- salaryFull parameter type is enum-based
 --
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
@@ -89,25 +100,34 @@ INSERT INTO parameter_dic
 VALUES
   (6, 'StartingSeed', '_20128171604590133', 'StartingSeed_p_2012819', 'StartingSeed_w_2012819', 0, 4, 0);
 
+INSERT INTO parameter_dic
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+VALUES
+  (7, 'salaryFull', '_20128171604590134', 'salaryFull_p_2012812', 'salaryFull_w_2012812', 1, 99, 0);
+
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 6, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 3, 7, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, 'Age by Sex (fr)', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, '(FR) Age by Sex', NULL);
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 0, 'Salary by Age', 'Salary by Age note');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 1, 'Salary by Age (fr)', 'Salary by Age note (fr)');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 1, '(FR) Salary by Age', '(FR) Salary by Age note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (6, 1, 'Starting Seed', 'Random numbers generator starting seed value');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (7, 0, 'Full or part time by Salary level', NULL);
 
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 0, 'dim0', 96);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 1, 'dim1', 97);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5, 0, 'dim0', 98);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5, 1, 'dim1', 96);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (7, 0, 'dim0', 98);
 
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 0, 'Age Dim', 'Age Dim notes');
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 1, 'Age Dim (fr)', 'Age Dim notes (fr)');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 1, 0, 'Sex Dim', 'Sex Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 1, 1, 'Sex Dim', NULL);
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (7, 0, 0, 'Full Dim', NULL);
 
 -- 
 -- modelOne output tables
@@ -128,15 +148,16 @@ VALUES
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (2, 1, 'Salary by Sex (fr)', 'Salary by Sex notes (fr)', 'Salary Dim (fr)', NULL);
+  (2, 1, '(FR) Salary by Sex', '(FR) Salary by Sex notes', '(FR) Salary Dim', NULL);
 
+-- dim1 "sex" has total enabled, enum id = 800
 INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (2, 0, 'dim0', 98, 0, 3);
-INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (2, 1, 'dim1', 97, 0, 2);
+INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (2, 1, 'dim1', 97, 1, 3);
 
 INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 0, 0, 'Salary Dim', 'Salary Dim notes');
-INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 0, 1, 'Salary Dim (fr)', 'Salary Dim notes (fr)');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 0, 1, '(FR) Salary Dim', '(FR) Salary Dim notes');
 INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sex Dim', 'Sex Dim notes');
-INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 1, 'Sex Dim (fr)', NULL);
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) Sex Dim', NULL);
 
 INSERT INTO table_acc (table_hid, acc_id, acc_name, acc_expr) VALUES (2, 0, 'acc0', 'value_sum()');
 INSERT INTO table_acc (table_hid, acc_id, acc_name, acc_expr) VALUES (2, 1, 'acc1', 'value_count()');
@@ -170,7 +191,7 @@ VALUES
   );
   
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 0, 'Average acc0', 'Average on acc0 notes');
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 1, 'Average acc0 (fr)', 'Average on acc0 notes (fr)');
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 1, '(FR) Average acc0', '(FR) Average on acc0 notes');
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sum acc1', NULL);
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 2, 0, 'Min acc0', NULL);
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 3, 0, 'Average acc0 * acc1', NULL);
@@ -179,16 +200,23 @@ INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) 
 INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 2, 1, 'age_sex_parameters', 0);
 
 INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 0, 'All parameters', 'All model parameters group');
-INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 1, '(fr) All parameters', NULL);
+INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 1, '(FR) All parameters', NULL);
 INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 2, 0, 'Age and Sex parameters', 'Age and Sex model parameters group');
 
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 1, 2, NULL);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 2, NULL, 2);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 3, NULL, 3);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 1, NULL, 0);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 2, NULL, 1);
 
 --
 -- modelOne input parameters
+-- enum ids for ageSex.dim0:     10,  20,  30, 40
+-- enum ids for ageSex.dim1:     0,   1
+-- enum ids for salaryAge.dim0:  100, 200, 300
+-- enum ids for salaryAge.dim1:  10,  20,  30, 40
+-- enum ids for salaryFull.dim0: 100, 200, 300
+-- enum ids for salaryFull.param_value: 22, 33
 --
 CREATE TABLE ageSex_p_2012817 
 (
@@ -240,8 +268,26 @@ CREATE TABLE StartingSeed_w_2012819
   PRIMARY KEY (set_id)
 );
 
+CREATE TABLE salaryFull_p_2012812
+(
+  run_id      INT NOT NULL,
+  dim0        INT NOT NULL, 
+  param_value INT NOT NULL,
+  PRIMARY KEY (run_id, dim0)
+);
+
+CREATE TABLE salaryFull_w_2012812
+(
+  set_id      INT NOT NULL,
+  dim0        INT NOT NULL, 
+  param_value INT NOT NULL,
+  PRIMARY KEY (set_id, dim0)
+);
+
 --
 -- modelOne output tables
+-- enum ids for salarySex.dim0: 100, 200, 300
+-- enum ids for salarySex.dim1: 0,   1
 --
 CREATE TABLE salarySex_a_2012820
 (

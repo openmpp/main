@@ -19,14 +19,15 @@ namespace openm
         virtual ~ParameterWriter(void) throw() { }
 
     protected:
-        int paramId;                                // parameter id
-        int dimCount;                               // number of dimensions
-        size_t totalSize;                           // total number of values in the table
-        vector<int> dimSizeVec;                     // size of each parameter dimension
-        const ParamDicRow * paramRow;               // parameter metadata row
-        const TypeDicRow * paramTypeRow;            // parameter type
-        vector<TypeEnumLstRow> paramEnums;          // enums for parameter value, if parameter value type is enum based
-        vector<ParamDimsRow> paramDims;             // parameter dimensions
+        int modelId;                            // model id in database
+        int paramId;                            // parameter id
+        int dimCount;                           // number of dimensions
+        size_t totalSize;                       // total number of values in the table
+        vector<int> dimSizeVec;                 // size of each parameter dimension
+        const ParamDicRow * paramRow;           // parameter metadata row
+        const TypeDicRow * paramTypeRow;        // parameter type
+        vector<TypeEnumLstRow> paramEnums;      // enums for parameter value, if parameter value type is enum based
+        vector<ParamDimsRow> paramDims;         // parameter dimensions
         vector<vector<TypeEnumLstRow>> dimEnums;    // enums for each dimension
 
     private:
@@ -143,32 +144,32 @@ ParameterWriter::ParameterWriter(
     if (i_name == nullptr || i_name[0] == '\0') throw DbException("Invalid (empty) input parameter name");
 
     // find model, parameter and parameter type in metadata tables
-    int mId = i_metaStore->modelRow->modelId;
+    modelId = i_metaStore->modelRow->modelId;
 
-    paramRow = i_metaStore->paramDic->byModelIdName(mId, i_name);
+    paramRow = i_metaStore->paramDic->byModelIdName(modelId, i_name);
     if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", i_name);
 
     paramId = paramRow->paramId;
     dimCount = paramRow->rank;
 
     // parameter type and enums for parameter values, if parameter is enum-based
-    paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
+    paramTypeRow = i_metaStore->typeDic->byKey(modelId, paramRow->typeId);
     if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
 
-    if (!paramTypeRow->isBuiltIn()) paramEnums = i_metaStore->typeEnumLst->byModelIdTypeId(mId, paramTypeRow->typeId);
+    if (!paramTypeRow->isBuiltIn()) paramEnums = i_metaStore->typeEnumLst->byModelIdTypeId(modelId, paramTypeRow->typeId);
 
     // get dimensions list
-    paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
+    paramDims = i_metaStore->paramDims->byModelIdParamId(modelId, paramId);
     if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
     totalSize = 1;
     for (const ParamDimsRow & dim : paramDims) {
 
-        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(mId, dim.typeId);
+        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(modelId, dim.typeId);
         if (typeRow == nullptr) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
 
-        vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(mId, dim.typeId);
+        vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(modelId, dim.typeId);
         int dimSize = (int)de.size();
         dimEnums.push_back(de);
 
@@ -195,7 +196,7 @@ ParameterSetWriter::ParameterSetWriter(
 
     // check if workset belong to model and parameter is part of the workset
     if (i_metaSet->worksetRow.setId != i_setId) throw DbException("invalid workset id: %d, expected: %d", i_metaSet->worksetRow.setId, i_setId);
-    if (i_metaSet->worksetRow.modelId != i_metaStore->modelRow->modelId) throw DbException("workset %d does not belong to model %s", i_setId, i_metaStore->modelRow->name.c_str());
+    if (i_metaSet->worksetRow.modelId != modelId) throw DbException("workset %d does not belong to model %s", i_setId, i_metaStore->modelRow->name.c_str());
     if (i_metaSet->worksetRow.isReadonly) throw DbException("workset %d is read-only", i_setId);
 
     vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(i_setId, paramId, i_metaSet->worksetParam);
@@ -298,7 +299,7 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
         i_dbExec->createStatement(insSql, (int)typeArr.size(), typeArr.data());
 
-        // storage for dimension items and db row values
+        // storage for dimension enum indexes
         unique_ptr<int> cellArrUptr(new int[dimCount]);
         int * cellArr = cellArrUptr.get();
 
@@ -306,6 +307,7 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
             cellArr[k] = 0;
         }
 
+        // storage for dimension items and db row values
         int rowSize = dimCount + 1;
         unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
         DbValue * valVec = valVecUptr.get();
@@ -313,9 +315,13 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
         // loop through all dimensions and store cell values
         for (size_t cellOffset = 0; cellOffset < i_size; cellOffset++) {
 
-            // set dimension items
-            for (int k = 0; k < dimCount; k++) {
-                valVec[k] = DbValue(cellArr[k]);
+            // set sql parameter values: dimension enum id by enum index
+            for (int nDim = 0; nDim < dimCount; nDim++) {
+
+                int eId = cellArr[nDim];
+                if (dimSizeVec[nDim] > 0) eId = dimEnums[nDim][cellArr[nDim]].enumId;
+
+                valVec[nDim] = DbValue(eId);
             }
 
             doSetValue(cellOffset, i_valueArr, valVec[dimCount]);   // set parameter value
@@ -409,7 +415,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
             }
             else { // csv contains code, find enum id by code
 
-                int mId = paramDims[k].modelId;
+                int mId = modelId;
                 int tId = paramDims[k].typeId;
 
                 auto eIt = find_if(

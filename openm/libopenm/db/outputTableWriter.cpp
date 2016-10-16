@@ -60,6 +60,7 @@ namespace openm
         vector<TableDimsRow> tableDims; // table dimensions
         vector<TableAccRow> tableAcc;   // table accumulators
         vector<TableExprRow> tableExpr; // table aggregation expressions
+        vector<vector<int>> dimEnumIds; // enums for each dimension, including "total" enum
 
         /**
          * write output table value: aggregated output expression value
@@ -158,10 +159,29 @@ OutputTableWriter::OutputTableWriter(
     exprCount = (int)tableExpr.size();
 
     // calculate total number of values for each accumulator
+    // for each dimension collect all enum id's
+    // include "total" enum id if total enabled for that output table dimension
     totalSize = 1;
     for (const TableDimsRow & dim : tableDims) {
-        if (dim.dimSize <= 0) throw DbException("invalid size of dimension %s for table: %s", dim.name.c_str(), i_name);
-        totalSize *= dim.dimSize;
+
+        size_t nSize = dim.dimSize;
+        if (nSize <= 0) throw DbException("invalid size of dimension %s for table: %s", dim.name.c_str(), i_name);
+        totalSize *= nSize;
+
+        // collect enum id's for that dimension
+        vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(modelId, dim.typeId);
+        if (nSize != de.size() + (dim.isTotal ? 1 : 0))
+             throw DbException("invalid size of dimension %s for table: %s, expected: %zd", dim.name.c_str(), i_name, nSize);
+
+        vector<int> idArr(nSize);
+        for (size_t k = 0; k < de.size(); k++) {
+            idArr[k] = de[k].enumId;
+        }
+
+        // if that output table dimension has "total" enabled then append total enum id
+        if (dim.isTotal) idArr[nSize - 1] = i_metaStore->typeDic->byKey(modelId, dim.typeId)->totalEnumId;
+
+        dimEnumIds.push_back(std::move(idArr));     // store enum id's for that dimension
     }
     if (totalSize <= 0) throw DbException("invalid size of the table: %s", i_name);
 }
@@ -237,7 +257,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
         i_dbExec->createStatement(sql, (int)tv.size(), tv.data());
 
-        // storage for dimension items and db row values
+        // storage for dimension enum indexes
         unique_ptr<int> cellArrUptr(new int[dimCount]);
         int * cellArr = cellArrUptr.get();
 
@@ -245,6 +265,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
             cellArr[k] = 0;
         }
 
+        // storage for dimension items and db row values
         int rowSize = dimCount + 1;
         unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
         DbValue * valVec = valVecUptr.get();
@@ -252,9 +273,9 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
         // loop through all dimensions and store cell values
         for (size_t cellOffset = 0; cellOffset < i_size; cellOffset++) {
 
-            // set parameter values: dimension items
-            for (int k = 0; k < dimCount; k++) {
-                valVec[k] = DbValue(cellArr[k]);
+            // set sql parameter values: dimension enum id by enum index
+            for (int nDim = 0; nDim < dimCount; nDim++) {
+                valVec[nDim] = DbValue(dimEnumIds[nDim][cellArr[nDim]]);
             }
 
             // if table is not "sparse" then store NULL value rows:

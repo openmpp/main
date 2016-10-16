@@ -9,6 +9,14 @@ using namespace openm;
 static int startSeed = 1;
 static double ageSex[ageSize][sexSize];
 static int salaryAge[salarySize][ageSize];
+static int salaryFull[salarySize];
+
+// model type "full": full or part time job
+enum jobKind : int
+{
+    fullTime = 22,
+    partTime = 33
+};
 
 // model output tables: salary by sex
 const char * SalarySex::NAME = "salarySex";
@@ -20,25 +28,40 @@ void RunModel(IModel * const i_model)
     theLog->logMsg("Running Simulation");
 
     // calculte salary by sex, accumulator 0: sum
+    // "sex" dimension has total enabled
     size_t nCell = 0;
 
     for (size_t nSalary = 0; nSalary < salarySize; nSalary++) {
         for (size_t nSex = 0; nSex < sexSize; nSex++) {
             for (size_t nAge = 0; nAge < ageSize; nAge++) {
+
+                // make some test value
                 theSalarySex->acc[SalarySex::ACC_Sum][nCell] +=
                     ((double)salaryAge[nSalary][nAge]) * ageSex[nAge][nSex] * (double)(i_model->subSampleNumber() + 1);
             }
             nCell++;
         }
+        theSalarySex->acc[SalarySex::ACC_Sum][nCell++] =
+            ((double)(nSalary + 800 * i_model->subSampleNumber() + 1));
     }
 
     // calculte salary by sex, accumulator 1: count
+    // "sex" dimension has total enabled
     nCell = 0;
 
     for (size_t nSalary = 0; nSalary < salarySize; nSalary++) {
+
+        int nFullBonus = (salaryFull[nSalary] == jobKind::fullTime) ? 1 : 0;
+
         for (size_t nSex = 0; nSex < sexSize; nSex++) {
-            theSalarySex->acc[SalarySex::ACC_Count][nCell++] = (double)(nSalary + nSex + i_model->subSampleNumber() + 1);
+
+            // make some test value
+            theSalarySex->acc[SalarySex::ACC_Count][nCell++] = 
+                (double)(nSalary + nSex + i_model->subSampleNumber() + 1 + nFullBonus);
         }
+        // "sex" dimension has total enabled: make test value for "total"
+        theSalarySex->acc[SalarySex::ACC_Count][nCell++] =
+            (double)(nSalary + 800 + i_model->subSampleNumber() + 1 + nFullBonus);
     }
 
     // trace output: disabled by default, use command-line or model.ini to enable it
@@ -53,6 +76,7 @@ void RunInit(IRunBase * const i_runBase)
     i_runBase->readParameter("StartingSeed", typeid(int), 1, &startSeed);
     i_runBase->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
     i_runBase->readParameter("salaryAge", typeid(int), salarySize * ageSize, salaryAge);
+    i_runBase->readParameter("salaryFull", typeid(int), salarySize, salaryFull);
 }
 
 // Model startup method: initialize subsample

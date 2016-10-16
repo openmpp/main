@@ -27,6 +27,12 @@ SELECT S.dim0, S.dim1, S.param_value AS "Value"
 FROM salaryAge_p_2012818 S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
 
+CREATE VIEW salaryFull 
+AS 
+SELECT S.dim0, S.param_value AS "Value"
+FROM salaryFull_p_2012812 S
+WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
+
 --
 -- Output tables compatibility views
 --

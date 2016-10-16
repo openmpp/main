@@ -27,16 +27,17 @@ void ModelShutdown(openm::IModel * const i_model);
 const size_t ageSize = 4;
 const size_t sexSize = 2;
 const size_t salarySize = 3;
+const size_t fullSize = 2;
 
 // model output tables: salary by sex
 class SalarySex
 {
 public:
-    static const size_t N_CELL = salarySize * sexSize;  // number of cells
-    static const size_t N_ACC = 2;                      // number of accumulators
-    static const size_t ACC_Sum = 0;                    // accumulator 0: sum
-    static const size_t ACC_Count = 1;                  // accumulator 1: count
-    static const char * NAME;                           // output table name: salarySex
+    static const size_t N_CELL = salarySize * (sexSize + 1);    // number of cells, "sex" dimension has total enabled
+    static const size_t N_ACC = 2;                              // number of accumulators
+    static const size_t ACC_Sum = 0;                            // accumulator 0: sum
+    static const size_t ACC_Count = 1;                          // accumulator 1: count
+    static const char * NAME;                                   // output table name: salarySex
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
