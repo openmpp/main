@@ -260,6 +260,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     // check if parameters csv directory specified and accessible
     string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
     bool isParamDir = !paramDir.empty() && isFileExists(paramDir.c_str());
+    bool isIdCsv = argOpts().boolOption(RunOptionsKey::useIdCsv);
 
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
@@ -329,7 +330,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                     i_dbExec,
                     metaStore.get()
                 ));
-                writer->loadCsvParameter(i_dbExec, csvPath.c_str());
+                writer->loadCsvParameter(i_dbExec, csvPath.c_str(), isIdCsv);
 
                 isInserted = true;
             }

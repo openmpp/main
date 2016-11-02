@@ -86,8 +86,8 @@ namespace openm
         virtual size_t sizeOf(void) const throw() override { return totalSize; }
 
         // load parameter values from csv file into run table
-        virtual void loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath) override;
-
+        virtual void loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath, bool i_isIdCsv = false) override;
+    
         // calculate run parameter values digest and store only single copy of parameter values
         void digestParameter(IDbExec * i_dbExec, const type_info & i_type) override;
 
@@ -346,7 +346,7 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_
 }
 
 // load parameter values from csv file into run table
-void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath)
+void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath, bool i_isIdCsv)
 {
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_filePath == nullptr) throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
@@ -408,9 +408,10 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
             if (col->empty())
                 throw DbException("invalid parameter.csv file at line %zd dimension is empty at column %d for parameter: %d %s", rowCount, k, paramId, paramRow->paramName.c_str());
 
+            // if csv contains enum id's then use column value to insert
             // if dimension is a simple type (integer) then use column value to insert
-            // if dimension is enum-based then find enum id by code
-            if (dimSizeVec[k] <= 0) {
+            // else dimension is enum-based and contains enum code: find enum id by code
+            if (i_isIdCsv || dimSizeVec[k] <= 0) {
                 insSql += *col + ", ";  // simple dimension type: insert csv value
             }
             else { // csv contains code, find enum id by code
@@ -435,7 +436,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
         if (col->empty())
             throw DbException("invalid parameter.csv file at line %zd, value is empty at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
 
-        if (!isStr && !isBool && !isEnum) {     // default: no conversion required, insert value as is
+        if (!isStr && !isBool && (!isEnum || isEnum && i_isIdCsv)) {    // default: no conversion required, insert value as is
             insSql += *col + ")";
         }
 
@@ -457,7 +458,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
             if (!isOk) throw DbException("invalid parameter.csv file at line %zd, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
         }
 
-        if (isEnum) {       // enum-based parameter value: csv contains code, find enum id by code
+        if (isEnum && !i_isIdCsv) {     // enum-based parameter value and csv contains code: find enum id by code
 
             int mId = paramTypeRow->modelId;
             int tId = paramTypeRow->typeId;

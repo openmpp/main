@@ -96,8 +96,9 @@ namespace openm
         *
         * @param[in] i_dbExec   database connection
         * @param[in] i_filePath path to parameter.csv file
+        * @param[in] i_isIdCsv  if true then create csv file contains enum id's, default: enum code
         */
-        virtual void loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath) = 0;
+        virtual void loadCsvParameter(IDbExec * i_dbExec, const char * i_filePath, bool i_isIdCsv = false) = 0;
 
         /**
         * calculate run parameter values digest and store only single copy of parameter values.

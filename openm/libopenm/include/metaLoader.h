@@ -42,9 +42,6 @@ namespace openm
         /** working set name to get input parameters */
         static const char * setName;
 
-        /** dir/to/read/input/parameter.csv */
-        static const char *paramDir;
-
         /** modeling task id */
         static const char * taskId;
 
@@ -68,6 +65,12 @@ namespace openm
 
         /** convert to string format for float, double, long double */
         static const char * doubleFormat;
+
+        /** dir/to/read/input/parameter.csv */
+        static const char *paramDir;
+
+        /** if true then create csv file contains enum id's, default: enum code */
+        static const char *useIdCsv;
 
         /** trace log to console */
         static const char * traceToConsole;

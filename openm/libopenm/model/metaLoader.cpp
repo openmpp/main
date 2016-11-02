@@ -42,12 +42,6 @@ namespace openm
     /** short name for: -s working set name to get input parameters */
     const char * RunShortKey::setName = "s";
     
-    /** dir/to/read/input/parameter.csv */
-    const char * RunOptionsKey::paramDir = "OpenM.ParamDir";
-
-    /** short version: -p dir/to/read/input/parameter.csv */
-    const char * RunShortKey::paramDir = "p";
-
     /** modeling task id */
     const char * RunOptionsKey::taskId = "OpenM.TaskId";
 
@@ -72,6 +66,15 @@ namespace openm
     /** convert to string format for float, double, long double */
     const char * RunOptionsKey::doubleFormat = "OpenM.DoubleFormat";
 
+    /** dir/to/read/input/parameter.csv */
+    const char * RunOptionsKey::paramDir = "OpenM.ParamDir";
+
+    /** short version: -p dir/to/read/input/parameter.csv */
+    const char * RunShortKey::paramDir = "p";
+
+    /** if true then create csv file contains enum id's, default: enum code */
+    const char * RunOptionsKey::useIdCsv = "OpenM.IdCsv";
+    
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
 
@@ -103,13 +106,14 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::runName,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
-    RunOptionsKey::paramDir,
     RunOptionsKey::taskId,
     RunOptionsKey::taskName,
     RunOptionsKey::profile,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     RunOptionsKey::doubleFormat,
+    RunOptionsKey::paramDir,
+    RunOptionsKey::useIdCsv,
     RunOptionsKey::traceToConsole,
     RunOptionsKey::traceToFile,
     RunOptionsKey::traceFilePath,
