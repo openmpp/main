@@ -69,7 +69,7 @@ namespace openm
         /** dir/to/read/input/parameter.csv */
         static const char *paramDir;
 
-        /** if true then create csv file contains enum id's, default: enum code */
+        /** if true then parameters csv file(s) contain enum id's, default: enum code */
         static const char *useIdCsv;
 
         /** trace log to console */
