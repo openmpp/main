@@ -48,4 +48,23 @@ chdir "${om_root}/R";
 	system(@args);
 };
 
+
+# if GOROOT and GOPATH defined then build dbcopy
+#
+if ("$ENV{GOROOT}" eq "" || "$ENV{GOPATH}" eq "") {
+	print "Skip dbcopy build: GOROOT or GOPATH is empty\n";
+}
+else {
+	print "Building utility dbcopy\n";
+	chdir "$ENV{GOPATH}";
+	($merged, $retval) = capture_merged {
+		my @args = (
+			'go',
+			'install',
+			'go.openmpp.org/dbcopy',
+			);
+		system(@args);
+	};
+}
+
 chdir "${om_root}/Perl";

@@ -128,10 +128,25 @@ for my $file (@files) {
 	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }
 
-# bin/dbcopy.exe: not included in build yet, copy if exist
-my $dbcopy_exe = "dbcopy.exe";
-if (-e "${om_root}/${subdir}/${dbcopy_exe}") {
-	copy "${om_root}/${subdir}/${dbcopy_exe}", "${deploy_dir}/${subdir}/${dbcopy_exe}" or die "Failed to copy ${subdir}/${dbcopy_exe}";
+# dbcopy: skip if GOPATH not defined
+#
+if ("$ENV{GOPATH}" eq "") {
+	print "Skip dbcopy: GOPATH is empty\n";
+}
+else {
+	my $dbcopy_exe = "$ENV{GOPATH}/bin/dbcopy.exe";
+	if (-e "${dbcopy_exe}") {
+		copy "${dbcopy_exe}", "${deploy_dir}/${subdir}/dbcopy.exe" or die "Failed to copy ${dbcopy_exe}";
+	}
+	else {
+		print "Skip dbcopy: it does not exist\n";
+	}
+	
+	# dbcopy source code
+	my $dbcopy_src_dir = "$ENV{GOPATH}/src/go.openmpp.org";
+	dircopy "$dbcopy_src_dir/dbcopy", "${deploy_dir}/go.openmpp.org/dbcopy" || die;
+	dircopy "$dbcopy_src_dir/ompp", "${deploy_dir}/go.openmpp.org/ompp" || die;
+	dircopy "$dbcopy_src_dir/licenses", "${deploy_dir}/licenses" || die;
 }
 
 # lib
