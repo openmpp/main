@@ -421,11 +421,18 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
 
                 if (i_isIdCsv) {    // if csv contain enum id the validate id and insert csv value
 
+                    int eId = 0;
+                    try {
+                        eId = std::stoi(*col);
+                    }
+                    catch (...) {
+                        throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k, paramId, paramRow->paramName.c_str(), col->c_str());
+                    }
                     auto eIt = find_if(
                         dimEnums[k].cbegin(),
                         dimEnums[k].cend(),
-                        [mId, tId, col](const TypeEnumLstRow & i_row) -> bool {
-                        return i_row.modelId == mId && i_row.typeId == tId && to_string(i_row.enumId) == *col;
+                        [mId, tId, eId](const TypeEnumLstRow & i_row) -> bool {
+                        return i_row.modelId == mId && i_row.typeId == tId && i_row.enumId == eId;
                     });
                     if (eIt == dimEnums[k].cend())
                         throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k, paramId, paramRow->paramName.c_str(), col->c_str());
@@ -483,11 +490,18 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
 
             if (i_isIdCsv) {    // if csv contain enum id the validate id and insert csv value
 
+                int eId = 0;
+                try {
+                    eId = std::stoi(*col);
+                }
+                catch (...) {
+                    throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
+                }
                 auto eIt = find_if(
                     paramEnums.cbegin(),
                     paramEnums.cend(),
-                    [mId, tId, col](const TypeEnumLstRow & i_row) -> bool {
-                    return i_row.modelId == mId && i_row.typeId == tId && to_string(i_row.enumId) == *col;
+                    [mId, tId, eId](const TypeEnumLstRow & i_row) -> bool {
+                    return i_row.modelId == mId && i_row.typeId == tId && i_row.enumId == eId;
                 });
                 if (eIt == paramEnums.cend())
                     throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
