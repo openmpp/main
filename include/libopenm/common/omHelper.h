@@ -78,6 +78,9 @@ namespace openm
     /** trim leading and trailing blank and space characters */
     extern string trim(const string & i_str);
 
+    /** replace all <cr> or <lf> with blank space character */
+    extern void blankCrLf(string & io_str);
+
     /** make quoted string using sql single ' quote by default, ie: 'O''Brien' */
     extern const string toQuoted(const string & i_str, char i_quote = '\'');
 

@@ -501,7 +501,7 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaS
             // copy sql body
             {
                 ifstream bodyFs(bodySqlPath.c_str(), ios::in);
-                if (bodyFs.fail()) throw HelperException("Failed to create file: %s", bodySqlPath.c_str());
+                if (bodyFs.fail()) throw HelperException("Failed to open file: %s", bodySqlPath.c_str());
 
                 wr.outFs << bodyFs.rdbuf();
                 wr.throwOnFail();
@@ -619,7 +619,7 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
         " FROM workset_lst W" \
         " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
         " WHERE W.set_name = " << worksetNameQuoted <<
-        " AND M.model_digest = " << modelDigestQuoted << ";\n";
+        " AND M.model_digest = " << modelDigestQuoted << ";\n\n";
     wr.throwOnFail();
 }
 
@@ -773,7 +773,7 @@ void ModelSqlBuilder::addWorksetParameter(
                 " FROM workset_lst W" \
                 " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
                 " WHERE W.set_name = " << worksetNameQuoted <<
-                " AND M.model_digest = " << modelDigestQuoted << ";";
+                " AND M.model_digest = " << modelDigestQuoted << ";\n";
             wr.throwOnFail();
 
             // get next cell indices

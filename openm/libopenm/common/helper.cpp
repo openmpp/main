@@ -131,6 +131,14 @@ string openm::trim(const string & i_str)
     return i_str.substr(begIt - i_str.begin(), (i_str.rend() - endIt) - (begIt - i_str.begin()));
 }
 
+// Replace all <cr> or <lf> with blank space character
+void openm::blankCrLf(string & io_str)
+{
+    for (string::value_type & it : io_str) {
+        if (it == '\r' || it == '\n') it = '\x20';
+    }
+}
+
 /** make quoted string using sql single ' quote by default, ie: 'O''Brien' */
 const string openm::toQuoted(const string & i_str, char i_quote)
 {
