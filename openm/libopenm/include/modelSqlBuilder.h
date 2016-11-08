@@ -207,6 +207,9 @@ namespace openm
         /** sort workset metadata rows */
         static void sortWorksetRows(MetaSetLangHolder & io_metaSet);
 
+        /** validate type enum names, it must be unique: model id, type id, enum name */
+        static void checkTypeEnumNames(MetaModelHolder & io_metaRows);
+
         /** set names for dimension, accumulator, expression columns */
         static void setColumnNames(MetaModelHolder & io_metaRows);
 
