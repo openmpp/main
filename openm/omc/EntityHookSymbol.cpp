@@ -141,16 +141,20 @@ void EntityHookSymbol::post_parse(int pass)
             }
         }
 
-        CodeBlock & c = hook_fn->func_body;
-        c += injection_description();
+        CodeBlock & cxx = hook_fn->func_body;
+        cxx += injection_description();
         if (to_is_self_scheduling) {
+            // The target of code injection for ss hooks is the self-scheduling event implement function of the entity.
+            // Code injection order (sorting_group) is low to ensure that injection occurs last,
+            // because the code makes use of the local-scoped variable flag_name,
+            // set earlier within the ss event implement function.
             assert(pp_to_ss); // logic guarantee
-            c += "if (" + pp_to_ss->flag_name() + ") {";
-            c += pp_from->name + "();";
-            c += "}";
+            cxx += "if (" + pp_to_ss->flag_name() + ") {";
+            cxx += pp_from->name + "();";
+            cxx += "}";
         }
         else {
-            c += pp_from->name + "();";
+            cxx += pp_from->name + "();";
         }
         break;
     }
