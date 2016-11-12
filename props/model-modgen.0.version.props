@@ -3,12 +3,15 @@
   <PropertyGroup>
     <!-- Following sets MODGEN_VERSION to 11 if running inside VS 2010 -->
     <MODGEN_VERSION Condition="'$(BuildingInsideVisualStudio)'=='true' And '$(VisualStudioVersion)'=='10.0'">11</MODGEN_VERSION>
-    <MODGEN_VERSION Condition="'$(MODGEN_VERSION)'==''">12</MODGEN_VERSION>
+    <MODGEN_VERSION Condition="'$(MODGEN_VERSION)'==''">12.1</MODGEN_VERSION>
     <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'=='' And '$(MODGEN_VERSION)'=='11'">$(registry:HKEY_LOCAL_MACHINE\Software\StatCan\Modgen\11@Path)</MODGEN_ROOT>
     <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'=='' And '$(MODGEN_VERSION)'=='12'">$(registry:HKEY_LOCAL_MACHINE\Software\StatCan\Modgen\12@Path)</MODGEN_ROOT>
+    <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'=='' And '$(MODGEN_VERSION)'=='12.1'">$(registry:HKEY_LOCAL_MACHINE\Software\StatCan\Modgen\12@Path)</MODGEN_ROOT>
     <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(MODGEN_VERSION)'=='11'">v100</PLATFORM_TOOLSET>
     <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(MODGEN_VERSION)'=='12'">v120</PLATFORM_TOOLSET>
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(MODGEN_VERSION)'=='12.1'">v140</PLATFORM_TOOLSET>
     <CHARACTER_SET Condition="'$(CHARACTER_SET)'=='' And '$(MODGEN_VERSION)'=='11'">MultiByte</CHARACTER_SET>
     <CHARACTER_SET Condition="'$(CHARACTER_SET)'=='' And '$(MODGEN_VERSION)'=='12'">Unicode</CHARACTER_SET>
+    <CHARACTER_SET Condition="'$(CHARACTER_SET)'=='' And '$(MODGEN_VERSION)'=='12.1'">Unicode</CHARACTER_SET>
   </PropertyGroup>
 </Project>

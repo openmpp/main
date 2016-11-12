@@ -57,7 +57,7 @@
     />
     <Exec 
           Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -i $(MODGEN_IN_DIR) -EN" 
-          Condition="'$(MODGEN_VERSION)'=='12'"
+          Condition="'$(MODGEN_VERSION)'=='12' Or '$(MODGEN_VERSION)'=='12.1'"
     />
     <Message Text="Modgen elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"

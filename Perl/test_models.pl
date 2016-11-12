@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2015 OpenM++
+# Copyright (c) 2013-2016 OpenM++
 # This code is licensed under MIT license (see LICENSE.txt for details)
 
 # Script to test multiple models in ompp, ompp-linux, and modgen
@@ -28,8 +28,8 @@ my ($opt, $usage) = describe_options(
 	[ 'ompp_platform=s' => 'OpenM++ platform: Win32(default) or x64',
 		{ default => 'Win32' } ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
-	[ 'modgen_version=i' => 'Modgen version: 11 or 12(default)',
-		{ default => 12 } ],
+	[ 'modgen_version=s' => 'Modgen version: 11 or 12 or 12.1(default)',
+		{ default => '12.1' } ],
 	[ 'modgen_config=s' => 'Modgen config: Debug or Release(default)',
 		{ default => 'Release' } ],
 	[ 'modgen_platform=s' => 'Modgen platform: Win32(default) or x64',
@@ -105,8 +105,8 @@ my $ompp_linux_configuration = "release";
 #####################
 
 my $modgen_version = $opt->modgen_version;
-if ($modgen_version != 11 && $modgen_version != 12) {
-	print "Invalid modgen_version=$modgen_version must be 11 or 12";
+if ($modgen_version ne '11' && $modgen_version ne '12' && $modgen_version ne '12.1') {
+	print "Invalid modgen_version=$modgen_version must be 11, 12, or 12.1";
 	exit 1;
 } 
 
@@ -234,17 +234,39 @@ my @flavours;
 my @flavours_tombstone;
 if ($is_windows) {
 	if ($do_modgen) {
-		my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\Modgen ${modgen_version}\\Modgen.exe";
+		my $modgen_folder;
+		$modgen_folder = 'Modgen 11' if $modgen_version eq '11';
+		$modgen_folder = 'Modgen 12' if $modgen_version eq '12';
+		# Modgen 12.1 has same folder as 12.0, but is treated differently (uses VS 2015 instead of VS 2013).
+		$modgen_folder = 'Modgen 12' if $modgen_version eq '12.1';
+		my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\${modgen_folder}\\Modgen.exe";
 		if ( ! -e $modgen_exe ) {
 			logmsg error, "Missing Modgen compiler: $modgen_exe";
 			exit 1;
 		}
 		push @flavours, 'modgen';
-		my $modgen_version = modgen_version($modgen_exe);
+		my $modgen_version_string = modgen_version($modgen_exe);
+		
+		# Consistency checks of Modgen installed version and version specified in command argument (or default)
+		(my $v1, my $v2, my $v3, my $v4) = split(',', $modgen_version_string);
+		if ($modgen_version eq '12') {
+			if (!($v1 == 12 && $v2 == 0)) {
+				logmsg error, "Mismatch of modgen compiler - modgen_version=${modgen_version} and compiler is ${modgen_version_string} ";
+				exit 1;
+			}
+		}
+		if ($modgen_version eq '12.1') {
+			if (!($v1 == 12 && $v2 == 1)) {
+				logmsg error, "Mismatch of modgen compiler - modgen_version=${modgen_version} and compiler is ${modgen_version_string} ";
+				exit 1;
+			}
+		}
+		
 		my $sb = stat($modgen_exe);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
-		push @flavours_tombstone, "version=${modgen_version} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_config}";
+		push @flavours_tombstone, "version=${modgen_version_string} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_config}";
 	}
+	
 	if ($do_ompp) {
 		if ( ! -e $create_db_sqlite_sql ) {
 			logmsg error, "Missing SQL file used to create new data store for ompp: $create_db_sqlite_sql";
