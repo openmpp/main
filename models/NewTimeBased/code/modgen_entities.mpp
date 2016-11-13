@@ -40,6 +40,13 @@ void Ticker::exit_simulation() { }
 /////////////////////////////////////////////////////
 // For each entity function <name> used by a hook, //
 // declare and define empty versions of the        //
-// function hook_<name>.                           //
+// function hook_<name>, e.g.                      //
+//                                                 //
+//  actor Person                                   //
+//  {                                              //
+//    void hook_BirthdayEvent();                   //
+//  };                                             //
+//  void Person::hook_BirthdayEvent() { }          //
+//                                                 //
 /////////////////////////////////////////////////////
 
