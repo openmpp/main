@@ -89,10 +89,6 @@ void Simulation()
     CaseInfo(nullptr, true);
 }
 							
-
-// VC++ 2013 (and earlier): define thread_local to comply with c++11 standard
-#define thread_local __declspec(thread)
-
 case_info* CaseInfo(case_info* ci, bool reset)
 {
     static thread_local case_info* ci_stored = nullptr;
