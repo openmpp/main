@@ -26,12 +26,12 @@ void SimulateEvents()
 {
 	// Buffer for messages
 	const size_t nBufSize = 255;
-	char szBuffer[nBufSize];
+	TCHAR szBuffer[nBufSize];
 
-	// Replicate number for progress reporting
-	int nReplicate = GetReplicate();
+	// Simulation member ordinal for progress reporting
+	int nSimulationMember = GetReplicate();
 
-	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_SIMULATION"));
+	_stprintf_s(szBuffer, nBufSize, _T("%s %d: %s"), (LPCTSTR)ModelString("S_MODEL_REPLICATE"), nSimulationMember, (LPCTSTR)ModelString("S_MODEL_SIMULATION"));
 	ProgressMessage( szBuffer );
 
 	double dCurrentTime = TIME_INFINITE;
@@ -61,7 +61,7 @@ void SimulateEvents()
 				gpoEventQueue->WaitUntilAllActors( SIMULATION_END() );
 			}
 
-			sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nReplicate, ModelString("S_MODEL_FINISH"));
+			_stprintf_s(szBuffer, nBufSize, _T("%s %d: %s"), (LPCTSTR)ModelString("S_MODEL_REPLICATE"), nSimulationMember, (LPCTSTR)ModelString("S_MODEL_FINISH"));
 			ProgressMessage( szBuffer );
 
 			gpoEventQueue->FinishAllActors();
@@ -97,12 +97,12 @@ void LogSimulationStart()
 {
 	// Buffer for messages
 	const size_t nBufSize = 255;
-	char szBuffer[nBufSize];
+	TCHAR szBuffer[nBufSize];
 
 	// Simulation member ordinal for progress reporting
 	int nSimulationMember = GetReplicate();
 
-	sprintf_s(szBuffer, nBufSize, "%s %d: %s", ModelString("S_MODEL_REPLICATE"), nSimulationMember, ModelString("S_MODEL_START"));
+	_stprintf_s(szBuffer, nBufSize, _T("%s %d: %s"), (LPCTSTR)ModelString("S_MODEL_REPLICATE"), nSimulationMember, (LPCTSTR)ModelString("S_MODEL_START"));
 	ProgressMessage( szBuffer );
 }
 
