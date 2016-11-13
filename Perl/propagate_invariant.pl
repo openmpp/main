@@ -51,31 +51,38 @@ if ($#ARGV >= 0) {
 	}
 }
 
-chdir $models_root || die "Folder ${models_root} not found";
+if (! -d $models_root) {
+	logmsg error, "Folder ${models_root} not found";
+	exit 1;
+}
 
-my @model_dirs; # list of models (without path)
+my @models; # list of models (without path)
 
 if ($#ARGV >= 0) {
 	# model folders listed explicitly on command line
-	@model_dirs = @ARGV;
+	@models = @ARGV;
 }
 else {
 	# no models listed on command line
 	# Create model list by identifying all model subdirectories
+	my $save_dir = getcwd();
+	chdir $models_root;
 	my @paths = glob "*/code";
+	chdir $save_dir;
 	for my $path (@paths) {
 		$path =~ s/\/.*//;
-		push @model_dirs, $path;
+		push @models, $path;
 	}
+	#logmsg info, "models: ".join(',',@models);
 }
 
-# Remove target file (is this necessary?)
+# Active option to remove target file (perhaps not necessary - doc'n unclear)
 local $File::Copy::Recursive::RMTrgFil = 1;
 
 MODEL:
-for my $model_dir (@model_dirs) {
+for my $model (@models) {
 
-	my $model_path = "${models_root}/${model_dir}";
+	my $model_path = "${models_root}/${model}";
 	if (! -d $model_path) {
 		logmsg error, "${model_path}: Missing model";
 		next MODEL;
@@ -89,10 +96,10 @@ for my $model_dir (@model_dirs) {
 		"MODEL-modgen.sln",             "NewCaseBased",
 		"MODEL-ompp.sln",               "NewCaseBased",
 		"modgen/Model.vcxproj",         "NewCaseBased",
-		"modgen/Model.props",           "NewCaseBased",
+		#"modgen/Model.props",           "NewCaseBased",
 		"modgen/Model.vcxproj.filters", "NewCaseBased",
 		"ompp/Model.vcxproj",           "NewCaseBased",
-		"ompp/Model.props",             "NewCaseBased",
+		#"ompp/Model.props",             "NewCaseBased",
 		"ompp/Model.vcxproj.filters",   "NewCaseBased",
 		"code/modgen_case_based.mpp",   "NewCaseBased",
 		"code/case_based.h",            "NewCaseBased",
@@ -102,16 +109,19 @@ for my $model_dir (@model_dirs) {
 	my $any_propagated = 0;
 	for( my $j = 0; $j <= $#invariant_list; $j += 2) {
 		my $invariant_file = @invariant_list[$j];
-		my $invariant_dir = @invariant_list[$j + 1];
-		my $src = "${om_root}/models/${invariant_dir}/${invariant_file}";
-		my $dst = "${model_dir}/${invariant_file}";
+		my $invariant_model = @invariant_list[$j + 1];
+		my $src = "${om_root}/models/${invariant_model}/${invariant_file}";
+		my $dst = "${models_root}/${model}/${invariant_file}";
 		# handle special case where string 'MODEL' is in the src file name
-		$src =~ s/MODEL/${invariant_dir}/;
-		$dst =~ s/MODEL/${model_dir}/;
+		$src =~ s/MODEL/${invariant_model}/;
+		$dst =~ s/MODEL/${model}/;
 		-e "${src}" || die "Not found: ${src}";
-		if (-f "${dst}" && ${model_dir} ne ${invariant_dir}) {
+		#logmsg info, "checking src=$src";
+		#logmsg info, "checking dst=$dst";
+		if (-f "${dst}" && ${model} ne ${invariant_model}) {
+			#logmsg info, "checking src=$src and dst=$dst";
 			if (compare ${src}, ${dst}) {
-				logmsg info, ${model_dir}, "Updating ${invariant_file} from ${invariant_dir}";
+				logmsg info, ${model}, "Updating ${invariant_file} from ${invariant_model}";
 				copy ${src}, ${dst};
 				$any_propagated = 1;
 			}
