@@ -194,3 +194,101 @@ NoCaseMap DbExecBase::parseConnectionStr(const string & i_connectionStr)
 
     return connMap;
 }
+
+/** parse and execute list of sql statements. */
+void DbExecBase::runSqlScript(IDbExec * i_dbExec, const string & i_sqlScript)
+{
+    try {
+        // parse source string into list of sql statements
+        string::size_type nPos = 0;
+        string::size_type nLength = i_sqlScript.length();
+        string stmt;
+        stmt.reserve(OM_STR_DB_MAX);
+
+        bool isQuote = false;   // inside of 'quote'
+        bool isComment = false; // --comment until end of line
+        char cPrev = '\0';
+        char cNow = '\0';
+
+        // until end of script parse each line 
+        while (nPos < nLength) {
+
+            // analyze current and previous char
+            cPrev = cNow;
+            cNow = i_sqlScript[nPos];
+
+            if (!isComment && !isQuote && cNow == '-' && cPrev == '-') {
+
+                if (!stmt.empty()) stmt.pop_back();     // remove - from the statement
+
+                isComment = true;   // start of --comment: skip until end of line
+                nPos++;             // move to next character
+                continue;
+            }
+
+            if (!isComment && cNow == '\'') {
+                isQuote = !isQuote;         // start or end of 'sql''quote'
+                stmt += cNow;               // append to statement
+                nPos++;                     // move to next character
+                continue;
+            }
+
+            // if end-of-line then skip to the next line
+            if (cNow == '\r' || cNow == '\n') {
+
+                if (!stmt.empty()) stmt += '\x20';  // inside of sql replace all cr-lf with space
+
+                // skip until next line started
+                while (++nPos < nLength) {
+                    cNow = i_sqlScript[nPos];
+                    if (cNow != '\r' && cNow != '\n' &&
+                        !isspace<char>(cNow, locale::classic()) && !iscntrl<char>(cNow, locale::classic())
+                        ) break;
+                }
+                if (nPos >= nLength) break;   // done: end of script
+
+                isComment = false;  // reset end of line state
+                cPrev = '\0';
+                continue;           // continue to next character
+            }
+
+            // if end of sql ; then execute statment
+            if (!isComment && !isQuote && cNow == ';') {
+
+                if (!stmt.empty()) {
+                    i_dbExec->update(stmt);     //  execute sql
+                }
+                stmt.clear();
+
+                isComment = false;  // reset end of sql state
+                cPrev = '\0';
+                cNow = '\0';
+                nPos++;             // move to next character
+                continue;
+            }
+
+            // if not --comment then append to statement
+            if (!isComment) {
+                // if non-printable except tab then replace with space
+                if (cNow != '\t' &&
+                    (isspace<char>(cNow, locale::classic()) || iscntrl<char>(cNow, locale::classic()))) {
+                    cNow = '\x20';
+                }
+                stmt += cNow;
+            }
+
+            nPos++;     // move to next character
+        }
+        if (!stmt.empty()) {    // execute last statement
+            i_dbExec->update(stmt);
+        }
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
