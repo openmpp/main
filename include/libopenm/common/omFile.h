@@ -17,6 +17,12 @@ namespace openm
     /** return true if file or directory exists */
     extern bool isFileExists(const char * i_filePath);
 
+    /** return base directory of the path or empty string if no / or \ in the path. */
+    extern string baseDirOf(const string & i_path);
+
+    /** return base directory of the path or empty string if no / or \ in the path. */
+    extern string baseDirOf(const char * i_path);
+
     /** make path from current working directory, executable name and specified extension. */
     extern string makeDefaultPath(const char * i_exePath, const char * i_extension);
 
@@ -24,16 +30,16 @@ namespace openm
      *
      * @param   i_dirPath   path or directory.
      * @param   i_name      file name.
-     * @param   i_extension file extension.
+     * @param   i_extension file extension, if not a null.
      *
      * @return  path combined as directory/name.extension
      *
-     * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\ slashes
+     * It does replace all \ with / even in "special\ path/", except of leading \\ slashes
      * For example:
      *   input\ ageSex csv => input/ageSex.csv
      *    \\host\share ageSex.csv => \\host/share.ageSex.csv
      */
-    string makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension);
+    string makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension = nullptr);
 
     /** convert null-terminated bytes from current user (or specified) code page to UTF-8 string. */
     extern string toUtf8(const char * i_byteArr, const char * i_codePageName = NULL);

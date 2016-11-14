@@ -34,7 +34,7 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     for (auto lang : Symbol::pp_all_languages) {
         ModelDicTxtLangRow modelTxt;
-        modelTxt.langName = lang->name;
+        modelTxt.langCode = lang->name;
         modelTxt.descr = label(*lang);
         modelTxt.note = note(*lang);
         metaRows.modelTxt.push_back(modelTxt);

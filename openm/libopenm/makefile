@@ -68,6 +68,7 @@ LIBOPENM_CPPLIST = \
   common/iniReader.cpp \
   common/log.cpp \
   common/md5.cpp \
+  common/splitCsv.cpp \
   common/utf8Convert.cpp \
   db/dbExec.cpp \
   db/dbExecBase.cpp \
@@ -80,7 +81,6 @@ LIBOPENM_CPPLIST = \
   db/groupTxtTable.cpp \
   db/langLstTable.cpp \
   db/langWordTable.cpp \
-  db/modelAggregationSql.cpp \
   db/modelDicTable.cpp \
   db/modelDicTxtTable.cpp \
   db/outputTableWriter.cpp \
@@ -142,9 +142,55 @@ LIB_OMC_CPPLIST = \
   common/iniReader.cpp \
   common/log.cpp \
   common/md5.cpp \
+  common/splitCsv.cpp \
   common/utf8Convert.cpp \
   db/dbExec.cpp \
+  db/dbExecBase.cpp \
+  db/dbExecProvider.cpp \
+  db/dbExecSqlite.cpp \
   db/dbMetaRow.cpp \
+  db/dbValue.cpp \
+  db/groupLstTable.cpp \
+  db/groupPcTable.cpp \
+  db/groupTxtTable.cpp \
+  db/langLstTable.cpp \
+  db/langWordTable.cpp \
+  db/modelDicTable.cpp \
+  db/modelDicTxtTable.cpp \
+  db/outputTableWriter.cpp \
+  db/paramDicTable.cpp \
+  db/paramDicTxtTable.cpp \
+  db/paramDimsTable.cpp \
+  db/paramDimsTxtTable.cpp \
+  db/parameterReader.cpp \
+  db/parameterWriter.cpp \
+  db/profileLstTable.cpp \
+  db/profileOptionTable.cpp \
+  db/runLstTable.cpp \
+  db/runOptionTable.cpp \
+  db/runParamTxtTable.cpp \
+  db/runTxtTable.cpp \
+  db/tableAccTable.cpp \
+  db/tableAccTxtTable.cpp \
+  db/tableDicTable.cpp \
+  db/tableDicTxtTable.cpp \
+  db/tableDimsTable.cpp \
+  db/tableDimsTxtTable.cpp \
+  db/tableExprTable.cpp \
+  db/tableExprTxtTable.cpp \
+  db/taskLstTable.cpp \
+  db/taskRunLstTable.cpp \
+  db/taskRunSetTable.cpp \
+  db/taskSetTable.cpp \
+  db/taskTxtTable.cpp \
+  db/typeDicTable.cpp \
+  db/typeDicTxtTable.cpp \
+  db/typeEnumLstTable.cpp \
+  db/typeEnumTxtTable.cpp \
+  db/worksetLstTable.cpp \
+  db/worksetParamTable.cpp \
+  db/worksetParamTxtTable.cpp \
+  db/worksetTxtTable.cpp \
   db/modelAggregationSql.cpp \
   db/modelInsertSql.cpp \
   db/modelSqlBuilder.cpp \

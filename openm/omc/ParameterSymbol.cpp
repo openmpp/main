@@ -416,7 +416,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     for (auto lang : Symbol::pp_all_languages) {
         ParamDicTxtLangRow paramTxt;
         paramTxt.paramId = pp_parameter_id;
-        paramTxt.langName = lang->name;
+        paramTxt.langCode = lang->name;
         paramTxt.descr = label(*lang);
         paramTxt.note = note(*lang);
         metaRows.paramTxt.push_back(paramTxt);
@@ -442,7 +442,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             paramDimsTxt.paramId = pp_parameter_id;
             paramDimsTxt.dimId = dim->index;
-            paramDimsTxt.langName = lang->name;
+            paramDimsTxt.langCode = lang->name;
             paramDimsTxt.descr = dim->label(*lang);
             paramDimsTxt.note = dim->note(*lang);
             metaRows.paramDimsTxt.push_back(paramDimsTxt);

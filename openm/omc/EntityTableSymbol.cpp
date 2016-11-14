@@ -766,7 +766,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             TableAccTxtLangRow tableAccTxt;
             tableAccTxt.tableId = pp_table_id;
             tableAccTxt.accId = acc->index;
-            tableAccTxt.langName = lang->name;
+            tableAccTxt.langCode = lang->name;
             tableAccTxt.descr = acc->label(*lang);
             tableAccTxt.note = acc->note(*lang);
             metaRows.tableAccTxt.push_back(tableAccTxt);
@@ -797,7 +797,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableExprTxt.tableId = pp_table_id;
             tableExprTxt.exprId = expr->index;
 
-            tableExprTxt.langName = lang->name;
+            tableExprTxt.langCode = lang->name;
 
             tableExprTxt.descr = expr->label(*lang);
             

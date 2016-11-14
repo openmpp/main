@@ -359,5 +359,8 @@
     <ClCompile Include="db\dbExecBase.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
+    <ClCompile Include="common\splitCsv.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

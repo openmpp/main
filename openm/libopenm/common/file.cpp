@@ -1,6 +1,6 @@
 /**
  * @file
- * OpenM++ common file utilities.
+ * OpenM++ common file utility functions.
  */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -30,6 +30,29 @@ bool openm::isFileExists(const char * i_filePath)
 }
 
 /**
+ * return base directory of the path or empty string if no / or \ in the path.
+ *          
+ * For example: C:\bin\modelOne.exe => C:\bin \n
+ * It is very primitive function and results incorrect if: "special\ path" => "special
+ */
+string openm::baseDirOf(const string & i_path)
+{
+    string::size_type nLast = i_path.find_last_of("/\\");
+    if (nLast != string::npos) return i_path.substr(0, nLast);
+    return "";
+}
+
+/** return base directory of the path or empty string if no / or \ in the path. */
+string openm::baseDirOf(const char * i_path)
+{
+    if (i_path != nullptr) {
+        string sPath = i_path;
+        return baseDirOf(sPath);
+    }
+    return "";
+}
+
+/**
  * make path from current working directory, executable name and specified extension.
  *
  * @param   i_exePath   full pathname of the executable file.
@@ -45,10 +68,10 @@ char cwd[OM_PATH_MAX + 1];
 
     // get current working directory
     string curDir;
-    if (getcwd(cwd, OM_PATH_MAX) != NULL) curDir = cwd;
+    if (getcwd(cwd, OM_PATH_MAX) != nullptr) curDir = cwd;
 
     // get executable basename
-    string baseName = i_exePath != NULL ? i_exePath : "";
+    string baseName = i_exePath != nullptr ? i_exePath : "";
 
     string::size_type namePos = baseName.find_last_of("/\\");
     if (namePos != string::npos && namePos + 1 < baseName.length()) baseName = baseName.substr(namePos + 1);
@@ -56,7 +79,11 @@ char cwd[OM_PATH_MAX + 1];
     if (endWithNoCase(baseName, ".exe")) baseName = baseName.substr(0, baseName.length() - 4);
 
     // combine: current/working/directory/basename.log
-    string sPath = (!curDir.empty() ? curDir + "/" : "") + (!baseName.empty() ? baseName : "openm") + (i_extension != NULL ? i_extension : "");
+    string sPath = 
+        (!curDir.empty() ? curDir + "/" : "") + 
+        (!baseName.empty() ? baseName : "openm") + 
+        (i_extension != nullptr ? i_extension : "");
+
     return sPath;
 }
 
@@ -65,11 +92,11 @@ char cwd[OM_PATH_MAX + 1];
  *
  * @param   i_dirPath   path or directory.
  * @param   i_name      file name.
- * @param   i_extension file extension.
+ * @param   i_extension file extension, if not a null.
  *
  * @return  path combined as directory/name.extension
  *
- * It does replace all \ with / ignoring "special\ path/" even if quoted, except of leading \\ slashes
+ * It does replace all \ with / even in "special\ path/", except of leading \\ slashes
  * For example: 
  *   input\ ageSex csv => input/ageSex.csv
 *    \\host\share ageSex.csv => \\host/share.ageSex.csv
@@ -94,7 +121,7 @@ string openm::makeFilePath(const char * i_dirPath, const char * i_name, const ch
     // if path empty then replace all \ by / except of leading \\ slashes
     string name = (i_name != nullptr) ? i_name : "";
 
-    if (!name.empty() && name.back() == '.') name = name.substr(0, name.length() - 1);
+    if (!name.empty() && name != "." && name != ".." && name.back() == '.') name = name.substr(0, name.length() - 1);
 
     if (!path.empty()) {
         std::replace(name.begin(), name.end(), '\\', '/');

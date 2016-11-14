@@ -99,7 +99,7 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
             typeEnumTxt.enumId = ordinal;
-            typeEnumTxt.langName = lang->name;
+            typeEnumTxt.langCode = lang->name;
             typeEnumTxt.descr = to_string(lower_bound + ordinal);
             typeEnumTxt.note = "";
             metaRows.typeEnumTxt.push_back(typeEnumTxt);

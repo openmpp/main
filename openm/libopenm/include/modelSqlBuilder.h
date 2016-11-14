@@ -14,6 +14,7 @@
 #include "crc32.h"
 #include "md5.h"
 #include "dbExec.h"
+#include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
@@ -28,10 +29,13 @@ namespace openm
     {
     public:
         /** create new model builder. */
-        ModelSqlBuilder(const string & i_providerNames, const string & i_outputDir);
+        ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir);
 
         /** release builder resources. */
         ~ModelSqlBuilder() throw() { }
+
+        /** if true then create SQLite database */
+        bool isSqliteDb(void) const override { return isSqlite; }
 
         /** set meta rows values and calculate digests for types, parameters, tables and model */
         void setModelMetaRows(MetaModelHolder & io_metaRows) const override;
@@ -57,16 +61,14 @@ namespace openm
         void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const override;
 
     private:
-        bool isCrc32Name;                   // if true then use crc32 as db table name suffix
-        int dbPrefixSize;                   // db table prefix name size
-        int dbSuffixSize;                   // db table prefix name size
-        string outputDir;                   // output directory to write sql script files
-        string bodySqlPath;                 // workset body sql file path
-        string modelDigestQuoted;           // sql-quoted model digest
-        string worksetNameQuoted;           // sql-quoted workset name
-        int worksetFileIndex;               // sequential number for workset sql file names
-        list<string> dbProviderLst;         // list of db provider names, ie: sqlite,postgresql,mysql
-        unique_ptr<ModelSqlWriter> setWr;   // workset sql writer
+        bool isCrc32Name;               // if true then use crc32 as db table name suffix
+        int dbPrefixSize;               // db table prefix name size
+        int dbSuffixSize;               // db table prefix name size
+        string sqlDir;                  // sql scripts directory to create database
+        string outputDir;               // output directory to write sql script files
+        bool isSqlite;                  // if true then create SQLite database
+        list<string> dbProviderLst;     // list of db provider names, ie: sqlite,postgresql,mysql
+        unique_ptr<IDbExec> dbExec;     // database connection
 
         /** helper struct to collect info for db table */
         struct DbTblInfo
@@ -86,8 +88,8 @@ namespace openm
         /** helper struct to collect info for db parameter table */
         struct ParamTblInfo : DbTblInfo
         {
-            /** db type of value column to store parameter */
-            string valueTypeName;
+            /** parameter value type name */
+            vector<TypeDicRow>::const_iterator valueTypeIt;
 
             /** if true then parameter added to workset */
             bool isAdded;
@@ -124,14 +126,12 @@ namespace openm
         /** sort and validate workset metadata for uniqueness and referential integrity */
         void prepareWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const;
 
-        /** create new workset and write workset metadata */
-        void createWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
-
-        /** delete existing workset parameter values and workset metadata */
-        void deleteWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) const;
+        /** create new workset: insert metadata and delete existing workset parameters, if required */
+        void createWorksetMeta(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
 
         /** impelementation of append scalar parameter value to sql script */
         void doAddScalarWorksetParameter(
+            int i_setId,
             const string & i_name, 
             const string & i_dbTableName, 
             const vector<ParamTblInfo>::const_iterator & i_paramInfo, 
@@ -182,6 +182,9 @@ namespace openm
             const vector<string> & i_dimNames, 
             ModelSqlWriter & io_wr
         ) const;
+
+        /** return db type name by model type for specific db provider, eg: INT or CLOB */
+        static string valueDbType(const string & i_sqlProvider, const ParamTblInfo & i_tblInfo);
 
         /** set field values for workset_lst table row */
         void setWorksetRow(WorksetLstRow & io_wsRow) const;

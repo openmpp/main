@@ -1,10 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
   <PropertyGroup>
     <!-- OM_ROOT set first allows indirection to folder containing props files -->
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
     <MODEL_SRC_DIR Condition="'$(MODEL_SRC_DIR)'==''">$(ProjectDir)..</MODEL_SRC_DIR>
   </PropertyGroup>
+
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -71,28 +73,35 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  
   <!-- Import common openM models project settings -->
   <PropertyGroup>
     <MODEL_NAME>$(ProjectName)</MODEL_NAME>
   </PropertyGroup>
+  
   <Import Project="$(OM_ROOT)/props/model-ompp.1.build.props" />
   <Import Project="$(OM_ROOT)/props/model-ompp.2.cpp.props" />
+  
   <ItemGroup>
     <ClCompile Include="$(MODEL_SRC_DIR)/modelOne.cpp" />
     <ClCompile Include="$(MODEL_SRC_DIR)/modelOne_om.cpp" />
   </ItemGroup>
+  
   <ItemGroup>
     <ClInclude Include="$(MODEL_SRC_DIR)/modelOne_om.h" />
   </ItemGroup>
+  
   <ItemGroup>
     <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_create_model.sql" />
     <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_insert_param.sql" />
     <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_optional_views.sql" />
     <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_drop_tables_views.sql" />
   </ItemGroup>
+  
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SqlScript)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>

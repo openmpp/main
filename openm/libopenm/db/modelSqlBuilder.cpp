@@ -7,24 +7,28 @@
 using namespace openm;
 
 // new model builder to create sql script specific to each db-provider
-IModelBuilder * IModelBuilder::create(const string & i_providerNames, const string & i_outputDir)
+IModelBuilder * IModelBuilder::create(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir)
 {
-    return new ModelSqlBuilder(i_providerNames, i_outputDir);
+    return new ModelSqlBuilder(i_providerNames, i_sqlDir, i_outputDir);
 }
 
 // release builder resources
 IModelBuilder::~IModelBuilder() throw() { }
 
 // create new model builder and set db table name prefix and suffix rules
-ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_outputDir) : 
+ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir) : 
     isCrc32Name(false),
     dbPrefixSize(0),
     dbSuffixSize(0),
+    sqlDir(i_sqlDir),
     outputDir(i_outputDir),
-    worksetFileIndex(0)
+    isSqlite(false)
 {
     // parse and validate provider names
     dbProviderLst = IDbExec::parseListOfProviderNames(i_providerNames);
+    if (dbProviderLst.empty()) throw DbException("invalid (empty) list db-provider names");
+
+    isSqlite = dbProviderLst.cend() != std::find(dbProviderLst.cbegin(), dbProviderLst.cend(), SQLITE_DB_PROVIDER);
 
     // find smallest of max size of db table name
     int minSize = 256;
@@ -38,7 +42,8 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     // prefix based on parameter name or output table name
     // suffix is 32 chars of md5 or 8 chars of crc32
     // there is extra 2 chars: _p, _w, _v, _a in table name between prefix and suffix
-    // always use short crc32 name suffix
+    //
+    // 2016-08-17: always use short crc32 name suffix (due to Oracle 30 limit)
     // isCrc32Name = minSize < 50;
     isCrc32Name = true;
     dbSuffixSize = isCrc32Name ? 8 : 32;
@@ -62,12 +67,58 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         // write sql script to insert new model metadata 
         // write sql script to create new model tables
         for (const string providerName : dbProviderLst) {
-            buildCreateModel(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_1_create_model_" + providerName + ".sql");
-            buildCreateModelTables(providerName, io_metaRows, outputDir + io_metaRows.modelDic.name + "_2_create_tables_" + providerName + ".sql");
+            buildCreateModel(
+                providerName, 
+                io_metaRows, 
+                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_1_create_model_" + providerName).c_str(), ".sql")
+            );
+            buildCreateModelTables(
+                providerName, 
+                io_metaRows, 
+                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_2_create_tables_" + providerName).c_str(), ".sql")
+            );
         }
 
         // write sql script to drop model tables
-        buildDropModelTables(io_metaRows, outputDir + io_metaRows.modelDic.name + "_drop_tables.sql");
+        buildDropModelTables(
+            io_metaRows, 
+            makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_drop_tables").c_str(), ".sql")
+        );
+
+        // create SQLite database and publish model: insert model metadata and create model tables
+        if (isSqlite) {
+            dbExec.reset(IDbExec::create(
+                SQLITE_DB_PROVIDER,
+                "Database=" + makeFilePath(outputDir.c_str(), io_metaRows.modelDic.name.c_str(), ".sqlite") + ";" +
+                " Timeout=86400;" +
+                " OpenMode=Create;" +
+                " DeleteExisting=true;"
+            ));
+
+            // run script to create openM++ metadata tables and insert default values
+            list<string> sqlLst = IDbExec::parseSql(fileToUtf8(makeFilePath(sqlDir.c_str(), "create_db.sql").c_str()));
+            for (const string & s : sqlLst) {
+                dbExec->update(s);
+            }
+
+            // run sql script to insert new model metadata into SQLite database
+            sqlLst = IDbExec::parseSql(
+                fileToUtf8(makeFilePath(
+                    outputDir.c_str(), (io_metaRows.modelDic.name + "_1_create_model_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
+                ).c_str()));
+            for (const string & s : sqlLst) {
+                dbExec->update(s);
+            }
+
+            // run sql script to create new model tables
+            sqlLst = IDbExec::parseSql(
+                fileToUtf8(makeFilePath(
+                    outputDir.c_str(), (io_metaRows.modelDic.name + "_2_create_tables_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
+                ).c_str()));
+            for (const string & s : sqlLst) {
+                dbExec->update(s);
+            }
+        }
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -343,6 +394,8 @@ void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  
 void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) 
 {
     try {
+        if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
+
         // validate workset metadata: uniqueness and referential integrity
         prepareWorkset(i_metaRows, io_metaSet);
 
@@ -354,19 +407,9 @@ void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLa
             tblInfo.isAdded = false;
         }
 
-        // create sql script to insert workset metadata and parameter values
-        bodySqlPath = outputDir + i_metaRows.modelDic.name + "_" + io_metaSet.worksetRow.name + theLog->timeStampSuffix() + ".sql";
-
-        setWr.reset(new ModelSqlWriter(bodySqlPath));
-
-        // delete existing workset values and metadata
-        modelDigestQuoted = toQuoted(i_metaRows.modelDic.digest);
-        worksetNameQuoted = toQuoted(io_metaSet.worksetRow.name);
-
-        deleteWorkset(i_metaRows, io_metaSet);
-
-        // insert new workset metadata
-        createWorkset(i_metaRows, io_metaSet);
+        // start workset transaction and insert new workset metadata
+        dbExec->beginTransaction();
+        createWorksetMeta(i_metaRows, io_metaSet);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -382,156 +425,193 @@ void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLa
     }
 }
 
-// delete existing workset parameter values and workset metadata
-void ModelSqlBuilder::deleteWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & /*i_metaSet*/) const
+// create new workset: insert metadata and delete existing workset parameters, if required
+void ModelSqlBuilder::createWorksetMeta(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet)
 {
-    // make workset id where clause
-    string whereSetId = " WHERE set_id =" \
+    // validate field values
+    if (io_metaSet.worksetRow.updateDateTime.length() > 32) throw DbException("invalid (too long) update time of workset: %s", io_metaSet.worksetRow.name.c_str());
+
+    // UPDATE id_lst SET id_value = 
+    //   CASE
+    //     WHEN 0 = 
+    //       (
+    //       SELECT COUNT(*) FROM workset_lst EW 
+    //       INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)
+    //       WHERE EW.set_name = 'modelOne'
+    //       AND EM.model_digest = '1234abcd'
+    //       ) 
+    //       THEN id_value + 1 
+    //     ELSE id_value
+    //   END
+    // WHERE id_key = 'run_id_set_id';
+    dbExec->update(
+        "UPDATE id_lst SET id_value =" \
+        " CASE" \
+        " WHEN 0 =" \
         " (" \
-        " SELECT W.set_id" \
-        " FROM workset_lst W" \
+        " SELECT COUNT(*) FROM workset_lst EW" \
+        " INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)" \
+        " WHERE EW.set_name = " + toQuoted(io_metaSet.worksetRow.name) +
+        " AND EM.model_digest = " + toQuoted(i_metaRows.modelDic.digest) +
+        " )" \
+        " THEN id_value + 1" \
+        " ELSE id_value" \
+        " END" \
+        " WHERE id_key = 'run_id_set_id'");
+
+    // insert into workset_lst table
+    // if i_row.baseRunId <= 0 then it treated as db-NULL
+    //
+    // INSERT INTO workset_lst
+    //   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)
+    // SELECT 
+    //   IL.id_value, 
+    //   NULL, 
+    //   (SELECT M.model_id FROM model_dic M WHERE M.model_digest = '1234abcd'), 
+    //   'modelOne', 
+    //   0, 
+    //   '2012-08-17 17:43:57.1234'
+    // FROM id_lst IL 
+    // WHERE IL.id_key = 'run_id_set_id'
+    // AND NOT EXISTS
+    // (
+    //   SELECT * FROM workset_lst EW 
+    //   INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)
+    //   WHERE EW.set_name = 'modelOne'
+    //   AND EM.model_digest = '1234abcd'
+    // );
+    dbExec->update(
+        "INSERT INTO workset_lst" \
+        " (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)" \
+        " SELECT IL.id_value, " +
+        (io_metaSet.worksetRow.baseRunId <= 0 ? "NULL" : to_string(io_metaSet.worksetRow.baseRunId)) + "," +
+        " (SELECT M.model_id FROM model_dic M WHERE M.model_digest = " + toQuoted(i_metaRows.modelDic.digest) + "), " +
+        toQuoted(io_metaSet.worksetRow.name) + ", " +
+        (io_metaSet.worksetRow.isReadonly ? "1, " : "0, ") +
+        toQuoted(io_metaSet.worksetRow.updateDateTime) +
+        " FROM id_lst IL" \
+        " WHERE IL.id_key = 'run_id_set_id'" \
+        " AND NOT EXISTS" \
+        " (" \
+        " SELECT * FROM workset_lst EW" \
+        " INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)" \
+        " WHERE EW.set_name = " + toQuoted(io_metaSet.worksetRow.name) +
+        " AND EM.model_digest = " + toQuoted(i_metaRows.modelDic.digest) +
+        ")");
+
+    // select workset id: must be positive
+    io_metaSet.worksetRow.setId = dbExec->selectToInt(
+        "SELECT set_id FROM workset_lst W" \
         " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
-        " WHERE W.set_name = " + worksetNameQuoted +
-        " AND M.model_digest = " + modelDigestQuoted +
-        " )";
+        " WHERE W.set_name = " + toQuoted(io_metaSet.worksetRow.name) +
+        " AND M.model_digest = " + toQuoted(i_metaRows.modelDic.digest), 
+        -1);
+    if (io_metaSet.worksetRow.setId <= 0) throw DbException("invalid (not positive) set id for workset: %s", io_metaSet.worksetRow.name.c_str());
 
-    // delete existing workset: workset parameter values
-    ModelSqlWriter & wr = *setWr.get();
-    wr.write(
-        "--\n" \
-        "-- delete existing workset: workset parameter values\n" \
-        "--\n"
-    );
+    string setIdStr = to_string(io_metaSet.worksetRow.setId);    // save current workset id
 
-    // DELETE FROM StartingSeed_w20120819 WHERE set_id = ... ;
+    // delete existing workset parameters
     for (const ParamDicRow & row : i_metaRows.paramDic) {
-        wr.outFs << "DELETE FROM " << row.dbSetTable << whereSetId << ";\n";
+        dbExec->update("DELETE FROM " + row.dbSetTable + " WHERE set_id = " + setIdStr);
     }
 
     // delete workset metadata except of workset_lst master row
-    wr.write(
-        "--\n" \
-        "-- delete existing working set metadata\n" \
-        "--\n"
-    );
-    wr.outFs << "DELETE FROM workset_parameter_txt " << whereSetId << ";\n";
-    wr.outFs << "DELETE FROM workset_parameter " << whereSetId << ";\n";
-    wr.outFs << "DELETE FROM workset_txt " << whereSetId << ";\n";
-    wr.write("\n");
-}
+    dbExec->update("DELETE FROM workset_parameter_txt WHERE set_id = " + setIdStr);
+    dbExec->update("DELETE FROM workset_parameter WHERE set_id = " + setIdStr);
+    dbExec->update("DELETE FROM workset_txt WHERE set_id = " + setIdStr);
 
-// create new workset and write workset metadata
-void ModelSqlBuilder::createWorkset(const MetaModelHolder & /*i_metaRows*/, const MetaSetLangHolder & i_metaSet) const
-{
-    // delete existing workset: workset parameters
-    ModelSqlWriter & wr = *setWr.get();
+    // insert workset text (description and notes)
+    for (const WorksetTxtLangRow & row : io_metaSet.worksetTxt) {
 
-    // insert new workset: workset header
-    wr.write(
-        "--\n" \
-        "-- insert new working set description\n" \
-        "--\n"
-        );
-    ModelInsertSql::insertSetSql(modelDigestQuoted, worksetNameQuoted, i_metaSet.worksetRow, wr);
-    wr.write("\n");
+        // validate field values
+        if (row.langCode.empty() || row.langCode.length() < 1) throw DbException("invalid (empty) language code for workset description and notes");
+        if (row.descr.empty() || row.descr.length() < 1) throw DbException("invalid (empty) workset description");
+        if (row.descr.length() > 255 || row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) workset description or notes");
 
-    for (const WorksetTxtLangRow & row : i_metaSet.worksetTxt) {
-        ModelInsertSql::insertSetSql(modelDigestQuoted, worksetNameQuoted, row, wr);
+        // INSERT INTO workset_txt (set_id, lang_id, descr, note) 
+        // SELECT 
+        //   W.set_id, 
+        //   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'),
+        //   'default workset',
+        //   'default workset notes'
+        // FROM workset_lst W WHERE W.set_id = 1234;
+        dbExec->update(
+            "INSERT INTO workset_txt (set_id, lang_id, descr, note)" \
+            " SELECT" \
+            " W.set_id," \
+            " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = " + toQuoted(row.langCode) + "), " +
+            toQuoted(row.descr) + ", " +
+            toQuoted(row.note) +
+            " FROM workset_lst W WHERE W.set_id = " + setIdStr);
     }
-    wr.write("\n");
 
-    // insert new workset: workset parameters
-    wr.write(
-        "--\n" \
-        "-- insert new working set parameters\n" \
-        "--\n"
-        );
-    for (const WorksetParamRow & row : i_metaSet.worksetParam) {
-        ModelInsertSql::insertSetSql(modelDigestQuoted, worksetNameQuoted, row, wr);
+    // insert workset parameters list
+    for (const WorksetParamRow & row : io_metaSet.worksetParam) {
+
+        // validate field values
+        if (row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", row.paramId);
+
+        // INSERT INTO workset_parameter (set_id, parameter_hid)
+        // SELECT 
+        //   W.set_id, P.parameter_hid
+        // FROM workset_lst W
+        // INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = 1)
+        //  WHERE W.set_id = 1234;
+        dbExec->update(
+            "INSERT INTO workset_parameter (set_id, parameter_hid)" \
+            " SELECT" \
+            " W.set_id, P.parameter_hid" \
+            " FROM workset_lst W" \
+            " INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = " + to_string(row.paramId) + ")"
+            " WHERE W.set_id = " + setIdStr);
     }
-    wr.write("\n");
 
-    for (const WorksetParamTxtLangRow & row : i_metaSet.worksetParamTxt) {
-        ModelInsertSql::insertSetSql(modelDigestQuoted, worksetNameQuoted, row, wr);
+    // insert workset parameters text: parameter value notes
+    for (const WorksetParamTxtLangRow & row : io_metaSet.worksetParamTxt) {
+
+        // validate field values
+        if (row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", row.paramId);
+
+        if (row.langCode.empty() || row.langCode.length() < 1) throw DbException("invalid (empty) language code, workset parameter id: %d", row.paramId);
+        if (row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) notes, workset parameter id: %d", row.paramId);
+
+        // INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)
+        // SELECT 
+        //   W.set_id, P.parameter_hid,
+        //   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'),
+        //   'parameter value notes'
+        // FROM workset_lst W
+        // INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = 1)
+        // WHERE W.set_id = 1234;
+        dbExec->update(
+            "INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)" \
+            " SELECT" \
+            " W.set_id, P.parameter_hid, " \
+            " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = " + toQuoted(row.langCode) + "), " +
+            toQuoted(row.note) +
+            " FROM workset_lst W" \
+            " INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = " + to_string(row.paramId) + ")"
+            " WHERE W.set_id = " + setIdStr);
     }
-    wr.write("\n");
-
-    // header comment for parameter values
-    wr.write(
-        "--\n" \
-        "-- insert values of parameters\n" \
-        "--\n"
-        );
 }
 
 /** finish sql script to create new working set */
-void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet)
+void ModelSqlBuilder::endWorkset(const MetaModelHolder & /* i_metaRows */, const MetaSetLangHolder & i_metaSet)
 {
     try {
+        if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
+
         // validate workset parameters: all parameters must be added to workset
         for (const ParamTblInfo & tblInfo : paramInfoVec) {
             if (!tblInfo.isAdded)
                 throw DbException("workset must include all model parameters, missing: %d: %s", tblInfo.id, tblInfo.name.c_str());
         }
 
-        // close workset sql body file
-        setWr.reset();
+        // mark workset as readonly: ready to use
+        dbExec->update("UPDATE workset_lst SET is_readonly = 1 WHERE set_id = " + to_string(i_metaSet.worksetRow.setId));
 
-        // for each provider create sql script file and copy sql body into transaction scope
-        for (const string & providerName : dbProviderLst) {
-
-            // create provider sql file and put header
-            ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_" + to_string(worksetFileIndex + 3) + "_" + i_metaSet.worksetRow.name + "_" + providerName + ".sql");
-            wr.outFs <<
-                "--\n" <<
-                "-- create working set of parameters: " << i_metaSet.worksetRow.name << '\n' <<
-                "-- model name:     " << i_metaRows.modelDic.name << '\n' <<
-                "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
-                "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
-                "--\n\n";
-            wr.throwOnFail();
-
-            // start transaction
-            string sqlBeginTrx = IDbExec::makeSqlBeginTransaction(providerName);
-            wr.writeLine("--");
-            wr.writeLine("-- make sure all below is done inside of TRANSACTION");
-            wr.writeLine("--");
-            if (!sqlBeginTrx.empty()) wr.writeLine(sqlBeginTrx + ";\n");
-
-            // copy sql body
-            {
-                ifstream bodyFs(bodySqlPath.c_str(), ios::in);
-                if (bodyFs.fail()) throw HelperException("Failed to open file: %s", bodySqlPath.c_str());
-
-                wr.outFs << bodyFs.rdbuf();
-                wr.throwOnFail();
-            }
-            wr.write("\n");
-
-            // mark workset as readonly
-            wr.write(
-                "--\n" \
-                "-- mark working set as readonly\n" \
-                "--\n"
-            );
-            wr.writeLine(
-                "UPDATE workset_lst SET is_readonly = 1" \
-                " WHERE set_name = " + worksetNameQuoted +
-                " AND model_id = (SELECT M.model_id FROM model_dic M WHERE M.model_digest = " + modelDigestQuoted + ");"
-            );
-            wr.write("\n");
-
-            string sqlCommitTrx = IDbExec::makeSqlCommitTransaction(providerName);
-            wr.writeLine("--");
-            wr.writeLine("-- make sure all above done inside of TRANSACTION");
-            wr.writeLine("--");
-            if (!sqlCommitTrx.empty()) wr.writeLine(sqlCommitTrx + ";");
-            wr.write("\n");
-        }
-        worksetFileIndex++;     // next workset sql file number
-
-        // delete sql body file, treat file delete error as warning
-        if (std::remove(bodySqlPath.c_str())) theLog->logFormatted("File delete error: %s", bodySqlPath.c_str());
+        // workset compeleted
+        dbExec->commit();
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -549,10 +629,11 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & i_metaRows, const MetaS
 
 // append scalar parameter value to sql script for new working set creation 
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & /*i_metaSet*/, const string & i_name, const string & i_value
+    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value
     )
 {
-    // check parameter name
+    // check parameters
+    if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
     if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
 
     // find parameter info
@@ -571,13 +652,14 @@ void ModelSqlBuilder::addWorksetParameter(
     if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
 
     // create sql to insert value of scalar paarameter
-    doAddScalarWorksetParameter(i_name, paramRow->dbSetTable, paramInfo, i_value);
+    doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_value);
 
     paramInfo->isAdded = true;  // done
 }
 
 // impelementation of append scalar parameter value to sql script
 void ModelSqlBuilder::doAddScalarWorksetParameter(
+    int i_setId,
     const string & i_name, 
     const string & i_dbTableName, 
     const vector<ParamTblInfo>::const_iterator & i_paramInfo, 
@@ -587,48 +669,23 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
     // scalar parameter expected: check number of dimensions
     if (i_paramInfo->dimNameVec.size() != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
 
-    // if parameter value is string type then it must be sql-quoted
-    bool isQuote =
-        equalNoCase(i_paramInfo->valueTypeName.c_str(), "VARCHAR") ||
-        equalNoCase(i_paramInfo->valueTypeName.c_str(), "CHAR") ||
-        equalNoCase(i_paramInfo->valueTypeName.c_str(), "TEXT");
-
     // make sql to insert parameter value
-    // INSERT INTO StartingSeed_w20120819 (set_id, param_value) 
-    // SELECT W.set_id, 0.014
-    // FROM workset_lst W
-    // INNER JOIN model_dic M ON (M.model_id = W.model_id)
-    // WHERE W.set_name = 'modelOne'
-    // AND M.model_digest = '1234abcd';
-    ModelSqlWriter & wr = *setWr.get();
-    wr.outFs <<
-        "INSERT INTO " << i_dbTableName << " (set_id, param_value)" <<
-        " SELECT W.set_id, ";
-    wr.throwOnFail();
-
-    // validate and write parameter value
-    if (isQuote) {
-        wr.writeQuoted(i_value);
-    }
-    else {
-        if (i_value.empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
-        wr.write(i_value.c_str());
-    }
-
-    wr.outFs <<
-        " FROM workset_lst W" \
-        " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
-        " WHERE W.set_name = " << worksetNameQuoted <<
-        " AND M.model_digest = " << modelDigestQuoted << ";\n\n";
-    wr.throwOnFail();
+    // if parameter value is string type then it must be sql-quoted
+    //  INSERT INTO StartingSeed_w20120819 (set_id, param_value) VALUES (1234, 0.014)
+    dbExec->update(
+        "INSERT INTO " + i_dbTableName + " (set_id, param_value) VALUES (" + 
+        to_string(i_setId) + ", " +
+        (i_paramInfo->valueTypeIt->isString() ? toQuoted(i_value) : i_value) +
+        ")");
 }
 
 // append parameter values to sql script for new working set creation 
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & /*i_metaSet*/, const string & i_name, const list<string> & i_valueLst
+    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
     )
 {
     // check parameters
+    if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
     if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
 
     // find parameter info
@@ -650,16 +707,13 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // if this is scalar parameter then use simplified version of sql
     if (dimCount <= 0) {
-        doAddScalarWorksetParameter(i_name, paramRow->dbSetTable, paramInfo, i_valueLst.front());
+        doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_valueLst.front());
         paramInfo->isAdded = true;
         return;                     // done with this scalar parameter
     }
 
     // if parameter value is string type then it must be sql-quoted
-    bool isQuote =
-        equalNoCase(paramInfo->valueTypeName.c_str(), "VARCHAR") ||
-        equalNoCase(paramInfo->valueTypeName.c_str(), "CHAR") ||
-        equalNoCase(paramInfo->valueTypeName.c_str(), "TEXT");
+    bool isQuote = paramInfo->valueTypeIt->isString();
 
     // get dimensions list
     int mId = i_metaRows.modelDic.modelId;
@@ -720,15 +774,8 @@ void ModelSqlBuilder::addWorksetParameter(
     if (totalSize != i_valueLst.size()) throw DbException("invalid value array size: %ld, expected: %ld for parameter: %s", i_valueLst.size(), totalSize, i_name.c_str());
 
     // make sql to insert parameter dimesion enums and parameter value
-    // INSERT INTO ageSex_w20120817 
-    //   (set_id, dim0, dim1, param_value) 
-    // SELECT 
-    //   W.set_id, 1, 2, 0.014
-    // FROM workset_lst W
-    // INNER JOIN model_dic M ON (M.model_id = W.model_id)
-    // WHERE W.set_name = 'modelOne'
-    // AND M.model_digest = '1234abcd';
-    ModelSqlWriter & wr = *setWr.get();
+    // if parameter value is string type then it must be sql-quoted
+    // INSERT INTO ageSex_w20120817 (set_id, dim0, dim1, param_value) VALUES (1234, 1, 2, 0.014)
     {
         // storage for dimension enum_id items
         unique_ptr<int> cellArrUptr(new int[dimCount]);
@@ -744,37 +791,37 @@ void ModelSqlBuilder::addWorksetParameter(
         for (const string & dimName : paramInfo->dimNameVec) {
             insertPrefix += dimName + ", ";
         }
-        insertPrefix += "param_value) SELECT W.set_id, ";
+        insertPrefix += "param_value) VALUES (" + to_string(i_metaSet.worksetRow.setId) + ", ";
 
         // loop through all enums for each dimension and write sql inserts
         list<string>::const_iterator valueIt = i_valueLst.cbegin();
+        string sql;
+        sql.reserve(OM_STR_DB_MAX);
+        char cellBuf[OM_STR_DB_MAX];
 
         for (size_t cellOffset = 0; cellOffset < totalSize; cellOffset++) {
 
-            wr.write(insertPrefix.c_str());
+            sql.clear();
+            sql += insertPrefix;
 
             // write dimension enum_id items
             for (int k = 0; k < dimCount; k++) {
-                wr.outFs << cellArr[k] << ", ";
-                wr.throwOnFail();
+                snprintf(cellBuf, OM_STR_DB_MAX, "%d, ", cellArr[k]);
+                sql += cellBuf;
             }
 
             // validate and write parameter value
             if (isQuote) {
-                wr.writeQuoted(*valueIt);
+                 sql += toQuoted(*valueIt);
             }
             else {
                 if (valueIt->empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
-                wr.write(valueIt->c_str());
+                sql += *valueIt;
             }
+            sql += ")";
 
-            // end of insert statement
-            wr.outFs <<
-                " FROM workset_lst W" \
-                " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
-                " WHERE W.set_name = " << worksetNameQuoted <<
-                " AND M.model_digest = " << modelDigestQuoted << ";\n";
-            wr.throwOnFail();
+            // do insert
+            dbExec->update(sql);
 
             // get next cell indices
             for (int nDim = dimCount - 1; nDim >= 0; nDim--) {
@@ -791,15 +838,15 @@ void ModelSqlBuilder::addWorksetParameter(
             valueIt++;     // next value
         }
     }
-    wr.write("\n");             // done with parameter insert
-    paramInfo->isAdded = true;
+
+    paramInfo->isAdded = true;  // done with parameter insert
 }
 
 // write sql script to create backward compatibility views
 void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
 {
     try {
-        // write sql script to cerate views for each provider
+        // write sql script to create views for each provider
         for (const string providerName : dbProviderLst) {
 
             // put descriptive header
@@ -815,7 +862,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
                 "--   this part of database is optional and NOT used by openM++\n" <<
                 "--   if you want it for any reason please enjoy else just ignore it\n" <<
                 "-- Or other words:\n" <<
-                "--   if you don't know what is this then you don't need it\n" <<
+                "--   if you don't know what this is then you don't need it\n" <<
                 "--\n\n";
             wr.throwOnFail();
 
@@ -919,13 +966,8 @@ const void ModelSqlBuilder::paramCreateTable(
         sqlBody += dimName + " INT NOT NULL, ";
     }
 
-    string tname = 
-        (i_sqlProvider == ORACLE_DB_PROVIDER && equalNoCase(i_tblInfo.valueTypeName.c_str(), "BIGINT")) ? 
-        "NUMBER(19)" : 
-        i_tblInfo.valueTypeName;
-
     sqlBody +=
-        "param_value " + tname + " NOT NULL, " +
+        "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + " NOT NULL, " +
         "PRIMARY KEY (" + i_runSetId;
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
@@ -934,6 +976,44 @@ const void ModelSqlBuilder::paramCreateTable(
     sqlBody += "));";
 
     io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
+}
+
+// return db type name by model type for specific db provider
+string ModelSqlBuilder::valueDbType(const string & i_sqlProvider, const ParamTblInfo & i_tblInfo)
+{
+    // C++ ambiguous integral type
+    // (in C/C++, the signedness of char is not specified)
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "char")) return "SMALLINT";
+
+    // C++ signed integral types
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "schar")) return "SMALLINT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "short")) return "SMALLINT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "int")) return "INT";
+
+    // C++ unsigned integral types
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "uchar")) return "SMALLINT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "ushort")) return "INT";
+
+    // Changeable numeric types
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "integer")) return "INT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "counter")) return "INT";
+
+    // C++ bool type
+    if (i_tblInfo.valueTypeIt->isBool()) return "SMALLINT";
+
+    // C++ int64 and uint64 types
+    if (i_tblInfo.valueTypeIt->isBigInt()) return IDbExec::bigIntTypeName(i_sqlProvider);
+
+    // C++ floating point types
+    if (i_tblInfo.valueTypeIt->isFloat()) return IDbExec::floatTypeName(i_sqlProvider);
+
+    // path to a file (a string)
+    if (i_tblInfo.valueTypeIt->isString()) return IDbExec::textTypeName(i_sqlProvider, OM_PATH_MAX);
+
+    // model specific types: it must be enum
+    if (!i_tblInfo.valueTypeIt->isBuiltIn()) return "INT";
+
+    throw DbException("invalid value type for parameter id: %d, db table name: %s", i_tblInfo.id, i_tblInfo.name.c_str());
 }
 
 // create table sql for accumulator table:

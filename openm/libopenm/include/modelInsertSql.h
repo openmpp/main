@@ -26,28 +26,28 @@ namespace openm
         *
         * if new model or workset created then model id selected from id_lst \n
         * it must be done in transaction scope and sql statements can look like: \n
-        * 
+        *
         * @code
-        * BEGIN TRANSACTION; 
-        * 
-        * UPDATE id_lst SET id_value = 
+        * BEGIN TRANSACTION;
+        *
+        * UPDATE id_lst SET id_value =
         *   CASE
-        *     WHEN 
-        *       NOT EXISTS (SELECT * FROM model_dic WHERE model_digest = '1234abcd') THEN id_value + 1 
+        *     WHEN
+        *       NOT EXISTS (SELECT * FROM model_dic WHERE model_digest = '1234abcd') THEN id_value + 1
         *     ELSE id_value
         *   END
         * WHERE id_key = 'model_id';
         *
-        * INSERT INTO model_dic (model_id, ...) 
-        * SELECT 
-        *     IL.id_value, 
-        *     ... 
+        * INSERT INTO model_dic (model_id, ...)
+        * SELECT
+        *     IL.id_value,
+        *     ...
         * FROM id_lst IL WHERE IL.id_key = 'model_id'
         * AND NOT EXISTS
         * (
         *   SELECT * FROM model_dic WHERE model_digest = '1234abcd'
         * );
-        * 
+        *
         * ...
         * COMMIT;
         * @endcode
@@ -62,21 +62,12 @@ namespace openm
         */
         template<class TMasterRow, class TRow> static void insertDetailSql(
             const TMasterRow & i_masterRow, const TRow & i_row, ModelSqlWriter & io_wr
-            );
-
-        /** 
-        * write sql to insert i_row values into workset metadata table.
-        *
-        * it must be done in transaction scope.
-        */
-        template<class TRow> static void insertSetSql(
-            const string & i_modelDigestQuoted, const string & i_worksetNameQuoted, const TRow & i_row, ModelSqlWriter & io_wr
         );
     };
-    
+
     /** write sql to insert into model_dic table. */
     template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr);
-    
+
     /** write sql to insert into model_dic_txt table. */
     template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ModelDicTxtLangRow>(
         const ModelDicRow & i_modelRow, const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr
@@ -172,44 +163,12 @@ namespace openm
         const ModelDicRow & i_modelRow, const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr
         );
 
-    /** write sql to insert into group_pc table.  
+    /** write sql to insert into group_pc table.
     *
     * negative value of i_row.childGroupId or i_row.leafId treated as db-NULL
     */
     template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupPcRow>(
         const ModelDicRow & i_modelRow, const GroupPcRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /**  write sql to insert into workset_lst table. */
-    template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
-        const string & i_modelDigestQuoted,
-        const string & i_worksetNameQuoted,
-        const WorksetLstRow & i_row,
-        ModelSqlWriter & io_wr
-        );
-  
-    /** write sql to insert into workset_txt table. */
-    template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
-        const string & i_modelDigestQuoted,
-        const string & i_worksetNameQuoted,
-        const WorksetTxtLangRow & i_row,
-        ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into workset_parameter table. */
-    template<> void ModelInsertSql::insertSetSql<WorksetParamRow>(
-        const string & i_modelDigestQuoted,
-        const string & i_worksetNameQuoted,
-        const WorksetParamRow & i_row, 
-        ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into workset_parameter_txt table. */
-    template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
-        const string & i_modelDigestQuoted,
-        const string & i_worksetNameQuoted,
-        const WorksetParamTxtLangRow & i_row, 
-        ModelSqlWriter & io_wr
         );
 }
 

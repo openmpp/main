@@ -129,7 +129,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             TableDicTxtLangRow tableTxt;
 
             tableTxt.tableId = pp_table_id;
-            tableTxt.langName = lang->name;
+            tableTxt.langCode = lang->name;
             tableTxt.descr = label(*lang);
             tableTxt.note = note(*lang);
             tableTxt.exprDescr = "Measures (" + lang->name + ")"; // TODO
@@ -160,7 +160,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             tableDimsTxt.tableId = pp_table_id;
             tableDimsTxt.dimId = dim->index;
-            tableDimsTxt.langName = lang->name;
+            tableDimsTxt.langCode = lang->name;
             tableDimsTxt.descr = dim->label(*lang);
             tableDimsTxt.note = dim->note(*lang);
             metaRows.tableDimsTxt.push_back(tableDimsTxt);

@@ -29,10 +29,10 @@ namespace openm
     struct MetaSetLangHolder : public MetaSetHolder
     {
     public:
-        /** workset_txt table rows and language name */
+        /** workset_txt table rows and language code */
         vector<WorksetTxtLangRow> worksetTxt;
 
-        /** workset_parameter_txt table rows and language name */
+        /** workset_parameter_txt table rows and language code */
         vector<WorksetParamTxtLangRow> worksetParamTxt;
     };
 }

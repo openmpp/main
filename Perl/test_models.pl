@@ -154,7 +154,7 @@ $models_root = getcwd; # to ensure is absolute path
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
 my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
-my $create_db_sqlite_sql = "${om_root}/sql/create_db.sql";
+# my $create_db_sqlite_sql = "${om_root}/sql/create_db.sql";
 
 
 # determine if running on windows or linux
@@ -268,10 +268,10 @@ if ($is_windows) {
 	}
 	
 	if ($do_ompp) {
-		if ( ! -e $create_db_sqlite_sql ) {
-			logmsg error, "Missing SQL file used to create new data store for ompp: $create_db_sqlite_sql";
-			exit 1;
-		}
+		#if ( ! -e $create_db_sqlite_sql ) {
+		#	logmsg error, "Missing SQL file used to create new data store for ompp: $create_db_sqlite_sql";
+		#	exit 1;
+		#}
 		if ( ! -e $msbuild_exe ) {
 			logmsg error, "Missing MSBuild for ompp: $msbuild_exe";
 			exit 1;

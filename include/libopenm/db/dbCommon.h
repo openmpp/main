@@ -17,11 +17,11 @@ namespace openm
     /** SQLite db-provider name */
     extern const char * SQLITE_DB_PROVIDER;
 
+    /** MySQL and MariaDB db-provider name */
+    extern const char * MYSQL_DB_PROVIDER;
+
     /** PostgreSQL db-provider name */
     extern const char * PGSQL_DB_PROVIDER;
-
-    /** MySQL db-provider name */
-    extern const char * MYSQL_DB_PROVIDER;
 
     /** MS SQL db-provider name */
     extern const char * MSSQL_DB_PROVIDER;

@@ -1,8 +1,10 @@
-// OpenM++ common helper utilities
+/**
+ * @file
+ * OpenM++ common helper functions.
+ */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#include "libopenm/common/omHelper.h"
 #include "helper.h"
 
 #ifdef _WIN32
@@ -212,27 +214,6 @@ string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
     return sRet;
 }
 
-// replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty
-const string openm::replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue)
-{
-    if (i_oldValue == NULL || i_oldValue[0] == '\0') return i_src;  // nothing to find
-    if (i_newValue == NULL || i_newValue[0] == '\0') return i_src;  // nothing to replace
-
-    size_t len = strnlen(i_oldValue, OM_STRLEN_MAX);
-    string dst = i_src;
-
-    bool isFound = false;
-    do {
-        size_t pos = dst.find(i_oldValue);
-        isFound = pos != string::npos;
-
-        if (isFound) dst = dst.replace(pos, len, i_newValue);
-
-    } while (isFound);
-
-    return dst;
-}
-
 // make date-time string, ie: 2012-08-17 16:04:59.0148
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {
@@ -299,78 +280,26 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
 }
 
 // this function exists only because g++ below 4.9 does not support std::regex
-/**   
-* split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
-*
-* RFC 4180 difference: 
-* skip space-only lines, trim values unless it is " quoted ",
-* line can end with CRLF or LF, multi-line strings not supported.
-*
-* @param[in] i_values       source string of comma separated values.
-* @param[in] i_delimiters   list of delimiters, default: comma.
-* @param[in] i_isUnquote    if true then do "unquote ""csv"" ", default: false.
-* @param[in] i_quote        quote character, default: sql single ' quote.
-*/
-list<string> openm::splitCsv(const string & i_values, const char * i_delimiters, bool i_isUnquote, char i_quote)
+//
+// replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty
+const string openm::replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue)
 {
-    // trim source and return empty result if source line empty or space only
-    list<string> resultLst;
-    string srcValues = trim(i_values);
-    string::size_type nSrcLen = srcValues.length();
+    if (i_oldValue == NULL || i_oldValue[0] == '\0') return i_src;  // nothing to find
+    if (i_newValue == NULL || i_newValue[0] == '\0') return i_src;  // nothing to replace
 
-    if (nSrcLen <= 0) return resultLst;     // source string is empty: return empty list
+    size_t len = strnlen(i_oldValue, OM_STRLEN_MAX);
+    string dst = i_src;
 
-    // no delimiters: return entire source string as first element of result list
-    size_t nDelimLen = (i_delimiters != nullptr) ? strnlen(i_delimiters, OM_STRLEN_MAX) : 0;
-    if (0 == nDelimLen) {
-        resultLst.push_back(srcValues);
-        return resultLst;
-    }
+    bool isFound = false;
+    do {
+        size_t pos = dst.find(i_oldValue);
+        isFound = pos != string::npos;
 
-    // find delimiter(s) and append values into output list
-    string::size_type nStart = 0;
-    bool isInside = false;
-    bool isDelim = false;
+        if (isFound) dst = dst.replace(pos, len, i_newValue);
 
-    for (string::size_type nPos = 0; nPos < nSrcLen; nPos++) {
+    } while (isFound);
 
-        char chNow = srcValues[nPos];
-
-        // if unquote required and this is quote then toogle 'inside '' quote' status
-        if (i_isUnquote && chNow == i_quote) {
-            isInside = !isInside;
-        }
-
-        // if not 'inside' of quoted value then check for any of delimiters
-        if (!isInside) {
-            isDelim = any_of(
-                i_delimiters,
-                i_delimiters + nDelimLen,
-                [chNow](const char i_delim) -> bool { return chNow == i_delim; }
-            );
-        }
-
-        // if this is delimiter or end of string then unquote value and append to the list
-        if (isDelim || nPos == nSrcLen - 1) {
-
-            // trim spaces and unquote value if required
-            size_t nLen = (nPos == nSrcLen - 1 && !isDelim) ? nSrcLen - nStart : nPos - nStart;
-
-            string sVal = i_isUnquote ?
-                toUnQuoted(srcValues.substr(nStart, nLen), i_quote) :
-                trim(srcValues.substr(nStart, nLen));
-
-            resultLst.push_back(sVal);
-
-            // if this is like: a,b, where delimiter at the end of line then append empty "" value
-            if (nPos == nSrcLen - 1 && isDelim) resultLst.push_back("");
-
-            nStart = nPos + 1;  // skip delimiter and continue
-            isDelim = false;
-        }
-    }
-
-    return resultLst;
+    return dst;
 }
 
 // this function exists only because g++ below 4.9 does not support std::regex

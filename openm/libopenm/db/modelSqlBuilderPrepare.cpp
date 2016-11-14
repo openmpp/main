@@ -58,6 +58,7 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
 // sort model metadata rows
 void ModelSqlBuilder::sortModelRows(MetaModelHolder & io_metaRows)
 { 
+    sort(io_metaRows.langLst.begin(), io_metaRows.langLst.end(), LangLstRow::isCodeLess);
     sort(io_metaRows.modelTxt.begin(), io_metaRows.modelTxt.end(), ModelDicTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.typeDic.begin(), io_metaRows.typeDic.end(), TypeDicRow::isKeyLess);
     sort(io_metaRows.typeTxt.begin(), io_metaRows.typeTxt.end(), TypeDicTxtLangRow::uniqueLangKeyLess);
@@ -94,17 +95,26 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     int mId = io_metaRows.modelDic.modelId;
         
     // model_dic_txt table
-    // unique: model id and language name; master key: model id
+    // unique: model id and language name; master key: model id; foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<ModelDicTxtLangRow>::iterator rowIt = io_metaRows.modelTxt.begin(); rowIt != io_metaRows.modelTxt.end(); ++rowIt) {
 
         if (rowIt->modelId != mId)
-            throw DbException("in model_dic_txt invalid model id: %d, expected: %d in row with language id: %d and name: %s", rowIt->modelId, mId, rowIt->langId, rowIt->langName.c_str());
+            throw DbException("in model_dic_txt invalid model id: %d, expected: %d in row with language id: %d and name: %s", rowIt->modelId, mId, rowIt->langId, rowIt->langCode.c_str());
 
         vector<ModelDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.modelTxt.cend() && ModelDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in model_dic_txt not unique model id: %d and language name: %s", rowIt->modelId, rowIt->langName.c_str());
+            throw DbException("in model_dic_txt not unique model id: %d and language: %s", rowIt->modelId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in model_dic_txt invalid model id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -134,7 +144,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // type_dic_txt table
-    // unique: model id, type id, language name; master key: model id, type id
+    // unique: model id, type id, language name; master key: model id, type id; foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<TypeDicTxtLangRow>::iterator rowIt = io_metaRows.typeTxt.begin(); rowIt != io_metaRows.typeTxt.end(); ++rowIt) {
 
@@ -150,7 +160,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TypeDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.typeTxt.cend() && TypeDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in type_dic_txt not unique model id: %d, type id: %d and language name: %s", rowIt->modelId, rowIt->typeId, rowIt->langName.c_str());
+            throw DbException("in type_dic_txt not unique model id: %d, type id: %d and language: %s", rowIt->modelId, rowIt->typeId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in type_dic_txt invalid  model id: %d, type id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->typeId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -177,7 +196,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
     
     // type_enum_txt table
-    // unique: model id, type id, enum id, language; master key: model id, type id, enum id
+    // unique: model id, type id, enum id, language; master key: model id, type id, enum id; foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<TypeEnumTxtLangRow>::iterator rowIt = io_metaRows.typeEnumTxt.begin(); rowIt != io_metaRows.typeEnumTxt.end(); ++rowIt) {
 
@@ -193,7 +212,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TypeEnumTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.typeEnumTxt.cend() && TypeEnumTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in type_enum_txt not unique model id: %d, type id: %d enum id: %d and language name: %s", rowIt->modelId, rowIt->typeId, rowIt->enumId, rowIt->langName.c_str());
+            throw DbException("in type_enum_txt not unique model id: %d, type id: %d enum id: %d and language: %s", rowIt->modelId, rowIt->typeId, rowIt->enumId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in type_enum_txt invalid model id: %d, type id: %d enum id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->typeId, rowIt->enumId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -233,7 +261,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // parameter_dic_txt table
-    // unique: model id, parameter id, language; master key: model id, parameter id
+    // unique: model id, parameter id, language; master key: model id, parameter id; foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<ParamDicTxtLangRow>::iterator rowIt = io_metaRows.paramTxt.begin(); rowIt != io_metaRows.paramTxt.end(); ++rowIt) {
 
@@ -249,7 +277,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<ParamDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.paramTxt.cend() && ParamDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in parameter_dic_txt not unique model id: %d, parameter id: %d and language name: %s", rowIt->modelId, rowIt->paramId, rowIt->langName.c_str());
+            throw DbException("in parameter_dic_txt not unique model id: %d, parameter id: %d and language: %s", rowIt->modelId, rowIt->paramId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in parameter_dic_txt invalid model id: %d, parameter id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->paramId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -284,7 +321,8 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // parameter_dims_txt table
-    // unique: model id, parameter id, dimension id, language; master key: model id, parameter id, dimension name;
+    // unique: model id, parameter id, dimension id, language; master key: model id, parameter id, dimension name
+    // foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<ParamDimsTxtLangRow>::iterator rowIt = io_metaRows.paramDimsTxt.begin(); rowIt != io_metaRows.paramDimsTxt.end(); ++rowIt) {
 
@@ -300,7 +338,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<ParamDimsTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.paramDimsTxt.cend() && ParamDimsTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in parameter_dims_txt not unique model id: %d, parameter id: %d, dimension id: %d and language: %s", rowIt->modelId, rowIt->paramId, rowIt->dimId, rowIt->langName.c_str());
+            throw DbException("in parameter_dims_txt not unique model id: %d, parameter id: %d, dimension id: %d and language: %s", rowIt->modelId, rowIt->paramId, rowIt->dimId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in parameter_dims_txt invalid model id: %d, parameter id: %d, dimension id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->paramId, rowIt->dimId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -330,7 +377,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // table_dic_txt table
-    // unique: model id, table id, language; master key: model id, table id
+    // unique: model id, table id, language; master key: model id, table id; foreign key: language code;
     // cleanup cr or lf in description, notes and expression dimension description, notes
     for (vector<TableDicTxtLangRow>::iterator rowIt = io_metaRows.tableTxt.begin(); rowIt != io_metaRows.tableTxt.end(); ++rowIt) {
 
@@ -346,7 +393,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TableDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableTxt.cend() && TableDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_dic_txt not unique model id: %d, table id: %d and language name: %s", rowIt->modelId, rowIt->tableId, rowIt->langName.c_str());
+            throw DbException("in table_dic_txt not unique model id: %d, table id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in table_dic_txt invalid model id: %d, table id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->tableId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -396,6 +452,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
     // table_dims_txt table
     // unique: model id, table id, dimension id, language; master key: model id, table id, dimension name;
+    // foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<TableDimsTxtLangRow>::iterator rowIt = io_metaRows.tableDimsTxt.begin(); rowIt != io_metaRows.tableDimsTxt.end(); ++rowIt) {
 
@@ -411,7 +468,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TableDimsTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableDimsTxt.cend() && TableDimsTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_dims_txt not unique model id: %d, table id: %d, dimension id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->dimId, rowIt->langName.c_str());
+            throw DbException("in table_dims_txt not unique model id: %d, table id: %d, dimension id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->dimId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in table_dims_txt invalid model id: %d, table id: %d, dimension id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->tableId, rowIt->dimId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -450,6 +516,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
     // table_acc_txt table
     // unique: model id, table id, accumulator id, language; master key: model id, table id, accumulator id;
+    // foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<TableAccTxtLangRow>::iterator rowIt = io_metaRows.tableAccTxt.begin(); rowIt != io_metaRows.tableAccTxt.end(); ++rowIt) {
 
@@ -465,7 +532,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TableAccTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableAccTxt.cend() && TableAccTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_acc_txt not unique model id: %d, table id: %d, accumulator id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langName.c_str());
+            throw DbException("in table_acc_txt not unique model id: %d, table id: %d, accumulator id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in table_acc_txt invalid model id: %d, table id: %d, accumulator id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -504,6 +580,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
     // table_expr_txt table
     // unique: model id, table id, expr id, language; master key: model id, table id, expr id;
+    // foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<TableExprTxtLangRow>::iterator rowIt = io_metaRows.tableExprTxt.begin(); rowIt != io_metaRows.tableExprTxt.end(); ++rowIt) {
 
@@ -519,7 +596,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<TableExprTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableExprTxt.cend() && TableExprTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in table_expr_txt not unique model id: %d, table id: %d, expr id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->exprId, rowIt->langName.c_str());
+            throw DbException("in table_expr_txt not unique model id: %d, table id: %d, expr id: %d and language: %s", rowIt->modelId, rowIt->tableId, rowIt->exprId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in table_expr_txt invalid model id: %d, table id: %d, expr id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->tableId, rowIt->exprId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -539,7 +625,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // group_txt table
-    // unique: model id, group id, language; master key: model id, group id
+    // unique: model id, group id, language; master key: model id, group id; foreign key: language code;
     // cleanup cr or lf in description and notes
     for (vector<GroupTxtLangRow>::iterator rowIt = io_metaRows.groupTxt.begin(); rowIt != io_metaRows.groupTxt.end(); ++rowIt) {
 
@@ -555,7 +641,16 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         vector<GroupTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.groupTxt.cend() && GroupTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in group_txt not unique model id: %d, group id: %d and language name: %s", rowIt->modelId, rowIt->groupId, rowIt->langName.c_str());
+            throw DbException("in group_txt not unique model id: %d, group id: %d and language: %s", rowIt->modelId, rowIt->groupId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in group_txt invalid model id: %d, group id: %d and language: %s: not found in lang_lst", rowIt->modelId, rowIt->groupId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -622,17 +717,26 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
         throw DbException("in workset_lst invalid model id: %d, expected: %d", io_metaSet.worksetRow.modelId, mId);
 
     // workset_txt table
-    // unique: set id and language name; master key: set id; 
+    // unique: set id and language name; master key: set id; foreign key: language code; 
     // cleanup cr or lf in description and notes
     for (vector<WorksetTxtLangRow>::iterator rowIt = io_metaSet.worksetTxt.begin(); rowIt != io_metaSet.worksetTxt.end(); ++rowIt) {
 
         if (rowIt->setId != setId)
-            throw DbException("in workset_txt invalid set id: %d, expected: %d in row with language id: %d and name: %s", rowIt-setId, setId, rowIt->langId, rowIt->langName.c_str());
+            throw DbException("in workset_txt invalid set id: %d, expected: %d in row with language id: %d and name: %s", rowIt-setId, setId, rowIt->langId, rowIt->langCode.c_str());
 
         vector<WorksetTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaSet.worksetTxt.cend() && WorksetTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in workset_txt not unique set id: %d and language name: %s", rowIt->setId, rowIt->langName.c_str());
+            throw DbException("in workset_txt not unique set id: %d and language: %s", rowIt->setId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            i_metaRows.langLst.cbegin(),
+            i_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in workset_txt invalid set id: %d and language: %s: not found in lang_lst", rowIt->setId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -662,7 +766,7 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     }
 
     // workset_parameter_txt table
-    // unique: set id, parameter id, language; master key: set id, parameter id
+    // unique: set id, parameter id, language; master key: set id, parameter id; foreign key: language code;
     // cleanup cr or lf in parameter value notes
     for (vector<WorksetParamTxtLangRow>::iterator rowIt = io_metaSet.worksetParamTxt.begin(); rowIt != io_metaSet.worksetParamTxt.end(); ++rowIt) {
 
@@ -678,7 +782,16 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
         vector<WorksetParamTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaSet.worksetParamTxt.cend() && WorksetParamTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
-            throw DbException("in workset_parameter_txt not unique set id: %d, parameter id: %d and language name: %s", rowIt->setId, rowIt->paramId, rowIt->langName.c_str());
+            throw DbException("in workset_parameter_txt not unique set id: %d, parameter id: %d and language: %s", rowIt->setId, rowIt->paramId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            i_metaRows.langLst.cbegin(),
+            i_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+            ))
+            throw DbException("in workset_parameter_txt invalid set id: %d, parameter id: %d and language: %s: not found in lang_lst", rowIt->setId, rowIt->paramId, rowIt->langCode.c_str());
 
         blankCrLf(rowIt->note);
     }
@@ -762,61 +875,14 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
             if (dimRow.paramId == tblInf.id) tblInf.dimNameVec.push_back(dimRow.name);
         }
 
-        // set value column db type by parameter type
-        tblInf.valueTypeName.clear();
-
-        auto typeRowIt = TypeDicRow::byKey(paramRow.modelId, paramRow.typeId, io_metaRows.typeDic);
-        if (typeRowIt != io_metaRows.typeDic.cend())  {
-
-            // built-in types (ordered as in omc grammar for clarity)
-
-            // C++ ambiguous integral type
-            // (in C/C++, the signedness of char is not specified)
-            if (equalNoCase(typeRowIt->name.c_str(), "char")) tblInf.valueTypeName = "SMALLINT";
-
-            // C++ signed integral types
-            if (equalNoCase(typeRowIt->name.c_str(), "schar")) tblInf.valueTypeName = "SMALLINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "short")) tblInf.valueTypeName = "SMALLINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "int")) tblInf.valueTypeName = "INT";
-            if (equalNoCase(typeRowIt->name.c_str(), "long")) tblInf.valueTypeName = "BIGINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "llong")) tblInf.valueTypeName = "BIGINT";
-
-            // C++ unsigned integral types (including bool)
-            if (equalNoCase(typeRowIt->name.c_str(), "bool")) tblInf.valueTypeName = "SMALLINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "uchar")) tblInf.valueTypeName = "SMALLINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "ushort")) tblInf.valueTypeName = "INT";
-            if (equalNoCase(typeRowIt->name.c_str(), "uint")) tblInf.valueTypeName = "BIGINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "ulong")) tblInf.valueTypeName = "BIGINT";
-            if (equalNoCase(typeRowIt->name.c_str(), "ullong")) tblInf.valueTypeName = "BIGINT";
-
-            // C++ floating point types
-            if (equalNoCase(typeRowIt->name.c_str(), "float")) tblInf.valueTypeName = "FLOAT";
-            if (equalNoCase(typeRowIt->name.c_str(), "double")) tblInf.valueTypeName = "FLOAT";
-            if (equalNoCase(typeRowIt->name.c_str(), "ldouble")) tblInf.valueTypeName = "FLOAT";
-
-            // Changeable numeric types
-            if (equalNoCase(typeRowIt->name.c_str(), "Time")) tblInf.valueTypeName = "FLOAT";
-            if (equalNoCase(typeRowIt->name.c_str(), "real")) tblInf.valueTypeName = "FLOAT";
-            if (equalNoCase(typeRowIt->name.c_str(), "integer")) tblInf.valueTypeName = "INT";
-            if (equalNoCase(typeRowIt->name.c_str(), "counter")) tblInf.valueTypeName = "INT";
-
-            // path to a file (a string)
-            if (equalNoCase(typeRowIt->name.c_str(), "file")) {
-                tblInf.valueTypeName = "VARCHAR(" + to_string(OM_PATH_MAX) + ")";
-            }
-
-            // model specific types: it must be enum
-            if (!typeRowIt->isBuiltIn()) {
-                tblInf.valueTypeName = "INT";
-            }
-        }
-
-        if (tblInf.valueTypeName.empty()) 
+        // find parameter value type
+        tblInf.valueTypeIt = TypeDicRow::byKey(paramRow.modelId, paramRow.typeId, io_metaRows.typeDic);
+        if (tblInf.valueTypeIt == io_metaRows.typeDic.cend())
             throw DbException("invalid type id: %d for parameter id: %d, name: %s", paramRow.typeId, paramRow.paramId, paramRow.paramName.c_str());
-        
+
         paramInfoVec.push_back(tblInf);     // add to parameters info vector
     }
-}    
+}
 
 // collect info for db subsample tables and value views
 void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)

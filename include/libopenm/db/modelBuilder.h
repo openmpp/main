@@ -24,7 +24,10 @@ namespace openm
         virtual ~IModelBuilder() throw() = 0;
 
         /** new model builder to create sql script specific to each db-provider. */
-        static IModelBuilder * create(const string & i_providerNames, const string & i_outputDir);
+        static IModelBuilder * create(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir);
+
+        /** if true then create SQLite database */
+        virtual bool isSqliteDb(void) const = 0;
 
         /** set meta rows values and calculate digests for types, parameters, tables and model */
         virtual void setModelMetaRows(MetaModelHolder & io_metaRows) const = 0;

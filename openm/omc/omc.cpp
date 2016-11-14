@@ -19,8 +19,9 @@
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
 * * -Omc.TraceScanning  detailed tracing from scanner
 * * -Omc.TraceParsing   detailed tracing from parser
-* * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,PostgreSQL,MySQL,MSSQL,Oracle,DB2, default: SQLite
-* * -OpenM.OptionsFile  some/optional/omc.ini
+* * -Omc.SqlDir         sql/script/dir to create SQLite database
+* * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
+* * -OpenM.OptionsFile  path/to/optional/omc.ini
 * 
 * Short form of command line arguments:
 * * -m short form of -Omc.ModelName
@@ -110,6 +111,9 @@ namespace openm
         /** omc generate detailed output from scanner */
         static const char * traceScanning;
 
+        /** omc input directory with sql script to create SQLite model database */
+        static const char * sqlDir;
+
         /** omc list of db-provider names to create sql scripts */
         static const char * dbProviderNames;
     };
@@ -174,6 +178,9 @@ namespace openm
 
     /** omc trace scanning option */
     const char * OmcArgKey::traceScanning = "Omc.TraceScanning";
+
+    /** omc input directory with sql script to create SQLite model database */
+    const char * OmcArgKey::sqlDir = "Omc.SqlDir";
 
     /** omc list of db-provider names to create sql scripts */
     const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
@@ -328,6 +335,7 @@ int main(int argc, char * argv[])
         }
 
         // Obtain locations of 'use' folders to make available to parser.
+		string omc_exe = argv[0];
 		{
 			string use_folders;
 			if (argStore.isOptionExist(OmcArgKey::useDir)) {
@@ -335,7 +343,6 @@ int main(int argc, char * argv[])
 			}
 			else {
 				// default value is sister directory of omc.exe directory, named 'use'
-				string omc_exe = argv[0];
 				use_folders = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../use/";
 			}
 
@@ -370,6 +377,16 @@ int main(int argc, char * argv[])
 
         // Obtain information on detailed scanning option, default: false
         Symbol::trace_scanning = argStore.boolOption(OmcArgKey::traceScanning);
+
+        // get sql script directory where SQLite create_db.sql is located
+        string sqlDir;
+        if (argStore.isOptionExist(OmcArgKey::sqlDir)) {
+            sqlDir = argStore.strOption(OmcArgKey::sqlDir);
+        }
+        else {
+            // default sql directory: /om_root/bin/omc.exe => /om_root/sql
+            sqlDir = makeFilePath(baseDirOf(baseDirOf(omc_exe)).c_str(), "sql");
+        }
 
         // get comma- or semicolon- separated list of SQL provider names to create model sql scripts
         // use SQLite as default
@@ -512,7 +529,9 @@ int main(int argc, char * argv[])
 #endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
-        unique_ptr<IModelBuilder> builder(IModelBuilder::create(sqlProviders, outDir));
+        unique_ptr<IModelBuilder> builder(IModelBuilder::create(sqlProviders, sqlDir, outDir));
+        if (!builder->isSqliteDb())
+            theLog->logMsg("omc : warning : model SQLite database not created");
 
         CodeBlock missing_param_defs; // Generated definitions for missing parameters
         CodeGen cg(
@@ -553,6 +572,17 @@ int main(int argc, char * argv[])
             }
         }
 
+        // TODO: make real list of model languages
+        // problem: it is not enough to have code+id like (0,EN) (1,FR)
+        // it is also neccessary to have language name and language "words" (all, min, max)
+        // in order to create new language in model database
+        for (auto lang : Symbol::pp_all_languages) {
+            if (lang->name != "EN" && lang->name != "FR") throw HelperException("TODO: non-standard languages not supported");
+            LangLstRow langRow(lang->language_id);
+            langRow.code = lang->name;
+            metaRows.langLst.push_back(langRow);
+        }
+
         // build model creation sql script
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);
@@ -569,7 +599,7 @@ int main(int argc, char * argv[])
         for (auto lang : Symbol::pp_all_languages) {
             WorksetTxtLangRow worksetTxt;
             auto lang_name = lang->name;
-            worksetTxt.langName = lang_name;
+            worksetTxt.langCode = lang_name;
             worksetTxt.descr = scenario_symbol->label(*lang);
             worksetTxt.note = scenario_symbol->note(*lang);
             metaSet.worksetTxt.push_back(worksetTxt);
@@ -591,32 +621,41 @@ int main(int argc, char * argv[])
                 string value_note = param->pp_value_notes[lang_id];
                 if (value_note.length() > 0) {
                     worksetParamTxt.paramId = wsParam.paramId;
-                    worksetParamTxt.langName = lang_name;
+                    worksetParamTxt.langCode = lang_name;
                     worksetParamTxt.note = value_note;
                     metaSet.worksetParamTxt.push_back(worksetParamTxt);
                 }
             }
         }
 
-        // start model default working set sql script
-        builder->beginWorkset(metaRows, metaSet);
-
-        // add values for all scenario model parameters into default working set
-        int scenario_parameters_done = 0;
-        for (auto param : Symbol::pp_all_parameters) {
-            if (param->source != ParameterSymbol::scenario_parameter) continue;
-            auto lst = param->initializer_for_storage();
-            builder->addWorksetParameter(metaRows, metaSet, param->name, lst);
-            scenario_parameters_done++;
-            if (0 == scenario_parameters_done % 10) {
-                theLog->logFormatted("%d of %d parameters processed", scenario_parameters_done, scenario_parameters_count);
-            }
+        // insert model workset int SQLite database
+        if (!builder->isSqliteDb()) {
+            theLog->logMsg("omc : warning : model SQLite database not created");
         }
-        theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
+        else {
+            // start model default working set
+            builder->beginWorkset(metaRows, metaSet);
 
-        // complete model default working set sql script
-        theLog->logFormatted("Finalize scenario processing");
-        builder->endWorkset(metaRows, metaSet);
+            // add values for all scenario model parameters into default working set
+            int scenario_parameters_done = 0;
+            chrono::system_clock::time_point start = chrono::system_clock::now();
+            for (auto param : Symbol::pp_all_parameters) {
+                if (param->source != ParameterSymbol::scenario_parameter) continue;
+                auto lst = param->initializer_for_storage();
+                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);
+                scenario_parameters_done++;
+                chrono::system_clock::time_point now = chrono::system_clock::now();
+                if (chrono::duration_cast<chrono::seconds>(now - start).count() >= 3) {     // report not more often than every 3 seconds
+                    start = now;
+                    theLog->logFormatted("%d of %d parameters processed (%s)", scenario_parameters_done, scenario_parameters_count, param->name.c_str());
+                }
+            }
+            theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
+
+            // complete model default working set
+            theLog->logFormatted("Finalize scenario processing");
+            builder->endWorkset(metaRows, metaSet);
+        }
 
         // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);

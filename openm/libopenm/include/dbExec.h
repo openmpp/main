@@ -23,7 +23,7 @@ namespace openm
         /** close db-connection and cleanup connection resources. */
         virtual ~IDbExec(void) throw() = 0;
 
-        /** db-connection factory: create new db-connection. 
+        /** db-connection factory: create new db-connection.
          *
          * @param[in] i_sqlProvider   sql provider name, ie: SQLITE
          * @param[in] i_connectionStr db connection string
@@ -122,7 +122,7 @@ namespace openm
          * select column into io_valueArray[i_size] buffer and return row count.
          *
          * @param[in]      i_sql       select sql query
-         * @param[in]      i_column    zero-based column index                            
+         * @param[in]      i_column    zero-based column index
          * @param[in]      i_type      type of io_valueArr array (target type of values)
          * @param[in]      i_size      size of io_valueArr array
          * @param[in,out]  io_valueArr one dimensional array to put selected values
@@ -136,7 +136,7 @@ namespace openm
          */
         virtual size_t selectColumn(
             const string & i_sql, int i_column, const type_info & i_type, size_t i_size, void * io_valueArr
-            ) = 0;
+        ) = 0;
 
         /**
          * execute sql statement (update, insert, delete, create, etc).
@@ -168,34 +168,34 @@ namespace openm
          * @param[in] i_sql        sql to create statement
          * @param[in] i_paramCount number of parameters
          * @param[in] i_typeArr    array of parameters type, use char * for VARCHAR
-         *            
+         *
          * usage example: \n
          * @code
-         *      createStatement(); 
-         *      while(...) { 
-         *          for (int k = 0; k < paramCount; k++) { 
-         *              valueArr[k] = some value; 
-         *          } 
-         *          executeStatement(paramCount, valueArr); 
-         *      } 
-         *      releaseStatement(); 
+         *      createStatement();
+         *      while(...) {
+         *          for (int k = 0; k < paramCount; k++) {
+         *              valueArr[k] = some value;
+         *          }
+         *          executeStatement(paramCount, valueArr);
+         *      }
+         *      releaseStatement();
          * @endcode
          */
         virtual void createStatement(const string & i_sql, int i_paramCount, const type_info ** i_typeArr) = 0;
 
-        /**   
+        /**
          * release statement resources.
-         *            
+         *
          * usage example: \n
          * @code
-         *      createStatement(); 
-         *      while(...) { 
-         *          for (int k = 0; k < paramCount; k++) { 
-         *              valueArr[k] = some value; 
-         *          } 
-         *          executeStatement(paramCount, valueArr); 
-         *      } 
-         *      releaseStatement(); 
+         *      createStatement();
+         *      while(...) {
+         *          for (int k = 0; k < paramCount; k++) {
+         *              valueArr[k] = some value;
+         *          }
+         *          executeStatement(paramCount, valueArr);
+         *      }
+         *      releaseStatement();
          * @endcode
          */
         virtual void releaseStatement(void) throw() = 0;
@@ -205,23 +205,23 @@ namespace openm
          *
          * @param[in] i_paramCount number of parameters
          * @param[in] i_valueArr   array of parameters value, use char * for VARCHAR
-         *            
+         *
          * this method can be used only after createStatement() call \n
          * usage example: \n
          * @code
-         *      createStatement(); 
-         *      while(...) { 
-         *          for (int k = 0; k < paramCount; k++) { 
-         *              valueArr[k] = some value; 
-         *          } 
-         *          executeStatement(paramCount, valueArr); 
-         *      } 
-         *      releaseStatement(); 
+         *      createStatement();
+         *      while(...) {
+         *          for (int k = 0; k < paramCount; k++) {
+         *              valueArr[k] = some value;
+         *          }
+         *          executeStatement(paramCount, valueArr);
+         *      }
+         *      releaseStatement();
          * @endcode
          */
         virtual void executeStatement(int i_paramCount, const DbValue * i_valueArr) = 0;
 
-        /** return list of provider names from supplied comma or semicolon separated string or exception on invalid name or empty list. */
+        /** return list of provider names from supplied comma or semicolon separated string or exception on invalid name. */
         static list<string> parseListOfProviderNames(const string & i_sqlProviderNames);
 
         /** check if provider name is valid. */
@@ -229,6 +229,15 @@ namespace openm
 
         /** return max length of db table or view name. */
         static int maxDbTableNameSize(const string & i_sqlProvider);
+
+        /** return type name for BIGINT sql type */
+        static string bigIntTypeName(const string & i_sqlProvider);
+
+        /** return type name for FLOAT standard sql type */
+        static string floatTypeName(const string & i_sqlProvider);
+
+        /** return column type DDL for long VARCHAR columns, use it for len > 255. */
+        static string textTypeName(const string & i_sqlProvider, int i_size);
 
         /** return sql statement to begin transaction (db-provider specific). */
         static string makeSqlBeginTransaction(const string & i_sqlProvider);
@@ -273,6 +282,35 @@ namespace openm
         static string makeSqlCreateViewReplace(
             const string & i_sqlProvider, const string & i_viewName, const string & i_viewBodySql
         );
+
+        /** parse sql script text and return it as list of sql statements.
+        *
+        * @param[in] i_sqlScript    sql statements separated by ; semicolons
+        *
+        * @return   list of sql statements
+        *
+        * source text may contain multiple sql statements separated by ; semicolons.
+        * it can be multiple line statement or multiple sql statements; on single line.
+        * it can include 'sql''quoted const with -- or ; semicolon' inside. \n
+        *
+        * end of line <cr><lf> replaced by space.
+        * end of statement ; semicolons and --comments removed. \n
+        *
+        * source string must be utf-8 or "code page" encoded, utf-16 or utf-32 NOT supported.
+        *
+        * @code
+        *    DELETE FROM tbl WHERE code = 1234;  -- comment after sql
+        *    -- comment only line
+        *    INSERT INTO tbl
+        *      (code, label)  -- comment inside of sql
+        *    VALUES
+        *      (4567,
+        *      'label --> not a comment because inside of ''quote
+        *      continue ''string to the new line')
+        *    ; UPDATE tbl SET label = '' WHERE code = 4567; -- multiple sqls ; on single line
+        * @endcode
+        */
+        static list<string> parseSql(const string & i_sqlScript);
     };
 }
 

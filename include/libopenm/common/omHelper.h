@@ -111,7 +111,7 @@ namespace openm
     // this function exist only because g++ below 4.9 does not support std::regex
     extern string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
 
-    /**   
+    /**
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
     *
     * RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
@@ -127,8 +127,8 @@ namespace openm
     struct LessNoCase
     {
         bool operator() (const string & i_left, const string & i_right) const
-        { 
-            return compareNoCase(i_left.c_str(), i_right.c_str()) < 0; 
+        {
+            return compareNoCase(i_left.c_str(), i_right.c_str()) < 0;
         }
     };
 
@@ -136,7 +136,7 @@ namespace openm
     typedef map<string, string, LessNoCase> NoCaseMap;
 
     /** simple resource exit guard implementation */
-    template <class ResourceHolder> 
+    template <class ResourceHolder>
     class exit_guard
     {
     public:
@@ -145,18 +145,19 @@ namespace openm
         typedef void(ResourceHolder::*CleanupHandler)(void);
 
         /** create resource guard to release resource on block exit */
-        exit_guard(ResourceHolder * const i_holder, CleanupHandler i_cleanupFnc) : 
+        exit_guard(ResourceHolder * const i_holder, CleanupHandler i_cleanupFnc) :
             isHold(false),
-            holder(i_holder), 
+            holder(i_holder),
             cleanup(i_cleanupFnc)
-            { }
+        { }
 
         /** release resource if exit guad hold() was not called */
-        ~exit_guard(void) throw() { 
+        ~exit_guard(void) throw()
+        {
             try {
-                if (!isHold) (holder->*cleanup)(); 
+                if (!isHold) (holder->*cleanup)();
             }
-            catch(...) { }
+            catch (...) { }
         }
 
         /** hold resource on exit instead of relesing it */

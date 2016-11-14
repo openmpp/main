@@ -67,7 +67,7 @@ void EnumerationWithEnumeratorsSymbol::populate_metadata(openm::MetaModelHolder 
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
             typeEnumTxt.enumId = enumerator->ordinal;
-            typeEnumTxt.langName = lang->name;
+            typeEnumTxt.langCode = lang->name;
             typeEnumTxt.descr = enumerator->label(*lang);
             typeEnumTxt.note = enumerator->note(*lang);
             metaRows.typeEnumTxt.push_back(typeEnumTxt);

@@ -70,13 +70,13 @@ template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_
 }
 
 // write sql to insert into model_dic_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ModelDicTxtLangRow>(
     const ModelDicRow & i_modelRow, const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name");
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) throw DbException("invalid (empty) language code");
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description");
     if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes");
 
@@ -99,7 +99,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ModelDicTxtLangRow>
     io_wr.write(
         " FROM lang_lst LL, model_dic MD" \
         " WHERE LL.lang_code = ");
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write(" AND MD.model_digest = ");
     io_wr.writeQuoted(i_modelRow.digest);
     io_wr.write(
@@ -200,13 +200,13 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TypeDicRow>(
 }
 
 // write sql to insert into type_dic_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeDicTxtLangRow>(
     const TypeDicRow & i_typeRow, const TypeDicTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, type: %s", i_typeRow.name.c_str());
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) throw DbException("invalid (empty) language code, type: %s", i_typeRow.name.c_str());
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, type: %s", i_typeRow.name.c_str());
     if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, type: %s", i_typeRow.name.c_str());
 
@@ -229,7 +229,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeDicTxtLangRow>(
         " SELECT" \
         " H.type_hid," \
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -243,7 +243,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeDicTxtLangRow>(
         " SELECT * FROM type_dic_txt E WHERE E.type_hid = H.type_hid" \
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = "
         );
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -283,7 +283,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumLstRow>(
 }
 
 // write sql to insert into type_enum_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
     const TypeDicRow & i_typeRow, const TypeEnumTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
@@ -291,7 +291,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
     // validate field values
     if (i_row.enumId < 0) throw DbException("invalid (negative) enum id: %d, type: %s", i_row.enumId, i_typeRow.name.c_str());
 
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) throw DbException("invalid (empty) language code, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
     if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, type: %s, enum id: %d", i_typeRow.name.c_str(), i_row.enumId);
 
@@ -317,7 +317,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
         i_row.enumId << "," <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -332,7 +332,7 @@ template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
         " AND E.enum_id = " << i_row.enumId <<
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -455,13 +455,13 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
 }
 
 // write sql to insert into parameter_dic_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDicTxtLangRow>(
     const ParamDicRow & i_paramRow, const ParamDicTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, parameter: %s", i_paramRow.paramName.c_str());
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) throw DbException("invalid (empty) language code, parameter: %s", i_paramRow.paramName.c_str());
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, parameter: %s", i_paramRow.paramName.c_str());
     if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, parameter: %s", i_paramRow.paramName.c_str());
 
@@ -484,7 +484,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDicTxtLangRow>
         " SELECT" \
         " H.parameter_hid," \
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -498,7 +498,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDicTxtLangRow>
         " SELECT * FROM parameter_dic_txt E WHERE E.parameter_hid = H.parameter_hid" \
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = "
         );
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -563,7 +563,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsRow>(
 }
 
 // write sql to insert into parameter_dims_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow>(
     const ParamDicRow & i_paramRow, const ParamDimsTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
@@ -572,8 +572,8 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow
     if (i_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", i_row.paramId);
     if (i_row.dimId < 0) throw DbException("invalid (negative) parameter dimension id: %d", i_row.dimId);
 
-    if (i_row.langName.empty() || i_row.langName.length() < 1)
-        throw DbException("invalid (empty) language name, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), i_row.dimId);
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1)
+        throw DbException("invalid (empty) language code, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), i_row.dimId);
 
     if (i_row.descr.empty() || i_row.descr.length() < 1)
         throw DbException("invalid (empty) description, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), i_row.dimId);
@@ -604,7 +604,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow
         i_row.dimId << ", " <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -619,7 +619,7 @@ template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow
         " AND E.dim_id = " << i_row.dimId <<
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -724,13 +724,13 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
 }
 
 // write sql to insert into table_dic_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDicTxtLangRow>(
     const TableDicRow & i_tableRow, const TableDicTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
 {
     // validate field values
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, output table: %s", i_tableRow.tableName.c_str());
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) throw DbException("invalid (empty) language code, output table: %s", i_tableRow.tableName.c_str());
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, output table: %s", i_tableRow.tableName.c_str());
     if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, output table: %s", i_tableRow.tableName.c_str());
@@ -759,7 +759,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDicTxtLangRow>
         " SELECT" \
         " H.table_hid," \
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ");
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note, true);
@@ -775,7 +775,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDicTxtLangRow>
         " SELECT * FROM table_dic_txt E WHERE E.table_hid = H.table_hid" \
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = "
         );
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -842,7 +842,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsRow>(
 }
 
 // write sql to insert into table_dims_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow>(
     const TableDicRow & i_tableRow, const TableDimsTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
@@ -850,8 +850,8 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow
     // validate field values
     if (i_row.dimId < 0) throw DbException("invalid (negative) output table dimension id: %d", i_row.dimId);
 
-    if (i_row.langName.empty() || i_row.langName.length() < 1) 
-        throw DbException("invalid (empty) language name, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), i_row.dimId);
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) 
+        throw DbException("invalid (empty) language code, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), i_row.dimId);
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) 
         throw DbException("invalid (empty) description, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), i_row.dimId);
@@ -882,7 +882,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow
         i_row.dimId << ", " <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -897,7 +897,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow
         " AND E.dim_id = " << i_row.dimId << 
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -945,7 +945,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccRow>(
 }
 
 // write sql to insert into table_acc_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>(
     const TableDicRow & i_tableRow, const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
@@ -953,8 +953,8 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>
     // validate field values
     if (i_row.accId < 0) throw DbException("invalid (negative) accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
 
-    if (i_row.langName.empty() || i_row.langName.length() < 1) 
-        throw DbException("invalid (empty) language name, accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) 
+        throw DbException("invalid (empty) language code, accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) 
         throw DbException("invalid (empty) description, accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
@@ -985,7 +985,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>
         i_row.accId << ", " <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -1000,7 +1000,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>
         " AND E.acc_id = " << i_row.accId << 
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -1058,7 +1058,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprRow>(
 }
 
 // write sql to insert into table_expr_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow>(
     const TableDicRow & i_tableRow, const TableExprTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
@@ -1066,8 +1066,8 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow
     // validate field values
     if (i_row.exprId < 0) throw DbException("invalid (negative) output expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
-    if (i_row.langName.empty() || i_row.langName.length() < 1)
-        throw DbException("invalid (empty) language name, expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1)
+        throw DbException("invalid (empty) language code, expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
     if (i_row.descr.empty() || i_row.descr.length() < 1)
         throw DbException("invalid (empty) description, expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
@@ -1098,7 +1098,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow
         i_row.exprId << ", " <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -1113,7 +1113,7 @@ template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow
         " AND E.expr_id = " << i_row.exprId << 
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -1160,7 +1160,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupLstRow>(
 }
 
 // write sql to insert into group_txt table.
-// language name used to select language id
+// language code used to select language id
 template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
     const ModelDicRow & i_modelRow, const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr
     )
@@ -1168,7 +1168,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
     // validate field values
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
 
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, group id: %d", i_row.groupId);
+    if (i_row.langCode.empty() || i_row.langCode.length() < 1) throw DbException("invalid (empty) language code, group id: %d", i_row.groupId);
 
     if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) description, group id: %d", i_row.groupId);
     if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, group id: %d", i_row.groupId);
@@ -1196,7 +1196,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
         i_row.groupId << ", " <<
         " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.write("), ");
     io_wr.writeQuoted(i_row.descr, true);
     io_wr.writeQuoted(i_row.note);
@@ -1211,7 +1211,7 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
         " AND E.group_id = " << i_row.groupId << ", " <<
         " AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = ";
     io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
+    io_wr.writeTrimQuoted(i_row.langCode);
     io_wr.writeLine(") );");
 }
 
@@ -1253,205 +1253,6 @@ template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupPcRow>(
         " AND E.group_id = " << i_row.groupId << 
         " AND E.child_pos = " << i_row.childPos << 
         " );\n";
-    io_wr.throwOnFail();
-}
-
-// write sql to insert into workset_lst table. 
-// if i_row.baseRunId <= 0 then it treated as db-NULL
-template<> void ModelInsertSql::insertSetSql<WorksetLstRow>(
-    const string & i_modelDigestQuoted, 
-    const string & i_worksetNameQuoted,
-    const WorksetLstRow & i_row, 
-    ModelSqlWriter & io_wr
-    )
-{
-    // validate field values
-    if (i_row.updateDateTime.length() > 32) throw DbException("invalid (too long) workset update time: %s", i_row.updateDateTime.c_str());
-
-    // UPDATE id_lst SET id_value = 
-    //   CASE
-    //     WHEN 0 = 
-    //       (
-    //       SELECT COUNT(*) FROM workset_lst EW 
-    //       INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)
-    //       WHERE EW.set_name = 'modelOne'
-    //       AND EM.model_digest = '1234abcd'
-    //       ) 
-    //       THEN id_value + 1 
-    //     ELSE id_value
-    //   END
-    // WHERE id_key = 'run_id_set_id';
-    io_wr.outFs <<
-        "UPDATE id_lst SET id_value =" \
-        " CASE" \
-        " WHEN 0 =" \
-        " (" \
-        " SELECT COUNT(*) FROM workset_lst EW" \
-        " INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)" \
-        " WHERE EW.set_name = " << i_worksetNameQuoted <<
-        " AND EM.model_digest = " << i_modelDigestQuoted <<
-        " )" \
-        " THEN id_value + 1" \
-        " ELSE id_value" \
-        " END" \
-        " WHERE id_key = 'run_id_set_id';\n";
-    io_wr.throwOnFail();
-
-    // INSERT INTO workset_lst
-    //   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)
-    // SELECT 
-    //   IL.id_value, 
-    //   NULL, 
-    //   (SELECT M.model_id FROM model_dic M WHERE M.model_digest = '1234abcd'), 
-    //   'modelOne', 
-    //   0, 
-    //   '2012-08-17 17:43:57.1234'
-    // FROM id_lst IL 
-    // WHERE IL.id_key = 'run_id_set_id'
-    // AND NOT EXISTS
-    // (
-    //   SELECT * FROM workset_lst EW 
-    //   INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)
-    //   WHERE EW.set_name = 'modelOne'
-    //   AND EM.model_digest = '1234abcd'
-    // );
-    io_wr.outFs <<
-        "INSERT INTO workset_lst" \
-        " (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)" \
-        " SELECT IL.id_value, " <<
-        (i_row.baseRunId <= 0 ? "NULL" : to_string(i_row.baseRunId)) << "," <<
-        " (SELECT M.model_id FROM model_dic M WHERE M.model_digest = " << i_modelDigestQuoted << "), " <<
-        i_worksetNameQuoted << ", ";
-    io_wr.throwOnFail();
-    io_wr.write((i_row.isReadonly ? "1, " : "0, "));
-    io_wr.writeQuoted(i_row.updateDateTime);
-    io_wr.outFs <<
-        " FROM id_lst IL" \
-        " WHERE IL.id_key = 'run_id_set_id'" \
-        " AND NOT EXISTS" \
-        " (" \
-        " SELECT * FROM workset_lst EW" \
-        " INNER JOIN model_dic EM ON (EM.model_id = EW.model_id)" \
-        " WHERE EW.set_name = " << i_worksetNameQuoted <<
-        " AND EM.model_digest = " << i_modelDigestQuoted <<
-        " );\n";
-    io_wr.throwOnFail();
-}
-
-// write sql to insert into workset_txt table. 
-// language name used to select language id
-template<> void ModelInsertSql::insertSetSql<WorksetTxtLangRow>(
-    const string & i_modelDigestQuoted, 
-    const string & i_worksetNameQuoted,
-    const WorksetTxtLangRow & i_row, 
-    ModelSqlWriter & io_wr
-    )
-{
-    // validate field values
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name for workset description and notes");
-    if (i_row.descr.empty() || i_row.descr.length() < 1) throw DbException("invalid (empty) workset description");
-    if (i_row.descr.length() > 255 || i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) workset description or notes");
-
-    // INSERT INTO workset_txt (set_id, lang_id, descr, note) 
-    // SELECT 
-    //   W.set_id, 
-    //   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'),
-    //   'default workset',
-    //   'default workset notes'
-    // FROM workset_lst W
-    // INNER JOIN model_dic M ON (M.model_id = W.model_id)
-    // WHERE W.set_name = 'modelOne'
-    // AND M.model_digest = '1234abcd';
-    io_wr.write(
-        "INSERT INTO workset_txt (set_id, lang_id, descr, note)" \
-        " SELECT" \
-        " W.set_id," \
-        " (" \
-        " SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = "
-        );
-    io_wr.writeTrimQuoted(i_row.langName);
-    io_wr.write("), ");
-    io_wr.writeQuoted(i_row.descr, true);
-    io_wr.writeQuoted(i_row.note);
-    io_wr.outFs <<
-        " FROM workset_lst W" \
-        " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
-        " WHERE W.set_name = " << i_worksetNameQuoted <<
-        " AND M.model_digest = " << i_modelDigestQuoted << ";\n";
-    io_wr.throwOnFail();
-}
-
-// write sql to insert into workset_parameter table. 
-template<> void ModelInsertSql::insertSetSql<WorksetParamRow>(
-    const string & i_modelDigestQuoted, 
-    const string & i_worksetNameQuoted,
-    const WorksetParamRow & i_row, 
-    ModelSqlWriter & io_wr
-    )
-{
-    // validate field values
-    if (i_row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", i_row.paramId);
-
-    // INSERT INTO workset_parameter (set_id, parameter_hid)
-    // SELECT 
-    //   W.set_id, P.parameter_hid
-    // FROM workset_lst W
-    // INNER JOIN model_dic M ON (M.model_id = W.model_id)
-    // INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = 1)
-    // WHERE W.set_name = 'modelOne'
-    // AND M.model_digest = '1234abcd';
-    io_wr.outFs <<
-        "INSERT INTO workset_parameter (set_id, parameter_hid)" \
-        " SELECT" \
-        " W.set_id, P.parameter_hid" \
-        " FROM workset_lst W" \
-        " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
-        " INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = " << i_row.paramId << ")"
-        " WHERE W.set_name = " << i_worksetNameQuoted <<
-        " AND M.model_digest = " << i_modelDigestQuoted << ";\n";
-    io_wr.throwOnFail();
-}
-
-// write sql to insert into workset_parameter_txt table. 
-// language name used to select language id
-template<> void ModelInsertSql::insertSetSql<WorksetParamTxtLangRow>(
-    const string & i_modelDigestQuoted, 
-    const string & i_worksetNameQuoted,
-    const WorksetParamTxtLangRow & i_row, 
-    ModelSqlWriter & io_wr
-    )
-{
-    // validate field values
-    if (i_row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", i_row.paramId);
-
-    if (i_row.langName.empty() || i_row.langName.length() < 1) throw DbException("invalid (empty) language name, workset parameter id: %d", i_row.paramId);
-    if (i_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) notes, workset parameter id: %d", i_row.paramId);
-
-    // INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)
-    // SELECT 
-    //   W.set_id, P.parameter_hid,
-    //   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'),
-    //   'parameter value notes'
-    // FROM workset_lst W
-    // INNER JOIN model_dic M ON (M.model_id = W.model_id)
-    // INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = 1)
-    // WHERE W.set_name = 'modelOne'
-    // AND M.model_digest = '1234abcd';
-    io_wr.outFs <<
-        "INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)" \
-        " SELECT" \
-        " W.set_id, P.parameter_hid, " \
-        " (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = ";
-    io_wr.throwOnFail();
-    io_wr.writeTrimQuoted(i_row.langName);
-    io_wr.write("), ");
-    io_wr.writeQuoted(i_row.note);
-    io_wr.outFs <<
-        " FROM workset_lst W" \
-        " INNER JOIN model_dic M ON (M.model_id = W.model_id)" \
-        " INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = " << i_row.paramId << ")"
-        " WHERE W.set_name = " << i_worksetNameQuoted <<
-        " AND M.model_digest = " << i_modelDigestQuoted << ";\n";
     io_wr.throwOnFail();
 }
 

@@ -36,7 +36,7 @@ libsqlite: prepare
 libopenm: prepare libsqlite
 	$(MAKE) -C $(LIBOPENM_DIR) libopenm
 
-lib_omc: prepare
+lib_omc: prepare libsqlite
 	$(MAKE) -C $(LIBOPENM_DIR) lib_omc
 
 omc: lib_omc

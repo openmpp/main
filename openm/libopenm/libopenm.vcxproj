@@ -66,12 +66,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
+  
   <PropertyGroup>
     <OutDir>$(OM_LIB_DIR)/</OutDir>
     <TargetName>$(ProjectName)$(BUILD_SUFFIX)</TargetName>
   </PropertyGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -86,6 +89,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -100,6 +104,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -118,6 +123,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -136,6 +142,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  
   <ItemGroup>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h" />
     <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
@@ -180,6 +187,7 @@
     <ClCompile Include="common\iniReader.cpp" />
     <ClCompile Include="common\log.cpp" />
     <ClCompile Include="common\md5.cpp" />
+    <ClCompile Include="common\splitCsv.cpp" />
     <ClCompile Include="common\utf8Convert.cpp" />
     <ClCompile Include="db\dbExecBase.cpp" />
     <ClCompile Include="db\dbValue.cpp" />

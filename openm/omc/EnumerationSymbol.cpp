@@ -59,7 +59,7 @@ void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     for (auto lang : Symbol::pp_all_languages) {
         TypeDicTxtLangRow typeTxt;
         typeTxt.typeId = type_id;
-        typeTxt.langName = lang->name;
+        typeTxt.langCode = lang->name;
         typeTxt.descr = label(*lang);
         typeTxt.note = note(*lang);
         metaRows.typeTxt.push_back(typeTxt);

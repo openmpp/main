@@ -128,36 +128,26 @@
   </PropertyGroup>
 
   <Target Name="SQLitePublish" 
-          Inputs="@(SQLITE_INPUTS)"
+          Inputs="@(OMC_SQL_OUTPUTS)"
           Outputs="$(PUBLISH_TICKLE)"
           AfterTargets="link"
           >
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(PUBLISH_SQLITE)" />
 
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/create_db.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/create_db.sql" />
-
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_1_create_model_sqlite.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_1_create_model_sqlite.sql" />
-
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_2_create_tables_sqlite.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_2_create_tables_sqlite.sql" />
-
-    <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_3_$(SCENARIO_NAME)_sqlite.sql" />
-    <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_3_$(SCENARIO_NAME)_sqlite.sql" />
+    <Message Text="Copy @(OMC_SQLITE_OUTPUT) to $(PUBLISH_SQLITE)" />
+    <Copy SourceFiles="@(OMC_SQLITE_OUTPUT)" DestinationFiles="$(PUBLISH_SQLITE)" SkipUnchangedFiles="true" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
-
+    
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
             />
   </Target>
-
 
   <!--
   RunModel
