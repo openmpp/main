@@ -185,10 +185,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
-$(MODEL_OMC_CPP) \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql : \
-  $(MODEL_MPP)
+$(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql : $(MODEL_MPP)
 	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
@@ -212,8 +209,7 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 .PHONY : publish
 publish : $(MODEL_SQLITE)
 
-$(MODEL_SQLITE) : \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql
+$(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql
 	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
 
 #
