@@ -135,8 +135,8 @@
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(PUBLISH_SQLITE)" />
 
-    <Message Text="Copy @(OMC_SQLITE_OUTPUT) to $(PUBLISH_SQLITE)" />
-    <Copy SourceFiles="@(OMC_SQLITE_OUTPUT)" DestinationFiles="$(PUBLISH_SQLITE)" SkipUnchangedFiles="true" />
+    <Message Text="Move @(OMC_SQLITE_OUTPUT) to $(PUBLISH_SQLITE)" />
+    <Move SourceFiles="@(OMC_SQLITE_OUTPUT)" DestinationFiles="$(PUBLISH_SQLITE)" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
