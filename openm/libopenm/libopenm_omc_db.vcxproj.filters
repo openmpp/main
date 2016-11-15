@@ -39,12 +39,6 @@
     <ClInclude Include="common\iniReader.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="include\modelInsertSql.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\modelAggregationSql.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
@@ -78,9 +72,6 @@
     <ClInclude Include="include\md5.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\modelSqlWriter.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="include\helper.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
@@ -91,6 +82,15 @@
       <Filter>Source Files\db</Filter>
     </ClInclude>
     <ClInclude Include="db\dbValue.h">
+      <Filter>Source Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="db\modelAggregationSql.h">
+      <Filter>Source Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="db\modelInsertSql.h">
+      <Filter>Source Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="db\modelSqlWriter.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
   </ItemGroup>

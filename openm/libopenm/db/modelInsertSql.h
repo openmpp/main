@@ -12,6 +12,7 @@
 #include "libopenm/db/dbMetaRow.h"
 #include "libopenm/db/modelBuilder.h"
 #include "helper.h"
+#include "dbExec.h"
 #include "modelSqlWriter.h"
 using namespace std;
 
@@ -63,6 +64,9 @@ namespace openm
         template<class TMasterRow, class TRow> static void insertDetailSql(
             const TMasterRow & i_masterRow, const TRow & i_row, ModelSqlWriter & io_wr
         );
+
+        /** create new workset: insert metadata and delete existing workset parameters, if required */
+        static void createWorksetMeta(IDbExec * i_dbExec, const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
     };
 
     /** write sql to insert into model_dic table. */
