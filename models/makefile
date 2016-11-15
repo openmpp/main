@@ -20,8 +20,7 @@ endif
 # models to build
 #
 ifndef MODEL_DIRS
-  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased RiskPaths
-#  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased RiskPaths OzProj OzProjGen 
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased RiskPaths OzProj OzProjGen 
 endif
 
 # set OM_MSG_USE:
