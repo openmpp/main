@@ -30,9 +30,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\modelSqlBuilder.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="common\log.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
@@ -91,6 +88,9 @@
       <Filter>Source Files\db</Filter>
     </ClInclude>
     <ClInclude Include="db\modelSqlWriter.h">
+      <Filter>Source Files\db</Filter>
+    </ClInclude>
+    <ClInclude Include="db\modelSqlBuilder.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
   </ItemGroup>

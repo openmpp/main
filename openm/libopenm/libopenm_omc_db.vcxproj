@@ -153,11 +153,11 @@
     <ClInclude Include="db\dbValue.h" />
     <ClInclude Include="db\modelAggregationSql.h" />
     <ClInclude Include="db\modelInsertSql.h" />
+    <ClInclude Include="db\modelSqlBuilder.h" />
     <ClInclude Include="db\modelSqlWriter.h" />
     <ClInclude Include="include\crc32.h" />
     <ClInclude Include="include\helper.h" />
     <ClInclude Include="include\md5.h" />
-    <ClInclude Include="include\modelSqlBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\argReader.cpp" />
