@@ -59,3 +59,62 @@ StringTypeSymbol *StringTypeSymbol::find()
     assert(bs); // only called when valid
     return bs;
 }
+
+
+string StringTypeSymbol::format_for_storage(const Constant &k) const
+{
+    string lit = k.value(); // The constant as a C++ string literal
+
+    // string constants are stored as C++ string literals
+    // e.g. "C:\\MyFolder\\TheFile.dat"
+    // including surrounding double quotes and internal C++ escape sequences,
+    // such as \\ for \.
+    // For DB storage, the quotes need to be removed, and the escapes expanded.
+
+    assert(is_string()); // logic guarantee
+    assert(lit.length() >= 2 && lit[0] == '"' && lit[lit.length() - 1] == '"'); // logic guarantee - string literal is enclosed in "
+
+    string inside = lit.substr(1, lit.length() - 2);
+
+    string result;
+    bool in_escape = false;
+    for (auto ch : inside) {
+        if (in_escape) {
+            switch (ch) {
+            case '"':
+            case '\'':
+            case '\\':
+                break;
+            case 'n':
+                ch = '\n';
+                break;
+            case 't':
+                ch = '\t';
+                break;
+            case 'r':
+                ch = '\r';
+                break;
+            case 'b':
+                ch = '\b';
+                break;
+            case 'f':
+                ch = '\f';
+                break;
+            default:
+                break;
+            }
+            in_escape = false;
+        }
+        else {
+            if (ch == '\\') {
+                // start an escape sequence
+                in_escape = true;
+                continue;
+            }
+        }
+        result += ch;
+    }
+
+    return result;
+}
+
