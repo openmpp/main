@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2015 OpenM++
+# Copyright (c) 2013-2016 OpenM++
 # This code is licensed under MIT license (see LICENSE.txt for details)
 
 # Script to prepare files for binary deployment
@@ -116,8 +116,10 @@ $subdir = 'bin';
 	'ompp_export_excel.exe',
 	'README_win.txt',
 	'modgen_export_csv.exe',
+	'dbcopy.exe',
 	'patch_modgen11_outputs.exe',
 	'patch_modgen12_outputs.exe',
+	'patch_modgen12.1_outputs.exe',
 	'sqlite3.exe',
 	);
 mkdir "${deploy_dir}/${subdir}" or die;
