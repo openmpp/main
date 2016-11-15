@@ -64,7 +64,7 @@ public:
      *
      * @return true if string, else false.
      */
-    bool is_string();
+    bool is_string() const;
 
     /**
      * Determines derived type.
