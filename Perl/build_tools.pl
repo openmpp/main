@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2015 OpenM++
+# Copyright (c) 2013-2016 OpenM++
 # This code is licensed under MIT license (see LICENSE.txt for details)
 
 # Script to build utilities, etc.
@@ -12,6 +12,7 @@ my $R_exe = 'C:\Program Files\R\R-3.2.3\bin\R.exe';
 my $verbosity = 3;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
+use File::Copy;
 
 # Get ompp root directory
 chdir "..";
@@ -49,12 +50,18 @@ chdir "${om_root}/R";
 };
 
 
-# if GOROOT and GOPATH defined then build dbcopy
+# if GOROOT and GOPATH (and others for MinGW) defined then build dbcopy
 #
-if ("$ENV{GOROOT}" eq "" || "$ENV{GOPATH}" eq "") {
-	print "Skip dbcopy build: GOROOT or GOPATH is empty\n";
+if ("$ENV{GOROOT}" eq "" || "$ENV{GOPATH}" eq "" || "$ENV{CPLUS_INCLUDE_PATH}" eq "" || "$ENV{C_INCLUDE_PATH}" eq "") {
+	print "Skip dbcopy build: GOROOT or GOPATH or CPLUS_INCLUDE_PATH or C_INCLUDE_PATH is empty\n";
 }
 else {
+	# For successful go build, must set persistent environment variables for MinGW
+	# (normally done through cmd line prompt by executing set_distro_paths before invoking go).
+	# Example to set persistent values:
+	# setx CPLUS_INCLUDE_PATH C:\MinGW\include;C:\MinGW\include\freetype2
+	# setx C_INCLUDE_PATH C:\MinGW\include;C:\MinGW\include\freetype2
+	
 	print "Building utility dbcopy\n";
 	chdir "$ENV{GOPATH}";
 	($merged, $retval) = capture_merged {
@@ -65,6 +72,10 @@ else {
 			);
 		system(@args);
 	};
+	if ($retval != 0) {
+		print "Build dbcopy failed (output follows:\n$merged\n"
+	}
 }
+copy 'bin/dbcopy.exe', "${om_root}/bin";
 
 chdir "${om_root}/Perl";
