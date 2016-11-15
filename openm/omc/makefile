@@ -163,7 +163,7 @@ $(DEPS_DIR)/scanner.d : $(BUILD_SRC_DIR)/scanner.cpp
 $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
-$(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
+$(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
 	$(CXX) -L$(OUT_LIB_DIR) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
 
 .PHONY: clean

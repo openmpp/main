@@ -222,6 +222,7 @@ namespace openm
         OmcArgKey::noLineDirectives,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
+        OmcArgKey::sqlDir,
         OmcArgKey::dbProviderNames,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
