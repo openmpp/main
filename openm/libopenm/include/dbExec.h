@@ -283,11 +283,9 @@ namespace openm
             const string & i_sqlProvider, const string & i_viewName, const string & i_viewBodySql
         );
 
-        /** parse sql script text and return it as list of sql statements.
+        /** parse and execute list of sql statements.
         *
         * @param[in] i_sqlScript    sql statements separated by ; semicolons
-        *
-        * @return   list of sql statements
         *
         * source text may contain multiple sql statements separated by ; semicolons.
         * it can be multiple line statement or multiple sql statements; on single line.
@@ -310,7 +308,7 @@ namespace openm
         *    ; UPDATE tbl SET label = '' WHERE code = 4567; -- multiple sqls ; on single line
         * @endcode
         */
-        static list<string> parseSql(const string & i_sqlScript);
+        virtual void runSqlScript(const string & i_sqlScript) = 0;
     };
 }
 

@@ -96,28 +96,19 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
             ));
 
             // run script to create openM++ metadata tables and insert default values
-            list<string> sqlLst = IDbExec::parseSql(fileToUtf8(makeFilePath(sqlDir.c_str(), "create_db.sql").c_str()));
-            for (const string & s : sqlLst) {
-                dbExec->update(s);
-            }
+            dbExec->runSqlScript(fileToUtf8(makeFilePath(sqlDir.c_str(), "create_db.sql").c_str()));
 
             // run sql script to insert new model metadata into SQLite database
-            sqlLst = IDbExec::parseSql(
+            dbExec->runSqlScript(
                 fileToUtf8(makeFilePath(
                     outputDir.c_str(), (io_metaRows.modelDic.name + "_1_create_model_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
                 ).c_str()));
-            for (const string & s : sqlLst) {
-                dbExec->update(s);
-            }
 
             // run sql script to create new model tables
-            sqlLst = IDbExec::parseSql(
+            dbExec->runSqlScript(
                 fileToUtf8(makeFilePath(
                     outputDir.c_str(), (io_metaRows.modelDic.name + "_2_create_tables_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
                 ).c_str()));
-            for (const string & s : sqlLst) {
-                dbExec->update(s);
-            }
         }
     }
     catch (HelperException & ex) {

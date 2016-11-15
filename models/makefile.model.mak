@@ -123,9 +123,9 @@ MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)
 #
 ifndef PUBLISH_DIR
   PUBLISH_DIR = output-linux
-  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_EXE)_$(SCENARIO_NAME).sqlite
+  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sqlite
 else
-  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_EXE).sqlite
+  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME).sqlite
 endif
 
 #
@@ -185,8 +185,8 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
-$(MODEL_OMC_CPP) : $(MODEL_MPP)
-	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT)
+$(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql : $(MODEL_MPP)
+	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
@@ -206,25 +206,11 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 #
 # create output SQLite database
 #
-SQLITE_EXE = sqlite3
-
 .PHONY : publish
 publish : $(MODEL_SQLITE)
 
-$(MODEL_SQLITE) : \
-  $(OM_SQL_DIR)/create_db.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_3_$(SCENARIO_NAME)_sqlite.sql \
-  $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
-  $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
-	rm -f $(MODEL_SQLITE)
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_3_$(SCENARIO_NAME)_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
+$(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql $(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql
+	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
 
 #
 # run the model

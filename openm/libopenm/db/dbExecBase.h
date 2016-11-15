@@ -54,6 +54,9 @@ namespace openm
         /** return long value of connection property or default value if key not found (case neutral). */
         long long longConnProperty(const string & i_key, long i_default) const;
 
+        /** parse and execute list of sql statements. */
+        static void runSqlScript(IDbExec * i_dbExec, const string & i_sqlScript);
+
     private:
         /** parse connection string and return case-neutral map of key+value string pairs. */
         NoCaseMap parseConnectionStr(const string & i_connectionStr);

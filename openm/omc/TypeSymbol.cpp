@@ -28,9 +28,9 @@ bool TypeSymbol::is_bool()
     }
 }
 
-bool TypeSymbol::is_string()
+bool TypeSymbol::is_string() const
 {
-    if (dynamic_cast<StringTypeSymbol *>(this)) {
+    if (dynamic_cast<const StringTypeSymbol *>(this)) {
         return true;
     }
     else {

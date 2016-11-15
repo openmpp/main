@@ -85,6 +85,9 @@ namespace openm
         /** execute statement with parameters. */
         void executeStatement(int i_paramCount, const DbValue * i_valueArr) override;
 
+        /** parse and execute list of sql statements. */
+        void runSqlScript(const string & i_sqlScript) override { DbExecBase::runSqlScript(this, i_sqlScript); };
+
     private:
         sqlite3 * theDb;                    // sqlite db
         sqlite3_stmt * theStmt;             // sqlite statement
