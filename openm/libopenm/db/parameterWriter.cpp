@@ -375,10 +375,19 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
     if (csvLines.size() <= 0)
         throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
 
-    // do insert values
+    // pre-allocate csv columns space
     size_t rowCount = 0;
     int rowSize = dimCount + 1;
+    list<string> csvCols;
+    for (int k = 0; k < rowSize; k++) {
+        string s;
+        s.reserve(255);
+        csvCols.push_back(std::move(s));
+    }
+
+    // do insert values
     string insSql;
+    const locale csvLocale("");     // user default locale for csv
 
     for (const string & line : csvLines) {
 
@@ -395,12 +404,13 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
         if (line.empty()) continue;     // skip empty lines
 
         // split to columns, unquote and check row size
-        list<string> csvCols = splitCsv(line, ",", true, '"');
+        splitCsv(line, csvCols, ",", true, '"', csvLocale);
         if (csvCols.size() < (size_t)rowSize)
             throw DbException("invalid parameter.csv file at line %zd, expected: %d columns for parameter: %d %s", rowCount, rowSize, paramId, paramRow->paramName.c_str());
 
         // make insert sql: append dimensions, it cannot be empty
-        insSql = insPrefix;
+        insSql.clear();
+        insSql += insPrefix;
 
         list<string>::const_iterator col = csvCols.cbegin();
         for (int k = 0; k < dimCount; k++) {
