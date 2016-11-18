@@ -46,16 +46,16 @@ using namespace std;
 namespace openm
 {
     /** convert string to lower case */
-    extern void toLower(string & io_str);
+    extern void toLower(string & io_str, const locale & i_locale = locale(""));
 
     /** convert string to lower case */
-    extern void toLower(char * io_str);
+    extern void toLower(char * io_str, const locale & i_locale = locale(""));
 
     /** convert string to upper case */
-    extern void toUpper(string & io_str);
+    extern void toUpper(string & io_str, const locale & i_locale = locale(""));
 
     /** convert string to upper case */
-    extern void toUpper(char * io_str);
+    extern void toUpper(char * io_str, const locale & i_locale = locale(""));
 
     /** case neutral string comparison */
     extern int compareNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
@@ -70,13 +70,13 @@ namespace openm
     extern bool endWithNoCase(const string & i_str, const char * i_end);
 
     /** trim leading blank and space characters */
-    extern string trimLeft(const string & i_str);
+    extern string trimLeft(const string & i_str, const locale & i_locale = locale(""));
 
     /** trim trailing blank and space characters */
-    extern string trimRight(const string & i_str);
+    extern string trimRight(const string & i_str, const locale & i_locale = locale(""));
 
     /** trim leading and trailing blank and space characters */
-    extern string trim(const string & i_str);
+    extern string trim(const string & i_str, const locale & i_locale = locale(""));
 
     /** replace all <cr> or <lf> with blank space character */
     extern void blankCrLf(string & io_str);
@@ -85,7 +85,7 @@ namespace openm
     extern const string toQuoted(const string & i_str, char i_quote = '\'');
 
     /** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
-    extern const string toUnQuoted(const string & i_str, char i_quote = '\'');
+    extern const string toUnQuoted(const string & i_str, char i_quote = '\'', const locale & i_locale = locale(""));
 
     /** convert float type to string: exist to fix std::to_string conversion losses. */
     extern const string toString(double i_val);
@@ -121,7 +121,29 @@ namespace openm
     * @param[in] i_isUnquote    if true then do "unquote ""csv"" ", default: false.
     * @param[in] i_quote        quote character, default: sql single ' quote.
     */
-    extern list<string> splitCsv(const string & i_values, const char * i_delimiters = ",", bool i_isUnquote = false, char i_quote = '\'');
+    extern list<string> splitCsv(
+        const string & i_values, const char * i_delimiters = ",", bool i_isUnquote = false, char i_quote = '\''
+    );
+
+    /**
+    * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
+    *
+    * RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
+    *
+    * @param[in] i_values         source string of comma separated values.
+    * @param[in,out] io_resultLst source string of comma separated values.
+    * @param[in] i_delimiters     list of delimiters, default: comma.
+    * @param[in] i_isUnquote      if true then do "unquote ""csv"" ", default: false.
+    * @param[in] i_quote          quote character, default: sql single ' quote.
+    * @param[in] i_locale         locale to trim space characters, defaut: user default locale.
+    */
+    extern void splitCsv(
+        const string & i_values, 
+        list<string> & io_resultLst, 
+        const char * i_delimiters = ",", 
+        bool i_isUnquote = false, 
+        char i_quote = '\'', 
+        const locale & i_locale = locale(""));
 
     /** case neutral less comparator for strings */
     struct LessNoCase

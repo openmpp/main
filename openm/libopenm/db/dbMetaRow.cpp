@@ -193,7 +193,7 @@ bool TypeEnumLstRow::isKeyEqual(const TypeEnumLstRow & i_left, const TypeEnumLst
     return i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.enumId == i_right.enumId;
 }
 
-// type_enum_txt join model_type_dic row less comparatorby unique key: model id, model type id, language id.
+// type_enum_txt join model_type_dic row less comparator by unique key: model id, model type id, language id.
 bool TypeEnumTxtRow::isKeyLess(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right)
 {
     return

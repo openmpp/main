@@ -126,9 +126,6 @@ namespace openm
         /** sort and validate workset metadata for uniqueness and referential integrity */
         void prepareWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const;
 
-        /** create new workset: insert metadata and delete existing workset parameters, if required */
-        void createWorksetMeta(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
-
         /** impelementation of append scalar parameter value to sql script */
         void doAddScalarWorksetParameter(
             int i_setId,

@@ -14,41 +14,41 @@
 #endif  // _WIN32
 
 // convert string to lower case
-void openm::toLower(string & io_str)
+void openm::toLower(string & io_str, const locale & i_locale)
 {
-    locale defaultLoc = locale("");
     transform(
         io_str.begin(), 
         io_str.end(), 
         io_str.begin(), 
-        bind(tolower<char>, placeholders::_1, cref(defaultLoc))
+        bind(tolower<char>, placeholders::_1, i_locale)
         );
 }
 
 // convert string to lower case
-void openm::toLower(char * io_str)
+void openm::toLower(char * io_str, const locale & i_locale)
 {
-    if (io_str != NULL) 
-        use_facet<ctype<char> >(locale("")).tolower(io_str, io_str + strnlen(io_str, OM_STRLEN_MAX));
+    if (io_str != NULL) {
+        use_facet<ctype<char> >(i_locale).tolower(io_str, io_str + strnlen(io_str, OM_STRLEN_MAX));
+    }
 }
 
 // convert string to upper case
-void openm::toUpper(string & io_str)
+void openm::toUpper(string & io_str, const locale & i_locale)
 {
-    locale defaultLoc = locale("");
     transform(
         io_str.begin(),
         io_str.end(),
         io_str.begin(),
-        bind(toupper<char>, placeholders::_1, cref(defaultLoc))
+        bind(toupper<char>, placeholders::_1, i_locale)
         );
 }
 
 // convert string to upper case
-void openm::toUpper(char * io_str)
+void openm::toUpper(char * io_str, const locale & i_locale)
 {
-    if (io_str != NULL) 
-        use_facet<ctype<char> >(locale("")).toupper(io_str, io_str + strnlen(io_str, OM_STRLEN_MAX));
+    if (io_str != NULL) {
+        use_facet<ctype<char> >(i_locale).toupper(io_str, io_str + strnlen(io_str, OM_STRLEN_MAX));
+    }
 }
 
 // case neutral string comparison
@@ -87,47 +87,36 @@ bool openm::endWithNoCase(const string & i_str, const char * i_end)
 }
 
 // Trim leading space characters
-string openm::trimLeft(const string & i_str)
+string openm::trimLeft(const string & i_str, const locale & i_locale)
 {
-    locale defaultLoc = locale("");
-    const ctype<char> & chType = use_facet<ctype<char> >(defaultLoc);
-
     for (string::const_iterator it = i_str.begin(); it != i_str.end(); ++it) {
-        if (!chType.is(ctype<char>::space, *it)) 
-            return i_str.substr(it - i_str.begin());
+        if (!isspace<char>(*it, i_locale)) return i_str.substr(it - i_str.begin());
     }
     return "";  // string is empty or has only space chars
 }
 
 // Trim trailing space characters
-string openm::trimRight(const string & i_str)
+string openm::trimRight(const string & i_str, const locale & i_locale)
 {
-    locale defaultLoc = locale("");
-    const ctype<char> & chType = use_facet<ctype<char> >(defaultLoc);
-
     for (string::const_reverse_iterator revIt = i_str.rbegin(); revIt != i_str.rend(); ++revIt) {
-        if (!chType.is(ctype<char>::space, *revIt)) 
-            return i_str.substr(0, i_str.rend() - revIt);
+        if (!isspace<char>(*revIt, i_locale)) return i_str.substr(0, i_str.rend() - revIt);
     }
     return "";  // string is empty or has only space chars
 }
 
 // Trim leading and trailing space characters
-string openm::trim(const string & i_str)
+string openm::trim(const string & i_str, const locale & i_locale)
 {
-    locale defaultLoc = locale("");
-    const ctype<char> & chType = use_facet<ctype<char> >(defaultLoc);
-
     string::const_iterator begIt;
     for (begIt = i_str.begin(); begIt != i_str.end(); ++begIt) {
-        if (!chType.is(ctype<char>::space, *begIt)) break;
+        if (!isspace<char>(*begIt, i_locale)) break;
     }
 
     if (begIt == i_str.end()) return "";  // string is empty or has only space chars
 
     string::const_reverse_iterator endIt;
     for (endIt = i_str.rbegin(); endIt != i_str.rend(); ++endIt) {
-        if (!chType.is(ctype<char>::space, *endIt)) break;
+        if (!isspace<char>(*endIt, i_locale)) break;
     }
 
     return i_str.substr(begIt - i_str.begin(), (i_str.rend() - endIt) - (begIt - i_str.begin()));
@@ -153,10 +142,10 @@ const string openm::toQuoted(const string & i_str, char i_quote)
 }
 
 /** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
-const string openm::toUnQuoted(const string & i_str, char i_quote)
+const string openm::toUnQuoted(const string & i_str, char i_quote, const locale & i_locale)
 {
     // trim and remove surrounding quotes
-    string sVal = trim(i_str);
+    string sVal = trim(i_str, i_locale);
 
     size_t nLen = sVal.length();
     bool isQuoted = nLen >= 2 && sVal[0] == i_quote && sVal[nLen - 1] == i_quote;
@@ -166,7 +155,7 @@ const string openm::toUnQuoted(const string & i_str, char i_quote)
 
     string sRet;
     bool isPrevQuote = false;
- 
+
     for (string::const_iterator it = sVal.begin(); it != sVal.end(); ++it) {
         if (*it != i_quote) {
             sRet += *it;
@@ -177,7 +166,7 @@ const string openm::toUnQuoted(const string & i_str, char i_quote)
             isPrevQuote = !isPrevQuote;
         }
     }
-     return sRet;
+    return sRet;
 }
 
 /** convert float type to string: exist to fix std::to_string conversion losses. */

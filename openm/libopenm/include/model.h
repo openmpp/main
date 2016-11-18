@@ -26,7 +26,7 @@ using namespace std;
 #include "dbParameter.h"
 #include "dbOutputTable.h"
 #include "modelRunState.h"
-#include "metaRunHolder.h"
+#include "metaHolder.h"
 #include "msg.h"
 #include "metaLoader.h"
 #include "runController.h"
@@ -45,7 +45,7 @@ namespace openm
             int i_subCount,
             int i_subNumber,
             RunController * i_runCtrl,
-            const MetaRunHolder * i_metaStore 
+            const MetaHolder * i_metaStore 
             );
 
         /** number of subsamples */
@@ -67,7 +67,7 @@ namespace openm
         int modelId;                        // model id in database
         int runId;                          // model run id
         RunController * runCtrl;            // run controller interface
-        const MetaRunHolder * metaStore;    // metadata tables
+        const MetaHolder * metaStore;    // metadata tables
         ModelRunState runState;             // model run state
         RunOptions runOpts;                 // model run options
 
@@ -77,7 +77,7 @@ namespace openm
             int i_subCount,
             int i_subNumber,
             RunController * i_runCtrl,
-            const MetaRunHolder * i_metaStore
+            const MetaHolder * i_metaStore
             );
 
         // helper struct to store output table save status

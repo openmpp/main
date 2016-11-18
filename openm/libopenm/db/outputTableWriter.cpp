@@ -17,7 +17,7 @@ namespace openm
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore, 
+            const MetaHolder * i_metaStore, 
             int i_numSubSamples,
             const char * i_doubleFormat = "",
             bool i_isSparse = false,
@@ -84,7 +84,7 @@ IOutputTableWriter * IOutputTableWriter::create(
     int i_runId,
     const char * i_name, 
     IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore, 
+    const MetaHolder * i_metaStore, 
     int i_numSubSamples, 
     bool i_isSparseGlobal, 
     double i_nullValue
@@ -98,7 +98,7 @@ IOutputTableWriter * IOutputTableWriter::create(
     int i_runId,
     const char * i_name, 
     IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore, 
+    const MetaHolder * i_metaStore, 
     int i_numSubSamples, 
     const char * i_doubleFormat
     )
@@ -111,7 +111,7 @@ OutputTableWriter::OutputTableWriter(
     int i_runId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore,
+    const MetaHolder * i_metaStore,
     int i_numSubSamples,
     const char * i_doubleFormat,
     bool i_isSparseGlobal,
@@ -187,7 +187,7 @@ OutputTableWriter::OutputTableWriter(
 }
 
 // calculate output table size: total number of values for each accumulator
-size_t IOutputTableWriter::sizeOf(const MetaRunHolder * i_metaStore, int i_tableId)
+size_t IOutputTableWriter::sizeOf(const MetaHolder * i_metaStore, int i_tableId)
 { 
     if (i_metaStore == nullptr) throw DbException("invalid (NULL) model metadata");
 

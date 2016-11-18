@@ -11,6 +11,9 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
+2016_11_15:
+    minor release to improve dbcopy utility and fix some bugs
+
 2016_09_28:
     support for model "publish": 
       import-export into and from json and csv files for model, input parameters set, run results

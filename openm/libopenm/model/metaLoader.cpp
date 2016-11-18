@@ -175,7 +175,7 @@ const RunOptions MetaLoader::modelRunOptions(int i_subCount, int i_subNumber) co
 }
 
 // read metadata tables from db, except of run_option table
-int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
+int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore)
 {
     // find model by name digest
     io_metaStore->modelTable.reset(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_DIGEST));
@@ -199,7 +199,7 @@ int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore)
 }
 
 // broadcast metadata tables from root to all modeling processes
-int MetaLoader::broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore)
+int MetaLoader::broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaHolder * io_metaStore)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 

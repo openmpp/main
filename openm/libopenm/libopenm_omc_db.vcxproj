@@ -66,15 +66,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  
   <!-- Import openM common project settings -->
   <Import Project="$(SolutionDir)openm.build.props" />
-  
   <PropertyGroup>
     <OutDir>$(OM_LIB_DIR)/</OutDir>
     <TargetName>$(ProjectName)$(BUILD_SUFFIX)</TargetName>
   </PropertyGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -89,7 +86,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -104,7 +100,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -123,7 +118,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
@@ -142,7 +136,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  
   <ItemGroup>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h" />
     <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
@@ -158,13 +151,13 @@
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />
     <ClInclude Include="db\dbValue.h" />
+    <ClInclude Include="db\modelAggregationSql.h" />
+    <ClInclude Include="db\modelInsertSql.h" />
+    <ClInclude Include="db\modelSqlBuilder.h" />
+    <ClInclude Include="db\modelSqlWriter.h" />
     <ClInclude Include="include\crc32.h" />
     <ClInclude Include="include\helper.h" />
     <ClInclude Include="include\md5.h" />
-    <ClInclude Include="include\modelAggregationSql.h" />
-    <ClInclude Include="include\modelInsertSql.h" />
-    <ClInclude Include="include\modelSqlBuilder.h" />
-    <ClInclude Include="include\modelSqlWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\argReader.cpp" />

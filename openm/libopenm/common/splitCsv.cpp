@@ -22,19 +22,50 @@
 */
 list<string> openm::splitCsv(const string & i_values, const char * i_delimiters, bool i_isUnquote, char i_quote)
 {
-    // trim source and return empty result if source line empty or space only
     list<string> resultLst;
-    string srcValues = trim(i_values);
-    string::size_type nSrcLen = srcValues.length();
+    splitCsv(i_values, resultLst, i_delimiters, i_isUnquote, i_quote);
+    return resultLst;
+}
 
-    if (nSrcLen <= 0) return resultLst;     // source string is empty: return empty list
-
+/**
+* split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
+*
+* RFC 4180 difference: it does skip space-only lines and trim values unless it is " quoted ".
+*
+* @param[in] i_values         source string of comma separated values.
+* @param[in,out] io_resultLst source string of comma separated values.
+* @param[in] i_delimiters     list of delimiters, default: comma.
+* @param[in] i_isUnquote      if true then do "unquote ""csv"" ", default: false.
+* @param[in] i_quote          quote character, default: sql single ' quote.
+* @param[in] i_locale         locale to trim space characters, defaut: user default locale.
+*/
+void openm::splitCsv(
+    const string & i_values, 
+    list<string> & io_resultLst, 
+    const char * i_delimiters, 
+    bool i_isUnquote, 
+    char i_quote, 
+    const locale & i_locale)
+{ 
+    // if source is empty then return empty result
+    string::size_type nSrcLen = i_values.length();
+    if (nSrcLen <= 0) {         
+        io_resultLst.clear();   // source string is empty: return empty list
+        return;
+    }
+        
     // no delimiters: return entire source string as first element of result list
     size_t nDelimLen = (i_delimiters != nullptr) ? strnlen(i_delimiters, OM_STRLEN_MAX) : 0;
     if (0 == nDelimLen) {
-        resultLst.push_back(srcValues);
-        return resultLst;
+        io_resultLst.clear();
+        io_resultLst.push_back(trim(i_values));
+        return;
     }
+
+    // position and size in already existing list to set new values
+    size_t lstSize = io_resultLst.size();
+    size_t lstPos = 0;
+    list<string>::iterator lstIt = io_resultLst.begin();
 
     // find delimiter(s) and append values into output list
     string::size_type nStart = 0;
@@ -43,7 +74,7 @@ list<string> openm::splitCsv(const string & i_values, const char * i_delimiters,
 
     for (string::size_type nPos = 0; nPos < nSrcLen; nPos++) {
 
-        char chNow = srcValues[nPos];
+        char chNow = i_values[nPos];
 
         // if unquote required and this is quote then toogle 'inside '' quote' status
         if (i_isUnquote && chNow == i_quote) {
@@ -62,22 +93,48 @@ list<string> openm::splitCsv(const string & i_values, const char * i_delimiters,
         // if this is delimiter or end of string then unquote value and append to the list
         if (isDelim || nPos == nSrcLen - 1) {
 
-            // trim spaces and unquote value if required
+            // column size: until end of line or until next delimiter
             size_t nLen = (nPos == nSrcLen - 1 && !isDelim) ? nSrcLen - nStart : nPos - nStart;
 
-            string sVal = i_isUnquote ?
-                toUnQuoted(srcValues.substr(nStart, nLen), i_quote) :
-                trim(srcValues.substr(nStart, nLen));
-
-            resultLst.push_back(sVal);
+            // if previous list had enough columns then use it else append new column
+            // trim spaces and unquote value if required
+            if (lstPos < lstSize) {
+                lstIt->clear();     // clear previous value
+                lstIt->append((
+                    i_isUnquote ?
+                    toUnQuoted(i_values.substr(nStart, nLen), i_quote, i_locale) :
+                    trim(i_values.substr(nStart, nLen), i_locale)
+                    ));
+                lstIt++;    // next column in existing list buffer
+            }
+            else {  // append new column
+                io_resultLst.emplace_back((
+                    i_isUnquote ?
+                    toUnQuoted(i_values.substr(nStart, nLen), i_quote, i_locale) :
+                    trim(i_values.substr(nStart, nLen), i_locale)
+                    ));
+            }
+            lstPos++;   // column count in the current list
 
             // if this is like: a,b, where delimiter at the end of line then append empty "" value
-            if (nPos == nSrcLen - 1 && isDelim) resultLst.push_back("");
+            if (nPos == nSrcLen - 1 && isDelim) {
+                if (lstPos < lstSize) {
+                    lstIt->clear();     // clear previous column value
+                    lstIt++;
+                }
+                else {
+                    io_resultLst.emplace_back("");  // append new empty column
+                }
+                lstPos++;
+            }
 
             nStart = nPos + 1;  // skip delimiter and continue
             isDelim = false;
         }
     }
 
-    return resultLst;
+    // if current line have less columns than previous buffer then trim extra columns from result
+    if (lstPos < lstSize) {
+        io_resultLst.resize(lstPos);
+    }
 }
