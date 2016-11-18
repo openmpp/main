@@ -15,7 +15,7 @@ namespace openm
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore
+            const MetaHolder * i_metaStore
             );
 
         // input parameter reader cleanup
@@ -49,7 +49,7 @@ IParameterReader::~IParameterReader(void) throw() { }
 
 // input parameter reader factory: create new reader
 IParameterReader * IParameterReader::create(
-     int i_runId, const char * i_name,  IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
+     int i_runId, const char * i_name,  IDbExec * i_dbExec, const MetaHolder * i_metaStore
     )
 {
     return new ParameterReader(i_runId, i_name, i_dbExec, i_metaStore);
@@ -60,7 +60,7 @@ ParameterReader::ParameterReader(
     int i_runId, 
     const char * i_name,  
     IDbExec * i_dbExec, 
-    const MetaRunHolder * i_metaStore
+    const MetaHolder * i_metaStore
     ) :
     runId(i_runId),
     paramId(0),

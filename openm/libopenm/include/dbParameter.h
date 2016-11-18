@@ -11,7 +11,7 @@
 #include "libopenm/db/dbCommon.h"
 #include "libopenm/common/omFile.h"
 #include "dbExec.h"
-#include "metaRunHolder.h"
+#include "metaHolder.h"
 #include "libopenm/db/metaSetHolder.h"
 
 namespace openm
@@ -26,7 +26,7 @@ namespace openm
             int i_runId,
             const char * i_name, 
             IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore
+            const MetaHolder * i_metaStore
             );
         
         /** return input parameter size: total number of values in the table */
@@ -55,7 +55,7 @@ namespace openm
             int i_setId,
             const char * i_name,
             IDbExec * i_dbExec,
-            const MetaRunHolder * i_metaStore,
+            const MetaHolder * i_metaStore,
             const MetaSetHolder * i_metaSet
             );
 
@@ -85,7 +85,7 @@ namespace openm
             int i_runId,
             const char * i_name,
             IDbExec * i_dbExec,
-            const MetaRunHolder * i_metaStore,
+            const MetaHolder * i_metaStore,
             const char * i_doubleFormat = ""
             );
 

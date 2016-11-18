@@ -78,9 +78,6 @@
     <ClInclude Include="include\dbParameter.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="include\metaRunHolder.h">
-      <Filter>Source Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h">
       <Filter>Header Files\libopenm\common</Filter>
     </ClInclude>
@@ -143,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\libopenm\omLog.h">
       <Filter>Header Files\libopenm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\metaHolder.h">
+      <Filter>Source Files\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

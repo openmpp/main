@@ -12,7 +12,7 @@
 #include <cfloat>
 #include "libopenm/db/dbCommon.h"
 #include "dbExec.h"
-#include "metaRunHolder.h"
+#include "metaHolder.h"
 
 namespace openm
 {
@@ -26,7 +26,7 @@ namespace openm
             int i_runId,
             const char * i_name,
             IDbExec * i_dbExec,
-            const MetaRunHolder * i_metaStore,
+            const MetaHolder * i_metaStore,
             int i_numSubSamples,
             bool i_isSparse = false,
             double i_nullValue = FLT_MIN
@@ -37,7 +37,7 @@ namespace openm
             int i_runId,
             const char * i_name,
             IDbExec * i_dbExec,
-            const MetaRunHolder * i_metaStore,
+            const MetaHolder * i_metaStore,
             int i_numSubSamples,
             const char * i_doubleFormat = ""
         );
@@ -46,7 +46,7 @@ namespace openm
         virtual size_t sizeOf(void) const throw() = 0;
 
         /** return total number of values for each accumulator */
-        static size_t sizeOf(const MetaRunHolder * i_metaStore, int i_tableId);
+        static size_t sizeOf(const MetaHolder * i_metaStore, int i_tableId);
 
         /** return number of output aggregated expressions */
         virtual int expressionCount(void) const throw() = 0;

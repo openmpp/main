@@ -124,7 +124,7 @@ namespace openm
         const ArgReader & argOpts(void) const { return argStore; }
 
         /** model metadata tables */
-        const MetaRunHolder * meta(void) const { return metaStore.get(); }
+        const MetaHolder * meta(void) const { return metaStore.get(); }
 
         /** return basic model run options */
         const RunOptions modelRunOptions(int i_subCount, int i_subNumber) const;
@@ -134,7 +134,7 @@ namespace openm
 
     protected:
         int modelId;                            // model id in database
-        unique_ptr<MetaRunHolder> metaStore;    // metadata tables
+        unique_ptr<MetaHolder> metaStore;    // metadata tables
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
@@ -148,10 +148,10 @@ namespace openm
         const RunOptions & modelRunOptions(void) const { return baseRunOpts; }
 
         // read metadata tables from db, except of run_option table
-        static int readMetaTables(IDbExec * i_dbExec, MetaRunHolder * io_metaStore);
+        static int readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore);
 
         // broadcast metadata tables from root to all modeling processes
-        static int broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaRunHolder * io_metaStore);
+        static int broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaHolder * io_metaStore);
 
         // broadcast int value from root to group of modeling processes
         static void broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_value);

@@ -13,7 +13,7 @@ namespace openm
     class ParameterWriter
     {
     public:
-        ParameterWriter(const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore);
+        ParameterWriter(const char * i_name, IDbExec * i_dbExec, const MetaHolder * i_metaStore);
 
         // Parameter writer cleanup
         virtual ~ParameterWriter(void) throw() { }
@@ -43,7 +43,7 @@ namespace openm
             int i_setId,
             const char * i_name,
             IDbExec * i_dbExec,
-            const MetaRunHolder * i_metaStore,
+            const MetaHolder * i_metaStore,
             const MetaSetHolder * i_metaSet
             );
 
@@ -75,7 +75,7 @@ namespace openm
             int i_runId, 
             const char * i_name, 
             IDbExec * i_dbExec, 
-            const MetaRunHolder * i_metaStore,
+            const MetaHolder * i_metaStore,
             const char * i_doubleFormat = ""
         );
 
@@ -111,7 +111,7 @@ IParameterSetWriter * IParameterSetWriter::create(
     int i_setId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore,
+    const MetaHolder * i_metaStore,
     const MetaSetHolder * i_metaSet
     )
 {
@@ -123,7 +123,7 @@ IParameterRunWriter * IParameterRunWriter::create(
     int i_runId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore,
+    const MetaHolder * i_metaStore,
     const char * i_doubleFormat
     )
 {
@@ -132,7 +132,7 @@ IParameterRunWriter * IParameterRunWriter::create(
 
 // New parameter writer
 ParameterWriter::ParameterWriter(
-    const char * i_name, IDbExec * i_dbExec, const MetaRunHolder * i_metaStore
+    const char * i_name, IDbExec * i_dbExec, const MetaHolder * i_metaStore
     ) :
     paramId(0),
     dimCount(0),
@@ -186,7 +186,7 @@ ParameterSetWriter::ParameterSetWriter(
     int i_setId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore,
+    const MetaHolder * i_metaStore,
     const MetaSetHolder * i_metaSet
     ) :
     ParameterWriter(i_name, i_dbExec, i_metaStore),
@@ -211,7 +211,7 @@ ParameterRunWriter::ParameterRunWriter(
     int i_runId,
     const char * i_name,
     IDbExec * i_dbExec,
-    const MetaRunHolder * i_metaStore,
+    const MetaHolder * i_metaStore,
     const char * i_doubleFormat
 ) :
     ParameterWriter(i_name, i_dbExec, i_metaStore),

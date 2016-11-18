@@ -78,7 +78,7 @@ void SingleController::init(void)
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
     // load metadata table rows, except of run_option, which is may not created yet
-    metaStore.reset(new MetaRunHolder);
+    metaStore.reset(new MetaHolder);
     modelId = readMetaTables(dbExec, metaStore.get());
 
     // merge command line and ini-file arguments with profile_option table values

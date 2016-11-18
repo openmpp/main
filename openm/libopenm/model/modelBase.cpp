@@ -24,7 +24,7 @@ ModelBase::ModelBase(
     int i_subCount,
     int i_subNumber,
     RunController * i_runCtrl,
-    const MetaRunHolder * i_metaStore
+    const MetaHolder * i_metaStore
     ) : 
     modelId(i_modelId),
     runId(i_runId),
@@ -48,7 +48,7 @@ ModelBase * ModelBase::create(
     int i_subCount,
     int i_subNumber,
     RunController * i_runCtrl,
-    const MetaRunHolder * i_metaStore 
+    const MetaHolder * i_metaStore 
     )
 {
     if (i_metaStore == NULL) throw ModelException("invalid (NULL) model metadata");
