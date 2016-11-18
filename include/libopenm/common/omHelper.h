@@ -46,16 +46,16 @@ using namespace std;
 namespace openm
 {
     /** convert string to lower case */
-    extern void toLower(string & io_str, const locale & i_locale = locale::locale(""));
+    extern void toLower(string & io_str, const locale & i_locale = locale(""));
 
     /** convert string to lower case */
-    extern void toLower(char * io_str, const locale & i_locale = locale::locale(""));
+    extern void toLower(char * io_str, const locale & i_locale = locale(""));
 
     /** convert string to upper case */
-    extern void toUpper(string & io_str, const locale & i_locale = locale::locale(""));
+    extern void toUpper(string & io_str, const locale & i_locale = locale(""));
 
     /** convert string to upper case */
-    extern void toUpper(char * io_str, const locale & i_locale = locale::locale(""));
+    extern void toUpper(char * io_str, const locale & i_locale = locale(""));
 
     /** case neutral string comparison */
     extern int compareNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
@@ -70,13 +70,13 @@ namespace openm
     extern bool endWithNoCase(const string & i_str, const char * i_end);
 
     /** trim leading blank and space characters */
-    extern string trimLeft(const string & i_str, const locale & i_locale = locale::locale(""));
+    extern string trimLeft(const string & i_str, const locale & i_locale = locale(""));
 
     /** trim trailing blank and space characters */
-    extern string trimRight(const string & i_str, const locale & i_locale = locale::locale(""));
+    extern string trimRight(const string & i_str, const locale & i_locale = locale(""));
 
     /** trim leading and trailing blank and space characters */
-    extern string trim(const string & i_str, const locale & i_locale = locale::locale(""));
+    extern string trim(const string & i_str, const locale & i_locale = locale(""));
 
     /** replace all <cr> or <lf> with blank space character */
     extern void blankCrLf(string & io_str);
@@ -85,7 +85,7 @@ namespace openm
     extern const string toQuoted(const string & i_str, char i_quote = '\'');
 
     /** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
-    extern const string toUnQuoted(const string & i_str, char i_quote = '\'', const locale & i_locale = locale::locale(""));
+    extern const string toUnQuoted(const string & i_str, char i_quote = '\'', const locale & i_locale = locale(""));
 
     /** convert float type to string: exist to fix std::to_string conversion losses. */
     extern const string toString(double i_val);
@@ -143,7 +143,7 @@ namespace openm
         const char * i_delimiters = ",", 
         bool i_isUnquote = false, 
         char i_quote = '\'', 
-        const locale & i_locale = locale::locale(""));
+        const locale & i_locale = locale(""));
 
     /** case neutral less comparator for strings */
     struct LessNoCase
