@@ -358,6 +358,37 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
     bool isStr = paramTypeRow->isString();
     bool isEnum = !paramTypeRow->isBuiltIn();
 
+    // if csv file contain enum codes then sort type enum by unique key: model id, type id, enum name
+    auto enumNameCmp = [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
+        return
+            (i_left.modelId < i_right.modelId) ||
+            (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId) ||
+            (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.name < i_right.name);
+    };
+
+    if (!i_isIdCsv) {
+        for (auto & eRows : dimEnums) {
+            sort(eRows.begin(), eRows.end(), enumNameCmp);
+        }
+        sort(paramEnums.begin(), paramEnums.end(), enumNameCmp);
+    }
+
+    // read csv file into list of strings
+    list<string> csvLines = fileToUtf8Lines(i_filePath);
+    if (csvLines.size() <= 0)
+        throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
+
+    // pre-allocate csv columns space
+    size_t rowCount = 0;
+    int rowSize = dimCount + 1;
+
+    list<string> csvCols;
+    for (int k = 0; k < rowSize; k++) {
+        string s;
+        s.reserve(255);
+        csvCols.push_back(std::move(s));
+    }
+
     // make prefix of sql to insert parameter value:
     //
     // INSERT INTO ageSex_p201208171604590148 (run_id, dim0,dim1,param_value) VALUES (2,
@@ -369,21 +400,6 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
     nameLst += "param_value";
 
     string insPrefix = "INSERT INTO " + paramRunDbTable + " (run_id, " + nameLst + ") VALUES (" + to_string(runId) + ", ";
-
-    // read csv file into list of strings
-    list<string> csvLines = fileToUtf8Lines(i_filePath);
-    if (csvLines.size() <= 0)
-        throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
-
-    // pre-allocate csv columns space
-    size_t rowCount = 0;
-    int rowSize = dimCount + 1;
-    list<string> csvCols;
-    for (int k = 0; k < rowSize; k++) {
-        string s;
-        s.reserve(255);
-        csvCols.push_back(std::move(s));
-    }
 
     // do insert values
     string insSql;
@@ -426,9 +442,6 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
             }
             else { // csv contains code or enum id
 
-                int mId = modelId;
-                int tId = paramDims[k].typeId;
-
                 if (i_isIdCsv) {    // if csv contain enum id the validate id and insert csv value
 
                     int eId = 0;
@@ -438,26 +451,20 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
                     catch (...) {
                         throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k, paramId, paramRow->paramName.c_str(), col->c_str());
                     }
-                    auto eIt = find_if(
-                        dimEnums[k].cbegin(),
-                        dimEnums[k].cend(),
-                        [mId, tId, eId](const TypeEnumLstRow & i_row) -> bool {
-                        return i_row.modelId == mId && i_row.typeId == tId && i_row.enumId == eId;
-                    });
-                    if (eIt == dimEnums[k].cend())
+
+                    TypeEnumLstRow eRow(modelId, paramDims[k].typeId, eId);
+                    if (!binary_search(dimEnums[k].cbegin(), dimEnums[k].cend(), eRow, TypeEnumLstRow::isKeyLess))
                         throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k, paramId, paramRow->paramName.c_str(), col->c_str());
 
                     insSql += *col + ", ";  // enum id: insert csv value
                 }
                 else { // csv contains code, find enum id by code
 
-                    auto eIt = find_if(
-                        dimEnums[k].cbegin(),
-                        dimEnums[k].cend(),
-                        [mId, tId, col](const TypeEnumLstRow & i_row) -> bool {
-                        return i_row.modelId == mId && i_row.typeId == tId && i_row.name == *col;
-                    });
-                    if (eIt == dimEnums[k].cend())
+                    TypeEnumLstRow eRow(modelId, paramDims[k].typeId, 0);
+                    eRow.name = *col;
+                    auto eIt = lower_bound(dimEnums[k].cbegin(), dimEnums[k].cend(), eRow, enumNameCmp);
+
+                    if (eIt == dimEnums[k].cend() || eIt->modelId != modelId || eIt->typeId != paramDims[k].typeId || eIt->name != *col)
                         throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k, paramId, paramRow->paramName.c_str(), col->c_str());
 
                     insSql += to_string(eIt->enumId) + ", ";  // insert enum id
@@ -495,9 +502,6 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
 
         if (isEnum) {   // enum-based parameter value, csv contains code or enum id
 
-            int mId = paramTypeRow->modelId;
-            int tId = paramTypeRow->typeId;
-
             if (i_isIdCsv) {    // if csv contain enum id the validate id and insert csv value
 
                 int eId = 0;
@@ -507,26 +511,20 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
                 catch (...) {
                     throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
                 }
-                auto eIt = find_if(
-                    paramEnums.cbegin(),
-                    paramEnums.cend(),
-                    [mId, tId, eId](const TypeEnumLstRow & i_row) -> bool {
-                    return i_row.modelId == mId && i_row.typeId == tId && i_row.enumId == eId;
-                });
-                if (eIt == paramEnums.cend())
+
+                TypeEnumLstRow eRow(modelId, paramTypeRow->typeId, eId);
+                if (!binary_search(paramEnums.cbegin(), paramEnums.cend(), eRow, TypeEnumLstRow::isKeyLess))
                     throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
 
                 insSql += *col + ")";
             }
             else { // csv contains code, find enum id by code
 
-                auto eIt = find_if(
-                    paramEnums.cbegin(),
-                    paramEnums.cend(),
-                    [mId, tId, col](const TypeEnumLstRow & i_row) -> bool {
-                    return i_row.modelId == mId && i_row.typeId == tId && i_row.name == *col;
-                });
-                if (eIt == paramEnums.cend())
+                TypeEnumLstRow eRow(modelId, paramTypeRow->typeId, 0);
+                eRow.name = *col;
+                auto eIt = lower_bound(paramEnums.cbegin(), paramEnums.cend(), eRow, enumNameCmp);
+
+                if (eIt == paramEnums.cend() || eIt->modelId != modelId || eIt->typeId != paramTypeRow->typeId || eIt->name != *col)
                     throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
 
                 insSql += to_string(eIt->enumId) + ")";  // insert enum id
