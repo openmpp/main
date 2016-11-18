@@ -377,6 +377,13 @@ public:
     void create_auxiliary_symbols();
 
     /**
+     * Perform addition syntax checks on arguments of self_scheduling attributes
+     *
+     * On failure, an exception is thrown
+     */
+    void check_ss_arguments();
+
+    /**
      * Assign the datatype of this symbol.
      */
     void assign_data_type();

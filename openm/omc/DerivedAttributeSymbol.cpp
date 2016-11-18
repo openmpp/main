@@ -694,6 +694,31 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     }
 }
 
+
+void DerivedAttributeSymbol::check_ss_arguments()
+{
+    // Some special conditions apply to first 'argument' of self_scheduling_int and self_scheduling_split
+    if (tok == token::TK_self_scheduling_int || tok == token::TK_self_scheduling_split) {
+         // av is the attribute being integerized or split, e.g. "age", "time", duration(), etc.
+        auto *av = pp_av1;
+        assert(av); // logic guarantee
+
+        // first argument can be 'age' or 'time'
+        if (av->name == "age" || av->name == "time") {
+            return;
+        }
+
+        // first argument can be duration() or active_spell_duration()
+        auto dav = dynamic_cast<DerivedAttributeSymbol *>(pp_av1);
+        if (dav) {
+            if (dav->tok == token::TK_active_spell_duration || dav->tok == token::TK_duration) {
+                return;
+            }
+        }
+        pp_fatal("error: first argument of " + token_to_string(tok) + " must be age, time, duration, or active_spell_duration");
+    }
+}
+
 void DerivedAttributeSymbol::assign_data_type()
 {
     switch (tok) {
@@ -2494,6 +2519,9 @@ void DerivedAttributeSymbol::post_parse(int pass)
     case eAssignMembers:
     {
         assign_pp_members();
+        if (is_self_scheduling()) {
+            check_ss_arguments(); // will call fatal_error and throw exction on failure
+        }
         break;
     }
     case eResolveDataTypes:
