@@ -430,6 +430,16 @@ public:
     void pp_error(const string& msg);
 
     /**
+     * Process a fatal semantic error encountered during the post-parse phase.
+     * 
+     * Source code location is that of Symbol.  An exception is thrown
+     * and further post-parse processing is aborted.
+     *
+     * @param msg The message.
+     */
+    void pp_fatal(const string& msg);
+
+    /**
      * Process a semantic warning encountered during the post-parse phase.
      * 
      * Source code location is that of Symbol
@@ -437,6 +447,15 @@ public:
      * @param msg The message.
      */
     void pp_warning(const string& msg);
+
+    /**
+     * Output a warning or error message to the log.
+     * 
+     * Source code location is that of Symbol
+     *
+     * @param msg The message.
+     */
+    void pp_log_message(const string& msg);
 
     /**
      * Get the symbol label in the given language.
