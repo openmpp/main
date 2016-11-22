@@ -11,6 +11,9 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
+2016_11_22:
+    minor release to fix performance issues for large parameters csv and compilation
+
 2016_11_15:
     minor release to improve dbcopy utility and fix some bugs
 
