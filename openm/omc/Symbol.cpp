@@ -692,15 +692,7 @@ CodeBlock Symbol::injection_description()
 void Symbol::pp_error(const string& msg)
 {
     post_parse_errors++;
-    yy::location l = decl_loc;
-    if (l.begin.filename) {
-        theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
-    }
-    else {
-        // This Symbol has no declaration location, append pretty_name() instead
-        string nm = pretty_name();
-        theLog->logFormatted("%s - %s", msg.c_str(), nm.c_str());
-    }
+    pp_log_message(msg);
     if (post_parse_errors >= max_error_count) {
         string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
         theLog->logFormatted(msg.c_str());
@@ -708,17 +700,30 @@ void Symbol::pp_error(const string& msg)
     }
 }
 
+void Symbol::pp_fatal(const string& msg)
+{
+    post_parse_errors++;
+    pp_log_message(msg);
+    throw HelperException("fatal error: stopping post parse processing");
+}
+
 void Symbol::pp_warning(const string& msg)
 {
     post_parse_warnings++;
+    pp_log_message(msg);
+}
+
+void Symbol::pp_log_message(const string& msg)
+{
     yy::location l = decl_loc;
     if (l.begin.filename) {
+        // The symbol has a declaration location
         theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
     }
     else {
-        // This Symbol has no declaration location, append pretty_name() instead
+        // This Symbol has no declaration location, so show symbol name
         string nm = pretty_name();
-        theLog->logFormatted("%s - %s", msg.c_str(), nm.c_str());
+        theLog->logFormatted("%s in symbol '%s'", msg.c_str(), nm.c_str());
     }
 }
 
