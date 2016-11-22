@@ -6,22 +6,13 @@
 
 using namespace openm;
 
-// create new sql inserter class 
-ModelInsertSql::ModelInsertSql(void)
-{
-    // obtain default locale
-    defaultLoc = locale("");
-}
-
 // insert model master row into model_dic table.
-void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row) const
+void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row)
 {
     // validate field values
-    if (io_row.name.empty() || io_row.name.length() < 1) throw DbException("invalid (empty) model name");
+    if (io_row.name.empty()) throw DbException("invalid (empty) model name");
     if (io_row.name.length() > 255) throw DbException("invalid (too long) model name: %s", io_row.name.c_str());
-
     if (io_row.digest.empty() || io_row.digest.length() > 32) throw DbException("invalid (or empty) digest, model: %s", io_row.name.c_str());
-
     if (io_row.version.length() > 32) throw DbException("invalid (too long) model version: %s", io_row.version.c_str());
 
     // get new model id: must be positive
@@ -42,24 +33,20 @@ void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row) co
         " (model_id, model_name, model_digest, model_type, model_ver, create_dt)" \
         " VALUES (" +
         to_string(io_row.modelId) + ", " +
-        toQuoted(trim(io_row.name, defaultLoc)) + ", " +
+        toQuoted(io_row.name) + ", " +
         toQuoted(io_row.digest) + ", " +
         to_string(io_row.type) + ", " +
-        toQuoted(trim(io_row.version, defaultLoc)) + ", " +
+        toQuoted(io_row.version) + ", " +
         toQuoted(io_row.createDateTime) + 
         ")");
 }
     
 // insert row into model_dic_txt table.
-void ModelInsertSql::insertModelDicText(IDbExec * i_dbExec, const map<string, int> & i_langMap, ModelDicTxtLangRow & io_row) const
+void ModelInsertSql::insertModelDicText(IDbExec * i_dbExec, const map<string, int> & i_langMap, ModelDicTxtLangRow & io_row)
 {
     // validate field values
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) throw DbException("invalid (empty) language code");
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) throw DbException("invalid (empty) description");
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code");
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description");
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes");
 
     // update language id with actual database value
@@ -78,12 +65,12 @@ void ModelInsertSql::insertModelDicText(IDbExec * i_dbExec, const map<string, in
 }
 
 // insert row into type_dic and model_type_dic tables, return type Hid.
-int ModelInsertSql::insertTypeDic(IDbExec * i_dbExec, const TypeDicRow & i_row) const
+int ModelInsertSql::insertTypeDic(IDbExec * i_dbExec, const TypeDicRow & i_row)
 {
     // validate field values
     if (i_row.typeId < 0) throw DbException("invalid (negative) type id: %d", i_row.typeId);
 
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) type name");
+    if (i_row.name.empty()) throw DbException("invalid (empty) type name");
     if (i_row.name.length() > 255) throw DbException("invalid (too long) type name: %s", i_row.name.c_str());
 
     if (i_row.digest.empty() || i_row.digest.length() > 32) throw DbException("invalid (or empty) digest, type: %s", i_row.name.c_str());
@@ -141,15 +128,11 @@ int ModelInsertSql::insertTypeDic(IDbExec * i_dbExec, const TypeDicRow & i_row) 
 // insert row into type_dic_txt table. 
 void ModelInsertSql::insertTypeText(
     IDbExec * i_dbExec, const map<string, int> & i_langMap, const map<int, int> & i_typeIdMap, TypeDicTxtLangRow & io_row
-) const
+)
 {
     // validate field values
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) throw DbException("invalid (empty) language code, type id: %d", io_row.typeId);
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) throw DbException("invalid (empty) description, type id: %d", io_row.typeId);
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, type id: %d", io_row.typeId);
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, type id: %d", io_row.typeId);
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, type id: %d", io_row.typeId);
 
     // update language id with actual database value
@@ -175,10 +158,10 @@ void ModelInsertSql::insertTypeText(
 }
 
 // insert row into type_enum_lst table.
-void ModelInsertSql::insertTypeEnum(IDbExec * i_dbExec, int i_typeHid, const TypeEnumLstRow & i_row) const
+void ModelInsertSql::insertTypeEnum(IDbExec * i_dbExec, int i_typeHid, const TypeEnumLstRow & i_row)
 {
     // validate field values
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) enum name, type id: %d", i_row.typeId);
+    if (i_row.name.empty()) throw DbException("invalid (empty) enum name, type id: %d", i_row.typeId);
     if (i_row.name.length() > 255) throw DbException("invalid (too long) enum name: %s, type id: %d", i_row.name.c_str(), i_row.typeId);
 
     if (i_row.enumId < 0) throw DbException("invalid (negative) enum %s id: %d, type id: %d", i_row.name.c_str(), i_row.enumId, i_row.typeId);
@@ -198,16 +181,12 @@ void ModelInsertSql::insertTypeEnum(IDbExec * i_dbExec, int i_typeHid, const Typ
 // insert row into type_enum_txt table.
 void ModelInsertSql::insertTypeEnumText(
     IDbExec * i_dbExec, const map<string, int> & i_langMap, int i_typeHid, TypeEnumTxtLangRow & io_row
-) const
+)
 {
     // validate field values
     if (io_row.enumId < 0) throw DbException("invalid (negative) enum id: %d, type id: %d", io_row.enumId, io_row.typeId);
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) throw DbException("invalid (empty) language code, type id: %d, enum id: %d", io_row.typeId, io_row.enumId);
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) throw DbException("invalid (empty) description, type id: %d, enum id: %d", io_row.typeId, io_row.enumId);
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, type id: %d, enum id: %d", io_row.typeId, io_row.enumId);
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, type id: %d, enum id: %d", io_row.typeId, io_row.enumId);
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, type id: %d, enum id: %d", io_row.typeId, io_row.enumId);
 
     // update language id with actual database value
@@ -230,12 +209,12 @@ void ModelInsertSql::insertTypeEnumText(
 }
 
 // insert row into parameter_dic and model_parameter_dic tables. 
-void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_typeIdMap, ParamDicRow & io_row) const
+void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_typeIdMap, ParamDicRow & io_row)
 {
     // validate field values
     if (io_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", io_row.paramId);
 
-    if (io_row.paramName.empty() || io_row.paramName.length() < 1) throw DbException("invalid (empty) parameter name, id: %d", io_row.paramId);
+    if (io_row.paramName.empty()) throw DbException("invalid (empty) parameter name, id: %d", io_row.paramId);
     if (io_row.paramName.length() > 255) throw DbException("invalid (too long) parameter name: %s", io_row.paramName.c_str());
 
     if (io_row.digest.empty() || io_row.digest.length() > 32) throw DbException("invalid (or empty) digest, parameter: %s", io_row.paramName.c_str());
@@ -290,15 +269,11 @@ void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_
 // insert row into parameter_dic_txt table.
 void ModelInsertSql::insertParamText(
     IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<string, int> & i_langMap, ParamDicTxtLangRow & io_row
-) const
+)
 {
     // validate field values
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) throw DbException("invalid (empty) language code, parameter: %s", i_paramRow.paramName.c_str());
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) throw DbException("invalid (empty) description, parameter: %s", i_paramRow.paramName.c_str());
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, parameter: %s", i_paramRow.paramName.c_str());
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, parameter: %s", i_paramRow.paramName.c_str());
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, parameter: %s", i_paramRow.paramName.c_str());
 
     // update language id with actual database value
@@ -320,12 +295,12 @@ void ModelInsertSql::insertParamText(
 // insert row into parameter_dims table.
 void ModelInsertSql::insertParamDims(
     IDbExec * i_dbExec, const ParamDicRow & i_paramRow,  const map<int, int> & i_typeIdMap, const ParamDimsRow & i_row
-) const
+)
 {
     // validate field values
     if (i_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", i_row.paramId);
 
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) parameter dimension name, parameter: %s", i_paramRow.paramName.c_str());
+    if (i_row.name.empty()) throw DbException("invalid (empty) parameter dimension name, parameter: %s", i_paramRow.paramName.c_str());
     if (i_row.name.length() > 8) throw DbException("invalid (too long) parameter dimension name: %s, parameter: %s", i_row.name.c_str(), i_paramRow.paramName.c_str());
     
     if (i_row.dimId < 0) throw DbException("invalid (negative) parameter dimension %s id: %d, parameter: %s", i_row.name.c_str(), i_row.dimId, i_paramRow.paramName.c_str());
@@ -347,19 +322,13 @@ void ModelInsertSql::insertParamDims(
 // insert row into parameter_dims_txt table. 
 void ModelInsertSql::insertParamDimsText(
     IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<string, int> & i_langMap, ParamDimsTxtLangRow & io_row
-) const
+)
 {
     // validate field values
     if (io_row.paramId < 0) throw DbException("invalid (negative) parameter id: %d", io_row.paramId);
     if (io_row.dimId < 0) throw DbException("invalid (negative) parameter dimension id: %d", io_row.dimId);
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1)
-        throw DbException("invalid (empty) language code, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), io_row.dimId);
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1)
-        throw DbException("invalid (empty) description, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), io_row.dimId);
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), io_row.dimId);
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), io_row.dimId);
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX)
         throw DbException("invalid (too long) description or notes, parameter: %s, dimension id: %d", i_paramRow.paramName.c_str(), io_row.dimId);
 
@@ -381,12 +350,12 @@ void ModelInsertSql::insertParamDimsText(
 }
 
 // insert row into table_dic and model_table_dic tables.
-void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row) const
+void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
 {
     // validate field values
     if (io_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", io_row.tableId);
 
-    if (io_row.tableName.empty() || io_row.tableName.length() < 1) throw DbException("invalid (empty) output table name, id: %d", io_row.tableId);
+    if (io_row.tableName.empty()) throw DbException("invalid (empty) output table name, id: %d", io_row.tableId);
     if (io_row.tableName.length() > 255) throw DbException("invalid (too long) output table name: %s", io_row.tableName.c_str());
 
     if (io_row.digest.empty() || io_row.digest.length() > 32) throw DbException("invalid (or empty) digest, parameter: %s", io_row.tableName.c_str());
@@ -436,21 +405,13 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row) co
 // insert row into table_dic_txt table. 
 void ModelInsertSql::insertTableText(
     IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableDicTxtLangRow & io_row
-) const
+)
 {
     // validate field values
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) throw DbException("invalid (empty) language code, output table: %s", i_tableRow.tableName.c_str());
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) throw DbException("invalid (empty) description, output table: %s", i_tableRow.tableName.c_str());
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, output table: %s", i_tableRow.tableName.c_str());
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, output table: %s", i_tableRow.tableName.c_str());
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, output table: %s", i_tableRow.tableName.c_str());
-
-    io_row.exprDescr = trim(io_row.exprDescr, defaultLoc);
-    io_row.exprNote = trim(io_row.exprNote, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.exprDescr.empty() || io_row.exprDescr.length() < 1) throw DbException("invalid (empty) analysis dimension description, output table: %s", i_tableRow.tableName.c_str());
+    if (io_row.exprDescr.empty()) throw DbException("invalid (empty) analysis dimension description, output table: %s", i_tableRow.tableName.c_str());
     if (io_row.exprDescr.length() > 255 || io_row.exprNote.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) analysis dimension description or notes, output table: %s", i_tableRow.tableName.c_str());
 
     // update language id with actual database value
@@ -476,12 +437,12 @@ void ModelInsertSql::insertTableText(
 // insert row into table_dims table. 
 void ModelInsertSql::insertTableDims(
     IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<int, int> & i_typeIdMap, const TableDimsRow & i_row
-) const
+)
 {
     // validate field values
     if (i_row.tableId < 0) throw DbException("invalid (negative) output table id: %d", i_tableRow.tableId);
 
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) output table dimension name");
+    if (i_row.name.empty()) throw DbException("invalid (empty) output table dimension name");
     if (i_row.name.length() > 8) throw DbException("invalid (too long) output table dimension name: %s", i_row.name.c_str());
 
     if (i_row.dimId < 0) throw DbException("invalid (negative) output table dimension %s id: %d", i_row.name.c_str(), i_row.dimId);
@@ -507,18 +468,12 @@ void ModelInsertSql::insertTableDims(
 // insert row into table_dims_txt table. 
 void ModelInsertSql::insertTableDimsText(
     IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableDimsTxtLangRow & io_row
-) const
+)
 {
     // validate field values
     if (io_row.dimId < 0) throw DbException("invalid (negative) output table dimension id: %d", io_row.dimId);
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1)
-        throw DbException("invalid (empty) language code, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), io_row.dimId);
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1)
-        throw DbException("invalid (empty) description, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), io_row.dimId);
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), io_row.dimId);
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), io_row.dimId);
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX)
         throw DbException("invalid (too long) description or notes, output table: %s, dimension id: %d", i_tableRow.tableName.c_str(), io_row.dimId);
 
@@ -554,12 +509,12 @@ void ModelInsertSql::insertTableDimsText(
 }
 
 // insert row into table_acc table. 
-void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_tableRow,  const TableAccRow & i_row) const
+void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_tableRow,  const TableAccRow & i_row)
 { 
     // validate field values
     if (i_row.accId < 0) throw DbException("invalid (negative) accumulator id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
 
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) accumulator name, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.name.empty()) throw DbException("invalid (empty) accumulator name, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
     if (i_row.name.length() > 8) throw DbException("invalid (too long) accumulator name: %s, id: %d, output table: %s", i_row.name.c_str(), i_row.accId, i_tableRow.tableName.c_str());
 
     if (i_row.expr.empty()) throw DbException("invalid (empty) accumulator expression, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
@@ -571,25 +526,19 @@ void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_ta
         to_string(i_tableRow.tableHid) + ", " +
         to_string(i_row.accId) + ", " +
         toQuoted(i_row.name) + ", " +
-        toQuoted(trim(i_row.expr, defaultLoc)) + 
+        toQuoted(i_row.expr) + 
         ")");
 }
 
 // insert row into table_acc_txt table. 
 void ModelInsertSql::insertTableAccText(
     IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableAccTxtLangRow & io_row
-) const
+)
 { 
     // validate field values
     if (io_row.accId < 0) throw DbException("invalid (negative) accumulator id: %d, output table: %s", io_row.accId, i_tableRow.tableName.c_str());
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) 
-        throw DbException("invalid (empty) language code, accumulator id: %d, output table: %s", io_row.accId, i_tableRow.tableName.c_str());
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) 
-        throw DbException("invalid (empty) description, accumulator id: %d, output table: %s", io_row.accId, i_tableRow.tableName.c_str());
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, accumulator id: %d, output table: %s", io_row.accId, i_tableRow.tableName.c_str());
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, accumulator id: %d, output table: %s", io_row.accId, i_tableRow.tableName.c_str());
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) 
         throw DbException("invalid (too long) description or notes, accumulator id: %d, output table: %s", io_row.accId, i_tableRow.tableName.c_str());
 
@@ -610,12 +559,12 @@ void ModelInsertSql::insertTableAccText(
 }
         
 // insert row into table_expr table. 
-void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_tableRow, const TableExprRow & i_row) const
+void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_tableRow, const TableExprRow & i_row)
 {
     // validate field values
     if (i_row.exprId < 0) throw DbException("invalid (negative) output expression id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) output expression name, output table: %s", i_tableRow.tableName.c_str());
+    if (i_row.name.empty()) throw DbException("invalid (empty) output expression name, output table: %s", i_tableRow.tableName.c_str());
     if (i_row.name.length() > 8) throw DbException("invalid (too long) output expression name: %s, output table: %s", i_row.name.c_str(), i_tableRow.tableName.c_str());
 
     if (i_row.srcExpr.empty()) throw DbException("invalid (empty) source expression, id: %d, output table: %s", i_row.exprId, i_row.tableId);
@@ -639,26 +588,20 @@ void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_t
         to_string(i_row.exprId) + ", " +
         toQuoted(i_row.name) + ", " +
         to_string(i_row.decimals) + ", " +
-        toQuoted(trim(i_row.srcExpr, defaultLoc)) + ", " +
-        toQuoted(trim(i_row.sqlExpr, defaultLoc)) +
+        toQuoted(i_row.srcExpr) + ", " +
+        toQuoted(i_row.sqlExpr) +
         ")");
 }
 
 // insert row into table_expr_txt table. 
 void ModelInsertSql::insertTableExprText(
     IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableExprTxtLangRow & io_row
-) const
+)
 {
     // validate field values
     if (io_row.exprId < 0) throw DbException("invalid (negative) output expression id: %d, output table: %s", io_row.exprId, i_tableRow.tableName.c_str());
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1)
-        throw DbException("invalid (empty) language code, expression id: %d, output table: %s", io_row.exprId, i_tableRow.tableName.c_str());
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1)
-        throw DbException("invalid (empty) description, expression id: %d, output table: %s", io_row.exprId, i_tableRow.tableName.c_str());
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, expression id: %d, output table: %s", io_row.exprId, i_tableRow.tableName.c_str());
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, expression id: %d, output table: %s", io_row.exprId, i_tableRow.tableName.c_str());
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX)
         throw DbException("invalid (too long) description or notes, expression id: %d, output table: %s", io_row.exprId, i_tableRow.tableName.c_str());
 
@@ -679,12 +622,12 @@ void ModelInsertSql::insertTableExprText(
 }
 
 // insert row into group_lst table. 
-void ModelInsertSql::insertGroupLst(IDbExec * i_dbExec, const GroupLstRow & i_row) const
+void ModelInsertSql::insertGroupLst(IDbExec * i_dbExec, const GroupLstRow & i_row)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
 
-    if (i_row.name.empty() || i_row.name.length() < 1) throw DbException("invalid (empty) group name, id: %d", i_row.groupId);
+    if (i_row.name.empty()) throw DbException("invalid (empty) group name, id: %d", i_row.groupId);
     if (i_row.name.length() > 255) throw DbException("invalid (too long) group name: %s", i_row.name.c_str());
 
     // INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1234, 0, 0, 'TableGroup', 0, 0)
@@ -699,16 +642,12 @@ void ModelInsertSql::insertGroupLst(IDbExec * i_dbExec, const GroupLstRow & i_ro
 }
 
 // insert row into group_txt table.
-void ModelInsertSql::insertGroupText(IDbExec * i_dbExec, const map<string, int> & i_langMap, GroupTxtLangRow & io_row) const
+void ModelInsertSql::insertGroupText(IDbExec * i_dbExec, const map<string, int> & i_langMap, GroupTxtLangRow & io_row)
 {
     // validate field values
     if (io_row.groupId < 0) throw DbException("invalid (negative) group id: %d", io_row.groupId);
-    if (io_row.langCode.empty() || io_row.langCode.length() < 1) throw DbException("invalid (empty) language code, group id: %d", io_row.groupId);
-
-    io_row.descr = trim(io_row.descr, defaultLoc);
-    io_row.note = trim(io_row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-    if (io_row.descr.empty() || io_row.descr.length() < 1) throw DbException("invalid (empty) description, group id: %d", io_row.groupId);
+    if (io_row.langCode.empty()) throw DbException("invalid (empty) language code, group id: %d", io_row.groupId);
+    if (io_row.descr.empty()) throw DbException("invalid (empty) description, group id: %d", io_row.groupId);
     if (io_row.descr.length() > 255 || io_row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) description or notes, group id: %d", io_row.groupId);
 
     // update language id with actual database value
@@ -730,7 +669,7 @@ void ModelInsertSql::insertGroupText(IDbExec * i_dbExec, const map<string, int> 
 
 // insert row into group_pc table. 
 // negative value of i_row.childGroupId or i_row.leafId treated as db-NULL
-void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row) const
+void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException("invalid (negative) group id: %d", i_row.groupId);
@@ -750,7 +689,7 @@ void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row)
 // create new workset: insert metadata and delete existing workset parameters, if required
 void ModelInsertSql::createWorksetMeta(
     IDbExec * i_dbExec, const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet
-) const
+)
 {
     // validate field values
     if (io_metaSet.worksetRow.updateDateTime.length() > 32) throw DbException("invalid (too long) update time of workset: %s", io_metaSet.worksetRow.name.c_str());
@@ -848,12 +787,8 @@ void ModelInsertSql::createWorksetMeta(
     for (WorksetTxtLangRow & row : io_metaSet.worksetTxt) {
 
         // validate field values
-        if (row.langCode.empty() || row.langCode.length() < 1) throw DbException("invalid (empty) language code for workset description and notes");
-
-        row.descr = trim(row.descr, defaultLoc);
-        row.note = trim(row.note, defaultLoc);      // trim notes to insert NULL if it is empty
-
-        if (row.descr.empty() || row.descr.length() < 1) throw DbException("invalid (empty) workset description");
+        if (row.langCode.empty()) throw DbException("invalid (empty) language code for workset description and notes");
+        if (row.descr.empty()) throw DbException("invalid (empty) workset description");
         if (row.descr.length() > 255 || row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) workset description or notes");
 
         // INSERT INTO workset_txt (set_id, lang_id, descr, note) 
@@ -899,10 +834,7 @@ void ModelInsertSql::createWorksetMeta(
 
         // validate field values
         if (row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", row.paramId);
-
-        row.note = trim(row.note, defaultLoc);    // trim notes to insert NULL if it is empty
-
-        if (row.langCode.empty() || row.langCode.length() < 1) throw DbException("invalid (empty) language code, workset parameter id: %d", row.paramId);
+        if (row.langCode.empty()) throw DbException("invalid (empty) language code, workset parameter id: %d", row.paramId);
         if (row.note.length() > OM_STR_DB_MAX) throw DbException("invalid (too long) notes, workset parameter id: %d", row.paramId);
 
         // INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note)

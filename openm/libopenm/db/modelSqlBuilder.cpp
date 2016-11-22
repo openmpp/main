@@ -16,7 +16,7 @@ IModelBuilder * IModelBuilder::create(const string & i_providerNames, const stri
 IModelBuilder::~IModelBuilder() throw() { }
 
 // create new model builder and set db table name prefix and suffix rules
-ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir) : 
+ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir) :
     isCrc32Name(false),
     dbPrefixSize(0),
     dbSuffixSize(0),
@@ -51,7 +51,7 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
 
     if (dbPrefixSize < 2 || dbSuffixSize < 8)
         throw DbException("invalid db table name prefix size: %d or suffix size: %d", dbPrefixSize, dbSuffixSize);
-}
+ }
 
 // validate metadata and return sql script to create new model from supplied metadata rows
 void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
@@ -123,8 +123,7 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     i_dbExec->beginTransaction();
 
     // model master row: model_dic
-    ModelInsertSql mi;
-    mi.insertModelDic(i_dbExec, io_metaRows.modelDic);
+    ModelInsertSql::insertModelDic(i_dbExec, io_metaRows.modelDic);
 
     // for all metadata rows update model id with actual value
     for (ModelDicTxtLangRow & row : io_metaRows.modelTxt) {
@@ -209,19 +208,19 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
 
     // model text rows: model_dic_txt
     for (ModelDicTxtLangRow & row : io_metaRows.modelTxt) {
-        mi.insertModelDicText(i_dbExec, langMap, row);
+        ModelInsertSql::insertModelDicText(i_dbExec, langMap, row);
     }
 
     // type rows: type_dic and model_type_dic
     // map model type id to Hid
     map<int, int> typeIdMap;
     for (const TypeDicRow & row : io_metaRows.typeDic) {
-        typeIdMap[row.typeId] = mi.insertTypeDic(i_dbExec, row);
+        typeIdMap[row.typeId] = ModelInsertSql::insertTypeDic(i_dbExec, row);
     }
 
     // type text rows: type_dic_txt
     for (TypeDicTxtLangRow & row : io_metaRows.typeTxt) {
-        mi.insertTypeText(i_dbExec, langMap, typeIdMap, row);
+        ModelInsertSql::insertTypeText(i_dbExec, langMap, typeIdMap, row);
     }
 
     // type enum rows: type_enum_lst
@@ -236,7 +235,7 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
             typeHid = it->second;
         }
 
-        mi.insertTypeEnum(i_dbExec, typeHid, row);
+        ModelInsertSql::insertTypeEnum(i_dbExec, typeHid, row);
     }
 
     // type enum text rows: type_enum_txt
@@ -251,92 +250,92 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
             typeHid = it->second;
         }
 
-        mi.insertTypeEnumText(i_dbExec, langMap, typeHid, row);
+        ModelInsertSql::insertTypeEnumText(i_dbExec, langMap, typeHid, row);
     }
 
     // model input parameter rows: parameter_dic and model_parameter_dic
     for (ParamDicRow & row : io_metaRows.paramDic) {
-        mi.insertParamDic(i_dbExec, typeIdMap, row);
+        ModelInsertSql::insertParamDic(i_dbExec, typeIdMap, row);
     }
 
     // parameter text rows: parameter_dic_txt
     for (ParamDicTxtLangRow & row : io_metaRows.paramTxt) {
         auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, io_metaRows.paramDic);
-        mi.insertParamText(i_dbExec, *paramRowIt, langMap, row);
+        ModelInsertSql::insertParamText(i_dbExec, *paramRowIt, langMap, row);
     }
 
     // parameter dimension rows: parameter_dims
     for (const ParamDimsRow & row : io_metaRows.paramDims) {
         auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, io_metaRows.paramDic);
-        mi.insertParamDims(i_dbExec, *paramRowIt, typeIdMap, row);
+        ModelInsertSql::insertParamDims(i_dbExec, *paramRowIt, typeIdMap, row);
     }
 
     // parameter dimension text rows: parameter_dims_txt
     for (ParamDimsTxtLangRow & row : io_metaRows.paramDimsTxt) {
         auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, io_metaRows.paramDic);
-        mi.insertParamDimsText(i_dbExec, *paramRowIt, langMap, row);
+        ModelInsertSql::insertParamDimsText(i_dbExec, *paramRowIt, langMap, row);
     }
 
     // model output table rows: table_dic and model_table_dic
     for (TableDicRow & row : io_metaRows.tableDic) {
-        mi.insertTableDic(i_dbExec, row);
+        ModelInsertSql::insertTableDic(i_dbExec, row);
     }
 
     // output table text rows: table_dic_txt
     for (TableDicTxtLangRow & row : io_metaRows.tableTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableText(i_dbExec, *tableRowIt, langMap, row);
+        ModelInsertSql::insertTableText(i_dbExec, *tableRowIt, langMap, row);
     }
 
     // output table dimension rows: table_dims
     for (const TableDimsRow & row : io_metaRows.tableDims) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableDims(i_dbExec, *tableRowIt, typeIdMap, row);
+        ModelInsertSql::insertTableDims(i_dbExec, *tableRowIt, typeIdMap, row);
     }
 
     // output table dimension text rows: table_dims_txt
     for (TableDimsTxtLangRow & row : io_metaRows.tableDimsTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableDimsText(i_dbExec, *tableRowIt, langMap, row);
+        ModelInsertSql::insertTableDimsText(i_dbExec, *tableRowIt, langMap, row);
     }
 
     // output table accumulator rows: table_acc
     for (const TableAccRow & row : io_metaRows.tableAcc) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableAcc(i_dbExec, *tableRowIt, row);
+        ModelInsertSql::insertTableAcc(i_dbExec, *tableRowIt, row);
     }
 
     // output table accumulator text rows: table_acc_txt
     for (TableAccTxtLangRow & row : io_metaRows.tableAccTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableAccText(i_dbExec, *tableRowIt, langMap, row);
+        ModelInsertSql::insertTableAccText(i_dbExec, *tableRowIt, langMap, row);
     }
 
     // output table expression rows: table_expr
     for (TableExprRow & row : io_metaRows.tableExpr) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableExpr(i_dbExec, *tableRowIt, row);
+        ModelInsertSql::insertTableExpr(i_dbExec, *tableRowIt, row);
     }
 
     // output table expression text rows: table_expr_txt
     for (TableExprTxtLangRow & row : io_metaRows.tableExprTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
-        mi.insertTableExprText(i_dbExec, *tableRowIt, langMap, row);
+        ModelInsertSql::insertTableExprText(i_dbExec, *tableRowIt, langMap, row);
     }
 
     // group of parameters or output tables: group_lst
     for (const GroupLstRow & row : io_metaRows.groupLst) {
-        mi.insertGroupLst(i_dbExec, row);
+        ModelInsertSql::insertGroupLst(i_dbExec, row);
     }
 
     // groups text: group_txt
     for (GroupTxtLangRow & row : io_metaRows.groupTxt) {
-        mi.insertGroupText(i_dbExec, langMap, row);
+        ModelInsertSql::insertGroupText(i_dbExec, langMap, row);
     }
 
     // groups parent-child relationships: group_pc
     for (const GroupPcRow & row : io_metaRows.groupPc) {
-        mi.insertGroupPc(i_dbExec, row);
+        ModelInsertSql::insertGroupPc(i_dbExec, row);
     }
  
     // insert model metadata compeleted
@@ -443,9 +442,7 @@ void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLa
 
         // start workset transaction and insert new workset metadata
         dbExec->beginTransaction();
-
-        ModelInsertSql mi;
-        mi.createWorksetMeta(dbExec.get(), i_metaRows, io_metaSet);
+        ModelInsertSql::createWorksetMeta(dbExec.get(), i_metaRows, io_metaSet);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

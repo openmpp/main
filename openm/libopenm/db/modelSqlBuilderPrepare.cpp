@@ -9,11 +9,8 @@ using namespace openm;
 // set meta rows values, sort and calculate digests for types, parameters, tables and model
 void ModelSqlBuilder::setModelMetaRows(MetaModelHolder & io_metaRows) const
 {
-    // validate type enum name unique by: model id, type id, enum name
-    // out-of-order execution because it uses sort(type enum rows) for speed optimization
-    checkTypeEnumNames(io_metaRows);
-    
-    // sort all rows by primary key
+    // trim string fields and sort all rows by primary key
+    trimModelRows(io_metaRows);
     sortModelRows(io_metaRows);
 
     // set names for dimension, accumulator, expression columns
@@ -88,6 +85,129 @@ void ModelSqlBuilder::sortWorksetRows(MetaSetLangHolder & io_metaSet)
     sort(io_metaSet.worksetParam.begin(), io_metaSet.worksetParam.end(), WorksetParamRow::isKeyLess);
     sort(io_metaSet.worksetParamTxt.begin(), io_metaSet.worksetParamTxt.end(), WorksetParamTxtLangRow::uniqueLangKeyLess);
 }
+
+// trim string fields in model metadata rows
+void ModelSqlBuilder::trimModelRows(MetaModelHolder & io_metaRows)
+{ 
+    locale loc("");
+
+    io_metaRows.modelDic.name = trim(io_metaRows.modelDic.name, loc);
+    io_metaRows.modelDic.digest = trim(io_metaRows.modelDic.digest, loc);
+    io_metaRows.modelDic.version = trim(io_metaRows.modelDic.version, loc);
+
+    for (auto & row : io_metaRows.langLst) {
+        row.code = trim(row.code, loc);
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto & row : io_metaRows.modelTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.typeDic) {
+        row.name = trim(row.name, loc);
+        row.digest = trim(row.digest, loc);
+    }
+
+    for (auto & row : io_metaRows.typeTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.typeEnum) {
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto & row : io_metaRows.typeEnumTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.paramDic) {
+        row.paramName = trim(row.paramName, loc);
+        row.digest = trim(row.digest, loc);
+    }
+
+    for (auto & row : io_metaRows.paramTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.paramDims) {
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto & row : io_metaRows.paramDimsTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.tableDic) {
+        row.tableName = trim(row.tableName, loc);
+        row.digest = trim(row.digest, loc);
+    }
+
+    for (auto & row : io_metaRows.tableTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+        row.exprDescr = trim(row.exprDescr, loc);
+        row.exprNote = trim(row.exprNote, loc);
+    }
+
+    for (auto & row : io_metaRows.tableDims) {
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto & row : io_metaRows.tableDimsTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.tableAcc) {
+        row.name = trim(row.name, loc);
+        row.expr = trim(row.expr, loc);
+    }
+
+    for (auto & row : io_metaRows.tableAccTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.tableExpr) {
+        row.name = trim(row.name, loc);
+        row.srcExpr = trim(row.srcExpr, loc);
+        row.sqlExpr = trim(row.sqlExpr, loc);
+    }
+
+    for (auto & row : io_metaRows.tableExprTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto & row : io_metaRows.groupLst) {
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto & row : io_metaRows.groupTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    // no string fields
+    // for (auto & row : io_metaRows.groupPc) { }
+}
+
 
 // sort and validate metadata rows for uniqueness and referential integrity
 void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
@@ -177,7 +297,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
     // type_enum_lst table
     // unique: model id, type id, enum id; master key: model id, type id
-    // validation for unique model id, type id, enum name already done
     for (vector<TypeEnumLstRow>::const_iterator rowIt = io_metaRows.typeEnum.cbegin(); rowIt != io_metaRows.typeEnum.cend(); ++rowIt) {
 
         TypeDicRow mkRow(rowIt->modelId, rowIt->typeId);
@@ -194,6 +313,31 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
         if (nextIt != io_metaRows.typeEnum.cend() && TypeEnumLstRow::isKeyEqual(*rowIt, *nextIt))
             throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum id: %d", rowIt->modelId, rowIt->typeId, rowIt->enumId);
     }
+
+    // sort type enum by unique key: model id, type id, enum name
+    sort(
+        io_metaRows.typeEnum.begin(), 
+        io_metaRows.typeEnum.end(), 
+        [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
+            return
+                (i_left.modelId < i_right.modelId) ||
+                (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId) ||
+                (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.name < i_right.name);
+        });
+    
+    // type_enum_lst table
+    // unique: model id, type id, enum name; 
+    for (vector<TypeEnumLstRow>::const_iterator rowIt = io_metaRows.typeEnum.cbegin(); rowIt != io_metaRows.typeEnum.cend(); ++rowIt) {
+
+        vector<TypeEnumLstRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.typeEnum.cend() &&
+            rowIt->modelId == nextIt->modelId && rowIt->typeId == nextIt->typeId && rowIt->name == nextIt->name)
+            throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum name: %s", rowIt->modelId, rowIt->typeId, rowIt->name.c_str());
+    }
+
+    // restore primary key sort order
+    sort(io_metaRows.typeEnum.begin(), io_metaRows.typeEnum.end(), TypeEnumLstRow::isKeyLess);
     
     // type_enum_txt table
     // unique: model id, type id, enum id, language; master key: model id, type id, enum id; foreign key: language code;
@@ -676,36 +820,13 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 }
 
-// validate type enum names, it must be unique: model id, type id, enum name
-void ModelSqlBuilder::checkTypeEnumNames(MetaModelHolder & io_metaRows)
-{ 
-    // sort type enum by unique key: model id, type id, enum name
-    sort(
-        io_metaRows.typeEnum.begin(), 
-        io_metaRows.typeEnum.end(), 
-        [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
-            return
-                (i_left.modelId < i_right.modelId) ||
-                (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId) ||
-                (i_left.modelId == i_right.modelId && i_left.typeId == i_right.typeId && i_left.name < i_right.name);
-        });
-    
-    // type_enum_lst table
-    // unique: model id, type id, enum name; 
-    for (vector<TypeEnumLstRow>::const_iterator rowIt = io_metaRows.typeEnum.cbegin(); rowIt != io_metaRows.typeEnum.cend(); ++rowIt) {
-
-        vector<TypeEnumLstRow>::const_iterator nextIt = rowIt + 1;
-
-        if (nextIt != io_metaRows.typeEnum.cend() &&
-            rowIt->modelId == nextIt->modelId && rowIt->typeId == nextIt->typeId && rowIt->name == nextIt->name)
-            throw DbException("in type_enum_lst not unique model id: %d, type id: %d and enum name: %s", rowIt->modelId, rowIt->typeId, rowIt->name.c_str());
-    }
-}    
-
 // validate workset metadata: uniqueness and referential integrity
 void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const
 {
-    // set workset_lst row field values: readonly status and creation date-time
+    // trim workset name and set workset_lst row field values: readonly status and creation date-time
+    locale loc("");
+    io_metaSet.worksetRow.name = trim(io_metaSet.worksetRow.name, loc);
+
     setWorksetRow(io_metaSet.worksetRow);
 
     int mId = i_metaRows.modelDic.modelId;
@@ -719,6 +840,10 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     // set language id by language code
     // cleanup cr or lf in description and notes
     for (vector<WorksetTxtLangRow>::iterator rowIt = io_metaSet.worksetTxt.begin(); rowIt != io_metaSet.worksetTxt.end(); ++rowIt) {
+
+        rowIt->langCode = trim(rowIt->langCode, loc);
+        rowIt->descr = trim(rowIt->descr, loc);
+        rowIt->note = trim(rowIt->note, loc);
 
         if (rowIt->setId != setId)
             throw DbException("in workset_txt invalid set id: %d, expected: %d in row with language id: %d and name: %s", rowIt-setId, setId, rowIt->langId, rowIt->langCode.c_str());
@@ -771,6 +896,9 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     // set language id by language code
     // cleanup cr or lf in parameter value notes
     for (vector<WorksetParamTxtLangRow>::iterator rowIt = io_metaSet.worksetParamTxt.begin(); rowIt != io_metaSet.worksetParamTxt.end(); ++rowIt) {
+
+        rowIt->langCode = trim(rowIt->langCode, loc);
+        rowIt->note = trim(rowIt->note, loc);
 
         rowIt->modelId = mId;   // update model id with actual db value
 
@@ -829,7 +957,7 @@ void ModelSqlBuilder::setColumnNames(MetaModelHolder & io_metaRows)
 void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
 {
     // validate model name
-    if (io_mdRow.name.empty() || trim(io_mdRow.name).length() < 1) throw DbException("invalid (empty) model name");
+    if (io_mdRow.name.empty()) throw DbException("invalid (empty) model name");
     if (io_mdRow.name.length() > 255) throw DbException("invalid (too long) model name: %s", io_mdRow.name.c_str());
 
     // set model create date-time, if required
@@ -840,7 +968,7 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
 void ModelSqlBuilder::setWorksetRow(WorksetLstRow & io_wsRow) const
 { 
     // validate workset name
-    if (io_wsRow.name.empty() || trim(io_wsRow.name).length() < 1) throw DbException("invalid (empty) workset name");
+    if (io_wsRow.name.empty()) throw DbException("invalid (empty) workset name");
     if (io_wsRow.name.length() > 255) throw DbException("invalid (too long) workset name: %s", io_wsRow.name.c_str());
 
     // validate workset digest
@@ -933,7 +1061,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
 // make prefix part of db table name by shorten source name, ie: ageSexProvince => ageSexPr
 const string ModelSqlBuilder::makeDbNamePrefix(int i_id, const string & i_src) const
 {
-    if (i_src.empty() || trim(i_src).length() < 1) throw DbException("invalid (empty) source name, id: %d", i_id);
+    if (i_src.empty()) throw DbException("invalid (empty) source name, id: %d", i_id);
 
     // in db table name use only [A-Z,a-z,0-9] and _ underscore
     // make sure name size not longer than (32 - max prefix size)
@@ -943,7 +1071,7 @@ const string ModelSqlBuilder::makeDbNamePrefix(int i_id, const string & i_src) c
 // make unique part of db table name by using digest or crc32(digest)
 const string ModelSqlBuilder::makeDbNameSuffix(int i_id, const string & i_src, const string i_digest) const
 {
-    if (i_digest.empty() || trim(i_digest).length() < 1) throw DbException("invalid (empty) digest for: %s, id: %d", i_src.c_str(), i_id);
+    if (i_digest.empty()) throw DbException("invalid (empty) digest for: %s, id: %d", i_src.c_str(), i_id);
 
     return isCrc32Name ? crc32String(i_digest) : i_digest;
 }
@@ -1087,7 +1215,7 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
         ++rowIt) {
 
         // add accumulator to digest: id, name, expression
-        sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + trim(rowIt->expr) + "\n";
+        sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + rowIt->expr + "\n";
         md5.add(sLine.c_str(), sLine.length());
     }
 
@@ -1106,7 +1234,7 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
         ++rowIt) {
 
         // add table expression to output table digest: id, name, source expression
-        sLine = to_string(rowIt->exprId) + "," + rowIt->name + "," + trim(rowIt->srcExpr) + "\n";
+        sLine = to_string(rowIt->exprId) + "," + rowIt->name + "," + rowIt->srcExpr + "\n";
         md5.add(sLine.c_str(), sLine.length());
     }
 

@@ -205,14 +205,14 @@ namespace openm
         /** set output tables meta rows and calculate digests */
         void setTableDicRows(MetaModelHolder & io_metaRows) const;
 
+        /** trim string fields in model metadata rows */
+        static void trimModelRows(MetaModelHolder & io_metaRows);
+
         /** sort model metadata rows */
         static void sortModelRows(MetaModelHolder & io_metaRows);
 
         /** sort workset metadata rows */
         static void sortWorksetRows(MetaSetLangHolder & io_metaSet);
-
-        /** validate type enum names, it must be unique: model id, type id, enum name */
-        static void checkTypeEnumNames(MetaModelHolder & io_metaRows);
 
         /** set names for dimension, accumulator, expression columns */
         static void setColumnNames(MetaModelHolder & io_metaRows);
