@@ -18,162 +18,102 @@ using namespace std;
 
 namespace openm
 {
-    /** class to produce sql statements from metadata rows. */
+    /** metadata inserter class: produce sql statements and insert metadata rows into db tables. */
     class ModelInsertSql
     {
     public:
-        /**
-        * write sql to insert i_row values to create new model.
-        *
-        * if new model or workset created then model id selected from id_lst \n
-        * it must be done in transaction scope and sql statements can look like: \n
-        *
-        * @code
-        * BEGIN TRANSACTION;
-        *
-        * UPDATE id_lst SET id_value =
-        *   CASE
-        *     WHEN
-        *       NOT EXISTS (SELECT * FROM model_dic WHERE model_digest = '1234abcd') THEN id_value + 1
-        *     ELSE id_value
-        *   END
-        * WHERE id_key = 'model_id';
-        *
-        * INSERT INTO model_dic (model_id, ...)
-        * SELECT
-        *     IL.id_value,
-        *     ...
-        * FROM id_lst IL WHERE IL.id_key = 'model_id'
-        * AND NOT EXISTS
-        * (
-        *   SELECT * FROM model_dic WHERE model_digest = '1234abcd'
-        * );
-        *
-        * ...
-        * COMMIT;
-        * @endcode
-        */
-        template<class TRow> static void insertTopSql(const TRow & i_row, ModelSqlWriter & io_wr);
+        /** create new sql inserter class */
+        ModelInsertSql(void);
 
-        /**
-        * write sql to insert i_row values into details table.
-        *
-        * it must be done in transaction scope. \n
-        * digest from "master" row to avoid select corresponding id, i.e.: model id, type id, etc.
-        */
-        template<class TMasterRow, class TRow> static void insertDetailSql(
-            const TMasterRow & i_masterRow, const TRow & i_row, ModelSqlWriter & io_wr
-        );
+        /** insert model master row into model_dic table. */
+        void insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row) const;
+
+        /** insert row into model_dic_txt table. */
+        void insertModelDicText(IDbExec * i_dbExec, const map<string, int> & i_langMap, ModelDicTxtLangRow & io_row) const;
+
+        /** insert row into type_dic and model_type_dic tables, return type Hid. */
+        int insertTypeDic(IDbExec * i_dbExec, const TypeDicRow & i_row) const;
+
+        /** insert row into type_dic_txt table. */
+        void insertTypeText(
+            IDbExec * i_dbExec, const map<string, int> & i_langMap, const map<int, int> & i_typeIdMap, TypeDicTxtLangRow & io_row
+        ) const;
+
+        /** insert row into type_enum_lst table. */
+        void insertTypeEnum(IDbExec * i_dbExec, int i_typeHid, const TypeEnumLstRow & i_row) const;
+
+        /** insert row into type_enum_txt table. */
+        void insertTypeEnumText(
+            IDbExec * i_dbExec, const map<string, int> & i_langMap, int i_typeHid, TypeEnumTxtLangRow & io_row
+        ) const;
+
+        /** insert row into parameter_dic and model_parameter_dic tables. */
+        void insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_typeIdMap, ParamDicRow & io_row) const;
+
+        /** insert row into parameter_dic_txt table. */
+        void insertParamText(
+            IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<string, int> & i_langMap, ParamDicTxtLangRow & io_row
+        ) const;
+
+        /** insert row into parameter_dims table. */
+        void insertParamDims(
+            IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<int, int> & i_typeIdMap, const ParamDimsRow & i_row
+        ) const;
+
+        /** insert row into parameter_dims_txt table. */
+        void insertParamDimsText(
+            IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<string, int> & i_langMap, ParamDimsTxtLangRow & io_row
+        ) const;
+
+        /** insert row into table_dic and model_table_dic tables. */
+        void insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row) const;
+
+        /** insert row into table_dic_txt table. */
+        void insertTableText(
+            IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableDicTxtLangRow & io_row
+        ) const;
+
+        /** insert row into table_dims table. */
+        void insertTableDims(
+            IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<int, int> & i_typeIdMap, const TableDimsRow & i_row
+        ) const;
+
+        /** insert row into table_dims_txt table. */
+        void insertTableDimsText(
+            IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableDimsTxtLangRow & io_row
+        ) const;
+
+        /** insert row into table_acc table. */
+        void insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_tableRow, const TableAccRow & i_row) const;
+
+        /** insert row into table_acc_txt table. */
+        void insertTableAccText(
+            IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableAccTxtLangRow & io_row
+        ) const;
+
+        /** insert row into table_expr table. */
+        void insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_tableRow, const TableExprRow & i_row) const;
+
+        /** insert row into table_expr_txt table. */
+        void insertTableExprText(
+            IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableExprTxtLangRow & io_row
+        ) const;
+
+        /** insert row into group_lst table. */
+        void insertGroupLst(IDbExec * i_dbExec, const GroupLstRow & i_row) const;
+
+        /** insert row into group_txt table. */
+        void insertGroupText(IDbExec * i_dbExec, const map<string, int> & i_langMap, GroupTxtLangRow & io_row) const;
+
+        /** insert row into group_pc table. */
+        void insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row) const;
 
         /** create new workset: insert metadata and delete existing workset parameters, if required */
-        static void createWorksetMeta(IDbExec * i_dbExec, const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
+        void createWorksetMeta(IDbExec * i_dbExec, const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) const;
+
+    private:
+        locale defaultLoc;  // default locale for trim
     };
-
-    /** write sql to insert into model_dic table. */
-    template<> void ModelInsertSql::insertTopSql<ModelDicRow>(const ModelDicRow & i_row, ModelSqlWriter & io_wr);
-
-    /** write sql to insert into model_dic_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ModelDicTxtLangRow>(
-        const ModelDicRow & i_modelRow, const ModelDicTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into type_dic and model_type_dic tables. */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TypeDicRow>(
-        const ModelDicRow & i_modelRow, const TypeDicRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into type_dic_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeDicTxtLangRow>(
-        const TypeDicRow & i_typeRow, const TypeDicTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into type_enum_lst table. */
-    template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumLstRow>(
-        const TypeDicRow & i_typeRow, const TypeEnumLstRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into type_enum_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<TypeDicRow, TypeEnumTxtLangRow>(
-        const TypeDicRow & i_typeRow, const TypeEnumTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into parameter_dic table. */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, ParamDicRow>(
-        const ModelDicRow & i_modelRow, const ParamDicRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into parameter_dic_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDicTxtLangRow>(
-        const ParamDicRow & i_paramRow, const ParamDicTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into parameter_dims table. */
-    template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsRow>(
-        const ParamDicRow & i_paramRow, const ParamDimsRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into parameter_dims_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<ParamDicRow, ParamDimsTxtLangRow>(
-        const ParamDicRow & i_paramRow, const ParamDimsTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_dic table. */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, TableDicRow>(
-        const ModelDicRow & i_modelRow, const TableDicRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_dic_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDicTxtLangRow>(
-        const TableDicRow & i_tableRow, const TableDicTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_dims table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsRow>(
-        const TableDicRow & i_tableRow, const TableDimsRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_dims_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableDimsTxtLangRow>(
-        const TableDicRow & i_tableRow, const TableDimsTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_acc table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccRow>(
-        const TableDicRow & i_tableRow, const TableAccRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_acc_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableAccTxtLangRow>(
-        const TableDicRow & i_tableRow, const TableAccTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_expr table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprRow>(
-        const TableDicRow & i_tableRow, const TableExprRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into table_expr_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<TableDicRow, TableExprTxtLangRow>(
-        const TableDicRow & i_tableRow, const TableExprTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into group_lst table. */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupLstRow>(
-        const ModelDicRow & i_modelRow, const GroupLstRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into group_txt table. */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupTxtLangRow>(
-        const ModelDicRow & i_modelRow, const GroupTxtLangRow & i_row, ModelSqlWriter & io_wr
-        );
-
-    /** write sql to insert into group_pc table.
-    *
-    * negative value of i_row.childGroupId or i_row.leafId treated as db-NULL
-    */
-    template<> void ModelInsertSql::insertDetailSql<ModelDicRow, GroupPcRow>(
-        const ModelDicRow & i_modelRow, const GroupPcRow & i_row, ModelSqlWriter & io_wr
-        );
 }
 
 #endif  // MODEL_INSERT_SQL_H

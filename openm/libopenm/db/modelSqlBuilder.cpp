@@ -64,18 +64,12 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         setParamTableInfo(io_metaRows);
         setOutTableInfo(io_metaRows);
 
-        // write sql script to insert new model metadata 
         // write sql script to create new model tables
         for (const string providerName : dbProviderLst) {
-            buildCreateModel(
-                providerName, 
-                io_metaRows, 
-                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_1_create_model_" + providerName).c_str(), ".sql")
-            );
             buildCreateModelTables(
                 providerName, 
                 io_metaRows, 
-                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_2_create_tables_" + providerName).c_str(), ".sql")
+                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_create_tables_" + providerName).c_str(), ".sql")
             );
         }
 
@@ -98,16 +92,13 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
             // run script to create openM++ metadata tables and insert default values
             dbExec->runSqlScript(fileToUtf8(makeFilePath(sqlDir.c_str(), "create_db.sql").c_str()));
 
-            // run sql script to insert new model metadata into SQLite database
-            dbExec->runSqlScript(
-                fileToUtf8(makeFilePath(
-                    outputDir.c_str(), (io_metaRows.modelDic.name + "_1_create_model_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
-                ).c_str()));
+            // insert new model metadata into SQLite database
+            createModel(dbExec.get(), io_metaRows);
 
             // run sql script to create new model tables
             dbExec->runSqlScript(
                 fileToUtf8(makeFilePath(
-                    outputDir.c_str(), (io_metaRows.modelDic.name + "_2_create_tables_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
+                    outputDir.c_str(), (io_metaRows.modelDic.name + "_create_tables_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
                 ).c_str()));
         }
     }
@@ -125,179 +116,231 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
     }
 }
 
-// write sql script to insert new model metadata
-void ModelSqlBuilder::buildCreateModel(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const
+// insert new model metadata into database and update id's with actual db values
+void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaRows)
 {
-    // start transaction and get new model id
-    ModelSqlWriter wr(i_filePath);
-    wr.outFs << 
-        "--\n" <<
-        "-- create new model: " << i_metaRows.modelDic.name << '\n' <<
-        "-- model digest:     " << i_metaRows.modelDic.digest << '\n' <<
-        "-- script created:   " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
-        "--\n\n";
-    wr.throwOnFail();
+    // start transaction and insert new model master row
+    i_dbExec->beginTransaction();
 
-    string sqlBeginTrx = IDbExec::makeSqlBeginTransaction(i_sqlProvider);
-    wr.writeLine("--");
-    wr.writeLine("-- make sure all below is done inside of TRANSACTION");
-    wr.writeLine("--");
-    if (!sqlBeginTrx.empty()) wr.writeLine(sqlBeginTrx + ";\n");
+    // model master row: model_dic
+    ModelInsertSql mi;
+    mi.insertModelDic(i_dbExec, io_metaRows.modelDic);
 
-    // model header
-    wr.write(
-        "--\n" \
-        "-- model description\n" \
-        "--\n"
-        );
-    ModelInsertSql::insertTopSql(i_metaRows.modelDic, wr);
-    wr.write("\n");
-
-    for (const ModelDicTxtLangRow & row : i_metaRows.modelTxt) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
+    // for all metadata rows update model id with actual value
+    for (ModelDicTxtLangRow & row : io_metaRows.modelTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    // model types
-    wr.write(
-        "--\n" \
-        "-- model types\n" \
-        "--\n"
-        );
-    for (const TypeDicRow & row : i_metaRows.typeDic) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
+    for (TypeDicRow & row : io_metaRows.typeDic) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TypeDicTxtLangRow & row : i_metaRows.typeTxt) {
-        auto typeRowIt = TypeDicRow::byKey(row.modelId, row.typeId, i_metaRows.typeDic);
-        ModelInsertSql::insertDetailSql(*typeRowIt, row, wr);
+    for (TypeDicTxtLangRow & row : io_metaRows.typeTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TypeEnumLstRow & row : i_metaRows.typeEnum) {
-        auto typeRowIt = TypeDicRow::byKey(row.modelId, row.typeId, i_metaRows.typeDic);
-        ModelInsertSql::insertDetailSql(*typeRowIt, row, wr);
+    for (TypeEnumLstRow & row : io_metaRows.typeEnum) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TypeEnumTxtLangRow & row : i_metaRows.typeEnumTxt) {
-        auto typeRowIt = TypeDicRow::byKey(row.modelId, row.typeId, i_metaRows.typeDic);
-        ModelInsertSql::insertDetailSql(*typeRowIt, row, wr);
+    for (TypeEnumTxtLangRow & row : io_metaRows.typeEnumTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    // model input parameters
-    wr.write(
-        "--\n" \
-        "-- model input parameters\n" \
-        "--\n"
-        );
-    for (const ParamDicRow & row : i_metaRows.paramDic) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
+    for (ParamDicRow & row : io_metaRows.paramDic) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const ParamDicTxtLangRow & row : i_metaRows.paramTxt) {
-        auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, i_metaRows.paramDic);
-        ModelInsertSql::insertDetailSql(*paramRowIt, row, wr);
+    for (ParamDicTxtLangRow & row : io_metaRows.paramTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const ParamDimsRow & row : i_metaRows.paramDims) {
-        auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, i_metaRows.paramDic);
-        ModelInsertSql::insertDetailSql(*paramRowIt, row, wr);
+    for (ParamDimsRow & row : io_metaRows.paramDims) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const ParamDimsTxtLangRow & row : i_metaRows.paramDimsTxt) {
-        auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, i_metaRows.paramDic);
-        ModelInsertSql::insertDetailSql(*paramRowIt, row, wr);
+    for (ParamDimsTxtLangRow & row : io_metaRows.paramDimsTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    // model output tables
-    wr.write(
-        "--\n" \
-        "-- model output tables\n" \
-        "--\n"
-        );
-    for (const TableDicRow & row : i_metaRows.tableDic) {
-        ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
+    for (TableDicRow & row : io_metaRows.tableDic) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableDicTxtLangRow & row : i_metaRows.tableTxt) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableDicTxtLangRow & row : io_metaRows.tableTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableDimsRow & row : i_metaRows.tableDims) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableDimsRow & row : io_metaRows.tableDims) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableDimsTxtLangRow & row : i_metaRows.tableDimsTxt) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableDimsTxtLangRow & row : io_metaRows.tableDimsTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableAccRow & row : i_metaRows.tableAcc) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableAccRow & row : io_metaRows.tableAcc) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableAccTxtLangRow & row : i_metaRows.tableAccTxt) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableAccTxtLangRow & row : io_metaRows.tableAccTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableExprRow & row : i_metaRows.tableExpr) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableExprRow & row : io_metaRows.tableExpr) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
-
-    for (const TableExprTxtLangRow & row : i_metaRows.tableExprTxt) {
-        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, i_metaRows.tableDic);
-        ModelInsertSql::insertDetailSql(*tableRowIt, row, wr);
+    for (TableExprTxtLangRow & row : io_metaRows.tableExprTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
     }
-    wr.write("\n");
+    for (GroupLstRow & row : io_metaRows.groupLst) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (GroupTxtLangRow & row : io_metaRows.groupTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (GroupPcRow & row : io_metaRows.groupPc) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
 
-    // group of parameters or output tables
-    if (i_metaRows.groupLst.size() > 0) {
+    // TODO: 
+    // when lanuage list and word list implemeneted in omc then insert languages instead of code below
+    //
+    // make language code to id map
+    unique_ptr<ILangLstTable> langTbl(std::move(ILangLstTable::create(i_dbExec)));
+    map<string, int> langMap;
 
-        wr.write(
-            "--\n" \
-            "-- group of parameters or output tables\n" \
-            "--\n"
-            );
-        for (const GroupLstRow & row : i_metaRows.groupLst) {
-            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
+    for (int k = 0; k < langTbl->rowCount(); k++) {
+        const LangLstRow * langRow = langTbl->byIndex(k);
+        langMap[langRow->code] = langRow->langId;
+    }
+
+    // update language list id's with actual database values
+    for (LangLstRow & row : io_metaRows.langLst) {
+        map<string, int>::const_iterator it = langMap.find(row.code);
+        if (it == langMap.cend()) throw DbException("invalid language code: %s", row.code.c_str());
+        row.langId = it->second;
+    }
+
+    // model text rows: model_dic_txt
+    for (ModelDicTxtLangRow & row : io_metaRows.modelTxt) {
+        mi.insertModelDicText(i_dbExec, langMap, row);
+    }
+
+    // type rows: type_dic and model_type_dic
+    // map model type id to Hid
+    map<int, int> typeIdMap;
+    for (const TypeDicRow & row : io_metaRows.typeDic) {
+        typeIdMap[row.typeId] = mi.insertTypeDic(i_dbExec, row);
+    }
+
+    // type text rows: type_dic_txt
+    for (TypeDicTxtLangRow & row : io_metaRows.typeTxt) {
+        mi.insertTypeText(i_dbExec, langMap, typeIdMap, row);
+    }
+
+    // type enum rows: type_enum_lst
+    int typeId = -1;
+    int typeHid = -1;
+    for (const TypeEnumLstRow & row : io_metaRows.typeEnum) {
+
+        if (typeId != row.typeId) {     // on type change find type Hid by model type id
+            typeId = row.typeId;
+            map<int, int>::const_iterator it = typeIdMap.find(typeId);
+            if (it == typeIdMap.cend()) throw DbException("invalid type id: %d", typeId);
+            typeHid = it->second;
         }
-        wr.write("\n");
 
-        for (const GroupTxtLangRow & row : i_metaRows.groupTxt) {
-            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
-        }
-        wr.write("\n");
-
-        for (const GroupPcRow & row : i_metaRows.groupPc) {
-            ModelInsertSql::insertDetailSql(i_metaRows.modelDic, row, wr);
-        }
-        wr.write("\n");
+        mi.insertTypeEnum(i_dbExec, typeHid, row);
     }
 
-    string sqlCommitTrx = IDbExec::makeSqlCommitTransaction(i_sqlProvider);
-    wr.writeLine("--");
-    wr.writeLine("-- make sure all above done inside of TRANSACTION");
-    wr.writeLine("--");
-    if (!sqlCommitTrx.empty()) wr.writeLine(sqlCommitTrx + ";");
+    // type enum text rows: type_enum_txt
+    typeId = -1;
+    typeHid = -1;
+    for (TypeEnumTxtLangRow & row : io_metaRows.typeEnumTxt) {
+
+        if (typeId != row.typeId) {     // on type change find type Hid by model type id
+            typeId = row.typeId;
+            map<int, int>::const_iterator it = typeIdMap.find(typeId);
+            if (it == typeIdMap.cend()) throw DbException("invalid type id: %d", typeId);
+            typeHid = it->second;
+        }
+
+        mi.insertTypeEnumText(i_dbExec, langMap, typeHid, row);
+    }
+
+    // model input parameter rows: parameter_dic and model_parameter_dic
+    for (ParamDicRow & row : io_metaRows.paramDic) {
+        mi.insertParamDic(i_dbExec, typeIdMap, row);
+    }
+
+    // parameter text rows: parameter_dic_txt
+    for (ParamDicTxtLangRow & row : io_metaRows.paramTxt) {
+        auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, io_metaRows.paramDic);
+        mi.insertParamText(i_dbExec, *paramRowIt, langMap, row);
+    }
+
+    // parameter dimension rows: parameter_dims
+    for (const ParamDimsRow & row : io_metaRows.paramDims) {
+        auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, io_metaRows.paramDic);
+        mi.insertParamDims(i_dbExec, *paramRowIt, typeIdMap, row);
+    }
+
+    // parameter dimension text rows: parameter_dims_txt
+    for (ParamDimsTxtLangRow & row : io_metaRows.paramDimsTxt) {
+        auto paramRowIt = ParamDicRow::byKey(row.modelId, row.paramId, io_metaRows.paramDic);
+        mi.insertParamDimsText(i_dbExec, *paramRowIt, langMap, row);
+    }
+
+    // model output table rows: table_dic and model_table_dic
+    for (TableDicRow & row : io_metaRows.tableDic) {
+        mi.insertTableDic(i_dbExec, row);
+    }
+
+    // output table text rows: table_dic_txt
+    for (TableDicTxtLangRow & row : io_metaRows.tableTxt) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableText(i_dbExec, *tableRowIt, langMap, row);
+    }
+
+    // output table dimension rows: table_dims
+    for (const TableDimsRow & row : io_metaRows.tableDims) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableDims(i_dbExec, *tableRowIt, typeIdMap, row);
+    }
+
+    // output table dimension text rows: table_dims_txt
+    for (TableDimsTxtLangRow & row : io_metaRows.tableDimsTxt) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableDimsText(i_dbExec, *tableRowIt, langMap, row);
+    }
+
+    // output table accumulator rows: table_acc
+    for (const TableAccRow & row : io_metaRows.tableAcc) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableAcc(i_dbExec, *tableRowIt, row);
+    }
+
+    // output table accumulator text rows: table_acc_txt
+    for (TableAccTxtLangRow & row : io_metaRows.tableAccTxt) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableAccText(i_dbExec, *tableRowIt, langMap, row);
+    }
+
+    // output table expression rows: table_expr
+    for (TableExprRow & row : io_metaRows.tableExpr) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableExpr(i_dbExec, *tableRowIt, row);
+    }
+
+    // output table expression text rows: table_expr_txt
+    for (TableExprTxtLangRow & row : io_metaRows.tableExprTxt) {
+        auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
+        mi.insertTableExprText(i_dbExec, *tableRowIt, langMap, row);
+    }
+
+    // group of parameters or output tables: group_lst
+    for (const GroupLstRow & row : io_metaRows.groupLst) {
+        mi.insertGroupLst(i_dbExec, row);
+    }
+
+    // groups text: group_txt
+    for (GroupTxtLangRow & row : io_metaRows.groupTxt) {
+        mi.insertGroupText(i_dbExec, langMap, row);
+    }
+
+    // groups parent-child relationships: group_pc
+    for (const GroupPcRow & row : io_metaRows.groupPc) {
+        mi.insertGroupPc(i_dbExec, row);
+    }
+ 
+    // insert model metadata compeleted
+    i_dbExec->commit();
 }
 
 // write sql script to create new model tables
@@ -400,7 +443,9 @@ void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLa
 
         // start workset transaction and insert new workset metadata
         dbExec->beginTransaction();
-        ModelInsertSql::createWorksetMeta(dbExec.get(), i_metaRows, io_metaSet);
+
+        ModelInsertSql mi;
+        mi.createWorksetMeta(dbExec.get(), i_metaRows, io_metaSet);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

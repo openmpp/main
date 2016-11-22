@@ -82,7 +82,7 @@ namespace openm
         /** get first row by predicate or NULL if not found: first row where comparator to i_row return true. */
         const TRow * findFirst(RowEqual i_cmp) const { return byIndex(indexOf(i_cmp)); }
 
-        /** return row value by index or NUUL if out of range. */
+        /** return row value by index or NULL if out of range. */
         const TRow * byIndex(IRowBaseVec::difference_type i_index) const 
         {
             return (0 <= i_index && i_index < rowCount()) ? dynamic_cast<TRow *>(rowsCRef()[i_index].get()) : nullptr;

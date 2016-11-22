@@ -711,13 +711,12 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     int mId = i_metaRows.modelDic.modelId;
     int setId = io_metaSet.worksetRow.setId;
 
-    // workset_lst table
-    // master key: model id
-    if (io_metaSet.worksetRow.modelId != mId)
-        throw DbException("in workset_lst invalid model id: %d, expected: %d", io_metaSet.worksetRow.modelId, mId);
+    // workset_lst table, update model id with actual db value
+    io_metaSet.worksetRow.modelId = mId;
 
     // workset_txt table
-    // unique: set id and language name; master key: set id; foreign key: language code; 
+    // unique: set id and language name; master key: set id; 
+    // set language id by language code
     // cleanup cr or lf in description and notes
     for (vector<WorksetTxtLangRow>::iterator rowIt = io_metaSet.worksetTxt.begin(); rowIt != io_metaSet.worksetTxt.end(); ++rowIt) {
 
@@ -730,13 +729,13 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
             throw DbException("in workset_txt not unique set id: %d and language: %s", rowIt->setId, rowIt->langCode.c_str());
 
         LangLstRow langRow(rowIt->langCode);
-        if (!std::binary_search(
-            i_metaRows.langLst.cbegin(),
-            i_metaRows.langLst.cend(),
-            langRow,
-            LangLstRow::isCodeLess
-            ))
+        const auto langIt = std::lower_bound(
+            i_metaRows.langLst.cbegin(), i_metaRows.langLst.cend(), langRow, LangLstRow::isCodeLess
+        );
+        if (langIt == i_metaRows.langLst.cend() || langIt->code != rowIt->langCode)
             throw DbException("in workset_txt invalid set id: %d and language: %s: not found in lang_lst", rowIt->setId, rowIt->langCode.c_str());
+
+        rowIt->langId = langIt->langId;
 
         blankCrLf(rowIt->descr);
         blankCrLf(rowIt->note);
@@ -745,7 +744,9 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     // workset_parameter table
     // unique: set id, parameter id; master key: set id; 
     // foreign key: model id, parameter id;
-    for (vector<WorksetParamRow>::const_iterator rowIt = io_metaSet.worksetParam.cbegin(); rowIt != io_metaSet.worksetParam.cend(); ++rowIt) {
+    for (vector<WorksetParamRow>::iterator rowIt = io_metaSet.worksetParam.begin(); rowIt != io_metaSet.worksetParam.end(); ++rowIt) {
+
+        rowIt->modelId = mId;   // update model id with actual db value
 
         if (rowIt->setId != setId)
             throw DbException("in workset_parameter invalid set id: %d, expected: %d in row with parameter id: %d", rowIt->setId, setId, rowIt->paramId);
@@ -766,9 +767,12 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     }
 
     // workset_parameter_txt table
-    // unique: set id, parameter id, language; master key: set id, parameter id; foreign key: language code;
+    // unique: set id, parameter id, language; master key: set id, parameter id;
+    // set language id by language code
     // cleanup cr or lf in parameter value notes
     for (vector<WorksetParamTxtLangRow>::iterator rowIt = io_metaSet.worksetParamTxt.begin(); rowIt != io_metaSet.worksetParamTxt.end(); ++rowIt) {
+
+        rowIt->modelId = mId;   // update model id with actual db value
 
         WorksetParamRow mkRow(rowIt->setId, rowIt->paramId);
         if (!std::binary_search(
@@ -785,13 +789,13 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
             throw DbException("in workset_parameter_txt not unique set id: %d, parameter id: %d and language: %s", rowIt->setId, rowIt->paramId, rowIt->langCode.c_str());
 
         LangLstRow langRow(rowIt->langCode);
-        if (!std::binary_search(
-            i_metaRows.langLst.cbegin(),
-            i_metaRows.langLst.cend(),
-            langRow,
-            LangLstRow::isCodeLess
-            ))
-            throw DbException("in workset_parameter_txt invalid set id: %d, parameter id: %d and language: %s: not found in lang_lst", rowIt->setId, rowIt->paramId, rowIt->langCode.c_str());
+        const auto langIt = std::lower_bound(
+            i_metaRows.langLst.cbegin(), i_metaRows.langLst.cend(), langRow, LangLstRow::isCodeLess
+        );
+        if (langIt == i_metaRows.langLst.cend() || langIt->code != rowIt->langCode)
+            throw DbException("in workset_txt invalid set id: %d and language: %s: not found in lang_lst", rowIt->setId, rowIt->langCode.c_str());
+
+        rowIt->langId = langIt->langId;
 
         blankCrLf(rowIt->note);
     }

@@ -16,6 +16,7 @@
 #include "dbExec.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
+#include "dbMetaTable.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
 #include "modelAggregationSql.h"
@@ -116,6 +117,9 @@ namespace openm
 
         /** write sql script to insert new model metadata */
         void buildCreateModel(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const;
+
+        /** insert new model metadata into database and update id's with actual db values */
+        static void createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaRows);
 
         /** write sql script to create new model tables */
         void buildCreateModelTables(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const;

@@ -156,6 +156,7 @@
     <ClInclude Include="db\modelSqlBuilder.h" />
     <ClInclude Include="db\modelSqlWriter.h" />
     <ClInclude Include="include\crc32.h" />
+    <ClInclude Include="include\dbMetaTable.h" />
     <ClInclude Include="include\helper.h" />
     <ClInclude Include="include\md5.h" />
   </ItemGroup>

@@ -93,6 +93,9 @@
     <ClInclude Include="db\modelSqlBuilder.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
+    <ClInclude Include="include\dbMetaTable.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\file.cpp">

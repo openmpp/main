@@ -261,7 +261,10 @@ namespace openm
         bool isInt(void) const;
 
         /** return true if model type is built-in, ie: int, double, logical */
-        bool isBuiltIn(void) const;
+        bool isBuiltIn(void) const { return isBuiltIn(typeId); }
+
+        /** return true if model type id is built-in type id, ie: int, double, logical */
+        static bool isBuiltIn(int i_typeId) { return i_typeId <= OM_MAX_BUILTIN_TYPE_ID; }
     };
 
     /** type_dic_txt join to model_type_dic table row. */

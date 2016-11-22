@@ -21,8 +21,7 @@
 
     <OMC_SQLITE_OUTPUT Include="$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite" />
     <OMC_SQL_OUTPUTS Include="@(OMC_SQLITE_OUTPUT)" />
-    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_1_create_model_sqlite.sql" />
-    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_2_create_tables_sqlite.sql" />
+    <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_create_tables_sqlite.sql" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql" />
     <!--
     drop sql-scripts created by omc and it is for dba use only:
