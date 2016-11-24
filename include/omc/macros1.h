@@ -1,17 +1,24 @@
 /**
 * @file    macros1.h
-* Macros available to all models (late).
-*
-* includes min/max macros which can break std headers if not included last
+* Macros and templates available to all models (late).
 */
 // Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-// override std:min and std::max to enable type conversion of arguments
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
+#include <type_traits>
 
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
+// Replacement versions of std:min and std::max which enable type conversion of arguments
+// to a common shared type.
+
+
+template <typename T, typename U>
+inline typename std::common_type<T, U>::type min(T a, U b)
+{
+	return a < b ? a : b;
+}
+
+template <typename T, typename U>
+inline typename std::common_type<T, U>::type max(T a, U b)
+{
+	return a < b ? b : a;
+}

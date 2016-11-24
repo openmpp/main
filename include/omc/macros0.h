@@ -1,6 +1,6 @@
 /**
 * @file    macros0.h
-* Macros available to all models (early)
+* Macros and templates available to all models (early)
 */
 // Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
