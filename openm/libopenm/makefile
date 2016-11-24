@@ -191,11 +191,11 @@ LIB_OMC_CPPLIST = \
   db/worksetParamTable.cpp \
   db/worksetParamTxtTable.cpp \
   db/worksetTxtTable.cpp \
-  db/modelAggregationSql.cpp \
-  db/modelInsertSql.cpp \
-  db/modelSqlBuilder.cpp \
-  db/modelSqlBuilderPrepare.cpp \
-  db/modelSqlWriter.cpp
+  db/omc/modelAggregationSql.cpp \
+  db/omc/modelInsertSql.cpp \
+  db/omc/modelSqlBuilder.cpp \
+  db/omc/modelSqlBuilderPrepare.cpp \
+  db/omc/modelSqlWriter.cpp
 
 RT_OBJS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
 RT_DEPS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))

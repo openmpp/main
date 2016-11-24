@@ -81,16 +81,16 @@
     <ClInclude Include="db\dbValue.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="db\modelAggregationSql.h">
+    <ClInclude Include="db\omc\modelAggregationSql.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="db\modelInsertSql.h">
+    <ClInclude Include="db\omc\modelInsertSql.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="db\modelSqlWriter.h">
+    <ClInclude Include="db\omc\modelSqlWriter.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="db\modelSqlBuilder.h">
+    <ClInclude Include="db\omc\modelSqlBuilder.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
     <ClInclude Include="include\dbMetaTable.h">
@@ -116,19 +116,19 @@
     <ClCompile Include="db\dbMetaRow.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\modelSqlBuilder.cpp">
+    <ClCompile Include="db\omc\modelSqlBuilder.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\modelInsertSql.cpp">
+    <ClCompile Include="db\omc\modelInsertSql.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\modelAggregationSql.cpp">
+    <ClCompile Include="db\omc\modelAggregationSql.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="common\argReader.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="db\modelSqlWriter.cpp">
+    <ClCompile Include="db\omc\modelSqlWriter.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="common\crc32.cpp">
@@ -137,7 +137,7 @@
     <ClCompile Include="common\md5.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="db\modelSqlBuilderPrepare.cpp">
+    <ClCompile Include="db\omc\modelSqlBuilderPrepare.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\dbExec.cpp">
