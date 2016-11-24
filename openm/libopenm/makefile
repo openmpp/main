@@ -206,6 +206,7 @@ OMC_DEPS := $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(roo
 vpath %.cpp $(CURDIR)
 vpath %.cpp $(CURDIR)/common
 vpath %.cpp $(CURDIR)/db
+vpath %.cpp $(CURDIR)/db/omc
 vpath %.cpp $(CURDIR)/model
 vpath %.cpp $(CURDIR)/msg
      
