@@ -5,8 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef META_RUN_HOLDER_H
-#define META_RUN_HOLDER_H
+#ifndef META_HOLDER_H
+#define META_HOLDER_H
 
 using namespace std;
 
@@ -54,4 +54,4 @@ namespace openm
     };
 }
 
-#endif  // META_RUN_HOLDER_H
+#endif  // META_HOLDER_H
