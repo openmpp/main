@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../..</OM_ROOT>
+
+    <OM_INC_INTERNAL_DIR Condition="'$(OM_INC_INTERNAL_DIR)'==''">$(OM_ROOT)/openm/libopenm/include</OM_INC_INTERNAL_DIR>
+    
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include;$(OM_INC_INTERNAL_DIR)</OM_INC_DIR>
+    <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(OM_ROOT)/lib</OM_LIB_DIR>
+
+    <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
+
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+
+    <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
+    
+  </PropertyGroup>
+  
+  <!-- 
+  Override default VStudio cpp project settings to build openM models:
+  
+    AdditionalIncludeDirectories:
+      OM_INC_DIR
+      OM_INC_INTERNAL_DIR
+      
+    AdditionalDependencies:
+      OM_DB_LIB 
+      libopenm.lib
+      
+    AdditionalLibraryDirectories:
+      OM_DB_LIB_DIR
+      OM_LIB_DIR
+      
+    Special include of OM_INC_INTERNAL_DIR: 
+      it is runtime library internal "public" interfaces
+      runtime libarary consist of 4 isolated parts
+      and current project is used IDbExec part of it,
+      which normally not exposed to the model.
+  -->
+  <PropertyGroup>
+    <OutDir>$(MODEL_BIN_DIR)/</OutDir>
+    <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
+    <TargetName>$(ProjectName)$(BUILD_SUFFIX)</TargetName>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose database library provider, now only SQlite supported
+    SQLITE - use SQlite version
+  -->
+  <PropertyGroup>
+    <OM_DB_USE>SQLITE</OM_DB_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
+    <OM_DB_DEF>OM_DB_SQLITE</OM_DB_DEF>
+    <OM_DB_INC>$(OM_INC_DIR)/libsqlite</OM_DB_INC>
+    <OM_DB_LIB>libsqlite$(BUILD_SUFFIX).lib</OM_DB_LIB>
+    <OM_DB_LIB_DIR>$(OM_LIB_DIR)</OM_DB_LIB_DIR>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose UTF-8 conversion library
+    MSSTL - use MS VC++ wstring_convert and codecvt_utf8
+    ICONV - use libiconv
+  -->
+  <PropertyGroup>
+    <OM_UCVT_USE>MSSTL</OM_UCVT_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_UCVT_USE)'=='MSSTL'">
+    <OM_UCVT_DEF>OM_UCVT_MSSTL</OM_UCVT_DEF>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_UCVT_USE)'=='ICONV'">
+    <OM_UCVT_DEF>OM_UCVT_ICONV</OM_UCVT_DEF>
+  </PropertyGroup>
+
+</Project>
