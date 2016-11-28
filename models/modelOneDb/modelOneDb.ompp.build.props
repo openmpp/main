@@ -5,9 +5,9 @@
 
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../..</OM_ROOT>
 
-    <OM_INC_INTERNAL_DIR Condition="'$(OM_INC_INTERNAL_DIR)'==''">$(OM_ROOT)/openm/libopenm/include</OM_INC_INTERNAL_DIR>
+    <OM_INC_LIBOPENM_DIR Condition="'$(OM_INC_LIBOPENM_DIR)'==''">$(OM_ROOT)/openm/libopenm/include</OM_INC_LIBOPENM_DIR>
     
-    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include;$(OM_INC_INTERNAL_DIR)</OM_INC_DIR>
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include;$(OM_INC_LIBOPENM_DIR)</OM_INC_DIR>
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(OM_ROOT)/lib</OM_LIB_DIR>
 
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
@@ -26,7 +26,7 @@
   
     AdditionalIncludeDirectories:
       OM_INC_DIR
-      OM_INC_INTERNAL_DIR
+      OM_INC_LIBOPENM_DIR
       
     AdditionalDependencies:
       OM_DB_LIB 
@@ -36,7 +36,7 @@
       OM_DB_LIB_DIR
       OM_LIB_DIR
       
-    Special include of OM_INC_INTERNAL_DIR: 
+    Special include of OM_INC_LIBOPENM_DIR: 
       it is runtime library internal "public" interfaces
       runtime libarary consist of 4 isolated parts
       and current project is used IDbExec part of it,
