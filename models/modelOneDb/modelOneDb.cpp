@@ -287,6 +287,7 @@ void doSimulation(void)
 
 // cosmetic modification of modelOne.cpp:
 // void ModelShutdown(IModel * const i_model)
+// void RunController::doShutdownRun(....)
 //
 // write all model output tables
 void writeAllOutputTables(IDbExec * i_dbExec, const MetaHolder * i_metaStore, const ArgReader & i_argOpts, int i_runId)
@@ -294,7 +295,69 @@ void writeAllOutputTables(IDbExec * i_dbExec, const MetaHolder * i_metaStore, co
     // write output result tables: salarySex sub-sample
     theLog->logMsg("Writing Output Tables");
 
+    // code below is simplified copy from: void RunController::doShutdownRun(....)
+    //
+    // for each ouput table: 
+    // update modeling progress in database
+    int mId = i_metaStore->modelRow->modelId;
+    {
+        // do all in thransaction scope
+        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+
+        for (IRowBaseVec::difference_type nTbl = 0; nTbl < i_metaStore->tableDic->rowCount(); nTbl++) {
+
+            // skip other models (should never happen because we have metadata only for one model)
+            const TableDicRow * tblRow = i_metaStore->tableDic->byIndex(nTbl);
+            if (tblRow->modelId != mId) continue;
+
+            // update model progress 
+            // and clear run digest (demo only: normally run digest is cleared at run initialization)
+            i_dbExec->update(
+                "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + ", " +
+                " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) + ", " +
+                " run_digest = ''" +
+                " WHERE run_id = " + to_string(i_runId)
+            );
+
+            // demo only: delete existing data from output tables
+            // demo only: model never does anything like this, you should NOT do it in real model
+            //
+            i_dbExec->update(
+                "DELETE FROM run_table WHERE run_id = " + to_string(i_runId) + " AND table_hid = " + to_string(tblRow->tableHid)
+            );
+            i_dbExec->update("DELETE FROM " + tblRow->dbExprTable + " WHERE run_id = " + to_string(i_runId));
+            i_dbExec->update("DELETE FROM " + tblRow->dbAccTable + " WHERE run_id = " + to_string(i_runId));
+        }
+     
+        i_dbExec->commit(); // done with delete: no model run results in database (delete is a demo only code)
+    }
+    
+    // cosmetic modification of modelOne.cpp:
+    // void ModelShutdown(IModel * const i_model)
+    //
+    // for all output tables:
+    // write output table accumulators table and calculate output table expresiisons
+    // in our demo we have onlty one output table "salarySex"
     writeDemoOutputTable(i_dbExec, i_metaStore, i_runId, i_argOpts, "salarySex", N_ACC, N_CELL, (double *)salarySexAcc);
+
+    // code below is simplified copy from: void RunController::doShutdownRun(....)
+    //
+    // calculate and update run digest 
+    // update model run status as successfuly completed
+    {
+        // do all in thransaction scope
+        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+
+        string sDigest = IRunLstTable::digestRun(i_dbExec, mId, i_runId);
+
+        i_dbExec->update(
+            "UPDATE run_lst SET status = " + toQuoted(RunStatus::done) + ", " +
+            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) + ", " +
+            " run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+            " WHERE run_id = " + to_string(i_runId)
+        );
+        i_dbExec->commit();     // done with model run
+    }
 }
 
 // simplified version of:
@@ -323,45 +386,14 @@ void writeDemoOutputTable(
     const double * i_accValues
 )
 {
-    // write output result tables: salarySex
-    theLog->logMsg("Writing Output Tables");
-
-    // find model output tables metadaata
+    // find model output table metadata
     int mId = i_metaStore->modelRow->modelId;
 
     const TableDicRow * tblRow = i_metaStore->tableDic->byModelIdName(mId, i_name);
     if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
 
-    // find index of first accumulator: table rows ordered by model id, table id and accumulators id
-    int tblId = tblRow->tableId;
-
-    int nAcc = (int)i_metaStore->tableAcc->indexOf(
-        [mId, tblId](const TableAccRow & i_row) -> bool { return i_row.modelId == mId && i_row.tableId == tblId; }
-    );
-    if (nAcc < 0) throw new DbException("output table accumulators not found: %s", i_name);
-
-    // demo only: delete existing data from output tables
-    // demo only: model never does anything like this
-    {
-        // do all in thransaction scope
-        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
-
-        // demo only: similar update is done when model run started
-        i_dbExec->update(
-            "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + ", " +
-            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) + ", " +
-            " run_digest = ''" + 
-            " WHERE run_id = " + to_string(i_runId)
-        );
-
-        i_dbExec->update(
-            "DELETE FROM run_table WHERE run_id = " + to_string(i_runId) + " AND table_hid = " + to_string(tblRow->tableHid)
-        );
-        i_dbExec->update("DELETE FROM " + tblRow->dbExprTable + " WHERE run_id = " + to_string(i_runId));
-        i_dbExec->update("DELETE FROM " + tblRow->dbAccTable + " WHERE run_id = " + to_string(i_runId));
-        
-        i_dbExec->commit();     // done with delete: no model run results in database
-    }
+    vector<TableAccRow> accVec = i_metaStore->tableAcc->byModelIdTableId(mId, tblRow->tableId);
+    if (accVec.size() != i_accCount) throw new DbException("output table accumulators not found: %s", i_name);
 
     // simplified version of: void RunController::doWriteAccumulators(....)
     //
@@ -380,11 +412,10 @@ void writeDemoOutputTable(
         accWriter->writeAccumulator(
             i_dbExec,
             0,              // subSampleNumber, we are using one subsample in our demo
-            i_metaStore->tableAcc->byIndex(nAcc)->accId,
+            accVec[k].accId,
             i_accSize,
             i_accValues
         );
-        nAcc++;
     }
 
     // simplified version of: void RunController::writeOutputValues(....)
@@ -400,25 +431,4 @@ void writeDemoOutputTable(
     ));
     valueWriter->writeAllExpressions(i_dbExec);
     valueWriter->digestOutput(i_dbExec);
-
-    // calculate output table values digest and store only single copy of output values
-    {
-        // do all in thransaction scope
-        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
-
-        // simplified version of: void RunController::doShutdownRun(....)
-        //
-        // update run digest
-        string sDigest = IRunLstTable::digestRun(i_dbExec, mId, i_runId);
-
-        i_dbExec->update(
-            "UPDATE run_lst SET status = " + toQuoted(RunStatus::done) + ", " +
-            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) + ", " +
-            " run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
-            " WHERE run_id = " + to_string(i_runId)
-        );
-
-        // completed successfuly
-        i_dbExec->commit();
-    }
 }
