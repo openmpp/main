@@ -152,8 +152,7 @@ void ModelExit(const char* msg)
  */
 void report_simulation_progress(int member, int percent)
 {
-    std::string msg = "Member=" + std::to_string(member) + " simulation progress=" + std::to_string(percent) + "%";
-    theLog->logMsg(msg.c_str());
+    theLog->logFormatted("Member=%d simulation progress=%d%%", member, percent);
 }
 
 

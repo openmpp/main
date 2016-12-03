@@ -71,9 +71,7 @@ void LogSimulationStart()
 {
     // Default global start time
     BaseEvent::set_global_time(0);
-
-    std::string msg = "Member=" + std::to_string(fmk::simulation_member) + " create start population";
-    theLog->logMsg(msg.c_str());
+    theLog->logFormatted("Member=%d create start population", fmk::simulation_member);
 }
 
 double SIMULATION_END()
