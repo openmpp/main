@@ -91,6 +91,13 @@ if (!defined(which($sqlite3_exe))) {
 	$sqlite3_exe = 'sqlite3.exe';
 }
 if (!defined(which($sqlite3_exe))) {
+	# Try absolute path using OM_ROOT environment variable.
+	$sqlite3_exe = $ENV{'OM_ROOT'}.'/bin/sqlite3.exe';
+	if (-e $sqlite3_exe) {
+		$sqlite3_exe = abs_path($sqlite3_exe);
+	}
+}
+if (!defined(which($sqlite3_exe))) {
 	# Try absolute path to Windows executable in ompp bin relative to this script location.
 	$sqlite3_exe = File::Spec->catfile(dirname($0), "../bin/sqlite3.exe");
 	if (-e $sqlite3_exe) {
