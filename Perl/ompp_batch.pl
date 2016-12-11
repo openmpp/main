@@ -1,6 +1,6 @@
 # Script to run and assemble a batch of scenarios
 
-use strict;
+#use strict;
 use warnings;
 
 my $script_name = 'ompp_batch';
@@ -11,6 +11,16 @@ use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Copy;
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
+use File::Basename;
+
+# add the directory of this script to search path to use Perl modules
+use lib dirname (__FILE__);
+
+# use portions of the common.pm module of shared functions	
+use common qw(
+				run_sqlite_script
+				run_sqlite_statement
+		    );
 
 my ($opt, $usage) = describe_options(
 	$script_name.' %o',
@@ -137,6 +147,7 @@ my $Default_sqlite = "${model_dir}/output/${model_name}_Default.sqlite";
 
 our @run_inis;
 our @run_names;
+our $post_assembly;
 
 unless (my $return = do $spec_file) {
 	warn "couldn't parse $spec_file: $@" if $@;
@@ -239,6 +250,9 @@ elsif ($assemble == 1) {
 			print "Results missing for run ${run} - ${run_name}\n";
 		}
 	}
+
+	# post_assembly contains optional code supplied in the batch specification script
+	eval $post_assembly;
 }
 elsif ($clean == 1) {
 	print "Cleaning batch ${output_dir}";

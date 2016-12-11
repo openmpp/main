@@ -127,7 +127,7 @@ sub sqlite3_exe {
 	return $sqlite3_exe;
 }
 
-# Run a SQL script on a SQLite database
+# Run SQL in a file on a SQLite database
 # arg0 - the SQLite database
 # arg1 - the file of SQL statements to run
 # arg2 - the return value from SQLite3
@@ -182,12 +182,14 @@ sub run_sqlite_statement {
 	return $merged;
 }
 
-# Extract ompp output tables from a ompp SQLite database to a folder
+# Extract all model output tables from a ompp SQLite database to a folder
 # arg0 - the SQLite database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
 # arg3 - flag to create non-rounded version of csv (optional)
 # returns - 0 for success, otherwise non-zero
+#
+# Note: Implementation uses DB compatibility views
 sub ompp_tables_to_csv
 {
 	my $db = shift(@_);
