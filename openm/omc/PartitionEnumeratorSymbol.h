@@ -37,11 +37,26 @@ public:
      */
     string label(const LanguageSymbol & language) const
     {
-        return "["
-            + lower_split_point
-            + ","
-            + upper_split_point
-            + ( (upper_split_point == "max") ? "]" : ")" );
+        string result = "";
+        if (lower_split_point == "min") {
+            //result += "(-\u221e"; // unicode for infinity - requires C++ compiler support for UTF-8
+            result += "(-\xE2\x88\x9E"; // UTF-8 for infinity in hexadecimal
+        }
+        else {
+            result += "[" + lower_split_point;
+        }
+
+        result += ",";
+
+        if (upper_split_point == "max") {
+            //result += "\u221e)"; // unicode for infinity - requires C++ compiler support for UTF-8
+            result += "\xE2\x88\x9E)"; // UTF-8 for infinity in hexadecimal
+        }
+        else {
+            result += upper_split_point + ")";
+        }
+
+        return result;
     }
 
     /**
