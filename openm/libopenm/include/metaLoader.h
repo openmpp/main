@@ -145,8 +145,8 @@ namespace openm
         static void initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
 
     protected:
-        int modelId;                            // model id in database
-        unique_ptr<MetaHolder> metaStore;    // metadata tables
+        int modelId;                        // model id in database
+        unique_ptr<MetaHolder> metaStore;   // metadata tables
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :

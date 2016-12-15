@@ -343,7 +343,7 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
 
         // if language code found then add id into the list
         const LangLstRow * langRow = langTbl->findFirst(
-            [&lang](const LangLstRow & i_row) -> bool { return equalNoCase(i_row.code.c_str(), lang.c_str()); }
+            [&lang](const LangLstRow & i_row) -> bool { return normalizeLangugeName(i_row.code) == lang; }
         );
         if (langRow != nullptr) {
             langIdArr.push_back(langRow->langId);
