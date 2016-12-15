@@ -91,6 +91,7 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
 
             // run script to create openM++ metadata tables and insert default values
             dbExec->runSqlScript(fileToUtf8(makeFilePath(sqlDir.c_str(), "create_db.sql").c_str()));
+            dbExec->runSqlScript(fileToUtf8(makeFilePath(sqlDir.c_str(), "insert_default.sql").c_str()));
 
             // insert new model metadata into SQLite database
             createModel(dbExec.get(), io_metaRows);

@@ -586,7 +586,7 @@ int main(int argc, char * argv[])
 
         // set model default language
         if (metaRows.langLst.size() <= 0) throw HelperException("Language list cannot be empty");
-        if (metaRows.langLst[0].name != "EN" && metaRows.langLst[0].name != "FR") throw HelperException("TODO: non-standard languages not supported");
+        if (metaRows.langLst[0].code != "EN" && metaRows.langLst[0].code != "FR") throw HelperException("TODO: non-standard languages not supported");
 
         metaRows.modelDic.defaultLangId = metaRows.langLst[0].langId;   // TODO: this is incorrect and wors only for hard-codded "EN" and "FR"
 
