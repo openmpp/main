@@ -42,6 +42,7 @@ DROP TABLE type_enum_lst;
 DROP TABLE type_dic_txt;
 DROP TABLE model_type_dic;
 DROP TABLE type_dic;
+DROP TABLE model_word;
 DROP TABLE model_dic_txt;
 DROP TABLE model_dic;
 DROP TABLE lang_word;

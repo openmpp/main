@@ -81,7 +81,7 @@ int main(int argc, char ** argv)
             argOpts.boolOption(ArgKey::logNoMsgTime),
             argOpts.boolOption(ArgKey::logSql)
             );
-        theLog->logMsg("Model", OM_MODEL_NAME);
+        theLog->logMsg(OM_MODEL_NAME);
 
         // if trace log file enabled setup trace file name
         string traceFilePath;
@@ -110,6 +110,9 @@ int main(int argc, char ** argv)
         unique_ptr<IDbExec> dbExec(
             (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
             );
+
+        // read language specific messages for the log and broadcast it to all modeling processes
+        MetaLoader::initLanguageMessages(isMpiUsed, dbExec.get(), msgExec.get());
 
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));

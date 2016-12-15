@@ -111,6 +111,12 @@ namespace openm
     // this function exist only because g++ below 4.9 does not support std::regex
     extern string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
 
+    /** normalize laguage name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8" */
+    extern string normalizeLangugeName(const string & i_srcLanguge);
+
+    /**  get user prefered locale name: en-CA en-CA or empty "" string on error */
+    extern string getDefaultLocaleName(void);
+
     /**
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
     *

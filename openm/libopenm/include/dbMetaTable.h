@@ -154,8 +154,11 @@ namespace openm
     {
         virtual ~ILangWordTable() throw() = 0;
 
-        /** create new table object and load table rows sorted by primary key: language id and word code. */
-        static ILangWordTable * create(IDbExec * i_dbExec);
+        /** create new table object and load table rows sorted by primary key: language id and word code.
+        *
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static ILangWordTable * create(IDbExec * i_dbExec, int i_langId = -1);
 
         /** binary search row by primary key: language id and word code, return NULL if not found. */
         virtual const LangWordRow * byKey(int i_langId, const string & i_code) const = 0;
@@ -210,6 +213,29 @@ namespace openm
 
         /** create new table rows by swap with supplied vector of rows. */
         static IModelDicTxtTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** model_word table public interface. */
+    struct IModelWordTable : public IMetaLoadedTable<ModelWordRow>
+    {
+        virtual ~IModelWordTable() throw() = 0;
+
+        /** 
+        * create new table object and load table rows sorted by primary key: model id, language id, word code.  
+        * 
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static IModelWordTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** binary search row by primary key: model id, language and code, return NULL if not found. */
+        virtual const ModelWordRow * byKey(int i_modelId, int i_langId, const string & i_code) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IModelWordTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;

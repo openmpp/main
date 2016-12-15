@@ -218,6 +218,9 @@
     <ClCompile Include="db\modelDicTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
+    <ClCompile Include="db\modelWordTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
     <ClCompile Include="db\outputTableWriter.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>

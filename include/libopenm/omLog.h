@@ -9,6 +9,7 @@
 #define OM_H_LOG_H
 
 #include <string>
+#include <map>
 using namespace std;
 
 namespace openm
@@ -54,6 +55,9 @@ namespace openm
             bool i_noMsgTime = false,
             bool i_isLogSql = false
             ) throw() = 0;
+
+        /** set language-specific messages */
+        virtual void swapLanguageMessages(map<string, string> & io_msgMap) throw() = 0;
     };
 
     /** trace log public interface: model event log to console and into log files */

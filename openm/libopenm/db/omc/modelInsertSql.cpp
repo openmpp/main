@@ -30,14 +30,15 @@ void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row)
     //   (1234, 'modelOne', '1234abcd', 0, '1.0.0.0', '2012-08-17 16:04:59.0148')
     i_dbExec->update(
         "INSERT INTO model_dic" \
-        " (model_id, model_name, model_digest, model_type, model_ver, create_dt)" \
+        " (model_id, model_name, model_digest, model_type, model_ver, create_dt, default_lang_id)" \
         " VALUES (" +
         to_string(io_row.modelId) + ", " +
         toQuoted(io_row.name) + ", " +
         toQuoted(io_row.digest) + ", " +
         to_string(io_row.type) + ", " +
         toQuoted(io_row.version) + ", " +
-        toQuoted(io_row.createDateTime) + 
+        toQuoted(io_row.createDateTime) + ", " + 
+        to_string(io_row.defaultLangId) + 
         ")");
 }
     

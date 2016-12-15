@@ -83,6 +83,7 @@ LIBOPENM_CPPLIST = \
   db/langWordTable.cpp \
   db/modelDicTable.cpp \
   db/modelDicTxtTable.cpp \
+  db/modelWordTable.cpp \
   db/outputTableWriter.cpp \
   db/paramDicTable.cpp \
   db/paramDicTxtTable.cpp \
@@ -157,6 +158,7 @@ LIB_OMC_CPPLIST = \
   db/langWordTable.cpp \
   db/modelDicTable.cpp \
   db/modelDicTxtTable.cpp \
+  db/modelWordTable.cpp \
   db/outputTableWriter.cpp \
   db/paramDicTable.cpp \
   db/paramDicTxtTable.cpp \

@@ -350,3 +350,53 @@ string openm::regexReplace(const string & i_srcText, const char * i_pattern, con
 }
 
 #endif // _WIN32
+
+// normalize laguage name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8"
+string openm::normalizeLangugeName(const string & i_srcLanguge)
+{
+    string lang = replaceAll(i_srcLanguge, "_", "-");
+
+    size_t dotPos = lang.find_last_of('.');
+    if (dotPos != string::npos && dotPos < lang.length()) lang = lang.substr(0, dotPos);
+
+    toLower(lang);
+    return lang;
+}
+
+#ifndef _WIN32
+
+// get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
+string openm::getDefaultLocaleName(void)
+{
+    return locale("").name();
+}
+
+#else   // _WIN32
+
+#include <windows.h>
+
+// get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
+string openm::getDefaultLocaleName(void)
+{
+    // try user locale and on error system default locale
+    string name;
+    wchar_t wlcn[LOCALE_NAME_MAX_LENGTH + 1];
+
+    if (GetUserDefaultLocaleName(wlcn, LOCALE_NAME_MAX_LENGTH) <= 0) {
+        if (GetSystemDefaultLocaleName(wlcn, LOCALE_NAME_MAX_LENGTH) <= 0) return name; // empty value on error
+    }
+    wlcn[LOCALE_NAME_MAX_LENGTH] = '\0';
+
+    // convert from Windows wchar to normal string
+    char lcn[LOCALE_NAME_MAX_LENGTH + 1];
+
+    size_t nLcn = std::wcstombs(lcn, wlcn, LOCALE_NAME_MAX_LENGTH);
+    if (nLcn >= LOCALE_NAME_MAX_LENGTH || nLcn == static_cast<size_t>(-1)) return name; // empty value on error
+
+    lcn[LOCALE_NAME_MAX_LENGTH] = '\0';
+    
+    name = lcn;
+    return name;
+}
+#endif  // _WIN32
+

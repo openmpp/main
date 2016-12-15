@@ -80,6 +80,36 @@ bool ModelDicTxtLangRow::uniqueLangKeyEqual(const ModelDicTxtLangRow & i_left, c
     return i_left.modelId == i_right.modelId && i_left.langCode == i_right.langCode;
 }
 
+// model_word row less comparator by primary key: model id, language id, word code.
+bool ModelWordRow::isKeyLess(const ModelWordRow & i_left, const ModelWordRow & i_right)
+{
+    return 
+        (i_left.modelId < i_right.modelId) || 
+        (i_left.modelId == i_right.modelId && i_left.langId < i_right.langId) ||
+        (i_left.modelId == i_right.modelId && i_left.langId == i_right.langId && i_left.code < i_right.code);
+}
+
+// model_word row equal comparator by primary key: model id, language id, word code.
+bool ModelWordRow::isKeyEqual(const ModelWordRow & i_left, const ModelWordRow & i_right)
+{
+    return i_left.modelId == i_right.modelId && i_left.langId == i_right.langId && i_left.code == i_right.code;
+}
+
+// model_word row less comparator by unique key: model id, language code, word code.
+bool ModelWordLangRow::uniqueLangKeyLess(const ModelWordLangRow & i_left, const ModelWordLangRow & i_right)
+{ 
+    return 
+        (i_left.modelId < i_right.modelId) || 
+        (i_left.modelId == i_right.modelId && i_left.langCode < i_right.langCode) ||
+        (i_left.modelId == i_right.modelId && i_left.langCode == i_right.langCode && i_left.code < i_right.code);
+}
+
+// model_word row equal comparator by unique key: model id, language code, word code.
+bool ModelWordLangRow::uniqueLangKeyEqual(const ModelWordLangRow & i_left, const ModelWordLangRow & i_right)
+{ 
+    return i_left.modelId == i_right.modelId && i_left.langCode == i_right.langCode && i_left.code == i_right.code;
+}
+
 // type_dic row less comparator by unique key: model id, model type id.
 bool TypeDicRow::isKeyLess(const TypeDicRow & i_left, const TypeDicRow & i_right)
 {
@@ -926,4 +956,16 @@ vector<TaskRunSetRow>::const_iterator TaskRunSetRow::byKey(int i_taskRunId, int 
         i_rowVec.cend(),
         [i_taskRunId, i_runId](const TaskRunSetRow & i_row) -> bool { return i_row.taskId == i_taskRunId && i_row.runId == i_runId; }
     );
+}
+
+// generic (code,value) row less comparator by primary key: code.
+bool CodeValueRow::isKeyLess(const CodeValueRow & i_left, const CodeValueRow & i_right)
+{
+    return i_left.code < i_right.code;
+}
+
+// generic (code,value) row equal comparator by primary key: code.
+bool CodeValueRow::isKeyEqual(const CodeValueRow & i_left, const CodeValueRow & i_right)
+{
+    return i_left.code == i_right.code;
 }

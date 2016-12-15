@@ -584,6 +584,11 @@ int main(int argc, char * argv[])
             metaRows.langLst.push_back(langRow);
         }
 
+        // set model default language
+        if (metaRows.langLst.size() <= 0) throw HelperException("Language list cannot be empty");
+
+        metaRows.modelDic.defaultLangId = metaRows.langLst[0].langId;
+
         // build model creation sql script
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);

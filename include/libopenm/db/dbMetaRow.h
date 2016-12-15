@@ -131,6 +131,10 @@ namespace openm
         /** create_dt        VARCHAR(32)  NOT NULL */
         string createDateTime;
 
+        /** default_lang_id  INT NOT NULL */
+        int defaultLangId;
+
+
         /** create row with supplied primary key field values. */
         ModelDicRow(int i_modelId) : 
             modelId(i_modelId), 
@@ -138,7 +142,8 @@ namespace openm
             digest(""), 
             type(0),
             version(""),
-            createDateTime("")
+            createDateTime(""),
+            defaultLangId(0)
         { }
 
         /** create row with default empty field values. */
@@ -199,6 +204,54 @@ namespace openm
 
         /** equal comparator by unique key: model id and language code. */
         static bool uniqueLangKeyEqual(const ModelDicTxtLangRow & i_left, const ModelDicTxtLangRow & i_right);
+    };
+
+    /** model_word table row. */
+    struct ModelWordRow : public IMetaRow<ModelWordRow>
+    {
+        /** model_id INT NOT NULL */
+        int modelId;
+
+        /** lang_id  INT NOT NULL */
+        int langId;
+
+        /** word_code  VARCHAR(255) NOT NULL */
+        string code;
+
+        /** word_value VARCHAR(255) NOT NULL */
+        string value;
+
+        /** create row with supplied primary key field values. */
+        ModelWordRow(int i_modelId, int i_langId, const string & i_code) : 
+            modelId(i_modelId), 
+            langId(i_langId),
+            code(i_code), 
+            value("")
+        { }
+
+        /** create row with default empty field values. */
+        ModelWordRow(void) : ModelWordRow(0, 0, "") { }
+
+        ~ModelWordRow(void) throw() { }
+
+        /** less comparator by primary key: model id, language id, word code. */
+        static bool isKeyLess(const ModelWordRow & i_left, const ModelWordRow & i_right);
+
+        /** equal comparator by primary key: model id, language id, word code. */
+        static bool isKeyEqual(const ModelWordRow & i_left, const ModelWordRow & i_right);
+    };
+
+    /** model_word table row and language code. */
+    struct ModelWordLangRow : public ModelWordRow
+    {
+        /** language code */
+        string langCode;
+
+        /** less comparator by unique key: model id, language code, word code. */
+        static bool uniqueLangKeyLess(const ModelWordLangRow & i_left, const ModelWordLangRow & i_right);
+
+        /** equal comparator by unique key: model id, language code, word code. */
+        static bool uniqueLangKeyEqual(const ModelWordLangRow & i_left, const ModelWordLangRow & i_right);
     };
 
     /** type_dic join to model_type_dic table row. */
@@ -1799,6 +1852,36 @@ namespace openm
 
         /** find row by primary key: task run id, run id. */
         static vector<TaskRunSetRow>::const_iterator byKey(int i_taskRunId, int i_runId, const vector<TaskRunSetRow> & i_rowVec);
+    };
+
+    /** generic two string columns: (code, value) table row. */
+    struct CodeValueRow : public IMetaRow<CodeValueRow>
+    {
+        /** code  VARCHAR(...) NOT NULL */
+        string code;
+
+        /** value VARCHAR(...) NOT NULL */
+        string value;
+
+        /** create row with supplied field values. */
+        CodeValueRow(const string & i_code, const string i_value) :
+            code(i_code),
+            value(i_value)
+        { }
+
+        /** create row with supplied primary key field values. */
+        CodeValueRow(const string & i_code) : CodeValueRow(i_code, "") { }
+
+        /** create row with default empty field values. */
+        CodeValueRow(void) : CodeValueRow("", "") { }
+
+        ~CodeValueRow(void) throw() { }
+
+        /** less comparator by primary key: code. */
+        static bool isKeyLess(const CodeValueRow & i_left, const CodeValueRow & i_right);
+
+        /** equal comparator by primary key: code. */
+        static bool isKeyEqual(const CodeValueRow & i_left, const CodeValueRow & i_right);
     };
 }
 

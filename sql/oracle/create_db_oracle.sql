@@ -19,7 +19,7 @@ CREATE TABLE id_lst
 CREATE TABLE lang_lst
 (
   lang_id   INT          NOT NULL, -- unique language id across all models
-  lang_code VARCHAR(32)  NOT NULL, -- language code: en_US
+  lang_code VARCHAR(32)  NOT NULL, -- language code: EN, FR, en-CA
   lang_name VARCHAR(255) NOT NULL, -- language name
   PRIMARY KEY (lang_id),
   CONSTRAINT lang_un UNIQUE (lang_code)
@@ -43,14 +43,17 @@ CREATE TABLE lang_word
 --
 CREATE TABLE model_dic
 (
-  model_id         INT          NOT NULL, -- unique model id for each model
-  model_name       VARCHAR(255) NOT NULL, -- model name: modelOne
-  model_digest     VARCHAR(32)  NOT NULL, -- model digest
-  model_type       INT          NOT NULL, -- model type: 0 = case based, 1 = time based
-  model_ver        VARCHAR(32)  NOT NULL, -- model version
-  create_dt        VARCHAR(32)  NOT NULL, -- create date-time
+  model_id        INT          NOT NULL, -- unique model id for each model
+  model_name      VARCHAR(255) NOT NULL, -- model name: modelOne
+  model_digest    VARCHAR(32)  NOT NULL, -- model digest
+  model_type      INT          NOT NULL, -- model type: 0 = case based, 1 = time based
+  model_ver       VARCHAR(32)  NOT NULL, -- model version
+  create_dt       VARCHAR(32)  NOT NULL, -- create date-time
+  default_lang_id INT          NOT NULL, -- model default language
   PRIMARY KEY (model_id), 
-  CONSTRAINT model_dic_un UNIQUE (model_digest)
+  CONSTRAINT model_dic_un UNIQUE (model_digest),
+  CONSTRAINT model_dic_lang_fk 
+             FOREIGN KEY (default_lang_id) REFERENCES lang_lst (lang_id)
 );
 
 --
@@ -66,6 +69,22 @@ CREATE TABLE model_dic_txt
   CONSTRAINT model_dic_txt_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
   CONSTRAINT model_dic_txt_lang_fk 
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+-- 
+-- Model language-specific messages (translated strings)
+-- 
+CREATE TABLE model_word
+(
+  model_id   INT          NOT NULL, -- master key
+  lang_id    INT          NOT NULL, -- language id
+  word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
+  word_value VARCHAR(255) NOT NULL, -- if not empty then actual word in that language
+  PRIMARY KEY (model_id, lang_id, word_code),
+  CONSTRAINT model_word_mk 
+             FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
+  CONSTRAINT model_word_fk 
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 

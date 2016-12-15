@@ -93,7 +93,7 @@ unique_ptr<char> MpiPacked::packArray(const type_info & i_type, size_t i_size, v
 * return an MPI_Pack'ed copy of source string array.
 *
 * @param[in] i_type      value type
-* @param[in] i_size      size of array
+* @param[in] i_size      size of array (row count)
 * @param[in] i_valueArr  array of strings to be packed
 */
 const vector<char> MpiPacked::packArray(size_t i_size, const string * i_valueArr)
@@ -125,7 +125,7 @@ const vector<char> MpiPacked::packArray(size_t i_size, const string * i_valueArr
 *
 * @param[in]     i_packedSize   total size in bytes of i_packedData buffer
 * @param[in]     i_packedData   source MPI message buffer to unpack: i_packedData[i_packedSize]
-* @param[in]     i_size         size of array
+* @param[in]     i_size         size of array (row count)
 * @param[in,out] io_valueArr    supplied array of string[i_size] to unpack results
 */
 void MpiPacked::unpackArray(int i_packedSize, void * i_packedData, size_t i_size, string * io_valueArr)

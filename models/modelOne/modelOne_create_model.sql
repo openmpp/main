@@ -15,12 +15,20 @@
 -- model digest: not a real digest (32 digits hex)
 --
 INSERT INTO model_dic
-  (model_id, model_name, model_digest, model_type, model_ver, create_dt)
+  (model_id, model_name, model_digest, model_type, model_ver, create_dt, default_lang_id)
 VALUES
-  (1, 'modelOne', '_201208171604590148_', 0, '1.0', '2012-08-17 16:04:59.0148');
+  (1, 'modelOne', '_201208171604590148_', 0, '1.0', '2012-08-17 16:04:59.0148', 0);
   
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', NULL);
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, '(FR) First model', NULL);
+
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Running Simulation', 'Running Simulation');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Running Simulation', '(FR)Running Simulation');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Event loop completed', 'Event loop completed');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Event loop completed', '(FR)Event loop completed');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Reading Parameters', 'Reading Parameters');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Start model subsample', 'Start model subsample');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Writing Output Tables', 'Writing Output Tables');
 
 -- 
 -- modelOne simple types: reference to built-in types

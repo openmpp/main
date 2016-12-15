@@ -183,7 +183,7 @@ MPI_Comm MpiExec::commByGroupOne(int i_groupOne)
 *
 * @param[in]     i_groupOne  if zero then worldwide else one-based group number
 * @param[in]     i_type      value type
-* @param[in]     i_size      size of array
+* @param[in]     i_size      size of array (row count)
 * @param[in,out] io_valueArr value array to send or output buffer to receive
 */
 void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr)
@@ -245,7 +245,7 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
                 mpiRet = MPI_Bcast(io_valueArr, recvSize, MpiPacked::toMpiType(i_type), rootRank, mComm);
                 if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
             }
-            else {  // pack string array
+            else {  // packed string array
 
                 if (recvSize <= 0 || recvSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", recvSize);
 

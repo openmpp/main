@@ -12,7 +12,7 @@ namespace openm
     class LangWordTable : public ILangWordTable
     {
     public:
-        LangWordTable(IDbExec * i_dbExec);
+        LangWordTable(IDbExec * i_dbExec, int i_langId = -1);
         LangWordTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~LangWordTable() throw();
 
@@ -76,9 +76,9 @@ namespace openm
 ILangWordTable::~ILangWordTable(void) throw() { }
 
 // Create new table rows by loading db rows
-ILangWordTable * ILangWordTable::create(IDbExec * i_dbExec)
+ILangWordTable * ILangWordTable::create(IDbExec * i_dbExec, int i_langId)
 {
-    return new LangWordTable(i_dbExec);
+    return new LangWordTable(i_dbExec, i_langId);
 }
 
 // Create new table rows by swap with supplied vector of rows
@@ -88,9 +88,11 @@ ILangWordTable * ILangWordTable::create(IRowBaseVec & io_rowVec)
 }
 
 // Load table from db
-LangWordTable::LangWordTable(IDbExec * i_dbExec)
+LangWordTable::LangWordTable(IDbExec * i_dbExec, int i_langId)
 { 
-    string sql = "SELECT lang_id, word_code, word_value FROM lang_word ORDER BY 1, 2";
+    string sql = "SELECT lang_id, word_code, word_value FROM lang_word" +
+        ((i_langId >= 0) ? " WHERE lang_id = " + to_string(i_langId) : "") +
+        " ORDER BY 1, 2";
 
     const IRowAdapter & adp = LangWordRowAdapter();
     rowVec = load(sql, i_dbExec, adp);

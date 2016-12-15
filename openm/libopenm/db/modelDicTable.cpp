@@ -43,7 +43,8 @@ namespace openm
         &typeid(decltype(ModelDicRow::digest)), 
         &typeid(decltype(ModelDicRow::type)),
         &typeid(decltype(ModelDicRow::version)),
-        &typeid(decltype(ModelDicRow::createDateTime))
+        &typeid(decltype(ModelDicRow::createDateTime)),
+        &typeid(decltype(ModelDicRow::defaultLangId))
    };
 
     // Size (number of columns) for model_dic row
@@ -80,6 +81,9 @@ namespace openm
             case 5:
                 dynamic_cast<ModelDicRow *>(i_row)->createDateTime = ((const char *)i_value);
                 break;
+            case 6:
+                dynamic_cast<ModelDicRow *>(i_row)->defaultLangId = (*((int *)i_value));
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -107,7 +111,7 @@ ModelDicTable::ModelDicTable(IDbExec * i_dbExec, const char * i_name, const char
 { 
     string sql = 
         "SELECT" \
-        " model_id, model_name, model_digest, model_type, model_ver, create_dt" \
+        " model_id, model_name, model_digest, model_type, model_ver, create_dt, default_lang_id" \
         " FROM model_dic";
     if (i_name != NULL && i_digest == NULL) sql += " WHERE model_name = " + toQuoted(i_name);
     if (i_name == NULL && i_digest != NULL) sql += " WHERE model_digest = " + toQuoted(i_digest);

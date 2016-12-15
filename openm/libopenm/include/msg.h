@@ -77,6 +77,9 @@ namespace openm
         /** run_option db rows */
         runOption,
 
+        /** generic (code,value) db rows */
+        codeValue,
+
         /** input parameter */
         //inParam,
 

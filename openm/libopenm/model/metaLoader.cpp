@@ -257,6 +257,147 @@ void MetaLoader::broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag
     }
 }
 
+
+/** read language specific messages from db and broadcast it to all modeling processes.
+*
+* @param[in] i_isMpiUsed    if true then MPI is used and messages must be brodcasted to child processes
+* @param[in] i_dbExec       database connection
+* @param[in] i_msgExec      message passing interface to brodcast model messages to child processes
+*
+* If messages in user prefered language exist then use it else default model language messages.
+* Simple language match used, for example:
+* if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
+*/
+void MetaLoader::initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
+{ 
+    if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
+
+    // if this is a root process then load messages from database
+    map<string, string> msgMap;
+    
+    if (!i_isMpiUsed || i_msgExec->isRoot()) {
+        msgMap = loadLanguageMessages(i_dbExec);
+    }
+
+    // if there is more then one process then broadcast messages to all child processes
+    if (i_isMpiUsed && i_msgExec->worldSize() > 1) {
+
+        // if this is root process then pack messages for brodacast
+        IRowBaseVec codeValueVec;
+
+        if (i_msgExec->isRoot()) {
+            for (map<string, string>::const_iterator it = msgMap.cbegin(); it != msgMap.cend(); it++) {
+                IRowBaseUptr cvUptr(new CodeValueRow(it->first, it->second));
+                codeValueVec.push_back(std::move(cvUptr));
+            }
+        }
+
+        // broadcast from root to all child processes
+        unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::codeValue));
+        i_msgExec->bcastPacked(0, codeValueVec, *packAdp);
+
+        // if this is child process then unpack messages
+        if (!i_msgExec->isRoot()) {
+            for (auto it = codeValueVec.cbegin(); it != codeValueVec.cend(); it++) {
+                CodeValueRow * cvRow = dynamic_cast<CodeValueRow *>(it->get());
+                msgMap[cvRow->code.c_str()] = cvRow->value.c_str();
+            }
+        }
+    }
+
+    // set language specific message for the log
+    if (!msgMap.empty()) theLog->swapLanguageMessages(msgMap);
+}
+
+/** determine language for model meassages and read language-specific strings from db.
+*
+* If messages in user prefered language exist then use it else default model language messages.
+* Simple language match used, for example:
+* if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
+*/
+map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
+{
+    if (i_dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
+
+    // find model by name digest
+    unique_ptr<IModelDicTable> mdTbl(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_DIGEST));
+
+    const ModelDicRow *mdRow = mdTbl->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
+    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+
+    // get list of languages
+    // get model language-specific messages in all languages
+    // get common runtime language-specific messages in all languages
+    unique_ptr<ILangLstTable> langTbl(ILangLstTable::create(i_dbExec));
+    unique_ptr<IModelWordTable> mwTbl(IModelWordTable::create(i_dbExec, mdRow->modelId));
+    unique_ptr<ILangWordTable> wordTbl(ILangWordTable::create(i_dbExec));
+
+    // get user prefered locale and "normalize" language part of it: en_CA.UTF-8 => en-ca
+    string lang = normalizeLangugeName(getDefaultLocaleName());
+
+    // make list of language id's by shroten user language: en-ca, en
+    vector<int> langIdArr;
+    bool isDef = false;     // if true then it is model default language
+
+    while (!lang.empty()) {
+
+        // if language code found then add id into the list
+        const LangLstRow * langRow = langTbl->findFirst(
+            [&lang](const LangLstRow & i_row) -> bool { return equalNoCase(i_row.code.c_str(), lang.c_str()); }
+        );
+        if (langRow != nullptr) {
+            langIdArr.push_back(langRow->langId);
+            if (!isDef) isDef = langRow->langId == mdRow->defaultLangId;
+        }
+
+        // shotren language code: simple (naive) way to get more generic language
+        size_t np = lang.find_last_of("-_");
+        if (np == string::npos || np <= 0 || np >= lang.length()) break;
+        lang = lang.substr(0, np);
+    }
+
+    // append model default language at the bottom of the list, if not already there
+    if (!isDef) langIdArr.push_back(mdRow->defaultLangId);
+
+    // build message map by selecting most specific language from model messages list
+    map<string, string> msgMap;
+
+    for (int langId : langIdArr) {
+        for (ptrdiff_t nRow = 0; nRow < mwTbl->rowCount(); nRow++) {
+
+            const ModelWordRow * mwRow = mwTbl->byIndex(nRow);
+            if (mwRow->langId != langId) continue;      // skip other languages
+
+            // if not already in message map then use it
+            if (msgMap.find(mwRow->code) == msgMap.end()) msgMap[mwRow->code] = mwRow->value;
+        }
+    }
+
+    // append common runtime messages
+    for (int langId : langIdArr) {
+        for (ptrdiff_t nRow = 0; nRow < wordTbl->rowCount(); nRow++) {
+
+            const LangWordRow * wordRow = wordTbl->byIndex(nRow);
+            if (wordRow->langId != langId) continue;      // skip other languages
+
+            // if not already in message map then use it
+            if (msgMap.find(wordRow->code) == msgMap.end()) msgMap[wordRow->code] = wordRow->value;
+        }
+    }
+
+    // reduce message map: remove empty and not translated messages (where translated value same as nont translated code)
+    for (auto it = msgMap.begin(); it != msgMap.end();) {
+        if (it->first.empty() || it->second.empty() || it->first == it->second) {
+            it = msgMap.erase(it);
+        }
+        else {
+            it++;
+        }
+    }
+
+    return msgMap;
+}
+
 // merge command line and ini-file arguments with profile_option table values
 // use default values for basic run options, i.e. SparseOutput = false
 // raise exception if any of "Parameter." run option name 

@@ -52,20 +52,14 @@ namespace openm
             );
         ~LogBase(void) throw();
 
-        /** log message */
-        void logMsg(const char * i_msg, const char * i_extra = NULL) throw();
-
-        /** log message formatted with vsnprintf() */
-        void logFormatted(const char * i_format, ...) throw();
-
         /** return timestamp suffix of log file name: _20120817_160459_0148.
         *
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
-        const string timeStampSuffix(void) throw();
+        const string timeStampSuffix(void) throw() override;
 
         /** return "stamped" log file name suffix which may include timestamp and pid. */
-        const string suffix(void) throw();
+        const string suffix(void) throw() override;
 
         /** re-initialize log file name(s) and other log settings.
         *
@@ -101,6 +95,10 @@ namespace openm
         char msgBuffer[msgBufferSize + 1];          // buffer to format message
 
     protected:
+
+        /** implement log message: log to console and log files */
+        void doLogMsg(const char * i_msg, const char * i_extra) throw();
+
         // create log file or truncate existing, return false on error
         bool logFileCreate(const string & i_path) throw();
 
@@ -163,7 +161,7 @@ namespace openm
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
          * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
-         * @param[in]   i_isLogSql      if true then log SQL
+         * @param[in]   i_isLogSql      if true then log SQL into log file
          */
         void init(
             bool i_logToConsole,
@@ -174,6 +172,15 @@ namespace openm
             bool i_isLogSql = false
             ) throw();
 
+        /** set language-specific messages */
+        void swapLanguageMessages(map<string, string> & io_msgMap) throw() override;
+
+        /** log message */
+        void logMsg(const char * i_msg, const char * i_extra = NULL) throw() override;
+
+        /** log message formatted with vsnprintf() */
+        void logFormatted(const char * i_format, ...) throw() override;
+
         /** log exception */
         void logErr(const exception & i_ex, const char * i_msg = nullptr) throw();
 
@@ -182,6 +189,7 @@ namespace openm
 
     private:
         bool isSqlLog;              // if true then log sql queries into last log
+        map<string, string> msgMap; // language-specific messages
 
         // log to file, return false on error
         bool logToFile(
@@ -244,6 +252,12 @@ namespace openm
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
             ) throw();
+
+        /** log message */
+        void logMsg(const char * i_msg, const char * i_extra = NULL) throw() override;
+
+        /** log message formatted with vsnprintf() */
+        void logFormatted(const char * i_format, ...) throw() override;
 
     private:
         ofstream lastSt;        // last log output stream

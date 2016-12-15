@@ -208,7 +208,6 @@ void ModelSqlBuilder::trimModelRows(MetaModelHolder & io_metaRows)
     // for (auto & row : io_metaRows.groupPc) { }
 }
 
-
 // sort and validate metadata rows for uniqueness and referential integrity
 void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 {

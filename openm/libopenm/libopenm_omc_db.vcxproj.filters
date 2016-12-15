@@ -28,6 +28,9 @@
     <Filter Include="Header Files\common">
       <UniqueIdentifier>{55d28e1f-5e10-4ce6-b1e2-86bca449fd0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\db\omc">
+      <UniqueIdentifier>{65a66291-34fb-4b02-bf51-b52b888dba20}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\log.h">
@@ -81,20 +84,20 @@
     <ClInclude Include="db\dbValue.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="db\omc\modelAggregationSql.h">
-      <Filter>Source Files\db</Filter>
-    </ClInclude>
-    <ClInclude Include="db\omc\modelInsertSql.h">
-      <Filter>Source Files\db</Filter>
-    </ClInclude>
-    <ClInclude Include="db\omc\modelSqlWriter.h">
-      <Filter>Source Files\db</Filter>
-    </ClInclude>
-    <ClInclude Include="db\omc\modelSqlBuilder.h">
-      <Filter>Source Files\db</Filter>
-    </ClInclude>
     <ClInclude Include="include\dbMetaTable.h">
       <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="db\omc\modelInsertSql.h">
+      <Filter>Source Files\db\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="db\omc\modelSqlBuilder.h">
+      <Filter>Source Files\db\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="db\omc\modelSqlWriter.h">
+      <Filter>Source Files\db\omc</Filter>
+    </ClInclude>
+    <ClInclude Include="db\omc\modelAggregationSql.h">
+      <Filter>Source Files\db\omc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -116,29 +119,14 @@
     <ClCompile Include="db\dbMetaRow.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\omc\modelSqlBuilder.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
-    <ClCompile Include="db\omc\modelInsertSql.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
-    <ClCompile Include="db\omc\modelAggregationSql.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="common\argReader.cpp">
       <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="db\omc\modelSqlWriter.cpp">
-      <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="common\crc32.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="common\md5.cpp">
       <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="db\omc\modelSqlBuilderPrepare.cpp">
-      <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\dbExec.cpp">
       <Filter>Source Files\db</Filter>
@@ -177,6 +165,9 @@
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\modelDicTxtTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\modelWordTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\outputTableWriter.cpp">
@@ -280,6 +271,21 @@
     </ClCompile>
     <ClCompile Include="db\worksetTxtTable.cpp">
       <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\omc\modelInsertSql.cpp">
+      <Filter>Source Files\db\omc</Filter>
+    </ClCompile>
+    <ClCompile Include="db\omc\modelSqlBuilder.cpp">
+      <Filter>Source Files\db\omc</Filter>
+    </ClCompile>
+    <ClCompile Include="db\omc\modelSqlBuilderPrepare.cpp">
+      <Filter>Source Files\db\omc</Filter>
+    </ClCompile>
+    <ClCompile Include="db\omc\modelSqlWriter.cpp">
+      <Filter>Source Files\db\omc</Filter>
+    </ClCompile>
+    <ClCompile Include="db\omc\modelAggregationSql.cpp">
+      <Filter>Source Files\db\omc</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

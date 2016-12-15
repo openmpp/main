@@ -24,6 +24,7 @@ namespace openm
         MpiPacked::pack<decltype(val->type)>(val->type, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->version, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->createDateTime, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->defaultLangId)>(val->defaultLangId, i_packedSize, io_packedData, io_packPos);
     }
 
     // model_dic: unpack MPI message into db row
@@ -38,6 +39,7 @@ namespace openm
         val->type = MpiPacked::unpack<decltype(val->type)>(i_packedSize, i_packedData, io_packPos);
         val->version = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->createDateTime = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->defaultLangId = MpiPacked::unpack<decltype(val->defaultLangId)>(i_packedSize, i_packedData, io_packPos);
     }
 
     // model_dic: return byte size to pack db row into MPI message
@@ -45,13 +47,14 @@ namespace openm
     int RowMpiPackedAdapter<ModelDicRow>::packedSize(const IRowBaseUptr & i_row)
     {
         const ModelDicRow * val = dynamic_cast<const ModelDicRow *>(i_row.get());
-        return 
+        return
             MpiPacked::packedSize(typeid(val->modelId)) +
             MpiPacked::packedSize(val->name) +
             MpiPacked::packedSize(val->digest) +
             MpiPacked::packedSize(typeid(int)) +
             MpiPacked::packedSize(val->version) +
-            MpiPacked::packedSize(val->createDateTime);
+            MpiPacked::packedSize(val->createDateTime) +
+            MpiPacked::packedSize(typeid(val->defaultLangId));
     }
 
     // type_dic: pack db row into MPI message
@@ -524,6 +527,36 @@ namespace openm
             MpiPacked::packedSize(val->key) +
             MpiPacked::packedSize(val->value);
     }
+
+    // generic (code,value) row: pack db row into MPI message
+    template<>
+    void RowMpiPackedAdapter<CodeValueRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
+    {
+        const CodeValueRow * val = dynamic_cast<const CodeValueRow *>(i_row.get());
+
+        MpiPacked::pack(val->code, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->value, i_packedSize, io_packedData, io_packPos);
+    }
+
+    // generic (code,value) row: unpack MPI message into db row
+    template<>
+    void RowMpiPackedAdapter<CodeValueRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
+    {
+        CodeValueRow * val = static_cast<CodeValueRow *>(io_row.get());
+
+        val->code = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->value = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+    }
+
+    // generic (code,value) row: return byte size to pack db row into MPI message
+    template<>
+    int RowMpiPackedAdapter<CodeValueRow>::packedSize(const IRowBaseUptr & i_row)
+    {
+        const CodeValueRow * val = dynamic_cast<const CodeValueRow *>(i_row.get());
+        return
+            MpiPacked::packedSize(val->code) +
+            MpiPacked::packedSize(val->value);
+    }
 }
 
 // create new pack and unpack adapter for metadata table db rows
@@ -557,6 +590,8 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
         return new MetaMpiPackedAdapter<MsgTag::groupLst, GroupLstRow>();
     case MsgTag::groupPc:
         return new MetaMpiPackedAdapter<MsgTag::groupPc, GroupPcRow>();
+    case MsgTag::codeValue:
+        return new MetaMpiPackedAdapter<MsgTag::codeValue, CodeValueRow>();
     default:
         throw MsgException("Fail to create message adapter: invalid message tag");
     }
