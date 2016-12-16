@@ -634,7 +634,9 @@ void Symbol::post_parse(int pass)
     }
     case eAssignMembers:
     {
-        // Check for presence of a comment label on the previous line of the symbol declaration.
+        // Check for presence of a comment label on the *previous* line of the symbol declaration.
+        // This is a second pass for associating language labels which are not already associated
+        // with a symbol declared on the same line as the label.
         if (decl_loc != yy::location() && decl_loc.begin.line > 0) {
             // This symbol has a declaration location.
             // Construct key for lookup in map of all // comments

@@ -5,6 +5,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "libopenm/common/omHelper.h" // for trim
 #include "LanguageSymbol.h"
 
 using namespace std;
@@ -16,6 +17,35 @@ void LanguageSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignLabel:
+    {
+        // The label for language symbols follows a special syntax
+        // which does not include a language prefix, e.g.
+        //      EN, // English
+        // The label assignment below will replace the default label assignment
+        // done by Symbol::post_parse in the hierarchical calling chain.
+
+        string lang_lbl = name;
+        assert(decl_loc != yy::location()); // grammar guarantee - language symbol has code location
+        // Construct key for lookup in map of all // comments
+        yy::position pos(decl_loc.begin.filename, decl_loc.begin.line, 0);
+        auto cmt_search = cxx_comments.find(pos);
+        if (cmt_search != cxx_comments.end()) {
+            // There was a // comment on the given line.
+            lang_lbl = openm::trim(cmt_search->second);
+        }
+        else {
+            //TODO error - language label required ?
+        }
+        // use the string designating this language, in all languages
+        // Note that pp_labels was previously populated with default values 
+        // in this pass by Symbol::post_parse
+        for (auto & lbl : pp_labels) {
+            lbl = lang_lbl;
+        }
+
+        break;
+    }
     case ePopulateCollections:
     {
         // Add this language to the complete list of languages.
