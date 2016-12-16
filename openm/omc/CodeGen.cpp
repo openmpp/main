@@ -71,6 +71,11 @@ void CodeGen::do_preamble()
     assert(version_symbol);
     version_symbol->populate_metadata(metaRows);
 
+    // populate metadata for model languages
+    for (auto lang : Symbol::pp_all_languages) {
+        lang->populate_metadata(metaRows);
+    }
+
     // om_types0.h
     t0 += "";
     t0 += "#pragma once";

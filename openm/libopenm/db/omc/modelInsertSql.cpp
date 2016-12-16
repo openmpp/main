@@ -7,13 +7,19 @@
 using namespace openm;
 
 // insert model master row into model_dic table.
-void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row)
+void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicLangRow & io_row, const map<string, int> & i_langMap)
 {
     // validate field values
     if (io_row.name.empty()) throw DbException("invalid (empty) model name");
     if (io_row.name.length() > 255) throw DbException("invalid (too long) model name: %s", io_row.name.c_str());
     if (io_row.digest.empty() || io_row.digest.length() > 32) throw DbException("invalid (or empty) digest, model: %s", io_row.name.c_str());
     if (io_row.version.length() > 32) throw DbException("invalid (too long) model version: %s", io_row.version.c_str());
+    if (io_row.defaultLangCode.empty()) throw DbException("invalid (empty) default model language code");
+
+    // update language id with actual database value
+    map<string, int>::const_iterator langIt = i_langMap.find(io_row.defaultLangCode);
+    if (langIt == i_langMap.cend()) throw DbException("invalid language code: %s", io_row.defaultLangCode.c_str());
+    io_row.defaultLangId = langIt->second;
 
     // get new model id: must be positive
     i_dbExec->update(
@@ -22,7 +28,7 @@ void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row)
     io_row.modelId = i_dbExec->selectToInt(
         "SELECT id_value FROM id_lst WHERE id_key = 'model_id'", 
         -1);
-    if (io_row.modelId <= 0)throw DbException("invalid (not positive) model id, model: %s", io_row.name.c_str());
+    if (io_row.modelId <= 0) throw DbException("invalid (not positive) model id, model: %s", io_row.name.c_str());
 
     // INSERT INTO model_dic 
     //   (model_id, model_name, model_digest, model_type, model_ver, create_dt) 
@@ -42,6 +48,62 @@ void ModelInsertSql::insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row)
         ")");
 }
     
+// insert language into lang_lst table, if not exist
+// update language list id's with actual database values
+void ModelInsertSql::insertLangLst(IDbExec * i_dbExec, LangLstRow & io_row)
+{
+    // validate field values
+    if (io_row.code.empty()) throw DbException("invalid (empty) language code");
+    if (io_row.code.length() > 32) throw DbException("invalid (too long) language code: %s", io_row.code.c_str());
+    if (io_row.name.empty()) throw DbException("invalid (empty) language name");
+    if (io_row.name.length() > 255) throw DbException("invalid (too long) language name: %s", io_row.name.c_str());
+
+    // get new language id if language not exist
+    //
+    // UPDATE id_lst SET id_value =
+    //   CASE
+    //     WHEN 0 = (SELECT COUNT(*) FROM lang_lst WHERE lang_code = 'EN') THEN id_value + 1
+    //     ELSE id_value
+    //   END
+    // WHERE id_key = 'lang_id'
+    i_dbExec->update(
+        "UPDATE id_lst SET id_value =" \
+        " CASE" \
+        " WHEN 0 = (SELECT COUNT(*) FROM lang_lst WHERE lang_code = " + toQuoted(io_row.code) + ")" +
+        " THEN id_value + 1" +
+        " ELSE id_value" +
+        " END" +
+        " WHERE id_key = 'lang_id'");
+
+    // insert language if not already exist
+    //
+    // INSERT INTO lang_lst (lang_id, lang_code, lang_name) 
+    // SELECT
+    //   IL.id_value, 'EN', 'English'
+    // FROM id_lst IL
+    // WHERE IL.id_key = 'lang_id'
+    // AND NOT EXISTS
+    // (
+    //   SELECT * FROM lang_lst E WHERE E.lang_code = 'EN'
+    // );
+    i_dbExec->update(
+        "INSERT INTO lang_lst (lang_id, lang_code, lang_name)" \
+        " SELECT" \
+        " IL.id_value, " + toQuoted(io_row.code) + ", " + toQuoted(io_row.name) +
+        " FROM id_lst IL" \
+        " WHERE IL.id_key = 'lang_id'" \
+        " AND NOT EXISTS" \
+        " (" \
+        "   SELECT * FROM lang_lst E WHERE E.lang_code = " + toQuoted(io_row.code) +
+        " )");
+
+    // update language id with actual database value: select new or existing language id
+    io_row.langId = i_dbExec->selectToInt(
+        "SELECT lang_id FROM lang_lst WHERE lang_code = " + toQuoted(io_row.code),
+        -1);
+    if (io_row.langId < 0) throw DbException("invalid (negative) language id, for language: %s", io_row.code.c_str());
+}
+
 // insert row into model_dic_txt table.
 void ModelInsertSql::insertModelDicText(IDbExec * i_dbExec, const map<string, int> & i_langMap, ModelDicTxtLangRow & io_row)
 {

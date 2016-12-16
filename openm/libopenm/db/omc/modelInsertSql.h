@@ -23,7 +23,10 @@ namespace openm
     {
     public:
         /** insert model master row into model_dic table. */
-        static void insertModelDic(IDbExec * i_dbExec, ModelDicRow & io_row);
+        static void insertModelDic(IDbExec * i_dbExec, ModelDicLangRow & io_row, const map<string, int> & i_langMap);
+
+        /** insert language into lang_lst table, if not exist. */
+        static void insertLangLst(IDbExec * i_dbExec, LangLstRow & io_row);
 
         /** insert row into model_dic_txt table. */
         static void insertModelDicText(IDbExec * i_dbExec, const map<string, int> & i_langMap, ModelDicTxtLangRow & io_row);

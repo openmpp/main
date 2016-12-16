@@ -573,23 +573,6 @@ int main(int argc, char * argv[])
             }
         }
 
-        // TODO: make real list of model languages
-        // problem: it is not enough to have code+id like (0,EN) (1,FR)
-        // it is also neccessary to have language name and language "words" (all, min, max)
-        // in order to create new language in model database
-        for (auto lang : Symbol::pp_all_languages) {
-            if (lang->name != "EN" && lang->name != "FR") throw HelperException("TODO: non-standard languages not supported");
-            LangLstRow langRow(lang->language_id);
-            langRow.code = lang->name;
-            metaRows.langLst.push_back(langRow);
-        }
-
-        // set model default language
-        if (metaRows.langLst.size() <= 0) throw HelperException("Language list cannot be empty");
-        if (metaRows.langLst[0].code != "EN" && metaRows.langLst[0].code != "FR") throw HelperException("TODO: non-standard languages not supported");
-
-        metaRows.modelDic.defaultLangId = metaRows.langLst[0].langId;   // TODO: this is incorrect and wors only for hard-codded "EN" and "FR"
-
         // build model creation sql script
         theLog->logMsg("Meta-data processing");
         builder->build(metaRows);

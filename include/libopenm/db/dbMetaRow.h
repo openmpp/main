@@ -158,6 +158,14 @@ namespace openm
         static bool isKeyEqual(const ModelDicRow & i_left, const ModelDicRow & i_right);
     };
 
+
+    /** model_dic table row and default model language code. */
+    struct ModelDicLangRow : public ModelDicRow
+    {
+        /**  default model language code */
+        string defaultLangCode;
+    };
+
     /** model_dic_txt table row. */
     struct ModelDicTxtRow : public IMetaRow<ModelDicTxtRow>
     {

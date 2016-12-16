@@ -27,9 +27,24 @@ void LanguageSymbol::post_parse(int pass)
     }
 }
 
-
 // static members
 int LanguageSymbol::next_language_id = 0;
 map<string, int> LanguageSymbol::name_to_id;
 vector<LanguageSymbol *> LanguageSymbol::id_to_sym;
 
+/** populate language metadata: id, language code, language name */
+void LanguageSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+{
+    using namespace openm;
+
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    LangLstRow langRow(language_id);
+    langRow.code = name;
+    langRow.name = label();
+    if (langRow.name.empty()) langRow.name = langRow.code;  // language name cannot be empty, use code as fallback
+
+    metaRows.langLst.push_back(langRow);
+}

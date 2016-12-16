@@ -3,6 +3,8 @@
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
 
+-- BEGIN TRANSACTION;
+
 --
 -- list of ids, must be positive.
 -- id < 100 reserved for development and testing
@@ -43,7 +45,7 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Subsample %d'
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Restart from subsample %d', 'Restart from subsample %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'MPI error: send %d unfinished from %d to %d', 'MPI error: send %d unfinished from %d to %d');
 
--- model runtime messages (use sources)
+-- model runtime messages from use .mpp .ompp
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f', 'Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d create start population', 'Member=%d create start population');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d simulation progress=%d%%', 'Member=%d simulation progress=%d%%');
@@ -88,3 +90,5 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 0
 INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 0, 1, 'Faux', NULL);
 INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 1, 0, 'True', NULL);
 INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (7, 1, 1, 'Vrai', NULL);
+
+-- COMMIT;

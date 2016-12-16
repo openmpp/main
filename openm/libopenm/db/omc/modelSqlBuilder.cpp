@@ -123,8 +123,18 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     // start transaction and insert new model master row
     i_dbExec->beginTransaction();
 
+    // insert language into lang_lst table, if not exist
+    // update language list id's with actual database values
+    // make language code to id map
+    map<string, int> langMap;
+
+    for (LangLstRow & row : io_metaRows.langLst) {
+        ModelInsertSql::insertLangLst(i_dbExec, row);
+        langMap[row.code] = row.langId;
+    }
+
     // model master row: model_dic
-    ModelInsertSql::insertModelDic(i_dbExec, io_metaRows.modelDic);
+    ModelInsertSql::insertModelDic(i_dbExec, io_metaRows.modelDic, langMap);
 
     // for all metadata rows update model id with actual value
     for (ModelDicTxtLangRow & row : io_metaRows.modelTxt) {
@@ -186,25 +196,6 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     }
     for (GroupPcRow & row : io_metaRows.groupPc) {
         row.modelId = io_metaRows.modelDic.modelId;
-    }
-
-    // TODO: 
-    // when lanuage list and word list implemeneted in omc then insert languages instead of code below
-    //
-    // make language code to id map
-    unique_ptr<ILangLstTable> langTbl(std::move(ILangLstTable::create(i_dbExec)));
-    map<string, int> langMap;
-
-    for (int k = 0; k < langTbl->rowCount(); k++) {
-        const LangLstRow * langRow = langTbl->byIndex(k);
-        langMap[langRow->code] = langRow->langId;
-    }
-
-    // update language list id's with actual database values
-    for (LangLstRow & row : io_metaRows.langLst) {
-        map<string, int>::const_iterator it = langMap.find(row.code);
-        if (it == langMap.cend()) throw DbException("invalid language code: %s", row.code.c_str());
-        row.langId = it->second;
     }
 
     // model text rows: model_dic_txt

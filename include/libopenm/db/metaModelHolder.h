@@ -18,8 +18,8 @@ namespace openm
     struct MetaModelHolder
     {
     public:
-        /** model_dic table row */
-        ModelDicRow modelDic;
+        /** model_dic table row and default model language code */
+        ModelDicLangRow modelDic;
 
         /** lang_lst table rows */
         vector<LangLstRow> langLst;

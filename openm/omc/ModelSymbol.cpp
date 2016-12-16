@@ -39,4 +39,7 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         modelTxt.note = note(*lang);
         metaRows.modelTxt.push_back(modelTxt);
     }
+
+    // set default model code: first language in the list of model languages
+    metaRows.modelDic.defaultLangCode = metaRows.modelTxt[0].langCode;
 };

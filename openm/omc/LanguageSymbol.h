@@ -7,7 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
-
+#include "libopenm/db/metaModelHolder.h"
 
 /**
  * Symbol for a supported human language in the model.
@@ -87,5 +87,8 @@ public:
      * Vector from language id to language symbol
      */
     static vector<LanguageSymbol *> id_to_sym;
+
+    /** populate language metadata: id, language code, language name */
+    void populate_metadata(openm::MetaModelHolder & metaRows);
 };
 
