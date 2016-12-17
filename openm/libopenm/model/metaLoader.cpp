@@ -333,7 +333,7 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
     unique_ptr<ILangWordTable> wordTbl(ILangWordTable::create(i_dbExec));
 
     // get user prefered locale and "normalize" language part of it: en_CA.UTF-8 => en-ca
-    string lang = normalizeLangugeName(getDefaultLocaleName());
+    string lang = normalizeLanguageName(getDefaultLocaleName());
 
     // make list of language id's by shroten user language: en-ca, en
     vector<int> langIdArr;
@@ -343,14 +343,14 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
 
         // if language code found then add id into the list
         const LangLstRow * langRow = langTbl->findFirst(
-            [&lang](const LangLstRow & i_row) -> bool { return normalizeLangugeName(i_row.code) == lang; }
+            [&lang](const LangLstRow & i_row) -> bool { return normalizeLanguageName(i_row.code) == lang; }
         );
         if (langRow != nullptr) {
             langIdArr.push_back(langRow->langId);
             if (!isDef) isDef = langRow->langId == mdRow->defaultLangId;
         }
 
-        // shotren language code: simple (naive) way to get more generic language
+        // shorten language code: simple (naive) way to get more generic language
         size_t np = lang.find_last_of("-_");
         if (np == string::npos || np <= 0 || np >= lang.length()) break;
         lang = lang.substr(0, np);

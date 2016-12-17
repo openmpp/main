@@ -247,17 +247,19 @@ void CodeGen::do_model_strings()
     }
     c += "};";
     c += "";
-    c += "//TODO get actual run-time language";
-    c += "string curr_lang = \"EN\";";
+    c += "// get list of user prefered languages";
+    c += "// if user language == en_CA.UTF-8 then list is: (en-ca, en)";
+    c += "list<string> langLst = splitLanguageName(getDefaultLocaleName());";
+    c += "langLst.push_back(normalizeLanguageName(\"" + Symbol::pp_all_languages.front()->name +"\")); // append default model language to the bottom of the list";
     c += "";
-    c += "string key = curr_lang + \"@\" + string_name;";
-    c += "auto search = string_map.find(key);";
+    c += "for (const string & lang : langLst) {";
+    c += "auto search = string_map.find(lang + \"@\" + string_name);";
     c += "if (search != string_map.end()) {";
     c += "return search->second;";
     c += "}";
-    c += "else {";
-    c += "return \"\";";
     c += "}";
+    c += "";
+    c += "return \"\"; // string not found";
     c += "}";
     c += "";
 }
