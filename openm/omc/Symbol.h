@@ -1080,6 +1080,21 @@ public:
     static unordered_map<string, string> notes_input;
 
     /**
+     * Set of functions to scan for human language string literal as first argument
+     * 
+     * Used to identify strings for translation, e.g. LT, logMsg, etc.
+     */
+    static unordered_set<string> tran_funcs;
+
+    /**
+     * Set of human language strings for translation.
+     * 
+     * String literals in model source which are arguments of 
+     * tran_funcs, e.g. e.g. LT, logMsg, etc.
+     */
+    static unordered_set<string> tran_strings;
+
+    /**
      * Map from a token to the preferred string representation of that token.
      * 
      * This is a fixed map independent of any model.  It has a unique key and maps the symbol enum

@@ -396,6 +396,14 @@ int main(int argc, char * argv[])
         // Populate symbol table with default symbols
         Symbol::populate_default_symbols(model_name, scenario_name);
 
+        // Create set of functions taking translatable string literal as first argument
+        Symbol::tran_funcs.insert("LT");
+        Symbol::tran_funcs.insert("logMsg");
+        Symbol::tran_funcs.insert("logFormatted");
+        Symbol::tran_funcs.insert("WriteLogEntry");
+        Symbol::tran_funcs.insert("WarningMsg");
+        Symbol::tran_funcs.insert("ModelExit");
+
         // create unique instance of ParseContext
         ParseContext pc;
 
@@ -470,6 +478,8 @@ int main(int argc, char * argv[])
                 parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
             }
         }
+
+        theLog->logFormatted("Identified %d translatable C++ strings in model source", Symbol::tran_strings.size());
 
         try {
             theLog->logMsg("Post-parse processing");

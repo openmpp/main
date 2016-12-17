@@ -517,6 +517,10 @@ unordered_map<string, string> Symbol::notes_source;
 
 unordered_map<string, string> Symbol::notes_input;
 
+unordered_set<string> Symbol::tran_funcs;
+
+unordered_set<string> Symbol::tran_strings;
+
 SpecialGlobal Symbol::pre_simulation("PreSimulation");
 
 SpecialGlobal Symbol::post_simulation("PostSimulation");

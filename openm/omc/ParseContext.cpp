@@ -137,6 +137,32 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, yy:
         result = word;
     }
 
+    //
+    // Handle special functions like LT taking string literal as argument.
+    // to identify strings for translation.
+    // 
+    if (tok == token::STRING_LITERAL && cxx_tokens.size() >= 3) {
+        // retrieve previous 2 tokens
+        auto it = cxx_tokens.cend();
+        --it;
+        --it;
+        auto tok_prev1 = *it;
+        --it;
+        auto tok_prev2 = *it;
+        if (tok_prev1.first == token::TK_LEFT_PAREN) {
+            if (tok_prev2.first == token::SYMBOL) {
+                if (Symbol::tran_funcs.count(tok_prev2.second) > 0) {
+                    // remove the enclosing double quotes from the string literal
+                    assert(tok_str.length() >= 2); // scanner guarantee
+                    auto str = tok_str.substr(1, tok_str.length() - 2);
+                    // record the translatable string literal
+                    Symbol::tran_strings.insert(str);
+                }
+            }
+        }
+    }
+
+
     // Return possibly modified version of the token.
     return result;
 }
