@@ -90,3 +90,6 @@ void Set_actor_subsample_weight(double weight);
 // defined in use/case_based/scaling_*.ompp
 //         or use/time_based/scaling_*.ompp
 extern double population_scaling_factor();
+
+// defined in generated code om_definitions.cpp
+extern const char * ModelString(const char * string_name);

@@ -41,6 +41,7 @@ void CodeGen::do_all()
     do_ModelShutdown();
     do_API_entries();
     do_ParameterNameSize();
+    do_model_strings();
 
     // set meta row values and calculate metadata digests: model, types, parameters, output tables
     modelBuilder->setModelMetaRows(metaRows);
@@ -225,6 +226,41 @@ void CodeGen::do_name_digest(void)
     ));
 }
 
+void CodeGen::do_model_strings()
+{
+    c += "// implementation of Modgen API for model-specific strings";
+    c += "const std::string ModelString(const std::string string_name)";
+    c += "{";
+    c += "static std::map<std::string, std::string> string_map {";
+    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+        auto lang_sym = LanguageSymbol::id_to_sym[j];
+        auto lang_name = lang_sym->name;
+        c += "";
+        c += "// strings for " + lang_name;
+        for (auto modgen_string : Symbol::pp_all_strings) {
+            c += "{"
+                  "\"" + lang_name + "@" + modgen_string->name + "\""
+                  ", "
+                  "\"" + modgen_string->pp_labels[j] + "\""
+                  "},";
+        }
+    }
+    c += "};";
+    c += "";
+    c += "//TODO get actual run-time language";
+    c += "string curr_lang = \"EN\";";
+    c += "";
+    c += "string key = curr_lang + \"@\" + string_name;";
+    c += "auto search = string_map.find(key);";
+    c += "if (search != string_map.end()) {";
+    c += "return search->second;";
+    c += "}";
+    c += "else {";
+    c += "return \"\";";
+    c += "}";
+    c += "}";
+    c += "";
+}
 
 void CodeGen::do_types()
 {
