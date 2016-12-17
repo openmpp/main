@@ -179,7 +179,7 @@ const string openm::toString(double i_val)
 }
 
 // replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores
-string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
+const string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
 {
     string sRet;
     bool isPrevUnder = false;
@@ -351,10 +351,10 @@ string openm::regexReplace(const string & i_srcText, const char * i_pattern, con
 
 #endif // _WIN32
 
-// normalize laguage name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8"
-string openm::normalizeLangugeName(const string & i_srcLanguge)
+// normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8"
+const string openm::normalizeLanguageName(const string & i_srcLanguage)
 {
-    string lang = replaceAll(i_srcLanguge, "_", "-");
+    string lang = replaceAll(i_srcLanguage, "_", "-");
 
     size_t dotPos = lang.find_last_of('.');
     if (dotPos != string::npos && dotPos < lang.length()) lang = lang.substr(0, dotPos);
@@ -363,10 +363,29 @@ string openm::normalizeLangugeName(const string & i_srcLanguge)
     return lang;
 }
 
+// normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
+const list<string> openm::splitLanguageName(const string & i_srcLanguage)
+{
+    // normalize convert form en_CA.UTF-8 into en-ca
+    string lang = normalizeLanguageName(i_srcLanguage);
+
+    // shorten language code: simple (naive) way to get more generic language
+    list<string> langLst;
+    while (!lang.empty()) {
+
+        langLst.push_back(lang);
+
+        size_t np = lang.find_last_of("-_");
+        if (np == string::npos || np <= 0 || np >= lang.length()) break;
+        lang = lang.substr(0, np);
+    }
+    return langLst;
+}
+
 #ifndef _WIN32
 
 // get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
-string openm::getDefaultLocaleName(void)
+const string openm::getDefaultLocaleName(void)
 {
     return locale("").name();
 }
@@ -376,7 +395,7 @@ string openm::getDefaultLocaleName(void)
 #include <windows.h>
 
 // get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
-string openm::getDefaultLocaleName(void)
+const string openm::getDefaultLocaleName(void)
 {
     // try user locale and on error system default locale
     string name;

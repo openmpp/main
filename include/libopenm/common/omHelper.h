@@ -91,7 +91,7 @@ namespace openm
     extern const string toString(double i_val);
 
     /** replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores. */
-    string toAlphaNumeric(const string & i_str, int i_maxSize = 0);
+    const string toAlphaNumeric(const string & i_str, int i_maxSize = 0);
 
     /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
     extern const string replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue);
@@ -111,11 +111,14 @@ namespace openm
     // this function exist only because g++ below 4.9 does not support std::regex
     extern string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
 
-    /** normalize laguage name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8" */
-    extern string normalizeLangugeName(const string & i_srcLanguge);
+    /** normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8" */
+    extern const string normalizeLanguageName(const string & i_srcLanguage);
+
+    /** normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
+    extern const list<string> splitLanguageName(const string & i_srcLanguage);
 
     /**  get user prefered locale name: en-CA en-CA or empty "" string on error */
-    extern string getDefaultLocaleName(void);
+    extern const string getDefaultLocaleName(void);
 
     /**
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
