@@ -71,7 +71,7 @@ void LogSimulationStart()
 {
     // Default global start time
     BaseEvent::set_global_time(0);
-    theLog->logFormatted("Member=%d create start population", fmk::simulation_member);
+    theLog->logFormatted("Member=%d create starting population", fmk::simulation_member);
 }
 
 double SIMULATION_END()

@@ -27,6 +27,7 @@ namespace fmk {
      */
     void case_checksum_msg(double case_seed, int case_sample)
     {
+        // The case checksum format reproduces the Modgen format precisely.
         theTrace->logFormatted("Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f",
                            case_seed,
                            case_sample,

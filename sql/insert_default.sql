@@ -36,20 +36,70 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'max', 'Max');
 
 -- model runtime messages from library
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Model', 'Model');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model',
+                                                                  'Modèle');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'FAILED', 'FAILED');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'FAILED',
+                                                                  'PAS RÉUSSI');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Done.', 'Done.');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Done.',
+                                                                  'Fini.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Read', 'Read');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Read',
+                                                                  'Lecture');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Writing Output Tables Expressions', 'Writing Output Tables Expressions');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Writing Output Tables Expressions',
+                                                                  'Enregistrement des expressions des tableaux de sorti');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Run: %d', 'Run: %d');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Run: %d',
+                                                                  'Exécution: %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Subsample %d', 'Subsample %d');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Subsample %d',
+                                                                  'Sous échantillon %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Restart from subsample %d', 'Restart from subsample %d');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Restart from subsample %d',
+                                                                  'Redemarrer du sous-échantillon %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'MPI error: send %d unfinished from %d to %d', 'MPI error: send %d unfinished from %d to %d');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'MPI error: send %d unfinished from %d to %d',
+                                                                  'erreur MPI : envoie %d inachevé de %d à %d');
 
 -- model runtime messages from use .mpp .ompp
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f', 'Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d create start population', 'Member=%d create start population');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d create starting population', 'Member=%d create starting population');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Member=%d create starting population',
+                                                                  'Member=%d créer la population de départ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d simulation progress=%d%%', 'Member=%d simulation progress=%d%%');
-  
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Member=%d simulation progress=%d%%',
+                                                                  'Membre=%d progrès de la simulation=%d%%');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'error : Event time ', 'error : Event time ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'error : Event time ',
+                                                                  'erreur : Le temps d''évènement ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' is earlier than current time ', ' is earlier than current time ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' is earlier than current time ',
+                                                                  ' est plus tôt que le temps actuel ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' in simulation member ', ' in simulation member ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' in simulation member ',
+                                                                  ' dans le membre de simulation ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' in event ', ' in event ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' in event ',
+                                                                  ' dans l''évènement ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' in entity_id ', ' in entity_id ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' in entity_id ',
+                                                                  ' dans entity_id ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' with combined seed ', ' with combined seed ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' with combined seed ',
+                                                                  ' avec graine aléatoire combinée ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'error : stream number ', 'error : stream number ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'error : stream number ',
+                                                                  'erreur : La fluxe aléatoire numéro ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' exceeds the maximum number of streams ', ' exceeds the maximum number of streams ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' exceeds the maximum number of streams ',
+                                                                  ' dépasse le nombre maximal de fluxes ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' Increase the number of streams in ompp_framework.ompp.', ' Increase the number of streams in ompp_framework.ompp.');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' Increase the number of streams in ompp_framework.ompp.',
+                                                                  ' Augmentez le nombre de fluxes aléatoires dans ompp_framework.ompp.');
+
+
+																  
 --
 -- built-in types: type name used as unique type digest
 --
@@ -81,7 +131,7 @@ INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) V
 INSERT INTO type_dic (type_hid, type_name, type_digest, dic_id, total_enum_id) VALUES (7, 'bool', '_bool_', 1, 2);
 
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7, 0, 'logical type', NULL);
-INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7, 1, 'logical type [no label (FR)]', NULL);
+INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7, 1, 'type logique', NULL);
 
 INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (7, 0, 'false');
 INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (7, 1, 'true');

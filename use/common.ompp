@@ -73,12 +73,12 @@ void handle_backwards_time(
     // The time of this event is in the local past of the entity within which the event occurs.
     // This is an error in model logic.
     std::stringstream ss;
-    ss << "Error - Event time " << the_event_time
-        << " is earlier than current time " << the_current_time
-        << " in simulation member " << get_simulation_member()
-        << " in event " << the_event
-        << " in entity_id " << the_entity
-        << " with combined seed " << get_combined_seed()
+    ss  << LT("error : Event time ") << the_event_time
+        << LT(" is earlier than current time ") << the_current_time
+        << LT(" in simulation member ") << get_simulation_member()
+        << LT(" in event ") << the_event
+        << LT(" in entity_id ") << the_entity
+        << LT(" with combined seed ") << get_combined_seed()
         ;
     throw openm::SimulationException(ss.str().c_str());
 }
@@ -92,9 +92,9 @@ void handle_streams_exceeded(
 {
     // The stream number exceeds the maximum number of streams.
     std::stringstream ss;
-    ss << "Error - stream number " << strm
-        << " exceeds the maximum number of streams " << model_streams << "."
-        << " Increase the number of streams in ompp_framework.ompp."
+    ss  << LT("error : stream number ") << strm
+        << LT(" exceeds the maximum number of streams ") << model_streams << LT(".")
+        << LT(" Increase the number of streams in ompp_framework.ompp.")
         ;
     throw openm::SimulationException(ss.str().c_str());
 }

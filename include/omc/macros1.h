@@ -22,3 +22,6 @@ inline typename std::common_type<T, U>::type max(T a, U b)
 {
 	return a < b ? b : a;
 }
+
+//TODO Temporary cover for LT localisation function
+#define LT(x) x
