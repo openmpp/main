@@ -37,7 +37,8 @@ IniFileReader::IniFileReader(const char * i_filePath) : is_loaded(false)
             nStart = nextPos;   // to start of the next line
 
             // skip empty lines and ; commnets or # Linux comments
-            if (sLine.length() < 2) continue;                   // at least k= or [] expected
+            string::size_type nLen = sLine.length();
+            if (nLen < 2) continue;                   // at least k= or [] expected
             if (sLine[0] == ';' || sLine[0] == '#') continue;
 
             // check for the [section] ; and comment (optional)
@@ -55,27 +56,49 @@ IniFileReader::IniFileReader(const char * i_filePath) : is_loaded(false)
 
             if (section.empty()) continue;  // if no [section] found then skip until first section
 
-            // get key and value
-            string::size_type nEq = sLine.find('=');
-            if (nEq == string::npos) continue;          // skip invalid line: expected at least key=
+            // get key: find first = outside of "quote" or 'single quote'
+            bool isIn = false;
+            char cq = '\0';
+            string::size_type nEq = 0;
 
+            for (string::size_type n = 0; n < nLen; n++) {
+
+                char c = sLine[n];
+
+                // if this is quote then toogle 'inside '' quote' status
+                if (!isIn && (c == '"' || c == '\'') || isIn && c == cq) {
+                    isIn = !isIn;
+                    cq = isIn ? c : '\0';   // store openig quote or clear it on close
+                    continue;               // done with quote char
+                }
+
+                // if not 'inside' of quoted key then check for = as end of key
+                if (!isIn && c == '=') {
+                    nEq = n;
+                    break;      // found end of key=
+                }
+            }
+            if (nEq <= 0 || nEq >= nLen) continue;  // skip invalid line: expected at least key=
+
+            // get key and value
             string key = sLine.substr(0, nEq);
             string val = (nEq + 1 < sLine.length()) ? sLine.substr(nEq + 1) : "";
 
-            // add to the entry list or replace existing entry with new value
-            IniEntry entry(section, key, val);
-        
-            IniEntryVec::const_iterator entryIt = std::find_if(
-                entryVec.cbegin(), 
-                entryVec.cend(), 
-                bind(mem_fn(&IniEntry::equalTo), placeholders::_1, entry)
-                );
+            // make new entry, unquote [section] and key if key is "quoted" or 'single quoted'
+            IniEntry newEntry(section, key, val);
+            if (newEntry.section.empty() || newEntry.key.empty()) continue;   // skip empty sections and keys
 
+            // add to the entry list or replace existing entry with new value
+            IniEntryVec::const_iterator entryIt = std::find_if(
+                entryVec.cbegin(),
+                entryVec.cend(),
+                [&newEntry](const IniEntry & i_entry) -> bool { return i_entry.equalTo(newEntry.section.c_str(), newEntry.key.c_str()); }
+            );
             if (entryIt != entryVec.cend()) {
-                entryVec[entryIt - entryVec.cbegin()].val = entry.val;
+                entryVec[entryIt - entryVec.cbegin()].val = val;
             }
             else {
-                entryVec.push_back(entry);
+                entryVec.push_back(newEntry);
             }
         }
 
@@ -98,13 +121,11 @@ ptrdiff_t IniFileReader::findIndex(const char * i_section, const char * i_key) c
     if (!is_loaded || i_section == NULL || i_key == NULL) return -1;
 
     // search entry by section and key
-    IniEntry entry(i_section, i_key, "");
-        
     IniEntryVec::const_iterator entryIt = std::find_if(
-        entryVec.cbegin(), 
-        entryVec.cend(), 
-        bind(mem_fn(&IniEntry::equalTo), placeholders::_1, entry)
-        );
+        entryVec.cbegin(),
+        entryVec.cend(),
+        [i_section, i_key](const IniEntry & entry) -> bool { return entry.equalTo(i_section, i_key); }
+    );
 
     // return index or -1 if not found
     return (entryIt != entryVec.cend()) ? entryIt - entryVec.cbegin() : -1;
@@ -116,11 +137,15 @@ ptrdiff_t IniFileReader::findIndex(const char * i_sectionKey) const
     // invalid section or key or file is not loaded
     if (!is_loaded || i_sectionKey == NULL || i_sectionKey[0] == '\0') return -1;
 
-    // search entry by section.key
-    for (IniEntryVec::const_iterator entryIt = entryVec.cbegin(); entryIt != entryVec.cend(); entryIt++) {
-        if (entryIt->bySectionKey(i_sectionKey)) return entryIt - entryVec.cbegin();
-    }
-    return -1;  // return -1 if not found
+    // search entry by section and key
+    IniEntryVec::const_iterator entryIt = std::find_if(
+        entryVec.cbegin(),
+        entryVec.cend(),
+        [i_sectionKey](const IniEntry & entry) -> bool { return entry.bySectionKey(i_sectionKey); }
+    );
+
+    // return index or -1 if not found
+    return (entryIt != entryVec.cend()) ? entryIt - entryVec.cbegin() : -1;
 }
 
 /** return true if section and key exist in ini-file. */
@@ -192,7 +217,7 @@ void IniFileReader::copySection(const char * i_section, NoCaseMap & io_dst, bool
             if (!equalNoCase(i_section, ent.section.c_str())) continue;     // skip other sections
 
             // insert into map if override specified or section.key not already exists
-            string sectionKey = string(i_section) + "." + ent.keySource;
+            string sectionKey = string(i_section) + "." + ent.key;
 
             if (i_isOverrideExisting || io_dst.find(sectionKey) == io_dst.cend()) io_dst[sectionKey] = ent.val;
         }
@@ -203,31 +228,31 @@ void IniFileReader::copySection(const char * i_section, NoCaseMap & io_dst, bool
 }
 
 /** initialize ini-file entry. */
-IniEntry::IniEntry(const string & i_sectionSource, const string & i_keySource, const string & i_value)
+IniEntry::IniEntry(const string & i_section, const string & i_key, const string & i_value)
 {
-    sectionSource = trim(i_sectionSource);
-    keySource = trim(i_keySource);
-    setSection();
-    setKey();
+    setSection(i_section);
+    setKey(i_key);
     if (!i_value.empty()) setValue(i_value);
 }
 
-// set section name by source: remove [brackets], convert to lower case and trim
-void IniEntry::setSection(void)
+// set section name: remove [brackets] and trim
+void IniEntry::setSection(const string & i_section)
 {
-    string::size_type len = sectionSource.length();
-    section = (len >= 2 && sectionSource[0] == '[' && sectionSource[len - 1] == ']') ? sectionSource.substr(1, len - 2) : sectionSource;
-    toLower(section);
+    section = trim(i_section);
+    string::size_type len = section.length();
+    if (len >= 2 && section[0] == '[' && section[len - 1] == ']') section = section.substr(1, len - 2);
     section = trim(section);
 }
 
-// set key name by keySource: remove = if present, convert to lower and trim
-void IniEntry::setKey(void)
+// set key name: remove = if present, unquote and trim
+void IniEntry::setKey(const string & i_key)
 {
-    string::size_type len = keySource.length();
-    key = (len >= 1 && keySource[len - 1] == '=') ? keySource.substr(0, len -1) : keySource;
-    toLower(key);
+    key = trim(i_key);
+    string::size_type len = key.length();
+    if (len >= 1 && key[len - 1] == '=') key = key.substr(0, len - 1);
     key = trim(key);
+    len = key.length();
+    if (len >= 2 && (key[0] == '"' || key[0] == '\'') && key[len - 1] == key[0]) key = key.substr(1, len - 2);
 }
 
 // set value: space trimed, comment removed and unquoted ("quotes" or 'apostrophes' removed)
@@ -293,16 +318,14 @@ void IniEntry::setValue(const string & i_value)
     if (len >= 2 && (val[0] == '"' || val[0] == '\'') && val[len - 1] == val[0]) val = val.substr(1, len - 2);
 }
 
-/** ini-file entry section and key case neutral equal comparison. */
-bool IniEntry::equalTo(const IniEntry & i_other) const 
-{ 
-    return 
-        equalNoCase(section.c_str(), i_other.section.c_str()) && 
-        equalNoCase(key.c_str(), i_other.key.c_str());
-}
-
 /** ini-file entry section.key case neutral equal comparison. */
 bool IniEntry::bySectionKey(const char * i_sectionKey) const
 {
-    return i_sectionKey != NULL && equalNoCase((section + "." + key).c_str(), i_sectionKey);
+    return i_sectionKey != nullptr && equalNoCase((section + "." + key).c_str(), i_sectionKey);
+}
+
+/** ini-file entry section.key case neutral equal comparison. */
+bool IniEntry::equalTo(const char * i_section, const char * i_key) const
+{
+    return i_section != nullptr && i_key != nullptr && equalNoCase(section.c_str(), i_section) && equalNoCase(key.c_str(), i_key);
 }

@@ -27,33 +27,27 @@ namespace openm
         /** value: space trimed and unquoted ("quotes" or 'apostrophes' removed) */
         string val;
 
-        /** section as it was in source ini-file */
-        string sectionSource;
-
-        /** key as it was in source ini-file */
-        string keySource;
-
         /**
          * initialize ini-file entry.
          *
-         * @param[in]   i_sectionSource ini-file section name.
-         * @param[in]   i_keySource     ini-file key.
-         * @param[in]   i_value         ini-file entry value.
+         * @param[in] i_section ini-file section name.
+         * @param[in] i_key     ini-file key.
+         * @param[in] i_value   ini-file entry value.
          */
-        IniEntry(const string & i_sectionSource, const string & i_keySource, const string & i_value);
-
-        /** ini-file entry section and key case neutral equal comparison. */
-        bool equalTo(const IniEntry & i_other) const;
+        IniEntry(const string & i_section, const string & i_key, const string & i_value);
 
         /** ini-file entry section.key case neutral equal comparison. */
         bool bySectionKey(const char * i_sectionKey) const;
 
-    private:
-        // set section name by sectionSource: remove [brackets], convert to lower case and trim
-        void setSection(void);
+        /** ini-file entry section and key case neutral equal comparison. */
+        bool equalTo(const char * i_section, const char * i_key) const;
 
-        // set key name by keySource: remove = if present, convert to lower and trim
-        void setKey(void);
+    private:
+        // set section name: remove [brackets] and trim
+        void setSection(const string & i_section);
+
+        // set key name: remove = if present, unquote and trim
+        void setKey(const string & i_key);
 
         // set value: space trimed, comment removed and unquoted ("quotes" or 'apostrophes' removed)
         void setValue(const string & i_value);
