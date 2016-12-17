@@ -66,7 +66,7 @@ IniFileReader::IniFileReader(const char * i_filePath) : is_loaded(false)
                 char c = sLine[n];
 
                 // if this is quote then toogle 'inside '' quote' status
-                if (!isIn && (c == '"' || c == '\'') || isIn && c == cq) {
+                if ((!isIn && (c == '"' || c == '\'')) || (isIn && c == cq)) {
                     isIn = !isIn;
                     cq = isIn ? c : '\0';   // store openig quote or clear it on close
                     continue;               // done with quote char
