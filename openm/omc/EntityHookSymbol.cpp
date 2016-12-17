@@ -52,7 +52,7 @@ void EntityHookSymbol::create_auxiliary_symbols()
                 // cast it to derived type
                 fn_sym = dynamic_cast<EntityFuncSymbol *>(sym);
                 if (!fn_sym) {
-                    pp_error("error : symbol '" + fn_name + "' is reserved for implementing hooks");
+                    pp_error(LT("error : symbol '") + fn_name + LT("' is reserved for implementing hooks"));
                     return;
                 }
             }
@@ -82,13 +82,13 @@ void EntityHookSymbol::post_parse(int pass)
         // assign direct pointer to the 'from' entity function symbol for use post-parse
         pp_from = dynamic_cast<EntityFuncSymbol *> (pp_symbol(from));
         if (!pp_from) {
-            pp_error("error : '" + from->name + "' must be a function member of agent '" + pp_agent->name + "'");
+            pp_error(LT("error : '") + from->name + LT("' must be a function member of agent '") + pp_agent->name + LT("'"));
             break;
         }
         if (!to_is_self_scheduling) {
             pp_to_fn = dynamic_cast<EntityFuncSymbol *> (pp_symbol(to));
             if (!pp_to_fn) {
-                pp_error("error : '" + to->name + "' must be a function member of agent '" + pp_agent->name + "'");
+                pp_error(LT("error : '") + to->name + LT("' must be a function member of agent '") + pp_agent->name + LT("'"));
                 break;
             }
         }
@@ -121,8 +121,8 @@ void EntityHookSymbol::post_parse(int pass)
                         pp_to_fn->body_identifiers.begin(),
                         pp_to_fn->body_identifiers.end(),
                         [nm](string id){ return nm == id; })) {
-                pp_error("error : the target function '" + pp_to_fn->unique_name + "' of the hook contains no call to '" + hook_fn->name + "'");
-                Symbol::pp_logmsg(pp_to_fn->defn_loc, "note : see definition of target function '" + pp_to_fn->unique_name + "'");
+                pp_error(LT("error : the target function '") + pp_to_fn->unique_name + LT("' of the hook contains no call to '") + hook_fn->name + LT("'"));
+                Symbol::pp_logmsg(pp_to_fn->defn_loc, LT("note : see definition of target function '") + pp_to_fn->unique_name + LT("'"));
             }
         }
 
@@ -130,14 +130,14 @@ void EntityHookSymbol::post_parse(int pass)
         // 
         // First test if the hook has no explicit order, but other hooks are present.
         if (order == 0 && pp_agent->pp_hooks.count(to_name) > 1) {
-            pp_warning("warning : one or more functions hooking to '" + to_name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
+            pp_warning(LT("warning : one or more functions hooking to '") + to_name + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));
         }
         else {
             // Second test is if the hook has an explicit order, but is tied to one or more other hooks.
             // See comment for 'key' above
             string key = to_name + "_om_" + to_string(order);
             if (pp_agent->pp_hooks_with_order.count(key) > 1) {
-                pp_warning("warning : one or more functions hooking to '" + to_name + "' are ordered ambiguously with respect to '" + pp_from->name + "'.");
+                pp_warning(LT("warning : one or more functions hooking to '") + to_name + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));
             }
         }
 

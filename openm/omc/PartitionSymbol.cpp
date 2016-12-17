@@ -70,7 +70,7 @@ void PartitionSymbol::post_parse(int pass)
             }
 
             if (!order_ok) {
-                pp_error("error : partition cutpoints are not strictly increasing");
+                pp_error(LT("error : partition cutpoints are not strictly increasing"));
             }
         }
         break;

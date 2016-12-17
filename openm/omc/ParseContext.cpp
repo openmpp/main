@@ -152,12 +152,12 @@ void ParseContext::process_cxx_comment(const string& cmt, const yy::location& lo
         // Extract symbol name
         p = cmt.find_first_not_of("( \t", p);
         if (p == std::string::npos) {
-            warning(loc, "warning : problem (#1) with LABEL comment - not processed");
+            warning(loc, LT("warning : problem (#1) with LABEL comment - not processed"));
             return;
         }
         q = cmt.find_first_of(", \t", p);
         if (q == std::string::npos) {
-            warning(loc, "warning : problem (#2) with LABEL comment - not processed");
+            warning(loc, LT("warning : problem (#2) with LABEL comment - not processed"));
             return;
         }
         string sym_name = cmt.substr(p, q - p);
@@ -171,12 +171,12 @@ void ParseContext::process_cxx_comment(const string& cmt, const yy::location& lo
         // Extract language code
         p = cmt.find_first_not_of(", \t", q);
         if (p == std::string::npos) {
-            warning(loc, "warning : problem (#3) with LABEL comment - not processed");
+            warning(loc, LT("warning : problem (#3) with LABEL comment - not processed"));
             return;
         }
         q = cmt.find_first_of(") \t", p);
         if (q == std::string::npos) {
-            warning(loc, "warning : problem (#4) with LABEL comment - not processed");
+            warning(loc, LT("warning : problem (#4) with LABEL comment - not processed"));
             return;
         }
         string lang_code = cmt.substr(p, q - p);
@@ -219,12 +219,12 @@ void ParseContext::process_c_comment(const string& cmt, const yy::location& loc)
         // Extract symbol name
         p = cmt.find_first_not_of("( \t", p);
         if (p == std::string::npos) {
-            warning(loc, "warning : problem (#1) with NOTE comment - not processed");
+            warning(loc, LT("warning : problem (#1) with NOTE comment - not processed"));
             return;
         }
         q = cmt.find_first_of(", \t", p);
         if (q == std::string::npos) {
-            warning(loc, "warning : problem (#2) with NOTE comment - not processed");
+            warning(loc, LT("warning : problem (#2) with NOTE comment - not processed"));
             return;
         }
         string sym_name = cmt.substr(p, q - p);
@@ -238,12 +238,12 @@ void ParseContext::process_c_comment(const string& cmt, const yy::location& loc)
         // Extract language code
         p = cmt.find_first_not_of(", \t", q);
         if (p == std::string::npos) {
-            warning(loc, "warning : problem (#3) with NOTE comment - not processed");
+            warning(loc, LT("warning : problem (#3) with NOTE comment - not processed"));
             return;
         }
         q = cmt.find_first_of(") \t", p);
         if (q == std::string::npos) {
-            warning(loc, "warning : problem (#4) with NOTE comment - not processed");
+            warning(loc, LT("warning : problem (#4) with NOTE comment - not processed"));
             return;
         }
         string lang_code = cmt.substr(p, q - p);

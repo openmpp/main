@@ -44,7 +44,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             // Create symbol for the data member which will hold the 'in' value of the increment.
             auto av = dynamic_cast<AttributeSymbol *>(agentvar);
             if (av == nullptr) {
-                throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
+                throw HelperException(LT("error : agentvar %s used in table %s but not declared in agent"), agentvar->name.c_str(), table->name.c_str());
             }
             string member_name = in_member_name();
             auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
@@ -56,7 +56,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             // Create symbol for the data member which will hold the 'in' value of the increment (for 'event' tabulation operator)
             auto av = dynamic_cast<AttributeSymbol *>(agentvar);
             if (av == nullptr) {
-                throw HelperException("Error: agentvar %s used in table %s but not declared in agent", agentvar->name.c_str(), table->name.c_str());
+                throw HelperException(LT("error : agentvar %s used in table %s but not declared in agent"), agentvar->name.c_str(), table->name.c_str());
             }
             string member_name = in_event_member_name();
             auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);

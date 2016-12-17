@@ -402,7 +402,7 @@ int main(int argc, char * argv[])
         // open & prepare pass-through / markup stream om_developer.cpp
         ofstream om_developer_cpp(outDir + "om_developer.cpp", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_developer_cpp(&om_developer_cpp, &ofstream::close);   // close on exit
-        if (om_developer_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_developer.cpp");
+        if (om_developer_cpp.fail()) throw HelperException(LT("error : Unable to open %s for writing"), "om_developer.cpp");
 
     #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
@@ -493,7 +493,7 @@ int main(int argc, char * argv[])
         }
         if (Symbol::post_parse_errors > 0) {
             theLog->logFormatted("%d errors in post-parse phase", Symbol::post_parse_errors);
-            throw HelperException("Finish omc");
+            throw HelperException(LT("Finish omc"));
         }
 
         theLog->logMsg("Code & meta-data generation");
@@ -501,24 +501,24 @@ int main(int argc, char * argv[])
         // open output streams for generated code
         ofstream om_types0_h(outDir + "om_types0.h", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_types0_h(&om_types0_h, &ofstream::close);   // close on exit
-        if (om_types0_h.fail()) throw HelperException("Unable to open %s for writing", "om_types0.h");
+        if (om_types0_h.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_types0.h");
 
         ofstream om_types1_h(outDir + "om_types1.h", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_types1_h(&om_types1_h, &ofstream::close);   // close on exit
-        if (om_types1_h.fail()) throw HelperException("Unable to open %s for writing", "om_types1.h");
+        if (om_types1_h.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_types1.h");
 
         ofstream om_declarations_h(outDir + "om_declarations.h", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_declarations_h(&om_declarations_h, &ofstream::close);   // close on exit
-        if (om_declarations_h.fail()) throw HelperException("Unable to open %s for writing", "om_declarations.h");
+        if (om_declarations_h.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_declarations.h");
 
         string om_definitions_cpp_fname = outDir + "om_definitions.cpp";
         ofstream om_definitions_cpp(om_definitions_cpp_fname, ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_definitions_cpp(&om_definitions_cpp, &ofstream::close);   // close on exit
-        if (om_definitions_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_definitions.cpp");
+        if (om_definitions_cpp.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_definitions.cpp");
 
         ofstream om_fixed_parms_cpp(outDir + "om_fixed_parms.cpp", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_fixed_parms_cpp(&om_fixed_parms_cpp, &ofstream::close);   // close on exit
-        if (om_fixed_parms_cpp.fail()) throw HelperException("Unable to open %s for writing", "om_fixed_parms.cpp");
+        if (om_fixed_parms_cpp.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_fixed_parms.cpp");
 
 #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
@@ -556,7 +556,7 @@ int main(int argc, char * argv[])
                 // open output stream for generated definitions for missing parameters
                 ofstream Missing_dat(paramDir + Missing_dat_name, ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
-                if (Missing_dat.fail()) throw HelperException("Unable to open %s for writing", "Missing.dat.tmp");
+                if (Missing_dat.fail()) throw HelperException(LT("error : unable to open %s for writing"), "Missing.dat.tmp");
                 Missing_dat << missing_param_defs;
                 Missing_dat.close();
             }
@@ -710,7 +710,7 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
     }
     if ( pc.parse_errors > 0 ) {
         theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);
-        throw HelperException("Finish omc");
+        throw HelperException(LT("Finish omc"));
     }
 }
 
@@ -724,7 +724,7 @@ static list<string> listSourceFiles(const string & i_srcPath, const list<string>
     // open source directory or current directory if source path is empty
     string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
     DIR * dir = opendir(srcPath.c_str());
-    if (dir == NULL) throw HelperException("Can not open source directory: %s", srcPath.c_str());
+    if (dir == NULL) throw HelperException(LT("error : Can not open source directory: %s"), srcPath.c_str());
 
     // collect list of .mpp, .ompp or .dat files
     try {

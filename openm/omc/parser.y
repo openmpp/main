@@ -598,7 +598,7 @@ decl_use:
 								}
 							}
 							if (!found) {
-								error(@path, "error: File '" + use_file + "' not found in any use folder.");
+								error(@path, LT("error: File '") + use_file + LT("' not found in any use folder."));
 							}
                             delete $path;
                             $path = nullptr;
@@ -927,7 +927,7 @@ decl_aggregation:
                         {
                             if (AggregationSymbol::exists($from_class, $to_class)) {
                                 // redeclaration not allowed
-                                error(@kw, "error: An aggregation from '" + $from_class->name + "' to '" + $to_class->name + "' already exists");
+                                error(@kw, LT("error: An aggregation from '") + $from_class->name + LT("' to '") + $to_class->name + LT("' already exists"));
                             }
                             // create new AggregationSymbol
                             auto *agg = new AggregationSymbol( $from_class, $to_class, @kw );
@@ -1407,7 +1407,7 @@ parameter_initializer_expr:
                             assert(parm); // grammar guarantee
                             if (parm->source == ParameterSymbol::derived_parameter) {
                                 ostringstream msg;
-                                msg << "warning : ignoring initializer for derived parameter " << parm->name;
+                                msg << LT("warning : ignoring initializer for derived parameter ") << parm->name;
                                 drv.warning(@eq, msg.str());
                             }
                             else if (pc.is_scenario_parameter_value) {
@@ -1418,7 +1418,7 @@ parameter_initializer_expr:
                             }
                             else {
                                 ostringstream msg;
-                                msg << "error : initializer for parameter " << parm->name << " not allowed in model source code";
+                                msg << LT("error : initializer for parameter ") << parm->name << LT(" not allowed in model source code");
                                 error(@eq, msg.str());
                             }
                             parm->initializer_list.push_back($parameter_initializer_element);
@@ -1430,7 +1430,7 @@ parameter_initializer_expr:
                             assert(parm); // grammar guarantee
                             if (parm->source == ParameterSymbol::derived_parameter) {
                                 ostringstream msg;
-                                msg << "warning : ignoring initializer for derived parameter " << parm->name;
+                                msg << LT("warning : ignoring initializer for derived parameter ") << parm->name;
                                 drv.warning(@eq, msg.str());
                             }
                             else if (pc.is_scenario_parameter_value) {
@@ -1441,7 +1441,7 @@ parameter_initializer_expr:
                             }
                             else {
                                 ostringstream msg;
-                                msg << "error : initializer for parameter " << parm->name << " not allowed in model source code";
+                                msg << LT("error : initializer for parameter ") << parm->name << LT(" not allowed in model source code");
                                 error(@eq, msg.str());
                             }
                             auto wrk = $wrk; // to see it in the debugger
@@ -1642,7 +1642,7 @@ decl_agent_function:
                             else {
                                 // redeclaration
                                 // ignore redeclaration, but issue warning
-                                string msg = "warning : ignoring redeclaration of entity function " + $SYMBOL->name;
+                                string msg = LT("warning : ignoring redeclaration of entity function ") + $SYMBOL->name;
                                 drv.warning(@SYMBOL, msg);
                             }
                             // Function argument declaration is now complete, so
@@ -1779,7 +1779,7 @@ decl_hook:
                                     // redeclaration is benign if hook order is identical in the two declarations
                                 }
                                 else {
-                                    error(@kw, "error: invalid redeclaration of hook (order differs)");
+                                    error(@kw, LT("error: invalid redeclaration of hook (order differs)"));
                                 }
                             }
                         }
@@ -2205,7 +2205,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 table = dynamic_cast<EntityTableSymbol *>($table);
                                 assert(table); // grammar/logic guarantee
                                 // redeclaration not allowed
-                                error(@table, "error: A table named '" + $table->name + "' already exists");
+                                error(@table, LT("error: A table named '") + $table->name + LT("' already exists"));
                             }
                             // Set agent context and table context for body of table declaration
                             pc.set_agent_context( $agent );
@@ -2493,7 +2493,7 @@ decl_derived_table:
                                 derived_table = dynamic_cast<DerivedTableSymbol *>($derived_table);
                                 assert(derived_table); // grammar/logic guarantee
                                 // redeclaration not allowed
-                                error(@derived_table, "error: A derived table named '" + derived_table->name + "' already exists");
+                                error(@derived_table, LT("error: A derived table named '") + derived_table->name + LT("' already exists"));
                             }
                             // Set derived table context for body of derived table declaration
                             pc.set_derived_table_context( derived_table );

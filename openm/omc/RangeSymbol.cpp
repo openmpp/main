@@ -43,7 +43,7 @@ void RangeSymbol::post_parse(int pass)
 
             // Semantic errors for range can be detected in this pass
             if (lower_bound > upper_bound) {
-                pp_error("error : minimum of range is greater than maximum");
+                pp_error(LT("error : minimum of range is greater than maximum"));
             }
         }
         break;

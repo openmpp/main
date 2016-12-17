@@ -36,16 +36,16 @@ void AggregationSymbol::post_parse(int pass)
         // assign direct pointer to classifications for use post-parse
         pp_to = dynamic_cast<ClassificationSymbol *> (pp_symbol(to));
         if (!pp_to) {
-            pp_error("error : '" + to->name + "' must be a classification in the aggregation");
+            pp_error(LT("error : '") + to->name + LT("' must be a classification in the aggregation"));
             break;
         }
         pp_from = dynamic_cast<ClassificationSymbol *> (pp_symbol(from));
         if (!pp_from) {
-            pp_error("error : '" + from->name + "' must be a classification in the aggregation");
+            pp_error(LT("error : '") + from->name + LT("' must be a classification in the aggregation"));
             break;
         }
         if (0 != symbol_list.size() % 2) {
-            pp_error("error : Non-even number of enumerators in the aggregation");
+            pp_error(LT("error : Non-even number of enumerators in the aggregation"));
             break;
         }
         
@@ -58,7 +58,7 @@ void AggregationSymbol::post_parse(int pass)
             assert(pp_sym); // scanner guarantee
             auto enumerator = dynamic_cast<EnumeratorSymbol *>(pp_sym);
             if (!enumerator) {
-                pp_error("error : '" + pp_sym->name + "' must be an enumerator in the aggregation");
+                pp_error(LT("error : '") + pp_sym->name + LT("' must be an enumerator in the aggregation"));
                 break;
             }
             if (is_first) {
@@ -67,7 +67,7 @@ void AggregationSymbol::post_parse(int pass)
             else { // second
                 from_enumerator = enumerator;
                 if (pp_enumerator_map.count(from_enumerator) != 0) {
-                    pp_error("error : '" + from_enumerator->name + "' specified more than once in the aggregation");
+                    pp_error(LT("error : '") + from_enumerator->name + LT("' specified more than once in the aggregation"));
                 }
                 // insert into the map
                 pp_enumerator_map.emplace(from_enumerator, to_enumerator);
@@ -92,11 +92,11 @@ void AggregationSymbol::post_parse(int pass)
         for (auto element : pp_enumerator_map) {
             auto enumerator_from = element.first;
             if (enumerator_from->pp_enumeration != pp_from) {
-                pp_error("error : enumerator '" + enumerator_from->name + "' not found in classification '" + pp_from->name + "'");
+                pp_error(LT("error : enumerator '") + enumerator_from->name + LT("' not found in classification '") + pp_from->name + LT("'"));
             }
             auto enumerator_to = element.second;
             if (enumerator_to->pp_enumeration != pp_to) {
-                pp_error("error : enumerator '" + enumerator_to->name + "' not found in classification '" + pp_to->name + "'");
+                pp_error(LT("error : enumerator '") + enumerator_to->name + LT("' not found in classification '") + pp_to->name + LT("'"));
             }
         }
 
@@ -105,7 +105,7 @@ void AggregationSymbol::post_parse(int pass)
         for (auto enumerator : pp_from->pp_enumerators) {
             auto element = pp_enumerator_map.find(enumerator);
             if (element == pp_enumerator_map.end()) {
-                pp_error("error : required enumerator '" + enumerator->name + "' is missing in aggregation");
+                pp_error(LT("error : required enumerator '") + enumerator->name + LT("' is missing in aggregation"));
             }
         }
 

@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <forward_list>
 #include <map>
+#include "omc_common.h"
 #include "location.hh"
 #include "SpecialGlobal.h"
 #include "parser.hpp"

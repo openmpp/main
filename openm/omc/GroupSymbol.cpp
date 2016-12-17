@@ -31,7 +31,7 @@ void GroupSymbol::post_parse(int pass)
     {
         // verify non-circularity
         if (is_circular()) {
-            pp_error("error : circular reference in group '" + name + "'");
+            pp_error(LT("error : circular reference in group '") + name + LT("'"));
         }
         break;
     }

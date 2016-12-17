@@ -255,6 +255,9 @@
     <ClInclude Include="ScenarioSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="omc_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">

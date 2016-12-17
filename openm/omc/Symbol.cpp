@@ -619,15 +619,15 @@ void Symbol::post_parse(int pass)
                 else {
                     // The source code contained an agent-qualified name token which was never declared,
                     // and no global with the same name exists.
-                    pp_warning("warning : '" + name + "' was never declared");
+                    pp_warning(LT("warning : '") + name + LT("' was never declared"));
                     // OK to continue
                 }
             }
             else {
                 // I don't think we should get here.  All symbols should be derived symbols at this point.
                 // A syntax error should have been detected earlier.
-                pp_error("error : unresolved symbol '" + name + "'");
-                throw HelperException("Finish omc");
+                pp_error(LT("error : unresolved symbol '" )+ name + LT("'"));
+                throw HelperException(LT("Finish omc"));
             }
         }
         break;
@@ -696,9 +696,9 @@ void Symbol::pp_error(const string& msg)
     post_parse_errors++;
     pp_log_message(msg);
     if (post_parse_errors >= max_error_count) {
-        string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
+        string msg = LT("error : ") + to_string(post_parse_errors) + LT(" errors encountered");
         theLog->logFormatted(msg.c_str());
-        throw HelperException("fatal error: stopping post parse processing");
+        throw HelperException(LT("fatal error: stopping post parse processing"));
     }
 }
 
@@ -706,7 +706,7 @@ void Symbol::pp_fatal(const string& msg)
 {
     post_parse_errors++;
     pp_log_message(msg);
-    throw HelperException("fatal error: stopping post parse processing");
+    throw HelperException(LT("fatal error: stopping post parse processing"));
 }
 
 void Symbol::pp_warning(const string& msg)
@@ -985,15 +985,15 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
             else {
                 // The source code contained an agent-qualified name token which was never declared,
                 // and no global with the same name exists.
-                sym->pp_warning("warning : '" + sym->name + "' was never declared");
+                sym->pp_warning(LT("warning : '") + sym->name + LT("' was never declared"));
                 // OK to continue
             }
         }
         else {
             // I don't think we should get here.  All symbols should be derived symbols at this point.
             // A syntax error should have been detected earlier.
-            pp_error(sym->decl_loc, "error : unresolved symbol '" + sym->name + "'");
-            throw HelperException("Finish omc");
+            pp_error(sym->decl_loc, LT("error : unresolved symbol '") + sym->name + LT("'"));
+            throw HelperException(LT("Finish omc"));
         }
     }
     return sym;
@@ -1047,9 +1047,9 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
         theLog->logFormatted("%s", msg.c_str());
     }
     if (post_parse_errors >= max_error_count) {
-        string msg = "error : " + to_string(post_parse_errors) + " errors encountered";
+        string msg = LT("error : ") + to_string(post_parse_errors) + LT(" errors encountered");
         theLog->logFormatted(msg.c_str());
-        throw HelperException("fatal error: stopping post parse processing");
+        throw HelperException(LT("fatal error: stopping post parse processing"));
     }
 }
 
@@ -1073,7 +1073,7 @@ void Symbol::post_parse_all()
     parse_options();
 
     if (LanguageSymbol::number_of_languages() == 0) {
-        pp_error(yy::location(), "error : no languages specified");
+        pp_error(yy::location(), LT("error : no languages specified"));
     }
 
     // Create pp_symbols now to easily find Symbols while debugging.
@@ -1118,7 +1118,7 @@ void Symbol::post_parse_all()
         ++type_change_passes;
         if (type_change_passes > 20) {
             theLog->logMsg("error - More than 20 post-parse type change passes.");
-            throw HelperException("Finish omc");
+            throw HelperException(LT("Finish omc"));
         }
     }
 
@@ -1305,12 +1305,12 @@ void Symbol::post_parse_all()
             if (distance(range.first, range.second) > 1) {
                 dups_found = true;
                 post_parse_errors++;
-                string msg = "omc : error : Duplicate definition of function " + sg->prefix + suffix;
+                string msg = LT("omc : error : Duplicate definition of function ") + sg->prefix + suffix;
                 theLog->logMsg(msg.c_str());
             }
             if ((suffix[0] == '0' && suffix.length() > 1) || std::string::npos != suffix.find_first_not_of("0123456789")) {
                 post_parse_warnings++;
-                string msg = "omc : warning : Unrecognized suffix in " + sg->prefix + " function " + sg->prefix + suffix;
+                string msg = LT("omc : warning : Unrecognized suffix in ") + sg->prefix + LT(" function ") + sg->prefix + suffix;
                 theLog->logMsg(msg.c_str());
             }
             else {
@@ -1329,14 +1329,14 @@ void Symbol::post_parse_all()
 
         // Output helpful list of used suffixes, if dups were found
         if (dups_found) {
-            string msg = "To disambiguate multiple " + sg->prefix + " functions, append a numeric suffix";
+            string msg = LT("To disambiguate multiple ") + sg->prefix + LT(" functions, append a numeric suffix");
             theLog->logMsg(msg.c_str());
             if (sg->suffixes.size() > 0) {
                 string used;
                 for (auto suffix : sg->suffixes) {
                     used += " " + suffix;
                 }
-                string msg = "List of " + sg->prefix + " suffixes used in model:" + used;
+                string msg = LT("List of ") + sg->prefix + LT(" suffixes used in model:") + used;
                 theLog->logMsg(msg.c_str());
             }
         }

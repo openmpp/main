@@ -39,7 +39,7 @@ void HideGroupSymbol::post_parse(int pass)
                 ts->is_internal = true;
                 continue;
             }
-            pp_error("error : '" + sym->name + "' in hide list is not a parameter or table");
+            pp_error(LT("error : '") + sym->name + LT("' in hide list is not a parameter or table"));
         }
         break;
     }

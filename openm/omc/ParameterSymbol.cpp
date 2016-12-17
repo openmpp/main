@@ -81,17 +81,17 @@ void ParameterSymbol::post_parse(int pass)
         assert(!pp_datatype); // no use allowed in parse phase
         pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
         if (!pp_datatype) {
-            pp_error("error : '" + datatype->name + "' is not a datatype in parameter '" + name + "'");
+            pp_error(LT("error : '") + datatype->name + LT("' is not a datatype in parameter '") + name + LT("'"));
         }
         if (datatype2) {
             // redeclaration
             assert(!pp_datatype2); // no use allowed in parse phase
             pp_datatype2 = dynamic_cast<TypeSymbol *>(pp_symbol(datatype2));
             if (!pp_datatype2) {
-                pp_error("error : '" + (*datatype2)->name + "' is not a datatype in parameter '" + name + "'");
+                pp_error(LT("error : '") + (*datatype2)->name + LT("' is not a datatype in parameter '") + name + LT("'"));
             }
             if (pp_datatype != pp_datatype2) {
-                pp_error("error : parameter '" + name + "' declared with type '" + pp_datatype->name + "' but initialized with type '" + pp_datatype2->name + "'");
+                pp_error(LT("error : parameter '") + name + LT("' declared with type '") + pp_datatype->name + LT("' but initialized with type '") + pp_datatype2->name + LT("'"));
             }
         }
         break;
@@ -106,12 +106,12 @@ void ParameterSymbol::post_parse(int pass)
             assert(sym); // grammar guarantee
             auto es = dynamic_cast<EnumerationSymbol *>(sym);
             if (!es) {
-                pp_error("error : '" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error(LT("error : '") + sym->name + LT("' is invalid as a dimension in parameter '") + name + LT("'"));
                 continue; // don't insert invalid type in dimension list
             }
             if (es->is_bool()) {
                 // bool not allowed as parameter dimension
-                pp_error("error : '" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error(LT("error : '") + es->name + LT("' is invalid as a dimension in parameter '") + name + LT("'"));
                 continue; // don't insert invalid type in dimension list
             }
             // process the dimension into post-parse members
@@ -140,12 +140,12 @@ void ParameterSymbol::post_parse(int pass)
             assert(sym); // grammar guarantee
             auto es = dynamic_cast<EnumerationSymbol *>(sym);
             if (!es) {
-                pp_error("error : '" + sym->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error(LT("error : '") + sym->name + LT("' is invalid as a dimension in parameter '") + name + LT("'"));
                 continue; // don't insert invalid type in dimension list
             }
             if (es->is_bool()) {
                 // bool not allowed as parameter dimension
-                pp_error("error : '" + es->name + "' is invalid as a dimension in parameter '" + name + "'");
+                pp_error(LT("error : '") + es->name + LT("' is invalid as a dimension in parameter '") + name + LT("'"));
                 continue; // don't insert invalid type in dimension list
             }
             pp_enumeration_list2.push_back(es);
@@ -157,14 +157,14 @@ void ParameterSymbol::post_parse(int pass)
         if (source == fixed_parameter || source == scenario_parameter) {
             // rank check
             if (pp_enumeration_list.size() != pp_enumeration_list2.size()) {
-                pp_error("error : parameter '" + name + "'"
-                    " declared with rank " + to_string(pp_enumeration_list.size()) +
-                    " but initialized with rank " + to_string(pp_enumeration_list2.size()));
+                pp_error(LT("error : parameter '") + name + LT("'")
+                    LT(" declared with rank ") + to_string(pp_enumeration_list.size()) +
+                    LT(" but initialized with rank ") + to_string(pp_enumeration_list2.size()));
             }
             else {
                 if (!std::equal(pp_enumeration_list.begin(), pp_enumeration_list.end(), pp_enumeration_list2.begin())) {
-                    pp_error("error : parameter '" + name + "'"
-                        " declaration dimensions differ from initializion dimensions");
+                    pp_error(LT("error : parameter '") + name + LT("'")
+                        LT(" declaration dimensions differ from initializion dimensions"));
                 }
             }
         }
@@ -323,25 +323,25 @@ void ParameterSymbol::validate_initializer()
 
     // warn about parameters with missing values
     if (source == missing_parameter) {
-        pp_warning("warning : missing value for parameter '" + name + "'");
+        pp_warning(LT("warning : missing value for parameter '") + name + LT("'"));
         return;
     }
 
     // Presence check
     if (0 == initializer_list.size()) {
-        pp_error("error : missing initializer for parameter '" + name + "'");
+        pp_error(LT("error : missing initializer for parameter '") + name + LT("'"));
         return;
     }
 
     // Size check
     if (size() != initializer_list.size()) {
-        pp_error(redecl_loc, "error : initializer for parameter '" + name + "' has size " + to_string(initializer_list.size()) + " - should be " + to_string(size()));
+        pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(" - should be ") + to_string(size()));
     }
 
     // Element check
     for (auto iel : initializer_list) {
         if (!iel->is_valid_constant(*pp_datatype)) {
-            string msg = "error : '" + iel->value() + "' is not a valid '" + pp_datatype->name + "' in initializer for parameter '" + name + "'";
+            string msg = LT("error : '") + iel->value() + LT("' is not a valid '") + pp_datatype->name + LT("' in initializer for parameter '") + name + LT("'");
             pp_error(iel->decl_loc, msg);
         }
     }

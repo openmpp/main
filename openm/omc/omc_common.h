@@ -9,6 +9,3 @@
 
 //TODO Temporary cover for LT localisation function
 #define LT(x) x
-
-//TODO Temporary cover for localisation function for comments in generated code
-#define LT2(x) x

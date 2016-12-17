@@ -48,7 +48,7 @@ void EntityArrayMemberSymbol::post_parse(int pass)
             assert(pp_sym);
             auto es = dynamic_cast<EnumerationSymbol *>(pp_sym);
             if (!es) {
-                pp_error(decl_loc, "Error - invalid dimension '" + pp_sym->name + "' in '" + name + "'");
+                pp_error(decl_loc, LT("error : invalid dimension '") + pp_sym->name + LT("' in '") + name + LT("'"));
             }
             else {
                 pp_dimension_list.push_back(es);

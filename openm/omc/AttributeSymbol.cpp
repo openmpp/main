@@ -126,7 +126,7 @@ bool AttributeSymbol::is_valid_comparison(const ConstantSymbol * constant, strin
             // Valid
         }
         else {
-            err_msg = "Error - '" + constant->value() + "' is not a boolean constant";
+            err_msg = LT("error : '") + constant->value() + LT("' is not a boolean constant");
             return false;
         }
     }
@@ -136,13 +136,13 @@ bool AttributeSymbol::is_valid_comparison(const ConstantSymbol * constant, strin
             // Valid
         }
         else {
-            err_msg = "Error - '" + constant->value() + "' is not valid for the classification '" + pp_data_type->name + "'";
+            err_msg = LT("error : '") + constant->value() + LT("' is not valid for the classification '") + pp_data_type->name + LT("'");
             return false;
         }
     }
     else if (pp_data_type->is_range() ) {
         if (!constant->is_literal || !dynamic_cast<const IntegerLiteral *>(constant->literal)) {
-            err_msg = "Error - '" + constant->value() + "' is not valid for the range '" + pp_data_type->name + "'";
+            err_msg = LT("error : '") + constant->value() + LT("' is not valid for the range '") + pp_data_type->name + LT("'");
             return false;
         }
         else {
@@ -150,14 +150,14 @@ bool AttributeSymbol::is_valid_comparison(const ConstantSymbol * constant, strin
             assert(rs);
             int val = stoi(constant->value());
             if (val < rs->lower_bound || val > rs->upper_bound) {
-                err_msg = "Error - '" + constant->value() + "' is not within the range '" + pp_data_type->name + "'";
+                err_msg = LT("error : '") + constant->value() + LT("' is not within the range '") + pp_data_type->name + LT("'");
                 return false;
             }
         }
     }
     else if (pp_data_type->is_partition() ) {
         if (!constant->is_literal || !dynamic_cast<const IntegerLiteral *>(constant)) {
-            err_msg = "Error - '" + constant->value() + "' is not valid for the partition '" + pp_data_type->name + "'";
+            err_msg = LT("error : '") + constant->value() + LT("' is not valid for the partition '") + pp_data_type->name + LT("'");
             return false;
         }
         else {
@@ -165,7 +165,7 @@ bool AttributeSymbol::is_valid_comparison(const ConstantSymbol * constant, strin
             assert(ps);
             int val = stoi(constant->value());
             if (val < 0 || (size_t) val >= ps->pp_enumerators.size()) {
-                err_msg = "Error - '" + constant->value() + "' is not within the partition '" + pp_data_type->name + "'";
+                err_msg = LT("error : '") + constant->value() + LT("' is not within the partition '") + pp_data_type->name + LT("'");
                 return false;
             }
         }

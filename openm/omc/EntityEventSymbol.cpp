@@ -89,13 +89,13 @@ void EntityEventSymbol::post_parse(int pass)
         }
 
         if (!time_func_defined) {
-            pp_error("error : Missing definition for event time function '" + time_func->unique_name + "'");
+            pp_error(LT("error : Missing definition for event time function '") + time_func->unique_name + LT("'"));
         }
         if (!implement_func_defined) {
-            pp_error("error : Missing definition for event implement function '" + implement_func->unique_name + "'");
+            pp_error(LT("error : Missing definition for event implement function '") + implement_func->unique_name + LT("'"));
         }
         if (time_func_memory != implement_func_memory) {
-            pp_error("error : Mismatching arguments in event time function '" + time_func->unique_name + "' and event implement function '" + implement_func->unique_name + "'");
+            pp_error(LT("error : Mismatching arguments in event time function '") + time_func->unique_name + LT("' and event implement function '") + implement_func->unique_name + LT("'"));
         }
 
         // Now record the conclusion of the preceding chunk of code.
