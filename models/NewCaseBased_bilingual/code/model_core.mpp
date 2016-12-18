@@ -1,0 +1,66 @@
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(model_core, EN) Core simulation functionality
+/* NOTE(model_core, EN)
+	This module contains model settings and the central simulation function.
+*/
+
+// The model type
+model_type case_based;
+
+// The data type used to represent time
+time_type double;
+
+// Supported languages
+languages {
+	EN, // English
+	FR	// Français
+};
+
+/**
+ * Simulates a single case.
+ * 
+ * Called by code in a simulation framework module.
+ */
+void CaseSimulation(case_info &ci)
+{
+    extern void SimulateEvents(); // defined in a simulation framework module
+
+	// Initialize the person actor
+	auto prPerson = new Person();
+	prPerson->Start();
+
+	// Simulate events until there are no more.
+    SimulateEvents();
+}
+
+/**
+ * Invoked at the beginning of the simulation of a set of cases.
+ *
+ * In ompp, called before the simulation of the cases in each simulation member (sub-sample).
+ *
+ * In modgen, called at the start of each simulation thread. In modgen, a simulation thread
+ * may simulate cases from more than one simulation member (sub-sample), interleaved.
+ *
+ * @param [in,out] ci Additional information related to the case.
+ */
+void Simulation_start(case_info &ci)
+{
+    // Initialize case information in ci (if used).
+}
+
+/**
+ * Invoked at the end of the simulation of a set of cases.
+ *
+ * In ompp, called after the simulation of the cases in each simulation member (sub-sample).
+ *
+ * In modgen, called at the end of each simulation thread. In modgen, a simulation thread
+ * may simulate cases from more than one simulation member (sub-sample), interleaved.
+ *
+ * @param [in,out] ci Additional information related to the case.
+ */
+void Simulation_end(case_info &ci)
+{
+    // Finalize case information in ci (if used).
+}
