@@ -26,6 +26,9 @@ for my $file (@files) {
 	close FILE;
 }
 
+print "[FR]\n";
 foreach my $string ( sort keys %strings ) {
-   print %strings{$string}.": ".$string."\n";
+   #print %strings{$string}.": ".$string."\n";
+   print '"'.$string.'" = '."\n";
+   print '"'.$string.'"'."\n\n";
 }
