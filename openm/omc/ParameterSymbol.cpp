@@ -81,14 +81,14 @@ void ParameterSymbol::post_parse(int pass)
         assert(!pp_datatype); // no use allowed in parse phase
         pp_datatype = dynamic_cast<TypeSymbol *>(pp_symbol(datatype));
         if (!pp_datatype) {
-            pp_error(LT("error : '") + datatype->name + LT("' is not a datatype in parameter '") + name + LT("'"));
+            pp_error(LT("error : '") + datatype->name + LT("' is not a data-type in parameter '") + name + LT("'"));
         }
         if (datatype2) {
             // redeclaration
             assert(!pp_datatype2); // no use allowed in parse phase
             pp_datatype2 = dynamic_cast<TypeSymbol *>(pp_symbol(datatype2));
             if (!pp_datatype2) {
-                pp_error(LT("error : '") + (*datatype2)->name + LT("' is not a datatype in parameter '") + name + LT("'"));
+                pp_error(LT("error : '") + (*datatype2)->name + LT("' is not a data-type in parameter '") + name + LT("'"));
             }
             if (pp_datatype != pp_datatype2) {
                 pp_error(LT("error : parameter '") + name + LT("' declared with type '") + pp_datatype->name + LT("' but initialized with type '") + pp_datatype2->name + LT("'"));
@@ -164,7 +164,7 @@ void ParameterSymbol::post_parse(int pass)
             else {
                 if (!std::equal(pp_enumeration_list.begin(), pp_enumeration_list.end(), pp_enumeration_list2.begin())) {
                     pp_error(LT("error : parameter '") + name + LT("'")
-                        LT(" declaration dimensions differ from initializion dimensions"));
+                        LT(" declaration dimensions differ from initialisation dimensions"));
                 }
             }
         }

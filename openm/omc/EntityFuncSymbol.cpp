@@ -28,7 +28,7 @@ void EntityFuncSymbol::post_parse(int pass)
                 defn_loc = search->second;
             }
             else {
-                pp_warning(LT("warning : Entity member function '") + unique_name + LT("' was declared but has no definition."));
+                pp_warning(LT("warning : entity member function '") + unique_name + LT("' was declared but has no definition."));
             }
 
             // Construct the set of all identifiers used in the function body.

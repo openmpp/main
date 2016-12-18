@@ -844,28 +844,28 @@ void DerivedAttributeSymbol::assign_pp_members()
         pp_av1 = dynamic_cast<AttributeSymbol *> (pp_symbol(av1));
         if (!pp_av1) {
             pp_error(LT("error : '") + (*av1)->name + LT("' is not an attribute of ") + agent->name);
-            throw HelperException(LT("fatal error: stopping post parse processing"));
+            throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
         }
     }
     if (av2) {
         pp_av2 = dynamic_cast<AttributeSymbol *> (pp_symbol(av2));
         if (!pp_av2) {
             pp_error(LT("error : '") + (*av2)->name + LT("' is not an attribute of ") + agent->name);
-            throw HelperException(LT("fatal error: stopping post parse processing"));
+            throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
         }
     }
     if (prt) {
         pp_prt = dynamic_cast<PartitionSymbol *> (pp_symbol(prt));
         if (!pp_prt) {
             pp_error(LT("error : '") + (*prt)->name + LT("' is not a partition"));
-            throw HelperException(LT("fatal error: stopping post parse processing"));
+            throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
         }
     }
     if (cls) {
         pp_cls = dynamic_cast<ClassificationSymbol *> (pp_symbol(cls));
         if (!pp_cls) {
             pp_error(LT("error : '") + (*cls)->name + LT("' is not a classification"));
-            throw HelperException(LT("fatal error: stopping post parse processing"));
+            throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
         }
     }
 }

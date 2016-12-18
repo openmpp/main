@@ -293,7 +293,7 @@ int main(int argc, char * argv[])
         string scenario_name = argStore.strOption(OmcArgKey::scenarioName);
         if (scenario_name.empty()) {
             scenario_name = "Default";
-            theLog->logFormatted("Scenario name not specified - using default name 'Default'. Use -s option to specify scenario name.");
+            theLog->logMsg("Scenario name not specified - using default name 'Default'. Use -s option to specify scenario name.");
         }
 
         // get list of source file names in specified directory or current directory by default
@@ -410,7 +410,7 @@ int main(int argc, char * argv[])
         // open & prepare pass-through / markup stream om_developer.cpp
         ofstream om_developer_cpp(outDir + "om_developer.cpp", ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_developer_cpp(&om_developer_cpp, &ofstream::close);   // close on exit
-        if (om_developer_cpp.fail()) throw HelperException(LT("error : Unable to open %s for writing"), "om_developer.cpp");
+        if (om_developer_cpp.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_developer.cpp");
 
     #if defined(_MSC_VER)
         // UTF-8 BOM for Microsoft compiler
@@ -542,7 +542,7 @@ int main(int argc, char * argv[])
         MetaModelHolder metaRows;
         unique_ptr<IModelBuilder> builder(IModelBuilder::create(sqlProviders, sqlDir, outDir));
         if (!builder->isSqliteDb())
-            theLog->logMsg("omc : warning : model SQLite database not created");
+            theLog->logMsg("warning : model SQLite database not created");
 
         CodeBlock missing_param_defs; // Generated definitions for missing parameters
         CodeGen cg(
@@ -630,7 +630,7 @@ int main(int argc, char * argv[])
 
         // insert model workset int SQLite database
         if (!builder->isSqliteDb()) {
-            theLog->logMsg("omc : warning : model SQLite database not created");
+            theLog->logMsg("warning : model SQLite database not created");
         }
         else {
             // start model default working set
@@ -653,7 +653,7 @@ int main(int argc, char * argv[])
             theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
 
             // complete model default working set
-            theLog->logFormatted("Finalize scenario processing");
+            theLog->logMsg("Finalize scenario processing");
             builder->endWorkset(metaRows, metaSet);
         }
 
@@ -734,7 +734,7 @@ static list<string> listSourceFiles(const string & i_srcPath, const list<string>
     // open source directory or current directory if source path is empty
     string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
     DIR * dir = opendir(srcPath.c_str());
-    if (dir == NULL) throw HelperException(LT("error : Can not open source directory: %s"), srcPath.c_str());
+    if (dir == NULL) throw HelperException(LT("error : cannot open source directory %s"), srcPath.c_str());
 
     // collect list of .mpp, .ompp or .dat files
     try {

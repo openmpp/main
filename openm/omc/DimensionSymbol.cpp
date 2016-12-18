@@ -56,7 +56,7 @@ void DimensionSymbol::post_parse(int pass)
             // Assign direct pointer to enumeration for post-parse use
             pp_enumeration = dynamic_cast<EnumerationSymbol *>(pp_attribute->pp_data_type);
             if (!pp_enumeration) {
-                pp_error(LT("error : the datatype of '") + pp_attribute->name + LT("' must be an enumeration to be used as a dimension"));
+                pp_error(LT("error : the data-type of '") + pp_attribute->name + LT("' must be an enumeration to be used as a dimension"));
             }
         }
         break;

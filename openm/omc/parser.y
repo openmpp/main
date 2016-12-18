@@ -598,7 +598,7 @@ decl_use:
 								}
 							}
 							if (!found) {
-								error(@path, LT("error: File '") + use_file + LT("' not found in any use folder."));
+								error(@path, LT("error: file '") + use_file + LT("' not found in any use folder."));
 							}
                             delete $path;
                             $path = nullptr;
@@ -927,7 +927,7 @@ decl_aggregation:
                         {
                             if (AggregationSymbol::exists($from_class, $to_class)) {
                                 // redeclaration not allowed
-                                error(@kw, LT("error: An aggregation from '") + $from_class->name + LT("' to '") + $to_class->name + LT("' already exists"));
+                                error(@kw, LT("error: an aggregation from '") + $from_class->name + LT("' to '") + $to_class->name + LT("' already exists"));
                             }
                             // create new AggregationSymbol
                             auto *agg = new AggregationSymbol( $from_class, $to_class, @kw );
@@ -2205,7 +2205,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 table = dynamic_cast<EntityTableSymbol *>($table);
                                 assert(table); // grammar/logic guarantee
                                 // redeclaration not allowed
-                                error(@table, LT("error: A table named '") + $table->name + LT("' already exists"));
+                                error(@table, LT("error: a table named '") + $table->name + LT("' already exists"));
                             }
                             // Set agent context and table context for body of table declaration
                             pc.set_agent_context( $agent );
@@ -2493,7 +2493,7 @@ decl_derived_table:
                                 derived_table = dynamic_cast<DerivedTableSymbol *>($derived_table);
                                 assert(derived_table); // grammar/logic guarantee
                                 // redeclaration not allowed
-                                error(@derived_table, LT("error: A derived table named '") + derived_table->name + LT("' already exists"));
+                                error(@derived_table, LT("error: a derived table named '") + derived_table->name + LT("' already exists"));
                             }
                             // Set derived table context for body of derived table declaration
                             pc.set_derived_table_context( derived_table );

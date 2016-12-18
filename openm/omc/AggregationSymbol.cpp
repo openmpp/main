@@ -45,7 +45,7 @@ void AggregationSymbol::post_parse(int pass)
             break;
         }
         if (0 != symbol_list.size() % 2) {
-            pp_error(LT("error : Non-even number of enumerators in the aggregation"));
+            pp_error(LT("error : non-even number of enumerators in the aggregation"));
             break;
         }
         

@@ -702,7 +702,7 @@ void Symbol::pp_error(const string& msg)
     if (post_parse_errors >= max_error_count) {
         string msg = LT("error : ") + to_string(post_parse_errors) + LT(" errors encountered");
         theLog->logFormatted(msg.c_str());
-        throw HelperException(LT("fatal error: stopping post parse processing"));
+        throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
     }
 }
 
@@ -710,7 +710,7 @@ void Symbol::pp_fatal(const string& msg)
 {
     post_parse_errors++;
     pp_log_message(msg);
-    throw HelperException(LT("fatal error: stopping post parse processing"));
+    throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
 }
 
 void Symbol::pp_warning(const string& msg)
@@ -1053,7 +1053,7 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
     if (post_parse_errors >= max_error_count) {
         string msg = LT("error : ") + to_string(post_parse_errors) + LT(" errors encountered");
         theLog->logFormatted(msg.c_str());
-        throw HelperException(LT("fatal error: stopping post parse processing"));
+        throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
     }
 }
 
@@ -1121,7 +1121,7 @@ void Symbol::post_parse_all()
         }
         ++type_change_passes;
         if (type_change_passes > 20) {
-            theLog->logMsg("error - More than 20 post-parse type change passes.");
+            theLog->logMsg("error : more than 20 post-parse type change passes.");
             throw HelperException(LT("Finish omc"));
         }
     }
@@ -1309,12 +1309,12 @@ void Symbol::post_parse_all()
             if (distance(range.first, range.second) > 1) {
                 dups_found = true;
                 post_parse_errors++;
-                string msg = LT("omc : error : Duplicate definition of function ") + sg->prefix + suffix;
+                string msg = LT("error : duplicate definition of function ") + sg->prefix + suffix;
                 theLog->logMsg(msg.c_str());
             }
             if ((suffix[0] == '0' && suffix.length() > 1) || std::string::npos != suffix.find_first_not_of("0123456789")) {
                 post_parse_warnings++;
-                string msg = LT("omc : warning : Unrecognized suffix in ") + sg->prefix + LT(" function ") + sg->prefix + suffix;
+                string msg = LT("warning : unrecognised suffix in ") + sg->prefix + LT(" function ") + sg->prefix + suffix;
                 theLog->logMsg(msg.c_str());
             }
             else {
