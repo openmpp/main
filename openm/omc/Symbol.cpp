@@ -1153,6 +1153,16 @@ void Symbol::post_parse_all()
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
     pp_all_aggregations.sort([](AggregationSymbol *a, AggregationSymbol *b) { return a->name < b->name; });
 
+    // Issue deprecated warning if any use of modgen 'string' in model source
+    if (pp_all_strings.size() > 0) {
+        ostringstream ss;
+        ss << LT("warning : ")
+            << pp_all_strings.size()
+            << LT(" uses of deprecated 'string' statement - use model.message.ini instead for multilingual support.");
+        theLog->logMsg(ss.str().c_str());
+        Symbol::post_parse_warnings++;
+    }
+
     // Assign numeric identifiers to symbols in selected collections
     // These numeric id's are used to communicate with the meta-data API.
     {
