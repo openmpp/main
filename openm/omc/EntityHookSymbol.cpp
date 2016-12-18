@@ -82,13 +82,13 @@ void EntityHookSymbol::post_parse(int pass)
         // assign direct pointer to the 'from' entity function symbol for use post-parse
         pp_from = dynamic_cast<EntityFuncSymbol *> (pp_symbol(from));
         if (!pp_from) {
-            pp_error(LT("error : '") + from->name + LT("' must be a function member of agent '") + pp_agent->name + LT("'"));
+            pp_error(LT("error : '") + from->name + LT("' must be a function member of entity '") + pp_agent->name + LT("'"));
             break;
         }
         if (!to_is_self_scheduling) {
             pp_to_fn = dynamic_cast<EntityFuncSymbol *> (pp_symbol(to));
             if (!pp_to_fn) {
-                pp_error(LT("error : '") + to->name + LT("' must be a function member of agent '") + pp_agent->name + LT("'"));
+                pp_error(LT("error : '") + to->name + LT("' must be a function member of entity '") + pp_agent->name + LT("'"));
                 break;
             }
         }
