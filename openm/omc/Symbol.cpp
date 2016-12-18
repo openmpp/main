@@ -64,6 +64,8 @@ vector<string> Symbol::use_folders;
 
 list<string> Symbol::all_source_files;
 
+list<string> Symbol::use_source_files;
+
 symbol_map_type Symbol::symbols;
 
 list<symbol_map_value_type> Symbol::pp_symbols;
@@ -1067,6 +1069,17 @@ void Symbol::pp_logmsg(const yy::location& loc, const string& msg)
     else {
         theLog->logFormatted("%s", msg.c_str());
     }
+}
+
+// static
+bool Symbol::is_use_file(const yy::location& loc)
+{
+    for (auto source_file : use_source_files) {
+        if (source_file == *loc.begin.filename) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Symbol::post_parse_all()

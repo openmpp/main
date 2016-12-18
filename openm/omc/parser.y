@@ -594,6 +594,7 @@ decl_use:
 								if (openm::isFileExists(use_file_full.c_str())) {
 									found = true;
 									Symbol::all_source_files.push_back(use_file_full);
+									Symbol::use_source_files.push_back(use_file_full);
 									break;
 								}
 							}

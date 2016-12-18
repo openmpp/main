@@ -799,6 +799,13 @@ public:
     static void pp_error(const yy::location& loc, const string& msg);
 
     /**
+     * Determines if location is in a source file included via a 'use' statement.
+     * 
+     * @param loc The location.
+     */
+    static bool is_use_file(const yy::location& loc);
+
+    /**
      * Perform operations after the parser has parsed all input files.
      * 
      * This includes validating each symbol and populating post-parse symbol members containing
@@ -855,6 +862,14 @@ public:
      * the 'use' statement from within model source code.
      */
     static list<string> all_source_files;
+
+	/**
+     * 'use' source files for the model.
+     * 
+     * A subset of all_source_files, consisting just of those which 
+     * were included in compilation through a 'use' statement.
+     */
+    static list<string> use_source_files;
 
     /**
      * The symbol table.

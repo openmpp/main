@@ -152,11 +152,14 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, yy:
         if (tok_prev1.first == token::TK_LEFT_PAREN) {
             if (tok_prev2.first == token::SYMBOL) {
                 if (Symbol::tran_funcs.count(tok_prev2.second) > 0) {
-                    // remove the enclosing double quotes from the string literal
-                    assert(tok_str.length() >= 2); // scanner guarantee
-                    auto str = tok_str.substr(1, tok_str.length() - 2);
-                    // record the translatable string literal
-                    Symbol::tran_strings.insert(str);
+                    // Ignore occurrences in 'use' source files.
+                    if (!Symbol::is_use_file(*loc)) {
+                        // remove the enclosing double quotes from the string literal
+                        assert(tok_str.length() >= 2); // scanner guarantee
+                        auto str = tok_str.substr(1, tok_str.length() - 2);
+                        // record the translatable string literal
+                        Symbol::tran_strings.insert(str);
+                    }
                 }
             }
         }

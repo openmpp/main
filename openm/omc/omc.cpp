@@ -479,7 +479,9 @@ int main(int argc, char * argv[])
             }
         }
 
-        theLog->logFormatted("Identified %d translatable C++ strings in model source", Symbol::tran_strings.size());
+        if (Symbol::tran_strings.size() > 0) {
+            theLog->logFormatted("Identified %d translatable C++ strings in model source", Symbol::tran_strings.size());
+        }
 
         try {
             theLog->logMsg("Post-parse processing");
