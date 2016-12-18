@@ -1,0 +1,52 @@
+//LABEL(model_core, EN) Core simulation functions
+
+/* NOTE(model_core, EN)
+	This module contains core simulation functions and definitions.
+*/
+
+// The model type
+model_type time_based, just_in_time;
+
+// The data type used to represent time
+time_type double;
+
+// Other data types
+//real_type		float;
+//counter_type	ushort;
+//integer_type	short;
+
+// The following option reduces memory use at the expense of speed
+//options packing_level=2;
+
+// Supported languages
+languages 
+{
+	EN // English
+};
+
+// This function is called by the simulation framework to simulate a replicate.
+void Simulation()
+{
+    extern void LogSimulationStart(); // defined elsewhere
+    extern void SimulateEvents(); // defined elsewhere
+
+    // Write simulation start message to log
+    LogSimulationStart();
+
+	// Create the single Ticker entity.
+	auto paTicker = new Ticker();
+	// Enter it into the the simulation.
+	paTicker->Start();
+
+	// The initial population
+	for ( int nJ = 0; nJ < StartingPopulationSize; nJ++ )
+	{
+    	// Create a Person entity.
+		auto paPerson = new Person();
+    	// Enter it into the simulation.
+		paPerson->Start();
+	}
+
+    // Simulate events until there are no more.
+    SimulateEvents();
+}
