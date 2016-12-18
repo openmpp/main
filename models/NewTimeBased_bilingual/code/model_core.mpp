@@ -19,9 +19,9 @@ time_type double;
 //options packing_level=2;
 
 // Supported languages
-languages 
-{
-	EN // English
+languages {
+	EN, // English
+	FR	// Français
 };
 
 // This function is called by the simulation framework to simulate a replicate.

@@ -1,0 +1,281 @@
+//LABEL ( language_FR, EN ) French translations of NewTimeBased strings
+
+/* NOTE ( language_FR, EN )	This module contains French translations of NewTimeBased labels and notes.
+*/
+
+
+
+
+//==============================/
+//                              /
+// classification               /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// range                        /
+//                              /
+//==============================/
+
+//LABEL ( REPORT_TIME, FR ) Intervalles de reportages
+
+
+//==============================/
+//                              /
+// partition                    /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// parameter group              /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// parameter                    /
+//                              /
+//==============================/
+
+//LABEL ( MortalityHazard, FR ) Hasard annuel de mortalité
+
+/* NOTE ( MortalityHazard, FR )		
+Hasard constant de mortalité ce qui donne une fonction de 
+	survie exponentielle.
+	*/
+
+//LABEL ( StartingPopulationSize, FR ) Taille de la population de départ
+
+/* NOTE ( StartingPopulationSize, FR )		
+	La taille de la population peut augmenter ou diminuer pendant la simulation.
+	*/
+
+
+
+//==============================/
+//                              /
+// actor                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// actor Person                 /
+//==============================/
+
+
+//LABEL ( Person, FR ) Individu
+
+
+
+     //==============================/
+     // state                        /
+     //==============================/
+
+
+
+	//LABEL ( Person.age, FR) Âge
+/* NOTE ( Person.age, FR )		L'âge est une quantité continue dans ce modèle.
+		L'unité d'âge est une année.
+	*/
+
+     //LABEL ( Person.alive, FR ) Vivant(e)
+
+/* NOTE ( Person.alive, FR )		A la valeur « TRUE » lorsque l'acteur 
+	démarre, et « FALSE » juste avant que l'acteur ne termine.
+		Puisque la valeur numérique de « TRUE » est 1 et que la valeur 
+		numérique de « FALSE » est 0, cet état peut également être 
+		utilisé pour compter les acteurs dans les tableaux.
+	*/
+
+	//LABEL( Person.time, FR) Temps
+     //LABEL ( Person.report_time, FR ) Temps de reportage
+
+/* NOTE ( Person.time, FR )		Le temps est continu dans ce modèle. 
+		L'unité de temps est une année.
+	*/
+
+
+
+     //==============================/
+     // event                        /
+     //==============================/
+
+
+     //LABEL ( Person.MortalityEvent, FR ) Événement de mortalité
+
+/* NOTE ( Person.MortalityEvent, FR )	Cet événement implémente un hasard constant de mortalité.
+*/
+
+
+
+     //==============================/
+     // function                     /
+     //==============================/
+
+
+     //LABEL ( Person.Finish, FR ) Termine l'acteur
+
+/* NOTE ( Person.Finish, FR )	La fonction « Finish » termine la simulation de l'acteur.
+*/
+
+     //LABEL ( Person.Start, FR ) Démarre l'acteur
+
+/* NOTE ( Person.Start, FR )	La fonction « Start » initialise les états de l'acteur avant 
+	que la simulation de l'acteur ne commence.
+*/
+
+
+
+//==============================/
+// actor Ticker                 /
+//==============================/
+
+
+//LABEL ( Ticker, FR ) Acteur pour synchroniser les activités au niveau de la population
+
+
+
+     //==============================/
+     // state                        /
+     //==============================/
+
+
+     //LABEL ( Ticker.next_tick, FR ) Temps pour le prochain événement tic-tac
+     //LABEL ( Ticker.report_time, FR ) Temps de reportage
+
+
+     //==============================/
+     // event                        /
+     //==============================/
+
+
+     //LABEL ( Ticker.TickEvent, FR ) Événement tic-tac
+
+/* NOTE ( Ticker.TickEvent, FR )	Incrémente l'horloge et synchronise les acteurs pour les rapports
+*/
+
+
+
+     //==============================/
+     // function                     /
+     //==============================/
+
+
+     //LABEL ( Ticker.Finish, FR ) Termine l'acteur
+
+/* NOTE ( Ticker.Finish, FR )	La fonction « Finish » termine la simulation de l'acteur « Ticker » .
+*/
+
+     //LABEL ( Ticker.Start, FR ) Démarre l'acteur
+
+/* NOTE ( Ticker.Start, FR ) 
+	Initialises l'acteur « Ticker ».
+*/
+
+
+
+//==============================/
+//                              /
+// ensembles d'acteurs          /
+//                              /
+//==============================/
+
+	//LABEL( asAllPerson, FR) Tous les acteurs « Person »
+
+//==============================/
+//                              /
+// table group                  /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// table                        /
+//                              /
+//==============================/
+
+
+
+//==============================/
+// table DurationOfLife         /
+//==============================/
+
+
+//LABEL ( DurationOfLife, FR ) Durée de vie
+
+/* NOTE ( DurationOfLife, FR )	Ce tableau contient les statistiques reliées à la durée de vie.
+*/
+
+
+     //LABEL ( DurationOfLife.Dim0, FR ) Caractéristiques démographiques
+
+
+     //LABEL ( DurationOfLife.Expr0, FR ) Taille de la population
+     //LABEL ( DurationOfLife.Expr1, FR ) Durée de vie minimale
+     //LABEL ( DurationOfLife.Expr2, FR ) Durée de vie maximale
+     //LABEL ( DurationOfLife.Expr3, FR ) Espérance de vie
+
+
+//==============================/
+//                              /
+// user table                   /
+//                              /
+//==============================/
+
+
+
+//==============================/
+//                              /
+// module                       /
+//                              /
+//==============================/
+
+//LABEL ( model_core, FR ) Fonctions de simulation de base
+
+/* NOTE ( model_core, FR )	Ce module contient les définitions et fonctions de simulation de base.
+*/
+
+//LABEL(model_info, FR) Information sur le modèle
+
+/* NOTE(model_info, EN)
+	Ce module contient la version, la description, et les notes du modèle.
+*/
+
+//LABEL (language_FR, FR) Traduction française des chaînes du modèle.
+
+/* NOTE(language_FR, FR) 
+Ce module contient la traduction française des labels et notes du modèle.
+*/
+
+//LABEL(modgen_strings, FR)	Chaînes de caractères spécifiques au modèle
+
+/*NOTE(modgen_strings, FR)
+	Ce module contient les chaînes de caractères spécifiques au modèle affichées dans le 
+	dialogue de progrès.
+*/
+
+//LABEL ( PersonCore, FR ) Fonctionnalités de base de l'acteur Person
+
+/* NOTE ( PersonCore, FR )	Ce module contient les informations de base qui définissent le cas de l'acteur Person.
+*/
+
+//LABEL ( TickerCore, FR ) Définition et initialisation de l'acteur « Ticker »
+
+/* NOTE ( TickerCore, FR )	
+	Ce module contient els informations de base associées avec l'acteur « Ticker ».
+	Une seule instance de l'acteur « Ticker » est créée dans une simulation.  Il est utilisé pour synchroniser
+	le temps parmi tous les acteurs de la population afin d'assurer des rapports fidèles.
+*/
+

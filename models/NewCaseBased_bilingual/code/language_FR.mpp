@@ -190,10 +190,10 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
 /* NOTE ( model_core, FR )	Ce module contient les définitions et fonctions de simulation de base.
 */
 
-//LABEL(model_info, FR) Model information sur le modèle
+//LABEL(model_info, FR) Information sur le modèle
 
 /* NOTE(model_info, EN)
-	Ce mdoule contient la version, la description, et les notes du modèle.
+	Ce module contient la version, la description, et les notes du modèle.
 */
 
 //LABEL (language_FR, FR) Traduction française des chaînes du modèle.

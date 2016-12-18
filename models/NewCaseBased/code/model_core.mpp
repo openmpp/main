@@ -14,8 +14,7 @@ time_type double;
 
 // Supported languages
 languages {
-	EN, // English
-	FR	// Français
+	EN // English
 };
 
 /**
