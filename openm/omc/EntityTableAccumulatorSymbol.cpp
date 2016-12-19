@@ -5,12 +5,16 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "libopenm/omError.h"
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableSymbol.h"
 #include "AttributeSymbol.h"
 #include "EntityInternalSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
 #include "CodeBlock.h"
+
+using namespace std;
+using namespace openm;
 
 
 // static
@@ -72,9 +76,11 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
         assert(pp_table); // parser guarantee
 
         if (accumulator != token::TK_unit) {
-            // assign direct pointer to agentvar for post-parse use
+            // assign direct pointer to attribute for post-parse use
             pp_agentvar = dynamic_cast<AttributeSymbol *> (pp_symbol(agentvar));
-            assert(pp_agentvar); // parser guarantee
+            if (pp_agentvar == nullptr) {
+                throw HelperException(LT("error : %s is not an attribute in table %s"), (*agentvar)->name.c_str(), table->name.c_str());
+            }
 
             // assign direct pointer to EntityTableMeasureAttributeSymbol for post-parse use
             pp_analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *> (pp_symbol(analysis_agentvar));
