@@ -479,7 +479,7 @@ int main(int argc, char * argv[])
             }
         }
 
-        if (Symbol::tran_strings.size() > 0) {
+        if (Symbol::tran_strings.size() > 0 && LanguageSymbol::number_of_languages() > 1) {
             theLog->logFormatted("Identified %d translatable C++ strings in model source", Symbol::tran_strings.size());
         }
 
