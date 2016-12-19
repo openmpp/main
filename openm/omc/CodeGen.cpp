@@ -41,7 +41,7 @@ void CodeGen::do_all()
     do_ModelShutdown();
     do_API_entries();
     do_ParameterNameSize();
-    do_model_strings();
+    if (!Symbol::pp_all_strings.empty()) do_model_strings();
 
     // set meta row values and calculate metadata digests: model, types, parameters, output tables
     modelBuilder->setModelMetaRows(metaRows);
@@ -229,7 +229,7 @@ void CodeGen::do_name_digest(void)
 void CodeGen::do_model_strings()
 {
     c += "// implementation of Modgen API for model-specific strings";
-    c += "const std::string ModelString(const std::string string_name)";
+    c += "const char * ModelString(const char * string_name)";
     c += "{";
     c += "static std::map<std::string, std::string> string_map {";
     for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
@@ -239,7 +239,7 @@ void CodeGen::do_model_strings()
         c += "// strings for " + lang_name;
         for (auto modgen_string : Symbol::pp_all_strings) {
             c += "{"
-                  "\"" + lang_name + "@" + modgen_string->name + "\""
+                  "\"" + normalizeLanguageName(lang_name) + "@" + modgen_string->name + "\""
                   ", "
                   "\"" + modgen_string->pp_labels[j] + "\""
                   "},";
@@ -249,13 +249,18 @@ void CodeGen::do_model_strings()
     c += "";
     c += "// get list of user prefered languages";
     c += "// if user language == en_CA.UTF-8 then list is: (en-ca, en)";
-    c += "list<string> langLst = splitLanguageName(getDefaultLocaleName());";
+    c += "static bool isLangDone = false; // TODO: temporary, work-in-progress";
+    c += "static list<string> langLst;";
+    c += "if (!isLangDone) {";
+    c += "langLst = splitLanguageName(getDefaultLocaleName());";
     c += "langLst.push_back(normalizeLanguageName(\"" + Symbol::pp_all_languages.front()->name +"\")); // append default model language to the bottom of the list";
+    c += "isLangDone = true;";
+    c += "}";
     c += "";
     c += "for (const string & lang : langLst) {";
     c += "auto search = string_map.find(lang + \"@\" + string_name);";
     c += "if (search != string_map.end()) {";
-    c += "return search->second;";
+    c += "return search->second.c_str();";
     c += "}";
     c += "}";
     c += "";
