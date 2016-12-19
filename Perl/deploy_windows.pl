@@ -52,7 +52,9 @@ my @models = (
 	'OzProjGen',
 	'RiskPaths',
 	'NewCaseBased',
+	'NewCaseBased_bilingual',
 	'NewTimeBased',
+	'NewTimeBased_bilingual',
 	);
 
 print "Build deployed models\n";
