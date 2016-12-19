@@ -142,8 +142,8 @@ my $dbcopy_exe = "${om_root}/bin/dbcopy.exe" or die;
 -f $dbcopy_exe or die "dbcopy utility $dbcopy_exe not found, stopped";
 
 # Starting database with Default scenario (from omc)
-my $Default_sqlite = "${model_dir}/output/${model_name}_Default.sqlite";
--f $Default_sqlite or die;
+my $start_sqlite = "${model_dir}/output/${model_name}.sqlite";
+-f $start_sqlite or die;
 
 our @run_inis;
 our @run_names;
@@ -194,7 +194,7 @@ if ($assemble == 0 && $clean == 0) {
 		
 		# The output database for this batch
 		my $database_sqlite = "${output_dir}/run_${run}.sqlite";
-		copy $Default_sqlite, $database_sqlite or die;
+		copy $start_sqlite, $database_sqlite or die;
 		
 		($merged, $retval) = tee_merged {
 			my @args = (
@@ -221,7 +221,7 @@ elsif ($assemble == 1) {
 	my $out_database_sqlite = "${output_dir}/runs.sqlite";
 	# Create db for assembled results
 	use File::Copy;
-	copy $Default_sqlite, $out_database_sqlite or die;
+	copy $start_sqlite, $out_database_sqlite or die;
 
 	for my $run (0..$#run_names) {
 		my $run_name = $run_names[$run];

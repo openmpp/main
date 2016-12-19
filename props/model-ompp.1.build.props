@@ -53,7 +53,7 @@
     
     <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
 
-    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sqlite</PUBLISH_SQLITE>
+    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
 
     <!-- 
     The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,
