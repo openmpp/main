@@ -164,7 +164,7 @@ void EntityTableSymbol::post_parse(int pass)
             }
             // Attributes used in measures
             for (auto ma : pp_measure_attributes) {
-                all_attributes.push_back(ma->pp_agentvar);
+                all_attributes.push_back(ma->pp_attribute);
             }
             // Attribute of filter (if present)
             if (filter) {
@@ -589,7 +589,7 @@ void EntityTableSymbol::build_body_init_increment()
         }
 
         if (ma->need_value_in) {
-            auto attr = ma->pp_agentvar;
+            auto attr = ma->pp_attribute;
             assert(attr); // logic guarantee
             c += "{";
             c += "// interval(" + attr->name +")";
@@ -600,7 +600,7 @@ void EntityTableSymbol::build_body_init_increment()
             c += "}";
         }
         if (ma->need_value_in_event) {
-            auto attr = ma->pp_agentvar;
+            auto attr = ma->pp_attribute;
             assert(attr); // logic guarantee
             assert(attr->lagged);
             assert(attr->lagged_event_counter);

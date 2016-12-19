@@ -48,7 +48,7 @@ class ExprForTable;
 extern char *yytext;
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_type acc, token_type incr, token_type table_op, ParseContext & pc);
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc);
 
 }
 
@@ -490,7 +490,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
 %type  <pval_Symbol>    derived_attribute_trigger
 %type  <pval_Symbol>    derived_attribute_other
 %type  <pval_Symbol>    any_attribute
-%type  <pval_Symbol>    link_to_agentvar
+%type  <pval_Symbol>    link_to_attribute
 %type  <pval_Symbol>    hook_to_symbol
 %type  <pval_Literal>   event_priority_opt
 %type  <pval_Literal>   hook_order_opt
@@ -1975,7 +1975,7 @@ expr_for_agentvar[result]:
 
 
 /*
- * the 'type' part of a parameter, agentvarm or agent function declaration
+ * the 'type' part of a parameter, agentvar or agent function declaration
  */
 
 decl_type_part:
@@ -2238,10 +2238,10 @@ table_filter_opt:
     "[" expr_for_agentvar[root] "]"
                         {
                             EntityTableSymbol *table = pc.get_table_context();
-                            // create an identity agentvar for the filter
+                            // create an identity attribute for the filter
                             auto iav = new IdentityAttributeSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
                             assert(iav);
-                            // note identity agentvar in table
+                            // note identity attribute in table
                             table->filter = iav;
                         }
     | /* nothing */
@@ -2322,7 +2322,7 @@ expr_for_table[result]:
       // Ex. unit
     | "unit"
                         {
-                            // This is the special accumulator wich counts increments
+                            // This is the special accumulator which counts increments
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
                         }
@@ -2583,10 +2583,10 @@ derived_table_placeholder_list:
 symbol_in_expr:
       SYMBOL
     | derived_attribute
-    | link_to_agentvar
+    | link_to_attribute
 	;
 
-link_to_agentvar:
+link_to_attribute:
       SYMBOL[link] "->"
                         {
                             // Tell the scanner not to apply agent scope resolution to the following 'word'
@@ -2594,13 +2594,13 @@ link_to_agentvar:
                             // depends on the nature of the symbol on the left of "->", whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
-            STRING[agentvar]
+            STRING[attribute]
                         {
                             // Create LinkToAttributeSymbol.  Store the r.h.s of pointer operator as a string for
                             // subsequent post-parse resolution.
-                            $link_to_agentvar = LinkToAttributeSymbol::create_symbol(pc.get_agent_context(), $link, *$agentvar);
-                            delete $agentvar; // delete the string created using new in scanner
-                            $agentvar = nullptr;
+                            $link_to_attribute = LinkToAttributeSymbol::create_symbol(pc.get_agent_context(), $link, *$attribute);
+                            delete $attribute; // delete the string created using new in scanner
+                            $attribute = nullptr;
                         }
         ;
 
@@ -3118,19 +3118,19 @@ ldouble_synonym:
 %%
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
 {
     Symbol *table = pc.get_table_context();
-    EntityTableMeasureAttributeSymbol *analysis_agentvar = nullptr;
-    if (agentvar) {
-        // Also create symbol for associated analysis agentvar if not already present
-        if ( EntityTableMeasureAttributeSymbol::exists( table, agentvar) ) {
-            string unique_name = EntityTableMeasureAttributeSymbol::symbol_name( table, agentvar);
-            analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *>(Symbol::get_symbol( unique_name ));
-            assert( analysis_agentvar );
+    EntityTableMeasureAttributeSymbol *analysis_attribute = nullptr;
+    if (attribute) {
+        // Also create symbol for associated analysis attribute if not already present
+        if ( EntityTableMeasureAttributeSymbol::exists( table, attribute) ) {
+            string unique_name = EntityTableMeasureAttributeSymbol::symbol_name( table, attribute);
+            analysis_attribute = dynamic_cast<EntityTableMeasureAttributeSymbol *>(Symbol::get_symbol( unique_name ));
+            assert( analysis_attribute );
         }
         else {
-            analysis_agentvar = new EntityTableMeasureAttributeSymbol( table, agentvar, pc.counter3);
+            analysis_attribute = new EntityTableMeasureAttributeSymbol( table, attribute, pc.counter3);
             pc.counter3++;
         }
         // determine if the increment requires the creation & maintenance of an associated 'in' member.
@@ -3142,10 +3142,10 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
             || incr == token::TK_nz_value_in ) {
 
             if (table_op == token::TK_interval) {
-                analysis_agentvar->need_value_in = true;
+                analysis_attribute->need_value_in = true;
             }
             else if (table_op == token::TK_event) {
-                analysis_agentvar->need_value_in_event = true;
+                analysis_attribute->need_value_in_event = true;
             }
             else {
                 assert(false); // logic guarantee
@@ -3158,13 +3158,13 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *agentvar, token_typ
     }
     // Also create symbol for associated accumulator if not already present
     EntityTableAccumulatorSymbol *accumulator = nullptr;
-    if ( EntityTableAccumulatorSymbol::exists( table, acc, incr, table_op, agentvar) ) {
-        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, agentvar );
+    if ( EntityTableAccumulatorSymbol::exists( table, acc, incr, table_op, attribute) ) {
+        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, attribute );
         accumulator = dynamic_cast<EntityTableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
         assert( accumulator );
     }
     else {
-        accumulator = new EntityTableAccumulatorSymbol( table, acc, incr, table_op, agentvar, analysis_agentvar, pc.counter2);
+        accumulator = new EntityTableAccumulatorSymbol( table, acc, incr, table_op, attribute, analysis_attribute, pc.counter2);
         pc.counter2++;
     }
 	auto result = new ExprForTableAccumulator( accumulator );

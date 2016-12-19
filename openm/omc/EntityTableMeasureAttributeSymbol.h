@@ -18,12 +18,12 @@ using namespace std;
 /**
 * EntityTableMeasureAttributeSymbol.
 *
-* Represents an agentvar used in the analysis dimension
+* Represents an attribute used in the analysis dimension
 * (also known as the expression dimension) of a table.
-* An agentvar can be used multiple times in the analysis dimension of a table.
+* An attribute can be used multiple times in the analysis dimension of a table.
 * If so, it is represented by a single instance of this class.
-* This class handles the creation of an associated agentvar which holds the
-* 'in' value of the agentvar when a table increment is started.
+* This class handles the creation of an associated attribute which holds the
+* 'in' value of the attribute when a table increment is started.
 */
 
 class EntityTableMeasureAttributeSymbol : public Symbol
@@ -34,12 +34,12 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableMeasureAttributeSymbol(Symbol *table, Symbol *agentvar, int index)
-        : Symbol(symbol_name(table, agentvar))
+    EntityTableMeasureAttributeSymbol(Symbol *table, Symbol *attribute, int index)
+        : Symbol(symbol_name(table, attribute))
         , table(table->stable_rp())
         , pp_table(nullptr)
-        , agentvar(agentvar->stable_rp())
-        , pp_agentvar(nullptr)
+        , attribute(attribute->stable_rp())
+        , pp_attribute(nullptr)
         , index(index)
         , need_value_in(false)
         , need_value_in_event(false)
@@ -50,24 +50,24 @@ public:
     * Get the unique name for a specified symbol of this kind.
     *
     * @param   table       The table.
-    * @param   agentvar    The agentvar used in the analysis dimension
+    * @param   attribute    The attribute used in the analysis dimension
     *
     * @return  The symbol name as a string.
     *          Example: om_taav_DurationOfLife_alive.
     */
 
-    static string symbol_name(const Symbol *table, const Symbol *agentvar);
+    static string symbol_name(const Symbol *table, const Symbol *attribute);
 
     /**
-    * Check for existence of a specific table analysis agentvar.
+    * Check for existence of a specific table analysis attribute.
     *
     * @param   table       The table.
-    * @param   agentvar    The agentvar.
+    * @param   attribute    The attribute.
     *
     * @return  true if found, else false.
     */
 
-    static bool exists(const Symbol *table, const Symbol *agentvar);
+    static bool exists(const Symbol *table, const Symbol *attribute);
 
     void post_parse(int pass);
 
@@ -90,7 +90,7 @@ public:
     string in_event_member_name() const;
 
     /**
-    * The table using the agentvar
+    * The table using the attribute
     *
     * Stored as a reference to a pointer, which is stable to symbol morphing during the parse phase.
     */
@@ -98,32 +98,32 @@ public:
     Symbol*& table;
 
     /**
-    * The table using the agentvar
+    * The table using the attribute
     *
     * Stored as a pointer, which is only valid after post-parse phase 1.
     */
     EntityTableSymbol* pp_table;
 
     /**
-    * The agentvar used in the analysis dimension of the table
+    * The attribute used in the analysis dimension of the table
     *
     * Stored as a reference to a pointer, which is stable to symbol morphing during the parse phase.
     */
 
-    Symbol*& agentvar;
+    Symbol*& attribute;
 
     /**
-    * The agentvar used in the analysis dimension of the table.
+    * The attribute used in the analysis dimension of the table.
     *
     * Stored as a pointer, which is only valid after post-parse phase 1.
     */
 
-    AttributeSymbol* pp_agentvar;
+    AttributeSymbol* pp_attribute;
 
 
     /**
-    * Zero-based index of the analysis agentvar
-    * in the list of all analysis agentvars used in the table.
+    * Zero-based index of the analysis attribute
+    * in the list of all analysis attributes used in the table.
     */
 
     const int index;
