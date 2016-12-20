@@ -7,20 +7,24 @@
 
 #include "libopenm/omError.h"
 #include "libopenm/common/omFile.h"
+#include "libopenm/common/iniReader.h"
 #include "log.h"
-#include "iniReader.h"
 
 using namespace std;
 using namespace openm;
 
-/** load all ini-file entries in memory. */
-IniFileReader::IniFileReader(const char * i_filePath) : is_loaded(false)
+/** load all ini-file entries in memory and convert into UTF-8. 
+*
+* @param[in] i_filePath     path to ini-file.
+* @param[in] i_codePageName (optional) name of encoding or Windows code page, ie: English_US.1252
+*/
+IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageName) : is_loaded(false)
 {
     try {
         if (i_filePath == NULL || i_filePath[0] == '\0') return;    // nothing to do: empty ini-file name
 
         // read ini-file into UTF-8 string
-        string fileContent = fileToUtf8(i_filePath);
+        string fileContent = fileToUtf8(i_filePath, i_codePageName);
 
         // parse file content into vector of entries
         string::size_type nStart = 0;
@@ -171,7 +175,7 @@ bool IniFileReader::isExist(const char * i_sectionKey) const throw()
 }
 
 /** return string value by section and key or deafult value if not found. */
-string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const throw()
+const string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const throw()
 {
     try {
         if (!is_loaded) return i_default;   // ini-file not loaded
@@ -186,7 +190,7 @@ string IniFileReader::strValue(const char * i_section, const char * i_key, const
 }
 
 /** return string value by section.key or deafult value if not found. */
-string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const throw()
+const string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const throw()
 {
     try {
         if (!is_loaded) return i_default;   // ini-file not loaded
@@ -200,30 +204,36 @@ string IniFileReader::strValue(const char * i_sectionKey, const string & i_defau
     }
 }
 
-/**
- * copy values of section into map.
- *
- * @param[in]     i_section             section name
- * @param[in,out] io_dst                destination map to insert section values
- * @param[in]     i_isOverrideExisting  if true then override already existing values of section.key
- */
-void IniFileReader::copySection(const char * i_section, NoCaseMap & io_dst, bool i_isOverrideExisting) const throw()
-{ 
+/** return names of ini-file sections as case-neutral set of strings. */
+const NoCaseSet IniFileReader::sectionSet(void) const throw()
+{
     try {
-        // invalid section or file is not loaded
-        if (!is_loaded || i_section == NULL || i_section[0] == '\0') return;
+        NoCaseSet rs;
+        for (const auto & e : entryVec) {
+            rs.insert(e.section);
+        }
+        return rs;
+    }
+    catch (...) { 
+        return NoCaseSet();
+    }
+}
+
+/** return section by name as case-neutral map of (key,value). */
+const NoCaseMap IniFileReader::getSection(const char * i_section) const throw()
+{
+    try {
+        NoCaseMap sectMap;
+
+        if (!is_loaded || i_section == NULL || i_section[0] == '\0') return sectMap;    // empty section name or file is not loaded
 
         for (const IniEntry & ent : entryVec) {
-            if (!equalNoCase(i_section, ent.section.c_str())) continue;     // skip other sections
-
-            // insert into map if override specified or section.key not already exists
-            string sectionKey = string(i_section) + "." + ent.key;
-
-            if (i_isOverrideExisting || io_dst.find(sectionKey) == io_dst.cend()) io_dst[sectionKey] = ent.val;
+            if (equalNoCase(i_section, ent.section.c_str())) sectMap[ent.key] = ent.val;
         }
+        return sectMap;
     }
     catch (...) {
-        return;
+        return NoCaseMap();
     }
 }
 

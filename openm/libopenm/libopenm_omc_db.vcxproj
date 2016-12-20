@@ -144,6 +144,7 @@
   
   <ItemGroup>
     <ClInclude Include="..\..\include\libopenm\common\argReader.h" />
+    <ClInclude Include="..\..\include\libopenm\common\iniReader.h" />
     <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
     <ClInclude Include="..\..\include\libopenm\common\omHelper.h" />
     <ClInclude Include="..\..\include\libopenm\db\dbCommon.h" />
@@ -153,7 +154,6 @@
     <ClInclude Include="..\..\include\libopenm\db\modelBuilder.h" />
     <ClInclude Include="..\..\include\libopenm\omCommon.h" />
     <ClInclude Include="common\log.h" />
-    <ClInclude Include="common\iniReader.h" />
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />
     <ClInclude Include="db\dbValue.h" />

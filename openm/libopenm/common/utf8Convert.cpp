@@ -88,7 +88,7 @@ namespace openm
          * Windows:  conversion from UTF-32 not supported for Windows and throws exception. \n
          * Linux:    conversion throws exception if encoding not supported or iconv return an error.
          */
-        static IUtf8Converter * create(CharCvtFrom i_from, const char * i_codePageName = NULL);
+        static IUtf8Converter * create(CharCvtFrom i_from, const char * i_codePageName = nullptr);
 
         /** release convertor resources. */
         virtual ~IUtf8Converter(void) throw() = 0;
@@ -111,7 +111,7 @@ public:
     // return copy of input bytes as UTF-8 string
     string next(long long i_size, const char * i_text)
     {
-        if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
+        if (i_size <= 0 || i_text == nullptr) return "";    // return on empty input
         return
             string(i_text, i_text + i_size);
     }
@@ -164,8 +164,8 @@ struct IconvOpenHolder
     IconvOpenHolder(const char * i_toEncoding, const char * i_fromEncoding) :
         iconvHandler((iconv_t)-1)
     {
-        if (i_toEncoding == NULL || i_toEncoding[0] == '\0') throw HelperException("Error: invalid (empty) destination encoding name");
-        if (i_fromEncoding == NULL || i_fromEncoding[0] == '\0') throw HelperException("Error: invalid (empty) source encoding name");
+        if (i_toEncoding == nullptr || i_toEncoding[0] == '\0') throw HelperException("Error: invalid (empty) destination encoding name");
+        if (i_fromEncoding == nullptr || i_fromEncoding[0] == '\0') throw HelperException("Error: invalid (empty) source encoding name");
             
         iconvHandler = iconv_open(i_toEncoding, i_fromEncoding);
         if (iconvHandler == (iconv_t)-1) throw HelperException("Error: iconv_open failed");
@@ -203,7 +203,7 @@ public:
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
     {
-        if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
+        if (i_size <= 0 || i_text == nullptr) return "";   // return on empty input
 
         // input and output byte buffres
         char outData[OUT_CVT_SIZE + 1];
@@ -253,7 +253,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
         return new ExpicitPageConverter("UTF-32BE");
 
     default:    // CharCvtFrom::defaultPage
-        if (defaultEncodingHolder.name() == NULL || defaultEncodingHolder.name()[0] == '\0') throw HelperException("Error: unknown default encoding name");
+        if (defaultEncodingHolder.name() == nullptr || defaultEncodingHolder.name()[0] == '\0') throw HelperException("Error: unknown default encoding name");
 
         // if default encoding already UTF-8 then return copy of input text else do character conversion
         if (equalNoCase(defaultEncodingHolder.name(), "UTF-8") || equalNoCase(defaultEncodingHolder.name(), "UTF8"))
@@ -281,7 +281,7 @@ public:
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
     {
-        if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
+        if (i_size <= 0 || i_text == nullptr) return "";   // return on empty input
 
         wstring ws = wcvt.from_bytes(i_text, i_text + i_size);
         return 
@@ -308,7 +308,7 @@ public:
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
     {
-        if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
+        if (i_size <= 0 || i_text == nullptr) return "";   // return on empty input
 
         wstring ws = wcvt->from_bytes(i_text, i_text + i_size);
 		return
@@ -330,7 +330,7 @@ public:
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
     {
-        if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
+        if (i_size <= 0 || i_text == nullptr) return "";   // return on empty input
 
         wstring ustr = wcvt.from_bytes(i_text, i_text + i_size);
         return 
@@ -352,7 +352,7 @@ public:
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
     {
-        if (i_size <= 0 || i_text == NULL) return "";   // return on empty input
+        if (i_size <= 0 || i_text == nullptr) return "";   // return on empty input
 
         wstring ustr = wcvt.from_bytes(i_text, i_text + i_size);
         return 
@@ -397,7 +397,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
 */
 string openm::toUtf8(const char * i_byteArr, const char * i_codePageName)
 {
-    return (i_byteArr != NULL) ? toUtf8(strnlen(i_byteArr, OM_STRLEN_MAX), i_byteArr, i_codePageName) : "";
+    return (i_byteArr != nullptr) ? toUtf8(strnlen(i_byteArr, OM_STRLEN_MAX), i_byteArr, i_codePageName) : "";
 }
 
 /**
@@ -411,10 +411,10 @@ string openm::toUtf8(const char * i_byteArr, const char * i_codePageName)
 */
 string openm::toUtf8(size_t i_size, const char * i_byteArr, const char * i_codePageName)
 {
-    if (i_size <= 0 || i_byteArr == NULL) return "";   // return empty "" string if no input data
+    if (i_size <= 0 || i_byteArr == nullptr) return "";   // return empty "" string if no input data
     
     unique_ptr<IUtf8Converter> cvt(IUtf8Converter::create(
-        (i_codePageName != NULL && i_codePageName[0] != '\0') ? CharCvtFrom::explicitPage : CharCvtFrom::defaultPage, 
+        (i_codePageName != nullptr && i_codePageName[0] != '\0') ? CharCvtFrom::explicitPage : CharCvtFrom::defaultPage, 
         i_codePageName
         ));
     return cvt->next(i_size, i_byteArr);
@@ -553,7 +553,7 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
 */
 list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * i_codePageName)
 {
-    if (i_filePath == NULL || i_filePath[0] == '\0') throw HelperException("Invalid (empty) file name");
+    if (i_filePath == nullptr || i_filePath[0] == '\0') throw HelperException("Invalid (empty) file name");
 
     // open file
     ifstream inpSt;
@@ -606,7 +606,7 @@ list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * i_code
     }
 
     // if no BOM and code page name specified then use the page for conversion
-    if (fromChar == CharCvtFrom::defaultPage && i_codePageName != NULL && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
+    if (fromChar == CharCvtFrom::defaultPage && i_codePageName != nullptr && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
 
     // if no BOM and no explicit code page name, probe content to see if it appears to be UTF-8
     if (fromChar == CharCvtFrom::defaultPage) {

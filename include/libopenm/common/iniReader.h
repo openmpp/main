@@ -8,8 +8,7 @@
 #ifndef OM_INI_READER_H
 #define OM_INI_READER_H
 
-#include "libopenm/common/omFile.h"
-#include "iniReader.h"
+#include "omFile.h"
 
 using namespace std;
 
@@ -60,8 +59,12 @@ namespace openm
         typedef vector<IniEntry> IniEntryVec;
 
     public:
-        /** load all ini-file entries in memory. */
-        IniFileReader(const char * i_filePath);
+        /** load all ini-file entries in memory and convert into UTF-8. 
+        *
+        * @param[in] i_filePath     path to ini-file.
+        * @param[in] i_codePageName (optional) name of encoding or Windows code page, ie: English_US.1252
+        */
+        IniFileReader(const char * i_filePath, const char * i_codePageName = nullptr);
 
         /** return true if ini-file loaded correctly or false on error */
         bool isLoaded(void) const throw() { return is_loaded; }
@@ -73,13 +76,16 @@ namespace openm
         bool isExist(const char * i_sectionKey) const throw();
 
         /** return string value by section and key or deafult value if not found. */
-        string strValue(const char * i_section, const char * i_key, const string & i_default = "") const throw();
+        const string strValue(const char * i_section, const char * i_key, const string & i_default = "") const throw();
 
         /** return string value by section.key or deafult value if not found. */
-        string strValue(const char * i_sectionKey, const string & i_default = "") const throw();
+        const string strValue(const char * i_sectionKey, const string & i_default = "") const throw();
 
-        /** copy values of section into map. */
-        void copySection(const char * i_section, NoCaseMap & io_dst, bool i_isOverrideExisting = false) const throw();
+        /** return names of ini-file sections as case-neutral set of strings. */
+        const NoCaseSet sectionSet(void) const throw();
+
+        /** return section by name as case-neutral map of (key,value). */
+        const NoCaseMap getSection(const char * i_section) const throw();
 
     private:
         bool is_loaded;         // if true then ini-file loaded OK else error

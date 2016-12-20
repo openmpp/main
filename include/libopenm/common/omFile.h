@@ -42,19 +42,19 @@ namespace openm
     string makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension = nullptr);
 
     /** convert null-terminated bytes from current user (or specified) code page to UTF-8 string. */
-    extern string toUtf8(const char * i_byteArr, const char * i_codePageName = NULL);
+    extern string toUtf8(const char * i_byteArr, const char * i_codePageName = nullptr);
 
     /** convert bytes from current user (or specified) code page to UTF-8 string. */
-    extern string toUtf8(size_t i_size, const char * i_byteArr, const char * i_codePageName = NULL);
+    extern string toUtf8(size_t i_size, const char * i_byteArr, const char * i_codePageName = nullptr);
 
     /** return true if bytes are valid UTF-8 */
     extern bool isUtf8(size_t i_size, const char * i_byteArr);
 
     /** read file and return content as UTF-8 as string */
-    extern string fileToUtf8(const char * i_filePath, const char * i_codePageName = NULL);
+    extern string fileToUtf8(const char * i_filePath, const char * i_codePageName = nullptr);
 
     /** read file, split by linefeed \n and return content as list of UTF-8 as strings */
-    extern list<string> fileToUtf8Lines(const char * i_filePath, const char * i_codePageName = NULL);
+    extern list<string> fileToUtf8Lines(const char * i_filePath, const char * i_codePageName = nullptr);
 }
 
 #endif  // OM_H_FILE_H

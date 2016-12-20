@@ -8,7 +8,7 @@
 #include "libopenm/omError.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/argReader.h"
-#include "iniReader.h"
+#include "libopenm/common/iniReader.h"
 
 using namespace std;
 using namespace openm;
@@ -229,14 +229,14 @@ void ArgReader::parseCommandLine(
 * @param[in] i_filePath       path to ini-file
 * @param[in] i_keyArrSize     size of i_keyArr, must be positive
 * @param[in] i_keyArr         array of allowed keys: full key names
-* @param[in] i_sectionToCopy  if not NULL then copy section from ini-file, i.e.: "Parameter"
+* @param[in] i_sectionToMerge if not NULL then merge section from ini-file, i.e.: "Parameter"
 */
 void ArgReader::loadIniFile(
     const char * i_filePath,
-    const size_t i_keyArrSize, 
+    const size_t i_keyArrSize,
     const char ** i_keyArr,
-    const char * i_sectionToCopy
-    )
+    const char * i_sectionToMerge
+)
 {
     // load options from ini-file
     IniFileReader iniRd(i_filePath);
@@ -251,8 +251,14 @@ void ArgReader::loadIniFile(
         args[i_keyArr[nKey]] = iniRd.strValue(i_keyArr[nKey]);      // add from ini-file to options map
     }
 
-    // copy pairs of (section.key, value) from section of ini-file if such section.key not already exists
-    if (i_sectionToCopy != nullptr && i_sectionToCopy[0] != '\0') iniRd.copySection(i_sectionToCopy, args);
+    // merge pairs of (section.key, value) from section of ini-file if such section.key not already exists
+    if (i_sectionToMerge != nullptr) {
+        NoCaseMap sect = iniRd.getSection(i_sectionToMerge);
+        for (const auto & ent : sect) {
+            string key = string(i_sectionToMerge) + "." + ent.first;
+            if (args.find(key) == args.cend()) args[key] = ent.second;
+        }
+    }
 }
 
 /** adjust log file settings, ie: make default log file path if required. */

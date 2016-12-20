@@ -41,5 +41,5 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // set default model code: first language in the list of model languages
-    metaRows.modelDic.defaultLangCode = metaRows.modelTxt[0].langCode;
+    if (!metaRows.modelTxt.empty()) metaRows.modelDic.defaultLangCode = metaRows.modelTxt[0].langCode;
 };

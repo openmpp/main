@@ -16,12 +16,13 @@
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
 * * -Omc.CodePage       code page for converting source files, e.g. windows-1252
+* * -Omc.MessageFnc     localized message functions, default: LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
+* * -OpenM.OptionsFile  path/to/optional/omc.ini
 * * -Omc.TraceScanning  detailed tracing from scanner
 * * -Omc.TraceParsing   detailed tracing from parser
 * * -Omc.SqlDir         sql/script/dir to create SQLite database
 * * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
-* * -OpenM.OptionsFile  path/to/optional/omc.ini
 * 
 * Short form of command line arguments:
 * * -m short form of -Omc.ModelName
@@ -57,6 +58,7 @@
 #include "ParseContext.h"
 #include "CodeGen.h"
 #include "libopenm/common/argReader.h"
+#include "libopenm/common/iniReader.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
 
@@ -72,6 +74,7 @@
 #endif // _WIN32
 
 using namespace std;
+using namespace openm;
 
 namespace openm
 {
@@ -116,6 +119,9 @@ namespace openm
 
         /** omc list of db-provider names to create sql scripts */
         static const char * dbProviderNames;
+
+        /** list of functions which produce localized messages */
+        static const char * messageFnc;
     };
 
     /** keys for omc options (short form) */
@@ -185,6 +191,9 @@ namespace openm
     /** omc list of db-provider names to create sql scripts */
     const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
 
+    /** list of functions which produce localized messages */
+    const char * OmcArgKey::messageFnc = "Omc.MessageFnc";
+
     /** short name for options file name: -ini fileName.ini */
     const char * OmcShortKey::optionsFile = "ini";
 
@@ -224,6 +233,7 @@ namespace openm
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
         OmcArgKey::dbProviderNames,
+        OmcArgKey::messageFnc,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -264,9 +274,17 @@ static string getFileNameStem(const string &file_name);
 // Parse a list of files
 static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
 
+// create output/modelName.message.ini file by merging model messages and languages with existing code/modelName.message.ini 
+void buildMessageIni(
+    const MetaModelHolder & i_metaRows, 
+    const string & i_inpDir, 
+    const string i_outDir, 
+    const char * i_codePageName, 
+    const unordered_set<string> & i_msgSet
+);
+
 int main(int argc, char * argv[])
 {
-    using namespace openm;
     try {
         // get omc run options from command line and ini-file
         ArgReader argStore(argc, argv, runArgKeySize, runArgKeyArr, shortPairSize, shortPairArr);
@@ -397,12 +415,12 @@ int main(int argc, char * argv[])
         Symbol::populate_default_symbols(model_name, scenario_name);
 
         // Create set of functions taking translatable string literal as first argument
-        Symbol::tran_funcs.insert("LT");
-        Symbol::tran_funcs.insert("logMsg");
-        Symbol::tran_funcs.insert("logFormatted");
-        Symbol::tran_funcs.insert("WriteLogEntry");
-        Symbol::tran_funcs.insert("WarningMsg");
-        Symbol::tran_funcs.insert("ModelExit");
+        list<string> mf = splitCsv(
+            argStore.strOption(OmcArgKey::messageFnc, "LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit"),
+            ",;");
+        for (const string & f : mf) {
+            Symbol::tran_funcs.insert(f);
+        }
 
         // create unique instance of ParseContext
         ParseContext pc;
@@ -585,8 +603,11 @@ int main(int argc, char * argv[])
             }
         }
 
-        // build model creation sql script
+        // create model.message.ini file
         theLog->logMsg("Meta-data processing");
+        buildMessageIni(metaRows, inpDir, outDir, Symbol::code_page.c_str(), Symbol::tran_strings);
+
+        // build model creation sql script and model.sqlite database
         builder->build(metaRows);
         
         // Create working set for published scenario
@@ -834,4 +855,175 @@ static string getFileNameStem(const string &file_name)
     openm::toLower(in_ext);
 
     return in_stem;
+}
+
+// create output/modelName.message.ini file by merging model messages and languages with existing code/modelName.message.ini 
+void buildMessageIni(
+    const MetaModelHolder & i_metaRows,
+    const string & i_inpDir,
+    const string i_outDir,
+    const char * i_codePageName,
+    const unordered_set<string> & i_msgSet
+)
+{
+    if (i_msgSet.empty()) return;   // exit: no messages to translate
+
+    map<string, NoCaseMap, LessNoCase> iniMap;  // output ini-flie as case-netral map
+    NoCaseSet langSet;
+    locale loc("");         // current user locale
+
+    // cleanup line breaks
+    unordered_set<string> msgSet;
+    for (string msg : i_msgSet) {
+        blankCrLf(msg);
+        msgSet.insert(msg);
+    }
+
+    // if exist code/modelName.message.ini then read it and 
+    // for each language merge new model messages with existing message translations
+    string srcPath = makeFilePath(i_inpDir.c_str(), i_metaRows.modelDic.name.c_str(), ".message.ini");
+
+    if (isFileExists(srcPath.c_str())) {    // if exist code/modelName.message.ini
+
+        // read existing translation file and get languages, which are section names
+        IniFileReader rd(srcPath.c_str(), i_codePageName);
+        langSet = rd.sectionSet();
+
+        for (const auto & sect : langSet) {
+
+            auto sectIt = iniMap.insert(pair<string, NoCaseMap>(sect, NoCaseMap()));
+            NoCaseMap & ctMap = sectIt.first->second;
+
+            for (const string & msg : msgSet) {
+                ctMap[msg] = rd.strValue(sect.c_str(), msg.c_str());
+            }
+        }
+
+        // BEGIN of optional code: can be commented
+        // if required count deleted translations for each model language
+        for (const LangLstRow & langRow : i_metaRows.langLst) {
+
+            const auto sectIt = iniMap.find(trim(langRow.code, loc));   // language section in new ini-file
+            if (sectIt == iniMap.end()) continue;                       // skip: no such model language
+
+            NoCaseMap rdMap = rd.getSection(sectIt->first.c_str()); // section [language] => (code,translation)
+            int nDel = 0;
+
+            for (const auto & rd : rdMap) {
+                if (sectIt->second.find(rd.first) == sectIt->second.end()) nDel++;
+            }
+            if (nDel > 0) theLog->logFormatted("Deleted %d translated message(s) from language %s", nDel, langRow.code.c_str());
+        }
+        // END of optional code
+    }
+    // merge done for existing ini-file messages
+
+    // BEGIN of optional code: can be commented
+    // do the counts and report translation status
+    // assume no translations if only one model language
+    if (i_metaRows.langLst.size() > 1) {
+
+        // count missing model languages
+        // count missing translations for each model language
+        int nLangMissing = 0;   // count missing translations for each model language
+        int nMsgMissing = 0;    // total count of count missing translations
+
+        for (const LangLstRow & langRow : i_metaRows.langLst) {
+
+            const auto sectIt = iniMap.find(trim(langRow.code, loc));   // language section in new ini-file
+            if (sectIt == iniMap.end()) {
+                nLangMissing++;
+                theLog->logFormatted("Missing translated messages for language %s", langRow.code.c_str());
+                continue;           // missing model language
+            }
+
+            int nMissing = 0;    // count missing translations for current model language
+
+            for (const auto & ct : sectIt->second) {
+                if (ct.second.empty()) nMissing++;      // message exist in in-file, but translation is empty
+            }
+            for (const string & msg : msgSet) {
+                if (sectIt->second.find(msg) == sectIt->second.end()) nMissing++;   // message not exist in ini-file
+            }
+            nMsgMissing += nMissing;
+            if (nMsgMissing > 0) theLog->logFormatted("Missing %d translated message(s) for language %s", nMsgMissing, langRow.code.c_str());
+        }
+
+        if (nMsgMissing > 0) theLog->logFormatted("Missing %d translated message(s)", nMsgMissing);
+        if (nLangMissing > 0) theLog->logFormatted("Missing translated messages for %d language(s)", nLangMissing);
+    }
+    // END of optional code
+
+    // for missing model languages append to output ini-file empty translations
+    // assume no translations if only one model language
+    if (i_metaRows.langLst.size() > 1) {
+
+        for (const LangLstRow & langRow : i_metaRows.langLst) {
+
+            // if language section exist in new ini-file then skip it
+            string sect = trim(langRow.code, loc);
+            if (iniMap.find(sect) != iniMap.end()) continue;
+
+            auto sectIt = iniMap.insert(pair<string, NoCaseMap>(sect, NoCaseMap()));
+            NoCaseMap & ctMap = sectIt.first->second;
+
+            for (const string & msg : msgSet) { // insert empty translation
+                ctMap[msg] = "";
+            }
+        }
+    }
+
+    // write updated version of output/modelName.message.ini
+    if (!iniMap.empty()) {
+
+        string dstPath = makeFilePath(i_outDir.c_str(), i_metaRows.modelDic.name.c_str(), ".message.ini");
+
+        ofstream iniFs(dstPath, ios::out | ios::trunc | ios::binary);
+        exit_guard<ofstream> onExit(&iniFs, &ofstream::close);   // close on exit
+        if (iniFs.fail()) throw HelperException(LT("error : unable to open %s for writing"), dstPath.c_str());
+
+        iniFs << "; Translated messages for model: " << i_metaRows.modelDic.name << "\r\n" <<
+            "; \r\n" <<
+            "; Each message must be on a single line, multi-line messages NOT supported \r\n" <<
+            "; Each message must be Key = Value \r\n" <<
+            "; If message starts or end with blank space then put it inside of \"quotes\" or 'single' quotes \r\n" <<
+            "; Part of the line after ; or # is just a comment \r\n" <<
+            "; Examples: \r\n" <<
+            "; some message = message in English                                    ; this part is a comment \r\n" <<
+            "; \" space can be preserved \" = \" space can be preserved in English \" \r\n" <<
+            "; ' you can use single quote ' = ' you can use single quote or '' combine \"quotes\" ' \r\n" <<
+            "\r\n";
+
+        for (const auto & iniSect : iniMap) {
+
+            iniFs << "[" << iniSect.first << "]\r\n";
+            if (iniFs.fail()) throw HelperException(LT("error : unable to write into: %s"), dstPath.c_str());
+
+            for (const auto & ct : iniSect.second) {
+
+                // cleanup: remove empty messages (empty message code)
+                if (ct.first.empty()) continue;
+
+                // if code or value start from or end with space
+                // put "quotes" or 'single quotes' around of code and value
+                if ((isspace<char>(ct.first.front(), loc) || isspace<char>(ct.first.back(), loc)) ||
+                    (!ct.second.empty() && (isspace<char>(ct.second.front(), loc) || isspace<char>(ct.second.back(), loc)))) {
+                
+                    if (ct.first.find("\"") != string::npos) {
+                        iniFs << "'" << ct.first << "' = '" << ct.second << "'\r\n";
+                    }
+                    else {
+                        iniFs << "\"" << ct.first << "\" = \"" << ct.second << "\"\r\n";
+                    }
+                }
+                else {
+                    iniFs << ct.first << " = " << ct.second << "\r\n";
+                }
+                if (iniFs.fail()) throw HelperException(LT("error : unable to write into: %s"), dstPath.c_str());
+            }
+
+            iniFs << "\r\n";
+            if (iniFs.fail()) throw HelperException(LT("error : unable to write into: %s"), dstPath.c_str());
+        }
+    }
 }

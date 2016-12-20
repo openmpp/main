@@ -17,6 +17,7 @@
 #include <locale>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <stdexcept>
 #include <thread>
@@ -165,6 +166,9 @@ namespace openm
 
     /** map of key-value strings with case neutral key search */
     typedef map<string, string, LessNoCase> NoCaseMap;
+
+    /** set of strings with case neutral key search */
+    typedef set<string, LessNoCase> NoCaseSet;
 
     /** simple resource exit guard implementation */
     template <class ResourceHolder>
