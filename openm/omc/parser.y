@@ -2238,11 +2238,11 @@ table_filter_opt:
     "[" expr_for_agentvar[root] "]"
                         {
                             EntityTableSymbol *table = pc.get_table_context();
-                            // create an identity attribute for the filter
-                            auto iav = new IdentityAttributeSymbol("om_" + table->name + "_filter", table->agent, BoolSymbol::find(), $root, @root);
-                            assert(iav);
+                            // create an anonymous identity attribute for the filter
+                            auto aia = IdentityAttributeSymbol::create_identity_attribute(table->agent, BoolSymbol::find(), $root, @root);
+                            assert(aia);
                             // note identity attribute in table
-                            table->filter = iav;
+                            table->filter = aia;
                         }
     | /* nothing */
     ;
