@@ -245,7 +245,7 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
     auto ternary_op = dynamic_cast<const ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
-        result = sym->pp_symbol->name;
+        result = sym->symbol->name;
     }
     else if (lit != nullptr) {
         result = lit->constant->value();
@@ -389,40 +389,36 @@ IdentityAttributeSymbol * IdentityAttributeSymbol::create_identity_attribute(Sym
 }
 
 //static
-IdentityAttributeSymbol * IdentityAttributeSymbol::create_equality_identity_attribute(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc)
+IdentityAttributeSymbol * IdentityAttributeSymbol::create_equality_identity_attribute(Symbol *entity, Symbol * av, const ConstantSymbol *k, yy::location decl_loc)
 {
-    assert(agent);
+    assert(entity);
     assert(av);
     assert(k);
-    IdentityAttributeSymbol *iav = nullptr;
-    string mem_name = "om_equality_" + av->name + "_EQ_" + k->value_as_name();
-    string nm = Symbol::symbol_name(mem_name, agent);
-    auto it = symbols.find(nm);
-    if (it != symbols.end()) {
-        // already exists
-        auto sym = it->second;
-        iav = dynamic_cast<IdentityAttributeSymbol * >(sym);
-        assert(iav);
-        return iav;
+
+    // Create expression tree terminal node for lhs
+    auto lhs = new ExprForAttributeSymbol(av);
+
+    // Create expression tree terminal node for rhs
+    ExprForAttribute *rhs = nullptr;
+
+    if (k->is_literal) {
+        rhs = new ExprForAttributeLiteral( k->literal );
     }
     else {
-        // Create expression tree terminal node for lhs
-        auto lhs = new ExprForAttributeSymbol(av);
-        // Create expression tree terminal node for rhs
-        ExprForAttribute * rhs = nullptr;
-        if (k->is_literal) {
-            rhs = new ExprForAttributeLiteral( k->literal );
-        }
-        else {
-            rhs = new ExprForAttributeSymbol(*(k->enumerator));
-        }
-        // Create expression tree node for == binary operation
-	    auto expr = new ExprForAttributeBinaryOp(token::TK_EQ, lhs, rhs);
-        // Create the identity attribute to maintain the expression
-        iav = new IdentityAttributeSymbol(mem_name, agent, BoolSymbol::find(), expr, decl_loc);
-        assert(iav);
-
-        return iav;
+        rhs = new ExprForAttributeSymbol(*(k->enumerator));
     }
+
+    // Create expression tree node for == binary operation
+	auto expr = new ExprForAttributeBinaryOp(token::TK_EQ, lhs, rhs);
+
+    // Create anonymous identity attribute for the equality expression
+    auto ia = create_identity_attribute(entity, BoolSymbol::find(), expr, decl_loc);
+    assert(ia);
+
+    // Little tiny expression tree created here will not be used if
+    // anonymous identity attribute already exists, but omc is one-shot
+    // execution, so memory 'leak' allowable.
+
+    return ia;
 }
 
