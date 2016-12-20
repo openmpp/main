@@ -20,6 +20,9 @@
 
 using namespace std;
 
+unordered_map<string, string> IdentityAttributeSymbol::anonymous_key_to_name;
+
+
 void IdentityAttributeSymbol::create_auxiliary_symbols()
 {
     // Create an EntityFuncSymbol for the expression function
@@ -61,7 +64,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
         build_body_expression();
 
         // Dependency on agentvars in expression
-        for (auto av : pp_agentvars_used) {
+        for (auto av : pp_attributes_used) {
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Maintain identity for '" + name + "'";
@@ -69,7 +72,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
         }
 
         // Dependency on linked agentvars in expression
-        for (auto ltav : pp_linked_agentvars_used) {
+        for (auto ltav : pp_linked_attributes_used) {
             auto av = ltav->pp_agentvar; // agentvar being referenced across the link (rhs)
             assert(av);
 
@@ -123,11 +126,11 @@ void IdentityAttributeSymbol::post_parse(int pass)
 
 void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
 {
-    auto sym = dynamic_cast<ExprForAgentVarSymbol *>(node);
-    auto lit = dynamic_cast<ExprForAgentVarLiteral *>(node);
-    auto unary_op = dynamic_cast<ExprForAgentVarUnaryOp *>(node);
-    auto binary_op = dynamic_cast<ExprForAgentVarBinaryOp *>(node);
-    auto ternary_op = dynamic_cast<ExprForAgentVarTernaryOp *>(node);
+    auto sym = dynamic_cast<ExprForAttributeSymbol *>(node);
+    auto lit = dynamic_cast<ExprForAttributeLiteral *>(node);
+    auto unary_op = dynamic_cast<ExprForAttributeUnaryOp *>(node);
+    auto binary_op = dynamic_cast<ExprForAttributeBinaryOp *>(node);
+    auto ternary_op = dynamic_cast<ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
         // do nothing with symbol terminals
@@ -147,7 +150,7 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
         // look for signature of a function call
         if (binary_op->op == token::TK_LEFT_PAREN) {
             auto node = binary_op->left;
-            if (auto efavs = dynamic_cast<ExprForAgentVarSymbol *>(node)) {
+            if (auto efavs = dynamic_cast<ExprForAttributeSymbol *>(node)) {
                 auto sym = efavs->symbol;
                 if (sym->is_base_symbol() && !Symbol::exists(sym->name)) {
                     // an undeclared SYMBOL followed by a '('
@@ -174,11 +177,11 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
 
 void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
 {
-    auto sym = dynamic_cast<ExprForAgentVarSymbol *>(node);
-    auto lit = dynamic_cast<ExprForAgentVarLiteral *>(node);
-    auto unary_op = dynamic_cast<ExprForAgentVarUnaryOp *>(node);
-    auto binary_op = dynamic_cast<ExprForAgentVarBinaryOp *>(node);
-    auto ternary_op = dynamic_cast<ExprForAgentVarTernaryOp *>(node);
+    auto sym = dynamic_cast<ExprForAttributeSymbol *>(node);
+    auto lit = dynamic_cast<ExprForAttributeLiteral *>(node);
+    auto unary_op = dynamic_cast<ExprForAttributeUnaryOp *>(node);
+    auto binary_op = dynamic_cast<ExprForAttributeBinaryOp *>(node);
+    auto ternary_op = dynamic_cast<ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
         (sym->pp_symbol) = pp_symbol(sym->symbol);
@@ -186,12 +189,12 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
         auto av = dynamic_cast<AttributeSymbol *>(sym->pp_symbol);
         if (av) {
             // add to the set of all agentvars used in this expression
-            pp_agentvars_used.insert(av);
+            pp_attributes_used.insert(av);
         }
         auto ltav = dynamic_cast<LinkToAttributeSymbol *>(sym->pp_symbol);
         if (ltav) {
             // add to the set of all links to agentvars used in this expression
-            pp_linked_agentvars_used.insert(ltav);
+            pp_linked_attributes_used.insert(ltav);
 
             // add the link itself to the set of all links used in this expression
             // ltav->pp_link is not yet valid in this post-parse pass,
@@ -230,15 +233,16 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
     }
 }
 
+//static
 string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
 {
     string result;
 
-    auto sym = dynamic_cast<const ExprForAgentVarSymbol *>(node);
-    auto lit = dynamic_cast<const ExprForAgentVarLiteral *>(node);
-    auto unary_op = dynamic_cast<const ExprForAgentVarUnaryOp *>(node);
-    auto binary_op = dynamic_cast<const ExprForAgentVarBinaryOp *>(node);
-    auto ternary_op = dynamic_cast<const ExprForAgentVarTernaryOp *>(node);
+    auto sym = dynamic_cast<const ExprForAttributeSymbol *>(node);
+    auto lit = dynamic_cast<const ExprForAttributeLiteral *>(node);
+    auto unary_op = dynamic_cast<const ExprForAttributeUnaryOp *>(node);
+    auto binary_op = dynamic_cast<const ExprForAttributeBinaryOp *>(node);
+    auto ternary_op = dynamic_cast<const ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
         result = sym->pp_symbol->name;
@@ -344,7 +348,48 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
 }
 
 //static
-IdentityAttributeSymbol * IdentityAttributeSymbol::CreateEqualityIdentitySymbol(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc)
+IdentityAttributeSymbol * IdentityAttributeSymbol::create_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *root, yy::location decl_loc)
+{
+    assert(entity);
+    assert(root);
+
+    IdentityAttributeSymbol *ia = nullptr;
+
+    // The key is the canonical C++ expression for the expression tree,
+    // prefixed by the entity name and data type.
+    string key = entity->name + "@" + type->name + "@ " + cxx_expression(root);
+
+    auto it = anonymous_key_to_name.find(key);
+    if (it != anonymous_key_to_name.end()) {
+        // An anonymous identity attribute for this expression tree already exists.
+
+        // Get its unique name.
+        auto unm = it->second;
+
+        // Find it in the symbol table
+        auto sym = Symbol::get_symbol(unm);
+        assert(sym); // logic guarantee
+
+        ia = dynamic_cast<IdentityAttributeSymbol * >(sym);
+        assert(ia); // logic guarantee
+    }
+    else {
+        // Create a new anonymous identity attribute
+
+        auto numeric_part = anonymous_key_to_name.size();
+        string mem_name = "om_aia_" + to_string(numeric_part);
+
+        ia = new IdentityAttributeSymbol(mem_name, entity, type, root, decl_loc);
+        assert(ia);
+
+        anonymous_key_to_name.insert({ key, ia->unique_name });
+    }
+
+    return ia;
+}
+
+//static
+IdentityAttributeSymbol * IdentityAttributeSymbol::create_equality_identity_attribute(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc)
 {
     assert(agent);
     assert(av);
@@ -362,21 +407,22 @@ IdentityAttributeSymbol * IdentityAttributeSymbol::CreateEqualityIdentitySymbol(
     }
     else {
         // Create expression tree terminal node for lhs
-        auto lhs = new ExprForAgentVarSymbol(av);
+        auto lhs = new ExprForAttributeSymbol(av);
         // Create expression tree terminal node for rhs
         ExprForAttribute * rhs = nullptr;
         if (k->is_literal) {
-            rhs = new ExprForAgentVarLiteral( k->literal );
+            rhs = new ExprForAttributeLiteral( k->literal );
         }
         else {
-            rhs = new ExprForAgentVarSymbol(*(k->enumerator));
+            rhs = new ExprForAttributeSymbol(*(k->enumerator));
         }
         // Create expression tree node for == binary operation
-	    auto expr = new ExprForAgentVarBinaryOp(token::TK_EQ, lhs, rhs);
-        // Create the identity agentvar to maintain the expression
-        iav = new IdentityAttributeSymbol( mem_name, agent, BoolSymbol::find(), expr, decl_loc);
+	    auto expr = new ExprForAttributeBinaryOp(token::TK_EQ, lhs, rhs);
+        // Create the identity attribute to maintain the expression
+        iav = new IdentityAttributeSymbol(mem_name, agent, BoolSymbol::find(), expr, decl_loc);
         assert(iav);
 
         return iav;
     }
 }
+

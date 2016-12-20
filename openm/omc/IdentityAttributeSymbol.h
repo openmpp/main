@@ -2,7 +2,7 @@
 * @file    IdentityAttributeSymbol.h
 * Declarations for the IdentityAttributeSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2016 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -17,7 +17,7 @@ using namespace std;
 /**
 * IdentityAttributeSymbol
 *
-* Symbol for expression agentvars of the form agentvar = <expression>;
+* Symbol for identity attributes of the form attribute = <expression>;
 */
 
 class IdentityAttributeSymbol : public AttributeSymbol
@@ -65,6 +65,13 @@ public:
         , root(root)
     {
         create_auxiliary_symbols();
+
+        // This sorting group ensures that side-effect code for the identity agentvar
+        // which might be injected into 'time' will execute after side-effect code injected by active_spell_delta (sorting group 2)
+        // (side-effect code is injected by sorting group then lexicographic order of the name of the injecting agentvar.)
+        // This ensures that logic to maintain active_spell_delta works correctly: the side-effect for active_spell_delta
+        // must execute before side-effect code which changes the condition.
+        sorting_group = 8;
     }
 
     /**
@@ -86,23 +93,33 @@ public:
     void build_body_expression();
 
     /**
-     * Constructs the C++ expression from the parse tree.
+     * Constructs the C++ expression from a parse tree.
      *
      * @param node The node.
      *
      * @return The expression.
      */
-    string cxx_expression(const ExprForAttribute *node);
+    static string cxx_expression(const ExprForAttribute *node);
 
     /**
-     * Creates an identity symbol for an equality or returns it if already present.
+     * Creates an identity attribute for an expression tree or returns it if already created.
      *
-     * @param [in,out] av If non-null, the agentvar on the lhs
+     * @param [in,out] av If non-null, the attribute on the lhs
      * @param k           The ConstantSymbol on the rhs.
      *
-     * @return The new equality symbol.
+     * @return The new identity attribute.
      */
-    static IdentityAttributeSymbol * CreateEqualityIdentitySymbol(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc);
+    static IdentityAttributeSymbol * create_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *node, yy::location decl_loc);
+
+    /**
+     * Creates an identity attribute for an equality or returns it if already created.
+     *
+     * @param [in,out] av If non-null, the attribute on the lhs
+     * @param k           The ConstantSymbol on the rhs.
+     *
+     * @return The new identity attribute.
+     */
+    static IdentityAttributeSymbol * create_equality_identity_attribute(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc);
 
     /**
      * Root of the expression tree.
@@ -112,7 +129,7 @@ public:
     /**
      * The agentvars used in the expression.
      */
-    set<AttributeSymbol *> pp_agentvars_used;
+    set<AttributeSymbol *> pp_attributes_used;
 
     /**
      * The links used in the expression.
@@ -122,11 +139,19 @@ public:
     /**
      * The linked agentvars used in the expression.
      */
-    set<LinkToAttributeSymbol *> pp_linked_agentvars_used;
+    set<LinkToAttributeSymbol *> pp_linked_attributes_used;
 
     /**
      * The expression function.
      */
     EntityFuncSymbol *expression_fn;
+
+    /**
+     * Map from key to name for anonymous identity attributes.
+     *
+     * The key is the canonical C++ expression for the expression tree,
+     * prefixed by the entity name and data type.
+     */
+    static unordered_map<string, string> anonymous_key_to_name;
 };
 

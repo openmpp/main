@@ -586,7 +586,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     {
         if (av1 && k1) {
             // is a conditioned duration
-            iav = IdentityAttributeSymbol::CreateEqualityIdentitySymbol(agent, *av1, k1, decl_loc);
+            iav = IdentityAttributeSymbol::create_equality_identity_attribute(agent, *av1, k1, decl_loc);
             assert(iav);
         }
         break;
@@ -598,7 +598,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     case token::TK_active_spell_delta:
     case token::TK_completed_spell_delta:
     {
-        iav = IdentityAttributeSymbol::CreateEqualityIdentitySymbol(agent, *av1, k1, decl_loc);
+        iav = IdentityAttributeSymbol::create_equality_identity_attribute(agent, *av1, k1, decl_loc);
         assert(iav);
         break;
     }

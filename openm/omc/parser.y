@@ -1814,119 +1814,119 @@ expr_for_agentvar[result]:
     // 
       symbol_in_expr[sym]
                         {
-	                        $result = new ExprForAgentVarSymbol( $sym );
+	                        $result = new ExprForAttributeSymbol( $sym );
                         }
     | literal
                         {
-	                        $result = new ExprForAgentVarLiteral( $literal );
-                            // NB: pointer $literal is used in ExprForAgentVarLiteral, so not deleted
+	                        $result = new ExprForAttributeLiteral( $literal );
+                            // NB: pointer $literal is used in ExprForAttributeLiteral, so not deleted
                         }
     //
     // arithmetic
     // 
     | "+"[op] expr_for_agentvar[right] %prec UNARY_PLUS
                         {
-	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
     | "-"[op] expr_for_agentvar[right] %prec UNARY_MINUS
                         {
-	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
     | expr_for_agentvar[left] "+"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "-"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "*"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "/"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "%"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // bit-wise operations
     // 
     | expr_for_agentvar[left] "|"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "&"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "^"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | "~"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
     | expr_for_agentvar[left] "<<"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] ">>"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // logical
     // 
     | "!"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarUnaryOp( (token_type) $op, $right );
+	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
     | expr_for_agentvar[left] "&&"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "||"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // comparison operations
     // 
     | expr_for_agentvar[left] "=="[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "!="[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "<"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] ">"[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] "<="[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     | expr_for_agentvar[left] ">="[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // ternary conditional
     // 
     | expr_for_agentvar[cond] "?" expr_for_agentvar[first] ":" expr_for_agentvar[second] 
                         {
-	                        $result = new ExprForAgentVarTernaryOp( $cond, $first, $second );
+	                        $result = new ExprForAttributeTernaryOp( $cond, $first, $second );
                         }
     //
     // array subscripting
@@ -1934,14 +1934,14 @@ expr_for_agentvar[result]:
     | expr_for_agentvar[left] "["[op] expr_for_agentvar[right] "]"
                         {
                             // array indexing
-                            $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+                            $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // comma-separated list
     //
     | expr_for_agentvar[left] ","[op] expr_for_agentvar[right]
                         {
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, $left, $right );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // function-syle cast to numeric type
@@ -1951,8 +1951,8 @@ expr_for_agentvar[result]:
                             // convert numeric_type from a token to a type symbol
                             auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$numeric_type));
                             assert(type_symbol); // grammar/initialization guarantee
-	                        auto type = new ExprForAgentVarSymbol( type_symbol );
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, type, $arg );
+	                        auto type = new ExprForAttributeSymbol( type_symbol );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, type, $arg );
                         }
     //
     // function call, or function-syle cast to a model-specific type, e.g. a classification
@@ -1960,9 +1960,9 @@ expr_for_agentvar[result]:
     | SYMBOL[sym] "("[op] expr_for_agentvar[arg] ")"
                         {
                             // turn the function (or type) symbol into an expression terminal node
-	                        auto func = new ExprForAgentVarSymbol( $sym );
+	                        auto func = new ExprForAttributeSymbol( $sym );
                             // note that arg can be an argument list because the grammar recognizes ',' as an expression operator
-	                        $result = new ExprForAgentVarBinaryOp( (token_type) $op, func, $arg );
+	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, func, $arg );
                         }
     //
     // grouping
