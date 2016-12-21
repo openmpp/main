@@ -12,11 +12,6 @@ model_type case_based;
 // The data type used to represent time
 time_type double;
 
-// Supported languages
-languages {
-	EN // English
-};
-
 /**
  * Simulates a single case.
  * 
@@ -26,12 +21,12 @@ void CaseSimulation(case_info &ci)
 {
     extern void SimulateEvents(); // defined in a simulation framework module
 
-	// Initialize the person actor
-	auto prPerson = new Person();
+    // Initialize the person actor
+    auto prPerson = new Person();
 	prPerson->Start();
 
 	// Simulate events until there are no more.
-    SimulateEvents();
+	SimulateEvents();
 }
 
 /**

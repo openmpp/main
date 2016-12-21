@@ -1,11 +1,14 @@
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
 //LABEL(modgen_case_based, EN) Modgen simulation framework for case-based cross-compatible models
 
 /* NOTE(modgen_case_based, EN)
-	This module implements Modgen versions of core global functions for case-based models
-	
+    This module implements Modgen versions of core global functions for case-based models
+    
     This module is ignored by the OpenM++ compiler.
-	
-	It should not be necessary to modify any code in this module.
+    
+    It should not be necessary to modify any code in this module.
 */
 
 bool do_exit_simulation_all = false;
@@ -24,22 +27,22 @@ void signal_exit_simulation_all()
  */
 void SimulateEvents()
 {
-	while (!gpoEventQueue->Empty())
-	{
-    	if (do_exit_simulation_all || gbCancelled || gbErrors) 
-    	{
-			// Terminate the case.
-    		gpoEventQueue->FinishAllActors();
-    	}
-		else 
-		{
-			// Age actor to the time of the next event.
-			gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
+    while (!gpoEventQueue->Empty())
+    {
+        if (do_exit_simulation_all || gbCancelled || gbErrors) 
+        {
+            // Terminate the case.
+            gpoEventQueue->FinishAllActors();
+        }
+        else 
+        {
+            // Age actor to the time of the next event.
+            gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
 
-			// Implement the next event.
-			gpoEventQueue->Implement();
-		}
-	}
+            // Implement the next event.
+            gpoEventQueue->Implement();
+        }
+    }
 }
 
 /**
@@ -59,36 +62,36 @@ void Simulation()
     CaseInfo(&ci);
 
     // Perform operations at the start of Simulation
-	Simulation_start(ci);
+    Simulation_start(ci);
 
-	long  lCase = 0; 	// counter for cases simulated
+    long  lCase = 0;     // counter for cases simulated
 
-	// Loop through all cases.
-	for ( lCase = 0; lCase < CASES() && !gbInterrupted 
-		  && !gbCancelled && !gbErrors; lCase++ )
-	{
-		// Tell the Modgen run-time to prepare to simulate a new case.
-		StartCase(); 
+    // Loop through all cases.
+    for ( lCase = 0; lCase < CASES() && !gbInterrupted 
+          && !gbCancelled && !gbErrors; lCase++ )
+    {
+        // Tell the Modgen run-time to prepare to simulate a new case.
+        StartCase(); 
 
-		// Call the CaseSimulation function defined earlier in this module.
-		CaseSimulation(ci); 
+        // Call the CaseSimulation function defined earlier in this module.
+        CaseSimulation(ci); 
 
-		// Tell the Modgen run-time that the case has been completed.
-		SignalCase();
+        // Tell the Modgen run-time that the case has been completed.
+        SignalCase();
 
         if (do_exit_simulation_all) {
             // The model signalled to end the simulation
             break;
         }
-	}
-	
-	// Perform operations at the end of Simulation
-	Simulation_end(ci);
+    }
+    
+    // Perform operations at the end of Simulation
+    Simulation_end(ci);
 
     // Reset CaseInfo API
     CaseInfo(nullptr, true);
 }
-							
+                            
 case_info* CaseInfo(case_info* ci, bool reset)
 {
     static thread_local case_info* ci_stored = nullptr;

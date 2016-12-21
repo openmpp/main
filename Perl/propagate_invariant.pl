@@ -93,16 +93,19 @@ for my $model (@models) {
 	# As a special case, if MODEL is in first element, it is replaced by the source and destination model
 	my @invariant_list = (
 		"makefile",                     "NewCaseBased",
-		"MODEL-modgen.sln",             "NewCaseBased",
-		"MODEL-ompp.sln",               "NewCaseBased",
-		"modgen/Model.vcxproj",         "NewCaseBased",
-		#"modgen/Model.props",           "NewCaseBased",
-		"modgen/Model.vcxproj.filters", "NewCaseBased",
-		"ompp/Model.vcxproj",           "NewCaseBased",
-		#"ompp/Model.props",             "NewCaseBased",
-		"ompp/Model.vcxproj.filters",   "NewCaseBased",
+
+		"modgen-MODEL.sln",             "NewCaseBased",
+		"modgen-model.vcxproj",         "NewCaseBased",
+		"modgen-model.vcxproj.filters", "NewCaseBased",
+
+		"ompp-MODEL.sln",               "NewCaseBased",
+		"ompp-model.vcxproj",           "NewCaseBased",
+		"ompp-model.props",             "NewCaseBased",
+		"ompp-model.vcxproj.filters",   "NewCaseBased",
+
 		"code/modgen_case_based.mpp",   "NewCaseBased",
 		"code/case_based.h",            "NewCaseBased",
+
 		"code/modgen_time_based.mpp",   "NewTimeBased",
 	);
 	
@@ -118,11 +121,11 @@ for my $model (@models) {
 		-e "${src}" || die "Not found: ${src}";
 		#logmsg info, "checking src=$src";
 		#logmsg info, "checking dst=$dst";
-		if (-f "${dst}" && ${model} ne ${invariant_model}) {
+		if (-f "${dst}" && ${model} ne ${invariant_model} && -d "${model}/code") {
 			#logmsg info, "checking src=$src and dst=$dst";
 			if (compare ${src}, ${dst}) {
 				logmsg info, ${model}, "Updating ${invariant_file} from ${invariant_model}";
-				copy ${src}, ${dst};
+				#copy ${src}, ${dst};
 				$any_propagated = 1;
 			}
 		}
