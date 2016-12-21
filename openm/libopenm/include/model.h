@@ -18,17 +18,9 @@ using namespace std;
 #include "libopenm/omLog.h"
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
-#include "libopenm/common/argReader.h"
-#include "libopenm/common/omFile.h"
-#include "helper.h"
-#include "dbExec.h"
 #include "dbMetaTable.h"
-#include "dbParameter.h"
-#include "dbOutputTable.h"
 #include "modelRunState.h"
 #include "metaHolder.h"
-#include "msg.h"
-#include "metaLoader.h"
 #include "runController.h"
 
 namespace openm

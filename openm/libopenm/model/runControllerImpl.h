@@ -9,6 +9,8 @@
 #define RUN_CTRL_IMPL_H
 
 #include <iterator>
+#include "dbParameter.h"
+#include "dbOutputTable.h"
 
 using namespace std;
 

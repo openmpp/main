@@ -225,6 +225,7 @@
     <ClInclude Include="MultilinkAttributeSymbol.h" />
     <ClInclude Include="NumericSymbol.h" />
     <ClInclude Include="omc_common.h" />
+    <ClInclude Include="omc_file.h" />
     <ClInclude Include="ParameterGroupSymbol.h" />
     <ClInclude Include="ParameterSymbol.h" />
     <ClInclude Include="ParseContext.h" />
@@ -303,6 +304,7 @@
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
+    <ClCompile Include="omc_file.cpp" />
     <ClCompile Include="ParameterGroupSymbol.cpp" />
     <ClCompile Include="ParameterSymbol.cpp" />
     <ClCompile Include="ParseContext.cpp" />

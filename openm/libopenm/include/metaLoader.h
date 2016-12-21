@@ -12,6 +12,7 @@
 using namespace std;
 
 #include "libopenm/common/argReader.h"
+#include "msg.h"
 
 namespace openm
 {
@@ -142,7 +143,7 @@ namespace openm
         * Simple language match used, for example:
         * if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
         */
-        static void initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
+        static void initMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
 
     protected:
         int modelId;                        // model id in database
@@ -197,7 +198,7 @@ namespace openm
         * Simple language match used, for example:
         * if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
         */
-        static map<string, string> loadLanguageMessages(IDbExec * i_dbExec);
+        static unordered_map<string, string> loadMessages(IDbExec * i_dbExec);
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;

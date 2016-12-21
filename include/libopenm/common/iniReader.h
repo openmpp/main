@@ -87,6 +87,9 @@ namespace openm
         /** return section by name as case-neutral map of (key,value). */
         const NoCaseMap getSection(const char * i_section) const throw();
 
+        /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
+        static void loadMessages(const char * i_exePath) throw();
+
     private:
         bool is_loaded;         // if true then ini-file loaded OK else error
         IniEntryVec entryVec;   // ini-file entries: (section, key, value)

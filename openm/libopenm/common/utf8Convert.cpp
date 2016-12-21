@@ -395,7 +395,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
 *
 * @return UTF-8 string.
 */
-string openm::toUtf8(const char * i_byteArr, const char * i_codePageName)
+const string openm::toUtf8(const char * i_byteArr, const char * i_codePageName)
 {
     return (i_byteArr != nullptr) ? toUtf8(strnlen(i_byteArr, OM_STRLEN_MAX), i_byteArr, i_codePageName) : "";
 }
@@ -409,7 +409,7 @@ string openm::toUtf8(const char * i_byteArr, const char * i_codePageName)
 *
 * @return UTF-8 string.
 */
-string openm::toUtf8(size_t i_size, const char * i_byteArr, const char * i_codePageName)
+const string openm::toUtf8(size_t i_size, const char * i_byteArr, const char * i_codePageName)
 {
     if (i_size <= 0 || i_byteArr == nullptr) return "";   // return empty "" string if no input data
     
@@ -522,7 +522,7 @@ bool openm::isUtf8(size_t i_size, const char * i_byteArr)
 *
 * @return file content as UTF-8 string.
 */
-string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
+const string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
 {
     // read and convert file into list of utf8 strings splitted by \n new line
     list<string> contentLst = fileToUtf8Lines(i_filePath, i_codePageName);
@@ -551,7 +551,7 @@ string openm::fileToUtf8(const char * i_filePath, const char * i_codePageName)
 *
 * @return file content as UTF-8 string.
 */
-list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * i_codePageName)
+const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * i_codePageName)
 {
     if (i_filePath == nullptr || i_filePath[0] == '\0') throw HelperException("Invalid (empty) file name");
 

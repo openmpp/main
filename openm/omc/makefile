@@ -101,6 +101,7 @@ ModelTypeSymbol.cpp \
 MultilinkAttributeSymbol.cpp \
 NumericSymbol.cpp \
 omc.cpp \
+omc_file.cpp \
 ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
 ParseContext.cpp \

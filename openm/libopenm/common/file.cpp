@@ -35,7 +35,7 @@ bool openm::isFileExists(const char * i_filePath)
  * For example: C:\bin\modelOne.exe => C:\bin \n
  * It is very primitive function and results incorrect if: "special\ path" => "special
  */
-string openm::baseDirOf(const string & i_path)
+const string openm::baseDirOf(const string & i_path)
 {
     string::size_type nLast = i_path.find_last_of("/\\");
     if (nLast != string::npos) return i_path.substr(0, nLast);
@@ -43,7 +43,7 @@ string openm::baseDirOf(const string & i_path)
 }
 
 /** return base directory of the path or empty string if no / or \ in the path. */
-string openm::baseDirOf(const char * i_path)
+const string openm::baseDirOf(const char * i_path)
 {
     if (i_path != nullptr) {
         string sPath = i_path;
@@ -62,7 +62,7 @@ string openm::baseDirOf(const char * i_path)
  *          
  * For example: C:\bin\modelOne.exe => D:\work\dir\modelOne.log
  */
-string openm::makeDefaultPath(const char * i_exePath, const char * i_extension)
+const string openm::makeDefaultPath(const char * i_exePath, const char * i_extension)
 {
 char cwd[OM_PATH_MAX + 1];
 
@@ -88,6 +88,24 @@ char cwd[OM_PATH_MAX + 1];
 }
 
 /**
+ * remove path.oldSuffix and append path.newSuffix.
+ *
+ * @param i_path        source file path.
+ * @param i_oldSuffix   old suffix (or .extension) to remove from the path.
+ * @param i_newSuffix   new suffix (or .extension) to append to the path.
+ *
+ * For example: C:\bin\modelOne.exe => C:\bin\modelOne.message.ini
+ */
+const string openm::replacePathSuffix(const char * i_path, const char * i_oldSuffix, const char * i_newSuffix)
+{
+    string sPath = i_path != nullptr ? i_path : "";
+
+    if (endWithNoCase(sPath, i_oldSuffix)) sPath = sPath.substr(0, sPath.length() - strnlen(i_oldSuffix, OM_PATH_MAX));
+
+    return (i_newSuffix != nullptr) ? sPath + i_newSuffix : sPath;
+}
+
+/**
  * make path by join directory, file name and specified extension.
  *
  * @param   i_dirPath   path or directory.
@@ -101,7 +119,7 @@ char cwd[OM_PATH_MAX + 1];
  *   input\ ageSex csv => input/ageSex.csv
 *    \\host\share ageSex.csv => \\host/share.ageSex.csv
  */
-string openm::makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension)
+const string openm::makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension)
 {
     // make directory: replace all \ by / except of leading \\ and append trailng/ separator
     string path = (i_dirPath != nullptr) ? i_dirPath : "";

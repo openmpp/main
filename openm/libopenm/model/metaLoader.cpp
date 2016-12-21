@@ -268,15 +268,15 @@ void MetaLoader::broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag
 * Simple language match used, for example:
 * if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
 */
-void MetaLoader::initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
+void MetaLoader::initMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
 { 
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
     // if this is a root process then load messages from database
-    map<string, string> msgMap;
+    unordered_map<string, string> msgMap;
     
     if (!i_isMpiUsed || i_msgExec->isRoot()) {
-        msgMap = loadLanguageMessages(i_dbExec);
+        msgMap = loadMessages(i_dbExec);
     }
 
     // if there is more then one process then broadcast messages to all child processes
@@ -286,7 +286,7 @@ void MetaLoader::initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsg
         IRowBaseVec codeValueVec;
 
         if (i_msgExec->isRoot()) {
-            for (map<string, string>::const_iterator it = msgMap.cbegin(); it != msgMap.cend(); it++) {
+            for (unordered_map<string, string>::const_iterator it = msgMap.cbegin(); it != msgMap.cend(); it++) {
                 IRowBaseUptr cvUptr(new CodeValueRow(it->first, it->second));
                 codeValueVec.push_back(std::move(cvUptr));
             }
@@ -304,9 +304,6 @@ void MetaLoader::initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsg
             }
         }
     }
-
-    // set language specific message for the log
-    if (!msgMap.empty()) theLog->swapLanguageMessages(msgMap);
 }
 
 /** determine language for model meassages and read language-specific strings from db.
@@ -315,7 +312,7 @@ void MetaLoader::initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsg
 * Simple language match used, for example:
 * if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
 */
-map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
+unordered_map<string, string> MetaLoader::loadMessages(IDbExec * i_dbExec)
 {
     if (i_dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
@@ -332,14 +329,16 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
     unique_ptr<IModelWordTable> mwTbl(IModelWordTable::create(i_dbExec, mdRow->modelId));
     unique_ptr<ILangWordTable> wordTbl(ILangWordTable::create(i_dbExec));
 
-    // get user prefered locale and "normalize" language part of it: en_CA.UTF-8 => en-ca
-    string lang = normalizeLanguageName(getDefaultLocaleName());
+    // if language list already set (stored in theLog) then use it
+    // else get user prefered locale and "normalize" language part of it: en_CA.UTF-8 => en-ca
+    list<string> langLst = theLog->getLanguages();
+    if (langLst.empty()) langLst = splitLanguageName(getDefaultLocaleName());
 
     // make list of language id's by shroten user language: en-ca, en
     vector<int> langIdArr;
     bool isDef = false;     // if true then it is model default language
 
-    while (!lang.empty()) {
+    for (const string & lang : langLst) {
 
         // if language code found then add id into the list
         const LangLstRow * langRow = langTbl->findFirst(
@@ -349,18 +348,20 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
             langIdArr.push_back(langRow->langId);
             if (!isDef) isDef = langRow->langId == mdRow->defaultLangId;
         }
-
-        // shorten language code: simple (naive) way to get more generic language
-        size_t np = lang.find_last_of("-_");
-        if (np == string::npos || np <= 0 || np >= lang.length()) break;
-        lang = lang.substr(0, np);
     }
 
     // append model default language at the bottom of the list, if not already there
-    if (!isDef) langIdArr.push_back(mdRow->defaultLangId);
+    if (!isDef) {
+        const LangLstRow * langRow = langTbl->byKey(mdRow->defaultLangId);
+        if (langRow != nullptr) {
+            langIdArr.push_back(langRow->langId);
+            langLst.push_back(langRow->code);
+        }
+    }
 
-    // build message map by selecting most specific language from model messages list
-    map<string, string> msgMap;
+    // get existing version of model messages list from theLog storage
+    // append to message map by selecting most specific language from db model messages
+    unordered_map<string, string> msgMap = theLog->getLanguageMessages();
 
     for (int langId : langIdArr) {
         for (ptrdiff_t nRow = 0; nRow < mwTbl->rowCount(); nRow++) {
@@ -385,7 +386,7 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
         }
     }
 
-    // reduce message map: remove empty and not translated messages (where translated value same as nont translated code)
+    // reduce message map: remove empty and not translated messages (where translated value same as non translated code)
     for (auto it = msgMap.begin(); it != msgMap.end();) {
         if (it->first.empty() || it->second.empty() || it->first == it->second) {
             it = msgMap.erase(it);
@@ -394,6 +395,9 @@ map<string, string> MetaLoader::loadLanguageMessages(IDbExec * i_dbExec)
             it++;
         }
     }
+
+    // set language specific message for the log
+    if (!msgMap.empty()) theLog->swapLanguageMessages(langLst, msgMap);
 
     return msgMap;
 }

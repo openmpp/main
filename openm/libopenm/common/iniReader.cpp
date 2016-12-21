@@ -339,3 +339,48 @@ bool IniEntry::equalTo(const char * i_section, const char * i_key) const
 {
     return i_section != nullptr && i_key != nullptr && equalNoCase(section.c_str(), i_section) && equalNoCase(key.c_str(), i_key);
 }
+
+/** read language specific messages from path/to/theExe.message.ini and pass it to the log */
+void IniFileReader::loadMessages(const char * i_exePath) throw()
+{
+    try {
+        // read message.ini
+        string msgPath = replacePathSuffix(i_exePath, ".exe", ".message.ini");
+        if (!isFileExists(msgPath.c_str())) return;     // exit: message.ini does not exists
+
+        IniFileReader rd(msgPath.c_str());
+
+        // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)
+        list<string> langLst = splitLanguageName(getDefaultLocaleName());
+
+        // find user language(s) as section of message.ini and copy messages into message map
+        // translated message is searched in language prefered order: (en-ca, en)
+        const NoCaseSet sectSet = rd.sectionSet();
+        unordered_map<string, string> msgMap;
+
+        for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
+
+            if (sectSet.find(lang) != sectSet.cend()) { // language exist in message.ini
+
+                // add translated messages, if not already in message map
+                // use only translated messages (where translated value is not empty)
+                const NoCaseMap cvMap = rd.getSection(lang.c_str());
+                for (const auto & cv : cvMap) {
+                    if (cv.first.empty() || cv.second.empty()) continue;
+                    if (msgMap.find(cv.first) == msgMap.end()) msgMap[cv.first] = cv.second;
+                }
+            }
+        }
+
+        // pass translated messages to the logger
+        theLog->swapLanguageMessages(langLst, msgMap);
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw;   = exit without failure
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw HelperException(ex.what());    = exit without failure
+    }
+}
