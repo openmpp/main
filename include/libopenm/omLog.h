@@ -9,7 +9,9 @@
 #define OM_H_LOG_H
 
 #include <string>
+#include <list>
 #include <unordered_map>
+
 using namespace std;
 
 namespace openm
