@@ -1,0 +1,11 @@
+//LABEL(languages, EN) Supported Languages
+
+/* NOTE(languages, EN)
+    This module contains the supported languages for the model.
+*/
+
+// Supported languages
+languages {
+    EN, // English
+    FR  // Français
+};

@@ -3,7 +3,7 @@
 
 //LABEL(model_info, EN) Model information
 /* NOTE(model_info, EN)
-	This module contains the model version, description, and notes.
+This module contains the model version, description, and notes.
 */
 
 // The model version number

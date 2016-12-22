@@ -1,15 +1,7 @@
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
-
-//LABEL ( language_FR, EN ) French translation
+//LABEL ( language_FR, EN ) French translations of cb_12103_bi strings
 
 /*NOTE( language_FR, EN)
-	This module contains French translations of labels and notes.
-*/
-
-//LABEL(model, FR) Simple modèle case-based
-/* NOTE(model, FR)
-Ce modèle peut servir comme point de départ pour construire un modèle case-based plus complexe.
+    This module contains French translations of cb_12103_bi labels and notes.
 */
 
 
@@ -52,11 +44,11 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
 //                              /
 //==============================/
 
-//LABEL ( MortalityHazard, FR ) Hasard annuel de mortalité
+//LABEL ( MortalityHazard, FR ) Hasard annuel de mortalitÃ©
 
-/* NOTE ( MortalityHazard, FR )		Hasard constant de mortalité ce qui donne une fonction de 
-	survie exponentielle.
-	*/
+/* NOTE ( MortalityHazard, FR )        Hasard constant de mortalitÃ© ce qui donne une fonction de 
+    survie exponentielle.
+    */
 
 
 
@@ -83,25 +75,25 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
 
 
 
-	//LABEL( Person.age, FR) Âge
-/* NOTE ( Person.age, FR )		L'âge est une quantité continue dans ce modèle.
-		L'unité d'âge est une année.
-	*/
+    //LABEL( Person.age, FR) Ã‚ge
+/* NOTE ( Person.age, FR )        L'Ã¢ge est une quantitÃ© continue dans ce modÃ¨le.
+        L'unitÃ© d'Ã¢ge est une annÃ©e.
+    */
 
      //LABEL ( Person.alive, FR ) Vivant(e)
 
-/* NOTE ( Person.alive, FR )		A la valeur « TRUE » lorsque l'acteur 
-	démarre, et « FALSE » juste avant que l'acteur ne termine.
-		Puisque la valeur numérique de « TRUE » est 1 et que la valeur 
-		numérique de « FALSE » est 0, cet état peut également être 
-		utilisé pour compter les acteurs dans les tableaux.
-	*/
+/* NOTE ( Person.alive, FR )        A la valeur Â« TRUE Â» lorsque l'acteur 
+    dÃ©marre, et Â« FALSE Â» juste avant que l'acteur ne termine.
+        Puisque la valeur numÃ©rique de Â« TRUE Â» est 1 et que la valeur 
+        numÃ©rique de Â« FALSE Â» est 0, cet Ã©tat peut Ã©galement Ãªtre 
+        utilisÃ© pour compter les acteurs dans les tableaux.
+    */
 
 
-	//LABEL( Person.time, FR) Temps
-/* NOTE ( Person.time, FR )		Le temps est continu dans ce modèle. 
-		L'unité de temps est une année.
-	*/
+    //LABEL( Person.time, FR) Temps
+/* NOTE ( Person.time, FR )        Le temps est continu dans ce modÃ¨le. 
+        L'unitÃ© de temps est une annÃ©e.
+    */
 
 
 
@@ -110,9 +102,9 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
      //==============================/
 
 
-     //LABEL ( Person.MortalityEvent, FR ) Événement de mortalité
+     //LABEL ( Person.MortalityEvent, FR ) Ã‰vÃ©nement de mortalitÃ©
 
-/* NOTE ( Person.MortalityEvent, FR )	Cet événement implémente un hasard constant de mortalité.
+/* NOTE ( Person.MortalityEvent, FR )    Cet Ã©vÃ©nement implÃ©mente un hasard constant de mortalitÃ©.
 */
 
 
@@ -124,13 +116,13 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
 
      //LABEL ( Person.Finish, FR ) Termine l'acteur
 
-/* NOTE ( Person.Finish, FR )	La fonction « Finish » termine la simulation de l'acteur.
+/* NOTE ( Person.Finish, FR )    La fonction Â« Finish Â» termine la simulation de l'acteur.
 */
 
-     //LABEL ( Person.Start, FR ) Démarre l'acteur
+     //LABEL ( Person.Start, FR ) DÃ©marre l'acteur
 
-/* NOTE ( Person.Start, FR )	La fonction « Start » initialise les états de l'acteur avant 
-	que la simulation de l'acteur ne commence.
+/* NOTE ( Person.Start, FR )    La fonction Â« Start Â» initialise les Ã©tats de l'acteur avant 
+    que la simulation de l'acteur ne commence.
 */
 
 
@@ -156,19 +148,19 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
 //==============================/
 
 
-//LABEL ( DurationOfLife, FR ) Durée de vie
+//LABEL ( DurationOfLife, FR ) DurÃ©e de vie
 
-/* NOTE ( DurationOfLife, FR )	Ce tableau contient les statistiques reliées à la durée de vie.
+/* NOTE ( DurationOfLife, FR )    Ce tableau contient les statistiques reliÃ©es Ã  la durÃ©e de vie.
 */
 
 
-     //LABEL ( DurationOfLife.Dim0, FR ) Caractéristiques démographiques
+     //LABEL ( DurationOfLife.Dim0, FR ) CaractÃ©ristiques dÃ©mographiques
 
 
      //LABEL ( DurationOfLife.Expr0, FR ) Taille de la population
-     //LABEL ( DurationOfLife.Expr1, FR ) Durée de vie minimale
-     //LABEL ( DurationOfLife.Expr2, FR ) Durée de vie maximale
-     //LABEL ( DurationOfLife.Expr3, FR ) Espérance de vie
+     //LABEL ( DurationOfLife.Expr1, FR ) DurÃ©e de vie minimale
+     //LABEL ( DurationOfLife.Expr2, FR ) DurÃ©e de vie maximale
+     //LABEL ( DurationOfLife.Expr3, FR ) EspÃ©rance de vie
 
 
 //==============================/
@@ -187,23 +179,29 @@ Ce modèle peut servir comme point de départ pour construire un modèle case-based
 
 //LABEL ( model_core, FR ) Fonctions de simulation de base
 
-/* NOTE ( model_core, FR )	Ce module contient les définitions et fonctions de simulation de base.
+/* NOTE ( model_core, FR )    Ce module contient les dÃ©finitions et fonctions de simulation de base.
 */
 
-//LABEL(model_info, FR) Information sur le modèle
+//LABEL(model_info, FR) Information sur le modÃ¨le
 
 /* NOTE(model_info, EN)
-	Ce module contient la version, la description, et les notes du modèle.
+Ce module contient la version, la description, et les notes du modÃ¨le.
 */
 
-//LABEL (language_FR, FR) Traduction française des chaînes du modèle.
+//LABEL (language_FR, FR) Traduction franÃ§aise des chaÃ®nes du modÃ¨le cb_12103_bi.
 
 /* NOTE(language_FR, FR) 
-Ce module contient la traduction française des labels et notes du modèle.
+Ce module contient la traduction franÃ§aise des labels et notes du modÃ¨le cb_12103_bi.
 */
 
-//LABEL ( PersonCore, FR ) Fonctionnalités de base de l'acteur Person
+//LABEL ( PersonCore, FR ) FonctionnalitÃ©s de base de l'acteur Person
 
-/* NOTE ( PersonCore, FR )	Ce module contient les informations de base qui définissent le cas de l'acteur Person.
+/* NOTE ( PersonCore, FR )    Ce module contient les informations de base qui dÃ©finissent le cas de l'acteur Person.
 */
+
+//LABEL (languages, FR) Languages supportÃ©s.
+
+/* NOTE(languages, FR) Ce module contient les languages supportÃ©es par le model.
+*/
+
 

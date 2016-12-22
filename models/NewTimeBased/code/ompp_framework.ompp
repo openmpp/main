@@ -4,7 +4,7 @@
 //LABEL(ompp_framework, EN) OpenM++ simulation framework
 
 /* NOTE(ompp_framework, EN)
-	This module specifies the simulation framework
+    This module specifies the simulation framework
     and supplies function definitions required by the framework.
 */
 
