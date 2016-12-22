@@ -88,7 +88,7 @@ namespace openm
         const NoCaseMap getSection(const char * i_section) const throw();
 
         /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-        static void loadMessages(const char * i_exePath) throw();
+        static void loadMessages(const char * i_iniMsgPath, const string & i_language = "") throw();
 
     private:
         bool is_loaded;         // if true then ini-file loaded OK else error

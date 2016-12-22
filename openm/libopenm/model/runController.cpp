@@ -24,7 +24,7 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
     int nProcess = i_isMpiUsed ? i_msgExec->worldSize() : 1;    // number of processes: MPI world size
 
     bool isTask = i_argOpts.intOption(RunOptionsKey::taskId, 0) > 0 || i_argOpts.strOption(RunOptionsKey::taskName) != "";
-    bool isRunId = i_argOpts.intOption(RunOptionsKey::runId, 0) > 0;
+    bool isRunId = i_argOpts.intOption(RunOptionsKey::restartRunId, 0) > 0;
 
     // multiple processes: create run controller for root or child process
     // single process run: create single process run controller 
@@ -140,7 +140,8 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     if (mStatus == ModelStatus::init) mStatus = ModelStatus::progress;
 
     // create new run
-    string sn = toAlphaNumeric(string(OM_MODEL_NAME) + "_" + dtStr + "_" + to_string(nRunId));
+    string sn = argOpts().strOption(RunOptionsKey::runName);
+    if (sn.empty()) sn = toAlphaNumeric(string(OM_MODEL_NAME) + "_" + dtStr + "_" + to_string(nRunId));
 
     i_dbExec->update(
         "INSERT INTO run_lst" \
@@ -190,7 +191,7 @@ void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExe
     for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
         // skip run id and connection string: it is already in database
-        if (optIt->first == RunOptionsKey::runId || optIt->first == RunOptionsKey::dbConnStr) continue;
+        if (optIt->first == RunOptionsKey::restartRunId || optIt->first == RunOptionsKey::dbConnStr) continue;
 
         // remove subsample count from run_option, it is stored in run_lst
         // if (optIt->first == RunOptionsKey::subSampleCount) continue;

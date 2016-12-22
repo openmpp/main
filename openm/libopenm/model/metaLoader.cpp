@@ -28,9 +28,9 @@ namespace openm
     const char * RunOptionsKey::dbConnStr = "OpenM.Database";
 
     /** model run id to restart model run */
-    const char * RunOptionsKey::runId = "OpenM.RunId";
+    const char * RunOptionsKey::restartRunId = "OpenM.RestartRunId";
 
-    /** model run name to restart model run */
+    /** model run name to in database */
     const char * RunOptionsKey::runName = "OpenM.RunName";
 
     /** working set id to get input parameters */
@@ -95,6 +95,9 @@ namespace openm
 
     /** do not prefix trace log messages with date-time */
     const char * RunOptionsKey::traceNoMsgTime = "OpenM.TraceNoMsgTime";
+
+    /** language to display output messages */
+    const char * RunOptionsKey::messageLang = "OpenM.MessageLanguage";
 }
 
 /** array of model run option keys. */
@@ -102,7 +105,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::subSampleCount,
     RunOptionsKey::threadCount,
     RunOptionsKey::dbConnStr,
-    RunOptionsKey::runId,
+    RunOptionsKey::restartRunId,
     RunOptionsKey::runName,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
@@ -121,6 +124,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::traceUseTs,
     RunOptionsKey::traceUsePid,
     RunOptionsKey::traceNoMsgTime,
+    RunOptionsKey::messageLang,
     ArgKey::optionsFile,
     ArgKey::logToConsole,
     ArgKey::logToFile,
@@ -257,62 +261,12 @@ void MetaLoader::broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag
     }
 }
 
-
-/** read language specific messages from db and broadcast it to all modeling processes.
+/** read model messages from database.
 *
-* @param[in] i_isMpiUsed    if true then MPI is used and messages must be brodcasted to child processes
-* @param[in] i_dbExec       database connection
-* @param[in] i_msgExec      message passing interface to brodcast model messages to child processes
-*
-* If messages in user prefered language exist then use it else default model language messages.
-* Simple language match used, for example:
-* if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
+* User preferd language determined by simple match, for example:
+* if user language is en_CA.UTF-8 then search done for lower case ["en-ca", "en", "model-default-langauge"].
 */
-void MetaLoader::initMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)
-{ 
-    if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
-
-    // if this is a root process then load messages from database
-    unordered_map<string, string> msgMap;
-    
-    if (!i_isMpiUsed || i_msgExec->isRoot()) {
-        msgMap = loadMessages(i_dbExec);
-    }
-
-    // if there is more then one process then broadcast messages to all child processes
-    if (i_isMpiUsed && i_msgExec->worldSize() > 1) {
-
-        // if this is root process then pack messages for brodacast
-        IRowBaseVec codeValueVec;
-
-        if (i_msgExec->isRoot()) {
-            for (unordered_map<string, string>::const_iterator it = msgMap.cbegin(); it != msgMap.cend(); it++) {
-                IRowBaseUptr cvUptr(new CodeValueRow(it->first, it->second));
-                codeValueVec.push_back(std::move(cvUptr));
-            }
-        }
-
-        // broadcast from root to all child processes
-        unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::codeValue));
-        i_msgExec->bcastPacked(0, codeValueVec, *packAdp);
-
-        // if this is child process then unpack messages
-        if (!i_msgExec->isRoot()) {
-            for (auto it = codeValueVec.cbegin(); it != codeValueVec.cend(); it++) {
-                CodeValueRow * cvRow = dynamic_cast<CodeValueRow *>(it->get());
-                msgMap[cvRow->code.c_str()] = cvRow->value.c_str();
-            }
-        }
-    }
-}
-
-/** determine language for model meassages and read language-specific strings from db.
-*
-* If messages in user prefered language exist then use it else default model language messages.
-* Simple language match used, for example:
-* if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
-*/
-unordered_map<string, string> MetaLoader::loadMessages(IDbExec * i_dbExec)
+void MetaLoader::loadMessages(IDbExec * i_dbExec)
 {
     if (i_dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
@@ -398,8 +352,6 @@ unordered_map<string, string> MetaLoader::loadMessages(IDbExec * i_dbExec)
 
     // set language specific message for the log
     if (!msgMap.empty()) theLog->swapLanguageMessages(langLst, msgMap);
-
-    return msgMap;
 }
 
 // merge command line and ini-file arguments with profile_option table values

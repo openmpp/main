@@ -16,6 +16,7 @@
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
 * * -Omc.CodePage       code page for converting source files, e.g. windows-1252
+* * -Omc.MessageLanguage    language to display output messages, default: user environment settings
 * * -Omc.MessageFnc     localized message functions, default: LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
 * * -OpenM.OptionsFile  path/to/optional/omc.ini
@@ -89,7 +90,7 @@ namespace openm
         /** omc input directory with OpenM++ fixed parameter files */
         static const char * fixedDir;
 
-        /** omc code page for source files */
+        /**  omc code page: input files encoding name */
         static const char * codePage;
 
         /** omc suppress #line directives in generated cpp files */
@@ -106,6 +107,9 @@ namespace openm
 
         /** omc list of db-provider names to create sql scripts */
         static const char * dbProviderNames;
+
+        /** language to display output messages */
+        static const char * messageLang;
 
         /** list of functions which produce localized messages */
         static const char * messageFnc;
@@ -160,7 +164,7 @@ namespace openm
     /** omc input directory for OpenM++ fixed parameter files */
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
-    /** omc code page option */
+    /** omc code page: input files encoding name */
     const char * OmcArgKey::codePage = "Omc.CodePage";
 
     /** omc no #line directives option */
@@ -177,6 +181,9 @@ namespace openm
 
     /** omc list of db-provider names to create sql scripts */
     const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
+
+    /** language to display output messages */
+    const char * OmcArgKey::messageLang = "Omc.MessageLanguage";
 
     /** list of functions which produce localized messages */
     const char * OmcArgKey::messageFnc = "Omc.MessageFnc";
@@ -220,6 +227,7 @@ namespace openm
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
         OmcArgKey::dbProviderNames,
+        OmcArgKey::messageLang,
         OmcArgKey::messageFnc,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
@@ -270,7 +278,8 @@ int main(int argc, char * argv[])
 
         // read language specific messages from path/to/exe/omc.message.ini
         IniFileReader::loadMessages(
-            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), "omc.message.ini").c_str()
+            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), "omc.message.ini").c_str(),
+            argStore.strOption(OmcArgKey::messageLang)
         );
         theLog->logMsg("Start omc");
 

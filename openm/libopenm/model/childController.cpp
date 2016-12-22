@@ -72,12 +72,34 @@ void ChildController::init(void)
         theModelRunState.updateStatus(ModelStatus::exit);
     }
 
-    // broadcast metadata tables from root to all other processes
+    // receive metadata tables from root process
+    // receive model run options
+    // receive broadcasted model messages from root
     metaStore.reset(new MetaHolder);
     modelId = broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
-
-    // receive model run options
     broadcastRunOptions(ProcessGroupDef::all, msgExec);
+    broadcastLanguageMessages();
+    broadcastLanguageMessages();
+}
+
+/** receive broadcasted model messages from root. */
+void ChildController::broadcastLanguageMessages(void)
+{
+    // broadcast from root to all child processes
+    IRowBaseVec codeValueVec;
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::codeValue));
+    msgExec->bcastPacked(ProcessGroupDef::all, codeValueVec, *packAdp);
+
+    // unpack messages
+    unordered_map<string, string> msgMap;
+    for (auto it = codeValueVec.cbegin(); it != codeValueVec.cend(); it++) {
+        CodeValueRow * cvRow = dynamic_cast<CodeValueRow *>(it->get());
+        msgMap[cvRow->code.c_str()] = cvRow->value.c_str();
+    }
+
+    // set language specific message for the log
+    list<string> langLst = theLog->getLanguages();
+    if (!msgMap.empty()) theLog->swapLanguageMessages(langLst, msgMap);
 }
 
 /** next run for child process: receive run id, run options and input parameters from root process. */

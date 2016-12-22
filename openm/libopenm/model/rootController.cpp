@@ -94,8 +94,10 @@ void RootController::init(void)
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
     // load metadata table rows, except of run_option, which is may not created yet
+    // load messages from database
     metaStore.reset(new MetaHolder);
     modelId = readMetaTables(dbExec, metaStore.get());
+    loadMessages(dbExec);
 
     // merge command line and ini-file arguments with profile_option table values
     mergeProfile(dbExec);
@@ -136,16 +138,33 @@ void RootController::init(void)
             "Invalid first subsample number: %d or number of subsamples: %d", subFirstNumber, selfSubCount
             );
 
-    // broadcast metadata tables from root to all other processes
-    broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
-
+    // broadcast metadata tables from root to all child processes
     // broadcast basic model run options
+    // broadcast model messages from root to all child processes
+    broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
     broadcastRunOptions(ProcessGroupDef::all, msgExec);
+    broadcastLanguageMessages();
 
     // if this is modeling task then find it in database
     // and create task run entry in database
     taskId = findTask(dbExec);
     if (taskId > 0) taskRunId = createTaskRun(taskId, dbExec);
+}
+
+/** broadcast model messages from root to all child processes. */
+void RootController::broadcastLanguageMessages(void)
+{
+    // get language messages: merge of message.ini and database messages
+    unordered_map<string, string> msgMap = theLog->getLanguageMessages();
+
+    // broadcast from root to all child processes
+    IRowBaseVec codeValueVec;
+    for (unordered_map<string, string>::const_iterator it = msgMap.cbegin(); it != msgMap.cend(); it++) {
+        IRowBaseUptr cvUptr(new CodeValueRow(it->first, it->second));
+        codeValueVec.push_back(std::move(cvUptr));
+    }
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::codeValue));
+    msgExec->bcastPacked(ProcessGroupDef::all, codeValueVec, *packAdp);
 }
 
 /** next run for root process: create new run and input parameters in database and support data exchange. 

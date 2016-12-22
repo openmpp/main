@@ -145,6 +145,9 @@ namespace openm
         // return root process run group: last run group
         RunGroup & rootRunGroup(void) { return runGroupLst.back(); }
 
+        /** broadcast model messages from root to all child processes. */
+        void broadcastLanguageMessages(void);
+
         /** create new run and assign it to modeling group. */
         int makeNextRun(RunGroup & i_runGroup);
 
@@ -217,6 +220,9 @@ namespace openm
 
         /** initialize child modeling process. */
         virtual void init(void) override;
+
+        /** receive broadcasted model messages from root. */
+        void broadcastLanguageMessages(void);
 
     private:
         ChildController(const ChildController & i_runCtrl) = delete;

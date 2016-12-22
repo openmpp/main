@@ -341,21 +341,24 @@ bool IniEntry::equalTo(const char * i_section, const char * i_key) const
 }
 
 /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-void IniFileReader::loadMessages(const char * i_msgPath) throw()
+void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_language) throw()
 {
     try {
-        // read modelName.message.ini
-        if (!isFileExists(i_msgPath)) return;     // exit: message.ini does not exists
-
-        IniFileReader rd(i_msgPath);
-        const NoCaseSet sectSet = rd.sectionSet();
-
         // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)
-        list<string> langLst = splitLanguageName(getDefaultLocaleName());
+        list<string> langLst = splitLanguageName(!i_language.empty() ? i_language : getDefaultLocaleName());
+
+        // set user prefred language(s)
+        unordered_map<string, string> msgMap;
+        theLog->swapLanguageMessages(langLst, msgMap);
+
+        // read modelName.message.ini
+        if (!isFileExists(i_iniMsgPath)) return;     // exit: message.ini does not exists
+
+        IniFileReader rd(i_iniMsgPath);
+        const NoCaseSet sectSet = rd.sectionSet();
 
         // find user language(s) as section of message.ini and copy messages into message map
         // translated message is searched in language prefered order: (en-ca, en)
-        unordered_map<string, string> msgMap;
 
         for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
 

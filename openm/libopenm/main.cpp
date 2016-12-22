@@ -87,7 +87,8 @@ int main(int argc, char ** argv)
 
         // read language specific messages from path/to/exe/modelName.message.ini
         IniFileReader::loadMessages(
-            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), OM_MODEL_NAME, ".message.ini").c_str()
+            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), OM_MODEL_NAME, ".message.ini").c_str(),
+            argOpts.strOption(RunOptionsKey::messageLang)
         );
         theLog->logMsg(OM_MODEL_NAME);
 
@@ -118,9 +119,6 @@ int main(int argc, char ** argv)
         unique_ptr<IDbExec> dbExec(
             (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
             );
-
-        // read language specific messages for the log and broadcast it to all modeling processes
-        MetaLoader::initMessages(isMpiUsed, dbExec.get(), msgExec.get());
 
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
