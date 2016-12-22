@@ -85,8 +85,10 @@ int main(int argc, char ** argv)
             argOpts.boolOption(ArgKey::logSql)
             );
 
-        // read language specific messages for the log
-        IniFileReader::loadMessages((argc > 0 ? argv[0] : ""));
+        // read language specific messages from path/to/exe/modelName.message.ini
+        IniFileReader::loadMessages(
+            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), OM_MODEL_NAME, ".message.ini").c_str()
+        );
         theLog->logMsg(OM_MODEL_NAME);
 
         // if trace log file enabled setup trace file name

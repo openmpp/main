@@ -113,6 +113,7 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 $subdir = 'bin';
 @files = (
 	'omc.exe',
+	'omc.message.ini',
 	'ompp_create_scex.exe',
 	'ompp_export_csv.exe',
 	'ompp_export_excel.exe',
@@ -212,7 +213,7 @@ dircopy $subdir, "${deploy_dir}/${subdir}" || die;
 # models
 mkdir "${deploy_dir}/models" or die;
 
-# models bin: pre-built models exe, database
+# models bin: pre-built models exe, message.ini database
 my $models_bin = "${deploy_dir}/models/bin";
 mkdir "${models_bin}" or die;
 
@@ -272,10 +273,16 @@ for my $model (@models) {
 	copy "${model_dir}/ompp/bin/${model}.exe", "${models_bin}" 
 		or die "Failed to copy ${model_dir}/ompp/bin/${model}.exe";
 		
-	# model db.sqlite, use default name for database file in order to open without explicit connection string
-	copy "${model_dir}/output/${model}_Default.sqlite", "${models_bin}/${model}.sqlite" 
-		or die "Failed to copy ${model_dir}/output/${model}_Default.sqlite";
+	# model db.sqlite
+	copy "${model_dir}/output/${model}.sqlite", "${models_bin}/${model}.sqlite" 
+		or die "Failed to copy ${model_dir}/output/${model}.sqlite";
 	
+	# model message.ini
+	if (-e "${model_dir}/ompp/bin/${model}.message.ini") {
+		copy "${model_dir}/ompp/bin/${model}.message.ini", "${models_bin}" 
+			or die "Failed to copy ${model_dir}/ompp/bin/${model}.message.ini";
+	}
+
 	# model sql files
 	$subdir = "${model_dir}/ompp/src";
 	@files = glob("${subdir}/*.sql");
@@ -312,9 +319,14 @@ for my $file (@files) {
 	copy "${file}", "${models_sql}" or die "Failed to copy ${file}";
 }
 	
-my $model_ini = "${model_dir}/modelOne.ini";
+my $model_ini = "${model_dir}/ompp/bin/modelOne.ini";
 if (-e $model_ini) {
 	copy "${model_ini}", "${models_bin}" or die "Failed to copy ${model_ini}";
+}
+
+my $msg_ini = "${model_dir}/ompp/bin/modelOne.message.ini";
+if (-e $msg_ini) {
+	copy "${msg_ini}", "${models_bin}" or die "Failed to copy ${msg_ini}";
 }
 
 my $model_sqlite = "${model_dir}/ompp/modelOne.sqlite";

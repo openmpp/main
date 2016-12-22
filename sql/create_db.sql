@@ -80,7 +80,7 @@ CREATE TABLE model_word
   model_id   INT          NOT NULL, -- master key
   lang_id    INT          NOT NULL, -- language id
   word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
-  word_value VARCHAR(255) NOT NULL, -- if not empty then actual word in that language
+  word_value VARCHAR(255) NULL,     -- if not NULL then actual word in that language
   PRIMARY KEY (model_id, lang_id, word_code),
   CONSTRAINT model_word_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),

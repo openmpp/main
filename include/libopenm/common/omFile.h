@@ -26,17 +26,6 @@ namespace openm
     /** make path from current working directory, executable name and specified extension. */
     extern const string makeDefaultPath(const char * i_exePath, const char * i_extension);
 
-    /**
-     * remove path.oldSuffix and append path.newSuffix.
-     *
-     * @param i_path        source file path.
-     * @param i_oldSuffix   old suffix (or .extension) to remove from the path.
-     * @param i_newSuffix   new suffix (or .extension) to append to the path.
-     *
-     * For example: C:\bin\modelOne.exe => C:\bin\modelOne.message.ini
-     */
-    extern const string replacePathSuffix(const char * i_path, const char * i_oldSuffix, const char * i_newSuffix);
-
     /** make path by join directory, file name and specified extension.
      *
      * @param   i_dirPath   path or directory.

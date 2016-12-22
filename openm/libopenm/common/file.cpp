@@ -88,24 +88,6 @@ char cwd[OM_PATH_MAX + 1];
 }
 
 /**
- * remove path.oldSuffix and append path.newSuffix.
- *
- * @param i_path        source file path.
- * @param i_oldSuffix   old suffix (or .extension) to remove from the path.
- * @param i_newSuffix   new suffix (or .extension) to append to the path.
- *
- * For example: C:\bin\modelOne.exe => C:\bin\modelOne.message.ini
- */
-const string openm::replacePathSuffix(const char * i_path, const char * i_oldSuffix, const char * i_newSuffix)
-{
-    string sPath = i_path != nullptr ? i_path : "";
-
-    if (endWithNoCase(sPath, i_oldSuffix)) sPath = sPath.substr(0, sPath.length() - strnlen(i_oldSuffix, OM_PATH_MAX));
-
-    return (i_newSuffix != nullptr) ? sPath + i_newSuffix : sPath;
-}
-
-/**
  * make path by join directory, file name and specified extension.
  *
  * @param   i_dirPath   path or directory.

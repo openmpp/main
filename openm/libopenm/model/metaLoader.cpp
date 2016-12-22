@@ -355,7 +355,7 @@ unordered_map<string, string> MetaLoader::loadMessages(IDbExec * i_dbExec)
         const LangLstRow * langRow = langTbl->byKey(mdRow->defaultLangId);
         if (langRow != nullptr) {
             langIdArr.push_back(langRow->langId);
-            langLst.push_back(langRow->code);
+            langLst.push_back(normalizeLanguageName(langRow->code));
         }
     }
 

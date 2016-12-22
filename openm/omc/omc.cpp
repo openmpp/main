@@ -268,8 +268,10 @@ int main(int argc, char * argv[])
             argStore.boolOption(ArgKey::logSql)
             );
 
-        // read language specific messages for the log
-        IniFileReader::loadMessages((argc > 0 ? argv[0] : ""));
+        // read language specific messages from path/to/exe/omc.message.ini
+        IniFileReader::loadMessages(
+            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), "omc.message.ini").c_str()
+        );
         theLog->logMsg("Start omc");
 
         // get model name

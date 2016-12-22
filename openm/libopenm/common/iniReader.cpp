@@ -341,30 +341,35 @@ bool IniEntry::equalTo(const char * i_section, const char * i_key) const
 }
 
 /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-void IniFileReader::loadMessages(const char * i_exePath) throw()
+void IniFileReader::loadMessages(const char * i_msgPath) throw()
 {
     try {
-        // read message.ini
-        string msgPath = replacePathSuffix(i_exePath, ".exe", ".message.ini");
-        if (!isFileExists(msgPath.c_str())) return;     // exit: message.ini does not exists
+        // read modelName.message.ini
+        if (!isFileExists(i_msgPath)) return;     // exit: message.ini does not exists
 
-        IniFileReader rd(msgPath.c_str());
+        IniFileReader rd(i_msgPath);
+        const NoCaseSet sectSet = rd.sectionSet();
 
         // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)
         list<string> langLst = splitLanguageName(getDefaultLocaleName());
 
         // find user language(s) as section of message.ini and copy messages into message map
         // translated message is searched in language prefered order: (en-ca, en)
-        const NoCaseSet sectSet = rd.sectionSet();
         unordered_map<string, string> msgMap;
 
         for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
 
-            if (sectSet.find(lang) != sectSet.cend()) { // language exist in message.ini
+            // if language exist in message.ini
+            auto sectIt = std::find_if(
+                sectSet.cbegin(),
+                sectSet.cend(),
+                [&lang](const string & i_sect) -> bool { return equalNoCase(lang.c_str(), normalizeLanguageName(i_sect).c_str()); }
+            );
+            if (sectIt != sectSet.cend()) {
 
                 // add translated messages, if not already in message map
                 // use only translated messages (where translated value is not empty)
-                const NoCaseMap cvMap = rd.getSection(lang.c_str());
+                const NoCaseMap cvMap = rd.getSection(sectIt->c_str());
                 for (const auto & cv : cvMap) {
                     if (cv.first.empty() || cv.second.empty()) continue;
                     if (msgMap.find(cv.first) == msgMap.end()) msgMap[cv.first] = cv.second;
@@ -377,7 +382,7 @@ void IniFileReader::loadMessages(const char * i_exePath) throw()
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
-        // throw;   = exit without failure
+        // throw;                               = exit without failure
     }
     catch (exception & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
