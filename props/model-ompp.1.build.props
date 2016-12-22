@@ -21,11 +21,11 @@
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(OM_ROOT)/lib</OM_LIB_DIR>
     <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(OM_ROOT)/sql</OM_SQL_DIR>
 
-    <MODEL_CODE_DIR>$(ProjectDir)code</MODEL_CODE_DIR>
+    <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
     
-    <MODEL_PARAM_DIR>$(ProjectDir)parameters</MODEL_PARAM_DIR>
-    <PUBLISH_DIR>$(ProjectDir)output</PUBLISH_DIR>
+    <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
+    <PUBLISH_DIR>$(ProjectDir)../output</PUBLISH_DIR>
     
     <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
 
@@ -43,8 +43,8 @@
 
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     
-    <!--  Name of parent directory of project, e.g. WizardCaseBased -->
-    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)..,$(ProjectDir)))</DEFAULT_MODEL_NAME>
+    <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
+    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME>
     <!--  Remove trailing backslash -->
     <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>
     <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>

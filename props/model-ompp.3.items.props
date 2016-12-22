@@ -5,7 +5,7 @@
 
     <OMC_INPUTS Include="$(MODEL_CODE_DIR)/*.mpp" />
     <OMC_INPUTS Include="$(MODEL_CODE_DIR)/*.ompp" />
-    <OMC_INPUTS Include="ompp-model.props" />
+    <OMC_INPUTS Include="Model.props" />
     <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
     <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
     <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'" />
