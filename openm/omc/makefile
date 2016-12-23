@@ -101,6 +101,7 @@ ModelTypeSymbol.cpp \
 MultilinkAttributeSymbol.cpp \
 NumericSymbol.cpp \
 omc.cpp \
+omc_file.cpp \
 ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
 ParseContext.cpp \
@@ -136,7 +137,7 @@ vpath %.cpp $(BUILD_SRC_DIR)
 all: omc 
 
 .PHONY : omc
-omc: prepare $(OUT_BIN_DIR)/$(OMC_EXE)
+omc: prepare $(OUT_BIN_DIR)/$(OMC_EXE) copy_ini
 
 $(OBJS): | prepare
 $(DEPS): | prepare
@@ -166,6 +167,11 @@ $(OBJ_DIR)/%.o : %.cpp
 $(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
 	$(CXX) -L$(OUT_LIB_DIR) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
 
+.PHONY : copy_ini
+copy_ini:
+	@if [ -e omc.ini ] ; then cp -pf omc.ini $(OUT_BIN_DIR) ; fi
+	@if [ -e omc.message.ini ] ; then cp -pf omc.message.ini $(OUT_BIN_DIR) ; fi
+
 .PHONY: clean
 clean:
 	rm -f $(OBJ_DIR)/*.o
@@ -175,6 +181,8 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	rm -f $(OUT_BIN_DIR)/$(OMC_EXE)
+	rm -f $(OUT_BIN_DIR)/omc.ini
+	rm -f $(OUT_BIN_DIR)/omc.message.ini
 	rm -rf $(BUILD_PROJ_DIR)
 	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
 

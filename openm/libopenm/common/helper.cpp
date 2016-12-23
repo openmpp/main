@@ -392,7 +392,8 @@ const string openm::getDefaultLocaleName(void)
 
 #else   // _WIN32
 
-#include <windows.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 // get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
 const string openm::getDefaultLocaleName(void)

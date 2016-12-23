@@ -68,8 +68,7 @@ foreach my $string ( sort keys %strings ) {
    
    print OUT_CURRENT '"'.$string.'"'."\n";
    
-   print OUT_STARTING '"'.$string.'" = '."\n";
-   print OUT_STARTING '"'.$string.'"'."\n\n";
+   print OUT_STARTING '"'.$string.'" = "'.$string.'"'."\n\n";
 }
 
 

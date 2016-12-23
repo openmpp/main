@@ -8,6 +8,8 @@
 #ifndef RUN_CTRL_H
 #define RUN_CTRL_H
 
+#include "metaLoader.h"
+
 using namespace std;
 
 namespace openm

@@ -16,12 +16,14 @@
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
 * * -Omc.CodePage       code page for converting source files, e.g. windows-1252
+* * -Omc.MessageLanguage    language to display output messages, default: user environment settings
+* * -Omc.MessageFnc     localized message functions, default: LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
+* * -OpenM.OptionsFile  path/to/optional/omc.ini
 * * -Omc.TraceScanning  detailed tracing from scanner
 * * -Omc.TraceParsing   detailed tracing from parser
 * * -Omc.SqlDir         sql/script/dir to create SQLite database
 * * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
-* * -OpenM.OptionsFile  path/to/optional/omc.ini
 * 
 * Short form of command line arguments:
 * * -m short form of -Omc.ModelName
@@ -46,9 +48,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <list>
-#include <cctype>
-#include <algorithm>
 #include "Symbol.h"
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
@@ -59,19 +58,11 @@
 #include "libopenm/common/argReader.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
-
-// using freeware implementation of dirent.h for VisualStudio because MS stop including it
-// it must be replaced with std::filesystem as soon it comes into std
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <Windows.h>
-    #include "dirent/dirent.h"
-#else
-    #include <dirent.h>
-    #include <sys/stat.h>
-#endif // _WIN32
+#include "omc_file.h"
 
 using namespace std;
+using namespace openm;
+using namespace omc;
 
 namespace openm
 {
@@ -99,7 +90,7 @@ namespace openm
         /** omc input directory with OpenM++ fixed parameter files */
         static const char * fixedDir;
 
-        /** omc code page for source files */
+        /**  omc code page: input files encoding name */
         static const char * codePage;
 
         /** omc suppress #line directives in generated cpp files */
@@ -116,6 +107,12 @@ namespace openm
 
         /** omc list of db-provider names to create sql scripts */
         static const char * dbProviderNames;
+
+        /** language to display output messages */
+        static const char * messageLang;
+
+        /** list of functions which produce localized messages */
+        static const char * messageFnc;
     };
 
     /** keys for omc options (short form) */
@@ -167,7 +164,7 @@ namespace openm
     /** omc input directory for OpenM++ fixed parameter files */
     const char * OmcArgKey::fixedDir = "Omc.FixedDir";
 
-    /** omc code page option */
+    /** omc code page: input files encoding name */
     const char * OmcArgKey::codePage = "Omc.CodePage";
 
     /** omc no #line directives option */
@@ -184,6 +181,12 @@ namespace openm
 
     /** omc list of db-provider names to create sql scripts */
     const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
+
+    /** language to display output messages */
+    const char * OmcArgKey::messageLang = "Omc.MessageLanguage";
+
+    /** list of functions which produce localized messages */
+    const char * OmcArgKey::messageFnc = "Omc.MessageFnc";
 
     /** short name for options file name: -ini fileName.ini */
     const char * OmcShortKey::optionsFile = "ini";
@@ -224,6 +227,8 @@ namespace openm
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
         OmcArgKey::dbProviderNames,
+        OmcArgKey::messageLang,
+        OmcArgKey::messageFnc,
         ArgKey::optionsFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
@@ -251,22 +256,12 @@ namespace openm
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
 
-// get list of files matching extension list from specified directory or current directory if source path is empty
-// each file name in result is a relative path and include source directory
-static list<string> listSourceFiles(const string & i_srcPath, const list<string> & i_extensions);
-
-// get extension of filename
-static string getFileNameExt(const string &file_name);
-
-// get stem of filename
-static string getFileNameStem(const string &file_name);
-
 // Parse a list of files
 static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
 
+
 int main(int argc, char * argv[])
 {
-    using namespace openm;
     try {
         // get omc run options from command line and ini-file
         ArgReader argStore(argc, argv, runArgKeySize, runArgKeyArr, shortPairSize, shortPairArr);
@@ -280,6 +275,12 @@ int main(int argc, char * argv[])
             argStore.boolOption(ArgKey::logNoMsgTime) || !argStore.isOptionExist(ArgKey::logNoMsgTime),
             argStore.boolOption(ArgKey::logSql)
             );
+
+        // read language specific messages from path/to/exe/omc.message.ini
+        IniFileReader::loadMessages(
+            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), "omc.message.ini").c_str(),
+            argStore.strOption(OmcArgKey::messageLang)
+        );
         theLog->logMsg("Start omc");
 
         // get model name
@@ -397,12 +398,12 @@ int main(int argc, char * argv[])
         Symbol::populate_default_symbols(model_name, scenario_name);
 
         // Create set of functions taking translatable string literal as first argument
-        Symbol::tran_funcs.insert("LT");
-        Symbol::tran_funcs.insert("logMsg");
-        Symbol::tran_funcs.insert("logFormatted");
-        Symbol::tran_funcs.insert("WriteLogEntry");
-        Symbol::tran_funcs.insert("WarningMsg");
-        Symbol::tran_funcs.insert("ModelExit");
+        list<string> mf = splitCsv(
+            argStore.strOption(OmcArgKey::messageFnc, "LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit"),
+            ",;");
+        for (const string & f : mf) {
+            Symbol::tran_funcs.insert(f);
+        }
 
         // create unique instance of ParseContext
         ParseContext pc;
@@ -585,8 +586,11 @@ int main(int argc, char * argv[])
             }
         }
 
-        // build model creation sql script
+        // create model.message.ini file
         theLog->logMsg("Meta-data processing");
+        buildMessageIni(metaRows, inpDir, outDir, Symbol::code_page.c_str(), Symbol::tran_strings);
+
+        // build model creation sql script and model.sqlite database
         builder->build(metaRows);
         
         // Create working set for published scenario
@@ -726,112 +730,3 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
     }
 }
 
-// get list of files matching extension list from specified directory or current directory if source path is empty
-// each file name in result is a relative path and include source directory
-static list<string> listSourceFiles(const string & i_srcPath, const list<string> & i_extensions)
-{
-    using namespace openm;
-    list<string> pathLst;
-    
-    // open source directory or current directory if source path is empty
-    string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
-    DIR * dir = opendir(srcPath.c_str());
-    if (dir == NULL) throw HelperException(LT("error : cannot open source directory %s"), srcPath.c_str());
-
-    // collect list of .mpp, .ompp or .dat files
-    try {
-        dirent * ent;
-        struct stat fileStat;
-        string path;
-
-        string basePath = i_srcPath;
-        if (!basePath.empty() && basePath.back() != '/' && basePath.back() != '\\') basePath += '/';
-
-        while ((ent = readdir(dir)) != NULL) {
-
-            if (ent->d_name == NULL) continue;  // skip file name errors
-
-            path = basePath + ent->d_name;     // include directory into result
-
-            // skip directories and special files
-            if (ent->d_type != DT_REG) {
-                if (ent->d_type != DT_UNKNOWN) continue;            // skip directories and special files
-                if (stat(path.c_str(), &fileStat) != 0) continue;   // we can't get file type
-                if (!S_ISREG(fileStat.st_mode)) continue;           // skip directories and special files
-            }
-
-            for (auto ext : i_extensions) {
-                if (endWithNoCase(path, ext.c_str())) {
-                    pathLst.push_back(path);
-                    break;
-                }
-            }
-        }
-    }
-    catch(...) {
-        closedir(dir);  // close directory on error
-        throw;
-    }
-    
-    // sort source files in alphabetical order for reproducibility
-    pathLst.sort();
-    return pathLst;
-}
-
-// get extension of filename
-static string getFileNameExt(const string &file_name)
-{
-    // length of optional path part, including final trailing slash
-    int in_path_len = file_name.find_last_of("/\\");
-    if (in_path_len == -1) in_path_len = 0;
-    if (in_path_len > 0) in_path_len++;
-
-    // position of stem part
-    int in_stem_pos = in_path_len;
-
-    // position of extension (0 if no extension)
-    int in_ext_pos = file_name.find_last_of(".");
-    if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
-
-    // length of extension
-    int in_ext_len = (in_ext_pos == 0) ? 0 : file_name.length() - in_ext_pos;
-
-    // length of stem
-    int in_stem_len = file_name.length() - in_path_len - in_ext_len;
-
-    string in_path = file_name.substr(0, in_path_len);
-    string in_stem = file_name.substr(in_stem_pos, in_stem_len);
-    string in_ext = file_name.substr(in_ext_pos, in_ext_len);
-    openm::toLower(in_ext);
-
-    return in_ext;
-}
-
-// get stem of filename
-static string getFileNameStem(const string &file_name)
-{
-    // length of optional path part, including final trailing slash
-    int in_path_len = file_name.find_last_of("/\\");
-    if (in_path_len == -1) in_path_len = 0;
-    if (in_path_len > 0) in_path_len++;
-
-    // position of stem part
-    int in_stem_pos = in_path_len;
-
-    // position of extension (0 if no extension)
-    int in_ext_pos = file_name.find_last_of(".");
-    if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
-
-    // length of extension
-    int in_ext_len = (in_ext_pos == 0) ? 0 : file_name.length() - in_ext_pos;
-
-    // length of stem
-    int in_stem_len = file_name.length() - in_path_len - in_ext_len;
-
-    string in_path = file_name.substr(0, in_path_len);
-    string in_stem = file_name.substr(in_stem_pos, in_stem_len);
-    string in_ext = file_name.substr(in_ext_pos, in_ext_len);
-    openm::toLower(in_ext);
-
-    return in_stem;
-}

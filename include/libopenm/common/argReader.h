@@ -103,7 +103,7 @@ namespace openm
             const char * i_filePath,
             const size_t i_keyArrSize, 
             const char ** i_keyArr,
-            const char * i_sectionToCopy = nullptr
+            const char * i_sectionToMerge = nullptr
             );
 
         /** adjust log file settings, ie: make default log file path if required. */

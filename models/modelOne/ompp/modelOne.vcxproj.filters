@@ -17,17 +17,21 @@
       <UniqueIdentifier>{fc0295b7-b330-4b7d-9cb0-08d0f5a45b19}</UniqueIdentifier>
       <Extensions>sql</Extensions>
     </Filter>
+    <Filter Include="IniFiles">
+      <UniqueIdentifier>{9d673919-854a-495c-b069-c7e667f5e12f}</UniqueIdentifier>
+      <Extensions>ini</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)/modelOne.cpp">
+    <ClCompile Include="$(MODEL_SRC_DIR)/modelOne.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/modelOne_om.cpp">
+    <ClCompile Include="$(MODEL_SRC_DIR)/modelOne_om.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(SolutionDir)/modelOne_om.h">
+    <ClInclude Include="$(MODEL_SRC_DIR)/modelOne_om.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

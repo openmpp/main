@@ -247,15 +247,8 @@ void CodeGen::do_model_strings()
     }
     c += "};";
     c += "";
-    c += "// get list of user prefered languages";
-    c += "// if user language == en_CA.UTF-8 then list is: (en-ca, en)";
-    c += "static bool isLangDone = false; // TODO: temporary, work-in-progress";
-    c += "static list<string> langLst;";
-    c += "if (!isLangDone) {";
-    c += "langLst = splitLanguageName(getDefaultLocaleName());";
-    c += "langLst.push_back(normalizeLanguageName(\"" + Symbol::pp_all_languages.front()->name +"\")); // append default model language to the bottom of the list";
-    c += "isLangDone = true;";
-    c += "}";
+    c += "// get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)";
+    c += "static list<string> langLst = theLog->getLanguages();";
     c += "";
     c += "for (const string & lang : langLst) {";
     c += "auto search = string_map.find(lang + \"@\" + string_name);";

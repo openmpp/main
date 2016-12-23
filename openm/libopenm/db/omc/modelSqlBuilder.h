@@ -15,6 +15,7 @@
 #include "md5.h"
 #include "dbExec.h"
 #include "libopenm/common/omFile.h"
+#include "libopenm/common/iniReader.h"
 #include "libopenm/db/modelBuilder.h"
 #include "dbMetaTable.h"
 #include "modelSqlWriter.h"
@@ -66,6 +67,7 @@ namespace openm
         int dbPrefixSize;               // db table prefix name size
         int dbSuffixSize;               // db table prefix name size
         string sqlDir;                  // sql scripts directory to create database
+        string sourceDir;               // source code directory
         string outputDir;               // output directory to write sql script files
         bool isSqlite;                  // if true then create SQLite database
         list<string> dbProviderLst;     // list of db provider names, ie: sqlite,postgresql,mysql

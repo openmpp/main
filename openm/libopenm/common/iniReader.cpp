@@ -7,20 +7,24 @@
 
 #include "libopenm/omError.h"
 #include "libopenm/common/omFile.h"
+#include "libopenm/common/iniReader.h"
 #include "log.h"
-#include "iniReader.h"
 
 using namespace std;
 using namespace openm;
 
-/** load all ini-file entries in memory. */
-IniFileReader::IniFileReader(const char * i_filePath) : is_loaded(false)
+/** load all ini-file entries in memory and convert into UTF-8. 
+*
+* @param[in] i_filePath     path to ini-file.
+* @param[in] i_codePageName (optional) name of encoding or Windows code page, ie: English_US.1252
+*/
+IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageName) : is_loaded(false)
 {
     try {
         if (i_filePath == NULL || i_filePath[0] == '\0') return;    // nothing to do: empty ini-file name
 
         // read ini-file into UTF-8 string
-        string fileContent = fileToUtf8(i_filePath);
+        string fileContent = fileToUtf8(i_filePath, i_codePageName);
 
         // parse file content into vector of entries
         string::size_type nStart = 0;
@@ -171,7 +175,7 @@ bool IniFileReader::isExist(const char * i_sectionKey) const throw()
 }
 
 /** return string value by section and key or deafult value if not found. */
-string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const throw()
+const string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const throw()
 {
     try {
         if (!is_loaded) return i_default;   // ini-file not loaded
@@ -186,7 +190,7 @@ string IniFileReader::strValue(const char * i_section, const char * i_key, const
 }
 
 /** return string value by section.key or deafult value if not found. */
-string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const throw()
+const string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const throw()
 {
     try {
         if (!is_loaded) return i_default;   // ini-file not loaded
@@ -200,30 +204,36 @@ string IniFileReader::strValue(const char * i_sectionKey, const string & i_defau
     }
 }
 
-/**
- * copy values of section into map.
- *
- * @param[in]     i_section             section name
- * @param[in,out] io_dst                destination map to insert section values
- * @param[in]     i_isOverrideExisting  if true then override already existing values of section.key
- */
-void IniFileReader::copySection(const char * i_section, NoCaseMap & io_dst, bool i_isOverrideExisting) const throw()
-{ 
+/** return names of ini-file sections as case-neutral set of strings. */
+const NoCaseSet IniFileReader::sectionSet(void) const throw()
+{
     try {
-        // invalid section or file is not loaded
-        if (!is_loaded || i_section == NULL || i_section[0] == '\0') return;
+        NoCaseSet rs;
+        for (const auto & e : entryVec) {
+            rs.insert(e.section);
+        }
+        return rs;
+    }
+    catch (...) { 
+        return NoCaseSet();
+    }
+}
+
+/** return section by name as case-neutral map of (key,value). */
+const NoCaseMap IniFileReader::getSection(const char * i_section) const throw()
+{
+    try {
+        NoCaseMap sectMap;
+
+        if (!is_loaded || i_section == NULL || i_section[0] == '\0') return sectMap;    // empty section name or file is not loaded
 
         for (const IniEntry & ent : entryVec) {
-            if (!equalNoCase(i_section, ent.section.c_str())) continue;     // skip other sections
-
-            // insert into map if override specified or section.key not already exists
-            string sectionKey = string(i_section) + "." + ent.key;
-
-            if (i_isOverrideExisting || io_dst.find(sectionKey) == io_dst.cend()) io_dst[sectionKey] = ent.val;
+            if (equalNoCase(i_section, ent.section.c_str())) sectMap[ent.key] = ent.val;
         }
+        return sectMap;
     }
     catch (...) {
-        return;
+        return NoCaseMap();
     }
 }
 
@@ -328,4 +338,57 @@ bool IniEntry::bySectionKey(const char * i_sectionKey) const
 bool IniEntry::equalTo(const char * i_section, const char * i_key) const
 {
     return i_section != nullptr && i_key != nullptr && equalNoCase(section.c_str(), i_section) && equalNoCase(key.c_str(), i_key);
+}
+
+/** read language specific messages from path/to/theExe.message.ini and pass it to the log */
+void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_language) throw()
+{
+    try {
+        // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)
+        list<string> langLst = splitLanguageName(!i_language.empty() ? i_language : getDefaultLocaleName());
+
+        // set user prefred language(s)
+        unordered_map<string, string> msgMap;
+        theLog->swapLanguageMessages(langLst, msgMap);
+
+        // read modelName.message.ini
+        if (!isFileExists(i_iniMsgPath)) return;     // exit: message.ini does not exists
+
+        IniFileReader rd(i_iniMsgPath);
+        const NoCaseSet sectSet = rd.sectionSet();
+
+        // find user language(s) as section of message.ini and copy messages into message map
+        // translated message is searched in language prefered order: (en-ca, en)
+
+        for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
+
+            // if language exist in message.ini
+            auto sectIt = std::find_if(
+                sectSet.cbegin(),
+                sectSet.cend(),
+                [&lang](const string & i_sect) -> bool { return equalNoCase(lang.c_str(), normalizeLanguageName(i_sect).c_str()); }
+            );
+            if (sectIt != sectSet.cend()) {
+
+                // add translated messages, if not already in message map
+                // use only translated messages (where translated value is not empty)
+                const NoCaseMap cvMap = rd.getSection(sectIt->c_str());
+                for (const auto & cv : cvMap) {
+                    if (cv.first.empty() || cv.second.empty()) continue;
+                    if (msgMap.find(cv.first) == msgMap.end()) msgMap[cv.first] = cv.second;
+                }
+            }
+        }
+
+        // pass translated messages to the logger
+        theLog->swapLanguageMessages(langLst, msgMap);
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw;                               = exit without failure
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw HelperException(ex.what());    = exit without failure
+    }
 }

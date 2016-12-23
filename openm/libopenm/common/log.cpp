@@ -291,11 +291,38 @@ void Log::init(
     catch (...) { }
 }
 
-/** set language-specific messages */
-void Log::swapLanguageMessages(map<string, string> & io_msgMap) throw()
+/** get list of language name for the messages, eg: (en-ca, en) */
+const list<string> Log::getLanguages(void) throw()
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
+        list<string> l(msgLangLst.cbegin(), msgLangLst.cend());
+        return l;
+    }
+    catch (...) {
+        return list<string>();
+    }
+}
+
+/** get copy of language-specific messages */
+const unordered_map<string, string> Log::getLanguageMessages(void) throw()
+{
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        unordered_map<string, string> m(msgMap.cbegin(), msgMap.cend());
+        return m;
+    }
+    catch (...) {
+        return unordered_map<string, string>();
+    }
+}
+
+/** set language-specific messages and update list of languages */
+void Log::swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) throw()
+{
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        msgLangLst.assign(i_langLst.cbegin(), i_langLst.cend());
         msgMap.swap(io_msgMap);
     }
     catch (...) { }
@@ -311,7 +338,7 @@ void Log::logMsg(const char * i_msg, const char * i_extra) throw()
 
         // translate log message
         if (i_msg != nullptr) {
-            const map<string, string>::const_iterator msgIt = msgMap.find(i_msg);
+            const unordered_map<string, string>::const_iterator msgIt = msgMap.find(i_msg);
             if (msgIt != msgMap.cend()) {
                 doLogMsg(msgIt->second.c_str(), i_extra);   // log translated message
                 return;
@@ -334,7 +361,7 @@ void Log::logFormatted(const char * i_format, ...) throw()
         // translate log format string
         const char * fmt = i_format;
  
-        const map<string, string>::const_iterator msgIt = msgMap.find(fmt);
+        const unordered_map<string, string>::const_iterator msgIt = msgMap.find(fmt);
         if (msgIt != msgMap.cend()) fmt = msgIt->second.c_str();
 
         // format message for the log

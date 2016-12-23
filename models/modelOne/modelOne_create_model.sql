@@ -23,12 +23,13 @@ INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First 
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, '(FR) First model', NULL);
 
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Running Simulation', 'Running Simulation');
-INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Running Simulation', '(FR)Running Simulation');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Event loop completed', 'Event loop completed');
-INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Event loop completed', '(FR)Event loop completed');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Reading Parameters', 'Reading Parameters');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Start model subsample', 'Start model subsample');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Writing Output Tables', 'Writing Output Tables');
+
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Running Simulation', '(FR) Running Simulation');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Event loop completed', '(FR) Event loop completed');
 
 -- 
 -- modelOne simple types: reference to built-in types

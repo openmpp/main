@@ -112,7 +112,7 @@ SQLITE_EXE = sqlite3
 MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
 .PHONY : publish
-publish : $(MODEL_SQLITE)
+publish : $(MODEL_SQLITE) copy_ini
 
 $(MODEL_SQLITE) : \
   $(OM_SQL_DIR)/create_db.sql \
@@ -122,11 +122,17 @@ $(MODEL_SQLITE) : \
   $(MODEL_NAME)_optional_views.sql
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/insert_default.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_optional_views.sql
-	
+
+.PHONY : copy_ini
+copy_ini:
+	@if [ -e modelOne.ini ] ; then cp -pf modelOne.ini $(OUT_BIN_DIR) ; fi
+	@if [ -e modelOne.message.ini ] ; then cp -pf modelOne.message.ini $(OUT_BIN_DIR) ; fi
+
 #
 # run the model
 #

@@ -114,11 +114,11 @@
   
   
   <!--
-  SQLitePublish
+  ModelPublish
   -->
 
   
-  <!-- The following properties help make the SQLitePublish target and output more readable. -->
+  <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
     <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
     <PUBLISH_SQLITE_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(PUBLISH_SQLITE)))</PUBLISH_SQLITE_REL>
@@ -127,7 +127,7 @@
     <OM_SQL_DIR_REL>$(OM_SQL_DIR_REL.Replace(&quot;\&quot;,&quot;/&quot;))</OM_SQL_DIR_REL>
   </PropertyGroup>
 
-  <Target Name="SQLitePublish" 
+  <Target Name="ModelPublish" 
           Inputs="@(OMC_SQL_OUTPUTS)"
           Outputs="$(PUBLISH_TICKLE)"
           AfterTargets="link"
@@ -143,6 +143,14 @@
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
+
+    <Message Text="Copy @(OMC_MSG_INI_OUTPUT) to $(MODEL_BIN_DIR)" />
+    <Copy 
+      SourceFiles="@(OMC_MSG_INI_OUTPUT)" 
+      DestinationFolder="$(MODEL_BIN_DIR)" 
+      SkipUnchangedFiles="true" 
+      Condition="Exists('%(FullPath)')"
+    />
     
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
@@ -167,7 +175,7 @@
           Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
-          AfterTargets="SQLitePublish"
+          AfterTargets="ModelPublish"
           >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
@@ -183,7 +191,7 @@
           Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'MPI'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
-          AfterTargets="SQLitePublish"
+          AfterTargets="ModelPublish"
           >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />

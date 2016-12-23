@@ -97,6 +97,11 @@
     <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_optional_views.sql" />
     <SqlScript Include="$(MODEL_SRC_DIR)/modelOne_drop_tables_views.sql" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ModelIni Include="$(MODEL_SRC_DIR)/modelOne.ini" />
+    <ModelIni Include="$(MODEL_SRC_DIR)/modelOne.message.ini" />
+  </ItemGroup>
   
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -104,5 +109,11 @@
   
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SqlScript)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy 
+      SourceFiles="@(ModelIni)" 
+      DestinationFolder="$(OutDir)" 
+      SkipUnchangedFiles="true" 
+      Condition="Exists('%(FullPath)')"
+    />
   </Target>
 </Project>

@@ -9,7 +9,9 @@
 #define OM_H_LOG_H
 
 #include <string>
-#include <map>
+#include <list>
+#include <unordered_map>
+
 using namespace std;
 
 namespace openm
@@ -56,8 +58,14 @@ namespace openm
             bool i_isLogSql = false
             ) throw() = 0;
 
-        /** set language-specific messages */
-        virtual void swapLanguageMessages(map<string, string> & io_msgMap) throw() = 0;
+        /** get list of language name for the messages, eg: (en-ca, en) */
+        virtual const list<string> getLanguages(void) throw() = 0;
+
+        /** get copy of language-specific messages */
+        virtual const unordered_map<string, string> getLanguageMessages(void) throw() = 0;
+
+        /** set language-specific messages and update list of languages */
+        virtual void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) throw() = 0;
     };
 
     /** trace log public interface: model event log to console and into log files */

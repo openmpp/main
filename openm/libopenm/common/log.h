@@ -172,8 +172,14 @@ namespace openm
             bool i_isLogSql = false
             ) throw();
 
-        /** set language-specific messages */
-        void swapLanguageMessages(map<string, string> & io_msgMap) throw() override;
+        /** get list of language name for the messages, eg: (en-ca, en) */
+        const list<string> getLanguages(void) throw() override;
+
+        /** get copy of language-specific messages */
+        const unordered_map<string, string> getLanguageMessages(void) throw() override;
+
+        /** set language-specific messages and update list of languages */
+        void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) throw() override;
 
         /** log message */
         void logMsg(const char * i_msg, const char * i_extra = NULL) throw() override;
@@ -188,8 +194,9 @@ namespace openm
         void logSql(const char * i_sql) throw();
 
     private:
-        bool isSqlLog;              // if true then log sql queries into last log
-        map<string, string> msgMap; // language-specific messages
+        bool isSqlLog;                          // if true then log sql queries into last log
+        list<string> msgLangLst;                // list of languages, in order of user prefrences
+        unordered_map<string, string> msgMap;   // language-specific messages
 
         // log to file, return false on error
         bool logToFile(

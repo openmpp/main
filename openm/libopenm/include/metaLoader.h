@@ -12,6 +12,7 @@
 using namespace std;
 
 #include "libopenm/common/argReader.h"
+#include "msg.h"
 
 namespace openm
 {
@@ -31,9 +32,9 @@ namespace openm
         static const char * dbConnStr;
 
         /** model run id to restart model run */
-        static const char * runId;
+        static const char * restartRunId;
 
-        /** model run name to restart model run */
+        /** model run name to in database */
         static const char * runName;
 
         /** working set id to get input parameters */
@@ -92,6 +93,9 @@ namespace openm
 
         /** do not prefix trace log messages with date-time */
         static const char * traceNoMsgTime;
+                                       
+        /** language to display output messages */
+        static const char * messageLang;
     };
 
     /** keys for model run options (short form) */
@@ -132,18 +136,6 @@ namespace openm
         /** initialize run options from command line and ini-file */
         static const ArgReader getRunOptions(int argc, char ** argv);
 
-        /** read language specific messages from db and broadcast it to all modeling processes.
-        *
-        * @param[in] i_isMpiUsed    if true then MPI is used and messages must be brodcasted to child processes
-        * @param[in] i_dbExec       database connection
-        * @param[in] i_msgExec      message passing interface to brodcast model messages to child processes
-        *
-        * If messages in user prefered language exist then use it else default model language messages.
-        * Simple language match used, for example:
-        * if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
-        */
-        static void initLanguageMessages(bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
-
     protected:
         int modelId;                        // model id in database
         unique_ptr<MetaHolder> metaStore;   // metadata tables
@@ -171,6 +163,13 @@ namespace openm
         // broadcast run options from root to group of modeling processes
         void broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec);
 
+        /** read model messages from database.
+        *
+        * User preferd language determined by simple match, for example:
+        * if user language is en_CA.UTF-8 then search done for lower case ["en-ca", "en", "model-default-langauge"].
+        */
+        void loadMessages(IDbExec * i_dbExec);
+
         // merge command line and ini-file arguments with profile_option table values
         void mergeProfile(IDbExec * i_dbExec);
 
@@ -190,14 +189,6 @@ namespace openm
         // broadcast meta table db rows
         template <class MetaTbl>
         static void broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
-
-        /** determine language for model meassages and read language-specific strings from db.
-        *
-        * If messages in user prefered language exist then use it else default model language messages.
-        * Simple language match used, for example:
-        * if user language is en_CA.UTF-8 then search done for lower case "en-ca", "en", "model-default-langauge".
-        */
-        static map<string, string> loadLanguageMessages(IDbExec * i_dbExec);
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;

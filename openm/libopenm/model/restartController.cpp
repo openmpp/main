@@ -28,8 +28,8 @@ using namespace openm;
 * If more threads specified (i.e. by command-line argument) then subsamples run in parallel.
 *
 * For example: \n
-*   model.exe -OpenM.RunId 10 \n
-*   model.exe -OpenM.RunId 10 -General.Threads 4
+*   model.exe -OpenM.RestartRunId 10 \n
+*   model.exe -OpenM.RestartRunId 10 -General.Threads 4
 *
 * (b) merge command line and ini-file options with db profile table
 *------------------------------------------------------------------
@@ -59,14 +59,16 @@ void RestartController::init(void)
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
     // load metadata table rows, except of run_option, which is may not created yet
+    // load messages from database
     metaStore.reset(new MetaHolder());
     modelId = readMetaTables(dbExec, metaStore.get());
+    loadMessages(dbExec);
 
     // merge command line and ini-file arguments with profile_option table values
     mergeProfile(dbExec);
 
     // "restart run": run id must be defined
-    runId = argOpts().intOption(RunOptionsKey::runId, 0);
+    runId = argOpts().intOption(RunOptionsKey::restartRunId, 0);
 
     if (runId <= 0) throw ModelException("Invalid run id: %d", runId);
 

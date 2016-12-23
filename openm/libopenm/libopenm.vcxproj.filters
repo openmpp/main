@@ -81,6 +81,9 @@
     <ClInclude Include="..\..\include\libopenm\common\argReader.h">
       <Filter>Header Files\libopenm\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\common\iniReader.h">
+      <Filter>Header Files\libopenm\common</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\common\omHelper.h">
       <Filter>Header Files\libopenm\common</Filter>
     </ClInclude>
@@ -94,9 +97,6 @@
       <Filter>Header Files\libopenm\db</Filter>
     </ClInclude>
     <ClInclude Include="common\log.h">
-      <Filter>Source Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="common\iniReader.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
     <ClInclude Include="db\dbExecBase.h">
