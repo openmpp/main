@@ -61,7 +61,7 @@ void Ticker::Finish()
 */
 TIME Ticker::timeTickEvent()
 {
-    return (TIME) next_tick;
+    return next_tick;
 }
 
 void Ticker::TickEvent()
@@ -73,7 +73,7 @@ void Ticker::TickEvent()
     int nPerson = asAllPerson->Count();
     for ( int nJ = 0; nJ < nPerson; nJ++ ) 
     {
-        Person *paPerson = asAllPerson->Item( nJ );
+		auto paPerson = asAllPerson->Item( nJ );
         paPerson->report_time = report_time;
     }
 
