@@ -291,6 +291,24 @@ void Log::init(
     catch (...) { }
 }
 
+/** get language-specific message by source non-translated message */
+const string Log::getMessage(const char * i_sourceMsg) throw()
+{
+    try {
+        if (i_sourceMsg == nullptr) return "";  // empty result on null
+
+        lock_guard<recursive_mutex> lck(theMutex);     // lock the log 
+
+        // if translation exist then return copy of translated message else return original message (no translation)
+        const unordered_map<string, string>::const_iterator msgIt = msgMap.find(i_sourceMsg);
+        return 
+            (msgIt != msgMap.cend()) ? msgIt->second.c_str() : i_sourceMsg;
+     }
+    catch (...) {
+        return "";
+    }
+}
+
 /** get list of language name for the messages, eg: (en-ca, en) */
 const list<string> Log::getLanguages(void) throw()
 {

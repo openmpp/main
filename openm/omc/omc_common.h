@@ -7,5 +7,9 @@
 
 #pragma once
 
-//TODO Temporary cover for LT localisation function
-#define LT(x) x
+#include "libopenm/omLog.h"
+
+using namespace std;
+
+/** LT localisation function: return is temporary const char* and must be copied to avoid memory violation crash. */
+#define LT(sourceMessage) ((theLog->getMessage(sourceMessage)).c_str())

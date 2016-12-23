@@ -58,6 +58,9 @@ namespace openm
             bool i_isLogSql = false
             ) throw() = 0;
 
+        /** get language-specific message by source non-translated message */
+        virtual const string getMessage(const char * i_sourceMsg) throw() = 0;
+
         /** get list of language name for the messages, eg: (en-ca, en) */
         virtual const list<string> getLanguages(void) throw() = 0;
 
