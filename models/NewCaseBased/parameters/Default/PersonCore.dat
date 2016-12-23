@@ -4,11 +4,6 @@ parameters {
 		years.
 */
 
-/* NOTE ( MortalityHazard, FR )
-		Une valeur sélectionnée arbitrairement, choisie pour produire une espérance de vie 
-		d'environ 70 ans.
-*/
-
 	double	MortalityHazard = .014; //EN Annual hazard of death //FR Hasard annuel de mortalité
 };
 
