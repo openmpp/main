@@ -12,8 +12,8 @@ Read and write OpenM++ database from R
 \tabular{ll}{
 Package: \tab openMpp\cr
 Type: \tab Package\cr
-Version: \tab 0.7.2\cr
-Date: \tab 2016-05-25\cr
+Version: \tab 0.8\cr
+Date: \tab 2016-12-27\cr
 License: \tab MIT license\cr
 }
   \describe{

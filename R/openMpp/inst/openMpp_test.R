@@ -7,12 +7,19 @@
 #   results of "taskOne" run
 #
 library("openMpp")
+library("RSQLite")
 
 #
-# open db connection
+# open db connection: SQLite model database
 #
 theDb <- dbConnect(RSQLite::SQLite(), "modelOne.sqlite", synchronous = "full")
 invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))   # recommended
+#
+# use ODBC if model database is:  MySQL, MariaDB, PostgreSQL, MSSQL, Oracle, DB2
+#
+# library("RODBCDBI")
+# theDb <- dbConnect(RODBCDBI::ODBC(), "your-dsn-name", "your-user-name", "your-password")
+#
 
 # find the model: get model definition from database
 #
@@ -98,6 +105,19 @@ salaryAge <- list(
   )
 )
 
+# salary level (low, medium, high) by full-or-part time job
+salaryFull <- list(
+
+  name = "salaryFull",
+
+  txt = data.frame(
+    lang = c("EN"),
+    note = c("salary level for full or part time job"),
+    stringsAsFactors = FALSE
+  ),
+  value = c(33L, 33L, 22L)
+)
+
 # starting seed parameter value and notes
 startingSeed <- list(
 
@@ -142,9 +162,9 @@ paramSetTxt <- data.frame(
 #
 
 # create new working set of model parameters
-# it is a full set and includes all "modelOne" parameters: "ageSex", "salaryAge", "StartingSeed"
+# it is a full set and includes all "modelOne" parameters: "ageSex", "salaryAge", "StartingSeed", "salaryFull"
 #
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed, salaryFull)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # find working set id by name
@@ -159,7 +179,7 @@ paramSetTxt$name <- NA
 paramSetTxt$descr <- c("other set of parameters", "FR other set of parameters")
 paramSetTxt$note <- NA
 
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed, salaryFull)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # 
