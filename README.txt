@@ -11,6 +11,9 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
+2016_12_29:
+    minor release: fix R test script and dbcopy utility bug in delete model
+
 2016_12_24:
     localizataion: support for translated messages in models and omc
 
