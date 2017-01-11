@@ -157,13 +157,13 @@ void ParameterSymbol::post_parse(int pass)
         if (source == fixed_parameter || source == scenario_parameter) {
             // rank check
             if (pp_enumeration_list.size() != pp_enumeration_list2.size()) {
-                pp_error(LT("error : parameter '") + name + LT("'")
+                pp_error(LT("error : parameter '") + name + LT("'") +
                     LT(" declared with rank ") + to_string(pp_enumeration_list.size()) +
                     LT(" but initialized with rank ") + to_string(pp_enumeration_list2.size()));
             }
             else {
                 if (!std::equal(pp_enumeration_list.begin(), pp_enumeration_list.end(), pp_enumeration_list2.begin())) {
-                    pp_error(LT("error : parameter '") + name + LT("'")
+                    pp_error(LT("error : parameter '") + name + LT("'") +
                         LT(" declaration dimensions differ from initialisation dimensions"));
                 }
             }

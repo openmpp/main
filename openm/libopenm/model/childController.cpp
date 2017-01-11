@@ -79,7 +79,6 @@ void ChildController::init(void)
     modelId = broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
     broadcastRunOptions(ProcessGroupDef::all, msgExec);
     broadcastLanguageMessages();
-    broadcastLanguageMessages();
 }
 
 /** receive broadcasted model messages from root. */

@@ -326,6 +326,7 @@
     <ClCompile Include="UnknownTypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />
   </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
@@ -345,4 +346,13 @@
     <Exec Command="$(BISON_FLEX_DIR)/$(BISON_EXE) --warnings=error -v -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
   </Target>
   <Target Name="BisonFlex" BeforeTargets="BeforeClCompile" DependsOnTargets="DoFlex;DoBison" />
+
+  <ItemGroup>
+    <OmcIni Include="omc.ini" />
+    <OmcIni Include="omc.message.ini" />
+  </ItemGroup>
+  
+  <Target Name="CopyIni" AfterTargets="link">
+    <Copy SourceFiles="@(OmcIni)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('%(FullPath)')" />
+  </Target>
 </Project>

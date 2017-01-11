@@ -1,5 +1,6 @@
 # use openMpp library for openM++ database access
 library("openMpp")
+library("RSQLite")
 
 #
 # Using RiskPaths model 

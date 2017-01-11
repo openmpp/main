@@ -1,5 +1,4 @@
 import(DBI)
-import(RSQLite)
 
 export(
   createTask,
