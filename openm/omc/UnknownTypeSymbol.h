@@ -25,15 +25,14 @@ public:
     /**
     * Constructor for the unknown type symbol
     */
-
     UnknownTypeSymbol()
         : TypeSymbol("om_unknown")
     {
     }
 
     const string default_initial_value() const {
-        // no types of this kind shouljd be present in code generation phase
-        return "error";
+        // no types of this kind should be present in code generation phase
+        return "error_unknown_type";
     };
 
     /**
@@ -41,7 +40,6 @@ public:
      *
      * @return the UnknownTypeSymbol*.
      */
-
     static UnknownTypeSymbol *find();
 };
 

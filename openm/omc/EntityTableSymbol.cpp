@@ -594,7 +594,7 @@ void EntityTableSymbol::build_body_init_increment()
             c += "{";
             c += "// interval(" + attr->name +")";
             c += "auto & value_in = " + ma->in_member_name() + ";";
-            c += attr->data_type->name + " value_curr = " + attr->name + ";";
+            c += attr->pp_data_type->name + " value_curr = " + attr->name + ";";
             c += "";
             c += "value_in = value_curr;";
             c += "}";
@@ -608,7 +608,7 @@ void EntityTableSymbol::build_body_init_increment()
             c += "{";
             c += "// event(" + attr->name +")";
             c += "auto & value_in = " + ma->in_event_member_name() + ";";
-            c += attr->data_type->name + " value_curr = " + attr->name + ";";
+            c += attr->pp_data_type->name + " value_curr = " + attr->name + ";";
             c += "auto & value_lagged = " + attr->lagged->name + ";";
             c += "auto & value_lagged_counter = " + attr->lagged_event_counter->name + ";";
             c += "";
@@ -635,7 +635,7 @@ void EntityTableSymbol::build_body_push_increment()
             auto attr = acc->pp_agentvar;
             assert(attr);
             if (acc->uses_value_out()) {
-                c += attr->data_type->name + " value_out = " + attr->name + ";";
+                c += attr->pp_data_type->name + " value_out = " + attr->name + ";";
             }
             if (acc->uses_value_in()) {
                 if (acc->table_op == token::TK_interval) {

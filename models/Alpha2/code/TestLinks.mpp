@@ -340,26 +340,26 @@ table Thing LinkTest8
     }
 };
 
-//table Person Table_LinkAsDim
-//{
-//    my_thing1->making_trouble
-//    * {
-//        duration()
-//    }
-//};
+table Person Table_LinkAsDim
+{
+    my_thing1->making_trouble
+    * {
+        duration()
+    }
+};
 
-//table Person Table_LinkAsMeasure1
-//{
-//    alive
-//    * {
-//        my_thing1->making_trouble
-//    }
-//};
+table Person Table_LinkAsMeasure1
+{
+    alive
+    * {
+        my_thing1->making_trouble
+    }
+};
 
-//table Person Table_LinkAsMeasure2
-//{
-//    alive
-//    * {
-//        value_out(my_thing1->making_trouble)
-//    }
-//};
+table Person Table_LinkAsMeasure2
+{
+    alive
+    * {
+        value_out(my_thing1->making_trouble)
+    }
+};

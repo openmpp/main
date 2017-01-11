@@ -31,7 +31,6 @@ class EntityMemberSymbol;
 class ConstantSymbol;
 class ExprForAttribute;
 class ExprForTable;
-
 }
 
 // The following code is written to the implementation file, not the header file
@@ -485,12 +484,14 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 
 %type  <pval_Symbol>    decl_type_part
 %type  <pval_Symbol>    symbol_in_expr
+%type  <pval_Symbol>    symbol_in_table
 %type  <pval_Symbol>    derived_attribute
 %type  <pval_Symbol>    derived_attribute_self_scheduling
 %type  <pval_Symbol>    derived_attribute_trigger
 %type  <pval_Symbol>    derived_attribute_other
 %type  <pval_Symbol>    any_attribute
 %type  <pval_Symbol>    link_to_attribute
+%type  <pval_Symbol>    link_to_attribute_shadowed
 %type  <pval_Symbol>    hook_to_symbol
 %type  <pval_Literal>   event_priority_opt
 %type  <pval_Literal>   hook_order_opt
@@ -2157,12 +2158,12 @@ entity_set_dimension_list:
     ;
 
 entity_set_dimension:
-      "[" symbol_in_expr "]"
+      "[" symbol_in_table "]"
                         {
-                            Symbol *attribute = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             assert(attribute);
 
-                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, false, attribute, nullptr, false, @symbol_in_expr);
+                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), pc.counter4, false, attribute, nullptr, false, @symbol_in_table);
                             assert(sym);
                             // add dimension to entity set's dimension_list
                             pc.get_entity_set_context()->dimension_list.push_back(sym);
@@ -2239,7 +2240,7 @@ table_filter_opt:
                         {
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an anonymous identity attribute for the filter
-                            auto aia = IdentityAttributeSymbol::create_identity_attribute(table->agent, BoolSymbol::find(), $root, @root);
+                            auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(table->agent, BoolSymbol::find(), $root, @root);
                             assert(aia);
                             // note identity attribute in table
                             table->filter = aia;
@@ -2264,14 +2265,14 @@ table_margin_opt:
     ;
 
 table_dimension:
-    symbol_in_expr table_margin_opt
+    symbol_in_table table_margin_opt
                         {
-                            Symbol *attribute = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             assert(attribute);
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
-                            auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, after_analysis_dim, attribute, nullptr, margin_opt, @symbol_in_expr);
+                            auto sym = new DimensionSymbol(pc.get_table_context(), pc.counter4, after_analysis_dim, attribute, nullptr, margin_opt, @symbol_in_table);
                             assert(sym);
                             // add dimension to table's dimension_list
                             pc.get_table_context()->dimension_list.push_back(sym);
@@ -2308,16 +2309,16 @@ table_expression_list:
 
 expr_for_table[result]:
       // Ex. income
-      symbol_in_expr
+      symbol_in_table
                         {
-                            Symbol *agentvar = $symbol_in_expr;
-                            assert(agentvar);
+                            Symbol *attribute = $symbol_in_table;
+                            assert(attribute);
                             // Defaults are accumulator=sum, increment=delta, table operator=interval
                             token_type acc = token::TK_sum;
                             token_type incr = token::TK_delta;
                             token_type tabop = token::TK_interval;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
                         }
       // Ex. unit
     | "unit"
@@ -2327,58 +2328,58 @@ expr_for_table[result]:
                             $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
                         }
       // Ex. max_value_in(income)
-    | modgen_cumulation_operator "(" symbol_in_expr ")"
+    | modgen_cumulation_operator "(" symbol_in_table ")"
                         {
-                            Symbol *agentvar = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             // Ex. token::TK_maximum
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
                             token_type tabop = token::TK_interval;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
                         }
       // Ex. sum(delta(income))
-    | table_accumulator[acc] "(" table_increment[incr] "(" symbol_in_expr ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" symbol_in_table ")" ")"
                         {
-                            Symbol *agentvar = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
                             token_type tabop = token::TK_interval;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
                         }
       // Ex. event(income)
-    | table_operator[tabop] "(" symbol_in_expr ")"
+    | table_operator[tabop] "(" symbol_in_table ")"
                         {
-                            Symbol *agentvar = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             token_type acc = token::TK_sum;
                             token_type incr = token::TK_delta;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y (below)
-                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
                         }
       // Ex. max_value_in(event(income))
-    | modgen_cumulation_operator "(" table_operator[tabop] "(" symbol_in_expr ")" ")"
+    | modgen_cumulation_operator "(" table_operator[tabop] "(" symbol_in_table ")" ")"
                         {
-                            Symbol *agentvar = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             // Ex. token::TK_maximum
                             token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
                         }
       // Ex. sum(delta(event(income)))
-    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_expr ")" ")" ")"
+    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_table ")" ")" ")"
                         {
-                            Symbol *agentvar = $symbol_in_expr;
+                            Symbol *attribute = $symbol_in_table;
                             token_type acc = (token_type) $acc;
                             token_type incr = (token_type) $incr;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(agentvar, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
                         }
     | numeric_literal
                         {
@@ -2601,6 +2602,52 @@ link_to_attribute:
                             $link_to_attribute = LinkToAttributeSymbol::create_symbol(pc.get_agent_context(), $link, *$attribute);
                             delete $attribute; // delete the string created using new in scanner
                             $attribute = nullptr;
+                        }
+        ;
+
+/*
+ * symbol used as a dimension or table measure
+ */
+
+symbol_in_table:
+      SYMBOL
+    | derived_attribute
+    | link_to_attribute_shadowed
+	;
+
+link_to_attribute_shadowed:
+      SYMBOL[link] "->"
+                        {
+                            // Tell the scanner not to apply agent scope resolution to the following 'word'
+                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // depends on the nature of the symbol on the left of "->", whose declaration may not yet have been encountered.
+                            pc.next_word_is_string = true;
+                        }
+            STRING[attribute]
+                        {
+                            // Create an anonymous identity attribute to shadow the linked attribute.
+                            // The type of the anonymous identity attribute is set to "unknown type",
+                            // which will be resolved subsequently during post-parse processing.
+                            auto entity = pc.get_agent_context();
+
+                            // create the link to attribute symbol, which will become the expression of the anonymous identity attribute
+                            auto link_to_attribute = LinkToAttributeSymbol::create_symbol(entity, $link, *$attribute);
+                            assert(link_to_attribute);
+                            delete $attribute; // delete the string created using new in scanner
+                            $attribute = nullptr;
+
+                            // Create expression tree consisting of the terminal node
+                            auto expr = new ExprForAttributeSymbol(link_to_attribute);
+
+                            // Create the anonymous link to attribute symbol,
+                            // whose expression is just the single terminal
+                            // the link_to_attribute created immediately above.
+                            // The data_type is unknown (it will be resolved post-parse).
+                            auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(entity, UnknownTypeSymbol::find(), expr, @attribute);
+                            assert(aia);
+
+                            // return the anonymous identity attribute which shadows the link to attribute
+                            $link_to_attribute_shadowed = aia;
                         }
         ;
 

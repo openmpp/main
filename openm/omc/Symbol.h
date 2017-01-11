@@ -622,8 +622,6 @@ public:
     /**
      * Gets a symbol for a member name in an agent.
      * 
-     * If it doesn't already exist, create it.
-     *
      * @param nm    The member name.
      * @param agent The agent.
      *

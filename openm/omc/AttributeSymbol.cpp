@@ -66,11 +66,9 @@ CodeBlock AttributeSymbol::cxx_definition_agent()
 
 void AttributeSymbol::change_data_type(TypeSymbol *new_type)
 {
-    // TODO Pass it upwards to EntityDataMemberSymbol rather than fiddling directly with members.
     assert(new_type);
     if (pp_data_type != new_type) {
         pp_data_type = new_type;
-        // Note that data_type remains as it was, since references cannot be reseated.
         assert(side_effects_fn); // logic guarantee
         side_effects_fn->arg_list_decl = pp_data_type->name + " om_old, " + pp_data_type->name + " om_new";
         // maintain global counter of type changes
@@ -101,6 +99,8 @@ void AttributeSymbol::create_lagged()
 
     // lagged stores in same type as this agentvar
     lagged = new EntityInternalSymbol(lagged_name, agent, data_type);
+    // note parent attribute for post-parse type resolution in case data_type is unknown
+    lagged->parent = this->stable_pp();
 
     // lagged event counter stores in same type as global event counter (big_counter)
     auto *typ = NumericSymbol::find(token::TK_big_counter);

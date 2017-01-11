@@ -15,6 +15,16 @@
 
 using namespace std;
 
+void EntityDataMemberSymbol::change_data_type(TypeSymbol *new_type)
+{
+    assert(new_type);
+    if (pp_data_type != new_type) {
+        pp_data_type = new_type;
+        // maintain global counter of type changes
+        ++Symbol::type_changes;
+    }
+}
+
 void EntityDataMemberSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
@@ -27,6 +37,25 @@ void EntityDataMemberSymbol::post_parse(int pass)
         // assign direct pointer to type symbol for use post-parse
         pp_data_type = dynamic_cast<TypeSymbol *> (pp_symbol(data_type));
         assert(pp_data_type); // parser guarantee
+        // assign direct pointer to parent symbol (if used)
+        if (parent) {
+            pp_parent = dynamic_cast<EntityDataMemberSymbol *> (pp_symbol(parent));
+            assert(pp_parent); // parser guarantee
+        }
+        break;
+    }
+    case eResolveDataTypes:
+    {
+        // Resolve datatype if unknown.
+        if (pp_data_type->is_unknown()) {
+            // data type of data member is unknown
+            if (pp_parent) {
+                auto typ = pp_parent->pp_data_type;
+                assert(typ);
+                // Set the type to the parent's type
+                change_data_type(typ);
+            }
+        }
         break;
     }
     case ePopulateCollections:

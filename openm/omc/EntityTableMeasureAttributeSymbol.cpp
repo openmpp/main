@@ -42,7 +42,6 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
     {
         if ( need_value_in ) {
             // Create symbol for the data member which will hold the 'in' value of the increment.
-            // TODO also support LinkToAttributeSymbol
             auto av = dynamic_cast<AttributeSymbol *>(attribute);
             if (av == nullptr) {
                 throw HelperException(LT("error : %s is not an attribute in table %s"), attribute->name.c_str(), table->name.c_str());
@@ -50,12 +49,13 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             string member_name = in_member_name();
             auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
             assert(sym);
+            // note parent attribute for post-parse type resolution in case data_type is unknown
+            sym->parent = av->stable_pp();
             // push the name into the pass #1 ignore hash
             pp_ignore_pass1.insert(sym->unique_name);
         }
         if ( need_value_in_event ) {
             // Create symbol for the data member which will hold the 'in' value of the increment (for 'event' tabulation operator)
-            // TODO also support LinkToAttributeSymbol
             auto av = dynamic_cast<AttributeSymbol *>(attribute);
             if (av == nullptr) {
                 throw HelperException(LT("error : %s is not an attribute in table %s"), attribute->name.c_str(), table->name.c_str());
@@ -63,6 +63,8 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             string member_name = in_event_member_name();
             auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
             assert(sym);
+            // note parent attribute for post-parse type resolution in case data_type is unknown
+            sym->parent = av->stable_pp();
             // push the name into the pass #1 ignore hash
             pp_ignore_pass1.insert(sym->unique_name);
         }

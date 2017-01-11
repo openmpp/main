@@ -13,6 +13,7 @@
 #include "LinkToAttributeSymbol.h"
 #include "TypeSymbol.h"
 #include "BoolSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ConstantSymbol.h"
 #include "CodeBlock.h"
@@ -47,6 +48,28 @@ void IdentityAttributeSymbol::post_parse(int pass)
     {
         // do a post-parse traverse to identify apparent use of global functions, and create a GlobalFuncSymbol for each
         post_parse_traverse1(root);
+        break;
+    }
+    case eResolveDataTypes:
+    {
+        // Resolve datatype if unknown.
+        if (pp_data_type->is_unknown()) {
+            // data type of identity attribute is unknown
+            if (auto node = dynamic_cast<ExprForAttributeSymbol *>(root)) {
+                // root of expression tree is a terminal node (specifically, an attribute)
+                auto attr = pp_symbol(node->symbol);
+                auto la = dynamic_cast<LinkToAttributeSymbol *>(attr);
+                if (la) {
+                    // The attribute is a link-to-attribute symbol
+                    // Get the type of the attribute in the other entity
+                    assert(la->pp_agentvar);
+                    auto typ = la->pp_agentvar->pp_data_type;
+                    assert(typ);
+                    // Set the type of the anonymous identity attribute to that type
+                    change_data_type(typ);
+                }
+            }
+        }
         break;
     }
     case ePopulateCollections:
@@ -348,9 +371,10 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
 }
 
 //static
-IdentityAttributeSymbol * IdentityAttributeSymbol::create_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *root, yy::location decl_loc)
+IdentityAttributeSymbol * IdentityAttributeSymbol::anonymous_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *root, yy::location decl_loc)
 {
     assert(entity);
+    assert(type);
     assert(root);
 
     IdentityAttributeSymbol *ia = nullptr;
@@ -412,7 +436,7 @@ IdentityAttributeSymbol * IdentityAttributeSymbol::create_equality_identity_attr
 	auto expr = new ExprForAttributeBinaryOp(token::TK_EQ, lhs, rhs);
 
     // Create anonymous identity attribute for the equality expression
-    auto ia = create_identity_attribute(entity, BoolSymbol::find(), expr, decl_loc);
+    auto ia = anonymous_identity_attribute(entity, BoolSymbol::find(), expr, decl_loc);
     assert(ia);
 
     // Little tiny expression tree created here will not be used if

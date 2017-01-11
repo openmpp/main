@@ -8,6 +8,7 @@
 #include <cassert>
 #include "DimensionSymbol.h"
 #include "AttributeSymbol.h"
+#include "LinkToAttributeSymbol.h"
 #include "EnumerationSymbol.h"
 
 // static

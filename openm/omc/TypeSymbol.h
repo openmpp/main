@@ -55,6 +55,13 @@ public:
     /**
      * Determines derived type.
      *
+     * @return true if unknown, else false.
+     */
+    bool is_unknown();
+
+    /**
+     * Determines derived type.
+     *
      * @return true if bool, else false.
      */
     bool is_bool();
@@ -118,7 +125,7 @@ public:
     /**
      * Determines appropriate type to use for sums or differences of this type.
      *
-     * @return type smbol for integer or real.
+     * @return type symbol for integer or real.
      */
     TypeSymbol * summing_type();
 

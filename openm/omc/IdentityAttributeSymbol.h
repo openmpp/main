@@ -102,14 +102,14 @@ public:
     static string cxx_expression(const ExprForAttribute *node);
 
     /**
-     * Creates an identity attribute for an expression tree or returns it if already created.
+     * Creates an anonymous identity attribute for an expression tree or returns it if already created.
      *
      * @param [in,out] av If non-null, the attribute on the lhs
      * @param k           The ConstantSymbol on the rhs.
      *
      * @return The new identity attribute.
      */
-    static IdentityAttributeSymbol * create_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *node, yy::location decl_loc);
+    static IdentityAttributeSymbol * anonymous_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *node, yy::location decl_loc);
 
     /**
      * Creates an identity attribute for an equality or returns it if already created.

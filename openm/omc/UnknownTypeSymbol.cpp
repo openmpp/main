@@ -10,6 +10,7 @@
 using namespace std;
 
 
+//static
 UnknownTypeSymbol *UnknownTypeSymbol::find()
 {
     auto bs = dynamic_cast<UnknownTypeSymbol *>(get_symbol("om_unknown"));

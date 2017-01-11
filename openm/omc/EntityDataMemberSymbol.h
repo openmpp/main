@@ -36,6 +36,8 @@ public:
         : EntityMemberSymbol(sym, agent, decl_loc)
         , data_type(data_type->stable_rp())
         , pp_data_type(nullptr)
+        , parent(nullptr)
+        , pp_parent(nullptr)
     {
     }
 
@@ -53,6 +55,8 @@ public:
         : EntityMemberSymbol(member_name, agent, decl_loc)
         , data_type(data_type->stable_rp())
         , pp_data_type(nullptr)
+        , parent(nullptr)
+        , pp_parent(nullptr)
     {
         assert(data_type);  // grammar/initialization guarantee
     }
@@ -80,6 +84,12 @@ public:
 
     CodeBlock cxx_definition_agent();
 
+    /**
+     * Change the data type in the post-parse phase.
+     *
+     * @param [in,out] new_type The new data type.
+     */
+    virtual void change_data_type(TypeSymbol *new_type);
 
     void post_parse(int pass);
 
@@ -93,4 +103,17 @@ public:
      */
     TypeSymbol *pp_data_type;
 
+    /**
+     * The parent data member (optional, pointer to pointer)
+     *
+     * Refers to a member from which this member was derived
+     */
+    Symbol** parent;
+
+    /**
+     * The parent data member (optional)
+     *
+     * Refers to a member from which this member was derived
+     */
+    EntityDataMemberSymbol *pp_parent;
 };
