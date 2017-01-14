@@ -51,14 +51,23 @@ actor Person
                  is_morning ? EMOTION_t(morning_emotion) : afternoon_emotion;
     EMOTION z10 = is_birthday ? HAPPY :
                  is_morning ? EMOTION_t(morning_emotion) : EMOTION_t(afternoon_emotion);
-    // The following generates C++ compile error due to overload resolution ambiguity
-    //EMOTION z11 = is_birthday ? morning_emotion : afternoon_emotion;
+
+    // In ompp MSVC, the following results in VC error C2446
+    // In ompp gcc, no error
+    // gcc appears to be using the 'cast to T2' (integer) overload 
+    //EMOTION z11 = is_morning ? morning_emotion : afternoon_emotion;
+
+    // Same behaviour as z11 (as expected, since min uses std::common_type.
+    //EMOTION z12 = min(morning_emotion, afternoon_emotion);
+
+    // Following fails in ompp
+    //EMOTION z13 = is_birthday ? morning_emotion : HAPPY;
 
     // The following does not work, due to ambiguous constructor - Classification(int val) or Classification(T val)
-    //EMOTION z12 = EMOTION(morning_emotion);
+    //EMOTION z13 = EMOTION(morning_emotion);
 
     // The following does not work (like z12 above)
-    //EMOTION z15 = is_birthday ? HAPPY :
+    //EMOTION z14 = is_birthday ? HAPPY :
     //             is_morning ? EMOTION(morning_emotion) : EMOTION(afternoon_emotion);
 
     TIME my_happy_time;
@@ -70,6 +79,7 @@ actor Person
     TIME my_delta_time = my_later_time - my_happy_time;
     TIME my_movie_time = 1942;
 
+    //TIME my_time = is_birthday ? my_happy_time : my_sad_time;
     TIME my_time = is_birthday ? TIME_t(my_happy_time) : TIME_t(my_sad_time);
 
     void helper();
@@ -94,7 +104,7 @@ void Person::helper()
 
 	double wellness2 = WellnessWeights2[DefaultEmotion];
 
-	// sidestep g++ warnings
+	// sidestep g++ warnings on unused local variables
     forever++;
     any_time++;
     the_time++;
