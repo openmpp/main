@@ -876,7 +876,8 @@ void Symbol::populate_default_symbols(const string &model_name, const string &sc
     // Other types
     sym = new StringTypeSymbol();
     assert(sym);
-    sym = new UnknownTypeSymbol();
+    // create the built-in unknown type "om_unknown", which plays a role in type resolution
+    sym = new UnknownTypeSymbol("om_unknown");
     assert(sym);
 
     // Not implemented (a string)

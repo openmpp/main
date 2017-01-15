@@ -23,20 +23,19 @@ public:
     bool is_base_symbol() const { return false; }
 
     /**
-    * Constructor for the unknown type symbol
+    * Constructor for an unknown type symbol
     */
-    UnknownTypeSymbol()
-        : TypeSymbol("om_unknown")
+    UnknownTypeSymbol(const string nm)
+        : TypeSymbol(nm)
     {
     }
 
     const string default_initial_value() const {
-        // no types of this kind should be present in code generation phase
-        return "error_unknown_type";
+        return "0";
     };
 
     /**
-     * Gets the one and only 'unknown type' symbol.
+     * Gets the built-in 'unknown type' symbol with name om_unknown
      *
      * @return the UnknownTypeSymbol*.
      */

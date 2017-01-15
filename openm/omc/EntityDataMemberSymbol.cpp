@@ -11,6 +11,7 @@
 #include "EntitySymbol.h"
 #include "TypeSymbol.h"
 #include "RangeSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -32,6 +33,29 @@ void EntityDataMemberSymbol::post_parse(int pass)
 
     // Perform operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateMissingSymbols:
+    {
+        // Identify any unknown type, and create a corresponding global UnknownTypeSymbol
+        // for subsequent type resolution.
+
+        // The logic below is similar to Symbol::pp_symbol(),
+        // which fixes up misidentifications of members and globals.
+        // See the definition of that function for additional comments.
+        assert(data_type);
+        Symbol *sym = *&data_type;
+        assert(sym);
+        if (
+            sym->is_base_symbol() // type was never declared
+            && symbols.end() == symbols.find(sym->name) // no corresponding global type in the symbol table
+            ) {
+            // Create UnknownTypeSymbol for type resolution in subsequent post-parse passes.
+            auto ut = new UnknownTypeSymbol(sym->name);
+            assert(ut);
+            // push its name into the pass #1 ignore hash
+            pp_ignore_pass1.insert(ut->unique_name);
+        }
+        break;
+    }
     case eAssignMembers:
     {
         // assign direct pointer to type symbol for use post-parse
