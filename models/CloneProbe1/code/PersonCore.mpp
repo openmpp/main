@@ -39,12 +39,22 @@ actor Person            //EN Individual
         can also be used to count actors in tables.
     */
 
+    //EN Clone identifier
+    int clone_id;
+    
+    //EN Number of clones to simulate in this case
+    int_ptr clone_count_ptr;
 
+    /*NOTE(Person.clone_count_ptr, EN)
+      This is a pointer to a local variable in the framework function CaseSimulation.
+      An entity in the simulation can use this pointer to tell the framework
+      to simulate one or more clones.
+    */
     
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
 
     //LABEL(Person.Start, EN) Starts the actor
-    void Start();
+    void Start(int cl_id, int_ptr cl_cnt_ptr);
 
     //LABEL(Person.Finish, EN) Finishes the actor
     void Finish();
@@ -79,7 +89,7 @@ void Person::MortalityEvent()
     The Start function initializes actor variables before simulation
     of the actor commences.
 */
-void Person::Start()
+void Person::Start(int cl_id, int_ptr cl_cnt_ptr)
 {
     // Modgen initializes all actor variables
     // before the code in this function is executed.
@@ -89,6 +99,8 @@ void Person::Start()
 
     age = 0;
     time = 0;
+    clone_id = cl_id;
+    clone_count_ptr = cl_cnt_ptr;
 
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();

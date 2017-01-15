@@ -27,6 +27,9 @@ namespace mm {
 struct case_info {
 };
 
+// Used by cloning framework
+typedef int *int_ptr;
+
 #if defined(MODGEN)
 }
 #endif

@@ -9,7 +9,7 @@ This module contains the model version, description, and notes.
 // The model version number
 version 1, 0, 0, 0;
 
-//LABEL(model, EN) Simple case-based model
+//LABEL(model, EN) Cloning illustration #1
 /* NOTE(model, EN)
-This model can serve as a starting point for more complex case-based models.
+
 */
