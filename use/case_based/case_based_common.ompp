@@ -49,7 +49,7 @@ namespace fmk {
      */
     thread_local long long member_case_counter = 0;
 
-} // fmk
+} // namespace fmk
 
 /**
  * Gets the numeric case identifier of the current case.
@@ -204,7 +204,6 @@ void RunSimulation(int mem_id, int mem_count)
 	// Perform operations at the start of Simulation
 	Simulation_start(ci);
 
-    int seed = SimulationSeed; // framework input parameter
     all_cases = SimulationCases; // framework input parameter
 
     // The number of cases to simulate for this sample member.
@@ -215,32 +214,25 @@ void RunSimulation(int mem_id, int mem_count)
         member_cases++;
     };
 
-    // For simulation member values greater than the (Modgen) maximum, re-use case seed generators cyclically
-    // and increment the starting case_seed for the simulation of the sample.
-    long case_seed = seed + (int)simulation_member / max_case_seed_generators;
+    // For simulation member values greater than the number of lcg generators,
+    // re-use case seed generators cyclically and increment the starting
+    // master_seed for the simulation of the sample.
+    fmk::master_seed = SimulationSeed + (int)simulation_member / max_case_seed_generators;
     long case_seed_generator = case_seed_generators[simulation_member % max_case_seed_generators];
 
 	// Create stream generator objects
+	// new_streams is generator-specific - defined in random/random_YYY.ompp
 	new_streams();
 
     for (long long thisCase = 0; thisCase < member_cases; thisCase++) {
-        {
-            // initialize the stream generators in the case, based on the simulation member and case seed
-            long seed = case_seed;
-            for (int model_stream = 0; model_stream < model_streams; model_stream++) {
-                initialize_stream(model_stream, simulation_member, seed);
-				// use specific fixed integral-congruential generator (with multiplier model_stream_seed_generator) to create seeds for streams
-                long long product = model_stream_seed_generator;
-                product *= seed;
-                seed = product % mg_modulus;
-            }
-        }
 
-        // Initialize global time for the case  (can override in StartSimulation)
+        initialize_model_streams(); //defined in common.ompp
+
+        // Initialize global time for the case (can override in StartSimulation)
         BaseEvent::set_global_time(0);
 
         // record the encoded case seed (case_seed + simulation_member in high order bits)
-        combined_seed = case_seed + simulation_member * ((long long)mg_modulus + 1);
+        fmk::combined_seed = fmk::master_seed + simulation_member * ((long long)lcg_modulus + 1);
 
         // record the case counter within the current simulation member
         member_case_counter = thisCase;
@@ -252,7 +244,7 @@ void RunSimulation(int mem_id, int mem_count)
         CaseSimulation(ci);
 
         // Log the case checksum if activated
-        if (BaseEvent::event_checksum_enabled) case_checksum_msg(case_seed, simulation_member);
+        if (BaseEvent::event_checksum_enabled) case_checksum_msg(fmk::master_seed, simulation_member);
 
         // Debug check for no left-over agents for which Finish was not called (model error)
         assert(0 == BaseAgent::om_active_agents());
@@ -263,10 +255,10 @@ void RunSimulation(int mem_id, int mem_count)
         }
 
         {
-            // generate the case seed for the next case
+            // generate the master seed for the next case
             long long product = case_seed_generator;
-            product *= case_seed;
-            case_seed = product % mg_modulus;
+            product *= fmk::master_seed;
+            fmk::master_seed = product % lcg_modulus;
         }
 
         // Compute progress and report periodically
@@ -286,6 +278,7 @@ void RunSimulation(int mem_id, int mem_count)
 	Simulation_end(ci);
 
 	// Free stream generator objects
+	// delete_streams is generator-specific - defined in random/random_YYY.ompp
 	delete_streams();
 
     // Reset CaseInfo API

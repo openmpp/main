@@ -183,26 +183,17 @@ void RunSimulation(int mem_id, int mem_count)
     simulation_end = SimulationEnd; // framework input parameter
 
     // The master seed to simulate this member of the 'sample' of simulations
-    long master_seed = seed + simulation_member;
+    fmk::master_seed = seed + simulation_member;
 
     // record the encoded combined seed (master_seed + simulation_member in high order bits)
-    combined_seed = master_seed + simulation_member * ((long long)mg_modulus + 1);
+    fmk::combined_seed = fmk::master_seed + simulation_member * ((long long)lcg_modulus + 1);
 
-	// Create random stream generator objects
+	// Create stream generator objects
+	// new_streams is generator-specific - defined in random/random_YYY.ompp
 	new_streams();
 
-    {
-        // initialize the stream generators
-        long seed = master_seed;
-		// initialize the stream generators in the simulation, using the master seed
-		for (int model_stream = 0; model_stream < model_streams; model_stream++) {
-            initialize_stream(model_stream, simulation_member, seed);
-			// use specific fixed integral-congruential generator (with multiplier model_stream_seed_generator) to create seeds for streams
-			long long product = model_stream_seed_generator;
-            product *= seed;
-            seed = product % mg_modulus;
-        }
-    }
+    initialize_model_streams(); //defined in common.ompp
+
     // Initialize global time (can override in StartSimulation)
     BaseEvent::set_global_time(-time_infinite);
      
@@ -210,6 +201,7 @@ void RunSimulation(int mem_id, int mem_count)
     Simulation();
 
 	// Free random stream generator objects
+	// delete_streams is generator-specific - defined in random/random_YYY.ompp
 	delete_streams();
 }
 

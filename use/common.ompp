@@ -26,9 +26,40 @@ namespace fmk {
     thread_local long member_entity_counter = 0;
 
     /**
-     * The seed encoded, with high order bits containing the simulation member id.
+     * The modulus used by linear congruential random number generators.
+     */
+    const long lcg_modulus = 2147483647;
+
+    /**
+     * Multiplier of linear congruential generator used to initialize model stream seeds.
+     */
+    const long model_stream_seed_generator = 376740290;
+
+    /**
+     * The master seed encoded, with high order bits containing the simulation member id.
+     *
+     * The random number generators can vary by simulation member, so both
+     * master seed and simulation member are required to reproduce
+     * a case (for case-based models) or a replicate (for time-based models)
+     * independtly of other cases / replicates.
      */
     thread_local long long combined_seed = 0;
+
+    /**
+     * The master seed, derived from SimulationSeed.
+     *
+     * The master seed is used to seed the individual random streams
+     * in the model before simulating a case (for case-based models)
+     * or simulating a member (aka replicate) (for time-based models).
+     *
+     * For case-based models, the master seed is used for a case,
+     * and is set by a separate case seed random number generator.
+     *
+     * For time-based models, the seed is used for a member (aka replicate),
+     * and is set by a simple formula based on the member number
+     * and SimulationSeed.
+     */
+    thread_local long master_seed = 0;
 
     /**
      * The value for population scaling.
@@ -50,15 +81,36 @@ namespace fmk {
  * 
  * Returns long long instead of double returned by GetCaseSeed()
  * For case-based models, the case seed, for time-based models, the global seed.
- * For both, the simulation member is in high order bits.
+ * For both, the simulation member is encoded in high order bits.
  *
  * @return The seed, with the simulation member in high order bits
  */
 long long get_combined_seed()
 {
-    // Time-based models have no concept of case seed.
-    // Return 0 when used in common run-time errors or warnings.
     return fmk::combined_seed;
+}
+
+/**
+ * Initializes the model stream generators
+ *
+ * For case-based models, the stream generators are initialized for each case.
+ * For time-based models, the stream generators are initialized for each member (aka replicate)
+ */
+void initialize_model_streams()
+{
+    using namespace fmk;
+
+    long stream_seed = fmk::master_seed;
+    for (int model_stream = 0; model_stream < model_streams; model_stream++) {
+        // initialize_stream is generator-specific - defined in random/random_YYY.ompp
+        initialize_stream(model_stream, simulation_member, stream_seed);
+		// Use fixed integral-congruential generator (with multiplier model_stream_seed_generator)
+		// to create seeds for streams.
+        // model_stream_seed_generator is generator-specific - defined in random/random_YYY.ompp
+        long long product = model_stream_seed_generator;
+        product *= stream_seed;
+        stream_seed = product % lcg_modulus;
+    }
 }
 
 /**

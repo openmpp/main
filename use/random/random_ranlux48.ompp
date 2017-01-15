@@ -7,7 +7,7 @@
 *
 * The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
 *
-* The interface to framework modules, e.g.case_based_modgen.ompp consists of the functions
+* The interface to framework modules, e.g.case_based_common.ompp consists of the functions
 * new_streams, delete_streams, initialize_stream
 *
 * Other content in this module should be considered to be 'private'.
@@ -16,16 +16,6 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 namespace fmk {
-
-	/**
-	* The fixed modulus used by all Modgen random number generators.
-	*/
-	const long mg_modulus = 2147483647;
-
-	/**
-	* Multiplier of generator used to initialize the model stream seeds.
-	*/
-	const long model_stream_seed_generator = 376740290;
 
 	// Stream generators in the simulation (const model_streams is declared in framework module of model)
 	thread_local std::ranlux48 * stream_generators[model_streams];

@@ -16,8 +16,7 @@
 * the number of multipliers in the table to 205 from the 207 stated in the article.
 *
 * From the 410 multipliers, 200 are used for case seed generators, and 200 for simulation members.
-* 1 of the remaining generators is used to initialize the model stream seeds in each simulation member.
-* The other 9 are kept as spares and commented in the code below.
+* The remaining 10 are kept as spares and commented in the code below.
 *
 * The order of the 410 multipliers was randomized (re-ordered in Excel before pasting here).
 * The source Excel workbook was named 'RNG Multipliers.xlsx'
@@ -25,7 +24,7 @@
 *
 * The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
 *
-* The interface to framework modules, e.g. case_based_modgen.ompp consists of the functions
+* The interface to framework modules, e.g. case_based_common.ompp consists of the functions
 * new_streams, delete_streams, initialize_stream
 *
 * Other content in this module should be considered to be 'private'.
@@ -40,17 +39,8 @@ namespace fmk {
      */
     const int max_stream_generators = 200;
 
-    /**
-     * The fixed modulus used by all Modgen random number generators.
-     */
-    const long mg_modulus = 2147483647;
-
-    /**
-     * Multiplier of generator used to initialize the model stream seeds.
-     */
-    const long model_stream_seed_generator = 1187848453;
-
-	// Spare generators:
+	// Spare generators in this family of generators (see article)
+	//1187848453
 	//1932380919
 	//1901918329
 	//451629028
@@ -268,18 +258,17 @@ namespace fmk {
 		600472792,
 	};
 
-    // Current seed for each stream generator in the simulation (const model_streams is declared in framework module of model)
-    thread_local long stream_seeds[model_streams];
-
     // Multiplier of the generator for the streams for this simulation (shared by all streams, varies by simulation member)
     thread_local long stream_generator = 0;
+
+    // Current seed for each stream generator in the simulation (const model_streams is declared in framework module of model)
+    thread_local long stream_seeds[model_streams];
 
     // Is there a random normal in other_normal?
     thread_local bool other_normal_valid[model_streams] = { false };
 
     // The other normal draw
     thread_local double other_normal[model_streams];
-
 
 } // fmk
 
@@ -299,7 +288,7 @@ void delete_streams()
 void initialize_stream(int model_stream, int member, long seed)
 {
 	// For members beyond number of Modgen generators, re-use generators cyclically.
-	// Note that fmk::stream_generator is idnetical and shared for a simulation member.
+	// Note that fmk::stream_generator is identical and shared for a simulation member.
 	fmk::stream_generator = fmk::model_stream_generators[member % fmk::max_stream_generators];
 
     fmk::stream_seeds[model_stream] = seed;
@@ -320,9 +309,9 @@ double RandUniform(int strm)
     long seed = stream_seeds[strm];
     long long product = stream_generator;
     product *= seed;
-    seed = product % mg_modulus;
+    seed = product % lcg_modulus;
     stream_seeds[strm] = seed;
-    return (double)seed / (double)mg_modulus;
+    return (double)seed / (double)lcg_modulus;
 }
 
 double RandNormal(int strm)

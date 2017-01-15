@@ -32,14 +32,13 @@ bool IsUndefined(double x);
 void report_simulation_progress(int member, int percent);
 void ProgressMsg(const char *msg);
 void TimeReport(double dTime);
+void initialize_model_streams();
 void handle_streams_exceeded(int strm, int model_streams);
 
 // defined in use/random/random_*.ompp
 extern void new_streams();
 extern void delete_streams();
 extern void initialize_stream(int model_stream, int member, long seed);
-extern void store_random_state();
-extern void retrieve_random_state();
 extern double RandUniform(int strm);
 extern double RandNormal(int strm);
 extern double RandLogistic(int strm);

@@ -23,17 +23,7 @@ namespace fmk {
     const int max_stream_generators = 41;
 
     /**
-     * The fixed modulus used by all Modgen random number generators.
-     */
-    const long mg_modulus = 2147483647;
-
-    /**
-     * Multiplier of generator used to initialize the model stream seeds.
-     */
-    const long model_stream_seed_generator = 376740290;
-
-    /**
-     * Multiplier of generator used for a given 'sample member'.
+     * Multiplier of generator used for a given simulation member.
      */
     const long model_stream_generators[max_stream_generators] = {
         16807,
@@ -91,11 +81,6 @@ namespace fmk {
     // The other normal draw
     thread_local double other_normal[model_streams];
 
-    // Storage for storing random state
-    thread_local long stored_stream_seeds[model_streams];
-    thread_local bool stored_other_normal_valid[model_streams] = { false };
-    thread_local double stored_other_normal[model_streams];
-
 } // fmk
 
 // Create objects for random streams
@@ -121,27 +106,6 @@ void initialize_stream(int model_stream, int member, long seed)
     fmk::other_normal_valid[model_stream] = false;
 }
 
-// Store the state of random streams for later restoration
-void store_random_state()
-{
-    for (int j = 0; j < fmk::max_stream_generators; ++j) {
-        fmk::stored_stream_seeds[j] = fmk::stream_seeds[j];
-        fmk::stored_other_normal_valid[j] = fmk::other_normal_valid[j];
-        fmk::stored_other_normal[j] = fmk::stored_other_normal[j];
-    }
-}
-
-// Retrieve the state of random streams stored by a previous call to store_random_state
-void retrieve_random_state()
-{
-    for (int j = 0; j < fmk::max_stream_generators; ++j) {
-        fmk::stream_seeds[j] = fmk::stored_stream_seeds[j];
-        fmk::other_normal_valid[j] = fmk::stored_other_normal_valid[j];
-        fmk::other_normal[j] = fmk::stored_other_normal[j];
-    }
-}
-
-
 double RandUniform(int strm)
 {
     using namespace fmk;
@@ -156,9 +120,9 @@ double RandUniform(int strm)
     long seed = stream_seeds[strm];
     long long product = stream_generator;
     product *= seed;
-    seed = product % mg_modulus;
+    seed = product % lcg_modulus;
     stream_seeds[strm] = seed;
-    return (double)seed / (double)mg_modulus;
+    return (double)seed / (double)lcg_modulus;
 }
 
 double RandNormal(int strm)
