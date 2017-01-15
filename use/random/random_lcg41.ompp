@@ -79,11 +79,11 @@ namespace fmk {
         1096609123,
     };
 
-    // Current seed for each stream generator in the simulation (const model_streams is declared in framework module of model)
-    thread_local long stream_seeds[model_streams];
-
     // Multiplier of the generator for the streams for this simulation (shared by all streams, varies by simulation member)
     thread_local long stream_generator = 0;
+
+    // Current seed for each stream generator in the simulation (const model_streams is declared in framework module of model)
+    thread_local long stream_seeds[model_streams];
 
     // Is there a random normal in other_normal?
     thread_local bool other_normal_valid[model_streams] = { false };
@@ -91,6 +91,10 @@ namespace fmk {
     // The other normal draw
     thread_local double other_normal[model_streams];
 
+    // Storage for storing random state
+    thread_local long stored_stream_seeds[model_streams];
+    thread_local bool stored_other_normal_valid[model_streams] = { false };
+    thread_local double stored_other_normal[model_streams];
 
 } // fmk
 
@@ -110,12 +114,33 @@ void delete_streams()
 void initialize_stream(int model_stream, int member, long seed)
 {
 	// For members beyond number of Modgen generators, re-use generators cyclically.
-	// Note that fmk::stream_generator is idnetical and shared for a simulation member.
+	// Note that fmk::stream_generator is identical and shared for a simulation member.
 	fmk::stream_generator = fmk::model_stream_generators[member % fmk::max_stream_generators];
 
     fmk::stream_seeds[model_stream] = seed;
     fmk::other_normal_valid[model_stream] = false;
 }
+
+// Store the state of random streams for later restoration
+void store_random_state()
+{
+    for (int j = 0; j < fmk::max_stream_generators; ++j) {
+        fmk::stored_stream_seeds[j] = fmk::stream_seeds[j];
+        fmk::stored_other_normal_valid[j] = fmk::other_normal_valid[j];
+        fmk::stored_other_normal[j] = fmk::stored_other_normal[j];
+    }
+}
+
+// Retrieve the state of random streams stored by a previous call to store_random_state
+void retrieve_random_state()
+{
+    for (int j = 0; j < fmk::max_stream_generators; ++j) {
+        fmk::stream_seeds[j] = fmk::stored_stream_seeds[j];
+        fmk::other_normal_valid[j] = fmk::stored_other_normal_valid[j];
+        fmk::other_normal[j] = fmk::stored_other_normal[j];
+    }
+}
+
 
 double RandUniform(int strm)
 {

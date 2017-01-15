@@ -38,6 +38,8 @@ void handle_streams_exceeded(int strm, int model_streams);
 extern void new_streams();
 extern void delete_streams();
 extern void initialize_stream(int model_stream, int member, long seed);
+extern void store_random_state();
+extern void retrieve_random_state();
 extern double RandUniform(int strm);
 extern double RandNormal(int strm);
 extern double RandLogistic(int strm);
