@@ -24,17 +24,22 @@ void CaseSimulation(case_info &ci)
 
     int clone_count = 1; // 1 entity per case by default
     for (int clone_id = 0; clone_id < clone_count; ++clone_id) {
+
+#if defined(OPENM)
+        if (clone_id > 0) {
+            // Reinitialize model streams using the master seed for the case.
+            initialize_model_streams();
+        }
+#else // defined(MODGEN)
         if (clone_id == 0) {
             // defined in modgen_case_based.mpp (modgen)
-            // or random random/random_YYY.ompp (ompp)
             store_random_state();
         }
         else {
             // defined in modgen_case_based.mpp (modgen)
-            // or random random/random_YYY.ompp (ompp)
             retrieve_random_state();
         }
-
+#endif
         // Initialize the person actor
         auto prPerson = new Person();
         prPerson->Start(clone_id, &clone_count); // the entity can chagne the clone count

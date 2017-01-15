@@ -123,15 +123,20 @@ void Person::Finish()
 
         // characteristics of first entity in case determine whether to clone
         // some hard-coded tests, choose which one by changing test_num
-        int test_num = 0;
+        int test_num = 2;
+
         if (test_num == 0) {
+            // no cloning
+            clone_it = false;
+        }
+        else if (test_num == 1) {
             // test #1: unconditional cloning
             // Expected results in DurationOfLife table:
             // person count doubles (5000 to 10000)
             // mean, min, max identical
             clone_it = true;
         }
-        else if (test_num == 1) {
+        else if (test_num == 2) {
             // test #2: clone if entity lived to age 80 or more
             // Expected results in DurationOfLife table:
             // person count increases (5000 to 6647)
@@ -140,8 +145,10 @@ void Person::Finish()
             if (age >= 80) {
                 clone_it = true;
             }
+            else {
+                clone_it = false;
+            }
         }
-
 
         if (clone_it) {
             ++(*clone_count_ptr);
