@@ -11,5 +11,19 @@ version 1, 0, 0, 0;
 
 //LABEL(model, EN) Cloning illustration #1
 /* NOTE(model, EN)
-
+   Illustration shows how one or more clones of the the case can be simulated
+   depending on characteristics of the first clone (clone 0).
+   model_core.mpp:
+     Adapted to implement cloning.
+   PersonCore.mpp
+     Initializes communication variables between the
+     simulated entity and the framework (CaseSimulation).
+     Requests a clone from the framework under different conditions (see code comments)
+  custom_extra.h
+     Declares additional type for attribute used for communication between
+     the simulated entity and the framework (to request subsequent clone)
+  modgen_case_based.ompp
+     Implements clone helper functions store_random_state and retrieve_random_state
+  random/random_YYY.ompp
+     Implementation of clone helper functions (specific to random number generator)
 */

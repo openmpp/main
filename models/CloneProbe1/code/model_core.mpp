@@ -16,23 +16,28 @@ time_type double;
  * Simulates a single case.
  * 
  * Called by code in a simulation framework module.
+ * This version is adapted for cloning.
  */
 void CaseSimulation(case_info &ci)
 {
     extern void SimulateEvents(); // defined in a simulation framework module
 
-    int clone_count = 2;
+    int clone_count = 1; // 1 entity per case by default
     for (int clone_id = 0; clone_id < clone_count; ++clone_id) {
         if (clone_id == 0) {
+            // defined in modgen_case_based.mpp (modgen)
+            // or random random/random_YYY.ompp (ompp)
             store_random_state();
         }
         else {
+            // defined in modgen_case_based.mpp (modgen)
+            // or random random/random_YYY.ompp (ompp)
             retrieve_random_state();
         }
 
         // Initialize the person actor
         auto prPerson = new Person();
-        prPerson->Start(clone_id, &clone_count);
+        prPerson->Start(clone_id, &clone_count); // the entity can chagne the clone count
 
         // Simulate events until there are no more.
         SimulateEvents();

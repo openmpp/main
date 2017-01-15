@@ -49,6 +49,7 @@ actor Person            //EN Individual
       This is a pointer to a local variable in the framework function CaseSimulation.
       An entity in the simulation can use this pointer to tell the framework
       to simulate one or more clones.
+      The type int_ptr is equivalent to 'int *' and is declared in custom_early.h
     */
     
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
@@ -115,6 +116,38 @@ void Person::Start(int cl_id, int_ptr cl_cnt_ptr)
 */
 void Person::Finish()
 {
+    // Determine if this entity will be cloned
+    // by communicating with the framework function CaseSimulation
+    if (clone_id == 0) {
+        bool clone_it = false;
+
+        // characteristics of first entity in case determine whether to clone
+        // some hard-coded tests, choose which one by changing test_num
+        int test_num = 0;
+        if (test_num == 0) {
+            // test #1: unconditional cloning
+            // Expected results in DurationOfLife table:
+            // person count doubles (5000 to 10000)
+            // mean, min, max identical
+            clone_it = true;
+        }
+        else if (test_num == 1) {
+            // test #2: clone if entity lived to age 80 or more
+            // Expected results in DurationOfLife table:
+            // person count increases (5000 to 6647)
+            // min, max identical
+            // men increases (71.9845 to 91.90681)
+            if (age >= 80) {
+                clone_it = true;
+            }
+        }
+
+
+        if (clone_it) {
+            ++(*clone_count_ptr);
+        }
+    }
+
     // Have the entity exit the simulation (OpenM++).
     exit_simulation();
 
