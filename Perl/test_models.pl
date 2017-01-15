@@ -677,6 +677,24 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
+			
+			# Change working directory to project directory to obtain props
+			chdir $project_dir || die;
+			
+			# Determine number of members in simulation from MEMBERS user macro in Model.props
+			my $members = get_user_macro($model_props, 'MEMBERS');
+			if ($members eq '') {
+				logmsg error, $model_dir, $flavour, "failed to get MEMBERS from ${model_props}";
+				next FLAVOUR;
+			}
+			
+			# Determine number of threads in simulation from THREADS user macro in Model.props
+			my $threads = get_user_macro($model_props, 'THREADS');
+			if ($threads eq '') {
+				logmsg error, $model_dir, $flavour, "failed to get THREADS from ${model_props}";
+				next FLAVOUR;
+			}
+
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
@@ -690,6 +708,8 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.TraceToFile", "true",
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
+					"-General.Subsamples", $members,
+					"-General.Threads", $threads,
 					);
 				system(@args);
 			};
@@ -836,8 +856,23 @@ for my $model_dir (@model_dirs) {
 			# Run model (ompp-linux)            #
 			#####################################
 			
+			# Determine number of members in simulation from MEMBERS user macro in Model.props
+			my $members = get_user_macro($model_props, 'MEMBERS');
+			if ($members eq '') {
+				logmsg error, $model_dir, $flavour, "failed to get MEMBERS from ${model_props}";
+				next FLAVOUR;
+			}
+			
+			# Determine number of threads in simulation from THREADS user macro in Model.props
+			my $threads = get_user_macro($model_props, 'THREADS');
+			if ($threads eq '') {
+				logmsg error, $model_dir, $flavour, "failed to get THREADS from ${model_props}";
+				next FLAVOUR;
+			}
+			
 			# Save copy of generated C++ source code
 			my $linux_generated_code_dir = "${project_dir}/build/${ompp_linux_configuration}/src";
+			
 			chdir $linux_generated_code_dir;
 			for (glob "*.h *.cpp") {
 				copy "$_", "$current_generated_code_dir";
@@ -857,6 +892,8 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.TraceToFile", "true",
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
+					"-General.Subsamples", $members,
+					"-General.Threads", $threads,
 					);
 				system(@args);
 			};
