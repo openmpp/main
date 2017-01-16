@@ -43,8 +43,14 @@ public:
     void post_parse_traverse(ExprForTable *node);
 
     enum expression_style {
+        // C++ expression to compute table measures for a simulation member
         cxx,
-        sql
+
+        // ompp SQL with accumulators aggregated across simulation members (default for case-based)
+        sql_aggregated_accumulators,
+
+        // ompp SQL with accumulators not aggregated across simulation members (default for time-based)
+        sql_accumulators
     };
 
     /**

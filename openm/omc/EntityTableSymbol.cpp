@@ -23,6 +23,7 @@
 #include "EntityTableMeasureAttributeSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EnumerationSymbol.h"
+#include "ModelTypeSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -515,8 +516,6 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         if (measure->scale != 0) {
             scale_part = measure->scale_as_factor() + " * ";
         }
-        // E.g.  // SUM_BEFORE( acc0 )
-        c += "// " + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql);
         // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
         c += "for (int cell = 0; cell < n_cells; cell++ ) "
             "measure[" + to_string(etm->index) + "][cell] = " + scale_part + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
@@ -749,6 +748,11 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
 
+    // Determine if model is case-based or time-based
+    auto mt = ModelTypeSymbol::find();
+    assert(mt); // logic guarantee
+    bool is_case_based = mt->is_case_based();
+
     // Perform operations specific to this level in the Symbol hierarchy.
 
     // accumulators for table
@@ -784,12 +788,28 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableExpr.exprId = expr->index;
         tableExpr.name = "expr" + to_string(expr->index);
         tableExpr.decimals = expr->decimals;
+
         // construct scale part, e.g. "1.0E-3 * "
         string scale_part;
         if (measure->scale != 0) {
             scale_part = measure->scale_as_factor() + " * ";
         }
-        tableExpr.srcExpr = scale_part + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql);
+
+        if (is_case_based) {
+            // case-based models, by default, aggregate accumulators across simulation members before evaluating the expression
+            tableExpr.srcExpr = 
+                scale_part
+                + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
+        }
+        else {
+            // time-based models, by default, compute the average of the expression across simulation members
+            tableExpr.srcExpr =
+                scale_part
+                + "OM_AVG("
+                + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators)
+                + ")";
+        }
+
         metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {

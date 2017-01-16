@@ -73,7 +73,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
         case cxx:
             result = "acc[" + to_string(accumulator->index) + "][cell]";
             break;
-        case sql:
+        case sql_aggregated_accumulators:
             {
                 string agg_func = "";
                 switch (accumulator->accumulator) {
@@ -92,6 +92,12 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
                     break;
                 }
                 result = agg_func + "( acc" + to_string(accumulator->index) + " )";
+                break;
+            }
+            break;
+        case sql_accumulators:
+            {
+                result = "acc" + to_string(accumulator->index);
                 break;
             }
             break;
