@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!-- Hard-coded for VS 2015 (no support for lower versions) -->
+    <!-- If running in VS 2017, set platform toolset for VC 2017 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(BuildingInsideVisualStudio)'=='true' And '$(VisualStudioVersion)'=='15.0'">v141</PLATFORM_TOOLSET>
+    <!-- Otherwise, hard code to VS 2015 (lower versions are not supported by ompp, so build failure on lower versions is correct) -->
     <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v140</PLATFORM_TOOLSET>
   </PropertyGroup>
 </Project>
