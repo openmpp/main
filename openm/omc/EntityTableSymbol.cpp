@@ -748,11 +748,6 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
 
-    // Determine if model is case-based or time-based
-    auto mt = ModelTypeSymbol::find();
-    assert(mt); // logic guarantee
-    bool is_case_based = mt->is_case_based();
-
     // Perform operations specific to this level in the Symbol hierarchy.
 
     // accumulators for table
@@ -795,20 +790,26 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             scale_part = measure->scale_as_factor() + " * ";
         }
 
-        if (is_case_based) {
-            // case-based models, by default, aggregate accumulators across simulation members before evaluating the expression
+        if (measures_are_aggregated) {
+            // Aggregate accumulators across simulation members before evaluating the expression for the measure.
             tableExpr.srcExpr = 
                 scale_part
                 + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
         }
         else {
-            // time-based models, by default, compute the average of the expression across simulation members
+            // Average the measure across simulation members.
             tableExpr.srcExpr =
                 scale_part
                 + "OM_AVG("
                 + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators)
                 + ")";
         }
+
+        // Obtain the expression for computing the measure for a single simulation member
+        string measure_expr =
+            scale_part
+            + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
+        // TODO - put measure_expr into the metadata holder
 
         metaRows.tableExpr.push_back(tableExpr);
 

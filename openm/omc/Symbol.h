@@ -818,7 +818,7 @@ public:
      * code parsing for subsequent processing by this function. Unrecognized options are ignored, as
      * are unrecognized values for recognized options.
      */
-    static void parse_options();
+    static void defaults_and_options();
 
     /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
@@ -1163,6 +1163,12 @@ public:
      * UserTables functions in model code.
      */
     static SpecialGlobal derived_tables;
+
+    /**
+     * If true, table measures are aggregated across simulation members.
+     * If false, table measures are averaged across simulation members.
+     */
+    static bool measures_are_aggregated;
 
     /**
      * A count of type changes made in a single post-parse pass.

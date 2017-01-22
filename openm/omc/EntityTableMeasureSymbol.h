@@ -46,10 +46,10 @@ public:
         // C++ expression to compute table measures for a simulation member
         cxx,
 
-        // ompp SQL with accumulators aggregated across simulation members (default for case-based)
+        // ompp SQL with accumulators aggregated across simulation members
         sql_aggregated_accumulators,
 
-        // ompp SQL with accumulators not aggregated across simulation members (default for time-based)
+        // ompp SQL with unaggregated accumulators
         sql_accumulators
     };
 

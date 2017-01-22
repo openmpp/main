@@ -529,6 +529,8 @@ SpecialGlobal Symbol::post_simulation("PostSimulation");
 
 SpecialGlobal Symbol::derived_tables("UserTables");
 
+bool Symbol::measures_are_aggregated = true;
+
 int Symbol::type_changes = 0;
 
 int Symbol::post_parse_errors = 0;
@@ -1085,10 +1087,10 @@ bool Symbol::is_use_file(const yy::location& loc)
 
 void Symbol::post_parse_all()
 {
-    // Parse all options encountered in model code.
+    // Set defaults and set options specified in model code.
     // This is done before any other post-parse operations
     // to allow options to affect post-parse processing as well as code generation.
-    parse_options();
+    defaults_and_options();
 
     if (LanguageSymbol::number_of_languages() == 0) {
         pp_error(yy::location(), LT("error : no languages specified"));
@@ -1371,7 +1373,7 @@ void Symbol::post_parse_all()
     }
 }
 
-void Symbol::parse_options()
+void Symbol::defaults_and_options()
 {
     {
         string key = "event_trace";
@@ -1397,6 +1399,39 @@ void Symbol::parse_options()
             }
             else if (value == "off") {
                 option_case_checksum = false;
+            }
+        }
+    }
+
+    {
+        // First, set default measures method as a function of model type.
+        // Determine if model is case-based or time-based
+        auto mt = ModelTypeSymbol::find();
+        assert(mt); // logic guarantee
+        bool is_case_based = mt->is_case_based();
+
+        if (is_case_based) {
+            // case-based models, by default, aggregate accumulators across simulation members before evaluating the expression
+            measures_are_aggregated = true;
+        }
+        else {
+            // time-based models, by default, compute the average of the expression across simulation members
+            measures_are_aggregated = false;
+        }
+
+        // Override default aggregation method if measures_method option was specified.
+        string key = "measures_method";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "aggregate") {
+                measures_are_aggregated = true;
+            }
+            else if (value == "average") {
+                measures_are_aggregated = false;
+            }
+            else {
+                pp_error(yy::location(), LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
             }
         }
     }
