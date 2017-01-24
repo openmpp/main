@@ -46,7 +46,7 @@
     EMPTY - use empty version of the library which does nothing
   -->
   <PropertyGroup>
-    <OM_MSG_USE>EMPTY</OM_MSG_USE>
+    <OM_MSG_USE>MPI</OM_MSG_USE>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OM_MSG_USE)'=='EMPTY'">
@@ -54,12 +54,14 @@
     <OM_MSG_INC></OM_MSG_INC>
     <OM_MSG_LIB></OM_MSG_LIB>
     <OM_MSG_LIB_DIR></OM_MSG_LIB_DIR>
+    <MPI_SUFFIX></MPI_SUFFIX>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI'">
     <OM_MSG_DEF>OM_MSG_MPI</OM_MSG_DEF>
     <OM_MSG_INC>$(MSMPI_INC)</OM_MSG_INC>
     <OM_MSG_LIB>msmpi.lib;</OM_MSG_LIB>
+    <MPI_SUFFIX>_mpi</MPI_SUFFIX>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI' And '$(Platform)'=='Win32'">

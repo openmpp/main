@@ -71,7 +71,7 @@
   <Import Project="$(SolutionDir)openm.build.props" />
   <PropertyGroup>
     <OutDir>$(OM_LIB_DIR)/</OutDir>
-    <TargetName>$(ProjectName)$(BUILD_SUFFIX)</TargetName>
+    <TargetName>$(ProjectName)$(BUILD_SUFFIX)$(MPI_SUFFIX)</TargetName>
   </PropertyGroup>
   
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
