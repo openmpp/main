@@ -123,6 +123,10 @@ int main(int argc, char ** argv)
         // load metadata tables and broadcast it to all modeling processes
         unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
+        if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
+            theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);
+        }
+
         // run the model until modeling task completed
         while(!theModelRunState.isShutdownOrExit()) {
 

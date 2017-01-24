@@ -44,6 +44,8 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'FAILED',
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Done.', 'Done.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Done.',
                                                                   'Fini.');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Parallel run of %d modeling processes, %d thread(s) each', 'Parallel run of %d modeling processes, %d thread(s) each');
+
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Read', 'Read');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Read',
                                                                   'Lecture');
