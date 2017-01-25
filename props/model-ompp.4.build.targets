@@ -164,6 +164,7 @@
   
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -General.Subsamples $(MEMBERS)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -General.Threads $(THREADS)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
@@ -186,8 +187,7 @@
             AlwaysCreate="true"
             />
   </Target>
-<!--  
-  <Target Name="RunModel"
+  <Target Name="RunModel_mpi"
           Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'MPI'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
@@ -202,7 +202,6 @@
             AlwaysCreate="true"
             />
   </Target>
--->
 
   <!--
   ExportCsv
@@ -274,6 +273,7 @@
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
     <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />
+    <Message Text="OM_MSG_USE=$(OM_MSG_USE)" />
     <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
     <Message Text="OMC_INPUTS=@(OMC_INPUTS)" />
     <Message Text="OMC_OUTPUTS=@(OMC_OUTPUTS)" />

@@ -19,13 +19,6 @@
   </PropertyGroup>
 
   <!-- 
-  Override VS default properties
-  -->
-  <PropertyGroup>
-    <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
-  </PropertyGroup>
-  
-  <!-- 
   Use this to choose database library provider, now only SQlite supported
     SQLITE - use SQlite version
   -->
@@ -88,5 +81,17 @@
   <PropertyGroup Condition="'$(OM_UCVT_USE)'=='ICONV'">
     <OM_UCVT_DEF>OM_UCVT_ICONV</OM_UCVT_DEF>
   </PropertyGroup>
+
+  <!-- 
+  Override VS default properties
+  -->
+  <PropertyGroup Condition="'$(ProjectName)'=='libopenm'">
+    <!-- Use MPI-specific intermediate directories for libopenm -->
+    <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/$(OM_MSG_USE)/</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ProjectName)'!='libopenm'">
+    <IntDir>$(BUILD_DIR)/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+  </PropertyGroup>
+
 
 </Project>

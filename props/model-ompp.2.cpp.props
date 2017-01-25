@@ -23,7 +23,7 @@
   <PropertyGroup>
     <OutDir>$(MODEL_BIN_DIR)/</OutDir>
     <IntDir>$(BUILD_DIR)/$(Configuration)/$(Platform)/</IntDir>
-    <TargetName>$(MODEL_NAME)$(BUILD_SUFFIX)</TargetName>
+    <TargetName>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX)</TargetName>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
