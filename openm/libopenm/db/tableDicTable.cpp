@@ -46,11 +46,12 @@ namespace openm
         &typeid(decltype(TableDicRow::tableName)), 
         &typeid(decltype(TableDicRow::tableHid)), 
         &typeid(decltype(TableDicRow::digest)), 
-        &typeid(decltype(TableDicRow::dbExprTable)), 
-        &typeid(decltype(TableDicRow::dbAccTable)), 
         &typeid(decltype(TableDicRow::rank)), 
         &typeid(decltype(TableDicRow::isSparse)),
         &typeid(decltype(TableDicRow::isUser)), 
+        &typeid(decltype(TableDicRow::dbExprTable)), 
+        &typeid(decltype(TableDicRow::dbAccTable)), 
+        &typeid(decltype(TableDicRow::dbAccAll)), 
         &typeid(decltype(TableDicRow::exprPos))
     };
 
@@ -84,21 +85,24 @@ namespace openm
                 dynamic_cast<TableDicRow *>(i_row)->digest = ((const char *)i_value);
                 break;
             case 5:
-                dynamic_cast<TableDicRow *>(i_row)->dbExprTable = ((const char *)i_value);
-                break;
-            case 6:
-                dynamic_cast<TableDicRow *>(i_row)->dbAccTable = ((const char *)i_value);
-                break;
-            case 7:
                 dynamic_cast<TableDicRow *>(i_row)->rank = (*(int *)i_value);
                 break;
-            case 8:
+            case 6:
                 dynamic_cast<TableDicRow *>(i_row)->isSparse = (*(bool *)i_value);
                 break;
-            case 9:
+            case 7:
                 dynamic_cast<TableDicRow *>(i_row)->isUser = (*(bool *)i_value);
                 break;
+            case 8:
+                dynamic_cast<TableDicRow *>(i_row)->dbExprTable = ((const char *)i_value);
+                break;
+            case 9:
+                dynamic_cast<TableDicRow *>(i_row)->dbAccTable = ((const char *)i_value);
+                break;
             case 10:
+                dynamic_cast<TableDicRow *>(i_row)->dbAccAll = ((const char *)i_value);
+                break;
+            case 11:
                 dynamic_cast<TableDicRow *>(i_row)->exprPos = (*(int *)i_value);
                 break;
             default:
@@ -129,8 +133,9 @@ TableDicTable::TableDicTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = TableDicRowAdapter();
     rowVec = load(
         "SELECT" \
-        " M.model_id, M.model_table_id, D.table_name, D.table_hid, D.table_digest," \
-        " D.db_expr_table, D.db_acc_table, D.table_rank, D.is_sparse, M.is_user, M.expr_dim_pos" \
+        " M.model_id, M.model_table_id, D.table_name, D.table_hid," \
+        " D.table_digest, D.table_rank, D.is_sparse, M.is_user," \
+        " D.db_expr_table, D.db_acc_table, D.db_acc_all_view, M.expr_dim_pos" \
         " FROM table_dic D" \
         " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +

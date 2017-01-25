@@ -422,8 +422,10 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
     if (io_row.tableName.length() > 255) throw DbException("invalid (too long) output table name: %s", io_row.tableName.c_str());
 
     if (io_row.digest.empty() || io_row.digest.length() > 32) throw DbException("invalid (or empty) digest, parameter: %s", io_row.tableName.c_str());
-    if (io_row.dbExprTable.empty() || io_row.dbExprTable.length() > 64 || io_row.dbAccTable.empty() || io_row.dbAccTable.length() > 64)
-        throw DbException("invalid (or empty) db table name for output table: %s", io_row.tableName.c_str());
+    if (io_row.dbExprTable.empty() || io_row.dbExprTable.length() > 64 || 
+        io_row.dbAccTable.empty() || io_row.dbAccTable.length() > 64 ||
+        io_row.dbAccAll.empty() || io_row.dbAccAll.length() > 64)
+        throw DbException("invalid (or empty) db table name(s) for output table: %s", io_row.tableName.c_str());
 
     if (io_row.rank < 0) throw DbException("invalid (negative) output table %s rank: %d", io_row.tableName.c_str(), io_row.rank);
     if (io_row.exprPos < -1 || io_row.exprPos > io_row.rank - 1) throw DbException("invalid output table %s analysis dimension position: %d", io_row.tableName.c_str(), io_row.exprPos);
@@ -438,20 +440,21 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
     if (io_row.tableHid <= 0) throw DbException("invalid (not positive) output table Hid, table: %s", io_row.tableName.c_str());
 
     // INSERT INTO table_dic
-    //   (table_hid, table_name, table_digest, db_expr_table, db_acc_table, table_rank, is_sparse)
+    //   (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view)
     // VALUES 
-    //   (9876, 'salarySex', '0fdc', 'salarySex_v0fdc', 'salarySex_a0fdc', 2, 0)
+    //   (9876, 'salarySex', '0fdc', 2, 0, 'salarySex_v0fdc', 'salarySex_a0fdc', 'salarySex_d0fdc')
     i_dbExec->update(
         "INSERT INTO table_dic" \
-        " (table_hid, table_name, table_digest, db_expr_table, db_acc_table, table_rank, is_sparse)" \
+        " (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view)" \
         " VALUES (" +
         to_string(io_row.tableHid) + ", " +
         toQuoted(io_row.tableName) + ", " +
         toQuoted(io_row.digest) + ", " +
+        to_string(io_row.rank) + ", " +
+        (io_row.isSparse ? "1" : "0") + ", " +
         toQuoted(io_row.dbExprTable) + ", " +
         toQuoted(io_row.dbAccTable) + ", " +
-        to_string(io_row.rank) + ", " +
-        (io_row.isSparse ? "1" : "0") +
+        toQuoted(io_row.dbAccAll) +
         ")");
 
     // INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (1234, 8, 9876, 0, 1)
@@ -583,12 +586,13 @@ void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_ta
     if (i_row.expr.empty()) throw DbException("invalid (empty) accumulator expression, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
     if (i_row.expr.length() > 255) throw DbException("invalid (too long) accumulator expression: %s, id: %d, output table: %s", i_row.expr.c_str(), i_row.accId, i_tableRow.tableName.c_str());
 
-    // INSERT INTO table_acc (table_hid, acc_id, acc_name, acc_expr) VALUES (9876, 1, 'acc1', 'value_sum()')
+    // INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (9876, 1, 'acc1', 1, '2 * acc0')
     i_dbExec->update(
-        "INSERT INTO table_acc (table_hid, acc_id, acc_name, acc_expr) VALUES (" +
+        "INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (" +
         to_string(i_tableRow.tableHid) + ", " +
         to_string(i_row.accId) + ", " +
         toQuoted(i_row.name) + ", " +
+        (i_row.isDerived ? "1, " : "0, ") +
         toQuoted(i_row.expr) + 
         ")");
 }

@@ -472,6 +472,16 @@ bool TableAccRow::isKeyEqual(const TableAccRow & i_left, const TableAccRow & i_r
     return i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.accId == i_right.accId;
 }
 
+// find row by unique key: model id, model table id, accumulator id.
+vector<TableAccRow>::const_iterator TableAccRow::byKey(int i_modelId, int i_tableId, int i_accId, const vector<TableAccRow> & i_rowVec)
+{
+    return find_if(
+        i_rowVec.cbegin(),
+        i_rowVec.cend(),
+        [i_modelId, i_tableId, i_accId](const TableAccRow & i_row) -> bool { return i_row.modelId == i_modelId && i_row.tableId == i_tableId && i_row.accId == i_accId; }
+    );
+}
+
 // table_acc_txt join to model_table_dic row less comparator by unique key: model id, model table id, accumulator id, language id.
 bool TableAccTxtRow::isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right)
 {

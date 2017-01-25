@@ -49,6 +49,7 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
         string s = makeDbNameSuffix(tableRow.tableId, tableRow.tableName, tableRow.digest);
         tableRow.dbExprTable = p + "_v" + s;
         tableRow.dbAccTable = p + "_a" + s;
+        tableRow.dbAccAll = p + "_d" + s;
     }
 }
 
@@ -974,6 +975,7 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
     for (ParamDicRow & paramRow : io_metaRows.paramDic) {
 
         ParamTblInfo tblInf;
+        tblInf.modelId = io_metaRows.modelDic.modelId;
         tblInf.id = paramRow.paramId;
         tblInf.name = paramRow.paramName;
 
@@ -999,6 +1001,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
     for (TableDicRow & tableRow : io_metaRows.tableDic) {
 
         OutTblInfo tblInf;
+        tblInf.modelId = io_metaRows.modelDic.modelId;
         tblInf.id = tableRow.tableId;
         tblInf.name = tableRow.tableName;
 
