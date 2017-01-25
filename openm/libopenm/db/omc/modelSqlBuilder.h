@@ -76,6 +76,9 @@ namespace openm
         /** helper struct to collect info for db table */
         struct DbTblInfo
         {
+            /** model id */
+            int modelId;
+
             /** parameter id or output table id */
             int id;
 
@@ -163,6 +166,16 @@ namespace openm
             const string & i_sqlProvider, 
             const string & i_dbTableName, 
             const OutTblInfo & i_tblInfo, 
+            ModelSqlWriter & io_wr
+        ) const;
+
+        /** create sql for all accumulators view: */
+        const void accAllCreateView(
+            const string & i_sqlProvider, 
+            const string & i_viewName, 
+            const OutTblInfo & i_tblInfo,
+            const string & i_accTablName,
+            const vector<TableAccRow> & i_accVec,
             ModelSqlWriter & io_wr
         ) const;
 

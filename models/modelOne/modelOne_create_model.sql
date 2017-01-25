@@ -144,9 +144,9 @@ INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VAL
 -- db suffix: not a real value (8 digits hex)
 --
 INSERT INTO table_dic 
-  (table_hid, table_name, table_digest, db_expr_table, db_acc_table, table_rank, is_sparse) 
+  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view) 
 VALUES 
-  (2, 'salarySex', '_20128171604590141', 'salarySex_v_2012820', 'salarySex_a_2012820', 2, 1);
+  (2, 'salarySex', '_20128171604590141', 2, 1, 'salarySex_v_2012820', 'salarySex_a_2012820', 'salarySex_d_2012820');
 
 INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (1, 0, 2, 0, 1);
   
@@ -168,8 +168,9 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 
 INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sex Dim', 'Sex Dim notes');
 INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) Sex Dim', NULL);
 
-INSERT INTO table_acc (table_hid, acc_id, acc_name, acc_expr) VALUES (2, 0, 'acc0', 'value_sum()');
-INSERT INTO table_acc (table_hid, acc_id, acc_name, acc_expr) VALUES (2, 1, 'acc1', 'value_count()');
+INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (2, 0, 'acc0', 0, 'value_sum()');
+INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (2, 1, 'acc1', 0, 'value_count()');
+INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (2, 2, 'acc2', 1, 'acc0 + acc1');
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 0, 0, 'Sum of salary by sex', NULL);
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 1, 0, 'Count of salary by sex', NULL);
@@ -318,3 +319,38 @@ CREATE TABLE salarySex_v_2012820
   expr_value FLOAT NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1)
 );
+
+--
+-- modelOne all accumulators view
+-- it does include all "native" accumulators: acc0, acc1
+-- and "derived" accumulator: acc2 = acc0 + acc1
+--
+-- uncomment GO if MSSQL return an error on CREATE VIEW
+-- GO
+--
+CREATE VIEW salarySex_d_2012820
+AS
+SELECT
+  A.run_id,
+  A.sub_id,
+  A.dim0,
+  A.dim1,
+  acc0,
+  acc1,
+  (acc0 + acc1) AS acc2
+FROM salarySex_a_2012820 A
+INNER JOIN
+(
+  SELECT run_id, sub_id, dim0, dim1, acc_value AS acc0
+  FROM salarySex_a_2012820
+  WHERE acc_id = 0
+) B0
+ON (B0.run_id = A.run_id AND B0.sub_id = A.sub_id AND B0.dim0 = A.dim0 AND B0.dim1 = A.dim1)
+INNER JOIN
+(
+  SELECT run_id, sub_id, dim0, dim1, acc_value AS acc1
+  FROM salarySex_a_2012820
+  WHERE acc_id = 1
+) B1
+ON (B1.run_id = A.run_id AND B1.sub_id = A.sub_id AND B1.dim0 = A.dim0 AND B1.dim1 = A.dim1)
+WHERE A.acc_id = 0;

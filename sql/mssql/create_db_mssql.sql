@@ -192,7 +192,7 @@ CREATE TABLE model_parameter_dic
   model_id           INT      NOT NULL, -- master key
   model_parameter_id INT      NOT NULL, -- model parameter id
   parameter_hid      INT      NOT NULL, -- unique parameter id
-  is_hidden          SMALLINT NOT NULL, -- if <> 0 then parameter is hidden
+  is_hidden          SMALLINT NOT NULL, -- if non-zero then parameter is hidden
   PRIMARY KEY (model_id, model_parameter_id),
   CONSTRAINT model_parameter_dic_un UNIQUE (model_id, parameter_hid),
   CONSTRAINT model_parameter_dic_mk 
@@ -256,13 +256,14 @@ CREATE TABLE parameter_dims_txt
 --
 CREATE TABLE table_dic
 (
-  table_hid     INT          NOT NULL, -- unique table id
-  table_name    VARCHAR(255) NOT NULL, -- table name
-  table_digest  VARCHAR(32)  NOT NULL, -- output table digest
-  db_expr_table VARCHAR(64)  NOT NULL, -- run values db table name: salaryBySex_v12345678
-  db_acc_table  VARCHAR(64)  NOT NULL, -- accumulator values db table name: salaryBySex_a12345678
-  table_rank    INT          NOT NULL, -- table rank
-  is_sparse     SMALLINT     NOT NULL, -- if <> 0 then table stored as sparse
+  table_hid       INT          NOT NULL, -- unique table id
+  table_name      VARCHAR(255) NOT NULL, -- table name
+  table_digest    VARCHAR(32)  NOT NULL, -- output table digest
+  table_rank      INT          NOT NULL, -- table rank
+  is_sparse       SMALLINT     NOT NULL, -- if non-zero then table stored as sparse
+  db_expr_table   VARCHAR(64)  NOT NULL, -- run values db table name: salaryBySex_v12345678
+  db_acc_table    VARCHAR(64)  NOT NULL, -- accumulator values db table name: salaryBySex_a12345678
+  db_acc_all_view VARCHAR(64)  NOT NULL, -- db view of all accumulators, including derived: salaryBySex_d12345678
   PRIMARY KEY (table_hid),
   CONSTRAINT table_dic_un UNIQUE (table_digest)
 );
@@ -275,7 +276,7 @@ CREATE TABLE model_table_dic
   model_id       INT      NOT NULL, -- master key
   model_table_id INT      NOT NULL, -- model table id
   table_hid      INT      NOT NULL, -- master key
-  is_user        SMALLINT NOT NULL, -- if <> 0 then "user" table
+  is_user        SMALLINT NOT NULL, -- if non-zero then "user" table
   expr_dim_pos   INT      NOT NULL, -- table expressions dimension (analysis dimension) position
   PRIMARY KEY (model_id, model_table_id),
   CONSTRAINT model_table_dic_un UNIQUE (model_id, table_hid),
@@ -312,7 +313,7 @@ CREATE TABLE table_dims
   dim_id    INT        NOT NULL, -- dimension index
   dim_name  VARCHAR(8) NOT NULL, -- unique column name of dimension: dim0
   type_hid  INT        NOT NULL, -- dimension type
-  is_total  SMALLINT   NOT NULL, -- if <> 0 then dimension has "total" item
+  is_total  SMALLINT   NOT NULL, -- if non-zero then dimension has "total" item
   dim_size  INT        NOT NULL, -- number of items, including "total" item
   PRIMARY KEY (table_hid, dim_id),
   CONSTRAINT table_dims_un UNIQUE (table_hid, dim_name),
@@ -344,10 +345,11 @@ CREATE TABLE table_dims_txt
 --
 CREATE TABLE table_acc 
 (
-  table_hid INT          NOT NULL, -- master key
-  acc_id    INT          NOT NULL, -- unique accumulator id
-  acc_name  VARCHAR(8)   NOT NULL, -- unique accumulator name: acc2
-  acc_expr  VARCHAR(255) NOT NULL, -- accumulator expression: min_value_out(duration())
+  table_hid  INT          NOT NULL, -- master key
+  acc_id     INT          NOT NULL, -- unique accumulator id
+  acc_name   VARCHAR(8)   NOT NULL, -- unique accumulator name: acc2
+  is_derived SMALLINT     NOT NULL, -- if non-zero then accumulator is expression on other accumulators
+  acc_expr   VARCHAR(255) NOT NULL, -- accumulator expression: acc0 + acc1 
   PRIMARY KEY (table_hid, acc_id),
   CONSTRAINT table_acc_un UNIQUE (table_hid, acc_name),
   CONSTRAINT table_acc_mk 
@@ -412,9 +414,9 @@ CREATE TABLE group_lst
 (
   model_id     INT          NOT NULL, -- master key
   group_id     INT          NOT NULL, -- unique model group id
-  is_parameter SMALLINT     NOT NULL, -- if <> 0 then parameter group else output table group
+  is_parameter SMALLINT     NOT NULL, -- if non-zero then parameter group else output table group
   group_name   VARCHAR(255) NOT NULL, -- group name
-  is_hidden    SMALLINT     NOT NULL, -- if <> 0 then group is hidden
+  is_hidden    SMALLINT     NOT NULL, -- if non-zero then group is hidden
   PRIMARY KEY (model_id, group_id),
   CONSTRAINT group_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)

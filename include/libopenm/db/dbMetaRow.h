@@ -703,12 +703,6 @@ namespace openm
         /** table_digest   VARCHAR(32) NOT NULL  */
         string digest;
 
-        /** db_expr_table    VARCHAR(64)  NOT NULL */
-        string dbExprTable;
-
-        /** db_acc_table     VARCHAR(64)  NOT NULL */
-        string dbAccTable;
-
         /** is_user        SMALLINT NOT NULL     */
         bool isUser;
         
@@ -718,6 +712,15 @@ namespace openm
         /** is_sparse      SMALLINT NOT NULL     */
         bool isSparse;
         
+        /** db_expr_table    VARCHAR(64)  NOT NULL */
+        string dbExprTable;
+
+        /** db_acc_table     VARCHAR(64)  NOT NULL */
+        string dbAccTable;
+
+        /** db_acc_all_view  VARCHAR(64)  NOT NULL */
+        string dbAccAll;
+
         /** expr_dim_pos   INT      NOT NULL     */
         int exprPos;
 
@@ -728,11 +731,12 @@ namespace openm
             tableName(""),
             tableHid(0),
             digest(""),
-            dbExprTable(""),
-            dbAccTable(""),
             isUser(false),
             rank(1),
             isSparse(false),
+            dbExprTable(""),
+            dbAccTable(""),
+            dbAccAll(""),
             exprPos(-1)
         { }
 
@@ -928,6 +932,9 @@ namespace openm
         
         /** acc_name VARCHAR(8)   NOT NULL */
         string name;
+
+        /** is_derived SMALLINT     NOT NULL */
+        bool isDerived;
         
         /** acc_expr VARCHAR(255) NOT NULL */
         string expr;
@@ -938,6 +945,7 @@ namespace openm
             tableId(i_tableId), 
             accId(i_accid), 
             name(""),
+            isDerived(false),
             expr("")
         { }
 
@@ -951,6 +959,9 @@ namespace openm
 
         /** equal comparator by unique key: model id, model table id, accumulator id. */
         static bool isKeyEqual(const TableAccRow & i_left, const TableAccRow & i_right);
+
+        /** find row by unique key: model id, model table id, accumulator id. */
+        static vector<TableAccRow>::const_iterator byKey(int i_modelId, int i_tableId, int i_accId, const vector<TableAccRow> & i_rowVec);
     };
 
     /** table_acc_txt table row. */

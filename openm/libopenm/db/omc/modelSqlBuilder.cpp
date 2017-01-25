@@ -359,15 +359,22 @@ void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const
     }
     wr.write("\n");
 
-    // create tables for model output tables
+    // create model output tables and views
     wr.write(
         "--\n" \
-        "-- create model output tables\n" \
+        "-- create model output tables and views\n" \
         "--\n"
         );
     for (size_t k = 0; k < i_metaRows.tableDic.size(); k++) {
         accCreateTable(i_sqlProvider, i_metaRows.tableDic[k].dbAccTable, outInfoVec[k], wr);
         valueCreateTable(i_sqlProvider, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k], wr);
+        accAllCreateView(
+            i_sqlProvider, 
+            i_metaRows.tableDic[k].dbAccAll, 
+            outInfoVec[k], 
+            i_metaRows.tableDic[k].dbAccTable, 
+            i_metaRows.tableAcc, 
+            wr);
     }
     wr.write("\n");
 }
@@ -392,10 +399,11 @@ void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  
     // drop model output tables
     wr.write(
         "--\n" \
-        "-- drop model output tables\n" \
+        "-- drop model output views and tables\n" \
         "--\n"
         );
     for (const TableDicRow & tblRow : i_metaRows.tableDic) {
+        wr.writeLine("DROP VIEW " + tblRow.dbAccAll + ";");
         wr.writeLine("DROP TABLE " + tblRow.dbAccTable + ";");
         wr.writeLine("DROP TABLE " + tblRow.dbExprTable + ";");
     }
@@ -935,6 +943,116 @@ const void ModelSqlBuilder::valueCreateTable(
     sqlBody += "));";
 
     io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
+}
+
+// create sql for all accumulators view:
+// CREATE VIEW salarySex_d_2012820
+// AS
+// SELECT
+//   A.run_id, A.sub_id, A.dim0, A.dim1,
+//   acc0,
+//   acc1,
+//   (acc0 + acc1) AS acc2
+// FROM salarySex_a_2012820 A
+// INNER JOIN
+// (
+//   SELECT run_id, sub_id, dim0, dim1, acc_value AS acc0
+//   FROM salarySex_a_2012820
+//   WHERE acc_id = 0
+// ) B0
+// ON (B0.run_id = A.run_id AND B0.sub_id = A.sub_id AND B0.dim0 = A.dim0 AND B0.dim1 = A.dim1)
+// INNER JOIN
+// (
+//   SELECT run_id, sub_id, dim0, dim1, acc_value AS acc1
+//   FROM salarySex_a_2012820
+//   WHERE acc_id = 1
+// ) B1
+// ON (B1.run_id = A.run_id AND B1.sub_id = A.sub_id AND B1.dim0 = A.dim0 AND B1.dim1 = A.dim1)
+// WHERE A.acc_id = 0;
+const void ModelSqlBuilder::accAllCreateView(
+    const string & i_sqlProvider, 
+    const string & i_viewName,
+    const OutTblInfo & i_tblInfo,
+    const string & i_accTablName,
+    const vector<TableAccRow> & i_accVec, 
+    ModelSqlWriter & io_wr
+    ) const
+{
+    // start view body with run id, sub id and dimensions
+    string sqlBody = "SELECT A.run_id, A.sub_id";
+
+    for (const string & dimName : i_tblInfo.dimNameVec) {
+        sqlBody += ", A." + dimName;
+    }
+
+    // accumulator values: as-is for native accumulators and expressions for derived
+    // it is expected for derived accumulator expression to be sql-compatible:
+    //   acc0,
+    //   acc1,
+    //   (acc0 + acc1) AS acc2
+    for (int accId : i_tblInfo.accIdVec) {
+
+        vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, accId, i_accVec);
+        if (accIt == i_accVec.cend())
+            throw DbException("output table %s accumulator not found, id: %d", i_tblInfo.name.c_str(), accId);
+
+        if (!accIt->isDerived) {
+            sqlBody += ", " + accIt->name;
+        }
+        else{
+            sqlBody += ", (" + accIt->expr + ") AS "+ accIt->name;
+        }
+    }
+
+    // main accumulator table
+    sqlBody += " FROM " + i_accTablName + " A";
+
+    // for each native accumulator 
+    // select it from accumulator table by join on run id, sub id and dimensions:
+    // INNER JOIN
+    // (
+    //   SELECT run_id, sub_id, dim0, dim1, acc_value AS acc0
+    //   FROM salarySex_a_2012820
+    //   WHERE acc_id = 0
+    // ) B0
+    // ON (B0.run_id = A.run_id AND B0.sub_id = A.sub_id AND B0.dim0 = A.dim0 AND B0.dim1 = A.dim1)
+    //
+    for (int accId : i_tblInfo.accIdVec) {
+
+        vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, accId, i_accVec);
+        if (accIt == i_accVec.cend())
+            throw DbException("output table %s accumulator not found, id: %d", i_tblInfo.name.c_str(), accId);
+
+        if (accIt->isDerived) continue;     // skip derived accumulator, only native accumulators selected
+
+        string sAccId = to_string(accId);
+        string alias = "B" + sAccId;
+
+        sqlBody += " INNER JOIN (" \
+            " SELECT run_id, sub_id, ";
+
+        for (const string & dimName : i_tblInfo.dimNameVec) {
+            sqlBody += dimName + ", ";
+        }
+
+        sqlBody += "acc_value AS " + accIt->name +
+            " FROM " + i_accTablName +
+            " WHERE acc_id = " + sAccId + ") " + alias +
+            " ON (" +
+            " " + alias + ".run_id = A.run_id AND " + alias + ".sub_id = A.sub_id";
+
+        for (const string & dimName : i_tblInfo.dimNameVec) {
+            sqlBody += " AND " + alias + "." + dimName + " = A." + dimName;
+        }
+        sqlBody += ")";
+    }
+
+    // select accumulator zero from main table 
+    // all other accumulators joined to zero by run id, sub id and dimensions
+    sqlBody += " WHERE A.acc_id = 0;";
+
+    // make create view as select
+    io_wr.outFs << IDbExec::makeSqlCreateViewReplace(i_sqlProvider, i_viewName, sqlBody) << "\n";
 }
 
 // write body of create view sql for parameter compatibility view:

@@ -544,8 +544,9 @@ namespace openm
         * create new table object and load table rows sorted by unique key: model id, model table id, accumulator id.
         * 
         * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_isIncludeDerived then select all acumulators else exclude derived
         */
-        static ITableAccTable * create(IDbExec * i_dbExec, int i_modelId = 0);
+        static ITableAccTable * create(IDbExec * i_dbExec, int i_modelId = 0, bool i_isIncludeDerived = false);
 
         /** binary search row by unique key: model id, model table id, accumulator id; return NULL if not found. */
         virtual const TableAccRow * byKey(int i_modelId, int i_tableId, int i_accId) const = 0;

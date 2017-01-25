@@ -8,6 +8,8 @@ DROP VIEW salaryAge;
 DROP VIEW ageSex;
 DROP VIEW salaryFull;
 
+DROP VIEW salarySex_d_2012820;
+
 DROP TABLE salarySex_v_2012820;
 DROP TABLE salarySex_a_2012820;
 DROP TABLE StartingSeed_w_2012819;

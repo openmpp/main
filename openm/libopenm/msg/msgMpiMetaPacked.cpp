@@ -242,11 +242,12 @@ namespace openm
         MpiPacked::pack(val->tableName, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->tableHid)>(val->tableHid, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->digest, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->dbExprTable, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->dbAccTable, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isUser)>(val->isUser, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isSparse)>(val->isSparse, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbExprTable, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbAccTable, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbAccAll, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->exprPos)>(val->exprPos, i_packedSize, io_packedData, io_packPos);
     }
 
@@ -261,11 +262,12 @@ namespace openm
         val->tableName = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->tableHid = MpiPacked::unpack<decltype(val->tableHid)>(i_packedSize, i_packedData, io_packPos);
         val->digest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->dbExprTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->dbAccTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->isUser = MpiPacked::unpack<decltype(val->isUser)>(i_packedSize, i_packedData, io_packPos);
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->isSparse = MpiPacked::unpack<decltype(val->isSparse)>(i_packedSize, i_packedData, io_packPos);
+        val->dbExprTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbAccTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbAccAll = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->exprPos = MpiPacked::unpack<decltype(val->exprPos)>(i_packedSize, i_packedData, io_packPos);
     }
 
@@ -280,11 +282,12 @@ namespace openm
             MpiPacked::packedSize(val->tableName) +
             MpiPacked::packedSize(typeid(val->tableHid)) +
             MpiPacked::packedSize(val->digest) +
-            MpiPacked::packedSize(val->dbExprTable) +
-            MpiPacked::packedSize(val->dbAccTable) +
             MpiPacked::packedSize(typeid(val->isUser)) +
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->isSparse)) +
+            MpiPacked::packedSize(val->dbExprTable) +
+            MpiPacked::packedSize(val->dbAccTable) +
+            MpiPacked::packedSize(val->dbAccAll) +
             MpiPacked::packedSize(typeid(val->exprPos));
     }
 
@@ -343,6 +346,7 @@ namespace openm
         MpiPacked::pack<decltype(val->tableId)>(val->tableId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->accId)>(val->accId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->isDerived)>(val->isDerived, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->expr, i_packedSize, io_packedData, io_packPos);
     }
 
@@ -356,6 +360,7 @@ namespace openm
         val->tableId = MpiPacked::unpack<decltype(val->tableId)>(i_packedSize, i_packedData, io_packPos);
         val->accId = MpiPacked::unpack<decltype(val->accId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->isDerived = MpiPacked::unpack<decltype(val->isDerived)>(i_packedSize, i_packedData, io_packPos);
         val->expr = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
@@ -369,6 +374,7 @@ namespace openm
             MpiPacked::packedSize(typeid(val->tableId)) +
             MpiPacked::packedSize(typeid(val->accId)) +
             MpiPacked::packedSize(val->name) +
+            MpiPacked::packedSize(typeid(val->isDerived)) +
             MpiPacked::packedSize(val->expr);
     }
 

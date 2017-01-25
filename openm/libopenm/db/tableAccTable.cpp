@@ -12,7 +12,7 @@ namespace openm
     class TableAccTable : public ITableAccTable
     {
     public:
-        TableAccTable(IDbExec * i_dbExec, int i_modelId = 0);
+        TableAccTable(IDbExec * i_dbExec, int i_modelId, bool i_isIncludeDerived);
         TableAccTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~TableAccTable() throw();
 
@@ -45,6 +45,7 @@ namespace openm
         &typeid(decltype(TableAccRow::tableId)), 
         &typeid(decltype(TableAccRow::accId)), 
         &typeid(decltype(TableAccRow::name)), 
+        &typeid(decltype(TableAccRow::isDerived)), 
         &typeid(decltype(TableAccRow::expr))
     };
 
@@ -75,6 +76,9 @@ namespace openm
                 dynamic_cast<TableAccRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 4:
+                dynamic_cast<TableAccRow *>(i_row)->isDerived = (*(bool *)i_value);
+                break;
+            case 5:
                 dynamic_cast<TableAccRow *>(i_row)->expr = ((const char *)i_value);
                 break;
             default:
@@ -88,9 +92,9 @@ namespace openm
 ITableAccTable::~ITableAccTable(void) throw() { }
 
 // Create new table rows by loading db rows
-ITableAccTable * ITableAccTable::create(IDbExec * i_dbExec, int i_modelId)
+ITableAccTable * ITableAccTable::create(IDbExec * i_dbExec, int i_modelId, bool i_isIncludeDerived)
 {
-    return new TableAccTable(i_dbExec, i_modelId);
+    return new TableAccTable(i_dbExec, i_modelId, i_isIncludeDerived);
 }
 
 // Create new table rows by swap with supplied vector of rows
@@ -100,14 +104,15 @@ ITableAccTable * ITableAccTable::create(IRowBaseVec & io_rowVec)
 }
 
 // Load table
-TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId)
+TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId, bool i_isIncludeDerived)
 { 
     const IRowAdapter & adp = TableAccRowAdapter();
     rowVec = load(
-        "SELECT M.model_id, M.model_table_id, D.acc_id, D.acc_name, D.acc_expr" \
+        "SELECT M.model_id, M.model_table_id, D.acc_id, D.acc_name, D.is_derived, D.acc_expr" \
         " FROM table_acc D" \
         " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
+        ((!i_isIncludeDerived) ? " AND D.is_derived = 0" : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
