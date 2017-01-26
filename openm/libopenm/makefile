@@ -2,10 +2,12 @@ ifeq ($(OM_MSG_USE), MPI)
   CXX = mpic++
   CC = mpicc
   OM_MSG_DEF = OM_MSG_MPI
+  MSG_POSTFIX = _mpi
 else
   CXX = g++
   CC = gcc
   OM_MSG_DEF = OM_MSG_EMPTY
+  MSG_POSTFIX =
 endif
 CPP = $(CC)
 AR = ar
@@ -18,21 +20,19 @@ ifndef OUT_PREFIX
   OUT_PREFIX = ../..
 endif
 
-BUILD_PROJ_DIR = $(BUILD_DIR)/libopenm
+BUILD_PROJ_DIR = $(BUILD_DIR)/libopenm$(MSG_POSTFIX)
 DEPS_DIR = $(BUILD_PROJ_DIR)/deps
-
-ifndef BIN_POSTFIX
-  BIN_POSTFIX = 
-endif 
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/release
+  BIN_POSTFIX =
 endif
 
 INCLUDE_G_DIR = ../../include
@@ -54,8 +54,7 @@ CXXFLAGS = -Wall -std=c++11 -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) -D_R
   -I$(INCLUDE_G_DIR) -I$(INCLUDE_L_DIR) $(OM_DB_CFLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-LIBOPENM_NAME = libopenm$(BIN_POSTFIX)
-LIBOPENM_A = $(LIBOPENM_NAME).a
+LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 
 LIB_OMC_NAME = libopenm_omc_db$(BIN_POSTFIX)
 LIB_OMC_A = $(LIB_OMC_NAME).a

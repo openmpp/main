@@ -813,7 +813,6 @@ for my $model_dir (@model_dirs) {
 
 			my $make_defines = '';
 			$make_defines .= ' RELEASE=1' if $ompp_linux_configuration eq 'release';
-			$make_defines .= ' BIN_POSTFIX=D' if $ompp_linux_configuration eq 'debug';
 			
 			my $build_log = "${project_dir}/make.log";
 			unlink $build_log;

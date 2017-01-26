@@ -8,10 +8,6 @@ LOCAL_OUT_PREFIX = $(dir $(OUT_PREFIX))
 LOCAL_BIN_DIR    = $(LOCAL_OUT_PREFIX)bin
 LOCAL_BUILD_DIR  = $(LOCAL_OUT_PREFIX)build
 
-ifndef BIN_POSTFIX
-  BIN_POSTFIX = 
-endif 
-
 ifndef OMC_CODE_PAGE
   OMC_CODE_PAGE = WINDOWS-1252
 endif
@@ -39,7 +35,7 @@ ifndef RELEASE
 else
   OMC_SRC_DIR = release/src
 endif
-LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX)
+LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql
 
 #
 # targets and rules
@@ -77,5 +73,3 @@ cleanall:
 	rm -rf $(LOCAL_BIN_DIR)
 	rm -rf $(LOCAL_BUILD_DIR)
 	@if [ -d $(LOCAL_OUT_PREFIX)sql ] ;  then rm -rf $(LOCAL_OUT_PREFIX)sql ; fi
-	@if [ -d $(LOCAL_OUT_PREFIX)sqlD ] ; then rm -rf $(LOCAL_OUT_PREFIX)sqlD ; fi
-	@if [ -d $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX) ] ; then rm -rf $(LOCAL_OUT_PREFIX)sql$(BIN_POSTFIX) ; fi

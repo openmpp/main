@@ -5,6 +5,8 @@
     <!-- OM_ROOT set first allows indirection to folder containing props files -->
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
     <MODEL_SRC_DIR Condition="'$(MODEL_SRC_DIR)'==''">$(ProjectDir)..</MODEL_SRC_DIR>
+    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
+    <DB_PROVIDER>SQLITE</DB_PROVIDER>
   </PropertyGroup>
 
   <ItemGroup Label="ProjectConfigurations">

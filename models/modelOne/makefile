@@ -2,10 +2,12 @@ ifeq ($(OM_MSG_USE), MPI)
   CXX = mpic++
   CC = mpicc
   OM_MSG_DEF = OM_MSG_MPI
+  MSG_POSTFIX = _mpi
 else
   CXX = g++
   CC = gcc
   OM_MSG_DEF = OM_MSG_EMPTY
+  MSG_POSTFIX =
 endif
 CPP = $(CC)
 AR = ar
@@ -17,10 +19,6 @@ endif
 ifndef OUT_PREFIX
   OUT_PREFIX = ..
 endif
-
-ifndef BIN_POSTFIX
-  BIN_POSTFIX = 
-endif 
 
 ifndef OM_ROOT
   OM_ROOT = ../..
@@ -52,11 +50,13 @@ ifndef RELEASE
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  BIN_POSTFIX =
 endif
 
 ifndef OM_DB_LIB
@@ -64,7 +64,7 @@ ifndef OM_DB_LIB
   OM_DB_LIB = sqlite$(BIN_POSTFIX)
 endif
 
-LIBOPENM_A = libopenm$(BIN_POSTFIX).a
+LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 # recognize dependency files
@@ -73,7 +73,7 @@ SUFFIXES += .d
 CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
-MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)
+MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
 
 #MODEL_PATH = $(CURDIR)
 MODEL_CPPLIST = \
@@ -103,7 +103,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
+	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
 
 #
 # create model SQLite database

@@ -2,10 +2,12 @@ ifeq ($(OM_MSG_USE), MPI)
   CXX = mpic++
   CC = mpicc
   OM_MSG_DEF = OM_MSG_MPI
+  MSG_POSTFIX = _mpi
 else
   CXX = g++
   CC = gcc
   OM_MSG_DEF = OM_MSG_EMPTY
+  MSG_POSTFIX =
 endif
 CPP = $(CC)
 AR = ar
@@ -24,10 +26,6 @@ OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
 endif
-
-ifndef BIN_POSTFIX
-  BIN_POSTFIX = 
-endif 
 
 #
 # arguments for run control
@@ -106,17 +104,19 @@ ifndef RELEASE
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/debug/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/release/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
+  BIN_POSTFIX =
 endif
 
 OUT_BIN_DIR = $(OUT_PREFIX)/bin
 
 # model exe name: model name and optional D postfix in case of debug
-MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)
+MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
 
 #
 # location and name of output database
@@ -146,7 +146,7 @@ ifndef OM_DB_LIB
   OM_DB_LIB = sqlite$(BIN_POSTFIX)
 endif
 
-LIBOPENM_A = libopenm$(BIN_POSTFIX).a
+LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 #
@@ -201,7 +201,7 @@ $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
+	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
 
 #
 # create output SQLite database
