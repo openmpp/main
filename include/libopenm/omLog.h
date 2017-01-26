@@ -48,10 +48,19 @@ namespace openm
         /** log sql query */
         virtual void logSql(const char * i_sql) throw() = 0;
 
-        /** re-initialize log file name(s) and other log settings */
+        /** re-initialize log file name(s) and other log settings.
+        * @param[in]   i_logToConsole  if true then log to console
+        * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_logToFile     if true then enable log to "last" file
+        * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
+        * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
+        * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+        * @param[in]   i_isLogSql      if true then log SQL into log file
+        */
         virtual void init(
             bool i_logToConsole,
             const char * i_basePath,
+            bool i_logToFile,
             bool i_useTimeStamp = false, 
             bool i_usePidStamp = false, 
             bool i_noMsgTime = false,
@@ -80,6 +89,7 @@ namespace openm
         *
         * @param[in]   i_logToConsole  if true then log to console
         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_logToFile     if true then enable log to "last" file
         * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
         * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
         * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
@@ -87,6 +97,7 @@ namespace openm
         virtual void init(
             bool i_logToConsole,
             const char * i_basePath,
+            bool i_logToFile,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false

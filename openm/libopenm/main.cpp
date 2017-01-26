@@ -79,6 +79,7 @@ int main(int argc, char ** argv)
         theLog->init(
             argOpts.boolOption(ArgKey::logToConsole) || !argOpts.isOptionExist(ArgKey::logToConsole),
             argOpts.strOption(ArgKey::logFilePath).c_str(),
+            argOpts.boolOption(ArgKey::logToFile),
             argOpts.boolOption(ArgKey::logUseTs),
             argOpts.boolOption(ArgKey::logUsePid),
             argOpts.boolOption(ArgKey::logNoMsgTime),
@@ -101,6 +102,7 @@ int main(int argc, char ** argv)
         theTrace->init(
             argOpts.boolOption(RunOptionsKey::traceToConsole),
             traceFilePath.c_str(),
+            argOpts.boolOption(RunOptionsKey::traceToFile),
             argOpts.boolOption(RunOptionsKey::traceUseTs),
             argOpts.boolOption(RunOptionsKey::traceUsePid),
             argOpts.boolOption(RunOptionsKey::traceNoMsgTime) || !argOpts.isOptionExist(RunOptionsKey::traceNoMsgTime)

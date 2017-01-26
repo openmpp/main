@@ -39,6 +39,7 @@ namespace openm
         *
         * @param[in]   i_logToConsole  if true then log to console
         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_logToFile     if true then enable log to "last" file
         * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
         * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
         * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
@@ -46,6 +47,7 @@ namespace openm
         LogBase(
             bool i_logToConsole,
             const char * i_basePath,
+            bool i_logToFile,
             bool i_useTimeStamp,
             bool i_usePidStamp,
             bool i_noMsgTime
@@ -65,6 +67,7 @@ namespace openm
         *
         * @param[in]   i_logToConsole  if true then log to console
         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_logToFile     if true then enable log to "last" file
         * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
         * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
         * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
@@ -72,6 +75,7 @@ namespace openm
         void init(
             bool i_logToConsole,
             const char * i_basePath,
+            bool i_logToFile,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
@@ -141,12 +145,14 @@ namespace openm
          *
          * @param[in]   i_logToConsole  if true then log to console
          * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+         * @param[in]   i_logToFile     if true then enable log to "last" file
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
          */
         Log(
             bool i_logToConsole = false,
-            const char * i_basePath = "openm.log", 
+            const char * i_basePath = "openm.log",
+            bool i_logToFile = false,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false
             );
@@ -157,15 +163,17 @@ namespace openm
          *
          * @param[in]   i_logToConsole  if true then log to console
          * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
-         * @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
+         * @param[in]   i_logToFile     if true then enable log to "last" file
          * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
          * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
          * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+         * @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
          * @param[in]   i_isLogSql      if true then log SQL into log file
          */
         void init(
             bool i_logToConsole,
             const char * i_basePath,
+            bool i_logToFile,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false, 
             bool i_noMsgTime = false,
@@ -232,6 +240,7 @@ namespace openm
         *
         * @param[in]   i_logToConsole  if true then log to console
         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_logToFile     if true then enable log to "last" file
         * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
         * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
         * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
@@ -239,10 +248,11 @@ namespace openm
         TraceLog(
             bool i_logToConsole = false,
             const char * i_basePath = "",
+            bool i_logToFile = false,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
-            ) : LogBase(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_noMsgTime)
+            ) : LogBase(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime)
         { }
 
         ~TraceLog(void) throw();
@@ -251,6 +261,7 @@ namespace openm
         *
         * @param[in]   i_logToConsole  if true then log to console
         * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+        * @param[in]   i_logToFile     if true then enable log to "last" file
         * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
         * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
         * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
@@ -258,6 +269,7 @@ namespace openm
         void init(
             bool i_logToConsole,
             const char * i_basePath,
+            bool i_logToFile,
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false

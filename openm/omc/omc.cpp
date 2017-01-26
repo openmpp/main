@@ -270,6 +270,7 @@ int main(int argc, char * argv[])
         theLog->init(
             argStore.boolOption(ArgKey::logToConsole) || !argStore.isOptionExist(ArgKey::logToConsole),
             argStore.strOption(ArgKey::logFilePath).c_str(),
+            argStore.boolOption(ArgKey::logToFile),
             argStore.boolOption(ArgKey::logUseTs),
             argStore.boolOption(ArgKey::logUsePid),
             argStore.boolOption(ArgKey::logNoMsgTime) || !argStore.isOptionExist(ArgKey::logNoMsgTime),

@@ -22,7 +22,7 @@ using namespace openm;
 const char openm::helperUnknownErrorMessage[] = "unknown error in helper method";
 
 /** actual log instance: initialize default log before main */
-static Log defaultLog(true, "openm.log");
+static Log defaultLog(true, "openm.log", true);
 
 /** public log interface */
 ILog * theLog = &defaultLog;
@@ -43,12 +43,13 @@ ITrace::~ITrace(void) throw() { }
 *
 * @param[in]   i_logToConsole  if true then log to console
 * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+* @param[in]   i_logToFile     if true then enable log to "last" file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
 * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
 */
 LogBase::LogBase(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
+    bool i_logToConsole, const char * i_basePath, bool i_logToFile, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
     ) :
     isConsoleEnabled(i_logToConsole),
     isLastEnabled(false),
@@ -65,7 +66,7 @@ LogBase::LogBase(
     pidSuffix = '.' + to_string(getpid());
     msgBuffer[0] = msgBuffer[msgBufferSize] = '\0';
 
-    init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
+    init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
 }
 
 /** cleanup log resources */
@@ -82,12 +83,13 @@ LogBase::~LogBase(void) throw()
 *
 * @param[in]   i_logToConsole  if true then log to console
 * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+* @param[in]   i_logToFile     if true then enable log to "last" file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
 * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
 */
 void LogBase::init(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
+    bool i_logToConsole, const char * i_basePath, bool i_logToFile, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
     ) throw()
 {
     try {
@@ -102,8 +104,8 @@ void LogBase::init(
         size_t len = (i_basePath != nullptr) ? strnlen(i_basePath, OM_PATH_MAX) : 0;
         if (len <= 0 || len >= OM_PATH_MAX) return;
 
-        lastPath = i_basePath;      // last log file name
-        isLastEnabled = true;       // enable use of last log file
+        lastPath = i_basePath;          // last log file name
+        isLastEnabled = i_logToFile;    // enable use of last log file
 
         // stamped log file suffix: build timestamp and pid stamp suffix
         fileSuffix = ((i_useTimeStamp ? tsSuffix : "") + (i_usePidStamp ? pidSuffix : ""));
@@ -245,17 +247,18 @@ void LogBase::writeToLog(
 *
 * @param[in]   i_logToConsole  if true then log to console
 * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+* @param[in]   i_logToFile     if true then enable log to "last" file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
 */
 Log::Log(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp
+    bool i_logToConsole, const char * i_basePath, bool i_logToFile, bool i_useTimeStamp, bool i_usePidStamp
     ) : 
-    LogBase(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, false),
+    LogBase(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, false),
     isSqlLog(false)
 {
     lock_guard<recursive_mutex> lck(theMutex);
-    init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, isNoMsgTime, isSqlLog);
+    init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, isNoMsgTime, isSqlLog);
 }
 
 /** cleanup log resources */
@@ -273,19 +276,26 @@ Log::~Log(void) throw()
 *
 * @param[in]   i_logToConsole  if true then log to console
 * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
-* @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
+* @param[in]   i_logToFile     if true then enable log to "last" file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
 * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
+* @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
 * @param[in]   i_isLogSql      if true then log SQL into log file
 */
 void Log::init(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime, bool i_isLogSql
+    bool i_logToConsole, 
+    const char * i_basePath, 
+    bool i_logToFile, 
+    bool i_useTimeStamp, 
+    bool i_usePidStamp, 
+    bool i_noMsgTime, 
+    bool i_isLogSql
     ) throw()
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
-        LogBase::init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
+        LogBase::init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
         isSqlLog = i_isLogSql && isLastEnabled;
     }
     catch (...) { }
@@ -462,15 +472,16 @@ TraceLog::~TraceLog(void) throw()
 *
 * @param[in]   i_logToConsole  if true then log to console
 * @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+* @param[in]   i_logToFile     if true then enable log to "last" file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
 * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
 */
 void TraceLog::init(
-    bool i_logToConsole, const char * i_basePath, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
+    bool i_logToConsole, const char * i_basePath, bool i_logToFile, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
     ) throw()
 {
-    LogBase::init(i_logToConsole, i_basePath, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
+    LogBase::init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
 }
 
 /** log message */
