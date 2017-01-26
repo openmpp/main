@@ -9,10 +9,6 @@ LIBSQLITE_DIR = libsqlite
 LIBOPENM_DIR = libopenm
 OMC_DIR = omc
 
-ifndef BIN_POSTFIX
-  BIN_POSTFIX = 
-endif 
-
 # set OM_MSG_USE:
 # MPI   - use MPI-based version (you must have MPI installed)
 # EMPTY - use empty version of the library which does nothing
@@ -60,4 +56,3 @@ cleanall:
 	rm -rf $(OUT_LIB_DIR)
 	@if [ -e $(OUT_BIN_DIR)/omc ] ;  then rm -f $(OUT_BIN_DIR)/omc ; fi 
 	@if [ -e $(OUT_BIN_DIR)/omcD ] ; then rm -f $(OUT_BIN_DIR)/omcD ; fi 
-	@if [ -e $(OUT_BIN_DIR)/omc$(BIN_POSTFIX) ] ; then rm -f $(OUT_BIN_DIR)/omc$(BIN_POSTFIX) ; fi 
