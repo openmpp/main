@@ -284,11 +284,11 @@ namespace openm
         int totalEnumId;
 
         /** create row with supplied unique key field values. */
-        TypeDicRow(int i_modelId, int i_typeId) : 
-            modelId(i_modelId), 
-            typeId(i_typeId), 
+        TypeDicRow(int i_modelId, int i_typeId) :
+            modelId(i_modelId),
+            typeId(i_typeId),
             name(""),
-            dicId(0), 
+            dicId(0),
             totalEnumId(0)
         { }
 
@@ -326,6 +326,12 @@ namespace openm
 
         /** return true if model type id is built-in type id, ie: int, double, logical */
         static bool isBuiltIn(int i_typeId) { return i_typeId <= OM_MAX_BUILTIN_TYPE_ID; }
+
+        /** return true if lower case of source string one of: "1" "t" "true" */
+        static bool isBoolTrue(const char * i_str);
+
+        /** return true if lower case of source string one of: "1" "t" "true" "0"  "f" "false" */
+        static bool isBoolValid(const char * i_str);
     };
 
     /** type_dic_txt join to model_type_dic table row. */

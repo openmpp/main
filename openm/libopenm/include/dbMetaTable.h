@@ -307,6 +307,9 @@ namespace openm
         /** get list of rows by model id, model type id. */
         virtual vector<TypeEnumLstRow> byModelIdTypeId(int i_modelId, int i_typeId) const = 0;
 
+        /** find row by unique key: model id, model type id, enum name. */
+        virtual const TypeEnumLstRow * byName(int i_modelId, int i_typeId, const char * i_name) const = 0;
+
         /** create new table rows by swap with supplied vector of rows. */
         static ITypeEnumLstTable * create(IRowBaseVec & io_rowVec);
 

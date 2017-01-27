@@ -487,17 +487,9 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const char * i_fil
         }
 
         if (isBool) {           // boolean make 0/1 from false/true
-            bool isOk = false;
-            if (equalNoCase(col->c_str(), "1") || equalNoCase(col->c_str(), "true") ||
-                equalNoCase(col->c_str(), "t") || equalNoCase(col->c_str(), "-1")) {
-                insSql += "1)";
-                isOk = true;
-            }
-            if (equalNoCase(col->c_str(), "0") || equalNoCase(col->c_str(), "false") || equalNoCase(col->c_str(), "f")) {
-                insSql += "0)";
-                isOk = true;
-            }
-            if (!isOk) throw DbException("invalid parameter.csv file at line %zd, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+            if (!TypeDicRow::isBoolValid(col->c_str())) throw DbException("invalid parameter.csv file at line %zd, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+
+            insSql += TypeDicRow::isBoolTrue(col->c_str()) ? "1)" : "0)";
         }
 
         if (isEnum) {   // enum-based parameter value, csv contains code or enum id

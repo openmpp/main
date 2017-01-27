@@ -262,6 +262,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
     bool isParamDir = !paramDir.empty() && isFileExists(paramDir.c_str());
     bool isIdCsv = argOpts().boolOption(RunOptionsKey::useIdCsv);
+    bool isIdValue = argOpts().boolOption(RunOptionsKey::useIdParamValue);
 
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
@@ -304,8 +305,25 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                 throw DbException("invalid (not found) type of parameter: %s", paramIt->paramName.c_str());
 
             // get parameter value as sql string 
+            // do special parameter value handling if required: 
+            // bool conversion to 0/1 or quoted for string or enum code to id
             string sVal = argOpts().strOption(argName.c_str());
-            if (equalNoCase(typeRow->name.c_str(), "file")) sVal = toQuoted(sVal);  // "file" type is VARCHAR
+            if (typeRow->isString()) sVal = toQuoted(sVal);  // "file" type is VARCHAR
+
+            if (typeRow->isBool()) {
+                if (!TypeDicRow::isBoolValid(sVal.c_str())) 
+                    throw DbException("invalid value of parameter: %s", paramIt->paramName.c_str());
+
+                sVal = TypeDicRow::isBoolTrue(sVal.c_str()) ? "1" : "0";
+            }
+
+            if (!typeRow->isBuiltIn() && !isIdValue) {
+                const TypeEnumLstRow * enumRow = metaStore->typeEnumLst->byName(modelId, paramIt->typeId, sVal.c_str());
+                if (enumRow == nullptr) 
+                    throw DbException("invalid value of parameter: %s", paramIt->paramName.c_str());
+
+                sVal = to_string(enumRow->enumId);
+            }
 
             // insert the value
             i_dbExec->update(

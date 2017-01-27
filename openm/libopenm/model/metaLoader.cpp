@@ -72,8 +72,11 @@ namespace openm
     /** short version: -p dir/to/read/input/parameter.csv */
     const char * RunShortKey::paramDir = "p";
 
-    /** if true then parameters csv file(s) contain enum id's, default: enum code */
+    /** if true then parameter(s) csv file(s) contain enum id's, default: enum code */
     const char * RunOptionsKey::useIdCsv = "OpenM.IdCsv";
+
+    /** if true then parameter value is enum id, default: enum code */
+    const char * RunOptionsKey::useIdParamValue = "OpenM.IdParameterValue";
     
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -117,6 +120,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::doubleFormat,
     RunOptionsKey::paramDir,
     RunOptionsKey::useIdCsv,
+    RunOptionsKey::useIdParamValue,
     RunOptionsKey::traceToConsole,
     RunOptionsKey::traceToFile,
     RunOptionsKey::traceFilePath,

@@ -92,7 +92,8 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 -- modelOne input parameters
 -- parameter digest: not a real digest (32 digits hex)
 -- db suffix: not a real value (8 digits hex)
--- salaryFull parameter type is enum-based
+-- salaryFull parameter is enum-based
+-- baseSalary is scalar parameter is enum-based
 --
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
@@ -114,10 +115,16 @@ INSERT INTO parameter_dic
 VALUES
   (7, 'salaryFull', '_20128171604590134', 'salaryFull_p_2012812', 'salaryFull_w_2012812', 1, 99, 0);
 
+INSERT INTO parameter_dic
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+VALUES
+  (8, 'baseSalary', '_20128171604590135', 'baseSalary_p_2012811', 'baseSalary_w_2012811', 0, 99, 0);
+
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 6, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 3, 7, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 4, 8, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, '(FR) Age by Sex', NULL);
@@ -125,6 +132,7 @@ INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 0
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 1, '(FR) Salary by Age', '(FR) Salary by Age note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (6, 1, 'Starting Seed', 'Random numbers generator starting seed value');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (7, 0, 'Full or part time by Salary level', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (8, 0, 'Base salary level', NULL);
 
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 0, 'dim0', 96);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 1, 'dim1', 97);
@@ -227,6 +235,7 @@ INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VA
 -- enum ids for salaryAge.dim1:  10,  20,  30, 40
 -- enum ids for salaryFull.dim0: 100, 200, 300
 -- enum ids for salaryFull.param_value: 22, 33
+-- enum ids for BasSalary.param_value:  22, 33
 --
 CREATE TABLE ageSex_p_2012817 
 (
@@ -292,6 +301,20 @@ CREATE TABLE salaryFull_w_2012812
   dim0        INT NOT NULL, 
   param_value INT NOT NULL,
   PRIMARY KEY (set_id, dim0)
+);
+
+CREATE TABLE baseSalary_p_2012811
+(
+  run_id      INT NOT NULL,
+  param_value INT NOT NULL,
+  PRIMARY KEY (run_id)
+);
+
+CREATE TABLE baseSalary_w_2012811
+(
+  set_id      INT NOT NULL,
+  param_value INT NOT NULL,
+  PRIMARY KEY (set_id)
 );
 
 --

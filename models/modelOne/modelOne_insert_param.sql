@@ -35,6 +35,7 @@ INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 4);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 5);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 6);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 7);
+INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (2, 8);
 
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 4, 0, 'Age by Sex default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 4, 1, '(FR) Age by Sex default values');
@@ -75,6 +76,7 @@ INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 4);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 5);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 6);
 INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 7);
+INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (4, 8);
 
 --
 -- modelOne modelling tasks
@@ -120,6 +122,9 @@ INSERT INTO salaryAge_w_2012818 (set_id, dim0, dim1, param_value) VALUES (2, 300
 -- random values starting seed, set id = 2 
 INSERT INTO StartingSeed_w_2012819 (set_id, param_value) VALUES (2, 8191);
 
+-- parameter type is enum based, enum ids: 22, 33
+INSERT INTO baseSalary_w_2012811 (set_id, param_value) VALUES (2, 22);
+
 -- full or part time by salary default values, set id = 2
 -- enum ids for salary not a zero based
 -- parameter type is enum based, enum ids: 22, 33
@@ -160,3 +165,6 @@ INSERT INTO salaryFull_w_2012812
 SELECT 
   4, dim0, param_value
 FROM salaryFull_w_2012812 WHERE set_id = 2;
+
+-- parameter type is enum based, enum ids: 22, 33
+INSERT INTO baseSalary_w_2012811 (set_id, param_value) VALUES (4, 33);

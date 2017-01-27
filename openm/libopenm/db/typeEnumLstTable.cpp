@@ -31,6 +31,9 @@ namespace openm
         // get list of rows by model id and model type id
         vector<TypeEnumLstRow> byModelIdTypeId(int i_modelId, int i_typeId) const override;
 
+        /** find row by unique key: model id, model type id, enum name. */
+        const TypeEnumLstRow * byName(int i_modelId, int i_typeId, const char * i_name) const override;
+
     private:
         IRowBaseVec rowVec;     // table rows
 
@@ -135,6 +138,18 @@ vector<TypeEnumLstRow> TypeEnumLstTable::byModelIdTypeId(int i_modelId, int i_ty
     return findAll(
         [i_modelId, i_typeId](const TypeEnumLstRow & i_row) -> bool {
             return i_row.modelId == i_modelId && i_row.typeId == i_typeId;
+        }
+    );
+}
+
+// find row by unique key: model id, model type id, enum name
+const TypeEnumLstRow * TypeEnumLstTable::byName(int i_modelId, int i_typeId, const char * i_name) const
+{
+    if (i_name == nullptr || i_name[0] == '\0') return nullptr;     // empty name: result is not found
+
+    return findFirst(
+        [i_modelId, i_typeId, i_name](const TypeEnumLstRow & i_row) -> bool {
+            return i_row.modelId == i_modelId && i_row.typeId == i_typeId && i_name != nullptr && i_row.name == i_name;
         }
     );
 }

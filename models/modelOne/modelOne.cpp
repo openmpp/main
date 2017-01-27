@@ -5,18 +5,19 @@
 #include "modelOne_om.h"
 using namespace openm;
 
-// model parameters
-static int startSeed = 1;
-static double ageSex[ageSize][sexSize];
-static int salaryAge[salarySize][ageSize];
-static int salaryFull[salarySize];
-
 // model type "full": full or part time job
 enum jobKind : int
 {
     fullTime = 22,
     partTime = 33
 };
+
+// model parameters
+static int startSeed = 1;
+static double ageSex[ageSize][sexSize];
+static int salaryAge[salarySize][ageSize];
+static int salaryFull[salarySize];
+static int baseSalary = jobKind::partTime;
 
 // model output tables: salary by sex
 const char * SalarySex::NAME = "salarySex";
@@ -77,6 +78,7 @@ void RunInit(IRunBase * const i_runBase)
     i_runBase->readParameter("ageSex", typeid(double), ageSize * sexSize, ageSex);
     i_runBase->readParameter("salaryAge", typeid(int), salarySize * ageSize, salaryAge);
     i_runBase->readParameter("salaryFull", typeid(int), salarySize, salaryFull);
+    i_runBase->readParameter("baseSalary", typeid(int), 1, &baseSalary);
 }
 
 // Model startup method: initialize subsample

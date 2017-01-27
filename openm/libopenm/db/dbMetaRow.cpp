@@ -171,6 +171,19 @@ bool TypeDicRow::isInt(void) const
     return !isBool() && !isString() && !isFloat() && !isBigInt();
 }
 
+/** return true if lower case of source string one of: "1" "t" "true" */
+bool TypeDicRow::isBoolTrue(const char * i_str)
+{ 
+    return equalNoCase(i_str, "1") || equalNoCase(i_str, "t") || equalNoCase(i_str, "true") || 
+        equalNoCase(i_str, "-1");   // use of -1 is not recommended
+}
+
+/** return true if lower case of source string one of: "1" "t" "true" "0"  "f" "false" */
+bool TypeDicRow::isBoolValid(const char * i_str)
+{ 
+    return isBoolTrue(i_str) || equalNoCase(i_str, "0") || equalNoCase(i_str, "f") || equalNoCase(i_str, "false");
+}
+
 // type_dic_txt join model_type_dic row less comparator by unique key: model id, model type id, language id.
 bool TypeDicTxtRow::isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right)
 {
