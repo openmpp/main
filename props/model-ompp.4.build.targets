@@ -50,6 +50,12 @@
 	    Text="GRID_COMPUTING must be either EMPTY or MPI. Value is $(GRID_COMPUTING)"
         Condition=" ! ( '$(GRID_COMPUTING)' == 'EMPTY' Or '$(GRID_COMPUTING)' == 'MPI' )" />
     <Error
+	    Text="Microsoft MPI must be installed if GRID_COMPUTING is set to MPI."
+        Condition=" ( '$(GRID_COMPUTING)' == 'MPI' And '$(MSMPI_BIN)' == '' )" />
+    <Error
+	    Text="Microsoft MPI SDK must be installed if GRID_COMPUTING is set to MPI."
+        Condition=" ( '$(GRID_COMPUTING)' == 'MPI' And '$(MSMPI_INC)' == '' )" />
+    <Error
 	    Text="DB_PROVIDER must be set to SQLITE. Value is $(DB_PROVIDER)"
         Condition=" ! ( '$(DB_PROVIDER)' == 'SQLITE' )" />
     <Error
@@ -196,7 +202,7 @@
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
     <Exec WorkingDirectory="$(TargetDir)"
-          Command="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
+          Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
             AlwaysCreate="true"

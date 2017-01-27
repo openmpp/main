@@ -723,9 +723,14 @@ for my $model_dir (@model_dirs) {
 			($merged, $retval) = capture_merged {
 				my @args;
 				if ($grid_computing eq 'MPI') {
+					my $msmpi_bin = $ENV{'MSMPI_BIN'};
+					if ($msmpi_bin eq '') {
+						logmsg error, $model_dir, $flavour, "GRID_COMPUTING = MPI but Microsoft MPI not installed";
+						next FLAVOUR;
+					}
 					push @args,
 						(
-						"mpiexec",
+						"${msmpi_bin}mpiexec.exe",
 						"-n", ${processes}
 						);
 				}
