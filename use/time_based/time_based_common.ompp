@@ -110,13 +110,6 @@ void SimulateEvents()
 
     // Simulate the population
     while ( true ) {
-        if (fmk::do_exit_simulation_all) {
-            // The previous event signalled to end the simulation
-            BaseAgent::exit_simulation_all();
-            fmk::do_exit_simulation_all = false;
-            break;
-        }
-
         // get the time of the next event in the event queue
         Time the_time = BaseEvent::time_next_event();
 
@@ -129,7 +122,6 @@ void SimulateEvents()
         if (the_time > simulation_end) {
             // The next event would exceed the maximum simulation time
             BaseAgent::age_all_agents(simulation_end);
-            BaseAgent::exit_simulation_all();
             break;
         }
 
@@ -151,6 +143,11 @@ void SimulateEvents()
             };
         }
     }
+
+    // cleanup
+    BaseAgent::exit_simulation_all();
+    BaseEvent::clean_all();
+    BaseAgent::free_all_zombies();
 
     if (current_step < progress_steps) {
         // final progress message

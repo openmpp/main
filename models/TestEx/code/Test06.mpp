@@ -30,9 +30,8 @@ actor Person {
 
 void Person::CreateLinks()
 {
-	TestActor06* prTest;
 	for ( int i=0; i < 3; i++ ) { // create 2
-		prTest = new TestActor06();
+		auto prTest = new TestActor06();
 		prTest->Start(time, (time+age), FALSE);
 		mlTestActors->Add(prTest);
 	}
@@ -42,6 +41,7 @@ void Person::CreateLinks()
 void Person::Test06Start()
 {
 	//CreateLinks(); // Keep off so simulations are slightly faster
+	CreateLinks();
 	next_test06 = time;
 }
 

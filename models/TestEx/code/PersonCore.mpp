@@ -171,7 +171,15 @@ void Person::Finish()
 
     // Tell the simulation framework to finish the case if this is the dominant person
     if (dominant) {
-        signal_exit_simulation_all();
+        if (ltestactor) {
+            ltestactor->Finish();
+        }
+        int nIndex = -1;
+        while (auto ta = mlTestActors->GetNext(nIndex + 1, &nIndex)) {
+            // SFG This is safe, because links are a 'holey' array
+            // in which existing entries always maintain their indices.
+            ta->Finish();
+        }
     }
 
     // Have the entity exit the simulation (OpenM++).

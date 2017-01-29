@@ -11,15 +11,6 @@
     It should not be necessary to modify any code in this module.
 */
 
-bool do_exit_simulation_all = false;
-/**
- * Tells the framework to exit all entities from the simulation after completion of the current event.
- */
-void signal_exit_simulation_all()
-{
-    do_exit_simulation_all = true;
-}
-
 /**
  * Simulate all events for all entities in the simulation.
  *
@@ -29,7 +20,7 @@ void SimulateEvents()
 {
     while (!gpoEventQueue->Empty())
     {
-        if (do_exit_simulation_all || gbCancelled || gbErrors) 
+        if (gbCancelled || gbErrors) 
         {
             // Terminate the case.
             gpoEventQueue->FinishAllActors();
@@ -78,11 +69,6 @@ void Simulation()
 
         // Tell the Modgen run-time that the case has been completed.
         SignalCase();
-
-        if (do_exit_simulation_all) {
-            // The model signalled to end the simulation
-            break;
-        }
     }
     
     // Perform operations at the end of Simulation

@@ -151,11 +151,6 @@ void SimulateEvents()
 {
     // Simulate the case
     while (true) {
-        if (fmk::do_exit_simulation_all) {
-            // The previous event signalled to end the simulation
-            BaseAgent::exit_simulation_all();
-            break;
-        }
         if (!BaseEvent::do_next_event()) {
             // no more events
             break;
@@ -246,13 +241,15 @@ void RunSimulation(int mem_id, int mem_count)
         // Log the case checksum if activated
         if (BaseEvent::event_checksum_enabled) case_checksum_msg(fmk::master_seed, simulation_member);
 
-        // Debug check for no left-over agents for which Finish was not called (model error)
+        // Debug check for no left-over agents for which Finish was not called (possible model error)
+        // TODO - consider making an optional warning activated by a model option
+        //  which could be turned on/off.
         assert(0 == BaseAgent::om_active_agents());
 
-        if (fmk::do_exit_simulation_all) {
-            // The model signalled to end the simulation
-            break;
-        }
+        // cleanup entities and event queue after case has completed.
+        BaseAgent::exit_simulation_all();
+        BaseEvent::clean_all();
+        BaseAgent::free_all_zombies();
 
         {
             // generate the master seed for the next case
