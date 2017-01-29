@@ -22,6 +22,11 @@ using namespace std;
 class BaseAgent
 {
 public:
+    /**
+     * Explicitly declared virtual destructor
+     * to allow safe delete of isntances of derived classes.
+     */
+    virtual ~BaseAgent() = default;
 
     /**
      * Assign initial value to all data members in agent, with no side-effects. The function
