@@ -25,6 +25,7 @@ namespace mm {
  * but can be left empty.
  */
 struct case_info {
+    int case_counter;
 };
 
 #if !defined(OPENM)

@@ -32,6 +32,14 @@ void CaseSimulation(case_info &ci)
 {
     extern void SimulateEvents(); // defined in a simulation framework module
 
+    ci.case_counter++;
+
+    // skip superfluous cases
+    if ((OneScript && ci.case_counter > 1)
+        || (ci.case_counter > SIZE(SCRIPT) - 1)) {
+        return;
+    }
+
 	// Initialize the person actor
 	auto prPerson = new Person();
 	prPerson->Start();
@@ -48,6 +56,7 @@ void CaseSimulation(case_info &ci)
 void Simulation_start(case_info &ci)
 {
     // Initialize case information in ci (if used).
+    ci.case_counter = 0;
 }
 
 /**

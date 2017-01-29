@@ -130,12 +130,7 @@ void Person::Start()
     enter_simulation();
 }
 
-extern void signal_exit_simulation_all();
 void Person::Finish()
 {
-    if (OneScript || (int)script == SIZE(SCRIPT) - 1) {
-        // Stop the simulation - no more SCRIPTs to do
-        signal_exit_simulation_all();
-    }
     exit_simulation();
 }
