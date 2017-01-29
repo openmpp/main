@@ -167,14 +167,18 @@ public:
     }
 
     /**
-     * Cleans up run-time after simulation.
+     * Clean up run-time after simulation.
      */
     static void finalize_simulation_runtime()
     {
+        assert(event_queue->empty());
         delete event_queue;
         event_queue = nullptr;
+
+        assert(dirty_events->empty());
         delete dirty_events;
         dirty_events = nullptr;
+
         delete global_time;
         global_time = nullptr;
     }
