@@ -720,13 +720,21 @@ void CodeGen::do_agents()
 
     c += "void BaseAgent::finalize_simulation_runtime()";
     c += "{";
+    c += "assert(agents->empty());";
     c += "delete agents;";
     c += "agents = nullptr;";
-    for ( auto agent : Symbol::pp_all_agents ) {
+    c += "";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "assert(" + agent->name + "::zombies->empty());";
         c += "delete " + agent->name + "::zombies;";
         c += agent->name + "::zombies = nullptr;";
+        c += "";
+        c += "for (auto ent : *" + agent->name + "::available) {";
+        c += "delete ent;";
+        c += "}";
         c += "delete " + agent->name + "::available;";
         c += agent->name + "::available = nullptr;";
+        c += "";
     }
     c += "}";
     c += "";
