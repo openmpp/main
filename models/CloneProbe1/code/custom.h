@@ -11,9 +11,9 @@
 
 #if defined(MODGEN)
 namespace mm {
-    // x-compatible API for random state storage and retrieval
-    // (to support cloning).
-    // Definitions in modgen_case_based.mpp
+    // Functions to save/restore random state
+    // to support cloning in Modgen models.
+    // Definitions in modgen_random_state.mpp
     extern void store_random_state();
     extern void retrieve_random_state();
 };

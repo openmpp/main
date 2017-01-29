@@ -1,0 +1,35 @@
+// Copyright (c) 2013-2017 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(modgen_random_state, EN) Functions to save and restore the rnadom state for Modgen models
+
+/* NOTE(modgen_random_state, EN)
+    This module is ignored by the OpenM++ compiler.
+    It should not be necessary to modify any code in this module.
+    The functions in this module are used in the implementation 
+    of cloning for a Modgen model.
+    There are no ompp versions of these functions.
+    Ompp models use a different mechanism to restore
+    the random state when cloning.
+*/
+
+thread_local CRandState *stored_rand_state = nullptr;
+
+// Store the state of random streams for later restoration
+void store_random_state()
+{
+    if (stored_rand_state == nullptr) {
+        stored_rand_state = new CRandState;
+    }
+    GetRandState(*stored_rand_state);
+}
+
+// Retrieve the state of random streams stored by a previous call to store_random_state
+void retrieve_random_state()
+{
+    if (stored_rand_state == nullptr) {
+        ModelExit("call to retrieve_random_state without previous call to store_random_state");
+        // NOT_REACHED
+    }
+    SetRandState(*stored_rand_state);
+}

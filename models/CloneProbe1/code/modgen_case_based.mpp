@@ -90,20 +90,3 @@ case_info* CaseInfo(case_info* ci, bool reset)
     }
     return ci_stored;
 }
-
-thread_local CRandState *stored_rand_state = nullptr;
-
-// Store the state of random streams for later restoration
-void store_random_state()
-{
-    if (stored_rand_state == nullptr) {
-        stored_rand_state = new CRandState;
-    }
-    GetRandState(*stored_rand_state);
-}
-
-// Retrieve the state of random streams stored by a previous call to store_random_state
-void retrieve_random_state()
-{
-    SetRandState(*stored_rand_state);
-}
