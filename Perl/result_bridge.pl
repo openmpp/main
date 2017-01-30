@@ -67,28 +67,69 @@ copy $example_mdb, $output_mdb;
 # Get output table metadata (name, rank, hid, expr_dim_pos)
 #
 
-# Need to join table_dic with model_table_dic to get expr_dim_pos
-# which is required for modgen output table dim order
-$sql =
-"Select table_dic.table_name, table_dic.table_rank, table_dic.table_hid, model_table_dic.expr_dim_pos
-	From table_dic
-	Inner Join model_table_dic
-	On table_dic.table_hid = model_table_dic.table_hid
-	Order By table_name;";
-my $tables_info = run_sqlite_statement($input_sqlite, $sql, $retval);
-($retval == 0) or die;
-# Create array of table names and hash table of rank for each table.
+# table_name is used as the key to tables in this script
+# This assumes that the DB contains only one model.
+
 my %table_rank;
 my %table_hid;
+my %table_is_user;
 my %table_expr_dim_pos;
 my @tables;
-for my $record (split(/\n/, $tables_info)) {
-	(my $col1, my $col2, my $col3, my $col4) = split(/\|/, $record);
-	push @tables, $col1;
-	$table_rank{$col1} = $col2;
-	$table_hid{$col1} = $col3;
-	$table_expr_dim_pos{$col1} = $col4;
+{
+	# Join table_dic with model_table_dic to get expr_dim_pos
+	$sql =
+	"Select table_dic.table_name, table_dic.table_rank, table_dic.table_hid, model_table_dic.is_user, model_table_dic.expr_dim_pos
+		From table_dic
+		Inner Join model_table_dic
+		On table_dic.table_hid = model_table_dic.table_hid
+		Order By table_name;";
+	my $tables_info = run_sqlite_statement($input_sqlite, $sql, $retval);
+	($retval == 0) or die;
+	# Create array of table names and hash table of rank for each table.
+	for my $record (split(/\n/, $tables_info)) {
+		(my $col1, my $col2, my $col3, my $col4, my $col5) = split(/\|/, $record);
+		push @tables, $col1;
+		$table_rank{$col1} = $col2;
+		$table_hid{$col1} = $col3;
+		$table_is_user{$col1} = $col4;
+		$table_expr_dim_pos{$col1} = $col5;
+	}
 }
+
+# Number of accumulators underlying measures
+my %table_acc_count;
+{
+	# Get number of 'true' (non-derived) accumulators for each table
+	$sql =
+"SELECT table_dic.table_name, Count(table_acc.is_derived) AS acc_count
+FROM table_acc INNER JOIN table_dic ON table_acc.table_hid = table_dic.table_hid
+WHERE (((table_acc.is_derived)=0))
+GROUP BY table_dic.table_name;";
+	my $lines = run_sqlite_statement($input_sqlite, $sql, $retval);
+	($retval == 0) or die;
+	for my $record (split(/\n/, $lines)) {
+		(my $col1, my $col2) = split(/\|/, $record);
+		$table_acc_count{$col1} = $col2;
+	}
+}
+
+# Number of measures
+my %table_expr_count;
+{
+	# Get number of expressions (aka derived accumulators) for each table
+	$sql =
+"SELECT table_dic.table_name, Count(table_acc.is_derived) AS acc_count
+FROM table_acc INNER JOIN table_dic ON table_acc.table_hid = table_dic.table_hid
+WHERE (((table_acc.is_derived)=1))
+GROUP BY table_dic.table_name;";
+	my $lines = run_sqlite_statement($input_sqlite, $sql, $retval);
+	($retval == 0) or die;
+	for my $record (split(/\n/, $lines)) {
+		(my $col1, my $col2) = split(/\|/, $record);
+		$table_expr_count{$col1} = $col2;
+	}
+}
+
 
 #
 # Get parameter metadata (names, ranks)
@@ -300,7 +341,20 @@ for my $table (@tables) {
 	# Get metadata info for table into working variables
 	my $rank = $table_rank{$table};
 	my $expr_dim_pos = $table_expr_dim_pos{$table};
-	print "rank=$rank expr_dim_pos=$expr_dim_pos\n";
+	my $is_user = $table_is_user{$table};
+	my $acc_count;
+	my $expr_count;
+	if ($is_user) {
+		$acc_count = 0;
+		$expr_count = $table_acc_count{$table};
+	}
+	else {
+		$acc_count = $table_acc_count{$table};
+		$expr_count = $table_expr_count{$table};
+	}
+	print "rank=$rank expr_dim_pos=$expr_dim_pos is_user=$is_user acc_count=$acc_count expr_count=$expr_count\n";
+	
+	# Get member information into associative array
 
 	# Remove all existing rows from the table
 	$sql = "Delete * From ${table};";
