@@ -794,6 +794,10 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             scale_part = measure->scale_as_factor() + " * ";
         }
 
+        // Obtain the expression to compute the measure for a single simulation member
+        string measure_expr = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
+
+        // Assign the expression used to compute the measure over simulation members
         if (measures_are_aggregated) {
             // Aggregate accumulators across simulation members before evaluating the expression for the measure.
             tableExpr.srcExpr =
@@ -801,29 +805,29 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
                 + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
         }
         else {
-            // Obtain the expression for computing the measure for a single simulation member
-            string measure_expr = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
-
             // Average the measure across simulation members.
             tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
-
-            // create derived accumulator for that table
-            TableAccRow tableAcc;
-            tableAcc.tableId = pp_table_id;
-            tableAcc.accId = ++maxAccIndex;
-            tableAcc.isDerived = true;
-            tableAcc.expr = scale_part + measure_expr;
-            metaRows.tableAcc.push_back(tableAcc);
-
-            // important:
-            // after this point we cannot any longer use pp_accumulators
-            // specially acc->index, which is out of sync with reality
-            // as result of: tableAcc.accId = ++maxAccIndex;
-
-            // TODO: add description and notes for that accumulator
         }
 
-        // save table expression metatdata
+        // create derived accumulator for that table
+        TableAccRow tableAcc;
+        tableAcc.tableId = pp_table_id;
+        tableAcc.accId = ++maxAccIndex;
+        tableAcc.isDerived = true;
+        tableAcc.expr = scale_part + measure_expr;
+        metaRows.tableAcc.push_back(tableAcc);
+
+        // important:
+        // after this point we cannot any longer use pp_accumulators
+        // specially acc->index, which is out of sync with reality
+        // as result of: tableAcc.accId = ++maxAccIndex;
+
+        // TODO: add description and notes for that accumulator
+        // But, these would be identical to the description and notes
+        // for the correspoinding measure.  So unclear whether
+        // there's any point to duplicating that info.
+
+        // save table expression metadata
         metaRows.tableExpr.push_back(tableExpr);
 
         for (auto lang : Symbol::pp_all_languages) {
