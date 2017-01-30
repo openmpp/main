@@ -750,6 +750,19 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    // The table (not done at higher TableSymbol level because isUser differs)
+    {
+        TableDicRow tableDic;
+
+        tableDic.tableId = pp_table_id;
+        tableDic.tableName = name;
+        tableDic.isUser = false;
+        tableDic.rank = dimension_count();
+        tableDic.isSparse = true;   // do not store zeroes
+        tableDic.exprPos = measures_position;
+        metaRows.tableDic.push_back(tableDic);
+    }
+
     int maxAccIndex = 0;    // only to avoid acc->index increment later
 
     // accumulators for table

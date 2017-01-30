@@ -79,6 +79,19 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    // The table (not done at higher TableSymbol level because isUser differs)
+    {
+        TableDicRow tableDic;
+
+        tableDic.tableId = pp_table_id;
+        tableDic.tableName = name;
+        tableDic.isUser = true;
+        tableDic.rank = dimension_count();
+        tableDic.isSparse = true;   // do not store zeroes
+        tableDic.exprPos = measures_position;
+        metaRows.tableDic.push_back(tableDic);
+    }
+
     // 'accumulators' for derived table
     for (auto acc : pp_measures) {
 
