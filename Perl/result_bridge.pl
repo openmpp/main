@@ -16,7 +16,7 @@ use lib "$FindBin::Bin/."; # use the directory of this script for resolution of 
 
 if ($#ARGV != 2) {
 	# must have exactly three arguments
-	print "usage: result_bridge example.mdb model output.mdb\n";
+	print "usage: result_bridge example.mdb model.sqlite output.mdb\n";
 	exit -1;
 }
 
@@ -38,6 +38,7 @@ my $om_root = $ENV{'OM_ROOT'};
 $om_root ne '' or die 'environment variable OM_ROOT not defined, stopped';
 
 use File::Copy;
+use File::Path qw(make_path remove_tree);
 use File::Temp qw(tempdir);
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 
@@ -165,6 +166,9 @@ if ($keep_temp == 0) {
 else {
 	# For debugging, place dbcopy results in known fixed location.
 	$temp_dir = "C:/Development/X/models/GMM/bridge_test/tmp";
+	# Remove any pre-existing contents or else anomalies can result
+	remove_tree $temp_dir || die;
+	make_path $temp_dir || die;
 }
 print "temp_dir=$temp_dir\n";
 
@@ -352,11 +356,47 @@ for my $table (@tables) {
 		$acc_count = $table_acc_count{$table};
 		$expr_count = $table_expr_count{$table};
 	}
-	print "rank=$rank expr_dim_pos=$expr_dim_pos is_user=$is_user acc_count=$acc_count expr_count=$expr_count\n";
+	#print "rank=$rank expr_dim_pos=$expr_dim_pos is_user=$is_user acc_count=$acc_count expr_count=$expr_count\n";
 	
 	# Get member information into associative array
+	my %table_all;
+	%table_all = ();  # Empty it
+	{
+		my $table_all_csv = "${table_dir}/${table}.acc-all.csv";
+		-e $table_all_csv or die;
+		open INPUT, '<'.$table_all_csv or die;
+		# Skip header record
+		<INPUT>;
+		# Insert all records
+		while (<INPUT>) {
+			chomp;
+			my $line = $_;
 
-	# Remove all existing rows from the table
+			# in_fields example for rank 2 table:
+			#  sub_id,dim0,dim1,acc0,acc1,... (both 'accumulators' and 'derived accumulators')
+			my @fields = split(/,/, $line);
+			for (my $expr_id = 0; $expr_id < $expr_count; $expr_id++) {
+				my $key;
+				my $value;
+				
+				my $sub_id = $fields[0];
+				
+				# build key
+				# key looks like
+				# sub_id,dim0,...dimN,expr_id
+				$key = join(',',@fields[0..$rank]);
+				$key .= ','.$expr_id;
+
+				# get corresponding value
+				$value = $fields[1 + $rank + $acc_count + $expr_id];
+				
+				# insert it into the hash
+				$table_all{$key} = $value;
+			}
+		}
+	}
+
+	# Remove all existing rows from the table in the output Modgen Access DB
 	$sql = "Delete * From ${table};";
 	$ADO_RS = $ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
@@ -366,13 +406,6 @@ for my $table (@tables) {
 	}
 
 	# Insert all data from the csv files for the table
-	
-	# Obtain values for each member
-	# TODO Fake values for all members (done once, but needs to be done for each cell
-	my @member_values;
-	for (my $j = 0; $j <$members; $j++) {
-		push @member_values, 0.0;
-	}
 	
 	# Get the aggregate value from the csv file for the table
 	my $table_csv = "${table_dir}/${table}.csv";
@@ -398,7 +431,7 @@ for my $table (@tables) {
 		# Note that one of Dim0,Dim1,Dim2 is the measure dimension
 		my @out_fields;
 		@out_fields = ();
-
+		
 		# Build the indices, inserting the measure index into the position required by modgen
 		for (my $j = 0; $j < $rank; $j++) {
 			if ($expr_dim_pos == $j - 1) {
@@ -417,10 +450,21 @@ for my $table (@tables) {
 		# Get values for each simulation member
 		my @member_values;
 		@member_values = (); # empty it
-		for (my $j = 0; $j < $members; $j++) {
-			# TODO use actual values for members instead of duplicating aggregate value
-			push @member_values, $expr_value;
+		for (my $sub_id = 0; $sub_id < $members; $sub_id++) {
+			# construct key for sub value
+			# key looks like
+			# sub_id,dim,...dimN,expr_id
+			my $key = $sub_id;
+			if ($rank > 0) {
+				$key .= ','.join(',',@in_fields[1..$rank]);
+			}
+			$key .= ','.$expr_id;
+			# retrieve value
+			my $expr_value_sub = $table_all{$key};
+			#print "key=$key value=$expr_value_sub\n";
+			push @member_values, $expr_value_sub;
 		}
+		#print "member_values=".join(',',@member_values)."\n";
 
 		# TODO compute CV based on @member_values
 		my $cv = 0.0;
