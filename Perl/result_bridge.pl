@@ -73,13 +73,12 @@ copy $example_mdb, $output_mdb;
 
 my %table_rank;
 my %table_hid;
-my %table_is_user;
 my %table_expr_dim_pos;
 my @tables;
 {
 	# Join table_dic with model_table_dic to get expr_dim_pos
 	$sql =
-	"Select table_dic.table_name, table_dic.table_rank, table_dic.table_hid, model_table_dic.is_user, model_table_dic.expr_dim_pos
+	"Select table_dic.table_name, table_dic.table_rank, table_dic.table_hid, model_table_dic.expr_dim_pos
 		From table_dic
 		Inner Join model_table_dic
 		On table_dic.table_hid = model_table_dic.table_hid
@@ -88,12 +87,11 @@ my @tables;
 	($retval == 0) or die;
 	# Create array of table names and hash table of rank for each table.
 	for my $record (split(/\n/, $tables_info)) {
-		(my $col1, my $col2, my $col3, my $col4, my $col5) = split(/\|/, $record);
+		(my $col1, my $col2, my $col3, my $col4) = split(/\|/, $record);
 		push @tables, $col1;
 		$table_rank{$col1} = $col2;
 		$table_hid{$col1} = $col3;
-		$table_is_user{$col1} = $col4;
-		$table_expr_dim_pos{$col1} = $col5;
+		$table_expr_dim_pos{$col1} = $col4;
 	}
 }
 
@@ -345,17 +343,10 @@ for my $table (@tables) {
 	# Get metadata info for table into working variables
 	my $rank = $table_rank{$table};
 	my $expr_dim_pos = $table_expr_dim_pos{$table};
-	my $is_user = $table_is_user{$table};
 	my $acc_count;
 	my $expr_count;
-	if ($is_user) {
-		$acc_count = 0;
-		$expr_count = $table_acc_count{$table};
-	}
-	else {
-		$acc_count = $table_acc_count{$table};
-		$expr_count = $table_expr_count{$table};
-	}
+	$acc_count = $table_acc_count{$table};
+	$expr_count = $table_expr_count{$table};
 	#print "rank=$rank expr_dim_pos=$expr_dim_pos is_user=$is_user acc_count=$acc_count expr_count=$expr_count\n";
 	
 	# Get member information into associative array

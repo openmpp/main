@@ -79,29 +79,30 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // The table (not done at higher TableSymbol level because isUser differs)
-    {
-        TableDicRow tableDic;
+    int maxAccIndex = 0;    // only to avoid acc->index increment later
 
-        tableDic.tableId = pp_table_id;
-        tableDic.tableName = name;
-        tableDic.isUser = true;
-        tableDic.rank = dimension_count();
-        tableDic.isSparse = true;   // do not store zeroes
-        tableDic.exprPos = measures_position;
-        metaRows.tableDic.push_back(tableDic);
-    }
-
-    // 'accumulators' for derived table
+    // Measures and accumulators are the same for derived tables.
+    // For derived tables, information is stored in the measures collection
+    // and the accumulators collection is empty.
+    // For derived tables, the measures collection is iterated
+    // to populate metadata for both accumulators and measures.
+    // The working variable 'acc' below is actually a measure.
+    // It is named 'acc' to maximize correspondence
+    // with parallel code in EntityTableSymbol.
     for (auto acc : pp_measures) {
 
         TableAccRow tableAcc;
 
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = acc->index;
-        // tableAcc.name = "acc" + to_string(acc->index);
         tableAcc.expr = acc->pretty_name();
+        tableAcc.isDerived = false;
         metaRows.tableAcc.push_back(tableAcc);
+
+        // Maintain maxAccIndex to use when creating derived accumulators below.
+        if (maxAccIndex < tableAcc.accId) {
+            maxAccIndex = tableAcc.accId;
+        }
 
         // Labels and notes for accumulators
         for (auto lang : Symbol::pp_all_languages) {
@@ -115,38 +116,65 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
     }
 
-    // measures for derived table
-    // Just average the values across simulation members
-    for (auto expr : pp_measures) {
+    // Measures for derived table.
+    // There is an exact one-to-one relationship
+    // between measures and accumulators for derived tables.
+    for (auto measure : pp_measures) {
 
         TableExprRow tableExpr;
 
         tableExpr.tableId = pp_table_id;
-        tableExpr.exprId = expr->index;
-        tableExpr.name = "meas" + to_string(expr->index);
-        tableExpr.decimals = expr->decimals;
+        tableExpr.exprId = measure->index;
+        tableExpr.name = "meas" + to_string(measure->index);
+        tableExpr.decimals = measure->decimals;
+
         // construct scale part, e.g. "1.0E-3 * "
         string scale_part;
-        if (expr->scale != 0) {
-            scale_part = expr->scale_as_factor() + " * ";
+        if (measure->scale != 0) {
+            scale_part = measure->scale_as_factor() + " * ";
         }
-        tableExpr.srcExpr = scale_part + "OM_AVG(acc" + to_string(expr->index) + ")";
+
+        // Construct the expression to compute the measure for a single simulation member.
+        // For derived tables, this is just the corresponding 'accumulator'.
+        string measure_expr = "acc" + to_string(measure->index);
+
+        // Construct the expression used to compute the measure over simulation members.
+        // For derived tables this is the average across simulation members.
+        tableExpr.srcExpr = scale_part + "OM_AVG(acc" + to_string(measure->index) + ")";
+
+        // save table measure metadata
         metaRows.tableExpr.push_back(tableExpr);
 
         // Labels and notes for measures
         for (auto lang : Symbol::pp_all_languages) {
-
             TableExprTxtLangRow tableExprTxt;
-
             tableExprTxt.tableId = pp_table_id;
-            tableExprTxt.exprId = expr->index;
+            tableExprTxt.exprId = measure->index;
 
             tableExprTxt.langCode = lang->name;
 
-            tableExprTxt.descr = expr->label(*lang);
+            tableExprTxt.descr = measure->label(*lang);
             
-            tableExprTxt.note = expr->note(*lang);
+            tableExprTxt.note = measure->note(*lang);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
+
+        // Create derived accumulators for the table, one for each measure.
+        TableAccRow tableAcc;
+        tableAcc.tableId = pp_table_id;
+        tableAcc.accId = ++maxAccIndex;
+        tableAcc.isDerived = true;
+        tableAcc.expr = scale_part + measure_expr;
+        metaRows.tableAcc.push_back(tableAcc);
+
+        // important:
+        // after this point we cannot any longer use pp_accumulators
+        // specially acc->index, which is out of sync with reality
+        // as result of: tableAcc.accId = ++maxAccIndex;
+
+        // TODO: add description and notes for that accumulator
+        // But, these would be identical to the description and notes
+        // for the corresponding measure.  So unclear whether
+        // there's any point to duplicating that info.
     }
 }

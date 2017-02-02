@@ -113,17 +113,16 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // The table
     {
-        // The table (not done at TableSymbol level because isUser differs)
+         // The table
 
-        //TableDicRow tableDic;
+        TableDicRow tableDic;
 
-        //tableDic.tableId = pp_table_id;
-        //tableDic.tableName = name;
-        //tableDic.isUser = true;
-        //tableDic.rank = dimension_count();
-        //tableDic.isSparse = true;   // do not store zeroes
-        //tableDic.exprPos = measures_position;
-        //metaRows.tableDic.push_back(tableDic);
+        tableDic.tableId = pp_table_id;
+        tableDic.tableName = name;
+        tableDic.rank = dimension_count();
+        tableDic.isSparse = true;   // do not store zeroes
+        tableDic.exprPos = measures_position;
+        metaRows.tableDic.push_back(tableDic);
 
         // Labels and notes for the table
         for (auto lang : Symbol::pp_all_languages) {

@@ -750,19 +750,6 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // The table (not done at higher TableSymbol level because isUser differs)
-    {
-        TableDicRow tableDic;
-
-        tableDic.tableId = pp_table_id;
-        tableDic.tableName = name;
-        tableDic.isUser = false;
-        tableDic.rank = dimension_count();
-        tableDic.isSparse = true;   // do not store zeroes
-        tableDic.exprPos = measures_position;
-        metaRows.tableDic.push_back(tableDic);
-    }
-
     int maxAccIndex = 0;    // only to avoid acc->index increment later
 
     // accumulators for table
@@ -776,8 +763,12 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableAcc.isDerived = false;
         metaRows.tableAcc.push_back(tableAcc);
 
-        if (maxAccIndex < tableAcc.accId)maxAccIndex = tableAcc.accId;
+        // Maintain maxAccIndex to use when creating derived accumulators below.
+        if (maxAccIndex < tableAcc.accId) {
+            maxAccIndex = tableAcc.accId;
+        }
 
+        // Labels and notes for accumulators
         for (auto lang : Symbol::pp_all_languages) {
             TableAccTxtLangRow tableAccTxt;
             tableAccTxt.tableId = pp_table_id;
@@ -789,16 +780,17 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
     }
 
-    // expressions for table
+    // Measures for entity table.
     for (auto measure : pp_measures) {
 
         TableExprRow tableExpr;
 
         auto expr = dynamic_cast<EntityTableMeasureSymbol *>(measure);
         assert(expr); // logic guarantee
+
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = expr->index;
-        tableExpr.name = "expr" + to_string(expr->index);
+        tableExpr.name = "meas" + to_string(expr->index);
         tableExpr.decimals = expr->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "
@@ -807,10 +799,10 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             scale_part = measure->scale_as_factor() + " * ";
         }
 
-        // Obtain the expression to compute the measure for a single simulation member
+        // Construct the expression to compute the measure for a single simulation member.
         string measure_expr = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
 
-        // Assign the expression used to compute the measure over simulation members
+        // Construct the expression used to compute the measure over simulation members.
         if (measures_are_aggregated) {
             // Aggregate accumulators across simulation members before evaluating the expression for the measure.
             tableExpr.srcExpr =
@@ -822,7 +814,24 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
         }
 
-        // create derived accumulator for that table
+        // save table measure metadata
+        metaRows.tableExpr.push_back(tableExpr);
+
+        // Labels and notes for measures
+        for (auto lang : Symbol::pp_all_languages) {
+            TableExprTxtLangRow tableExprTxt;
+            tableExprTxt.tableId = pp_table_id;
+            tableExprTxt.exprId = expr->index;
+
+            tableExprTxt.langCode = lang->name;
+
+            tableExprTxt.descr = expr->label(*lang);
+
+            tableExprTxt.note = expr->note(*lang);
+            metaRows.tableExprTxt.push_back(tableExprTxt);
+        }
+
+        // Create derived accumulators for the table, one for each measure.
         TableAccRow tableAcc;
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = ++maxAccIndex;
@@ -837,23 +846,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         // TODO: add description and notes for that accumulator
         // But, these would be identical to the description and notes
-        // for the correspoinding measure.  So unclear whether
+        // for the corresponding measure.  So unclear whether
         // there's any point to duplicating that info.
-
-        // save table expression metadata
-        metaRows.tableExpr.push_back(tableExpr);
-
-        for (auto lang : Symbol::pp_all_languages) {
-            TableExprTxtLangRow tableExprTxt;
-            tableExprTxt.tableId = pp_table_id;
-            tableExprTxt.exprId = expr->index;
-
-            tableExprTxt.langCode = lang->name;
-
-            tableExprTxt.descr = expr->label(*lang);
-
-            tableExprTxt.note = expr->note(*lang);
-            metaRows.tableExprTxt.push_back(tableExprTxt);
-        }
     }
 }
