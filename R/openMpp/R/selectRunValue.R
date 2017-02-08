@@ -10,7 +10,7 @@
 # defRs     - model definition database rows
 # runId     - id of model run results
 # tableName - output table name, i.e.: "sexAge"
-# exprName  - (optional) output table expression name, i.e.: "Expr0"
+# exprName  - (optional) output table expression name, i.e.: "meas0"
 #             if missing or NA then return all expressions
 #
 # return data frame of output table rows:

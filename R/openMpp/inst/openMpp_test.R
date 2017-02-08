@@ -61,9 +61,11 @@ ageSex_paramRs <- selectRunParameter(theDb, defRs, runId, "ageSex")
 
 #
 # "modelOne" model parameters:
-#   age by sex parameter double[4, 2] 
-#   salary by age parameter int[3, 4]
-#   starting seed parameter integer value
+#   age by sex:    double[4, 2] 
+#   salary by age: int[3, 4]
+#   salary level:  int enum[3]
+#   base salary:   int enum scalar value
+#   starting seed: int scalar value
 #
 
 # age by sex parameter value and notes
@@ -118,6 +120,19 @@ salaryFull <- list(
   value = c(33L, 33L, 22L)
 )
 
+# base salary parameter enum value
+baseSalary <- list(
+
+  name = "baseSalary",
+
+  txt = data.frame(
+    lang = c("EN"),
+    note = c("base salary notes"),
+    stringsAsFactors = FALSE
+  ),
+  value = 22L
+)
+
 # starting seed parameter value and notes
 startingSeed <- list(
 
@@ -162,9 +177,10 @@ paramSetTxt <- data.frame(
 #
 
 # create new working set of model parameters
-# it is a full set and includes all "modelOne" parameters: "ageSex", "salaryAge", "StartingSeed", "salaryFull"
+# it is a full set and includes all "modelOne" parameters: 
+#   "ageSex", "salaryAge", "salaryFull", "baseSalary", "StartingSeed"
 #
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed, salaryFull)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, salaryFull, baseSalary, startingSeed)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # find working set id by name
@@ -179,7 +195,7 @@ paramSetTxt$name <- NA
 paramSetTxt$descr <- c("other set of parameters", "FR other set of parameters")
 paramSetTxt$note <- NA
 
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed, salaryFull)
+setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, baseSalary, salaryFull, startingSeed)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # 
