@@ -1452,6 +1452,12 @@ parameter_initializer_expr:
                             $wrk = nullptr;
                         }
     | /* Nothing */
+                        {
+                            auto parm = pc.get_parameter_context();
+                            assert(parm); // grammar guarantee
+                            // no initializer, so parameter was declared in model source.
+                            parm->is_declared = true;
+                        }
     ;
 
 

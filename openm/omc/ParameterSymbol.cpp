@@ -76,6 +76,12 @@ void ParameterSymbol::post_parse(int pass)
     }
     case eAssignMembers:
     {
+        if (!is_declared) {
+            // parameter was not declared in source code
+            // (but was parsed through an initializer in a .dat file)
+            pp_error(LT("error : parameter '") + name + LT("'") +
+                LT(" initialized but not declared in model"));
+        }
         // assign direct pointer to type symbol for use post-parse
         assert(datatype); // grammar guarantee
         assert(!pp_datatype); // no use allowed in parse phase
@@ -153,15 +159,16 @@ void ParameterSymbol::post_parse(int pass)
         // clear the parse version to avoid inadvertant use post-parse
         enumeration_list2.clear();
 
-        // check that declaration and initializer dimensions are identical
-        if (source == fixed_parameter || source == scenario_parameter) {
-            // rank check
+        // check initializer declaration against source declaration
+        if (is_declared && (source == fixed_parameter || source == scenario_parameter)) {
             if (pp_enumeration_list.size() != pp_enumeration_list2.size()) {
+                // rank check failed
                 pp_error(LT("error : parameter '") + name + LT("'") +
                     LT(" declared with rank ") + to_string(pp_enumeration_list.size()) +
                     LT(" but initialized with rank ") + to_string(pp_enumeration_list2.size()));
             }
             else {
+                // shape and type dimension type check
                 if (!std::equal(pp_enumeration_list.begin(), pp_enumeration_list.end(), pp_enumeration_list2.begin())) {
                     pp_error(LT("error : parameter '") + name + LT("'") +
                         LT(" declaration dimensions differ from initialisation dimensions"));

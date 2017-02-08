@@ -33,6 +33,7 @@ public:
         , lookup_fn(nullptr)
         , haz1rate(false)
         , is_hidden(false)
+        , is_declared(false)
         , datatype2(nullptr)
         , pp_datatype2(nullptr)
         , pp_parameter_id(0)
@@ -322,6 +323,11 @@ public:
      * True if the parameter is hidden
      */
     bool is_hidden;
+
+    /**
+     * True if the parameter was declared in model source
+     */
+    bool is_declared;
 
     /**
      * The data type of the parameter contents - redeclaration
