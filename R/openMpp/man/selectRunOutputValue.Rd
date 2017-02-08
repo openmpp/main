@@ -23,14 +23,14 @@ selectRunOutputValue(dbCon, defRs, runId, tableName, exprName = NA)
     output table name, i.e.: "sexAge"
   }
   \item{exprName}{
-    (optional) output table expression name, i.e.: "expr0"
+    (optional) output table expression name, i.e.: "meas0"
     if missing or NA then return all expressions
   }
 }
 \details{
 That call return values of output table expressions from model run results with id \code{runId}.
 
-You can get either value of single expression by specifying it name, i.e.: \code{"expr2"} 
+You can get either value of single expression by specifying it name, i.e.: \code{"meas2"} 
 or all expressions if \code{exprName} argument is missing.
 
 You must use \code{getModel} function in order to find model definition \code{defRs}.

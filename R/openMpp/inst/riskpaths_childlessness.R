@@ -137,7 +137,7 @@ system2(
 
 #
 # read results of task run from database
-#   cohort fertility: T05_CohortFertility.expr1
+#   cohort fertility: T05_CohortFertility.meas1
 #
 taskRunId <- getTaskLastRunId(theDb, taskId)  # most recent task run id
 taskRunRs <- selectTaskRun(theDb, taskRunId)  # get result id's
@@ -150,8 +150,8 @@ for (k in 1:scaleLen)
 {
   for (j in 1:scaleLen)
   {
-    # cohort fertility: T05_CohortFertility.expr1
-    expr1Rs <- selectRunOutputValue(theDb, defRs, taskRunRs$taskRunSet$run_id[runPos], "T05_CohortFertility", "expr1")
+    # cohort fertility: T05_CohortFertility.meas1
+    expr1Rs <- selectRunOutputValue(theDb, defRs, taskRunRs$taskRunSet$run_id[runPos], "T05_CohortFertility", "meas1")
     childlessnessMat[k, j] = expr1Rs$expr_value
     runPos <- runPos + 1
   }

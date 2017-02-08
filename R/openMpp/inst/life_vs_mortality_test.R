@@ -116,7 +116,7 @@ for (mortality in mortalityData$value)
 
 #
 # read final results from database
-#   average duration of life: DurationOfLife.expr3
+#   average duration of life: DurationOfLife.meas3
 #
 runIdRs <- getWorksetRunIds(theDb, setId)   # get result id's
 
@@ -125,7 +125,7 @@ for (runId in runIdRs$run_id)
 {
   lifeDurationData <- rbind(
     lifeDurationData,
-    selectRunOutputValue(theDb, defRs, runId, "DurationOfLife", "expr3")
+    selectRunOutputValue(theDb, defRs, runId, "DurationOfLife", "meas3")
   )
 }
 
