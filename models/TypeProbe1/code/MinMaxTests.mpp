@@ -1,0 +1,27 @@
+//LABEL(MinMaxTests, EN) Tests of min and max templates
+
+actor Person {
+    int clamped_count;
+    void ClampTest();
+    hook ClampTest, MortalityEvent;
+};
+
+// The implement function of MortalityEvent
+void Person::ClampTest()
+{
+    int lower = 40;
+    int upper = 50;
+    double clamped = 0.0;
+    //clamped = max(lower, min((double)time, upper));
+    clamped = max(lower, min(time, upper));
+    double diff = time - clamped;
+    if (diff != 0.0) clamped_count++;
+}
+
+table Person ClampedOccurrences //EN Clamped count
+{
+    {
+        clamped_count
+    }
+};
+
