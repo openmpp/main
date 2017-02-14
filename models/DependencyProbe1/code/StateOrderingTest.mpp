@@ -1,0 +1,108 @@
+﻿//LABEL (StateOrderingTest, EN) Test State Ordering
+/*NOTE (StateOrderingTest, EN)
+	This module tests the current ordering of state updates in Modgen.
+	The logic is based on the name of states, when all other conditions are equal.
+	This causes an issue when certain dependencies are not updated in the correct order.
+
+	This module is an implementation of the same bug that occurred in CRMM 3.
+*/
+
+range STATE_ORDERING_TEST_REPORT_YEAR
+{
+	60, 62
+};
+
+actor Person
+{
+	// This is set to MIN(STATE_ORDERING_TEST_REPORT_YEAR) in StateOrderingTestSetup()
+	int StateOrderingTestStartAge = { 0 };
+	int StateOrderingTestEndAge = StateOrderingTestStartAge;
+
+	// The year needs to be one more that the start age to ensure that
+	// AAA_StateOrderingTestCondition starts off the year true, and becomes false when integer_age is incremented later that year.
+	int StateOrderingTestStartYear = StateOrderingTestStartAge + 1;
+	int StateOrderingTestEndYear = StateOrderingTestStartYear;
+
+	// Birthday event
+	TIME StateOrderingTestNextBirthday;
+	event timeStateOrderingTestNextBirthday, StateOrderingTestNextBirthdayEvent;
+	int StateOrderingTest_integer_age = { 0 };
+
+	// Year event
+	TIME StateOrderingTestNextYear;
+	event timeStateOrderingTestNextYear, StateOrderingTestNextYearEvent;
+	int StateOrderingTest_year = { 0 };
+
+	// table dimension
+	STATE_ORDERING_TEST_REPORT_YEAR StateOrderingTest_report_year = COERCE(STATE_ORDERING_TEST_REPORT_YEAR, StateOrderingTest_year);
+
+	// Setup of module
+	void StateOrderingTestSetup();
+	hook StateOrderingTestSetup, Start;
+
+	// Two identical conditions with different names
+	logical AAA_StateOrderingTestCondition = StateOrderingTest_integer_age >= StateOrderingTestStartAge && StateOrderingTest_integer_age <= StateOrderingTestEndAge && StateOrderingTest_year >= StateOrderingTestStartYear && StateOrderingTest_year <= StateOrderingTestEndYear;
+	logical ZZZ_StateOrderingTestCondition = StateOrderingTest_integer_age >= StateOrderingTestStartAge && StateOrderingTest_integer_age <= StateOrderingTestEndAge && StateOrderingTest_year >= StateOrderingTestStartYear && StateOrderingTest_year <= StateOrderingTestEndYear;
+
+	// Two identical filters based on the different conditions
+	logical AAA_StateOrderingTestFilter = AAA_StateOrderingTestCondition && trigger_changes(StateOrderingTest_integer_age);
+	logical ZZZ_StateOrderingTestFilter = ZZZ_StateOrderingTestCondition && trigger_changes(StateOrderingTest_integer_age);
+};
+
+void Person::StateOrderingTestSetup()
+{
+	// Start age should be the first value of the STATE_ORDERING_TEST_REPORT_YEAR range
+	StateOrderingTestStartAge = MIN(STATE_ORDERING_TEST_REPORT_YEAR);
+
+	// Start of year is integer portion of time
+	StateOrderingTest_year = static_cast<int>(std::floor(time));
+	StateOrderingTestNextYear = StateOrderingTest_year + 1.0;
+
+	StateOrderingTest_integer_age = 0;
+	TIME timeSinceNewYearsDay = time - StateOrderingTest_year;
+
+	// Birthday is some time next year
+	StateOrderingTestNextBirthday = WAIT(1.0 - timeSinceNewYearsDay + RandUniform(2));
+}
+
+TIME Person::timeStateOrderingTestNextBirthday()
+{
+	return StateOrderingTestNextBirthday;
+}
+
+void Person::StateOrderingTestNextBirthdayEvent()
+{
+	StateOrderingTest_integer_age++;
+	StateOrderingTestNextBirthday = WAIT(1.0);
+}
+
+TIME Person::timeStateOrderingTestNextYear()
+{
+	return StateOrderingTestNextYear;
+}
+
+void Person::StateOrderingTestNextYearEvent()
+{
+	StateOrderingTest_year++;
+	StateOrderingTestNextYear = WAIT(1.0);
+}
+
+table Person StateOrderingTestWorking
+[undergone_entrance(AAA_StateOrderingTestFilter, TRUE)]
+{
+	StateOrderingTest_report_year
+	*
+	{ 
+		unit
+	}
+};
+
+table Person StateOrderingTestBroken
+[undergone_entrance(ZZZ_StateOrderingTestFilter, TRUE)]
+{
+	StateOrderingTest_report_year
+	*
+	{
+		unit
+	}
+};
