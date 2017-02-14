@@ -90,6 +90,9 @@ void Person::Start()
     age = 0;
     time = 0;
 
+    // hook location for ompp
+    hook_Start();
+
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 
