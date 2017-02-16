@@ -369,7 +369,7 @@ for my $model_dir (@model_dirs) {
 		# Folders for reference model outputs
 		my $reference_outputs_dir = "${reference_dir}/outputs";
 
-		my $generated_code_dir = "${project_dir}/build/src";
+		my $generated_code_dir = "${project_dir}/src";
 		remove_tree $generated_code_dir;
 		make_path $generated_code_dir;
 

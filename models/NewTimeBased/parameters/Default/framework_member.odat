@@ -1,0 +1,7 @@
+parameters {
+    //EN Simulation member
+    int Member = 0;
+
+    //EN Number of simulation members
+    int MemberCount = 1;
+};
