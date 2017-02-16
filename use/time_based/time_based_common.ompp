@@ -163,9 +163,22 @@ void SimulateEvents()
  */
 void RunSimulation(int mem_id, int mem_count)
 {
-    extern void CaseSimulation(); // defined elsewhere
-
     using namespace fmk;
+
+#if false
+    // Run-time sanity check that Member and MemberCount parameters
+    // correspond to the values retrieved from the IModel interface.
+    if (mem_id != Member || mem_count != MemberCount) {
+        ostringstream ss;
+        ss  << LT("error : simulation member inconsistency")
+            << LT(" Member=") << Member
+            << LT(" (IModel value=") << mem_id << ")"
+            << LT(" MemberCount=") << MemberCount
+            << LT(" (IModel value=") << mem_count << ")"
+            ;
+        ModelExit(ss.str().c_str());
+    }
+#endif
 
     // Initialize the entity counter for this simulation member
     member_entity_counter = 0;

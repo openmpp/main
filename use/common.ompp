@@ -5,7 +5,7 @@
 * The global functions in this module are declared in omSimulation.h.
 * 
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2017 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 namespace fmk {
@@ -76,6 +76,14 @@ namespace fmk {
      */
     thread_local bool do_exit_simulation_all = false;
 }
+
+parameters {
+    //EN Number of simulation members
+    int MemberCount;
+
+    //EN Simulation member
+    int Member;
+};
 
 /**
  * Gets the combined seed.
