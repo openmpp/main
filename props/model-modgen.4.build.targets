@@ -106,7 +106,7 @@
   ScexPublish
   -->
   <ItemGroup>
-    <FRAMEWORK_ODAT Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*Framework*.odat" />
+    <FRAMEWORK_ODAT Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/Framework.odat" />
   </ItemGroup>
  
   <PropertyGroup>
