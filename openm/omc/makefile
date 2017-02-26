@@ -94,6 +94,7 @@ IdentityAttributeSymbol.cpp \
 LanguageSymbol.cpp \
 LinkAttributeSymbol.cpp \
 LinkToAttributeSymbol.cpp \
+MaintainedAttributeSymbol.cpp \
 ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
 MultilinkAttributeSymbol.cpp \

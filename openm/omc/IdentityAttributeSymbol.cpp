@@ -79,6 +79,11 @@ void IdentityAttributeSymbol::post_parse(int pass)
         
         // Perform post-parse operations to each element in the expression tree
         post_parse_traverse2(root);
+
+        // record dependencies
+        for (auto *sym : pp_attributes_used) {
+            pp_dependent_attributes.emplace(sym);
+        }
         break;
     }
     case ePopulateDependencies:

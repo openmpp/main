@@ -167,6 +167,7 @@ public:
         , redecl_loc(yy::location())
         , reference_count(0)
         , sorting_group(10)
+        , code_order(0)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -208,6 +209,7 @@ public:
         , redecl_loc(yy::location())
         , reference_count(0)
         , sorting_group(10)
+        , code_order(0)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -243,6 +245,7 @@ public:
         , redecl_loc(yy::location())
         , reference_count(0)
         , sorting_group(10)
+        , code_order(0)
     {
         // find symbol table entry for the existing symbol
         auto it = symbols.find( unique_name );
@@ -308,13 +311,13 @@ public:
         ///< post-parse pass to assign pp_ members, etc.
         eAssignMembers,
 
-        ///< post-parse pass to resolve data types of derived agentvars, etc.
+        ///< post-parse pass to resolve data types of derived attributes, etc.
         eResolveDataTypes,
 
         ///< post-parse pass to populate pp_ collections, etc.
         ePopulateCollections,
 
-        ///< post-parse pass to populate dependencies, etc.
+        ///< post-parse pass to populate dependencies, side-effects, etc.
         ePopulateDependencies,
 
     };
@@ -523,7 +526,7 @@ public:
      *
      * @param pos The position.
      *
-     * @return true if it a valid comment line was foudn and processed, else false.
+     * @return true if it a valid comment line was found and processed, else false.
      */
     bool process_symbol_label(const yy::position& pos);
 
@@ -577,9 +580,14 @@ public:
      * The sorting group the Symbol belongs in.
      * 
      * Used to control the order in which code is injected into side-effect call-back functions
-     * to handle inderdependencies in derived agentvars.
+     * to handle interdependencies in derived attributes.
      */
     int sorting_group;
+
+    /**
+     * The order for code insertion (higher values insert first).
+     */
+    int code_order;
 
     /**
      * Check for existence of symbol with this unique name.
@@ -761,11 +769,14 @@ public:
     /**
      * Populate pp symbols
      * 
-     * pp_symbols is a version of the symbol table sorted in a fixed known order, unlike the symbol table which is an unordered map.
-     * The order of pp_symbols is sorting_group, followed by unique_name.  The higher order sorting_group controls the order of code injection
-     * for derived agentvars with interdependencies.
+     * pp_symbols is a version of the symbol table sorted in a known order, unlike the symbol table which is an unordered map.
      */
     static void populate_pp_symbols();
+
+    /**
+     * Sort pp_symbols in default order
+     */
+    static void default_sort_pp_symbols();
 
     /**
      * Sort pp_symbols for Modgen compatible code-generation (1).

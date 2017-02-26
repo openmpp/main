@@ -108,6 +108,13 @@ public:
      */
     bool is_valid_comparison(const ConstantSymbol * constant, string &err_msg);
 
+    /**
+     * Determines if attribute is a maintained attribute.
+     *
+     * @return true if valid comparison, false if not.
+     */
+    bool is_maintained() const;
+
     void post_parse(int pass);
 
     /**

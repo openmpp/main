@@ -40,6 +40,7 @@
 #include "EntityInternalSymbol.h"
 #include "EntityMultilinkSymbol.h"
 #include "AttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
 #include "BuiltinAttributeSymbol.h"
 #include "SimpleAttributeSymbol.h"
 #include "SimpleAttributeEnumSymbol.h"

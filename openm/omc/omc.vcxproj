@@ -219,6 +219,7 @@
     <ClInclude Include="LinkToAttributeSymbol.h" />
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
+    <ClInclude Include="MaintainedAttributeSymbol.h" />
     <ClInclude Include="ModelSymbol.h" />
     <ClInclude Include="ModelTypeSymbol.h" />
     <ClInclude Include="ModuleSymbol.h" />
@@ -297,6 +298,7 @@
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAttributeSymbol.cpp" />
     <ClCompile Include="LinkToAttributeSymbol.cpp" />
+    <ClCompile Include="MaintainedAttributeSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="MultilinkAttributeSymbol.cpp" />
@@ -326,7 +328,6 @@
     <ClCompile Include="UnknownTypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />
   </ItemGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
@@ -346,12 +347,10 @@
     <Exec Command="$(BISON_FLEX_DIR)/$(BISON_EXE) --warnings=error -v -b parser -o $(BUILD_OMC_SRC_DIR)/parser.cpp parser.y" />
   </Target>
   <Target Name="BisonFlex" BeforeTargets="BeforeClCompile" DependsOnTargets="DoFlex;DoBison" />
-
   <ItemGroup>
     <OmcIni Include="omc.ini" />
     <OmcIni Include="omc.message.ini" />
   </ItemGroup>
-  
   <Target Name="CopyIni" AfterTargets="link">
     <Copy SourceFiles="@(OmcIni)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('%(FullPath)')" />
   </Target>

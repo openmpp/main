@@ -5,12 +5,15 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#define DEPENDENCY_TEST 0
+
 #include <cassert>
 #include <limits>
 #include <algorithm>
 #include <typeinfo>
 #include <unordered_map>
 #include <set>
+#include <map>
 #include "location.hh"
 #include "libopenm/omLog.h"
 #include "libopenm/db/modelBuilder.h"   // for OM_MAX_BUILTIN_TYPE_ID
@@ -36,6 +39,7 @@
 #include "EntityEventSymbol.h"
 #include "EntityFuncSymbol.h"
 #include "AttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
 #include "DerivedAttributeSymbol.h"
 #include "LinkAttributeSymbol.h"
 #include "EntityMultilinkSymbol.h"
@@ -1014,11 +1018,44 @@ void Symbol::populate_pp_symbols()
     for (auto sym : symbols) {
         pp_symbols.push_back(sym);
     }
+}
+
+void Symbol::default_sort_pp_symbols()
+{
+    // The default order of pp_symbols is sorting_group, followed by unique_name.
+    // The higher order sorting_group controls the order of code injection
+    // for derived attributes with interdependencies.
+    
+    // sorting_group (ascending)
+    // code_order (descending)
+    // unique_name (ascending)
+
     pp_symbols.sort(
         [](symbol_map_value_type a, symbol_map_value_type b)
         {
-            return a.second->sorting_group < b.second->sorting_group
-                || (a.second->sorting_group == b.second->sorting_group && a.second->unique_name < b.second->unique_name);
+            //return a.second->sorting_group < b.second->sorting_group
+            //    || (a.second->sorting_group == b.second->sorting_group && a.second->unique_name < b.second->unique_name)
+            //    ;
+
+            //return a.second->sorting_group < b.second->sorting_group
+            //    || (a.second->sorting_group == b.second->sorting_group && a.second->code_order > b.second->code_order)
+            //    || (a.second->code_order == b.second->code_order && a.second->unique_name < b.second->unique_name)
+            //    ;
+ 
+            // sorting_group (ascending)
+            if (a.second->sorting_group < b.second->sorting_group) return true;
+            if (a.second->sorting_group > b.second->sorting_group) return false;
+
+            // code_order (descending)
+            if (a.second->code_order > b.second->code_order) return true;
+            if (a.second->code_order < b.second->code_order) return false;
+
+            // unique_name (ascending)
+            if (a.second->unique_name < b.second->unique_name) return true;
+            if (a.second->unique_name > b.second->unique_name) return false;
+
+            // is not < (but actually not reached)
+            return false;
         }
     );
 }
@@ -1098,6 +1135,7 @@ void Symbol::post_parse_all()
 
     // Create pp_symbols now to easily find Symbols while debugging.
     populate_pp_symbols();
+    default_sort_pp_symbols();
 
     // pass 1: create additional symbols not created during parse phase
     // symbols will be processed in lexicographical order within sorting group
@@ -1113,6 +1151,7 @@ void Symbol::post_parse_all()
 
     // Recreate pp_symbols because symbols may have changed or been added.
     populate_pp_symbols();
+    default_sort_pp_symbols();
 
     // pass 2: assign label using default or from comment on same lines as symbol declaration
     // Symbols will be processed in lexicographical order within sorting group.
@@ -1126,7 +1165,7 @@ void Symbol::post_parse_all()
         pr.second->post_parse( eAssignMembers );
     }
 
-    // pass 4: resolve derived agentvar data types
+    // pass 4: resolve derived attribute data types
     // Symbols will be processed in lexicographical order within sorting group.
     type_changes = 1;
     int type_change_passes = 0;
@@ -1206,6 +1245,7 @@ void Symbol::post_parse_all()
     for ( auto agent : pp_all_agents ) {
         agent->pp_agent_data_members.sort( [] (EntityDataMemberSymbol *a, EntityDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_callback_members.sort( [] (EntityMemberSymbol *a, EntityMemberSymbol *b) { return a->name < b->name ; } );
+        agent->pp_maintained_attributes.sort( [] (MaintainedAttributeSymbol *a, MaintainedAttributeSymbol *b) { return a->name < b->name ; } );
         agent->pp_identity_agentvars.sort( [] (IdentityAttributeSymbol *a, IdentityAttributeSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_events.sort( [] (EntityEventSymbol *a, EntityEventSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agent_funcs.sort( [] (EntityFuncSymbol *a, EntityFuncSymbol *b) { return a->name < b->name ; } );
@@ -1277,7 +1317,6 @@ void Symbol::post_parse_all()
     }
 
     // Optionally sort symbol table so that self-scheduled attributes have identical numbers
-    // and identical code injection order between ompp and Modgen.
     if (modgen_sort_option) {
         // This first sort does not respect sorting group.
         // It is used temporarily to reproduce the Modgen self-scheduling
@@ -1285,7 +1324,7 @@ void Symbol::post_parse_all()
         modgen_sort_pp_symbols1();
     }
 
-    // Assign numeric identifier to self-scheduling derived agentvars (used in trace output)
+    // Assign numeric identifier to self-scheduling derived attributes (used in trace output)
     for (auto pr : pp_symbols) {
         auto sym = pr.second;
         if (auto dav = dynamic_cast<DerivedAttributeSymbol *>(sym)) {
@@ -1297,12 +1336,127 @@ void Symbol::post_parse_all()
     }
 
     if (modgen_sort_option) {
-        // This second sort restores sorting group
-        modgen_sort_pp_symbols2();
+        // Restore default sort order
+        //modgen_sort_pp_symbols2();
+        default_sort_pp_symbols();
     }
+
+#if defined(DEPENDENCY_TEST)
+    // For each entity in the model, determine the code injection order
+    // of its maintained attributes.
+    for (auto *ent : pp_all_agents) {
+
+        // Construct working multimap map 'dpnd' containing all dependencies
+        // of maintained attributes on other maintained attributes.
+        multimap<MaintainedAttributeSymbol *, MaintainedAttributeSymbol *> dpnd;
+        for (auto *attr1 : ent->pp_maintained_attributes) {
+            for (auto *attr2 : attr1->pp_dependent_attributes) {
+                if (attr2->is_maintained()) {
+                    MaintainedAttributeSymbol *attr2m = dynamic_cast<MaintainedAttributeSymbol *>(attr2);
+                    assert(attr2m);
+                    dpnd.emplace(attr1, attr2m);
+                }
+            }
+        }
+
+        {
+            // TODO SFG - for debugging, comment for production
+            ostringstream ss;
+            ss << "  processing code order of " << ent->pp_maintained_attributes.size() << " maintained attributes of entity '" << ent->name << "'";
+            theLog->logMsg(ss.str().c_str());
+        }
+
+        // Increment code order priority (higher comes first in dependency order)
+        // until convergence.  If there is no convergence, there is a circular dependency error
+        // among the maintained attributes.
+        static int max_iters = 100;
+        int iter = 0;
+        while (true) {
+            if (iter >= max_iters) {
+                string msg = LT("error : circularity detected in maintained attributes of entity '") + ent->name + LT("'");
+                post_parse_errors++;
+                theLog->logMsg(msg.c_str());
+                break;
+            }
+            ++iter;
+
+            int changes = 0;
+            for (auto &p : dpnd) {
+                if (p.second->code_order <= p.first->code_order) {
+                    // assign higher order to dependent maintained attribute
+                    // so that its code will be inserted first.
+                    p.second->code_order = p.first->code_order + 1;
+                    ++changes;
+                }
+            }
+
+            {
+                // TODO SFG - for debugging, comment for production
+                ostringstream ss;
+                ss << "    iteration " << iter << " changes " << changes;
+                theLog->logMsg(ss.str().c_str());
+            }
+
+            if (changes == 0) {
+                // convergence
+                break;
+            }
+        }
+
+        {
+            // TODO SFG - for debugging, comment for production
+            ostringstream ss;
+            ss << "    code injection order:";
+            theLog->logMsg(ss.str().c_str());
+
+            // working copy of maintained attributes
+            auto lst = ent->pp_maintained_attributes;
+            lst.sort(
+                [](MaintainedAttributeSymbol *a, MaintainedAttributeSymbol *b)
+                {
+                    // sorting_group (ascending)
+                    if (a->sorting_group < b->sorting_group) return true;
+                    if (a->sorting_group > b->sorting_group) return false;
+
+                    // code_order (descending)
+                    if (a->code_order > b->code_order) return true;
+                    if (a->code_order < b->code_order) return false;
+
+                    // unique_name (ascending)
+                    if (a->unique_name < b->unique_name) return true;
+                    if (a->unique_name > b->unique_name) return false;
+
+                    // is not < (but actually not reached)
+                    return false;
+                }
+            );
+
+            for (auto *attr : lst) {
+                ostringstream ss;
+                ss.str("");
+                ss  << "    " 
+                    << attr->sorting_group
+                    << " "
+                    << attr->code_order
+                    << " "
+                    << attr->name
+                    ;
+                if (auto *ia = dynamic_cast<IdentityAttributeSymbol *>(attr)) {
+                    ss  << " = "
+                        << IdentityAttributeSymbol::cxx_expression(ia->root);
+                }
+
+                theLog->logMsg(ss.str().c_str());
+            }
+        }
+    }
+    // Sort taking account of code injection order before pass 6
+    default_sort_pp_symbols();
+#endif
 
     // Pass 6: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
+    // This includes code insertion in callback functions.
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateDependencies );

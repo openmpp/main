@@ -21,6 +21,8 @@
 #include "PartitionSymbol.h"
 #include "CodeBlock.h"
 
+#include "MaintainedAttributeSymbol.h" // for check based on dynmaic cast below
+
 using namespace std;
 
 void AttributeSymbol::create_auxiliary_symbols()
@@ -171,6 +173,11 @@ bool AttributeSymbol::is_valid_comparison(const ConstantSymbol * constant, strin
         }
     }
     return true;
+}
+
+bool AttributeSymbol::is_maintained() const
+{
+    return nullptr != dynamic_cast<const MaintainedAttributeSymbol *>(this);
 }
 
 

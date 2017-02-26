@@ -261,6 +261,9 @@
     <ClInclude Include="omc_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MaintainedAttributeSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -459,6 +462,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="omc_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaintainedAttributeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

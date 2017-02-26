@@ -15,6 +15,7 @@ class EntityEventSymbol;
 class EntityEventSymbol;
 class EntityFuncSymbol;
 class AttributeSymbol;
+class MaintainedAttributeSymbol;
 class IdentityAttributeSymbol;
 class LinkAttributeSymbol;
 class EntityMultilinkSymbol;
@@ -254,6 +255,13 @@ public:
      *  Populated after parsing is complete.
      */
     list<EntityMemberSymbol *> pp_callback_members;
+
+    /**
+     * The maintained attributes of this agent.
+     * 
+     *  Populated after parsing is complete.
+     */
+    list<MaintainedAttributeSymbol *> pp_maintained_attributes;
 
     /**
      * The expression agentvars of this agent.

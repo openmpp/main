@@ -5,6 +5,8 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#define DEPENDENCY_TEST 0
+
 #include <cassert>
 #include "libopenm/omError.h"
 #include "DerivedAttributeSymbol.h"
@@ -524,10 +526,10 @@ void DerivedAttributeSymbol::assign_sorting_group()
     // Code injection is ordered by sorting group, then lexicographically by unique_name.
     // 
     // The ordering requirements are as follows:
-    // continuously-updated durations occur first (side-effect of 'time')
-    // undergone_* (2) is used by value_at_first_* (1) in side-effect of condition
-    // active_spell_* (2) is used by completed_spell_* (1)in side-effect of condition
-    // active_spell_delta (2) occurs before identity condition (9) in side-effect of time
+    // - continuously-updated durations occur first (side-effect of 'time')
+    // - undergone_* (2) is used by value_at_first_* (1) in side-effect of condition
+    // - active_spell_* (2) is used by completed_spell_* (1)in side-effect of condition
+    // - active_spell_delta (2) occurs before identity condition (9) in side-effect of time
 
     switch (tok) {
     case token::TK_trigger_entrances:
@@ -575,6 +577,11 @@ void DerivedAttributeSymbol::assign_sorting_group()
         break;
     }
     }
+#if defined(DEPENDENCY_TEST)
+    // Assign all derived attributes to sorting group 8
+    // so that code_order resolves depdencies among them.
+    sorting_group = 8;
+#endif
 }
 
 void DerivedAttributeSymbol::create_auxiliary_symbols()
@@ -834,6 +841,114 @@ void DerivedAttributeSymbol::assign_data_type()
         assert(false); // A type for each kind of derived attribute should have been assigned above.
     break;
     }
+
+}
+
+void DerivedAttributeSymbol::record_dependencies()
+{
+    // dependency on explicitly named attribute (first)
+    if (pp_av1) {
+        pp_dependent_attributes.emplace(pp_av1);
+    }
+
+    // dependency on explicitly named attribute (second)
+    if (pp_av2) {
+        pp_dependent_attributes.emplace(pp_av2);
+    }
+
+    // dependency on explicit condition (identity attribute)
+    if (iav) {
+        pp_dependent_attributes.emplace(iav);
+    }
+
+    // implicit dependencies on time and age
+    switch (tok) {
+
+    case token::TK_duration:
+    case token::TK_weighted_duration:
+    case token::TK_active_spell_duration:
+    case token::TK_active_spell_weighted_duration:
+    {
+        // implicit dependency on time
+        auto *sym = pp_agent->pp_time;
+        assert(sym);
+        pp_dependent_attributes.emplace(sym);
+        break;
+    }
+
+    case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
+    {
+        // Dependency on time and age are already handled above through pp_av1.
+        // which is time, age, durationl, or active_spell_duration
+        // No need to go deeper into the composition of the duration or active_spell_duration,
+        // (e.g the identity attribute holding a condition), since such dependencies
+        // are already accounted for in the duration/active_spell_duration attribute itself.
+        break;
+    }
+
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_first_change:
+    {
+        // These attributes make use of the corresponding undergone_* attribute
+        // to record only the first change.  So, the undergone_* attribute
+        // needs to be updated after the value_at* attribute
+        // to record only the first change.
+        assert(dav);
+        dav->pp_dependent_attributes.emplace(this);
+    }
+
+    case token::TK_completed_spell_duration:
+    case token::TK_completed_spell_weighted_duration:
+    case token::TK_completed_spell_delta:
+    {
+        // These attributes make use of the corresponding active_spell_* attribute
+        // to get the value before the spell becomes false.
+        // So, the active_spell_* attribute
+        // needs to be updated after the completed_spell_* attribute
+        // to record its value before the spell becomse false.
+        assert(dav);
+        dav->pp_dependent_attributes.emplace(this);
+    }
+
+    case token::TK_weighted_cumulation:
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    case token::TK_value_at_latest_entrance:
+    case token::TK_value_at_latest_exit:
+    case token::TK_value_at_latest_transition:
+    case token::TK_value_at_latest_change:
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
+    case token::TK_duration_trigger:
+    case token::TK_entrances:
+    case token::TK_exits:
+    case token::TK_transitions:
+    case token::TK_changes:
+    case token::TK_duration_counter:
+    case token::TK_active_spell_delta:
+    case token::TK_value_at_entrances:
+    case token::TK_value_at_exits:
+    case token::TK_value_at_transitions:
+    case token::TK_value_at_changes:
+    case token::TK_split:
+    case token::TK_aggregate:
+    {
+        // no implicit dependency
+        break;
+    }
+
+    default:
+        assert(false); // above cases should be exhaustive
+    break;
+    }
+
 
 }
 
@@ -2391,6 +2506,25 @@ bool DerivedAttributeSymbol::is_self_scheduling() const
     }
 }
 
+bool DerivedAttributeSymbol::is_trigger() const
+{
+    switch (tok) {
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
+    {
+        return true;
+        break;
+    }
+    default:
+    {
+        return false;
+        break;
+    }
+    }
+}
+
 string DerivedAttributeSymbol::pp_modgen_name() const
 {
     if (!is_self_scheduling()) return unique_name;
@@ -2527,6 +2661,11 @@ void DerivedAttributeSymbol::post_parse(int pass)
     case eResolveDataTypes:
     {
         assign_data_type();
+        break;
+    }
+    case ePopulateCollections:
+    {
+        record_dependencies();
         break;
     }
     case ePopulateDependencies:

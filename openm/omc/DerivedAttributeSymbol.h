@@ -6,7 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "AttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
 #include "NumericSymbol.h"
 #include "ConstantSymbol.h"
 
@@ -23,10 +23,10 @@ using namespace std;
  * Symbol for derived agentvars with various signatures
  * E.g. duration(happy, true)
  */
-class DerivedAttributeSymbol : public AttributeSymbol
+class DerivedAttributeSymbol : public MaintainedAttributeSymbol
 {
 private:
-    typedef AttributeSymbol super;
+    typedef MaintainedAttributeSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -45,7 +45,7 @@ public:
                           const ConstantSymbol *k1,
                           const ConstantSymbol *k2,
                           const ConstantSymbol *k3)
-        : AttributeSymbol(DerivedAttributeSymbol::member_name(tok, av1, av2, prt, cls, k1, k2, k3),
+        : MaintainedAttributeSymbol(DerivedAttributeSymbol::member_name(tok, av1, av2, prt, cls, k1, k2, k3),
                         agent,
                         NumericSymbol::find(token::TK_double) // will be changed later
                         )
@@ -394,6 +394,11 @@ public:
     void assign_pp_members();
 
     /**
+     * Record symbols on which the derived attributes depends
+     */
+    void record_dependencies();
+
+    /**
      * Create side-effects to maintain this symbol.
      */
     void create_side_effects();
@@ -415,11 +420,18 @@ public:
     }
 
     /**
-     * Query if this derived agentvar is self-scheduling.
+     * Query if this derived attribute is self-scheduling.
      *
      * @return true if self-scheduling, false if not.
      */
     bool is_self_scheduling() const;
+
+    /**
+     * Query if this derived attribute is a trigger.
+     *
+     * @return true if a trigger, false if not.
+     */
+    bool is_trigger() const;
 
     /**
      * Name for local flag variable used in implement function of self-scheduling event

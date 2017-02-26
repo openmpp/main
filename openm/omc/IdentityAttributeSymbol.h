@@ -8,7 +8,7 @@
 #pragma once
 #include <string>
 #include <set>
-#include "AttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
 #include "LinkToAttributeSymbol.h"
 #include "EntityFuncSymbol.h"
 
@@ -20,10 +20,10 @@ using namespace std;
 * Symbol for identity attributes of the form attribute = <expression>;
 */
 
-class IdentityAttributeSymbol : public AttributeSymbol
+class IdentityAttributeSymbol : public MaintainedAttributeSymbol
 {
 private:
-    typedef AttributeSymbol super;
+    typedef MaintainedAttributeSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -38,7 +38,7 @@ public:
      * @param decl_loc      (Optional) the declaration location.
      */
     IdentityAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, ExprForAttribute *root, yy::location decl_loc = yy::location())
-        : AttributeSymbol(sym, agent, type, decl_loc)
+        : MaintainedAttributeSymbol(sym, agent, type, decl_loc)
         , root(root)
     {
         create_auxiliary_symbols();
@@ -61,7 +61,7 @@ public:
      * @param decl_loc      (Optional) the declaration location.
      */
     IdentityAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, ExprForAttribute *root, yy::location decl_loc = yy::location())
-        : AttributeSymbol(member_name, agent, type, decl_loc)
+        : MaintainedAttributeSymbol(member_name, agent, type, decl_loc)
         , root(root)
     {
         create_auxiliary_symbols();
