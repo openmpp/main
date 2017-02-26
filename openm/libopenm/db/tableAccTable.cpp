@@ -46,7 +46,8 @@ namespace openm
         &typeid(decltype(TableAccRow::accId)), 
         &typeid(decltype(TableAccRow::name)), 
         &typeid(decltype(TableAccRow::isDerived)), 
-        &typeid(decltype(TableAccRow::expr))
+        &typeid(decltype(TableAccRow::accSrc)),
+        &typeid(decltype(TableAccRow::accSql))
     };
 
     // Size (number of columns) for table_acc join to model_table_dic row
@@ -79,7 +80,10 @@ namespace openm
                 dynamic_cast<TableAccRow *>(i_row)->isDerived = (*(bool *)i_value);
                 break;
             case 5:
-                dynamic_cast<TableAccRow *>(i_row)->expr = ((const char *)i_value);
+                dynamic_cast<TableAccRow *>(i_row)->accSrc = ((const char *)i_value);
+                break;
+            case 6:
+                dynamic_cast<TableAccRow *>(i_row)->accSql = ((const char *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -108,7 +112,7 @@ TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId, bool i_isInclude
 { 
     const IRowAdapter & adp = TableAccRowAdapter();
     rowVec = load(
-        "SELECT M.model_id, M.model_table_id, D.acc_id, D.acc_name, D.is_derived, D.acc_expr" \
+        "SELECT M.model_id, M.model_table_id, D.acc_id, D.acc_name, D.is_derived, D.acc_src, D.acc_sql" \
         " FROM table_acc D" \
         " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +

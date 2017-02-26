@@ -356,25 +356,6 @@ void CodeGen::do_RunInit()
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
 
-    c += "theLog->logMsg(\"Initialize invariant entity data\");";
-
-    c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_agent.om_assign_member_offsets();";
-        c += agent->name + "::om_null_agent.om_initialize_data_members0();";
-        c += "";
-    }
-
-    c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
-        c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
-        c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
-    }
-    c += "";
-
     c += "theLog->logMsg(\"Get fixed and missing parameters\");";
     // Missing parameters are done here, since they are handled identically to fixed parameters.
     bool any_missing_parameters = false;
@@ -410,7 +391,12 @@ void CodeGen::do_RunInit()
     c += "theLog->logMsg(\"Get scenario parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
-            c += parameter->cxx_type_check();
+
+            // TODO: update in order to use vector of sub-values
+            // throw exception("TODO: work in progress on parameter sub-values");
+            //
+            // c += parameter->cxx_type_check();
+            //
             c += parameter->cxx_read_parameter();
             if (parameter->cumrate) {
                 // prepare cumrate for parameter
@@ -450,6 +436,25 @@ void CodeGen::do_RunInit()
         }
     }
 
+    c += "theLog->logMsg(\"Initialize invariant entity data\");";
+
+    c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "// Entity - " + agent->name;
+        c += agent->name + "::om_null_agent.om_assign_member_offsets();";
+        c += agent->name + "::om_null_agent.om_initialize_data_members0();";
+        c += "";
+    }
+
+    c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "// Entity - " + agent->name;
+        c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
+        c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
+        c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
+    }
+    c += "";
+
 	c += "}";
 	c += "";
 }
@@ -459,6 +464,39 @@ void CodeGen::do_ModelStartup()
     c += "// Model startup method: Initialization for a simulation thread";
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
+
+    c += "// bind parameters reference thread local values";
+    c += "// at this point parameter values undefined and cannot be used by the model";
+    c += "//";
+    for (auto parameter : Symbol::pp_all_parameters) {
+
+        // skip derived and fixed parameters, it should be only parameters visible to user.
+        if (parameter->source == ParameterSymbol::derived_parameter || parameter->source == ParameterSymbol::fixed_parameter) continue;
+
+        if (parameter->size() > 1) {
+
+            c += parameter->name + " = " +
+                "*reinterpret_cast<" + parameter->pp_datatype->name + "(*)" + parameter->cxx_dimensions() + ">(" +
+                parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
+                ");";
+        }
+        else {
+            if (!parameter->pp_datatype->is_time()) {
+                c += parameter->name + " = " +
+                    "*" +
+                    parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
+            }
+            else {
+                c += parameter->name + " = " +
+                    "*reinterpret_cast<" + parameter->pp_datatype->name + " *>(" +
+                    parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
+                    ");";
+            }
+        }
+    }
+    c += "//";
+    c += "// parameters ready now and can be used by the model";
+    c += "";
 
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
@@ -503,7 +541,7 @@ void CodeGen::do_ModelShutdown()
 	c += "void ModelShutdown(IModel * const i_model)";
 	c += "{";
     c += "// obtain simulation member to use for log messages";
-    c += "int simulation_member = i_model->subSampleNumber();";
+    c += "int simulation_member = i_model->subValueId();";
     c += "";
     c += "// extract accumulators, and scale them to population size";
     for ( auto table : Symbol::pp_all_entity_tables ) {
@@ -851,8 +889,8 @@ void CodeGen::do_RunModel()
     c += "BaseEvent::initialize_simulation_runtime();";
     c += "BaseAgent::initialize_simulation_runtime();";
     c += "";
-    c += "int mem_id = i_model->subSampleNumber();";
-    c += "int mem_count = i_model->subSampleCount();";
+    c += "int mem_id = i_model->subValueId();";
+    c += "int mem_count = i_model->subValueCount();";
     c += "RunSimulation(mem_id, mem_count); // Defined by the model framework, generally in a 'use' module";
     c += "";
     c += "BaseEvent::finalize_simulation_runtime();";
@@ -860,7 +898,6 @@ void CodeGen::do_RunModel()
     c += "}";
     c += "";
 }
-
 
 void CodeGen::do_API_entries()
 {

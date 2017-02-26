@@ -55,11 +55,11 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Writing Outpu
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Run: %d', 'Run: %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Run: %d',
                                                                   'Exécution: %d');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Subsample %d', 'Subsample %d');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Subsample %d',
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Sub-value %d', 'Sub-value %d');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Sub-value %d',
                                                                   'Sous échantillon %d');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Restart from subsample %d', 'Restart from subsample %d');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Restart from subsample %d',
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Restart from sub-value %d', 'Restart from sub-value %d');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Restart from sub-value %d',
                                                                   'Redemarrer du sous-échantillon %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'MPI error: send %d unfinished from %d to %d', 'MPI error: send %d unfinished from %d to %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'MPI error: send %d unfinished from %d to %d',

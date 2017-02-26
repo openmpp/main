@@ -62,13 +62,16 @@ namespace openm
         static unique_ptr<char> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
 
         /** return an MPI_Pack'ed copy of source string array. */
-        static const vector<char> packArray(size_t i_size, const string * i_valueArr);
+        static unique_ptr<char> packArray(size_t i_size, const string * i_valueArr);
 
         /** unpack MPI_Pack'ed string array from i_packedData into supplied io_valueArr. */
         static void unpackArray(int i_packedSize, void * i_packedData, size_t i_size, string * io_valueArr);
 
         /** return MPI pack size for array of specified primitive type values. */
         static int packedSize(const type_info & i_type, size_t i_size);
+
+        /** return MPI pack size of string array. */
+        static int packedSize(size_t i_size, const string * i_valueArr);
 
         /** return MPI pack size for specified primitive type. */
         static int packedSize(const type_info & i_type);

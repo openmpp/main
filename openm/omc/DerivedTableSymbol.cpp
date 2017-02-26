@@ -95,7 +95,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = acc->index;
-        tableAcc.expr = acc->pretty_name();
+        tableAcc.accSrc = acc->pretty_name();
         tableAcc.isDerived = false;
         metaRows.tableAcc.push_back(tableAcc);
 
@@ -164,7 +164,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = ++maxAccIndex;
         tableAcc.isDerived = true;
-        tableAcc.expr = scale_part + measure_expr;
+        tableAcc.accSrc = scale_part + measure_expr;
         metaRows.tableAcc.push_back(tableAcc);
 
         // important:

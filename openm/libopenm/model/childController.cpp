@@ -15,56 +15,56 @@ using namespace openm;
 
 /** initialize child modeling process.
 *
-* - (a) get number of subsamples, processes, threads, groups
+* - (a) get number of sub-values, processes, threads, groups
 * - (d) receive metadata tables from root processes
 *
-* Number of subsamples by default = 1 and it can be specified
+* Number of sub-values by default = 1 and it can be specified
 * using command-line argument, ini-file or profile table in database
 *
-* Number of modeling threads by default = 1 and subsamples run sequentially in single thread.
-* If more threads specified (i.e. by command-line argument) then subsamples run in parallel.
+* Number of modeling threads by default = 1 and sub-values run sequentially in single thread.
+* If more threads specified (i.e. by command-line argument) then sub-values run in parallel.
 *
 * For example: \n
-*   model.exe -General.Subsamples 8 \n
-*   model.exe -General.Subsamples 8 -General.Threads 4 \n
-*   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
+*   model.exe -OpenM.SubValues 8 \n
+*   model.exe -OpenM.SubValues 8 -OpenM.Threads 4 \n
+*   mpiexec -n 2 model.exe -OpenM.SubValues 31 -OpenM.Threads 7
 *
 * Number of modeling processes = MPI world size \n
 *
-* Size of modeling group = number of subsamples / number of threads \n
+* Size of modeling group = number of sub-values / number of threads \n
 * Number of groups = number of processes / group size \n
 *   by default only one group which include all modeling processes \n
 *   group size always >= 1 therefore group always include at least one process \n
 *
-* Number of subsamples per child process = total number of subsamples / group size \n
-*   if total number of subsamples % group size != 0 then remainder calculated at last group process \n
+* Number of sub-values per child process = total number of sub-values / group size \n
+*   if total number of sub-values % group size != 0 then remainder calculated at last group process \n
 */
 void ChildController::init(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
 
     // broadcast basic run options from root to all other processes
-    broadcastInt(ProcessGroupDef::all, msgExec, &subSampleCount);
+    broadcastInt(ProcessGroupDef::all, msgExec, &subValueCount);
     broadcastInt(ProcessGroupDef::all, msgExec, &threadCount);
     broadcastInt(ProcessGroupDef::all, msgExec, &modelId);
 
     // basic validation: number of processes expected to be > 1
-    if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
+    if (subValueCount <= 0) throw ModelException("Invalid number of sub-values: %d", subValueCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
     // if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
 
     // create groups for parallel run of modeling task
-    groupDef = ProcessGroupDef(subSampleCount, threadCount, msgExec->worldSize(), msgExec->rank());
+    groupDef = ProcessGroupDef(subValueCount, threadCount, msgExec->worldSize(), msgExec->rank());
 
     msgExec->createGroups(groupDef.groupSize, groupDef.groupCount);
 
-    // first subsample number and number of subsamples
-    subFirstNumber = groupDef.activeRank * groupDef.subPerProcess;
+    // first sub-value index and number of sub-values
+    subFirstId = groupDef.activeRank * groupDef.subPerProcess;
     selfSubCount = groupDef.selfSubCount;
 
-    if (subFirstNumber < 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
+    if (subFirstId < 0 || selfSubCount <= 0 || subFirstId + selfSubCount > subValueCount)
         throw ModelException(
-            "Invalid first subsample number: %d or number of subsamples: %d", subFirstNumber, selfSubCount
+            "Invalid first sub-value index: %d or number of sub-values: %d", subFirstId, selfSubCount
             );
 
     // adjust number of active processes: exit from unused child processes
@@ -130,11 +130,12 @@ void ChildController::shutdownRun(int /*i_runId*/)
 * read input parameter values.
 *
 * @param[in]     i_name      parameter name
+* @param[in]     i_subId     parameter sub-value index
 * @param[in]     i_type      parameter type
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void ChildController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
+void ChildController::readParameter(const char * i_name, int /*i_subId*/, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
@@ -176,7 +177,7 @@ void ChildController::writeAccumulators(
     for (auto & ap : io_accValues) {
         msgExec->startSend(
             IMsgExec::rootRank,
-            (MsgTag)(AccReceive::accMsgTag(i_runOpts.subSampleNumber, subSampleCount, accIndex)),
+            (MsgTag)(AccReceive::accMsgTag(i_runOpts.subValueId, subValueCount, accIndex)),
             typeid(double),
             i_size,
             ap.release()

@@ -18,7 +18,7 @@ namespace openm
             const char * i_name, 
             IDbExec * i_dbExec, 
             const MetaHolder * i_metaStore, 
-            int i_numSubSamples,
+            int i_subCount,
             const char * i_doubleFormat = "",
             bool i_isSparse = false,
             double i_nullValue = FLT_MIN
@@ -34,9 +34,9 @@ namespace openm
         int expressionCount(void) const throw() override { return exprCount; }
 
         // write output table accumulator values
-        void writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, size_t i_size, const double * i_valueArr) override;
+        void writeAccumulator(IDbExec * i_dbExec, int i_subId, int i_accId, size_t i_size, const double * i_valueArr) override;
 
-        // write all output table values: aggregate subsamples using table expressions
+        // write all output table values: aggregate sub-values using table expressions
         void writeAllExpressions(IDbExec * i_dbExec) override;
 
         // calculate output table values digest and store only single copy of output values
@@ -46,7 +46,7 @@ namespace openm
         int runId;                      // destination run id
         int modelId;                    // model id in database
         int tableId;                    // output table id
-        int numSubSamples;              // number of subsamples in model run
+        int subCount;                   // number of sub-values in model run
         int dimCount;                   // number of dimensions
         int accCount;                   // number of accumulators
         int exprCount;                  // number of aggregated expressions
@@ -85,12 +85,12 @@ IOutputTableWriter * IOutputTableWriter::create(
     const char * i_name, 
     IDbExec * i_dbExec, 
     const MetaHolder * i_metaStore, 
-    int i_numSubSamples, 
+    int i_subCount, 
     bool i_isSparseGlobal, 
     double i_nullValue
     )
 {
-    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, "", i_isSparseGlobal, i_nullValue);
+    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_subCount, "", i_isSparseGlobal, i_nullValue);
 }
 
 // Output table writer factory: create new writer
@@ -99,11 +99,11 @@ IOutputTableWriter * IOutputTableWriter::create(
     const char * i_name, 
     IDbExec * i_dbExec, 
     const MetaHolder * i_metaStore, 
-    int i_numSubSamples, 
+    int i_subCount, 
     const char * i_doubleFormat
     )
 {
-    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_numSubSamples, i_doubleFormat);
+    return new OutputTableWriter(i_runId, i_name, i_dbExec, i_metaStore, i_subCount, i_doubleFormat);
 }
 
 // New output table writer
@@ -112,7 +112,7 @@ OutputTableWriter::OutputTableWriter(
     const char * i_name,
     IDbExec * i_dbExec,
     const MetaHolder * i_metaStore,
-    int i_numSubSamples,
+    int i_subCount,
     const char * i_doubleFormat,
     bool i_isSparseGlobal,
     double i_nullValue
@@ -120,7 +120,7 @@ OutputTableWriter::OutputTableWriter(
     runId(i_runId),
     modelId(0),
     tableId(0),
-    numSubSamples(i_numSubSamples),
+    subCount(i_subCount),
     dimCount(0),
     accCount(0),
     exprCount(0),
@@ -214,11 +214,11 @@ size_t IOutputTableWriter::sizeOf(const MetaHolder * i_metaStore, int i_tableId)
 }
 
 // write output table accumulator values
-void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, int i_accId, size_t i_size, const double * i_valueArr)
+void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subCount, int i_accId, size_t i_size, const double * i_valueArr)
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
-    if (i_nSubSample < 0 || i_nSubSample >= numSubSamples) throw DbException("invalid sub-sample index: %d for output table: %s", i_nSubSample, tableRow->tableName.c_str());
+    if (i_subCount < 0 || i_subCount >= subCount) throw DbException("invalid sub-value index: %d for output table: %s", i_subCount, tableRow->tableName.c_str());
     if (i_accId < 0 || i_accId >= accCount) throw DbException("invalid accumulator number: %d for output table: %s", i_accId, tableRow->tableName.c_str());
     if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for output table: %s", i_size, tableRow->tableName.c_str());
 
@@ -233,7 +233,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
         sql += ", " + dim.name;
     }
 
-    sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_nSubSample);
+    sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_subCount);
 
     // build sql, append: , ?, ?, ?)
     // as dimensions parameter placeholder(s), value placeholder
@@ -304,11 +304,11 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_nSubSample, i
         }
     }   // done with insert
 
-    // commit: done with subsample
+    // commit: done with sub-value
     i_dbExec->commit();
 }
 
-// write all output table values: aggregate subsamples using table expressions
+// write all output table values: aggregate sub-values using table expressions
 void OutputTableWriter::writeAllExpressions(IDbExec * i_dbExec)
 {
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
@@ -437,8 +437,8 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     md5.add(sLine.c_str(), sLine.length());
 
     // +2 columns: acc_id, sub_id
-    ValueRowDigester md5AccRd(dimCount + 2, typeid(double), &md5, doubleFmt.c_str());
-    ValueRowAdapter accAdp(dimCount + 2, typeid(double));
+    ValueRowDigester md5AccRd(2 + dimCount, typeid(double), &md5, doubleFmt.c_str());
+    ValueRowAdapter accAdp(2 + dimCount, typeid(double));
 
     i_dbExec->selectToRowProcessor(accSql, accAdp, md5AccRd);
 

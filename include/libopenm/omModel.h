@@ -8,10 +8,12 @@
 #ifndef OM_H_MODEL_H
 #define OM_H_MODEL_H
 
-#include <typeinfo>
 #include <memory>
 #include <cfloat>
 #include <forward_list>
+#include <type_traits>
+#include <typeinfo>
+#include <vector>
 using namespace std;
 
 #include "omLog.h"
@@ -22,11 +24,11 @@ namespace openm
     /** model run options */
     struct RunOptions
     {
-        /** number of subsamples */
-        int subSampleCount;
+        /** number of sub-values */
+        int subValueCount;
 
-        /** subsample number for current modeling process */
-        int subSampleNumber;
+        /** sub-value index for current modeling process */
+        int subValueId;
 
         /** if true then use sparse output to database */
         bool useSparse;
@@ -36,8 +38,8 @@ namespace openm
 
         /** init run options with default values */
         RunOptions(void) :
-            subSampleCount(1),
-            subSampleNumber(0),
+            subValueCount(1),
+            subValueId(0),
             useSparse(false),
             nullValue(FLT_MIN)
         { }
@@ -99,20 +101,35 @@ namespace openm
     {
         virtual ~IRunBase(void) throw() = 0;
 
+        /** return index of parameter by name */
+        virtual int parameterIdByName(const char * i_name) const = 0;
+
+        /** number of parameter sub-values */
+        virtual int parameterSubCount(int i_paramId) const = 0;
+
+        /** number of parameter sub-values for current process */
+        virtual int parameterSelfSubCount(int i_paramId) const = 0;
+
+        /** return index of parameter sub-value in the storage array of sub-values */
+        virtual int parameterSubValueIndex(int i_paramId, int i_subId) const = 0;
+
+        /** return true if sub-value used by current process */
+        virtual bool isUseSubValue(int i_subId) const = 0;
+
         /** read model parameter */
-        virtual void readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
+        virtual void readParameter(const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
     };
 
-    /** model subsample run public interface */
+    /** model sub-value run public interface */
     struct IModel
     {
         virtual ~IModel(void) throw() = 0;
 
-        /** number of subsamples */
-        virtual int subSampleCount(void) const throw() = 0;
-        
-        /** subsample number of current modeling process */
-        virtual int subSampleNumber(void) const throw() = 0;
+        /** number of sub-values */
+        virtual int subValueCount(void) const throw() = 0;
+
+        /** sub-value index of current modeling process */
+        virtual int subValueId(void) const throw() = 0;
 
         /** return model run options */
         virtual const RunOptions * runOptions(void) const = 0;
@@ -120,7 +137,10 @@ namespace openm
         /** update modeling progress */
         virtual int updateProgress(void) = 0;
 
-        /** write output result table: subsample value */
+        /** return index of parameter sub-value in the array of sub-values, used to find thread local parameter values */
+        virtual int parameterSubValueIndex(const char * i_name) const = 0;
+
+        /** write output result table: sub values */
         virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
     };
 
@@ -133,7 +153,7 @@ namespace openm
         /** value type */
         const type_info & typeOf;
 
-        /** parameter size(number of parameter values) */
+        /** parameter size (number of parameter values) */
         const size_t size;
     };
 
@@ -144,16 +164,84 @@ namespace openm
     extern const ParameterNameSizeItem parameterNameSizeArr[];
 
     /** default error message: "unknown model error" */
-    extern const char modelUnknownErrorMessage[];   
+    extern const char modelUnknownErrorMessage[];
 
     /** modeling library exception */
     typedef OpenmException<4000, modelUnknownErrorMessage> ModelException;
 
     /** simulation exception default error message: "unknown error in simulation" */
-    extern const char simulationUnknownErrorMessage[];   
+    extern const char simulationUnknownErrorMessage[];
 
     /** simulation exception */
     typedef OpenmException<4000, simulationUnknownErrorMessage> SimulationException;
+
+    /** read scalar parameter value or all sub-values for the current process */
+    template<typename TVal> vector<unique_ptr<TVal>> read_om_parameter(IRunBase * const i_runBase, const char * i_name)
+    {
+        int paramId = i_runBase->parameterIdByName(i_name);
+        int selfCount = i_runBase->parameterSelfSubCount(paramId);  // number of sub-values for current process
+        int allCount = i_runBase->parameterSubCount(paramId);       // number of sub-values for current process
+
+        // storage array: parameter values for current process
+        vector<unique_ptr<TVal>> valueVec(selfCount);
+        for (auto & p : valueVec) {
+            p.reset(new TVal);
+        }
+
+        unique_ptr<TVal> extraVal;  // parameter value for exchange between root and child process
+        if (allCount > 1) {
+            extraVal.reset(new TVal);
+        }
+
+        // read sub-values and place into storage array or send to child process
+        for (int nSub = 0; nSub < allCount; nSub++) {
+
+            void * pData = valueVec[0].get();
+            if (allCount > 1) {
+                pData =
+                    i_runBase->isUseSubValue(nSub) ?
+                    valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)].get() :
+                    extraVal.get();
+            }
+            i_runBase->readParameter(i_name, nSub, typeid(TVal), 1, pData);
+        }
+        return valueVec;
+    }
+
+    /** read array parameter value or all sub-values for the current process */
+    template<typename TVal> vector<unique_ptr<TVal[]>> read_om_parameter(IRunBase * const i_runBase, const char * i_name, size_t i_size)
+    {
+        int paramId = i_runBase->parameterIdByName(i_name);
+        int selfCount = i_runBase->parameterSelfSubCount(paramId);  // number of sub-values for current process
+        int allCount = i_runBase->parameterSubCount(paramId);       // number of sub-values for current process
+
+        if (i_size <= 0) throw ModelException("invalid size: %zd of parameter %s", i_size, i_name);
+
+        // storage array: parameter values for current process
+        vector<unique_ptr<TVal[]>> valueVec(selfCount);
+        for (auto & p : valueVec) {
+            p.reset(new TVal[i_size]);
+        }
+
+        unique_ptr<TVal> extraVal;  // parameter value for exchange between root and child process
+        if (allCount > 1) {
+            extraVal.reset(new TVal[i_size]);
+        }
+
+        // read sub-values and place into storage array or send to child process
+        for (int nSub = 0; nSub < allCount; nSub++) {
+
+            void * pData = valueVec[0].get();
+            if (allCount > 1) {
+                pData =
+                    i_runBase->isUseSubValue(nSub) ?
+                    valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)].get() :
+                    extraVal.get();
+            }
+            i_runBase->readParameter(i_name, nSub, typeid(TVal), i_size, pData);
+        }
+        return valueVec;
+    }
 }
 
 //
@@ -176,7 +264,7 @@ int main(int argc, char ** argv);
 typedef void(*OM_RUN_INIT_HANDLER)(openm::IRunBase * const i_runBase);
 extern OM_RUN_INIT_HANDLER RunInitHandler;
 
-/** model startup method: initialize subsample */
+/** model startup method: initialize sub-value */
 typedef void(*OM_STARTUP_HANDLER)(openm::IModel * const i_model);
 extern OM_STARTUP_HANDLER ModelStartupHandler;
 

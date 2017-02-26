@@ -58,13 +58,13 @@ selectRunParameter <- function(dbCon, defRs, runId, paramName)
     stop("model run results not found (or not completed), run id: ", runId)
   }
   
-  # SELECT dim0, dim1, param_value 
+  # SELECT sub_id, dim0, dim1, param_value 
   # FROM ageSex_p2012_817
   # WHERE run_id = (SELECT base_run_id FROM run_parameter WHERE run_id = 1234 AND parameter_hid = 1)
   # ORDER BY 1, 2, 3
   sqlSel <-
     paste(
-      "SELECT ", 
+      "SELECT sub_id, ", 
       ifelse(nRank > 0L,
         paste(
           paste(

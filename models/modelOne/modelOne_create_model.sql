@@ -25,7 +25,7 @@ INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, '(FR) F
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Running Simulation', 'Running Simulation');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Event loop completed', 'Event loop completed');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Reading Parameters', 'Reading Parameters');
-INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Start model subsample', 'Start model subsample');
+INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Start model subvalue', 'Start model subvalue');
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Writing Output Tables', 'Writing Output Tables');
 
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 'Running Simulation', '(FR) Running Simulation');
@@ -36,6 +36,7 @@ INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 
 --
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 4, 4);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 14, 14);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 21, 21);
 
 -- 
 -- modelOne classifcation types
@@ -94,6 +95,7 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 -- db suffix: not a real value (8 digits hex)
 -- salaryFull parameter is enum-based
 -- baseSalary is scalar parameter is enum-based
+-- filePath is a test parameter of string type
 --
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
@@ -120,11 +122,17 @@ INSERT INTO parameter_dic
 VALUES
   (8, 'baseSalary', '_20128171604590135', 'baseSalary_p_2012811', 'baseSalary_w_2012811', 0, 99, 0);
 
+INSERT INTO parameter_dic
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+VALUES
+  (9, 'filePath', '_20128171604590136', 'filePath_p_2012814', 'filePath_w_2012814', 0, 21, 0);
+
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 6, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 3, 7, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 4, 8, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 5, 9, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, '(FR) Age by Sex', NULL);
@@ -133,6 +141,7 @@ INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 1
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (6, 1, 'Starting Seed', 'Random numbers generator starting seed value');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (7, 0, 'Full or part time by Salary level', NULL);
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (8, 0, 'Base salary level', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (9, 0, 'File path string', NULL);
 
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 0, 'dim0', 96);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 1, 'dim1', 97);
@@ -176,12 +185,30 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 
 INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sex Dim', 'Sex Dim notes');
 INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) Sex Dim', NULL);
 
-INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (2, 0, 'acc0', 0, 'value_sum()');
-INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (2, 1, 'acc1', 0, 'value_count()');
-INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (2, 2, 'acc2', 1, 'acc0 + acc1');
-
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  2, 0, 'acc0', 0, 'value_sum()', 'A.acc_value'
+  );
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  2, 1, 'acc1', 0, 'value_count()', 
+  'SELECT A1.acc_value FROM salarySex_a_2012820 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1'
+  );
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  2, 2, 'acc2', 1, 'acc0 + acc1', 
+  '(A.acc_value) + (SELECT A1.acc_value FROM salarySex_a_2012820 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1)'
+  );
+  
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 0, 0, 'Sum of salary by sex', NULL);
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 1, 0, 'Count of salary by sex', NULL);
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 2, 0, 'Derived accumulator', NULL);
 
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
@@ -240,81 +267,107 @@ INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VA
 CREATE TABLE ageSex_p_2012817 
 (
   run_id      INT   NOT NULL,
+  sub_id      INT   NOT NULL, 
   dim0        INT   NOT NULL, 
   dim1        INT   NOT NULL, 
   param_value FLOAT NOT NULL,
-  PRIMARY KEY (run_id, dim0, dim1)
+  PRIMARY KEY (run_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE ageSex_w_2012817
 (
   set_id      INT   NOT NULL,
+  sub_id      INT   NOT NULL, 
   dim0        INT   NOT NULL, 
   dim1        INT   NOT NULL, 
   param_value FLOAT NOT NULL,
-  PRIMARY KEY (set_id, dim0, dim1)
+  PRIMARY KEY (set_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE salaryAge_p_2012818
 (
   run_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   dim0        INT NOT NULL, 
   dim1        INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (run_id, dim0, dim1)
+  PRIMARY KEY (run_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE salaryAge_w_2012818
 (
   set_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   dim0        INT NOT NULL, 
   dim1        INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (set_id, dim0, dim1)
+  PRIMARY KEY (set_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE StartingSeed_p_2012819
 (
   run_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (run_id)
+  PRIMARY KEY (run_id, sub_id)
 );
 
 CREATE TABLE StartingSeed_w_2012819
 (
   set_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (set_id)
+  PRIMARY KEY (set_id, sub_id)
 );
 
 CREATE TABLE salaryFull_p_2012812
 (
   run_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   dim0        INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (run_id, dim0)
+  PRIMARY KEY (run_id, sub_id, dim0)
 );
 
 CREATE TABLE salaryFull_w_2012812
 (
   set_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   dim0        INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (set_id, dim0)
+  PRIMARY KEY (set_id, sub_id, dim0)
 );
 
 CREATE TABLE baseSalary_p_2012811
 (
   run_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (run_id)
+  PRIMARY KEY (run_id, sub_id)
 );
 
 CREATE TABLE baseSalary_w_2012811
 (
   set_id      INT NOT NULL,
+  sub_id      INT NOT NULL, 
   param_value INT NOT NULL,
-  PRIMARY KEY (set_id)
+  PRIMARY KEY (set_id, sub_id)
+);
+
+CREATE TABLE filePath_p_2012814
+(
+  run_id      INT          NOT NULL,
+  sub_id      INT          NOT NULL, 
+  param_value VARCHAR(255) NOT NULL,
+  PRIMARY KEY (run_id, sub_id)
+);
+
+CREATE TABLE filePath_w_2012814
+(
+  set_id      INT          NOT NULL,
+  sub_id      INT          NOT NULL, 
+  param_value VARCHAR(255) NOT NULL,
+  PRIMARY KEY (set_id, sub_id)
 );
 
 --
@@ -348,7 +401,7 @@ CREATE TABLE salarySex_v_2012820
 -- it does include all "native" accumulators: acc0, acc1
 -- and "derived" accumulator: acc2 = acc0 + acc1
 --
--- uncomment GO if MSSQL return an error on CREATE VIEW
+-- uncomment next line GO if MSSQL return an error on CREATE VIEW
 -- GO
 --
 CREATE VIEW salarySex_d_2012820
@@ -358,22 +411,22 @@ SELECT
   A.sub_id,
   A.dim0,
   A.dim1,
-  acc0,
-  acc1,
-  (acc0 + acc1) AS acc2
+  A.acc_value AS acc0,
+  (
+    SELECT A1.acc_value FROM salarySex_a_2012820 A1
+    WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+    AND A1.acc_id = 1
+  ) AS acc1,
+  (
+    (
+      A.acc_value
+    )
+    + 
+    (
+      SELECT A1.acc_value FROM salarySex_a_2012820 A1
+      WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+      AND A1.acc_id = 1
+    )
+  ) AS acc2
 FROM salarySex_a_2012820 A
-INNER JOIN
-(
-  SELECT run_id, sub_id, dim0, dim1, acc_value AS acc0
-  FROM salarySex_a_2012820
-  WHERE acc_id = 0
-) B0
-ON (B0.run_id = A.run_id AND B0.sub_id = A.sub_id AND B0.dim0 = A.dim0 AND B0.dim1 = A.dim1)
-INNER JOIN
-(
-  SELECT run_id, sub_id, dim0, dim1, acc_value AS acc1
-  FROM salarySex_a_2012820
-  WHERE acc_id = 1
-) B1
-ON (B1.run_id = A.run_id AND B1.sub_id = A.sub_id AND B1.dim0 = A.dim0 AND B1.dim1 = A.dim1)
 WHERE A.acc_id = 0;

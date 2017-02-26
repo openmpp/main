@@ -27,7 +27,7 @@ namespace openm
             const char * i_name,
             IDbExec * i_dbExec,
             const MetaHolder * i_metaStore,
-            int i_numSubSamples,
+            int i_subCount,
             bool i_isSparse = false,
             double i_nullValue = FLT_MIN
         );
@@ -38,7 +38,7 @@ namespace openm
             const char * i_name,
             IDbExec * i_dbExec,
             const MetaHolder * i_metaStore,
-            int i_numSubSamples,
+            int i_subCount,
             const char * i_doubleFormat = ""
         );
 
@@ -55,16 +55,16 @@ namespace openm
         * write output table accumulator values
         *
         * @param[in] i_dbExec      database connection
-        * @param[in] i_nSubSample  subsample number
+        * @param[in] i_subId       sub-value index
         * @param[in] i_size        number of values for each accumulator
         * @param[in] i_accId       accumulator number for the output table (zero based)
         * @param[in] i_valueArr    array of accumulator values
         */
         virtual void writeAccumulator(
-            IDbExec * i_dbExec, int i_nSubSample, int i_accId, size_t i_size, const double * i_valueArr
+            IDbExec * i_dbExec, int i_subId, int i_accId, size_t i_size, const double * i_valueArr
             ) = 0;
 
-        /** write all output table values: aggregate subsamples using table expressions */
+        /** write all output table values: aggregate sub-values using table expressions */
         virtual void writeAllExpressions(IDbExec * i_dbExec) = 0;
 
         /** calculate output table values digest and store only single copy of output values */

@@ -50,7 +50,7 @@ void MsgExecBase::startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_t
 
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        sendVec.push_back(unique_ptr<IMsgSend>(
+        sendLst.push_back(unique_ptr<IMsgSend>(
             IMsgSendArray::create(rank(), i_sendTo, i_msgTag, i_type, i_size, i_valueArr)
             ));
     }
@@ -76,7 +76,7 @@ void MsgExecBase::startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, co
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        sendVec.push_back(unique_ptr<IMsgSend>(
+        sendLst.push_back(unique_ptr<IMsgSend>(
             IMsgSendPacked::create(rank(), i_sendTo, i_rowVec, i_adapter)
             ));
     }
@@ -106,7 +106,7 @@ void MsgExecBase::startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i
 
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        recvVec.push_back(unique_ptr<IMsgRecv>(
+        recvLst.push_back(unique_ptr<IMsgRecv>(
             IMsgRecvArray::create(rank(), i_recvFrom, i_msgTag, i_type, i_size, io_valueArr)
             ));
     }
@@ -132,7 +132,7 @@ void MsgExecBase::startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec,
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        recvVec.push_back(unique_ptr<IMsgRecv>(
+        recvLst.push_back(unique_ptr<IMsgRecv>(
             IMsgRecvPacked::create(rank(), i_recvFrom, io_resultRowVec, i_adapter)
             ));
     }
@@ -211,8 +211,8 @@ void MsgExecBase::waitSendAll(void)
             isAllDone = true;
 
             // check for any active send request
-            for (size_t nSend = 0; nSend < sendVec.size(); nSend++) {
-                bool isDone = sendVec[nSend].get()->isCompleted();
+            for (const auto & rs : sendLst) {
+                bool isDone = rs.get()->isCompleted();
                 isAllDone = isAllDone && isDone;
             }
 
@@ -221,7 +221,7 @@ void MsgExecBase::waitSendAll(void)
         }
         while (!isAllDone);
         
-        sendVec.clear();    // all request completed, clear the list
+        sendLst.clear();    // all request completed, clear the list
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -244,8 +244,8 @@ void MsgExecBase::waitRecvAll(void)
             isAllDone = true;
 
             // check for any active receive request
-            for (size_t nRecv = 0; nRecv < recvVec.size(); nRecv++) {
-                bool isDone = recvVec[nRecv].get()->tryReceive();
+            for (const auto & rs : recvLst) {
+                bool isDone = rs.get()->tryReceive();
                 isAllDone = isAllDone && isDone;
             }
 
@@ -254,7 +254,7 @@ void MsgExecBase::waitRecvAll(void)
         }
         while (!isAllDone);
         
-        recvVec.clear();    // all request completed, clear the list
+        recvLst.clear();    // all request completed, clear the list
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

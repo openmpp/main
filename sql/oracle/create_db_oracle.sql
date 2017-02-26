@@ -64,7 +64,7 @@ CREATE TABLE model_dic_txt
   model_id INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- model description
-  note     CLOB,                      -- model notes
+  note     CLOB,                     -- model notes
   PRIMARY KEY (model_id, lang_id),
   CONSTRAINT model_dic_txt_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
@@ -345,11 +345,12 @@ CREATE TABLE table_dims_txt
 --
 CREATE TABLE table_acc 
 (
-  table_hid  INT          NOT NULL, -- master key
-  acc_id     INT          NOT NULL, -- unique accumulator id
-  acc_name   VARCHAR(8)   NOT NULL, -- unique accumulator name: acc2
-  is_derived SMALLINT     NOT NULL, -- if non-zero then accumulator is expression on other accumulators
-  acc_expr   VARCHAR(255) NOT NULL, -- accumulator expression: acc0 + acc1 
+  table_hid  INT           NOT NULL, -- master key
+  acc_id     INT           NOT NULL, -- unique accumulator id
+  acc_name   VARCHAR(8)    NOT NULL, -- unique accumulator name: acc2
+  is_derived SMALLINT      NOT NULL, -- if non-zero then accumulator is expression on other accumulators
+  acc_src    VARCHAR(255)  NOT NULL, -- source expression: acc0 + acc1 
+  acc_sql    VARCHAR(2048) NOT NULL, -- db expression: sql subquery
   PRIMARY KEY (table_hid, acc_id),
   CONSTRAINT table_acc_un UNIQUE (table_hid, acc_name),
   CONSTRAINT table_acc_mk 
@@ -471,7 +472,7 @@ CREATE TABLE profile_lst
 CREATE TABLE profile_option
 (
   profile_name VARCHAR(255)  NOT NULL, -- master key
-  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
+  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: OpenM.Threads
   option_value VARCHAR(2048) NOT NULL, -- option value
   PRIMARY KEY (profile_name, option_key),
   CONSTRAINT profile_option_mk 
@@ -487,10 +488,10 @@ CREATE TABLE run_lst
   run_id        INT          NOT NULL, -- unique run id
   model_id      INT          NOT NULL, -- model id
   run_name      VARCHAR(255) NOT NULL, -- model run name
-  sub_count     INT          NOT NULL, -- subsamples count
-  sub_started   INT          NOT NULL, -- number of subsamples started
-  sub_completed INT          NOT NULL, -- number of subsamples completed
-  sub_restart   INT          NOT NULL, -- subsample to restart from
+  sub_count     INT          NOT NULL, -- subvalue count
+  sub_started   INT          NOT NULL, -- number of subvalues started
+  sub_completed INT          NOT NULL, -- number of subvalues completed
+  sub_restart   INT          NOT NULL, -- subvalue to restart from
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
@@ -524,7 +525,7 @@ CREATE TABLE run_txt
 CREATE TABLE run_option
 (
   run_id       INT           NOT NULL, -- master key
-  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: General.Subsamples
+  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: OpenM.Threads
   option_value VARCHAR(2048) NOT NULL, -- option value
   PRIMARY KEY (run_id, option_key),
   CONSTRAINT run_option_mk 
@@ -540,6 +541,7 @@ CREATE TABLE run_parameter
   run_id        INT         NOT NULL, -- master key
   parameter_hid INT         NOT NULL, -- parameter unique id
   base_run_id   INT         NOT NULL, -- source run id to select parameter value
+  sub_count     INT         NOT NULL, -- subvalues count
   run_digest    VARCHAR(32) NULL,     -- digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
   CONSTRAINT run_parameter_mk 
@@ -555,10 +557,10 @@ CREATE TABLE run_parameter
 --
 CREATE TABLE run_parameter_txt
 (
-  run_id        INT NOT NULL,   -- model run id
-  parameter_hid INT NOT NULL,   -- master key
-  lang_id       INT NOT NULL,   -- language id
-  note          CLOB,           -- parameter value notes
+  run_id        INT             NOT NULL, -- model run id
+  parameter_hid INT             NOT NULL, -- master key
+  lang_id       INT             NOT NULL, -- language id
+  note          CLOB,                     -- parameter value notes
   PRIMARY KEY (run_id, parameter_hid, lang_id),
   CONSTRAINT run_parameter_txt_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
@@ -600,7 +602,7 @@ CREATE TABLE run_table
 --   if workset is editable then you can modify input parameters or workset description, notes, etc.
 --   if workset is read-only then you can run the model using that workset as input
 -- workset name + model id must be unique (model cannot have multiple workset with same name)
--- Important: working set_id must be different from run_id (use id_lst to get it)
+-- working set_id must be different from run_id (use id_lst to get it)
 -- Important: always update parameter values inside of transaction scope
 -- Important: before parameter update do is_readonly = is_readonly + 1 to "lock" workset
 --
@@ -643,6 +645,7 @@ CREATE TABLE workset_parameter
 (
   set_id        INT NOT NULL, -- master key
   parameter_hid INT NOT NULL, -- parameter_dic.parameter_id
+  sub_count     INT NOT NULL, -- subvalues count
   PRIMARY KEY (set_id, parameter_hid),
   CONSTRAINT workset_parameter_mk 
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
@@ -721,7 +724,7 @@ CREATE TABLE task_run_lst
 (
   task_run_id INT         NOT NULL, -- unique task run id
   task_id     INT         NOT NULL, -- master key
-  sub_count   INT         NOT NULL, -- subsamples count of task run
+  sub_count   INT         NOT NULL, -- subvalues count of task run
   create_dt   VARCHAR(32) NOT NULL, -- start date-time
   status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
   update_dt   VARCHAR(32) NOT NULL, -- last update date-time

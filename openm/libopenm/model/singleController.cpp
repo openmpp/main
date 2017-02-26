@@ -15,27 +15,27 @@ using namespace openm;
 
 /** initialize modeling process.
 *
-* - (a) get number of subsamples, processes, threads
+* - (a) get number of sub-values, processes, threads
 * - (b) merge command line and ini-file options with db profile table
 * - (c) initialize task run if required
 * - (d) load metadata tables from database
 *
-* (a) get number of subsamples, processes, threads
+* (a) get number of sub-values, processes, threads
 * ------------------------------------------------
 *
-* Number of subsamples by default = 1 and it can be specified
+* Number of sub-values by default = 1 and it can be specified
 * using command-line argument, ini-file or profile table in database
 *
-* Number of modeling threads by default = 1 and subsamples run sequentially in single thread.
-* If more threads specified (i.e. by command-line argument) then subsamples run in parallel.
+* Number of modeling threads by default = 1 and sub-values run sequentially in single thread.
+* If more threads specified (i.e. by command-line argument) then sub-values run in parallel.
 *
 * For example: \n
-*   model.exe -General.Subsamples 8 \n
-*   model.exe -General.Subsamples 8 -General.Threads 4 \n
-*   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
+*   model.exe -OpenM.SubValues 8 \n
+*   model.exe -OpenM.SubValues 8 -OpenM.Threads 4 \n
+*   mpiexec -n 2 model.exe -OpenM.SubValues 31 -OpenM.Threads 7
 *
 * Number of modeling processes expected to be 1 \n
-* Number of subsamples calculated by process is same as total number of subsamples
+* Number of sub-values calculated by process is same as total number of sub-values
 *
 * (b) merge command line and ini-file options with db profile table
 *------------------------------------------------------------------
@@ -64,9 +64,9 @@ using namespace openm;
 * -----------------------
 * modeling task can be specified by name or by task id:
 *
-*   model.exe -General.Subsamples 16 -OpenM.TaskName someTask \n
-*   model.exe -General.Subsamples 16 -OpenM.Taskid 1 \n
-*   model.exe -General.Subsamples 16 -OpenM.TaskName someTask -OpenM.TaskWait true
+*   model.exe -OpenM.SubValues 16 -OpenM.TaskName someTask \n
+*   model.exe -OpenM.SubValues 16 -OpenM.Taskid 1 \n
+*   model.exe -OpenM.SubValues 16 -OpenM.TaskName someTask -OpenM.TaskWait true
 *
 * if task specified then model would run for each input working set of parameters \n
 * if task "wait" is true then modeling task is run under external supervision: \n
@@ -84,21 +84,21 @@ void SingleController::init(void)
     loadMessages(dbExec);
 
     // merge command line and ini-file arguments with profile_option table values
-    mergeProfile(dbExec);
+    mergeOptions(dbExec);
 
-    // get main run control values: number of subsamples, threads
-    subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
+    // get main run control values: number of sub-values, threads
+    subValueCount = argOpts().intOption(RunOptionsKey::subValueCount, 1);   // number of sub-values from command line or ini-file
     threadCount = argOpts().intOption(RunOptionsKey::threadCount, 1);       // max number of modeling threads
     isWaitTaskRun = argOpts().boolOption(RunOptionsKey::taskWait);          // if true then task run under external supervision
 
     // basic validation: single process expected
-    if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
+    if (subValueCount <= 0) throw ModelException("Invalid number of sub-values: %d", subValueCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
 
-    // all subsamples calculated at current process
-    subFirstNumber = 0;
-    selfSubCount = subSampleCount;
-    isSubDone.init(subSampleCount);
+    // all sub-values calculated at current process
+    subFirstId = 0;
+    selfSubCount = subValueCount;
+    isSubDone.init(subValueCount);
 
     // if this is modeling task then find it in database
     // and create task run entry in database
@@ -162,7 +162,7 @@ int SingleController::nextRun(void)
         return 0;   // all done: all sets from task or single run completed
     }
 
-    // reset write status for subsamples
+    // reset write status for sub-values
     isSubDone.reset();
 
     return nowSetRun.runId;
@@ -172,20 +172,21 @@ int SingleController::nextRun(void)
 * read input parameter values.
 *
 * @param[in]     i_name      parameter name
+* @param[in]     i_subId     parameter sub-value index
 * @param[in]     i_type      parameter type
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void SingleController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
+void SingleController::readParameter(const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
-    if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
+    if (i_name == nullptr || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
             IParameterReader::create(nowSetRun.runId, i_name, dbExec, metaStore.get())
             );
-        reader->readParameter(dbExec, i_type, i_size, io_valueArr);
+        reader->readParameter(dbExec, i_subId, i_type, i_size, io_valueArr);
     }
     catch (exception & ex) {
         throw ModelException("Failed to read input parameter: %s. %s", i_name, ex.what());
@@ -211,10 +212,10 @@ void SingleController::writeAccumulators(
     // write accumulators into database
     doWriteAccumulators(nowSetRun.runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
 
-    // if all accumulators of subsample completed then update restart subsample number
+    // if all accumulators of sub-value completed then update restart sub-value index
     if (i_isLastTable) {
-        isSubDone.setAt(i_runOpts.subSampleNumber);     // mark that subsample as completed
-        updateRestartSubsample(nowSetRun.runId, dbExec, isSubDone.countFirst());
+        isSubDone.setAt(i_runOpts.subValueId);      // mark that sub-value as completed
+        updateRestartSubValueId(nowSetRun.runId, dbExec, isSubDone.countFirst());
     }
 }
 

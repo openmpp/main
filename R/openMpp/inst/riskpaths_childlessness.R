@@ -21,8 +21,8 @@ library("RSQLite")
 # model_exe    <- path to the model executable, i.e.: "./RiskPaths" or "RiskPaths.exe"
 # model_sqlite <- path to the model.sqlite database:  "RiskPaths.sqlite"
 # model_args   <- optional arguments to control model run, for example:
-#       -General.Subsamples 8 <- number of simation members
-#       -General.Threads 4    <- number of computatinal threads
+#       -OpenM.SubValues 8 <- number of simation members
+#       -OpenM.Threads 4   <- number of computatinal threads
 #
 ### For running on a local machine using the working directory in R 
 #
@@ -34,7 +34,7 @@ library("RSQLite")
 model_exe = "./RiskPaths"
 model_sqlite = "RiskPaths.sqlite"
 model_args = " "  # default: 1 simulation member and 1 thread
-# model_args = " -General.Subsamples 8 -General.Threads 4" 
+# model_args = " -OpenM.SubValues 8 -OpenM.Threads 4" 
 #
 ### For running on a local machine using explicit paths
 #
@@ -43,9 +43,9 @@ model_args = " "  # default: 1 simulation member and 1 thread
 #
 ### For running on cluster (change to match your cluster)
 #
-# model_exe = "/mirror/omrun"
+# model_exe = "mpiexec"
 # model_sqlite = "/mirror/RiskPaths.sqlite"
-# model_args = "-n 8 /mirror/RiskPaths -General.Subsamples 16 -General.Threads 2"
+# model_args = "-n 8 /mirror/RiskPaths -OpenM.SubValues 16 -OpenM.Threads 2"
 ##################################################################
 
 # 

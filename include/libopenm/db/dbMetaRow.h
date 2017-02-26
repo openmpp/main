@@ -927,24 +927,27 @@ namespace openm
     /** table_acc table row. */
     struct TableAccRow : public IMetaRow<TableAccRow>
     {
-        /** model_id INT          NOT NULL */
+        /** model_id   INT           NOT NULL */
         int modelId;
         
-        /** table_id INT          NOT NULL */
+        /** table_id   INT           NOT NULL */
         int tableId;
         
-        /** acc_id INT            NOT NULL */
+        /** acc_id     INT           NOT NULL */
         int accId;
         
-        /** acc_name VARCHAR(8)   NOT NULL */
+        /** acc_name   VARCHAR(8)    NOT NULL */
         string name;
 
-        /** is_derived SMALLINT     NOT NULL */
+        /** is_derived SMALLINT      NOT NULL */
         bool isDerived;
         
-        /** acc_expr VARCHAR(255) NOT NULL */
-        string expr;
+        /** acc_src    VARCHAR(255)  NOT NULL */
+        string accSrc;
         
+        /** acc_sql    VARCHAR(2048) NOT NULL */
+        string accSql;
+
         /** create row with supplied key field values. */
         TableAccRow(int i_modelId, int i_tableId, int i_accid) : 
             modelId(i_modelId), 
@@ -952,7 +955,8 @@ namespace openm
             accId(i_accid), 
             name(""),
             isDerived(false),
-            expr("")
+            accSrc(""),
+            accSql("")
         { }
 
         /** create row with default empty field values. */
@@ -1600,12 +1604,16 @@ namespace openm
 
         /** parameter_id INT NOT NULL */
         int paramId;
+        
+        /** sub_count    INT NOT NULL */
+        int subCount;
 
         /** create row with supplied primary key field values. */
         WorksetParamRow(int i_setId, int i_paramId) :
             setId(i_setId),
             modelId(0),
-            paramId(i_paramId)
+            paramId(i_paramId),
+            subCount(0)
         { }
 
         /** create row with default empty field values. */

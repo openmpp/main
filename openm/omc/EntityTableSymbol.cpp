@@ -759,7 +759,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = acc->index;
-        tableAcc.expr = acc->pretty_name(); // expression is a part of model digest, do we need pretty here?
+        tableAcc.accSrc = acc->pretty_name();   // expression is a part of model digest, do we need pretty here?
         tableAcc.isDerived = false;
         metaRows.tableAcc.push_back(tableAcc);
 
@@ -836,7 +836,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = ++maxAccIndex;
         tableAcc.isDerived = true;
-        tableAcc.expr = scale_part + measure_expr;
+        tableAcc.accSrc = scale_part + measure_expr;
         metaRows.tableAcc.push_back(tableAcc);
 
         // important:

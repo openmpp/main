@@ -15,8 +15,8 @@ library("RSQLite")
 # model_exe    <- path to the model executable, i.e.: "./NewCaseBased" or "NewCaseBased.exe"
 # model_sqlite <- path to the model.sqlite database:  "NewCaseBased.sqlite"
 # model_args   <- optional arguments to control model run, for example:
-#       -General.Subsamples 16 <- number of simation members
-#       -General.Threads 4     <- number of computatinal threads
+#       -OpenM.SubValues 16 <- number of simation members
+#       -OpenM.Threads 4    <- number of computatinal threads
 #
 ### For running on a local machine using the working directory in R 
 #
@@ -27,7 +27,7 @@ library("RSQLite")
 #
 model_exe = "./NewCaseBased"
 model_sqlite = "NewCaseBased.sqlite"
-model_args = " -General.Subsamples 16 -General.Threads 4" 
+model_args = " -OpenM.SubValues 16 -OpenM.Threads 4" 
 # model_args = " "  # default: 1 simulation member and 1 thread
 #
 ### For running on a local machine using explicit paths
@@ -37,9 +37,9 @@ model_args = " -General.Subsamples 16 -General.Threads 4"
 #
 ### For running on cluster (change to match your cluster)
 #
-# model_exe = "/mirror/omrun"
+# model_exe = "mpiexec"
 # model_sqlite = "/mirror/NewCaseBased.sqlite"
-# model_args = "-n 8 /mirror/NewCaseBased -General.Subsamples 16 -General.Threads 2"
+# model_args = "-n 8 /mirror/NewCaseBased -OpenM.SubValues 16 -OpenM.Threads 2"
 ##################################################################
 
 #

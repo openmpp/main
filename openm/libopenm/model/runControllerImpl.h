@@ -26,7 +26,7 @@ namespace openm
             taskRunId(0),
             isWaitTaskRun(false),
             dbExec(i_dbExec),
-            isSubDone(subSampleCount)
+            isSubDone(subValueCount)
         { }
 
         /** last cleanup */
@@ -37,7 +37,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
+            const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** write output table accumulators. */
@@ -72,7 +72,7 @@ namespace openm
         bool isWaitTaskRun;     // if true then task run under external supervision
         SetRunItem nowSetRun;   // current set id, run id and status
         IDbExec * dbExec;       // db-connection
-        DoneVector isSubDone;   // size of [subsample count], if true then all subsample accumulators saved in database
+        DoneVector isSubDone;   // size of [sub-value count], if true then all sub-value accumulators saved in database
 
     private:
         SingleController(const SingleController & i_runCtrl) = delete;
@@ -103,7 +103,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
+            const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** write output table accumulators. */
@@ -151,16 +151,16 @@ namespace openm
         /** create new run and assign it to modeling group. */
         int makeNextRun(RunGroup & i_runGroup);
 
-        /** receive accumulators of output tables subsamples and write into database. */
+        /** receive accumulators of output tables sub-values and write into database. */
         void appendAccReceiveList(int i_runId, const RunGroup & i_runGroup);
 
         /** read all input parameters by run id and broadcast to child processes. */
         void readAllRunParameters(const RunGroup & i_runGroup) const;
 
-        /** receive accumulators of output tables subsamples and write into database. */
-        bool receiveSubSamples(void);
+        /** receive accumulators of output tables sub-values and write into database. */
+        bool receiveSubValues(void);
 
-        /** update restart subsample in database and list of accumulators to be received. */
+        /** update restart sub-value in database and list of accumulators to be received. */
         void updateAccReceiveList(void);
 
     private:
@@ -189,7 +189,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
+            const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** send output table accumulators to root process. */
@@ -229,7 +229,7 @@ namespace openm
         ChildController & operator=(const ChildController & i_runCtrl) = delete;
     };
 
-    /** controller for "restart run": calculate outstanding subsamples for existing run */
+    /** controller for "restart run": calculate outstanding sub-values for existing run */
     class RestartController : public RunController
     {
     public:
@@ -238,7 +238,7 @@ namespace openm
             runId(0),
             setId(0),
             dbExec(i_dbExec),
-            isSubDone(subSampleCount)
+            isSubDone(subValueCount)
         { }
 
         /** last cleanup */
@@ -249,7 +249,7 @@ namespace openm
 
         /** read input parameter values. */
         virtual void readParameter(
-            const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr
+            const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
 
         /** write output table accumulators. */
@@ -277,13 +277,13 @@ namespace openm
         int runId;              // if > 0 then model run id
         int setId;              // if > 0 then set id of source input parametes
         IDbExec * dbExec;       // db-connection
-        DoneVector isSubDone;   // size of [subsample count], if true then all subsample accumulators saved in database
+        DoneVector isSubDone;   // size of [sub-value count], if true then all sub-value accumulators saved in database
 
         /** initialize "restart run" modeling process. */
         virtual void init(void) override;
 
-        // find subsample to restart the run and update run status
-        bool cleanupRestartSubsample(void);
+        // find sub-value to restart the run and update run status
+        bool cleanupRestartSubValue(void);
 
     private:
         RestartController(const RestartController & i_runCtrl) = delete;

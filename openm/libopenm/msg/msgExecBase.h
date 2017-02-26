@@ -65,8 +65,8 @@ namespace openm
         int worldRank;          // rank of process in world communicator
         int group_rank;         // rank of process in group communicator
 
-        vector<unique_ptr<IMsgSend> > sendVec;     // active send requests vector
-        vector<unique_ptr<IMsgRecv> > recvVec;     // active receive requests vector
+        list<unique_ptr<IMsgSend> > sendLst;    // list of active send requests
+        list<unique_ptr<IMsgRecv> > recvLst;    // list of active receive requests
 
     private:
         MsgExecBase(const MsgExecBase & i_msgExec) = delete;

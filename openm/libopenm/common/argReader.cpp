@@ -140,15 +140,16 @@ double ArgReader::doubleOption(const char * i_key, double i_default) const throw
 /**   
 * get run options from command line, ie: number of cases.     
 *
-* @param[in] argc             number of command line arguments
-* @param[in] argv             array of command line arguments
-* @param[in] i_isThrowUnknown if true then throw exception when key is unknown (except i_prefixToCopy below)
-* @param[in] i_isStoreUnknown if true then store unknown key values (always stored i_prefixToCopy below)
-* @param[in] i_keyArrSize     size of i_keyArr, must be positive
-* @param[in] i_keyArr         array of allowed keys: full key names
-* @param[in] i_shortArrSize   size of i_shortPairArr, can be zero
-* @param[in] i_shortPairArr   array of short and full key names to remap from short to full name
-* @param[in] i_prefixToCopy   if not NULL then copy options started from "prefix." i.e.: "Parameter."
+* @param[in] argc               number of command line arguments
+* @param[in] argv               array of command line arguments
+* @param[in] i_isThrowUnknown   if true then throw exception when key is unknown (except i_prefixToCopy below)
+* @param[in] i_isStoreUnknown   if true then store unknown key values (always stored i_prefixToCopy below)
+* @param[in] i_keyArrSize       size of i_keyArr, must be positive
+* @param[in] i_keyArr           array of allowed keys: full key names
+* @param[in] i_shortArrSize     size of i_shortPairArr, can be zero
+* @param[in] i_shortPairArr     array of short and full key names to remap from short to full name
+* @param[in] i_prefixToCopySize size of options "prefix." array to be copied
+* @param[in] i_prefixToCopyArr  copy options started from "prefix." i.e.: "Parameter." or "SubValue."
 */
 void ArgReader::parseCommandLine(
     int argc, 
@@ -159,7 +160,8 @@ void ArgReader::parseCommandLine(
     const char ** i_keyArr, 
     const size_t i_shortArrSize, 
     const pair<const char *, const char *> * i_shortPairArr,
-    const char * i_prefixToCopy
+    const size_t i_prefixToCopySize,
+    const char ** i_prefixToCopyArr
     )
 {
     // if no command line arguments then return empty options
@@ -169,15 +171,19 @@ void ArgReader::parseCommandLine(
     if (argc < 1 || argv == nullptr) throw HelperException("Invalid (empty) list of command line arguments, expected at least one");
     if (i_keyArrSize <= 0 || i_keyArrSize > SHRT_MAX || i_keyArr == nullptr) throw HelperException("Invalid (or empty) list of option keys");
     if (i_shortArrSize < 0 || i_shortArrSize > SHRT_MAX || (i_shortArrSize != 0 && i_shortPairArr == nullptr)) throw HelperException("Invalid (or empty) list of option short keys");
-
-    // check if there prefix to copy specified, i.e.: "Parameter"
-    bool isCopyPrefix = i_prefixToCopy != nullptr && i_prefixToCopy[0] != '\0';
-    string copyPrefix = isCopyPrefix ? string(i_prefixToCopy) + "." : "";
-    size_t nPrefix = copyPrefix.length();
-
+    if (i_prefixToCopySize < 0 || i_prefixToCopySize > SHRT_MAX || (i_prefixToCopySize != 0 && i_prefixToCopyArr == nullptr)) throw HelperException("Invalid (or empty) list of option prefixes");
+    
     // past the end of option names array
     const char ** endOfKeyArr = i_keyArr + i_keyArrSize;
     const pair<const char *, const char *> * endOfShortArr = i_shortPairArr + i_shortArrSize;
+
+    // make list of "Prefix." to copy
+    vector<string> cpVec;
+    if (i_prefixToCopySize > 0 && i_prefixToCopyArr != nullptr) {
+        for (size_t k = 0; k < i_prefixToCopySize; k++) {
+            cpVec.push_back(string(i_prefixToCopyArr[k]) + ".");
+        }
+    }
 
     // find keys in the names array and append key-value pairs into result
     for (int nArg = 1; nArg < argc; nArg++) {
@@ -209,7 +215,11 @@ void ArgReader::parseCommandLine(
         }
         else {              // key not found: raise error, store or ignore unknown key
 
-            if (!isCopyPrefix || !equalNoCase(sKey.c_str(), copyPrefix.c_str(), nPrefix)) {
+            bool isUnk = true;
+            for (vector<string>::const_iterator it = cpVec.cbegin(); isUnk && it != cpVec.cend(); it++) {
+                isUnk = !startWithNoCase(sKey, it->c_str());
+            }
+            if (isUnk) {
                 if (i_isThrowUnknown) throw HelperException("Invalid command line parameter %s", argv[nArg]);
                 if (!i_isStoreUnknown) continue;
             }
@@ -226,16 +236,18 @@ void ArgReader::parseCommandLine(
 /**
 * read ini-file and merge with command line arguments.
 *
-* @param[in] i_filePath       path to ini-file
-* @param[in] i_keyArrSize     size of i_keyArr, must be positive
-* @param[in] i_keyArr         array of allowed keys: full key names
-* @param[in] i_sectionToMerge if not NULL then merge section from ini-file, i.e.: "Parameter"
+* @param[in] i_filePath           path to ini-file
+* @param[in] i_keyArrSize         size of i_keyArr, must be positive
+* @param[in] i_keyArr             array of allowed keys: full key names
+* @param[in] i_sectionToMergeSize number of section names to merge
+* @param[in] i_sectionToMergeArr  if not NULL then merge section from ini-file, i.e.: "Parameter" or "SubValue"
 */
 void ArgReader::loadIniFile(
     const char * i_filePath,
     const size_t i_keyArrSize,
     const char ** i_keyArr,
-    const char * i_sectionToMerge
+    const size_t i_sectionToMergeSize,
+    const char ** i_sectionToMergeArr
 )
 {
     // load options from ini-file
@@ -252,11 +264,14 @@ void ArgReader::loadIniFile(
     }
 
     // merge pairs of (section.key, value) from section of ini-file if such section.key not already exists
-    if (i_sectionToMerge != nullptr) {
-        NoCaseMap sect = iniRd.getSection(i_sectionToMerge);
-        for (const auto & ent : sect) {
-            string key = string(i_sectionToMerge) + "." + ent.first;
-            if (args.find(key) == args.cend()) args[key] = ent.second;
+    if (i_sectionToMergeSize > 0 && i_sectionToMergeArr != nullptr) {
+
+        for (size_t k = 0; k < i_sectionToMergeSize; k++) {
+            NoCaseMap sect = iniRd.getSection(i_sectionToMergeArr[k]);
+            for (const auto & ent : sect) {
+                string key = string(i_sectionToMergeArr[k]) + "." + ent.first;
+                if (args.find(key) == args.cend()) args[key] = ent.second;
+            }
         }
     }
 }

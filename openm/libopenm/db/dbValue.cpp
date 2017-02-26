@@ -281,7 +281,7 @@ void ValueRowDigester::processRow(IRowBaseUptr & i_row)
 {
     ValueRow * row = dynamic_cast<ValueRow *>(i_row.get());
 
-    // append expression id, accumulator id, subsample number and dimensions to digest
+    // append expression id, accumulator id, sub-value index and dimensions to digest
     char buf[numeric_limits<long>::digits10 + 1];
     for (int k = 0; k < idCount; k++) {
         int n = snprintf(buf, sizeof(buf), "%d,", row->idArr[k]);

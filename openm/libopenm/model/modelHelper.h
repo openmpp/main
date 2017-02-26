@@ -12,7 +12,7 @@ using namespace std;
 
 namespace openm
 {
-    // atomic bool vector to store subsample done status
+    // atomic bool vector to store sub-value done status
     class DoneVector
     {
     public:
@@ -35,7 +35,7 @@ namespace openm
 
     private:
         recursive_mutex theMutex;   // mutex to lock access operations
-        vector<bool> isDoneVec;     // if true then all subsample accumulators saved in database
+        vector<bool> isDoneVec;     // if true then all sub-value accumulators saved in database
 
     private:
         DoneVector(const DoneVector & i_doneVec) = delete;
@@ -50,8 +50,8 @@ namespace openm
         int activeRank;         // active rank in group: process index among other modeling processes in the group
         int groupOne;           // current process modeling group number, one based, not a zero based
         bool isRootActive;      // if true then root process used for modeling else dedicated for data exchange
-        int subPerProcess;      // number of subsamples per modeling process, except of last process where rest is calculated
-        int selfSubCount;       // number of subsamples for current process
+        int subPerProcess;      // number of sub-values per modeling process, except of last process where rest is calculated
+        int selfSubCount;       // number of sub-values for current process
 
         static const int all = 0;   // worldwide group, all processes
 
@@ -59,7 +59,7 @@ namespace openm
             groupSize(1), groupCount(0), activeRank(0), groupOne(0), isRootActive(true), subPerProcess(1), selfSubCount(1)
         { }
 
-        ProcessGroupDef(int i_subSampleCount, int i_threadCount, int i_worldSize, int i_worldRank);
+        ProcessGroupDef(int i_subValueCount, int i_threadCount, int i_worldSize, int i_worldRank);
     };
 
     // helper struct to hold modeling group run id and run state
@@ -72,12 +72,12 @@ namespace openm
         int childCount;         // number of child processes in group
         bool isUseRoot;         // if true then root process used for modeling else dedicated for data exchange
         int groupSize;          // size of modeling group
-        int subPerProcess;      // number of subsamples per modeling process, except of last process where rest is calculated
+        int subPerProcess;      // number of sub-values per modeling process, except of last process where rest is calculated
         ModelRunState state;    // group status and modeling progress
-        DoneVector isSubDone;   // size of [subsample count], if true then all subsample accumulators saved in database
+        DoneVector isSubDone;   // size of [subValue count], if true then all sub-value accumulators saved in database
 
         // set initial run group size, assign process ranks and initial state state
-        RunGroup(int i_groupOne, int i_subSampleCount, const ProcessGroupDef & i_rootGroupDef);
+        RunGroup(int i_groupOne, int i_subValueCount, const ProcessGroupDef & i_rootGroupDef);
 
         // set group state for next run
         void nextRun(int i_runId, int i_setId, ModelStatus i_status);
@@ -85,8 +85,8 @@ namespace openm
         // clear group state after run
         void reset(void) { nextRun(0, 0, ModelStatus::init); }
 
-        // return child world rank where subsample is calculated
-        int rankBySubsampleNumber(int i_subNumber) const;
+        // return child world rank where sub-value is calculated
+        int rankBySubValueId(int i_subId) const;
 
     private:
         RunGroup(const RunGroup & i_runGroup) = delete;
@@ -97,38 +97,38 @@ namespace openm
     struct AccReceive
     {
         int runId;              // run id to receive
-        int subNumber;          // subsample number to receive
+        int subValueId;         // sub-value index to receive
         int tableId;            // output table id
         int accId;              // accumulator id
-        size_t valueCount;      // size of accumulator data
+        size_t valueSize;       // size of accumulator data
         bool isReceived;        // if true then data received
         int senderRank;         // sender rank: process where accumulator calculated
         int msgTag;             // accumulator message tag
 
         AccReceive(
             int i_runId,
-            int i_subNumber,
-            int i_subSampleCount,
+            int i_subId,
+            int i_subValueCount,
             int i_senderRank,
             int i_tableId,
             int i_accId,
             int i_accIndex,
-            size_t i_valueCount
+            size_t i_valueSize
             ) :
             runId(i_runId),
-            subNumber(i_subNumber),
+            subValueId(i_subId),
             tableId(i_tableId),
             accId(i_accId),
-            valueCount(i_valueCount),
+            valueSize(i_valueSize),
             isReceived(false),
             senderRank(i_senderRank),
-            msgTag(accMsgTag(i_subNumber, i_subSampleCount, i_accIndex))
+            msgTag(accMsgTag(i_subId, i_subValueCount, i_accIndex))
         { }
 
         /** return accumulator message tag */
-        static int accMsgTag(int i_subNumber, int i_subSampleCount, int i_accIndex)
+        static int accMsgTag(int i_subId, int i_subValueCount, int i_accIndex)
         {
-            return ((int)MsgTag::outSubsampleBase + i_accIndex) * i_subSampleCount + i_subNumber;
+            return ((int)MsgTag::outSubValueBase + i_accIndex) * i_subValueCount + i_subId;
         }
     };
 }

@@ -140,7 +140,7 @@ copy_ini:
 run:
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) -General.Subsamples 4 -General.Threads 4 \
+	$(OUT_BIN_DIR)/$(MODEL_EXE) -OpenM.SubValues 4 -OpenM.Threads 4 \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) -OpenM.TaskName taskOne \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"

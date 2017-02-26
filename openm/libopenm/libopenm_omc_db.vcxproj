@@ -157,7 +157,7 @@
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />
     <ClInclude Include="db\dbValue.h" />
-    <ClInclude Include="db\omc\modelAggregationSql.h" />
+    <ClInclude Include="db\omc\modelExpressionSql.h" />
     <ClInclude Include="db\omc\modelInsertSql.h" />
     <ClInclude Include="db\omc\modelSqlBuilder.h" />
     <ClInclude Include="db\omc\modelSqlWriter.h" />
@@ -190,7 +190,7 @@
     <ClCompile Include="db\modelDicTable.cpp" />
     <ClCompile Include="db\modelDicTxtTable.cpp" />
     <ClCompile Include="db\modelWordTable.cpp" />
-    <ClCompile Include="db\omc\modelAggregationSql.cpp" />
+    <ClCompile Include="db\omc\modelExpressionSql.cpp" />
     <ClCompile Include="db\omc\modelInsertSql.cpp" />
     <ClCompile Include="db\omc\modelSqlBuilder.cpp" />
     <ClCompile Include="db\omc\modelSqlBuilderPrepare.cpp" />

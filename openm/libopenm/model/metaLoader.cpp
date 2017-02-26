@@ -15,14 +15,17 @@ namespace openm
     /** short name for options file name: -ini fileName.ini */
     const char * RunShortKey::optionsFile = "ini";
 
-    /** parameters started with "Parameter." treated as value of model scalar input parameters */
+    /** options started with "Parameter." treated as value of model scalar input parameters */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
-    /** number of sub-samples */
-    const char * RunOptionsKey::subSampleCount = "General.Subsamples";
+    /** options started with "SubValue." used to describe sub-values of model input parameters */
+    const char * RunOptionsKey::subValuePrefix = "SubValue";
+
+    /** number of sub-values */
+    const char * RunOptionsKey::subValueCount = "OpenM.SubValues";
 
     /** number of modeling threads */
-    const char * RunOptionsKey::threadCount = "General.Threads";
+    const char * RunOptionsKey::threadCount = "OpenM.Threads";
 
     /** database connection string */
     const char * RunOptionsKey::dbConnStr = "OpenM.Database";
@@ -101,11 +104,17 @@ namespace openm
 
     /** language to display output messages */
     const char * RunOptionsKey::messageLang = "OpenM.MessageLanguage";
+
+    /** sub-value of parameter must be in the input workset */
+    const char * RunOptionsKey::worksetSubValue = "Set";
+
+    /** sub-value of parameter created as integer from 0 to sub-value count */
+    const char * RunOptionsKey::iotaSubValue = "Iota";
 }
 
 /** array of model run option keys. */
 static const char * runOptKeyArr[] = {
-    RunOptionsKey::subSampleCount,
+    RunOptionsKey::subValueCount,
     RunOptionsKey::threadCount,
     RunOptionsKey::dbConnStr,
     RunOptionsKey::restartRunId,
@@ -150,6 +159,13 @@ static const pair<const char *, const char *> shortPairArr[] =
 };
 static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 
+/** option prefixes to treat in a special way, ie: "Parameter" or "SubValue" */
+static const char * prefixOptArr[] = {
+    RunOptionsKey::parameterPrefix, 
+    RunOptionsKey::subValuePrefix
+};
+static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
+
 /** last cleanup */
 MetaLoader::~MetaLoader(void) throw() { }
 
@@ -159,13 +175,13 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
     // get command line options
     ArgReader ar;
     ar.parseCommandLine(
-        argc, argv, true, false, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr, RunOptionsKey::parameterPrefix
-        );
+        argc, argv, true, false, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr, prefixOptSize, prefixOptArr
+    );
 
     // load options from ini-file and append parameters section
     ar.loadIniFile(
-        ar.strOption(ArgKey::optionsFile).c_str(), runOptKeySize, runOptKeyArr, RunOptionsKey::parameterPrefix
-        );
+        ar.strOption(ArgKey::optionsFile).c_str(), runOptKeySize, runOptKeyArr, prefixOptSize, prefixOptArr
+    );
 
     // dependency in log options: if LogToFile is true then file name must be non-empty else must be empty
     ar.adjustLogSettings(argc, argv);
@@ -174,11 +190,11 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
 }
 
 /** return basic model run options */
-const RunOptions MetaLoader::modelRunOptions(int i_subCount, int i_subNumber) const 
+const RunOptions MetaLoader::modelRunOptions(int i_subCount, int i_subId) const 
 { 
     RunOptions opts(baseRunOpts);
-    opts.subSampleCount = i_subCount;
-    opts.subSampleNumber = i_subNumber;
+    opts.subValueCount = i_subCount;
+    opts.subValueId = i_subId;
     return opts; 
 }
 
@@ -242,10 +258,24 @@ void MetaLoader::broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subSampleCount);
-    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subSampleNumber);
+    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subValueCount);
+    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subValueId);
     i_msgExec->bcast(i_groupOne, typeid(bool), 1, &baseRunOpts.useSparse);
     i_msgExec->bcast(i_groupOne, typeid(double), 1, &baseRunOpts.nullValue);
+
+    // broadcast number of parameters with sub-values and parameters id
+    int n = (int)paramIdSubArr.size();
+    i_msgExec->bcast(i_groupOne, typeid(int), 1, &n);
+
+    if (n > 0) {
+        if (i_msgExec->isRoot()) {
+            i_msgExec->bcast(i_groupOne, typeid(int), n, paramIdSubArr.data());
+        }
+        else {
+            paramIdSubArr.resize(n);
+            i_msgExec->bcast(i_groupOne, typeid(int), n, paramIdSubArr.data());
+        }
+    }
 }
 
 // broadcast meta table db rows
@@ -360,9 +390,10 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
 
 // merge command line and ini-file arguments with profile_option table values
 // use default values for basic run options, i.e. SparseOutput = false
-// raise exception if any of "Parameter." run option name 
-// is not in the list of model input parameters or is not scalar
-void MetaLoader::mergeProfile(IDbExec * i_dbExec)
+// raise exception if "Parameter." or "SubValue." name is not a parameter name
+// raise exception if "Parameter." name is not a not scalar parameter
+// raise exception if "SubValue." name is not valid value
+void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 {
     // initial values are hard-coded default run options
     NoCaseMap defaultOpt;
@@ -393,29 +424,18 @@ void MetaLoader::mergeProfile(IDbExec * i_dbExec)
         }
     }
 
-    // update "Parameter." options: merge command line and ini-file with profile table
+    // update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
     vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
-
-    for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
-
-        string argName = string(RunOptionsKey::parameterPrefix) + "." + paramIt->paramName;
-
-        if (argStore.isOptionExist(argName.c_str())) continue;  // parameter specified at command line or ini-file
-
-        // find option in profile_option table
-        const ProfileOptionRow * optRow = profileTbl->byKey(profileName, argName.c_str());
-        if (optRow != nullptr) {
-            argStore.args[argName] = optRow->value;             // add option from database
-        }
-    }
+    mergeParameterProfile(profileName, RunOptionsKey::parameterPrefix, profileTbl.get(), paramVec);
+    mergeParameterProfile(profileName, RunOptionsKey::subValuePrefix, profileTbl.get(), paramVec);
 
     // validate "Parameter." options: it must be name of scalar input parameter
-    string parPrefix = string(RunOptionsKey::parameterPrefix) + ".";
-    size_t nPrefix = parPrefix.length();
+    string prefixDot = string(RunOptionsKey::parameterPrefix) + ".";
+    size_t nPrefix = prefixDot.length();
 
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
-        if (!equalNoCase(optIt->first.c_str(), parPrefix.c_str(), nPrefix)) continue;   // it is not a "Parameter."
+        if (!equalNoCase(optIt->first.c_str(), prefixDot.c_str(), nPrefix)) continue;   // it is not a "Parameter."
 
         if (optIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified");
 
@@ -433,11 +453,74 @@ void MetaLoader::mergeProfile(IDbExec * i_dbExec)
         if (optIt->second.empty()) throw ModelException("invalid (empty) value specified for parameter %s", sName.c_str());
     }
 
+    // validate "SubValue." options: it must valid value, ie "Set" or "Iota"
+    prefixDot = string(RunOptionsKey::subValuePrefix) + ".";
+    nPrefix = prefixDot.length();
+
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+
+        if (!equalNoCase(optIt->first.c_str(), prefixDot.c_str(), nPrefix)) continue;   // it is not a "SubValue."
+
+        if (optIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified");
+
+        // find parameter by name: it must be a model parameter
+        string sName = optIt->first.substr(nPrefix);
+
+        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, sName);
+        if (paramRow == nullptr)
+            throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+
+        // argument value must be one of "Set" or "Iota"
+        if (optIt->second != RunOptionsKey::worksetSubValue && optIt->second != RunOptionsKey::iotaSubValue) 
+            throw ModelException("invalid value specified for parameter %s, expected: %s or %s", sName.c_str(), RunOptionsKey::worksetSubValue, RunOptionsKey::iotaSubValue);
+
+        // append parameter id to the list of sub-value parameters
+        paramIdSubArr.push_back(paramRow->paramId);
+    }
+
+    // validate "SubValue." options: each parameter must be included only once and not be in "Parameter." options
+    std::sort(paramIdSubArr.begin(), paramIdSubArr.end());
+
+    prefixDot = string(RunOptionsKey::parameterPrefix) + ".";
+
+    for (size_t k = 0; k < paramIdSubArr.size(); k++) {
+
+        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, paramIdSubArr[k]);
+
+        if (k > 0 && paramRow->paramId == paramIdSubArr[k - 1])
+            throw DbException("parameter %s included more than once in \"%s\"", paramRow->paramName.c_str(), RunOptionsKey::subValuePrefix);
+
+        if (argStore.isOptionExist((prefixDot + paramRow->paramName).c_str()))
+            throw DbException("parameter %s cannot be specified as \"%s\" and \"%s\"", paramRow->paramName.c_str(), RunOptionsKey::subValuePrefix, RunOptionsKey::parameterPrefix);
+    }
+
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
     baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, FLT_MIN);
 }
 
+// merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValue.Age" argument
+void MetaLoader::mergeParameterProfile(
+    const string & i_profileName, const char * i_prefix, const IProfileOptionTable * i_profileOpt, const vector<ParamDicRow> & i_paramRs
+)
+{
+    // merge command-line or ini-file arguments with profile_option table
+    string prefixDot = string(i_prefix) + ".";
+
+    for (vector<ParamDicRow>::const_iterator paramIt = i_paramRs.cbegin(); paramIt != i_paramRs.cend(); ++paramIt) {
+
+        string argName = prefixDot + paramIt->paramName;
+
+        if (argStore.isOptionExist(argName.c_str())) continue;  // parameter specified at command line or ini-file
+
+        // find option in profile_option table
+        const ProfileOptionRow * optRow = i_profileOpt->byKey(i_profileName, argName.c_str());
+        if (optRow != nullptr) {
+            argStore.args[argName] = optRow->value;             // add option from database
+        }
+    }
+}
+        
 // create task run entry in database
 int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec) 
 {
@@ -459,7 +542,7 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
         " VALUES (" +
         to_string(taskRunId) + ", " +
         to_string(i_taskId) + ", " +
-        to_string(subSampleCount) + ", " +
+        to_string(subValueCount) + ", " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::init) + ", " +
         toQuoted(dtStr) + ")"

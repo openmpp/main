@@ -38,7 +38,7 @@ You must use \code{getModel} function in order to find model definition \code{de
 \value{
   Data frame of database rows with output table accumulator(s) dimensions and values:
   \item{acc_id}{ accumulator number }
-  \item{sub_id}{ subsample number }
+  \item{sub_id}{ sub-value number }
   \item{dim0,...,dimN}{ dimension items enum ids (not returned if rank is zero) }
   \item{acc_value}{ accumulator value }
 }

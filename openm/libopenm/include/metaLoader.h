@@ -19,11 +19,14 @@ namespace openm
     /** keys for model run options */
     struct RunOptionsKey
     {
-        /** parameters started with "Parameter." treated as value of model scalar input parameters */
+        /** options started with "Parameter." treated as value of model scalar input parameters */
         static const char * parameterPrefix;
 
-        /** number of sub-samples */
-        static const char * subSampleCount;
+        /** options started with "SubValue." used to describe sub-values of model input parameters */
+        static const char * subValuePrefix;
+
+        /** number of sub-values */
+        static const char * subValueCount;
 
         /** number of modeling threads */
         static const char * threadCount;
@@ -99,6 +102,12 @@ namespace openm
                                        
         /** language to display output messages */
         static const char * messageLang;
+        
+        /** sub-value of parameter must be in the input workset */
+        static const char * worksetSubValue;
+
+        /** sub-value of parameter created as integer from 0 to sub-value count */
+        static const char * iotaSubValue;
     };
 
     /** keys for model run options (short form) */
@@ -111,7 +120,7 @@ namespace openm
         static const char * setName;
 
         /** short name for: -p dir/to/read/input/parameter.csv */
-        static const char *paramDir;
+        static const char * paramDir;
     };
 
     /** model metadata loader: read and broadcast metadata and run options. */
@@ -121,8 +130,8 @@ namespace openm
         /** last cleanup */
         virtual ~MetaLoader(void) throw() = 0;
 
-        /** total number of subsamples */
-        int subSampleCount;
+        /** total number of sub-values */
+        int subValueCount;
 
         /** max number of modeling threads */
         int threadCount;
@@ -134,18 +143,25 @@ namespace openm
         const MetaHolder * meta(void) const { return metaStore.get(); }
 
         /** return basic model run options */
-        const RunOptions modelRunOptions(int i_subCount, int i_subNumber) const;
+        const RunOptions modelRunOptions(int i_subCount, int i_subId) const;
 
         /** initialize run options from command line and ini-file */
         static const ArgReader getRunOptions(int argc, char ** argv);
 
+        /** return sub-values count by parameter id */
+        int parameterSubCount(int i_paramId) const
+        {
+            return binary_search(paramIdSubArr.cbegin(), paramIdSubArr.cend(), i_paramId) ? subValueCount : 1;
+        }
+
     protected:
         int modelId;                        // model id in database
         unique_ptr<MetaHolder> metaStore;   // metadata tables
+        vector<int> paramIdSubArr;          // ids of parameters with sub-values
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
-            subSampleCount(0),
+            subValueCount(0),
             threadCount(1),
             modelId(0),
             argStore(i_argStore)
@@ -174,7 +190,7 @@ namespace openm
         void loadMessages(IDbExec * i_dbExec);
 
         // merge command line and ini-file arguments with profile_option table values
-        void mergeProfile(IDbExec * i_dbExec);
+        void mergeOptions(IDbExec * i_dbExec);
 
         // create task run entry in database
         int createTaskRun(int i_taskId, IDbExec * i_dbExec);
@@ -192,6 +208,11 @@ namespace openm
         // broadcast meta table db rows
         template <class MetaTbl>
         static void broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
+
+        // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValue.Age" argument
+        void mergeParameterProfile(
+            const string & i_profileName, const char * i_prefix, const IProfileOptionTable * i_profileOpt, const vector<ParamDicRow> & i_paramRs
+        );
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;
