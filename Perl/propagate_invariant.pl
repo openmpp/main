@@ -94,12 +94,12 @@ for my $model (@models) {
 	my @invariant_list = (
 		"makefile",                     "NewCaseBased",
 
-		"modgen-MODEL.sln",             "NewCaseBased",
-		"modgen-model.vcxproj",         "NewCaseBased",
-		"modgen-model.vcxproj.filters", "NewCaseBased",
+		"MODEL-modgen.sln",             "NewCaseBased",
+		"modgen/Model.vcxproj",         "NewCaseBased",
+		"modgen/Model.vcxproj.filters", "NewCaseBased",
 
-		"ompp-MODEL.sln",               "NewCaseBased",
-		"ompp-model.vcxproj",           "NewCaseBased",
+		"MODEL-ompp.sln",               "NewCaseBased",
+		"ompp/Model.vcxproj",           "NewCaseBased",
 		"ompp-model.props",             "NewCaseBased",
 		"ompp-model.vcxproj.filters",   "NewCaseBased",
 
