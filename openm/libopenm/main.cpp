@@ -8,12 +8,12 @@
 * - main() model entry point  
 * - model initialization:    
 *   * read model input parameters  
-*   * create modeling threads for each subsample
+*   * create modeling threads for each sub-value
 * - run model event loop (do the simulation)  
 * - model shutdown:  
-*   * get output results for each subsample  
+*   * get output results for each sub-value  
 *   * write output tables  
-*   * do subsamples aggregation    
+*   * do sub-values aggregation    
 * 
 * There are four isolated parts in runtime library:
 * - model part: sources are in openm/model
@@ -50,7 +50,7 @@ using namespace openm;
 /** model run initialization: read input parameters */
 OM_RUN_INIT_HANDLER RunInitHandler;
 
-/** model startup method: initialize subsample */
+/** model startup method: initialize sub-value */
 OM_STARTUP_HANDLER ModelStartupHandler;
 
 /** model event loop: user code entry point */
@@ -60,9 +60,9 @@ OM_EVENT_LOOP_HANDLER RunModelHandler;
 OM_SHUTDOWN_HANDLER ModelShutdownHandler;
 
 /** model thread function */
-static bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunController * i_runCtrl);
+static bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl);
 
-// run modeling threads to calculate subsamples
+// run modeling threads to calculate sub-values
 static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
 // communicate with child modeling processes or sleep if no child activity
@@ -143,7 +143,7 @@ int main(int argc, char ** argv)
             // initialize model run: read input parameters
             RunInitHandler(runCtrl.get());
 
-            // do the modeling: run modeling threads to calculate subsamples
+            // do the modeling: run modeling threads to calculate sub-values
             bool isRunOk = runModelThreads(runId, runCtrl.get());
             if (!isRunOk) {
                 runCtrl->shutdownOnExit(ModelStatus::error);
@@ -188,18 +188,18 @@ int main(int argc, char ** argv)
 }
 
 /** model thread function */
-bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunController * i_runCtrl)
+bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl)
 {
     try {
 #ifdef _DEBUG
-        theLog->logFormatted("Subsample %d", i_subNumber);
+        theLog->logFormatted("Sub-value %d", i_subId);
 #endif      
         // create the model
         unique_ptr<IModel> model(
-            ModelBase::create(i_runId, i_subCount, i_subNumber, i_runCtrl, i_runCtrl->meta())
+            ModelBase::create(i_runId, i_subCount, i_subId, i_runCtrl, i_runCtrl->meta())
             );
 
-        // initialize model subsample
+        // initialize model sub-value
         if (ModelStartupHandler != NULL) ModelStartupHandler(model.get());
 
         // do the modeling
@@ -240,7 +240,7 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subNumber, RunController
     return true;    // modeling thread completed OK
 }
 
-// run modeling threads to calculate subsamples
+// run modeling threads to calculate sub-values
 bool runModelThreads(int i_runId, RunController * i_runCtrl)
 {
     list<future<bool> > modelFutureLst;     // modeling threads
@@ -254,8 +254,8 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
                 launch::async,
                 modelThreadLoop,
                 i_runId,
-                i_runCtrl->subSampleCount,
-                i_runCtrl->subFirstNumber + nextSub,
+                i_runCtrl->subValueCount,
+                i_runCtrl->subFirstId + nextSub,
                 i_runCtrl
                 )));
             nextSub++;

@@ -16,31 +16,31 @@ using namespace openm;
 
 /** initialize root modeling process.
 *
-* - (a) get number of subsamples, processes, threads, groups
+* - (a) get number of sub-values, processes, threads, groups
 * - (b) merge command line and ini-file options with db profile table
 * - (c) initialize task run if required
 * - (d) load metadata tables from database and broadcast it to child processes
 *
-* (a) get number of subsamples, processes, threads, groups
+* (a) get number of sub-values, processes, threads, groups
 * --------------------------------------------------------
 *
-* Number of subsamples by default = 1 and it can be specified
+* Number of sub-values by default = 1 and it can be specified
 * using command-line argument, ini-file or profile table in database
 *
-* Number of modeling threads by default = 1 and subsamples run sequentially in single thread.
-* If more threads specified (i.e. by command-line argument) then subsamples run in parallel.
+* Number of modeling threads by default = 1 and sub-values run sequentially in single thread.
+* If more threads specified (i.e. by command-line argument) then sub-values run in parallel.
 *
 * For example: \n
-*   model.exe -General.Subsamples 8 \n
-*   model.exe -General.Subsamples 8 -General.Threads 4 \n
-*   mpiexec -n 2 model.exe -General.Subsamples 31 -General.Threads 7
+*   model.exe -OpenM.SubValues 8 \n
+*   model.exe -OpenM.SubValues 8 -OpenM.Threads 4 \n
+*   mpiexec -n 2 model.exe -OpenM.SubValues 31 -OpenM.Threads 7
 *
 * Number of modeling processes = MPI world size
 *
 * Processes may be combined into groups for parallel run of input data sets
-* and size of the group is such to calculate all subsamples by the group.
+* and size of the group is such to calculate all sub-values by the group.
 *
-* Size of modeling group = number of subsamples / number of threads \n
+* Size of modeling group = number of sub-values / number of threads \n
 *   group size always >= 1 therefore group always include at least one process \n
 * Number of groups = number of processes / group size \n
 *   by default is only one group, which include all modeling processes \n
@@ -49,8 +49,8 @@ using namespace openm;
 *   if (group size * group count) == process count then "root is active" \n
 *   else root process dedicated for data exchange and modeling done only by child processes
 *
-* Number of subsamples per process = total number of subsamples / group size \n
-*   if total number of subsamples % number of processes != 0 then remainder calculated at group last process \n
+* Number of sub-values per process = total number of sub-values / group size \n
+*   if total number of sub-values % number of processes != 0 then remainder calculated at group last process \n
 *
 * (b) merge command line and ini-file options with db profile table
 *------------------------------------------------------------------
@@ -79,9 +79,9 @@ using namespace openm;
 * -----------------------
 * modeling task can be specified by name or by task id:
 *
-*   model.exe -General.Subsamples 16 -OpenM.TaskName someTask \n
-*   model.exe -General.Subsamples 16 -OpenM.Taskid 1 \n
-*   model.exe -General.Subsamples 16 -OpenM.TaskName someTask -OpenM.TaskWait true
+*   model.exe -OpenM.SubValues 16 -OpenM.TaskName someTask \n
+*   model.exe -OpenM.SubValues 16 -OpenM.Taskid 1 \n
+*   model.exe -OpenM.SubValues 16 -OpenM.TaskName someTask -OpenM.TaskWait true
 *
 * if task specified then model would run for each input working set of parameters \n
 * if task "wait" is true then modeling task is run under external supervision: \n
@@ -100,20 +100,20 @@ void RootController::init(void)
     loadMessages(dbExec);
 
     // merge command line and ini-file arguments with profile_option table values
-    mergeProfile(dbExec);
+    mergeOptions(dbExec);
 
-    // get main run control values: number of subsamples, threads
-    subSampleCount = argOpts().intOption(RunOptionsKey::subSampleCount, 1); // number of subsamples from command line or ini-file
+    // get main run control values: number of sub-values, threads
+    subValueCount = argOpts().intOption(RunOptionsKey::subValueCount, 1);   // number of sub-values from command line or ini-file
     threadCount = argOpts().intOption(RunOptionsKey::threadCount, 1);       // max number of modeling threads
     isWaitTaskRun = argOpts().boolOption(RunOptionsKey::taskWait);          // if true then task run under external supervision
 
     // broadcast basic run options from root to all other processes
-    broadcastInt(ProcessGroupDef::all, msgExec, &subSampleCount);
+    broadcastInt(ProcessGroupDef::all, msgExec, &subValueCount);
     broadcastInt(ProcessGroupDef::all, msgExec, &threadCount);
     broadcastInt(ProcessGroupDef::all, msgExec, &modelId);
 
     // basic validation: number of processes expected to be > 1
-    if (subSampleCount <= 0) throw ModelException("Invalid number of subsamples: %d", subSampleCount);
+    if (subValueCount <= 0) throw ModelException("Invalid number of sub-values: %d", subValueCount);
     if (threadCount <= 0) throw ModelException("Invalid number of modeling threads: %d", threadCount);
     if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
 
@@ -121,21 +121,21 @@ void RootController::init(void)
     // "is root active": root may be used for modeling in last group
     // if (group size * group count) == process count then "root is active"
     // else root process dedicated for data exchange and modeling done only by child processes
-    rootGroupDef = ProcessGroupDef(subSampleCount, threadCount, msgExec->worldSize(), msgExec->rank());
+    rootGroupDef = ProcessGroupDef(subValueCount, threadCount, msgExec->worldSize(), msgExec->rank());
 
     msgExec->createGroups(rootGroupDef.groupSize, rootGroupDef.groupCount);
 
     for (int nGroup = 0; nGroup < rootGroupDef.groupCount; nGroup++) {
-        runGroupLst.emplace_back(1 + nGroup, subSampleCount, rootGroupDef);
+        runGroupLst.emplace_back(1 + nGroup, subValueCount, rootGroupDef);
     }
 
-    // first subsample number and number of subsamples
-    subFirstNumber = 0;
+    // first sub-value index and number of sub-values
+    subFirstId = 0;
     selfSubCount = rootGroupDef.selfSubCount;
 
-    if (subFirstNumber < 0 || selfSubCount <= 0 || subFirstNumber + selfSubCount > subSampleCount)
+    if (subFirstId < 0 || selfSubCount <= 0 || subFirstId + selfSubCount > subValueCount)
         throw ModelException(
-            "Invalid first subsample number: %d or number of subsamples: %d", subFirstNumber, selfSubCount
+            "Invalid first sub-value index: %d or number of sub-values: %d", subFirstId, selfSubCount
             );
 
     // broadcast metadata tables from root to all child processes
@@ -253,11 +253,11 @@ bool RootController::childExchange(void)
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
-    // try to receive subsamples and wait for send completion, if any outstanding
-    bool isReceived = receiveSubSamples();
+    // try to receive sub-values and wait for send completion, if any outstanding
+    bool isReceived = receiveSubValues();
     msgExec->waitSendAll();
 
-    // find modeling groups where all subsamples completed and finalize run results
+    // find modeling groups where all sub-values completed and finalize run results
     bool isCompleted = false;
 
     for (RunGroup & rg : runGroupLst) {
@@ -266,7 +266,7 @@ bool RootController::childExchange(void)
         if (rootGroupDef.isRootActive && rg.groupOne == rootRunGroup().groupOne) continue;
         if (rg.state.isExit()) continue;    // group already shutdown
 
-        // check if all run subsamples completed then finalize run completed in database
+        // check if all run sub-values completed then finalize run completed in database
         if (rg.runId > 0) {
             if (rg.isSubDone.isAll()) {
                 isCompleted = true;
@@ -309,7 +309,7 @@ void RootController::shutdownWaitAll(void)
     // receive outstanding run results
     bool isAnyToRecv = true;
     do {
-        bool isReceived = receiveSubSamples();  // receive outstanding subsamples
+        bool isReceived = receiveSubValues();  // receive outstanding sub-values
 
         isAnyToRecv = std::any_of(
             accRecvLst.cbegin(),
@@ -334,7 +334,7 @@ void RootController::shutdownWaitAll(void)
         // skip if group already shutdown
         if (rg.state.isShutdownOrExit()) continue;
 
-        // check if all run subsamples completed then finalize run completed in database
+        // check if all run sub-values completed then finalize run completed in database
         if (rg.runId > 0) {
             if (rg.isSubDone.isAll()) doShutdownRun(rg.runId, taskRunId, dbExec);  // run completed
         }
@@ -352,10 +352,10 @@ void RootController::shutdownWaitAll(void)
 /** model run shutdown: save results and update run status. */
 void RootController::shutdownRun(int i_runId) 
 {
-    // receive outstanding subsamples for that run id
+    // receive outstanding sub-values for that run id
     bool isAnyToRecv = true;
     do {
-        bool isReceived = receiveSubSamples();  // receive outstanding subsamples
+        bool isReceived = receiveSubValues();  // receive outstanding sub-values
 
         isAnyToRecv = std::any_of(
             accRecvLst.cbegin(),
@@ -382,22 +382,22 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
     const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
 
     int tblId = -1;
-    size_t valCount = 0;
+    size_t valSize = 0;
     for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
 
         // get accumulator data size
         if (tblId != accVec[nAcc].tableId) {
             tblId = accVec[nAcc].tableId;
-            valCount = IOutputTableWriter::sizeOf(metaStore.get(), tblId);
+            valSize = IOutputTableWriter::sizeOf(metaStore.get(), tblId);
         }
 
-        for (int nSub = 0; nSub < subSampleCount; nSub++) {
+        for (int nSub = 0; nSub < subValueCount; nSub++) {
 
-            int nRank = i_runGroup.rankBySubsampleNumber(nSub);
+            int nRank = i_runGroup.rankBySubValueId(nSub);
             if (nRank == msgExec->rootRank) continue;
 
             accRecvLst.push_back(
-                AccReceive(i_runId, nSub, subSampleCount, nRank, tblId, accVec[nAcc].accId, nAcc, valCount)
+                AccReceive(i_runId, nSub, subValueCount, nRank, tblId, accVec[nAcc].accId, nAcc, valSize)
                 );
         }
     }
@@ -407,11 +407,12 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
 * read input parameter values.
 *
 * @param[in]     i_name      parameter name
+* @param[in]     i_subId     parameter sub-value index
 * @param[in]     i_type      parameter value type
 * @param[in]     i_size      parameter size (number of parameter values)
 * @param[in,out] io_valueArr array to return parameter values, size must be =i_size
 */
-void RootController::readParameter(const char * i_name, const type_info & i_type, size_t i_size, void * io_valueArr)
+void RootController::readParameter(const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
 
@@ -420,7 +421,7 @@ void RootController::readParameter(const char * i_name, const type_info & i_type
         unique_ptr<IParameterReader> reader(
             IParameterReader::create(rootRunGroup().runId, i_name, dbExec, metaStore.get())
             );
-        reader->readParameter(dbExec, i_type, i_size, io_valueArr);
+        reader->readParameter(dbExec, i_subId, i_type, i_size, io_valueArr);
 
         // broadcast parameter to root group child modeling processes
         msgExec->bcast(rootGroupDef.groupOne, i_type, i_size, io_valueArr);
@@ -437,27 +438,31 @@ void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
     unique_ptr<string[]> strArr;
     void * paramData = nullptr;
 
-    for (size_t k = 0; k < PARAMETER_NAME_ARR_LEN; k++) {
+    for (size_t nPar = 0; nPar < PARAMETER_NAME_ARR_LEN; nPar++) {
 
         // allocate memory to read parameter
-        if (parameterNameSizeArr[k].typeOf == typeid(string)) {
-            strArr.reset(new string[parameterNameSizeArr[k].size]);
+        if (parameterNameSizeArr[nPar].typeOf == typeid(string)) {
+            strArr.reset(new string[parameterNameSizeArr[nPar].size]);
             paramData = strArr.get();
         }
         else {
-            size_t packSize = IPackedAdapter::packedSize(parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size);
+            size_t packSize = IPackedAdapter::packedSize(parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size);
             byteArr.reset(new char[packSize]);
             paramData = byteArr.get();
         }
 
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[k].name, dbExec, metaStore.get())
+            IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[nPar].name, dbExec, metaStore.get())
             );
-        reader->readParameter(dbExec, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, paramData);
+        int nCount = parameterSubCount(reader->parameterId());
 
-        // broadcast parameter to all child modeling processes
-        msgExec->bcast(i_runGroup.groupOne, parameterNameSizeArr[k].typeOf, parameterNameSizeArr[k].size, paramData);
+        for (int nSub = 0; nSub < nCount; nSub++) {
+            reader->readParameter(dbExec, nSub, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
+
+            // broadcast parameter to all child modeling processes
+            msgExec->bcast(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
+        }
     }
 }
 
@@ -480,15 +485,15 @@ void RootController::writeAccumulators(
     // write accumulators into database
     doWriteAccumulators(rootRunGroup().runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
 
-    // if all accumulators of subsample completed then update restart subsample number
+    // if all accumulators of sub-value completed then update restart sub-value index
     if (i_isLastTable) {
-        rootRunGroup().isSubDone.setAt(i_runOpts.subSampleNumber);      // mark that subsample as completed
-        updateRestartSubsample(rootRunGroup().runId, dbExec, rootRunGroup().isSubDone.countFirst());
+        rootRunGroup().isSubDone.setAt(i_runOpts.subValueId);       // mark that sub-value as completed
+        updateRestartSubValueId(rootRunGroup().runId, dbExec, rootRunGroup().isSubDone.countFirst());
     }
 }
 
-/** receive accumulators of output tables subsamples and write into database. */
-bool RootController::receiveSubSamples(void)
+/** receive accumulators of output tables sub-values and write into database. */
+bool RootController::receiveSubValues(void)
 {
     // exit if nothing to receive
     if (accRecvLst.empty()) return false;
@@ -501,12 +506,12 @@ bool RootController::receiveSubSamples(void)
         if (!accRecv.isReceived) {      // if accumulator not yet received
 
             // allocate buffer to receive the data
-            unique_ptr<double> valueUptr(new double[(int)accRecv.valueCount]);
+            unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
             double * valueArr = valueUptr.get();
 
             // try to received
             accRecv.isReceived = msgExec->tryReceive(
-                accRecv.senderRank, (MsgTag)accRecv.msgTag, typeid(double), accRecv.valueCount, valueArr
+                accRecv.senderRank, (MsgTag)accRecv.msgTag, typeid(double), accRecv.valueSize, valueArr
             );
             if (!accRecv.isReceived) continue;
 
@@ -519,23 +524,23 @@ bool RootController::receiveSubSamples(void)
                 tblRow->tableName.c_str(),
                 dbExec,
                 metaStore.get(),
-                subSampleCount,
+                subValueCount,
                 modelRunOptions().useSparse,
                 modelRunOptions().nullValue
             ));
-            writer->writeAccumulator(dbExec, accRecv.subNumber, accRecv.accId, accRecv.valueCount, valueArr);
+            writer->writeAccumulator(dbExec, accRecv.subValueId, accRecv.accId, accRecv.valueSize, valueArr);
 
             isAnyReceived = true;
         }
     }
 
-    // update restart subsample in database and list of accumulators
+    // update restart sub-value in database and list of accumulators
     if (isAnyReceived) updateAccReceiveList();
 
     return isAnyReceived;
 }
 
-/** update restart subsample in database and list of accumulators to be received. */
+/** update restart sub-value in database and list of accumulators to be received. */
 void RootController::updateAccReceiveList(void)
 {
     // exit if nothing to receive
@@ -544,10 +549,10 @@ void RootController::updateAccReceiveList(void)
     // collect accumulators received ststus: find if any accumulators not received
     struct RunSubDone {
         int runId;      // run id to to receive from child
-        int subNumber;  // subsamples number to receive
+        int subValueId; // sub-values number to receive
         bool isDone;    // if true then all accumulators received
 
-        RunSubDone(int i_runId, int i_subNumber, bool i_isDone) : runId(i_runId), subNumber(i_subNumber), isDone(i_isDone) { }
+        RunSubDone(int i_runId, int i_subId, bool i_isDone) : runId(i_runId), subValueId(i_subId), isDone(i_isDone) { }
     };
     vector<RunSubDone> rsdVec;
 
@@ -556,40 +561,40 @@ void RootController::updateAccReceiveList(void)
         auto rsd = find_if(
             rsdVec.begin(),
             rsdVec.end(),
-            [&accRecv](RunSubDone i_rsd) -> bool { return i_rsd.runId == accRecv.runId && i_rsd.subNumber == accRecv.subNumber; }
+            [&accRecv](RunSubDone i_rsd) -> bool { return i_rsd.runId == accRecv.runId && i_rsd.subValueId == accRecv.subValueId; }
         );
 
         if (rsd != rsdVec.end()) {
             rsd->isDone &= accRecv.isReceived;  // update done status: it is true if all accumulators received
         }
         else {
-            rsdVec.push_back(RunSubDone(accRecv.runId, accRecv.subNumber, accRecv.isReceived));
+            rsdVec.push_back(RunSubDone(accRecv.runId, accRecv.subValueId, accRecv.isReceived));
         }
     }
 
-    // update modeling groups "subsample done" status
+    // update modeling groups "sub-value done" status
     for (RunGroup & rg : runGroupLst) {
 
-        // for each subsample of that run check if all accumulators received
+        // for each sub-value of that run check if all accumulators received
         bool isAny = false;
 
-        for (int nSub = 0; nSub < subSampleCount; nSub++) {
+        for (int nSub = 0; nSub < subValueCount; nSub++) {
 
             auto rsd = find_if(
                 rsdVec.begin(),
                 rsdVec.end(),
-                [&rg, nSub](RunSubDone i_rsd) -> bool { return i_rsd.runId == rg.runId && i_rsd.subNumber == nSub; }
+                [&rg, nSub](RunSubDone i_rsd) -> bool { return i_rsd.runId == rg.runId && i_rsd.subValueId == nSub; }
             );
 
             if (rsd != rsdVec.end() && rsd->isDone) {
-                rg.isSubDone.setAt(rsd->subNumber);     // "done" for that subsample of that run id
+                rg.isSubDone.setAt(rsd->subValueId);    // "done" for that sub-value of that run id
                 isAny = true;
             }
         }
 
-        // if any changes in subsample "done" status then update restart subsample in database
+        // if any changes in sub-value "done" status then update restart sub-value in database
         if (isAny) {
-            updateRestartSubsample(rg.runId, dbExec, rg.isSubDone.countFirst());
+            updateRestartSubValueId(rg.runId, dbExec, rg.isSubDone.countFirst());
         }
     }
 

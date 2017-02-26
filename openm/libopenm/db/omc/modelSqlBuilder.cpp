@@ -60,7 +60,7 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         // validate input rows: uniqueness and referential integrity
         prepare(io_metaRows);
 
-        // collect info for db parameter tables, db subsample tables and value views
+        // collect info for db parameter tables, db sub-value tables and value views
         setParamTableInfo(io_metaRows);
         setOutTableInfo(io_metaRows);
 
@@ -69,14 +69,14 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
             buildCreateModelTables(
                 providerName, 
                 io_metaRows, 
-                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_create_tables_" + providerName).c_str(), ".sql")
+                makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_create_" + providerName).c_str(), ".sql")
             );
         }
 
-        // write sql script to drop model tables
+        // write sql script to drop model tables and views
         buildDropModelTables(
             io_metaRows, 
-            makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_drop_tables").c_str(), ".sql")
+            makeFilePath(outputDir.c_str(), (io_metaRows.modelDic.name + "_drop").c_str(), ".sql")
         );
 
         // create SQLite database and publish model: insert model metadata and create model tables
@@ -99,7 +99,7 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
             // run sql script to create new model tables
             dbExec->runSqlScript(
                 fileToUtf8(makeFilePath(
-                    outputDir.c_str(), (io_metaRows.modelDic.name + "_create_tables_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
+                    outputDir.c_str(), (io_metaRows.modelDic.name + "_create_" + SQLITE_DB_PROVIDER).c_str(), ".sql"
                 ).c_str()));
         }
     }
@@ -334,7 +334,7 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     i_dbExec->commit();
 }
 
-// write sql script to create new model tables
+// write sql script to create new model tables and views
 void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const MetaModelHolder & i_metaRows,  const string & i_filePath) const
 {
     // script header
@@ -379,7 +379,7 @@ void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const
     wr.write("\n");
 }
 
-// write sql script to drop model tables
+// write sql script to drop model tables and views
 void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  const string & i_filePath) const
 {
     // script header
@@ -521,6 +521,7 @@ void ModelSqlBuilder::addWorksetParameter(
 }
 
 // impelementation of append scalar parameter value to sql script
+// it does insert into sub-value id = 0
 void ModelSqlBuilder::doAddScalarWorksetParameter(
     int i_setId,
     const string & i_name, 
@@ -534,15 +535,16 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
 
     // make sql to insert parameter value
     // if parameter value is string type then it must be sql-quoted
-    //  INSERT INTO StartingSeed_w20120819 (set_id, param_value) VALUES (1234, 0.014)
+    //  INSERT INTO StartingSeed_w20120819 (set_id, sub_id, param_value) VALUES (1234, 0, 0.014)
     dbExec->update(
-        "INSERT INTO " + i_dbTableName + " (set_id, param_value) VALUES (" + 
-        to_string(i_setId) + ", " +
+        "INSERT INTO " + i_dbTableName + " (set_id, sub_id, param_value) VALUES (" + 
+        to_string(i_setId) + ", 0, " +
         (i_paramInfo->valueTypeIt->isString() ? toQuoted(i_value) : i_value) +
         ")");
 }
 
 // append parameter values to sql script for new working set creation 
+// it does insert into sub-value id = 0
 void ModelSqlBuilder::addWorksetParameter(
     const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
     )
@@ -638,7 +640,7 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // make sql to insert parameter dimesion enums and parameter value
     // if parameter value is string type then it must be sql-quoted
-    // INSERT INTO ageSex_w20120817 (set_id, dim0, dim1, param_value) VALUES (1234, 1, 2, 0.014)
+    // INSERT INTO ageSex_w20120817 (set_id, sub_id, dim0, dim1, param_value) VALUES (1234, 0, 1, 2, 0.014)
     {
         // storage for dimension enum_id items
         unique_ptr<int> cellArrUptr(new int[dimCount]);
@@ -649,12 +651,12 @@ void ModelSqlBuilder::addWorksetParameter(
         }
 
         // make constant portion of insert
-        string insertPrefix = "INSERT INTO " + paramRow->dbSetTable + " (set_id, ";
+        string insertPrefix = "INSERT INTO " + paramRow->dbSetTable + " (set_id, sub_id, ";
 
         for (const string & dimName : paramInfo->dimNameVec) {
             insertPrefix += dimName + ", ";
         }
-        insertPrefix += "param_value) VALUES (" + to_string(i_metaSet.worksetRow.setId) + ", ";
+        insertPrefix += "param_value) VALUES (" + to_string(i_metaSet.worksetRow.setId) + ", 0, ";
 
         // loop through all enums for each dimension and write sql inserts
         list<string>::const_iterator valueIt = i_valueLst.cbegin();
@@ -813,25 +815,27 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 // CREATE TABLE ageSex_p20120817
 // (
 //  run_id      INT   NOT NULL,  -- set_id for workset parameter
+//  sub_id      INT   NOT NULL,
 //  dim0        INT   NOT NULL,
 //  dim1        INT   NOT NULL,
 //  param_value FLOAT NOT NULL,
-//  PRIMARY KEY (run_id, dim0, dim1)  -- set_id for workset parameter
+//  PRIMARY KEY (run_id, sub_id, dim0, dim1)  -- set_id for workset parameter
 // );
 const void ModelSqlBuilder::paramCreateTable(
     const string & i_sqlProvider, const string & i_dbTableName, const string & i_runSetId, const ParamTblInfo & i_tblInfo, ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "(" + 
-        i_runSetId + " INT NOT NULL, ";
+        i_runSetId + " INT NOT NULL," +
+        " sub_id INT NOT NULL, ";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += dimName + " INT NOT NULL, ";
     }
 
     sqlBody +=
-        "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + " NOT NULL, " +
-        "PRIMARY KEY (" + i_runSetId;
+        "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + " NOT NULL," +
+        " PRIMARY KEY (" + i_runSetId + ", sub_id";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += ", " + dimName;
@@ -950,24 +954,24 @@ const void ModelSqlBuilder::valueCreateTable(
 // AS
 // SELECT
 //   A.run_id, A.sub_id, A.dim0, A.dim1,
-//   acc0,
-//   acc1,
-//   (acc0 + acc1) AS acc2
+//   A.acc_value AS acc0,
+//   (
+//     SELECT A1.acc_value FROM salarySex_a_2012820 A1
+//     WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+//     AND A1.acc_id = 1
+//   ) AS acc1,
+//   (
+//     (
+//       A.acc_value
+//     )
+//     + 
+//     (
+//       SELECT A1.acc_value FROM salarySex_a_2012820 A1
+//       WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+//       AND A1.acc_id = 1
+//     )
+//   ) AS acc2
 // FROM salarySex_a_2012820 A
-// INNER JOIN
-// (
-//   SELECT run_id, sub_id, dim0, dim1, acc_value AS acc0
-//   FROM salarySex_a_2012820
-//   WHERE acc_id = 0
-// ) B0
-// ON (B0.run_id = A.run_id AND B0.sub_id = A.sub_id AND B0.dim0 = A.dim0 AND B0.dim1 = A.dim1)
-// INNER JOIN
-// (
-//   SELECT run_id, sub_id, dim0, dim1, acc_value AS acc1
-//   FROM salarySex_a_2012820
-//   WHERE acc_id = 1
-// ) B1
-// ON (B1.run_id = A.run_id AND B1.sub_id = A.sub_id AND B1.dim0 = A.dim0 AND B1.dim1 = A.dim1)
 // WHERE A.acc_id = 0;
 const void ModelSqlBuilder::accAllCreateView(
     const string & i_sqlProvider, 
@@ -985,71 +989,22 @@ const void ModelSqlBuilder::accAllCreateView(
         sqlBody += ", A." + dimName;
     }
 
-    // accumulator values: as-is for native accumulators and expressions for derived
-    // it is expected for derived accumulator expression to be sql-compatible:
-    //   acc0,
-    //   acc1,
-    //   (acc0 + acc1) AS acc2
+    // append accumulators as sql subqueries
     for (int accId : i_tblInfo.accIdVec) {
 
         vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, accId, i_accVec);
         if (accIt == i_accVec.cend())
             throw DbException("output table %s accumulator not found, id: %d", i_tblInfo.name.c_str(), accId);
 
-        if (!accIt->isDerived) {
-            sqlBody += ", " + accIt->name;
-        }
-        else{
-            sqlBody += ", (" + accIt->expr + ") AS "+ accIt->name;
-        }
+        sqlBody += ", (" + accIt->accSql + ") AS " + accIt->name;
     }
 
     // main accumulator table
-    sqlBody += " FROM " + i_accTablName + " A";
-
-    // for each native accumulator 
-    // select it from accumulator table by join on run id, sub id and dimensions:
-    // INNER JOIN
-    // (
-    //   SELECT run_id, sub_id, dim0, dim1, acc_value AS acc0
-    //   FROM salarySex_a_2012820
-    //   WHERE acc_id = 0
-    // ) B0
-    // ON (B0.run_id = A.run_id AND B0.sub_id = A.sub_id AND B0.dim0 = A.dim0 AND B0.dim1 = A.dim1)
-    //
-    for (int accId : i_tblInfo.accIdVec) {
-
-        vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, accId, i_accVec);
-        if (accIt == i_accVec.cend())
-            throw DbException("output table %s accumulator not found, id: %d", i_tblInfo.name.c_str(), accId);
-
-        if (accIt->isDerived) continue;     // skip derived accumulator, only native accumulators selected
-
-        string sAccId = to_string(accId);
-        string alias = "B" + sAccId;
-
-        sqlBody += " INNER JOIN (" \
-            " SELECT run_id, sub_id, ";
-
-        for (const string & dimName : i_tblInfo.dimNameVec) {
-            sqlBody += dimName + ", ";
-        }
-
-        sqlBody += "acc_value AS " + accIt->name +
-            " FROM " + i_accTablName +
-            " WHERE acc_id = " + sAccId + ") " + alias +
-            " ON (" +
-            " " + alias + ".run_id = A.run_id AND " + alias + ".sub_id = A.sub_id";
-
-        for (const string & dimName : i_tblInfo.dimNameVec) {
-            sqlBody += " AND " + alias + "." + dimName + " = A." + dimName;
-        }
-        sqlBody += ")";
-    }
-
-    // select accumulator zero from main table 
-    // all other accumulators joined to zero by run id, sub id and dimensions
-    sqlBody += " WHERE A.acc_id = 0;";
+    // select first accumulator from main table 
+    // all other accumulators joined to the first by run id, sub id and dimensions
+    sqlBody += 
+        " FROM " + i_accTablName + " A" +
+        " WHERE A.acc_id = " + to_string(i_tblInfo.accIdVec[0]) + ";";
 
     // make create view as select
     io_wr.outFs << IDbExec::makeSqlCreateViewReplace(i_sqlProvider, i_viewName, sqlBody) << "\n";
@@ -1062,7 +1017,8 @@ const void ModelSqlBuilder::accAllCreateView(
 //  S.dim1        AS "Dim1",
 //  S.param_value AS "Value"
 // FROM ageSex_p20120817 S
-// WHERE S.run_id =
+// WHERE S.sub_id = 0
+// AND S.run_id =
 // (
 //  SELECT MIN(RL.run_id)
 //  FROM run_lst RL
@@ -1085,10 +1041,11 @@ const void ModelSqlBuilder::paramCompatibilityView(
     }
     sqlBody += " S.param_value AS \"Value\"";
 
-    // from subsample table where run id is first run of that model
+    // from sub-value table where run id is first run of that model
     sqlBody +=
         " FROM " + i_srcTableName + " S" +
-        " WHERE S.run_id = (" \
+        " WHERE S.sub_id = 0" \
+        " AND S.run_id = (" \
         " SELECT MIN(RL.run_id)" \
         " FROM run_lst RL" \
         " INNER JOIN model_dic M ON (M.model_id = RL.model_id)" \

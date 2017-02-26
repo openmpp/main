@@ -21,12 +21,15 @@ namespace openm
         // input parameter reader cleanup
         ~ParameterReader(void) throw() { }
 
+        // return input parameter id
+        int parameterId(void) const throw() override { return paramId; }
+
         // return input parameter size: total number of values in the table
-        size_t sizeOf(void) const throw() { return totalSize; }
+        size_t sizeOf(void) const throw() override { return totalSize; }
 
         // read input parameter values
         void readParameter(
-            IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * io_valueArr
+            IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
             );
 
     private:
@@ -104,12 +107,18 @@ ParameterReader::ParameterReader(
 }
 
 // read input parameter values
-void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type, size_t i_size, void * io_valueArr)
+void ParameterReader::readParameter(IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr)
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter id: %d", i_size, paramId);
     if (io_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+
+    // validate sub_id: must be between 0 and sub_count
+    int nSub = i_dbExec->selectToInt(
+        "SELECT sub_count FROM run_parameter WHERE run_id = " + to_string(runId) + " AND parameter_hid = " + to_string(paramRow->paramHid),
+        -1);
+    if (i_subId < 0 || i_subId >= nSub) throw DbException("invalid sub value id: %d for parameter id: %d", i_subId, paramId);
 
     // make sql to select parameter value
     //
@@ -119,6 +128,7 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type
     // (
     //   SELECT R.base_run_id FROM run_parameter R WHERE R.run_id = 4 AND R.parameter_hid = 654
     // )
+    // AND sub_id = 31
     // ORDER BY 1, 2
     //
     string sDimLst;
@@ -129,13 +139,14 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type
         sOrder += to_string(k + 1) + ((k < dimCount - 1) ? ", " : "");
     }
 
-    string sql = "SELECT " + sDimLst + " param_value" + 
-        " FROM "  + paramDbTable  + 
+    string sql = "SELECT " + sDimLst + " param_value" +
+        " FROM " + paramDbTable +
         " WHERE run_id = " \
         " (" \
         " SELECT R.base_run_id FROM run_parameter R" \
         " WHERE R.run_id = " + to_string(runId) + " AND R.parameter_hid = " + to_string(paramRow->paramHid) +
         " )" +
+        " AND sub_id = " + to_string(i_subId) +
         ((dimCount > 0) ? " ORDER BY " + sOrder : "");
 
     // select parameter and return value column

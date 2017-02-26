@@ -54,6 +54,17 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
     return ctrl.release();
 }
 
+/** return index of parameter by name */
+int RunController::parameterIdByName(const char * i_name) const
+{
+    if (i_name == nullptr || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
+
+    const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
+    if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+
+    return paramRow->paramId;
+}
+
 // create new run, create input parameters and run options for input working sets
 // find working set to run the model, it can be:
 //  next set of current modeling task
@@ -150,8 +161,8 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
         toQuoted(sn) + ", " +
-        to_string(subSampleCount) + ", " +
-        to_string(subSampleCount) + ", " +
+        to_string(subValueCount) + ", " +
+        to_string(subValueCount) + ", " +
         "0, " +
         "0, " +
         toQuoted(dtStr) + ", " +
@@ -193,8 +204,8 @@ void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExe
         // skip run id and connection string: it is already in database
         if (optIt->first == RunOptionsKey::restartRunId || optIt->first == RunOptionsKey::dbConnStr) continue;
 
-        // remove subsample count from run_option, it is stored in run_lst
-        // if (optIt->first == RunOptionsKey::subSampleCount) continue;
+        // remove sub-value count from run_option, it is stored in run_lst
+        // if (optIt->first == RunOptionsKey::subValueCount) continue;
 
         i_dbExec->update(
             "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
@@ -233,8 +244,9 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     if (i_setId <= 0) throw DbException("invalid set id or model working sets not found in database");
 
     // increase read only flag to "lock" workset until parameters copy not done
+    string sSetId = to_string(i_setId);
     i_dbExec->update(
-        "UPDATE workset_lst SET is_readonly = is_readonly + 1 WHERE set_id = " + to_string(i_setId)
+        "UPDATE workset_lst SET is_readonly = is_readonly + 1 WHERE set_id = " + sSetId
         );
 
     // workset must exist
@@ -273,15 +285,19 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     string sRunId = to_string(i_runId);
     string sModelId = to_string(modelId);
     string sBaseWsRunId = to_string(baseWsRunId);
+    string paramDot = string(RunOptionsKey::parameterPrefix) + ".";
+    string subValueDot = string(RunOptionsKey::subValuePrefix) + ".";
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
 
-        string argName = string(RunOptionsKey::parameterPrefix) + "." + paramIt->paramName;
+        // calculate parameter source: command line (or ini-file), generate "iota", workset, based run, run options
+        bool isInserted = false;
+        bool isBaseRunFullCopy = false;
+        bool isArgOption = argOpts().isOptionExist((paramDot + paramIt->paramName).c_str());
+        bool isIotaSubValues = argOpts().strOption((subValueDot + paramIt->paramName).c_str()) == RunOptionsKey::iotaSubValue;
+        bool isExistInWs = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
 
-        // calculate parameter source: command line (or ini-file), workset, based run, run options
-        bool isArgOption = argOpts().isOptionExist(argName.c_str());
-        bool isFromSet = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
-        bool isFromBaseRun = false;
+        int nParamSubCount = parameterSubCount(paramIt->paramId);   // if >1 then multiple sub-values expected
 
         // get dimensions name
         int nRank = paramIt->rank;
@@ -296,8 +312,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         }
 
         // insert parameter from run options
-        bool isInserted = false;
         if (isArgOption) {
+
+            // only one sub-value can be supplied on command-line (ini-file, profile table)
+            if (nParamSubCount > 1)
+                throw DbException("only one sub-value can be provided for parameter: %s", paramIt->paramName.c_str());
 
             // find parameter type 
             const TypeDicRow * typeRow = metaStore->typeDic->byKey(modelId, paramIt->typeId);
@@ -307,7 +326,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             // get parameter value as sql string 
             // do special parameter value handling if required: 
             // bool conversion to 0/1 or quoted for string or enum code to id
-            string sVal = argOpts().strOption(argName.c_str());
+            string sVal = argOpts().strOption((paramDot + paramIt->paramName).c_str());
             if (typeRow->isString()) sVal = toQuoted(sVal);  // "file" type is VARCHAR
 
             if (typeRow->isBool()) {
@@ -327,8 +346,28 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             // insert the value
             i_dbExec->update(
-                "INSERT INTO " + paramIt->dbRunTable + " (run_id, param_value) VALUES (" + sRunId + ", " + sVal + ")"
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, param_value) VALUES (" + sRunId + ", 0, " + sVal + ")"
                 );
+            isInserted = true;
+        }
+
+        // generate "iota" parameter values: numeric from 0 to sub-value count-1
+        if (!isInserted && isIotaSubValues) {
+
+            if (nRank > 0) throw DbException("parameter %s is not a scalar", paramIt->paramName.c_str());
+
+            // find parameter type, it must be numeric
+            const TypeDicRow * typeRow = metaStore->typeDic->byKey(modelId, paramIt->typeId);
+            if (typeRow == nullptr) throw DbException("invalid (not found) type of parameter: %s", paramIt->paramName.c_str());
+            if (!typeRow->isBigInt() && !typeRow->isInt() && !typeRow->isFloat()) throw DbException("invalid (not a numeric) type of parameter: %s", paramIt->paramName.c_str());
+
+            // insert the value
+            for (int k = 0; k < nParamSubCount; k++) {
+                string sVal = to_string(k);
+                i_dbExec->update(
+                    "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, param_value) VALUES (" + sRunId + ", " + sVal + ", " + sVal + ")"
+                );
+            }
             isInserted = true;
         }
 
@@ -340,7 +379,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             if (isFileExists(csvPath.c_str())) {
 #ifdef _DEBUG
-        theLog->logMsg("Read", csvPath.c_str());
+                theLog->logMsg("Read", csvPath.c_str());
 #endif      
                 // read from csv file, parse csv lines and insert values into parameter run table
                 unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
@@ -349,7 +388,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                     i_dbExec,
                     metaStore.get()
                 ));
-                writer->loadCsvParameter(i_dbExec, csvPath.c_str(), isIdCsv);
+                writer->loadCsvParameter(i_dbExec, nParamSubCount, csvPath.c_str(), isIdCsv);
 
                 isInserted = true;
             }
@@ -357,41 +396,82 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
         // copy parameter from workset parameter value table
         // copy parameter value notes from workset parameter text table
-        if (!isInserted && isFromSet) {
+        if (!isInserted && isExistInWs) {
+
+            // validate: parameter must exist in workset and must have enough sub-values
+            int nSub = i_dbExec->selectToInt(
+                "SELECT sub_count FROM workset_parameter" \
+                " WHERE set_id = " + sSetId + " AND parameter_hid = " + to_string(paramIt->paramHid),
+                0);
+            if (nSub <= 0)
+                throw DbException("parameter %d: %s must be included in workset (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), i_setId);
+            if (nSub < nParamSubCount)
+                throw DbException("parameter %d: %s must have %d sub-values in workset (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), nParamSubCount, i_setId);
+
             i_dbExec->update(
-                "INSERT INTO " + paramIt->dbRunTable + " (run_id, " + sDimLst + " param_value)" +
-                " SELECT " + sRunId + ", " + sDimLst + " param_value" +
-                " FROM " + paramIt->dbSetTable + " WHERE set_id = " + to_string(i_setId)
-                );
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sDimLst + " param_value)" +
+                " SELECT " + sRunId + ", sub_id, " + sDimLst + " param_value" +
+                " FROM " + paramIt->dbSetTable +
+                " WHERE set_id = " + sSetId +
+                (nSub == nParamSubCount ?
+                    "" :
+                    (nParamSubCount <= 1 ?
+                        " AND sub_id = 0" :
+                        " AND sub_id BETWEEN 0 AND " + to_string(nParamSubCount - 1)
+                        )
+                    )
+            );
             i_dbExec->update(
                 "INSERT INTO run_parameter_txt (run_id, parameter_hid, lang_id, note)" \
                 " SELECT " + sRunId + ", parameter_hid, lang_id, note" +
                 " FROM workset_parameter_txt" +
-                " WHERE set_id = " + to_string(i_setId) +
+                " WHERE set_id = " + sSetId +
                 " AND parameter_hid = " + to_string(paramIt->paramHid)
                 );
             isInserted = true;
         }
 
-        // insert link to parameter values from workset base run
+        // insert parameter values from workset base run:
+        // if base run has same number of sub-values 
+        // then insert link to parameter values from workset base run
+        // else copy only part of source sub-values as new parameter values
         if (!isInserted && isBaseWsRun) {
 
-            i_dbExec->update(
-                "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, run_digest)" \
-                " SELECT " + sRunId + ", E.parameter_hid, E.base_run_id, E.run_digest" \
-                " FROM run_parameter E"
-                " WHERE E.run_id = " + sBaseWsRunId + " AND E.parameter_hid = " + to_string(paramIt->paramHid)
-            );
-
-            // validate: parameter must exist in workset base run
-            int nBase = i_dbExec->selectToInt(
-                "SELECT base_run_id FROM run_parameter" \
+            // validate: parameter must exist in workset base run and must have enough sub-values
+            int nSub = i_dbExec->selectToInt(
+                "SELECT sub_count FROM run_parameter" \
                 " WHERE run_id = " + sRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
                 0);
-            if (nBase <= 0)
-                throw DbException("parameter %d: %s must be included in run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), baseWsRunId);
+            if (nSub <= 0)
+                throw DbException("parameter %d: %s must be included in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), baseWsRunId);
+            if (nSub < nParamSubCount)
+                throw DbException("parameter %d: %s must have %d sub-values in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), nParamSubCount, baseWsRunId);
 
-            isInserted = isFromBaseRun = true;
+            // if base run has same number of sub-values then copy all else only part of source sub-values
+            isBaseRunFullCopy = nParamSubCount == nSub;
+
+            if (isBaseRunFullCopy) {            // copy parameter from base run of workset
+                i_dbExec->update(
+                    "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, run_digest)" \
+                    " SELECT " + sRunId + ", E.parameter_hid, E.base_run_id, E.sub_count, E.run_digest" \
+                    " FROM run_parameter E"
+                    " WHERE E.run_id = " + sBaseWsRunId + " AND E.parameter_hid = " + to_string(paramIt->paramHid)
+                );
+            }
+            else {      // copy only required number of sub-values from base run of workset
+                i_dbExec->update(
+                    "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sDimLst + " param_value)" +
+                    " SELECT " + sRunId + ", sub_id, " + sDimLst + " param_value" +
+                    " FROM " + paramIt->dbSetTable +
+                    " WHERE set_id = " + sSetId +
+                    (nParamSubCount <= 1 ?
+                        " AND sub_id = 0" :
+                        " AND sub_id BETWEEN 0 AND " + to_string(nParamSubCount - 1)
+                        )
+                );
+            }
+
+            isInserted = true;
         }
 
         // parameter values must be inserted from one of above sources
@@ -403,7 +483,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         }
 
         // if new value of parameter inserted then calculte parameter values digest
-        if (!isFromBaseRun) {
+        if (!isBaseRunFullCopy) {
 
             // find parameter type
             const ParameterNameSizeItem * endItem = parameterNameSizeArr + PARAMETER_NAME_ARR_LEN;
@@ -422,12 +502,12 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                 metaStore.get(),
                 argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
             ));
-            writer->digestParameter(i_dbExec, pi->typeOf);
+            writer->digestParameter(i_dbExec, nParamSubCount, pi->typeOf);
         }
     }
 
     // unlock workset
-    i_dbExec->update("UPDATE workset_lst SET is_readonly = 1 WHERE set_id = " + to_string(i_setId));
+    i_dbExec->update("UPDATE workset_lst SET is_readonly = 1 WHERE set_id = " + sSetId);
 }
 
 /** impelementation of model process shutdown if exiting without completion. */
@@ -480,7 +560,7 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
 /** implementation of model run shutdown. */
 void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
-    // update run status: all subsamples completed at this point
+    // update run status: all sub-values completed at this point
     string sDt = makeDateTime(chrono::system_clock::now());
     {
         unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
@@ -564,7 +644,7 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
             tblRow.tableName.c_str(),
             i_dbExec,
             metaStore.get(),
-            subSampleCount,
+            subValueCount,
             argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
         ));
         writer->writeAllExpressions(i_dbExec);
@@ -600,23 +680,23 @@ void RunController::doWriteAccumulators(
         i_name,
         i_dbExec,
         metaStore.get(),
-        subSampleCount,
+        subValueCount,
         i_runOpts.useSparse,
         i_runOpts.nullValue
     ));
 
     for (const auto & apc : io_accValues) {
         writer->writeAccumulator(
-            i_dbExec, i_runOpts.subSampleNumber, metaStore->tableAcc->byIndex(nAcc)->accId, i_size, apc.get()
+            i_dbExec, i_runOpts.subValueId, metaStore->tableAcc->byIndex(nAcc)->accId, i_size, apc.get()
         );
         nAcc++;
     }
 }
 
-/** update subsample number to restart the run */
-void RunController::updateRestartSubsample(int i_runId, IDbExec * i_dbExec, size_t i_subRestart) const
+/** update sub-value index to restart the run */
+void RunController::updateRestartSubValueId(int i_runId, IDbExec * i_dbExec, size_t i_subRestart) const
 {
-    // update restart subsample number
+    // update restart sub-value index
     if (i_subRestart > 0) {
         i_dbExec->update(
             "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + "," +

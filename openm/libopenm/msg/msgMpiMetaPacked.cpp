@@ -347,7 +347,8 @@ namespace openm
         MpiPacked::pack<decltype(val->accId)>(val->accId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isDerived)>(val->isDerived, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->expr, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->accSrc, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->accSql, i_packedSize, io_packedData, io_packPos);
     }
 
     // table_acc: unpack MPI message into db row
@@ -361,7 +362,8 @@ namespace openm
         val->accId = MpiPacked::unpack<decltype(val->accId)>(i_packedSize, i_packedData, io_packPos);
         val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->isDerived = MpiPacked::unpack<decltype(val->isDerived)>(i_packedSize, i_packedData, io_packPos);
-        val->expr = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->accSrc = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->accSql = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
     // table_acc: return byte size to pack db row into MPI message
@@ -375,7 +377,8 @@ namespace openm
             MpiPacked::packedSize(typeid(val->accId)) +
             MpiPacked::packedSize(val->name) +
             MpiPacked::packedSize(typeid(val->isDerived)) +
-            MpiPacked::packedSize(val->expr);
+            MpiPacked::packedSize(val->accSrc) +
+            MpiPacked::packedSize(val->accSql);
     }
 
     // table_expr: pack db row into MPI message

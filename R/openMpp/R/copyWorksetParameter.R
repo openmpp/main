@@ -148,9 +148,9 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
         dbCon, 
         paste(
           "INSERT INTO ", paramDef$dbTableName, 
-          " (set_id, ", nameCs, " param_value)",
+          " (set_id, sub_id, ", nameCs, " param_value)",
           " SELECT ", 
-          worksetId, ", ", nameCs, " param_value",
+          worksetId, ", sub_id, ", nameCs, " param_value",
           " FROM ", paramRow$db_run_table,
           " WHERE run_id = ", 
           " (", 

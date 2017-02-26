@@ -42,10 +42,10 @@ namespace openm
     /** message passing main class.    
     * 
     * empty implementation of message passing library does nothing \n
-    * it does NOT pass any data between subsample processes but not required MPI to be installed \n
+    * it does NOT pass any data between sub-value processes but not required MPI to be installed \n
     * it can be used for: \n
-    *   model debug and development to quickly test model code with single subsample \n
-    *   or if each subsample process directly connected to database (see wiki for details) \n
+    *   model debug and development to quickly test model code with single sub-value \n
+    *   or if each sub-value process directly connected to database \n
     */
     class MsgEmptyExec : public IMsgExec, public MsgExecBase
     {

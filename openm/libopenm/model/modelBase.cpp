@@ -1,6 +1,6 @@
 /**
  * @file
- * OpenM++ modeling library: modeling thread implementation to calculate model subsample
+ * OpenM++ modeling library: modeling thread implementation to calculate model sub-value
  */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -14,15 +14,15 @@ const char openm::modelUnknownErrorMessage[] = "unknown model error";
 /** simulation exception default error message */
 const char openm::simulationUnknownErrorMessage[] = "unknown error in simulation";
 
-/** model subsample run public interface */
+/** model sub-value run public interface */
 IModel::~IModel() throw() { }
 
-/** create new model subsample run base class */
+/** create new model sub-value run base class */
 ModelBase::ModelBase(
     int i_modelId,
     int i_runId,
     int i_subCount,
-    int i_subNumber,
+    int i_subId,
     RunController * i_runCtrl,
     const MetaHolder * i_metaStore
     ) : 
@@ -32,7 +32,7 @@ ModelBase::ModelBase(
     metaStore(i_metaStore)
 {
     // set model run options
-    runOpts = i_runCtrl->modelRunOptions(i_subCount, i_subNumber);
+    runOpts = i_runCtrl->modelRunOptions(i_subCount, i_subId);
 
     // setup accumulators list of id's
     const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
@@ -42,11 +42,11 @@ ModelBase::ModelBase(
     }
 }
 
-/** create new model subsample run */
+/** create new model sub-value run */
 ModelBase * ModelBase::create(
     int i_runId,
     int i_subCount,
-    int i_subNumber,
+    int i_subId,
     RunController * i_runCtrl,
     const MetaHolder * i_metaStore 
     )
@@ -54,8 +54,17 @@ ModelBase * ModelBase::create(
     if (i_metaStore == NULL) throw ModelException("invalid (NULL) model metadata");
     if (i_runCtrl == NULL) throw ModelException("invalid (NULL) run controller interface");
 
-    // create the model subsample run
-    return new ModelBase(i_metaStore->modelRow->modelId, i_runId, i_subCount, i_subNumber, i_runCtrl, i_metaStore);
+    // create the model sub-value run
+    return new ModelBase(i_metaStore->modelRow->modelId, i_runId, i_subCount, i_subId, i_runCtrl, i_metaStore);
+}
+
+/** return index of parameter sub-value in the storage array, used to find thread local parameter values */
+int ModelBase::parameterSubValueIndex(const char * i_name) const 
+{
+    const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
+    if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", (i_name != nullptr ? i_name : ""));
+
+    return runCtrl->parameterSubCount(paramRow->paramId) > 1 ? runOptions()->subValueId - runCtrl->subFirstId : 0;
 }
 
 /**
@@ -122,7 +131,7 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
             if (!td.isDone) isLastTable = false;
         }
 
-        // write subsample into database or start sending data to root process
+        // write sub-value into database or start sending data to root process
         runCtrl->writeAccumulators(runOpts, isLastTable, i_name, i_size, accValLst);
     }
     catch (exception & ex) {

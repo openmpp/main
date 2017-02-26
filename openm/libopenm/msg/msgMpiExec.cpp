@@ -215,17 +215,17 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
             else {  // pack string array
 
                 const string * srcArr = reinterpret_cast<const string *>(io_valueArr);
-                vector<char> packedData = MpiPacked::packArray(i_size, srcArr);
+                int sendSize = MpiPacked::packedSize(i_size, srcArr);
+                if (sendSize <= 0 || sendSize >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %d", sendSize);
 
-                if (packedData.size() <= 0 || packedData.size() >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %zu", packedData.size());
+                unique_ptr<char> packedData = MpiPacked::packArray(i_size, srcArr);
 
                 // send byte size of packed string array
-                int sendSize = (int)packedData.size();
                 int mpiRet = MPI_Bcast(&sendSize, 1, MPI_INT, rootRank, mComm);
                 if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
                 // send packed string array
-                mpiRet = MPI_Bcast(packedData.data(), sendSize, MPI_PACKED, rootRank, mComm);
+                mpiRet = MPI_Bcast(packedData.get(), sendSize, MPI_PACKED, rootRank, mComm);
                 if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
             }
         }
@@ -250,7 +250,7 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
                 if (recvSize <= 0 || recvSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", recvSize);
 
                 // receive packed data
-                unique_ptr<char[]> recvPack(new char[recvSize]);
+                unique_ptr<char> recvPack(new char[recvSize]);
 
                 mpiRet = MPI_Bcast(recvPack.get(), recvSize, MPI_PACKED, rootRank, mComm);
                 if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
@@ -313,7 +313,7 @@ void MpiExec::bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPacked
             if (packedSize <= 0 || packedSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", packedSize);
 
             // receive packed db rows
-            unique_ptr<char[]> recvPack(new char[packedSize]);
+            unique_ptr<char> recvPack(new char[packedSize]);
 
             mpiRet = MPI_Bcast(recvPack.get(), packedSize, MPI_PACKED, rootRank, mComm);
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);

@@ -1,12 +1,12 @@
 /**
  * @file
- * OpenM++ data library: classes to translate output table aggregation expressions into sql
+ * OpenM++ data library: classes to translate output table accumulators and expressions into sql
  */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#ifndef MODEL_AGGREGATION_SQL_H
-#define MODEL_AGGREGATION_SQL_H
+#ifndef MODEL_EXPRESSION_SQL_H
+#define MODEL_EXPRESSION_SQL_H
 
 #include "libopenm/db/dbMetaRow.h"
 using namespace std;
@@ -101,8 +101,97 @@ namespace openm
         { }
     };
 
+    /** base class to produce sql expressions and subqueries for otput table */
+    class ModelBaseExpressionSql
+    {
+    public:
+        /**
+         * initialization: store output table definition parts.
+         *
+         * @param[in]   i_accTableName  accumulator table name in database
+         * @param[in]   i_accIdVec      ids of table accumulators
+         * @param[in]   i_accNameVec    names of table accumulators
+         * @param[in]   i_dimNameVec    names of table dimensions
+         */
+        ModelBaseExpressionSql(
+            const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
+            ) :
+            accTableName(i_accTableName),
+            dimNameVec(i_dimNameVec),
+            accIdVec(i_accIdVec),
+            accNameVec(i_accNameVec)
+        { }
+
+        /** release sql builder resources. */
+        ~ModelBaseExpressionSql() throw() { }
+
+    protected:
+        /** accumulator database table name */
+        const string accTableName;
+
+        /** names of table dimensions */
+        const vector<string> dimNameVec;
+
+        /** ids of table accumulators */
+        const vector<int> accIdVec;
+
+        /** names of table accumulators */
+        const vector<string> accNameVec;
+
+    private:
+        ModelBaseExpressionSql(const ModelBaseExpressionSql & i_other) = delete;
+        ModelBaseExpressionSql & operator=(const ModelBaseExpressionSql & i_other) = delete;
+    };
+
+    /** class to produce accumulators sql subqueries for otput table */
+    class ModelAccumulatorSql : public ModelBaseExpressionSql
+    {
+    public:
+        /**
+         * initialization: store output table definition parts.
+         *
+         * @param[in]   i_accTableName  accumulator table name in database
+         * @param[in]   i_accIdVec      ids of table accumulators
+         * @param[in]   i_accNameVec    names of table accumulators
+         * @param[in]   i_dimNameVec    names of table dimensions
+         */
+        ModelAccumulatorSql(
+            const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
+            ) :
+            ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec)
+        { }
+
+        /** release sql builder resources. */
+        ~ModelAccumulatorSql() throw() { }
+
+        /**
+         * translate output table "native" (non-derived) accumulator into sql subquery.
+         *
+         * @param i_accId       accumulator id
+         * @param i_isFirstAcc  if true then this is first accumulator
+         *
+         * @return  sql select subquery
+         */
+        const string translateNativeAccExpr(int i_accId, bool i_isFirstAcc) const;
+
+        /**
+         * translate output table derived accumulator into sql subquery.
+         *
+         * @param i_accName     accumulator name
+         * @param i_expr        source expression, ie: acc0 + acc1.
+         * @param i_nativeMap   native accumlators map of (name, sql)
+         *
+         * @return  sql select subquery
+         */
+        const string translateDerivedAccExpr(const string & i_accName, const string & i_expr, const map<string, string> & i_nativeMap) const;
+
+    private:
+        ModelAccumulatorSql(const ModelAccumulatorSql & i_other) = delete;
+        ModelAccumulatorSql & operator=(const ModelAccumulatorSql & i_other) = delete;
+    };
+
     /** class to produce aggregation sql for otput table */
-    class ModelAggregationSql
+    class ModelAggregationSql : public ModelBaseExpressionSql
     {
     public:
         /**
@@ -116,10 +205,7 @@ namespace openm
         ModelAggregationSql(
             const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
             ) :
-            accTableName(i_accTableName),
-            dimNameVec(i_dimNameVec),
-            accIdVec(i_accIdVec),
-            accNameVec(i_accNameVec)
+            ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec)
         { }
 
         /** release sql builder resources. */
@@ -136,18 +222,6 @@ namespace openm
         const string translateAggregationExpr(const string & i_name, const string & i_expr);
 
     private:
-        /** accumulator database table name */
-        const string accTableName;
-
-        /** names of table dimensions */
-        const vector<string> dimNameVec;
-
-        /** ids of table accumulators */
-        const vector<int> accIdVec;
-
-        /** names of table accumulators */
-        const vector<string> accNameVec;
-
         /** contains true if accumulator used at current level */
         vector<bool> isAccUsedArr;
 
@@ -172,10 +246,16 @@ namespace openm
         /** push OM_ function to next aggregation level and return column name */
         const string pushToNextLevel(const string & i_fncExpr);
 
+        /** return true if this is first used accumulator */
+        bool isFirstUsedAcc(int i_accPos, const vector<bool> & i_accUsage) const;
+
+        /** make accumulator table alias or return fromAlias for the first used accumulator */
+        const string makeAccTableAlias(int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias) const;
+
     private:
         ModelAggregationSql(const ModelAggregationSql & i_other) = delete;
         ModelAggregationSql & operator=(const ModelAggregationSql & i_other) = delete;
     };
 }
 
-#endif  // MODEL_AGGREGATION_SQL_H
+#endif  // MODEL_EXPRESSION_SQL_H

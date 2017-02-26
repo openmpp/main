@@ -11,7 +11,7 @@
 using namespace std;
 using namespace openm;
 
-// atomic bool vector to store subsample done status
+// atomic bool vector to store sub-value done status
 void DoneVector::init(size_t i_size)
 {
     lock_guard<recursive_mutex> lck(theMutex);
@@ -58,10 +58,10 @@ size_t DoneVector::countFirst(void)
 }
 
 // set modeling groups size, group count and process rank in group
-ProcessGroupDef::ProcessGroupDef(int i_subSampleCount, int i_threadCount, int i_worldSize, int i_worldRank) :
+ProcessGroupDef::ProcessGroupDef(int i_subValueCount, int i_threadCount, int i_worldSize, int i_worldRank) :
     ProcessGroupDef() 
 {
-    groupSize = i_subSampleCount / i_threadCount;
+    groupSize = i_subValueCount / i_threadCount;
     if (groupSize <= 0) groupSize = 1;
     if (groupSize > i_worldSize) groupSize = i_worldSize;
 
@@ -82,9 +82,9 @@ ProcessGroupDef::ProcessGroupDef(int i_subSampleCount, int i_threadCount, int i_
         ((i_worldRank - 1) % groupSize) : 
         i_worldRank % groupSize;
 
-    // number of subsamples for modeling process, last process calculate the rest of subsamples
-    subPerProcess = i_subSampleCount / groupSize;   // subsamples per modeling process
-    selfSubCount = (activeRank < groupSize - 1) ? subPerProcess : i_subSampleCount - ((groupSize - 1) * subPerProcess);
+    // number of sub-values for modeling process, last process calculate the rest of sub-values
+    subPerProcess = i_subValueCount / groupSize;   // sub-values per modeling process
+    selfSubCount = (activeRank < groupSize - 1) ? subPerProcess : i_subValueCount - ((groupSize - 1) * subPerProcess);
 
     // is current process active: 
     // "active" process means it is used for modeling 
@@ -94,13 +94,13 @@ ProcessGroupDef::ProcessGroupDef(int i_subSampleCount, int i_threadCount, int i_
 }
 
 // set initial run group size, assign process ranks and initial state state
-RunGroup::RunGroup(int i_groupOne, int i_subSampleCount, const ProcessGroupDef & i_rootGroupDef) : 
+RunGroup::RunGroup(int i_groupOne, int i_subValueCount, const ProcessGroupDef & i_rootGroupDef) : 
     groupOne(i_groupOne),
     runId(0), 
     setId(0),
     groupSize(i_rootGroupDef.groupSize),
     subPerProcess(i_rootGroupDef.subPerProcess),
-    isSubDone(i_subSampleCount)
+    isSubDone(i_subValueCount)
 { 
     firstChildRank = 1 + (i_groupOne - 1) * groupSize;
     childCount = (i_groupOne >= i_rootGroupDef.groupCount && i_rootGroupDef.isRootActive) ? groupSize - 1 : groupSize;
@@ -116,17 +116,17 @@ void RunGroup::nextRun(int i_runId, int i_setId, ModelStatus i_status)
     isSubDone.reset();
 }
 
-// return child world rank where subsample is calculated
-int RunGroup::rankBySubsampleNumber(int i_subNumber) const
+// return child world rank where sub-value is calculated
+int RunGroup::rankBySubValueId(int i_subId) const
 {
-    int nProc = i_subNumber / subPerProcess;        // process index in group
+    int nProc = i_subId / subPerProcess;            // process index in group
     if (nProc >= groupSize) nProc = groupSize - 1;  // last process also calculate the rest
 
-    int nRank = firstChildRank + nProc;             // world rank to calculate subsample
+    int nRank = firstChildRank + nProc;             // world rank to calculate sub-value
 
-    // if root process is "active" (is used for modeling) then first subsamples calculated at root 
+    // if root process is "active" (is used for modeling) then first sub-values calculated at root 
     if (isUseRoot) {
-        nRank = i_subNumber < subPerProcess ? 0 : firstChildRank + nProc - 1;
+        nRank = i_subId < subPerProcess ? 0 : firstChildRank + nProc - 1;
     }
     return nRank;
 }

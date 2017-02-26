@@ -96,7 +96,7 @@
     <ClInclude Include="db\omc\modelSqlWriter.h">
       <Filter>Source Files\db\omc</Filter>
     </ClInclude>
-    <ClInclude Include="db\omc\modelAggregationSql.h">
+    <ClInclude Include="db\omc\modelExpressionSql.h">
       <Filter>Source Files\db\omc</Filter>
     </ClInclude>
   </ItemGroup>
@@ -284,7 +284,7 @@
     <ClCompile Include="db\omc\modelSqlWriter.cpp">
       <Filter>Source Files\db\omc</Filter>
     </ClCompile>
-    <ClCompile Include="db\omc\modelAggregationSql.cpp">
+    <ClCompile Include="db\omc\modelExpressionSql.cpp">
       <Filter>Source Files\db\omc</Filter>
     </ClCompile>
   </ItemGroup>

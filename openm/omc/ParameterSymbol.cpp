@@ -248,9 +248,14 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += "extern " + datatype->name + " " + alternate_name() + cxx_dimensions() + "; // read-write version";
-    string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
-    h += "extern " + cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + ";";
+    if (source != parameter_source::derived_parameter && source != parameter_source::fixed_parameter) {
+        h += "extern thread_local reference_wrapper<const " + datatype->name + cxx_dimensions() + "> " + name + ";";
+    }
+    else {
+        h += "extern " + datatype->name + " " + alternate_name() + cxx_dimensions() + "; // read-write version";
+        string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
+        h += "extern " + cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + ";";
+    }
     if (cumrate) {
         h += "extern cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
     }
@@ -264,26 +269,51 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    if (source == missing_parameter) {
+    if (source == parameter_source::missing_parameter) {
         //TODO treat as error?
         c += "// WARNING - No data supplied for the following parameter:";
     }
-    
-    if (source == fixed_parameter) {
-        // Parameter is fixed (an initializer was provided in the model source).
-        assert(!initializer_list.empty());
-        c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = ";
-        c += cxx_initializer();
-        c += ";" ;
+
+    if (source != parameter_source::derived_parameter && source != parameter_source::fixed_parameter) {
+
+        if (size() > 1) {
+            c += "static vector<unique_ptr<" + pp_datatype->name + "[]>> " + alternate_name() + ";";
+            c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
+            c += "thread_local reference_wrapper<const " + pp_datatype->name + cxx_dimensions() + "> " + name +
+                " = *reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">(om_none_" + name + ");";
+        }
+        else {
+            if (!pp_datatype->is_time()) {
+                c += "static vector<unique_ptr<" + pp_datatype->name + ">> " + alternate_name() + ";";
+                c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
+                c += "thread_local reference_wrapper<const " + pp_datatype->name + "> " + name +
+                    " = " + " *om_none_" + name + ";";
+            }
+            else {
+                c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
+                c += "static " + cxx_type_of_parameter() + " * om_none_" + name + " = nullptr;";
+                c += "thread_local reference_wrapper<const " + pp_datatype->name + "> " + name +
+                    " = *reinterpret_cast<" + pp_datatype->name + " *>(om_none_" + name + ");";
+            }
+        }
     }
     else {
-        // Initialize using the default value for a type of this kind.
-        c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
-    }
+        if (source == parameter_source::fixed_parameter) {
+            // Parameter is fixed (an initializer was provided in the model source).
+            assert(!initializer_list.empty());
+            c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = ";
+            c += cxx_initializer();
+            c += ";";
+        }
+        else {
+            // Initialize using the default value for a type of this kind.
+            c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
+        }
 
-    string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
-    // definition of read-only reference for use in model code
-    c += cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + " = " + alternate_name() + ";";
+        string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
+        // definition of read-only reference for use in model code
+        c += cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + " = " + alternate_name() + ";";
+    }
 
     if (cumrate) {
         c += "cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
@@ -475,6 +505,9 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
         assert(rng);
         if (rng->lower_bound != 0) {
+            // TODO: update in order to use vector of sub-values
+            throw exception("TODO: work in progress on parameter sub-values at cxx_read_parameter()");
+
             string typ = cxx_type_of_parameter();   // storage type
             string cell_count = to_string(size());
             c += "{";
@@ -487,11 +520,21 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         }
         else {
             // range starts at 0 so requires no transformation
-            c += "i_runBase->readParameter(" + cxx_parameter_name_type_size() + ", &" + alternate_name() + ");";
+            c += alternate_name() + ".swap(" \
+                "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
         }
     }
     else {
-        c += "i_runBase->readParameter(" + cxx_parameter_name_type_size() + ", &" + alternate_name() + ");";
+        if (size() > 1) {
+            // ex: om_param_ageSex.swap(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+            c += alternate_name() + ".swap(" \
+                "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
+        }
+        else {
+            // ex: om_param_startSeed.swap(read_om_parameter<int>(i_runBase, "startSeed"));
+            c += alternate_name() + ".swap(" \
+                "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\"));";
+        }
     }
 
     return c;
@@ -548,6 +591,9 @@ const string ParameterSymbol::cxx_type_of_parameter(void) const
 
 string ParameterSymbol::cxx_initialize_cumrate()
 {
+    // TODO: update in order to use vector of sub-values
+    throw exception("TODO: work in progress on parameter sub-values at cxx_initialize_cumrate()");
+
     string result = "";
     if (cumrate) {
         result = cumrate_name() + ".initialize((double *)" + name + ");";
@@ -557,6 +603,9 @@ string ParameterSymbol::cxx_initialize_cumrate()
 
 CodeBlock ParameterSymbol::cxx_transform_haz1rate()
 {
+    // TODO: update in order to use vector of sub-values
+    throw exception("TODO: work in progress on parameter sub-values at cxx_transform_haz1rate()");
+
     CodeBlock cxx;
     if (haz1rate) {
         cxx += "{";
@@ -576,6 +625,9 @@ string ParameterSymbol::cxx_type_check()
         // For string type parameters, skip sanity check
         return "";
     }
+
+    // TODO: update in order to use vector of sub-values
+    throw exception("TODO: work in progress on parameter sub-values at cxx_type_check()");
 
     string typ; // storage type
     if (pp_datatype->is_time()) {

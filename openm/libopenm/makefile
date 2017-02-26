@@ -192,7 +192,7 @@ LIB_OMC_CPPLIST = \
   db/worksetParamTable.cpp \
   db/worksetParamTxtTable.cpp \
   db/worksetTxtTable.cpp \
-  db/omc/modelAggregationSql.cpp \
+  db/omc/modelExpressionSql.cpp \
   db/omc/modelInsertSql.cpp \
   db/omc/modelSqlBuilder.cpp \
   db/omc/modelSqlBuilderPrepare.cpp \

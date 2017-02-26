@@ -18,10 +18,10 @@ namespace openm
     class RunController : public MetaLoader, public IRunBase
     {
     public:
-        /** subsample staring number for current modeling process */
-        int subFirstNumber;
+        /** sub-value staring index for current modeling process */
+        int subFirstId;
 
-        /** number of subsamples for current process */
+        /** number of sub-values for current process */
         int selfSubCount;
 
         /** number of modeling processes: MPI world size */
@@ -32,6 +32,35 @@ namespace openm
 
         /** last cleanup */
         virtual ~RunController(void) throw() = 0;
+
+        /** return index of parameter by name */
+        int parameterIdByName(const char * i_name) const override;
+
+        /** number of parameter sub-values for current process */
+        int parameterSubCount(int i_paramId) const override
+        {
+            return MetaLoader::parameterSubCount(i_paramId);
+        }
+
+        /** number of parameter sub-values for current process */
+        int parameterSelfSubCount(int i_paramId) const override
+        {
+            return parameterSubCount(i_paramId) > 1 ? selfSubCount : 1;
+        }
+                
+        /** return index of parameter sub-value in the storage array of sub-values */
+        int parameterSubValueIndex(int i_paramId, int i_subId) const override
+        {
+            return (parameterSubCount(i_paramId) > 1 && subFirstId <= i_subId && i_subId < subFirstId + selfSubCount) ? 
+                i_subId - subFirstId : 
+                0;
+        }
+
+        /** return true if sub-value used by current process */
+        bool isUseSubValue(int i_subId) const override
+        {
+            return subFirstId <= i_subId && i_subId < subFirstId + selfSubCount;
+        }
 
         /** create new run and input parameters in database. */
         virtual int nextRun(void) = 0;
@@ -60,12 +89,12 @@ namespace openm
     protected:
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
-            subFirstNumber(0),
+            subFirstId(0),
             selfSubCount(0),
             processCount(1)
         { }
 
-        /** get number of subsamples, read and broadcast metadata. */
+        /** get number of sub-values, read and broadcast metadata. */
         virtual void init(void) = 0;
 
         // input set id, result run id and status
@@ -105,8 +134,8 @@ namespace openm
             forward_list<unique_ptr<double> > & io_accValues
             ) const;
 
-        /** update subsample number to restart the run */
-        void updateRestartSubsample(int i_runId, IDbExec * i_dbExec, size_t i_subRestart) const;
+        /** update sub-value index to restart the run */
+        void updateRestartSubValueId(int i_runId, IDbExec * i_dbExec, size_t i_subRestart) const;
 
     private:
         // create run options in run_option table

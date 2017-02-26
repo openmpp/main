@@ -583,17 +583,22 @@ void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_ta
     if (i_row.name.empty()) throw DbException("invalid (empty) accumulator name, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
     if (i_row.name.length() > 8) throw DbException("invalid (too long) accumulator name: %s, id: %d, output table: %s", i_row.name.c_str(), i_row.accId, i_tableRow.tableName.c_str());
 
-    if (i_row.expr.empty()) throw DbException("invalid (empty) accumulator expression, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
-    if (i_row.expr.length() > 255) throw DbException("invalid (too long) accumulator expression: %s, id: %d, output table: %s", i_row.expr.c_str(), i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.accSrc.empty()) throw DbException("invalid (empty) accumulator expression, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.accSrc.length() > 255) throw DbException("invalid (too long) accumulator expression, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
 
-    // INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (9876, 1, 'acc1', 1, '2 * acc0')
+    if (i_row.accSql.empty()) throw DbException("invalid (empty) accumulator sql, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.accSql.length() > 2048) throw DbException("invalid (too long) accumulator sql, id: %d, output table: %s", i_row.accId, i_tableRow.tableName.c_str());
+
+    // INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+    // VALUES (9876, 1, 'acc1', 1, '2 * acc0', '2 * A.acc_value')
     i_dbExec->update(
-        "INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_expr) VALUES (" +
+        "INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) VALUES (" +
         to_string(i_tableRow.tableHid) + ", " +
         to_string(i_row.accId) + ", " +
         toQuoted(i_row.name) + ", " +
         (i_row.isDerived ? "1, " : "0, ") +
-        toQuoted(i_row.expr) + 
+        toQuoted(i_row.accSrc) + ", " +
+        toQuoted(i_row.accSql) + 
         ")");
 }
 
@@ -635,10 +640,10 @@ void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_t
     if (i_row.name.length() > 8) throw DbException("invalid (too long) output expression name: %s, output table: %s", i_row.name.c_str(), i_tableRow.tableName.c_str());
 
     if (i_row.srcExpr.empty()) throw DbException("invalid (empty) source expression, id: %d, output table: %s", i_row.exprId, i_row.tableId);
-    if (i_row.srcExpr.length() > 255) throw DbException("invalid (too long) source expression: %s, id: %d, output table: %s", i_row.srcExpr.c_str(), i_row.exprId, i_tableRow.tableName.c_str());
+    if (i_row.srcExpr.length() > 255) throw DbException("invalid (too long) source expression, id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
     if (i_row.sqlExpr.empty()) throw DbException("invalid (empty) output expression, id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
-    if (i_row.sqlExpr.length() > 2048) throw DbException("invalid (too long) output expression: %s, id: %d, output table: %s", i_row.sqlExpr.c_str(), i_row.exprId, i_tableRow.tableName.c_str());
+    if (i_row.sqlExpr.length() > 2048) throw DbException("invalid (too long) output expression, id: %d, output table: %s", i_row.exprId, i_tableRow.tableName.c_str());
 
     if (i_row.decimals < 0 || i_row.decimals > DBL_DIG)
         throw DbException("invalid output expression decimals: %d, id: %d, output table: %s", i_row.decimals, i_row.exprId, i_tableRow.tableName.c_str());
@@ -881,16 +886,16 @@ void ModelInsertSql::createWorksetMeta(
         // validate field values
         if (row.paramId < 0) throw DbException("invalid (negative) workset parameter id: %d", row.paramId);
 
-        // INSERT INTO workset_parameter (set_id, parameter_hid)
+        // INSERT INTO workset_parameter (set_id, parameter_hid, sub_count)
         // SELECT 
-        //   W.set_id, P.parameter_hid
+        //   W.set_id, P.parameter_hid, 1
         // FROM workset_lst W
         // INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = 1)
-        //  WHERE W.set_id = 1234;
+        // WHERE W.set_id = 1234;
         i_dbExec->update(
-            "INSERT INTO workset_parameter (set_id, parameter_hid)" \
+            "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count)" \
             " SELECT" \
-            " W.set_id, P.parameter_hid" \
+            " W.set_id, P.parameter_hid, 1" \
             " FROM workset_lst W" \
             " INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = " + to_string(row.paramId) + ")"
             " WHERE W.set_id = " + setIdStr);

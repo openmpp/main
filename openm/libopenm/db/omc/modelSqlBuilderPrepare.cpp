@@ -175,7 +175,8 @@ void ModelSqlBuilder::trimModelRows(MetaModelHolder & io_metaRows)
 
     for (auto & row : io_metaRows.tableAcc) {
         row.name = trim(row.name, loc);
-        row.expr = trim(row.expr, loc);
+        row.accSrc = trim(row.accSrc, loc);
+        row.accSql = trim(row.accSql, loc);
     }
 
     for (auto & row : io_metaRows.tableAccTxt) {
@@ -994,7 +995,7 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
     }
 }
 
-// collect info for db subsample tables and value views
+// collect info for db accumulator tables and value views
 void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
 {
     // collect information for all output tables
@@ -1021,6 +1022,26 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         }
         if (tblInf.accNameVec.empty()) 
             throw DbException("output table accumulators not found for table: %s", tableRow.tableName.c_str());
+
+        // translate native accumulators into sql subqueries
+        ModelAccumulatorSql ae(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
+
+        map<string, string> nm;     // native accumulators map of (name, sql subquery)
+        bool isFirst = true;
+        for (TableAccRow & accRow : io_metaRows.tableAcc) {
+            if (accRow.tableId == tblInf.id && !accRow.isDerived) {
+                accRow.accSql = ae.translateNativeAccExpr(accRow.accId, isFirst);
+                isFirst = false;
+                nm[accRow.name] = accRow.accSql;
+            }
+        }
+
+        // translate derived accumulators into sql subqueries
+        for (TableAccRow & accRow : io_metaRows.tableAcc) {
+            if (accRow.tableId == tblInf.id && accRow.isDerived) {
+                accRow.accSql = ae.translateDerivedAccExpr(accRow.name, accRow.accSrc, nm);
+            }
+        }
 
         // translate expressions into sql
         ModelAggregationSql aggr(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
@@ -1179,8 +1200,8 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
         }
     }
 
-    // add accumulators: id, name, expression
-    md5.add("acc_id,acc_name,acc_expr\n", strlen("acc_id,acc_name,acc_expr\n"));
+    // add accumulators: id, name, source expression
+    md5.add("acc_id,acc_name,acc_src\n", strlen("acc_id,acc_name,acc_src\n"));
 
     TableAccRow accFkRow(i_tableRow.modelId, i_tableRow.tableId, 0);
     const auto accRowIt = std::lower_bound(
@@ -1194,7 +1215,7 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
         ++rowIt) {
 
         // add accumulator to digest: id, name, expression
-        sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + rowIt->expr + "\n";
+        sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + rowIt->accSrc + "\n";
         md5.add(sLine.c_str(), sLine.length());
     }
 

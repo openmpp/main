@@ -76,7 +76,7 @@ void LogSimulationStart()
 
 double SIMULATION_END()
 {
-    return (double) SimulationEnd;
+    return *(double *)(&SimulationEnd);
 }
 
 void Set_actor_weight(double weight)

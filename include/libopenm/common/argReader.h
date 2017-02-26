@@ -87,23 +87,25 @@ namespace openm
 
         /** get run options from command line, ie: number of cases. */
         void parseCommandLine(
-            int argc, 
-            char ** argv, 
-            bool i_isThrowUnknown, 
+            int argc,
+            char ** argv,
+            bool i_isThrowUnknown,
             bool i_isStoreUnknown,
-            const size_t i_keyArrSize, 
-            const char ** i_keyArr, 
-            const size_t i_shortArrSize = 0, 
+            const size_t i_keyArrSize,
+            const char ** i_keyArr,
+            const size_t i_shortArrSize = 0,
             const pair<const char *, const char *> * i_shortPairArr = nullptr,
-            const char * i_prefixToCopy = nullptr
-            );
+            const size_t i_prefixToCopySize = 0,
+            const char ** i_prefixToCopyArr = nullptr
+        );
 
         /** read ini-file and merge command line arguments. */
         void loadIniFile(
             const char * i_filePath,
             const size_t i_keyArrSize, 
             const char ** i_keyArr,
-            const char * i_sectionToMerge = nullptr
+            const size_t i_sectionToMergeSize = 0,
+            const char ** i_sectionToMergeArr = nullptr
             );
 
         /** adjust log file settings, ie: make default log file path if required. */

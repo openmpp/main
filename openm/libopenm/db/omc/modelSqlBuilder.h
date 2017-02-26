@@ -20,7 +20,7 @@
 #include "dbMetaTable.h"
 #include "modelSqlWriter.h"
 #include "modelInsertSql.h"
-#include "modelAggregationSql.h"
+#include "modelExpressionSql.h"
 
 using namespace std;
 
@@ -101,7 +101,7 @@ namespace openm
             bool isAdded;
         };
 
-        /** helper struct to collect info for db subsample table and value view */
+        /** helper struct to collect info for db accumulators table and value view */
         struct OutTblInfo : DbTblInfo
         {
             /** accumulator ids */
@@ -114,7 +114,7 @@ namespace openm
         /** vector of db parameter tables info */
         vector<ParamTblInfo> paramInfoVec;
 
-        /** vector of db subsample tables and value views info */
+        /** vector of db accumulator tables and value views info */
         vector<OutTblInfo> outInfoVec;
 
         /** sort and validate metadata rows for uniqueness and referential integrity */
@@ -126,10 +126,10 @@ namespace openm
         /** insert new model metadata into database and update id's with actual db values */
         static void createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaRows);
 
-        /** write sql script to create new model tables */
+        /** write sql script to create new model tables and views */
         void buildCreateModelTables(const string & i_sqlProvider, const MetaModelHolder & i_metaRows, const string & i_filePath) const;
 
-        /** write sql script to drop model tables */
+        /** write sql script to drop model tables and views */
         void buildDropModelTables(const MetaModelHolder & i_metaRows, const string & i_filePath) const;
 
         /** sort and validate workset metadata for uniqueness and referential integrity */
@@ -211,7 +211,7 @@ namespace openm
         /** collect info for db parameter tables */
         void setParamTableInfo(MetaModelHolder & io_metaRows);
 
-        /** collect info for db subsample tables and value views */
+        /** collect info for db accumulator tables and value views */
         void setOutTableInfo(MetaModelHolder & io_metaRows);
 
         /** set parameter meta rows and calculate digests */

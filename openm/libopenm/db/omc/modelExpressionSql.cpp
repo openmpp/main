@@ -2,7 +2,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#include "modelAggregationSql.h"
+#include "modelExpressionSql.h"
 using namespace openm;
 
 /** average value */
@@ -55,13 +55,13 @@ static const size_t fncTagArrSize = sizeof(fncTagArr) / sizeof(FncTag);
 
 /** left side accumulator name delimiters */
 static const char leftDelimArr[] = {
-    '(', '+', '-', '*', '/', '^', '|', '&', '~', '!', '=', '<', '>'
+    '(', '+', '-', '*', '/', '%', '^', '|', '&', '~', '!', '=', '<', '>'
 };
 static const size_t leftDelimSize = sizeof(leftDelimArr) / sizeof(char);
 
 /** right side accumulator name delimiters */
 static const char rightDelimArr[] = {
-    ')', '+', '-', '*', '/', '^', '|', '&', '~', '!', '=', '<', '>'
+    ')', '+', '-', '*', '/', '%', '^', '|', '&', '~', '!', '=', '<', '>'
 };
 static const size_t rightDelimSize = sizeof(rightDelimArr) / sizeof(char);
 
@@ -90,8 +90,6 @@ struct FncToken
 };
 
 static size_t skipIfQuoted(size_t i_pos, const string & i_str);
-static bool isFirstUsedAcc(int i_accPos, const vector<bool> & i_accUsage);
-static const string makeAccTableAlias(int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias);
 
 // Parsed aggregation expressions for each nesting level
 struct LevelDef
@@ -614,6 +612,24 @@ const FncToken FncToken::next(const string & i_expr)
     return fncToken;
 }
 
+// return true if this is first used accumulator
+bool ModelAggregationSql::isFirstUsedAcc(int i_accPos, const vector<bool> & i_accUsage) const
+{
+    for (size_t nPos = 0; nPos < i_accUsage.size(); nPos++) {
+        if ((int)nPos == i_accPos) return true;
+        if (i_accUsage[nPos]) break;
+    }
+    return false;
+}
+
+// make accumulator table alias or return fromAlias for the first used accumulator
+const string ModelAggregationSql::makeAccTableAlias(
+    int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias
+) const
+{
+    return isFirstUsedAcc(i_accPos, i_accUsage) ? i_firstAlias : "L" + to_string(i_level) + "A" + to_string(i_accPos);
+}
+
 // if quote opens at current position then skip until the end of "quotes" or 'apostrophes'
 size_t skipIfQuoted(size_t i_pos, const string & i_str)
 {
@@ -630,18 +646,117 @@ size_t skipIfQuoted(size_t i_pos, const string & i_str)
     throw DbException("unbalanced \"quotes\" or 'apostrophes' in: %s", i_str.c_str());
 }
 
-// return true if this is first used accumulator
-bool isFirstUsedAcc(int i_accPos, const vector<bool> & i_accUsage)
+/** translate output table "native" (non-derived) accumulator into sql subquery. */
+const string ModelAccumulatorSql::translateNativeAccExpr(int i_accId, bool i_isFirstAcc) const
 {
-    for (size_t nPos = 0; nPos < i_accUsage.size(); nPos++) {
-        if ((int)nPos == i_accPos) return true;
-        if (i_accUsage[nPos]) break;
+    // if this is first accumulator then return value field: no subquery required
+    if (i_isFirstAcc) return "A.acc_value";
+
+    // SELECT A1.acc_value FROM salarySex_a_2012820 A1
+    // WHERE A1.run_id = A.run_id 
+    // AND A1.sub_id = A.sub_id 
+    // AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+    // AND A1.acc_id = 1
+    //
+    string alias = "A" + to_string(i_accId);    // table alsias
+    string sql = 
+        "SELECT " + alias + ".acc_value FROM " + accTableName + " " + alias +
+        " WHERE " + alias + ".run_id = A.run_id" +
+        " AND " + alias + ".sub_id = A.sub_id";
+
+    for (const string & name : dimNameVec) {
+        sql += " AND " + alias + "." + name + " = A." + name;
     }
-    return false;
+
+    sql += " AND " + alias + ".acc_id = " + to_string(i_accId);
+
+    return sql;
 }
 
-// make accumulator table alias or return fromAlias for the first used accumulator
-const string makeAccTableAlias(int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias)
+/** translate output table derived accumulator into sql subquery. */
+const string ModelAccumulatorSql::translateDerivedAccExpr(
+    const string & i_accName, const string & i_expr, const map<string, string> & i_nativeMap
+) const
 {
-    return isFirstUsedAcc(i_accPos, i_accUsage) ? i_firstAlias : "L" + to_string(i_level) + "A" + to_string(i_accPos);
+    // find native accumulators in source expression and substitute with sql subquery
+    string sql;
+    bool isLeftDelim = true;
+
+    for (size_t nPos = 0; nPos < i_expr.length(); nPos++) {
+
+        // skip until end of "quotes" or 'apostrophes'
+        size_t nSkip = skipIfQuoted(nPos, i_expr);
+        if (nSkip != nPos) {
+            if (nSkip < i_expr.length()) {      // append to output
+                sql += i_expr.substr(nPos, (nSkip + 1) - nPos);
+                nPos = nSkip;
+                isLeftDelim = false;    // "quotes" or 'apostrophes' is not left delimiter
+                continue;               // move to the next char after "quotes" or 'apostrophes'
+            }
+            else { 
+                sql += i_expr.substr(nPos);
+                break;      // skipped until end of string
+            }
+        }
+
+        // if previous char was name left delimiter then check for accumulator name in current position
+        if (isLeftDelim) {
+
+            // check for each accumulator name
+            bool isAcc = false;
+            size_t nLen = 0;
+            int accPos;
+            for (accPos = 0; accPos < (int)accNameVec.size(); accPos++) {
+                
+                nLen = accNameVec[accPos].length();
+                isAcc = equalNoCase(accNameVec[accPos].c_str(), i_expr.c_str() + nPos, nLen);
+
+                // check if accumulator name end with right delimiter
+                if (isAcc && nPos + nLen < i_expr.length()) {
+
+                    char chEnd = i_expr[nPos + nLen];
+                    isAcc =
+                        isspace<char>(chEnd, locale::classic()) ||
+                        std::any_of(
+                        rightDelimArr,
+                        rightDelimArr + rightDelimSize,
+                        [chEnd](const char i_delim) -> bool { return chEnd == i_delim; }
+                    );
+                }
+
+                if (isAcc) break;   // accumulator found
+            }
+
+            // accumulator found: replace with subquery
+            if (isAcc) {
+
+                // validate: it must be native accumulator
+                const map<string, string>::const_iterator it = i_nativeMap.find(accNameVec[accPos]);
+                if (it == i_nativeMap.cend()) 
+                    throw DbException("error in derived accumulator: %s invalid name: %s in: %s", i_accName.c_str(), accNameVec[accPos].c_str(), i_expr.c_str());
+
+                sql += "(" + it->second +")";   // append subquery
+
+                nPos += nLen - 1;   // skip accumulator in source expression
+                isLeftDelim = false;
+                continue;           // done with accumulator
+            }
+        }
+
+        // append current char to output
+        char chNow = i_expr[nPos];
+        sql += chNow;
+
+        // check if current char is a name delimiter
+        isLeftDelim = 
+            isspace<char>(chNow, locale::classic()) || 
+            std::any_of(
+                leftDelimArr, 
+                leftDelimArr + leftDelimSize, 
+                [chNow](const char i_delim) -> bool { return chNow == i_delim; }
+            );
+    }
+
+    return sql;
 }
+

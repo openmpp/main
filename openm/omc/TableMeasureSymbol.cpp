@@ -22,7 +22,7 @@ string TableMeasureSymbol::symbol_name(const Symbol* table, int index)
 
 string TableMeasureSymbol::pretty_name() const
 {
-    // example:     accumulator 0: sum(delta(interval(duration)))
+    // example:     measure 0: sum(delta(interval(duration)))
     string result = " measure " + to_string(index) + ": " + measure_name;
     return result;
 }

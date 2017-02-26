@@ -15,7 +15,7 @@
 #
 # return data frame of output table rows:
 #   $acc_id   - output table accumulator id
-#   $sub_id   - subsample number
+#   $sub_id   - sub-value number
 #   $dim0,... - dimension item enum ids (not returned if rank is zero)
 #   $acc0,... - output table accumulator value(s)
 #
@@ -63,7 +63,7 @@ selectRunAccumulator <- function(dbCon, defRs, runId, tableName, accName = NA)
   }
   
   # check if run id is belong the model and completed
-  # check if that run has required number of subsamples 
+  # check if that run has required number of sub-values 
   rlRow <- dbGetQuery(
     dbCon, 
     paste(

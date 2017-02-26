@@ -83,8 +83,8 @@ namespace openm
         /** input parameter */
         //inParam,
 
-        /** output table subsample base */
-        outSubsampleBase = 128
+        /** output table sub-value base */
+        outSubValueBase = 128
     };
 
     /** public interface to pack and unpack rows of metadata db-table */
