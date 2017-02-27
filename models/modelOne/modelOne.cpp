@@ -68,13 +68,13 @@ void RunModel(IModel * const i_model)
             for (size_t nAge = 0; nAge < N_AGE; nAge++) {
 
                 // make some test value
-                theSalarySex->acc[SalarySex::ACC_Sum][nCell] +=
+                theSalarySex->acc[SalarySex::ACC_SUM_ID][nCell] +=
                     ((double)salaryAge[nSalary][nAge]) * ageSex[nAge][nSex] * (double)(i_model->subValueId() + 1);
             }
             nCell++;
         }
         // "sex" dimension has total enabled: make test value for "total"
-        theSalarySex->acc[SalarySex::ACC_Sum][nCell++] =
+        theSalarySex->acc[SalarySex::ACC_SUM_ID][nCell++] =
             ((double)(nSalary + 800 * i_model->subValueId() + 1));
     }
 
@@ -89,11 +89,11 @@ void RunModel(IModel * const i_model)
         for (size_t nSex = 0; nSex < N_SEX; nSex++) {
 
             // make some test value
-            theSalarySex->acc[SalarySex::ACC_Count][nCell++] = 
+            theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] = 
                 (double)(nSalary + nSex + i_model->subValueId() + 1 + nFullBonus);
         }
         // "sex" dimension has total enabled: make test value for "total"
-        theSalarySex->acc[SalarySex::ACC_Count][nCell++] =
+        theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] =
             (double)(nSalary + 800 + i_model->subValueId() + 1 + nFullBonus);
     }
 
@@ -113,7 +113,6 @@ void RunInit(IRunBase * const i_runBase)
     om_param_salaryFull.swap(read_om_parameter<int>(i_runBase, "salaryFull", N_SALARY));
     om_param_baseSalary.swap(read_om_parameter<int>(i_runBase, "baseSalary"));
     om_param_filePath.swap(read_om_parameter<string>(i_runBase, "filePath"));
-    // logAllParams();
 }
 
 // Model startup method: initialize sub-value
@@ -131,7 +130,6 @@ void ModelStartup(IModel * const i_model)
     baseSalary = *om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")].get();
     filePath = *om_param_filePath[i_model->parameterSubValueIndex("filePath")].get();
     //
-    // logSubValueParams(i_model->subValueId());
     // parameters ready now and can be used by the model
 
     // clear existing output table(s) - release memory if allocated by previous run

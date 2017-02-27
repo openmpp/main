@@ -34,6 +34,7 @@ extern void readModelParameter(
     const MetaHolder * i_metaStore,
     int i_runId,
     const char * i_name,
+    int i_subId, 
     const type_info & i_type,
     size_t i_size,
     void * io_valueArr

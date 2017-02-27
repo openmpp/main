@@ -73,7 +73,7 @@ void RestartController::init(void)
     if (runId <= 0) throw ModelException("Invalid run id: %d", runId);
 
     // get main run control values: number of sub-values, threads
-    // if number of sub-values sepcified then it must be same as run_lst.sub_count database value
+    // if number of sub-values specified then it must be same as run_lst.sub_count database value
     threadCount = argOpts().intOption(RunOptionsKey::threadCount, 1);       // max number of modeling threads
     subValueCount = argOpts().intOption(RunOptionsKey::subValueCount, 1);   // number of sub-values from command line or ini-file
 
