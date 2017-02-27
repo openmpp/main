@@ -742,8 +742,9 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.TraceToFile", "true",
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
-					"-General.Subsamples", $members,
-					"-General.Threads", $threads,
+					"-OpenM.SubValues", $members,
+					"-SubValue.Member", "iota",
+					"-OpenM.Threads", $threads,
 					);
 				system(@args);
 			};
@@ -925,8 +926,9 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.TraceToFile", "true",
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
-					"-General.Subsamples", $members,
-					"-General.Threads", $threads,
+					"-OpenM.SubValues", $members,
+					"-SubValue.Member", "iota",
+					"-OpenM.Threads", $threads,
 					);
 				system(@args);
 			};
