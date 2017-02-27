@@ -448,7 +448,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
         catch (...) {
             nSub = -1;
         }
-        if (nSub < 0) throw DbException("invalid sub-value index %s in csv file at line %zd, column zero, parameter: %d %s, value: %s", *col, rowCount, paramId, paramRow->paramName.c_str(), col->c_str());
+        if (nSub < 0) throw DbException("invalid sub-value index %s in csv file at line %zd, column zero, parameter: %d %s, value: %s", col->c_str(), rowCount, paramId, paramRow->paramName.c_str(), col->c_str());
         
         if (nSub >= i_paramSubCount) continue;  // skip csv line if csv file has more sub-values than model want to use now
 
