@@ -299,6 +299,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
         int nParamSubCount = parameterSubCount(paramIt->paramId);   // if >1 then multiple sub-values expected
 
+        if (!isParamDir && argOpts().strOption((subValueDot + paramIt->paramName).c_str()) == RunOptionsKey::csvSubValue)
+            throw
+            DbException("invalid (empty) parameter.csv file path for parameter: %s", paramIt->paramName.c_str());
+
         // get dimensions name
         int nRank = paramIt->rank;
 

@@ -106,10 +106,13 @@ namespace openm
     const char * RunOptionsKey::messageLang = "OpenM.MessageLanguage";
 
     /** sub-value of parameter must be in the input workset */
-    const char * RunOptionsKey::worksetSubValue = "Set";
+    const char * RunOptionsKey::dbSubValue = "db";
 
     /** sub-value of parameter created as integer from 0 to sub-value count */
-    const char * RunOptionsKey::iotaSubValue = "Iota";
+    const char * RunOptionsKey::iotaSubValue = "iota";
+
+    /** all parameter sub-values must be in parameter.csv file */
+    const char * RunOptionsKey::csvSubValue = "csv";
 }
 
 /** array of model run option keys. */
@@ -453,7 +456,7 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
         if (optIt->second.empty()) throw ModelException("invalid (empty) value specified for parameter %s", sName.c_str());
     }
 
-    // validate "SubValue." options: it must valid value, ie "Set" or "Iota"
+    // validate "SubValue." options, it must one of: "db", "iota", "csv"
     prefixDot = string(RunOptionsKey::subValuePrefix) + ".";
     nPrefix = prefixDot.length();
 
@@ -470,9 +473,12 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
         if (paramRow == nullptr)
             throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
-        // argument value must be one of "Set" or "Iota"
-        if (optIt->second != RunOptionsKey::worksetSubValue && optIt->second != RunOptionsKey::iotaSubValue) 
-            throw ModelException("invalid value specified for parameter %s, expected: %s or %s", sName.c_str(), RunOptionsKey::worksetSubValue, RunOptionsKey::iotaSubValue);
+        // argument value must be one of: "db", "iota", "csv"
+        if (optIt->second != RunOptionsKey::dbSubValue && 
+            optIt->second != RunOptionsKey::iotaSubValue && 
+            optIt->second != RunOptionsKey::csvSubValue) 
+            throw ModelException("invalid value specified for parameter %s, expected one of: %s %s %s", 
+                sName.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
 
         // append parameter id to the list of sub-value parameters
         paramIdSubArr.push_back(paramRow->paramId);
