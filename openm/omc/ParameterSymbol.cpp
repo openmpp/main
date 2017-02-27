@@ -506,7 +506,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         assert(rng);
         if (rng->lower_bound != 0) {
             // TODO: update in order to use vector of sub-values
-            throw exception("TODO: work in progress on parameter sub-values at cxx_read_parameter()");
+            throw HelperException("TODO: work in progress on parameter sub-values at cxx_read_parameter()");
 
             string typ = cxx_type_of_parameter();   // storage type
             string cell_count = to_string(size());
@@ -520,19 +520,19 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         }
         else {
             // range starts at 0 so requires no transformation
-            c += alternate_name() + ".swap(" \
+            c += alternate_name() + " = std::move(" \
                 "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
         }
     }
     else {
         if (size() > 1) {
-            // ex: om_param_ageSex.swap(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
-            c += alternate_name() + ".swap(" \
+            // ex: om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+            c += alternate_name() + " = std::move(" \
                 "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
         }
         else {
-            // ex: om_param_startSeed.swap(read_om_parameter<int>(i_runBase, "startSeed"));
-            c += alternate_name() + ".swap(" \
+            // ex: om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
+            c += alternate_name() + " = std::move(" \
                 "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\"));";
         }
     }
@@ -592,7 +592,7 @@ const string ParameterSymbol::cxx_type_of_parameter(void) const
 string ParameterSymbol::cxx_initialize_cumrate()
 {
     // TODO: update in order to use vector of sub-values
-    throw exception("TODO: work in progress on parameter sub-values at cxx_initialize_cumrate()");
+    throw HelperException("TODO: work in progress on parameter sub-values at cxx_initialize_cumrate()");
 
     string result = "";
     if (cumrate) {
@@ -604,7 +604,7 @@ string ParameterSymbol::cxx_initialize_cumrate()
 CodeBlock ParameterSymbol::cxx_transform_haz1rate()
 {
     // TODO: update in order to use vector of sub-values
-    throw exception("TODO: work in progress on parameter sub-values at cxx_transform_haz1rate()");
+    throw HelperException("TODO: work in progress on parameter sub-values at cxx_transform_haz1rate()");
 
     CodeBlock cxx;
     if (haz1rate) {
@@ -627,7 +627,7 @@ string ParameterSymbol::cxx_type_check()
     }
 
     // TODO: update in order to use vector of sub-values
-    throw exception("TODO: work in progress on parameter sub-values at cxx_type_check()");
+    throw HelperException("TODO: work in progress on parameter sub-values at cxx_type_check()");
 
     string typ; // storage type
     if (pp_datatype->is_time()) {

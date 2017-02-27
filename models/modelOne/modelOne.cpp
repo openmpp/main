@@ -49,10 +49,10 @@ const char * SalarySex::NAME = "salarySex";
 static thread_local unique_ptr<SalarySex> theSalarySex; // salary by sex
 
 // log all parameters and sub-values
-static void logAllParams(void);
+// static void logAllParams(void);
 
 // log parameters thread local sub-value
-static void logSubValueParams(int i_subId);
+// static void logSubValueParams(int i_subId);
 
 // Model event loop: user code
 void RunModel(IModel * const i_model)
@@ -107,12 +107,12 @@ void RunInit(IRunBase * const i_runBase)
     // load model parameters
     theLog->logMsg("Reading Parameters");
 
-    om_param_startSeed.swap(read_om_parameter<int>(i_runBase, "StartingSeed"));
-    om_param_ageSex.swap(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
-    om_param_salaryAge.swap(read_om_parameter<int>(i_runBase, "salaryAge", N_SALARY * N_AGE));
-    om_param_salaryFull.swap(read_om_parameter<int>(i_runBase, "salaryFull", N_SALARY));
-    om_param_baseSalary.swap(read_om_parameter<int>(i_runBase, "baseSalary"));
-    om_param_filePath.swap(read_om_parameter<string>(i_runBase, "filePath"));
+    om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
+    om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+    om_param_salaryAge = std::move(read_om_parameter<int>(i_runBase, "salaryAge", N_SALARY * N_AGE));
+    om_param_salaryFull = std::move(read_om_parameter<int>(i_runBase, "salaryFull", N_SALARY));
+    om_param_baseSalary = std::move(read_om_parameter<int>(i_runBase, "baseSalary"));
+    om_param_filePath = std::move(read_om_parameter<string>(i_runBase, "filePath"));
 }
 
 // Model startup method: initialize sub-value
@@ -148,8 +148,7 @@ void ModelShutdown(IModel * const i_model)
     i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
 }
 
-#ifdef _DEBUG
-
+/*
 // log all parameters and sub-values
 void logAllParams(void)
 {
@@ -162,9 +161,9 @@ void logAllParams(void)
     theLog->logMsg("ageSex");
     for (size_t n = 0; n < om_param_ageSex.size(); n++) {
         const auto & p = om_param_ageSex[n];
-        for (int k = 0; k < N_AGE; k++) {
-            for (int j = 0; j < N_SEX; j++) {
-                theLog->logFormatted("%zu: %d %d = %g", n, k, j, p.get()[k * N_SEX + j]);
+        for (size_t k = 0; k < N_AGE; k++) {
+            for (size_t j = 0; j < N_SEX; j++) {
+                theLog->logFormatted("%zu: %zu %zu = %g", n, k, j, p.get()[k * N_SEX + j]);
             }
         }
     }
@@ -172,9 +171,9 @@ void logAllParams(void)
     theLog->logMsg("salaryAge");
     for (size_t n = 0; n < om_param_salaryAge.size(); n++) {
         const auto & p = om_param_salaryAge[n];
-        for (int k = 0; k < N_SALARY; k++) {
-            for (int j = 0; j < N_AGE; j++) {
-                theLog->logFormatted("%zu: %d %d = %d", n, k, j, p.get()[k * N_AGE + j]);
+        for (size_t k = 0; k < N_SALARY; k++) {
+            for (size_t j = 0; j < N_AGE; j++) {
+                theLog->logFormatted("%zu: %zu %zu = %d", n, k, j, p.get()[k * N_AGE + j]);
             }
         }
     }
@@ -182,8 +181,8 @@ void logAllParams(void)
     theLog->logMsg("salaryFull");
     for (size_t n = 0; n < om_param_salaryFull.size(); n++) {
         const auto & p = om_param_salaryFull[n];
-        for (int k = 0; k < N_SALARY; k++) {
-            theLog->logFormatted("%zu: %d = %d", n, k, p.get()[k]);
+        for (size_t k = 0; k < N_SALARY; k++) {
+            theLog->logFormatted("%zu: %zu = %d", n, k, p.get()[k]);
         }
     }
 
@@ -209,22 +208,22 @@ void logSubValueParams(int i_subId)
     theLog->logFormatted("(%u) %d: = %d", thId, i_subId, startSeed.get());
 
     theLog->logMsg("ageSex");
-    for (int k = 0; k < N_AGE; k++) {
-        for (int j = 0; j < N_SEX; j++) {
-            theLog->logFormatted("(%u) %d: %d %d = %g", thId, i_subId, k, j, ageSex[k][j]);
+    for (size_t k = 0; k < N_AGE; k++) {
+        for (size_t j = 0; j < N_SEX; j++) {
+            theLog->logFormatted("(%u) %d: %zu %zu = %g", thId, i_subId, k, j, ageSex[k][j]);
         }
     }
 
     theLog->logMsg("salaryAge");
-    for (int k = 0; k < N_SALARY; k++) {
-        for (int j = 0; j < N_AGE; j++) {
-            theLog->logFormatted("(%u) %d: %d %d = %d", thId, i_subId, k, j, salaryAge[k][j]);
+    for (size_t k = 0; k < N_SALARY; k++) {
+        for (size_t j = 0; j < N_AGE; j++) {
+            theLog->logFormatted("(%u) %d: %zu %zu = %d", thId, i_subId, k, j, salaryAge[k][j]);
         }
     }
 
     theLog->logMsg("salaryFull");
-    for (int k = 0; k < N_SALARY; k++) {
-        theLog->logFormatted("(%u) %d: %d = %d", thId, i_subId, k, salaryFull[k]);
+    for (size_t k = 0; k < N_SALARY; k++) {
+        theLog->logFormatted("(%u) %d: %zu = %d", thId, i_subId, k, salaryFull[k]);
     }
 
     theLog->logMsg("baseSalary");
@@ -233,5 +232,5 @@ void logSubValueParams(int i_subId)
     theLog->logMsg("filePath");
     theLog->logFormatted("(%u) %d: = %s", thId, i_subId, filePath.get().c_str());
 }
+*/
 
-#endif // _DEBUG
