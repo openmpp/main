@@ -474,9 +474,9 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
             throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
         // argument value must be one of: "db", "iota", "csv"
-        if (optIt->second != RunOptionsKey::dbSubValue && 
-            optIt->second != RunOptionsKey::iotaSubValue && 
-            optIt->second != RunOptionsKey::csvSubValue) 
+        if (!equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue) && 
+            !equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue) && 
+            !equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue))
             throw ModelException("invalid value specified for parameter %s, expected one of: %s %s %s", 
                 sName.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
 

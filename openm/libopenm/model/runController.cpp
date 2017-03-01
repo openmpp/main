@@ -294,12 +294,13 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         bool isInserted = false;
         bool isBaseRunFullCopy = false;
         bool isArgOption = argOpts().isOptionExist((paramDot + paramIt->paramName).c_str());
-        bool isIotaSubValues = argOpts().strOption((subValueDot + paramIt->paramName).c_str()) == RunOptionsKey::iotaSubValue;
+        string argOfSubValDotParam = argOpts().strOption((subValueDot + paramIt->paramName).c_str());
+        bool isIotaSubValues = equalNoCase(argOfSubValDotParam.c_str(), RunOptionsKey::iotaSubValue);
         bool isExistInWs = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
 
         int nParamSubCount = parameterSubCount(paramIt->paramId);   // if >1 then multiple sub-values expected
 
-        if (!isParamDir && argOpts().strOption((subValueDot + paramIt->paramName).c_str()) == RunOptionsKey::csvSubValue)
+        if (!isParamDir && equalNoCase(argOfSubValDotParam.c_str(), RunOptionsKey::csvSubValue))
             throw
             DbException("invalid (empty) parameter.csv file path for parameter: %s", paramIt->paramName.c_str());
 
