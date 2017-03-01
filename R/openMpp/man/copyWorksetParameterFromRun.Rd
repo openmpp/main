@@ -25,7 +25,7 @@ copyWorksetParameterFromRun(dbCon, defRs, worksetId, baseRunId, ...)
   \item{\dots}{
     list of parameters value and value notes.
     
-    Each element is also a list of $name and $txt:
+    Each element is also a list of $name, $subCount, $subId, $value, $txt:
     \itemize{
       \item \code{$name} parameter name (character) 
       \item \code{$txt} (optional) workset parameter text:
@@ -35,6 +35,9 @@ copyWorksetParameterFromRun(dbCon, defRs, worksetId, baseRunId, ...)
 }
 \details{
 That call allow you to add a copy of input parameter value from existing model run into workset and update value notes.
+
+Parameter(s) can have can have multiple sub-values (by default only one value, no sub-values).
+All parameter sub-values are copied from existing model run.
 
 Workset is a working set of model parameters and can be a full set, 
 which include values of all model parameters or subset and include only some parameters.
@@ -58,7 +61,7 @@ To find set id by name use \code{\link{getWorksetIdByName}} call.
 
 Working set must be not read-only in order to add parameters by \code{\link{copyWorksetParameterFromRun}}.
 And working set must be read-only to run the model, so, typically you want to wrap \code{\link{copyWorksetParameterFromRun}}
-by \code{setReadonlyDefaultWorkset} or \code{setReadonlyWorkset} calls.
+by \code{setReadonlyWorkset} calls.
 
 You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
@@ -73,7 +76,6 @@ amc1999
 }
 \note{
 To run examples you must have modelOne database modelOne.sqlite in current directory
-It must contain run_id = 11 and 12 (see runId usage below)
 }
 
 \seealso{
@@ -99,7 +101,7 @@ It must contain run_id = 11 and 12 (see runId usage below)
   #
   # name, description and notes for this set of model parameters
   #
-  paramSetTxt <- data.frame(
+  inputSet <- data.frame(
     name = "myOtherData",
     lang = "EN",
     descr = "new set of parameters",
@@ -109,9 +111,7 @@ It must contain run_id = 11 and 12 (see runId usage below)
 
   # age by sex parameter value notes
   ageSex <- list(
-    
-    name = "ageSex",  # parameter name
-    
+    name = "ageSex",    # parameter name
     txt = data.frame(
       lang = c("EN", "FR"),
       note = c(
@@ -130,15 +130,15 @@ It must contain run_id = 11 and 12 (see runId usage below)
   
   #
   # create new working set
-  # for all parameters use previous model run with id = 11 
+  # for all parameters use previous model run with id = 101 
   #
-  setId <- createWorksetBasedOnRun(theDb, defRs, 11L, paramSetTxt)
+  setId <- createWorksetBasedOnRun(theDb, defRs, 101L, inputSet)
   if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   #
-  # copy ageSex parameter value from model run with id = 12
+  # copy ageSex parameter value from model run with id = 102
   #
-  copyWorksetParameterFromRun(theDb, defRs, setId, 12L, ageSex)
+  copyWorksetParameterFromRun(theDb, defRs, setId, 102L, ageSex)
   
   # make workset read-only in order to run the model
   setReadonlyWorkset(theDb, defRs, TRUE, setId)

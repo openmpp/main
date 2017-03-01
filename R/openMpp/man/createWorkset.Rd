@@ -7,7 +7,7 @@ Create new working set of model parameters
 Create new workset FULL set of model parameters, it must include ALL model parameters 
 }
 \usage{
-createWorkset(dbCon, defRs, worksetTxt, ...)
+createWorkset(dbCon, defRs, setDef, ...)
 }
 \arguments{
   \item{dbCon}{
@@ -16,8 +16,8 @@ createWorkset(dbCon, defRs, worksetTxt, ...)
   \item{defRs}{
     model definition: database rows describing model input parameters and output tables
   }
-  \item{worksetTxt}{
-    if not NA then workset text data frame:
+  \item{setDef}{
+    if not NA then workset description data frame:
     \itemize{
       \item \code{$name} working set name, must be unique
       \item \code{$lang} language code 
@@ -28,9 +28,11 @@ createWorkset(dbCon, defRs, worksetTxt, ...)
   \item{\dots}{
     list of parameters value and (optional) value notes.
     
-    Each element is also a list of $name, $value and $txt:
+    Each element is also a list of $name, $subCount, $subId, $value, $txt:
     \itemize{
       \item \code{$name} parameter name (character) 
+      \item \code{$subCount} (optional) number of parameter sub-values, default: 1
+      \item{subId} (optional) parameter sub-value index, default: 0
       \item \code{$value} parameter value
         it can be scalar value, vector or data frame
         size of $value must be equal to production of dimension sizes
@@ -68,6 +70,10 @@ To find set id by name use \code{\link{getWorksetIdByName}} call.
 Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
 after \code{createWorkset}.
 
+Parameter(s) can have can have multiple sub-values (by default only one value, no sub-values).
+If you want to have multiple sub-values then $subCount must be >1 (default =1).
+If parameter have multiple sub-values then you can specify sub-value index as $subId (default =0).
+
 You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
@@ -96,16 +102,24 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 \examples{
   #
   # model parameters:
-  #   age by sex parameter double[4, 2] 
-  #   salary by age parameter int[3, 4]
-  #   starting seed parameter integer value
+  #   age by sex:    double[4, 2] 
+  #   salary by age: int[3, 4]
+  #   salary level:  int enum[3]
+  #   base salary:   int enum scalar value
+  #   starting seed: int scalar value
+  #   file path:     string parameter
   #
   
   # age by sex parameter value and notes
   ageSex <- list(
-    
     name = "ageSex",  # parameter name
-    
+    subCount = 1L,    # no sub-values, only one parameter value
+    subId = 0L,       # no sub-values, only one parameter value
+    value = c(
+      10,
+      rep(c(1, 2, 3), times = 2),
+      20
+    ),
     txt = data.frame(
       lang = c("EN", "FR"),
       note = c(
@@ -113,51 +127,62 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
         NA                        # NA == no FR value notes 
       ),
       stringsAsFactors = FALSE
-    ),
-    
-    value = c(
-      10,
-      rep(c(1, 2, 3), times = 2),
-      20
     )
   )
   
-  # salary by age parameter value and notes
+  # salary by age parameter, one sub-value by default
   salaryAge <- list(
-    
     name = "salaryAge",
-    
-    txt = data.frame(
-      lang = c("EN", "FR"),
-      note = c("salary by age value notes", "FR salary by age value notes"),
-      stringsAsFactors = FALSE
-    ),
     value = c(
       100L,
       rep(c(10L, 20L, 30L), times = 3),
       200L,
       300L
+    ),
+    txt = data.frame(
+      lang = c("EN", "FR"),
+      note = c("salary by age value notes", "FR salary by age value notes"),
+      stringsAsFactors = FALSE
+    )
+  )
+  
+  # salary level (low, medium, high) by full-or-part time job
+  salaryFull <- list(
+    name = "salaryFull", value = c(33L, 33L, 22L),
+    txt = data.frame(
+      lang = c("EN"), note = c("salary level for full or part time job"), stringsAsFactors = FALSE
+    )
+  )
+  
+  # base salary parameter enum value
+  baseSalary <- list(
+    name = "baseSalary", value = 22L,
+    txt = data.frame(
+      lang = c("EN"), note = c("base salary notes"), stringsAsFactors = FALSE
     )
   )
   
   # starting seed parameter value and notes
   startingSeed <- list(
-
-    name = "StartingSeed",
-
+    name = "StartingSeed", value = 127L,
     txt = data.frame(
-      lang = c("EN"),
-      note = c("random generator starting seed"),
-      stringsAsFactors = FALSE
-    ),
-    value = 127L
+      lang = c("EN"), note = c("random generator starting seed"), stringsAsFactors = FALSE
+    )
+  )
+  
+  # file path parameter value and notes, "filePath" is string parameter
+  filePath <- list(
+    name = "filePath", value = "file R path",
+    txt = data.frame(
+      lang = c("EN"), note = c("file path string parameter"), stringsAsFactors = FALSE
+    )
   )
   
   #
   # name, description and notes for this set of model parameters
   # name MUST be unique
   #
-  paramSetTxt <- data.frame(
+  inputSet <- data.frame(
     name = "myData",
     lang = c("EN", "FR"),
     descr = c("full set of parameters", "description in French"),
@@ -172,7 +197,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   defRs <- getModel(theDb, "modelOne")
   
   # create new workset with ALL model parameters
-  setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, startingSeed)
+  setId <- createWorkset(theDb, defRs, inputSet, ageSex, salaryAge, salaryFull, baseSalary, startingSeed, filePath)
   if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   # make workset read-only in order to run the model

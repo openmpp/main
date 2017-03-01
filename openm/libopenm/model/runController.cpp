@@ -444,7 +444,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             // validate: parameter must exist in workset base run and must have enough sub-values
             int nSub = i_dbExec->selectToInt(
                 "SELECT sub_count FROM run_parameter" \
-                " WHERE run_id = " + sRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
+                " WHERE run_id = " + sBaseWsRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
                 0);
             if (nSub <= 0)
                 throw DbException("parameter %d: %s must be included in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), baseWsRunId);

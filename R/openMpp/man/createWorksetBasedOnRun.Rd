@@ -7,7 +7,7 @@ Create new working set of model parameters
 Create new workset as SUBSET of model parameters based on parameters from existing model run 
 }
 \usage{
-createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
+createWorksetBasedOnRun(dbCon, defRs, baseRunId, setDef, ...)
 }
 
 \arguments{
@@ -20,8 +20,8 @@ createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
   \item{baseRunId}{
     id of model run results, must be positive integer
   }
-  \item{worksetTxt}{
-    if not NA then workset text data frame:
+  \item{setDef}{
+    if not NA then workset description data frame:
     \itemize{
       \item \code{$name} working set name, must be unique
       \item \code{$lang} language code 
@@ -32,9 +32,11 @@ createWorksetBasedOnRun(dbCon, defRs, baseRunId, worksetTxt, ...)
   \item{\dots}{
     list of parameters value and (optional) value notes.
     
-    Each element is also a list of $name, $value and $txt:
+    Each element is also a list of $name, $subCount, $subId, $value, $txt:
     \itemize{
       \item \code{$name} parameter name (character) 
+      \item \code{$subCount} (optional) number of parameter sub-values, default: 1
+      \item{subId} (optional) parameter sub-value index, default: 0
       \item \code{$value} parameter value
         it can be scalar value, vector or data frame
         size of $value must be equal to production of dimension sizes
@@ -59,7 +61,7 @@ Default workset is a first workset of the model with set_id = min(set_id) for th
 Default workset always include ALL model parameters (it is a full set).
 
 If you want to create new workset as a full set of model parameters
-then you must pass ALL model parameters into \code{createWorkset} through \dots argument list. 
+then you must pass ALL model parameters into \code{createWorksetBasedOnRun} through \dots argument list. 
 
 If you already have result of model run in your database 
 and want to modify only some input parameters (subset) then call \code{\link{createWorksetBasedOnRun}} 
@@ -74,6 +76,10 @@ To find set id by name use \code{\link{getWorksetIdByName}} call.
 Working set must be read-only to run the model, so, typically you want to call \code{\link{setReadonlyWorkset}}
 after \code{createWorksetBasedOnRun}.
 
+Parameter(s) can have can have multiple sub-values (by default only one value, no sub-values).
+If you want to have multiple sub-values then $subCount must be >1 (default =1).
+If parameter have multiple sub-values then you can specify sub-value index as $subId (default =0).
+
 You must use \code{getModel} function in order to find model definition \code{defRs}.
 }
 \value{
@@ -86,8 +92,7 @@ OpenM++ documentation: http://ompp.sourceforge.net/wiki/
 amc1999
 }
 \note{
-To run examples you must have modelOne database modelOne.sqlite in current directory.
-It must contain run_id = 11 and 12 (see runId usage below)
+To run examples you must have modelOne database modelOne.sqlite in current directory
 }
 
 \seealso{
@@ -103,36 +108,20 @@ It must contain run_id = 11 and 12 (see runId usage below)
   \code{\link{updateWorksetParameter}}
 }
 \examples{
+  # StartingSeed parameter have two sub-values
   #
-  # model parameters:
-  #   age by sex parameter double[4, 2] 
-  #   salary by age parameter int[3, 4]
-  #   starting seed parameter integer value
-  #
-  
-  # salary by age parameter value and notes
-  salaryAge <- list(
-    
-    name = "salaryAge",
-    
-    txt = data.frame(
-      lang = c("EN", "FR"),
-      note = c("salary by age value notes", "FR salary by age value notes"),
-      stringsAsFactors = FALSE
-    ),
-    value = c(
-      100L,
-      rep(c(10L, 20L, 30L), times = 3),
-      200L,
-      300L
-    )
+  seedSubVal <- list(
+    name = "StartingSeed", 
+    subCount = 2L,        # two sub-values for that parameter
+    subId = 0L,           # sub-value index =0 
+    value = 100L          # sub-value[0] = 100
   )
   
   #
   # name, description and notes for this set of model parameters
   # name MUST be unique
   #
-  paramSetTxt <- data.frame(
+  inputSet <- data.frame(
     name = "myOtherData",
     lang = "EN",
     descr = "new set of parameters",
@@ -147,16 +136,24 @@ It must contain run_id = 11 and 12 (see runId usage below)
   defRs <- getModel(theDb, "modelOne")
   
   #
-  # pass new value for salaryAge parameter
-  # for all other parameters use previous model run with id = 11 
+  # pass new value for StartingSeed parameter
+  # for all other parameters use previous model run with id = 101 
   #
-  setId <- createWorksetBasedOnRun(theDb, defRs, 11L, paramSetTxt, salaryAge)
+  setId <- createWorksetBasedOnRun(theDb, defRs, 101L, inputSet, seedSubVal)
   if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   
   #
-  # copy ageSex parameter value from model run with id = 12
+  # add seed parameter sub-value =1
   #
-  copyWorksetParameterFromRun(theDb, defRs, setId, 12L, list(name = "ageSex"))
+  seedSubVal <- list(name = "StartingSeed", subId = 1L, value = 200L)
+
+  setId <- updateWorksetParameter(theDb, defRs, setId, seedSubVal)
+  if (setId <= 0L) stop("failed to update workset parameter: ", seedSubVal$name)
+
+  #
+  # copy ageSex parameter value from model run with id = 102
+  #
+  copyWorksetParameterFromRun(theDb, defRs, setId, 102L, list(name = "ageSex"))
   
   # make workset read-only in order to run the model
   setReadonlyWorkset(theDb, defRs, TRUE, setId)

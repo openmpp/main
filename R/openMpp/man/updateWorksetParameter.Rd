@@ -22,9 +22,11 @@ updateWorksetParameter(dbCon, defRs, worksetId, ...)
   \item{\dots}{
     list of parameters value and value notes.
     
-    Each element is also a list of $name, $value and $txt:
+    Each element is also a list of $name, $subCount, $subId, $value, $txt:
     \itemize{
       \item \code{$name} parameter name (character) 
+      \item \code{$subCount} (optional) number of parameter sub-values, default: 1
+      \item{subId} (optional) parameter sub-value index, default: 0
       \item \code{$value} (optional) parameter value
         it can be scalar value. vector or data frame
         size of $value must be equal to production of dimension sizes
@@ -38,6 +40,9 @@ updateWorksetParameter(dbCon, defRs, worksetId, ...)
 }
 \details{
 That call allow you to update input parameter value and value notes in specific workset.
+
+Parameter(s) can have can have multiple sub-values (by default only one value, no sub-values).
+If parameter have multiple sub-values then you can specify sub-value index as $subId (default =0).
 
 Workset is a working set of model parameters and can be a full set, 
 which include values of all model parameters or subset and include only some parameters.
@@ -90,17 +95,19 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
 }
 \examples{
   #
-  # model parameters:
+  # update sub-value =0 of
   #   age by sex parameter double[4, 2] 
-  #   salary by age parameter int[3, 4]
-  #   starting seed parameter integer value
   #
   
   # age by sex parameter value and notes
   ageSex <- list(
-    
     name = "ageSex",  # parameter name
-    
+    subId = 0L,       # sub-value =0 (first sub-value or parameter have no sub-values)
+    value = c(
+      10,
+      rep(c(1, 2, 3), times = 2),
+      20
+    ),
     txt = data.frame(
       lang = c("EN", "FR"),
       note = c(
@@ -108,12 +115,6 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
         NA                        # NA == no FR value notes 
       ),
       stringsAsFactors = FALSE
-    ),
-    
-    value = c(
-      10,
-      rep(c(1, 2, 3), times = 2),
-      20
     )
   )
   
@@ -124,7 +125,7 @@ To run examples you must have modelOne database modelOne.sqlite in current direc
   defRs <- getModel(theDb, "modelOne")
   
   # reset read-only status of workset  
-  setId <- 3L
+  setId <- 4L
   if (setReadonlyWorkset(theDb, defRs, FALSE, setId) <= 0L) {
     stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
   }
