@@ -66,7 +66,7 @@ SimulationSeed <- list(name = "SimulationSeed", value = 16807)
 #
 # name, description and notes for this set of model parameters
 #
-paramSetTxt <- data.frame(
+inputSet <- data.frame(
   name = "LifeVsMortality",
   lang = c("EN", "FR"),
   descr = c("NewCaseBased working set of parameters", "(FR) NewCaseBased working set of parameters"),
@@ -75,17 +75,21 @@ paramSetTxt <- data.frame(
 )
 
 # 
-# connect to database and create new working set of model parameters
+# connect to database and find NewCaseBased model
 #
 theDb <- dbConnect(RSQLite::SQLite(), model_sqlite, synchronous = "full")
 invisible(dbGetQuery(theDb, "PRAGMA busy_timeout = 86400"))   # recommended
 
 defRs <- getModel(theDb, "NewCaseBased")      # find NewCaseBased model in database
 
-setId <- createWorkset(
-  theDb, defRs, paramSetTxt, 
+# create new working set of model parameters based on existing model run results
+#
+firstRunId <- getFirstRunId(theDb, defRs)
+
+setId <- createWorksetBasedOnRun(
+  theDb, defRs, firstRunId, inputSet, 
   MortalityHazard, SimulationCases, SimulationSeed
-)
+  )
 if (setId <= 0L) stop("workset creation failed")
 
 setReadonlyWorkset(theDb, defRs, TRUE, setId)  # workset must be read-only to run the model

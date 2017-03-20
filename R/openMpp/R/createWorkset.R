@@ -9,17 +9,19 @@
 #
 # Return set id of new workset or <= 0 on error
 #
-# dbCon      - database connection
-# defRs      - model definition database rows
-# worksetTxt - (optional) workset text data frame:
+# dbCon  - database connection
+# defRs  - model definition database rows
+# setDef - (optional) workset definition data frame:
 #   $name  - working set name
 #   $lang  - language code
 #   $descr - working set description
 #   $note  - (optional) working set notes
 # ... - list of parameters value and (optional) value notes
-#   each element is also a list of $name, $value and $txt
-#   $name  - parameter name (character)
-#   $value - parameter value
+#   each element is also a list of $name, $subCount, $subId, $value, $txt
+#   $name     - parameter name (character)
+#   $subCount - (optional) number of parameter sub-values, default: 1
+#   $subId    - (optional) sub-value index, default: 0
+#   $value    - parameter value
 #     it can be scalar value, vector or data frame
 #     size of $value must be equal to production of dimension sizes
 #     if data frame then 
@@ -28,7 +30,7 @@
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createWorkset <- function(dbCon, defRs, worksetTxt, ...)
+createWorkset <- function(dbCon, defRs, setDef, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -38,7 +40,7 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
   if (is.null(defRs) || is.na(defRs) || !is.list(defRs)) stop("invalid or empty model definition")
   
   # create new workset
-  setId <- createNewWorkset(dbCon, defRs, FALSE, NA, worksetTxt, ...)
+  setId <- createNewWorkset(dbCon, defRs, FALSE, NA, setDef, ...)
   return(setId)
 }
 
@@ -54,15 +56,17 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
 # dbCon      - database connection
 # defRs      - model definition database rows
 # baseRunId  - id of model run results
-# worksetTxt - (optional) workset text data frame:
+# setDef - (optional) workset definition data frame:
 #   $name  - working set name
 #   $lang  - language code
 #   $descr - working set description
 #   $note  - (optional) working set notes
 # ... - list of parameters value and (optional) value notes
-#   each element is also a list of $name, $value and $txt
-#   $name  - parameter name (character)
-#   $value - parameter value
+#   each element is also a list of $name, $subCount, $subId, $value, $txt
+#   $name     - parameter name (character)
+#   $subCount - (optional) number of parameter sub-values, default: 1
+#   $subId    - (optional) sub-value index, default: 0
+#   $value    - parameter value
 #     it can be scalar value, vector or data frame
 #     size of $value must be equal to production of dimension sizes
 #     if data frame then 
@@ -71,7 +75,7 @@ createWorkset <- function(dbCon, defRs, worksetTxt, ...)
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
+createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, setDef, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -99,7 +103,7 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
   }
 
   # create new workset
-  setId <- createNewWorkset(dbCon, defRs, TRUE, baseRunId, worksetTxt, ...)
+  setId <- createNewWorkset(dbCon, defRs, TRUE, baseRunId, setDef, ...)
   return(setId)
 }
 
@@ -114,15 +118,17 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
 # i_isRunBased - if true then use base run id 
 #                else all parameters must be supplied by ... argument(s)
 # i_baseRunId  - id of model run results
-# worksetTxt   - (optional) workset text data frame:
+# i_setDef - (optional) workset definition data frame:
 #   $name  - working set name
 #   $lang  - language code
 #   $descr - working set description
 #   $note  - (optional) working set notes
 # ... - list of parameters value and (optional) value notes
-#   each element is also a list of $name, $value and $txt
-#   $name  - parameter name (character)
-#   $value - parameter value
+#   each element is also a list of $name, $subCount, $subId, $value, $txt
+#   $name     - parameter name (character)
+#   $subCount - (optional) number of parameter sub-values, default: 1
+#   $subId    - (optional) sub-value index, default: 0
+#   $value    - parameter value
 #     it can be scalar value, vector or data frame
 #     size of $value must be equal to production of dimension sizes
 #     if data frame then 
@@ -131,7 +137,7 @@ createWorksetBasedOnRun <- function(dbCon, defRs, baseRunId, worksetTxt, ...)
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
-createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt, ...)
+createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, i_setDef, ...)
 {
   # validate input parameters
   if (missing(dbCon)) stop("invalid (missing) database connection")
@@ -147,7 +153,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
   if (length(wsParamLst) > 0 && !validateParameterValueLst(defRs$langLst, TRUE, wsParamLst)) return(0L)
 
   # validate workset text
-  isAnyWsTxt <- validateTxtFrame("workset text", defRs$langLst, worksetTxt)
+  isAnyWsTxt <- validateTxtFrame("workset text", defRs$langLst, i_setDef)
 
   # check if supplied parameters are in model: parameter_name in parameter_dic table
   # if all parameters required then check if ALL parameters supplied
@@ -183,9 +189,9 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
     setId <- idRs$id_value
     
     # workset name, make auto-name if empty
-    setName <- ifelse(isAnyWsTxt, worksetTxt$name, NA)
+    setName <- ifelse(isAnyWsTxt, i_setDef$name, NA)
     if (is.na(setName)) setName <- toQuoted(paste("set_", setId, sep = ""))
-  
+    
     # create workset
     dbGetQuery(
       dbCon, 
@@ -214,7 +220,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       dbGetPreparedQuery(
         dbCon, 
         sqlInsTxt,
-        bind.data = worksetTxt[which(!is.na(worksetTxt$lang) & !is.na(worksetTxt$descr)), ]
+        bind.data = i_setDef[which(!is.na(i_setDef$lang) & !is.na(i_setDef$descr)), ]
       )
     }
     
@@ -226,11 +232,41 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       # get parameter row
       paramRow <- defRs$paramDic[which(defRs$paramDic$parameter_name == wsParam$name), ]
       
+      # validate sub-value count and index
+      isCount <- !is.null(wsParam$subCount) && !is.na(wsParam$subCount)
+      nCount <- ifelse(isCount, as.integer(wsParam$subCount), 1L)
+      if (nCount < 1) stop("invalid (less than 1) sub-value count for parameter ", wsParam$name)
+      
+      if (i_isRunBased) {
+        rpRs <- dbGetQuery(
+          dbCon, 
+          paste(
+            "SELECT sub_count FROM run_parameter ",
+            " WHERE run_id = ", 
+            " (", 
+            " SELECT base_run_id FROM run_parameter WHERE run_id = ", i_baseRunId, " AND parameter_hid = ", paramRow$parameter_hid, 
+            " )",
+            sep = ""
+          )
+        )
+        if (nrow(rpRs) == 1L) {
+          if (!isCount){
+            nCount <- rpRs$sub_count
+          } 
+          else {
+            if (nCount > rpRs$sub_count) stop("invalid (less than 1) sub-value count for parameter ", wsParam$name)
+          }
+        }
+      }
+
+      nSubId <- ifelse(!is.null(wsParam$subId) && !is.na(wsParam$subId), as.integer(wsParam$subId), 0L)
+      if (nSubId < 0 || nSubId >= nCount) stop("invalid sub-value index for parameter ", wsParam$name)
+      
       # add parameter into workset
       dbGetQuery(
         dbCon, 
         paste(
-          "INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (", setId, ", ", paramRow$parameter_hid, " )",
+          "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (", setId, ", ", paramRow$parameter_hid, ", ", nCount, " )",
           sep = ""
         )
       )
@@ -260,6 +296,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, worksetTxt
       # combine parameter definition to insert value and notes
       paramDef <- list(
         setId = setId, 
+        subId = nSubId,
         paramHid = paramRow$parameter_hid, 
         dbTableName = paramRow$db_set_table,
         dims = data.frame(name = dimNames, size = dimLen, stringsAsFactors = FALSE)

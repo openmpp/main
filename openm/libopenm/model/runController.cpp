@@ -294,10 +294,15 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         bool isInserted = false;
         bool isBaseRunFullCopy = false;
         bool isArgOption = argOpts().isOptionExist((paramDot + paramIt->paramName).c_str());
-        bool isIotaSubValues = argOpts().strOption((subValueDot + paramIt->paramName).c_str()) == RunOptionsKey::iotaSubValue;
+        string argOfSubValDotParam = argOpts().strOption((subValueDot + paramIt->paramName).c_str());
+        bool isIotaSubValues = equalNoCase(argOfSubValDotParam.c_str(), RunOptionsKey::iotaSubValue);
         bool isExistInWs = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec) != wsParamVec.cend();
 
         int nParamSubCount = parameterSubCount(paramIt->paramId);   // if >1 then multiple sub-values expected
+
+        if (!isParamDir && equalNoCase(argOfSubValDotParam.c_str(), RunOptionsKey::csvSubValue))
+            throw
+            DbException("invalid (empty) parameter.csv file path for parameter: %s", paramIt->paramName.c_str());
 
         // get dimensions name
         int nRank = paramIt->rank;
@@ -440,7 +445,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             // validate: parameter must exist in workset base run and must have enough sub-values
             int nSub = i_dbExec->selectToInt(
                 "SELECT sub_count FROM run_parameter" \
-                " WHERE run_id = " + sRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
+                " WHERE run_id = " + sBaseWsRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
                 0);
             if (nSub <= 0)
                 throw DbException("parameter %d: %s must be included in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), baseWsRunId);

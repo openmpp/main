@@ -11,10 +11,6 @@ ifndef OUT_PREFIX
   OUT_PREFIX = ..
 endif
 
-ifndef BIN_POSTFIX
-  BIN_POSTFIX = 
-endif 
-
 ifndef OM_ROOT
   OM_ROOT = ../..
 endif
@@ -43,11 +39,13 @@ ifndef RELEASE
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
+  BIN_POSTFIX =
 endif
 
 ifndef OM_DB_LIB

@@ -9,7 +9,7 @@
 # insert or update workset parameter notes
 # dbCon - database connection
 # i_paramDef - list with $setId and $paramHid
-#   $setId - workset id
+#   $setId    - workset id
 #   $paramHid - parameter Hid
 # i_wsParamTxt - workset parameter text:
 #   data frame with $lang=language code and $note=parameter notes
@@ -56,12 +56,13 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
 # insert or update workset parameter values
 # dbCon - database connection
 # i_paramDef - list with:
-#   $setId - workset id
+#   $setId       - workset id
+#   $subId       - sub-value index
 #   $dbTableName - workset parameter table name
-#   $dims - data frame for each dimension
+#   $dims        - data frame for each dimension
 #     $name - dimension name
 #     $size - dimension size
-# i_value - workset parameter values
+# i_value         - workset parameter values
 #   it can be scalar value, vector or data frame
 #   if scalar then $dims$size must be c(NA) or c(0) or c(1)
 #   if vector then prod($dims$size) must be equal to vector length
@@ -131,32 +132,34 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
   if (is.logical(dbDf$value)) dbDf$value <- ifelse(dbDf$value, 1, 0)
   
   #
-  # DELETE FROM param_workset_tbl WHERE set_id = 1234
+  # DELETE FROM param_workset_tbl WHERE set_id = 1234 AND sub_id = 7
   #
-  # INSERT INTO param_workset_tbl (set_id, dim0, dim1, param_value) 
-  # VALUES (1234, :dim0, :dim1, :value)
+  # INSERT INTO param_workset_tbl (set_id, sub_id, dim0, dim1, param_value) 
+  # VALUES (1234, 7, :dim0, :dim1, :value)
   #
   sqlDel <-
     paste(
       "DELETE FROM ", i_paramDef$dbTableName, 
       " WHERE set_id = ", i_paramDef$setId,
+      " AND sub_id = ", i_paramDef$subId,
       sep = ""
     )
   sqlIns <-
     ifelse(isScalar,
       paste(
-        "INSERT INTO ", i_paramDef$dbTableName, " (set_id, param_value)",
+        "INSERT INTO ", i_paramDef$dbTableName, " (set_id, sub_id, param_value)",
         " VALUES", 
-        " (", i_paramDef$setId, ", :value)",
+        " (", i_paramDef$setId, ", ", i_paramDef$subId, ", :value)",
         sep = ""
       ),
       paste(
         "INSERT INTO ", i_paramDef$dbTableName, 
-        " (set_id, ",
+        " (set_id, sub_id, ",
         paste(i_paramDef$dims$name, sep = "", collapse=", "), ", ",
         " param_value)",
         " VALUES (",
         i_paramDef$setId, ", ",
+        i_paramDef$subId, ", ",
         paste(paste(":", i_paramDef$dims$name, sep = ""), sep = "", collapse = ", "), ", ",
         " :value)",
         sep = ""
@@ -178,8 +181,10 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
 # i_isCreate   - if true then parameters must have $value
 # i_wsParamLst - list of parameters value and (optional) value notes
 #   each element is also a list of $name, $value and $txt
-#   $name - parameter name (character)
-#   $value - parameter value
+#   $name     - parameter name (character)
+#   $subCount - (optional) sub-value count, default: 1
+#   $subId    - (optional) sub-value index, default: 0
+#   $value    - parameter value
 #     it can be scalar value, vector or data frame
 #   $txt - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
@@ -214,6 +219,24 @@ validateParameterValueLst <- function(i_langRs, i_isCreate, i_wsParamLst)
 
     # if partameter created then it must have $value
     if (i_isCreate && is.null(wsPar$"value")) stop("workset parameter must have $value")
+
+    # validate sub-value count
+    nCount <- 1L
+    if (!is.null(wsPar$subCount) && !is.na(wsPar$subCount)) {
+      if (!is.numeric(wsPar$subCount)) stop("workset parameter $subCount must be numeric, parameter: ", wsPar$name)
+
+      nCount <- as.integer(wsPar$subCount)
+      if (nCount < 1) stop("invalid number sub-values for parameter ", wsPar$name)
+    }
+
+    # validate sub-value index
+    nSubId <- 0L
+    if (!is.null(wsPar$subId) && !is.na(wsPar$subId)) {
+      if (!is.numeric(wsPar$subId)) stop("workset parameter $subId must be numeric, parameter: ", wsPar$name)
+
+      nSubId <- as.integer(wsPar$subId)
+      if (nSubId < 0) stop("invalid sub-value index for parameter ", wsPar$name)
+    }
     
     if (is.null(wsPar$"txt")) next  # parameter value notes is optional
 

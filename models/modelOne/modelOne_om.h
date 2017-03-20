@@ -42,8 +42,8 @@ class SalarySex
 public:
     static const size_t N_CELL = N_SALARY * (N_SEX + 1);    // number of cells, "sex" dimension has total enabled
     static const size_t N_ACC = 2;                          // number of accumulators
-    static const size_t ACC_Sum = 0;                        // accumulator 0: sum
-    static const size_t ACC_Count = 1;                      // accumulator 1: count
+    static const size_t ACC_SUM_ID = 0;                     // accumulator 0: sum
+    static const size_t ACC_COUNT_ID = 1;                   // accumulator 1: count
     static const char * NAME;                               // output table name: salarySex
 
 public:
@@ -62,8 +62,8 @@ public:
     // initailize accumulators
     void initialize_accumulators(void)
     {
-        std::fill(acc[ACC_Sum], &acc[ACC_Sum][N_CELL], 0.0);
-        std::fill(acc[ACC_Count], &acc[ACC_Count][N_CELL], 0.0);
+        std::fill(acc[ACC_SUM_ID], &acc[ACC_SUM_ID][N_CELL], 0.0);
+        std::fill(acc[ACC_COUNT_ID], &acc[ACC_COUNT_ID][N_CELL], 0.0);
     }
 };
 

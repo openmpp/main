@@ -13,9 +13,9 @@
 # worksetId - id of parameters working set
 # baseRunId - id of model run results
 # ...       - list of parameters and (optional) value notes
-#   each element is also a list of $name and $txt
-#   $name  - parameter name (character)
-#   $txt   - (optional) workset parameter text:
+#   each element is also a list of $name, $txt
+#   $name - parameter name (character)
+#   $txt  - (optional) workset parameter text:
 #     data frame with $lang = language code and $note = value notes
 #
 copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
@@ -131,7 +131,14 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       dbGetQuery(
         dbCon, 
         paste(
-          "INSERT INTO workset_parameter (set_id, parameter_hid) VALUES (", worksetId, ", ", paramDef$paramHid, " )",
+          "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count)",
+          " SELECT ", worksetId, ", ", paramDef$paramHid, ", sub_count",
+          " FROM run_parameter",
+          " WHERE parameter_hid = ", paramDef$paramHid, 
+          " AND run_id = ", 
+          " (", 
+          " SELECT base_run_id FROM run_parameter WHERE run_id = ", baseRunId, " AND parameter_hid = ", paramDef$paramHid, 
+          " )",
           sep = ""
         )
       )

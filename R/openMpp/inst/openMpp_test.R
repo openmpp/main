@@ -66,13 +66,19 @@ ageSex_paramRs <- selectRunParameter(theDb, defRs, runId, "ageSex")
 #   salary level:  int enum[3]
 #   base salary:   int enum scalar value
 #   starting seed: int scalar value
+#   file path:     string parameter
 #
 
 # age by sex parameter value and notes
 ageSex <- list(
-
   name = "ageSex",  # parameter name
-
+  subCount = 1L,    # no sub-values, only one parameter value
+  subId = 0L,       # no sub-values, only one parameter value
+  value = c(
+    10,
+    rep(c(1, 2, 3), times = 2),
+    20
+  ),
   txt = data.frame(
     lang = c("EN", "FR"),
     note = c(
@@ -80,70 +86,55 @@ ageSex <- list(
       NA                        # NA == no FR value notes 
     ),
     stringsAsFactors = FALSE
-  ),
-  
-  value = c(
-    10,
-    rep(c(1, 2, 3), times = 2),
-    20
   )
 )
 
-# salary by age parameter value and notes
+# salary by age parameter, one sub-value by default
 salaryAge <- list(
-
   name = "salaryAge",
-
-  txt = data.frame(
-    lang = c("EN", "FR"),
-    note = c("salary by age value notes", "FR salary by age value notes"),
-    stringsAsFactors = FALSE
-  ),
   value = c(
     100L,
     rep(c(10L, 20L, 30L), times = 3),
     200L,
     300L
+  ),
+  txt = data.frame(
+    lang = c("EN", "FR"),
+    note = c("salary by age value notes", "FR salary by age value notes"),
+    stringsAsFactors = FALSE
   )
 )
 
 # salary level (low, medium, high) by full-or-part time job
 salaryFull <- list(
-
-  name = "salaryFull",
-
+  name = "salaryFull", value = c(33L, 33L, 22L),
   txt = data.frame(
-    lang = c("EN"),
-    note = c("salary level for full or part time job"),
-    stringsAsFactors = FALSE
-  ),
-  value = c(33L, 33L, 22L)
+    lang = c("EN"), note = c("salary level for full or part time job"), stringsAsFactors = FALSE
+  )
 )
 
 # base salary parameter enum value
 baseSalary <- list(
-
-  name = "baseSalary",
-
+  name = "baseSalary", value = 22L,
   txt = data.frame(
-    lang = c("EN"),
-    note = c("base salary notes"),
-    stringsAsFactors = FALSE
-  ),
-  value = 22L
+    lang = c("EN"), note = c("base salary notes"), stringsAsFactors = FALSE
+  )
 )
 
 # starting seed parameter value and notes
 startingSeed <- list(
-
-  name = "StartingSeed",
-
+  name = "StartingSeed", value = 127L,
   txt = data.frame(
-    lang = c("EN"),
-    note = c("random generator starting seed"),
-    stringsAsFactors = FALSE
-  ),
-  value = 127L
+    lang = c("EN"), note = c("random generator starting seed"), stringsAsFactors = FALSE
+  )
+)
+
+# file path parameter value and notes, "filePath" is string parameter
+filePath <- list(
+  name = "filePath", value = "file R path",
+  txt = data.frame(
+    lang = c("EN"), note = c("file path string parameter"), stringsAsFactors = FALSE
+  )
 )
 
 #
@@ -152,7 +143,7 @@ startingSeed <- list(
 #
 setName <- format(Sys.time(), "myData_%Y_%m_%d_%H_%M_%S")
 
-paramSetTxt <- data.frame(
+setDef <- data.frame(
   name = setName,
   lang = c("EN", "FR"),
   descr = c("default set of parameters", "FR default set of parameters"),
@@ -180,22 +171,28 @@ paramSetTxt <- data.frame(
 # it is a full set and includes all "modelOne" parameters: 
 #   "ageSex", "salaryAge", "salaryFull", "baseSalary", "StartingSeed"
 #
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, salaryFull, baseSalary, startingSeed)
+setId <- createWorkset(theDb, defRs, setDef, ageSex, salaryAge, salaryFull, baseSalary, startingSeed, filePath)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # find working set id by name
+# and make workset read-only
+#   if we want to use workset as input for model the it MUST be read-only
 #
 setId <- getWorksetIdByName(theDb, defRs, setName)
 if (setId <= 0L) warning("workset not found: ", setName)
 
+setId <- setReadonlyWorkset(theDb, defRs, TRUE, setId)
+if (setId <= 0L) stop("failed to set read-only status of workset: ", setName)
+
+#
 # create another workset with different description and notes in English an French
 # workset name will be generated automatically
 #
-paramSetTxt$name <- NA
-paramSetTxt$descr <- c("other set of parameters", "FR other set of parameters")
-paramSetTxt$note <- NA
+setDef$name <- NA
+setDef$descr <- c("other set of parameters", "FR other set of parameters")
+setDef$note <- NA
 
-setId <- createWorkset(theDb, defRs, paramSetTxt, ageSex, salaryAge, baseSalary, salaryFull, startingSeed)
+setId <- createWorkset(theDb, defRs, setDef, ageSex, salaryAge, baseSalary, salaryFull, startingSeed, filePath)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # 
@@ -217,25 +214,24 @@ if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " 
 # it is based on some existing model run 
 # and all model parameters (i.e.: "ageSex") would get values from that run
 #
-runId <- getFirstRunId(theDb, defRs)
+firstRunId <- getFirstRunId(theDb, defRs)
 
 # for test only: make workset name unique
 setName <- format(Sys.time(), "otherSet_%Y_%m_%d_%H_%M_%S")
-paramSetTxt$name <- setName
-paramSetTxt$descr <- c("initially empty set of parameters")
+setDef$name <- setName
+setDef$descr <- c("initially empty set of parameters")
 
-setId <- createWorksetBasedOnRun(theDb, defRs, runId, paramSetTxt)
+setId <- createWorksetBasedOnRun(theDb, defRs, firstRunId, setDef)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 #
-# copy ageSex parameter values from other model run (run_id = 12)
+# copy ageSex parameter values from other model run (second model run)
+# all sub-values of ageSex parameter will be copied
 #
-otherRunId <- 1L + getFirstRunId(theDb, defRs)
+secondRunId <- 1L + getFirstRunId(theDb, defRs)
 
 ageSexCopy <- list(
-
-  name = "ageSex",  # parameter name
-
+  name = "ageSex",  # parameter name to copy
   txt = data.frame(
     lang = c("EN"),
     note = c("age by sex value copy from other model run"),
@@ -243,33 +239,49 @@ ageSexCopy <- list(
   )
 )
 
-copyWorksetParameterFromRun(theDb, defRs, setId, otherRunId, ageSexCopy)
+setId <- copyWorksetParameterFromRun(theDb, defRs, setId, secondRunId, ageSexCopy)
+if (setId <= 0L) stop("copy parameter failed: ", ageSexCopy$name)
 
 #
-# update parameters working set with new values and value notes 
-#   reset read-only status of workset before the update
-#   and make workset read-only after update
+# create new working set with 2 sub-values for parameter "starting seed"
+#   for test only: make workset name unique
 #
-setId <- getDefaultWorksetId(theDb, defRs)
-if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
+setName <- format(Sys.time(), "setWithSubValues_%Y_%m_%d_%H_%M_%S")
+setDef$name <- setName
+setDef$descr <- c("set with 4 sub-values")
 
-if (setReadonlyWorkset(theDb, defRs, FALSE, setId) != setId) {
-  stop("workset not found: ", setId, " for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
-}
+seedSubVal <- list(
+  name = "StartingSeed", 
+  subCount = 2L,        # two sub-values for that parameter
+  subId = 0L,           # sub-value index =0 
+  value = 100L          # sub-value[0] = 100
+)
 
-updateWorksetParameter(theDb, defRs, setId, ageSex)
-setReadonlyWorkset(theDb, defRs, TRUE, setId)
+setId <- createWorksetBasedOnRun(theDb, defRs, firstRunId, setDef, seedSubVal)
+if (setId <= 0L) stop("workset creation failed: ", setName)
 
 #
-# update default working set of model parameters
+# add seed parameter sub-value =1
+#
+seedSubVal <- list(name = "StartingSeed", subId = 1L, value = 200L)
+
+setId <- updateWorksetParameter(theDb, defRs, setId, seedSubVal)
+if (setId <= 0L) stop("failed to update workset parameter: ", seedSubVal$name)
+
+#
+# find defult workset and set/clear read-only status
 #   default workset is a first workset of the model: id = min(set_id)
-#   default workset always include ALL model parameters
+#   please note: 
+#   it is not recommended to change parameters in model default workset
 #
-setId <- setReadonlyDefaultWorkset(theDb, defRs, FALSE)
-if (setId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
+defaultSetId <- getDefaultWorksetId(theDb, defRs)
+if (defaultSetId <= 0L) stop("no any worksets exists for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
-updateWorksetParameter(theDb, defRs, setId, ageSex, startingSeed)
-setReadonlyDefaultWorkset(theDb, defRs, TRUE)
+setId <- setReadonlyWorkset(theDb, defRs, FALSE, defaultSetId)
+if (setId <= 0L) stop("failed to clear read-only status of default workset for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
+
+setId <- setReadonlyDefaultWorkset(theDb, defRs, TRUE)
+if (setId <= 0L) stop("failed to set read-only status of default workset for model: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 #
 # modeling task: named set of model inputs (of working sets)

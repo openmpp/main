@@ -30,6 +30,7 @@ You must use \code{getModel} function in order to find model definition \code{de
 }
 \value{
   Data frame of database rows with parameter dimensions and values:
+  \item{sub_id}{ parameter sub-value index or zero if parameter has no sub-values }
   \item{dim0,...,dimN}{ dimension items enum ids (not returned if rank is zero) }
   \item{value}{ parameter value }
 }

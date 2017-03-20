@@ -104,10 +104,13 @@ namespace openm
         static const char * messageLang;
         
         /** sub-value of parameter must be in the input workset */
-        static const char * worksetSubValue;
+        static const char * dbSubValue;
 
         /** sub-value of parameter created as integer from 0 to sub-value count */
         static const char * iotaSubValue;
+
+        /** all parameter sub-values must be in parameter.csv file */
+        static const char * csvSubValue;
     };
 
     /** keys for model run options (short form) */

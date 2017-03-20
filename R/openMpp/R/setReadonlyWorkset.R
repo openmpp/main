@@ -99,7 +99,7 @@ setReadonlyDefaultWorkset <- function(dbCon, defRs, isReadonly)
 #
 # dbCon           - database connection
 # i_defRs         - model definition database rows
-# i_isSetId       - if true then use set id else model id
+# i_isSetId       - if true then use set id else default workset by model id
 # i_setId         - id of parameters working set
 # i_isAddValue    - if TRUE then add value to is_readonly else set
 # i_readonlyValue - integer to set is_readonly
