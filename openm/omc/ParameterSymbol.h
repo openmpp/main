@@ -193,6 +193,9 @@ public:
      */
     string cv_qualifier() const
     {
+        // haz1rate parameters must be writable to implement in-place transformation
+        if (haz1rate) return "";
+
         switch (source) {
         case scenario_parameter:
         case fixed_parameter:
