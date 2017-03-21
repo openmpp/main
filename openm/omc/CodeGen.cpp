@@ -398,25 +398,6 @@ void CodeGen::do_RunInit()
     }
     c += "";
 
-    c += "theLog->logMsg(\"Initialize invariant entity data\");";
-
-    c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_agent.om_assign_member_offsets();";
-        c += agent->name + "::om_null_agent.om_initialize_data_members0();";
-        c += "";
-    }
-
-    c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
-        c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
-        c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
-    }
-    c += "";
-
 	c += "}";
 	c += "";
 }
@@ -512,6 +493,25 @@ void CodeGen::do_ModelStartup()
             c += parameter->cxx_transform_haz1rate();
         }
     }
+
+    c += "theLog->logMsg(\"Initialize invariant entity data\");";
+
+    c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "// Entity - " + agent->name;
+        c += agent->name + "::om_null_agent.om_assign_member_offsets();";
+        c += agent->name + "::om_null_agent.om_initialize_data_members0();";
+        c += "";
+    }
+
+    c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
+    for (auto agent : Symbol::pp_all_agents) {
+        c += "// Entity - " + agent->name;
+        c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
+        c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
+        c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
+    }
+    c += "";
 
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
@@ -738,16 +738,16 @@ void CodeGen::do_agents()
 	    h += "";
 	    c += "";
 
-        h += "// The declaration of the single static " + agent->name;
-        h += "// used to retrieve (zero) values when dereferencing nullptr link agentvars.";
-        h += "static " + agent->name + " " + "om_null_agent;";
+        h += "// The declaration of the static member " + agent->name;
+        h += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
+        h += "static thread_local " + agent->name + " " + "om_null_agent;";
 
 	    h += "}; // class " + agent->name;
 	    h += "";
 
-        c += "// The definition of the single static " + agent->name;
-        c += "// used to retrieve (zero) values when dereferencing nullptr link agentvars.";
-        c += agent->name + " " + agent->name + "::om_null_agent;";
+        c += "// The definition of the static member " + agent->name;
+        c += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
+        c += "thread_local " + agent->name + " " + agent->name + "::om_null_agent;";
     }
 
     c += doxygen("Free all zombie agents");
