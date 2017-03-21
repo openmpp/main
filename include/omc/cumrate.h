@@ -36,7 +36,7 @@ public:
      *
      * @param freq The frequency of each value
      */
-    void initialize(double * freq)
+    void initialize(const double *freq)
     {
         assert(freq); // logic guarantee
 
@@ -140,7 +140,7 @@ public:
      *
      * @param freq For each of the M distributions, the N frequencies of each value
      */
-    void initialize(double * freq)
+    void initialize(const double *freq)
     {
         for (int j = 0; j < M; ++j) {
             distns[j].initialize(freq);

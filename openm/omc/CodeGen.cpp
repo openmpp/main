@@ -336,6 +336,7 @@ void CodeGen::do_parameters()
             z += parameter->cxx_definition_global();
         }
         else {
+            c += "";
             c += parameter->cxx_definition_global();
         }
         if (parameter->cumrate) {
@@ -360,26 +361,27 @@ void CodeGen::do_RunInit()
     // Missing parameters are done here, since they are handled identically to fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
-        if (parameter->source == ParameterSymbol::fixed_parameter
-            || parameter->source == ParameterSymbol::missing_parameter) {
+        // Process only fixed and missing parameters in this for loop
+        if (parameter->source != ParameterSymbol::fixed_parameter && parameter->source != ParameterSymbol::missing_parameter) continue;
 
-            if (parameter->source == ParameterSymbol::missing_parameter) {
-                if (!any_missing_parameters) {
-                    m += "parameters {";
-                    any_missing_parameters = true;
-                }
-                m += parameter->dat_definition();
-                // create warning message which the model will output whenever it is run
-                c += "theLog->logFormatted(\"model : warning : parameter " + parameter->name + " was missing when model was published\");";
+        // Create contents of helpful .dat format file sepcifying missing parameters.
+        if (parameter->source == ParameterSymbol::missing_parameter) {
+            if (!any_missing_parameters) {
+                m += "parameters {";
+                any_missing_parameters = true;
             }
-            if (parameter->cumrate) {
-                // prepare cumrate for parameter
-                c += parameter->cxx_initialize_cumrate();
-            }
-            if (parameter->haz1rate) {
-                // perform haz1rate transformation
-                c += parameter->cxx_transform_haz1rate();
-            }
+            m += parameter->dat_definition();
+            // create warning message which the model will output whenever it is run
+            c += "theLog->logFormatted(\"model : warning : parameter " + parameter->name + " was missing when model was published\");";
+        }
+
+        if (parameter->cumrate) {
+            // prepare cumrate for parameter
+            c += parameter->cxx_initialize_cumrate();
+        }
+        if (parameter->haz1rate) {
+            // perform haz1rate transformation
+            c += parameter->cxx_transform_haz1rate();
         }
     }
     if (any_missing_parameters) {
@@ -391,50 +393,10 @@ void CodeGen::do_RunInit()
     c += "theLog->logMsg(\"Get scenario parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
-
-            // TODO: update in order to use vector of sub-values
-            // throw exception("TODO: work in progress on parameter sub-values");
-            //
-            // c += parameter->cxx_type_check();
-            //
             c += parameter->cxx_read_parameter();
-            if (parameter->cumrate) {
-                // prepare cumrate for parameter
-                c += parameter->cxx_initialize_cumrate();
-            }
-            if (parameter->haz1rate) {
-                // perform haz1rate transformation
-                c += parameter->cxx_transform_haz1rate();
-            }
         }
     }
     c += "";
-
-    c += "theLog->logMsg(\"compute derived parameters\");";
-    c += "// TODO Re-initialize derived parameters";
-    auto & sg = Symbol::pre_simulation;
-    if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-        for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-            c += sg.disambiguated_name(id) + "();";
-        }
-        for (auto suffix : sg.suffixes) {
-            c += sg.prefix + suffix + "();";
-        }
-        c += "";
-    }
-
-    for (auto parameter : Symbol::pp_all_parameters) {
-        if (parameter->source == ParameterSymbol::derived_parameter) {
-            if (parameter->cumrate) {
-                // prepare cumrate for parameter
-                c += parameter->cxx_initialize_cumrate();
-            }
-            if (parameter->haz1rate) {
-                // perform haz1rate transformation
-                c += parameter->cxx_transform_haz1rate();
-            }
-        }
-    }
 
     c += "theLog->logMsg(\"Initialize invariant entity data\");";
 
@@ -465,38 +427,91 @@ void CodeGen::do_ModelStartup()
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
 
-    c += "// bind parameters reference thread local values";
-    c += "// at this point parameter values undefined and cannot be used by the model";
-    c += "//";
+    c += "// Bind scenario parameter references to thread local values (for scenario parameters).";
+    c += "// Until this is done scenario parameter values are undefined and cannot be used by the model.";
+    c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
-
-        // skip derived and fixed parameters, it should be only parameters visible to user.
-        if (parameter->source == ParameterSymbol::derived_parameter || parameter->source == ParameterSymbol::fixed_parameter) continue;
+        // Process only scenario parameters in this for loop
+        if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
         if (parameter->size() > 1) {
-
             c += parameter->name + " = " +
-                "*reinterpret_cast<" + parameter->pp_datatype->name + "(*)" + parameter->cxx_dimensions() + ">(" +
-                parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
+                "*reinterpret_cast<" 
+                + parameter->cv_qualifier()
+                + parameter->pp_datatype->name
+                + "(*)" + parameter->cxx_dimensions() + ">("
+                + parameter->alternate_name()
+                + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
                 ");";
         }
         else {
             if (!parameter->pp_datatype->is_time()) {
                 c += parameter->name + " = " +
-                    "*" +
-                    parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
+                    "*"
+                    + parameter->alternate_name()
+                    + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
             }
             else {
                 c += parameter->name + " = " +
-                    "*reinterpret_cast<" + parameter->pp_datatype->name + " *>(" +
-                    parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
-                    ");";
+                    "*reinterpret_cast<"
+                    + parameter->cv_qualifier()
+                    + parameter->pp_datatype->name + " *>("
+                    + parameter->alternate_name()
+                    + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()"
+                    + ");";
             }
         }
+        if (parameter->cumrate) {
+            // prepare cumrate for scenario parameter
+            c += parameter->cxx_initialize_cumrate();
+        }
+        if (parameter->haz1rate) {
+            // perform haz1rate transformation for scenario parameter
+            c += parameter->cxx_transform_haz1rate();
+        }
     }
-    c += "//";
-    c += "// parameters ready now and can be used by the model";
+
     c += "";
+    c += "// Zero fill derived parameters";
+    c += "";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        // Process only derived parameters in this for loop
+        if (parameter->source != ParameterSymbol::derived_parameter) continue;
+        c += "std::memset(&" 
+            + parameter->name + ", "
+            + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + "), "
+            + "'\\0'"
+            + ");";
+    }
+
+    c += "";
+    c += "// Parameters are now ready and can be used by the model.";
+    c += "";
+
+    c += "theLog->logMsg(\"compute derived parameters\");";
+    auto & sg = Symbol::pre_simulation;
+    if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
+        for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+            c += sg.disambiguated_name(id) + "();";
+        }
+        for (auto suffix : sg.suffixes) {
+            c += sg.prefix + suffix + "();";
+        }
+        c += "";
+    }
+
+    for (auto parameter : Symbol::pp_all_parameters) {
+        // Process only derived parameters in this for loop
+        if (parameter->source != ParameterSymbol::derived_parameter) continue;
+        if (parameter->cumrate) {
+            // prepare cumrate for derived parameter
+            c += parameter->cxx_initialize_cumrate();
+        }
+        if (parameter->haz1rate) {
+            // perform haz1rate transformation for derived parameter
+            c += parameter->cxx_transform_haz1rate();
+        }
+    }
 
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {

@@ -183,7 +183,7 @@ actor Person //EN Individual
 TIME Person::timeMicroDataOutputEvent()
 {
   if (MicroDataOutputFlag && !microdata_output_done)
-    return MicroDataOutputTime;
+    return (TIME_t) MicroDataOutputTime;
   else
     return TIME_INFINITE;
 }
@@ -262,7 +262,7 @@ void Person::Start(Observation *oeObs, Person *peMother, double dArrival)
       origin = PO_INITIAL_POP;
       int nAge = oeObs->o_range_age;
       age = nAge + RandUniform(3);
-      time = SimulationStartTime;
+      time = (TIME_t) SimulationStartTime;
       calendar_year_of_arrival = (int) SimulationStartTime - oeObs->o_years_since_arrival;
       native_born = oeObs->o_native_born;
       // Assign other attributes using the microdata observation

@@ -248,16 +248,22 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    if (source != parameter_source::derived_parameter && source != parameter_source::fixed_parameter) {
-        h += "extern thread_local reference_wrapper<const " + datatype->name + cxx_dimensions() + "> " + name + ";";
+
+    if (source == scenario_parameter) {
+        h += "extern thread_local reference_wrapper<"
+            + cv_qualifier()
+            + pp_datatype->name
+            + cxx_dimensions() + "> "
+            + name + ";";
     }
     else {
-        h += "extern " + datatype->name + " " + alternate_name() + cxx_dimensions() + "; // read-write version";
-        string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
-        h += "extern " + cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + ";";
-    }
-    if (cumrate) {
-        h += "extern cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
+        assert(source == derived_parameter || source == fixed_parameter || source == missing_parameter);
+        h += "extern "
+            + storage_duration()
+            + cv_qualifier()
+            + pp_datatype->name + " "
+            + name
+            + cxx_dimensions() + ";";
     }
     return h;
 }
@@ -269,54 +275,68 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    if (source == parameter_source::missing_parameter) {
-        //TODO treat as error?
-        c += "// WARNING - No data supplied for the following parameter:";
+    if (source == missing_parameter) {
+        c += "// WARNING - No data for the following parameter:";
     }
 
-    if (source != parameter_source::derived_parameter && source != parameter_source::fixed_parameter) {
-
+    if (source == scenario_parameter) {
         if (size() > 1) {
             c += "static vector<unique_ptr<" + pp_datatype->name + "[]>> " + alternate_name() + ";";
             c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
-            c += "thread_local reference_wrapper<const " + pp_datatype->name + cxx_dimensions() + "> " + name +
+            c += "thread_local reference_wrapper<"
+                + cv_qualifier()
+                + pp_datatype->name
+                + cxx_dimensions() + "> "
+                + name +
                 " = *reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">(om_none_" + name + ");";
         }
         else {
             if (!pp_datatype->is_time()) {
                 c += "static vector<unique_ptr<" + pp_datatype->name + ">> " + alternate_name() + ";";
                 c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
-                c += "thread_local reference_wrapper<const " + pp_datatype->name + "> " + name +
-                    " = " + " *om_none_" + name + ";";
+                c += "thread_local reference_wrapper<"
+                    + cv_qualifier()
+                    + pp_datatype->name + "> "
+                    + name + " = "
+                    + "*om_none_" + name + ";";
             }
             else {
                 c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
                 c += "static " + cxx_type_of_parameter() + " * om_none_" + name + " = nullptr;";
-                c += "thread_local reference_wrapper<const " + pp_datatype->name + "> " + name +
-                    " = *reinterpret_cast<" + pp_datatype->name + " *>(om_none_" + name + ");";
+                c += "thread_local reference_wrapper<"
+                    + cv_qualifier()
+                    + pp_datatype->name + "> "
+                    + name + " = "
+                    + "*reinterpret_cast<" + pp_datatype->name + " *>(om_none_" + name + ");";
             }
         }
     }
     else {
-        if (source == parameter_source::fixed_parameter) {
-            // Parameter is fixed (an initializer was provided in the model source).
+        c += storage_duration()
+            + cv_qualifier()
+            + pp_datatype->name + " "
+            + name
+            + cxx_dimensions() + " = ";
+        if (source == fixed_parameter) {
+            // An initializer was provided in the model source code.
             assert(!initializer_list.empty());
-            c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = ";
             c += cxx_initializer();
             c += ";";
         }
         else {
+            assert(source == derived_parameter || source == missing_parameter);
             // Initialize using the default value for a type of this kind.
-            c += pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = { " + pp_datatype->default_initial_value() + " };";
+            c += "{ " + pp_datatype->default_initial_value() + " };";
         }
-
-        string cv_qualifier = (source == parameter_source::derived_parameter) ? "" : "const";
-        // definition of read-only reference for use in model code
-        c += cv_qualifier + " " + datatype->name + " (&" + name + ")" + cxx_dimensions() + " = " + alternate_name() + ";";
     }
 
     if (cumrate) {
-        c += "cumrate<" + to_string(conditioning_size()) + "," + to_string(distribution_size()) + "> " + cumrate_name() + ";";
+        // The supporting cumrate object used by the generated Lookup_ function
+        c += storage_duration()
+            + "static cumrate<" 
+            + to_string(conditioning_size()) + ","
+            + to_string(distribution_size()) + "> "
+            + cumrate_name() + ";";
     }
     return c;
 }
@@ -591,12 +611,14 @@ const string ParameterSymbol::cxx_type_of_parameter(void) const
 
 string ParameterSymbol::cxx_initialize_cumrate()
 {
-    // TODO: update in order to use vector of sub-values
-    throw HelperException("TODO: work in progress on parameter sub-values at cxx_initialize_cumrate()");
-
     string result = "";
     if (cumrate) {
-        result = cumrate_name() + ".initialize((double *)" + name + ");";
+        // N-1 trailing [0] are required to successfully pass argument of type reference_wrapper<...>
+        string inds = "";
+        for (size_t j = 0; j < rank() - 1; ++j) {
+            inds += "[0]";
+        }
+        result = cumrate_name() + ".initialize(" + name + inds + ");";
     }
     return result;
 }

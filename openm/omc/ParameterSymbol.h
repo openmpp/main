@@ -189,6 +189,37 @@ public:
     }
 
     /**
+     * The cv qualifier of the parameter
+     */
+    string cv_qualifier() const
+    {
+        switch (source) {
+        case scenario_parameter:
+        case fixed_parameter:
+        case missing_parameter:
+            return "const ";
+        case derived_parameter:
+            return "";
+        default:
+            assert(false); // not reached
+            return "";
+        }
+    }
+
+    /**
+     * The storage class of the parameter
+     */
+    string storage_duration() const
+    {
+        if (source == scenario_parameter || source == derived_parameter) {
+            return "thread_local ";
+        }
+        else {
+            return "";
+        }
+    }
+
+    /**
      * The data type of the parameter contents (parse phase reference to pointer)
      */
     Symbol*& datatype;
