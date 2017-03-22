@@ -379,10 +379,6 @@ void CodeGen::do_RunInit()
             // prepare cumrate for parameter
             c += parameter->cxx_initialize_cumrate();
         }
-        if (parameter->haz1rate) {
-            // perform haz1rate transformation
-            c += parameter->cxx_transform_haz1rate();
-        }
     }
     if (any_missing_parameters) {
         m += "};";
@@ -426,7 +422,7 @@ void CodeGen::do_ModelStartup()
                 ");";
         }
         else {
-            if (!parameter->pp_datatype->is_time()) {
+            if (!parameter->pp_datatype->is_wrapped()) {
                 c += parameter->name + " = " +
                     "*"
                     + parameter->alternate_name()
@@ -445,10 +441,6 @@ void CodeGen::do_ModelStartup()
         if (parameter->cumrate) {
             // prepare cumrate for scenario parameter
             c += parameter->cxx_initialize_cumrate();
-        }
-        if (parameter->haz1rate) {
-            // perform haz1rate transformation for scenario parameter
-            c += parameter->cxx_transform_haz1rate();
         }
     }
 
@@ -487,10 +479,6 @@ void CodeGen::do_ModelStartup()
         if (parameter->cumrate) {
             // prepare cumrate for derived parameter
             c += parameter->cxx_initialize_cumrate();
-        }
-        if (parameter->haz1rate) {
-            // perform haz1rate transformation for derived parameter
-            c += parameter->cxx_transform_haz1rate();
         }
     }
 

@@ -137,21 +137,6 @@ public:
     string cxx_initialize_cumrate();
 
     /**
-     * C++ code to perform haz1rate transformation on parameter.
-     *
-     * @return A CodeBlock.
-     */
-    CodeBlock cxx_transform_haz1rate();
-
-    /**
-     * assert C++ code fragment to verify that storage type has the same size as the readParameter
-     * type.
-     *
-     * @return A string.
-     */
-    string cxx_type_check();
-
-    /**
      * Enumeration indicating source of parameter value.
      */
     enum parameter_source {
@@ -193,9 +178,6 @@ public:
      */
     string cv_qualifier() const
     {
-        // haz1rate parameters must be writable to implement in-place transformation
-        if (haz1rate) return "";
-
         switch (source) {
         case scenario_parameter:
         case fixed_parameter:

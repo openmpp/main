@@ -123,6 +123,20 @@ public:
     bool is_floating() const;
 
     /**
+     * Determines if the type is a wrapped type, e.g. time, cassificaiton, etc.
+     *
+     * @return true if the type is wrapped, false otherwise
+     */
+    bool is_wrapped()
+    {
+        return is_time()
+            || is_classification()
+            || is_range()
+            || is_partition()
+            ;
+    }
+
+    /**
      * Determines appropriate type to use for sums or differences of this type.
      *
      * @return type symbol for integer or real.

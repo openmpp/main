@@ -280,8 +280,8 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     }
 
     if (source == scenario_parameter) {
-        if (size() > 1) {
-            c += "static vector<unique_ptr<" + pp_datatype->name + "[]>> " + alternate_name() + ";";
+        if (rank() > 0) {
+            c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
             c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
             c += "thread_local reference_wrapper<"
                 + cv_qualifier()
@@ -291,8 +291,8 @@ CodeBlock ParameterSymbol::cxx_definition_global()
                 " = *reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">(om_none_" + name + ");";
         }
         else {
-            if (!pp_datatype->is_time()) {
-                c += "static vector<unique_ptr<" + pp_datatype->name + ">> " + alternate_name() + ";";
+            if (!pp_datatype->is_wrapped()) {
+                c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
                 c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
                 c += "thread_local reference_wrapper<"
                     + cv_qualifier()
@@ -521,39 +521,60 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     CodeBlock c;
 
     // i_runBase is an argument (local variable) of the global function RunInit
+    
+    bool adjust = false; // true if parameter values require in-place adjustment
+    string c_adjust_comment; // C++ code fragment with explanatory comment about in-place adjustment
+    string c_adjust_code; // C++ code fragment to do in-place adjustment (using reference named "value")
+
+    // Handle in-place adjustment for parameters of type range where range has non-zero lower bound
     if (pp_datatype->is_range()) {
         auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
         assert(rng);
-        if (rng->lower_bound != 0) {
-            // TODO: update in order to use vector of sub-values
-            throw HelperException("TODO: work in progress on parameter sub-values at cxx_read_parameter()");
-
-            string typ = cxx_type_of_parameter();   // storage type
-            string cell_count = to_string(size());
-            c += "{";
-            c += "// Parameter '" + name + "' has range type '" + pp_datatype->name + "' and requires transformation from ordinal -> value";
-            c += "long work[" + cell_count + "];";
-            c += "i_runBase->readParameter(" + cxx_parameter_name_type_size() + ", &work);";
-            c += typ + " *parm = (" + typ + " *) &" + alternate_name() + ";";
-            c += "for (size_t j = 0; j < " + cell_count + "; ++j) parm[j] = (" + typ + ") (work[j] + " + to_string(rng->lower_bound) + ");";
-            c += "}";
+        auto lb = rng->lower_bound;
+        if (lb != 0) {
+            adjust = true;
+            c_adjust_comment = "// Parameter '" + name + "' has type range '" + pp_datatype->name + "' with non-zero lower bound " + to_string(lb) + " and requires transformation from ordinal -> value";
+            // handle +ve and -ve lower bound separately in case types are unsigned
+            if (lb > 0) {
+                c_adjust_code = "value += (" + pp_datatype->name + ") " + to_string(lb) + ";";
+            }
+            else {
+                c_adjust_code = "value -= (" + pp_datatype->name + ") " + to_string(-lb) + ";";
+            }
         }
-        else {
-            // range starts at 0 so requires no transformation
-            c += alternate_name() + " = std::move(" \
-                "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
+    }
+
+    if (haz1rate) {
+        adjust = true;
+        c_adjust_comment = "// Parameter '" + name + "' is declared haz1rate and requires transformation.";
+        c_adjust_code = "value = - log(1.0 - value);";
+    }
+
+    if (rank() > 0) {
+        // ex: om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+        c += alternate_name() + " = std::move("
+            //"read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
+            "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
+        if (adjust) {
+            c += c_adjust_comment;
+            c += "for (auto & p_value : " + alternate_name() + ") {";
+            c += "for (size_t j = 0; j < " + to_string(size()) + "; ++j) {";
+            c += "auto &value = p_value[j];";
+            c += c_adjust_code;
+            c += "}";
+            c += "}";
         }
     }
     else {
-        if (size() > 1) {
-            // ex: om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
-            c += alternate_name() + " = std::move(" \
-                "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
-        }
-        else {
-            // ex: om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
-            c += alternate_name() + " = std::move(" \
-                "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\"));";
+        // ex: om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
+        c += alternate_name() + " = std::move("
+            "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\"));";
+        if (adjust) {
+            c += c_adjust_comment;
+            c += "for (auto & p_value : " + alternate_name() + ") {";
+            c += "auto &value = *p_value;";
+            c += c_adjust_code;
+            c += "}";
         }
     }
 
@@ -623,53 +644,3 @@ string ParameterSymbol::cxx_initialize_cumrate()
     return result;
 }
 
-CodeBlock ParameterSymbol::cxx_transform_haz1rate()
-{
-    // TODO: update in order to use vector of sub-values
-    throw HelperException("TODO: work in progress on parameter sub-values at cxx_transform_haz1rate()");
-
-    CodeBlock cxx;
-    if (haz1rate) {
-        cxx += "{";
-        cxx += "// Perform haz1rate transformation on contents of " + name;
-        cxx += "double *pd = (double *)&" + name + ";";
-        cxx += "for (size_t j = 0; j < " + to_string(size()) + "; ++j) {";
-        cxx += "pd[j] = - log(1.0 - pd[j]);";
-        cxx += "}";
-        cxx += "}";
-    }
-    return cxx;
-}
-
-string ParameterSymbol::cxx_type_check()
-{
-    if (pp_datatype->is_string()) {
-        // For string type parameters, skip sanity check
-        return "";
-    }
-
-    // TODO: update in order to use vector of sub-values
-    throw HelperException("TODO: work in progress on parameter sub-values at cxx_type_check()");
-
-    string typ; // storage type
-    if (pp_datatype->is_time()) {
-        // For Time, the type is wrapped
-        auto ts = dynamic_cast<TimeSymbol *>(pp_datatype);
-        assert(ts); // grammar guarantee
-        typ = Symbol::token_to_string(ts->time_type);
-    }
-    else if (pp_datatype->is_numeric_or_bool()) {
-        // For fundamental types (and bool), the name of the symbol is the name of the type
-        typ = pp_datatype->name;
-    }
-    else {
-        // for parameters of type classification, range, or partition
-        // get the underlying storage type
-        auto ens = dynamic_cast<EnumerationSymbol *>(pp_datatype);
-        assert(ens); // grammar guarantee
-        typ = Symbol::token_to_string(ens->storage_type);
-    }
-
-    string result = "static_assert(sizeof(" + alternate_name() + cxx_dimensions(true) + ") == sizeof(" + typ + "), \"Incoherence in datatype of " + name + "\");" ;
-    return result;
-}
