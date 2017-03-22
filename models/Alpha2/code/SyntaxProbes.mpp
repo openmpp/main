@@ -356,3 +356,9 @@ actor Person
     //void SomethingStringee2(std::string s);
 };
 
+// Tests of haz1rate parameters
+
+parameters {
+    haz1rate z_haz1rate_scalar; //EN haz1rate scalar atest
+    haz1rate z_haz1rate_array[SEX];
+};

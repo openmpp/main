@@ -56,3 +56,10 @@ parameters{
     };
 };
 
+parameters {
+    haz1rate z_haz1rate_scalar = 0.90;
+    haz1rate z_haz1rate_array[SEX] = 
+    {
+        0.80, 0.85
+    };
+};
