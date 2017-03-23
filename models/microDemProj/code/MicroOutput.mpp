@@ -38,7 +38,7 @@ void Person::WriteMicroRecord_Start()
             time_microdata_output = WAIT(0);
         }
         else {
-            time_microdata_output = TimeMicroOutput;
+            time_microdata_output = (TIME)TimeMicroOutput;
         }
     }
     else {
