@@ -103,10 +103,10 @@ void CreateStartingPopulation(void)
 		int nAgeOfMother = nAge;
 
 		// minimum age at which this mother could have given birth
-		int nMinAgeOfMotherAtChildbirth = max(MinAgeToReproduce, nAgeOfMother - MinAgeToReproduce + 1); 
+		int nMinAgeOfMotherAtChildbirth = max((int)MinAgeToReproduce, nAgeOfMother - (int)MinAgeToReproduce + 1); 
 
 		// maximum age at which this mother could have given birth
-		int nMaxAgeOfMotherAtChildbirth = min(MaxAgeToReproduce, nAgeOfMother);
+		int nMaxAgeOfMotherAtChildbirth = min((int)MaxAgeToReproduce, nAgeOfMother);
 
 		// Iterate through all reproductive ages for this mother
 		// excluding those for which the resulting child is currently reproductive age or older.
