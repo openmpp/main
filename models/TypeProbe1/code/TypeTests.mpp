@@ -100,9 +100,9 @@ void Person::helper()
     TIME the_time2 = WAIT(TIME_t(my_time));
     TIME wait_time = min((TIME_t)my_happy_time, (TIME_t)my_sad_time);
 
-	double wellness = WellnessWeights[DefaultEmotion];
+	double wellness = WellnessWeights[(EMOTION)DefaultEmotion];
 
-	double wellness2 = WellnessWeights2[DefaultEmotion];
+	double wellness2 = WellnessWeights2[(EMOTION)DefaultEmotion];
 
 	// sidestep g++ warnings on unused local variables
     forever++;
