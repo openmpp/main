@@ -120,6 +120,13 @@ public:
     CodeBlock cxx_read_parameter();
 
     /**
+    * C++ code to set a parameter to its default value.
+    *
+    * @return A block of code.
+    */
+    CodeBlock cxx_set_to_default();
+
+    /**
     * return C++ type name of parameter value(s) to read from data store.
     */
     const string cxx_type_of_parameter(void) const;

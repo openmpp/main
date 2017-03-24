@@ -581,6 +581,19 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     return c;
 }
 
+CodeBlock ParameterSymbol::cxx_set_to_default()
+{
+    CodeBlock c;
+
+    c += "std::memset(&" 
+        + name + ", "
+        + to_string(size()) + " * sizeof(" + pp_datatype->name + "), "
+        + "'\\0'"
+        + ");";
+
+    return c;
+}
+
 const string ParameterSymbol::cxx_parameter_name_type_size(void) const
 {
     string result;

@@ -445,16 +445,13 @@ void CodeGen::do_ModelStartup()
     }
 
     c += "";
-    c += "// Zero fill derived parameters";
+    c += "// Set derived parameters to default value";
     c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only derived parameters in this for loop
         if (parameter->source != ParameterSymbol::derived_parameter) continue;
-        c += "std::memset(&" 
-            + parameter->name + ", "
-            + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + "), "
-            + "'\\0'"
-            + ");";
+
+        c += parameter->cxx_set_to_default();
     }
 
     c += "";
