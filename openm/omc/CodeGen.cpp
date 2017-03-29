@@ -437,8 +437,8 @@ void CodeGen::do_ModelStartup()
         if (parameter->source != ParameterSymbol::derived_parameter) continue;
         c += "std::memset(&" 
             + parameter->name + ", "
-            + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + "), "
-            + "'\\0'"
+            + "'\\0', "
+            + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + ")"
             + ");";
     }
 
