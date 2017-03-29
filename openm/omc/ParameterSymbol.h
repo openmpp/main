@@ -179,10 +179,10 @@ public:
     string cv_qualifier() const
     {
         switch (source) {
-        case scenario_parameter:
         case fixed_parameter:
         case missing_parameter:
             return "const ";
+        case scenario_parameter:
         case derived_parameter:
             return "";
         default:

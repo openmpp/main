@@ -176,34 +176,29 @@ namespace openm
     typedef OpenmException<4000, simulationUnknownErrorMessage> SimulationException;
 
     /** read scalar parameter value or all sub-values for the current process */
-    template<typename TVal> vector<unique_ptr<TVal>> read_om_parameter(IRunBase * const i_runBase, const char * i_name)
+    template<typename TVal> vector<TVal> read_om_parameter(IRunBase * const i_runBase, const char * i_name)
     {
         int paramId = i_runBase->parameterIdByName(i_name);
+        int allCount = i_runBase->parameterSubCount(paramId);       // number of parameter sub-values
         int selfCount = i_runBase->parameterSelfSubCount(paramId);  // number of sub-values for current process
-        int allCount = i_runBase->parameterSubCount(paramId);       // number of sub-values for current process
 
         // storage array: parameter values for current process
-        vector<unique_ptr<TVal>> valueVec(selfCount);
-        for (auto & p : valueVec) {
-            p.reset(new TVal);
-        }
-
-        unique_ptr<TVal> extraVal;  // parameter value for exchange between root and child process
-        if (allCount > 1) {
-            extraVal.reset(new TVal);
-        }
+        // extra parameter value for exchange between root and child process
+        vector<TVal> valueVec(selfCount);
+        TVal extraVal;
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
 
-            void * pData = valueVec[0].get();
-            if (allCount > 1) {
-                pData =
-                    i_runBase->isUseSubValue(nSub) ?
-                    valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)].get() :
-                    extraVal.get();
-            }
+            void * pData = &extraVal;
             i_runBase->readParameter(i_name, nSub, typeid(TVal), 1, pData);
+
+            if (allCount <= 1) {
+                valueVec[0] = extraVal;
+            }
+            else {
+                if (i_runBase->isUseSubValue(nSub)) valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)] = extraVal;
+            }
         }
         return valueVec;
     }
@@ -212,8 +207,8 @@ namespace openm
     template<typename TVal> vector<unique_ptr<TVal[]>> read_om_parameter(IRunBase * const i_runBase, const char * i_name, size_t i_size)
     {
         int paramId = i_runBase->parameterIdByName(i_name);
+        int allCount = i_runBase->parameterSubCount(paramId);       // number of parameter sub-values
         int selfCount = i_runBase->parameterSelfSubCount(paramId);  // number of sub-values for current process
-        int allCount = i_runBase->parameterSubCount(paramId);       // number of sub-values for current process
 
         if (i_size <= 0) throw ModelException("invalid size: %zd of parameter %s", i_size, i_name);
 
@@ -223,7 +218,7 @@ namespace openm
             p.reset(new TVal[i_size]);
         }
 
-        unique_ptr<TVal> extraVal;  // parameter value for exchange between root and child process
+        unique_ptr<TVal> extraVal;  // extra parameter value for exchange between root and child process
         if (allCount > 1) {
             extraVal.reset(new TVal[i_size]);
         }

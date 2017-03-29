@@ -29,12 +29,16 @@ const size_t N_SEX = 2;
 const size_t N_SALARY = 3;
 
 // model parameters
-extern thread_local reference_wrapper<const int> startSeed;
-extern thread_local reference_wrapper<const double[N_AGE][N_SEX]> ageSex;
-extern thread_local reference_wrapper<const int[N_SALARY][N_AGE]> salaryAge;
-extern thread_local reference_wrapper<const int[N_SALARY]> salaryFull;
-extern thread_local reference_wrapper<const int> baseSalary;
-extern thread_local reference_wrapper<const string> filePath;
+extern thread_local int startSeed;
+extern thread_local int baseSalary;
+extern thread_local string filePath;
+extern thread_local double * om_value_ageSex;
+extern thread_local int * om_value_salaryAge;
+extern thread_local int * om_value_salaryFull;
+
+#define ageSex      (*reinterpret_cast<double(*)[N_AGE][N_SEX]>(om_value_ageSex))
+#define salaryAge   (*reinterpret_cast<int(*)[N_SALARY][N_AGE]>(om_value_salaryAge))
+#define salaryFull  (*reinterpret_cast<int(*)[N_SALARY]>(om_value_salaryFull))
 
 // model output tables: salary by sex
 class SalarySex

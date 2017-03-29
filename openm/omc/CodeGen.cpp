@@ -412,31 +412,16 @@ void CodeGen::do_ModelStartup()
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
         if (parameter->size() > 1) {
-            c += parameter->name + " = " +
-                "*reinterpret_cast<" 
-                + parameter->cv_qualifier()
-                + parameter->pp_datatype->name
-                + "(*)" + parameter->cxx_dimensions() + ">("
-                + parameter->alternate_name()
-                + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
-                ");";
+            // ex: om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
+            c += 
+                "om_value_" + parameter->name + " = " 
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
         }
         else {
-            if (!parameter->pp_datatype->is_wrapped()) {
-                c += parameter->name + " = " +
-                    "*"
-                    + parameter->alternate_name()
-                    + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
-            }
-            else {
-                c += parameter->name + " = " +
-                    "*reinterpret_cast<"
-                    + parameter->cv_qualifier()
-                    + parameter->pp_datatype->name + " *>("
-                    + parameter->alternate_name()
-                    + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()"
-                    + ");";
-            }
+            // ex: startSeed = om_param_startSeed[i_model->parameterSubValueIndex("startSeed")];
+            c += 
+                parameter->name + " = "
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")];";
         }
         if (parameter->cumrate) {
             // prepare cumrate for scenario parameter

@@ -248,13 +248,25 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-
     if (source == scenario_parameter) {
-        h += "extern thread_local reference_wrapper<"
-            + cv_qualifier()
-            + pp_datatype->name
-            + cxx_dimensions() + "> "
-            + name + ";";
+        if (rank() > 0) {
+            // ex: extern thread_local double * om_value_ageSex;
+            // ex: #define ageSex (*reinterpret_cast<double(*)[N_AGE][N_SEX]>(om_value_ageSex))
+            h += "extern thread_local " + cv_qualifier() + cxx_type_of_parameter() + " * om_value_" + name + ";";
+            h += "#define " +
+                name +
+                " (*reinterpret_cast<" +
+                cv_qualifier() +
+                pp_datatype->name +
+                "(*)" +
+                cxx_dimensions() + ">" +
+                "(om_value_" + name + ")" +
+                ")";
+        }
+        else {
+            // ex: extern thread_local int kind;
+            h += "extern thread_local " + cv_qualifier() + pp_datatype->name + " " + name + ";";
+        }
     }
     else {
         assert(source == derived_parameter || source == fixed_parameter || source == missing_parameter);
@@ -281,34 +293,21 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 
     if (source == scenario_parameter) {
         if (rank() > 0) {
+            // ex: static vector<unique_ptr<double[]>> om_param_ageSex;
+            // ex: thread_local double * om_value_ageSex = nullptr;
             c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
-            c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
-            c += "thread_local reference_wrapper<"
+            c += "thread_local "
                 + cv_qualifier()
-                + pp_datatype->name
-                + cxx_dimensions() + "> "
-                + name +
-                " = *reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">(om_none_" + name + ");";
+                + cxx_type_of_parameter() + " * "
+                + "om_value_" + name + " = nullptr;";
         }
         else {
-            if (!pp_datatype->is_wrapped()) {
-                c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
-                c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
-                c += "thread_local reference_wrapper<"
-                    + cv_qualifier()
-                    + pp_datatype->name + "> "
-                    + name + " = "
-                    + "*om_none_" + name + ";";
-            }
-            else {
-                c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
-                c += "static " + cxx_type_of_parameter() + " * om_none_" + name + " = nullptr;";
-                c += "thread_local reference_wrapper<"
-                    + cv_qualifier()
-                    + pp_datatype->name + "> "
-                    + name + " = "
-                    + "*reinterpret_cast<" + pp_datatype->name + " *>(om_none_" + name + ");";
-            }
+            // ex: static vector<int> om_param_startSeed;
+            // ex: thread_local int startSeed = { 0 };
+            c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
+            c += "thread_local " 
+                + cv_qualifier() + pp_datatype->name + " " + name + 
+                " = { " + pp_datatype->default_initial_value() + " };";
         }
     }
     else {
@@ -553,7 +552,6 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     if (rank() > 0) {
         // ex: om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
         c += alternate_name() + " = std::move("
-            //"read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
             "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
         if (adjust) {
             c += c_adjust_comment;
@@ -572,7 +570,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         if (adjust) {
             c += c_adjust_comment;
             c += "for (auto & p_value : " + alternate_name() + ") {";
-            c += "auto &value = *p_value;";
+            c += "auto &value = p_value;";
             c += c_adjust_code;
             c += "}";
         }
