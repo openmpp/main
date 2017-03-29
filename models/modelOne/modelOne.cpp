@@ -14,14 +14,8 @@ enum jobKind : int
 
 // model parameters
 //
-// static int startSeed = 1;
-// static double ageSex[N_AGE][N_SEX];
-// static int salaryAge[N_SALARY][N_AGE];
-// static int salaryFull[N_SALARY];
-// static int baseSalary = jobKind::partTime;
-//
 static vector<int> om_param_startSeed;
-thread_local int startSeed = { 0 };
+thread_local int om_value_startSeed = { 0 };
 
 static vector<unique_ptr<double[]>> om_param_ageSex; 
 thread_local double * om_value_ageSex = nullptr;
@@ -33,10 +27,10 @@ static vector<unique_ptr<int[]>> om_param_salaryFull;
 thread_local int * om_value_salaryFull = nullptr;
 
 static vector<int> om_param_baseSalary;
-thread_local int baseSalary = { 0 };
+thread_local int om_value_baseSalary = { jobKind::partTime };
 
 static vector<string> om_param_filePath;
-thread_local string filePath = { "" };
+thread_local string om_value_filePath;
 
 // model output tables: salary by sex
 const char * SalarySex::NAME = "salarySex";
@@ -117,12 +111,12 @@ void ModelStartup(IModel * const i_model)
     // bind parameters reference thread local values
     // at this point parameter values undefined and cannot be used by the model
     //
-    startSeed = om_param_startSeed[i_model->parameterSubValueIndex("StartingSeed")];
+    om_value_startSeed = om_param_startSeed[i_model->parameterSubValueIndex("StartingSeed")];
     om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
     om_value_salaryAge = om_param_salaryAge[i_model->parameterSubValueIndex("salaryAge")].get();
     om_value_salaryFull = om_param_salaryFull[i_model->parameterSubValueIndex("salaryFull")].get();
-    baseSalary = om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")];
-    filePath = om_param_filePath[i_model->parameterSubValueIndex("filePath")];
+    om_value_baseSalary = om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")];
+    om_value_filePath = om_param_filePath[i_model->parameterSubValueIndex("filePath")];
     //
     // parameters ready now and can be used by the model
 
