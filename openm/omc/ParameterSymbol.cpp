@@ -250,22 +250,24 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
     if (source == scenario_parameter) {
         if (rank() > 0) {
-            // ex: extern thread_local double * om_value_ageSex;
-            // ex: #define ageSex (*reinterpret_cast<double(*)[N_AGE][N_SEX]>(om_value_ageSex))
-            h += "extern thread_local " + cv_qualifier() + cxx_type_of_parameter() + " * om_value_" + name + ";";
+            // extern thread_local double * om_value_ageSex;
+            // #define ageSex (*reinterpret_cast<const double(*)[N_AGE][N_SEX]>(om_value_ageSex))
+            h += "extern thread_local " + cxx_type_of_parameter() + " * om_value_" + name + ";";
             h += "#define " +
                 name +
-                " (*reinterpret_cast<" +
-                cv_qualifier() +
-                pp_datatype->name +
-                "(*)" +
-                cxx_dimensions() + ">" +
+                " (*reinterpret_cast<const " + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
                 "(om_value_" + name + ")" +
                 ")";
         }
         else {
-            // ex: extern thread_local int kind;
-            h += "extern thread_local " + cv_qualifier() + pp_datatype->name + " " + name + ";";
+            // extern thread_local int om_value_startSeed;
+            // #define startSeed (static_cast<const int>>(om_value_startSeed))
+            h += "extern thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
+            h += "#define " +
+                name +
+                " (static_cast<const " + pp_datatype->name + ">" +
+                "(om_value_" + name + ")" +
+                ")";
         }
     }
     else {
@@ -293,21 +295,18 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 
     if (source == scenario_parameter) {
         if (rank() > 0) {
-            // ex: static vector<unique_ptr<double[]>> om_param_ageSex;
-            // ex: thread_local double * om_value_ageSex = nullptr;
+            // static vector<unique_ptr<double[]>> om_param_ageSex;
+            // thread_local double * om_value_ageSex = nullptr;
             c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
-            c += "thread_local "
-                + cv_qualifier()
-                + cxx_type_of_parameter() + " * "
-                + "om_value_" + name + " = nullptr;";
+            c += "thread_local " + cxx_type_of_parameter() + " * " + "om_value_" + name + " = nullptr;";
         }
         else {
-            // ex: static vector<int> om_param_startSeed;
-            // ex: thread_local int startSeed = { 0 };
+            // static vector<int> om_param_startSeed;
+            // thread_local int om_value_startSeed = { 0 };
             c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
-            c += "thread_local " 
-                + cv_qualifier() + pp_datatype->name + " " + name + 
-                " = { " + pp_datatype->default_initial_value() + " };";
+            c += "thread_local " + cxx_type_of_parameter() + " om_value_" + name + " = ";
+            c += cxx_initializer();
+            c += ";";
         }
     }
     else {
@@ -550,7 +549,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     }
 
     if (rank() > 0) {
-        // ex: om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+        // om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
         c += alternate_name() + " = std::move("
             "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
         if (adjust) {
@@ -564,7 +563,7 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         }
     }
     else {
-        // ex: om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
+        // om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
         c += alternate_name() + " = std::move("
             "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\"));";
         if (adjust) {

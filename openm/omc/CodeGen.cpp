@@ -412,15 +412,15 @@ void CodeGen::do_ModelStartup()
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
         if (parameter->size() > 1) {
-            // ex: om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
+            // om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
             c += 
                 "om_value_" + parameter->name + " = " 
                 + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
         }
         else {
-            // ex: startSeed = om_param_startSeed[i_model->parameterSubValueIndex("startSeed")];
+            // om_value_startSeed = om_param_startSeed[i_model->parameterSubValueIndex("startSeed")];
             c += 
-                parameter->name + " = "
+                "om_value_" + parameter->name + " = "
                 + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")];";
         }
         if (parameter->cumrate) {
