@@ -248,16 +248,47 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+    assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
 
     if (source == scenario_parameter) {
-        h += "extern thread_local reference_wrapper<"
-            + cv_qualifier()
-            + pp_datatype->name
-            + cxx_dimensions() + "> "
-            + name + ";";
+        if (rank() > 0) {
+            // extern thread_local double * om_value_ageSex;
+            // #define ageSex (*reinterpret_cast<const double(*)[N_AGE][N_SEX]>(om_value_ageSex))
+            h += "extern thread_local " + cxx_type_of_parameter() + " * om_value_" + name + ";";
+            h += "#define " +
+                name +
+                " (*reinterpret_cast<const " + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
+                "(om_value_" + name + ")" +
+                ")";
+        }
+        else {
+            // extern thread_local int om_value_startSeed;
+            // #define startSeed (static_cast<const int>>(om_value_startSeed))
+            h += "extern thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
+            h += "#define " +
+                name +
+                " (static_cast<const " + pp_datatype->name + ">" +
+                "(om_value_" + name + ")" +
+                ")";
+        }
     }
-    else {
-        assert(source == derived_parameter || source == fixed_parameter || source == missing_parameter);
+    if (source == derived_parameter) {
+        if (rank() > 0) {
+            // extern thread_local CITY * om_value_NearestCity;
+            // #define NearestCity (*reinterpret_cast<CITY(*)[N_CITY]>(om_value_NearestCity))
+            h += "extern thread_local " + pp_datatype->name + " * om_value_" + name + ";";
+            h += "#define " +
+                name +
+                " (*reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
+                "(om_value_" + name + ")" +
+                ")";
+        }
+        else {
+            // extern thread_local CITY oneCity;
+            h += "extern thread_local " + pp_datatype->name + " " + name + ";";
+        }
+    }
+    if (source == fixed_parameter || source == missing_parameter) {
         h += "extern "
             + storage_duration()
             + cv_qualifier()
@@ -274,6 +305,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+    assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
 
     if (source == missing_parameter) {
         c += "// WARNING - No data for the following parameter:";
@@ -281,37 +313,36 @@ CodeBlock ParameterSymbol::cxx_definition_global()
 
     if (source == scenario_parameter) {
         if (rank() > 0) {
+            // static vector<unique_ptr<double[]>> om_param_ageSex;
+            // thread_local double * om_value_ageSex = nullptr;
             c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
-            c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
-            c += "thread_local reference_wrapper<"
-                + cv_qualifier()
-                + pp_datatype->name
-                + cxx_dimensions() + "> "
-                + name +
-                " = *reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">(om_none_" + name + ");";
+            c += "thread_local " + cxx_type_of_parameter() + " * " + "om_value_" + name + " = nullptr;";
         }
         else {
-            if (!pp_datatype->is_wrapped()) {
-                c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
-                c += "static " + pp_datatype->name + " * om_none_" + name + " = nullptr;";
-                c += "thread_local reference_wrapper<"
-                    + cv_qualifier()
-                    + pp_datatype->name + "> "
-                    + name + " = "
-                    + "*om_none_" + name + ";";
-            }
-            else {
-                c += "static vector<unique_ptr<" + cxx_type_of_parameter() + ">> " + alternate_name() + ";";
-                c += "static " + cxx_type_of_parameter() + " * om_none_" + name + " = nullptr;";
-                c += "thread_local reference_wrapper<"
-                    + cv_qualifier()
-                    + pp_datatype->name + "> "
-                    + name + " = "
-                    + "*reinterpret_cast<" + pp_datatype->name + " *>(om_none_" + name + ");";
-            }
+            // static vector<int> om_param_startSeed;
+            // thread_local int om_value_startSeed = { 0 };
+            c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
+            c += "thread_local " + cxx_type_of_parameter() + " om_value_" + name + " = ";
+            c += cxx_initializer();
+            c += ";";
         }
     }
-    else {
+    if (source == derived_parameter) {
+        if (rank() > 0) {
+            // static thread_local CITY om_param_NearestCity[N_CITY] = { PARIS };
+            // thread_local CITY * om_value_NearestCity = nullptr;
+            c += 
+                "static thread_local " + pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = " 
+                "{ " + pp_datatype->default_initial_value() + " };";
+            c += "thread_local " + pp_datatype->name + " * " + "om_value_" + name + " = nullptr;";
+        }
+        else {
+            // thread_local CITY oneCity = { PARIS };
+            c += "thread_local " + pp_datatype->name + " " + name + " = ";
+            c += "{ " + pp_datatype->default_initial_value() + " };";
+        }
+    }
+    if (source == fixed_parameter || source == missing_parameter) {
         c += storage_duration()
             + cv_qualifier()
             + pp_datatype->name + " "
@@ -324,7 +355,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
             c += ";";
         }
         else {
-            assert(source == derived_parameter || source == missing_parameter);
+            assert(source == missing_parameter);
             // Initialize using the default value for a type of this kind.
             c += "{ " + pp_datatype->default_initial_value() + " };";
         }
@@ -551,9 +582,8 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     }
 
     if (rank() > 0) {
-        // ex: om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+        // om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
         c += alternate_name() + " = std::move("
-            //"read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
             "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\", " + to_string(size()) + "));";
         if (adjust) {
             c += c_adjust_comment;
@@ -566,13 +596,13 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         }
     }
     else {
-        // ex: om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
+        // om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "startSeed"));
         c += alternate_name() + " = std::move("
             "read_om_parameter<" + cxx_type_of_parameter() + ">(i_runBase, \"" + name + "\"));";
         if (adjust) {
             c += c_adjust_comment;
             c += "for (auto & p_value : " + alternate_name() + ") {";
-            c += "auto &value = *p_value;";
+            c += "auto &value = p_value;";
             c += c_adjust_code;
             c += "}";
         }

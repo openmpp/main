@@ -14,35 +14,23 @@ enum jobKind : int
 
 // model parameters
 //
-// static int startSeed = 1;
-// static double ageSex[N_AGE][N_SEX];
-// static int salaryAge[N_SALARY][N_AGE];
-// static int salaryFull[N_SALARY];
-// static int baseSalary = jobKind::partTime;
-//
-static vector<unique_ptr<int>> om_param_startSeed;
-static int * om_none_startSeed = nullptr;
-thread_local reference_wrapper<const int> startSeed = *om_none_startSeed;
+static vector<int> om_param_startSeed;
+thread_local int om_value_startSeed = { 0 };
 
 static vector<unique_ptr<double[]>> om_param_ageSex; 
-static double * om_none_ageSex = nullptr; 
-thread_local reference_wrapper<const double[N_AGE][N_SEX]> ageSex = *reinterpret_cast<double(*)[N_AGE][N_SEX]>(om_none_ageSex);
+thread_local double * om_value_ageSex = nullptr;
 
 static vector<unique_ptr<int[]>> om_param_salaryAge; 
-static int * om_none_salaryAge = nullptr; 
-thread_local reference_wrapper<const int[N_SALARY][N_AGE]> salaryAge = *reinterpret_cast<int(*)[N_SALARY][N_AGE]>(om_none_salaryAge);
+thread_local int * om_value_salaryAge = nullptr;
 
 static vector<unique_ptr<int[]>> om_param_salaryFull; 
-static int * om_none_salaryFull = nullptr; 
-thread_local reference_wrapper<const int[N_SALARY]> salaryFull = *reinterpret_cast<int(*)[N_SALARY]>(om_none_salaryFull);
+thread_local int * om_value_salaryFull = nullptr;
 
-static vector<unique_ptr<int>> om_param_baseSalary;
-static int * om_none_baseSalary = nullptr;
-thread_local reference_wrapper<const int> baseSalary = *om_none_baseSalary;
+static vector<int> om_param_baseSalary;
+thread_local int om_value_baseSalary = { jobKind::partTime };
 
-static vector<unique_ptr<string>> om_param_filePath;
-static string * om_none_filePath = nullptr;
-thread_local reference_wrapper<const string> filePath = *om_none_filePath;
+static vector<string> om_param_filePath;
+thread_local string om_value_filePath;
 
 // model output tables: salary by sex
 const char * SalarySex::NAME = "salarySex";
@@ -123,12 +111,12 @@ void ModelStartup(IModel * const i_model)
     // bind parameters reference thread local values
     // at this point parameter values undefined and cannot be used by the model
     //
-    startSeed = *om_param_startSeed[i_model->parameterSubValueIndex("StartingSeed")].get();
-    ageSex = *reinterpret_cast<double(*)[N_AGE][N_SEX]>(om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get());
-    salaryAge = *reinterpret_cast<int(*)[N_SALARY][N_AGE]>(om_param_salaryAge[i_model->parameterSubValueIndex("salaryAge")].get());
-    salaryFull = *reinterpret_cast<int(*)[N_SALARY]>(om_param_salaryFull[i_model->parameterSubValueIndex("salaryFull")].get());
-    baseSalary = *om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")].get();
-    filePath = *om_param_filePath[i_model->parameterSubValueIndex("filePath")].get();
+    om_value_startSeed = om_param_startSeed[i_model->parameterSubValueIndex("StartingSeed")];
+    om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
+    om_value_salaryAge = om_param_salaryAge[i_model->parameterSubValueIndex("salaryAge")].get();
+    om_value_salaryFull = om_param_salaryFull[i_model->parameterSubValueIndex("salaryFull")].get();
+    om_value_baseSalary = om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")];
+    om_value_filePath = om_param_filePath[i_model->parameterSubValueIndex("filePath")];
     //
     // parameters ready now and can be used by the model
 

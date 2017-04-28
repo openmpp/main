@@ -412,31 +412,16 @@ void CodeGen::do_ModelStartup()
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
         if (parameter->size() > 1) {
-            c += parameter->name + " = " +
-                "*reinterpret_cast<" 
-                + parameter->cv_qualifier()
-                + parameter->pp_datatype->name
-                + "(*)" + parameter->cxx_dimensions() + ">("
-                + parameter->alternate_name()
-                + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()" +
-                ");";
+            // om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
+            c += 
+                "om_value_" + parameter->name + " = " 
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
         }
         else {
-            if (!parameter->pp_datatype->is_wrapped()) {
-                c += parameter->name + " = " +
-                    "*"
-                    + parameter->alternate_name()
-                    + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
-            }
-            else {
-                c += parameter->name + " = " +
-                    "*reinterpret_cast<"
-                    + parameter->cv_qualifier()
-                    + parameter->pp_datatype->name + " *>("
-                    + parameter->alternate_name()
-                    + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get()"
-                    + ");";
-            }
+            // om_value_startSeed = om_param_startSeed[i_model->parameterSubValueIndex("startSeed")];
+            c += 
+                "om_value_" + parameter->name + " = "
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")];";
         }
         if (parameter->cumrate) {
             // prepare cumrate for scenario parameter
@@ -445,16 +430,27 @@ void CodeGen::do_ModelStartup()
     }
 
     c += "";
-    c += "// Zero fill derived parameters";
+    c += "// Bind derived parameter references to thread local values (if derived parameter is an array).";
+    //c += "// Zero fill derived parameters";
     c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
+
         // Process only derived parameters in this for loop
         if (parameter->source != ParameterSymbol::derived_parameter) continue;
-        c += "std::memset(&" 
-            + parameter->name + ", "
-            + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + "), "
-            + "'\\0'"
-            + ");";
+
+        if (parameter->size() > 1) {
+            // om_value_NearestCity = reinterpret_cast<CITY *>(om_param_NearestCity);
+            c += "om_value_" + parameter->name + " = "
+                + "reinterpret_cast<" + parameter->pp_datatype->name + " *>" +
+                +"(" + parameter->alternate_name() + ");";
+        }
+
+        // expected to be initialized at declaration or zero-initialized by compiler
+        //c += "std::memset(&" 
+        //    + parameter->name + ", "
+        //    + "'\\0', "
+        //    + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + ")"
+        //    + ");";
     }
 
     c += "";
