@@ -824,7 +824,7 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
         rowIt->note = trim(rowIt->note, loc);
 
         if (rowIt->setId != setId)
-            throw DbException("in workset_txt invalid set id: %d, expected: %d in row with language id: %d and name: %s", rowIt-setId, setId, rowIt->langId, rowIt->langCode.c_str());
+            throw DbException("in workset_txt invalid set id: %d, expected: %d in row with language id: %d and name: %s", rowIt->setId, setId, rowIt->langId, rowIt->langCode.c_str());
 
         vector<WorksetTxtLangRow>::const_iterator nextIt = rowIt + 1;
 
