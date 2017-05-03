@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- If running in VS 2015, set platform toolset for VC 2015 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(BuildingInsideVisualStudio)'=='true' And '$(VisualStudioVersion)'=='14.0'">v140</PLATFORM_TOOLSET>
+    <!-- Otherwise, hard code to VS 2017 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v141</PLATFORM_TOOLSET>
+    <!-- by default VC 2017 installed without Windows 8.1 SDK -->
+    <WindowsTargetPlatformVersion Condition="'$(PLATFORM_TOOLSET)'=='v141'">10.0.14393.0</WindowsTargetPlatformVersion>
+    <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
+  </PropertyGroup>
+  
+</Project>
