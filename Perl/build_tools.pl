@@ -3,7 +3,7 @@
 
 # Script to build utilities, etc.
 
-my $R_exe = 'C:\Program Files\R\R-3.2.3\bin\R.exe';
+my $R_exe = 'C:\Program Files\R\R-3.4.0\bin\R.exe';
 
 # Verbosity of report:
 #  0 - errors only

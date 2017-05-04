@@ -8,8 +8,6 @@
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
     <!-- VC 2017 platform toolset -->
     <PlatformToolset>v141</PlatformToolset>
-    <!-- by default VC 2017 installed without Windows 8.1 SDK -->
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
