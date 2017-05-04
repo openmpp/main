@@ -153,9 +153,17 @@ $models_root = getcwd; # to ensure is absolute path
 
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
-my $msbuild_exe = "C:\\Program Files (x86)\\MSBuild\\14.0\\Bin\\MSBuild.exe";
-my $create_db_sqlite_sql = "${om_root}/sql/create_db.sql";
 
+my $msbuild_exe = "";
+if (defined $ENV{VSINSTALLDIR}) {
+    $msbuild_exe = "$ENV{VSINSTALLDIR}MSBuild\\15.0\\bin\\MSBuild.exe";
+}
+else {
+	# VSINSTALLDIR is empty, default: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\
+    $msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\bin\\MSBuild.exe";
+}
+
+my $create_db_sqlite_sql = "${om_root}/sql/create_db.sql";
 
 # determine if running on windows or linux
 my $is_windows = 1;
