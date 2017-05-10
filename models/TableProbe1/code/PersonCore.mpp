@@ -69,7 +69,7 @@ parameters
 actor Person
 {
     //EN Scripts (with long description)
-    SCRIPT script;
+    SCRIPT script = OneScript ? WhichScript : SCRIPT(actor_id - 1);
 
 	logical alive;
     logical fltr;
@@ -124,13 +124,6 @@ void Person::Start()
 
 	age = 0;
 	time = 0;
-
-    if (OneScript) {
-        script = WhichScript;
-    }
-    else {
-        script = SCRIPT(actor_id - 1);
-    }
 
     AssignAttributes();
 

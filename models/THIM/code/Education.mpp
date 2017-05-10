@@ -95,8 +95,8 @@ void Person::Start_Newborn_Education()
 
 	double nEducation =  mEducation + dF + perturb;	// mEducation is a parm for mean education
 
-	nEducation = ( nEducation < MinimumYearsOfEducation) ? (double)MinimumYearsOfEducation : nEducation;
-	nEducation = ( nEducation > MaximumYearsOfEducation) ? (double)MaximumYearsOfEducation : nEducation;
+	nEducation = ( nEducation < MinimumYearsOfEducation) ? MinimumYearsOfEducation : nEducation;
+	nEducation = ( nEducation > MaximumYearsOfEducation) ? MaximumYearsOfEducation : nEducation;
 	education = nEducation;
 
 }
