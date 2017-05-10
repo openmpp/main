@@ -44,6 +44,9 @@ parameters {
 
     //EN Nearest city to each city
     model_generated CITY NearestCity[CITY];
+
+    //EN Distribution of starting city
+    cumrate StartCityDistribution[CITY];
 };
 
 void PreSimulation()
@@ -85,8 +88,20 @@ actor Person
     //EN Moves
     int moves;
 
+    //EN Start city
+    void StartCity();
+    hook StartCity, Start;
+
 	event timeMoveEvent, MoveEvent;
 };
+
+void Person::StartCity()
+{
+    double draw = RandUniform(12);
+    int nCity = 0;
+    Lookup_StartCityDistribution(draw, &nCity);
+    city = (CITY) nCity;
+}
 
 TIME Person::timeMoveEvent(int * p_destination)
 {

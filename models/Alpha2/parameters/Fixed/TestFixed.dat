@@ -1,0 +1,19 @@
+parameters
+{
+    //EN a double
+    double fixed_double = 3.14;
+
+    //EN a double array
+    double fixed_double_array[SEX] =
+    {
+        3.1415, 2.71828
+    };
+
+    //EN dog type distribution
+    cumrate[1] DogTypeDistribution[SEX][DOG_TYPE] = {
+        // FEMALE
+        60, 10, 25, 5,
+        // MALE
+        50,  0, 25, 25
+    };
+};

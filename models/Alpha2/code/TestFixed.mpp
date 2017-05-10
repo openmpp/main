@@ -1,0 +1,65 @@
+// Copyright (c) 2013-2017 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(TestFixed, EN) Tests of Fixed parameters
+
+classification DOG_TYPE //EN Type of dog
+{
+    //EN No dog
+    DT_NONE, 
+
+    //EN Pocket dog
+    DT_POCKET,
+
+    //EN Small dog
+    DT_SMALL,
+
+    //EN Large dog
+    DT_LARGE
+};
+
+
+parameters
+{
+    //EN a double
+    double fixed_double;
+
+    //EN a double array
+    double fixed_double_array[SEX];
+
+    //EN dog type distribution
+    cumrate[1] DogTypeDistribution[SEX][DOG_TYPE];
+};
+
+parameter_group PG_fixed {
+    fixed_double,
+    fixed_double_array,
+    DogTypeDistribution
+};
+
+actor Person            //EN Individual
+{
+    //EN Owns dog
+    DOG_TYPE dog_type;
+
+    //EN Set dog ownership
+    void StartDogOwnership();
+
+    hook StartDogOwnership, Start;
+};
+
+void Person::StartDogOwnership()
+{
+    double draw = RandUniform(10);
+    int nDogType = 0;
+    Lookup_DogTypeDistribution(draw, sex, &nDogType);
+    dog_type = (DOG_TYPE) nDogType;
+}
+
+void PreSimulation()
+{
+    double d1 = fixed_double_array[MALE];
+    double d2 = fixed_double_array[FEMALE];
+    double d3 = d1 + d2;
+}
+

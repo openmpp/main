@@ -44,6 +44,9 @@ actor Person            //EN Individual
 		can also be used to count actors in tables.
 	*/
 
+    //EN Sex
+    SEX sex;
+
     event timeMortalityEvent, MortalityEvent;	//EN Mortality event
 
 	//LABEL(Person.Start, EN) Starts the actor
@@ -89,6 +92,10 @@ void Person::Start()
 
     // Initialize all attributes (OpenM++).
     initialize_attributes();
+
+    sex = (RandUniform(11) < 0.50) ? MALE : FEMALE;
+
+    hook_Start(); // for OpenM++
 
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
