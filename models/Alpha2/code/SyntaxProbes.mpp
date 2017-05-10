@@ -362,3 +362,53 @@ parameters {
     haz1rate z_haz1rate_scalar; //EN haz1rate scalar atest
     haz1rate z_haz1rate_array[SEX];
 };
+
+
+// Tests of derived (aka model_generated) parameters
+parameters {
+    model_generated YEAR mg_year1;
+    model_generated YEAR mg_year2;
+    model_generated YEAR mg_year_array[SEX];
+    model_generated int mg_int;
+    model_generated double mg_double;
+    model_generated int mg_int_array[SEX];
+    model_generated double mg_double_array[SEX];
+};
+
+void PreSimulation()
+{
+    assert(mg_year1 == MIN(YEAR)); // default value of range is lower bound
+
+    mg_year2 = mg_year1;
+    mg_year2++;
+    assert(mg_year2 == 1 + MIN(YEAR)); // derived parameter value persists
+
+    assert(mg_int == 0); // default value of int is zero
+    mg_int = 42;
+    assert(mg_int == 42); // derived parameter value persists
+
+    assert(mg_double == 0.0); // default value of double is zero
+    mg_double = 42.0;
+    assert(mg_double == 42.0); // derived parameter value persists
+
+    assert(mg_year_array[MALE] == MIN(YEAR));  // default value of range is lower bound
+    assert(mg_year_array[FEMALE] == MIN(YEAR));  // default value of range is lower bound
+
+    mg_year_array[MALE]++;
+    assert(mg_year_array[MALE] == 1 + MIN(YEAR));  // derived parameter value persists
+
+    assert(mg_int_array[FEMALE] == 0); // default value of int is zero
+    assert(mg_int_array[MALE] == 0); // default value of int is zero
+    mg_int_array[FEMALE] = 7;
+    mg_int_array[MALE] = 9;
+    assert(mg_int_array[FEMALE] == 7); // derived parameter value persists
+    assert(mg_int_array[MALE] == 9); // derived parameter value persists
+
+    assert(mg_double_array[FEMALE] == 0); // default value of double is zero
+    assert(mg_double_array[MALE] == 0); // default value of double is zero
+    mg_double_array[FEMALE] = 7;
+    mg_double_array[MALE] = 9;
+    assert(mg_double_array[FEMALE] == 7); // derived parameter value persists
+    assert(mg_double_array[MALE] == 9); // derived parameter value persists
+
+}
