@@ -344,7 +344,7 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     if (source == fixed_parameter) {
         // An initializer was provided in the model source code.
         assert(!initializer_list.empty());
-        c += "const "
+        c += "extern const "
             + pp_datatype->name + " "
             + name
             + cxx_dimensions() + " = ";
@@ -353,22 +353,11 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     }
     if (source == missing_parameter) {
         // Initialize using the default value for a type of this kind.
-        c += "const "
+        c += "extern const "
             + pp_datatype->name + " "
             + name
             + cxx_dimensions()
             + " = { " + pp_datatype->default_initial_value() + " };";
-    }
-
-    if (cumrate) {
-        // The supporting cumrate object used by the generated Lookup_ function
-        string storage_duration = (source == fixed_parameter || source == missing_parameter) ? "thread_local " : "";
-        c += "static "
-            + storage_duration
-            + "cumrate<" 
-            + to_string(conditioning_size()) + ","
-            + to_string(distribution_size()) + "> "
-            + cumrate_name() + ";";
     }
     return c;
 }
@@ -661,6 +650,25 @@ const string ParameterSymbol::cxx_type_of_parameter(void) const
     return typ;
 }
 
+string ParameterSymbol::cxx_definition_cumrate()
+{
+    string result = "";
+    if (cumrate) {
+        // The supporting cumrate object used by the generated Lookup_ function
+        // storage duration is thread_local, except if parameter is fixed (or missing)
+        string storage_duration = (source == fixed_parameter || source == missing_parameter) ? "" : "thread_local ";
+        // TODO - test/implement global storage for cumrate supporting object for fixed parameters
+        storage_duration = "thread_local ";
+        result = "static "
+            + storage_duration
+            + "cumrate<" 
+            + to_string(conditioning_size()) + ","
+            + to_string(distribution_size()) + "> "
+            + cumrate_name() + ";";
+    }
+    return result;
+}
+
 string ParameterSymbol::cxx_initialize_cumrate()
 {
     string result = "";
@@ -670,7 +678,8 @@ string ParameterSymbol::cxx_initialize_cumrate()
         for (size_t j = 0; j < rank() - 1; ++j) {
             inds += "[0]";
         }
-        result = cumrate_name() + ".initialize(" + name + inds + ");";
+        //result = cumrate_name() + ".initialize(" + name + inds + ");";
+        result = cumrate_name() + ".initialize((const double *)" + name + ");";
     }
     return result;
 }

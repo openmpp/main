@@ -130,6 +130,13 @@ public:
     const string cxx_parameter_name_type_size(void) const;
 
     /**
+     * C++ code to define supporting object for cumrate parameter.
+     *
+     * @return A string.
+     */
+    string cxx_definition_cumrate();
+
+    /**
      * C++ code to initialize cumrate for parameter.
      *
      * @return A string.

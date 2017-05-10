@@ -340,6 +340,7 @@ void CodeGen::do_parameters()
             c += parameter->cxx_definition_global();
         }
         if (parameter->cumrate) {
+            c += parameter->cxx_definition_cumrate();
             c += parameter->lookup_fn->cxx_definition_global();
         }
     }
