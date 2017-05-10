@@ -288,10 +288,14 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
             h += "extern thread_local " + pp_datatype->name + " " + name + ";";
         }
     }
-    if (source == fixed_parameter || source == missing_parameter) {
-        h += "extern "
-            + storage_duration()
-            + cv_qualifier()
+    if (source == fixed_parameter) {
+        h += "extern const "
+            + pp_datatype->name + " "
+            + name
+            + cxx_dimensions() + ";";
+    }
+    if (source == missing_parameter) {
+        h += "extern const "
             + pp_datatype->name + " "
             + name
             + cxx_dimensions() + ";";
@@ -320,51 +324,48 @@ CodeBlock ParameterSymbol::cxx_definition_global()
         }
         else {
             // static vector<int> om_param_startSeed;
-            // thread_local int om_value_startSeed = { 0 };
+            // thread_local int om_value_startSeed;
             c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
-            c += "thread_local " + cxx_type_of_parameter() + " om_value_" + name + " = ";
-            c += cxx_initializer();
-            c += ";";
+            c += "thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
         }
     }
     if (source == derived_parameter) {
         if (rank() > 0) {
-            // static thread_local CITY om_param_NearestCity[N_CITY] = { PARIS };
+            // static thread_local CITY om_param_NearestCity[N_CITY];
             // thread_local CITY * om_value_NearestCity = nullptr;
-            c += 
-                "static thread_local " + pp_datatype->name + " " + alternate_name() + cxx_dimensions() + " = " 
-                "{ " + pp_datatype->default_initial_value() + " };";
+            c += "static thread_local " + pp_datatype->name + " " + alternate_name() + cxx_dimensions() + ";";
             c += "thread_local " + pp_datatype->name + " * " + "om_value_" + name + " = nullptr;";
         }
         else {
-            // thread_local CITY oneCity = { PARIS };
-            c += "thread_local " + pp_datatype->name + " " + name + " = ";
-            c += "{ " + pp_datatype->default_initial_value() + " };";
+            // thread_local CITY oneCity;
+            c += "thread_local " + pp_datatype->name + " " + name + ";";
         }
     }
-    if (source == fixed_parameter || source == missing_parameter) {
-        c += storage_duration()
-            + cv_qualifier()
+    if (source == fixed_parameter) {
+        // An initializer was provided in the model source code.
+        assert(!initializer_list.empty());
+        c += "const "
             + pp_datatype->name + " "
             + name
             + cxx_dimensions() + " = ";
-        if (source == fixed_parameter) {
-            // An initializer was provided in the model source code.
-            assert(!initializer_list.empty());
-            c += cxx_initializer();
-            c += ";";
-        }
-        else {
-            assert(source == missing_parameter);
-            // Initialize using the default value for a type of this kind.
-            c += "{ " + pp_datatype->default_initial_value() + " };";
-        }
+        c += cxx_initializer();
+        c += ";";
+    }
+    if (source == missing_parameter) {
+        // Initialize using the default value for a type of this kind.
+        c += "const "
+            + pp_datatype->name + " "
+            + name
+            + cxx_dimensions()
+            + " = { " + pp_datatype->default_initial_value() + " };";
     }
 
     if (cumrate) {
         // The supporting cumrate object used by the generated Lookup_ function
-        c += storage_duration()
-            + "static cumrate<" 
+        string storage_duration = (source == fixed_parameter || source == missing_parameter) ? "thread_local " : "";
+        c += "static "
+            + storage_duration
+            + "cumrate<" 
             + to_string(conditioning_size()) + ","
             + to_string(distribution_size()) + "> "
             + cumrate_name() + ";";
@@ -607,19 +608,6 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
             c += "}";
         }
     }
-
-    return c;
-}
-
-CodeBlock ParameterSymbol::cxx_set_to_default()
-{
-    CodeBlock c;
-
-    c += "std::memset(&" 
-        + name + ", "
-        + to_string(size()) + " * sizeof(" + pp_datatype->name + "), "
-        + "'\\0'"
-        + ");";
 
     return c;
 }

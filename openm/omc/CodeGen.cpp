@@ -431,7 +431,6 @@ void CodeGen::do_ModelStartup()
 
     c += "";
     c += "// Bind derived parameter references to thread local values (if derived parameter is an array).";
-    //c += "// Zero fill derived parameters";
     c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
 
@@ -444,13 +443,6 @@ void CodeGen::do_ModelStartup()
                 + "reinterpret_cast<" + parameter->pp_datatype->name + " *>" +
                 +"(" + parameter->alternate_name() + ");";
         }
-
-        // expected to be initialized at declaration or zero-initialized by compiler
-        //c += "std::memset(&" 
-        //    + parameter->name + ", "
-        //    + "'\\0', "
-        //    + to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + ")"
-        //    + ");";
     }
 
     c += "";

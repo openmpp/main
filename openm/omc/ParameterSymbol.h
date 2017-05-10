@@ -120,13 +120,6 @@ public:
     CodeBlock cxx_read_parameter();
 
     /**
-    * C++ code to set a parameter to its default value.
-    *
-    * @return A block of code.
-    */
-    CodeBlock cxx_set_to_default();
-
-    /**
     * return C++ type name of parameter value(s) to read from data store.
     */
     const string cxx_type_of_parameter(void) const;
@@ -178,37 +171,6 @@ public:
     string cumrate_name() const
     {
         return "om_cumrate_" + name;
-    }
-
-    /**
-     * The cv qualifier of the parameter
-     */
-    string cv_qualifier() const
-    {
-        switch (source) {
-        case fixed_parameter:
-        case missing_parameter:
-            return "const ";
-        case scenario_parameter:
-        case derived_parameter:
-            return "";
-        default:
-            assert(false); // not reached
-            return "";
-        }
-    }
-
-    /**
-     * The storage class of the parameter
-     */
-    string storage_duration() const
-    {
-        if (source == scenario_parameter || source == derived_parameter) {
-            return "thread_local ";
-        }
-        else {
-            return "";
-        }
     }
 
     /**
