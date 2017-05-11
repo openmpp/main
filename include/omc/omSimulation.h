@@ -76,12 +76,14 @@ namespace openm {
     struct ModelEntryHolder
     {
         ModelEntryHolder(
+        OM_RUN_ONCE_HANDLER i_RunOnceHandler,
         OM_RUN_INIT_HANDLER i_RunInitHandler,
         OM_STARTUP_HANDLER i_ModelStartupHandler,
         OM_EVENT_LOOP_HANDLER i_RunModelHandler,
         OM_SHUTDOWN_HANDLER i_ModelShutdownHandler
         )
         {
+            ::RunOnceHandler = i_RunOnceHandler;              // link run once function
             ::RunInitHandler = i_RunInitHandler;              // link run init function
             ::ModelStartupHandler = i_ModelStartupHandler;    // link model startup function
             ::RunModelHandler = i_RunModelHandler;            // link user portion of model event loop
