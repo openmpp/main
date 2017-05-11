@@ -89,6 +89,12 @@ void RunModel(IModel * const i_model)
     theTrace->logMsg("Event loop completed");
 }
 
+// Model one-time initialization
+void RunOnce(IRunBase * const i_runBase)
+{
+    theLog->logMsg("One-time initialization");
+}
+
 // Initialize model run: read parameters
 void RunInit(IRunBase * const i_runBase)
 {

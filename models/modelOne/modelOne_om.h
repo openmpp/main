@@ -11,6 +11,9 @@ using namespace std;
 
 #include "libopenm/omModel.h"
 
+// One-time initialization, if requred by the model
+void RunOnce(openm::IRunBase * const i_runBase);
+
 // Model run initialization: read input parameters
 void RunInit(openm::IRunBase * const i_runBase);
 

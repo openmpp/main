@@ -255,6 +255,10 @@ extern const char * OM_MODEL_DIGEST;
 /** main entry point */
 int main(int argc, char ** argv);
 
+/** model one-time initialization */
+typedef void(*OM_RUN_ONCE_HANDLER)(openm::IRunBase * const i_runBase);
+extern OM_RUN_ONCE_HANDLER RunOnceHandler;
+
 /** model run initialization: read input parameters */
 typedef void(*OM_RUN_INIT_HANDLER)(openm::IRunBase * const i_runBase);
 extern OM_RUN_INIT_HANDLER RunInitHandler;

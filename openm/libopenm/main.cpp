@@ -47,6 +47,9 @@ using namespace openm;
     static const bool isMpiUsed = false;
 #endif
 
+/** model one-time initialization */
+OM_RUN_ONCE_HANDLER RunOnceHandler;
+
 /** model run initialization: read input parameters */
 OM_RUN_INIT_HANDLER RunInitHandler;
 
@@ -128,6 +131,9 @@ int main(int argc, char ** argv)
         if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
             theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);
         }
+
+        // model one-time initialization
+        if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
 
         // run the model until modeling task completed
         while(!theModelRunState.isShutdownOrExit()) {
