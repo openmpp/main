@@ -184,6 +184,11 @@ parameters {
 
 };
 
+void PreSimulation()
+{
+    assert(i_year == -2); // Parameter i_year is not -2 (value in SyntaxProbes.dat)
+}
+
 range RNG_0_19 { 0, 19 };
 range RNG_0_20 { 0, 20 };
 range RNG_0_30 { 0, 30 };
