@@ -363,9 +363,10 @@ void CodeGen::do_RunInit()
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only fixed and missing parameters in this for loop
+        // These parameters are shared by all simulation threads.
         if (parameter->source != ParameterSymbol::fixed_parameter && parameter->source != ParameterSymbol::missing_parameter) continue;
 
-        // Create contents of helpful .dat format file sepcifying missing parameters.
+        // Create contents of helpful .dat format file specifying missing parameters.
         if (parameter->source == ParameterSymbol::missing_parameter) {
             if (!any_missing_parameters) {
                 m += "parameters {";

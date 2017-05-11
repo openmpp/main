@@ -344,6 +344,8 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     if (source == fixed_parameter) {
         // An initializer was provided in the model source code.
         assert(!initializer_list.empty());
+        // Note that extern is required in the definition (not just the declaration)
+        // since in C++ default linkage of 'const' is local, not global.
         c += "extern const "
             + pp_datatype->name + " "
             + name
@@ -654,11 +656,11 @@ string ParameterSymbol::cxx_definition_cumrate()
 {
     string result = "";
     if (cumrate) {
-        // The supporting cumrate object used by the generated Lookup_ function
-        // storage duration is thread_local, except if parameter is fixed (or missing)
+        // Definition of the supporting cumrate object used by the generated Lookup_ function.
+        // Storage duration is thread_local, except if parameter is fixed (or missing).
+        // The cumrate object is only used in generated lookup function defined later in teh same module,
+        // so is declared static, and requires no header file declaration.
         string storage_duration = (source == fixed_parameter || source == missing_parameter) ? "" : "thread_local ";
-        // TODO - test/implement global storage for cumrate supporting object for fixed parameters
-        storage_duration = "thread_local ";
         result = "static "
             + storage_duration
             + "cumrate<" 
