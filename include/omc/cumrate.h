@@ -29,6 +29,7 @@ class cumrate_distribution
 public:
     cumrate_distribution()
         : is_degenerate(false)
+        , is_initialized(false)
     {}
 
     /**
@@ -39,10 +40,8 @@ public:
     void initialize(const double *freq)
     {
         assert(freq); // logic guarantee
-
-        // temporary permutation vector
-        // create on the heap to avoid possible stack overflow (e.g POHEM)
-        //auto p_index = new array<size_t, N>;
+        assert(!is_initialized); // should be initialized only once
+        is_initialized = true;
 
         // initialize the permutation vector
         iota(value.begin(), value.end(), 0);
@@ -89,6 +88,7 @@ public:
      */
     int draw(double uniform)
     {
+        assert(is_initialized); // must be initialized before use
         if (cumprob.front() >= uniform) {
             // check first element directly, for efficiency.
             // Often there is a single dominating probability which occurs frequently
@@ -120,6 +120,12 @@ public:
      * The cumulated probabilities (partial sums)
      */
     array<double,N> cumprob;
+
+    /**
+     * true if distribution has been initialized
+     */
+    bool is_initialized;
+
 };
 
 /**
@@ -133,6 +139,7 @@ class cumrate
 {
 public:
     cumrate()
+        : is_initialized(false)
     {}
 
     /**
@@ -142,6 +149,8 @@ public:
      */
     void initialize(const double *freq)
     {
+        assert(!is_initialized); // should be initialized only once
+        is_initialized = true;
         for (int j = 0; j < M; ++j) {
             distns[j].initialize(freq);
             freq += N;
@@ -158,6 +167,7 @@ public:
      */
     int draw(int dist, double uniform)
     {
+        assert(is_initialized); // must be initialized before use
         return distns[dist].draw(uniform);
     }
 
@@ -170,6 +180,7 @@ public:
      */
     bool is_degenerate(int dist)
     {
+        assert(is_initialized); // must be initialized before use
         return distns[dist].is_degenerate;
     }
 
@@ -179,4 +190,9 @@ private:
      * The M distributions, each with N values.
      */
     cumrate_distribution<N> distns[M];
+
+    /**
+     * true if cumrate has been initialized
+     */
+    bool is_initialized;
 };
