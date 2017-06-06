@@ -18,6 +18,7 @@ my ($opt, $usage) = describe_options(
 	[ 'help|h'    => 'print usage message and exit' ],
 	[ 'version|v' => 'print version and exit' ],
 	[ 'no64' => 'do not include 64-bit components' ],
+	[ 'mpi' => 'deploy MPI build' ],
 );
 
 if ($opt->version) {
@@ -34,6 +35,14 @@ if ($opt->help) {
 my $no64 = 0;
 if ($opt->no64) {
 	$no64 = 1;
+}
+
+# Check for --mpi flag: build models and libs with MPI
+my $doMpi = "no";
+my $mpiSuffix = "";
+if ($opt->mpi) {
+	$doMpi = "yes";
+    $mpiSuffix = "_mpi";
 }
 
 chdir "..";
@@ -59,7 +68,7 @@ my @models = (
 
 print "Build deployed models\n";
 chdir 'Perl';
-system 'perl', 'test_models.pl', '--nomodgen', '--noclean', @models;
+system 'perl', 'test_models.pl', '--nomodgen', '--noclean', "--ompp_deploy_mpi=${doMpi}", @models;
 chdir $om_root;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
@@ -156,22 +165,22 @@ else {
 
 # lib
 $subdir = 'lib';
-@files = (
-	'libopenm.lib',
-	'libopenmD.lib',
-	'libopenm64.lib',
-	'libopenm64D.lib',
-	'libsqlite.lib',
-	'libsqliteD.lib',
-	'libsqlite64.lib',
-	'libsqlite64D.lib',
-	);
 mkdir "${deploy_dir}/${subdir}" or die;
-for my $file (@files) {
-	if ($no64 && $file =~ /64/) {
-		next;
+
+my @lib_names = ("libopenm", "libsqlite");
+my @lib_suffixes = ("", "D", "64", "64D");
+
+for my $ln (@lib_names) {
+	for my $sf (@lib_suffixes) {
+		if ($no64 && $sf =~ /64/) {
+			next;
+		}
+		my $file = "${ln}${sf}.lib";
+		if (${ln} eq "libopenm") {
+			$file = "${ln}${sf}${mpiSuffix}.lib";   # if MPI then: libopenm_mpi.lib
+		}
+		copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 	}
-	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }
 
 # include
@@ -269,9 +278,10 @@ for my $model (@models) {
 		copy "${om_root}/${file}", "${deploy_dir}/${subdir}" or die "Failed to copy ${subdir}/${file}";
 	}
 	
-	# model exe
-	copy "${model_dir}/ompp/bin/${model}.exe", "${models_bin}" 
-		or die "Failed to copy ${model_dir}/ompp/bin/${model}.exe";
+	# copy model.exe or model_mpi.exe
+	my $model_exe = "${model_dir}/ompp/bin/${model}${mpiSuffix}.exe";
+	copy "${model_exe}", "${models_bin}" 
+		or die "Failed to copy ${model_exe}";
 		
 	# model db.sqlite
 	copy "${model_dir}/output/${model}.sqlite", "${models_bin}/${model}.sqlite" 
@@ -312,7 +322,9 @@ for my $file (@files) {
 
 # modelOne executable, sql scripts and if exists ini-file and db.sqlite
 my $model_dir = "${om_root}/models/modelOne";
-copy "${model_dir}/ompp/bin/modelOne.exe", "${models_bin}" or die "Failed to copy ${model_dir}/ompp/bin/modelOne.exe";
+
+copy "${model_dir}/ompp/bin/modelOne${mpiSuffix}.exe", "${models_bin}" 
+	or die "Failed to copy ${model_dir}/ompp/bin/modelOne${mpiSuffix}.exe";
 
 @files = glob("${model_dir}/*.sql");
 for my $file (@files) {
