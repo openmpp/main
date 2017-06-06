@@ -11,6 +11,10 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
+2017_06_05:
+    major release: parameters sub-values for probabilistic statistical analysis
+    minor changes and bug fixes, update for Visual Studio 2017
+
 2016_12_29:
     minor release: fix R test script and dbcopy utility bug in delete model
 
