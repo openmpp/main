@@ -170,7 +170,7 @@
   
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -OpenM.SubValues $(MEMBERS) -SubValue.Member iota</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -OpenM.Threads $(THREADS)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
