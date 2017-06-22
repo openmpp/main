@@ -358,19 +358,8 @@ void CodeGen::do_RunOnce()
     c += "// Model one-time initialization";
     c += "void RunOnce(IRunBase * const i_runBase)";
     c += "{";
-    c += "// theLog->logMsg(\"One-time initialization\");";
-    c += "}";
-    c += "";
-}
-
-void CodeGen::do_RunInit()
-{
-    c += "// Model run initialization";
-	c += "void RunInit(IRunBase * const i_runBase)";
-	c += "{";
-
-    c += "theLog->logMsg(\"Get fixed and missing parameters\");";
-    // Missing parameters are done here, since they are handled identically to fixed parameters.
+    c += "theLog->logMsg(\"Process fixed and missing parameters\");";
+    // Missing parameters are handled like fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only fixed and missing parameters in this for loop
@@ -392,12 +381,25 @@ void CodeGen::do_RunInit()
             // prepare cumrate for parameter
             c += parameter->cxx_initialize_cumrate();
         }
+
+        // TODO transform fixed haz1rate parameters
+
     }
     if (any_missing_parameters) {
         m += "};";
         theLog->logMsg("Missing parameters written to Missing.dat.tmp");
     }
     c += "";
+
+    c += "}";
+    c += "";
+}
+
+void CodeGen::do_RunInit()
+{
+    c += "// Model run initialization";
+	c += "void RunInit(IRunBase * const i_runBase)";
+	c += "{";
 
     c += "theLog->logMsg(\"Get scenario parameters\");";
     for (auto parameter : Symbol::pp_all_parameters) {
