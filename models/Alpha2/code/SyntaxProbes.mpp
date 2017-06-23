@@ -61,7 +61,7 @@ parameters
     //AGE_GROUP a_age_group;
 
     //EN my first multi-dimensional parameter
-    // 'rel' is supported in ompp, not supported in Modgen
+    // 'real' is supported in ompp, not supported in Modgen
     double Something[SEX][AGE_GROUP];
 
 };
@@ -362,11 +362,22 @@ actor Person
 };
 
 // Tests of haz1rate parameters
-
 parameters {
-    haz1rate z_haz1rate_scalar; //EN haz1rate scalar atest
-    haz1rate z_haz1rate_array[SEX];
+    haz1rate z_haz1rate_scalar; //EN haz1rate scalar
+    haz1rate z_haz1rate_array[SEX]; //EN haz1rate array
 };
+
+void PreSimulation()
+{
+    double d1 = z_haz1rate_scalar;
+    // value in SyntaxProbes.dat is 0.90
+    double d2 = - log(1.0 - 0.90);
+    
+    double diff = d1 - d2;
+    if (diff < 0) diff = -diff;
+    assert(diff < 1e-15); // should be the same to nuemrical precision
+}
+
 
 
 // Tests of derived (aka model_generated) parameters

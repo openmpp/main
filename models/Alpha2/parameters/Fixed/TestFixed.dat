@@ -16,4 +16,10 @@ parameters
         // MALE
         50,  0, 25, 25
     };
+
+    haz1rate fixed_haz1rate_scalar = 0.90;
+    haz1rate fixed_haz1rate_array[SEX] = 
+    {
+        0.80, 0.85
+    };
 };

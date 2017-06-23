@@ -63,3 +63,20 @@ void PreSimulation()
     double d3 = d1 + d2;
 }
 
+
+// Tests of haz1rate parameters
+parameters {
+    haz1rate fixed_haz1rate_scalar; //EN haz1rate scalar atest
+    haz1rate fixed_haz1rate_array[SEX];
+};
+
+void PreSimulation()
+{
+    double d1 = fixed_haz1rate_scalar;
+    // value in TestFixed.dat is 0.90
+    double d2 = - log(1.0 - 0.90);
+    
+    double diff = d1 - d2;
+    if (diff < 0) diff = -diff;
+    assert(diff < 1e-15); // should be the same to nuemrical precision
+}
