@@ -59,7 +59,7 @@ void EnumerationWithEnumeratorsSymbol::populate_metadata(openm::MetaModelHolder 
             TypeEnumLstRow typeEnum;
             typeEnum.typeId = type_id;
             typeEnum.enumId = enumerator->ordinal;
-            typeEnum.name = enumerator->name;
+            typeEnum.name = enumerator->db_name();
             metaRows.typeEnum.push_back(typeEnum);
         }
 

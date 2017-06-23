@@ -27,15 +27,11 @@ public:
     }
 
     /**
-     * Gets the fixed label for the interval in the partition.
-     * 
-     * This specialization is language-independent.
-     *
-     * @param language The language.
+     * Gets a formatted representation of the interval in standard notation
      *
      * @return A string.
      */
-    string label(const LanguageSymbol & language) const
+    string formatted_interval() const
     {
         string result = "";
         if (lower_split_point == "min") {
@@ -58,6 +54,27 @@ public:
 
         return result;
     }
+
+	string db_name() const
+	{
+		// The 'name' in the data store is the formatted partition, e.g. "[14,20)"
+		return formatted_interval();
+	};
+
+
+	/**
+	* Gets the fixed label for the interval in the partition.
+	*
+	* This specialization is language-independent.
+	*
+	* @param language The language.
+	*
+	* @return A string.
+	*/
+	string label(const LanguageSymbol & language) const
+	{
+		return formatted_interval();
+	}
 
     /**
      * Gets the (always empty) note for the interval in the partition.

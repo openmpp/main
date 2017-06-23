@@ -39,6 +39,14 @@ public:
     void post_parse(int pass);
 
 
+	/**
+	* Gets the short 'name' associated with the enumerator in the data store.
+	*
+	* @return A string.
+	*/
+	virtual string db_name() const = 0;
+
+
     /**
     * Reference to pointer to enumeration.
     *

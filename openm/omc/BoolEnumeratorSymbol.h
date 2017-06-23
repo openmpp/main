@@ -27,8 +27,16 @@ public:
     {
     }
 
+	string db_name() const
+	{
+		// The 'name' in the data store is the ordinal, which is 0 for false and 1 for true
+		return to_string(ordinal);
+	};
+
     /**
      * Gets the fixed label for the enumerator in bool.
+	 *
+	 * Hard-coded support for EN and FR, for now.
      *
      * @param language The language.
      *

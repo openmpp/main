@@ -28,6 +28,7 @@
 #include "StringTypeSymbol.h"
 #include "UnknownTypeSymbol.h"
 #include "ClassificationSymbol.h"
+#include "ClassificationEnumeratorSymbol.h"
 #include "PartitionSymbol.h"
 #include "PartitionEnumeratorSymbol.h"
 #include "RangeSymbol.h"

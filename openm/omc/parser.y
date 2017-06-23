@@ -906,14 +906,14 @@ classification_levels:
       SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
-                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            auto *sym = new ClassificationEnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             assert(sym);
                             pc.counter1++;  // counter for classification levels
                         }
       | classification_levels "," SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
-                            auto *sym = new EnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            auto *sym = new ClassificationEnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             assert(sym);
                             pc.counter1++;  // counter for classification levels
                         }

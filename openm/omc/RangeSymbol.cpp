@@ -78,14 +78,16 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     if (!metadata_needed) return;
 
-    // Range enumerations do not populate an associated collection of enumerators.
-    // Enumerator metadata for ranges is instead created directly at this level (RangeSymbol) 
+    // Unlike classifications, etc. (children of EnumerationWithEnumerators),
+	// range enumerations do not populate an associated C++ collection of enumerators.
+	// This is because a range may contain 100,000 or more levels in some models,
+	// causing performance issues during model compilation and publishing.
+    // Instead, enumerator metadata for ranges is created directly at this level (RangeSymbol) 
     // of the hierarchical calling chain.
 
     for (int i = lower_bound, ordinal = 0; i <= upper_bound; ++i, ++ordinal) {
-        string enumerator_name = name + "_";
-        if (i < 0) enumerator_name += "_" + to_string(-i);
-        else  enumerator_name += to_string(i);
+		// The enumerator 'name' in the data store is set to the integer range value.
+        string enumerator_name = to_string(i);
 
         {
             TypeEnumLstRow typeEnum;

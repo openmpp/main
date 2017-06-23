@@ -264,6 +264,9 @@
     <ClInclude Include="MaintainedAttributeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ClassificationEnumeratorSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">

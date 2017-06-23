@@ -13,7 +13,6 @@
       OM_LIB_DIR
   -->
   <Import Project="$(SolutionDir)openm.0.version.props" />
-
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -177,6 +176,7 @@
     <ClInclude Include="BoolEnumeratorSymbol.h" />
     <ClInclude Include="BoolSymbol.h" />
     <ClInclude Include="BuiltinAttributeSymbol.h" />
+    <ClInclude Include="ClassificationEnumeratorSymbol.h" />
     <ClInclude Include="ClassificationSymbol.h" />
     <ClInclude Include="CodeBlock.h" />
     <ClInclude Include="CodeGen.h" />
