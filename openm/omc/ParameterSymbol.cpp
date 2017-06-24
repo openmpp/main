@@ -549,24 +549,6 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     string c_adjust_comment; // C++ code fragment with explanatory comment about in-place adjustment
     string c_adjust_code; // C++ code fragment to do in-place adjustment (using reference named "value")
 
-    // Handle in-place adjustment for parameters of type range where range has non-zero lower bound
-    if (pp_datatype->is_range()) {
-        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
-        assert(rng);
-        auto lb = rng->lower_bound;
-        if (lb != 0) {
-            adjust = true;
-            c_adjust_comment = "// Parameter '" + name + "' has type range '" + pp_datatype->name + "' with non-zero lower bound " + to_string(lb) + " and requires transformation from ordinal -> value";
-            // handle +ve and -ve lower bound separately in case types are unsigned
-            if (lb > 0) {
-                c_adjust_code = "value += (" + pp_datatype->name + ") " + to_string(lb) + ";";
-            }
-            else {
-                c_adjust_code = "value -= (" + pp_datatype->name + ") " + to_string(-lb) + ";";
-            }
-        }
-    }
-
     if (haz1rate) {
         adjust = true;
         c_adjust_comment = "// Parameter '" + name + "' is declared haz1rate and requires transformation.";

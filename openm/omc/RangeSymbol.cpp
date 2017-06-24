@@ -128,9 +128,6 @@ string RangeSymbol::format_for_storage(const Constant &k) const
 {
     long value = stol(k.value());
 
-    // For storage, normalize range value to ordinal by subtracting lower bound
-    value -= lower_bound;
-
     string result = to_string(value);
     return result;
 }
