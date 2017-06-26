@@ -2,21 +2,21 @@
 
 # Details:
 #
-# --executable
+# --batch
 #
-# The stem of the model executable is the model name.
-# If the model name would contain a trailing _mpi, it is removed.
+# The name of the batch. Used to construct the name of the batch specification
+# input file and the merged output database.
 #
-# --output_dir
+# --model
 #
-# The output and intermediate files of the batch
-# are written to a batch-specific directory.
+# The name of the model.  Used to construct the name of the executable, and to
+# find the starting scenario in the input database.
 #
-# --spec_file
+# The batch specification file
 # 
-# Provides the name of the Perl batch specification file,
-# which assigns values to the following Perl variables:
-# $default_values - A Perl string containing batch-specific Perl code
+# Input file named $in_dir/$batch_name.pl
+# Assigns values to the following Perl variables:
+# $batch_options - A Perl string containing batch-specific Perl code
 #   to be executed before processing command-line options.
 # @run_names - A Perl array containing the names to be used for each scenario in the batch.
 # @run_inis - A Perl array containing multi-line strings, each in the format of an ompp ini file.
@@ -25,10 +25,10 @@
 #   to be executed after run assembly.
 # The specification file returns the value 1 to indicate success.
 #
-# --processes
+# --mpi
 #
-# If processes is greater than 1, mpiexec is used to launch the executable.
-# Otherwise, the executable is launched directly.
+# If set, specifies to use the mpi version of the model executable, which is
+# $in_dir/$model.'_mpi.exe'
 #
 # --runs
 #
@@ -71,22 +71,28 @@ use common qw(
 
 my ($opt, $usage) = describe_options(
 	$script_name.' %o',
-	[ 'help|h'    => 'print usage message and exit' ],
-	[ 'version|v' => 'print version and exit' ],
-	[ 'spec_file|s=s' => 'the batch specification script' ],
-	[ 'executable|e=s' => 'model executable' ],
-	[ 'input_db|i=s' => 'input DB containing Default scenario' ],
-	[ 'prefix|p=s' => 'run prefix' ],
-	[ 'members|m=i' => 'members' ],
-	[ 'threads|t=i' => 'threads' ],
+	[ 'help|h'      => 'print usage message and exit' ],
+	[ 'version|v'   => 'print version and exit' ],
+
+	[ 'batch|b=s'   => 'name of the batch' ],
+	[ 'model|m=s'   => 'name of the model' ],
+	[ 'workset|w=s' => 'name of the starting workset (default is Default)' ],
+	[ 'in_dir|i=s'  => 'input directory (default is current directory)' ],
+	[ 'out_dir|o=s' => 'output directory (default is current directory)' ],
+	[ 'pub_dir=s'   => 'model publishing directory (default is current directory)' ],
+	[ 'prefix|p=s'  => 'run prefix (default is no prefix)' ],
+	
+	[ 'members=i'   => 'members' ],
+	[ 'threads=i'   => 'threads' ],
 	[ 'processes=i' => 'MPI processes' ],
-	[ 'output_dir|o=s' => 'output directory (default is ./<spec_file_stem>' ],
-	[ 'runs|r=s' => 'which runs to launch, e.g. 0,1,2,4,8-10' ],
-	[ 'list|l' => 'just list runs in batch' ],
-	[ 'assemble|a' => 'just assemble existing runs' ],
+	[ 'mpi'         => 'use mpi to name and launch model' ],
+
+	[ 'runs|r=s'    => 'which runs to launch, e.g. 0,1,2,4,8-10' ],
+
+	[ 'list|l'      => 'just list runs in batch' ],
+	[ 'assemble|a'  => 'just assemble existing runs' ],
 	[ 'post_assemble|p' => 'just post-assemble existing runs' ],
-	[ 'clean|c' => 'just remove output directory and its contents' ],
-	[ 'verbose' => 'additional diagnostic messages' ],
+	[ 'verbose'     => 'additional diagnostic messages' ],
 );
 
 if ($opt->version) {
@@ -99,44 +105,39 @@ if ($opt->help) {
 	exit 0;
 }
 
-my $curr_dir = getcwd;
+my $in_dir = '.';
+$in_dir = $opt->in_dir if $opt->in_dir;
+-d $in_dir or die "invalid input directory";
+print "in_dir=${in_dir}\n" if $opt->verbose;
 
 #####################
-# Specification file
+# Batch specification file
 #####################
 
-if (! $opt->spec_file) {
-	print "spec_file is required";
-	exit -1;
-}
-my $spec_file = $opt->spec_file;
--f $spec_file or die "spec_file=${spec_file} not found, stopped";
-#print "spec_file=${spec_file}\n";
+$opt->batch or die "batch name must be specified";
+my $batch = $opt->batch;
+print "batch=${batch}\n" if $opt->verbose;
 
-# Declare variables set by spec_file
-our $default_options;
+my $spec_file = "${in_dir}/${batch}.pl";
+-f $spec_file or die "batch specification file '${spec_file}' not found, stopped";
+print "spec_file=${spec_file}\n" if $opt->verbose;
+
+# Declare variables which will be set by spec_file
+our $batch_options;
 our @run_inis;
 our @run_names;
 our $post_assembly;
 
-# Assign variables using spec_file
+# Assign variables from spec_file
 unless (my $return = do $spec_file) {
 	die "couldn't parse $spec_file: $@" if $@;
 	die "couldn't do $spec_file: $!"    unless defined $return;
 	die "couldn't run $spec_file"       unless $return;
 }
 
-# The specification name is the stem of the spec_file
-my $spec_name = $spec_file;
-# Remove leading path portion
-$spec_name =~ s/.*[\/\\]//;
-# remove trailing .pl if present
-$spec_name =~ s/[.]pl$//;
-
 # Perform checks on variables set in the specification file.
 $#run_names >=0 or die 'no runs specified, stopped';
 $#run_inis == $#run_names or die '@run_inis and @run_names are not the same length, stopped';
-
 
 ####################
 # Arguments & derived
@@ -144,55 +145,63 @@ $#run_inis == $#run_names or die '@run_inis and @run_names are not the same leng
 
 # Declare arguments and assign default values
 
-# The model executable - default assumes current dir is subdir like model/batch
-my $executable = glob('../ompp/bin/*.exe');
-# The number of members in each run.
-my $members = 1;
+# The name of the model
+my $model = '';
+# The starting workset
+my $workset = 'Default';
+# The output directory
+my $out_dir = '.';
+# The model publishing directory
+my $pub_dir = '.';
 # The prefix added at the beginning of run names.
 my $prefix = '';
+
+# The number of members in each run.
+my $members = 1;
 # Number of threads in each process.
 my $threads = 1;
 # Number of MPI processes.
 my $processes = 1;
-# Input database
-my $input_db = glob('../output/*.sqlite');
-# Output directory - default is a subdirectory of the current directory, named spec_name.
-my $output_dir = "./${spec_name}";
+# Flag to name executable and launch using mpiexec.
+my $mpi = 0;
+
 # Flag indicating to just assemble runs
 my $assemble = 0;
 # Flag indicating to just post-assemble runs
 my $post_assemble = 0;
 # Flag indicating to just list runs in batch
 my $list = 0;
-# Flag indicating to just clean result_dir
-my $clean = 0;
-
 
 # Assign any argument values given in the specification file
-eval $default_options;
+eval $batch_options;
 
-# Assign any argument values given on the command line
-$executable    = $opt->executable if $opt->executable;
-$input_db      = $opt->input_db   if $opt->input_db;
+# Assign any argument values given on the command line.
+# Command line arguments override values in batch specification file.
+$model         = $opt->model      if $opt->model;
+$workset       = $opt->workset    if $opt->workset;
+$out_dir       = $opt->out_dir    if $opt->out_dir;
+$pub_dir       = $opt->pub_dir    if $opt->pub_dir;
 $prefix        = $opt->prefix     if $opt->prefix;
+
 $members       = $opt->members    if $opt->members;
 $threads       = $opt->threads    if $opt->threads;
 $processes     = $opt->processes  if $opt->processes;
-$output_dir    = $opt->output_dir if $opt->output_dir;
+$mpi           = 1 if $opt->mpi || $processes > 1;
+
 $assemble      = 1 if $opt->assemble;
 $post_assemble = 1 if $opt->post_assemble;
 $list          = 1 if $opt->list;
-$clean         = 1 if $opt->clean;
 
+# Checks on final values of arguments
 
-# The model name is the 'stem' portion of executable
-my $model_name = $executable;
-# Remove leading path portion
-$model_name =~ s/.*[\/\\]//;
-# remove trailing .exe if present
-$model_name =~ s/[.]exe$//;
-# remove trailing _mpi if present
-$model_name =~ s/_mpi$//;
+# Input database
+my $input_db = "${pub_dir}/${model}.sqlite";
+-f $input_db or die "Invalid input database '$input_db'";
+
+# The model executable
+my $exe_suffix = '_mpi' if $mpi;
+my $model_exe = "${pub_dir}/${model}${exe_suffix}.exe";
+-x $model_exe or die "invalid model executable '${model_exe}', stopped";
 
 # Array of runs to perform
 my @runs;
@@ -219,15 +228,14 @@ else {
 
 # Display selected argument and derived values for debugging
 if ($opt->verbose) {
-	print "spec_name=${spec_name}\n";
-	print "executable=${executable}\n";
+	print "batch=${batch}\n";
+	print "model_exe=${model_exe}\n";
 	print "input_db=${input_db}\n";
-	print "model_name=${model_name}\n";
+	print "model=${model}\n";
+	print "out_dir=${out_dir}\n";
 	print "assemble=${assemble}\n";
-	print "output_dir=${output_dir}\n";
 	print "post_assemble=${post_assemble}\n";
 	print "list=${list}\n";
-	print "clean=${clean}\n";
 	print "runs=@{runs}\n";
 }
 
@@ -235,8 +243,8 @@ if ($opt->verbose) {
 # Processing
 #############
 
-if (! -d $output_dir) {
-	make_path $output_dir;
+if (! -d $out_dir) {
+	make_path $out_dir or die "invalid output directory '${out_dir}, stopped'";
 }
 
 # OM_ROOT is needed to locate the dbcopy.exe utility
@@ -245,14 +253,10 @@ $om_root ne '' or die 'environment variable OM_ROOT not defined, stopped';
 my $dbcopy_exe = "${om_root}/bin/dbcopy.exe" or die;
 -f $dbcopy_exe or die "dbcopy utility $dbcopy_exe not found, stopped";
 
-# Starting database with Default scenario (from omc)
--f $input_db or die;
-
 #print "runs are numbered from 0 to $#run_names\n";
 
 if ($assemble == 0 && $post_assemble == 0 && $clean == 0 && $list == 0) {
 	# Launch runs
-	-f $executable or die "model executable ${executable} not found, stopped";
 	
 	my $retval; # return value from external commands
 	my $merged; # output from external commands
@@ -264,15 +268,15 @@ if ($assemble == 0 && $post_assemble == 0 && $clean == 0 && $list == 0) {
 		print "Launching run ${run} - ${run_name}\n";
 		
 		# Create ini file with parameter values
-		my $ini_file = "${output_dir}/run_${run}.ini";
+		my $ini_file = "${out_dir}/${run_name}.ini";
 		open INI_TXT, '>'.$ini_file or die;
 		print INI_TXT $run_inis[$run];
 		close INI_TXT;
 
-		my $log_file = "${output_dir}/run_${run}.log";
+		my $log_file = "${out_dir}/${run_name}.log";
 		
-		# The output database for this batch
-		my $database_sqlite = "${output_dir}/run_${run}.sqlite";
+		# The input/output database for this run
+		my $database_sqlite = "${out_dir}/${run_name}.sqlite";
 		copy $input_db, $database_sqlite or die;
 		
 		($merged, $retval) = tee_merged {
@@ -292,7 +296,7 @@ if ($assemble == 0 && $post_assemble == 0 && $clean == 0 && $list == 0) {
 
 			push @args,
 				(
-				"${executable}",
+				"${model_exe}",
 				"-OpenM.Database", "\"Database=${database_sqlite}; Timeout=86400; OpenMode=ReadWrite;\"",
 				"-OpenM.LogToFile", "true",
 				"-OpenM.LogFilePath", "${log_file}",
@@ -315,7 +319,7 @@ if ($assemble == 0 && $post_assemble == 0 && $clean == 0 && $list == 0) {
 elsif ($list == 1) {
 	for my $run (0..$#run_names) {
 		my $run_name = $prefix.$run_names[$run];
-		my $in_database_sqlite = "${output_dir}/run_${run}.sqlite";
+		my $in_database_sqlite = "${out_dir}/${run_name}.sqlite";
 		my $status = (-f $in_database_sqlite) ? "  DONE" : "ABSENT";
 		print $run, ' ', $status, ' ', $run_name, "\n";
 	}
@@ -323,7 +327,7 @@ elsif ($list == 1) {
 elsif ($assemble == 1) {
 	# just assemble results
 
-	my $out_database_sqlite = "${output_dir}/${model_name}.sqlite";
+	my $out_database_sqlite = "${out_dir}/${batch}.sqlite";
 	# Create db for assembled results
 	use File::Copy;
 	copy $input_db, $out_database_sqlite or die;
@@ -331,19 +335,19 @@ elsif ($assemble == 1) {
 
 	my @missing_runs;
 	for my $run (0..$#run_names) {
-		my $run_name = $run_names[$run];
-		my $in_database_sqlite = "${output_dir}/run_${run}.sqlite";
+		my $run_name = $prefix.$run_names[$run];
+		my $in_database_sqlite = "${out_dir}/${run_name}.sqlite";
 		if (-f $in_database_sqlite) {
 			print "Merging results from run ${run} - ${run_name}\n";
 			
-			my $log_file = "${output_dir}/run_${run}_merge.log";
+			my $log_file = "${out_dir}/run_${run}_merge.log";
 			
 			my $retval; # return value from external commands
 			my $merged; # output from external commands
 			($merged, $retval) = tee_merged {
 				my @args = (
 					"${dbcopy_exe}",
-					"-m", "${model_name}",
+					"-m", "${model}",
 					"-dbcopy.To", "db2db",
 					"-dbcopy.Database", "\"Database=${in_database_sqlite};Timeout=86400;OpenMode=ReadWrite;\"",
 					"-dbcopy.ToDatabase", "\"Database=${out_database_sqlite};Timeout=86400;OpenMode=ReadWrite;\"",
@@ -363,7 +367,7 @@ elsif ($assemble == 1) {
 	eval $post_assembly;
 	
 	if ($#missing_runs >= 0) {
-		print "One or more missing runs in batch:\n";
+		print "List of missing runs in batch:\n";
 		print join("\n", @missing_runs), "\n";
 	}
 	else {
@@ -373,13 +377,7 @@ elsif ($assemble == 1) {
 }
 elsif ($post_assemble == 1) {
 	# just post-assemble results
-	my $out_database_sqlite = "${output_dir}/runs.sqlite";
+	my $out_database_sqlite = "${out_dir}/${batch}.sqlite";
 	eval $post_assembly;
 }
-elsif ($clean == 1) {
-	# just clean output directory
-	print "Cleaning batch ${output_dir}";
-	if (-d $output_dir) {
-		remove_tree $output_dir;
-	}
-}
+
