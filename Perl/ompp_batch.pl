@@ -255,7 +255,7 @@ my $dbcopy_exe = "${om_root}/bin/dbcopy.exe" or die;
 
 #print "runs are numbered from 0 to $#run_names\n";
 
-if ($assemble == 0 && $post_assemble == 0 && $clean == 0 && $list == 0) {
+if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
 	# Launch runs
 	
 	my $retval; # return value from external commands
