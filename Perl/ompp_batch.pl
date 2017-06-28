@@ -201,6 +201,7 @@ my $input_db = "${pub_dir}/${model}.sqlite";
 # The model executable
 my $exe_suffix = '_mpi' if $mpi;
 my $model_exe = "${pub_dir}/${model}${exe_suffix}.exe";
+$model_exe =~ s/\//\\/g; # replace all forward slash by backwards slash
 -x $model_exe or die "invalid model executable '${model_exe}', stopped";
 
 # Array of runs to perform
