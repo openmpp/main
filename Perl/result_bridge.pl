@@ -9,27 +9,55 @@
 use strict;
 use warnings;
 
+my $script_name = "result_bridge";
+my $script_version = '1.1';
+
+use Getopt::Long::Descriptive;
+
+my ($opt, $usage) = describe_options(
+	$script_name.' %o',
+	[ 'help|h'     => 'print usage message and exit' ],
+	[ 'version|v'  => 'print version and exit' ],
+	[ 'model|m=s'  => 'model name' ],
+	[ 'ref_db|r=s' => 'reference database (Modgen mdb)' ],
+	[ 'in_db|i=s'  => 'input database (ompp sqlite)' ],
+	[ 'out_db|o=s' => 'output database (Modgen mdb)' ],
+	[ 'keep_tmp|k' => 'keep temporary files in ./tmp_result_bridge' ],
+	[ 'verbose'    => 'verbose log output' ],
+);
+
+if ($opt->version) {
+	print $script_name.' version '.$script_version."\n";
+	exit 0;
+}
+
+if ($opt->help) {
+	print $usage->text;
+	exit 0;
+}
+
 # Add the directory of this script (ompp/Perl) to the search path 
 use FindBin; # locate this script
 use lib "$FindBin::Bin/."; # use the directory of this script for resolution of 'use' statements
 
-
-if ($#ARGV != 2) {
-	# must have exactly three arguments
-	print "usage: result_bridge example.mdb model.sqlite output.mdb\n";
-	exit -1;
-}
-
-# example Modgen DB
-my $example_mdb = shift @ARGV;
--f $example_mdb or die;
+# reference Modgen DB
+$opt->ref_db or die "ref_db is required";
+my $ref_db = $opt->ref_db;
+-f $ref_db or die "invalid ref_db";
 
 # input ompp DB
-my $input_sqlite = shift @ARGV;
--f $input_sqlite or die;
+$opt->in_db or die "in_db is required";
+my $in_db = $opt->in_db;
+-f $in_db or die "invalid in_db";
 
 # output Modgen DB
-my $output_mdb = shift @ARGV;
+$opt->out_db or die "out_db is required";
+my $out_db = $opt->out_db;
+
+# model name
+$opt->model or die "model name is required";
+my $model = $opt->model;
+
 
 use Cwd qw(getcwd);
 
@@ -60,13 +88,15 @@ my $merged; # output from program
 my $sql; # a SQL statement
 			
 # copy example MDB to output MDB
-copy $example_mdb, $output_mdb;
+copy $ref_db, $out_db;
 
 # Following section adapted from common.pm (ompp_tables_to_csv)
 
 #
 # Get output table metadata (name, rank, hid, expr_dim_pos)
 #
+
+print "Processing metadata...\n";
 
 # table_name is used as the key to tables in this script
 # This assumes that the DB contains only one model.
@@ -83,7 +113,7 @@ my @tables;
 		Inner Join model_table_dic
 		On table_dic.table_hid = model_table_dic.table_hid
 		Order By table_name;";
-	my $tables_info = run_sqlite_statement($input_sqlite, $sql, $retval);
+	my $tables_info = run_sqlite_statement($in_db, $sql, $retval);
 	($retval == 0) or die;
 	# Create array of table names and hash table of rank for each table.
 	for my $record (split(/\n/, $tables_info)) {
@@ -104,7 +134,7 @@ my %table_acc_count;
 FROM table_acc INNER JOIN table_dic ON table_acc.table_hid = table_dic.table_hid
 WHERE (((table_acc.is_derived)=0))
 GROUP BY table_dic.table_name;";
-	my $lines = run_sqlite_statement($input_sqlite, $sql, $retval);
+	my $lines = run_sqlite_statement($in_db, $sql, $retval);
 	($retval == 0) or die;
 	for my $record (split(/\n/, $lines)) {
 		(my $col1, my $col2) = split(/\|/, $record);
@@ -121,7 +151,7 @@ my %table_expr_count;
 FROM table_acc INNER JOIN table_dic ON table_acc.table_hid = table_dic.table_hid
 WHERE (((table_acc.is_derived)=1))
 GROUP BY table_dic.table_name;";
-	my $lines = run_sqlite_statement($input_sqlite, $sql, $retval);
+	my $lines = run_sqlite_statement($in_db, $sql, $retval);
 	($retval == 0) or die;
 	for my $record (split(/\n/, $lines)) {
 		(my $col1, my $col2) = split(/\|/, $record);
@@ -137,7 +167,7 @@ GROUP BY table_dic.table_name;";
 $sql = "Select parameter_name, parameter_rank, type_hid
 		From parameter_dic
 		Order By parameter_name;";
-my $parameters_info = run_sqlite_statement($input_sqlite, $sql, $retval);
+my $parameters_info = run_sqlite_statement($in_db, $sql, $retval);
 ($retval == 0) or die;
 # Create array of parameter names and hash table of rank for each parameter.
 my %parameter_rank;
@@ -152,31 +182,27 @@ for my $record (split(/\n/, $parameters_info)) {
 
 # Use dbcopy to dump the ompp scenario to a temporary folder
 
+print "Extracting data from input db...\n";
+
 my $dbcopy_exe = "${om_root}/bin/dbcopy.exe";
 -f $dbcopy_exe or die;
 
 my $temp_dir;
-my $keep_temp = 1;
-if ($keep_temp == 0) {
-	# For production, place dbcopy results in temporary directory, which is deleted at script end.
-	my $temp_dir = tempdir( CLEANUP => 1 );
-}
-else {
+if ($opt->keep_tmp) {
 	# For debugging, place dbcopy results in known fixed location.
-	$temp_dir = "C:/Development/X/models/GMM/bridge_test2/tmp";
+	$temp_dir = "./tmp_result_bridge";
 	# Remove any pre-existing contents or else anomalies can result
 	remove_tree $temp_dir || die;
 	make_path $temp_dir || die;
 }
-print "temp_dir=$temp_dir\n";
-
-# Assume model name is base name of sqlite file
-my $model = $input_sqlite;
-$model =~ s/[.]sqlite$//;
-$model =~ s/^.*[\/]//;
+else {
+	# For production, place dbcopy results in temporary directory, which is deleted at script end.
+	$temp_dir = tempdir( CLEANUP => 1 );
+}
+print "temp_dir=$temp_dir\n" if $opt->verbose;
 
 # connection string to ompp DB
-my $conn = "\"Database=${input_sqlite}; Timeout=86400; OpenMode=ReadWrite;\"";
+my $conn = "\"Database=${in_db}; Timeout=86400; OpenMode=ReadWrite;\"";
 
 # Dump ompp DB to csv
 ($merged, $retval) = capture_merged {
@@ -201,7 +227,7 @@ if ($retval) {
 use Win32::OLE;
 use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
 
-my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${output_mdb}";
+my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${out_db}";
 my $ADO_Conn = Win32::OLE->new('ADODB.Connection');	# creates a connection object
 my $ADO_RS = Win32::OLE->new('ADODB.Recordset');		# creates a recordset object
 $ADO_Conn->Open($sConnect);
@@ -215,6 +241,8 @@ my @fields; # working variable
 #
 # Get the run name, date-time
 #
+
+print "Processing run information...\n";
 
 my $run_name = 'untitled';
 my $run_date_time = '';
@@ -232,11 +260,11 @@ my $run_sub_count = 1;
 		@fields = split(/,/, $record);
 		# Fields are run_id,model_id,run_name,sub_count,sub_started,sub_completed,create_dt,status,update_dt,run_digest
 		$run_name = $fields[2];
-		print "run_name=${run_name}\n";
+		print "run_name=${run_name}\n" if $opt->verbose;
 		$run_sub_count = $fields[3];
-		print "run_sub_count=${run_sub_count}\n";
+		print "run_sub_count=${run_sub_count}\n" if $opt->verbose;
 		$run_date_time = $fields[6];
-		print "run_date_time=${run_date_time}\n";
+		print "run_date_time=${run_date_time}\n" if $opt->verbose;
 	}
 	else {
 		die 'missing run record in run_lst';
@@ -263,9 +291,9 @@ my $run_note = '';
 		@fields = split(/,/, $record);
 		# Fields are run_id,lang_code,descr,note
 		$run_descr = $fields[2];
-		print "run_descr=${run_descr}\n";
+		print "run_descr=${run_descr}\n" if $opt->verbose;
 		$run_note = $fields[3];
-		print "run_note=${run_note}\n";
+		print "run_note=${run_note}\n" if $opt->verbose;
 	}
 	close INPUT;
 }
@@ -298,8 +326,9 @@ my $run_note = '';
 # Single set assumed
 my $parameter_dir = glob("${temp_dir}/${model}/set.*/");
 
+print "Processing ".(1+$#parameters)." parameters...\n";
 for my $parameter (@parameters) {
-	print "processing parameter ${parameter}\n";
+	print "processing parameter ${parameter}\n" if $opt->verbose;
 	# Skip known ompp framework parameters with no modgen equivalent
 	next if $parameter eq 'SimulationSeed';
 	next if $parameter eq 'Member';
@@ -353,8 +382,9 @@ my $members = $run_sub_count;
 # Single run assumed
 my $table_dir = glob("${temp_dir}/${model}/run.*/");
 
+print "Processing ".(1+$#tables)." tables...\n";
 for my $table (@tables) {
-	print "processing table ${table}\n";
+	print "processing table ${table}\n" if $opt->verbose;
 	
 	# Get metadata info for table into working variables
 	my $rank = $table_rank{$table};
@@ -518,4 +548,7 @@ for my $table (@tables) {
 			exit -1;
 		}
 	}
+	close INPUT;
 }
+
+print "Finished processing.\n";
