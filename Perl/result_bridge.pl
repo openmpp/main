@@ -163,7 +163,7 @@ if ($keep_temp == 0) {
 }
 else {
 	# For debugging, place dbcopy results in known fixed location.
-	$temp_dir = "C:/Development/X/models/GMM/bridge_test/tmp";
+	$temp_dir = "C:/Development/X/models/GMM/bridge_test2/tmp";
 	# Remove any pre-existing contents or else anomalies can result
 	remove_tree $temp_dir || die;
 	make_path $temp_dir || die;
@@ -291,6 +291,9 @@ for my $parameter (@parameters) {
 	print "processing parameter ${parameter}\n";
 	# Skip known ompp framework parameters with no modgen equivalent
 	next if $parameter eq 'SimulationSeed';
+	next if $parameter eq 'Member';
+	next if $parameter eq 'MemberCount';
+	
 	# Remove all existing rows from parameter
 	$sql = "Delete * From ${parameter};";
 	$ADO_RS = $ADO_Conn->Execute($sql);
@@ -310,6 +313,8 @@ for my $parameter (@parameters) {
 	while (<INPUT>) {
 		chomp;
 		my $values = $_;
+		# Remove leading sub_id field from csv
+		$values =~ s/^[^,]+,//;
 		# TODO hard-coded type for file parameters
 		if ($parameter_type{$parameter} == 21) {
 			# type is file (string)
