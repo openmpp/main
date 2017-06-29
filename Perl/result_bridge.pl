@@ -218,6 +218,7 @@ my @fields; # working variable
 
 my $run_name = 'untitled';
 my $run_date_time = '';
+my $run_sub_count = 1;
 {
 	my $run_lst = "${temp_dir}/${model}/run_lst.csv";
 	-e $run_lst or die;
@@ -232,8 +233,13 @@ my $run_date_time = '';
 		# Fields are run_id,model_id,run_name,sub_count,sub_started,sub_completed,create_dt,status,update_dt,run_digest
 		$run_name = $fields[2];
 		print "run_name=${run_name}\n";
+		$run_sub_count = $fields[3];
+		print "run_sub_count=${run_sub_count}\n";
 		$run_date_time = $fields[6];
 		print "run_date_time=${run_date_time}\n";
+	}
+	else {
+		die 'missing run record in run_lst';
 	}
 	close INPUT;
 }
@@ -337,8 +343,8 @@ for my $parameter (@parameters) {
 	close INPUT;
 }
 
-# TODO hard-coded - obtain actual number of simulation members
-my $members = 16;
+# number of simulation members
+my $members = $run_sub_count;
 
 #
 # replace table values
@@ -467,14 +473,39 @@ for my $table (@tables) {
 		}
 		#print "member_values=".join(',',@member_values)."\n";
 
-		# TODO compute CV based on @member_values
-		my $cv = 0.0;
-		push @out_fields, $cv;
-		
-		# TODO compute SE based on @member_values
+		# compute summary statistics using @member_values
 		my $se = 0.0;
-		push @out_fields, $se;
+		my $cv = 0.0;
+		{
+			my $N = 0;
+			my $sum1 = 0;
+			my $mu = 0;
+			for my $X (@member_values) {
+				if ($X ne 'null') {
+					$N++;
+					$sum1 += $X;
+				}
+			}
+			
+			if ($N > 1) {
+				$mu = $sum1 / $N;
+				my $sum2 = 0;
+				for my $X (@member_values) {
+					if ($X ne 'null') {
+						$sum2 += ($X - $mu)*($X - $mu);
+					}
+				}
+				my $var = $sum2 / ($N - 1);
+				my $sd = sqrt($var);
+				
+				$se = $sd / sqrt($N);
+				$cv = ($mu == 0) ? 0 : ($sd / $mu);
+			}
+		}
 
+		push @out_fields, $cv;
+		push @out_fields, $se;
+		
 		push @out_fields, @member_values;
 		
 		$out_values = join(',', @out_fields);
