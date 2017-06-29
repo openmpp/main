@@ -213,50 +213,54 @@ if (Win32::OLE->LastError()) {
 my @fields; # working variable
 
 #
-# Get the scenario name, date-time
+# Get the run name, date-time
 #
 
-my $scenario_name;
-my $scenario_date_time;
+my $run_name = 'untitled';
+my $run_date_time = '';
 {
-	my $workset_lst = "${temp_dir}/${model}/workset_lst.csv";
-	-e $workset_lst or die;
-	open INPUT, '<'.$workset_lst or die;
+	my $run_lst = "${temp_dir}/${model}/run_lst.csv";
+	-e $run_lst or die;
+	open INPUT, '<'.$run_lst or die;
 	# Skip header record
 	my $header = <INPUT>;
-	# Get single record for workset
+	# Get single record for run
 	my $record = <INPUT>;
-	chomp $record;
-	@fields = split(/,/, $record);
-	# Fields are set_id,base_run_id,model_id,set_name,is_readonly,update_dt
-	$scenario_name = $fields[3];
-	print "scenario_name=${scenario_name}\n";
-	$scenario_date_time = $fields[5];
-	print "scenario_date_time=${scenario_date_time}\n";
+	if (defined($record)) {
+		chomp $record;
+		@fields = split(/,/, $record);
+		# Fields are run_id,model_id,run_name,sub_count,sub_started,sub_completed,create_dt,status,update_dt,run_digest
+		$run_name = $fields[2];
+		print "run_name=${run_name}\n";
+		$run_date_time = $fields[6];
+		print "run_date_time=${run_date_time}\n";
+	}
 	close INPUT;
 }
 
 #
-# Get the scenario description, note
+# Get the run description, note
 #
 
-my $scenario_descr;
-my $scenario_note;
+my $run_descr = $run_name;
+my $run_note = '';
 {
-	my $workset_txt = "${temp_dir}/${model}/workset_txt.csv";
-	-e $workset_txt or die;
-	open INPUT, '<'.$workset_txt or die;
+	my $run_txt = "${temp_dir}/${model}/run_txt.csv";
+	-e $run_txt or die;
+	open INPUT, '<'.$run_txt or die;
 	# Skip header record
 	my $header = <INPUT>;
-	# Get first record.  Assume is for default language
+	# Get first record (if present).  Assume is for default language
 	my $record = <INPUT>;
-	chomp $record;
-	@fields = split(/,/, $record);
-	# Fields are set_id,lang_code,descr,note
-	$scenario_descr = $fields[2];
-	print "scenario_descr=${scenario_descr}\n";
-	$scenario_note = $fields[3];
-	print "scenario_note=${scenario_note}\n";
+	if (defined($record)) {
+		chomp $record;
+		@fields = split(/,/, $record);
+		# Fields are run_id,lang_code,descr,note
+		$run_descr = $fields[2];
+		print "run_descr=${run_descr}\n";
+		$run_note = $fields[3];
+		print "run_note=${run_note}\n";
+	}
 	close INPUT;
 }
 
@@ -267,10 +271,11 @@ my $scenario_note;
 {
 	# The following sql updates the columns for all languages.
 	# using the default language in the ompp sqlite.
+	# Description is set to run_name, because it is used by Modgen web to name the run.
 	$sql = "Update ScenarioDic
-			Set [Name]='${scenario_name}',
-			    [Description]='${scenario_descr} (${scenario_date_time})',
-				[Note]='${scenario_note}'
+			Set [Name]='${run_name}',
+			    [Description]='${run_descr}',
+				[Note]='${run_date_time} ${run_note}'
 			;";
 	$ADO_RS = $ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
