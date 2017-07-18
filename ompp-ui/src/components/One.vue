@@ -1,8 +1,8 @@
 <template>
   <div id="one" class="mdc-typography--display">
     <slot></slot>
+    <p class="mdc-typography--body1">For internal use only.</p>
     <p class="mdc-typography--body1">One modelTitle ={{ modelTitle }}=</p>
-    <p class="mdc-typography--body1">One storeTxt ={{ storeTxt }}=</p>
     <p class="mdc-typography--body1">One uiLang ={{ uiLang }}=</p>
     <p class="mdc-typography--body1">One msg ={{ msg }}=</p>
 
@@ -10,7 +10,6 @@
 
     <om-mcw-button :raised="true" @click="doClick('ok')">ok</om-mcw-button>
     <om-mcw-button :raised="true" @click="doShow()">show</om-mcw-button>
-    <om-mcw-button :raised="true" @click="doSetModel('IDMM', 'f5024ac32c4e8abfc696a0f925141c95')">Set Model</om-mcw-button>
 
     <om-mcw-dialog 
       ref="dlg" 
@@ -34,7 +33,6 @@ import OmMcwDialog from './OmMcwDialog'
 
 export default {
   props: {
-    digest: ''
   },
 
   data () {
@@ -46,17 +44,17 @@ export default {
 
   computed: {
     modelTitle () {
-      return this.theModel.Name + ': ' + this.theModel.Digest + '=' + this.digest
+      return this.theModel.Model.Name + ': ' + this.theModel.Model.Digest + '='
     },
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,
-      storeTxt: GET.TXT
+      omppServerUrl: GET.OMPP_SRV_URL
     })
   },
 
   methods: {
-    doClick (m) { this.msg = m },
+    doClick (m) { this.msg = m + ':' + process.env.NODE_ENV + ':' + this.omppServerUrl + ':' },
 
     doShow () {
       this.msg = 'do show'
@@ -65,10 +63,6 @@ export default {
 
     doAccept () { this.msg = 'do accept' },
     doCancel () { this.msg = 'do cancel' },
-
-    doSetModel (name, digest) {
-      this.setTheModel({Name: name, Digest: digest})
-    },
 
     ...mapMutations({
       setTheModel: SET.THE_MODEL

@@ -7,8 +7,7 @@ Vue.use(Vuex)
 export const GET = {
   OMPP_SRV_URL: 'omppServerUrl',
   UI_LANG: 'uiLang',
-  THE_MODEL: 'theModel',
-  TXT: 'txt'
+  THE_MODEL: 'theModel'
 }
 
 // mutations names
@@ -21,20 +20,21 @@ export const SET = {
 const state = {
   // ui language, if not empty then selected by user
   uiLang: '',
+
   // current model
   theModel: {
-    Name: '',
-    Digest: ''
-  },
-  txt: 'store text'
+    Model: {
+      Name: '',
+      Digest: ''
+    }
+  }
 }
 
 // getters
 const getters = {
   [GET.UI_LANG]: state => state.uiLang,
-  [GET.OMPP_SRV_URL]: state => (process.env.NODE_ENV === 'development' ? 'http://localhost:4040' : ''),
-  [GET.THE_MODEL]: state => state.theModel,
-  [GET.TXT]: state => state.txt
+  [GET.OMPP_SRV_URL]: state => (process.env.OMPP_SRV_URL_ENV || ''),
+  [GET.THE_MODEL]: state => state.theModel
 }
 
 // mutations: synchronized updates
@@ -43,9 +43,9 @@ const mutations = {
 
   [SET.THE_MODEL] (state, md) {
     if (!md) return
-    if (!md.hasOwnProperty('Name') || !md.hasOwnProperty('Digest')) return
-    state.theModel.Name = md.Name || ''
-    state.theModel.Digest = md.Digest || ''
+    if (!md.hasOwnProperty('Model')) return
+    if (!md.Model.hasOwnProperty('Name') || !md.Model.hasOwnProperty('Digest')) return
+    state.theModel = md
   }
 }
 

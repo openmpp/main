@@ -4,12 +4,15 @@
 
   <div v-if="loadDone" class="mdc-typography--body1">
 
-    <p>{{ modelDef.Name }} : {{ modelDef.Digest }} </p>
+      <i class="fa fa-subscript fa-lg" role="presentation" aria-hidden="true"></i>
+      <span>{{ modelDef.Model.Name }}
+        <span>{{ modelDef.DescrNote.Descr }}</span>
+      </span>
 
     <a href="#" 
       v-if="isModelNote(modelDef)" 
       @click="showModelNote(modelDef)" 
-      class="material-icons mdc-list-item__end-detail" 
+      class="material-icons" 
       title="Notes" 
       aria-hidden="true">info_outline</a>
 
@@ -17,10 +20,6 @@
 
   <div v-else>
     <span class="fa fa-refresh fa-spin fa-fw fa-2x"></span><span>{{msg}}</span>
-  </div>
-
-  <div>
-    <span>Model:</span><span>{{modelDef}}</span>
   </div>
 
   <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
@@ -47,9 +46,14 @@ export default {
   data () {
     return {
       loadDone: false,
-      modelDef: {},
       titleNoteDlg: '',
       textNoteDlg: '',
+      modelDef: {
+        Model: {
+          Name: '',
+          Digest: ''
+        }
+      },
       msg: ''
     }
   },
@@ -70,8 +74,9 @@ export default {
       this.msg = 'Loading...'
       try {
         const response = await axios.get(u)
-        this.modelDef = response.data
-        this.setTheModel(this.modelDef)   // update current model in store
+        // this.modelDef = response.data
+        this.setTheModel(response.data)   // update current model in store
+        this.modelDef = this.theModel
       } catch (e) {
         this.msg = 'Server offline or model not found'
       }
@@ -81,15 +86,15 @@ export default {
     // is model notes not empty
     isModelNote (md) {
       if (!md) return false
-      if (!md.hasOwnProperty('TxtRow')) return false
-      if (!md.TxtRow.hasOwnProperty('Note')) return false
-      return (md.TxtRow.Note || '') !== ''
+      if (!md.hasOwnProperty('DescrNote')) return false
+      if (!md.DescrNote.hasOwnProperty('Note')) return false
+      return (md.DescrNote.Note || '') !== ''
     },
 
     showModelNote (md) {
       if (!md) return false
-      this.titleNoteDlg = md.ModelRow.Name
-      this.textNoteDlg = md.TxtRow.Note
+      this.titleNoteDlg = md.Model.Name
+      this.textNoteDlg = md.DescrNote.Note
       this.$refs.noteDlg.open()
     },
 
