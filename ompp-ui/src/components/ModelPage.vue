@@ -5,8 +5,8 @@
   <div v-if="loadDone" class="mdc-typography--body1">
 
       <i class="fa fa-subscript fa-lg" role="presentation" aria-hidden="true"></i>
-      <span>{{ modelDef.Model.Name }}
-        <span>{{ modelDef.DescrNote.Descr }}</span>
+      <span>{{ modelName }}
+        <span>{{ modelDescr }}</span>
       </span>
 
     <a href="#" 
@@ -37,6 +37,7 @@ import { mapGetters, mapMutations } from 'vuex'
 import { GET, SET } from '@/store'
 import OmMcwButton from './OmMcwButton'
 import OmMcwDialog from './OmMcwDialog'
+import { default as mC } from '@/modelCommon'
 
 export default {
   props: {
@@ -46,19 +47,22 @@ export default {
   data () {
     return {
       loadDone: false,
-      titleNoteDlg: '',
-      textNoteDlg: '',
       modelDef: {
         Model: {
           Name: '',
           Digest: ''
         }
       },
+      titleNoteDlg: '',
+      textNoteDlg: '',
       msg: ''
     }
   },
 
   computed: {
+    modelName () { return mC.modelName(this.modelDef) },
+    modelDescr () { return mC.modelDescr(this.modelDef) },
+
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,
@@ -74,7 +78,6 @@ export default {
       this.msg = 'Loading...'
       try {
         const response = await axios.get(u)
-        // this.modelDef = response.data
         this.setTheModel(response.data)   // update current model in store
         this.modelDef = this.theModel
       } catch (e) {
@@ -83,18 +86,15 @@ export default {
       this.loadDone = true
     },
 
-    // is model notes not empty
+    // if model notes not empty
     isModelNote (md) {
-      if (!md) return false
-      if (!md.hasOwnProperty('DescrNote')) return false
-      if (!md.DescrNote.hasOwnProperty('Note')) return false
-      return (md.DescrNote.Note || '') !== ''
+      return mC.isModelNote(md)
     },
-
+    // then show model notes
     showModelNote (md) {
-      if (!md) return false
-      this.titleNoteDlg = md.Model.Name
-      this.textNoteDlg = md.DescrNote.Note
+      let d = mC.modelDescr(md)
+      this.titleNoteDlg = mC.modelName(md) + (d !== '' ? ': ' + d : '')
+      this.textNoteDlg = mC.modelNote(md)
       this.$refs.noteDlg.open()
     },
 

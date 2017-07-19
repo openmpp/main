@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { default as mC } from '@/modelCommon'
 
 Vue.use(Vuex)
 
@@ -33,7 +34,9 @@ const state = {
 // getters
 const getters = {
   [GET.UI_LANG]: state => state.uiLang,
+
   [GET.OMPP_SRV_URL]: state => (process.env.OMPP_SRV_URL_ENV || ''),
+
   [GET.THE_MODEL]: state => state.theModel
 }
 
@@ -42,9 +45,7 @@ const mutations = {
   [SET.UI_LANG] (state, lang) { state.uiLang = lang || '' },
 
   [SET.THE_MODEL] (state, md) {
-    if (!md) return
-    if (!md.hasOwnProperty('Model')) return
-    if (!md.Model.hasOwnProperty('Name') || !md.Model.hasOwnProperty('Digest')) return
+    if (!mC.isModel(md)) return
     state.theModel = md
   }
 }

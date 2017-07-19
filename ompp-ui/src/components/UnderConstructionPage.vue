@@ -1,5 +1,5 @@
 <template>
-  <div id="none-404-msg" class="mdc-typography">
+  <div id="under-construction-msg" class="mdc-typography">
     <i class="material-icons om-mcw-stop-icon" aria-hidden="true">do_not_disturb_on</i>
     <span class="mdc-typography--body1">{{ msg }}</span>
   </div>
@@ -9,10 +9,7 @@
 export default {
   data () {
     return {
-      msg: '404 - not found: ' +
-        (((window.location.pathname || '').length > 100)
-          ? (window.location.pathname || '').substr(0, 100) + '...'
-            : (window.location.pathname || ''))
+      msg: 'Work in progress, please try again later.'
     }
   }
 }
@@ -21,7 +18,7 @@ export default {
 <!-- this component only css -->
 <style scoped>
 
-#none-404-msg {
+#under-construction-msg {
   text-align: center;
 }
 

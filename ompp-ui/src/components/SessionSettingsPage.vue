@@ -2,9 +2,9 @@
   <div id="one" class="mdc-typography">
     <slot></slot>
     <p class="mdc-typography--body1">For internal use only.</p>
-    <p class="mdc-typography--body1">modelTitle ={{ modelTitle }}=</p>
-    <p class="mdc-typography--body1">uiLang ={{ uiLang }}=</p>
-    <p class="mdc-typography--body1">msg ={{ msg }}=</p>
+    <p class="mdc-typography--body1">One modelTitle ={{ modelTitle }}=</p>
+    <p class="mdc-typography--body1">One uiLang ={{ uiLang }}=</p>
+    <p class="mdc-typography--body1">One msg ={{ msg }}=</p>
 
     <p class="mdc-typography--body1">Fa =<i class="fa fa-subscript fa-2x" role="presentation"aria-hidden="true"></i>=</p>
 
@@ -44,7 +44,9 @@ export default {
   },
 
   computed: {
-    modelTitle () { return mC.modelTitle(this.theModel) },
+    modelTitle () {
+      return mC.modelTitle(this.theModel)
+    },
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,

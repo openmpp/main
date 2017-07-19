@@ -7,25 +7,24 @@
 
       <li v-for="m in modelLst" :key="m.Model.Digest" class="mdc-list-item">
 
-        <router-link :to="'/model/' + m.Model.Digest" class="ahref-model">
-          <i class="mdc-list-item__start-detail fa fa-subscript fa-lg" role="presentation" aria-hidden="true"></i>
-          <span class="mdc-list-item__text">{{ m.Model.Name }}
-            <span class="mdc-list-item__text__secondary">{{ m.DescrNote.Descr }}</span>
-          </span>
-        </router-link>
-
         <a href="#" 
           v-if="isModelNote(m)" 
           @click="showModelNote(m)" 
-          class="material-icons mdc-list-item__end-detail" 
+          class="material-icons mdc-list-item__start-detail" 
           title="Notes" 
           aria-hidden="true">info_outline</a>
         <a href="#" 
           v-else 
           @click="showModelNote(m)" 
-          class="material-icons mdc-list-item__end-detail info-disabled" 
+          class="material-icons mdc-list-item__start-detail info-disabled" 
           title="Notes" 
           aria-hidden="true">info</a>
+
+        <router-link :to="'/model/' + m.Model.Digest" class="ahref-model">
+          <span class="mdc-list-item__text">{{ m.Model.Name }}
+            <span class="mdc-list-item__text__secondary">{{ m.DescrNote.Descr }}</span>
+          </span>
+        </router-link>
 
       </li>
 
@@ -50,6 +49,7 @@ import axios from 'axios'
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import OmMcwDialog from './OmMcwDialog'
+import { default as mC } from '@/modelCommon'
 
 export default {
   data () {
@@ -84,18 +84,15 @@ export default {
       this.loadDone = true
     },
 
-    // is model notes not empty
+    // if model notes not empty
     isModelNote (md) {
-      if (!md) return false
-      if (!md.hasOwnProperty('DescrNote')) return false
-      if (!md.DescrNote.hasOwnProperty('Note')) return false
-      return (md.DescrNote.Note || '') !== ''
+      return mC.isModelNote(md)
     },
-
+    // then show model notes
     showModelNote (md) {
-      if (!md) return false
-      this.titleNoteDlg = md.Model.Name
-      this.textNoteDlg = md.DescrNote.Note
+      let d = mC.modelDescr(md)
+      this.titleNoteDlg = mC.modelName(md) + (d !== '' ? ': ' + d : '')
+      this.textNoteDlg = mC.modelNote(md)
       this.$refs.noteDlg.open()
     }
   },

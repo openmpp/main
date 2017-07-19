@@ -1,5 +1,5 @@
 <template>
-  <div id="info-page" class="mdc-typography mdc-typography--display">
+  <div id="info-page" class="mdc-typography">
     <div v-if="loadDone" class="om-mcw-lic mdc-typography--body1">{{ msg }}</div>
     <div v-else>
       <span class="fa fa-refresh fa-spin fa-fw fa-2x"></span><span>{{msg}}</span>

@@ -68,6 +68,10 @@
             <a href="//www.openmpp.org/wiki/" target="_blank" class="mdc-list-item" role="menuitem" tabindex="0">
               <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">link</i>OpenM++ wiki
             </a>
+            <hr class="mdc-list-divider" role="separator"></hr>
+            <router-link to="/one" class="mdc-list-item" role="menuitem" tabindex="0">
+              <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">settings</i>Test
+            </router-link>
           </om-mcw-menu>
           
         </section>
@@ -92,12 +96,13 @@ import OmMcwDrawer from './components/OmMcwDrawer'
 import OmMcwMenu from './components/OmMcwMenu'
 import { mapGetters, mapMutations } from 'vuex'
 import { GET, SET } from './store'
+import { default as mC } from './modelCommon'
 
 export default {
   // name: 'app',
   data () {
     return {
-      msg: ''
+      // msg: ''
     }
   },
   components: {
@@ -106,7 +111,8 @@ export default {
 
   computed: {
     mainTitle () {
-      return (this.theModel.Name || '') !== '' ? this.theModel.Name : 'OpenM++'
+      let t = mC.modelTitle(this.theModel)
+      return (t !== '') ? t : 'OpenM++'
     },
     ...mapGetters({
       uiLang: GET.UI_LANG,
@@ -121,18 +127,12 @@ export default {
     toggleMore () {
       this.$refs.more.toggle()
     },
-    doRefresh () {
-      this.msg = 'do refresh'
-    },
     // more menu: view settings and language change
     moreSelected (evt) {
       let lc = evt.item.textContent || ''
       lc = lc.substring(lc, lc.indexOf('_lang_change_')).trim()
       if (lc) {
-        this.msg = 'language: ' + lc
         this.setUiLang(lc)
-      } else {
-        this.msg = evt.item.textContent + ' ' + evt.index.toString()
       }
     },
     ...mapMutations({
