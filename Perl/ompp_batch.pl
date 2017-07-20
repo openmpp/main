@@ -88,6 +88,7 @@ my ($opt, $usage) = describe_options(
 	[ 'mpi'         => 'use mpi to name and launch model' ],
 
 	[ 'runs|r=s'    => 'which runs to launch, e.g. 0,1,2,4,8-10' ],
+	[ 'force|f'     => 'launch runs even if results present' ],
 
 	[ 'list|l'      => 'just list runs in batch' ],
 	[ 'assemble|a'  => 'just assemble existing runs' ],
@@ -250,7 +251,7 @@ if (! -d $out_dir) {
 
 # OM_ROOT is needed to locate the dbcopy.exe utility
 my $om_root = $ENV{'OM_ROOT'};
-$om_root ne '' or die 'environment variable OM_ROOT not defined, stopped';
+defined($om_root) or die 'environment variable OM_ROOT not defined, stopped';
 my $dbcopy_exe = "${om_root}/bin/dbcopy.exe" or die;
 -f $dbcopy_exe or die "dbcopy utility $dbcopy_exe not found, stopped";
 
@@ -266,7 +267,16 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
 
 	for my $run (@runs) {
 		my $run_name = $prefix.$run_names[$run];
-		print "Launching run ${run} - ${run_name}\n";
+		
+		# The input/output database for this run
+		my $database_sqlite = "${out_dir}/${run_name}.sqlite";
+		if (-f $database_sqlite && ! $opt->force) {
+			# output database already exists, and force option not provided, skip
+			print "Skip existing run ${run} - ${run_name}\n";
+			next;
+		}
+		
+		print "Launch run    ${run} - ${run_name}\n";
 		
 		# Create ini file with parameter values
 		my $ini_file = "${out_dir}/${run_name}.ini";
@@ -276,8 +286,6 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
 
 		my $log_file = "${out_dir}/${run_name}.log";
 		
-		# The input/output database for this run
-		my $database_sqlite = "${out_dir}/${run_name}.sqlite";
 		copy $input_db, $database_sqlite or die;
 		
 		($merged, $retval) = tee_merged {
@@ -285,7 +293,7 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
 			
 			if ($processes > 1) {
 				my $msmpi_bin = $ENV{'MSMPI_BIN'};
-				$msmpi_bin ne '' or die "Microsoft MPI not installed";
+				defined($msmpi_bin) or die "Microsoft MPI not installed";
 				my $mpiexec_exe = "${msmpi_bin}mpiexec.exe";
 				-f $mpiexec_exe or die "mpiexec.exe not found";
 				push @args,
