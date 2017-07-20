@@ -87,9 +87,6 @@ my $retval; # return value from program
 my $merged; # output from program
 my $sql; # a SQL statement
 			
-# copy example MDB to output MDB
-copy $ref_db, $out_db;
-
 # Following section adapted from common.pm (ompp_tables_to_csv)
 
 #
@@ -202,7 +199,9 @@ else {
 print "temp_dir=$temp_dir\n" if $opt->verbose;
 
 # connection string to ompp DB
-my $conn = "\"Database=${in_db}; Timeout=86400; OpenMode=ReadWrite;\"";
+my $in_db_msdos = $in_db;
+$in_db_msdos =~ s@/@\\@g;
+my $conn = "\"Database=${in_db_msdos}; Timeout=86400; OpenMode=ReadWrite;\"";
 
 # Dump ompp DB to csv
 ($merged, $retval) = capture_merged {
@@ -223,19 +222,6 @@ if ($retval) {
 	die;
 }
 
-# Open output Access DB
-use Win32::OLE;
-use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
-
-my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${out_db}";
-my $ADO_Conn = Win32::OLE->new('ADODB.Connection');	# creates a connection object
-my $ADO_RS = Win32::OLE->new('ADODB.Recordset');		# creates a recordset object
-$ADO_Conn->Open($sConnect);
-if (Win32::OLE->LastError()) {
-	print "Fatal Error: ", Win32::OLE->LastError(), "\n";
-	exit -1;
-}
-
 my @fields; # working variable
 
 #
@@ -244,9 +230,11 @@ my @fields; # working variable
 
 print "Processing run information...\n";
 
+my $run_id = -1;
 my $run_name = 'untitled';
 my $run_date_time = '';
 my $run_sub_count = 1;
+my $run_sub_completed = 0;
 {
 	my $run_lst = "${temp_dir}/${model}/run_lst.csv";
 	-e $run_lst or die;
@@ -259,18 +247,25 @@ my $run_sub_count = 1;
 		chomp $record;
 		@fields = split(/,/, $record);
 		# Fields are run_id,model_id,run_name,sub_count,sub_started,sub_completed,create_dt,status,update_dt,run_digest
+		$run_id = $fields[0];
+		print "run_id=${run_id}\n" if $opt->verbose;
 		$run_name = $fields[2];
 		print "run_name=${run_name}\n" if $opt->verbose;
 		$run_sub_count = $fields[3];
 		print "run_sub_count=${run_sub_count}\n" if $opt->verbose;
+		$run_sub_completed = $fields[5];
+		print "run_sub_completed=${run_sub_completed}\n" if $opt->verbose;
 		$run_date_time = $fields[6];
 		print "run_date_time=${run_date_time}\n" if $opt->verbose;
 	}
 	else {
+		close INPUT;
 		die 'missing run record in run_lst';
 	}
 	close INPUT;
 }
+
+die "run is incomplete - stopped." if $run_sub_count != $run_sub_completed;
 
 #
 # Get the run description, note
@@ -296,6 +291,22 @@ my $run_note = '';
 		print "run_note=${run_note}\n" if $opt->verbose;
 	}
 	close INPUT;
+}
+
+# copy example MDB to output MDB
+copy $ref_db, $out_db;
+
+# Open output Access DB
+use Win32::OLE;
+use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
+
+my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${out_db}";
+my $ADO_Conn = Win32::OLE->new('ADODB.Connection');	# creates a connection object
+my $ADO_RS = Win32::OLE->new('ADODB.Recordset');		# creates a recordset object
+$ADO_Conn->Open($sConnect);
+if (Win32::OLE->LastError()) {
+	print "Fatal Error: ", Win32::OLE->LastError(), "\n";
+	exit -1;
 }
 
 #
