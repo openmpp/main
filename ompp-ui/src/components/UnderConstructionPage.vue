@@ -1,7 +1,7 @@
 <template>
-  <div id="under-construction-msg" class="mdc-typography">
+  <div id="under-construction-page" class="mdc-typography">
     <i class="material-icons om-mcw-stop-icon" aria-hidden="true">do_not_disturb_on</i>
-    <span class="mdc-typography--body1">{{ msg }}</span>
+    <span class="mdc-typography--body1">Work in progress, please try again later.</span>
   </div>
 </template>
 
@@ -9,7 +9,6 @@
 export default {
   data () {
     return {
-      msg: 'Work in progress, please try again later.'
     }
   }
 }
@@ -18,7 +17,7 @@ export default {
 <!-- this component only css -->
 <style scoped>
 
-#under-construction-msg {
+#under-construction-page {
   text-align: center;
 }
 

@@ -2,7 +2,7 @@
   <div id="info-page" class="mdc-typography">
     <div v-if="loadDone" class="om-mcw-lic mdc-typography--body1">{{ msg }}</div>
     <div v-else>
-      <span class="fa fa-refresh fa-spin fa-fw fa-2x"></span><span>{{msg}}</span>
+      <span class="material-icons om-mcw-spin">refresh</span><span>{{msg}}</span>
     </div>
   </div>
 </template>
@@ -56,7 +56,8 @@ export default {
 
 </style>
 
-<!-- import MDC styles -->
+<!-- MDC styles -->
 <style lang="scss">
   @import "@material/typography/mdc-typography";
+  @import "@material/theme/mdc-theme";
 </style>

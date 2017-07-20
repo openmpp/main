@@ -4,22 +4,19 @@
 
   <div v-if="loadDone" class="mdc-typography--body1">
 
-      <i class="fa fa-subscript fa-lg" role="presentation" aria-hidden="true"></i>
-      <span>{{ modelName }}
-        <span>{{ modelDescr }}</span>
-      </span>
-
     <a href="#" 
-      v-if="isModelNote(modelDef)" 
-      @click="showModelNote(modelDef)" 
+      v-if="isModelNote()" 
+      @click="showModelNote()" 
       class="material-icons" 
       title="Notes" 
       aria-hidden="true">info_outline</a>
 
+      <span>{{ modelTitle() }}</span>
+
   </div>
 
   <div v-else>
-    <span class="fa fa-refresh fa-spin fa-fw fa-2x"></span><span>{{msg}}</span>
+    <span class="material-icons om-mcw-spin">refresh</span><span>{{msg}}</span>
   </div>
 
   <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
@@ -37,7 +34,7 @@ import { mapGetters, mapMutations } from 'vuex'
 import { GET, SET } from '@/store'
 import OmMcwButton from './OmMcwButton'
 import OmMcwDialog from './OmMcwDialog'
-import { default as mC } from '@/modelCommon'
+import { default as Mdf } from '@/modelCommon'
 
 export default {
   props: {
@@ -47,12 +44,6 @@ export default {
   data () {
     return {
       loadDone: false,
-      modelDef: {
-        Model: {
-          Name: '',
-          Digest: ''
-        }
-      },
       titleNoteDlg: '',
       textNoteDlg: '',
       msg: ''
@@ -60,9 +51,6 @@ export default {
   },
 
   computed: {
-    modelName () { return mC.modelName(this.modelDef) },
-    modelDescr () { return mC.modelDescr(this.modelDef) },
-
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,
@@ -71,6 +59,19 @@ export default {
   },
 
   methods: {
+    modelTitle () { return Mdf.modelTitle(this.theModel) },
+
+    // if model notes not empty
+    isModelNote () {
+      return Mdf.isModelNote(this.theModel)
+    },
+    // then show model notes
+    showModelNote () {
+      this.titleNoteDlg = Mdf.modelTitle(this.theModel)
+      this.textNoteDlg = Mdf.modelNote(this.theModel)
+      this.$refs.noteDlg.open()
+    },
+
     // refersh current model
     async doRefresh () {
       let u = this.omppServerUrl + '/api/model-text/' + (this.digest || '') + (this.uiLang !== '' ? '/' + this.uiLang : '')
@@ -79,23 +80,10 @@ export default {
       try {
         const response = await axios.get(u)
         this.setTheModel(response.data)   // update current model in store
-        this.modelDef = this.theModel
       } catch (e) {
         this.msg = 'Server offline or model not found'
       }
       this.loadDone = true
-    },
-
-    // if model notes not empty
-    isModelNote (md) {
-      return mC.isModelNote(md)
-    },
-    // then show model notes
-    showModelNote (md) {
-      let d = mC.modelDescr(md)
-      this.titleNoteDlg = mC.modelName(md) + (d !== '' ? ': ' + d : '')
-      this.textNoteDlg = mC.modelNote(md)
-      this.$refs.noteDlg.open()
     },
 
     ...mapMutations({
@@ -104,7 +92,12 @@ export default {
   },
 
   mounted () {
-    this.doRefresh()
+    // if model already loaded then exit
+    if (Mdf.modelDigest(this.theModel) === this.digest) {
+      this.loadDone = true
+      return
+    }
+    this.doRefresh() // load new model
   },
 
   components: { OmMcwButton, OmMcwDialog }
@@ -172,10 +165,9 @@ a.mdc-list-item__end-detail:hover {
 
 </style>
 
-<!-- MDC styles expected to be imported by App -->
-<!-- 
+<!-- MDC styles -->
 <style lang="scss">
   @import "@material/list/mdc-list";
   @import "@material/typography/mdc-typography";
+  @import "@material/theme/mdc-theme";
 </style>
--->

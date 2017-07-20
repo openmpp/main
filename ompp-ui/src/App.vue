@@ -96,22 +96,19 @@ import OmMcwDrawer from './components/OmMcwDrawer'
 import OmMcwMenu from './components/OmMcwMenu'
 import { mapGetters, mapMutations } from 'vuex'
 import { GET, SET } from './store'
-import { default as mC } from './modelCommon'
+import { default as Mdf } from './modelCommon'
 
 export default {
-  // name: 'app',
+  name: 'app',
   data () {
     return {
       // msg: ''
     }
   },
-  components: {
-    OmMcwDrawer, OmMcwMenu
-  },
 
   computed: {
     mainTitle () {
-      let t = mC.modelTitle(this.theModel)
+      let t = Mdf.modelTitle(this.theModel)
       return (t !== '') ? t : 'OpenM++'
     },
     ...mapGetters({
@@ -138,6 +135,10 @@ export default {
     ...mapMutations({
       setUiLang: SET.UI_LANG
     })
+  },
+
+  components: {
+    OmMcwDrawer, OmMcwMenu
   }
 }
 
@@ -183,9 +184,9 @@ export default {
 
 </style>
 
-<!-- import font-awesome, shared by multiple pages -->
+<!-- import refresh spin animation shared style -->
 <style lang="scss">
-  @import "./font-awesome/scss/font-awesome.scss"
+  @import "./refresh-spin.scss";
 </style>
 
 <!-- import MDC styles -->

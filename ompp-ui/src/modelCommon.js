@@ -8,6 +8,12 @@ const ModelCommon = {
     return md.Model.hasOwnProperty('Name') && md.Model.hasOwnProperty('Digest')
   },
 
+  // if this is an empty model
+  isEmptyModel (md) {
+    if (!this.isModel(md)) return false
+    return (md.Model.Name || '') === '' || (md.Model.Digest || '') === ''
+  },
+
   // name of the model
   modelName (md) {
     if (!md) return ''

@@ -1,5 +1,5 @@
 <template>
-  <div id="none-404-msg" class="mdc-typography">
+  <div id="none-404-page" class="mdc-typography">
     <i class="material-icons om-mcw-stop-icon" aria-hidden="true">do_not_disturb_on</i>
     <span class="mdc-typography--body1">{{ msg }}</span>
   </div>
@@ -21,7 +21,7 @@ export default {
 <!-- this component only css -->
 <style scoped>
 
-#none-404-msg {
+#none-404-page {
   text-align: center;
 }
 

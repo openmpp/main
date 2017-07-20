@@ -6,8 +6,6 @@
     <p class="mdc-typography--body1">uiLang ={{ uiLang }}=</p>
     <p class="mdc-typography--body1">msg ={{ msg }}=</p>
 
-    <p class="mdc-typography--body1">Fa =<i class="fa fa-subscript fa-2x" role="presentation"aria-hidden="true"></i>=</p>
-
     <om-mcw-button :raised="true" @click="doClick('ok')">ok</om-mcw-button>
     <om-mcw-button :raised="true" @click="doShow()">show</om-mcw-button>
 
@@ -30,7 +28,7 @@ import { mapGetters, mapMutations } from 'vuex'
 import { GET, SET } from '@/store'
 import OmMcwButton from './OmMcwButton'
 import OmMcwDialog from './OmMcwDialog'
-import { default as mC } from '@/modelCommon'
+import { default as Mdf } from '@/modelCommon'
 
 export default {
   props: {
@@ -44,7 +42,7 @@ export default {
   },
 
   computed: {
-    modelTitle () { return mC.modelTitle(this.theModel) },
+    modelTitle () { return Mdf.modelTitle(this.theModel) },
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,

@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { default as mC } from '@/modelCommon'
+import { default as Mdf } from '@/modelCommon'
 
 Vue.use(Vuex)
 
@@ -14,7 +14,8 @@ export const GET = {
 // mutations names
 export const SET = {
   UI_LANG: 'uiLang',
-  THE_MODEL: 'theModel'
+  THE_MODEL: 'theModel',
+  EMPTY_MODEL: 'emptyModel'
 }
 
 // store state: application model
@@ -45,8 +46,13 @@ const mutations = {
   [SET.UI_LANG] (state, lang) { state.uiLang = lang || '' },
 
   [SET.THE_MODEL] (state, md) {
-    if (!mC.isModel(md)) return
+    if (!Mdf.isModel(md)) return
     state.theModel = md
+  },
+
+  // set model to empty value: clear the model
+  [SET.EMPTY_MODEL] (state) {
+    state.theModel = { Model: { Name: '', Digest: '' } }
   }
 }
 
