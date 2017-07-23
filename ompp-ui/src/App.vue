@@ -14,12 +14,23 @@
       </router-link>
     </nav>
     <hr class="mdc-list-divider" role="separator">
+
     <nav class="mdc-list">
-      <router-link to="/run" class="mdc-list-item" role="menuitem">
-        <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">launch</i>Run the model
+      <router-link to="/service" :class="{'disable-model-link': !isCurrentModel}" class="mdc-list-item" role="menuitem">
+        <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">input</i>Parameters
       </router-link>
+      <router-link to="/history" :class="{'disable-model-link': !isCurrentModel}" class="mdc-list-item" role="menuitem">
+        <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">launch</i>Output tables
+      </router-link>
+      <router-link to="/run" :class="{'disable-model-link': !isCurrentModel}" class="mdc-list-item" role="menuitem">
+        <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">queue_play_next</i>Run the model
+      </router-link>
+    </nav>
+    <hr class="mdc-list-divider" role="separator">
+
+    <nav class="mdc-list">
       <router-link to="/service" class="mdc-list-item" role="menuitem">
-        <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">queue_play_next</i>Service status
+        <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">devices_other</i>Service status
       </router-link>
       <router-link to="/history" class="mdc-list-item" role="menuitem">
         <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">history</i>Run history
@@ -34,10 +45,12 @@
       <div class="mdc-toolbar__row">
       
         <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
-          <button @click="toggleDrawer" class="material-icons mdc-toolbar__icon--menu" title="Menu" alt="Menu">menu</button>
+          <button @click="toggleDrawer" class="toolbar-button material-icons mdc-toolbar__icon--menu" title="Menu" alt="Menu">menu</button>
           <span id="om-mcw-title" class="mdc-toolbar__title">{{mainTitle}}</span>
         </section>
-         
+        <section class="mdc-toolbar__section mdc-toolbar__section--align-end mdc-toolbar__section--shrink-to-fit">
+          <button @click="doRefresh" class="toolbar-button material-icons mdc-toolbar__icon" title="Refresh" alt="Refresh">refresh</button>
+        </section>
         <section class="mdc-toolbar__section mdc-toolbar__section--align-end mdc-toolbar__section--shrink-to-fit">
           <router-link to="/login" class="material-icons mdc-toolbar__icon" title="Login" alt="Login">account_circle</router-link>
         </section>
@@ -56,22 +69,29 @@
               <span hidden="true">_lang_change_</span>Français
             </a>
             <hr class="mdc-list-divider" role="separator"></hr>
+<!--
+            <a href="#" class="mdc-list-item" role="menuitem" tabindex="0">
+              <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">refresh</i>
+              <span hidden="true">_action_button_</span>Refresh
+            </a>
+            <router-link to="/login" class="mdc-list-item" role="menuitem" tabindex="0">
+              <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">account_circle</i>Login
+            </router-link>
+-->
             <router-link to="/settings" class="mdc-list-item" role="menuitem" tabindex="0">
               <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">settings</i>Settings
             </router-link>
             <router-link to="/info" class="mdc-list-item" role="menuitem" tabindex="0">
               <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">info_outline</i>Licence
             </router-link>
+            <hr class="mdc-list-divider" role="separator"></hr>
+
             <a href="//www.openmpp.org/" target="_blank" class="mdc-list-item" role="menuitem" tabindex="0">
               <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">link</i>OpenM++ website
             </a>
             <a href="//www.openmpp.org/wiki/" target="_blank" class="mdc-list-item" role="menuitem" tabindex="0">
               <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">link</i>OpenM++ wiki
             </a>
-            <hr class="mdc-list-divider" role="separator"></hr>
-            <router-link to="/one" class="mdc-list-item" role="menuitem" tabindex="0">
-              <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">settings</i>Test
-            </router-link>
           </om-mcw-menu>
           
         </section>
@@ -80,9 +100,7 @@
     </header>
     
     <main class="om-mcw-main">
-
-      <router-view></router-view>
-
+      <router-view :refresh-tickle="refreshTickle"></router-view>
     </main>
     
   </div>
@@ -102,15 +120,21 @@ export default {
   name: 'app',
   data () {
     return {
-      // msg: ''
+      // msg: '',
+      refreshTickle: false
     }
   },
 
   computed: {
     mainTitle () {
       let t = Mdf.modelTitle(this.theModel)
-      return (t !== '') ? t : 'OpenM++'
+      if (t === '') return 'OpenM++'
+      return (t.length > 100) ? t.substring(0, 100) + '...' : t
     },
+    isCurrentModel () {
+      return Mdf.isModel(this.theModel) && !Mdf.isModelEmpty(this.theModel)
+    },
+
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL
@@ -124,22 +148,36 @@ export default {
     toggleMore () {
       this.$refs.more.toggle()
     },
-    // more menu: view settings and language change
+    doRefresh () {
+      this.refreshTickle = !this.refreshTickle
+    },
+
+    // more menu: view and update settings, change language, refresh data
     moreSelected (evt) {
-      let lc = evt.item.textContent || ''
-      lc = lc.substring(lc, lc.indexOf('_lang_change_')).trim()
+      // if this is language change
+      let txt = evt.item.textContent || ''
+      let lc = txt.substring(txt, txt.indexOf('_lang_change_')).trim()
       if (lc) {
         this.setUiLang(lc)
+        return
+      }
+      // if this is action button click
+      let bt = txt.substring(txt, txt.indexOf('_action_button_')).trim()
+      if (bt) {
+        if (bt === 'refresh') {
+          this.doRefresh()
+        } else {
+          console.log('moreSelected: unknown action button', bt)
+        }
       }
     },
+
     ...mapMutations({
       setUiLang: SET.UI_LANG
     })
   },
 
-  components: {
-    OmMcwDrawer, OmMcwMenu
-  }
+  components: { OmMcwDrawer, OmMcwMenu }
 }
 
 </script>
@@ -169,9 +207,20 @@ export default {
   padding-left: 1em;
 }
 
+/* disable model link if no current model selected */
+.disable-model-link {
+  pointer-events: none;
+  cursor: default;
+}
+
 /* toolbar */
 .mdc-toolbar a {
   text-decoration: none;
+}
+
+/* toolbar icon buttons */
+.toolbar-button:hover {
+  cursor: pointer;
 }
 
 /* fix for ie 10+ */

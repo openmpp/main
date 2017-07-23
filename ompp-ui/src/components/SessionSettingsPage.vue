@@ -5,19 +5,27 @@
     <div class="mdc-typography--body1 set-table">
 
       <div class="set-table-row">
-          <span class="set-table-cell">
-            <om-mcw-button :raised="true" @click="doModelClear()">Clear</om-mcw-button>
-          </span>
-          <span class="set-table-cell">Model:  </span>
-          <span class="set-table-cell mdc-typography--body2">{{ modelTitle }}</span>
+        <span class="set-table-cell">
+          <om-mcw-button :raised="true" @click="doUiLangClear()">Clear</om-mcw-button>
+        </span>
+        <span class="set-table-cell">Language:</span>
+        <span class="set-table-cell mdc-typography--body2">{{ uiLangTitle }}</span>
       </div>
 
       <div class="set-table-row">
-          <span class="set-table-cell">
-            <om-mcw-button :raised="true" @click="doUiLangClear()">Clear</om-mcw-button>
-          </span>
-          <span class="set-table-cell">Language:</span>
-          <span class="set-table-cell mdc-typography--body2">{{ uiLangTitle }}  </span>
+        <span class="set-table-cell">
+          <om-mcw-button :raised="true" @click="doModelListClear()">Clear</om-mcw-button>
+        </span>
+        <span class="set-table-cell">Models List:</span>
+        <span class="set-table-cell mdc-typography--body2">{{ modelListCount() }} model(s)</span>
+      </div>
+
+      <div class="set-table-row">
+        <span class="set-table-cell">
+          <om-mcw-button :raised="true" @click="doModelClear()">Clear</om-mcw-button>
+        </span>
+        <span class="set-table-cell">Current Model:</span>
+        <span class="set-table-cell mdc-typography--body2">{{ modelTitle }}</span>
       </div>
 
     </div>
@@ -41,9 +49,9 @@ export default {
 
   computed: {
     modelTitle () {
-      return !Mdf.isModel(this.theModel)
-        ? 'Undefined model'
-        : !Mdf.isEmptyModel(this.theModel) ? Mdf.modelTitle(this.theModel) : 'No model selected'
+      if (!Mdf.isModel(this.theModel)) return 'Undefined model'
+      if (Mdf.isModelEmpty(this.theModel)) return 'Not selected'
+      return Mdf.modelTitle(this.theModel)
     },
 
     uiLangTitle () { return this.uiLang !== '' ? this.uiLang : 'Default' },
@@ -51,18 +59,22 @@ export default {
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,
+      modelList: GET.MODEL_LIST,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },
 
   methods: {
-    doModelClear () { this.setEmptyModel() },
     doUiLangClear () { this.setUiLang('') },
+    doModelClear () { this.setEmptyModel() },
+    doModelListClear () { this.setEmptyModelList() },
+    modelListCount () { return Mdf.isModelList(this.modelList) ? this.modelList.length : 0 },
 
     ...mapMutations({
       setUiLang: SET.UI_LANG,
       setTheModel: SET.THE_MODEL,
-      setEmptyModel: SET.EMPTY_MODEL
+      setEmptyModel: SET.EMPTY_MODEL,
+      setEmptyModelList: SET.EMPTY_MODEL_LIST
     })
   },
 

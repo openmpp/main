@@ -43,6 +43,7 @@ export default {
 
   computed: {
     modelTitle () { return Mdf.modelTitle(this.theModel) },
+
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,

@@ -38,7 +38,8 @@ import { default as Mdf } from '@/modelCommon'
 
 export default {
   props: {
-    digest: ''
+    digest: '',
+    refreshTickle: false
   },
 
   data () {
@@ -56,6 +57,13 @@ export default {
       theModel: GET.THE_MODEL,
       omppServerUrl: GET.OMPP_SRV_URL
     })
+  },
+
+  watch: {
+    // refresh button handler
+    refreshTickle () {
+      this.doRefresh()
+    }
   },
 
   methods: {

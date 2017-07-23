@@ -1,5 +1,5 @@
 <!-- based on stasson/vue-mdc-adapter, MIT license -->
-<!--                                                          -->
+<!--                                               -->
 <template>
 
 <div ref="root" :class="classes" tabindex="-1">

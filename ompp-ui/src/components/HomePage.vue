@@ -5,7 +5,7 @@
   <div v-if="loadDone" class="mdc-typography--body1">
     <ul class="mdc-list mdc-list--two-line">
 
-      <li v-for="m in modelLst" :key="m.Model.Digest" class="mdc-list-item">
+      <li v-for="m in modelList" :key="m.Model.Digest" class="mdc-list-item">
 
         <a href="#" 
           v-if="isModelNote(m)" 
@@ -46,16 +46,19 @@
 
 <script>
 import axios from 'axios'
-import { mapGetters } from 'vuex'
-import { GET } from '@/store'
+import { mapGetters, mapMutations } from 'vuex'
+import { GET, SET } from '@/store'
 import OmMcwDialog from './OmMcwDialog'
 import { default as Mdf } from '@/modelCommon'
 
 export default {
+  props: {
+    refreshTickle: false
+  },
+
   data () {
     return {
       loadDone: false,
-      modelLst: [],
       titleNoteDlg: '',
       textNoteDlg: '',
       msg: ''
@@ -65,8 +68,16 @@ export default {
   computed: {
     ...mapGetters({
       uiLang: GET.UI_LANG,
+      modelList: GET.MODEL_LIST,
       omppServerUrl: GET.OMPP_SRV_URL
     })
+  },
+
+  watch: {
+    // refresh button handler
+    refreshTickle () {
+      this.doRefresh()
+    }
   },
 
   methods: {
@@ -83,21 +94,30 @@ export default {
 
     // refersh model list
     async doRefresh () {
-      let u = this.omppServerUrl + '/api/model-list-text/' + (this.uiLang !== '' ? this.uiLang : '')
+      let u = this.omppServerUrl + '/api/model-list-text' + (this.uiLang !== '' ? '/' + this.uiLang : '')
       this.loadDone = false
       this.msg = 'Loading...'
       try {
         const response = await axios.get(u)
-        this.modelLst = response.data
+        this.setModelList(response.data)   // update model list in store
       } catch (e) {
         this.msg = 'Server offline or no models published'
       }
       this.loadDone = true
-    }
+    },
+
+    ...mapMutations({
+      setModelList: SET.MODEL_LIST
+    })
   },
 
   mounted () {
-    this.doRefresh()
+    // if model list already loaded then exit
+    if (Mdf.isModelList(this.modelList) && this.modelList.length > 0) {
+      this.loadDone = true
+      return
+    }
+    this.doRefresh() // load new model list
   },
 
   components: { OmMcwDialog }
