@@ -6,7 +6,6 @@ import InfoPage from '@/components/InfoPage'
 import None404Page from '@/components/None404Page'
 import UnderConstruction from '@/components/UnderConstructionPage'
 import SessionSettings from '@/components/SessionSettingsPage'
-import One from '@/components/One'
 
 Vue.use(Router)
 
@@ -45,10 +44,6 @@ export default new Router({
     {
       path: '/settings',
       component: SessionSettings
-    },
-    {
-      path: '/one',
-      component: One
     },
     {
       path: '*',

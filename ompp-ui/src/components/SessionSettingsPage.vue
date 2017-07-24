@@ -1,27 +1,34 @@
 <template>
-  <div id="one" class="mdc-typography">
+  <div id="settings-page" class="mdc-typography">
     <slot></slot>
-    <p class="mdc-typography--body1">For internal use only.</p>
-    <p class="mdc-typography--body1">One modelTitle ={{ modelTitle }}=</p>
-    <p class="mdc-typography--body1">One uiLang ={{ uiLang }}=</p>
-    <p class="mdc-typography--body1">One msg ={{ msg }}=</p>
+    
+    <div class="mdc-typography--body1 set-table">
 
-    <p class="mdc-typography--body1">Fa =<i class="fa fa-subscript fa-2x" role="presentation"aria-hidden="true"></i>=</p>
+      <div class="set-table-row">
+        <span class="set-table-cell">
+          <om-mcw-button :raised="true" @click="doUiLangClear()">Clear</om-mcw-button>
+        </span>
+        <span class="set-table-cell">Language:</span>
+        <span class="set-table-cell mdc-typography--body2">{{ uiLangTitle }}</span>
+      </div>
 
-    <om-mcw-button :raised="true" @click="doClick('ok')">ok</om-mcw-button>
-    <om-mcw-button :raised="true" @click="doShow()">show</om-mcw-button>
+      <div class="set-table-row">
+        <span class="set-table-cell">
+          <om-mcw-button :raised="true" @click="doModelListClear()">Clear</om-mcw-button>
+        </span>
+        <span class="set-table-cell">Models List:</span>
+        <span class="set-table-cell mdc-typography--body2">{{ modelListCount() }} model(s)</span>
+      </div>
 
-    <om-mcw-dialog 
-      ref="dlg" 
-      id="one-dlg" 
-      cancelText="No"
-      acceptText="Yes"
-      @accept="doAccept" 
-      @cancel="doCancel">
-      <span slot="header">Title</span>
-      <div>Dialog text</div>
-    </om-mcw-dialog>
+      <div class="set-table-row">
+        <span class="set-table-cell">
+          <om-mcw-button :raised="true" @click="doModelClear()">Clear</om-mcw-button>
+        </span>
+        <span class="set-table-cell">Current Model:</span>
+        <span class="set-table-cell mdc-typography--body2">{{ modelTitle }}</span>
+      </div>
 
+    </div>
   </div>
 </template>
 
@@ -29,8 +36,7 @@
 import { mapGetters, mapMutations } from 'vuex'
 import { GET, SET } from '@/store'
 import OmMcwButton from './OmMcwButton'
-import OmMcwDialog from './OmMcwDialog'
-import { default as mC } from '@/modelCommon'
+import { default as Mdf } from '@/modelCommon'
 
 export default {
   props: {
@@ -38,50 +44,65 @@ export default {
 
   data () {
     return {
-      opened: true,
-      msg: 'not initialized'
     }
   },
 
   computed: {
     modelTitle () {
-      return mC.modelTitle(this.theModel)
+      if (!Mdf.isModel(this.theModel)) return 'Undefined model'
+      if (Mdf.isModelEmpty(this.theModel)) return 'Not selected'
+      return Mdf.modelTitle(this.theModel)
     },
+
+    uiLangTitle () { return this.uiLang !== '' ? this.uiLang : 'Default' },
+
     ...mapGetters({
       uiLang: GET.UI_LANG,
       theModel: GET.THE_MODEL,
+      modelList: GET.MODEL_LIST,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },
 
   methods: {
-    doClick (m) { this.msg = m + ':' + process.env.NODE_ENV + ':' + this.omppServerUrl + ':' },
-
-    doShow () {
-      this.msg = 'do show'
-      this.$refs.dlg.open()
-    },
-
-    doAccept () { this.msg = 'do accept' },
-    doCancel () { this.msg = 'do cancel' },
+    doUiLangClear () { this.setUiLang('') },
+    doModelClear () { this.setEmptyModel() },
+    doModelListClear () { this.setEmptyModelList() },
+    modelListCount () { return Mdf.isModelList(this.modelList) ? this.modelList.length : 0 },
 
     ...mapMutations({
       setUiLang: SET.UI_LANG,
-      setTheModel: SET.THE_MODEL
+      setTheModel: SET.THE_MODEL,
+      setEmptyModel: SET.EMPTY_MODEL,
+      setEmptyModelList: SET.EMPTY_MODEL_LIST
     })
   },
 
-  components: { OmMcwButton, OmMcwDialog }
+  components: { OmMcwButton }
 }
 
 </script>
 
 <!-- this component only css -->
-<style scoped>
+<style scoped lang="scss">
+  .set-table {
+    display: table;
+    padding-top: 0.5em;
+  }
 
-.button-m-icon {
-  display: inline;
-  vertical-align: middle;
-}
+  .set-table-row {
+    display: table-row;
+  }
+  
+  .set-table-cell {
+    display: table-cell;
+    padding-right: 0.5em;
+    padding-top: 0.5em;
+  }
+</style>
 
+<!-- MDC styles -->
+<style lang="scss">
+  @import "@material/typography/mdc-typography";
+  @import "@material/theme/mdc-theme";
 </style>

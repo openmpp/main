@@ -8,6 +8,15 @@ const ModelCommon = {
     return md.Model.hasOwnProperty('Name') && md.Model.hasOwnProperty('Digest')
   },
 
+  // if this is an empty model
+  isModelEmpty (md) {
+    if (!this.isModel(md)) return false
+    return (md.Model.Name || '') === '' || (md.Model.Digest || '') === ''
+  },
+
+  // retrun empty model object
+  emptyModel () { return { Model: { Name: '', Digest: '' } } },
+
   // name of the model
   modelName (md) {
     if (!md) return ''
@@ -51,6 +60,16 @@ const ModelCommon = {
     if (!md) return ''
     if (!md.hasOwnProperty('DescrNote')) return ''
     return (md.DescrNote.Note || '')
+  },
+
+  // return true if each list element isModel()
+  isModelList (ml) {
+    if (!ml) return false
+    if (!ml.hasOwnProperty('length')) return false
+    for (let k = 0; k < ml.length; k++) {
+      if (!this.isModel(ml[k])) return false
+    }
+    return true
   }
 }
 
