@@ -7,11 +7,11 @@
     <a href="#" 
       v-if="isModelNote()" 
       @click="showModelNote()" 
-      class="material-icons" 
+      class="model-note material-icons" 
       title="Notes" 
       aria-hidden="true">info_outline</a>
 
-      <span>{{ modelTitle() }}</span>
+      <span class="mdc-typography--body1">{{ modelTitle() }}</span>
 
   </div>
 
@@ -116,59 +116,27 @@ export default {
 <!-- this component only css -->
 <style scoped lang="scss">
 
-.ahref-model {
-  display: block;
-  width: 100%;
+.model-note {
+  display: inline-block;
+  vertical-align: top;
   height: 100%;
-  text-decoration: none;
-  color: var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87));
-}
-
-a.ahref-model:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.mdc-list-item__start-detail, .mdc-list-item__end-detail {
-  display: inline;
-  vertical-align: middle;
   margin: 0;
   text-decoration: none;
-}
-
-.mdc-list-item__start-detail {
+  padding-left: 0.5em;
   padding-right: 0.5em;
 }
 
-.mdc-list-item__end-detail {
-  padding: 1em;
+a.model-note {
+  outline: none;
 }
 
-a.mdc-list-item__end-detail:hover {
+a.model-note:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.mdc-list-item__start-detail, .mdc-list-item__end-detail {
-  color: var(--mdc-theme-text-secondary-on-background, rgba(0, 0, 0, 0.54))
-}
-
-/* fix for ms edge 12+ */
-@supports (-ms-ime-align:auto) {
-  .mdc-list-item__start-detail, .mdc-list-item__end-detail {
-    color: rgba(0, 0, 0, 0.54);
-  }
-  .ahref-model {
-    color: rgba(0, 0, 0, 0.87);
-  }
-}
-
-/* fix for ie 10+ */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  .mdc-list-item__start-detail, .mdc-list-item__end-detail {
-    color: rgba(0, 0, 0, 0.54);
-  }
-  .ahref-model {
-    color: rgba(0, 0, 0, 0.87);
-  }
+.model-note {
+  color: rgba(0, 0, 0, 0.54);
+  color: var(--mdc-theme-text-secondary-on-background, rgba(0, 0, 0, 0.54));
 }
 
 </style>
