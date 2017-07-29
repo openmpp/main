@@ -94,7 +94,7 @@ export default {
 
     // refersh model list
     async doRefresh () {
-      let u = this.omppServerUrl + '/api/model-list-text' + (this.uiLang !== '' ? '/' + this.uiLang : '')
+      let u = this.omppServerUrl + '/api/model-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.msg = 'Loading...'
       try {
@@ -133,6 +133,7 @@ export default {
   width: 100%;
   height: 100%;
   text-decoration: none;
+  color: rgba(0, 0, 0, 0.87);
   color: var(--mdc-theme-text-primary-on-background, rgba(0, 0, 0, 0.87));
 }
 
@@ -164,27 +165,8 @@ a.model-note-disabled {
 }
 
 .model-note, .model-note-disabled {
-  color: var(--mdc-theme-text-secondary-on-background, rgba(0, 0, 0, 0.54))
-}
-
-/* fix for ms edge 12+ */
-@supports (-ms-ime-align:auto) {
-  .model-note, .model-note-disabled {
-    color: rgba(0, 0, 0, 0.54);
-  }
-  .ahref-model {
-    color: rgba(0, 0, 0, 0.87);
-  }
-}
-
-/* fix for ie 10+ */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  .model-note, .model-note-disabled {
-    color: rgba(0, 0, 0, 0.54);
-  }
-  .ahref-model {
-    color: rgba(0, 0, 0, 0.87);
-  }
+  color: rgba(0, 0, 0, 0.54);
+  color: var(--mdc-theme-text-secondary-on-background, rgba(0, 0, 0, 0.54));
 }
 
 </style>

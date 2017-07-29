@@ -15,7 +15,7 @@
     </nav>
     <hr class="mdc-list-divider" role="separator">
 
-    <nav class="mdc-list">
+    <nav class="mdc-list" :class="{'disable-model-menu': !isCurrentModel}">
       <router-link to="/service" :class="{'disable-model-link': !isCurrentModel}" class="mdc-list-item" role="menuitem">
         <i class="material-icons mdc-list-item__start-detail" aria-hidden="true">input</i>Parameters
       </router-link>
@@ -207,7 +207,11 @@ export default {
   padding-left: 1em;
 }
 
-/* disable model link if no current model selected */
+/* disable model menu and links if no current model selected */
+.disable-model-menu {
+  background: rgba(0, 0, 0, 0.02);
+}
+
 .disable-model-link {
   pointer-events: none;
   cursor: default;
@@ -219,16 +223,14 @@ export default {
 }
 
 /* toolbar icon buttons */
-.toolbar-button:hover {
-  cursor: pointer;
+.toolbar-button {
+  background-color: rgb(63, 81, 181);
+  background-color: var(--mdc-theme-primary, rgb(63, 81, 181));
+  outline: none;
 }
 
-/* fix for ie 10+ */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  button.mdc-toolbar__icon--menu {
-    background-color: rgb(63, 81, 181);
-    background-color: var(--mdc-theme-primary, rgb(63, 81, 181));
-  }
+.toolbar-button:hover {
+  cursor: pointer;
 }
 
 </style>

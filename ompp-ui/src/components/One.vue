@@ -1,3 +1,4 @@
+<!-- Test page, not for production -->
 <template>
   <div id="one" class="mdc-typography">
     <slot></slot>
