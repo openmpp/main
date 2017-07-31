@@ -13,7 +13,7 @@
 #include "LinkToAttributeSymbol.h"
 #include "TypeSymbol.h"
 #include "BoolSymbol.h"
-#include "ForeignTypeSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ConstantSymbol.h"
 #include "CodeBlock.h"
@@ -53,7 +53,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
     case eResolveDataTypes:
     {
         // Resolve datatype if unknown.
-        if (pp_data_type->is_foreign()) {
+        if (pp_data_type->is_unknown()) {
             // data type of identity attribute is unknown
             if (auto node = dynamic_cast<ExprForAttributeSymbol *>(root)) {
                 // root of expression tree is a terminal node (specifically, an attribute)
@@ -185,7 +185,7 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
                     // create a GlobalFuncSymbol with that name
                     auto gfs = new GlobalFuncSymbol(sym->name, sym->decl_loc);
 					// Push the name into the post parse ignore hash for the current pass.
-					pp_ignore_symbol.insert(gfs->unique_name);
+					pp_symbols_ignore.insert(gfs->unique_name);
                 }
             }
         }

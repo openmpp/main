@@ -30,7 +30,7 @@
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
 #include "StringTypeSymbol.h"
-#include "ForeignTypeSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
 #include "EntitySymbol.h"
@@ -74,7 +74,7 @@ symbol_map_type Symbol::symbols;
 
 list<symbol_map_value_type> Symbol::pp_symbols;
 
-unordered_set<string> Symbol::pp_ignore_symbol;
+unordered_set<string> Symbol::pp_symbols_ignore;
 
 unordered_set<string> Symbol::identifiers_in_model_source;
 
@@ -883,7 +883,7 @@ void Symbol::populate_default_symbols(const string &model_name, const string &sc
     sym = new StringTypeSymbol();
     assert(sym);
     // create the built-in unknown type "om_unknown", which plays a role in type resolution
-    sym = new ForeignTypeSymbol("om_unknown");
+    sym = new UnknownTypeSymbol("om_unknown");
     assert(sym);
 
     // Not implemented (a string)
@@ -1139,11 +1139,11 @@ void Symbol::post_parse_all()
 
 	// pass 1: create additional symbols for foreign types
 	// symbols will be processed in lexicographical order within sorting group
-	pp_ignore_symbol.clear();
+	pp_symbols_ignore.clear();
 	for (auto pr : pp_symbols) {
-		if (pp_ignore_symbol.count(pr.first) != 0) {
-			// This is a freshly created or morphed symbol in this pass, so ignore it.
-			// Note that pr.second will be invalid for such symbols in this pass.
+		if (pp_symbols_ignore.count(pr.first) != 0) {
+			// This is a symbol morphed earlier in this pass, so ignore it.
+			// Note that pr.second is invalid for symbols morphed in this pass.
 			continue;
 		}
 		//theLog->logFormatted("pass #1 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
@@ -1156,11 +1156,11 @@ void Symbol::post_parse_all()
 
 	// pass 2: create additional symbols not created during parse phase
 	// symbols will be processed in lexicographical order within sorting group
-	pp_ignore_symbol.clear();
+	pp_symbols_ignore.clear();
 	for (auto pr : pp_symbols) {
-		if (pp_ignore_symbol.count(pr.first) != 0) {
-			// This is a freshly created or morphed symbol in this pass, so ignore it.
-			// Note that pr.second will be invalid for such symbols in this pass.
+		if (pp_symbols_ignore.count(pr.first) != 0) {
+			// This is a symbol morphed earlier in this pass, so ignore it.
+			// Note that pr.second is invalid for symbols morphed in this pass.
 			continue;
 		}
 		//theLog->logFormatted("pass #2 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());

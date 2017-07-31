@@ -57,7 +57,7 @@ public:
      *
      * @return true if unknown, else false.
      */
-    bool is_foreign();
+    bool is_unknown();
 
     /**
      * Determines derived type.

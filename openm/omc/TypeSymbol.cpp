@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include "TypeSymbol.h"
-#include "ForeignTypeSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
 #include "StringTypeSymbol.h"
@@ -19,9 +19,9 @@
 
 using namespace std;
 
-bool TypeSymbol::is_foreign()
+bool TypeSymbol::is_unknown()
 {
-    if (dynamic_cast<ForeignTypeSymbol *>(this)) {
+    if (dynamic_cast<UnknownTypeSymbol *>(this)) {
         return true;
     }
     else {

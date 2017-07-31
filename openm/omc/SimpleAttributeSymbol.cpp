@@ -60,26 +60,52 @@ void SimpleAttributeSymbol::post_parse(int pass)
 	switch (pass) {
 	case eCreateMissingSymbols:
 	{
-		// Determine if simple attribute is declared using an unrecognized (foreign) type.
-		// If so, declaration needs to be direct, bypassing the normal ompp attribute mechanisms.
-		// This allows Modgen 'data members', which can be attributes like
-		//   vector_double_type breast_cancer_hazard;
-		// where
-		//   typedef std::vector<double> vector_double_type;
+		// Foreign types are not definitively known until this post-parse pass.
+		//
+		// If this SimpleAttributeSymbol was declared using an unknown (foreign) type,
+		// C++ declaration of the member needs to be direct,
+		// bypassing the normal ompp attribute mechanisms.
 		//
 		// Entity members with a foreign type do not participate
 		// in the ompp mechanisms of derived attributes, identity attributes,
 		// events, and tabulation.
+		//
+		// These are Modgen 'data members', e.g.
+		//   vector_double_type breast_cancer_hazard;
+		// where
+		//   typedef std::vector<double> vector_double_type;
+		//
+		// In the code below, the original SimpleAttributeSymbol created during parsing
+		// is replaced by an EntityForeignMemberSymbol with the same name.
 
 		auto typ = dynamic_cast<TypeSymbol *> (pp_symbol(data_type));
 		assert(typ); // parser guarantee
-		bool is_foreign = typ->is_foreign();
+		bool is_unknown = typ->is_unknown();
 
-		if (is_foreign) {
-			// Morph to foreign data member.
-			// This will change (in the symbol table) the symbol associated with this name
-			// from a SimpleAttributeSymbol to an EntityForeignMemberSymbol
+		if (is_unknown) {
+			// Note the names of the associated side-effect and notify functions
+			// created when this SimpleAttributeSymbol was created.
+			// They will be destroyed below.
+			auto se = side_effects_fn;
+			auto ntfy = notify_fn;
+
+			// Morph this SimpleAttributeSymbol to an EntityForeignMemberSymbol.
+			// Morphing changes (in the symbol table) the symbol associated with this name.
 			auto sym = new EntityForeignMemberSymbol(this, agent, data_type, decl_loc);
+			// Push the name into the post parse ignore hash for the current pass.
+			pp_symbols_ignore.insert(sym->unique_name);
+
+			// Remove the side-effect and notify functions from the symbol table
+			symbols.erase(se->unique_name);
+			symbols.erase(ntfy->unique_name);
+
+			// Ignore them in the current post-parse pass
+			pp_symbols_ignore.insert(se->unique_name);
+			pp_symbols_ignore.insert(ntfy->unique_name);
+
+			// Delete them
+			delete se;
+			delete ntfy;
 		}
 
 		break;

@@ -1,6 +1,6 @@
 /**
-* @file    ForeignTypeSymbol.h
-* Declarations for the ForeignTypeSymbol class.
+* @file    UnknownTypeSymbol.h
+* Declarations for the UnknownTypeSymbol class.
 */
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -14,7 +14,7 @@ using namespace openm;
 /**
 * BoolSymbol.
 */
-class ForeignTypeSymbol : public TypeSymbol
+class UnknownTypeSymbol : public TypeSymbol
 {
 private:
     typedef TypeSymbol super;
@@ -25,7 +25,7 @@ public:
     /**
     * Constructor for an unknown type symbol
     */
-    ForeignTypeSymbol(const string nm)
+    UnknownTypeSymbol(const string nm)
         : TypeSymbol(nm)
     {
     }
@@ -37,8 +37,8 @@ public:
     /**
      * Gets the built-in 'unknown type' symbol with name om_unknown
      *
-     * @return the ForeignTypeSymbol*.
+     * @return the UnknownTypeSymbol*.
      */
-    static ForeignTypeSymbol *find();
+    static UnknownTypeSymbol *find();
 };
 

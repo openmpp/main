@@ -161,8 +161,8 @@ void EntityEventSymbol::post_parse(int pass)
             // Plug it in
             implement_func = cover_implement_func;
 			// Push the names into the post parse ignore hash for the current pass.
-			pp_ignore_symbol.insert(cover_time_func->unique_name);
-            pp_ignore_symbol.insert(cover_implement_func->unique_name);
+			pp_symbols_ignore.insert(cover_time_func->unique_name);
+            pp_symbols_ignore.insert(cover_implement_func->unique_name);
 
         }
         break;

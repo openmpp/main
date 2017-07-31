@@ -87,7 +87,6 @@ EntityTableSymbol.cpp \
 EnumerationSymbol.cpp \
 EnumerationWithEnumeratorsSymbol.cpp \
 EnumeratorSymbol.cpp \
-ForeignTypeSymbol.cpp \
 GlobalFuncSymbol.cpp \
 GroupSymbol.cpp \
 HeaderCheck.cpp \
@@ -121,6 +120,7 @@ TableSymbol.cpp \
 TimeSymbol.cpp \
 TypeOfLinkSymbol.cpp \
 TypeSymbol.cpp \
+UnknownTypeSymbol.cpp \
 VersionSymbol.cpp \
   $(BUILD_SRC_DIR)/parser.cpp \
   $(BUILD_SRC_DIR)/scanner.cpp 

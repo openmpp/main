@@ -328,6 +328,12 @@ void EntitySymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
+		// Create attribute case_id (for case-based models only)
+		// Note that case_id cannot be created when the entity (e.g. Person) is created
+		// because the model type (case-based or time-based) may not be known
+		// at that point in parsing.  So, creation of case_id needs to be postponed
+		// until after parsing is complete and the model type is known.
+
         // Find the one and only ModelTypeSymbol
         auto mts = ModelTypeSymbol::find();
         assert(mts);
@@ -348,7 +354,7 @@ void EntitySymbol::post_parse(int pass)
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
 				// Push the name into the post parse ignore hash for the current pass.
-				pp_ignore_symbol.insert(biav->unique_name);
+				pp_symbols_ignore.insert(biav->unique_name);
             }
         }
         break;

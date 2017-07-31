@@ -267,7 +267,7 @@
     <ClInclude Include="EntityForeignMemberSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ForeignTypeSymbol.h">
+    <ClInclude Include="UnknownTypeSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -473,7 +473,7 @@
     <ClCompile Include="EntityForeignMemberSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ForeignTypeSymbol.cpp">
+    <ClCompile Include="UnknownTypeSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

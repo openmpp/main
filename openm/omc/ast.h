@@ -26,7 +26,7 @@
 #include "BoolEnumeratorSymbol.h"
 #include "BoolSymbol.h"
 #include "StringTypeSymbol.h"
-#include "ForeignTypeSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "ClassificationSymbol.h"
 #include "ClassificationEnumeratorSymbol.h"
 #include "PartitionSymbol.h"

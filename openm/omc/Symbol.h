@@ -912,7 +912,7 @@ public:
 	 * Any post_parse code which creates a new symbol or morphs an
      * existing symbol in these passes must push the name into this hash to ensure it is skipped.
      */
-    static unordered_set<string> pp_ignore_symbol;
+    static unordered_set<string> pp_symbols_ignore;
 
 	/**
      * List of all identifiers in model source code.

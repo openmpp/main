@@ -8,7 +8,7 @@
 #pragma once
 #include "AttributeSymbol.h"
 #include "NumericSymbol.h"
-#include "ForeignTypeSymbol.h"
+#include "UnknownTypeSymbol.h"
 
 class EntityMultilinkSymbol;
 
@@ -42,7 +42,7 @@ public:
     MultilinkAttributeSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar)
         : AttributeSymbol(MultilinkAttributeSymbol::member_name(func, multilink, agentvar),
                         agent,
-                        ForeignTypeSymbol::find() )
+                        UnknownTypeSymbol::find() )
         , func(func)
         , multilink(multilink->stable_rp())
         , pp_multilink(nullptr)

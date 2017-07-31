@@ -2646,7 +2646,7 @@ void DerivedAttributeSymbol::post_parse(int pass)
             agnt->create_ss_event();
             assert(agnt->ss_event);
             // Push the name into the post parse ignore hash for the current pass.
-            pp_ignore_symbol.insert(agnt->ss_event->unique_name);
+            pp_symbols_ignore.insert(agnt->ss_event->unique_name);
         }
         break;
     }
