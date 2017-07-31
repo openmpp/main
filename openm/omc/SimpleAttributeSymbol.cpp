@@ -73,7 +73,7 @@ void SimpleAttributeSymbol::post_parse(int pass)
 
 		auto typ = dynamic_cast<TypeSymbol *> (pp_symbol(data_type));
 		assert(typ); // parser guarantee
-		bool is_foreign = typ->is_unknown();
+		bool is_foreign = typ->is_foreign();
 
 		if (is_foreign) {
 			// Morph to foreign data member.

@@ -13,7 +13,7 @@
 #include "LinkToAttributeSymbol.h"
 #include "TypeSymbol.h"
 #include "BoolSymbol.h"
-#include "UnknownTypeSymbol.h"
+#include "ForeignTypeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ConstantSymbol.h"
 #include "CodeBlock.h"
@@ -53,7 +53,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
     case eResolveDataTypes:
     {
         // Resolve datatype if unknown.
-        if (pp_data_type->is_unknown()) {
+        if (pp_data_type->is_foreign()) {
             // data type of identity attribute is unknown
             if (auto node = dynamic_cast<ExprForAttributeSymbol *>(root)) {
                 // root of expression tree is a terminal node (specifically, an attribute)

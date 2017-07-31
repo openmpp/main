@@ -11,7 +11,7 @@
 #include "EntitySymbol.h"
 #include "TypeSymbol.h"
 #include "RangeSymbol.h"
-#include "UnknownTypeSymbol.h"
+#include "ForeignTypeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -35,7 +35,7 @@ void EntityDataMemberSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
-        // Identify any unknown type, and create a corresponding global UnknownTypeSymbol
+        // Identify any unknown type, and create a corresponding global ForeignTypeSymbol
         // for subsequent type resolution.
 
         // The logic below is similar to Symbol::pp_symbol(),
@@ -48,8 +48,8 @@ void EntityDataMemberSymbol::post_parse(int pass)
             sym->is_base_symbol() // type was never declared
             && symbols.end() == symbols.find(sym->name) // no corresponding global type in the symbol table
             ) {
-            // Create UnknownTypeSymbol for type resolution in subsequent post-parse passes.
-            auto ut = new UnknownTypeSymbol(sym->name);
+            // Create ForeignTypeSymbol for type resolution in subsequent post-parse passes.
+            auto ut = new ForeignTypeSymbol(sym->name);
             assert(ut);
             // push its name into the pass #1 ignore hash
             pp_ignore_pass1.insert(ut->unique_name);
@@ -71,7 +71,7 @@ void EntityDataMemberSymbol::post_parse(int pass)
     case eResolveDataTypes:
     {
         // Resolve datatype if unknown.
-        if (pp_data_type->is_unknown()) {
+        if (pp_data_type->is_foreign()) {
             // data type of data member is unknown
             if (pp_parent) {
                 auto typ = pp_parent->pp_data_type;

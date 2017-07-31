@@ -209,6 +209,7 @@
     <ClInclude Include="EnumeratorSymbol.h" />
     <ClInclude Include="ExprForAttribute.h" />
     <ClInclude Include="ExprForTable.h" />
+    <ClInclude Include="ForeignTypeSymbol.h" />
     <ClInclude Include="GlobalFuncSymbol.h" />
     <ClInclude Include="GroupSymbol.h" />
     <ClInclude Include="HideGroupSymbol.h" />
@@ -246,7 +247,6 @@
     <ClInclude Include="TimeSymbol.h" />
     <ClInclude Include="TypeOfLinkSymbol.h" />
     <ClInclude Include="TypeSymbol.h" />
-    <ClInclude Include="UnknownTypeSymbol.h" />
     <ClInclude Include="VersionSymbol.h" />
   </ItemGroup>
   <ItemGroup>
@@ -290,6 +290,7 @@
     <ClCompile Include="EnumerationSymbol.cpp" />
     <ClCompile Include="EnumerationWithEnumeratorsSymbol.cpp" />
     <ClCompile Include="EnumeratorSymbol.cpp" />
+    <ClCompile Include="ForeignTypeSymbol.cpp" />
     <ClCompile Include="GlobalFuncSymbol.cpp" />
     <ClCompile Include="GroupSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
@@ -325,7 +326,6 @@
     <ClCompile Include="TimeSymbol.cpp" />
     <ClCompile Include="TypeOfLinkSymbol.cpp" />
     <ClCompile Include="TypeSymbol.cpp" />
-    <ClCompile Include="UnknownTypeSymbol.cpp" />
     <ClCompile Include="VersionSymbol.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

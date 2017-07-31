@@ -30,7 +30,7 @@
 #include "EnumeratorSymbol.h"
 #include "BoolSymbol.h"
 #include "StringTypeSymbol.h"
-#include "UnknownTypeSymbol.h"
+#include "ForeignTypeSymbol.h"
 #include "TypeOfLinkSymbol.h"
 #include "ParameterSymbol.h"
 #include "EntitySymbol.h"
@@ -883,7 +883,7 @@ void Symbol::populate_default_symbols(const string &model_name, const string &sc
     sym = new StringTypeSymbol();
     assert(sym);
     // create the built-in unknown type "om_unknown", which plays a role in type resolution
-    sym = new UnknownTypeSymbol("om_unknown");
+    sym = new ForeignTypeSymbol("om_unknown");
     assert(sym);
 
     // Not implemented (a string)
