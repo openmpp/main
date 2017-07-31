@@ -33,7 +33,7 @@ void EntityDataMemberSymbol::post_parse(int pass)
 
     // Perform operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case eCreateMissingSymbols:
+    case eCreateForeignTypes:
     {
         // Identify any unknown type, and create a corresponding global ForeignTypeSymbol
         // for subsequent type resolution.
@@ -49,10 +49,10 @@ void EntityDataMemberSymbol::post_parse(int pass)
             && symbols.end() == symbols.find(sym->name) // no corresponding global type in the symbol table
             ) {
             // Create ForeignTypeSymbol for type resolution in subsequent post-parse passes.
-            auto ut = new ForeignTypeSymbol(sym->name);
-            assert(ut);
-            // push its name into the pass #1 ignore hash
-            pp_ignore_pass1.insert(ut->unique_name);
+            auto ft = new ForeignTypeSymbol(sym->name);
+            assert(ft);
+			// Push the name into the post parse ignore hash for the current pass.
+			pp_ignore_symbol.insert(ft->unique_name);
         }
         break;
     }

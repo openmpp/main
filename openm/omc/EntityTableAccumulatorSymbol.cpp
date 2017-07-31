@@ -63,9 +63,9 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
             av->create_lagged();
             assert(av->lagged);
             assert(av->lagged_event_counter);
-            // push the names into the pass #1 ignore hash
-            pp_ignore_pass1.insert(av->lagged->unique_name);
-            pp_ignore_pass1.insert(av->lagged_event_counter->unique_name);
+			// Push the names into the post parse ignore hash for the current pass.
+			pp_ignore_symbol.insert(av->lagged->unique_name);
+            pp_ignore_symbol.insert(av->lagged_event_counter->unique_name);
         }
         break;
     }

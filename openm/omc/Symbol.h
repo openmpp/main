@@ -302,10 +302,13 @@ public:
 
     enum post_parse_pass {
 
-        ///< post-parse pass to create missing symbols
-        eCreateMissingSymbols,
+		///< post-parse pass to identify foreign types
+		eCreateForeignTypes,
 
-        ///< post-parse pass to assign labels, etc.
+		///< post-parse pass to create/morph missing symbols
+		eCreateMissingSymbols,
+
+		///< post-parse pass to assign labels, etc.
         eAssignLabel,
 
         ///< post-parse pass to assign pp_ members, etc.
@@ -901,16 +904,17 @@ public:
     static list<symbol_map_value_type> pp_symbols;
 
     /**
-     * List of symbols to ignore in post-parse pass #1.
+     * List of symbols to ignore in post-parse pass.
      * 
-     * Symbols morphed in pass #1 (eCreateMissingSymbols) will have invalid pair.second (Symbol *)
-     * in pp_symbols, so should not be processed if they happen to come later in pp_symbols than the
-     * symbol which morphed them. Any post_parse code which creates a new symbol or morphs an
-     * existing symbol in this pass pushes the name into this hash to ensure they are skipped.
+     * Symbols morphed in a post-parse pass (eCreateForeignTypes, eCreateMissingSymbols)
+	 * will have invalid pair.second (Symbol *) in pp_symbols, so should not be processed
+	 * if they happen to come later in pp_symbols than the symbol which morphed them.
+	 * Any post_parse code which creates a new symbol or morphs an
+     * existing symbol in these passes must push the name into this hash to ensure it is skipped.
      */
-    static unordered_set<string> pp_ignore_pass1;
+    static unordered_set<string> pp_ignore_symbol;
 
-    /**
+	/**
      * List of all identifiers in model source code.
      * 
      * Includes identifiers in both C++ code and in ompp declarative islands.

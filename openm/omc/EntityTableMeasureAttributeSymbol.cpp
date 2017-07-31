@@ -51,8 +51,8 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             assert(sym);
             // note parent attribute for post-parse type resolution in case data_type is unknown
             sym->parent = av->stable_pp();
-            // push the name into the pass #1 ignore hash
-            pp_ignore_pass1.insert(sym->unique_name);
+			// Push the name into the post parse ignore hash for the current pass.
+			pp_ignore_symbol.insert(sym->unique_name);
         }
         if ( need_value_in_event ) {
             // Create symbol for the data member which will hold the 'in' value of the increment (for 'event' tabulation operator)
@@ -65,8 +65,8 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             assert(sym);
             // note parent attribute for post-parse type resolution in case data_type is unknown
             sym->parent = av->stable_pp();
-            // push the name into the pass #1 ignore hash
-            pp_ignore_pass1.insert(sym->unique_name);
+			// Push the name into the post parse ignore hash for the current pass.
+			pp_ignore_symbol.insert(sym->unique_name);
         }
         break;
     }

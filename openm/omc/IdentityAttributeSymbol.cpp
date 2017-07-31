@@ -184,8 +184,8 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
                     // an undeclared SYMBOL followed by a '('
                     // create a GlobalFuncSymbol with that name
                     auto gfs = new GlobalFuncSymbol(sym->name, sym->decl_loc);
-                    // push the name into the pass #1 ignore hash
-                    pp_ignore_pass1.insert(gfs->unique_name);
+					// Push the name into the post parse ignore hash for the current pass.
+					pp_ignore_symbol.insert(gfs->unique_name);
                 }
             }
         }

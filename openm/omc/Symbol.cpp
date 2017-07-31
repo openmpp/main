@@ -74,7 +74,7 @@ symbol_map_type Symbol::symbols;
 
 list<symbol_map_value_type> Symbol::pp_symbols;
 
-unordered_set<string> Symbol::pp_ignore_pass1;
+unordered_set<string> Symbol::pp_ignore_symbol;
 
 unordered_set<string> Symbol::identifiers_in_model_source;
 
@@ -1137,35 +1137,53 @@ void Symbol::post_parse_all()
     populate_pp_symbols();
     default_sort_pp_symbols();
 
-    // pass 1: create additional symbols not created during parse phase
-    // symbols will be processed in lexicographical order within sorting group
-    for (auto pr : pp_symbols) {
-        if (pp_ignore_pass1.count(pr.first) != 0) {
-            // This is a freshly morphed pass #1 symbol, so ignore it.
-            // Note that pr.second will be invalid for symbols morphed in pass #1.
-            continue;
-        }
-        //theLog->logFormatted("pass #1 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
-        pr.second->post_parse( eCreateMissingSymbols );
-    }
+	// pass 1: create additional symbols for foreign types
+	// symbols will be processed in lexicographical order within sorting group
+	pp_ignore_symbol.clear();
+	for (auto pr : pp_symbols) {
+		if (pp_ignore_symbol.count(pr.first) != 0) {
+			// This is a freshly created or morphed symbol in this pass, so ignore it.
+			// Note that pr.second will be invalid for such symbols in this pass.
+			continue;
+		}
+		//theLog->logFormatted("pass #1 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
+		pr.second->post_parse(eCreateForeignTypes);
+	}
 
-    // Recreate pp_symbols because symbols may have changed or been added.
-    populate_pp_symbols();
-    default_sort_pp_symbols();
+	// Recreate pp_symbols because symbols may have changed or been added.
+	populate_pp_symbols();
+	default_sort_pp_symbols();
 
-    // pass 2: assign label using default or from comment on same lines as symbol declaration
+	// pass 2: create additional symbols not created during parse phase
+	// symbols will be processed in lexicographical order within sorting group
+	pp_ignore_symbol.clear();
+	for (auto pr : pp_symbols) {
+		if (pp_ignore_symbol.count(pr.first) != 0) {
+			// This is a freshly created or morphed symbol in this pass, so ignore it.
+			// Note that pr.second will be invalid for such symbols in this pass.
+			continue;
+		}
+		//theLog->logFormatted("pass #2 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
+		pr.second->post_parse(eCreateMissingSymbols);
+	}
+
+	// Recreate pp_symbols because symbols may have changed or been added.
+	populate_pp_symbols();
+	default_sort_pp_symbols();
+
+	// pass 3: assign label using default or from comment on same lines as symbol declaration
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignLabel );
     }
 
-    // pass 3: create pp_ members
+    // pass 4: create pp_ members
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignMembers );
     }
 
-    // pass 4: resolve derived attribute data types
+    // pass 5: resolve derived attribute data types
     // Symbols will be processed in lexicographical order within sorting group.
     type_changes = 1;
     int type_change_passes = 0;
@@ -1181,7 +1199,7 @@ void Symbol::post_parse_all()
         }
     }
 
-    // pass 5: create pp_ collections
+    // pass 6: create pp_ collections
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateCollections );

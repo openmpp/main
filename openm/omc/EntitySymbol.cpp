@@ -347,8 +347,8 @@ void EntitySymbol::post_parse(int pass)
                     // morph it
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
-                // push its name into the pass #1 ignore hash
-                pp_ignore_pass1.insert(biav->unique_name);
+				// Push the name into the post parse ignore hash for the current pass.
+				pp_ignore_symbol.insert(biav->unique_name);
             }
         }
         break;
