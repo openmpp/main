@@ -49,6 +49,7 @@
 #include "DerivedAttributeSymbol.h"
 #include "EntityFuncSymbol.h"
 #include "EntityArrayMemberSymbol.h"
+#include "EntityForeignMemberSymbol.h"
 #include "EntityHookSymbol.h"
 #include "LinkToAttributeSymbol.h"
 #include "LinkAttributeSymbol.h"

@@ -267,6 +267,9 @@
     <ClInclude Include="ClassificationEnumeratorSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EntityForeignMemberSymbol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -468,6 +471,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MaintainedAttributeSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityForeignMemberSymbol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -38,14 +38,16 @@ public:
 
 
     /**
-     * Gets the initial value for the agentvar.
+     * Gets the initial value for the attribute.
      *
      * @return The initial value as a string.
      */
 
     string initialization_value(bool type_default) const;
 
-    CodeBlock cxx_declaration_agent();
+	void post_parse(int pass);
+
+	CodeBlock cxx_declaration_agent();
 
     // members
 

@@ -191,6 +191,7 @@
     <ClInclude Include="EntityArrayMemberSymbol.h" />
     <ClInclude Include="EntityDataMemberSymbol.h" />
     <ClInclude Include="EntityEventSymbol.h" />
+    <ClInclude Include="EntityForeignMemberSymbol.h" />
     <ClInclude Include="EntityFuncSymbol.h" />
     <ClInclude Include="EntityHookSymbol.h" />
     <ClInclude Include="EntityIncrementSymbol.h" />
@@ -273,6 +274,7 @@
     <ClCompile Include="EntityArrayMemberSymbol.cpp" />
     <ClCompile Include="EntityDataMemberSymbol.cpp" />
     <ClCompile Include="EntityEventSymbol.cpp" />
+    <ClCompile Include="EntityForeignMemberSymbol.cpp" />
     <ClCompile Include="EntityFuncSymbol.cpp" />
     <ClCompile Include="EntityHookSymbol.cpp" />
     <ClCompile Include="EntityIncrementSymbol.cpp" />

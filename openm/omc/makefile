@@ -71,6 +71,7 @@ Driver.cpp \
 EntityArrayMemberSymbol.cpp \
 EntityDataMemberSymbol.cpp \
 EntityEventSymbol.cpp \
+EntityForeignMemberSymbol.cpp \
 EntityFuncSymbol.cpp \
 EntityHookSymbol.cpp \
 EntityIncrementSymbol.cpp \
