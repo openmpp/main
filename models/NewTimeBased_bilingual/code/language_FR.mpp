@@ -1,9 +1,13 @@
-//LABEL ( language_FR, EN ) French translations of NewTimeBased strings
+//LABEL ( language_FR, EN ) French translation
 
-/* NOTE ( language_FR, EN )    This module contains French translations of NewTimeBased labels and notes.
+/*NOTE( language_FR, EN)
+This module contains French translations of labels and notes.
 */
 
-
+//LABEL(model, FR) Simple modèle time-based
+/* NOTE(model, FR)
+Ce modèle peut servir comme point de départ pour construire un modèle time-based plus complexe.
+*/
 
 
 //==============================/
