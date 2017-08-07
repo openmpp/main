@@ -189,6 +189,16 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     // copy input parameters from "base" run and working set into new run id
     createRunParameters(nRunId, nSetId, i_dbExec);
 
+    // copy workset text into run text if workset exists and it is readonly
+    i_dbExec->update(
+        "INSERT INTO run_txt (run_id, lang_id, descr, note)" \
+        " SELECT " + 
+        to_string(nRunId) + ", " + " WT.lang_id, WT.descr, WT.note" +
+        " FROM workset_lst W" +
+        " INNER JOIN workset_txt WT ON (WT.set_id = W.set_id)" +
+        " WHERE W.set_id = " + to_string(nSetId) +
+        " AND W.is_readonly <> 0");
+
     // completed: commit the changes
     i_dbExec->commit();
 
