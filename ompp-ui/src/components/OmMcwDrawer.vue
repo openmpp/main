@@ -3,12 +3,12 @@
 <template>
 
 <aside :class="classes">
-  <nav ref="drawer" class="mdc-persistent-drawer__drawer om-mcw-drawer-bottom">
+  <nav ref="drawer" class="drawer-bottom mdc-persistent-drawer__drawer">
 
-    <header class="mdc-persistent-drawer__header" v-if="$slots['header'] || drawerHeader">
+    <header v-if="$slots['header']" class="drawer-header mdc-persistent-drawer__toolbar-spacer">
       <slot name="header"></slot>
     </header>
-    <div class="mdc-persistent-drawer__toolbar-spacer" v-else></div>
+    <div v-else class="mdc-persistent-drawer__toolbar-spacer"></div>
 
     <div class="mdc-list-group" role="menu">
       <slot></slot>
@@ -25,7 +25,6 @@ import * as util from '@material/drawer/util'
 
 export default {
   props: {
-    drawerHeader: Boolean
   },
   data () {
     return {
@@ -47,76 +46,32 @@ export default {
 
     let vm = this
     this.foundation = new MDCPersistentDrawerFoundation({
-      addClass (className) {
-        vm.$set(vm.classes, className, true)
-      },
-      removeClass (className) {
-        vm.$delete(vm.classes, className)
-      },
-      hasClass (className) {
-        return Boolean(vm.classes[className]) || (vm.$el && vm.$el.classList.contains(className))
-      },
-      hasNecessaryDom () {
-        return Boolean(vm.$refs.drawer)
-      },
-      registerInteractionHandler (evt, handler) {
-        vm.$el.addEventListener(evt, handler)
-      },
-      deregisterInteractionHandler (evt, handler) {
-        vm.$el.removeEventListener(evt, handler)
-      },
-      registerDrawerInteractionHandler (evt, handler) {
-        vm.$refs.drawer.addEventListener(evt, handler)
-      },
-      deregisterDrawerInteractionHandler (evt, handler) {
-        vm.$refs.drawer.removeEventListener(evt, handler)
-      },
-      registerTransitionEndHandler (handler) {
-        vm.$refs.drawer.addEventListener('transitionend', handler)
-      },
-      deregisterTransitionEndHandler (handler) {
-        vm.$refs.drawer.removeEventListener('transitionend', handler)
-      },
-      registerDocumentKeydownHandler (handler) {
-        document.addEventListener('keydown', handler)
-      },
-      deregisterDocumentKeydownHandler (handler) {
-        document.removeEventListener('keydown', handler)
-      },
-      getDrawerWidth () {
-        return vm.$refs.drawer.offsetWidth
-      },
-      setTranslateX (value) {
-        vm.$refs.drawer.style.setProperty(
+      addClass: (className) => vm.$set(vm.classes, className, true),
+      removeClass: (className) => vm.$delete(vm.classes, className),
+      hasClass: (className) => Boolean(vm.classes[className]) || (vm.$el && vm.$el.classList.contains(className)),
+      hasNecessaryDom: () => Boolean(vm.$refs.drawer),
+      registerInteractionHandler: (evt, handler) => vm.$el.addEventListener(evt, handler),
+      deregisterInteractionHandler: (evt, handler) => vm.$el.removeEventListener(evt, handler),
+      registerDrawerInteractionHandler: (evt, handler) => vm.$refs.drawer.addEventListener(evt, handler),
+      deregisterDrawerInteractionHandler: (evt, handler) => vm.$refs.drawer.removeEventListener(evt, handler),
+      registerTransitionEndHandler: (handler) => vm.$refs.drawer.addEventListener('transitionend', handler),
+      deregisterTransitionEndHandler: (handler) => vm.$refs.drawer.removeEventListener('transitionend', handler),
+      registerDocumentKeydownHandler: (handler) => document.addEventListener('keydown', handler),
+      deregisterDocumentKeydownHandler: (handler) => document.removeEventListener('keydown', handler),
+      getDrawerWidth: () => vm.$refs.drawer.offsetWidth,
+      setTranslateX: (value) => vm.$refs.drawer.style.setProperty(
           util.getTransformPropertyName(),
           value === null ? null : `translateX(${value}px)`
-        )
-      },
-      getFocusableElements () {
-        return vm.$refs.drawer.querySelectorAll(FOCUSABLE_ELEMENTS)
-      },
-      saveElementTabState (el) {
-        util.saveElementTabState(el)
-      },
-      restoreElementTabState (el) {
-        util.restoreElementTabState(el)
-      },
-      makeElementUntabbable (el) {
-        el.setAttribute('tabindex', -1)
-      },
-      notifyOpen () {
-        vm.$emit('opened')
-      },
-      notifyClose  () {
-        vm.$emit('closed')
-      },
-      isRtl () {
-        /* global getComputedStyle */
-        return getComputedStyle(vm.$el).getPropertyValue('direction') === 'rtl'
-      },
-      isDrawer (el) {
-        el === vm.$refs.drawer
-      }
+        ),
+      getFocusableElements: () => vm.$refs.drawer.querySelectorAll(FOCUSABLE_ELEMENTS),
+      saveElementTabState: (el) => util.saveElementTabState(el),
+      restoreElementTabState: (el) => util.restoreElementTabState(el),
+      makeElementUntabbable: (el) => el.setAttribute('tabindex', -1),
+      notifyOpen: () => vm.$emit('opened'),
+      notifyClose: () => vm.$emit('closed'),
+      /* global getComputedStyle */
+      isRtl: () => getComputedStyle(vm.$el).getPropertyValue('direction') === 'rtl',
+      isDrawer: (el) => el === vm.$refs.drawer
     })
 
     this.foundation.init()
@@ -126,14 +81,26 @@ export default {
     this.foundation.destroy()
   }
 }
-
 </script>
 
-<!-- this component only css -->
-<style scoped>
-.om-mcw-drawer-bottom {
-  border-bottom: 1px solid rgba(0, 0, 0, .12);
-}
+<!-- local scope css: this component only -->
+<style scoped lang="scss">
+
+  .drawer-header {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .drawer-bottom {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  
+  /* ie11 drawer width bug with flex conetent */
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .mdc-persistent-drawer--open {
+      min-width: 240px;
+    }
+  }
 </style>
 
 <!-- import MDC styles -->

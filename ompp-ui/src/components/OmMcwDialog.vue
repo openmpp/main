@@ -24,6 +24,7 @@
     <footer class="mdc-dialog__footer">
       <button
         v-if="cancelText"
+        ref="cancel"
         type="button"
         class="mdc-button mdc-dialog__footer__button mdc-dialog__footer__button--cancel">
         {{cancelText}}
@@ -115,7 +116,15 @@ export default {
       notifyCancel: () => vm.$emit('cancel'),
       isDialog: (el) => el === vm.$refs.surface,
       trapFocusOnSurface: () => vm.focusTrap.activate(),
-      untrapFocusOnSurface: () => vm.focusTrap.deactivate()
+      untrapFocusOnSurface: () => vm.focusTrap.deactivate(),
+      layoutFooterRipples: () => {
+        if (vm.$refs.accept) {
+          if (vm.$refs.accept.hasOwnProperty('ripple')) vm.$refs.accept.ripple.layout()
+        }
+        if (vm.cancelText && vm.$refs.cancel) {
+          if (vm.$refs.cancel.hasOwnProperty('ripple')) vm.$refs.cancel.ripple.layout()
+        }
+      }
     })
 
     this.foundation.init()

@@ -19,7 +19,7 @@ INSERT INTO model_dic
 VALUES
   (1, 'modelOne', '_201208171604590148_', 0, '1.0', '2012-08-17 16:04:59.0148', 0);
   
-INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', NULL);
+INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 0, 'First model', 'First model: openM++ development test model');
 INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1, 1, '(FR) First model', NULL);
 
 INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 0, 'Running Simulation', 'Running Simulation');

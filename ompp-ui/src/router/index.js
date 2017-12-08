@@ -1,11 +1,17 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HomePage from '@/components/HomePage'
+import ModelListPage from '@/components/ModelListPage'
 import ModelPage from '@/components/ModelPage'
-import InfoPage from '@/components/InfoPage'
+import ParameterListPage from '@/components/ParameterListPage'
+import TableListPage from '@/components/TableListPage'
+import RunListPage from '@/components/RunListPage'
+import WorksetListPage from '@/components/WorksetListPage'
+import ParameterPage from '@/components/ParameterPage'
+import TablePage from '@/components/TablePage'
+import SessionSettings from '@/components/SessionSettingsPage'
+import LicensePage from '@/components/LicensePage'
 import None404Page from '@/components/None404Page'
 import UnderConstruction from '@/components/UnderConstructionPage'
-import SessionSettings from '@/components/SessionSettingsPage'
 
 Vue.use(Router)
 
@@ -14,16 +20,60 @@ export default new Router({
   routes: [
     {
       path: '/',
-      component: HomePage
+      component: ModelListPage
     },
     {
       path: '/model/:digest',
       component: ModelPage,
-      props: true
+      props: true,
+      children: [
+        {
+          path: 'parameter-list',
+          component: ParameterListPage,
+          props: true
+        },
+        {
+          path: 'table-list',
+          component: TableListPage,
+          props: true
+        },
+        {
+          path: 'run-list',
+          component: RunListPage,
+          props: true
+        },
+        {
+          path: 'workset-list',
+          component: WorksetListPage,
+          props: true
+        },
+        {
+          path: 'parameter/:paramName',
+          component: ParameterPage,
+          props: true
+        },
+        {
+          path: 'table/:tableName',
+          component: TablePage,
+          props: true
+        }
+      ]
     },
     {
-      path: '/info',
-      component: InfoPage
+      path: '/run-list/:digest',
+      component: UnderConstruction
+    },
+    {
+      path: '/workset-list',
+      component: UnderConstruction
+    },
+    {
+      path: '/parameters',
+      component: UnderConstruction
+    },
+    {
+      path: '/outputs',
+      component: UnderConstruction
     },
     {
       path: '/run',
@@ -34,7 +84,7 @@ export default new Router({
       component: UnderConstruction
     },
     {
-      path: '/history',
+      path: '/run-history',
       component: UnderConstruction
     },
     {
@@ -44,6 +94,10 @@ export default new Router({
     {
       path: '/settings',
       component: SessionSettings
+    },
+    {
+      path: '/license',
+      component: LicensePage
     },
     {
       path: '*',

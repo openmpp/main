@@ -1,21 +1,49 @@
 // model common functions mixin
 
 const ModelCommon = {
-  // if this is a model
-  isModel (md) {
+  // if this is a Model with Name and Digest properties
+  hasNameDigest (md) {
     if (!md) return false
     if (!md.hasOwnProperty('Model')) return false
     return md.Model.hasOwnProperty('Name') && md.Model.hasOwnProperty('Digest')
   },
 
-  // if this is an empty model
-  isModelEmpty (md) {
-    if (!this.isModel(md)) return false
+  // if this is a model
+  isModel (md) {
+    if (!this.hasNameDigest(md)) return false
+    return (md.Model.Name || '') !== '' && (md.Model.Digest || '') !== ''
+  },
+
+  // if this is an empty model: model with empty name and digest
+  isEmptyModel (md) {
+    if (!this.hasNameDigest(md)) return false
     return (md.Model.Name || '') === '' || (md.Model.Digest || '') === ''
   },
 
-  // retrun empty model object
+  // return empty Model
   emptyModel () { return { Model: { Name: '', Digest: '' } } },
+
+  // return true if each list element isModel()
+  isModelList (ml) {
+    if (!ml) return false
+    if (!ml.hasOwnProperty('length')) return false
+    for (let k = 0; k < ml.length; k++) {
+      if (!this.isModel(ml[k])) return false
+    }
+    return true
+  },
+
+  // number of model parameters
+  paramCount (md) { return this.isParamTextList(md) ? md.ParamTxt.length : 0 },
+
+  // number of model output tables
+  outTableCount (md) { return this.isTableTextList(md) ? md.TableTxt.length : 0 },
+
+  // run count: number of run text entries
+  runTextCount (rtl) { return this.isRunTextList(rtl) ? rtl.length : 0 },
+
+  // workset count: number of worksettext entries
+  worksetTextCount (wtl) { return this.isWorksetTextList(wtl) ? wtl.length : 0 },
 
   // name of the model
   modelName (md) {
@@ -31,43 +59,195 @@ const ModelCommon = {
     return (md.Model.Digest || '')
   },
 
-  // description if model has text info
-  modelDescr (md) {
-    if (!md) return ''
-    if (!md.hasOwnProperty('DescrNote')) return ''
-    return (md.DescrNote.Descr || '')
-  },
-
   // make model title
   modelTitle (md) {
-    if (!md) return ''
-    if (!md.hasOwnProperty('Model')) return ''
-    if ((md.Model.Digest || '') === '') return ''
-    if (!md.hasOwnProperty('DescrNote')) return (md.Model.Name || '')
-    return (md.Model.Name || '') +
-      (((md.DescrNote.Descr || '') !== '') ? ': ' + (md.DescrNote.Descr || '') : '')
+    if (!this.isModel(md)) return ''
+    const descr = this.descrOfDescrNote(md)
+    if (descr !== '') return md.Model.Name + ': ' + descr
+    return md.Model.Name
   },
 
-  // is model notes not empty
-  isModelNote (md) {
-    if (!md) return false
-    if (!md.hasOwnProperty('Model') || !md.hasOwnProperty('DescrNote')) return false
-    return (md.DescrNote.Note || '') !== ''
+  // return date-time string: truncate timestamp
+  dtStr (ts) { return (ts || '').substr(0, 19) },
+
+  // description if object has DescrNote
+  descrOfDescrNote (tdn) {
+    if (!tdn) return ''
+    if (!tdn.hasOwnProperty('DescrNote')) return ''
+    return (tdn.DescrNote.Descr || '')
   },
 
-  // notes if model has text info
-  modelNote (md) {
-    if (!md) return ''
-    if (!md.hasOwnProperty('DescrNote')) return ''
-    return (md.DescrNote.Note || '')
+  // notes if object has DescrNote
+  noteOfDescrNote (tdn) {
+    if (!tdn) return ''
+    if (!tdn.hasOwnProperty('DescrNote')) return ''
+    return (tdn.DescrNote.Note || '')
   },
 
-  // return true if each list element isModel()
-  isModelList (ml) {
-    if (!ml) return false
-    if (!ml.hasOwnProperty('length')) return false
-    for (let k = 0; k < ml.length; k++) {
-      if (!this.isModel(ml[k])) return false
+  // return true if notes of DescrNote not empty
+  isNoteOfDescrNote (tdn) {
+    if (!tdn) return false
+    if (!tdn.hasOwnProperty('DescrNote')) return false
+    return (tdn.DescrNote.Note || '') !== ''
+  },
+
+  // description if object has Txt[0] description-notes
+  descrOfTxt (tdn) {
+    if (!tdn) return ''
+    if (!tdn.hasOwnProperty('Txt')) return ''
+    if (!tdn.Txt.hasOwnProperty('length')) return ''
+    return (tdn.Txt.length > 0) ? (tdn.Txt[0].Descr || '') : ''
+  },
+
+  // notes if object has Txt[0] description-notes
+  noteOfTxt (tdn) {
+    if (!tdn) return ''
+    if (!tdn.hasOwnProperty('Txt')) return ''
+    if (!tdn.Txt.hasOwnProperty('length')) return ''
+    return (tdn.Txt.length > 0) ? (tdn.Txt[0].Note || '') : ''
+  },
+
+  // return true if notes of Txt[0] not empty
+  isNoteOfTxt (tdn) {
+    if (!tdn) return false
+    if (!tdn.hasOwnProperty('Txt')) return false
+    if (!tdn.Txt.hasOwnProperty('length')) return false
+    return (tdn.Txt.length > 0) ? (tdn.Txt[0].Note || '') !== '' : false
+  },
+
+  // is model has parameter text list and each element is Param
+  isParamTextList (md) {
+    if (!this.isModel(md)) return false
+    if (!md.hasOwnProperty('ParamTxt')) return false
+    if (!md.ParamTxt.hasOwnProperty('length')) return false
+    for (let k = 0; k < md.ParamTxt.length; k++) {
+      if (!this.isParam(md.ParamTxt[k].Param)) return false
+    }
+    return true
+  },
+
+  // return true if this is non empty Param
+  isParam (p) {
+    if (!p) return false
+    if (!p.hasOwnProperty('ParamId') || !p.hasOwnProperty('Name') || !p.hasOwnProperty('Digest')) return false
+    return (p.Name || '') !== '' && (p.Digest || '') !== ''
+  },
+
+  // return empty ParamTxt
+  emptyParamText () {
+    return {
+      Param: { ParamId: 0, Name: '', Digest: '' },
+      DescrNote: { LangCode: '', Descr: '', Note: '' } }
+  },
+
+  // find parameter by name
+  paramTextByName (md, name) {
+    if (!this.isModel(md) || (name || '') === '') { // model empty or name empty: return empty result
+      return this.emptyParamText()
+    }
+    for (let k = 0; k < md.ParamTxt.length; k++) {
+      if (!this.isParam(md.ParamTxt[k].Param)) continue
+      if (md.ParamTxt[k].Param.Name === name) return md.ParamTxt[k]
+    }
+    return this.emptyParamText()  // not found
+  },
+
+  // is model has output table text list and each element is Table
+  isTableTextList (md) {
+    if (!this.isModel(md)) return false
+    if (!md.hasOwnProperty('TableTxt')) return false
+    if (!md.TableTxt.hasOwnProperty('length')) return false
+    for (let k = 0; k < md.TableTxt.length; k++) {
+      if (!this.isTable(md.TableTxt[k].Table)) return false
+    }
+    return true
+  },
+
+  // return true if this is non empty Table
+  isTable (t) {
+    if (!t) return false
+    if (!t.hasOwnProperty('TableId') || !t.hasOwnProperty('Name') || !t.hasOwnProperty('Digest')) return false
+    return (t.Name || '') !== '' && (t.Digest || '') !== ''
+  },
+
+  // return empty TableTxt
+  emptyTableText () {
+    return {
+      Table: { TableId: 0, Name: '', Digest: '' }, LangCode: '', TableDescr: '', TableNote: '', ExprDescr: '', ExprNote: ''
+    }
+  },
+
+  // find output table by name
+  tableTextByName (md, name) {
+    if (!this.isModel(md) || (name || '') === '') { // model empty or name empty: return empty result
+      return this.emptyTableText()
+    }
+    for (let k = 0; k < md.TableTxt.length; k++) {
+      if (!this.isTable(md.TableTxt[k].Table)) continue
+      if (md.TableTxt[k].Table.Name === name) return md.TableTxt[k]
+    }
+    return this.emptyTableText()  // not found
+  },
+
+  // if this is run text
+  isRunText (rt) {
+    if (!rt) return false
+    if (!rt.hasOwnProperty('ModelName') || !rt.hasOwnProperty('ModelDigest')) return false
+    if (!rt.hasOwnProperty('Name') || !rt.hasOwnProperty('Digest')) return false
+    if (!rt.hasOwnProperty('SubCount') || !rt.hasOwnProperty('Status')) return false
+    if (!rt.hasOwnProperty('Txt')) return false
+    if (!rt.Txt.hasOwnProperty('length')) return false
+    return true
+  },
+
+  // if this is not empty run text: model run text name and satus not empty
+  isNotEmptyRunText (rt) {
+    if (!this.isRunText(rt)) return false
+    return (rt.ModelName || '') !== '' && (rt.ModelDigest || '') !== '' &&
+      (rt.Name || '') !== '' && (rt.Status || '') !== ''
+  },
+
+  // return empty run text
+  emptyRunText () {
+    return {
+      ModelName: '', ModelDigest: '', Name: '', Digest: '', SubCount: 0, Status: '', Txt: []
+    }
+  },
+
+  // return true if each list element isRunText()
+  isRunTextList (rtl) {
+    if (!rtl) return false
+    if (!rtl.hasOwnProperty('length')) return false
+    for (let k = 0; k < rtl.length; k++) {
+      if (!this.isRunText(rtl[k])) return false
+    }
+    return true
+  },
+
+  // if this is workset text
+  isWorksetText (wt) {
+    if (!wt) return false
+    if (!wt.hasOwnProperty('ModelName') || !wt.hasOwnProperty('ModelDigest')) return false
+    if (!wt.hasOwnProperty('Name')) return false
+    if (!wt.hasOwnProperty('IsReadonly') || !wt.hasOwnProperty('BaseRunDigest')) return false
+    if (!wt.hasOwnProperty('Txt')) return false
+    if (!wt.Txt.hasOwnProperty('length')) return false
+    return true
+  },
+
+  // return empty workset text
+  emptyWorksetText () {
+    return {
+      ModelName: '', ModelDigest: '', Name: '', IsReadonly: false, BaseRunDigest: '', Txt: []
+    }
+  },
+
+  // return true if each list element isWorksetText()
+  isWorksetTextList (wtl) {
+    if (!wtl) return false
+    if (!wtl.hasOwnProperty('length')) return false
+    for (let k = 0; k < wtl.length; k++) {
+      if (!this.isWorksetText(wtl[k])) return false
     }
     return true
   }

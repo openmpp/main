@@ -1,5 +1,4 @@
-<!-- based on stasson/vue-mdc-adapter, MIT license -->
-<!--                                               -->
+<!-- originally based on stasson/vue-mdc-adapter, MIT license -->
 <template>
 
 <div ref="root" :class="classes" tabindex="-1">
@@ -16,7 +15,6 @@ import { getTransformPropertyName } from '@material/menu/util'
 
 export default {
   props: {
-    open: Boolean,
     openFromTopLeft: Boolean,
     openFromTopRight: Boolean,
     openFromBottomLeft: Boolean,
@@ -36,19 +34,12 @@ export default {
     }
   },
 
-  computed: {
-    items () {
-      return [].slice.call(
-        this.$refs.items.querySelectorAll('.mdc-list-item[role]'))
-    }
-  },
-
   methods: {
-    toggle () {
-      this.foundation.isOpen() ? this.foundation.close() : this.foundation.open()
+    toggle (options) {
+      this.foundation.isOpen() ? this.foundation.close() : this.foundation.open(options)
     },
-    show () {
-      this.foundation.open()
+    show (options) {
+      this.foundation.open(options)
     },
     hide () {
       this.foundation.close()
@@ -60,70 +51,74 @@ export default {
 
   mounted () {
     let vm = this
+    const itemsContainer = vm.$refs.items
+    const items = [].slice.call(vm.$refs.items.querySelectorAll('.mdc-list-item[role]'))
 
     this.foundation = new MDCSimpleMenuFoundation({
       addClass: (className) => vm.$set(vm.classes, className, true),
       removeClass: (className) => vm.$delete(vm.classes, className),
-      hasClass: (className) => Boolean(vm.classes[className]),
-      hasNecessaryDom: () => Boolean(vm.$refs.items),
+      hasClass: (className) => vm.$el && vm.$el.classList.contains(className),
+      hasNecessaryDom: () => Boolean(itemsContainer),
+      getAttributeForEventTarget: (target, attributeName) => target.getAttribute(attributeName),
       getInnerDimensions: () => {
-        return {width: vm.$refs.items.offsetWidth, height: vm.$refs.items.offsetHeight}
+        return {
+          width: itemsContainer.offsetWidth,
+          height: itemsContainer.offsetHeight}
       },
-      hasAnchor: () => vm.$refs.root.parentElement && vm.$refs.root.parentElement.classList.contains('mdc-menu-anchor'),
-      getAnchorDimensions: () => vm.$refs.root.parentElement.getBoundingClientRect(),
+      hasAnchor: () => vm.$el.parentElement && vm.$el.parentElement.classList.contains('mdc-menu-anchor'),
+      getAnchorDimensions: () => vm.$el.parentElement.getBoundingClientRect(),
       getWindowDimensions: () => {
-        return {width: window.innerWidth, height: window.innerHeight}
+        return {
+          width: window.innerWidth,
+          height: window.innerHeight}
       },
       setScale: (x, y) => {
-        vm.$refs.root.style[getTransformPropertyName(window)] = `scale(${x}, ${y})`
+        vm.$el.style[getTransformPropertyName(window)] = `scale(${x}, ${y})`
       },
       setInnerScale: (x, y) => {
-        vm.$refs.items.style[getTransformPropertyName(window)] = `scale(${x}, ${y})`
+        itemsContainer.style[getTransformPropertyName(window)] = `scale(${x}, ${y})`
       },
-      getNumberOfItems: () => vm.items.length,
-      registerInteractionHandler: (type, handler) => vm.$refs.root.addEventListener(type, handler),
-      deregisterInteractionHandler: (type, handler) => vm.$refs.root.removeEventListener(type, handler),
-      registerDocumentClickHandler: (handler) => document.addEventListener('click', handler),
-      deregisterDocumentClickHandler: (handler) => document.removeEventListener('click', handler),
+      getNumberOfItems: () => items.length,
+      registerInteractionHandler: (type, handler) => vm.$el.addEventListener(type, handler),
+      deregisterInteractionHandler: (type, handler) => vm.$el.removeEventListener(type, handler),
+      registerBodyClickHandler: (handler) => document.body.addEventListener('click', handler),
+      deregisterBodyClickHandler: (handler) => document.body.removeEventListener('click', handler),
       getYParamsForItemAtIndex: (index) => {
-        const {offsetTop: top, offsetHeight: height} = vm.items[index]
+        const {offsetTop: top, offsetHeight: height} = items[index]
         return {top, height}
       },
       setTransitionDelayForItemAtIndex: (index, value) =>
-        vm.items[index].style.setProperty('transition-delay', value),
-      getIndexForEventTarget: (target) => vm.items.indexOf(target),
+        items[index].style.setProperty('transition-delay', value),
+      getIndexForEventTarget: (target) => items.indexOf(target),
       notifySelected: (evtData) => vm.$emit('selected', {
         index: evtData.index,
-        item: vm.items[evtData.index]
+        item: items[evtData.index]
       }),
       notifyCancel: () => vm.$emit('cancel'),
       saveFocus: () => {
         vm.prevFocus = document.activeElement
       },
       restoreFocus: () => {
-        if (vm.prevFocus) {
-          vm.prevFocus.focus()
-        }
+        if (vm.prevFocus) vm.prevFocus.focus()
       },
-      isFocused: () => document.activeElement === vm.$refs.root,
-      focus: () => vm.$refs.root.focus(),
-      getFocusedItemIndex: () => vm.items.indexOf(document.activeElement),
-      focusItemAtIndex: (index) => vm.items[index].focus(),
-      isRtl: () => getComputedStyle(vm.$refs.root).getPropertyValue('direction') === 'rtl',
+      isFocused: () => document.activeElement === vm.$el,
+      focus: () => vm.$el.focus(),
+      getFocusedItemIndex: () => items.indexOf(document.activeElement),
+      focusItemAtIndex: (index) => items[index].focus(),
+      isRtl: () => getComputedStyle(vm.$el).getPropertyValue('direction') === 'rtl',
       setTransformOrigin: (origin) => {
-        vm.$refs.root.style[`${getTransformPropertyName(window)}-origin`] = origin
+        vm.$el.style[`${getTransformPropertyName(window)}-origin`] = origin
       },
       setPosition: (position) => {
-        vm.$refs.root.style.left = 'left' in position ? position.left : null
-        vm.$refs.root.style.right = 'right' in position ? position.right : null
-        vm.$refs.root.style.top = 'top' in position ? position.top : null
-        vm.$refs.root.style.bottom = 'bottom' in position ? position.bottom : null
+        vm.$el.style.left = 'left' in position ? position.left : null
+        vm.$el.style.right = 'right' in position ? position.right : null
+        vm.$el.style.top = 'top' in position ? position.top : null
+        vm.$el.style.bottom = 'bottom' in position ? position.bottom : null
       },
       getAccurateTime: () => window.performance.now()
     })
 
     this.foundation.init()
-    if (this.open) this.foundation.open()
   },
 
   beforeDestroy () {

@@ -1,6 +1,6 @@
 <template>
-  <div id="under-construction-page" class="mdc-typography">
-    <i class="material-icons om-mcw-stop-icon" aria-hidden="true">do_not_disturb_on</i>
+  <div id="under-construction-page" class="mdc-typography mdc-typography--body1">
+    <i class="material-icons stop-icon" aria-hidden="true">remove_circle_outline</i>
     <span class="mdc-typography--body1">Work in progress, please try again later.</span>
   </div>
 </template>
@@ -14,21 +14,21 @@ export default {
 }
 </script>
 
-<!-- this component only css -->
+<!-- local scope css: this component only -->
 <style scoped>
 
-#under-construction-page {
-  text-align: center;
-}
+  #under-construction-page {
+    text-align: center;
+  }
 
-.om-mcw-stop-icon {
-  display: inline;
-  vertical-align: middle;
-}
-
+  .stop-icon {
+    display: inline;
+    vertical-align: middle;
+  }
 </style>
 
 <!-- import MDC styles -->
 <style lang="scss">
+  @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
 </style>

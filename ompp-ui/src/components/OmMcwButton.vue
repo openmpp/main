@@ -14,23 +14,22 @@
 export default {
   props: {
     disabled: Boolean,
+    compact: Boolean,
     dense: Boolean,
     raised: Boolean,
-    compact: Boolean,
-    primary: Boolean,
-    accent: Boolean,
+    unelevated: Boolean,
+    stroked: Boolean,
     materialIcon: Boolean
   },
   data () {
     return {
       classes: {
         'mdc-button': true,
+        'mdc-button--compact': this.compact,
         'mdc-button--dense': this.dense,
         'mdc-button--raised': this.raised,
-        'mdc-button--compact': this.compact,
-        'mdc-button--primary': this.primary,
-        'mdc-button--accent': this.accent,
-        'button-m-icon': this.materialIcon
+        'mdc-button--unelevated': this.unelevated,
+        'mdc-button--stroked': this.stroked
       }
     }
   },
@@ -41,16 +40,6 @@ export default {
   }
 }
 </script>
-
-<!-- this component only css -->
-<style scoped>
-
-.button-m-icon {
-  display: inline;
-  vertical-align: middle;
-}
-
-</style>
 
 <!-- import MDC styles -->
 <style lang="scss">
