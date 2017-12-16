@@ -1,6 +1,6 @@
 <template>
 
-<div id="app" class="app-container mdc-typography">
+<div id="app" class="mdc-typography">
 
   <om-mcw-drawer ref="drawer">
     
@@ -98,7 +98,7 @@
 
   <div class="content-container">
   
-    <header class="mdc-toolbar" >
+    <header class="toolbar-container mdc-toolbar" >
       <div class="mdc-toolbar__row">
       
         <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
@@ -177,7 +177,7 @@
         <div class="mono">Digest:&nbsp;&nbsp;{{digestNoteDlg}}</div>
       </om-mcw-dialog>
     </main>
-    
+
   </div>
   
 </div>
@@ -284,26 +284,37 @@ export default {
   @import "@material/theme/mdc-theme";
 
   /* app body: drawer on left side and content */
-  .app-container {
+  #app {
+    height: 100%;
+    width: 100%;
     display: flex;
     flex-direction: row;
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+    overflow-y: hidden;
   }
 
   /* content: toolbar and main page body */
   .content-container {
-    display: inline-flex; 
-    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    display: flex; 
     flex-grow: 1;
+    flex-direction: column;
     box-sizing: border-box;
     overflow: hidden;
   }
-
-  /* main page body */
+  .toolbar-container {
+    flex: 0 0 auto;
+  }
   .main-container {
+    height: 100%;
+    flex: 1 1 auto;
+    display: flex; 
+    flex-direction: column;
     padding-left: 1em;
+    overflow-y: auto;
   }
 
   /* disable model menu and links if no current model selected */

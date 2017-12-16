@@ -3,7 +3,7 @@
 <template>
 
 <aside :class="classes">
-  <nav ref="drawer" class="drawer-bottom mdc-persistent-drawer__drawer">
+  <nav ref="drawer" class="mdc-persistent-drawer__drawer">
 
     <header v-if="$slots['header']" class="drawer-header mdc-persistent-drawer__toolbar-spacer">
       <slot name="header"></slot>
@@ -90,9 +90,6 @@ export default {
     width: 100%;
     padding-left: 0;
     padding-right: 0;
-  }
-  .drawer-bottom {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   }
   
   /* ie11 drawer width bug with flex conetent */

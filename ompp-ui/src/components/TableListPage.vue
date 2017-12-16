@@ -7,11 +7,11 @@
 
       <li v-for="t in TableList()" :key="'tt-' + t.Table.TableId" class="mdc-list-item">
 
-        <a href="#" 
+        <span
           @click="showTableInfo(t)" 
           class="material-icons mdc-list-item__start-detail note-link" 
           :title="t.Table.Name + ' notes'"
-          :alt="t.Table.Name + ' notes'">event_note</a>
+          :alt="t.Table.Name + ' notes'">event_note</span>
         <router-link
           :to="'/model/' + digest + '/table/' + t.Table.Name" 
           class="ahref-next" 
@@ -19,7 +19,7 @@
           :alt="t.Table.Name" 
           >
           <span class="mdc-list-item__text">{{ t.Table.Name }}
-            <span class="mdc-list-item__text__secondary">{{ t.TableDescr }}</span>
+            <span class="mdc-list-item__secondary-text">{{ t.TableDescr }}</span>
           </span>
         </router-link>
 
@@ -146,12 +146,11 @@ export default {
   }
   .note-link {
     @extend .note-item;
-    text-decoration: none;
-    outline: none;
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.1);
+    }
     @extend .mdc-theme--text-secondary-on-background;
-  }
-  a.note-link:hover {
-    background: rgba(0, 0, 0, 0.1);
   }
   .note-empty {
     @extend .note-item;

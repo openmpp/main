@@ -7,14 +7,14 @@
 
       <li v-for="(r, idx) in runTextList" :key="'rt-' + idx.toString()" class="mdc-list-item">
 
-        <a href="#" 
+        <span
           @click="showRunInfo(r)" 
           class="material-icons mdc-list-item__start-detail note-link" 
           :title="r.Name + ' notes'"
           :alt="r.Name + ' notes'">
             <span v-if="isSuccess(r)">event_note</span>
             <span v-else>event_busy</span>
-          </a>
+          </span>
         <a
           @click="doRunClick(idx)"
           href="#"
@@ -24,7 +24,7 @@
           >
           <span class="mdc-list-item__text">
             <span>{{ r.Name }}</span>
-            <span class="item-line mdc-list-item__text__secondary"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
+            <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
           </span>
         </a>
         <!--
@@ -37,7 +37,7 @@
           >
           <span class="mdc-list-item__text">
             <span>{{ r.Name }}</span>
-            <span class="item-line mdc-list-item__text__secondary"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
+            <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
           </span>
         </router-link>
         -->
@@ -212,12 +212,11 @@ export default {
   }
   .note-link {
     @extend .note-item;
-    text-decoration: none;
-    outline: none;
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.1);
+    }
     @extend .mdc-theme--text-secondary-on-background;
-  }
-  a.note-link:hover {
-    background: rgba(0, 0, 0, 0.1);
   }
   .note-empty {
     @extend .note-item;

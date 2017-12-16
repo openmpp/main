@@ -1,26 +1,24 @@
 <template>
 
-<div id="model-page" class="mdc-typography">
+<div id="model-page" class="main-container mdc-typography">
 
   <div class="hdr-row mdc-typography--body1">
 
-    <span v-if="loadRunDone">
-      <span>
-        <a href="#" v-if="isNotEmptyTheRun" 
+    <span v-if="loadRunDone" class="hdr-text">
+      <span v-if="isNotEmptyTheRun" 
           @click="showRunInfo()" 
           class="cell-icon-link material-icons" 
           alt="Model run info"
           title="Model run info">
             <span v-if="isSuccessTheRun">directions_run</span>
             <span v-else>priority_high</span>
-          </a>
+        </span>
         <span v-else 
           title="Model run info not available"
           alt="Model run info not available"
           class="cell-icon-empty material-icons" 
           aria-hidden="true">directions_run</span>
-      </span>
-      <span v-if="isNotEmptyTheRun" class="cell-descr">
+      <span v-if="isNotEmptyTheRun">
         <span v-if="!isSuccessTheRun" class="cell-status mdc-typography--body2">{{statusOfTheRun}}</span>
         <span class="mono">{{lastTimeOfTheRun}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfTheRun}}</span>
         <span>{{ descrOfTheRun }}</span>
@@ -29,9 +27,9 @@
         <span class="mdc-typography--body2">No model run results</span>
       </span>
     </span>
-    <span v-else class="cell-icon-empty material-icons" aria-hidden="true">refresh</span>
-
-    <span class="mdc-typography--body2">
+    
+    <span class="hdr-text mdc-typography--body2">
+      <span v-if="!loadRunDone" class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
       <refresh-model
         :digest="digest"
         :refresh-tickle="refreshTickle"
@@ -74,7 +72,7 @@
     </div>
   </nav>
   
-  <main class="tab-body-container">
+  <main class="main-container">
     <router-view :refresh-tickle="refreshTickle" @tab-mounted="doTabMounted"></router-view>
   </main>
 
@@ -408,6 +406,15 @@ export default {
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
 
+  /* page and tab container content body */
+  .main-container {
+    height: 100%;
+    flex: 1 1 auto;
+    display: flex; 
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
   /* tab bar: tab items with link and close button */
   .tab-container {
     display: flex;
@@ -452,12 +459,18 @@ export default {
 
   /* header row of model, run, workset properties */
   .hdr-row {
+    flex-grow: 1;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
     margin-top: 0.5em;
+  }
+  .hdr-text {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-  /* header table of parameter properties */
   /*
   .hdr-table {
     display: table;
@@ -472,19 +485,18 @@ export default {
   }
   */
 
-  /* cell material icon: a link or empty (not a link) */
+  /* cell material icon: a link or empty (non-link) */
   .cell-icon {
-    display: inline-block;
     vertical-align: middle;
-    height: 100%;
     margin: 0;
     padding-left: 0.5em;
     padding-right: 0.5em;
   }
   .cell-icon-link {
     @extend .cell-icon;
-    text-decoration: none;
-    outline: none;
+    &:hover {
+      cursor: pointer;
+    }
     @extend .mdc-theme--text-primary-on-primary;
     @extend .mdc-theme--primary-bg;
   }
@@ -497,7 +509,10 @@ export default {
     text-transform: uppercase;
   }
 
-  /* note dialog table info */
+  /* note dialog, fix handsontable z-index: 101; */
+  #the-run-note-dlg {
+    z-index: 200;
+  }
   .note-table {
     display: table;
     margin-top: .5em;

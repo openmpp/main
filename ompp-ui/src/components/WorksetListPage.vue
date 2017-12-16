@@ -7,11 +7,11 @@
 
       <li v-for="(w, idx) in worksetTextList" :key="'wt-' + idx.toString()" class="mdc-list-item">
 
-        <a href="#" 
+        <span
           @click="showWsInfo(w)" 
           class="material-icons mdc-list-item__start-detail note-link" 
           :title="w.Name + ' notes'"
-          :alt="w.Name + ' notes'">event_note</a>
+          :alt="w.Name + ' notes'">event_note</span>
         <a
           @click="doWsClick(idx)"
           href="#"
@@ -21,7 +21,7 @@
           >
           <span class="mdc-list-item__text">
             <span>{{ w.Name }}</span>
-            <span class="item-line mdc-list-item__text__secondary"><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
+            <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
           </span>
         </a>
         <!--
@@ -34,7 +34,7 @@
           >
           <span class="mdc-list-item__text">
             <span>{{ w.Name }}</span>
-            <span class="item-line mdc-list-item__text__secondary"><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
+            <span class="item-line mmdc-list-item__secondary-text><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
           </span>
         </router-link>
         -->
@@ -169,12 +169,11 @@ export default {
   }
   .note-link {
     @extend .note-item;
-    text-decoration: none;
-    outline: none;
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.1);
+    }
     @extend .mdc-theme--text-secondary-on-background;
-  }
-  a.note-link:hover {
-    background: rgba(0, 0, 0, 0.1);
   }
   .note-empty {
     @extend .note-item;

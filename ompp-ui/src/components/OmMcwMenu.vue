@@ -60,6 +60,7 @@ export default {
       hasClass: (className) => vm.$el && vm.$el.classList.contains(className),
       hasNecessaryDom: () => Boolean(itemsContainer),
       getAttributeForEventTarget: (target, attributeName) => target.getAttribute(attributeName),
+      eventTargetHasClass: (target, className) => target.classList.contains(className),
       getInnerDimensions: () => {
         return {
           width: itemsContainer.offsetWidth,

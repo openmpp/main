@@ -18,8 +18,7 @@ export default {
     dense: Boolean,
     raised: Boolean,
     unelevated: Boolean,
-    stroked: Boolean,
-    materialIcon: Boolean
+    stroked: Boolean
   },
   data () {
     return {

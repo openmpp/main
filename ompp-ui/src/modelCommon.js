@@ -115,6 +115,52 @@ const ModelCommon = {
     return (tdn.Txt.length > 0) ? (tdn.Txt[0].Note || '') !== '' : false
   },
 
+  // is model has type text list and each element is TypeTxt
+  isTypeTextList (md) {
+    if (!this.isModel(md)) return false
+    if (!md.hasOwnProperty('TypeTxt')) return false
+    if (!md.TypeTxt.hasOwnProperty('length')) return false
+    for (let k = 0; k < md.TypeTxt.length; k++) {
+      if (!this.isType(md.TypeTxt[k].Type)) return false
+    }
+    return true
+  },
+
+  // return true if this is non empty Type
+  isType (t) {
+    if (!t) return false
+    if (!t.hasOwnProperty('TypeId') || !t.hasOwnProperty('Name') || !t.hasOwnProperty('Digest')) return false
+    return (t.Name || '') !== '' && (t.Digest || '') !== ''
+  },
+
+  // return empty TypeTxt
+  emptyTypeText () {
+    return {
+      Type: { TypeId: 0, Name: '', Digest: '' },
+      DescrNote: { LangCode: '', Descr: '', Note: '' },
+      TypeEnumTxt: [] }
+  },
+
+  // find TypeTxt by TypeId
+  typeTextById (md, typeId) {
+    if (!this.isModel(md) || typeId === void 0 || typeId === null) {  // model empty or type id empty: return empty result
+      return this.emptyTypeText()
+    }
+    for (let k = 0; k < md.TypeTxt.length; k++) {
+      if (!this.isType(md.TypeTxt[k].Type)) continue
+      if (md.TypeTxt[k].Type.TypeId === typeId) return md.TypeTxt[k]
+    }
+    return this.emptyTypeText()  // not found
+  },
+
+  // find type size by TypeId: TypeTxt.TypeEnumTxt.length
+  typeEnumSizeById (md, typeId) {
+    const t = this.typeTextById(md, typeId)
+    if (!this.isType(t.Type)) return 0
+    if (!t.hasOwnProperty('TypeEnumTxt')) return 0
+    return t.TypeEnumTxt.length || 0
+  },
+
   // is model has parameter text list and each element is Param
   isParamTextList (md) {
     if (!this.isModel(md)) return false
@@ -140,7 +186,7 @@ const ModelCommon = {
       DescrNote: { LangCode: '', Descr: '', Note: '' } }
   },
 
-  // find parameter by name
+  // find ParamTxt by name
   paramTextByName (md, name) {
     if (!this.isModel(md) || (name || '') === '') { // model empty or name empty: return empty result
       return this.emptyParamText()
@@ -150,6 +196,22 @@ const ModelCommon = {
       if (md.ParamTxt[k].Param.Name === name) return md.ParamTxt[k]
     }
     return this.emptyParamText()  // not found
+  },
+
+  // find parameter size by name: number of parameter rows
+  paramSizeByName (md, name) {
+    const p = this.paramTextByName(md, name)
+    if (!this.isParam(p.Param)) return 0
+    if (!p.hasOwnProperty('ParamDimsTxt')) return 0
+    if (!p.ParamDimsTxt.hasOwnProperty('length')) return 0
+
+    let size = 1
+    for (let k = 0; k < p.ParamDimsTxt.length; k++) {
+      if (!p.ParamDimsTxt[k].hasOwnProperty('Dim')) return 0
+      let n = this.typeEnumSizeById(md, p.ParamDimsTxt[k].Dim.TypeId)
+      if ((n || 0) > 0) size *= n
+    }
+    return size
   },
 
   // is model has output table text list and each element is Table
@@ -177,7 +239,7 @@ const ModelCommon = {
     }
   },
 
-  // find output table by name
+  // find output TableTxt by name
   tableTextByName (md, name) {
     if (!this.isModel(md) || (name || '') === '') { // model empty or name empty: return empty result
       return this.emptyTableText()

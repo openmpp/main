@@ -7,11 +7,11 @@
 
       <li v-for="p in paramList()" :key="'pt-' + p.Param.ParamId" class="mdc-list-item">
 
-        <a href="#" 
+        <span
           @click="showParamInfo(p)" 
           class="material-icons mdc-list-item__start-detail note-link" 
-          :title="p.Param.Name + ' notes'"
-          :alt="p.Param.Name + ' notes'">event_note</a>
+          :title="p.Param.Name + ' info'"
+          :alt="p.Param.Name + ' info'">event_note</span>
         <router-link
           :to="'/model/' + digest + '/parameter/' + p.Param.Name" 
           class="ahref-next" 
@@ -19,7 +19,7 @@
           :alt="p.Param.Name" 
           >
           <span class="mdc-list-item__text">{{ p.Param.Name }}
-            <span class="mdc-list-item__text__secondary">{{ descrOf(p) }}</span>
+            <span class="mdc-list-item__secondary-text">{{ descrOf(p) }}</span>
           </span>
         </router-link>
 
@@ -137,12 +137,11 @@ export default {
   }
   .note-link {
     @extend .note-item;
-    text-decoration: none;
-    outline: none;
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.1);
+    }
     @extend .mdc-theme--text-secondary-on-background;
-  }
-  a.note-link:hover {
-    background: rgba(0, 0, 0, 0.1);
   }
   .note-empty {
     @extend .note-item;

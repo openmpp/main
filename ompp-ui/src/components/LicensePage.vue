@@ -1,9 +1,6 @@
 <template>
-  <div id="license-page" class="mdc-typography">
-    <div v-if="loadDone" class="lic-text mdc-typography--body1">{{ msg }}</div>
-    <div v-else class="mdc-typography--body1">
-      <span v-if="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msg}}</span>
-    </div>
+  <div id="license-page" class="mdc-typography mdc-typography--body1">
+   <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>{{ msg }}
   </div>
 </template>
 
@@ -50,12 +47,24 @@ export default {
 
 <!-- local scope css: this component only -->
 <style lang="scss" scoped>
-
-  /* license text style */
-  .lic-text {
-    font-family: "Roboto Mono", monospace;
+  #license-page {
+    display: block;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
     white-space: pre;
+    font-family: "Roboto Mono", monospace;
   }
+  /*
+  #license-page {
+    flex: 1 0 auto; 
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    white-space: pre;
+    font-family: "Roboto Mono", monospace;
+  }
+  */
 </style>
 
 <!-- MDC styles -->

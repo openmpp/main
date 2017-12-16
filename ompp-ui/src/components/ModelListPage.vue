@@ -1,8 +1,8 @@
 <template>
 
-<div id="home-page" class="mdc-typography mdc-typography--body1">
+<div id="model-list-page" class="main-container mdc-typography mdc-typography--body1">
 
-  <div v-if="loadDone">
+  <div v-if="loadDone" class="main-container">
     <ul class="main-list mdc-list mdc-list--two-line">
 
       <li v-for="m in modelList" :key="m.Model.Digest" class="mdc-list-item">
@@ -19,7 +19,7 @@
             :alt="m.Model.Name + ' model'"
             >
             <span class="mdc-list-item__text">{{ m.Model.Name }}
-              <span class="mdc-list-item__text__secondary">{{ descrOf(m) }}</span>
+              <span class="mdc-list-item__secondary-text">{{ descrOf(m) }}</span>
             </span>
           </router-link>
         </template>
@@ -146,10 +146,28 @@ export default {
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
 
-  /* main body list */
+  /* model list: containers and list itself */
+  .main-container {
+    display: block; 
+    overflow-y: auto;
+  }
   .main-list {
     padding-left: 0;
   }
+
+  /* model list: containers and list itself */
+  /*
+  .main-container {
+    height: 100%;
+    flex: 1 1 auto;
+    display: flex; 
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .main-list {
+    padding-left: 0;
+  }
+  */
 
   /* model a link */
   .ahref-model {
