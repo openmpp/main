@@ -60,7 +60,6 @@ export default {
         fillHandle: false,
         stretchH: 'last',
         data: [],
-        colHeaders: [],
         columns: []
       },
       dataPage: []
@@ -127,13 +126,15 @@ export default {
     console.log('paramSizeByName', n)
 
     this.htSettings.columns = []
-    this.htSettings.colHeaders = []
     for (let j = 0; j < this.paramText.ParamDimsTxt.length; j++) {
-      this.htSettings.columns.push({readOnly: true})
-      this.htSettings.colHeaders.push(this.paramText.ParamDimsTxt[j].Dim.Name)
+      this.htSettings.columns.push({
+        readOnly: true,
+        title: this.paramText.ParamDimsTxt[j].Dim.Name})
     }
-    this.htSettings.columns.push({readOnly: false}, {readOnly: false})
-    this.htSettings.colHeaders.push('SubId', 'Value')
+    this.htSettings.columns.push(
+      {readOnly: false, type: 'numeric', title: 'SubId'},
+      {readOnly: false, validator: 'numeric', title: 'Value'})
+      // {readOnly: false, title: 'Value'})
 
     // this.htRoot = 'ht-' + this.digest + '-' + this.paramName + '-' + (this.theRunText.Digest || '')
     this.doDataPage()
@@ -149,7 +150,7 @@ export default {
   @import "@material/typography/mdc-typography";
   @import "handsontable/dist/handsontable.full.css";
 
-  /* main container and header row */
+  /* main container, header row and data table */
   .main-container {
     height: 100%;
     flex: 1 1 auto;
@@ -158,24 +159,21 @@ export default {
     overflow-y: hidden;
   }
   .hdr-row {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
     flex: 0 0 auto;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
   }
-
-  /* table container */
   .ht-container {
     flex: 1 1 auto;
-    position: relative;
     overflow: auto;
   }
 
-  /* to fix handsontable z-index: 101; */
+  /* note dialog, fix handsontable z-index: 101; */
   #note-dlg {
-    z-index: 200;
+    z-index: 201;
   }
 
   /* cell material icon: a link or empty (non-link) */

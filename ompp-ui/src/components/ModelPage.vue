@@ -511,7 +511,7 @@ export default {
 
   /* note dialog, fix handsontable z-index: 101; */
   #the-run-note-dlg {
-    z-index: 200;
+    z-index: 201;
   }
   .note-table {
     display: table;

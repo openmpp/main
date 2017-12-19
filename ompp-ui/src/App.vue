@@ -371,10 +371,17 @@ export default {
 
   /* fix: getInnerDimensions returns 0,0 randomly */
   /* more menu at the right top instead of mdc-anchor */
+  /* fix handsontable z-index: 101; */
   .more-menu {
     transform-origin: right top 0px;
     right: 0px; 
     top: 0px;
+    z-index: 204;
+    /* position: relative; */
+  }
+  /* note dialog, fix handsontable z-index: 101; */
+  #note-dlg {
+    z-index: 201;
   }
 </style>
 

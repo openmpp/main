@@ -200,11 +200,14 @@ const ModelCommon = {
 
   // find parameter size by name: number of parameter rows
   paramSizeByName (md, name) {
+    // if this is not a parameter then size =0 else at least =1
     const p = this.paramTextByName(md, name)
     if (!this.isParam(p.Param)) return 0
-    if (!p.hasOwnProperty('ParamDimsTxt')) return 0
-    if (!p.ParamDimsTxt.hasOwnProperty('length')) return 0
 
+    // zero rank parameter
+    if (!p.hasOwnProperty('ParamDimsTxt') || !p.ParamDimsTxt.hasOwnProperty('length')) return 1
+
+    // multiply all dimension sizes, assume =1 for built-in types
     let size = 1
     for (let k = 0; k < p.ParamDimsTxt.length; k++) {
       if (!p.ParamDimsTxt[k].hasOwnProperty('Dim')) return 0
@@ -249,6 +252,42 @@ const ModelCommon = {
       if (md.TableTxt[k].Table.Name === name) return md.TableTxt[k]
     }
     return this.emptyTableText()  // not found
+  },
+
+  // find output table size by name or empty value
+  tableSizeByName (md, name) {
+    // if this is not output table then size =empty value
+    let ret = this.emptyTableSize()
+    const t = this.tableTextByName(md, name)
+    if (!this.isTable(t.Table)) return ret
+
+    // count of dimensions, expressions and accumulatotrs: table rank must be same as dimension count
+    if (t.hasOwnProperty('TableDimsTxt')) {
+      if ((t.Table.Rank || 0) !== (t.TableDimsTxt.length || 0)) return ret
+      ret.rank = (t.Table.Rank || 0)
+    }
+    if (t.hasOwnProperty('TableExprTxt')) ret.exprCount = (t.TableExprTxt.length || 0)
+    if (t.hasOwnProperty('TableAccTxt')) ret.allAccCount = (t.TableAccTxt.length || 0)
+    if (ret.allAccCount > 0) {
+      ret.accCount = ret.allAccCount
+      for (let k = 0; k < ret.allAccCount; k++) {
+        if (t.TableAccTxt[k].hasOwnProperty('Acc') && !!t.TableAccTxt[k].Acc.IsDerived) ret.accCount--
+      }
+    }
+
+    // multiply all dimension sizes, include "total" item, assume =1 for built-in types
+    ret.dimTotal = 1
+    for (let k = 0; k < t.TableDimsTxt.length; k++) {
+      if (!t.TableDimsTxt[k].hasOwnProperty('Dim')) return 0
+      ret.dimSize.push(t.TableDimsTxt[k].Dim.DimSize || 0)
+      if (ret.dimSize[k] > 0) ret.dimTotal *= ret.dimSize[k]
+    }
+    return ret
+  },
+
+  // return empty table size
+  emptyTableSize () {
+    return {rank: 0, exprCount: 0, accCount: 0, allAccCount: 0, dimTotal: 0, dimSize: []}
   },
 
   // if this is run text

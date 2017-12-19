@@ -14,11 +14,10 @@
           :alt="r.Name + ' notes'">
             <span v-if="isSuccess(r)">event_note</span>
             <span v-else>event_busy</span>
-          </span>
-        <a
+        </span>
+        <span
           @click="doRunClick(idx)"
-          href="#"
-          class="ahref-next" 
+          class="link-next" 
           :title="r.Name"
           :alt="r.Name" 
           >
@@ -26,21 +25,7 @@
             <span>{{ r.Name }}</span>
             <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
           </span>
-        </a>
-        <!--
-        <router-link
-          @click.native="doRunClick(idx)"
-          :to="'/model/' + digest + '/run/' + r.Digest" 
-          class="ahref-next" 
-          :title="r.Name"
-          :alt="r.Name" 
-          >
-          <span class="mdc-list-item__text">
-            <span>{{ r.Name }}</span>
-            <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
-          </span>
-        </router-link>
-        -->
+        </span>
 
       </li>
 
@@ -197,6 +182,17 @@ export default {
     text-decoration: none;
     @extend .mdc-theme--text-primary-on-background;
     &:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+  .link-next {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    @extend .mdc-theme--text-primary-on-background;
+    &:hover {
+      cursor: pointer;
       background: rgba(0, 0, 0, 0.1);
     }
   }

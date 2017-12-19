@@ -37,9 +37,26 @@
       <div>{{exprNoteDlg}}</div>
     </div>
     <br/>
-    <div class="mono">Name:&nbsp;&nbsp;&nbsp;{{nameNoteDlg}}</div>
-    <div class="mono">Rank:&nbsp;&nbsp;&nbsp;{{rankNoteDlg}}</div>
-    <div class="mono">Digest:&nbsp;{{digestNoteDlg}}</div>
+    <div class="note-table">
+      <div class="note-row">
+        <span class="note-cell mono">Name:</span><span class="note-cell mono">{{nameNoteDlg}}</span>
+      </div>
+      <div v-if="sizeNoteDlg.rank !== 0" class="note-row">
+        <span class="note-cell mono">Dimensions:</span><span class="note-cell mono">{{sizeNoteDlg.dimSize}}</span>
+      </div>
+      <div v-else class="note-row">
+        <span class="note-cell mono">Rank:</span><span class="note-cell mono">{{sizeNoteDlg.rank}}</span>
+      </div>
+      <div class="note-row">
+        <span class="note-cell mono">Expressions:</span><span class="note-cell mono">{{sizeNoteDlg.exprCount}}</span>
+      </div>
+      <div class="note-row">
+        <span class="note-cell mono">Accumulators:</span><span class="note-cell mono">{{sizeNoteDlg.accCount}}</span>
+      </div>
+      <div class="note-row">
+        <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{digestNoteDlg}}</span>
+      </div>
+    </div>
   </om-mcw-dialog>
 
 </div>
@@ -65,7 +82,7 @@ export default {
       nameNoteDlg: '',
       exprDescrDlg: '',
       exprNoteDlg: '',
-      rankNoteDlg: 0,
+      sizeNoteDlg: Mdf.emptyTableSize(),
       digestNoteDlg: ''
     }
   },
@@ -101,7 +118,7 @@ export default {
       this.exprNoteDlg = t.ExprNote || ''
       this.nameNoteDlg = t.Table.Name
       this.digestNoteDlg = t.Table.Digest
-      this.rankNoteDlg = t.Table.Rank || 0
+      this.sizeNoteDlg = Mdf.tableSizeByName(this.theModel, t.Table.Name)
       this.$refs.noteDlg.open()
     }
   },
@@ -156,6 +173,22 @@ export default {
     @extend .note-item;
     cursor: default;
     @extend .mdc-theme--text-disabled-on-background;
+  }
+
+  /* note dialog */
+  .note-table {
+    display: table;
+    margin-top: .5em;
+  }
+  .note-row {
+    display: table-row;
+  }
+  .note-cell {
+    display: table-cell;
+    white-space: nowrap;
+    &:first-child {
+      padding-right: .5em;
+    }
   }
 </style>
 
