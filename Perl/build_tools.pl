@@ -50,10 +50,10 @@ chdir "${om_root}/R";
 };
 
 
-# if GOROOT and GOPATH (and others for MinGW) defined then build dbcopy
+# if GOROOT and GOPATH (and others for MinGW) defined then build dbcopy and oms
 #
 if ("$ENV{GOROOT}" eq "" || "$ENV{GOPATH}" eq "" || "$ENV{CPLUS_INCLUDE_PATH}" eq "" || "$ENV{C_INCLUDE_PATH}" eq "") {
-	print "Skip dbcopy build: GOROOT or GOPATH or CPLUS_INCLUDE_PATH or C_INCLUDE_PATH is empty\n";
+	print "Skip dbcopy and oms build: GOROOT or GOPATH or CPLUS_INCLUDE_PATH or C_INCLUDE_PATH is empty\n";
 }
 else {
 	# For successful go build, must set persistent environment variables for MinGW
@@ -75,7 +75,22 @@ else {
 	if ($retval != 0) {
 		print "Build dbcopy failed (output follows:\n$merged\n"
 	}
+    
+	print "Building utility oms\n";
+	chdir "$ENV{GOPATH}";
+	($merged, $retval) = capture_merged {
+		my @args = (
+			'go',
+			'install',
+			'go.openmpp.org/oms',
+			);
+		system(@args);
+	};
+	if ($retval != 0) {
+		print "Build oms failed (output follows:\n$merged\n"
+	}
 }
 copy 'bin/dbcopy.exe', "${om_root}/bin";
+copy 'bin/oms.exe', "${om_root}/bin";
 
 chdir "${om_root}/Perl";

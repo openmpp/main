@@ -11,6 +11,11 @@ Cluster version:
 
 More information at: http://ompp.sourceforge.net/wiki/
 
+2017_12_19:
+    major changes: beta version of openM++ web-service to access (oms)
+    minor changes and bug fixes, update for Visual Studio 2017
+    pre-alpha version of openM++ user interface (ompp-ui)
+
 2017_06_05:
     major release: parameters sub-values for probabilistic statistical analysis
     minor changes and bug fixes, update for Visual Studio 2017

@@ -5,7 +5,7 @@ It is build on CentOS 7, x64, g++ 4.8.5
 
 make RELEASE=1
 
-MPI cluster version build with OpenMPI 1.10.0
+MPI cluster version build with OpenMPI 1.10.6
 
 make RELEASE=1 OM_MSG_USE=MPI
 

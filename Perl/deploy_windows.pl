@@ -129,6 +129,7 @@ $subdir = 'bin';
 	'README_win.txt',
 	'modgen_export_csv.exe',
 	'dbcopy.exe',
+    'oms.exe',
 	'patch_modgen11_outputs.exe',
 	'patch_modgen12_outputs.exe',
 	'patch_modgen12.1_outputs.exe',
@@ -142,12 +143,13 @@ for my $file (@files) {
 	copy "${om_root}/${subdir}/${file}", "${deploy_dir}/${subdir}/${file}" or die "Failed to copy ${subdir}/${file}";
 }
 
-# dbcopy: skip if GOPATH not defined
+# dbcopy and oms: skip if GOPATH not defined
 #
 if ("$ENV{GOPATH}" eq "") {
-	print "Skip dbcopy: GOPATH is empty\n";
+	print "Skip dbcopy and oms: GOPATH is empty\n";
 }
 else {
+    # copy dbcopy.exe
 	my $dbcopy_exe = "$ENV{GOPATH}/bin/dbcopy.exe";
 	if (-e "${dbcopy_exe}") {
 		copy "${dbcopy_exe}", "${deploy_dir}/${subdir}/dbcopy.exe" or die "Failed to copy ${dbcopy_exe}";
@@ -156,11 +158,21 @@ else {
 		print "Skip dbcopy: it does not exist\n";
 	}
 	
-	# dbcopy source code
-	my $dbcopy_src_dir = "$ENV{GOPATH}/src/go.openmpp.org";
-	dircopy "$dbcopy_src_dir/dbcopy", "${deploy_dir}/go.openmpp.org/dbcopy" || die;
-	dircopy "$dbcopy_src_dir/ompp", "${deploy_dir}/go.openmpp.org/ompp" || die;
-	dircopy "$dbcopy_src_dir/licenses", "${deploy_dir}/licenses" || die;
+    # copy oms.exe
+	my $oms_exe = "$ENV{GOPATH}/bin/oms.exe";
+	if (-e "${oms_exe}") {
+		copy "${oms_exe}", "${deploy_dir}/${subdir}/oms.exe" or die "Failed to copy ${oms_exe}";
+	}
+	else {
+		print "Skip oms: it does not exist\n";
+	}
+	
+	# dbcopy and oms source code
+	my $go_src_dir = "$ENV{GOPATH}/src/go.openmpp.org";
+	dircopy "$go_src_dir/dbcopy", "${deploy_dir}/go.openmpp.org/dbcopy" || die;
+	dircopy "$go_src_dir/ompp", "${deploy_dir}/go.openmpp.org/ompp" || die;
+	dircopy "$go_src_dir/licenses", "${deploy_dir}/licenses" || die;
+	dircopy "$go_src_dir/oms", "${deploy_dir}/go.openmpp.org/oms" || die;
 }
 
 # lib
