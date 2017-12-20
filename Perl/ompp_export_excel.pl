@@ -13,11 +13,13 @@ my $script_version = '1.0';
 use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
-	$script_name.' %o <source-sqlite> <destination-folder>',
+	$script_name.' %o <source-sqlite> <destination-file>',
 	[ 'help|h'    => "print usage message and exit" ],
 	[ 'version|v' => "print version and exit" ],
 	[ 'lang|l=s'  => "language of labels (a language declared in the model)",
 		{ default => '' } ],
+	[ 'verbosity=i' => 'verbosity 0(default), 1, 2, 3',
+		{ default => 0 } ],
 );
 
 if ($opt->version) {
@@ -30,6 +32,9 @@ if ($opt->help) {
 	exit 0;
 }
 
+# Control verbosity of log output (0, 1, 2, 3)
+my $verbosity = $opt->verbosity;
+
 if ($#ARGV != 1) {
 	# must have exactly two arguments
 	print $usage->text;
@@ -39,8 +44,6 @@ if ($#ARGV != 1) {
 my $db = shift @ARGV;
 my $workbook_xlsx = shift @ARGV;
 
-# Control verbosity of log output (0, 1, 2)
-my $verbosity = 0;
 
 my $lang_code_requested = $opt->lang;
 
@@ -67,14 +70,21 @@ use common qw(
 # Check for compile errors, and bail if any.
 if ($@) {
 	print $@;
-	exit;
+	exit 1;
 }
 
 if (! -s $db) {
 	logmsg error, $script_name, "SQLite database ${db} not found\n";
+	exit 1;
 }
-if (-s $workbook_xlsx) {
-	unlink $workbook_xlsx || logmsg error, $script_name, "unable to remove existing ${workbook_xlsx}\n";
+
+# Remove existing output xlsx if present
+if (-e $workbook_xlsx) {
+	$success = unlink $workbook_xlsx;
+	if (!$success) {
+		logmsg error, "unable to remove existing ${workbook_xlsx}";
+		exit 1;
+	}
 }
 
 # Extract csv versions of tables to a temporary folder
@@ -84,16 +94,9 @@ logmsg info, "excel_export", "extracting tables to ${tmpdir}" if $verbosity >= 1
 $failure = ompp_tables_to_csv($db, $tmpdir);
 if ($failure) {
 	logmsg error, $script_name, "unable to extract tables";
-	exit 1
+	exit 1;
 };
- 
-if (-s $workbook_xlsx) {
-	$failure = unlink $workbook_xlsx;
-	if ($failure) {
-		logmsg error, "unable to remove existing ${workbook_xlsx}";
-		exit 1;
-	}
-}
+
 
 my $Book = Excel::Writer::XLSX->new($workbook_xlsx);
 
@@ -347,6 +350,11 @@ logmsg info, $script_name, "sql", $sql if $verbosity >= 2;
 $result = run_sqlite_statement $db, $sql, $failure;
 exit 1 if $failure;
 chomp $result;
+logmsg info, $script_name, "result=${result}" if $verbosity >= 2;
+if ($result eq '') {
+	logmsg error, $script_name, "no runs in database";
+	exit 1;
+}
 (my $run_id, my $run_date_time, my $pieces) = split(/[|]/, $result);
 logmsg info, $script_name, "run_id=${run_id} run_date_time=${run_date_time} pieces=${pieces}" if $verbosity >= 1;
 
@@ -516,7 +524,7 @@ for my $table_id (@table_ids) {
 	while (<CSV>) {
 		chomp;
 		my $line = $_;
-		logmsg info, $script_name, $table_name, "line=$line" if $verbosity >= 2;
+		logmsg info, $script_name, $table_name, "line=$line" if $verbosity >= 3;
 		++$record_counter;
 		next if $record_counter == 1; # skip csv header line containing column names
 
@@ -531,13 +539,13 @@ for my $table_id (@table_ids) {
 			$value += 0; # force to numeric
 		}
 
-		logmsg info, $script_name, $table_name, "expr_id=${expr_id} value=${value}" if $verbosity >= 2;
+		logmsg info, $script_name, $table_name, "expr_id=${expr_id} value=${value}" if $verbosity >= 3;
 		
 		if ($expr_id == 0) {
 			# New observation
 			++$observation_counter;
 			my $row = $observation_counter;
-			logmsg info, $script_name, $table_name, "observation_counter=${observation_counter} row=${row}" if $verbosity >= 2;
+			logmsg info, $script_name, $table_name, "observation_counter=${observation_counter} row=${row}" if $verbosity >= 3;
 			# Classification dimensions for this observation
 			if ($table_rank > 0) {
 				for my $dim_id (0..$table_rank - 1) {
@@ -553,7 +561,7 @@ for my $table_id (@table_ids) {
 		if (!$value_missing) {
 			my $row = $observation_counter;
 			my $col = $table_rank + $expr_id;
-			logmsg info, $script_name, $table_name, "row=${row} col=${col} value=${value}" if $verbosity >= 2;
+			logmsg info, $script_name, $table_name, "row=${row} col=${col} value=${value}" if $verbosity >= 3;
 			$Sheet->write($row, $col, $value);
 		}
 	}
