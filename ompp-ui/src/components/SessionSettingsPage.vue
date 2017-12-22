@@ -118,7 +118,7 @@ export default {
 
   .set-table {
     display: table;
-    padding-top: 0.5em;
+    padding-top: 0.5rem;
   }
 
   .set-table-row {
@@ -127,8 +127,8 @@ export default {
 
   .set-table-cell {
     display: table-cell;
-    padding-right: 0.5em;
-    padding-top: 0.5em;
+    padding-right: 0.5rem;
+    padding-top: 0.5rem;
   }
 </style>
 

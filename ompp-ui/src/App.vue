@@ -313,7 +313,7 @@ export default {
     flex: 1 1 auto;
     display: flex; 
     flex-direction: column;
-    padding-left: 1em;
+    padding-left: 1rem;
     overflow-y: auto;
   }
 
@@ -334,10 +334,10 @@ export default {
     width: 100%;
   }
   .menu-start {
-    margin-right: .5em;
+    margin-right: .5rem;
   }
   .menu-count {
-    width: 3em;
+    width: 3rem;
     text-align: right;
     padding-right: 1px;
     @extend .mdc-theme--text-primary-on-primary;

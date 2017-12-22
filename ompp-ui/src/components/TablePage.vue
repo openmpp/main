@@ -88,9 +88,11 @@ export default {
         manualColumnMove: true,
         manualColumnResize: true,
         manualRowResize: true,
+        preventOverflow: 'horizontal',
+        renderAllRows: true,
+        stretchH: 'all',
         rowHeaders: true,
         fillHandle: false,
-        stretchH: 'all',
         readOnly: true,
         colHeaders: [],
         data: []
@@ -275,8 +277,8 @@ export default {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
   }
   .ht-container {
     flex: 1 1 auto;
@@ -287,8 +289,8 @@ export default {
   .cell-icon {
     vertical-align: middle;
     margin: 0;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
   .cell-icon-link {
     @extend .cell-icon;
@@ -310,7 +312,7 @@ export default {
   }
   .note-table {
     display: table;
-    margin-top: .5em;
+    margin-top: .5rem;
   }
   .note-row {
     display: table-row;
@@ -319,7 +321,7 @@ export default {
     display: table-cell;
     white-space: nowrap;
     &:first-child {
-      padding-right: .5em;
+      padding-right: .5rem;
     }
   }
 </style>

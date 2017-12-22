@@ -132,8 +132,8 @@ export default {
     vertical-align: top;
     height: 100%;
     margin: 0;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
   .note-link {
     @extend .note-item;

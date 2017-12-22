@@ -158,8 +158,8 @@ export default {
     vertical-align: top;
     height: 100%;
     margin: 0;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
   .note-link {
     @extend .note-item;
@@ -178,7 +178,7 @@ export default {
   /* note dialog */
   .note-table {
     display: table;
-    margin-top: .5em;
+    margin-top: .5rem;
   }
   .note-row {
     display: table-row;
@@ -187,7 +187,7 @@ export default {
     display: table-cell;
     white-space: nowrap;
     &:first-child {
-      padding-right: .5em;
+      padding-right: .5rem;
     }
   }
 </style>
