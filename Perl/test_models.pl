@@ -284,7 +284,7 @@ if ($is_windows) {
 		}
 		
 		my $sb = stat($modgen_exe);
-		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
+		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
 		push @flavours_tombstone, "version=${modgen_version_string} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_config}";
 	}
 	
@@ -301,7 +301,7 @@ if ($is_windows) {
 		my $full_path = "${om_root}/bin/${omc_exe}";
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
-		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
+		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
 		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${ompp_platform} configuration=${ompp_config}";
 	}
 }
@@ -311,7 +311,7 @@ else { # linux
 	my $full_path = "${om_root}/bin/${omc_exe}";
 	-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 	my $sb = stat($full_path);
-	my $exe_time_stamp = strftime "%Y-%m-%d %H:%M",localtime $sb->mtime;
+	my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
 	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${ompp_linux_config}";
 }
 	
