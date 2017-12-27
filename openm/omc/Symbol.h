@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <forward_list>
 #include <map>
+#include <set>
 #include "omc_common.h"
 #include "location.hh"
 #include "SpecialGlobal.h"
@@ -1046,6 +1047,14 @@ public:
      * Populated after parsing is complete.
      */
     static list<DependencyGroupSymbol *> pp_all_dependency_groups;
+
+    /**
+    * The event names in the model
+    *
+    * Note that the set contains no duplicates, but event names can be duplicates in different entities.
+    * Populated after parsing is complete.
+    */
+    static set<string> pp_all_event_names;
 
     /**
      * Map of member function qualified names to all identifiers used in the body of the function.

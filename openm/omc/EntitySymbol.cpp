@@ -26,9 +26,9 @@ using namespace std;
 
 void EntitySymbol::create_auxiliary_symbols()
 {
-    // Create builtin agentvars for this agent: time, age, events, entity_id.
+    // Create builtin attributes for this entity: time, age, events, entity_id.
     // Need to handle situation where the symbol exists but requires morphing.
-    // This can occur if the symbol has been used in a table before the agent was declared.
+    // This can occur if the symbol has been used in a table before the entity was declared.
 
     {
         string nm = "time";
@@ -133,6 +133,26 @@ void EntitySymbol::create_auxiliary_symbols()
         }
     }
 
+    // The check_time() member function
+    {
+        auto *fn = new EntityFuncSymbol("check_time", this, "Time", "Time t");
+        fn->doc_block = doxygen_short("Check that argument is not in past of entity, else throw run-time exception.");
+        CodeBlock& c = fn->func_body;
+        c += "if (t < time) {";
+        // The following code block similar to handle_backwards_time() in use/common.ompp.
+        c += "std::stringstream ss;";
+        c += "ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision";
+        c += "   << LT(\"error : time \") << std::showpoint << t";
+        c += "   << LT(\" is earlier than current time \") << (double)time";
+        c += "   << LT(\" in entity_id \") << entity_id";
+        c += "   << LT(\" in simulation member \") << get_simulation_member()";
+        c += "   << LT(\" with combined seed \") << get_combined_seed()";
+        c += "    ;";
+        c += "throw openm::SimulationException(ss.str().c_str());";
+        c += "}";
+        c += "return t;";
+    }
+
     // The age_agent() member function
     {
         auto *fn = new EntityFuncSymbol("age_agent", this, "void", "Time t");
@@ -144,10 +164,10 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "}";
         c += "else {";
         c += "// The entity is already older than the given time.";
-        c += "// This is normal if another agent is 'catching up' to this agent in its own events.";
-        c += "// It is a model error if the current event is in this agent,";
-        c += "// since that implies that an event is trying to make time run backwards for this agent.";
-        c += "// This possibility is detected and handled outside of this function.";
+        c += "// This is normal if another entity is 'catching up' to this entity in its own events.";
+        c += "// It is a model error if the current event is in this entity,";
+        c += "// since that implies that an event is trying to make time run backwards for this entity.";
+        c += "// This condition is detected and handled outside of this function.";
         c += "}";
     }
 

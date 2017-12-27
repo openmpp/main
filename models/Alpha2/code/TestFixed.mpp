@@ -66,6 +66,7 @@ void PreSimulation()
 
 // Tests of haz1rate parameters
 parameters {
+    logical ActivateTest_haz1rate;
     haz1rate fixed_haz1rate_scalar; //EN haz1rate scalar atest
     haz1rate fixed_haz1rate_array[SEX];
 };
@@ -78,5 +79,7 @@ void PreSimulation()
     
     double diff = d1 - d2;
     if (diff < 0) diff = -diff;
-    assert(diff < 1e-15); // should be the same to nuemrical precision
+    if (ActivateTest_haz1rate) {
+        assert(diff < 1e-15); // should be the same to nuemrical precision
+    }
 }

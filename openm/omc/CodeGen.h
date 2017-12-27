@@ -65,6 +65,7 @@ public:
      */
     void do_table_interface();
     void do_event_queue();
+    void do_event_names();
     void do_RunOnce();
     void do_RunInit();
     void do_ModelStartup();

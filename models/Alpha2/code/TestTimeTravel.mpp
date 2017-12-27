@@ -1,0 +1,40 @@
+// Copyright (c) 2013-2017 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(TestTimeTravel, EN) Runtime tests of time running backwards
+
+parameters
+{
+    //EN activate time travel runtime error
+    logical ActivateTimeTravel;
+
+    //EN activate check_time function on time travel event
+    logical ActivateCheckTime;
+};
+
+actor Person {
+    event timeTimeTravelEvent, TimeTravelEvent;
+};
+
+#if defined(MODGEN)
+#define check_time(T) T
+#endif
+TIME Person::timeTimeTravelEvent()
+{
+    TIME tEventTime = TIME_INFINITE;
+    if (ActivateTimeTravel) {
+        tEventTime = WAIT(-0.5); // test to trigger backwards runtime error.
+    }
+    if (ActivateCheckTime) {
+        return check_time(tEventTime);
+    }
+    else {
+        return tEventTime;
+    }
+}
+
+void Person::TimeTravelEvent()
+{
+}
+
+

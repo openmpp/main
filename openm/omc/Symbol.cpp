@@ -110,6 +110,8 @@ list<HideGroupSymbol *> Symbol::pp_all_hide_groups;
 
 list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
 
+set<string> Symbol::pp_all_event_names;
+
 list<GlobalFuncSymbol *> Symbol::pp_all_global_funcs;
 
 list<AggregationSymbol *> Symbol::pp_all_aggregations;
@@ -1287,22 +1289,20 @@ void Symbol::post_parse_all()
     }
 
     {
-        // Create an amalgamated set of event names, in all agents, sorted lexicographically.
-        // Note that the set contains no duplicates, but event names can be duplicates in different agents.
-        set<string> all_event_names;
+        // Create the amalgamated set of event names, in all agents, sorted lexicographically.
         for (auto *agent : pp_all_agents) {
             for (auto *event : agent->pp_agent_events) {
                 string str = event->event_name;
-                all_event_names.insert(str);
+                pp_all_event_names.insert(str);
             }
         }
 
-        // For each event in the model, find the index in the sorted list, and assign it as event_id
+        // For each event in the model, find the index in the sorted set, and assign it as event_id
         for (auto *agent : pp_all_agents) {
             for (auto *event : agent->pp_agent_events) {
                 string str = event->event_name;
-                auto iter = all_event_names.find(str);
-                event->pp_event_id = distance(all_event_names.begin(), iter);
+                auto iter = pp_all_event_names.find(str);
+                event->pp_event_id = distance(pp_all_event_names.begin(), iter);
             }
         }
     }

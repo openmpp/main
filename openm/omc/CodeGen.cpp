@@ -31,6 +31,7 @@ void CodeGen::do_all()
 	do_agents();
 	do_entity_sets();
     do_event_queue();
+    do_event_names();
 
     h += "void StartSimulation(int id);";
     h += "void EndSimulation();";
@@ -880,6 +881,20 @@ void CodeGen::do_event_queue()
     c += "";
 }
 
+void CodeGen::do_event_names()
+{
+    c += "// get event name given event id";
+    c += "const char * event_id_to_name(int event_id) {";
+    c += "static const char * event_name[] = {";
+    for (auto nm : Symbol::pp_all_event_names) {
+        c += "\"" + nm + "\",";
+    }
+    c += "\"\", // unused - terminating entry";
+    c += "};";
+    c += "return event_name[event_id];";
+    c += "}";
+    c += "";
+}
 
 void CodeGen::do_RunModel()
 {

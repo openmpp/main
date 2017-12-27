@@ -133,12 +133,14 @@ void handle_backwards_time(
 {
     // The time of this event is in the local past of the entity within which the event occurs.
     // This is an error in model logic.
+    extern const char * event_id_to_name(int event_id); // omc generated function defined in om_definitions.cpp
     std::stringstream ss;
-    ss  << LT("error : Event time ") << the_event_time
+    ss  << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+        << LT("error : Event time ") << std::showpoint << the_event_time
         << LT(" is earlier than current time ") << the_current_time
-        << LT(" in simulation member ") << get_simulation_member()
-        << LT(" in event ") << the_event
+        << LT(" in event ") << event_id_to_name(the_event)
         << LT(" in entity_id ") << the_entity
+        << LT(" in simulation member ") << get_simulation_member()
         << LT(" with combined seed ") << get_combined_seed()
         ;
     throw openm::SimulationException(ss.str().c_str());

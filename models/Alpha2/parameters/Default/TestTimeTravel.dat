@@ -1,0 +1,9 @@
+parameters {
+    //EN activate time travel runtime error
+    logical ActivateTimeTravel = FALSE;
+
+    //EN activate check_time function on time travel event
+    logical ActivateCheckTime = FALSE;
+
+};
+
