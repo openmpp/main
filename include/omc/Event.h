@@ -13,7 +13,7 @@
 #include "libopenm/omModel.h" // for theTrace
 #include "omc/tailed_forward_list.h"
 #include "omc/less_deref.h"
-#include "omc/Agent.h"
+#include "omc/Entity.h"
 #include "omc/event_priorities.h"
 #include "om_types0.h" // for Time
 

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <vector>
-#include "omc/Agent.h"
+#include "omc/Entity.h"
 #include "omc/Event.h"
 
 using namespace std;
