@@ -74,12 +74,12 @@ parameters {
 void PreSimulation()
 {
     double d1 = fixed_haz1rate_scalar;
-    // value in TestFixed.dat is 0.90
-    double d2 = - log(1.0 - 0.90);
+    // value in TestFixed.dat is 0.39346934028736657639620046500882 which gives h=0.5
+    double d2 = - log(1.0 - 0.39346934028736657639620046500882);
     
     double diff = d1 - d2;
     if (diff < 0) diff = -diff;
     if (ActivateTest_haz1rate) {
-        assert(diff < 1e-15); // should be the same to nuemrical precision
+        assert(diff < 1e-15); // should be the same to numerical precision
     }
 }

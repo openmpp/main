@@ -143,7 +143,7 @@ void handle_backwards_time(
         << LT(" in simulation member ") << get_simulation_member()
         << LT(" with combined seed ") << get_combined_seed()
         ;
-    throw openm::SimulationException(ss.str().c_str());
+    ModelExit(ss.str().c_str());
 }
 
 /**
@@ -159,7 +159,7 @@ void handle_streams_exceeded(
         << LT(" exceeds the maximum number of streams ") << model_streams << LT(".")
         << LT(" Increase the number of streams in ompp_framework.ompp.")
         ;
-    throw openm::SimulationException(ss.str().c_str());
+    ModelExit(ss.str().c_str());
 }
 
 /**

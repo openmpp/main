@@ -375,6 +375,9 @@ CodeBlock ParameterSymbol::cxx_initializer()
             values_per_line = es->pp_size();
         }
         c += "{";
+        if (haz1rate) {
+            c += "// haz1rate parameter - original values transformed";
+        }
         int values_in_line = 0;
         string line;
         for (auto k : initializer_list) {
@@ -384,7 +387,21 @@ CodeBlock ParameterSymbol::cxx_initializer()
                 line = "";
                 values_in_line = 0;
             }
-            line += k->value() + ",";
+            string s_value = k->value();
+            if (haz1rate) {
+                const size_t bufsize = 50;
+                char buf[bufsize];
+                // perform in-place transformation
+                double d_value = atof(s_value.c_str());
+                if (d_value >= 1.0 || d_value < 0.0) {
+                    // value out of bounds for transformation to hazard
+                    pp_fatal(LT("error : value out of bounds for haz1rate conversion in fixed parameter '") + name + LT("'"));
+                }
+                d_value = -log(1.0 - d_value);
+                snprintf(buf, bufsize, "%a", d_value);
+                s_value = buf;
+            }
+            line += s_value + ",";
             values_in_line++;
         }
         // output final partial line
@@ -547,12 +564,21 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
     
     bool adjust = false; // true if parameter values require in-place adjustment
     string c_adjust_comment; // C++ code fragment with explanatory comment about in-place adjustment
-    string c_adjust_code; // C++ code fragment to do in-place adjustment (using reference named "value")
+    CodeBlock c_adjust_code; // C++ code fragment to do in-place adjustment (using reference named "value")
 
     if (haz1rate) {
         adjust = true;
         c_adjust_comment = "// Parameter '" + name + "' is declared haz1rate and requires transformation.";
-        c_adjust_code = "value = - log(1.0 - value);";
+        // Raise model run-time exception if rate is out of bounds for haz1rate conversion
+        c_adjust_code += "if (value >= 1.0 || value < 0.0) {";
+        c_adjust_code += "// Throw model run-time exception if rate is out of bounds for haz1rate conversion";
+        c_adjust_code += "std::string msg;";
+        c_adjust_code += "msg = LT(\"error : value out of bounds for haz1rate conversion in parameter '\");";
+        c_adjust_code += "msg += \"" + name + "\";";
+        c_adjust_code += "msg += LT(\"'\");";
+        c_adjust_code += "ModelExit(msg.c_str());";
+        c_adjust_code += "}";
+        c_adjust_code += "value = - log(1.0 - value);";
     }
 
     if (rank() > 0) {

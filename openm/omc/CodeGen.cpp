@@ -382,9 +382,6 @@ void CodeGen::do_RunOnce()
             // prepare cumrate for parameter
             c += parameter->cxx_initialize_cumrate();
         }
-
-        // TODO transform fixed haz1rate parameters
-
     }
     if (any_missing_parameters) {
         m += "};";

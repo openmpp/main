@@ -17,10 +17,10 @@ parameters
         50,  0, 25, 25
     };
 
-    logical ActivateTest_haz1rate = FALSE;
-    haz1rate fixed_haz1rate_scalar = 0.90;
+    logical ActivateTest_haz1rate = TRUE;
+    haz1rate fixed_haz1rate_scalar = 0.39346934028736657639620046500882; // hazard=0.5
     haz1rate fixed_haz1rate_array[SEX] = 
     {
-        0.80, 0.85
+        0.80, 0.99999
     };
 };
