@@ -1,5 +1,5 @@
 /**
- * @file    fixed_precision_float.h
+ * @file    fixed_precision.h
  * Wraps a floating point number for associative +/- operations (fixed precision)
  *         
  */
