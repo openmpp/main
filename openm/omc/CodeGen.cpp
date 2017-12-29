@@ -83,7 +83,7 @@ void CodeGen::do_preamble()
     t0 += "";
     t0 += "#pragma once";
     t0 += "#include <cmath>";
-    t0 += "#include \"omc/fixed_precision_float.h\"";
+    t0 += "#include \"omc/fixed_precision.h\"";
     t0 += "";
 
     // om_types1.h

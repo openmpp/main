@@ -1,5 +1,5 @@
 /**
- * @file    AgentVar.h
+ * @file    Attribute.h
  * Declares the AgentVar class and associated classes and templates
  *         
  */

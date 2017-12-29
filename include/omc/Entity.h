@@ -1,5 +1,5 @@
 /**
- * @file    Agent.h
+ * @file    Entity.h
  * Declares the Agent class and associated classes and templates
  *         
  */
