@@ -170,3 +170,21 @@ private:
 template<typename T>
 int fixed_precision_float<T>::addend = 0;
 
+// Enable fixed_precision to participate in type resolution
+// by specializing std::common_type, e.g. in min/max templates.
+
+namespace std {
+    // unwrap fixed_precision_float
+    template<typename T, typename U>
+    struct common_type<fixed_precision_float<T>, U>
+    {
+        using type = typename common_type<T, U>::type;
+    };
+
+    // unwrap fixed_precision_float, opposite order
+    template<typename T, typename U>
+    struct common_type<T, fixed_precision_float<U>>
+    {
+        using type = typename common_type<T, U>::type;
+    };
+}
