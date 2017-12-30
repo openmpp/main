@@ -1,22 +1,11 @@
 //LABEL(MinMaxTests, EN) Tests of min and max templates
 
+#if false
 actor Person {
     int clamped_count;
     void ClampTest();
     hook ClampTest, MortalityEvent;
 };
-
-// The implement function of MortalityEvent
-void Person::ClampTest()
-{
-    int lower = 40;
-    int upper = 50;
-    double clamped = 0.0;
-    //clamped = max(lower, min((double)time, upper));
-    clamped = max(lower, min(time, upper));
-    double diff = time - clamped;
-    if (diff != 0.0) clamped_count++;
-}
 
 table Person ClampedOccurrences //EN Clamped count
 {
@@ -24,4 +13,30 @@ table Person ClampedOccurrences //EN Clamped count
         clamped_count
     }
 };
+#endif
+
+#ifndef MODGEN
+#include "omc/omSimulation.h"
+#endif
+
+// The implement function of MortalityEvent
+void Person::ClampTest()
+{
+    int lower = 40;
+    int upper = 60;
+    double clamped = 0.0;
+    //clamped = max(lower, min((double)time, upper));
+    //double x0 = std::min(clamped, upper);
+    auto x1 = ::min(clamped, upper);
+    double x2 = ::min(clamped, upper);
+    TIME_t e0 = time;
+    TIME_t e1 = ::min(e0, upper);
+    TIME_t e2 = ::min(upper, e0);
+    //TIME_t e3 = clamp(lower, upper, e0);
+    TIME_t e4 = ::min(time, upper); // time preserves its Attribute type here, and ::min template attempts to pass by reference, but move constructor of Attribute is (deliberately) deleted.
+    clamped = max(lower, min(time, upper));
+    double diff = time - clamped;
+    if (diff != 0.0) clamped_count++;
+}
+
 
