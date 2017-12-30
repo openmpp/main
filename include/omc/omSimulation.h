@@ -61,7 +61,8 @@ typedef std::string CString;
 
 #include "custom.h" // model-specific declarations and includes (late)
 
-#include "omc/macros1.h" // includes min/max templates (included last to avoid interfering with std includes
+#include "omc/min_max.h" // min and max templates
+#include "omc/macros1.h" // macros and templates (late)
 
 
 namespace openm {
