@@ -2,6 +2,7 @@
 
 #if false
 actor Person {
+    TIME special_time = {12.34};
     int clamped_count;
     void ClampTest();
     hook ClampTest, MortalityEvent;
@@ -24,18 +25,23 @@ void Person::ClampTest()
 {
     int lower = 40;
     int upper = 60;
-    double clamped = 0.0;
+    double clamped1 = 0.0;
+    double clamped2 = 0.0;
     //clamped = max(lower, min((double)time, upper));
-    //double x0 = std::min(clamped, upper);
-    auto x1 = ::min(clamped, upper);
-    double x2 = ::min(clamped, upper);
+    double x0 = min(lower, upper);
+    auto x1 = min(clamped1, upper);
+    double x2 = min(clamped1, upper);
+    //auto e0 = time;  // this works, but shouldn't be allowed
     TIME_t e0 = time;
-    TIME_t e1 = ::min(e0, upper);
-    TIME_t e2 = ::min(upper, e0);
-    //TIME_t e3 = clamp(lower, upper, e0);
-    TIME_t e4 = ::min(time, upper); // time preserves its Attribute type here, and ::min template attempts to pass by reference, but move constructor of Attribute is (deliberately) deleted.
-    clamped = max(lower, min(time, upper));
-    double diff = time - clamped;
+    TIME_t e1 = min(e0, upper);
+    TIME_t e2 = min(upper, e0);
+    auto e3 = clamp(time, lower, upper);
+    TIME_t e4 = min(time, upper); // time preserves its Attribute type here, and ::min template attempts to pass by reference, but move constructor of Attribute is (deliberately) deleted.
+    //auto e5 = min(time, special_time); // does not work, no specialization (too many combos)
+    clamped1 = max(lower, min(time, upper));
+    clamped2 = clamp(time, lower, upper);
+    assert(clamped1 == clamped2);
+    double diff = time - clamped1;
     if (diff != 0.0) clamped_count++;
 }
 
