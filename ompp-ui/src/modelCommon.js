@@ -115,6 +115,33 @@ const ModelCommon = {
     return (tdn.Txt.length > 0) ? (tdn.Txt[0].Note || '') !== '' : false
   },
 
+  // hard coded enum code for total enum id
+  ALL_WORD_CODE: 'all',
+
+  // return empty language-specific model words list
+  emptyWordList () {
+    return { ModelName: '', ModelDigest: '', LangCode: '', LangWords: [], ModelLangCode: '', ModelWords: [] }
+  },
+
+  // find label by code in language-specific model words list, return code if labe not found
+  wordByCode (mw, code) {
+    if (!code) return ''
+    if (!mw) return code
+    // seacrh in model-specific list of words
+    if (mw.ModelWords && (mw.ModelWords.length || 0) > 0) {
+      for (let k = 0; k < mw.ModelWords.length; k++) {
+        if (mw.ModelWords[k].Code === code) return mw.ModelWords[k].Label
+      }
+    }
+    // seacrh in common language-specific list of words
+    if (mw.LangWords && (mw.LangWords.length || 0) > 0) {
+      for (let k = 0; k < mw.LangWords.length; k++) {
+        if (mw.LangWords[k].Code === code) return mw.LangWords[k].Label
+      }
+    }
+    return code   // not found: return original code
+  },
+
   // is model has type text list and each element is TypeTxt
   isTypeTextList (md) {
     if (!this.isModel(md)) return false
@@ -132,6 +159,9 @@ const ModelCommon = {
     if (!t.hasOwnProperty('TypeId') || !t.hasOwnProperty('Name') || !t.hasOwnProperty('Digest')) return false
     return (t.Name || '') !== '' && (t.Digest || '') !== ''
   },
+
+  // return true if argument has length > 0
+  isLength (arr) { return arr && (arr.length || 0) > 0 },
 
   // return empty TypeTxt
   emptyTypeText () {
@@ -159,6 +189,34 @@ const ModelCommon = {
     if (!this.isType(t.Type)) return 0
     if (!t.hasOwnProperty('TypeEnumTxt')) return 0
     return t.TypeEnumTxt.length || 0
+  },
+
+  // return true if this is non empty Enum
+  isEnum (t) {
+    if (!t || !t.Enum) return false
+    return !(t.Enum.EnumId === void 0 || t.Enum.EnumId === null)
+  },
+
+  // find enum code by enum id or empty string if not found
+  enumCodeById (typeTxt, enumId) {
+    if (!typeTxt || !this.isLength(typeTxt.TypeEnumTxt)) return ''
+    for (let k = 0; k < typeTxt.TypeEnumTxt.length; k++) {
+      if (this.isEnum(typeTxt.TypeEnumTxt[k]) && typeTxt.TypeEnumTxt[k].Enum.EnumId === enumId) {
+        return (typeTxt.TypeEnumTxt[k].Enum.Name || '')
+      }
+    }
+    return ''   // not found
+  },
+
+  // find enum description or code by enum id or empty string if not found
+  enumDescrOrCodeById (typeTxt, enumId) {
+    if (!typeTxt || !this.isLength(typeTxt.TypeEnumTxt)) return ''
+    for (let k = 0; k < typeTxt.TypeEnumTxt.length; k++) {
+      if (this.isEnum(typeTxt.TypeEnumTxt[k]) && typeTxt.TypeEnumTxt[k].Enum.EnumId === enumId) {
+        return this.descrOfDescrNote(typeTxt.TypeEnumTxt[k]) || (typeTxt.TypeEnumTxt[k].Enum.Name || '')
+      }
+    }
+    return ''   // not found
   },
 
   // is model has parameter text list and each element is Param
@@ -238,7 +296,15 @@ const ModelCommon = {
   // return empty TableTxt
   emptyTableText () {
     return {
-      Table: { TableId: 0, Name: '', Digest: '' }, LangCode: '', TableDescr: '', TableNote: '', ExprDescr: '', ExprNote: ''
+      Table: { TableId: 0, Name: '', Digest: '' },
+      TableDimsTxt: [],
+      TableExprTxt: [],
+      TableAccTxt: [],
+      LangCode: '',
+      TableDescr: '',
+      TableNote: '',
+      ExprDescr: '',
+      ExprNote: ''
     }
   },
 
@@ -271,7 +337,7 @@ const ModelCommon = {
     if (ret.allAccCount > 0) {
       ret.accCount = ret.allAccCount
       for (let k = 0; k < ret.allAccCount; k++) {
-        if (t.TableAccTxt[k].hasOwnProperty('Acc') && !!t.TableAccTxt[k].Acc.IsDerived) ret.accCount--
+        if (ret.accCount > 0 && t.TableAccTxt[k].hasOwnProperty('Acc') && !!t.TableAccTxt[k].Acc.IsDerived) ret.accCount--
       }
     }
 

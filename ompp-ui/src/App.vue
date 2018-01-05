@@ -114,6 +114,7 @@
             {{ mainTitle }}
           </router-link>
           <span v-else class="mdc-toolbar__title">{{ mainTitle }}</span>
+
         </section>
 
         <section class="mdc-toolbar__section mdc-toolbar__section--align-end mdc-toolbar__section--shrink-to-fit">

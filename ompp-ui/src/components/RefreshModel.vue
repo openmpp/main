@@ -5,7 +5,7 @@
   <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}} </span>
   <span class="mono">{{digest}}</span>
 </span>
-  
+
 </template>
 
 <script>
@@ -45,6 +45,8 @@ export default {
   methods: {
     // refersh current model
     async doRefreshModel () {
+      //
+      // refresh model text rows
       let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.msgLoad = 'Loading model...'
@@ -60,10 +62,20 @@ export default {
         console.log('Server offline or no models published')
       }
       this.loadWait = false
+
+      // refresh model "words" language-specific strings
+      let uw = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/word-list' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
+      try {
+        const response = await axios.get(uw)
+        this.setWordList(response.data)  // update model words list in store
+      } catch (e) {
+        console.log('Model words refresh failed')
+      }
     },
 
     ...mapActions({
-      setTheModel: SET.THE_MODEL
+      setTheModel: SET.THE_MODEL,
+      setWordList: SET.WORD_LIST
     })
   },
 

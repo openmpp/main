@@ -69,6 +69,12 @@ import { default as Mdf } from '@/modelCommon'
 import OmMcwDialog from './OmMcwDialog'
 import HotTable from '@/vue-handsontable-official/src/HotTable'
 
+const kind = {
+  EXPR: 0,  // output table expression(s)
+  ACC: 1,   // output table accumulator(s)
+  ALL: 2    // output table all-accumultors view
+}
+
 export default {
   props: {
     digest: '',
@@ -83,6 +89,8 @@ export default {
       titleNoteDlg: '',
       textNoteDlg: '',
       tableText: Mdf.emptyTableText(),
+      tableSize: Mdf.emptyTableSize(),
+      subCount: 0,
       htRoot: '',
       htSettings: {
         manualColumnMove: true,
@@ -97,9 +105,11 @@ export default {
         colHeaders: [],
         data: []
       },
-      tableSize: Mdf.emptyTableSize(),
-      subCount: 0,
-      isAcc: false,
+      dimProp: [],
+      exprProp: [],
+      accProp: [],
+      totalEnumLabel: '',
+      kind: kind.EXPR,
       pageStart: 0,
       pageSize: 20,
       isNextPage: false,
@@ -111,6 +121,7 @@ export default {
     ...mapGetters({
       theModel: GET.THE_MODEL,
       theRunText: GET.THE_RUN_TEXT,
+      wordList: GET.WORD_LIST,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },
@@ -142,50 +153,145 @@ export default {
       }
       if (this.isNextPage) len--  // if page size limited and response row count > limit
 
-      // set dimension(s) items and expression(s) or accumulator(s) values
-      // put accumulator sub-values as extra columns
-      // accumulator sub-values not adjacent, default order by: acc_id, sub_id, dim0, dim1
+      // set page data
+      switch (this.kind) {
+        case kind.EXPR:
+          this.htSettings.data = this.makeExprPage(len, d)
+          break
+        case kind.ACC:
+          this.htSettings.data = this.makeAccPage(len, d)
+          break
+        case kind.ALL:
+          this.htSettings.data = this.makeAllAccPage(len, d)
+          break
+        default:
+          this.htSettings.data = []
+          console.log('Invalid kind of table view: must be or of: EXPR, ACC, ALL')
+      }
+    },
+
+    // make expression data page, columns are: dimensions, expression id, value
+    makeExprPage (dataLen, d) {
       const vp = []
-      if (!this.isAcc) {    // dimension(s) items and expression(s) values
-        //
-        for (let i = 0; i < len; i++) {
+
+      for (let i = 0; i < dataLen; i++) {
+        let row = []
+        for (let j = 0; j < this.tableSize.rank; j++) {
+          row.push(
+            this.translateDimEnumId(j, d[i].DimIds[j]) || d[i].DimIds[j]
+          )
+        }
+        row.push(this.translateExprId(d[i].ExprId) || d[i].ExprId)
+        row.push(!d[i].IsNull ? d[i].Value : void 0)
+        vp.push(row)
+      }
+      return vp
+    },
+
+    // make accumulators data page, columns are: dimensions, accumulator id, sub-values
+    // accumulator sub-values are separate rows in source rowset
+    makeAccPage (dataLen, d) {
+      const vp = []
+
+      let nowKey = '?'  // non-existent start key to enforce append of the first row
+      let n = 0
+      const nSub0 = this.tableSize.rank + 1   // first sub-value position
+
+      for (let i = 0; i < dataLen; i++) {
+        let sk = [d[i].DimIds, d[i].AccId].toString() // current row key
+
+        if (sk === nowKey) {  // same key: set sub-value at position of sub_id
+          //
+          if (!d[i].IsNull) vp[n][nSub0 + (d[i].SubId || 0)] = d[i].Value
+        } else {
+          // make new row
           let row = []
           for (let j = 0; j < this.tableSize.rank; j++) {
-            row.push(d[i].Dims[j])
+            row.push(
+              this.translateDimEnumId(j, d[i].DimIds[j]) || d[i].DimIds[j]
+            )
           }
-          row.push(d[i].ExprId)
-          row.push(!d[i].IsNull ? d[i].Value : void 0)
+          row.push(this.translateAccId(d[i].AccId) || d[i].AccId)
+          for (let j = 0; j < this.subCount; j++) {   // append empty sub-values
+            row.push(void 0)
+          }
+
+          // append new row to page data
+          if (!d[i].IsNull) row[nSub0 + (d[i].SubId || 0)] = d[i].Value // set current sub-value
+          n = vp.length
           vp.push(row)
+          nowKey = sk
         }
-      } else {  // dimension(s) items and accumulator(s) values: sub-values as columns
-        //
-        let ak = []   // array of row keys: each key is string of [dimensions, acc_id]
-        let subOffset = this.tableSize.rank + 1
+      }
+      return vp
+    },
 
-        for (let i = 0; i < len; i++) {
-          // make row key and search it
-          let sk = [d[i].Dims, d[i].AccId].toString()
-          let n = ak.indexOf(sk)
+    // make all-accumulators view page, columns are: dimensions, accumulator id, sub-values
+    // accumulator sub-values are separate rows in source rowset
+    makeAllAccPage (dataLen, d) {
+      const vp = []
 
-          if (n >= 0) {   // key found: set sub-value at position of sub_id
-            vp[n][subOffset + (d[i].SubId || 0)] = (!d[i].IsNull ? d[i].Value : void 0)
-          } else {
-            // append new row
+      let dKey = '?'  // non-existent start key to enforce append of the first row
+      let nf = 0
+      const nSub0 = this.tableSize.rank + 1   // first sub-value position
+
+      for (let i = 0; i < dataLen; i++) {
+        let sk = [d[i].DimIds].toString() // current dimensions key
+
+        if (sk === dKey) {  // same dimensions: for each accumulator set sub-value at position of sub_id
+          //
+          for (let k = 0; k < this.tableSize.allAccCount; k++) {
+            if (!d[i].IsNull[k]) vp[nf + k][nSub0 + (d[i].SubId || 0)] = d[i].Value[k]
+          }
+        } else {
+          // make new rows: one row per accumulator
+          nf = vp.length
+          dKey = sk
+
+          for (let k = 0; k < this.tableSize.allAccCount; k++) {
             let row = []
             for (let j = 0; j < this.tableSize.rank; j++) {
-              row.push(d[i].Dims[j])
+              row.push(
+                this.translateDimEnumId(j, d[i].DimIds[j]) || d[i].DimIds[j]
+              )
             }
-            row.push(d[i].AccId)
-            row[subOffset + (d[i].SubId || 0)] = (!d[i].IsNull ? d[i].Value : void 0)
+            row.push(this.translateAccId(k) || k)
+            for (let j = 0; j < this.subCount; j++) {   // append empty sub-values
+              row.push(void 0)
+            }
+            // append new row to page data
+            if (!d[i].IsNull[k]) row[nSub0 + (d[i].SubId || 0)] = d[i].Value[k] // set current sub-value
             vp.push(row)
-            ak.push(sk)
           }
         }
       }
-      this.htSettings.data = vp
+      return vp
     },
 
-    // get page of table data from current model run: expressions or accumulators
+    // translate dimension enum id to label, it does return enum code if label is empty
+    // return total enum label if total enabled for dimension and id is total enum id
+    translateDimEnumId (dimIdx, enumId) {
+      if (this.dimProp[dimIdx].isTotal && enumId === this.dimProp[dimIdx].totalId) return this.totalEnumLabel
+      return Mdf.enumDescrOrCodeById(this.dimProp[dimIdx].typeText, enumId)
+    },
+
+    // translate expression id to label or name if label is empty
+    // it is expected to be expression id === expression index
+    translateExprId (exprId) {
+      return (exprId !== void 0 && exprId !== null && exprId >= 0 && exprId < this.exprProp.length)
+        ? this.exprProp[exprId].label || this.exprProp[exprId].name
+        : ''
+    },
+
+    // translate accumulator id to label or name if label is empty
+    // it is expected to be accumulator id === accumulator index
+    translateAccId (accId) {
+      return (accId !== void 0 && accId !== null && accId >= 0 && accId < this.accProp.length)
+        ? this.accProp[accId].label || this.accProp[accId].name
+        : ''
+    },
+
+// get page of table data from current model run: expressions or accumulators
     async doRefreshDataPage () {
       this.loadDone = false
       this.loadWait = true
@@ -199,24 +305,16 @@ export default {
         return
       }
 
-      // make url: table name, expression or accumulators, table start row and rows count
-      let nVal = !this.isAcc ? this.tableSize.exprCount : this.tableSize.accCount * this.subCount
+      // make output table read layout and url
+      let layout = this.makeSelectLayout()
       let u = this.omppServerUrl +
-        '/api/model/' + (this.digest || '') +
-        '/run/' + (this.theRunText.Digest || '') +
-        '/table/' + this.tableName +
-        (!this.isAcc ? '/expr' : '/acc')
-      if ((this.pageSize || 0) > 0) {
-        u +=
-          '/start/' + (this.pageStart || 0).toString() +
-          '/count/' + (1 + this.pageSize * nVal).toString()
-      }
+        '/api/model/' + (this.digest || '') + '/run/' + (this.theRunText.Digest || '') + '/table/value-id'
 
       // retrieve page from server and check if next page exist
       try {
-        const response = await axios.get(u)
+        const response = await axios.post(u, layout)
         const d = response.data
-        this.isNextPage = this.pageSize > 0 && this.pageSize * nVal < ((!!d && (d.length || 0) > 0) ? d.length : 0)
+        this.isNextPage = this.pageSize > 0 && ((!!d && (d.length || 0) > 0) ? d.length : 0) >= layout.Size
         this.setData(d)     // update table page
         this.loadDone = true
       } catch (e) {
@@ -224,6 +322,36 @@ export default {
         console.log('Server offline or no run completed')
       }
       this.loadWait = false
+    },
+
+    // return page layout to read table data
+    makeSelectLayout () {
+      //
+      // if page size limited then make size to select at least page size +1
+      // for accumulators each sub-value is a separate row
+      let nSize = this.pageSize * ((this.kind === kind.ACC || this.kind === kind.ALL) ? this.subCount : 1)
+      let layout = {
+        Name: this.tableName,
+        Offset: (this.pageSize > 0 ? this.pageStart : 0),
+        Size: (this.pageSize > 0 ? 1 + nSize : 0),
+        Filter: [],
+        OrderBy: [],
+        IsAccum: (this.kind === kind.ACC || this.kind === kind.ALL),
+        IsAllAccum: this.kind === kind.ALL
+      }
+
+      // make deafult order by
+      // expressions:      SELECT expr_id, dim0, dim1, value...        ORDER BY 2, 3, 1
+      // accumulators:     SELECT acc_id, sub_id, dim0, dim1, value... ORDER BY 3, 4, 1, 2
+      // all-accumulators: SELECT sub_id, dim0, dim1, acc0, acc1...    ORDER BY 2, 3, 1
+      let n = this.kind === kind.ACC ? 3 : 2
+      for (let k = 0; k < this.tableSize.rank; k++) {
+        layout.OrderBy.push({IndexOne: k + n})
+      }
+      layout.OrderBy.push({IndexOne: 1})
+      if (this.kind === kind.ACC) layout.OrderBy.push({IndexOne: 2})
+
+      return layout
     }
   },
 
@@ -234,19 +362,64 @@ export default {
     this.tableText = Mdf.tableTextByName(this.theModel, this.tableName)
     this.tableSize = Mdf.tableSizeByName(this.theModel, this.tableName)
     this.subCount = this.theRunText.SubCount || 0
+    this.totalEnumLabel = Mdf.wordByCode(this.wordList, Mdf.ALL_WORD_CODE)
 
-    // set columns layout
+    // find dimension type for each dimension
+    this.dimProp = []
+    for (let j = 0; j < this.tableSize.rank; j++) {
+      if (this.tableText.TableDimsTxt[j].hasOwnProperty('Dim')) {
+        let t = Mdf.typeTextById(this.theModel, (this.tableText.TableDimsTxt[j].Dim.TypeId || 0))
+        this.dimProp.push({
+          name: this.tableText.TableDimsTxt[j].Dim.Name || '',
+          label: Mdf.descrOfDescrNote(this.tableText.TableDimsTxt[j]),
+          isTotal: this.tableText.TableDimsTxt[j].Dim.IsTotal,
+          totalId: t.Type.TotalEnumId || 0,
+          typeText: t
+        })
+      } else {
+        this.dimProp.push({
+          name: '', label: '', isTotal: false, totalId: 0, typeText: Mdf.emptyTypeText() })
+      }
+    }
+
+    // expression labels
+    this.exprProp = []
+    for (let j = 0; j < this.tableText.TableExprTxt.length; j++) {
+      if (this.tableText.TableExprTxt[j].hasOwnProperty('Expr')) {
+        this.exprProp.push({
+          name: this.tableText.TableExprTxt[j].Expr.Name || '',
+          label: Mdf.descrOfDescrNote(this.tableText.TableExprTxt[j])
+        })
+      } else {
+        this.exprProp.push({ name: '', label: '' })
+      }
+    }
+
+    // accumultor labels
+    this.accProp = []
+    for (let j = 0; j < this.tableText.TableAccTxt.length; j++) {
+      if (this.tableText.TableAccTxt[j].hasOwnProperty('Acc')) {
+        this.accProp.push({
+          name: this.tableText.TableAccTxt[j].Acc.Name || '',
+          label: Mdf.descrOfDescrNote(this.tableText.TableAccTxt[j])
+        })
+      } else {
+        this.accProp.push({ name: '', label: '' })
+      }
+    }
+
+    // columns layout: dimensions, expression or accumulator dimension, value or sub-values
     this.htSettings.colHeaders = []
     for (let j = 0; j < this.tableSize.rank; j++) {
-      let name = this.tableText.TableDimsTxt[j].hasOwnProperty('Dim') ? (this.tableText.TableDimsTxt[j].Dim.Name || '') : ''
-      this.htSettings.colHeaders.push(name)
+      this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
     }
-    if (!this.isAcc) {
-      this.htSettings.colHeaders.push('ExprId', 'Value')  // expression id and value
+    if (this.kind === kind.EXPR) {
+      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
+      this.htSettings.colHeaders.push('Value')          // expression value
     } else {
-      this.htSettings.colHeaders.push('AccId')
+      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
       for (let j = 0; j < this.subCount; j++) {
-        this.htSettings.colHeaders.push(j.toString())     // column for each sub-value
+        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
       }
     }
 

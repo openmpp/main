@@ -7,9 +7,10 @@ Vue.use(Vuex)
 // getters names
 export const GET = {
   UI_LANG: 'uiLang',
-  THE_MODEL: 'theModel',
+  WORD_LIST: 'wordList',
   MODEL_LIST: 'modelList',
   MODEL_LIST_COUNT: 'modelListCount',
+  THE_MODEL: 'theModel',
   THE_RUN_TEXT: 'theRunText',
   RUN_TEXT_LIST: 'runTextList',
   THE_WORKSET_TEXT: 'theWorksetText',
@@ -20,8 +21,9 @@ export const GET = {
 // exported actions names
 export const SET = {
   UI_LANG: 'uiLang',
-  THE_MODEL: 'theModel',
+  WORD_LIST: 'wordList',
   MODEL_LIST: 'modelList',
+  THE_MODEL: 'theModel',
   EMPTY_MODEL: 'emptyModel',
   EMPTY_MODEL_LIST: 'emptyModelList',
   THE_RUN_TEXT_BY_IDX: 'theRunTextByIdx',
@@ -35,8 +37,10 @@ export const SET = {
 // internal mutations names
 const UPDATE = {
   UI_LANG: 'uiLang',
-  THE_MODEL: 'theModel',
+  WORD_LIST: 'wordList',
+  WORD_LIST_ON_NEW: 'wordListOnNew',
   MODEL_LIST: 'modelList',
+  THE_MODEL: 'theModel',
   THE_RUN_TEXT_ON_NEW: 'theRunTextOnNew',
   THE_RUN_TEXT_BY_IDX: 'theRunTextByIdx',
   RUN_TEXT_LIST: 'runTextList',
@@ -47,9 +51,22 @@ const UPDATE = {
   WORKSET_TEXT_LIST_ON_NEW: 'worksetTextListOnNew'
 }
 
+// store state: model
+const state = {
+  uiLang: '',
+  wordList: Mdf.emptyWordList(),
+  modelList: [],
+  theModel: Mdf.emptyModel(),
+  theRunText: Mdf.emptyRunText(),
+  runTextList: [],
+  theWorksetText: Mdf.emptyWorksetText(),
+  worksetTextList: []
+}
+
 // getters
 const getters = {
   [GET.UI_LANG]: state => state.uiLang,
+  [GET.WORD_LIST]: state => state.wordList,
   [GET.THE_MODEL]: state => state.theModel,
   [GET.MODEL_LIST]: state => state.modelList,
   [GET.MODEL_LIST_COUNT]: state => state.modelList.length,
@@ -60,20 +77,31 @@ const getters = {
   [GET.OMPP_SRV_URL]: state => (process.env.OMPP_SRV_URL_ENV || '')
 }
 
-// store state: model
-const state = {
-  uiLang: '',
-  theModel: Mdf.emptyModel(),
-  modelList: [],
-  theRunText: Mdf.emptyRunText(),
-  runTextList: [],
-  theWorksetText: Mdf.emptyWorksetText(),
-  worksetTextList: []
-}
-
 // mutations: synchronized updates
 const mutations = {
+  // assign new value to current UI language
   [UPDATE.UI_LANG] (state, lang) { state.uiLang = (lang || '') },
+
+  // assign new value to model language-specific strings (model words)
+  [UPDATE.WORD_LIST] (state, mw) {
+    state.wordList = Mdf.emptyWordList()
+    if (!mw) return
+    state.wordList.ModelName = (mw.ModelName || '')
+    state.wordList.ModelDigest = (mw.ModelDigest || '')
+    state.wordList.LangCode = (mw.LangCode || '')
+    state.wordList.ModelLangCode = (mw.ModelLangCode || '')
+    if (mw.hasOwnProperty('LangWords')) {
+      if (mw.LangWords && (mw.LangWords.length || 0) > 0) state.wordList.LangWords = mw.LangWords
+    }
+    if (mw.hasOwnProperty('ModelWords')) {
+      if (mw.ModelWords && (mw.ModelWords.length || 0) > 0) state.wordList.ModelWords = mw.ModelWords
+    }
+  },
+
+  // clear model words list if new model digest not same as word list model digest
+  [UPDATE.WORD_LIST_ON_NEW] (state, modelDigest) {
+    if ((modelDigest || '') !== state.wordList.ModelDigest) state.wordList = Mdf.emptyWordList()
+  },
 
   // assign new value to current model, if (md) is a model
   [UPDATE.THE_MODEL] (state, md) {
@@ -158,12 +186,19 @@ const mutations = {
 const actions = {
   [SET.UI_LANG] ({ commit, dispatch }, lang) {
     commit(UPDATE.UI_LANG, lang)
+    commit(UPDATE.WORD_LIST, Mdf.emptyWordList())
+  },
+
+  // set new value to model words list
+  [SET.WORD_LIST] ({ commit, dispatch }, mw) {
+    commit(UPDATE.WORD_LIST, mw)
   },
 
   // set new value to current model, clear run list and workset list
   [SET.THE_MODEL] ({ commit, dispatch }, md) {
     let digest = Mdf.modelDigest(md)
     commit(UPDATE.THE_MODEL, md)
+    commit(UPDATE.WORD_LIST_ON_NEW, digest)
     commit(UPDATE.RUN_TEXT_LIST_ON_NEW, digest)
     commit(UPDATE.THE_RUN_TEXT_ON_NEW, digest)
     commit(UPDATE.WORKSET_TEXT_LIST_ON_NEW, digest)
