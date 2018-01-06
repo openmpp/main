@@ -170,11 +170,11 @@ INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (2, 0, 'Salary by Sex', 'Salary by Sex notes', 'Salary Dim', NULL);
+  (2, 0, 'Salary by Sex', 'Salary by Sex notes', 'Measure', 'Measure notes');
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (2, 1, '(FR) Salary by Sex', '(FR) Salary by Sex notes', '(FR) Salary Dim', NULL);
+  (2, 1, '(FR) Salary by Sex', '(FR) Salary by Sex notes', '(FR) Measure', NULL);
 
 -- dim1 "sex" has total enabled, enum id = 800
 INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (2, 0, 'dim0', 98, 0, 3);
