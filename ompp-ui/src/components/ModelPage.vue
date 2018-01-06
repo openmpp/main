@@ -7,17 +7,13 @@
     <span v-if="loadRunDone" class="hdr-text">
       <span v-if="isNotEmptyTheRun" 
           @click="showRunInfo()" 
-          class="cell-icon-link material-icons" 
-          alt="Model run info"
-          title="Model run info">
+          class="cell-icon-link material-icons" alt="Model run info" title="Model run info">
             <span v-if="isSuccessTheRun">directions_run</span>
             <span v-else>priority_high</span>
         </span>
         <span v-else 
-          title="Model run info not available"
-          alt="Model run info not available"
           class="cell-icon-empty material-icons" 
-          aria-hidden="true">directions_run</span>
+          title="Model run info not available" alt="Model run info not available" aria-hidden="true">directions_run</span>
       <span v-if="isNotEmptyTheRun">
         <span v-if="!isSuccessTheRun" class="cell-status mdc-typography--body2">{{statusOfTheRun}}</span>
         <span class="mono">{{lastTimeOfTheRun}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfTheRun}}</span>
@@ -66,7 +62,7 @@
           @click="doTabClose(t.id)"
           :alt="'Close ' + t.title"
           :title="'Close ' + t.title" 
-          class="tab-close-button"><i class="tab-close-icon material-icons mdc-button__icon">clear</i>
+          class="tab-close-button"><i class="tab-close-icon material-icons mdc-button__icon">close</i>
         </om-mcw-button>
 
     </div>
@@ -115,6 +111,8 @@ import RefreshRunList from './RefreshRunList'
 import RefreshWorksetList from './RefreshWorksetList'
 
 export default {
+  components: { OmMcwButton, OmMcwDialog, RefreshModel, RefreshRunList, RefreshWorksetList },
+
   props: {
     digest: '',
     refreshTickle: false
@@ -395,9 +393,7 @@ export default {
 
   mounted () {
     this.mountedDone = true
-  },
-
-  components: { OmMcwButton, OmMcwDialog, RefreshModel, RefreshRunList, RefreshWorksetList }
+  }
 }
 </script>
 
@@ -420,7 +416,7 @@ export default {
     display: flex;
     flex-direction: row;
     overflow: hidden;
-    margin-top: .5em;
+    margin-top: .5rem;
   }
   .tab-item {
     display: inline-flex;
@@ -428,9 +424,9 @@ export default {
     flex-shrink: 1;
     overflow: hidden;
     align-items: center;
-    padding-left: .5em;
+    padding-left: .5rem;
     margin-right: 1px;
-    border-top-right-radius: 1em;
+    border-top-right-radius: 1rem;
   }
   .tab-item-inactive {
     @extend .tab-item;
@@ -450,8 +446,8 @@ export default {
   }
   .tab-close-button {
     border: 0;
-    padding: 0 0 0 0.5em;
-    min-width: 1em;
+    padding: 0 0 0 .5rem;
+    min-width: 1rem;
   }
   .tab-close-icon {
     @extend .mdc-theme--text-primary-on-primary;
@@ -464,7 +460,7 @@ export default {
     display: flex;
     flex-direction: row;
     overflow: hidden;
-    margin-top: 0.5em;
+    margin-top: .5rem;
   }
   .hdr-text {
     overflow: hidden;
@@ -474,14 +470,14 @@ export default {
   /*
   .hdr-table {
     display: table;
-    padding-top: 0.5em;
+    padding-top: .5rem;
   }
   .hdr-table-row {
     display: table-row;
   }
   .hdr-table-cell {
     display: table-cell;
-    padding-right: 0.5em;
+    padding-right: .5rem;
   }
   */
 
@@ -489,8 +485,8 @@ export default {
   .cell-icon {
     vertical-align: middle;
     margin: 0;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
   .cell-icon-link {
     @extend .cell-icon;
@@ -515,7 +511,7 @@ export default {
   }
   .note-table {
     display: table;
-    margin-top: .5em;
+    margin-top: .5rem;
   }
   .note-row {
     display: table-row;
@@ -524,7 +520,7 @@ export default {
     display: table-cell;
     white-space: nowrap;
     &:first-child {
-      padding-right: .5em;
+      padding-right: .5rem;
     }
   }
 </style>

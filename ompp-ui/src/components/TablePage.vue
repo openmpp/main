@@ -6,9 +6,81 @@
     
     <span
       @click="showTableInfo()" 
-      class="cell-icon-link material-icons" 
-      :alt="tableName + ' info'"
-      :title="tableName + ' info'">event_note</span>
+      class="cell-icon-link material-icons" :alt="tableName + ' info'" :title="tableName + ' info'">event_note</span>
+
+    <span v-if="tv.isPrev">
+      <span
+        @click="doFirstPage()"
+        class="cell-icon-link material-icons" title="First page" alt="First page">first_page</span>
+      <span
+        @click="doPrevPage()"
+        class="cell-icon-link material-icons" title="Previous page" alt="Previous page">navigate_before</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="First page" alt="First page">first_page</span>
+      <span
+        class="cell-icon-empty material-icons" title="Previous page" alt="Previous page">navigate_before</span>
+    </span>
+
+    <span v-if="tv.isNext">
+      <span
+        @click="doNextPage()"
+        class="cell-icon-link material-icons" title="Next page" alt="Next page">navigate_next</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Next page" alt="Next page">navigate_next</span>
+    </span>
+
+    <span v-if="tv.isLast">
+      <span
+        @click="doLastPage()"
+        class="cell-icon-link material-icons" title="Last page" alt="Last page">last_page</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Last page" alt="Last page">last_page</span>
+    </span>
+
+    <span v-if="isShowMoreControls">
+
+      <span
+        @click="doRefresh()"
+        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
+      <span v-if="tv.isInc">
+        <span
+          @click="doIncreasePage()"
+          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">vertical_align_bottom</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">vertical_align_bottom</span>
+      </span>
+
+      <span v-if="tv.isDec">
+        <span
+          @click="doDecreasePage()"
+          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_top</span>
+      </span>
+      <span v-else>
+        <span
+          @click="doDecreasePage()"
+          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_top</span>
+      </span>
+
+      <span
+        @click="doUnlimitedPage()"
+        class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
+      <span
+        @click="doResetView()"
+        class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">highlight_off</span>
+    </span>
+
+    <span
+      @click="toggleMoreControls()"
+      class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
+
     <span class="mdc-typography--body2">{{ tableName }}: </span>
     <span>{{ tableDescr() }}</span>
 
@@ -74,8 +146,13 @@ const kind = {
   ACC: 1,   // output table accumulator(s)
   ALL: 2    // output table all-accumultors view
 }
+const MAX_PAGE_SIZE = 1048576
+const SHOW_MORE_LABEL = 'Show more controls'
+const HIDE_MORE_LABEL = 'Hide extra controls'
 
 export default {
+  components: { OmMcwDialog, HotTable },
+
   props: {
     digest: '',
     tableName: '',
@@ -109,10 +186,19 @@ export default {
       exprProp: [],
       accProp: [],
       totalEnumLabel: '',
-      kind: kind.EXPR,
-      pageStart: 0,
-      pageSize: 20,
-      isNextPage: false,
+      tv: {
+        kind: kind.EXPR,
+        start: 0,
+        size: 20,
+        isNext: false,
+        isPrev: false,
+        isLast: false,
+        isInc: false,
+        isDec: false,
+        lastRowFound: 0
+      },
+      isShowMoreControls: false,
+      moreControlsLabel: SHOW_MORE_LABEL,
       msg: ''
     }
   },
@@ -127,7 +213,7 @@ export default {
   },
 
   watch: {
-    // refresh button handler
+    // parent refresh button handler
     refreshTickle () {
       this.doRefreshDataPage()
     }
@@ -143,6 +229,73 @@ export default {
       this.$refs.noteDlg.open()
     },
 
+    // local refresh button handler, table content only
+    doRefresh () {
+      this.doRefreshDataPage()
+    },
+
+    // show or hide extra controls
+    toggleMoreControls () {
+      this.isShowMoreControls = !this.isShowMoreControls
+      this.moreControlsLabel = this.isShowMoreControls ? HIDE_MORE_LABEL : SHOW_MORE_LABEL
+    },
+
+    // move to previous page
+    doPrevPage () {
+      if (this.tv.start > 0) this.tv.start -= this.tv.size
+      if (this.tv.start < 0) this.tv.start = 0
+      this.doRefreshDataPage()
+    },
+
+    // move to next page
+    doNextPage () {
+      this.tv.start = (this.tv.start < MAX_PAGE_SIZE - this.tv.size)
+        ? this.tv.start + this.tv.size
+        : MAX_PAGE_SIZE - this.tv.size
+      this.doRefreshDataPage()
+    },
+
+    // move to first page
+    doFirstPage () {
+      this.tv.start = 0
+      this.doRefreshDataPage()
+    },
+
+    // move to last page
+    doLastPage () {
+      if (this.tv.lastRowFound <= 0) return
+      this.tv.start = (this.tv.lastRowFound + 1) - this.tv.size
+      if (this.tv.start < 0) this.tv.start = 0
+      this.doRefreshDataPage()
+    },
+
+    // increase page size
+    doIncreasePage () {
+      this.tv.size = this.tv.size >= 10 ? this.tv.size *= 2 : this.tv.size + 1
+      if (this.tv.size > MAX_PAGE_SIZE) this.tv.size = MAX_PAGE_SIZE
+      this.doRefreshDataPage()
+    },
+
+    // decrease page size
+    doDecreasePage () {
+      this.tv.size = this.tv.size > 10 ? Math.floor(this.tv.size / 2) : this.tv.size - 1
+      if (this.tv.size < 1) this.tv.size = 1
+      this.doRefreshDataPage()
+    },
+
+    // unlimited page size, show all data
+    doUnlimitedPage () {
+      this.tv.start = 0
+      this.tv.size = 0
+      this.doRefreshDataPage()
+    },
+
+    // reset table view to default
+    doResetView () {
+      this.setDefaultPageView()
+      this.doRefreshDataPage()
+    },
+
     // update table data from response data page
     setData (d) {
       // if response is empty or invalid: clean table
@@ -151,21 +304,25 @@ export default {
         this.htSettings.data = []
         return
       }
-      if (this.isNextPage) len--  // if page size limited and response row count > limit
+      if (this.tv.isNext) len--  // if page size limited and response row count > limit
 
       // set page data
-      switch (this.kind) {
+      switch (this.tv.kind) {
         case kind.EXPR:
           this.htSettings.data = this.makeExprPage(len, d)
+          this.htSettings.rowHeaders = this.makeRowHeaders(len, 1)
           break
         case kind.ACC:
           this.htSettings.data = this.makeAccPage(len, d)
+          this.htSettings.rowHeaders = this.makeRowHeaders(len, 1)
           break
         case kind.ALL:
           this.htSettings.data = this.makeAllAccPage(len, d)
+          this.htSettings.rowHeaders = this.makeRowHeaders(len, this.tableSize.allAccCount)
           break
         default:
           this.htSettings.data = []
+          this.htSettings.rowHeaders = true
           console.log('Invalid kind of table view: must be or of: EXPR, ACC, ALL')
       }
     },
@@ -268,6 +425,19 @@ export default {
       return vp
     },
 
+    // make table row headers, each data row can contain multiple table rows.
+    // in case of all-accumulators view each data row produce one table row for each accumulator
+    makeRowHeaders (dataLen, rowSize) {
+      if ((!!dataLen || 0) <= 0) return ['none']
+      const rh = []
+      let n = this.tv.start * rowSize
+      if (n < 0) n = 0
+      for (let k = 0; k < dataLen * rowSize; k++) {
+        rh.push(n + k + 1)
+      }
+      return rh
+    },
+
     // translate dimension enum id to label, it does return enum code if label is empty
     // return total enum label if total enabled for dimension and id is total enum id
     translateDimEnumId (dimIdx, enumId) {
@@ -291,11 +461,16 @@ export default {
         : ''
     },
 
-// get page of table data from current model run: expressions or accumulators
+    // get page of table data from current model run: expressions or accumulators
     async doRefreshDataPage () {
       this.loadDone = false
       this.loadWait = true
       this.msg = 'Loading...'
+      this.tv.isNext = false
+      this.tv.isPrev = false
+      this.tv.isInc = false
+      this.tv.isDec = false
+      this.tv.isLast = false
 
       // exit if model run: must be found (not found run is empty)
       if (!Mdf.isNotEmptyRunText(this.theRunText)) {
@@ -314,8 +489,18 @@ export default {
       try {
         const response = await axios.post(u, layout)
         const d = response.data
-        this.isNextPage = this.pageSize > 0 && ((!!d && (d.length || 0) > 0) ? d.length : 0) >= layout.Size
-        this.setData(d)     // update table page
+
+        // set page view state: is next page exist
+        const len = (!!d && (d.length || 0) > 0) ? d.length : 0
+        this.tv.isNext = this.tv.size > 0 && len >= layout.Size
+        this.tv.isPrev = this.tv.start > 0
+        this.tv.isInc = this.tv.isNext && this.tv.size < MAX_PAGE_SIZE
+        this.tv.isDec = this.tv.size > 1
+        if (this.tv.lastRowFound <= 0 && !this.tv.isNext && len > 0) this.tv.lastRowFound = this.tv.start + (len - 1)
+        this.tv.isLast = this.tv.isNext && this.tv.lastRowFound > 0
+
+        // update table page
+        this.setData(d)
         this.loadDone = true
       } catch (e) {
         this.msg = 'Server offline or no models published'
@@ -329,29 +514,37 @@ export default {
       //
       // if page size limited then make size to select at least page size +1
       // for accumulators each sub-value is a separate row
-      let nSize = this.pageSize * ((this.kind === kind.ACC || this.kind === kind.ALL) ? this.subCount : 1)
+      let nSize = this.tv.size * ((this.tv.kind === kind.ACC || this.tv.kind === kind.ALL) ? this.subCount : 1)
       let layout = {
         Name: this.tableName,
-        Offset: (this.pageSize > 0 ? this.pageStart : 0),
-        Size: (this.pageSize > 0 ? 1 + nSize : 0),
+        Offset: (this.tv.size > 0 ? this.tv.start : 0),
+        Size: (this.tv.size > 0 ? 1 + nSize : 0),
         Filter: [],
         OrderBy: [],
-        IsAccum: (this.kind === kind.ACC || this.kind === kind.ALL),
-        IsAllAccum: this.kind === kind.ALL
+        IsAccum: (this.tv.kind === kind.ACC || this.tv.kind === kind.ALL),
+        IsAllAccum: this.tv.kind === kind.ALL
       }
 
       // make deafult order by
       // expressions:      SELECT expr_id, dim0, dim1, value...        ORDER BY 2, 3, 1
       // accumulators:     SELECT acc_id, sub_id, dim0, dim1, value... ORDER BY 3, 4, 1, 2
       // all-accumulators: SELECT sub_id, dim0, dim1, acc0, acc1...    ORDER BY 2, 3, 1
-      let n = this.kind === kind.ACC ? 3 : 2
+      let n = this.tv.kind === kind.ACC ? 3 : 2
       for (let k = 0; k < this.tableSize.rank; k++) {
         layout.OrderBy.push({IndexOne: k + n})
       }
       layout.OrderBy.push({IndexOne: 1})
-      if (this.kind === kind.ACC) layout.OrderBy.push({IndexOne: 2})
+      if (this.tv.kind === kind.ACC) layout.OrderBy.push({IndexOne: 2})
 
       return layout
+    },
+
+    // set default page view parameters
+    setDefaultPageView () {
+      this.tv.kind = kind.EXPR
+      this.tv.start = 0
+      this.tv.size = 20
+      this.tv.lastRowFound = 0
     }
   },
 
@@ -363,6 +556,7 @@ export default {
     this.tableSize = Mdf.tableSizeByName(this.theModel, this.tableName)
     this.subCount = this.theRunText.SubCount || 0
     this.totalEnumLabel = Mdf.wordByCode(this.wordList, Mdf.ALL_WORD_CODE)
+    this.setDefaultPageView()
 
     // find dimension type for each dimension
     this.dimProp = []
@@ -413,7 +607,7 @@ export default {
     for (let j = 0; j < this.tableSize.rank; j++) {
       this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
     }
-    if (this.kind === kind.EXPR) {
+    if (this.tv.kind === kind.EXPR) {
       this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
       this.htSettings.colHeaders.push('Value')          // expression value
     } else {
@@ -425,9 +619,7 @@ export default {
 
     // this.htRoot = 'ht-' + this.digest + '-' + this.tableName + '-' + (this.theRunText.Digest || '')
     this.doRefreshDataPage()
-  },
-
-  components: { OmMcwDialog, HotTable }
+  }
 }
 </script>
 
@@ -476,7 +668,9 @@ export default {
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--text-disabled-on-background;
+    @extend .mdc-theme--primary-light-bg;
+    @extend .mdc-theme--text-primary-on-primary;
+    /* @extend .mdc-theme--text-disabled-on-background; */
   }
 
   /* note dialog, fix handsontable z-index: 101; */
