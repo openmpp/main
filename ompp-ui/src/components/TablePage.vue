@@ -43,40 +43,6 @@
         class="cell-icon-empty material-icons" title="Last page" alt="Last page">last_page</span>
     </span>
 
-    <span v-if="isShowMoreControls">
-
-      <span
-        @click="doRefresh()"
-        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
-      <span v-if="tv.isInc">
-        <span
-          @click="doIncreasePage()"
-          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">vertical_align_bottom</span>
-      </span>
-      <span v-else>
-        <span
-          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">vertical_align_bottom</span>
-      </span>
-
-      <span v-if="tv.isDec">
-        <span
-          @click="doDecreasePage()"
-          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_top</span>
-      </span>
-      <span v-else>
-        <span
-          @click="doDecreasePage()"
-          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_top</span>
-      </span>
-
-      <span
-        @click="doUnlimitedPage()"
-        class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
-      <span
-        @click="doResetView()"
-        class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">highlight_off</span>
-    </span>
-
     <span
       @click="toggleMoreControls()"
       class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
@@ -89,6 +55,50 @@
     <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
     <span class="mdc-typography--body2">{{msg}}</span>
+  </div>
+
+  <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
+
+    <span
+      @click="doResetView()"
+      class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">settings_backup_restore</span>
+
+    <span v-if="tv.isInc">
+      <span
+        @click="doIncreasePage()"
+        class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+    </span>
+
+    <span v-if="tv.isDec">
+      <span
+        @click="doDecreasePage()"
+        class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+    </span>
+    <span v-else>
+      <span
+        @click="doDecreasePage()"
+        class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+    </span>
+
+    <span
+      @click="doUnlimitedPage()"
+      class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
+    <span
+      @click="doExpressionPage()"
+      class="cell-icon-link material-icons" title="View table expressions"alt="View table expressions">filter_none</span>
+    <span
+      @click="doAccumulatorPage()"
+      class="cell-icon-link material-icons" title="View accumulators and sub-values"alt="View accumulators and sub-values">filter_8</span>
+    <span
+      @click="doAllAccumulatorPage()"
+      class="cell-icon-link material-icons" title="View all accumulators and sub-values"alt="View all accumulators and sub-values">library_add</span>
+    <span
+      @click="doRefresh()"
+      class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
   </div>
 
   <div class="ht-container">
@@ -172,6 +182,7 @@ export default {
       htSettings: {
         manualColumnMove: true,
         manualColumnResize: true,
+        // autoColumnSize: {syncLimit: 100, useHeaders: true},
         manualRowResize: true,
         preventOverflow: 'horizontal',
         renderAllRows: true,
@@ -242,54 +253,77 @@ export default {
 
     // move to previous page
     doPrevPage () {
+      if (this.tv.start === 0) return
       if (this.tv.start > 0) this.tv.start -= this.tv.size
-      if (this.tv.start < 0) this.tv.start = 0
+      if ((this.tv.start || 0) <= 0) this.tv.start = 0
       this.doRefreshDataPage()
     },
-
     // move to next page
     doNextPage () {
-      this.tv.start = (this.tv.start < MAX_PAGE_SIZE - this.tv.size)
-        ? this.tv.start + this.tv.size
-        : MAX_PAGE_SIZE - this.tv.size
+      if (!this.tv.isNext) return
+      this.tv.start = this.tv.start + this.tv.size
       this.doRefreshDataPage()
     },
-
     // move to first page
     doFirstPage () {
       this.tv.start = 0
       this.doRefreshDataPage()
     },
-
     // move to last page
     doLastPage () {
       if (this.tv.lastRowFound <= 0) return
       this.tv.start = (this.tv.lastRowFound + 1) - this.tv.size
-      if (this.tv.start < 0) this.tv.start = 0
+      if ((this.tv.start || 0) <= 0) this.tv.start = 0
       this.doRefreshDataPage()
     },
-
     // increase page size
     doIncreasePage () {
       this.tv.size = this.tv.size >= 10 ? this.tv.size *= 2 : this.tv.size + 1
       if (this.tv.size > MAX_PAGE_SIZE) this.tv.size = MAX_PAGE_SIZE
       this.doRefreshDataPage()
     },
-
     // decrease page size
     doDecreasePage () {
-      this.tv.size = this.tv.size > 10 ? Math.floor(this.tv.size / 2) : this.tv.size - 1
+      if (this.tv.size > 0) {
+        this.tv.size = this.tv.size > 10 ? Math.floor(this.tv.size / 2) : this.tv.size - 1
+      } else {
+        if (this.tv.lastRowFound <= 1) {
+          this.tv.isDec = false
+          return
+        }
+        // page size unlimited and last row > 0
+        this.tv.size = this.tv.lastRowFound > 10 ? Math.floor(this.tv.lastRowFound / 2) : this.tv.lastRowFound - 1
+      }
       if (this.tv.size < 1) this.tv.size = 1
       this.doRefreshDataPage()
     },
-
     // unlimited page size, show all data
     doUnlimitedPage () {
       this.tv.start = 0
       this.tv.size = 0
       this.doRefreshDataPage()
     },
-
+    // show output table expressions
+    doExpressionPage () {
+      this.tv.kind = kind.EXPR
+      this.tv.lastRowFound = 0
+      this.setExprColHeaders()
+      this.doRefreshDataPage()
+    },
+    // show output table accumulators
+    doAccumulatorPage () {
+      this.tv.kind = kind.ACC
+      this.tv.lastRowFound = 0
+      this.setAccColHeaders()
+      this.doRefreshDataPage()
+    },
+    // show all-accumulators view
+    doAllAccumulatorPage () {
+      this.tv.kind = kind.ALL
+      this.tv.lastRowFound = 0
+      this.setAccColHeaders()
+      this.doRefreshDataPage()
+    },
     // reset table view to default
     doResetView () {
       this.setDefaultPageView()
@@ -301,7 +335,7 @@ export default {
       // if response is empty or invalid: clean table
       let len = (!!d && (d.length || 0) > 0) ? d.length : 0
       if (!d || len <= 0) {
-        this.htSettings.data = []
+        this.htSettings.data = ['none']
         return
       }
       if (this.tv.isNext) len--  // if page size limited and response row count > limit
@@ -346,7 +380,7 @@ export default {
     },
 
     // make accumulators data page, columns are: dimensions, accumulator id, sub-values
-    // accumulator sub-values are separate rows in source rowset
+    // each sub-value is a separate row in source rowset
     makeAccPage (dataLen, d) {
       const vp = []
 
@@ -383,8 +417,9 @@ export default {
       return vp
     },
 
-    // make all-accumulators view page, columns are: dimensions, accumulator id, sub-values
-    // accumulator sub-values are separate rows in source rowset
+    // make all-accumulators view page, columns are: dimensions, sub-values
+    // each sub-value is a separate row in source rowset
+    // each row has all accumulators
     makeAllAccPage (dataLen, d) {
       const vp = []
 
@@ -495,8 +530,10 @@ export default {
         this.tv.isNext = this.tv.size > 0 && len >= layout.Size
         this.tv.isPrev = this.tv.start > 0
         this.tv.isInc = this.tv.isNext && this.tv.size < MAX_PAGE_SIZE
-        this.tv.isDec = this.tv.size > 1
-        if (this.tv.lastRowFound <= 0 && !this.tv.isNext && len > 0) this.tv.lastRowFound = this.tv.start + (len - 1)
+        this.tv.isDec = this.tv.size > 1 || (this.tv.size === 0 && len > 1)
+        if (this.tv.lastRowFound <= 0 && !this.tv.isNext && len > 0) {
+          this.tv.lastRowFound = this.tv.start + (Math.floor(len / this.subCount) - 1)
+        }
         this.tv.isLast = this.tv.isNext && this.tv.lastRowFound > 0
 
         // update table page
@@ -514,10 +551,15 @@ export default {
       //
       // if page size limited then make size to select at least page size +1
       // for accumulators each sub-value is a separate row
-      let nSize = this.tv.size * ((this.tv.kind === kind.ACC || this.tv.kind === kind.ALL) ? this.subCount : 1)
+      let nStart = this.tv.start
+      let nSize = this.tv.size
+      if (this.tv.kind === kind.ACC || this.tv.kind === kind.ALL) {
+        nStart *= this.subCount
+        nSize *= this.subCount
+      }
       let layout = {
         Name: this.tableName,
-        Offset: (this.tv.size > 0 ? this.tv.start : 0),
+        Offset: (this.tv.size > 0 ? nStart : 0),
         Size: (this.tv.size > 0 ? 1 + nSize : 0),
         Filter: [],
         OrderBy: [],
@@ -545,6 +587,27 @@ export default {
       this.tv.start = 0
       this.tv.size = 20
       this.tv.lastRowFound = 0
+      this.setExprColHeaders()
+    },
+    // column headers for output table expressions
+    setExprColHeaders () {
+      this.htSettings.colHeaders = []
+      for (let j = 0; j < this.tableSize.rank; j++) {
+        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
+      }
+      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
+      this.htSettings.colHeaders.push('Value')          // expression value
+    },
+    // column headers for accumulators or all accumulators veiw
+    setAccColHeaders () {
+      this.htSettings.colHeaders = []
+      for (let j = 0; j < this.tableSize.rank; j++) {
+        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
+      }
+      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
+      for (let j = 0; j < this.subCount; j++) {
+        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
+      }
     }
   },
 
@@ -556,7 +619,6 @@ export default {
     this.tableSize = Mdf.tableSizeByName(this.theModel, this.tableName)
     this.subCount = this.theRunText.SubCount || 0
     this.totalEnumLabel = Mdf.wordByCode(this.wordList, Mdf.ALL_WORD_CODE)
-    this.setDefaultPageView()
 
     // find dimension type for each dimension
     this.dimProp = []
@@ -602,22 +664,8 @@ export default {
       }
     }
 
-    // columns layout: dimensions, expression or accumulator dimension, value or sub-values
-    this.htSettings.colHeaders = []
-    for (let j = 0; j < this.tableSize.rank; j++) {
-      this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
-    }
-    if (this.tv.kind === kind.EXPR) {
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
-      this.htSettings.colHeaders.push('Value')          // expression value
-    } else {
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
-      for (let j = 0; j < this.subCount; j++) {
-        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
-      }
-    }
-
-    // this.htRoot = 'ht-' + this.digest + '-' + this.tableName + '-' + (this.theRunText.Digest || '')
+    // set columns layout and refresh the data
+    this.setDefaultPageView()
     this.doRefreshDataPage()
   }
 }
@@ -643,11 +691,11 @@ export default {
     white-space: nowrap;
     text-overflow: ellipsis;
     margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
   }
   .ht-container {
     flex: 1 1 auto;
     overflow: auto;
+    margin-top: 0.5rem;
   }
 
   /* cell material icon: a link or empty (non-link) */

@@ -61,7 +61,7 @@ export function hotDestroy (vueInstance) {
 
 /**
  * Generate an object containing all the available Handsontable properties and plugin hooks (with the `on`-prefixes added).
-
+ *
  * @returns {Object}
  */
 export function propFactory () {
