@@ -27,18 +27,14 @@
       <span
         @click="doNextPage()"
         class="cell-icon-link material-icons" title="Next page" alt="Next page">navigate_next</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Next page" alt="Next page">navigate_next</span>
-    </span>
-
-    <span v-if="tv.isLast">
       <span
         @click="doLastPage()"
         class="cell-icon-link material-icons" title="Last page" alt="Last page">last_page</span>
     </span>
+    </span>
     <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Next page" alt="Next page">navigate_next</span>
       <span
         class="cell-icon-empty material-icons" title="Last page" alt="Last page">last_page</span>
     </span>
@@ -156,7 +152,8 @@ const kind = {
   ACC: 1,   // output table accumulator(s)
   ALL: 2    // output table all-accumultors view
 }
-const MAX_PAGE_SIZE = 1048576
+const MAX_PAGE_SIZE = 65536
+const MAX_PAGE_OFFSET = (MAX_PAGE_SIZE * MAX_PAGE_SIZE)
 const SHOW_MORE_LABEL = 'Show more controls'
 const HIDE_MORE_LABEL = 'Hide extra controls'
 
@@ -203,10 +200,8 @@ export default {
         size: 20,
         isNext: false,
         isPrev: false,
-        isLast: false,
         isInc: false,
-        isDec: false,
-        lastRowFound: 0
+        isDec: false
       },
       isShowMoreControls: false,
       moreControlsLabel: SHOW_MORE_LABEL,
@@ -260,7 +255,6 @@ export default {
     },
     // move to next page
     doNextPage () {
-      if (!this.tv.isNext) return
       this.tv.start = this.tv.start + this.tv.size
       this.doRefreshDataPage()
     },
@@ -271,9 +265,7 @@ export default {
     },
     // move to last page
     doLastPage () {
-      if (this.tv.lastRowFound <= 0) return
-      this.tv.start = (this.tv.lastRowFound + 1) - this.tv.size
-      if ((this.tv.start || 0) <= 0) this.tv.start = 0
+      this.tv.start = MAX_PAGE_OFFSET
       this.doRefreshDataPage()
     },
     // increase page size
@@ -287,12 +279,13 @@ export default {
       if (this.tv.size > 0) {
         this.tv.size = this.tv.size > 10 ? Math.floor(this.tv.size / 2) : this.tv.size - 1
       } else {
-        if (this.tv.lastRowFound <= 1) {
+        let len = (this.htSettings.rowHeaders.length || 0) > 0 ? this.htSettings.rowHeaders.length : 0
+        if (len <= 1) {
           this.tv.isDec = false
           return
         }
         // page size unlimited and last row > 0
-        this.tv.size = this.tv.lastRowFound > 10 ? Math.floor(this.tv.lastRowFound / 2) : this.tv.lastRowFound - 1
+        this.tv.size = len > 10 ? Math.floor(len / 2) : len - 1
       }
       if (this.tv.size < 1) this.tv.size = 1
       this.doRefreshDataPage()
@@ -306,21 +299,18 @@ export default {
     // show output table expressions
     doExpressionPage () {
       this.tv.kind = kind.EXPR
-      this.tv.lastRowFound = 0
       this.setExprColHeaders()
       this.doRefreshDataPage()
     },
     // show output table accumulators
     doAccumulatorPage () {
       this.tv.kind = kind.ACC
-      this.tv.lastRowFound = 0
       this.setAccColHeaders()
       this.doRefreshDataPage()
     },
     // show all-accumulators view
     doAllAccumulatorPage () {
       this.tv.kind = kind.ALL
-      this.tv.lastRowFound = 0
       this.setAccColHeaders()
       this.doRefreshDataPage()
     },
@@ -338,7 +328,6 @@ export default {
         this.htSettings.data = ['none']
         return
       }
-      if (this.tv.isNext) len--  // if page size limited and response row count > limit
 
       // set page data
       switch (this.tv.kind) {
@@ -362,10 +351,10 @@ export default {
     },
 
     // make expression data page, columns are: dimensions, expression id, value
-    makeExprPage (dataLen, d) {
+    makeExprPage (len, d) {
       const vp = []
 
-      for (let i = 0; i < dataLen; i++) {
+      for (let i = 0; i < len; i++) {
         let row = []
         for (let j = 0; j < this.tableSize.rank; j++) {
           row.push(
@@ -381,14 +370,14 @@ export default {
 
     // make accumulators data page, columns are: dimensions, accumulator id, sub-values
     // each sub-value is a separate row in source rowset
-    makeAccPage (dataLen, d) {
+    makeAccPage (len, d) {
       const vp = []
 
       let nowKey = '?'  // non-existent start key to enforce append of the first row
       let n = 0
       const nSub0 = this.tableSize.rank + 1   // first sub-value position
 
-      for (let i = 0; i < dataLen; i++) {
+      for (let i = 0; i < len; i++) {
         let sk = [d[i].DimIds, d[i].AccId].toString() // current row key
 
         if (sk === nowKey) {  // same key: set sub-value at position of sub_id
@@ -420,14 +409,14 @@ export default {
     // make all-accumulators view page, columns are: dimensions, sub-values
     // each sub-value is a separate row in source rowset
     // each row has all accumulators
-    makeAllAccPage (dataLen, d) {
+    makeAllAccPage (len, d) {
       const vp = []
 
       let dKey = '?'  // non-existent start key to enforce append of the first row
       let nf = 0
       const nSub0 = this.tableSize.rank + 1   // first sub-value position
 
-      for (let i = 0; i < dataLen; i++) {
+      for (let i = 0; i < len; i++) {
         let sk = [d[i].DimIds].toString() // current dimensions key
 
         if (sk === dKey) {  // same dimensions: for each accumulator set sub-value at position of sub_id
@@ -462,12 +451,12 @@ export default {
 
     // make table row headers, each data row can contain multiple table rows.
     // in case of all-accumulators view each data row produce one table row for each accumulator
-    makeRowHeaders (dataLen, rowSize) {
-      if ((!!dataLen || 0) <= 0) return ['none']
+    makeRowHeaders (len, rowSize) {
+      if ((!!len || 0) <= 0) return ['none']
       const rh = []
       let n = this.tv.start * rowSize
       if (n < 0) n = 0
-      for (let k = 0; k < dataLen * rowSize; k++) {
+      for (let k = 0; k < len * rowSize; k++) {
         rh.push(n + k + 1)
       }
       return rh
@@ -505,7 +494,6 @@ export default {
       this.tv.isPrev = false
       this.tv.isInc = false
       this.tv.isDec = false
-      this.tv.isLast = false
 
       // exit if model run: must be found (not found run is empty)
       if (!Mdf.isNotEmptyRunText(this.theRunText)) {
@@ -520,21 +508,31 @@ export default {
       let u = this.omppServerUrl +
         '/api/model/' + (this.digest || '') + '/run/' + (this.theRunText.Digest || '') + '/table/value-id'
 
-      // retrieve page from server and check if next page exist
+      // retrieve page from server, it must be: {Layout: {...}, Page: [...]}
       try {
         const response = await axios.post(u, layout)
-        const d = response.data
+        const rsp = response.data
+        let d = []
+        if (!!rsp && rsp.hasOwnProperty('Page')) {
+          if ((rsp.Page.length || 0) > 0) d = rsp.Page
+        }
+        let lt = {Offset: 0, Size: 0, IsLastPage: true}
+        if (!!rsp && rsp.hasOwnProperty('Layout')) {
+          if ((rsp.Layout.Offset || 0) > 0) lt.Offset = rsp.Layout.Offset || 0
+          if ((rsp.Layout.Size || 0) > 0) lt.Size = rsp.Layout.Size || 0
+          if (rsp.Layout.hasOwnProperty('IsLastPage')) lt.IsLastPage = !!rsp.Layout.IsLastPage
+        }
 
         // set page view state: is next page exist
-        const len = (!!d && (d.length || 0) > 0) ? d.length : 0
-        this.tv.isNext = this.tv.size > 0 && len >= layout.Size
-        this.tv.isPrev = this.tv.start > 0
+        this.tv.start = lt.Offset
+        if (this.tv.kind !== kind.EXPR) this.tv.start = Math.floor(lt.Offset / this.subCount)
+        this.tv.isNext = !lt.IsLastPage
+        this.tv.isPrev = lt.Offset > 0
         this.tv.isInc = this.tv.isNext && this.tv.size < MAX_PAGE_SIZE
-        this.tv.isDec = this.tv.size > 1 || (this.tv.size === 0 && len > 1)
-        if (this.tv.lastRowFound <= 0 && !this.tv.isNext && len > 0) {
-          this.tv.lastRowFound = this.tv.start + (Math.floor(len / this.subCount) - 1)
+        this.tv.isDec = this.tv.size > 1
+        if (this.tv.size === 0 && lt.Size > 1) {
+          this.tv.isDec = this.tv.kind === kind.EXPR || lt.Size > 2 * this.subCount
         }
-        this.tv.isLast = this.tv.isNext && this.tv.lastRowFound > 0
 
         // update table page
         this.setData(d)
@@ -553,17 +551,18 @@ export default {
       // for accumulators each sub-value is a separate row
       let nStart = this.tv.start
       let nSize = this.tv.size
-      if (this.tv.kind === kind.ACC || this.tv.kind === kind.ALL) {
+      if (this.tv.kind !== kind.EXPR) {
         nStart *= this.subCount
         nSize *= this.subCount
       }
       let layout = {
         Name: this.tableName,
         Offset: (this.tv.size > 0 ? nStart : 0),
-        Size: (this.tv.size > 0 ? 1 + nSize : 0),
+        Size: (this.tv.size > 0 ? nSize : 0),
+        IsLastPage: true,
         Filter: [],
         OrderBy: [],
-        IsAccum: (this.tv.kind === kind.ACC || this.tv.kind === kind.ALL),
+        IsAccum: (this.tv.kind !== kind.EXPR),
         IsAllAccum: this.tv.kind === kind.ALL
       }
 
@@ -586,7 +585,6 @@ export default {
       this.tv.kind = kind.EXPR
       this.tv.start = 0
       this.tv.size = 20
-      this.tv.lastRowFound = 0
       this.setExprColHeaders()
     },
     // column headers for output table expressions
