@@ -76,7 +76,6 @@
     </span>
     <span v-else>
       <span
-        @click="doDecreasePage()"
         class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
     </span>
 
@@ -101,39 +100,7 @@
     <HotTable ref="ht" :root="htRoot" :settings="htSettings"></HotTable>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <div v-if="((tableText.ExprDescr || '') !== '' || (tableText.ExprNote || '') !== '')">
-      <br v-if="((textNoteDlg || '') !== '')"/>
-      <div>{{tableText.ExprDescr || ''}}</div>
-      <div>{{tableText.ExprNote || ''}}</div>
-    </div>
-    <br/>
-    <div class="note-table">
-      <div class="note-row">
-        <span class="note-cell mono">Name:</span><span class="note-cell mono">{{tableName}}</span>
-      </div>
-      <div v-if="tableSize.rank !== 0" class="note-row">
-        <span class="note-cell mono">Dimensions:</span><span class="note-cell mono">{{tableSize.dimSize}}</span>
-      </div>
-      <div v-else class="note-row">
-        <span class="note-cell mono">Rank:</span><span class="note-cell mono">{{tableSize.rank}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Expressions:</span><span class="note-cell mono">{{tableSize.exprCount}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Accumulators:</span><span class="note-cell mono">{{tableSize.accCount}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">SubValues:</span><span class="note-cell mono">{{subCount}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{tableText.Table.Digest}}</span>
-      </div>
-    </div>
-  </om-mcw-dialog>
+  <table-info-dialog ref="noteDlg" id="table-note-dlg"></table-info-dialog>
 
 </div>
   
@@ -144,7 +111,7 @@ import axios from 'axios'
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import { default as Mdf } from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import TableInfoDialog from './TableInfoDialog'
 import HotTable from '@/vue-handsontable-official/src/HotTable'
 
 const kind = {
@@ -158,7 +125,7 @@ const SHOW_MORE_LABEL = 'Show more controls'
 const HIDE_MORE_LABEL = 'Hide extra controls'
 
 export default {
-  components: { OmMcwDialog, HotTable },
+  components: { TableInfoDialog, HotTable },
 
   props: {
     digest: '',
@@ -170,8 +137,6 @@ export default {
     return {
       loadDone: false,
       loadWait: false,
-      titleNoteDlg: '',
-      textNoteDlg: '',
       tableText: Mdf.emptyTableText(),
       tableSize: Mdf.emptyTableSize(),
       subCount: 0,
@@ -179,7 +144,6 @@ export default {
       htSettings: {
         manualColumnMove: true,
         manualColumnResize: true,
-        // autoColumnSize: {syncLimit: 100, useHeaders: true},
         manualRowResize: true,
         preventOverflow: 'horizontal',
         renderAllRows: true,
@@ -230,9 +194,7 @@ export default {
 
     // show table info
     showTableInfo () {
-      this.titleNoteDlg = this.tableText.TableDescr || ''
-      this.textNoteDlg = this.tableText.TableNote || ''
-      this.$refs.noteDlg.open()
+      this.$refs.noteDlg.showTableInfo(this.tableName, this.subCount)
     },
 
     // local refresh button handler, table content only
@@ -547,7 +509,6 @@ export default {
     // return page layout to read table data
     makeSelectLayout () {
       //
-      // if page size limited then make size to select at least page size +1
       // for accumulators each sub-value is a separate row
       let nStart = this.tv.start
       let nSize = this.tv.size
@@ -584,7 +545,7 @@ export default {
     setDefaultPageView () {
       this.tv.kind = kind.EXPR
       this.tv.start = 0
-      this.tv.size = 20
+      this.tv.size = Math.min(20, this.tableSize.dimTotal * this.tableSize.exprCount)
       this.setExprColHeaders()
     },
     // column headers for output table expressions
@@ -700,8 +661,12 @@ export default {
   .cell-icon {
     vertical-align: middle;
     margin: 0;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   .cell-icon-link {
     @extend .cell-icon;
@@ -717,25 +682,6 @@ export default {
     @extend .mdc-theme--primary-light-bg;
     @extend .mdc-theme--text-primary-on-primary;
     /* @extend .mdc-theme--text-disabled-on-background; */
-  }
-
-  /* note dialog, fix handsontable z-index: 101; */
-  #note-dlg {
-    z-index: 201;
-  }
-  .note-table {
-    display: table;
-    margin-top: .5rem;
-  }
-  .note-row {
-    display: table-row;
-  }
-  .note-cell {
-    display: table-cell;
-    white-space: nowrap;
-    &:first-child {
-      padding-right: .5rem;
-    }
   }
 </style>
 

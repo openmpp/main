@@ -2,30 +2,96 @@
 
 <div id="parameter-page" class="main-container mdc-typography mdc-typography--body1">
 
-  <div class="hdr-row mdc-typography--body1">
+  <div v-if="loadDone" class="hdr-row mdc-typography--body1">
     
     <span
       @click="showParamInfo()" 
-      class="cell-icon-link material-icons" 
-      :alt="paramName + ' info'"
-      :title="paramName + ' info'">event_note</span>
+      class="cell-icon-link material-icons" :alt="paramName + ' info'" :title="paramName + ' info'">event_note</span>
+
+    <span v-if="tv.isPrev">
+      <span
+        @click="doFirstPage()"
+        class="cell-icon-link material-icons" title="First page" alt="First page">first_page</span>
+      <span
+        @click="doPrevPage()"
+        class="cell-icon-link material-icons" title="Previous page" alt="Previous page">navigate_before</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="First page" alt="First page">first_page</span>
+      <span
+        class="cell-icon-empty material-icons" title="Previous page" alt="Previous page">navigate_before</span>
+    </span>
+
+    <span v-if="tv.isNext">
+      <span
+        @click="doNextPage()"
+        class="cell-icon-link material-icons" title="Next page" alt="Next page">navigate_next</span>
+      <span
+        @click="doLastPage()"
+        class="cell-icon-link material-icons" title="Last page" alt="Last page">last_page</span>
+    </span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Next page" alt="Next page">navigate_next</span>
+      <span
+        class="cell-icon-empty material-icons" title="Last page" alt="Last page">last_page</span>
+    </span>
+
+    <span
+      @click="toggleMoreControls()"
+      class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
+
     <span class="mdc-typography--body2">{{ paramName }}: </span>
     <span>{{ paramDescr() }}</span>
 
+  </div>
+  <div v-else class="hdr-row mdc-typography--body2">
+    <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
+    <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
+    <span class="mdc-typography--body2">{{msg}}</span>
+  </div>
+
+  <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
+
+    <span
+      @click="doResetView()"
+      class="cell-icon-link material-icons" title="Reset parameter view to default" alt="Reset parameter view to default">settings_backup_restore</span>
+
+    <span v-if="tv.isInc">
+      <span
+        @click="doIncreasePage()"
+        class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+    </span>
+
+    <span v-if="tv.isDec">
+      <span
+        @click="doDecreasePage()"
+        class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+    </span>
+    <span v-else>
+      <span
+        class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+    </span>
+
+    <span
+      @click="doUnlimitedPage()"
+      class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
+    <span
+      @click="doRefresh()"
+      class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
   </div>
 
   <div class="ht-container">
     <HotTable ref="ht" :root="htRoot" :settings="htSettings"></HotTable>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <br/>
-    <div class="mono">Name:&nbsp;&nbsp;&nbsp;{{paramName}}</div>
-    <div class="mono">Rank:&nbsp;&nbsp;&nbsp;{{paramText.Param.Rank || 0}}</div>
-    <div class="mono">Digest:&nbsp;{{paramText.Param.Digest || ''}}</div>
-  </om-mcw-dialog>
+  <param-info-dialog ref="noteDlg" id="param-note-dlg"></param-info-dialog>
 
 </div>
   
@@ -36,10 +102,17 @@ import axios from 'axios'
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import { default as Mdf } from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import { default as ParamInfoDialog } from './ParameterInfoDialog'
 import HotTable from '@/vue-handsontable-official/src/HotTable'
 
+const MAX_PAGE_SIZE = 65536
+const MAX_PAGE_OFFSET = (MAX_PAGE_SIZE * MAX_PAGE_SIZE)
+const SHOW_MORE_LABEL = 'Show more controls'
+const HIDE_MORE_LABEL = 'Hide extra controls'
+
 export default {
+  components: { ParamInfoDialog, HotTable },
+
   props: {
     digest: '',
     paramName: '',
@@ -48,9 +121,12 @@ export default {
 
   data () {
     return {
-      titleNoteDlg: '',
-      textNoteDlg: '',
+      loadDone: false,
+      loadWait: false,
       paramText: Mdf.emptyParamText(),
+      paramSize: Mdf.emptyParamSize(),
+      paramType: Mdf.emptyTypeText(),
+      subCount: 0,
       htRoot: '',
       htSettings: {
         manualColumnMove: true,
@@ -61,10 +137,22 @@ export default {
         stretchH: 'all',
         rowHeaders: true,
         fillHandle: false,
-        data: [],
-        columns: []
+        readOnly: true,
+        columns: [],
+        data: []
       },
-      dataPage: []
+      dimProp: [],
+      tv: {
+        start: 0,
+        size: 20,
+        isNext: false,
+        isPrev: false,
+        isInc: false,
+        isDec: false
+      },
+      isShowMoreControls: false,
+      moreControlsLabel: SHOW_MORE_LABEL,
+      msg: ''
     }
   },
 
@@ -77,7 +165,10 @@ export default {
   },
 
   watch: {
-    // refresh button handler
+    // parent refresh button handler
+    refreshTickle () {
+      this.doRefreshDataPage()
+    }
   },
 
   methods: {
@@ -85,64 +176,276 @@ export default {
 
     // show parameter info
     showParamInfo () {
-      this.titleNoteDlg = Mdf.descrOfDescrNote(this.paramText)
-      this.textNoteDlg = Mdf.noteOfDescrNote(this.paramText)
-      this.$refs.noteDlg.open()
+      this.$refs.noteDlg.showParamInfo(this.paramName, this.subCount)
     },
 
-    //
-    async doDataPage () {
-      //
-      let r = this.theRunText
-      if (!Mdf.isNotEmptyRunText(r)) {
-        console.log('No run completed')
+    // local refresh button handler, table content only
+    doRefresh () {
+      this.doRefreshDataPage()
+    },
+
+    // show or hide extra controls
+    toggleMoreControls () {
+      this.isShowMoreControls = !this.isShowMoreControls
+      this.moreControlsLabel = this.isShowMoreControls ? HIDE_MORE_LABEL : SHOW_MORE_LABEL
+    },
+
+    // move to previous page
+    doPrevPage () {
+      if (this.tv.start === 0) return
+      if (this.tv.start > 0) this.tv.start -= this.tv.size
+      if ((this.tv.start || 0) <= 0) this.tv.start = 0
+      this.doRefreshDataPage()
+    },
+    // move to next page
+    doNextPage () {
+      this.tv.start = this.tv.start + this.tv.size
+      this.doRefreshDataPage()
+    },
+    // move to first page
+    doFirstPage () {
+      this.tv.start = 0
+      this.doRefreshDataPage()
+    },
+    // move to last page
+    doLastPage () {
+      this.tv.start = MAX_PAGE_OFFSET
+      this.doRefreshDataPage()
+    },
+    // increase page size
+    doIncreasePage () {
+      this.tv.size = this.tv.size >= 10 ? this.tv.size *= 2 : this.tv.size + 1
+      if (this.tv.size > MAX_PAGE_SIZE) this.tv.size = MAX_PAGE_SIZE
+      this.doRefreshDataPage()
+    },
+    // decrease page size
+    doDecreasePage () {
+      if (this.tv.size > 0) {
+        this.tv.size = this.tv.size > 10 ? Math.floor(this.tv.size / 2) : this.tv.size - 1
+      } else {
+        let len = (this.htSettings.rowHeaders.length || 0) > 0 ? this.htSettings.rowHeaders.length : 0
+        if (len <= 1) {
+          this.tv.isDec = false
+          return
+        }
+        // page size unlimited and last row > 0
+        this.tv.size = len > 10 ? Math.floor(len / 2) : len - 1
+      }
+      if (this.tv.size < 1) this.tv.size = 1
+      this.doRefreshDataPage()
+    },
+    // unlimited page size, show all data
+    doUnlimitedPage () {
+      this.tv.start = 0
+      this.tv.size = 0
+      this.doRefreshDataPage()
+    },
+    // reset table view to default
+    doResetView () {
+      this.setDefaultPageView()
+      this.doRefreshDataPage()
+    },
+
+    // update table data from response data page
+    setData (d) {
+      // if response is empty or invalid: clean table
+      let len = (!!d && (d.length || 0) > 0) ? d.length : 0
+      if (!d || len <= 0) {
+        this.htSettings.data = ['none']
         return
       }
-      //
-      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/run/' + (r.Digest || '') + '/parameter/' + this.paramName + '/value'
+
+      // set page data
+      this.htSettings.data = this.makeParamPage(len, d)
+      this.htSettings.rowHeaders = this.makeRowHeaders(len)
+    },
+
+    // make parameter data page, columns are: dimensions, sub-values
+    // each sub-value is a separate row in source rowset
+    makeParamPage (len, d) {
+      const vp = []
+
+      let nowKey = '?'  // non-existent start key to enforce append of the first row
+      let n = 0
+      const nSub0 = this.paramSize.rank // first sub-value position
+
+      for (let i = 0; i < len; i++) {
+        let sk = [d[i].DimIds].toString() // current row key
+
+        if (sk === nowKey) {  // same key: set sub-value at position of sub_id
+          //
+          if (!d[i].IsNull) vp[n][nSub0 + (d[i].SubId || 0)] = d[i].Value
+        } else {
+          // make new row
+          let row = []
+          for (let j = 0; j < this.paramSize.rank; j++) {
+            row.push(
+              this.translateDimEnumId(j, d[i].DimIds[j]) || d[i].DimIds[j]
+            )
+          }
+          for (let j = 0; j < this.subCount; j++) {   // append empty sub-values
+            row.push(void 0)
+          }
+
+          // append new row to page data
+          if (!d[i].IsNull) row[nSub0 + (d[i].SubId || 0)] = d[i].Value // set current sub-value
+          n = vp.length
+          vp.push(row)
+          nowKey = sk
+        }
+      }
+      return vp
+    },
+
+    // make table row headers, each data row can contain multiple table rows.
+    makeRowHeaders (len) {
+      if ((!!len || 0) <= 0) return ['none']
+      const rh = []
+      let n = this.tv.start
+      if (n < 0) n = 0
+      for (let k = 0; k < len; k++) {
+        rh.push(n + k + 1)
+      }
+      return rh
+    },
+
+    // translate dimension enum id to label, it does return enum code if label is empty
+    translateDimEnumId (dimIdx, enumId) {
+      return Mdf.enumDescrOrCodeById(this.dimProp[dimIdx].typeText, enumId)
+    },
+
+    // get page of parameter data from current model run
+    async doRefreshDataPage () {
+      this.loadDone = false
+      this.loadWait = true
+      this.msg = 'Loading...'
+      this.tv.isNext = false
+      this.tv.isPrev = false
+      this.tv.isInc = false
+      this.tv.isDec = false
+
+      // exit if model run: must be found (not found run is empty)
+      if (!Mdf.isNotEmptyRunText(this.theRunText)) {
+        this.msg = 'Model run is not completed'
+        console.log('Model run is not completed (empty)')
+        this.loadWait = false
+        return
+      }
+
+      // make parameter read layout and url
+      let layout = this.makeSelectLayout()
+      let u = this.omppServerUrl +
+        '/api/model/' + (this.digest || '') + '/run/' + (this.theRunText.Digest || '') + '/parameter/value-id'
+
+      // retrieve page from server, it must be: {Layout: {...}, Page: [...]}
       try {
-        const response = await axios.get(u)
-        this.dataPage = response.data
+        const response = await axios.post(u, layout)
+        const rsp = response.data
+        let d = []
+        if (!!rsp && rsp.hasOwnProperty('Page')) {
+          if ((rsp.Page.length || 0) > 0) d = rsp.Page
+        }
+        let lt = {Offset: 0, Size: 0, IsLastPage: true}
+        if (!!rsp && rsp.hasOwnProperty('Layout')) {
+          if ((rsp.Layout.Offset || 0) > 0) lt.Offset = rsp.Layout.Offset || 0
+          if ((rsp.Layout.Size || 0) > 0) lt.Size = rsp.Layout.Size || 0
+          if (rsp.Layout.hasOwnProperty('IsLastPage')) lt.IsLastPage = !!rsp.Layout.IsLastPage
+        }
+
+        // set page view state: is next page exist
+        this.tv.start = Math.floor(lt.Offset / this.subCount)
+        this.tv.isNext = !lt.IsLastPage
+        this.tv.isPrev = lt.Offset > 0
+        this.tv.isInc = this.tv.isNext && this.tv.size < MAX_PAGE_SIZE
+        this.tv.isDec = this.tv.size > 1 || (this.tv.size === 0 && lt.Size > 2 * this.subCount)
+
+        // update table page
+        this.setData(d)
+        this.loadDone = true
       } catch (e) {
+        this.msg = 'Server offline or no models published'
         console.log('Server offline or no run completed')
       }
+      this.loadWait = false
+    },
+
+    // return page layout to read parameter data
+    makeSelectLayout () {
       //
-      const result = []
-      for (let i = 0; i < this.dataPage.length; i++) {
-        let row = []
-        for (let j = 0; j < this.dataPage[i].Dims.length; j++) {
-          row.push(this.dataPage[i].Dims[j])
-        }
-        row.push(this.dataPage[i].SubId, this.dataPage[i].Value)
-        result.push(row)
+      // each sub-value is a separate row
+      let nStart = this.tv.start * this.subCount
+      let nSize = this.tv.size * this.subCount
+      let layout = {
+        Name: this.paramName,
+        Offset: (this.tv.size > 0 ? nStart : 0),
+        Size: (this.tv.size > 0 ? nSize : 0),
+        IsLastPage: true,
+        Filter: [],
+        OrderBy: []
       }
-      this.htSettings.data = result
+
+      // make deafult order by:
+      //   SELECT sub_id, dim0, dim1, value... ORDER BY 2, 3, 1
+      for (let k = 0; k < this.paramSize.rank; k++) {
+        layout.OrderBy.push({IndexOne: k + 2})
+      }
+      layout.OrderBy.push({IndexOne: 1})
+
+      return layout
+    },
+
+    // set default page view parameters
+    setDefaultPageView () {
+      this.tv.start = 0
+      this.tv.size = Math.min(20, this.paramSize.dimTotal)
     }
   },
 
   mounted () {
     this.$emit('tab-mounted', 'parameter', this.paramName)
+
+    // find parameter, parameter type and size, including run sub-values count
     this.paramText = Mdf.paramTextByName(this.theModel, this.paramName)
+    this.paramSize = Mdf.paramSizeByName(this.theModel, this.paramName)
+    this.paramType = Mdf.typeTextById(this.theModel, (this.paramText.Param.TypeId || 0))
+    this.subCount = this.theRunText.SubCount || 0
 
-    let n = Mdf.paramSizeByName(this.theModel, this.paramName)
-    console.log('paramSizeByName', n)
+    // find dimension type for each dimension
+    this.dimProp = []
+    for (let j = 0; j < this.paramSize.rank; j++) {
+      if (this.paramText.ParamDimsTxt[j].hasOwnProperty('Dim')) {
+        let t = Mdf.typeTextById(this.theModel, (this.paramText.ParamDimsTxt[j].Dim.TypeId || 0))
+        this.dimProp.push({
+          name: this.paramText.ParamDimsTxt[j].Dim.Name || '',
+          label: Mdf.descrOfDescrNote(this.paramText.ParamDimsTxt[j]),
+          typeText: t
+        })
+      } else {
+        this.dimProp.push({
+          name: '', label: '', typeText: Mdf.emptyTypeText() })
+      }
+    }
 
+    // set column: header, type and validator
     this.htSettings.columns = []
-    for (let j = 0; j < this.paramText.ParamDimsTxt.length; j++) {
+    for (let j = 0; j < this.paramSize.rank; j++) {
       this.htSettings.columns.push({
         readOnly: true,
-        title: this.paramText.ParamDimsTxt[j].Dim.Name})
+        title: (this.dimProp[j].label || this.dimProp[j].name)})
     }
-    this.htSettings.columns.push(
-      {readOnly: false, type: 'numeric', title: 'SubId'},
-      {readOnly: false, validator: 'numeric', title: 'Value'})
-      // {readOnly: false, title: 'Value'})
+    // single value column or multiple sub-values
+    if (this.subCount <= 1) {
+      this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: 'Value'})
+    } else {
+      for (let j = 0; j < this.subCount; j++) {
+        this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: j.toString()})
+      }
+    }
 
-    // this.htRoot = 'ht-' + this.digest + '-' + this.paramName + '-' + (this.theRunText.Digest || '')
-    this.doDataPage()
-  },
-
-  components: { OmMcwDialog, HotTable }
+    // set columns layout and refresh the data
+    this.setDefaultPageView()
+    this.doRefreshDataPage()
+  }
 }
 </script>
 
@@ -166,24 +469,23 @@ export default {
     white-space: nowrap;
     text-overflow: ellipsis;
     margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
   }
   .ht-container {
     flex: 1 1 auto;
     overflow: auto;
-  }
-
-  /* note dialog, fix handsontable z-index: 101; */
-  #note-dlg {
-    z-index: 201;
+    margin-top: 0.5rem;
   }
 
   /* cell material icon: a link or empty (non-link) */
   .cell-icon {
     vertical-align: middle;
     margin: 0;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   .cell-icon-link {
     @extend .cell-icon;
@@ -196,7 +498,9 @@ export default {
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--text-disabled-on-background;
+    @extend .mdc-theme--primary-light-bg;
+    @extend .mdc-theme--text-primary-on-primary;
+    /* @extend .mdc-theme--text-disabled-on-background; */
   }
 </style>
 

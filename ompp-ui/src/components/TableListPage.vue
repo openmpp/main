@@ -28,36 +28,7 @@
     </ul>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <div v-if="((exprDescrDlg || '') !== '' || (exprNoteDlg || '') !== '')">
-      <br v-if="((textNoteDlg || '') !== '')"/>
-      <div>{{exprDescrDlg}}</div>
-      <div>{{exprNoteDlg}}</div>
-    </div>
-    <br/>
-    <div class="note-table">
-      <div class="note-row">
-        <span class="note-cell mono">Name:</span><span class="note-cell mono">{{nameNoteDlg}}</span>
-      </div>
-      <div v-if="sizeNoteDlg.rank !== 0" class="note-row">
-        <span class="note-cell mono">Dimensions:</span><span class="note-cell mono">{{sizeNoteDlg.dimSize}}</span>
-      </div>
-      <div v-else class="note-row">
-        <span class="note-cell mono">Rank:</span><span class="note-cell mono">{{sizeNoteDlg.rank}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Expressions:</span><span class="note-cell mono">{{sizeNoteDlg.exprCount}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Accumulators:</span><span class="note-cell mono">{{sizeNoteDlg.accCount}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{digestNoteDlg}}</span>
-      </div>
-    </div>
-  </om-mcw-dialog>
+  <table-info-dialog ref="noteDlg" id="table-note-dlg"></table-info-dialog>
 
 </div>
   
@@ -67,9 +38,11 @@
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import { default as Mdf } from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import TableInfoDialog from './TableInfoDialog'
 
 export default {
+  components: { TableInfoDialog },
+
   props: {
     digest: '',
     refreshTickle: false
@@ -77,13 +50,6 @@ export default {
 
   data () {
     return {
-      titleNoteDlg: '',
-      textNoteDlg: '',
-      nameNoteDlg: '',
-      exprDescrDlg: '',
-      exprNoteDlg: '',
-      sizeNoteDlg: Mdf.emptyTableSize(),
-      digestNoteDlg: ''
     }
   },
 
@@ -112,22 +78,13 @@ export default {
 
     // show table info
     showTableInfo (t) {
-      this.titleNoteDlg = t.TableDescr || ''
-      this.textNoteDlg = t.TableNote || ''
-      this.exprDescrDlg = t.ExprDescr || ''
-      this.exprNoteDlg = t.ExprNote || ''
-      this.nameNoteDlg = t.Table.Name
-      this.digestNoteDlg = t.Table.Digest
-      this.sizeNoteDlg = Mdf.tableSizeByName(this.theModel, t.Table.Name)
-      this.$refs.noteDlg.open()
+      this.$refs.noteDlg.showTableInfo(t.Table.Name, 0)
     }
   },
 
   mounted () {
     this.$emit('tab-mounted', 'table-list', '')
-  },
-
-  components: { OmMcwDialog }
+  }
 }
 </script>
 
@@ -173,22 +130,6 @@ export default {
     @extend .note-item;
     cursor: default;
     @extend .mdc-theme--text-disabled-on-background;
-  }
-
-  /* note dialog */
-  .note-table {
-    display: table;
-    margin-top: .5rem;
-  }
-  .note-row {
-    display: table-row;
-  }
-  .note-cell {
-    display: table-cell;
-    white-space: nowrap;
-    &:first-child {
-      padding-right: .5rem;
-    }
   }
 </style>
 

@@ -256,23 +256,37 @@ const ModelCommon = {
     return this.emptyParamText()  // not found
   },
 
+  // return empty parameter size
+  emptyParamSize () {
+    return {rank: 0, dimTotal: 0, dimSize: []}
+  },
+
   // find parameter size by name: number of parameter rows
   paramSizeByName (md, name) {
-    // if this is not a parameter then size =0 else at least =1
+    // if this is not a parameter then size =empty value else rowCount at least =1
+    let ret = this.emptyParamSize()
     const p = this.paramTextByName(md, name)
-    if (!this.isParam(p.Param)) return 0
+    if (!this.isParam(p.Param)) return ret
 
-    // zero rank parameter
-    if (!p.hasOwnProperty('ParamDimsTxt') || !p.ParamDimsTxt.hasOwnProperty('length')) return 1
+    // parameter rank must be same as dimension count
+    if (p.hasOwnProperty('ParamDimsTxt')) {
+      if ((p.Param.Rank || 0) !== (p.ParamDimsTxt.length || 0)) return ret
+      //
+      ret.rank = (p.Param.Rank || 0)
+    }
 
     // multiply all dimension sizes, assume =1 for built-in types
-    let size = 1
+    ret.dimTotal = 1
     for (let k = 0; k < p.ParamDimsTxt.length; k++) {
-      if (!p.ParamDimsTxt[k].hasOwnProperty('Dim')) return 0
+      if (!p.ParamDimsTxt[k].hasOwnProperty('Dim')) {
+        ret = this.emptyParamSize()
+        return ret
+      }
       let n = this.typeEnumSizeById(md, p.ParamDimsTxt[k].Dim.TypeId)
-      if ((n || 0) > 0) size *= n
+      ret.dimSize.push(n || 0)
+      if (ret.dimSize[k] > 0) ret.dimTotal *= ret.dimSize[k]
     }
-    return size
+    return ret
   },
 
   // is model has output table text list and each element is Table
@@ -320,6 +334,11 @@ const ModelCommon = {
     return this.emptyTableText()  // not found
   },
 
+  // return empty table size
+  emptyTableSize () {
+    return {rank: 0, exprCount: 0, accCount: 0, allAccCount: 0, dimTotal: 0, dimSize: []}
+  },
+
   // find output table size by name or empty value
   tableSizeByName (md, name) {
     // if this is not output table then size =empty value
@@ -344,16 +363,14 @@ const ModelCommon = {
     // multiply all dimension sizes, include "total" item, assume =1 for built-in types
     ret.dimTotal = 1
     for (let k = 0; k < t.TableDimsTxt.length; k++) {
-      if (!t.TableDimsTxt[k].hasOwnProperty('Dim')) return 0
+      if (!t.TableDimsTxt[k].hasOwnProperty('Dim')) {
+        ret = this.emptyTableSize()
+        return ret
+      }
       ret.dimSize.push(t.TableDimsTxt[k].Dim.DimSize || 0)
       if (ret.dimSize[k] > 0) ret.dimTotal *= ret.dimSize[k]
     }
     return ret
-  },
-
-  // return empty table size
-  emptyTableSize () {
-    return {rank: 0, exprCount: 0, accCount: 0, allAccCount: 0, dimTotal: 0, dimSize: []}
   },
 
   // if this is run text

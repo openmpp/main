@@ -87,7 +87,7 @@
         <span class="note-cell mono">{{subCountNoteDlg}}<span v-if="!isSucessNoteDlg">&nbsp;&nbsp;completed:&nbsp;{{subCompletedNoteDlg}}</span></span>
       </div>
       <div class="note-row">
-        <span class="note-cell mono">Time:</span>
+        <span class="note-cell mono">Run time:</span>
         <span class="note-cell mono">{{createdNoteDlg}} - {{lastNoteDlg}}<span v-if="timeNoteDlg"> = {{timeNoteDlg}}</span></span>
       </div>
       <div class="note-row">
@@ -487,6 +487,10 @@ export default {
     margin: 0;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   .cell-icon-link {
     @extend .cell-icon;
