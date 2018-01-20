@@ -13,7 +13,7 @@
           :title="p.Param.Name + ' info'"
           :alt="p.Param.Name + ' info'">event_note</span>
         <router-link
-          :to="'/model/' + digest + '/parameter/' + p.Param.Name" 
+          :to="'/model/' + digest + '/' + (runOrSet || '') + '/' + (nameDigest || '') + '/parameter/' + p.Param.Name" 
           class="ahref-next" 
           :title="p.Param.Name"
           :alt="p.Param.Name" 
@@ -37,7 +37,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import { default as ParamInfoDialog } from './ParameterInfoDialog'
 
 export default {
@@ -45,6 +45,8 @@ export default {
 
   props: {
     digest: '',
+    runOrSet: '',
+    nameDigest: '',
     refreshTickle: false
   },
 
@@ -62,7 +64,6 @@ export default {
   },
 
   watch: {
-    // refresh button handler
   },
 
   methods: {

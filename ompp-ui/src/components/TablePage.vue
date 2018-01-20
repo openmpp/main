@@ -50,7 +50,7 @@
   <div v-else class="hdr-row mdc-typography--body2">
     <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
-    <span class="mdc-typography--body2">{{msg}}</span>
+    <span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
   <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
@@ -110,7 +110,7 @@
 import axios from 'axios'
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import TableInfoDialog from './TableInfoDialog'
 import HotTable from '@/vue-handsontable-official/src/HotTable'
 
@@ -130,6 +130,7 @@ export default {
   props: {
     digest: '',
     tableName: '',
+    nameDigest: '',
     refreshTickle: false
   },
 
@@ -148,9 +149,10 @@ export default {
         preventOverflow: 'horizontal',
         renderAllRows: true,
         stretchH: 'all',
-        rowHeaders: true,
         fillHandle: false,
         readOnly: true,
+        rowHeaders: true,
+        rowHeaderWidth: 72,
         colHeaders: [],
         data: []
       },
@@ -174,6 +176,9 @@ export default {
   },
 
   computed: {
+    routeKey () {
+      return [this.digest, this.tableName, this.nameDigest, this.refreshTickle].toString()
+    },
     ...mapGetters({
       theModel: GET.THE_MODEL,
       theRunText: GET.THE_RUN_TEXT,
@@ -183,9 +188,8 @@ export default {
   },
 
   watch: {
-    // parent refresh button handler
-    refreshTickle () {
-      this.doRefreshDataPage()
+    routeKey () {
+      this.refreshView()
     }
   },
 
@@ -447,6 +451,92 @@ export default {
         : ''
     },
 
+    // refresh current page view on mounted or tab switch
+    refreshView () {
+      // find table and table size, including run sub-values count
+      this.tableText = Mdf.tableTextByName(this.theModel, this.tableName)
+      this.tableSize = Mdf.tableSizeByName(this.theModel, this.tableName)
+      this.subCount = this.theRunText.SubCount || 0
+      this.totalEnumLabel = Mdf.wordByCode(this.wordList, Mdf.ALL_WORD_CODE)
+
+      // find dimension type for each dimension
+      this.dimProp = []
+      for (let j = 0; j < this.tableSize.rank; j++) {
+        if (this.tableText.TableDimsTxt[j].hasOwnProperty('Dim')) {
+          let t = Mdf.typeTextById(this.theModel, (this.tableText.TableDimsTxt[j].Dim.TypeId || 0))
+          this.dimProp.push({
+            name: this.tableText.TableDimsTxt[j].Dim.Name || '',
+            label: Mdf.descrOfDescrNote(this.tableText.TableDimsTxt[j]),
+            isTotal: this.tableText.TableDimsTxt[j].Dim.IsTotal,
+            totalId: t.Type.TotalEnumId || 0,
+            typeText: t
+          })
+        } else {
+          this.dimProp.push({
+            name: '', label: '', isTotal: false, totalId: 0, typeText: Mdf.emptyTypeText() })
+        }
+      }
+
+      // expression labels
+      this.exprProp = []
+      for (let j = 0; j < this.tableText.TableExprTxt.length; j++) {
+        if (this.tableText.TableExprTxt[j].hasOwnProperty('Expr')) {
+          this.exprProp.push({
+            name: this.tableText.TableExprTxt[j].Expr.Name || '',
+            label: Mdf.descrOfDescrNote(this.tableText.TableExprTxt[j])
+          })
+        } else {
+          this.exprProp.push({ name: '', label: '' })
+        }
+      }
+
+      // accumultor labels
+      this.accProp = []
+      for (let j = 0; j < this.tableText.TableAccTxt.length; j++) {
+        if (this.tableText.TableAccTxt[j].hasOwnProperty('Acc')) {
+          this.accProp.push({
+            name: this.tableText.TableAccTxt[j].Acc.Name || '',
+            label: Mdf.descrOfDescrNote(this.tableText.TableAccTxt[j])
+          })
+        } else {
+          this.accProp.push({ name: '', label: '' })
+        }
+      }
+
+      // set columns layout and refresh the data
+      this.htRoot = 'ht-t-' + this.digest + '-' + this.nameDigest + '-' + this.tableName
+      this.setDefaultPageView()
+      this.doRefreshDataPage()
+    },
+
+    // set default page view parameters
+    setDefaultPageView () {
+      this.tv.kind = kind.EXPR
+      this.tv.start = 0
+      this.tv.size = Math.min(20, this.tableSize.dimTotal * this.tableSize.exprCount)
+      this.setExprColHeaders()
+    },
+    // column headers for output table expressions
+    setExprColHeaders () {
+      this.htSettings.colHeaders = []
+      for (let j = 0; j < this.tableSize.rank; j++) {
+        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
+      }
+      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
+      this.htSettings.colHeaders.push('Value')          // expression value
+    },
+    // column headers for accumulators or all accumulators veiw
+    setAccColHeaders () {
+      this.htSettings.colHeaders = []
+      for (let j = 0; j < this.tableSize.rank; j++) {
+        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
+      }
+      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
+      for (let j = 0; j < this.subCount; j++) {
+        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
+      }
+    },
+
     // get page of table data from current model run: expressions or accumulators
     async doRefreshDataPage () {
       this.loadDone = false
@@ -457,7 +547,7 @@ export default {
       this.tv.isInc = false
       this.tv.isDec = false
 
-      // exit if model run: must be found (not found run is empty)
+      // exit if model run empty: must be found (not found run is empty)
       if (!Mdf.isNotEmptyRunText(this.theRunText)) {
         this.msg = 'Model run is not completed'
         console.log('Model run is not completed (empty)')
@@ -500,8 +590,8 @@ export default {
         this.setData(d)
         this.loadDone = true
       } catch (e) {
-        this.msg = 'Server offline or no models published'
-        console.log('Server offline or no run completed')
+        this.msg = 'Server offline or output table data not found'
+        console.log('Server offline or output table data not found')
       }
       this.loadWait = false
     },
@@ -539,93 +629,12 @@ export default {
       if (this.tv.kind === kind.ACC) layout.OrderBy.push({IndexOne: 2})
 
       return layout
-    },
-
-    // set default page view parameters
-    setDefaultPageView () {
-      this.tv.kind = kind.EXPR
-      this.tv.start = 0
-      this.tv.size = Math.min(20, this.tableSize.dimTotal * this.tableSize.exprCount)
-      this.setExprColHeaders()
-    },
-    // column headers for output table expressions
-    setExprColHeaders () {
-      this.htSettings.colHeaders = []
-      for (let j = 0; j < this.tableSize.rank; j++) {
-        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
-      }
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
-      this.htSettings.colHeaders.push('Value')          // expression value
-    },
-    // column headers for accumulators or all accumulators veiw
-    setAccColHeaders () {
-      this.htSettings.colHeaders = []
-      for (let j = 0; j < this.tableSize.rank; j++) {
-        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
-      }
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
-      for (let j = 0; j < this.subCount; j++) {
-        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
-      }
     }
   },
 
   mounted () {
+    this.refreshView()
     this.$emit('tab-mounted', 'table', this.tableName)
-
-    // find table and table size, including run sub-values count
-    this.tableText = Mdf.tableTextByName(this.theModel, this.tableName)
-    this.tableSize = Mdf.tableSizeByName(this.theModel, this.tableName)
-    this.subCount = this.theRunText.SubCount || 0
-    this.totalEnumLabel = Mdf.wordByCode(this.wordList, Mdf.ALL_WORD_CODE)
-
-    // find dimension type for each dimension
-    this.dimProp = []
-    for (let j = 0; j < this.tableSize.rank; j++) {
-      if (this.tableText.TableDimsTxt[j].hasOwnProperty('Dim')) {
-        let t = Mdf.typeTextById(this.theModel, (this.tableText.TableDimsTxt[j].Dim.TypeId || 0))
-        this.dimProp.push({
-          name: this.tableText.TableDimsTxt[j].Dim.Name || '',
-          label: Mdf.descrOfDescrNote(this.tableText.TableDimsTxt[j]),
-          isTotal: this.tableText.TableDimsTxt[j].Dim.IsTotal,
-          totalId: t.Type.TotalEnumId || 0,
-          typeText: t
-        })
-      } else {
-        this.dimProp.push({
-          name: '', label: '', isTotal: false, totalId: 0, typeText: Mdf.emptyTypeText() })
-      }
-    }
-
-    // expression labels
-    this.exprProp = []
-    for (let j = 0; j < this.tableText.TableExprTxt.length; j++) {
-      if (this.tableText.TableExprTxt[j].hasOwnProperty('Expr')) {
-        this.exprProp.push({
-          name: this.tableText.TableExprTxt[j].Expr.Name || '',
-          label: Mdf.descrOfDescrNote(this.tableText.TableExprTxt[j])
-        })
-      } else {
-        this.exprProp.push({ name: '', label: '' })
-      }
-    }
-
-    // accumultor labels
-    this.accProp = []
-    for (let j = 0; j < this.tableText.TableAccTxt.length; j++) {
-      if (this.tableText.TableAccTxt[j].hasOwnProperty('Acc')) {
-        this.accProp.push({
-          name: this.tableText.TableAccTxt[j].Acc.Name || '',
-          label: Mdf.descrOfDescrNote(this.tableText.TableAccTxt[j])
-        })
-      } else {
-        this.accProp.push({ name: '', label: '' })
-      }
-    }
-
-    // set columns layout and refresh the data
-    this.setDefaultPageView()
-    this.doRefreshDataPage()
   }
 }
 </script>

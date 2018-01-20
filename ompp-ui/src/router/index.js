@@ -28,12 +28,12 @@ export default new Router({
       props: true,
       children: [
         {
-          path: 'parameter-list',
+          path: ':runOrSet/:nameDigest/parameter-list',
           component: ParameterListPage,
           props: true
         },
         {
-          path: 'table-list',
+          path: 'run/:nameDigest/table-list',
           component: TableListPage,
           props: true
         },
@@ -48,12 +48,12 @@ export default new Router({
           props: true
         },
         {
-          path: 'parameter/:paramName',
+          path: ':runOrSet/:nameDigest/parameter/:paramName',
           component: ParameterPage,
           props: true
         },
         {
-          path: 'table/:tableName',
+          path: 'run/:nameDigest/table/:tableName',
           component: TablePage,
           props: true
         }

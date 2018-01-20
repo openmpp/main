@@ -48,9 +48,9 @@
 
   </div>
   <div v-else class="hdr-row mdc-typography--body2">
-    <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
+    <span class="cell-icon-empty material-icons" aria-hidden="true">refresh</span>
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
-    <span class="mdc-typography--body2">{{msg}}</span>
+    <span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
   <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
@@ -101,7 +101,7 @@
 import axios from 'axios'
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import { default as ParamInfoDialog } from './ParameterInfoDialog'
 import HotTable from '@/vue-handsontable-official/src/HotTable'
 
@@ -116,6 +116,8 @@ export default {
   props: {
     digest: '',
     paramName: '',
+    runOrSet: '',
+    nameDigest: '',
     refreshTickle: false
   },
 
@@ -126,7 +128,9 @@ export default {
       paramText: Mdf.emptyParamText(),
       paramSize: Mdf.emptyParamSize(),
       paramType: Mdf.emptyTypeText(),
+      paramRunSet: Mdf.emptyParamRunSet(),
       subCount: 0,
+      isWsView: false,    // if true then page view is a workset else model run
       htRoot: '',
       htSettings: {
         manualColumnMove: true,
@@ -135,9 +139,10 @@ export default {
         preventOverflow: 'horizontal',
         renderAllRows: true,
         stretchH: 'all',
-        rowHeaders: true,
         fillHandle: false,
         readOnly: true,
+        rowHeaders: true,
+        rowHeaderWidth: 72,
         columns: [],
         data: []
       },
@@ -157,17 +162,20 @@ export default {
   },
 
   computed: {
+    routeKey () {
+      return [this.digest, this.paramName, this.runOrSet, this.nameDigest, this.refreshTickle].toString()
+    },
     ...mapGetters({
       theModel: GET.THE_MODEL,
       theRunText: GET.THE_RUN_TEXT,
+      theWorksetText: GET.THE_WORKSET_TEXT,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },
 
   watch: {
-    // parent refresh button handler
-    refreshTickle () {
-      this.doRefreshDataPage()
+    routeKey () {
+      this.refreshView()
     }
   },
 
@@ -314,6 +322,62 @@ export default {
       return Mdf.enumDescrOrCodeById(this.dimProp[dimIdx].typeText, enumId)
     },
 
+    // refresh current page view on mounted or tab switch
+    refreshView () {
+      // find parameter, parameter type and size, including run sub-values count
+      this.isWsView = ((this.runOrSet || '') === Mdf.SET_OF_RUNSET)
+      this.paramText = Mdf.paramTextByName(this.theModel, this.paramName)
+      this.paramSize = Mdf.paramSizeByName(this.theModel, this.paramName)
+      this.paramType = Mdf.typeTextById(this.theModel, (this.paramText.Param.TypeId || 0))
+      this.paramRunSet = Mdf.paramRunSetByName(
+        this.isWsView ? this.theWorksetText : this.theRunText,
+        this.paramName)
+      this.subCount = this.paramRunSet.SubCount || 0
+
+      // find dimension type for each dimension
+      this.dimProp = []
+      for (let j = 0; j < this.paramSize.rank; j++) {
+        if (this.paramText.ParamDimsTxt[j].hasOwnProperty('Dim')) {
+          let t = Mdf.typeTextById(this.theModel, (this.paramText.ParamDimsTxt[j].Dim.TypeId || 0))
+          this.dimProp.push({
+            name: this.paramText.ParamDimsTxt[j].Dim.Name || '',
+            label: Mdf.descrOfDescrNote(this.paramText.ParamDimsTxt[j]),
+            typeText: t
+          })
+        } else {
+          this.dimProp.push({
+            name: '', label: '', typeText: Mdf.emptyTypeText() })
+        }
+      }
+
+      // set column: header, type and validator
+      this.htSettings.columns = []
+      for (let j = 0; j < this.paramSize.rank; j++) {
+        this.htSettings.columns.push({
+          readOnly: true,
+          title: (this.dimProp[j].label || this.dimProp[j].name)})
+      }
+      // single value column or multiple sub-values
+      if (this.subCount <= 1) {
+        this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: 'Value'})
+      } else {
+        for (let j = 0; j < this.subCount; j++) {
+          this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: j.toString()})
+        }
+      }
+
+      // set columns layout and refresh the data
+      this.htRoot = 'ht-p-' + this.digest + '-' + this.runOrSet + '-' + this.nameDigest + '-' + this.paramName
+      this.setDefaultPageView()
+      this.doRefreshDataPage()
+    },
+
+    // set default page view parameters
+    setDefaultPageView () {
+      this.tv.start = 0
+      this.tv.size = Math.min(20, this.paramSize.dimTotal)
+    },
+
     // get page of parameter data from current model run
     async doRefreshDataPage () {
       this.loadDone = false
@@ -324,10 +388,11 @@ export default {
       this.tv.isInc = false
       this.tv.isDec = false
 
-      // exit if model run: must be found (not found run is empty)
-      if (!Mdf.isNotEmptyRunText(this.theRunText)) {
-        this.msg = 'Model run is not completed'
-        console.log('Model run is not completed (empty)')
+      // exit if parameter not found in model run or workset
+      if (!Mdf.isParamRunSet(this.paramRunSet)) {
+        let m = 'Parameter not found in ' + this.nameDigest
+        this.msg = m
+        console.log(m)
         this.loadWait = false
         return
       }
@@ -335,7 +400,9 @@ export default {
       // make parameter read layout and url
       let layout = this.makeSelectLayout()
       let u = this.omppServerUrl +
-        '/api/model/' + (this.digest || '') + '/run/' + (this.theRunText.Digest || '') + '/parameter/value-id'
+        '/api/model/' + (this.digest || '') +
+        (this.isWsView ? '/workset/' : '/run/') + (this.nameDigest || '') +
+        '/parameter/value-id'
 
       // retrieve page from server, it must be: {Layout: {...}, Page: [...]}
       try {
@@ -363,8 +430,8 @@ export default {
         this.setData(d)
         this.loadDone = true
       } catch (e) {
-        this.msg = 'Server offline or no models published'
-        console.log('Server offline or no run completed')
+        this.msg = 'Server offline or parameter data not found'
+        console.log('Server offline or parameter data not found')
       }
       this.loadWait = false
     },
@@ -392,59 +459,12 @@ export default {
       layout.OrderBy.push({IndexOne: 1})
 
       return layout
-    },
-
-    // set default page view parameters
-    setDefaultPageView () {
-      this.tv.start = 0
-      this.tv.size = Math.min(20, this.paramSize.dimTotal)
     }
   },
 
   mounted () {
+    this.refreshView()
     this.$emit('tab-mounted', 'parameter', this.paramName)
-
-    // find parameter, parameter type and size, including run sub-values count
-    this.paramText = Mdf.paramTextByName(this.theModel, this.paramName)
-    this.paramSize = Mdf.paramSizeByName(this.theModel, this.paramName)
-    this.paramType = Mdf.typeTextById(this.theModel, (this.paramText.Param.TypeId || 0))
-    this.subCount = this.theRunText.SubCount || 0
-
-    // find dimension type for each dimension
-    this.dimProp = []
-    for (let j = 0; j < this.paramSize.rank; j++) {
-      if (this.paramText.ParamDimsTxt[j].hasOwnProperty('Dim')) {
-        let t = Mdf.typeTextById(this.theModel, (this.paramText.ParamDimsTxt[j].Dim.TypeId || 0))
-        this.dimProp.push({
-          name: this.paramText.ParamDimsTxt[j].Dim.Name || '',
-          label: Mdf.descrOfDescrNote(this.paramText.ParamDimsTxt[j]),
-          typeText: t
-        })
-      } else {
-        this.dimProp.push({
-          name: '', label: '', typeText: Mdf.emptyTypeText() })
-      }
-    }
-
-    // set column: header, type and validator
-    this.htSettings.columns = []
-    for (let j = 0; j < this.paramSize.rank; j++) {
-      this.htSettings.columns.push({
-        readOnly: true,
-        title: (this.dimProp[j].label || this.dimProp[j].name)})
-    }
-    // single value column or multiple sub-values
-    if (this.subCount <= 1) {
-      this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: 'Value'})
-    } else {
-      for (let j = 0; j < this.subCount; j++) {
-        this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: j.toString()})
-      }
-    }
-
-    // set columns layout and refresh the data
-    this.setDefaultPageView()
-    this.doRefreshDataPage()
   }
 }
 </script>

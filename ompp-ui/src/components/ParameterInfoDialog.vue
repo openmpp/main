@@ -32,7 +32,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import OmMcwDialog from './OmMcwDialog'
 
 export default {

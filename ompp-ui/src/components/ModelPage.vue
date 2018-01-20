@@ -4,38 +4,57 @@
 
   <div class="hdr-row mdc-typography--body1">
 
-    <span v-if="loadRunDone" class="hdr-text">
-      <span v-if="isNotEmptyTheRun" 
-          @click="showRunInfo()" 
-          class="cell-icon-link material-icons" alt="Model run info" title="Model run info">
-            <span v-if="isSuccessTheRun">directions_run</span>
-            <span v-else>priority_high</span>
+    <span v-if="loadDone">
+      <span v-if="!isWsView" 
+        @click="showRunInfoDlg()" 
+        class="cell-icon-link material-icons"
+        alt="Description and notes" title="Description and notes">
+          <span v-if="isSuccessTheRun">event_note</span>
+          <span v-else>priority_high</span>
         </span>
-        <span v-else 
-          class="cell-icon-empty material-icons" 
-          title="Model run info not available" alt="Model run info not available" aria-hidden="true">directions_run</span>
-      <span v-if="isNotEmptyTheRun">
-        <span v-if="!isSuccessTheRun" class="cell-status mdc-typography--body2">{{statusOfTheRun}}</span>
-        <span class="mono">{{lastTimeOfTheRun}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfTheRun}}</span>
-        <span>{{ descrOfTheRun }}</span>
+      <span v-else 
+        @click="showWsInfoDlg()" 
+        class="cell-icon-link material-icons"
+        alt="Description and notes" title="Description and notes">event_note</span>
+    </span>
+    <span v-else 
+      class="cell-icon-empty material-icons" 
+      title="Information not available" alt="Information not available" aria-hidden="true">event_note</span>
+
+    <span v-if="loadDone" class="hdr-text">
+      <span v-if="isNotEmptyHdr">
+        <span v-if="!isWsView && !isSuccessTheRun" class="cell-status mdc-typography--body2">{{statusOfTheRun}}</span>
+        <span class="mono">{{lastTimeOfHdr}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfHdr}}</span>
+        <span>{{ descrOfHdr }}</span>
       </span>
       <span v-else>
-        <span class="mdc-typography--body2">No model run results</span>
+        <span class="mdc-typography--body2">{{emptyHdrMsg}}</span>
       </span>
     </span>
     
     <span class="hdr-text mdc-typography--body2">
-      <span v-if="!loadRunDone" class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
       <refresh-model
         :digest="digest"
         :refresh-tickle="refreshTickle"
         @done="doneModelLoad" @wait="()=>{}">
       </refresh-model>
+      <refresh-run v-if="(runDigest || '') !== ''"
+        :model-digest="digest"
+        :run-digest="runDigest"
+        :refresh-tickle="refreshTickle"
+        @done="doneRunLoad" @wait="()=>{}">
+      </refresh-run>
       <refresh-run-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
         @done="doneRunListLoad" @wait="()=>{}">
       </refresh-run-list>
+      <refresh-workset v-if="(wsName || '') !== ''"
+        :model-digest="digest"
+        :workset-name="wsName"
+        :refresh-tickle="refreshTickle"
+        @done="doneWsLoad" @wait="()=>{}">
+      </refresh-workset>
       <refresh-workset-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
@@ -69,32 +88,15 @@
   </nav>
   
   <main class="main-container">
-    <router-view :refresh-tickle="refreshTickle" @tab-mounted="doTabMounted"></router-view>
+    <router-view
+      :refresh-tickle="refreshTickle"
+      @tab-mounted="doTabMounted"
+      @run-select="doRunSelect"
+      @workset-select="doWsSelect"></router-view>
   </main>
 
-  <om-mcw-dialog ref="theRunNoteDlg" id="the-run-note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <div class="note-table">
-      <div class="note-row">
-        <span class="note-cell mono">Run name:</span><span class="note-cell mono">{{nameNoteDlg}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Status:</span><span class="note-cell mono">{{statusNoteDlg}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Sub-values:</span>
-        <span class="note-cell mono">{{subCountNoteDlg}}<span v-if="!isSucessNoteDlg">&nbsp;&nbsp;completed:&nbsp;{{subCompletedNoteDlg}}</span></span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Run time:</span>
-        <span class="note-cell mono">{{createdNoteDlg}} - {{lastNoteDlg}}<span v-if="timeNoteDlg"> = {{timeNoteDlg}}</span></span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{digestNoteDlg}}</span>
-      </div>
-    </div>
-  </om-mcw-dialog>
+  <run-info-dialog ref="theRunInfoDlg" id="the-run-info-dlg"></run-info-dialog>
+  <workset-info-dialog ref="theWsInfoDlg" id="the-ws-info-dlg"></workset-info-dialog>
 
 </div>
   
@@ -103,15 +105,20 @@
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import OmMcwButton from './OmMcwButton'
-import OmMcwDialog from './OmMcwDialog'
 import RefreshModel from './RefreshModel'
+import RefreshRun from './RefreshRun'
 import RefreshRunList from './RefreshRunList'
+import RefreshWorkset from './RefreshWorkset'
 import RefreshWorksetList from './RefreshWorksetList'
+import RunInfoDialog from './RunInfoDialog'
+import WorksetInfoDialog from './WorksetInfoDialog'
 
 export default {
-  components: { OmMcwButton, OmMcwDialog, RefreshModel, RefreshRunList, RefreshWorksetList },
+  components: {
+    OmMcwButton, RunInfoDialog, WorksetInfoDialog, RefreshModel, RefreshRun, RefreshRunList, RefreshWorkset, RefreshWorksetList
+  },
 
   props: {
     digest: '',
@@ -122,40 +129,47 @@ export default {
     return {
       loadModelDone: false,
       loadRunDone: false,
+      loadRunListDone: false,
       loadWsDone: false,
+      loadWsListDone: false,
       mountedDone: false,
+      runDigest: '',
+      wsName: '',
+      isWsView: false,    // if true then page view is a workset else run
       tabCount: 0,
-      tabLst: [],
-      titleNoteDlg: '',
-      textNoteDlg: '',
-      nameNoteDlg: '',
-      statusNoteDlg: '',
-      isSucessNoteDlg: false,
-      subCountNoteDlg: 0,
-      subCompletedNoteDlg: 0,
-      createdNoteDlg: '',
-      lastNoteDlg: '',
-      timeNoteDlg: '',
-      digestNoteDlg: ''
+      tabLst: []
     }
   },
 
   computed: {
-    modelTabReady () { return this.loadModelDone && this.mountedDone },
-    runTabReady () { return this.loadModelDone && this.loadRunDone && this.mountedDone },
-    worksetTabReady () { return this.loadModelDone && this.loadWsDone && this.mountedDone },
-
-    isNotEmptyTheRun () { return Mdf.isNotEmptyRunText(this.theRunText) },
-    isSuccessTheRun () { return (this.theRunText.Status || '') === 's' },
-    lastTimeOfTheRun () { return Mdf.dtStr(this.theRunText.UpdateDateTime) },
-    statusOfTheRun () { return this.statusOfRun(this.theRunText) },
-    nameOfTheRun () { return (this.theRunText.Name || '') },
-    descrOfTheRun () { return Mdf.descrOfTxt(this.theRunText) },
+    loadDone () {
+      return this.mountedDone &&
+        this.loadModelDone && this.loadRunDone && this.loadRunListDone && this.loadWsDone && this.loadWsListDone
+    },
+    isSuccessTheRun () { return Mdf.isRunSuccess(this.theRunText) },
+    currentRunSetKey () { return [this.runDigest, this.wsName, this.isWsView].toString() },
+    // view header line
+    isNotEmptyHdr () {
+      return this.isWsView ? Mdf.isNotEmptyWorksetText(this.theWorksetText) : Mdf.isNotEmptyRunText(this.theRunText)
+    },
+    lastTimeOfHdr () {
+      return this.isWsView ? Mdf.dtStr(this.theWorksetText.UpdateDateTime) : Mdf.dtStr(this.theRunText.UpdateDateTime)
+    },
+    nameOfHdr () {
+      return this.isWsView ? (this.theWorksetText.Name || '') : (this.theRunText.Name || '')
+    },
+    descrOfHdr () {
+      return this.isWsView ? Mdf.descrOfTxt(this.theWorksetText) : Mdf.descrOfTxt(this.theRunText)
+    },
+    emptyHdrMsg () {
+      return this.isWsView ? 'No input set of parameters found' : 'No model run results'
+    },
 
     ...mapGetters({
       theModel: GET.THE_MODEL,
       theRunText: GET.THE_RUN_TEXT,
       runTextList: GET.RUN_TEXT_LIST,
+      theWorksetText: GET.THE_WORKSET_TEXT,
       worksetTextList: GET.WORKSET_TEXT_LIST
     })
   },
@@ -165,78 +179,86 @@ export default {
     refreshTickle () {
       this.loadModelDone = false
       this.loadRunDone = false
+      this.loadRunListDone = false
       this.loadWsDone = false
+      this.loadWsListDone = false
     },
 
     // add tabs if data ready and component mounted
-    modelTabReady () {
-      if (this.modelTabReady) {
+    loadDone () {
+      if (this.loadDone) {
         this.doTabAdd(false, false, 'parameter-list')
-        this.doTabAdd(false, false, 'table-list')
-        this.doTabHeaderRefresh()
-      }
-    },
-    runTabReady () {
-      if (this.runTabReady) {
-        this.doTabAdd(false, false, 'run-list')
-        this.doTabHeaderRefresh()
-      }
-    },
-    worksetTabReady () {
-      if (this.worksetTabReady) {
+        if (this.isSuccessTheRun) {
+          this.doTabAdd(false, false, 'table-list')
+          this.doTabAdd(false, false, 'run-list')
+        }
         this.doTabAdd(false, false, 'workset-list')
         this.doTabHeaderRefresh()
+      }
+    },
+
+    // change of selected run or workset
+    currentRunSetKey () {
+      if (this.loadDone) {
+        this.doTabPathRefresh()
       }
     }
   },
 
   methods: {
     // reload event handlers: async get the model, runs and worksets
-    doneModelLoad () { this.loadModelDone = true },
-    doneRunListLoad () { this.loadRunDone = true },
-    doneWsListLoad () { this.loadWsDone = true },
-
-    // return run status by code: i=init p=progress s=success x=exit e=error(failed)
-    statusOfRun (rt) {
-      switch (rt.Status || '') {
-        case 's': return 'success'
-        case 'p': return 'in progress'
-        case 'i': return 'not yet started'
-        case 'e': return 'failed'
-        case 'x': return 'exit (not completed)'
+    doneModelLoad (isSuccess) { this.loadModelDone = true },
+    doneRunLoad (isSuccess) {
+      this.loadRunDone = true
+      this.isWsView = !isSuccess
+    },
+    doneRunListLoad (isSuccess) {
+      this.loadRunListDone = true
+      let ok = !!isSuccess
+      if (ok) {
+        this.runDigest = this.theRunText.Digest
+      } else {
+        this.isWsView = true
+        this.loadRunDone = true   // do not refresh run: run list empty
       }
-      return 'unknown'
+    },
+    doneWsLoad (isSuccess) { this.loadWsDone = true },
+    doneWsListLoad (isSuccess) {
+      this.loadWsListDone = true
+      let ok = !!isSuccess
+      if (ok) {
+        this.wsName = this.theWorksetText.Name
+      } else {
+        this.loadWsDone = true  // do not refresh workset: workset list empty
+      }
     },
 
-    // show run info
-    showRunInfo () {
-      let rt = this.theRunText
-      this.titleNoteDlg = this.descrOfTheRun
-      this.textNoteDlg = Mdf.noteOfTxt(rt)
-      this.nameNoteDlg = this.nameOfTheRun
-      this.digestNoteDlg = rt.Digest
-      this.statusNoteDlg = this.statusOfTheRun
-      this.isSucessNoteDlg = this.isSuccessTheRun
-      this.subCountNoteDlg = (rt.SubCount || 0)
-      this.subCompletedNoteDlg = (rt.SubCompleted || 0)
-      this.createdNoteDlg = Mdf.dtStr(rt.CreateDateTime)
-      this.lastNoteDlg = this.lastTimeOfTheRun
-      this.timeNoteDlg = ''
-
-      let start = Date.parse(this.createdNoteDlg)
-      let stop = Date.parse(this.lastNoteDlg)
-      if (start && stop) {
-        let s = Math.floor((stop - start) / 1000) % 60
-        let m = Math.floor((stop - start) / (60 * 1000)) % 60
-        let h = Math.floor((stop - start) / (60 * 60 * 1000)) % 24
-        let d = Math.floor((stop - start) / (24 * 60 * 60 * 1000))
-        this.timeNoteDlg =
-          ((d > 0) ? d.toString() + 'd ' : '') +
-          ('00' + h.toString()).slice(-2) + ':' +
-          ('00' + m.toString()).slice(-2) + ':' +
-          ('00' + s.toString()).slice(-2)
+    // run selected from the list: reload run info
+    doRunSelect (dgst) {
+      if ((dgst || '') === '') {
+        console.log('run digest is empty')
+        return
       }
-      this.$refs.theRunNoteDlg.open()
+      this.runDigest = dgst
+      this.isWsView = false
+    },
+    // workset selected from the list: reload workset info
+    doWsSelect (name) {
+      if ((name || '') === '') {
+        console.log('workset name is empty')
+        return
+      }
+      this.wsName = name
+      this.isWsView = true
+    },
+
+    // show currently selected run info
+    showRunInfoDlg () {
+      this.$refs.theRunInfoDlg.showRunInfo(this.theRunText)
+    },
+    // show currently selected workset info
+    showWsInfoDlg () {
+      this.$refs.theWsInfoDlg.showWsInfo(this.theWorksetText)
     },
 
     // tab mounted: handle tabs mounted by direct link
@@ -250,6 +272,7 @@ export default {
 
     // click on tab link: activate that tab
     doTabLink (tabId, isRoute = false, path = '') {
+      //
       for (let k = 0; k < this.tabLst.length; k++) {
         this.tabLst[k].active = this.tabLst[k].id === tabId
       }
@@ -291,6 +314,16 @@ export default {
       }
     },
 
+    // update all tab route paths
+    doTabPathRefresh () {
+      for (let k = 0; k < this.tabLst.length; k++) {
+        const ti = this.makeTabInfo(this.tabLst[k].kind, this.tabLst[k].dn)
+        if ((ti.path || '') !== '' && (ti.path || '') !== this.tabLst[k].path) {
+          this.tabLst[k].path = ti.path
+        }
+      }
+    },
+
     // if tab not exist then add new tab and make it active else activate existing tab
     doTabAdd (isActivate, isRoute, kind, dn = '') {
       // make tab key path and title
@@ -317,7 +350,7 @@ export default {
         kind: kind,
         dn: (dn || ''),
         key: (ti.key || ''),
-        path: '/model/' + this.digest + '/' + (ti.path || ''),
+        path: (ti.path || ''),
         active: false,
         title: (ti.title || '')
       }
@@ -340,29 +373,35 @@ export default {
         return this.emptyTabInfo()
       }
 
+      // path to current model and to current run or workset
+      let mp = '/model/' + this.digest
+      let rdn = (this.theRunText.Digest || '') !== '' ? (this.theRunText.Digest || '') : (this.theRunText.Name || '')
+      let rwp = '/' +
+        (this.isWsView ? Mdf.SET_OF_RUNSET + '/' + (this.theWorksetText.Name || '') : Mdf.RUN_OF_RUNSET + '/' + rdn)
+
       switch (kind) {
         case 'parameter-list':
           return {
             key: 'pl-' + this.digest,
-            path: 'parameter-list',
+            path: mp + rwp + '/parameter-list',
             title: 'Parameters: ' + Mdf.paramCount(this.theModel).toString()
           }
         case 'table-list':
           return {
             key: 'tl-' + this.digest,
-            path: 'table-list',
+            path: mp + '/run/' + rdn + '/table-list',
             title: 'Output tables: ' + Mdf.outTableCount(this.theModel).toString()
           }
         case 'run-list':
           return {
             key: 'rtl-' + this.digest,
-            path: 'run-list',
+            path: mp + '/run-list',
             title: 'Model runs: ' + Mdf.runTextCount(this.runTextList).toString()
           }
         case 'workset-list':
           return {
             key: 'wtl-' + this.digest,
-            path: 'workset-list',
+            path: mp + '/workset-list',
             title: 'Input sets: ' + Mdf.worksetTextCount(this.worksetTextList).toString()
           }
         case 'parameter':
@@ -370,7 +409,7 @@ export default {
           let pds = Mdf.descrOfDescrNote(pt)
           return {
             key: 'p-' + this.digest + '-' + (dn || ''),
-            path: 'parameter/' + (dn || ''),
+            path: mp + rwp + '/parameter/' + (dn || ''),
             title: (pds !== '') ? pds : (dn || '')
           }
         case 'table':
@@ -378,7 +417,7 @@ export default {
           let tds = Mdf.descrOfDescrNote(tt)
           return {
             key: 't-' + this.digest + '-' + (dn || ''),
-            path: 'table/' + (dn || ''),
+            path: mp + '/run/' + rdn + '/table/' + (dn || ''),
             title: (tds !== '') ? tds : (dn || '')
           }
       }
@@ -401,7 +440,7 @@ export default {
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
-
+  
   /* page and tab container content body */
   .main-container {
     height: 100%;
@@ -466,6 +505,7 @@ export default {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin-left: .5rem;
   }
   /*
   .hdr-table {
@@ -485,8 +525,6 @@ export default {
   .cell-icon {
     vertical-align: middle;
     margin: 0;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;

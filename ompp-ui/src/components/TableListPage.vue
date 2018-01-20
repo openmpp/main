@@ -13,7 +13,7 @@
           :title="t.Table.Name + ' notes'"
           :alt="t.Table.Name + ' notes'">event_note</span>
         <router-link
-          :to="'/model/' + digest + '/table/' + t.Table.Name" 
+          :to="'/model/' + digest + '/run/' + (nameDigest || '') + '/table/' + t.Table.Name" 
           class="ahref-next" 
           :title="t.Table.Name"
           :alt="t.Table.Name" 
@@ -37,7 +37,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import TableInfoDialog from './TableInfoDialog'
 
 export default {
@@ -45,6 +45,7 @@ export default {
 
   props: {
     digest: '',
+    nameDigest: '',
     refreshTickle: false
   },
 
@@ -62,7 +63,6 @@ export default {
   },
 
   watch: {
-    // refresh button handler
   },
 
   methods: {

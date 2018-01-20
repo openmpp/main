@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 
 Vue.use(Vuex)
 
@@ -20,35 +20,39 @@ export const GET = {
 
 // exported actions names
 export const SET = {
-  UI_LANG: 'uiLang',
-  WORD_LIST: 'wordList',
-  MODEL_LIST: 'modelList',
-  THE_MODEL: 'theModel',
-  EMPTY_MODEL: 'emptyModel',
-  EMPTY_MODEL_LIST: 'emptyModelList',
-  THE_RUN_TEXT_BY_IDX: 'theRunTextByIdx',
-  RUN_TEXT_LIST: 'runTextList',
-  EMPTY_RUN_TEXT_LIST: 'emptyRunTextList',
-  THE_WORKSET_TEXT_BY_IDX: 'theWorksetTextByIdx',
-  WORKSET_TEXT_LIST: 'worksetTextList',
-  EMPTY_WORKSET_TEXT_LIST: 'emptyWorksetTextList'
+  UI_LANG: 'setUiLang',
+  WORD_LIST: 'setWordList',
+  MODEL_LIST: 'setModelList',
+  THE_MODEL: 'setModel',
+  EMPTY_MODEL: 'setEmptyModel',
+  EMPTY_MODEL_LIST: 'setEmptyModelList',
+  THE_RUN_TEXT: 'setRunText',
+  THE_RUN_TEXT_BY_IDX: 'setRunTextByIdx',
+  RUN_TEXT_LIST: 'setRunTextList',
+  EMPTY_RUN_TEXT_LIST: 'setEmptyRunTextList',
+  THE_WORKSET_TEXT: 'setWorksetText',
+  THE_WORKSET_TEXT_BY_IDX: 'setWorksetTextByIdx',
+  WORKSET_TEXT_LIST: 'setWorksetTextList',
+  EMPTY_WORKSET_TEXT_LIST: 'setEmptyWorksetTextList'
 }
 
 // internal mutations names
 const UPDATE = {
-  UI_LANG: 'uiLang',
-  WORD_LIST: 'wordList',
-  WORD_LIST_ON_NEW: 'wordListOnNew',
-  MODEL_LIST: 'modelList',
-  THE_MODEL: 'theModel',
-  THE_RUN_TEXT_ON_NEW: 'theRunTextOnNew',
-  THE_RUN_TEXT_BY_IDX: 'theRunTextByIdx',
-  RUN_TEXT_LIST: 'runTextList',
-  RUN_TEXT_LIST_ON_NEW: 'runTextListOnNew',
-  THE_WORKSET_TEXT_ON_NEW: 'theWorksetTextOnNew',
-  THE_WORKSET_TEXT_BY_IDX: 'theWorksetTextByIdx',
-  WORKSET_TEXT_LIST: 'worksetTextList',
-  WORKSET_TEXT_LIST_ON_NEW: 'worksetTextListOnNew'
+  UI_LANG: 'updUiLang',
+  WORD_LIST: 'updWordList',
+  WORD_LIST_ON_NEW: 'updWordListOnNew',
+  MODEL_LIST: 'updModelList',
+  THE_MODEL: 'updModel',
+  THE_RUN_TEXT: 'updRunText',
+  THE_RUN_TEXT_ON_NEW: 'updRunTextOnNew',
+  THE_RUN_TEXT_BY_IDX: 'updRunTextByIdx',
+  RUN_TEXT_LIST: 'updRunTextList',
+  RUN_TEXT_LIST_ON_NEW: 'updRunTextListOnNew',
+  THE_WORKSET_TEXT: 'updWorksetText',
+  THE_WORKSET_TEXT_ON_NEW: 'updWorksetTextOnNew',
+  THE_WORKSET_TEXT_BY_IDX: 'updWorksetTextByIdx',
+  WORKSET_TEXT_LIST: 'updWorksetTextList',
+  WORKSET_TEXT_LIST_ON_NEW: 'updWorksetTextListOnNew'
 }
 
 // store state: model
@@ -70,10 +74,10 @@ const getters = {
   [GET.THE_MODEL]: state => state.theModel,
   [GET.MODEL_LIST]: state => state.modelList,
   [GET.MODEL_LIST_COUNT]: state => state.modelList.length,
-  [GET.THE_RUN_TEXT]: state => state.theRunText,
   [GET.RUN_TEXT_LIST]: state => state.runTextList,
-  [GET.THE_WORKSET_TEXT]: state => state.theWorksetText,
+  [GET.THE_RUN_TEXT]: state => state.theRunText,
   [GET.WORKSET_TEXT_LIST]: state => state.worksetTextList,
+  [GET.THE_WORKSET_TEXT]: state => state.theWorksetText,
   [GET.OMPP_SRV_URL]: state => (process.env.OMPP_SRV_URL_ENV || '')
 }
 
@@ -125,12 +129,31 @@ const mutations = {
     }
   },
 
+  // set current run
+  [UPDATE.THE_RUN_TEXT] (state, rt) {
+    state.theRunText = Mdf.isRunText(rt) ? rt : Mdf.emptyRunText()
+  },
+
   // set current run by index in run list or empty if index out of range
   [UPDATE.THE_RUN_TEXT_BY_IDX] (state, idx) {
-    state.theRunText =
-      (idx >= 0 && idx < state.runTextList.length)
-      ? JSON.parse(JSON.stringify(state.runTextList[idx]))
-      : Mdf.emptyRunText()
+    // if index out of range then set current run to empty value
+    if (idx < 0 && idx >= state.runTextList.length) {
+      state.theRunText = Mdf.emptyRunText()
+      return
+    }
+    // if current run same as index run then do nothing
+    if (Mdf.isNotEmptyRunText(state.theRunText) &&
+      state.theRunText.ModelDigest === state.runTextList[idx].ModelDigest &&
+      state.theRunText.Name === state.runTextList[idx].Name &&
+      state.theRunText.Digest === state.runTextList[idx].Digest &&
+      state.theRunText.Status === state.runTextList[idx].Status &&
+      state.theRunText.SubCount === state.runTextList[idx].SubCount &&
+      (state.theRunText.CreateDateTime || '') === (state.runTextList[idx].CreateDateTime || '') &&
+      (state.theRunText.UpdateDateTime || '') === (state.runTextList[idx].UpdateDateTime || '')) {
+      return  // same workset
+    }
+    // update current run to run at the index
+    state.theRunText = JSON.parse(JSON.stringify(state.runTextList[idx]))
   },
 
   // assign new value to run list, if (rl) is a model run text list
@@ -159,12 +182,26 @@ const mutations = {
     }
   },
 
+  // set current workset
+  [UPDATE.THE_WORKSET_TEXT] (state, wt) {
+    state.theWorksetText = Mdf.isWorksetText(wt) ? wt : Mdf.emptyWorksetText()
+  },
+
   // set current workset by index in workset list or empty if index out of range
   [UPDATE.THE_WORKSET_TEXT_BY_IDX] (state, idx) {
-    state.theWorksetText =
-      (idx >= 0 && idx < state.worksetTextList.length)
-      ? JSON.parse(JSON.stringify(state.worksetTextList[idx]))
-      : Mdf.emptyWorksetText()
+    // if index out of range then set current workset to empty value
+    if (idx < 0 && idx >= state.worksetTextList.length) {
+      state.theWorksetText = Mdf.emptyWorksetText()
+      return
+    }
+    // if current workset same as index workset then do nothing
+    if (Mdf.isNotEmptyWorksetText(state.theWorksetText) &&
+      state.theWorksetText.ModelDigest === state.worksetTextList[idx].ModelDigest &&
+      state.theWorksetText.Name === state.worksetTextList[idx].Name) {
+      return  // same workset
+    }
+    // update current workset to workset at the index
+    state.theWorksetText = JSON.parse(JSON.stringify(state.worksetTextList[idx]))
   },
 
   // assign new value to workset list, if (wtl) is a model run list
@@ -221,6 +258,11 @@ const actions = {
     dispatch(SET.MODEL_LIST, [])
   },
 
+  // set current run
+  [SET.THE_RUN_TEXT] ({ commit, dispatch }, rt) {
+    commit(UPDATE.THE_RUN_TEXT, rt)
+  },
+
   // set current run by index in run list or empty if index out of range
   [SET.THE_RUN_TEXT_BY_IDX] ({ commit, dispatch }, idx) {
     commit(UPDATE.THE_RUN_TEXT_BY_IDX, idx)
@@ -237,14 +279,19 @@ const actions = {
     dispatch(SET.RUN_TEXT_LIST, [])
   },
 
+  // set current workset
+  [SET.THE_WORKSET_TEXT] ({ commit, dispatch }, wt) {
+    commit(UPDATE.THE_WORKSET_TEXT, wt)
+  },
+
   // set current workset by index in workset list or empty if index out of range
   [SET.THE_WORKSET_TEXT_BY_IDX] ({ commit, dispatch }, idx) {
     commit(UPDATE.THE_WORKSET_TEXT_BY_IDX, idx)
   },
 
-  // set new value to workset list
   [SET.WORKSET_TEXT_LIST] ({ commit, dispatch }, wl) {
     commit(UPDATE.WORKSET_TEXT_LIST, wl)
+    commit(UPDATE.THE_WORKSET_TEXT_BY_IDX, 0)
   },
 
   // clear workset list: set to empty value
