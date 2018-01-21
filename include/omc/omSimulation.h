@@ -28,7 +28,6 @@
 #include "omc/Entity.h"
 #include "omc/Attribute.h"
 #include "omc/AssignableAttribute.h"
-#include "omc/IdentityAttribute.h"
 #include "omc/DurationAttribute.h"
 #include "omc/LinkAttribute.h"
 #include "omc/Event.h"
