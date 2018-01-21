@@ -158,16 +158,17 @@ void MultilinkAttributeSymbol::post_parse(int pass)
                 c += "{";
                 c += "auto lnk = " + rlink + ".get();";
                 c += "if (lnk.get() != nullptr) {";
+                string typ = pp_data_type->name; // C++ type of the multilink attribute, e.g. 'int', 'double'
                 if (func == token::TK_sum_over) {
                     c += "lnk->" + name + ".set(lnk->" + name + " + om_new - om_old);";
                 }
                 else if (func == token::TK_min_over) {
-                    c += "auto current = lnk->" + name + ";";
+                    c += typ + " current = lnk->" + name + ";";
                     c += "if (om_new < current) lnk->" + name +".set(om_new);";
                     c += "else if (om_old == current && om_new > current) lnk->" + evaluate_fn->name + "();";
                 }
                 else if (func == token::TK_max_over) {
-                    c += "auto current = lnk->" + name + ";";
+                    c += typ + " current = lnk->" + name + ";";
                     c += "if (om_new > current) lnk->" + name +".set(om_new);";
                     c += "else if (om_old == current && om_new < current) lnk->" + evaluate_fn->name + "();";
                 }
@@ -187,16 +188,17 @@ void MultilinkAttributeSymbol::post_parse(int pass)
                 c += "// Incremental update of multilink agentvar " + name + " for each agent of multilink";
                 c += "for (auto &lnk : " + rlink + ".storage) {";
                 c += "if (lnk.get() != nullptr) {";
+                string typ = pp_data_type->name; // C++ type of the multilink attribute, e.g. 'int', 'double'
                 if (func == token::TK_sum_over) {
                     c += "lnk->" + name + ".set(lnk->" + name + " + om_new - om_old);";
                 }
                 else if (func == token::TK_min_over) {
-                    c += "auto current = lnk->" + name + ";";
+                    c += typ + " current = lnk->" + name + ";";
                     c += "if (om_new < current) lnk->" + name +".set(om_new);";
                     c += "else if (om_old == current && om_new > current) lnk->" + evaluate_fn->name + "();";
                 }
                 else if (func == token::TK_max_over) {
-                    c += "auto current = lnk->" + name + ";";
+                    c += typ + " current = lnk->" + name + ";";
                     c += "if (om_new > current) lnk->" + name +".set(om_new);";
                     c += "else if (om_old == current && om_new < current) lnk->" + evaluate_fn->name + "();";
                 }
