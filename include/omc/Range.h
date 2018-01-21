@@ -196,6 +196,13 @@ public:
         else return val;
     }
 
+    // bound a quantity to the limits of a range, with 'long long' argument returning 'long long' result
+    static long long bound(long long val)
+    {
+        if (val < min) return min;
+        if (val > max) return max;
+        else return val;
+    }
 
     // return a integer_counter object for iterating indices of this range
     static integer_counter<int, 0, T_max - T_min> indices()
