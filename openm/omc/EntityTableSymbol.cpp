@@ -664,7 +664,7 @@ void EntityTableSymbol::build_body_push_increment()
             c += "dIncrement = value_in != 0 ? 1.0 : 0.0;";
             break;
         case token::TK_value_in2:
-            c += "dIncrement = value_in * value_in;";
+            c += "dIncrement = (double)value_in * (double)value_in;";
             break;
         case token::TK_value_out:
             c += "dIncrement = value_out;";
@@ -673,16 +673,16 @@ void EntityTableSymbol::build_body_push_increment()
             c += "dIncrement = value_out != 0 ? 1.0 : 0.0;";
             break;
         case token::TK_value_out2:
-            c += "dIncrement = value_out * value_out;";
+            c += "dIncrement = (double)value_out * (double)value_out;";
             break;
         case token::TK_delta:
-            c += "dIncrement = value_out - value_in;";
+            c += "dIncrement = (double)value_out - (double)value_in;";
             break;
         case token::TK_nz_delta:
-            c += "dIncrement = (value_out - value_in) != 0 ? 1.0 : 0.0;";
+            c += "dIncrement = ((double)value_out - (double)value_in) != 0 ? 1.0 : 0.0;";
             break;
         case token::TK_delta2:
-            c += "dIncrement = (value_out - value_in) * (value_out - value_in);";
+            c += "dIncrement = ((double)value_out - (double)value_in) * ((double)value_out - (double)value_in);";
             break;
         case token::TK_unused:
             assert(acc->accumulator == token::TK_unit);
