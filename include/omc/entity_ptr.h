@@ -21,8 +21,14 @@ class entity_ptr
     A* ptr;
 
 public:
-    // constructor
-    entity_ptr(A* p = nullptr)
+    // ctor
+    entity_ptr()
+        : ptr(nullptr)
+    {
+    }
+
+    // ctor
+    entity_ptr(A *p)
         : ptr(p)
     {
     }
