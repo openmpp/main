@@ -85,6 +85,7 @@
     <Message Text="Modgen elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />
+    <Message Text="Running patch utility $(COMPLETE_PATCH_MODGEN_OUTPUTS_EXE)" />
     <Exec Command="$(COMPLETE_PATCH_MODGEN_OUTPUTS_EXE) $(MODGEN_OUT_DIR)"
     />
     <Touch Files="@(MODGEN_OUTPUTS)" />
@@ -105,6 +106,8 @@
   <!-- 
   ScexPublish
   -->
+  
+  
   <ItemGroup>
     <FRAMEWORK_ODAT Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/Framework.odat" />
   </ItemGroup>
