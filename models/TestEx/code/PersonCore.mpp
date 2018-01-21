@@ -84,7 +84,7 @@ actor Person          //EN Individual
 
 	// -----------------------------------
 
-	CASE48 myCase = case_id < 48 ? case_id : 47;	//EN Case identifier to use in tables
+	CASE48 myCase = COERCE(CASE48, case_id); //EN Case identifier to use in tables
 
 	/*TODO - Add more states*/
 
