@@ -1,48 +1,126 @@
 //LABEL(MinMaxTests, EN) Tests of min and max templates
 
-#if false
+#ifndef MODGEN
+#include "omc/omSimulation.h" // enable IDE to understand C++ portions
+#endif
+
+#if false // hide syntactic island from IDE
 actor Person {
-    TIME special_time = {12.34};
-    int clamped_count;
-    void ClampTest();
-    hook ClampTest, MortalityEvent;
+    double a_dbl1 = { 3.14159 };
+    double a_dbl2 = { 2.71828 };
+    TIME a_special_time = {2.34};
+    int a_clamped_count;
+    void MinMaxClampTests();
+    hook MinMaxClampTests, MortalityEvent, 1;
 };
 
 table Person ClampedOccurrences //EN Clamped count
 {
     {
-        clamped_count
+        a_clamped_count
     }
 };
-#endif
+#endif // hide syntactic island from IDE
 
-#ifndef MODGEN
-#include "omc/omSimulation.h"
-#endif
-
-// The implement function of MortalityEvent
-void Person::ClampTest()
+void Person::MinMaxClampTests()
 {
     int lower = 40;
     int upper = 60;
+
+    {
+        // a wrapped type (fixed_precision<double>)
+        TIME t1 = { 1.1 };
+        int i1 = 2;
+        //auto x1 = (t1 < i1) ? t1 : i1; // works in MSVC (result is type Time), fails in gcc
+    }
+
+    // constants and fundamental type combos
+    auto w1 = min(1, 2);
+    auto w2 = min(1, 1.2);
+    auto w3 = min(1.2, 1.2);
+    auto w3a = min(lower, 39);
+    auto w4 = min(lower, upper);
+    //auto w5 = min(lower, 39.9);
+
+    // Attribute of a non-wrapped type (double)
+
+    double a1 = (22.0 / 7.0);
+    int i1 = 3;
+    auto q1 = min(a_dbl1, a1); // works, Attribute has cast to other type (double)
+    auto q1r = min(a1, a_dbl1);
+    auto q2 = min(a_dbl1, i1); // works, C++ fundamental type promotion rules apply
+    auto q2r = min(i1, a_dbl1);
+    //auto q3 = min(a_dbl1, a_dbl2); // does not work, no common type of two Attributes
+    // std::clamp not implemented in MSVC 15 (VS2017)
+    //auto q4 = clamp(a_dbl1, i1, a1); // works, only one Attribute
+
+    // attribute of a wrapped type (fixed_precision<double>)
+    TIME t1 = { 1.1 };
+    TIME t2 = { 2.2 };
+    auto t3 = std::min(t1, t2); // works, identical types
+    auto t4 = min(t1, t2);
+    //auto t4a = min(t1, i1); // works in MSVC (result is type Time) fails in gcc
+    //auto t4b = (t1 < i1) ? t1 : i1; // same as above
+    //auto t4c = (t1 < a1) ? t1 : a1; // same as above
+    auto t5 = min(time, a1); // works, wrapped type has cast to other type, which is a C++ fundamental type
+    auto t6 = min(a_dbl2, i1);
+    //auto t7 = (a_dbl2 < i1) ? dbl2 : i1;
+    //if (a_dbl2 < i1) {
+    //    if (t7 != a_dbl2) {
+    //        stringstream ss;
+    //        ss << "error: t7=" << t7 << " a_dbl2=" << a_dbl2;
+    //        ModelExit(ss.str().c_str());
+    //    }
+    //}
+
+    //auto t7 = min(time, t2); // does not work, no common type of two wrapped types
+
+#if false // approach abandoned due to fragility and lack of generality
     double clamped1 = 0.0;
     double clamped2 = 0.0;
-    //clamped = max(lower, min((double)time, upper));
+    auto clamped0 = max(lower, min((double)time, upper));
+    clamped = max(lower, min((double)time, upper));
+    clamped = max(lower, min(time, upper));
     double x0 = min(lower, upper);
     auto x1 = min(clamped1, upper);
     double x2 = min(clamped1, upper);
-    //auto e0 = time;  // this works, but shouldn't be allowed
+
+    //auto e0 = time;  // this compiles, but shouldn't be allowed (creates local copy of Attribute)
+
     TIME_t e0 = time;
-    TIME_t e1 = min(e0, upper);
-    TIME_t e2 = min(upper, e0);
-    auto e3 = clamp(time, lower, upper);
-    TIME_t e4 = min(time, upper); // time preserves its Attribute type here, and ::min template attempts to pass by reference, but move constructor of Attribute is (deliberately) deleted.
-    //auto e5 = min(time, special_time); // does not work, no specialization (too many combos)
+    auto e1 = min(e0, upper);
+    auto e2 = min(upper, e0);
+
+    // daily_difference uses template Attribute<int, void, ...>
+    auto d1 = min(daily_difference, upper);
+    auto d2 = min(upper, daily_difference);
+
+    auto e3 = min(time, upper);
+    auto e4 = min(upper, time);
+    assert(e3 == e4);
+    if (upper > e0) {
+        if (e0 != e3) {
+            stringstream ss;
+            ss << "error: e0=" << e0 << " e3=" << e3;
+            ModelExit(ss.str().c_str());
+        }
+    }
+    //auto e6 = ::min(time, special_time); // does not work - two Attributes
     clamped1 = max(lower, min(time, upper));
-    clamped2 = clamp(time, lower, upper);
-    assert(clamped1 == clamped2);
+    //clamped2 = clamp(time, lower, upper);
+    //assert(clamped1 == clamped2);
+    //if (upper > e0 && e0 > lower) {
+    //    if (e0 != clamped1) {
+    //        stringstream ss;
+    //        ss << "error: e0=" << e0 << " clamped1=" << clamped1;
+    //        ModelExit(ss.str().c_str());
+    //    }
+    //}
+#endif
+    auto clamped1 = clampd(time, lower, upper);
+
     double diff = time - clamped1;
-    if (diff != 0.0) clamped_count++;
+    if (diff != 0.0) a_clamped_count++;
 }
 
 

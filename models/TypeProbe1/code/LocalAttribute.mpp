@@ -1,0 +1,45 @@
+//LABEL(LocalAttribute, EN) Tests of ability to create Attribute a local variable
+
+#if false // hide syntactic islands from IDE
+actor Person {
+
+    double my_d = 1.1; // this is an Attribute (identity Attribute)
+
+    void LocalAttributeTests();
+    hook LocalAttributeTests, MortalityEvent, 2;
+};
+#endif
+
+#ifndef MODGEN
+#include "omc/omSimulation.h" // enable IDE to understand C++ portions
+#endif
+
+// The implement function of MortalityEvent
+void Person::LocalAttributeTests()
+{
+    // Creation of an Attribute as a local variable is dangerous
+    // because side effects may not affect the 'true' Attribute (the member of an Entity).
+    // Moreover, local Attribute could be in incorrect Entity context.
+    // Design goal is to forbid creation of an Attribute as a local variable.
+    // An Attribute should exist only as a member of an Entity.
+
+    // Use of Attribute should create instance of wrapped type
+
+    // Test AssignableAttribute
+    // following generates C++ compile error (correctly, due to deleted function)
+#if false
+    auto y1a = time;
+#endif
+
+    decltype(time) y1b;
+
+    // Test Attribute
+    // following generates C++ compile error (correctly, due to deleted function)
+    //auto y2a = my_d;
+    decltype(my_d) y2b;
+
+    // Obtain wrapped value
+    double y3 = time;
+}
+
+

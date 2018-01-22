@@ -7,7 +7,8 @@
  */
 
 #pragma once
-#include <algorithm> // for std:min and std::max
+#include <algorithm> // for std:min, std::max, std::clamp
+#include <cassert>
 #include "case_based.h"
 
 #if defined(MODGEN)
@@ -22,7 +23,7 @@ namespace mm {
 
 #if defined(OPENM)
 
-#pragma message ("really got here, inside OPENM")
+//#pragma message ("really got here, inside OPENM")
 
 // unwrap fixed_precision_float
 //template<typename T, typename U>
@@ -33,39 +34,39 @@ namespace mm {
 
 namespace std {
 
-    // unwrap AgentVar, with non-void T2
-    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
-    {
-        using type = typename common_type<Other, T2>::type;
-    };
+    //// unwrap AgentVar, with non-void T2
+    //template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    //struct common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    //{
+    //    using type = typename common_type<Other, T2>::type;
+    //};
 
-    // unwrap AgentVar, with void T2
-    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
-    {
-        using type = typename common_type<Other, T>::type;
-    };
-    // unwrap AgentVar, opposite order calls other specializations
-    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
-    {
-        using type = typename common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>::type;
-    };
+    //// unwrap AgentVar, with void T2
+    //template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    //struct common_type<Other, AgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    //{
+    //    using type = typename common_type<Other, T>::type;
+    //};
+    //// unwrap AgentVar, opposite order calls other specializations
+    //template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    //struct common_type<AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    //{
+    //    using type = typename common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>::type;
+    //};
 
-    // unwrap AssignableAgentVar, calls AgentVar specializations
-    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
-    {
-        using type = typename common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>::type;
-    };
+    //// unwrap AssignableAgentVar, calls AgentVar specializations
+    //template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    //struct common_type<Other, AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    //{
+    //    using type = typename common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>::type;
+    //};
 
-    // unwrap AssignableAgentVar, opposite order, calls AssignableAgentVar specialization
-    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
-    {
-        using type = typename common_type<Other, AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>::type;
-    };
+    //// unwrap AssignableAgentVar, opposite order, calls AssignableAgentVar specialization
+    //template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    //struct common_type<AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    //{
+    //    using type = typename common_type<Other, AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>::type;
+    //};
 
 }
 
