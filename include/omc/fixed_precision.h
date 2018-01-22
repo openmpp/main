@@ -12,6 +12,7 @@ template<typename T>
 class fixed_precision_float
 {
 public:
+    // expose the wrapped type as .type
     typedef T type;
 
     // ctors
@@ -171,20 +172,35 @@ template<typename T>
 int fixed_precision_float<T>::addend = 0;
 
 // Enable fixed_precision to participate in type resolution
-// by specializing std::common_type, e.g. in min/max templates.
+// e.g. in min/max/clamp templates, by specializing std::common_type
 
+#if false // approach in testing
 namespace std {
-    // unwrap fixed_precision_float
+
+    template<typename T>
+    struct common_type<fixed_precision_float<T>>
+    {
+        using type = T;
+    };
+
+    template<typename T>
+    struct common_type<fixed_precision_float<T>, fixed_precision_float<T>>
+    {
+        using type = T;
+    };
+
     template<typename T, typename U>
     struct common_type<fixed_precision_float<T>, U>
     {
         using type = typename common_type<T, U>::type;
     };
 
-    // unwrap fixed_precision_float, opposite order
+    // opposite order to above
     template<typename T, typename U>
-    struct common_type<T, fixed_precision_float<U>>
+    struct common_type<U, fixed_precision_float<T>>
     {
         using type = typename common_type<T, U>::type;
     };
+
 }
+#endif
