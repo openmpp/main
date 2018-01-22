@@ -12,10 +12,10 @@
           class="material-icons mdc-list-item__start-detail note-link" 
           :title="w.Name + ' notes'"
           :alt="w.Name + ' notes'">event_note</span>
-        <a
-          @click="doWsClick(idx)"
+        <span
+          @click="doWsClick(idx, w.Name)"
           href="#"
-          class="ahref-next" 
+          class="link-next" 
           :title="w.Name"
           :alt="w.Name" 
           >
@@ -23,45 +23,14 @@
             <span>{{ w.Name }}</span>
             <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
           </span>
-        </a>
-        <!--
-        <router-link
-          @click.native="doWsClick(idx)"
-          :to="'/model/' + digest + '/workset/' + w.Name" 
-          class="ahref-next" 
-          :title="w.Name"
-          :alt="w.Name" 
-          >
-          <span class="mdc-list-item__text">
-            <span>{{ w.Name }}</span>
-            <span class="item-line mmdc-list-item__secondary-text><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
-          </span>
-        </router-link>
-        -->
+        </span>
 
       </li>
 
     </ul>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="ws-note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <div class="note-table">
-      <div class="note-row">
-        <span class="note-cell mono">Name:</span><span class="note-cell mono">{{nameNoteDlg}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Read only:</span><span class="note-cell mono">{{isReadOnlyNoteDlg}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Updated:</span><span class="note-cell mono">{{lastNoteDlg}}</span>
-      </div>
-      <div v-if="(baseRunDigestNoteDlg !== '')" class="note-row">
-        <span class="note-cell mono">Base run:</span><span class="note-cell mono">{{baseRunDigestNoteDlg}}</span>
-      </div>
-    </div>
-  </om-mcw-dialog>
+  <workset-info-dialog ref="wsInfoDlg" id="ws-info-dlg"></workset-info-dialog>
 
 </div>
   
@@ -70,10 +39,12 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import * as Mdf from '@/modelCommon'
+import WorksetInfoDialog from './WorksetInfoDialog'
 
 export default {
+  components: { WorksetInfoDialog },
+
   props: {
     digest: '',
     refreshTickle: false
@@ -81,12 +52,8 @@ export default {
 
   data () {
     return {
-      titleNoteDlg: '',
-      textNoteDlg: '',
-      nameNoteDlg: '',
-      isReadOnlyNoteDlg: false,
-      lastNoteDlg: '',
-      baseRunDigestNoteDlg: ''
+      prevName: '',
+      prevIndex: -1
     }
   },
 
@@ -94,7 +61,6 @@ export default {
     isWsList () { return Mdf.isWorksetTextList(this.worksetTextList) },
 
     ...mapGetters({
-      theWorksetText: GET.THE_WORKSET_TEXT,
       worksetTextList: GET.WORKSET_TEXT_LIST
     })
   },
@@ -108,20 +74,18 @@ export default {
     descrOf (wt) { return Mdf.descrOfTxt(wt) },
 
     // click on workset: select this workset as current
-    doWsClick (idx) {
+    doWsClick (idx, name) {
+      if (idx === this.prevIndex && name === this.prevName) return  // exit: click on same item in the list
+      this.prevName = (name || '')
+      this.prevIndex = (idx || 0)
+      // select new current workset by index
       this.setTheWorksetTextByIdx(idx)
-      console.log('name', this.theWorksetText.Name)
+      this.$emit('workset-select', name)
     },
 
     // show workset info
     showWsInfo (wt) {
-      this.titleNoteDlg = Mdf.descrOfTxt(wt)
-      this.textNoteDlg = Mdf.noteOfTxt(wt)
-      this.nameNoteDlg = wt.Name
-      this.isReadOnlyNoteDlg = !!wt.isReadonly
-      this.lastNoteDlg = Mdf.dtStr(wt.UpdateDateTime)
-      this.baseRunDigestNoteDlg = wt.BaseRunDigest || ''
-      this.$refs.noteDlg.open()
+      this.$refs.wsInfoDlg.showWsInfo(wt)
     },
 
     ...mapActions({
@@ -131,9 +95,7 @@ export default {
 
   mounted () {
     this.$emit('tab-mounted', 'workset-list', '')
-  },
-
-  components: { OmMcwDialog }
+  }
 }
 </script>
 
@@ -154,6 +116,17 @@ export default {
     text-decoration: none;
     @extend .mdc-theme--text-primary-on-background;
     &:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+  .link-next {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    @extend .mdc-theme--text-primary-on-background;
+    &:hover {
+      cursor: pointer;
       background: rgba(0, 0, 0, 0.1);
     }
   }

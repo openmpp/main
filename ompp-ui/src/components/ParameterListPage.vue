@@ -13,7 +13,7 @@
           :title="p.Param.Name + ' info'"
           :alt="p.Param.Name + ' info'">event_note</span>
         <router-link
-          :to="'/model/' + digest + '/parameter/' + p.Param.Name" 
+          :to="'/model/' + digest + '/' + (runOrSet || '') + '/' + (nameDigest || '') + '/parameter/' + p.Param.Name" 
           class="ahref-next" 
           :title="p.Param.Name"
           :alt="p.Param.Name" 
@@ -28,14 +28,7 @@
     </ul>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <br/>
-    <div class="mono">Name:&nbsp;&nbsp;&nbsp;{{nameNoteDlg}}</div>
-    <div class="mono">Rank:&nbsp;&nbsp;&nbsp;{{rankNoteDlg}}</div>
-    <div class="mono">Digest:&nbsp;{{digestNoteDlg}}</div>
-  </om-mcw-dialog>
+  <param-info-dialog ref="noteDlg" id="param-note-dlg"></param-info-dialog>
 
 </div>
   
@@ -44,22 +37,21 @@
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import * as Mdf from '@/modelCommon'
+import { default as ParamInfoDialog } from './ParameterInfoDialog'
 
 export default {
+  components: { ParamInfoDialog },
+
   props: {
     digest: '',
+    runOrSet: '',
+    nameDigest: '',
     refreshTickle: false
   },
 
   data () {
     return {
-      titleNoteDlg: '',
-      textNoteDlg: '',
-      nameNoteDlg: '',
-      rankNoteDlg: 0,
-      digestNoteDlg: ''
     }
   },
 
@@ -72,7 +64,6 @@ export default {
   },
 
   watch: {
-    // refresh button handler
   },
 
   methods: {
@@ -82,26 +73,19 @@ export default {
     },
 
     // return description from DescrNote
-    descrOf (pt) {
-      return Mdf.descrOfDescrNote(pt)
+    descrOf (p) {
+      return Mdf.descrOfDescrNote(p)
     },
 
     // show parameter info
-    showParamInfo (pt) {
-      this.titleNoteDlg = Mdf.descrOfDescrNote(pt)
-      this.textNoteDlg = Mdf.noteOfDescrNote(pt)
-      this.nameNoteDlg = pt.Param.Name
-      this.digestNoteDlg = pt.Param.Digest
-      this.rankNoteDlg = pt.Param.Rank || 0
-      this.$refs.noteDlg.open()
+    showParamInfo (p) {
+      this.$refs.noteDlg.showParamInfo(p.Param.Name, 0)
     }
   },
 
   mounted () {
     this.$emit('tab-mounted', 'parameter-list', '')
-  },
-
-  components: { OmMcwDialog }
+  }
 }
 </script>
 

@@ -103,7 +103,9 @@
       
         <section class="mdc-toolbar__section mdc-toolbar__section--align-start">
 
-          <button @click="toggleDrawer" class="toolbar-button material-icons mdc-toolbar__menu-icon" title="Menu" alt="Menu">menu</button>
+          <button
+            @click="toggleDrawer"
+            class="toolbar-button material-icons mdc-toolbar__menu-icon" title="Menu" alt="Menu">menu</button>
 
           <router-link 
             v-if="isModel" 
@@ -114,6 +116,7 @@
             {{ mainTitle }}
           </router-link>
           <span v-else class="mdc-toolbar__title">{{ mainTitle }}</span>
+
         </section>
 
         <section class="mdc-toolbar__section mdc-toolbar__section--align-end mdc-toolbar__section--shrink-to-fit">
@@ -187,7 +190,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from './store'
-import { default as Mdf } from './modelCommon'
+import * as Mdf from './modelCommon'
 import OmMcwDrawer from './components/OmMcwDrawer'
 import OmMcwMenu from './components/OmMcwMenu'
 import OmMcwDialog from './components/OmMcwDialog'
@@ -360,13 +363,12 @@ export default {
     &:hover {
       cursor: pointer;
     }
-    @extend .mdc-theme--primary-bg;
-  }
-  .toolbar-pad-button {
-    padding-right: 0;
-    &:last-of-type {
-      padding-right: 12px;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    &:first-of-type {
+      padding-left: 1rem;
     }
+    @extend .mdc-theme--primary-bg;
   }
 
   /* fix: getInnerDimensions returns 0,0 randomly */

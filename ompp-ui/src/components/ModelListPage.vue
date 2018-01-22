@@ -28,7 +28,7 @@
     </ul>
   </div>
   <div v-else>
-    <span v-if="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msg}}</span>
+    <span v-if="loadWait" class="material-icons om-mcw-spin">star</span><span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
   <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
@@ -48,7 +48,7 @@
 import axios from 'axios'
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import OmMcwDialog from './OmMcwDialog'
 
 export default {

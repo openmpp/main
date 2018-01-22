@@ -3,8 +3,6 @@
 </template>
 
 <script>
-  // import Handsontable from 'handsontable'
-  // import SettingsMapper from './settingsMapper'
   import {
     hotInit,
     hotDestroy,

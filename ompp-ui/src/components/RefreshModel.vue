@@ -1,18 +1,17 @@
 <!-- reload current model by digest -->
 <template>
 
-<span id="refresh-model" v-show="!loadDone" class="mdc-typography--body1">
-  <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}} </span>
-  <span class="mono">{{digest}}</span>
+<span id="refresh-model" v-show="!loadDone" class="mdc-typography--caption">
+  <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
 </span>
-  
+
 </template>
 
 <script>
 import axios from 'axios'
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 
 export default {
   props: {
@@ -45,6 +44,8 @@ export default {
   methods: {
     // refersh current model
     async doRefreshModel () {
+      //
+      // refresh model text rows
       let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.msgLoad = 'Loading model...'
@@ -54,16 +55,25 @@ export default {
         const response = await axios.get(u)
         this.setTheModel(response.data)   // update current model in store
         this.loadDone = true
-        this.$emit('done')
       } catch (e) {
-        this.msgLoad = 'Server offline or model not found'
-        console.log('Server offline or no models published')
+        this.msgLoad = '<Server offline or model not found>'
+        console.log('Server offline or model not found')
       }
       this.loadWait = false
-    },
+      this.$emit('done', this.loadDone)
 
+      // refresh model "words" language-specific strings
+      let uw = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/word-list' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
+      try {
+        const response = await axios.get(uw)
+        this.setWordList(response.data)  // update model words list in store
+      } catch (e) {
+        console.log('Model words refresh failed')
+      }
+    },
     ...mapActions({
-      setTheModel: SET.THE_MODEL
+      setTheModel: SET.THE_MODEL,
+      setWordList: SET.WORD_LIST
     })
   },
 

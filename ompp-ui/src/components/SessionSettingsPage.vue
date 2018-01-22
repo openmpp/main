@@ -60,7 +60,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
+import * as Mdf from '@/modelCommon'
 import OmMcwButton from './OmMcwButton'
 
 export default {

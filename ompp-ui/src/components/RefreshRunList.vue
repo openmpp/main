@@ -1,7 +1,7 @@
 <!-- reload run-text-list by digest -->
 <template>
 
-<span id="refresh-run-list" v-show="!loadDone" class="mdc-typography--body1">
+<span id="refresh-run-list" v-show="!loadDone" class="mdc-typography--caption">
   <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
 </span>
   
@@ -11,7 +11,6 @@
 import axios from 'axios'
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
 
 export default {
   props: {
@@ -30,7 +29,6 @@ export default {
   computed: {
     ...mapGetters({
       uiLang: GET.UI_LANG,
-      theModel: GET.THE_MODEL,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },
@@ -38,6 +36,9 @@ export default {
   watch: {
     // refresh button handler
     refreshTickle () {
+      this.doRefreshRunTextList() // reload run list
+    },
+    digest () {
       this.doRefreshRunTextList() // reload run list
     }
   },
@@ -54,26 +55,19 @@ export default {
         const response = await axios.get(u)
         this.setRunTextList(response.data)   // update run list in store
         this.loadDone = true
-        this.$emit('done')
       } catch (e) {
-        this.msgLoad = 'Server offline or model not found'
-        console.log('Server offline or no models published (/run-list/text)')
+        this.msgLoad = '<Server offline or no model runs published>'
+        console.log('Server offline or no model runs published')
       }
       this.loadWait = false
+      this.$emit('done', this.loadDone)
     },
-
     ...mapActions({
       setRunTextList: SET.RUN_TEXT_LIST
     })
   },
 
   mounted () {
-    // if model already loaded then exit
-    if (Mdf.modelDigest(this.theModel) === this.digest) {
-      this.loadDone = true
-      this.$emit('done')
-      return
-    }
     this.doRefreshRunTextList() // reload run list
   }
 }

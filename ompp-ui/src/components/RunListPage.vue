@@ -16,7 +16,7 @@
             <span v-else>event_busy</span>
         </span>
         <span
-          @click="doRunClick(idx)"
+          @click="doRunClick(idx, r.Digest)"
           class="link-next" 
           :title="r.Name"
           :alt="r.Name" 
@@ -32,29 +32,7 @@
     </ul>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="run-note-dlg" acceptText="OK">
-    <span slot="header">{{titleNoteDlg}}</span>
-    <div>{{textNoteDlg}}</div>
-    <div class="note-table">
-      <div class="note-row">
-        <span class="note-cell mono">Run name:</span><span class="note-cell mono">{{nameNoteDlg}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Status:</span><span class="note-cell mono">{{statusNoteDlg}}</span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Sub-values:</span>
-        <span class="note-cell mono">{{subCountNoteDlg}}<span v-if="!isSucessNoteDlg">&nbsp;&nbsp;completed:&nbsp;{{subCompletedNoteDlg}}</span></span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Time:</span>
-        <span class="note-cell mono">{{createdNoteDlg}} - {{lastNoteDlg}}<span v-if="timeNoteDlg"> = {{timeNoteDlg}}</span></span>
-      </div>
-      <div class="note-row">
-        <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{digestNoteDlg}}</span>
-      </div>
-    </div>
-  </om-mcw-dialog>
+  <run-info-dialog ref="runInfoDlg" id="run-info-dlg"></run-info-dialog>
 
 </div>
   
@@ -63,10 +41,12 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
-import { default as Mdf } from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import * as Mdf from '@/modelCommon'
+import RunInfoDialog from './RunInfoDialog'
 
 export default {
+  components: { RunInfoDialog },
+
   props: {
     digest: '',
     refreshTickle: false
@@ -74,17 +54,8 @@ export default {
 
   data () {
     return {
-      titleNoteDlg: '',
-      textNoteDlg: '',
-      nameNoteDlg: '',
-      statusNoteDlg: '',
-      isSucessNoteDlg: false,
-      subCountNoteDlg: 0,
-      subCompletedNoteDlg: 0,
-      createdNoteDlg: '',
-      lastNoteDlg: '',
-      timeNoteDlg: '',
-      digestNoteDlg: ''
+      prevDigest: '',
+      prevIndex: -1
     }
   },
 
@@ -102,54 +73,22 @@ export default {
 
   methods: {
     lastTime (rt) { return Mdf.dtStr(rt.UpdateDateTime) },
-    isSuccess (rt) { return (rt.Status || '') === 's' },
+    isSuccess (rt) { return Mdf.isRunSuccess(rt) },
     descrOf (rt) { return Mdf.descrOfTxt(rt) },
 
     // click on run: select this run as current run
-    doRunClick (idx) {
+    doRunClick (idx, runDigest) {
+      if (idx === this.prevIndex && runDigest === this.prevDigest) return  // exit: click on same item in the list
+      this.prevDigest = (runDigest || '')
+      this.prevIndex = (idx || 0)
+      // select new current run by index
       this.setTheRunTextByIdx(idx)
-    },
-
-    // return run status by code: i=init p=progress s=success x=exit e=error(failed)
-    statusText (rt) {
-      switch ((rt.Status || '')) {
-        case 's': return 'success'
-        case 'p': return 'in progress'
-        case 'i': return 'not yet started'
-        case 'e': return 'failed'
-        case 'x': return 'exit (not completed)'
-      }
-      return 'unknown'
+      this.$emit('run-select', runDigest)
     },
 
     // show run info
     showRunInfo (rt) {
-      this.titleNoteDlg = Mdf.descrOfTxt(rt)
-      this.textNoteDlg = Mdf.noteOfTxt(rt)
-      this.nameNoteDlg = rt.Name
-      this.digestNoteDlg = rt.Digest
-      this.statusNoteDlg = this.statusText(rt)
-      this.isSucessNoteDlg = this.isSuccess(rt)
-      this.subCountNoteDlg = (rt.SubCount || 0)
-      this.subCompletedNoteDlg = (rt.SubCompleted || 0)
-      this.createdNoteDlg = Mdf.dtStr(rt.CreateDateTime)
-      this.lastNoteDlg = this.lastTime(rt)
-      this.timeNoteDlg = ''
-
-      let start = Date.parse(this.createdNoteDlg)
-      let stop = Date.parse(this.lastNoteDlg)
-      if (start && stop) {
-        let s = Math.floor((stop - start) / 1000) % 60
-        let m = Math.floor((stop - start) / (60 * 1000)) % 60
-        let h = Math.floor((stop - start) / (60 * 60 * 1000)) % 24
-        let d = Math.floor((stop - start) / (24 * 60 * 60 * 1000))
-        this.timeNoteDlg =
-          ((d > 0) ? d.toString() + 'd ' : '') +
-          ('00' + h.toString()).slice(-2) + ':' +
-          ('00' + m.toString()).slice(-2) + ':' +
-          ('00' + s.toString()).slice(-2)
-      }
-      this.$refs.noteDlg.open()
+      this.$refs.runInfoDlg.showRunInfo(rt)
     },
 
     ...mapActions({
@@ -159,9 +98,7 @@ export default {
 
   mounted () {
     this.$emit('tab-mounted', 'run-list', '')
-  },
-
-  components: { OmMcwDialog }
+  }
 }
 </script>
 

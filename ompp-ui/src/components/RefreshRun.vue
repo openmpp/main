@@ -1,7 +1,7 @@
-<!-- reload workset-text-list by digest -->
+<!-- reload run-text by model digest and run digest -->
 <template>
 
-<span id="refresh-workset-list" v-show="!loadDone" class="mdc-typography--caption">
+<span id="refresh-run" v-show="!loadDone" class="mdc-typography--caption">
   <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
 </span>
   
@@ -14,7 +14,8 @@ import { GET, SET } from '@/store'
 
 export default {
   props: {
-    digest: '',
+    modelDigest: '',
+    runDigest: '',
     refreshTickle: false
   },
 
@@ -36,39 +37,39 @@ export default {
   watch: {
     // refresh button handler
     refreshTickle () {
-      this.doRefreshWsTextList()  // reload workset list
+      this.doRefreshRunText() // reload run
     },
-    digest () {
-      this.doRefreshWsTextList() // reload run list
+    runDigest () {
+      this.doRefreshRunText() // reload run
     }
   },
 
   methods: {
-    // refersh workset list
-    async doRefreshWsTextList () {
-      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/workset-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
+    // refersh run text
+    async doRefreshRunText () {
+      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/run/' + (this.runDigest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
-      this.msgLoad = 'Loading workset list...'
+      this.msgLoad = 'Loading model run...'
       this.$emit('wait')
       try {
         const response = await axios.get(u)
-        this.setWorksetTextList(response.data)  // update workset list in store
+        this.setRunText(response.data)   // update run text in store
         this.loadDone = true
       } catch (e) {
-        this.msgLoad = '<Server offline or no model input sets published>'
-        console.log('Server offline or no model input sets published')
+        this.msgLoad = '<Server offline or model run not found>'
+        console.log('Server offline or model run not found')
       }
       this.loadWait = false
       this.$emit('done', this.loadDone)
     },
     ...mapActions({
-      setWorksetTextList: SET.WORKSET_TEXT_LIST
+      setRunText: SET.THE_RUN_TEXT
     })
   },
 
   mounted () {
-    this.doRefreshWsTextList() // reload workset list
+    this.doRefreshRunText() // reload run
   }
 }
 </script>
