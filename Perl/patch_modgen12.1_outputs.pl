@@ -40,4 +40,75 @@ if (!-d $src_dir) {
 	exit 1;
 }
 
+#
+# MODEL.H
+#
+
+{
+	my $file_name = 'MODEL.H';
+	my $model_h = "${src_dir}/${file_name}";
+	if (!-f $model_h) {
+		logmsg error, $script_name, "File ${model_h} not found\n";
+		exit 1;
+	}
+	(my $fh, my $filename) = tempfile();
+	open MODEL_H, "<".$model_h;
+	while (<MODEL_H>) {
+		chomp;
+		my $line = $_;
+		print $fh $line."\n";
+	}
+	
+	# append definitions of mind, etc.
+	my $code = <<'END_CODE';
+	
+//
+// The following code was inserted by patch_modgenXX_outputs after Modgen compilation:
+//
+
+// minimum of two doubles
+inline double mind(double a, double b)
+{
+    return (b < a ? b : a);
+}
+
+// maximum of two doubles
+inline double maxd(double a, double b)
+{
+    return (a < b ? b : a);
+}
+
+// clamped value of a double
+inline double clampd(double v, double lo, double hi)
+{
+    return (v < lo ? lo : v > hi ? hi : v);
+}
+
+// minimum of two ints
+inline int mini(int a, int b)
+{
+    return (b < a ? b : a);
+}
+
+// maximum of two ints
+inline int maxi(int a, int b)
+{
+    return (a < b ? b : a);
+}
+
+// clamped value of an int
+inline int clampi(int v, int lo, int hi)
+{
+    return (v < lo ? lo : v > hi ? hi : v);
+}
+END_CODE
+
+	print $fh $code;
+	
+	close $fh;
+	close MODEL_H;
+	copy $filename, $model_h;
+	unlink $filename;
+}
+
 exit 0;
