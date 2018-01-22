@@ -466,9 +466,13 @@ void CodeGen::do_ModelStartup()
     auto & sg = Symbol::pre_simulation;
     if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
         for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+            // The following line was useful to track down a runtime error occurring in a PreSimulation function
+            //c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
             c += sg.disambiguated_name(id) + "();";
         }
         for (auto suffix : sg.suffixes) {
+            // The following line was useful to track down a runtime error occurring in a PreSimulation function
+            //c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
             c += sg.prefix + suffix + "();";
         }
         c += "";
