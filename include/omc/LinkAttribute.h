@@ -53,8 +53,14 @@ template<
 class LinkAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
-    //LinkAgentVar(const LinkAgentVar&) = delete;
-    //LinkAgentVar& operator=(const LinkAgentVar&) = delete;
+    LinkAgentVar(const LinkAgentVar&) = delete; // copy constructor
+    LinkAgentVar& operator=(const LinkAgentVar&) = delete; // copy initialization operator
+
+    // ctor
+    LinkAgentVar()
+    {
+        this->set(nullptr);
+    }
 
     bool is_nullptr() const {
         return nullptr == this->get().get();

@@ -42,22 +42,23 @@ template<
 class AgentVar 
 {
 public:
-    //AgentVar(const AgentVar&) = delete;
-    //AgentVar& operator=(const AgentVar&) = delete;
+    // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
+    AgentVar(const AgentVar&) = delete; // copy constructor
+    AgentVar& operator=(const AgentVar&) = delete; // copy initialization operator
 
     // ctor
     AgentVar()
     {
     }
 
-    // 1-argument ctor for creating r-values for assignment to 'real' AgentVar's in Agent
+    // 1-argument ctor for creating temporary r-values
     AgentVar(T assign_value)
     {
         // N.B. no side-effects
         value = assign_value;
     }
 
-    // 1-argument ctor for creating r-values for assignment to 'real' AgentVar's in Agent, for wrapped types
+    // 1-argument ctor for creating temporary r-values
     //AgentVar(T2 assign_value)
     //{
     //    // N.B. no side-effects
@@ -70,13 +71,14 @@ public:
         value = initial_value;
     }
 
-    // operator: cast to T (use agentvar containing fundamental type)
-    operator T()
+    // operator: user-defined conversion to T
+    operator T() const
     {
         return (T) get();
     }
 
-    operator T2()
+    // operator: user-defined conversion to T2 (when Attribute type is itself a wrapped type)
+    operator T2() const
     {
         return (T2) get();
     }
@@ -157,3 +159,49 @@ template<
     bool NT_ntfy_present
 >
 size_t AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
+
+// Attribute participation in type resolution based on wrapped types
+// by specializing std::common_type.
+// e.g. in min/max/clamp mixed-mode templates
+
+namespace std {
+
+    // unwrap Attribute with void T2
+    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<Other, AgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    {
+        using type = typename common_type<Other, T>::type;
+    };
+
+    // unwrap Attribute with void T2, opposite order
+    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<AgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    {
+        using type = typename common_type<Other, T>::type;
+    };
+
+    // unwrap Attribute with non-void T2
+    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    {
+        using type = typename common_type<Other, T2>::type;
+    };
+
+    // unwrap Attribute with non-void T2, opposite order
+    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    {
+        using type = typename common_type<Other, T2>::type;
+        //using type = decltype(true ? declval<Other>() : declval<T2>());
+    };
+
+    // unwrap two Attributes, both with non-void T2
+    //template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present,
+    //         typename O_T, typename O_T2, typename O_A, string const *O_NT_name, void (A::*O_NT_side_effects)(T, T), bool O_NT_se_present, void (A::*O_NT_notify)(), bool O_NT_ntfy_present>
+    //struct common_type<AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>,
+    //                   AgentVar<O_T, O_T2, O_A, O_NT_name, O_NT_side_effects, O_NT_se_present, O_NT_notify, O_NT_ntfy_present>>
+    //{
+    //    using type = typename common_type<T2, O_T2>::type;
+    //};
+
+}

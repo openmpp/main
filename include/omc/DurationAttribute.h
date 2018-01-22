@@ -43,8 +43,10 @@ template<
 class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
-    //DurationAgentVar(const DurationAgentVar&) = delete;
-    //DurationAgentVar& operator=(const DurationAgentVar&) = delete;
+    // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
+    DurationAgentVar(const DurationAgentVar&) = delete; // copy constructor
+    DurationAgentVar& operator=(const DurationAgentVar&) = delete; // copy initialization operator
+
     // update duration 
     void advance( T delta_time )
     {
@@ -60,3 +62,39 @@ public:
         this->set( 0 );
     }
 };
+
+// DurationAttribute participation in type resolution based on wrapped types
+// by specializing std::common_type.
+// e.g. in min/max/clamp mixed-mode templates
+
+namespace std {
+
+    // unwrap DurationAttribute with void T2
+    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
+    struct common_type<Other, DurationAgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>>
+    {
+        using type = typename common_type<Other, T>::type;
+    };
+
+    // unwrap DurationAttribute with void T2, opposite order
+    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
+    struct common_type<DurationAgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>, Other>
+    {
+        using type = typename common_type<Other, T>::type;
+    };
+
+    // unwrap DurationAttribute with non-void T2
+    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
+    struct common_type<Other, DurationAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>>
+    {
+        using type = typename common_type<Other, T2>::type;
+    };
+
+    // unwrap DurationAttribute with non-void T2, opposite order
+    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
+    struct common_type<DurationAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>, Other>
+    {
+        using type = typename common_type<Other, T2>::type;
+    };
+
+}
