@@ -171,7 +171,7 @@
     <main class="main-container">
       <router-view :refresh-tickle="refreshTickle"></router-view>
 
-      <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
+      <om-mcw-dialog ref="theModelInfoDlg" id="the-model-info-dlg" :scrollable="true" acceptText="OK">
         <span slot="header">{{titleNoteDlg}}</span>
         <div>{{textNoteDlg}}</div>
         <br/>
@@ -270,7 +270,7 @@ export default {
       this.nameNoteDlg = Mdf.modelName(md)
       this.createdNoteDlg = Mdf.dtStr(md.Model.CreateDateTime)
       this.digestNoteDlg = Mdf.modelDigest(md)
-      this.$refs.noteDlg.open()
+      this.$refs.theModelInfoDlg.open()
     },
 
     ...mapActions({

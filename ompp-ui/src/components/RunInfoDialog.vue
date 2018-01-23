@@ -1,7 +1,7 @@
 <!-- model run info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{runDescr}}</span>
   <div>{{runNote}}</div>
   <div class="note-table">

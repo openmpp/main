@@ -1,7 +1,7 @@
 <!-- model workset info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{wsDescr}}</span>
   <div>{{wsNote}}</div>
   <div class="note-table">

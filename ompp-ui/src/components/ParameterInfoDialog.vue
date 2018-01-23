@@ -1,7 +1,7 @@
 <!-- parameter info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{paramDescr}}</span>
   <div v-if="(paramNote !== '')">{{paramNote}}</div>
   <br/>

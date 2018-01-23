@@ -333,6 +333,7 @@ export default {
         this.isWsView ? this.theWorksetText : this.theRunText,
         this.paramName)
       this.subCount = this.paramRunSet.SubCount || 0
+      let isRw = this.isWsView && !this.theWorksetText.IsReadonly
 
       // find dimension type for each dimension
       this.dimProp = []
@@ -359,10 +360,10 @@ export default {
       }
       // single value column or multiple sub-values
       if (this.subCount <= 1) {
-        this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: 'Value'})
+        this.htSettings.columns.push({readOnly: !isRw, validator: 'numeric', title: 'Value'})
       } else {
         for (let j = 0; j < this.subCount; j++) {
-          this.htSettings.columns.push({readOnly: false, validator: 'numeric', title: j.toString()})
+          this.htSettings.columns.push({readOnly: !isRw, validator: 'numeric', title: j.toString()})
         }
       }
 
