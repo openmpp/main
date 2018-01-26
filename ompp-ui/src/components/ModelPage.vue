@@ -89,7 +89,6 @@
   
   <main class="main-container">
     <router-view
-      :refresh-tickle="refreshTickle"
       @tab-mounted="doTabMounted"
       @run-select="doRunSelect"
       @workset-select="doWsSelect"></router-view>
@@ -164,7 +163,6 @@ export default {
     emptyHdrMsg () {
       return this.isWsView ? 'No input set of parameters found' : 'No model run results'
     },
-
     ...mapGetters({
       theModel: GET.THE_MODEL,
       theRunText: GET.THE_RUN_TEXT,
@@ -193,7 +191,10 @@ export default {
           this.doTabAdd(false, false, 'run-list')
         }
         this.doTabAdd(false, false, 'workset-list')
+        //
         this.doTabHeaderRefresh()
+        this.doTabPathRefresh()
+        this.doTabAdd(true, true, 'parameter-list')
       }
     },
 
@@ -267,16 +268,17 @@ export default {
         console.log('invalid (empty) kind of tab mounted')
         return
       }
+      if (!this.loadDone) {
+        return    // wait until model loaded
+      }
       this.doTabAdd(true, false, kind, dn)
     },
 
     // click on tab link: activate that tab
     doTabLink (tabId, isRoute = false, path = '') {
-      //
       for (let k = 0; k < this.tabLst.length; k++) {
         this.tabLst[k].active = this.tabLst[k].id === tabId
       }
-
       // if new path is a result of tab add or close then route to new path
       if (isRoute && (path || '') !== '') {
         this.$router.push(path)

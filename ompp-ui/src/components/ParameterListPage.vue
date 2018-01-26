@@ -2,7 +2,7 @@
 
 <div id="parameter-list-page" class="mdc-typography mdc-typography--body1">
 
-  <div v-if="isParamList">
+  <div v-if="isParamList()">
     <ul class="main-list mdc-list mdc-list--two-line">
 
       <li v-for="p in paramList()" :key="'pt-' + p.Param.ParamId" class="mdc-list-item">
@@ -12,8 +12,8 @@
           class="material-icons mdc-list-item__start-detail note-link" 
           :title="p.Param.Name + ' info'"
           :alt="p.Param.Name + ' info'">event_note</span>
-        <router-link
-          :to="'/model/' + digest + '/' + (runOrSet || '') + '/' + (nameDigest || '') + '/parameter/' + p.Param.Name" 
+        <router-link v-if="pathRunSet !== '/'"
+          :to="'/model/' + digest + '/' + pathRunSet + '/parameter/' + p.Param.Name" 
           class="ahref-next" 
           :title="p.Param.Name"
           :alt="p.Param.Name" 
@@ -22,6 +22,11 @@
             <span class="mdc-list-item__secondary-text">{{ descrOf(p) }}</span>
           </span>
         </router-link>
+        <span v-else class="ahref-next">
+          <span class="mdc-list-item__text">{{ p.Param.Name }}
+            <span class="mdc-list-item__secondary-text">{{ descrOf(p) }}</span>
+          </span>
+        </span>
 
       </li>
 
@@ -46,8 +51,7 @@ export default {
   props: {
     digest: '',
     runOrSet: '',
-    nameDigest: '',
-    refreshTickle: false
+    nameDigest: ''
   },
 
   data () {
@@ -56,10 +60,24 @@ export default {
   },
 
   computed: {
-    isParamList () { return Mdf.isParamTextList(this.theModel) },
-
+    pathRunSet () {
+      let rs = this.runOrSet || ''
+      let nd = this.nameDigest || ''
+      if (nd === '') {
+        if (rs === Mdf.SET_OF_RUNSET) {
+          nd = this.theWorksetText.Name
+        } else {
+          nd = this.theRunText.Digest
+          if (nd === '') nd = this.theRunText.Name
+          if (rs === '' && nd !== '') rs = Mdf.RUN_OF_RUNSET
+        }
+      }
+      return rs + '/' + nd
+    },
     ...mapGetters({
-      theModel: GET.THE_MODEL
+      theModel: GET.THE_MODEL,
+      theRunText: GET.THE_RUN_TEXT,
+      theWorksetText: GET.THE_WORKSET_TEXT
     })
   },
 
@@ -68,9 +86,8 @@ export default {
 
   methods: {
     // array of ParamTxt if model has parameter list
-    paramList () {
-      return Mdf.isParamTextList(this.theModel) ? this.theModel.ParamTxt : []
-    },
+    isParamList () { return Mdf.isParamTextList(this.theModel) },
+    paramList () { return Mdf.isParamTextList(this.theModel) ? this.theModel.ParamTxt : [] },
 
     // return description from DescrNote
     descrOf (p) {

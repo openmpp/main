@@ -43,6 +43,49 @@
       @click="toggleMoreControls()"
       class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
 
+    <span v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
+
+      <span
+        @click="doResetView()"
+        class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">settings_backup_restore</span>
+
+      <span v-if="tv.isInc">
+        <span
+          @click="doIncreasePage()"
+          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+      </span>
+
+      <span v-if="tv.isDec">
+        <span
+          @click="doDecreasePage()"
+          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+      </span>
+
+      <span
+        @click="doUnlimitedPage()"
+        class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
+      <span
+        @click="doExpressionPage()"
+        class="cell-icon-link material-icons" title="View table expressions"alt="View table expressions">filter_none</span>
+      <span
+        @click="doAccumulatorPage()"
+        class="cell-icon-link material-icons" title="View accumulators and sub-values"alt="View accumulators and sub-values">filter_8</span>
+      <span
+        @click="doAllAccumulatorPage()"
+        class="cell-icon-link material-icons" title="View all accumulators and sub-values"alt="View all accumulators and sub-values">library_add</span>
+      <span
+        @click="doRefresh()"
+        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
+    </span>
+    
     <span class="mdc-typography--body2">{{ tableName }}: </span>
     <span>{{ tableDescr() }}</span>
 
@@ -51,49 +94,6 @@
     <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
     <span class="mdc-typography--caption">{{msg}}</span>
-  </div>
-
-  <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
-
-    <span
-      @click="doResetView()"
-      class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">settings_backup_restore</span>
-
-    <span v-if="tv.isInc">
-      <span
-        @click="doIncreasePage()"
-        class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
-    </span>
-
-    <span v-if="tv.isDec">
-      <span
-        @click="doDecreasePage()"
-        class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
-    </span>
-
-    <span
-      @click="doUnlimitedPage()"
-      class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
-    <span
-      @click="doExpressionPage()"
-      class="cell-icon-link material-icons" title="View table expressions"alt="View table expressions">filter_none</span>
-    <span
-      @click="doAccumulatorPage()"
-      class="cell-icon-link material-icons" title="View accumulators and sub-values"alt="View accumulators and sub-values">filter_8</span>
-    <span
-      @click="doAllAccumulatorPage()"
-      class="cell-icon-link material-icons" title="View all accumulators and sub-values"alt="View all accumulators and sub-values">library_add</span>
-    <span
-      @click="doRefresh()"
-      class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
   </div>
 
   <div class="ht-container">
@@ -130,8 +130,7 @@ export default {
   props: {
     digest: '',
     tableName: '',
-    nameDigest: '',
-    refreshTickle: false
+    nameDigest: ''
   },
 
   data () {
@@ -146,6 +145,9 @@ export default {
         manualColumnMove: true,
         manualColumnResize: true,
         manualRowResize: true,
+        autoColumnSize: {useHeaders: false},
+        columnSorting: true,
+        sortIndicator: true,
         preventOverflow: 'horizontal',
         renderAllRows: true,
         stretchH: 'all',
@@ -177,7 +179,7 @@ export default {
 
   computed: {
     routeKey () {
-      return [this.digest, this.tableName, this.nameDigest, this.refreshTickle].toString()
+      return [this.digest, this.tableName, this.nameDigest].toString()
     },
     ...mapGetters({
       theModel: GET.THE_MODEL,
@@ -188,9 +190,7 @@ export default {
   },
 
   watch: {
-    routeKey () {
-      this.refreshView()
-    }
+    routeKey () { this.refreshView() }
   },
 
   methods: {

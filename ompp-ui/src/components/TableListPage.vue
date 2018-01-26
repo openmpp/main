@@ -2,7 +2,7 @@
 
 <div id="table-list-page" class="mdc-typography mdc-typography--body1">
 
-  <div v-if="isTableList">
+  <div v-if="isTableList()">
     <ul class="main-list mdc-list mdc-list--two-line">
 
       <li v-for="t in TableList()" :key="'tt-' + t.Table.TableId" class="mdc-list-item">
@@ -13,7 +13,7 @@
           :title="t.Table.Name + ' notes'"
           :alt="t.Table.Name + ' notes'">event_note</span>
         <router-link
-          :to="'/model/' + digest + '/run/' + (nameDigest || '') + '/table/' + t.Table.Name" 
+          :to="'/model/' + digest + '/run/' + pathNameDigest + '/table/' + t.Table.Name" 
           class="ahref-next" 
           :title="t.Table.Name"
           :alt="t.Table.Name" 
@@ -45,8 +45,7 @@ export default {
 
   props: {
     digest: '',
-    nameDigest: '',
-    refreshTickle: false
+    nameDigest: ''
   },
 
   data () {
@@ -55,10 +54,17 @@ export default {
   },
 
   computed: {
-    isTableList () { return Mdf.isTableTextList(this.theModel) },
-
+    pathNameDigest () {
+      let nd = this.nameDigest || ''
+      if (nd === '') {
+        nd = this.theRunText.Digest
+        if (nd === '') nd = this.theRunText.Name
+      }
+      return nd
+    },
     ...mapGetters({
-      theModel: GET.THE_MODEL
+      theModel: GET.THE_MODEL,
+      theRunText: GET.THE_RUN_TEXT
     })
   },
 
@@ -66,6 +72,8 @@ export default {
   },
 
   methods: {
+    isTableList () { return Mdf.isTableTextList(this.theModel) },
+
     // array of TableTxt if model has table list
     TableList () {
       return Mdf.isTableTextList(this.theModel) ? this.theModel.TableTxt : []

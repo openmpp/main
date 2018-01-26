@@ -37,6 +37,7 @@ INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (2, 6, 1
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (2, 7, 4);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (2, 8, 4);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (2, 9, 4);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (2, 10, 4);
 
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 4, 0, 'Age by Sex default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 4, 1, '(FR) Age by Sex default values');
@@ -44,6 +45,7 @@ INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES 
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 5, 1, '(FR) Salary by Age default values');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 6, 0, 'Starting seed default value');
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 7, 0, 'Full or part time by Salary default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 10, 0, 'Is old age default values');
 
 --
 -- modelOne modified set of parameters
@@ -79,6 +81,7 @@ INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (4, 6, 1
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (4, 7, 1);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (4, 8, 1);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (4, 9, 1);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (4, 10, 1);
 
 --
 -- modelOne modelling tasks
@@ -161,6 +164,27 @@ INSERT INTO filePath_w_2012814 (set_id, sub_id, param_value) VALUES (2, 1, 'file
 INSERT INTO filePath_w_2012814 (set_id, sub_id, param_value) VALUES (2, 2, 'file 2 path');
 INSERT INTO filePath_w_2012814 (set_id, sub_id, param_value) VALUES (2, 3, 'file 3 path');
 
+-- set id = 2
+-- is old age default values
+-- enum ids for age not a zero based
+-- number of parameter sub values: sub_count = 4
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 0, 10, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 0, 20, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 0, 30, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 0, 40, 1);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 1, 10, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 1, 20, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 1, 30, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 1, 40, 1);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 2, 10, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 2, 20, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 2, 30, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 2, 40, 1);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 3, 10, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 3, 20, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 3, 30, 0);
+INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 3, 40, 1);
+
 -- set id = 3
 -- age by sex
 -- enum ids for age not a zero based
@@ -208,4 +232,12 @@ INSERT INTO baseSalary_w_2012811 (set_id, sub_id, param_value) VALUES (4, 0, 33)
 -- set id = 4
 -- file path parameter type is string
 INSERT INTO filePath_w_2012814 (set_id, sub_id, param_value) VALUES (4, 0, 'set 4 file 0 path');
+
+-- set id = 4
+-- is old age values
+INSERT INTO isOldAge_w_2012815
+  (set_id, sub_id, dim0, param_value) 
+SELECT 
+  4, sub_id, dim0, param_value
+FROM isOldAge_w_2012815 WHERE set_id = 2 AND sub_id = 0;
 

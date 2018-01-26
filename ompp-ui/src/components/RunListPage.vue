@@ -48,8 +48,7 @@ export default {
   components: { RunInfoDialog },
 
   props: {
-    digest: '',
-    refreshTickle: false
+    digest: ''
   },
 
   data () {

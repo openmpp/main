@@ -46,8 +46,7 @@ export default {
   components: { WorksetInfoDialog },
 
   props: {
-    digest: '',
-    refreshTickle: false
+    digest: ''
   },
 
   data () {

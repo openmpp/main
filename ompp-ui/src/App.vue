@@ -32,7 +32,7 @@
         <span v-if="isModel" class="menu-count mdc-list-item__end-detail">{{runTextCount}}</span>
       </router-link>
       <router-link 
-        :to="'/model/' + modelDigest + '/parameter-list'" 
+        :to="'/model/' + modelDigest + '/run/parameter-list'" 
         :class="{'disable-item': !isModel}" class="mdc-list-item" 
         alt="Model parameters"
         role="menuitem">
@@ -42,7 +42,7 @@
         <span v-if="isModel" class="menu-count mdc-list-item__end-detail">{{paramCount}}</span>
       </router-link>
       <router-link 
-        :to="'/model/' + modelDigest + '/table-list'" 
+        :to="'/model/' + modelDigest + '/run/table-list'" 
         :class="{'disable-item': !isModel}" class="mdc-list-item" 
         alt="Output tables"
         role="menuitem">
@@ -63,7 +63,7 @@
         <span v-if="isModel" class="menu-count mdc-list-item__end-detail">{{worksetTextCount}}</span>
       </router-link>
       <router-link 
-        to="/parameters" 
+        :to="'/model/' + modelDigest + '/set/parameter-list'" 
         :class="{'disable-item': !isModel}" class="mdc-list-item" 
         alt="Model parameters"
         role="menuitem">
@@ -109,7 +109,7 @@
 
           <router-link 
             v-if="isModel" 
-            :to="'/model/' + modelDigest + '/parameter-list'" 
+            :to="'/model/' + modelDigest" 
             :title="modelName"
             :alt="modelName"
             class="mdc-toolbar__title toolbar-title-link">

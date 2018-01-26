@@ -32,15 +32,12 @@ thread_local int om_value_baseSalary = { jobKind::partTime };
 static vector<string> om_param_filePath;
 thread_local string om_value_filePath;
 
+static vector<unique_ptr<bool[]>> om_param_isOldAge;
+thread_local bool * om_value_isOldAge = nullptr;
+
 // model output tables: salary by sex
 const char * SalarySex::NAME = "salarySex";
 static thread_local unique_ptr<SalarySex> theSalarySex; // salary by sex
-
-// log all parameters and sub-values
-// static void logAllParams(void);
-
-// log parameters thread local sub-value
-// static void logSubValueParams(int i_subId);
 
 // Model event loop: user code
 void RunModel(IModel * const i_model)
@@ -57,7 +54,9 @@ void RunModel(IModel * const i_model)
 
                 // make some test value
                 theSalarySex->acc[SalarySex::ACC_SUM_ID][nCell] +=
-                    ((double)salaryAge[nSalary][nAge]) * ageSex[nAge][nSex] * (double)(i_model->subValueId() + 1);
+                    ((double)salaryAge[nSalary][nAge]) * 
+                    ageSex[nAge][nSex] * 
+                    (double)(i_model->subValueId() + isOldAge[nAge] ? 20 : 1);
             }
             nCell++;
         }
@@ -107,6 +106,7 @@ void RunInit(IRunBase * const i_runBase)
     om_param_salaryFull = std::move(read_om_parameter<int>(i_runBase, "salaryFull", N_SALARY));
     om_param_baseSalary = std::move(read_om_parameter<int>(i_runBase, "baseSalary"));
     om_param_filePath = std::move(read_om_parameter<string>(i_runBase, "filePath"));
+    om_param_isOldAge = std::move(read_om_parameter<bool>(i_runBase, "isOldAge", N_AGE));
 }
 
 // Model startup method: initialize sub-value
@@ -123,6 +123,7 @@ void ModelStartup(IModel * const i_model)
     om_value_salaryFull = om_param_salaryFull[i_model->parameterSubValueIndex("salaryFull")].get();
     om_value_baseSalary = om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")];
     om_value_filePath = om_param_filePath[i_model->parameterSubValueIndex("filePath")];
+    om_value_isOldAge = om_param_isOldAge[i_model->parameterSubValueIndex("isOldAge")].get();
     //
     // parameters ready now and can be used by the model
 
@@ -141,90 +142,3 @@ void ModelShutdown(IModel * const i_model)
 
     i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
 }
-
-/*
-// log all parameters and sub-values
-void logAllParams(void)
-{
-    theLog->logMsg("StartingSeed");
-    for (size_t n = 0; n < om_param_startSeed.size(); n++) {
-        const auto & p = om_param_startSeed[n];
-        theLog->logFormatted("%zu: = %d", n, *p);
-    }
-
-    theLog->logMsg("ageSex");
-    for (size_t n = 0; n < om_param_ageSex.size(); n++) {
-        const auto & p = om_param_ageSex[n];
-        for (size_t k = 0; k < N_AGE; k++) {
-            for (size_t j = 0; j < N_SEX; j++) {
-                theLog->logFormatted("%zu: %zu %zu = %g", n, k, j, p.get()[k * N_SEX + j]);
-            }
-        }
-    }
-
-    theLog->logMsg("salaryAge");
-    for (size_t n = 0; n < om_param_salaryAge.size(); n++) {
-        const auto & p = om_param_salaryAge[n];
-        for (size_t k = 0; k < N_SALARY; k++) {
-            for (size_t j = 0; j < N_AGE; j++) {
-                theLog->logFormatted("%zu: %zu %zu = %d", n, k, j, p.get()[k * N_AGE + j]);
-            }
-        }
-    }
-
-    theLog->logMsg("salaryFull");
-    for (size_t n = 0; n < om_param_salaryFull.size(); n++) {
-        const auto & p = om_param_salaryFull[n];
-        for (size_t k = 0; k < N_SALARY; k++) {
-            theLog->logFormatted("%zu: %zu = %d", n, k, p.get()[k]);
-        }
-    }
-
-    theLog->logMsg("baseSalary");
-    for (size_t n = 0; n < om_param_baseSalary.size(); n++) {
-        const auto & p = om_param_baseSalary[n];
-        theLog->logFormatted("%zu: = %d", n, *p);
-    }
-
-    theLog->logMsg("filePath");
-    for (size_t n = 0; n < om_param_filePath.size(); n++) {
-        const auto & p = om_param_filePath[n];
-        theLog->logFormatted("%zu: = %s", n, p->c_str());
-    }
-}
-
-// log parameters thread local sub-value
-void logSubValueParams(int i_subId)
-{
-    thread::id thId = this_thread::get_id();
-
-    theLog->logMsg("StartingSeed");
-    theLog->logFormatted("(%u) %d: = %d", thId, i_subId, startSeed.get());
-
-    theLog->logMsg("ageSex");
-    for (size_t k = 0; k < N_AGE; k++) {
-        for (size_t j = 0; j < N_SEX; j++) {
-            theLog->logFormatted("(%u) %d: %zu %zu = %g", thId, i_subId, k, j, ageSex[k][j]);
-        }
-    }
-
-    theLog->logMsg("salaryAge");
-    for (size_t k = 0; k < N_SALARY; k++) {
-        for (size_t j = 0; j < N_AGE; j++) {
-            theLog->logFormatted("(%u) %d: %zu %zu = %d", thId, i_subId, k, j, salaryAge[k][j]);
-        }
-    }
-
-    theLog->logMsg("salaryFull");
-    for (size_t k = 0; k < N_SALARY; k++) {
-        theLog->logFormatted("(%u) %d: %zu = %d", thId, i_subId, k, salaryFull[k]);
-    }
-
-    theLog->logMsg("baseSalary");
-    theLog->logFormatted("(%u) %d: = %d", thId, i_subId, baseSalary.get());
-
-    theLog->logMsg("filePath");
-    theLog->logFormatted("(%u) %d: = %s", thId, i_subId, filePath.get().c_str());
-}
-*/
-

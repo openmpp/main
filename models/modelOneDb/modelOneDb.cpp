@@ -100,6 +100,7 @@ static int salaryAge[N_SALARY][N_AGE];
 static int salaryFull[N_SALARY];
 static int baseSalary = jobKind::partTime;
 static string filePath;
+static bool isOldAge[N_AGE];
 
 // "modelOne" output table: salary by sex
 // normally each subsample has it own thread local storage for each output table
@@ -233,6 +234,7 @@ void readAllParameters(IDbExec * i_dbExec, const MetaHolder * i_metaStore, int i
     readModelParameter(i_dbExec, i_metaStore, i_runId, "salaryFull", 0, typeid(int), N_SALARY, salaryFull);
     readModelParameter(i_dbExec, i_metaStore, i_runId, "baseSalary", 0, typeid(int), 1, &baseSalary);
     readModelParameter(i_dbExec, i_metaStore, i_runId, "filePath", 0, typeid(string), 1, &filePath);
+    readModelParameter(i_dbExec, i_metaStore, i_runId, "isOldAge", 0, typeid(bool), N_AGE, isOldAge);
 }
 
 // code below is a cosmetic modification of:

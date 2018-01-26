@@ -35,6 +35,7 @@ INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 
 -- modelOne simple types: reference to built-in types
 --
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 4, 4);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 7, 7);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 14, 14);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 21, 21);
 
@@ -93,9 +94,10 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 -- modelOne input parameters
 -- parameter digest: not a real digest (32 digits hex)
 -- db suffix: not a real value (8 digits hex)
--- salaryFull parameter is enum-based
--- baseSalary is scalar parameter is enum-based
--- filePath is a test parameter of string type
+--   salaryFull parameter is enum-based
+--   baseSalary is scalar parameter is enum-based
+--   filePath is a test parameter of string type
+--   isOldAge parameter of logical type
 --
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
@@ -127,12 +129,18 @@ INSERT INTO parameter_dic
 VALUES
   (9, 'filePath', '_20128171604590136', 'filePath_p_2012814', 'filePath_w_2012814', 0, 21, 0);
 
+INSERT INTO parameter_dic
+  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+VALUES
+  (10, 'isOldAge', '_20128171604590137', 'isOldAge_p_2012815', 'isOldAge_w_2012815', 1, 7, 0);
+  
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 6, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 3, 7, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 4, 8, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 5, 9, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 6, 10, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, '(FR) Age by Sex', NULL);
@@ -142,18 +150,23 @@ INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (6, 1
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (7, 0, 'Full or part time by Salary level', NULL);
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (8, 0, 'Base salary level', NULL);
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (9, 0, 'File path string', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (10, 0, 'Is Old Age', 'Is Old Age notes');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (10, 1, '(FR) Is Old Age', '(FR) Is Old Age notes');
 
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 0, 'dim0', 96);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 1, 'dim1', 97);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5, 0, 'dim0', 98);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5, 1, 'dim1', 96);
 INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (7, 0, 'dim0', 98);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (10, 0, 'dim0', 96);
 
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 0, 'Age Dim', 'Age Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 1, 0, 'Sex Dim', 'Sex Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 1, 1, 'Sex Dim', NULL);
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (7, 0, 0, 'Full Dim', NULL);
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (10, 0, 0, 'Age Dim', 'Age Dim notes');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (10, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
 
 -- 
 -- modelOne output tables
@@ -260,6 +273,7 @@ INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VA
 -- enum ids for ageSex.dim1:     0,   1
 -- enum ids for salaryAge.dim0:  100, 200, 300
 -- enum ids for salaryAge.dim1:  10,  20,  30, 40
+-- enum ids for isOldAge.dim0:   10,  20,  30, 40
 -- enum ids for salaryFull.dim0: 100, 200, 300
 -- enum ids for salaryFull.param_value: 22, 33
 -- enum ids for BasSalary.param_value:  22, 33
@@ -368,6 +382,24 @@ CREATE TABLE filePath_w_2012814
   sub_id      INT          NOT NULL, 
   param_value VARCHAR(255) NOT NULL,
   PRIMARY KEY (set_id, sub_id)
+);
+
+CREATE TABLE isOldAge_p_2012815 
+(
+  run_id      INT      NOT NULL,
+  sub_id      INT      NOT NULL, 
+  dim0        INT      NOT NULL, 
+  param_value SMALLINT NOT NULL,
+  PRIMARY KEY (run_id, sub_id, dim0)
+);
+
+CREATE TABLE isOldAge_w_2012815
+(
+  set_id      INT      NOT NULL,
+  sub_id      INT      NOT NULL, 
+  dim0        INT      NOT NULL, 
+  param_value SMALLINT NOT NULL,
+  PRIMARY KEY (set_id, sub_id, dim0)
 );
 
 --

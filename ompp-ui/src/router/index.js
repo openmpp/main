@@ -56,6 +56,21 @@ export default new Router({
           path: 'run/:nameDigest/table/:tableName',
           component: TablePage,
           props: true
+        },
+        {
+          path: ':runOrSet/parameter-list',
+          component: ParameterListPage,
+          props: true
+        },
+        {
+          path: 'run/table-list',
+          component: TableListPage,
+          props: true
+        },
+        {
+          path: '',
+          component: ParameterListPage,
+          props: true
         }
       ]
     },

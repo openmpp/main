@@ -39,9 +39,51 @@
         class="cell-icon-empty material-icons" title="Last page" alt="Last page">last_page</span>
     </span>
 
+    <span v-if="isEdit">
+      <span
+        @click="doSave()" 
+        class="cell-icon-link material-icons" :alt="'Save ' + paramName" :title="'Save ' + paramName">save</span>
+    </span>
+
     <span
       @click="toggleMoreControls()"
       class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
+
+    <span v-if="isShowMoreControls">
+
+      <span
+        @click="doResetView()"
+        class="cell-icon-link material-icons" title="Reset parameter view to default" alt="Reset parameter view to default">settings_backup_restore</span>
+
+      <span v-if="tv.isInc">
+        <span
+          @click="doIncreasePage()"
+          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+      </span>
+
+      <span v-if="tv.isDec">
+        <span
+          @click="doDecreasePage()"
+          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+      </span>
+
+      <span
+        @click="doUnlimitedPage()"
+        class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
+
+      <span
+        @click="doRefresh()"
+        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
+
+    </span>
 
     <span class="mdc-typography--body2">{{ paramName }}: </span>
     <span>{{ paramDescr() }}</span>
@@ -51,40 +93,6 @@
     <span class="cell-icon-empty material-icons" aria-hidden="true">refresh</span>
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
     <span class="mdc-typography--caption">{{msg}}</span>
-  </div>
-
-  <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
-
-    <span
-      @click="doResetView()"
-      class="cell-icon-link material-icons" title="Reset parameter view to default" alt="Reset parameter view to default">settings_backup_restore</span>
-
-    <span v-if="tv.isInc">
-      <span
-        @click="doIncreasePage()"
-        class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
-    </span>
-
-    <span v-if="tv.isDec">
-      <span
-        @click="doDecreasePage()"
-        class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
-    </span>
-
-    <span
-      @click="doUnlimitedPage()"
-      class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
-    <span
-      @click="doRefresh()"
-      class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
   </div>
 
   <div class="ht-container">
@@ -117,8 +125,7 @@ export default {
     digest: '',
     paramName: '',
     runOrSet: '',
-    nameDigest: '',
-    refreshTickle: false
+    nameDigest: ''
   },
 
   data () {
@@ -136,11 +143,15 @@ export default {
         manualColumnMove: true,
         manualColumnResize: true,
         manualRowResize: true,
+        autoColumnSize: {useHeaders: false},
+        columnSorting: true,
+        sortIndicator: true,
         preventOverflow: 'horizontal',
         renderAllRows: true,
         stretchH: 'all',
         fillHandle: false,
         readOnly: true,
+        afterChange: this.doAfterChange,
         rowHeaders: true,
         rowHeaderWidth: 72,
         columns: [],
@@ -157,13 +168,16 @@ export default {
       },
       isShowMoreControls: false,
       moreControlsLabel: SHOW_MORE_LABEL,
+      isEdit: false,
+      editCount: 0,
+      isEditChange: false,
       msg: ''
     }
   },
 
   computed: {
     routeKey () {
-      return [this.digest, this.paramName, this.runOrSet, this.nameDigest, this.refreshTickle].toString()
+      return [this.digest, this.paramName, this.runOrSet, this.nameDigest].toString()
     },
     ...mapGetters({
       theModel: GET.THE_MODEL,
@@ -174,9 +188,7 @@ export default {
   },
 
   watch: {
-    routeKey () {
-      this.refreshView()
-    }
+    routeKey () { this.refreshView() }
   },
 
   methods: {
@@ -281,10 +293,10 @@ export default {
         let sk = [d[i].DimIds].toString() // current row key
 
         if (sk === nowKey) {  // same key: set sub-value at position of sub_id
+          // convert sub-value from enum id to label if required
+          if (!d[i].IsNull) vp[n][nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)
           //
-          if (!d[i].IsNull) vp[n][nSub0 + (d[i].SubId || 0)] = d[i].Value
-        } else {
-          // make new row
+        } else {              // make new row
           let row = []
           for (let j = 0; j < this.paramSize.rank; j++) {
             row.push(
@@ -295,8 +307,8 @@ export default {
             row.push(void 0)
           }
 
-          // append new row to page data
-          if (!d[i].IsNull) row[nSub0 + (d[i].SubId || 0)] = d[i].Value // set current sub-value
+          // append new row to page data and set first row value
+          if (!d[i].IsNull) row[nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)
           n = vp.length
           vp.push(row)
           nowKey = sk
@@ -322,6 +334,60 @@ export default {
       return Mdf.enumDescrOrCodeById(this.dimProp[dimIdx].typeText, enumId)
     },
 
+    // translate column value if parameter value is enum-based
+    translateValue (val) {
+      if (!Mdf.isBuiltIn(this.paramType.Type)) return Mdf.enumDescrOrCodeById(this.paramType, val)
+      return val
+    },
+
+    // save if data editied
+    doSave () {
+      console.log('doSave editCount isEditChange:', this.editCount, this.isEditChange)
+      console.log('this.htSettings.data:', JSON.stringify(this.htSettings.data))
+    },
+
+    // cell edit completed
+    doAfterChange (changes, source) {
+      if (!this.isEdit) return      // edit not allowed
+      if (source === 'loadData') {  // new data loaded
+        this.editCount = 0
+        this.isEditChange = false
+        return
+      }
+
+      // undo changes
+      if (source === 'UndoRedo.undo') {
+        if (this.editCount > 0) this.editCount--
+        if (this.editCount <= 0) this.isEditChange = false
+        return
+      }
+      this.editCount++
+
+      // compare old and new value: it may be no changes
+      let len = Mdf.lengthOf(changes)
+      if (len <= 0) return      // changes undefined
+      try {
+        for (let k = 0; k < len; k++) {
+          let oldVal = changes[k][2]
+          let newVal = changes[k][3]
+          if (newVal !== oldVal) {
+            //
+            if (!Mdf.isInt(this.paramType.Type) && !Mdf.isFloat(this.paramType.Type)) {
+              this.isEditChange = true
+            } else {
+              if (typeof newVal !== 'number') {
+                let nv = parseFloat(newVal)
+                if (!this.isEditChange) this.isEditChange = nv !== oldVal
+                this.htSettings.data[changes[k][0]][changes[k][1]] = nv
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('after change comparison failed')
+      }
+    },
+
     // refresh current page view on mounted or tab switch
     refreshView () {
       // find parameter, parameter type and size, including run sub-values count
@@ -333,7 +399,7 @@ export default {
         this.isWsView ? this.theWorksetText : this.theRunText,
         this.paramName)
       this.subCount = this.paramRunSet.SubCount || 0
-      let isRw = this.isWsView && !this.theWorksetText.IsReadonly
+      this.isEdit = this.isWsView && !this.theWorksetText.IsReadonly
 
       // find dimension type for each dimension
       this.dimProp = []
@@ -360,10 +426,10 @@ export default {
       }
       // single value column or multiple sub-values
       if (this.subCount <= 1) {
-        this.htSettings.columns.push({readOnly: !isRw, validator: 'numeric', title: 'Value'})
+        this.htSettings.columns.push(this.valueColumnDef('Value'))
       } else {
         for (let j = 0; j < this.subCount; j++) {
-          this.htSettings.columns.push({readOnly: !isRw, validator: 'numeric', title: j.toString()})
+          this.htSettings.columns.push(this.valueColumnDef(j.toString()))
         }
       }
 
@@ -371,6 +437,34 @@ export default {
       this.htRoot = 'ht-p-' + this.digest + '-' + this.runOrSet + '-' + this.nameDigest + '-' + this.paramName
       this.setDefaultPageView()
       this.doRefreshDataPage()
+    },
+
+    // value column(s) settings, editor and validator
+    valueColumnDef (title) {
+      // readonly value columns: disable editing
+      if (!this.isEdit) return {readOnly: true, title: title}
+
+      // enable editing
+      let col = {readOnly: false, allowInvalid: false, allowEmpty: false, title: title}
+
+      if (Mdf.isInt(this.paramType.Type)) {
+        col.validator = /^[-+]?[0-9]+$/
+        col.className = 'htRight'
+      }
+      if (Mdf.isFloat(this.paramType.Type)) {
+        col.validator = /^[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$/
+        col.className = 'htRight'
+      }
+      if (Mdf.isBool(this.paramType.Type)) {
+        col.type = 'checkbox'
+      }
+      if (!Mdf.isBuiltIn(this.paramType.Type)) {  // enum type
+        col.editor = 'select'
+        col.selectOptions = Mdf.enumDescrOrCodeArray(this.paramType)
+        // col.type = 'dropdown'
+        // col.source = Mdf.enumDescrOrCodeArray(this.paramType)
+      }
+      return col
     },
 
     // set default page view parameters
