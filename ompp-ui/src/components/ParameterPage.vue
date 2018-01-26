@@ -441,10 +441,20 @@ export default {
 
     // value column(s) settings, editor and validator
     valueColumnDef (title) {
-      // readonly value columns: disable editing
-      if (!this.isEdit) return {readOnly: true, title: title}
+      // readonly value columns: editing disabled
+      if (!this.isEdit) {
+        let col = {readOnly: true, title: title}
 
-      // enable editing
+        if (Mdf.isInt(this.paramType.Type) || Mdf.isFloat(this.paramType.Type)) {
+          col.className = 'htRight'
+        }
+        if (Mdf.isBool(this.paramType.Type)) {
+          col.type = 'checkbox'
+        }
+        return col
+      }
+
+      // editing enabled
       let col = {readOnly: false, allowInvalid: false, allowEmpty: false, title: title}
 
       if (Mdf.isInt(this.paramType.Type)) {
