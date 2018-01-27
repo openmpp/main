@@ -213,17 +213,16 @@ export default {
       this.$refs.noteDlg.showParamInfo(this.paramName, this.subCount)
     },
 
-    // local refresh button handler, table content only
-    doRefresh () {
-      this.doRefreshDataPage()
-    },
-
     // show or hide extra controls
     toggleMoreControls () {
       this.isShowMoreControls = !this.isShowMoreControls
       this.moreControlsLabel = this.isShowMoreControls ? HIDE_MORE_LABEL : SHOW_MORE_LABEL
     },
 
+    // local refresh button handler, table content only
+    doRefresh () {
+      this.doRefreshDataPage()
+    },
     // move to previous page
     doPrevPage () {
       if (this.tv.start === 0) return
@@ -278,6 +277,76 @@ export default {
     doResetView () {
       this.setDefaultPageView()
       this.doRefreshDataPage()
+    },
+
+    // save if data editied
+    doSave () {
+      this.doSaveDataPage()
+    },
+
+    // cell(s) edit completed event: load data, copy-paste, undo-redo
+    // handsontable issue: even data not changed handsontable emit 'eidt' event
+    doAfterChange (changes, source) {
+      if (!this.isEdit) return      // edit not allowed
+
+      if (source === 'loadData') {  // new data loaded
+        this.editCount = 0
+        this.isEditUpdated = false
+        this.editRowCol = []
+        return
+      }
+
+      // undo changes
+      if (source === 'UndoRedo.undo') {
+        if (this.editCount > 0) this.editCount--
+        if (this.editCount <= 0) {
+          this.isEditUpdated = false
+          this.editRowCol = []
+        }
+        return
+      }
+      this.editCount++
+
+      // compare old and new value: it may be no changes
+      let len = Mdf.lengthOf(changes)
+      if (len <= 0) return      // changes undefined
+      try {
+        for (let k = 0; k < len; k++) {
+          let oldVal = changes[k][2]
+          let newVal = changes[k][3]
+          let iRow = this.$refs.ht.table.toPhysicalRow(changes[k][0])
+          let iCol = changes[k][1]
+          let isUpd = false
+
+          // check new value type, convert back to number, store numeric value in the data
+          // handsontable issues:
+          //   old and new value may be identical, we must compare to detect real change
+          //   numeric value converted to string, we must convert it back
+          if (newVal !== oldVal) {
+            if (!Mdf.isInt(this.paramType.Type) && !Mdf.isFloat(this.paramType.Type)) {
+              isUpd = true
+            } else {
+              if (typeof newVal !== 'number') {
+                let nv = parseFloat(newVal)
+                isUpd = nv !== oldVal                 // cell updated only if numeric values different
+                this.htSettings.data[iRow][iCol] = nv // restore numeric value
+              }
+            }
+          }
+
+          // value updated, store updated cell row column
+          if (isUpd) {
+            this.isEditUpdated = true
+            let isFound = false
+            for (let j = 0; !isFound && j < this.editRowCol.length; j++) {
+              isFound = this.editRowCol[j][0] === iRow && this.editRowCol[j][1] === iCol
+            }
+            if (!isFound) this.editRowCol.push([iRow, iCol])
+          }
+        }
+      } catch (e) {
+        console.log('after change comparison failed')
+      }
     },
 
     // update table data from response data page
@@ -356,76 +425,8 @@ export default {
       return val
     },
 
-    // save if data editied
-    doSave () {
-      this.doSaveDataPage()
-    },
-
-    // cell(s) edit completed event: load data, copy-paste, undo-redo
-    // handsontable issue: even data not changed handsontable emit 'eidt' event
-    doAfterChange (changes, source) {
-      if (!this.isEdit) return      // edit not allowed
-
-      if (source === 'loadData') {  // new data loaded
-        this.editCount = 0
-        this.isEditUpdated = false
-        this.editRowCol = []
-        return
-      }
-
-      // undo changes
-      if (source === 'UndoRedo.undo') {
-        if (this.editCount > 0) this.editCount--
-        if (this.editCount <= 0) {
-          this.isEditUpdated = false
-          this.editRowCol = []
-        }
-        return
-      }
-      this.editCount++
-
-      // compare old and new value: it may be no changes
-      let len = Mdf.lengthOf(changes)
-      if (len <= 0) return      // changes undefined
-      try {
-        for (let k = 0; k < len; k++) {
-          let oldVal = changes[k][2]
-          let newVal = changes[k][3]
-          let iRow = changes[k][0]
-          let iCol = changes[k][1]
-          let isUpd = false
-
-          // handsontable issue: compare old and new value, it may be identical
-          // handsontable issue: numeric value converted to string
-          // check new value type, convert back to number, store numeric value in the data
-          if (newVal !== oldVal) {
-            if (!Mdf.isInt(this.paramType.Type) && !Mdf.isFloat(this.paramType.Type)) {
-              isUpd = true
-            } else {
-              if (typeof newVal !== 'number') {
-                let nv = parseFloat(newVal)
-                isUpd = nv !== oldVal                 // cell updated only if numeric values different
-                this.htSettings.data[iRow][iCol] = nv // restore numeric value
-              }
-            }
-          }
-
-          // value updated, store updated cell row column
-          if (isUpd) {
-            this.isEditUpdated = true
-            let isFound = false
-            for (let j = 0; !isFound && j < this.editRowCol.length; j++) {
-              isFound = this.editRowCol[j][0] === iRow && this.editRowCol[j][1] === iCol
-            }
-            if (!isFound) this.editRowCol.push([iRow, iCol])
-          }
-        }
-      } catch (e) {
-        console.log('after change comparison failed')
-      }
-    },
-
     // refresh current page view on mounted or tab switch
+    // this is a main entry point to set table view and query data from the server
     refreshView () {
       // find parameter, parameter type and size, including run sub-values count
       this.isWsView = ((this.runOrSet || '') === Mdf.SET_OF_RUNSET)
@@ -437,10 +438,6 @@ export default {
         this.paramName)
       this.subCount = this.paramRunSet.SubCount || 0
       this.isEdit = this.isWsView && !this.theWorksetText.IsReadonly
-
-      // column sorting only if parameter non-editable
-      this.htSettings.columnSorting = !this.isEdit
-      this.htSettings.sortIndicator = !this.isEdit
 
       // find dimension type for each dimension
       this.dimProp = []

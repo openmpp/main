@@ -201,17 +201,16 @@ export default {
       this.$refs.noteDlg.showTableInfo(this.tableName, this.subCount)
     },
 
-    // local refresh button handler, table content only
-    doRefresh () {
-      this.doRefreshDataPage()
-    },
-
     // show or hide extra controls
     toggleMoreControls () {
       this.isShowMoreControls = !this.isShowMoreControls
       this.moreControlsLabel = this.isShowMoreControls ? HIDE_MORE_LABEL : SHOW_MORE_LABEL
     },
 
+    // local refresh button handler, table content only
+    doRefresh () {
+      this.doRefreshDataPage()
+    },
     // move to previous page
     doPrevPage () {
       if (this.tv.start === 0) return

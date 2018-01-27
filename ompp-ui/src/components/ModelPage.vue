@@ -147,6 +147,7 @@ export default {
     },
     isSuccessTheRun () { return Mdf.isRunSuccess(this.theRunText) },
     currentRunSetKey () { return [this.runDigest, this.wsName, this.isWsView].toString() },
+
     // view header line
     isNotEmptyHdr () {
       return this.isWsView ? Mdf.isNotEmptyWorksetText(this.theWorksetText) : Mdf.isNotEmptyRunText(this.theRunText)
@@ -163,6 +164,7 @@ export default {
     emptyHdrMsg () {
       return this.isWsView ? 'No input set of parameters found' : 'No model run results'
     },
+
     ...mapGetters({
       theModel: GET.THE_MODEL,
       theRunText: GET.THE_RUN_TEXT,

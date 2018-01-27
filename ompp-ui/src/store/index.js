@@ -125,7 +125,7 @@ const mutations = {
   // set current run by index in run list or empty if index out of range
   [UPDATE.THE_RUN_TEXT_BY_IDX] (state, idx) {
     // if index out of range then set current run to empty value
-    if (idx < 0 && idx >= state.runTextList.length) {
+    if (idx < 0 || idx >= state.runTextList.length) {
       state.theRunText = Mdf.emptyRunText()
       return
     }
@@ -190,7 +190,7 @@ const mutations = {
   // set current workset by index in workset list or empty if index out of range
   [UPDATE.THE_WORKSET_TEXT_BY_IDX] (state, idx) {
     // if index out of range then set current workset to empty value
-    if (idx < 0 && idx >= state.worksetTextList.length) {
+    if (idx < 0 || idx >= state.worksetTextList.length) {
       state.theWorksetText = Mdf.emptyWorksetText()
       return
     }
