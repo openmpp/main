@@ -148,6 +148,18 @@ export const enumDescrOrCodeById = (typeTxt, enumId) => {
   return ''   // not found
 }
 
+// find enum id by description or code retrun null if not found
+export const enumIdByDescrOrCode = (typeTxt, enumDc) => {
+  if (!typeTxt || !Hlpr.isLength(typeTxt.TypeEnumTxt)) return null
+  for (let k = 0; k < typeTxt.TypeEnumTxt.length; k++) {
+    if (isEnum(typeTxt.TypeEnumTxt[k])) {
+      let dc = Dnf.descrOfDescrNote(typeTxt.TypeEnumTxt[k]) || (typeTxt.TypeEnumTxt[k].Enum.Name || '')
+      if (dc === enumDc) return typeTxt.TypeEnumTxt[k].Enum.EnumId
+    }
+  }
+  return null // not found
+}
+
 // return array of all codes from TypeEnumTxt[]
 export const enumCodeArray = (typeTxt) => {
   if (!typeTxt || !Hlpr.isLength(typeTxt.TypeEnumTxt)) return []

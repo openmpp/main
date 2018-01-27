@@ -2,7 +2,7 @@
 
 <div id="parameter-page" class="main-container mdc-typography mdc-typography--body1">
 
-  <div v-if="loadDone" class="hdr-row mdc-typography--body1">
+  <div v-if="loadDone && saveDone" class="hdr-row mdc-typography--body1">
     
     <span
       @click="showParamInfo()" 
@@ -40,9 +40,11 @@
     </span>
 
     <span v-if="isEdit">
-      <span
+      <span v-if="isEditUpdated"
         @click="doSave()" 
         class="cell-icon-link material-icons" :alt="'Save ' + paramName" :title="'Save ' + paramName">save</span>
+      <span v-else
+        class="cell-icon-empty material-icons" title="Save" alt="Save">save</span>
     </span>
 
     <span
@@ -91,7 +93,7 @@
   </div>
   <div v-else class="hdr-row mdc-typography--body2">
     <span class="cell-icon-empty material-icons" aria-hidden="true">refresh</span>
-    <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
+    <span v-if="loadWait || saveWait" class="material-icons om-mcw-spin">star</span>
     <span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
@@ -132,6 +134,8 @@ export default {
     return {
       loadDone: false,
       loadWait: false,
+      saveDone: false,
+      saveWait: false,
       paramText: Mdf.emptyParamText(),
       paramSize: Mdf.emptyParamSize(),
       paramType: Mdf.emptyTypeText(),
@@ -158,6 +162,7 @@ export default {
         data: []
       },
       dimProp: [],
+      dimKeys: [],
       tv: {
         start: 0,
         size: 20,
@@ -169,8 +174,9 @@ export default {
       isShowMoreControls: false,
       moreControlsLabel: SHOW_MORE_LABEL,
       isEdit: false,
+      isEditUpdated: false,
       editCount: 0,
-      isEditChange: false,
+      editRowCol: [],
       msg: ''
     }
   },
@@ -188,7 +194,15 @@ export default {
   },
 
   watch: {
-    routeKey () { this.refreshView() }
+    routeKey () { this.refreshView() },
+    saveDone () {
+      let isDone = this.saveDone
+      if (isDone) {
+        this.isEditUpdated = false
+        this.editCount = 0
+        this.editRowCol = []
+      }
+    }
   },
 
   methods: {
@@ -274,16 +288,16 @@ export default {
         this.htSettings.data = ['none']
         return
       }
-
-      // set page data
-      this.htSettings.data = this.makeParamPage(len, d)
+      // set table data and row headers
+      this.setNewTableData(len, d)
       this.htSettings.rowHeaders = this.makeRowHeaders(len)
     },
 
     // make parameter data page, columns are: dimensions, sub-values
     // each sub-value is a separate row in source rowset
-    makeParamPage (len, d) {
+    setNewTableData (len, d) {
       const vp = []
+      const dp = []
 
       let nowKey = '?'  // non-existent start key to enforce append of the first row
       let n = 0
@@ -293,9 +307,7 @@ export default {
         let sk = [d[i].DimIds].toString() // current row key
 
         if (sk === nowKey) {  // same key: set sub-value at position of sub_id
-          // convert sub-value from enum id to label if required
-          if (!d[i].IsNull) vp[n][nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)
-          //
+          vp[n][nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)  // convert sub-value from enum id to label if required
         } else {              // make new row
           let row = []
           for (let j = 0; j < this.paramSize.rank; j++) {
@@ -307,14 +319,18 @@ export default {
             row.push(void 0)
           }
 
-          // append new row to page data and set first row value
-          if (!d[i].IsNull) row[nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)
+          // append new row to page data, set first row value, store dimension ids
+          row[nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)
           n = vp.length
           vp.push(row)
           nowKey = sk
+          if (this.isEdit) dp.push(d[i].DimIds)
         }
       }
-      return vp
+
+      // set page data and stroe dimension keys for page rows
+      this.htSettings.data = vp
+      this.dimKeys = dp
     },
 
     // make table row headers, each data row can contain multiple table rows.
@@ -342,23 +358,28 @@ export default {
 
     // save if data editied
     doSave () {
-      console.log('doSave editCount isEditChange:', this.editCount, this.isEditChange)
-      console.log('this.htSettings.data:', JSON.stringify(this.htSettings.data))
+      this.doSaveDataPage()
     },
 
-    // cell edit completed
+    // cell(s) edit completed event: load data, copy-paste, undo-redo
+    // handsontable issue: even data not changed handsontable emit 'eidt' event
     doAfterChange (changes, source) {
       if (!this.isEdit) return      // edit not allowed
+
       if (source === 'loadData') {  // new data loaded
         this.editCount = 0
-        this.isEditChange = false
+        this.isEditUpdated = false
+        this.editRowCol = []
         return
       }
 
       // undo changes
       if (source === 'UndoRedo.undo') {
         if (this.editCount > 0) this.editCount--
-        if (this.editCount <= 0) this.isEditChange = false
+        if (this.editCount <= 0) {
+          this.isEditUpdated = false
+          this.editRowCol = []
+        }
         return
       }
       this.editCount++
@@ -370,17 +391,33 @@ export default {
         for (let k = 0; k < len; k++) {
           let oldVal = changes[k][2]
           let newVal = changes[k][3]
+          let iRow = changes[k][0]
+          let iCol = changes[k][1]
+          let isUpd = false
+
+          // handsontable issue: compare old and new value, it may be identical
+          // handsontable issue: numeric value converted to string
+          // check new value type, convert back to number, store numeric value in the data
           if (newVal !== oldVal) {
-            //
             if (!Mdf.isInt(this.paramType.Type) && !Mdf.isFloat(this.paramType.Type)) {
-              this.isEditChange = true
+              isUpd = true
             } else {
               if (typeof newVal !== 'number') {
                 let nv = parseFloat(newVal)
-                if (!this.isEditChange) this.isEditChange = nv !== oldVal
-                this.htSettings.data[changes[k][0]][changes[k][1]] = nv
+                isUpd = nv !== oldVal                 // cell updated only if numeric values different
+                this.htSettings.data[iRow][iCol] = nv // restore numeric value
               }
             }
+          }
+
+          // value updated, store updated cell row column
+          if (isUpd) {
+            this.isEditUpdated = true
+            let isFound = false
+            for (let j = 0; !isFound && j < this.editRowCol.length; j++) {
+              isFound = this.editRowCol[j][0] === iRow && this.editRowCol[j][1] === iCol
+            }
+            if (!isFound) this.editRowCol.push([iRow, iCol])
           }
         }
       } catch (e) {
@@ -400,6 +437,10 @@ export default {
         this.paramName)
       this.subCount = this.paramRunSet.SubCount || 0
       this.isEdit = this.isWsView && !this.theWorksetText.IsReadonly
+
+      // column sorting only if parameter non-editable
+      this.htSettings.columnSorting = !this.isEdit
+      this.htSettings.sortIndicator = !this.isEdit
 
       // find dimension type for each dimension
       this.dimProp = []
@@ -483,7 +524,7 @@ export default {
       this.tv.size = Math.min(20, this.paramSize.dimTotal)
     },
 
-    // get page of parameter data from current model run
+    // get page of parameter data from current model run or workset
     async doRefreshDataPage () {
       this.loadDone = false
       this.loadWait = true
@@ -564,10 +605,78 @@ export default {
       layout.OrderBy.push({IndexOne: 1})
 
       return layout
+    },
+
+    // save page of parameter data into current workset
+    async doSaveDataPage () {
+      this.saveDone = false
+      this.saveWait = true
+      this.msg = 'Saving...'
+
+      // exit if parameter not found in model run or workset
+      if (!Mdf.isParamRunSet(this.paramRunSet)) {
+        let m = 'Parameter not found in ' + this.nameDigest
+        this.msg = m
+        console.log(m)
+        this.saveWait = false
+        return
+      }
+
+      // prepare parameter data for save, exit with error if no changes found
+      let pv = this.makePageForSave()
+      if (!Mdf.lengthOf(pv)) {
+        this.msg = 'No parameter changes, nothing to save'
+        console.log('No parameter changes, nothing to save')
+        this.saveWait = false
+        return
+      }
+
+      // url to update parameter data
+      let u = this.omppServerUrl +
+        '/api/model/' + (this.digest || '') +
+        '/workset/' + (this.nameDigest || '') +
+        '/parameter/' + (this.paramName || '') + '/new/value-id'
+
+      // send data page to the server, response body expected to be empty
+      try {
+        const response = await axios.post(u, pv)
+        const rsp = response.data
+        if ((rsp || '') !== '') console.log('Server reply:', rsp)
+        this.saveDone = true
+      } catch (e) {
+        this.msg = 'Server offline or parameter save failed'
+        console.log('Server offline or parameter save failed')
+      }
+      this.saveWait = false
+    },
+
+    // prepare page of parameter data for save
+    makePageForSave () {
+      if (!this.isEdit || this.editRowCol.length <= 0) return []   // no changes or edit disabled
+
+      const nSub0 = this.paramSize.rank // first sub-value position
+      const pv = []
+
+      for (let k = 0; k < this.editRowCol.length; k++) {
+        let iRow = this.editRowCol[k][0]
+        let iCol = this.editRowCol[k][1]
+
+        // if parameter enum-based then convert label to enum id
+        let v = (Mdf.isBuiltIn(this.paramType.Type)
+          ? this.htSettings.data[iRow][iCol]
+          : Mdf.enumIdByDescrOrCode(this.paramType, this.htSettings.data[iRow][iCol]))
+
+        pv.push({
+          DimIds: this.dimKeys[iRow],
+          Value: v,
+          SubId: iCol - nSub0})
+      }
+      return pv
     }
   },
 
   mounted () {
+    this.saveDone = true
     this.refreshView()
     this.$emit('tab-mounted', 'parameter', this.paramName)
   }
