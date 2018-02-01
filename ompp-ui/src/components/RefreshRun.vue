@@ -16,7 +16,8 @@ export default {
   props: {
     modelDigest: '',
     runDigest: '',
-    refreshTickle: false
+    refreshTickle: false,
+    refreshRunTickle: false
   },
 
   data () {
@@ -35,13 +36,10 @@ export default {
   },
 
   watch: {
-    // refresh button handler
-    refreshTickle () {
-      this.doRefreshRunText() // reload run
-    },
-    runDigest () {
-      this.doRefreshRunText() // reload run
-    }
+    // refresh handlers
+    refreshTickle () { this.doRefreshRunText() },
+    refreshRunTickle () { this.doRefreshRunText() },
+    runDigest () { this.doRefreshRunText() }
   },
 
   methods: {

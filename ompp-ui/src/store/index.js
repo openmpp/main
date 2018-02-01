@@ -119,7 +119,31 @@ const mutations = {
 
   // set current run
   [UPDATE.THE_RUN_TEXT] (state, rt) {
-    state.theRunText = Mdf.isRunText(rt) ? rt : Mdf.emptyRunText()
+    if (!Mdf.isRunText(rt)) {
+      state.theRunText = Mdf.emptyRunText()
+      return
+    }
+    // update current model run
+    state.theRunText = rt
+
+    // find current model run in the list and update it
+    if (!Mdf.isNotEmptyRunText(rt) || !Mdf.isLength(state.runTextList)) return
+
+    for (let k = 0; k < state.runTextList.length; k++) {
+      if (state.runTextList[k].ModelDigest === rt.ModelDigest &&
+        ((rt.Digest !== '' && state.runTextList[k].Digest === rt.Digest) ||
+        (rt.Digest === '' &&
+        state.runTextList[k].Digest === rt.Digest &&
+        state.runTextList[k].Name === rt.Name &&
+        state.runTextList[k].Status === rt.Status &&
+        state.runTextList[k].SubCount === rt.SubCount &&
+        state.runTextList[k].CreateDateTime === rt.CreateDateTime &&
+        state.runTextList[k].UpdateDateTime === rt.UpdateDateTime))) {
+        // update run list with current value
+        state.runTextList.splice(k, 1, JSON.parse(JSON.stringify(rt)))
+        break
+      }
+    }
   },
 
   // set current run by index in run list or empty if index out of range
@@ -184,7 +208,24 @@ const mutations = {
 
   // set current workset
   [UPDATE.THE_WORKSET_TEXT] (state, wt) {
-    state.theWorksetText = Mdf.isWorksetText(wt) ? wt : Mdf.emptyWorksetText()
+    if (!Mdf.isWorksetText(wt)) {
+      state.theWorksetText = Mdf.emptyWorksetText()
+      return
+    }
+    // update current workset
+    state.theWorksetText = wt
+
+    // find current workset in the list and update it
+    if (!Mdf.isNotEmptyWorksetText(wt) || !Mdf.isLength(state.worksetTextList)) return
+
+    for (let k = 0; k < state.worksetTextList.length; k++) {
+      if (state.worksetTextList[k].ModelDigest === wt.ModelDigest &&
+        state.worksetTextList[k].Name === wt.Name) {
+        // update workset list with current value
+        state.worksetTextList.splice(k, 1, JSON.parse(JSON.stringify(wt)))
+        break
+      }
+    }
   },
 
   // set current workset by index in workset list or empty if index out of range

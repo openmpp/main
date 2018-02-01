@@ -5,18 +5,51 @@
   <div class="hdr-row mdc-typography--body1">
 
     <span v-if="loadDone">
+
       <span v-if="!isWsView" 
         @click="showRunInfoDlg()" 
         class="cell-icon-link material-icons"
         alt="Description and notes" title="Description and notes">
           <span v-if="isSuccessTheRun">event_note</span>
           <span v-else>priority_high</span>
+      </span>
+      <!-- isWsView -->
+      <span v-else>
+
+        <span
+          @click="showWsInfoDlg()" 
+          class="cell-icon-link material-icons"
+          alt="Description and notes" title="Description and notes">event_note</span>
+
+        <span v-if="!isWsEdit">
+          <span
+            @click="doWsEditToggle()" 
+            class="cell-icon-link material-icons"
+            alt="Edit input set of parameters" title="Edit input set of parameters">mode_edit</span>
+          <span v-if="!isRunPanel"
+            @click="showRunPanel()" 
+            class="cell-icon-link material-icons"
+            alt="Run the model" title="Run the model">directions_run</span>
+          <span v-else
+            @click="hideRunPanel()" 
+            class="cell-icon-link material-icons"
+            alt="Close" title="Close">close</span>
         </span>
-      <span v-else 
-        @click="showWsInfoDlg()" 
-        class="cell-icon-link material-icons"
-        alt="Description and notes" title="Description and notes">event_note</span>
+        <!-- isWsEdit -->
+        <span v-else>
+          <span
+            @click="doWsEditToggle()" 
+            class="cell-icon-link material-icons"
+            alt="Save input set of parameters" title="Save input set of parameters">save</span>
+          <span
+            class="cell-icon-empty material-icons" 
+            alt="Run the model" title="Run the model">directions_run</span>
+        </span>
+
+      </span>
     </span>
+
+    <!-- !loadDone -->
     <span v-else 
       class="cell-icon-empty material-icons" 
       title="Information not available" alt="Information not available" aria-hidden="true">event_note</span>
@@ -47,12 +80,14 @@
       <refresh-run-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
+        :refresh-run-tickle="refreshRunTickle"
         @done="doneRunListLoad" @wait="()=>{}">
       </refresh-run-list>
       <refresh-workset v-if="(wsName || '') !== ''"
         :model-digest="digest"
         :workset-name="wsName"
         :refresh-tickle="refreshTickle"
+        :refresh-ws-tickle="refreshWsTickle"
         @done="doneWsLoad" @wait="()=>{}">
       </refresh-workset>
       <refresh-workset-list
@@ -60,8 +95,64 @@
         :refresh-tickle="refreshTickle"
         @done="doneWsListLoad" @wait="()=>{}">
       </refresh-workset-list>
+      <update-workset-status v-if="(wsName || '') !== ''"
+        :model-digest="digest"
+        :workset-name="wsName"
+        :enable-edit="!isWsEdit"
+        :save-ws-status-tickle="saveWsStatusTickle"
+        @done="doneWsStatusUpdate" @wait="()=>{}">
+      </update-workset-status>
     </span>
 
+  </div>
+
+  <div v-if="!isWsEdit && isRunPanel && !isRunInit" class="panel-frame mdc-typography--body1">
+    <div>
+      <span class="panel-item mdc-typography--body2">Enter the name for new model run:</span>
+    </div>
+    <div>
+      <span class="mdc-text-field mdc-text-field--fullwidth">
+        <input type="text"
+          id="run-name-input"
+          ref="runNameInput"
+          maxlength="255"
+          :value="autoNewRunName"
+          class="mdc-text-field__input"></input>
+      </span>
+    </div>
+    <div>
+      <om-mcw-button 
+        @click="doModelRun"
+        :raised="true"
+        class="panel-item"
+        :alt="'Run the model with input set ' + wsName"
+        :title="'Run the model with input set ' + wsName">
+        <i class="material-icons mdc-button__icon">directions_run</i>Run the model</om-mcw-button>
+    </div>
+  </div>
+
+  <div v-if="isRunPanel && isRunInit" class="panel-frame mdc-typography--body1">
+    <div>
+      <span class="mdc-typography--body2">Running: </span><span class="mdc-typography--body1">{{newRunName}}</span>
+    </div>
+    <template v-if="isNewRunState">
+      <div>
+        <span class="mdc-typography--body2">Started at: </span><span class="mono">{{newRunState.StartDateTime}}</span>
+      </div>
+      <div>
+        <span class="mdc-typography--body2">Model log: </span><span class="mono">{{newRunState.RunKey}}.log</span>
+      </div>
+    </template>
+    <div>
+      <new-run-model
+        :model-digest="digest"
+        :new-run-name="newRunName"
+        :workset-name="wsName"
+        @done="doneNewRunLoad"
+        @mounted="()=>{}"
+        @wait="()=>{}">
+      </new-run-model>
+    </div>
   </div>
 
   <nav class="tab-container mdc-typography--body2">
@@ -111,12 +202,23 @@ import RefreshRun from './RefreshRun'
 import RefreshRunList from './RefreshRunList'
 import RefreshWorkset from './RefreshWorkset'
 import RefreshWorksetList from './RefreshWorksetList'
+import UpdateWorksetStatus from './UpdateWorksetStatus'
+import NewRunModel from './NewRunModel'
 import RunInfoDialog from './RunInfoDialog'
 import WorksetInfoDialog from './WorksetInfoDialog'
 
 export default {
   components: {
-    OmMcwButton, RunInfoDialog, WorksetInfoDialog, RefreshModel, RefreshRun, RefreshRunList, RefreshWorkset, RefreshWorksetList
+    OmMcwButton,
+    RunInfoDialog,
+    WorksetInfoDialog,
+    RefreshModel,
+    RefreshRun,
+    RefreshRunList,
+    RefreshWorkset,
+    RefreshWorksetList,
+    UpdateWorksetStatus,
+    NewRunModel
   },
 
   props: {
@@ -131,10 +233,19 @@ export default {
       loadRunListDone: false,
       loadWsDone: false,
       loadWsListDone: false,
+      refreshWsTickle: false,
+      saveWsStatusTickle: false,
+      refreshRunTickle: false,
       mountedDone: false,
+      modelName: '',
       runDigest: '',
       wsName: '',
-      isWsView: false,    // if true then page view is a workset else run
+      isWsView: false,      // if true then page view is a workset else run
+      isRunPanel: false,    // if true then run panel is visible
+      isRunInit: false,     // if true then model run initiated
+      isNewRunState: false, // if true then new run state received from server
+      newRunState: {},      // current run state
+      newRunName: '',
       tabCount: 0,
       tabLst: []
     }
@@ -147,6 +258,16 @@ export default {
     },
     isSuccessTheRun () { return Mdf.isRunSuccess(this.theRunText) },
     currentRunSetKey () { return [this.runDigest, this.wsName, this.isWsView].toString() },
+
+    // if true then workset edit mode else readonly and model run enabled
+    isWsEdit () {
+      return this.isWsView && Mdf.isNotEmptyWorksetText(this.theWorksetText) && !this.theWorksetText.IsReadonly
+    },
+    // make new model run name
+    autoNewRunName () {
+      const dt = new Date()
+      return (this.wsName || '') + ' ' + Mdf.dtToTimeStamp(dt)
+    },
 
     // view header line
     isNotEmptyHdr () {
@@ -210,7 +331,10 @@ export default {
 
   methods: {
     // reload event handlers: async get the model, runs and worksets
-    doneModelLoad (isSuccess) { this.loadModelDone = true },
+    doneModelLoad (isSuccess) {
+      this.modelName = this.theModel.Name
+      this.loadModelDone = true
+    },
     doneRunLoad (isSuccess) {
       this.loadRunDone = true
       this.isWsView = !isSuccess
@@ -235,6 +359,9 @@ export default {
         this.loadWsDone = true  // do not refresh workset: workset list empty
       }
     },
+    doneWsStatusUpdate () {
+      this.refreshWsTickle = !this.refreshWsTickle  // refersh current workset
+    },
 
     // run selected from the list: reload run info
     doRunSelect (dgst) {
@@ -253,6 +380,40 @@ export default {
       }
       this.wsName = name
       this.isWsView = true
+    },
+
+    // toggle workset readonly status
+    doWsEditToggle () {
+      this.saveWsStatusTickle = !this.saveWsStatusTickle
+    },
+
+    // show or close model run panel
+    showRunPanel () { this.isRunPanel = true },
+    hideRunPanel () {
+      this.isRunPanel = false
+      this.isRunInit = false
+      this.isNewRunState = false
+    },
+
+    // run the model
+    doModelRun () {
+      // cleanup model run name
+      let name = this.$refs.runNameInput.value
+      name = name.replace(/["'`$}{@\\]/g, ' ').trim()
+      if ((name || '') === '') name = this.autoNewRunName
+
+      this.newRunName = name  // show actual name afetr cleanup
+      this.isRunInit = true
+      this.isNewRunState = false
+    },
+    // new run started
+    doneNewRunLoad (ok, rst) {
+      this.isNewRunState = (!!ok && !!rst)
+      if (this.isNewRunState) {
+        this.newRunState = rst
+      } else {
+        this.newRunState = { RunKey: '', StartDateTime: '', UpdateDateTime: '' }
+      }
     },
 
     // show currently selected run info
@@ -444,6 +605,7 @@ export default {
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
+  @import "@material/textfield/mdc-text-field";
   
   /* page and tab container content body */
   .main-container {
@@ -525,10 +687,24 @@ export default {
   }
   */
 
+  /* model run panel */
+  .panel-frame {
+    margin-top: .5rem;
+    margin-right: 2rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+  .panel-item {
+    margin-right: .5rem;
+  }
+
   /* cell material icon: a link or empty (non-link) */
   .cell-icon {
     vertical-align: middle;
     margin: 0;
+    padding-left: 0;
+    padding-right: 0;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -545,7 +721,9 @@ export default {
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--text-disabled-on-background;
+    @extend .mdc-theme--primary-light-bg;
+    @extend .mdc-theme--text-primary-on-primary;
+    /* @extend .mdc-theme--text-disabled-on-background; */
   }
   .cell-status {
     text-transform: uppercase;

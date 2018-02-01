@@ -425,8 +425,10 @@ export default {
       return val
     },
 
+    //
+    // main entry point to set table view and query data from the server
+    //
     // refresh current page view on mounted or tab switch
-    // this is a main entry point to set table view and query data from the server
     refreshView () {
       // find parameter, parameter type and size, including run sub-values count
       this.isWsView = ((this.runOrSet || '') === Mdf.SET_OF_RUNSET)

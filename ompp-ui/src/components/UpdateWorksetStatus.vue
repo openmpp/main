@@ -1,7 +1,7 @@
-<!-- reload workset-text by model digest and workset name -->
+<!-- update workset readonly status by model digest and workset name -->
 <template>
 
-<span id="refresh-workset" v-show="!loadDone" class="mdc-typography--caption">
+<span id="update-workset-status" v-show="!loadDone" class="mdc-typography--caption">
   <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
 </span>
   
@@ -9,15 +9,15 @@
 
 <script>
 import axios from 'axios'
-import { mapGetters, mapActions } from 'vuex'
-import { GET, SET } from '@/store'
+import { mapGetters } from 'vuex'
+import { GET } from '@/store'
 
 export default {
   props: {
     modelDigest: '',
     worksetName: '',
-    refreshTickle: false,
-    refreshWsTickle: false
+    enableEdit: false,
+    saveWsStatusTickle: false
   },
 
   data () {
@@ -30,29 +30,30 @@ export default {
 
   computed: {
     ...mapGetters({
-      uiLang: GET.UI_LANG,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },
 
   watch: {
-    // refresh handlers
-    refreshTickle () { this.doRefreshWsText() },
-    refreshWsTickle () { this.doRefreshWsText() },
-    worksetName () { this.doRefreshWsText() }
+    // start status update handler
+    saveWsStatusTickle () { this.doUpdateWsStatus() }
   },
 
   methods: {
-    // refersh workset text
-    async doRefreshWsText () {
-      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/workset/' + (this.worksetName || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
+    // update workset readonly status
+    async doUpdateWsStatus () {
+      let u = this.omppServerUrl +
+        '/api/model/' + (this.modelDigest || '') +
+        '/workset/' + (this.worksetName || '') +
+        '/readonly/' + (!this.enableEdit).toString()
       this.loadDone = false
       this.loadWait = true
-      this.msgLoad = 'Loading workset...'
+      this.msgLoad = 'Updating workset...'
       this.$emit('wait')
       try {
-        const response = await axios.get(u)
-        this.setWorksetText(response.data)   // update workset text in store
+        const response = await axios.post(u)
+        const rsp = response.data
+        if ((rsp || '') !== '') console.log('Server reply:', rsp)
         this.loadDone = true
       } catch (e) {
         this.msgLoad = '<Server offline or no model input set not found>'
@@ -60,14 +61,10 @@ export default {
       }
       this.loadWait = false
       this.$emit('done', this.loadDone)
-    },
-    ...mapActions({
-      setWorksetText: SET.THE_WORKSET_TEXT
-    })
+    }
   },
 
   mounted () {
-    this.doRefreshWsText() // reload workset
   }
 }
 </script>
