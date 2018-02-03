@@ -15,7 +15,8 @@ import { GET, SET } from '@/store'
 export default {
   props: {
     digest: '',
-    refreshTickle: false
+    refreshTickle: false,
+    refreshWsListTickle: false
   },
 
   data () {
@@ -34,23 +35,21 @@ export default {
   },
 
   watch: {
-    // refresh button handler
-    refreshTickle () {
-      this.doRefreshWsTextList()  // reload workset list
-    },
-    digest () {
-      this.doRefreshWsTextList() // reload run list
-    }
+    // refresh handlers
+    refreshTickle () { this.doRefreshWsTextList() },
+    refreshWsListTickle () { this.doRefreshWsTextList() },
+    digest () { this.doRefreshWsTextList() }
   },
 
   methods: {
     // refersh workset list
     async doRefreshWsTextList () {
-      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/workset-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
       this.msgLoad = 'Loading workset list...'
       this.$emit('wait')
+
+      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/workset-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setWorksetTextList(response.data)  // update workset list in store
@@ -62,6 +61,7 @@ export default {
       this.loadWait = false
       this.$emit('done', this.loadDone)
     },
+
     ...mapActions({
       setWorksetTextList: SET.WORKSET_TEXT_LIST
     })

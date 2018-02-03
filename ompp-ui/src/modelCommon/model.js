@@ -1,6 +1,7 @@
 // db structures common functions: model and model list
 
 import * as Dnf from './descrNote'
+import * as Hlpr from './helper'
 
 // if this is a Model with Name and Digest properties
 export const hasNameDigest = (md) => {
@@ -34,7 +35,7 @@ export const emptyModel = () => {
 // return true if each list element isModel()
 export const isModelList = (ml) => {
   if (!ml) return false
-  if (!ml.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(ml)) return false
   for (let k = 0; k < ml.length; k++) {
     if (!isModel(ml[k])) return false
   }

@@ -15,7 +15,8 @@ import { GET, SET } from '@/store'
 export default {
   props: {
     digest: '',
-    refreshTickle: false
+    refreshTickle: false,
+    refreshRunListTickle: false
   },
 
   data () {
@@ -34,23 +35,21 @@ export default {
   },
 
   watch: {
-    // refresh button handler
-    refreshTickle () {
-      this.doRefreshRunTextList() // reload run list
-    },
-    digest () {
-      this.doRefreshRunTextList() // reload run list
-    }
+    // refresh handlers
+    refreshTickle () { this.doRefreshRunTextList() },
+    refreshRunListTickle () { this.doRefreshRunTextList() },
+    digest () { this.doRefreshRunTextList() }
   },
 
   methods: {
     // refersh run list
     async doRefreshRunTextList () {
-      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/run-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
       this.msgLoad = 'Loading run list...'
       this.$emit('wait')
+
+      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/run-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setRunTextList(response.data)   // update run list in store
@@ -62,6 +61,7 @@ export default {
       this.loadWait = false
       this.$emit('done', this.loadDone)
     },
+
     ...mapActions({
       setRunTextList: SET.RUN_TEXT_LIST
     })

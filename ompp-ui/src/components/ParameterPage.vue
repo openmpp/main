@@ -60,21 +60,21 @@
       <span v-if="tv.isInc">
         <span
           @click="doIncreasePage()"
-          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">expand_more</span>
       </span>
       <span v-else>
         <span
-          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
+          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">expand_more</span>
       </span>
 
       <span v-if="tv.isDec">
         <span
           @click="doDecreasePage()"
-          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">expand_less</span>
       </span>
       <span v-else>
         <span
-          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
+          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">expand_less</span>
       </span>
 
       <span
@@ -528,6 +528,7 @@ export default {
       this.loadDone = false
       this.loadWait = true
       this.msg = 'Loading...'
+
       this.tv.isNext = false
       this.tv.isPrev = false
       this.tv.isInc = false

@@ -109,10 +109,10 @@ export default {
 
     // refersh model list
     async doRefresh () {
-      let u = this.omppServerUrl + '/api/model-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
       this.msg = 'Loading...'
+      let u = this.omppServerUrl + '/api/model-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setModelList(response.data)   // update model list in store

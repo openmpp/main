@@ -44,13 +44,13 @@ export default {
   methods: {
     // refersh current model
     async doRefreshModel () {
-      //
-      // refresh model text rows
-      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.msgLoad = 'Loading model...'
       this.loadWait = true
       this.$emit('wait')
+
+      // refresh model text rows
+      let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setTheModel(response.data)   // update current model in store
@@ -71,6 +71,7 @@ export default {
         console.log('Model words refresh failed')
       }
     },
+
     ...mapActions({
       setTheModel: SET.THE_MODEL,
       setWordList: SET.WORD_LIST

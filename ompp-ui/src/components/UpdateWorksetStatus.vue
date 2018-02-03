@@ -42,14 +42,15 @@ export default {
   methods: {
     // update workset readonly status
     async doUpdateWsStatus () {
-      let u = this.omppServerUrl +
-        '/api/model/' + (this.modelDigest || '') +
-        '/workset/' + (this.worksetName || '') +
-        '/readonly/' + (!this.enableEdit).toString()
       this.loadDone = false
       this.loadWait = true
       this.msgLoad = 'Updating workset...'
       this.$emit('wait')
+
+      let u = this.omppServerUrl +
+        '/api/model/' + (this.modelDigest || '') +
+        '/workset/' + (this.worksetName || '') +
+        '/readonly/' + (!this.enableEdit).toString()
       try {
         const response = await axios.post(u)
         const rsp = response.data

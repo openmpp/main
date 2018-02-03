@@ -13,7 +13,7 @@ export const paramCount = (md) => {
 export const isParamTextList = (md) => {
   if (!Mdl.isModel(md)) return false
   if (!md.hasOwnProperty('ParamTxt')) return false
-  if (!md.ParamTxt.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(md.ParamTxt)) return false
   for (let k = 0; k < md.ParamTxt.length; k++) {
     if (!isParam(md.ParamTxt[k].Param)) return false
   }
@@ -95,8 +95,7 @@ export const paramSizeByName = (md, name) => {
 // return true if this is non empty ParamRunSet
 export const isParamRunSet = (prs) => {
   if (!prs) return false
-  if (!prs.hasOwnProperty('Name') || !prs.hasOwnProperty('SubCount') || !prs.hasOwnProperty('Txt')) return false
-  if (!prs.Txt.hasOwnProperty('length')) return false
+  if (!prs.hasOwnProperty('Name') || !prs.hasOwnProperty('SubCount') || !Hlpr.hasLength(prs.Txt)) return false
   return (prs.Name || '') !== ''
 }
 

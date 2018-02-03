@@ -45,11 +45,12 @@ export default {
   methods: {
     // refersh workset text
     async doRefreshWsText () {
-      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/workset/' + (this.worksetName || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
       this.msgLoad = 'Loading workset...'
       this.$emit('wait')
+
+      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/workset/' + (this.worksetName || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setWorksetText(response.data)   // update workset text in store
@@ -61,6 +62,7 @@ export default {
       this.loadWait = false
       this.$emit('done', this.loadDone)
     },
+
     ...mapActions({
       setWorksetText: SET.THE_WORKSET_TEXT
     })

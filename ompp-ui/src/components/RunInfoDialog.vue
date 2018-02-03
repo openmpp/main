@@ -76,22 +76,7 @@ export default {
       this.subCompleted = (rt.SubCompleted || 0)
       this.createdDt = Mdf.dtStr(rt.CreateDateTime)
       this.lastDt = Mdf.dtStr(rt.UpdateDateTime)
-      this.timeDt = ''
-
-      // time to complete: days, hours, minuets, seconds
-      let start = Date.parse(this.createdDt)
-      let stop = Date.parse(this.lastDt)
-      if (start && stop) {
-        let s = Math.floor((stop - start) / 1000) % 60
-        let m = Math.floor((stop - start) / (60 * 1000)) % 60
-        let h = Math.floor((stop - start) / (60 * 60 * 1000)) % 24
-        let d = Math.floor((stop - start) / (24 * 60 * 60 * 1000))
-        this.timeDt =
-          ((d > 0) ? d.toString() + 'd ' : '') +
-          ('00' + h.toString()).slice(-2) + ':' +
-          ('00' + m.toString()).slice(-2) + ':' +
-          ('00' + s.toString()).slice(-2)
-      }
+      this.timeDt = Mdf.toIntervalStr(this.createdDt, this.lastDt)
 
       this.$refs.noteDlg.open()   // show run info dialog
     }

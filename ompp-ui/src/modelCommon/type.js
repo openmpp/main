@@ -7,8 +7,7 @@ import * as Hlpr from './helper'
 // is model has type text list and each element is TypeTxt
 export const isTypeTextList = (md) => {
   if (!Mdl.isModel(md)) return false
-  if (!md.hasOwnProperty('TypeTxt')) return false
-  if (!md.TypeTxt.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(md.TypeTxt)) return false
   for (let k = 0; k < md.TypeTxt.length; k++) {
     if (!isType(md.TypeTxt[k].Type)) return false
   }
