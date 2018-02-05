@@ -264,19 +264,19 @@ export default {
     // show output table expressions
     doExpressionPage () {
       this.tv.kind = kind.EXPR
-      this.setExprColHeaders()
+      this.setColumnsView()
       this.doRefreshDataPage()
     },
     // show output table accumulators
     doAccumulatorPage () {
       this.tv.kind = kind.ACC
-      this.setAccColHeaders()
+      this.setColumnsView()
       this.doRefreshDataPage()
     },
     // show all-accumulators view
     doAllAccumulatorPage () {
       this.tv.kind = kind.ALL
-      this.setAccColHeaders()
+      this.setColumnsView()
       this.doRefreshDataPage()
     },
     // reset table view to default
@@ -327,7 +327,7 @@ export default {
           )
         }
         row.push(this.translateExprId(d[i].ExprId) || d[i].ExprId)
-        row.push(!d[i].IsNull ? d[i].Value : void 0)
+        row.push(this.formatExprValue(d[i].ExprId, d[i].IsNull, d[i].Value))
         vp.push(row)
       }
       return vp
@@ -437,17 +437,47 @@ export default {
     // translate expression id to label or name if label is empty
     // it is expected to be expression id === expression index
     translateExprId (exprId) {
-      return (exprId !== void 0 && exprId !== null && exprId >= 0 && exprId < this.exprProp.length)
-        ? this.exprProp[exprId].label || this.exprProp[exprId].name
-        : ''
+      if (exprId === void 0 || exprId === null || exprId < 0) { // expression id undefined
+        return ''
+      }
+      for (let j = 0; j < this.exprProp.length; j++) {
+        if (this.exprProp[j].exprId === exprId) {
+          return this.exprProp[j].label || this.exprProp[j].name
+        }
+      }
+      return exprId.toString()  // expression id not found
     },
 
     // translate accumulator id to label or name if label is empty
     // it is expected to be accumulator id === accumulator index
     translateAccId (accId) {
-      return (accId !== void 0 && accId !== null && accId >= 0 && accId < this.accProp.length)
-        ? this.accProp[accId].label || this.accProp[accId].name
-        : ''
+      if (accId === void 0 || accId === null || accId < 0) {  // accumulator id undefined
+        return ''
+      }
+      for (let j = 0; j < this.accProp.length; j++) {
+        if (this.accProp[j].accId === accId) {
+          return this.accProp[j].label || this.accProp[j].name
+        }
+      }
+      return accId.toString()   // accumulator id not found
+    },
+
+    // return expression value formatted with specified decimals
+    // decimals undefined then default format is used
+    formatExprValue (exprId, isNull, val) {
+      if (isNull || val === void 0 || val === null) return ''   // value is null
+      if (exprId === void 0 || exprId === null || exprId < 0) { // expression id undefined
+        return val.toString()
+      }
+      for (let j = 0; j < this.exprProp.length; j++) {
+        if (this.exprProp[j].exprId === exprId) {
+          if (this.exprProp[j].dec !== void 0 && this.exprProp[j].dec !== null) {
+            return val.toFixed(this.exprProp[j].dec)
+          }
+          break   // decimals undefined: use default format
+        }
+      }
+      return val.toString()   // default format if expression id not found or decimals undefined
     },
 
     // refresh current page view on mounted or tab switch
@@ -481,11 +511,13 @@ export default {
       for (let j = 0; j < this.tableText.TableExprTxt.length; j++) {
         if (this.tableText.TableExprTxt[j].hasOwnProperty('Expr')) {
           this.exprProp.push({
+            exprId: this.tableText.TableExprTxt[j].Expr.ExprId,
+            dec: this.tableText.TableExprTxt[j].Expr.Decimals,
             name: this.tableText.TableExprTxt[j].Expr.Name || '',
             label: Mdf.descrOfDescrNote(this.tableText.TableExprTxt[j])
           })
         } else {
-          this.exprProp.push({ name: '', label: '' })
+          this.exprProp.push({ id: 0, name: '', label: '', dec: void 0 })
         }
       }
 
@@ -494,11 +526,12 @@ export default {
       for (let j = 0; j < this.tableText.TableAccTxt.length; j++) {
         if (this.tableText.TableAccTxt[j].hasOwnProperty('Acc')) {
           this.accProp.push({
+            accId: this.tableText.TableAccTxt[j].AccId,
             name: this.tableText.TableAccTxt[j].Acc.Name || '',
             label: Mdf.descrOfDescrNote(this.tableText.TableAccTxt[j])
           })
         } else {
-          this.accProp.push({ name: '', label: '' })
+          this.accProp.push({ accId: 0, name: '', label: '' })
         }
       }
 
@@ -513,26 +546,33 @@ export default {
       this.tv.kind = kind.EXPR
       this.tv.start = 0
       this.tv.size = Math.min(20, this.tableSize.dimTotal * this.tableSize.exprCount)
-      this.setExprColHeaders()
+      this.setColumnsView()
     },
-    // column headers for output table expressions
-    setExprColHeaders () {
-      this.htSettings.colHeaders = []
+
+    // table columns if view is output table expressions
+    setColumnsView () {
+      this.htSettings.columns = []
+
+      // dimension columns
       for (let j = 0; j < this.tableSize.rank; j++) {
-        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
+        this.htSettings.columns.push({title: (this.dimProp[j].label || this.dimProp[j].name)})
       }
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
-      this.htSettings.colHeaders.push('Value')          // expression value
-    },
-    // column headers for accumulators or all accumulators veiw
-    setAccColHeaders () {
-      this.htSettings.colHeaders = []
-      for (let j = 0; j < this.tableSize.rank; j++) {
-        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
-      }
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
-      for (let j = 0; j < this.subCount; j++) {
-        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
+      this.htSettings.columns.push({      // expression dimension
+        title: (this.tableText.ExprDescr || 'Measure')
+      })
+
+      // value column or saccumultor sub-value columns
+      if (this.tv.kind === kind.EXPR) {
+        this.htSettings.columns.push({    // expression value
+          title: 'Value',
+          className: 'htRight'
+        })
+      } else {
+        for (let j = 0; j < this.subCount; j++) {
+          this.htSettings.columns.push({    // column for each sub-value
+            title: j.toString(),
+            className: 'htRight'})
+        }
       }
     },
 

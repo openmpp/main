@@ -481,7 +481,7 @@ export default {
       sub = sub.replace(/[^0-9]/g, ' ').trim()
       let nSub = ((sub || '') !== '') ? parseInt(sub) : 1
 
-      this.newRunName = name  // actual values afetr cleanup
+      this.newRunName = name  // actual values after cleanup
       this.newRunSubCount = nSub || 1
       this.newRunState = Mdf.emptyRunState()
 
