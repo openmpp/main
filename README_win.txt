@@ -6,6 +6,18 @@ In subsequent instructions, replace C:\OpenM++ with the directory to which you e
 downloaded OpenM++ zip archive.
 
 ========================================
+Starting OpenM++ user interface (ompp-ui)
+========================================
+
+You can start OpenM++ UI by double clicking on C:\OpenM++\bin\ompp_ui.bat.
+As result you will see:
+- OpenM++ web-service (oms) in background windows
+- web UI in your default browser at http://localhost:4040
+
+It is recommended to use Chrome, Firefox or Edge for ompp-ui.
+Please note Internet Explorer is significantly slower and may not work correctly.
+
+========================================
 Setting the OM_ROOT environment variable
 ========================================
 

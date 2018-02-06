@@ -88,11 +88,12 @@ use POSIX qw(strftime);
 my $verbosity = 3;
 
 # Preliminary check of source folder structure
-for my $subdir ('licenses', 'bin', 'include', 'openm', 'lib', 'props', 'R', 'Excel', 'sql', 'use', 'models') {
+for my $subdir ('licenses', 'bin', 'include', 'openm', 'lib', 'props', 'R', 'Excel', 'sql', 'use', 'models', 'ompp-ui') {
 	-d "${om_root}/${subdir}" or die "Missing directory ${om_root}/${subdir}";
 }
 
 my $deploy_dir = "deploy_windows";
+
 print "Removing previous deployment directory ${deploy_dir}\n";
 remove_tree $deploy_dir;
 mkdir $deploy_dir or die "Unable to remove deployment directory ${deploy_dir}";
@@ -134,6 +135,7 @@ $subdir = 'bin';
 	'patch_modgen12_outputs.exe',
 	'patch_modgen12.1_outputs.exe',
 	'sqlite3.exe',
+    'ompp_ui.bat',
 	);
 mkdir "${deploy_dir}/${subdir}" or die;
 for my $file (@files) {
@@ -313,7 +315,6 @@ for my $model (@models) {
 	}
 }
 
-
 # modelOne
 $subdir = "models/modelOne";
 mkdir "${deploy_dir}/${subdir}" or die;
@@ -358,6 +359,25 @@ if (-e $model_sqlite) {
 	copy "${model_sqlite}", "${models_bin}" or die "Failed to copy ${model_sqlite}";
 }
 
+# ompp-ui
+dircopy "ompp-ui/dist", "${deploy_dir}/html" || die "Failed to copy ompp-ui/dist";
+mkdir "${deploy_dir}/log" or die;
+mkdir "${deploy_dir}/models/log" or die;
+
+# ompp-ui sources
+mkdir "${deploy_dir}/ompp-ui" or die;
+
+@files = glob("ompp-ui/* ompp-ui/.*");
+for my $file (@files) {
+    if (! -d ${file}) {
+        copy "${om_root}/${file}", "${deploy_dir}/${file}" or die "Failed to copy ${om_root}/${file}";
+    }
+    else {
+        if ($file ne "ompp-ui/." && $file ne "ompp-ui/.." && $file ne "ompp-ui/dist" && $file ne "ompp-ui/node_modules") {
+            dircopy "${om_root}/${file}", "${deploy_dir}/${file}" || die "Failed to copy ${om_root}/${file}";
+        }
+    }
+}
 
 # Create zip archive
 my $seven_zip = "C:\\Program Files\\7-Zip\\7z.exe";
