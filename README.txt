@@ -9,8 +9,8 @@ Cluster version:
   Linux:   openmpp_centos_mpi_YYYYMMDD.tar.gz
   Windows: openmpp_win_mpi_YYYYMMDD.zip 
 
-It is recommended to start with desktop version, do not download _mpi_ binaries
-unless you have MPI installed on your cluster.
+It is recommended to start with desktop version.
+Do NOT download _mpi_ binaries unless you have MPI installed on your cluster.
   
 More information at: http://ompp.sourceforge.net/wiki/
 
