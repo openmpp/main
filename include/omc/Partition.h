@@ -46,7 +46,7 @@ public:
         : interval((interval < 0 ) ? 0 : (interval > max) ? max : interval)
     {}
 
-    // operator: cast to T (use in C++ expression)
+    // operator: user-defined conversion
     operator T() const
     {
         return interval;
