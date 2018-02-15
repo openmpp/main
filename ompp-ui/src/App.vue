@@ -184,7 +184,7 @@
   </div>
   
 </div>
-  
+
 </template>
 
 <script>
@@ -382,7 +382,7 @@ export default {
     /* position: relative; */
   }
   /* note dialog, fix handsontable z-index: 101; */
-  #note-dlg {
+  #the-model-info-dlg {
     z-index: 201;
   }
 </style>
