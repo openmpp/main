@@ -115,7 +115,6 @@ void initialize_model_streams()
         initialize_stream(model_stream, simulation_member, stream_seed);
 		// Use fixed integral-congruential generator (with multiplier model_stream_seed_generator)
 		// to create seeds for streams.
-        // model_stream_seed_generator is generator-specific - defined in random/random_YYY.ompp
         long long product = model_stream_seed_generator;
         product *= stream_seed;
         stream_seed = product % lcg_modulus;
