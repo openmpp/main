@@ -27,6 +27,7 @@ namespace fmk {
 
     /**
      * The modulus used by linear congruential random number generators.
+     * Equal to 2^31 - 1
      */
     const long lcg_modulus = 2147483647;
 
@@ -46,18 +47,24 @@ namespace fmk {
     thread_local long long combined_seed = 0;
 
     /**
-     * The master seed, derived from SimulationSeed.
+     * The master seed, derived from the parameter SimulationSeed.
      *
      * The master seed is used to seed the individual random streams
      * in the model before simulating a case (for case-based models)
      * or simulating a member (aka replicate) (for time-based models).
+     * It is also used to seed the individual random number streams
+     * before execution of PreSimulation functions.
      *
      * For case-based models, the master seed is used for a case,
      * and is set by a separate case seed random number generator.
      *
-     * For time-based models, the seed is used for a member (aka replicate),
-     * and is set by a simple formula based on the member number
-     * and SimulationSeed.
+     * For time-based models, the master seed is used for a member (aka replicate),
+     * and is set to SimulationSeed.
+     *
+     * For use in PreSimulation functions,
+     * the master seed is set to SimulationSeed.
+     *
+     * The actual RNG stream varies by member, in an RNG-specific way.
      */
     thread_local long master_seed = 0;
 
@@ -111,7 +118,8 @@ void initialize_model_streams()
 
     long stream_seed = fmk::master_seed;
     for (int model_stream = 0; model_stream < model_streams; model_stream++) {
-        // initialize_stream is generator-specific - defined in random/random_YYY.ompp
+        // initialize_stream is generator-specific - defined in random/random_YYY.ompp.
+        // Note that streams vary by simulation_member as well as stream_seed.
         initialize_stream(model_stream, simulation_member, stream_seed);
 		// Use fixed integral-congruential generator (with multiplier model_stream_seed_generator)
 		// to create seeds for streams.

@@ -23,6 +23,37 @@ namespace fmk {
 
 } // namespace fmk
 
+/**
+* Called before invocation of PreSimulation functions.
+*/
+void before_presimulation()
+{
+    // In PreSimulation, the master seed is the same for all simulation members.
+    // For lcg-style generators, a different generator is used for each member.
+    // For other generators, the actual starting seed is generated from the master seed
+    // and the simulation member number.
+    fmk::master_seed = SimulationSeed;
+
+    // Create stream generator objects
+    // new_streams is generator-specific - defined in random/random_YYY.ompp
+    new_streams();
+
+    // Note that streams vary by simulation member as well as SimulationSeed and stream number.
+    initialize_model_streams(); //defined in common.ompp
+}
+
+/**
+* Called after invocation of PreSimulation functions.
+*/
+void after_presimulation()
+{
+    fmk::master_seed = 0;
+
+    // Free stream generator objects
+    // delete_streams is generator-specific - defined in random/random_YYY.ompp
+    delete_streams();
+}
+
 double GetCaseSeed()
 {
     // Time-based models have no concept of case seed.
