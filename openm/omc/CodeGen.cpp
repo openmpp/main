@@ -413,7 +413,7 @@ void CodeGen::do_RunInit()
 
 void CodeGen::do_ModelStartup()
 {
-    c += "// Model startup method: Initialization for a simulation thread";
+    c += "// Model startup method: Initialization for a simulation member";
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
 
