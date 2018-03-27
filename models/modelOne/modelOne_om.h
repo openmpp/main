@@ -38,6 +38,7 @@ extern thread_local string om_value_filePath;
 extern thread_local double * om_value_ageSex;
 extern thread_local int * om_value_salaryAge;
 extern thread_local int * om_value_salaryFull;
+extern thread_local bool * om_value_isOldAge;
 
 #define startSeed   (reinterpret_cast<const int>(om_value_startSeed))
 #define baseSalary  (reinterpret_cast<const int>(om_value_baseSalary))
@@ -45,6 +46,7 @@ extern thread_local int * om_value_salaryFull;
 #define ageSex      (*reinterpret_cast<const double(*)[N_AGE][N_SEX]>(om_value_ageSex))
 #define salaryAge   (*reinterpret_cast<const int(*)[N_SALARY][N_AGE]>(om_value_salaryAge))
 #define salaryFull  (*reinterpret_cast<const int(*)[N_SALARY]>(om_value_salaryFull))
+#define isOldAge    (*reinterpret_cast<const bool(*)[N_AGE]>(om_value_isOldAge))
 
 // model output tables: salary by sex
 class SalarySex

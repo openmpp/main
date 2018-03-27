@@ -3,7 +3,7 @@
 
 # Script to build utilities, etc.
 
-my $R_exe = 'C:\Program Files\R\R-3.4.0\bin\R.exe';
+my $R_exe = 'C:\Program Files\R\R-3.4.3\bin\R.exe';
 
 # Verbosity of report:
 #  0 - errors only
@@ -13,6 +13,7 @@ my $verbosity = 3;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 use File::Copy;
+use File::Which;
 
 # Get ompp root directory
 chdir "..";
@@ -37,18 +38,23 @@ for my $utility ('ompp_export_excel', 'ompp_export_csv', 'modgen_export_csv', 'o
 	};
 }
 
-print "Building R package\n";
-chdir "${om_root}/R";
-($merged, $retval) = capture_merged {
-	my @args = (
-		$R_exe,
-		'CMD',
-		'build',
-		'openMpp',
-		);
-	system(@args);
-};
-
+# build R package
+if (! -e "${R_exe}") {
+	print "Skip R package build, not found: ${R_exe}\n";
+}
+else {
+    print "Building R package\n";
+    chdir "${om_root}/R";
+    ($merged, $retval) = capture_merged {
+        my @args = (
+            $R_exe,
+            'CMD',
+            'build',
+            'openMpp',
+            );
+        system(@args);
+    };
+}
 
 # if GOROOT and GOPATH (and others for MinGW) defined then build dbcopy and oms
 #
@@ -89,8 +95,52 @@ else {
 	if ($retval != 0) {
 		print "Build oms failed (output follows:\n$merged\n"
 	}
-}
-copy 'bin/dbcopy.exe', "${om_root}/bin";
-copy 'bin/oms.exe', "${om_root}/bin";
 
+    copy 'bin/dbcopy.exe', "${om_root}/bin";
+    copy 'bin/oms.exe', "${om_root}/bin";
+    chdir "${om_root}";
+}
+
+# build ompp-ui
+my $npm_exe = which 'npm';
+
+if (! -e "${npm_exe}") {
+	print "Skip ompp-ui build, npm found. Install node and run nodevars.bat\n";
+}
+else {
+    print "Building ompp-ui\n";
+    chdir "${om_root}/ompp-ui";
+    
+    # install node modules if not yet installed
+    if (! -d "node_modules") {
+        print 'Doing "npm install", please wait...\n';
+        ($merged, $retval) = capture_merged {
+            my @args = (
+                'npm',
+                'install',
+                );
+            system(@args);
+        };
+        if ($retval != 0) {
+            print "Build ompp-ui failed (output follows:\n$merged\n"
+        }
+        print 'Now we can do "npm run build"\n';
+    }
+    
+    # do actual build
+	($merged, $retval) = capture_merged {
+		my @args = (
+			'npm',
+			'run',
+			'build',
+			);
+		system(@args);
+	};
+	if ($retval != 0) {
+		print "Build ompp-ui failed (output follows:\n$merged\n"
+	}
+    chdir "${om_root}";
+}
+
+#done
 chdir "${om_root}/Perl";

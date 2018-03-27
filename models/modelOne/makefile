@@ -139,10 +139,23 @@ copy_ini:
 .PHONY : run
 run:
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.RunName Default \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) -OpenM.SubValues 4 -OpenM.Threads 4 \
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-OpenM.RunName Default-4 \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) -OpenM.TaskName taskOne \
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.TaskName taskOne \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.SubValues 2 -SubValue.salaryFull csv -OpenM.ParamDir ./csv \
+		-OpenM.RunName "Parameter sub-values 2 from csv" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-SubValue.baseSalary db -SubValue.salaryFull db -SubValue.filePath db -SubValue.isOldAge db \
+		-OpenM.RunName "Parameter sub-values 4" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean

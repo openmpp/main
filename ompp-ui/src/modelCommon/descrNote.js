@@ -1,5 +1,7 @@
 // db structures common functions: description and notes
 
+import * as Hlpr from './helper'
+
 // description if object has DescrNote
 export const descrOfDescrNote = (tdn) => {
   if (!tdn) return ''
@@ -24,23 +26,19 @@ export const isNoteOfDescrNote = (tdn) => {
 // description if object has Txt[0] description-notes
 export const descrOfTxt = (tdn) => {
   if (!tdn) return ''
-  if (!tdn.hasOwnProperty('Txt')) return ''
-  if (!tdn.Txt.hasOwnProperty('length')) return ''
-  return (tdn.Txt.length > 0) ? (tdn.Txt[0].Descr || '') : ''
+  return Hlpr.isLength(tdn.Txt) ? (tdn.Txt[0].Descr || '') : ''
 }
 
 // notes if object has Txt[0] description-notes
 export const noteOfTxt = (tdn) => {
   if (!tdn) return ''
-  if (!tdn.hasOwnProperty('Txt')) return ''
-  if (!tdn.Txt.hasOwnProperty('length')) return ''
-  return (tdn.Txt.length > 0) ? (tdn.Txt[0].Note || '') : ''
+  return Hlpr.isLength(tdn.Txt) ? (tdn.Txt[0].Note || '') : ''
 }
 
 // return true if notes of Txt[0] not empty
 export const isNoteOfTxt = (tdn) => {
   if (!tdn) return false
   if (!tdn.hasOwnProperty('Txt')) return false
-  if (!tdn.Txt.hasOwnProperty('length')) return false
-  return (tdn.Txt.length > 0) ? (tdn.Txt[0].Note || '') !== '' : false
+  if (!Hlpr.hasLength(tdn.Txt)) return false
+  return Hlpr.isLength(tdn.Txt) ? (tdn.Txt[0].Note || '') !== '' : false
 }

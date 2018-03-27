@@ -43,6 +43,49 @@
       @click="toggleMoreControls()"
       class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
 
+    <span v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
+
+      <span
+        @click="doResetView()"
+        class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">settings_backup_restore</span>
+
+      <span v-if="tv.isInc">
+        <span
+          @click="doIncreasePage()"
+          class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">expand_more</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">expand_more</span>
+      </span>
+
+      <span v-if="tv.isDec">
+        <span
+          @click="doDecreasePage()"
+          class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">expand_less</span>
+      </span>
+      <span v-else>
+        <span
+          class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">expand_less</span>
+      </span>
+
+      <span
+        @click="doUnlimitedPage()"
+        class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
+      <span
+        @click="doExpressionPage()"
+        class="cell-icon-link material-icons" title="View table expressions"alt="View table expressions">filter_none</span>
+      <span
+        @click="doAccumulatorPage()"
+        class="cell-icon-link material-icons" title="View accumulators and sub-values"alt="View accumulators and sub-values">filter_8</span>
+      <span
+        @click="doAllAccumulatorPage()"
+        class="cell-icon-link material-icons" title="View all accumulators and sub-values"alt="View all accumulators and sub-values">library_add</span>
+      <span
+        @click="doRefresh()"
+        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
+    </span>
+    
     <span class="mdc-typography--body2">{{ tableName }}: </span>
     <span>{{ tableDescr() }}</span>
 
@@ -51,49 +94,6 @@
     <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
     <span class="mdc-typography--caption">{{msg}}</span>
-  </div>
-
-  <div v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
-
-    <span
-      @click="doResetView()"
-      class="cell-icon-link material-icons" title="Reset table view to default" alt="Reset table view to default">settings_backup_restore</span>
-
-    <span v-if="tv.isInc">
-      <span
-        @click="doIncreasePage()"
-        class="cell-icon-link material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Increase page size" alt="Increase page size">format_line_spacing</span>
-    </span>
-
-    <span v-if="tv.isDec">
-      <span
-        @click="doDecreasePage()"
-        class="cell-icon-link material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
-    </span>
-    <span v-else>
-      <span
-        class="cell-icon-empty material-icons" title="Decrease page size" alt="Decrease page size">vertical_align_center</span>
-    </span>
-
-    <span
-      @click="doUnlimitedPage()"
-      class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
-    <span
-      @click="doExpressionPage()"
-      class="cell-icon-link material-icons" title="View table expressions"alt="View table expressions">filter_none</span>
-    <span
-      @click="doAccumulatorPage()"
-      class="cell-icon-link material-icons" title="View accumulators and sub-values"alt="View accumulators and sub-values">filter_8</span>
-    <span
-      @click="doAllAccumulatorPage()"
-      class="cell-icon-link material-icons" title="View all accumulators and sub-values"alt="View all accumulators and sub-values">library_add</span>
-    <span
-      @click="doRefresh()"
-      class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
   </div>
 
   <div class="ht-container">
@@ -130,8 +130,7 @@ export default {
   props: {
     digest: '',
     tableName: '',
-    nameDigest: '',
-    refreshTickle: false
+    nameDigest: ''
   },
 
   data () {
@@ -146,6 +145,9 @@ export default {
         manualColumnMove: true,
         manualColumnResize: true,
         manualRowResize: true,
+        autoColumnSize: {useHeaders: false},
+        columnSorting: true,
+        sortIndicator: true,
         preventOverflow: 'horizontal',
         renderAllRows: true,
         stretchH: 'all',
@@ -177,7 +179,7 @@ export default {
 
   computed: {
     routeKey () {
-      return [this.digest, this.tableName, this.nameDigest, this.refreshTickle].toString()
+      return [this.digest, this.tableName, this.nameDigest].toString()
     },
     ...mapGetters({
       theModel: GET.THE_MODEL,
@@ -188,9 +190,7 @@ export default {
   },
 
   watch: {
-    routeKey () {
-      this.refreshView()
-    }
+    routeKey () { this.refreshView() }
   },
 
   methods: {
@@ -201,17 +201,16 @@ export default {
       this.$refs.noteDlg.showTableInfo(this.tableName, this.subCount)
     },
 
-    // local refresh button handler, table content only
-    doRefresh () {
-      this.doRefreshDataPage()
-    },
-
     // show or hide extra controls
     toggleMoreControls () {
       this.isShowMoreControls = !this.isShowMoreControls
       this.moreControlsLabel = this.isShowMoreControls ? HIDE_MORE_LABEL : SHOW_MORE_LABEL
     },
 
+    // local refresh button handler, table content only
+    doRefresh () {
+      this.doRefreshDataPage()
+    },
     // move to previous page
     doPrevPage () {
       if (this.tv.start === 0) return
@@ -265,19 +264,19 @@ export default {
     // show output table expressions
     doExpressionPage () {
       this.tv.kind = kind.EXPR
-      this.setExprColHeaders()
+      this.setColumnsView()
       this.doRefreshDataPage()
     },
     // show output table accumulators
     doAccumulatorPage () {
       this.tv.kind = kind.ACC
-      this.setAccColHeaders()
+      this.setColumnsView()
       this.doRefreshDataPage()
     },
     // show all-accumulators view
     doAllAccumulatorPage () {
       this.tv.kind = kind.ALL
-      this.setAccColHeaders()
+      this.setColumnsView()
       this.doRefreshDataPage()
     },
     // reset table view to default
@@ -328,7 +327,7 @@ export default {
           )
         }
         row.push(this.translateExprId(d[i].ExprId) || d[i].ExprId)
-        row.push(!d[i].IsNull ? d[i].Value : void 0)
+        row.push(this.formatExprValue(d[i].ExprId, d[i].IsNull, d[i].Value))
         vp.push(row)
       }
       return vp
@@ -438,17 +437,47 @@ export default {
     // translate expression id to label or name if label is empty
     // it is expected to be expression id === expression index
     translateExprId (exprId) {
-      return (exprId !== void 0 && exprId !== null && exprId >= 0 && exprId < this.exprProp.length)
-        ? this.exprProp[exprId].label || this.exprProp[exprId].name
-        : ''
+      if (exprId === void 0 || exprId === null || exprId < 0) { // expression id undefined
+        return ''
+      }
+      for (let j = 0; j < this.exprProp.length; j++) {
+        if (this.exprProp[j].exprId === exprId) {
+          return this.exprProp[j].label || this.exprProp[j].name
+        }
+      }
+      return exprId.toString()  // expression id not found
     },
 
     // translate accumulator id to label or name if label is empty
     // it is expected to be accumulator id === accumulator index
     translateAccId (accId) {
-      return (accId !== void 0 && accId !== null && accId >= 0 && accId < this.accProp.length)
-        ? this.accProp[accId].label || this.accProp[accId].name
-        : ''
+      if (accId === void 0 || accId === null || accId < 0) {  // accumulator id undefined
+        return ''
+      }
+      for (let j = 0; j < this.accProp.length; j++) {
+        if (this.accProp[j].accId === accId) {
+          return this.accProp[j].label || this.accProp[j].name
+        }
+      }
+      return accId.toString()   // accumulator id not found
+    },
+
+    // return expression value formatted with specified decimals
+    // decimals undefined then default format is used
+    formatExprValue (exprId, isNull, val) {
+      if (isNull || val === void 0 || val === null) return ''   // value is null
+      if (exprId === void 0 || exprId === null || exprId < 0) { // expression id undefined
+        return val.toString()
+      }
+      for (let j = 0; j < this.exprProp.length; j++) {
+        if (this.exprProp[j].exprId === exprId) {
+          if (this.exprProp[j].dec !== void 0 && this.exprProp[j].dec !== null) {
+            return val.toFixed(this.exprProp[j].dec)
+          }
+          break   // decimals undefined: use default format
+        }
+      }
+      return val.toString()   // default format if expression id not found or decimals undefined
     },
 
     // refresh current page view on mounted or tab switch
@@ -482,11 +511,13 @@ export default {
       for (let j = 0; j < this.tableText.TableExprTxt.length; j++) {
         if (this.tableText.TableExprTxt[j].hasOwnProperty('Expr')) {
           this.exprProp.push({
+            exprId: this.tableText.TableExprTxt[j].Expr.ExprId,
+            dec: this.tableText.TableExprTxt[j].Expr.Decimals,
             name: this.tableText.TableExprTxt[j].Expr.Name || '',
             label: Mdf.descrOfDescrNote(this.tableText.TableExprTxt[j])
           })
         } else {
-          this.exprProp.push({ name: '', label: '' })
+          this.exprProp.push({ id: 0, name: '', label: '', dec: void 0 })
         }
       }
 
@@ -495,11 +526,12 @@ export default {
       for (let j = 0; j < this.tableText.TableAccTxt.length; j++) {
         if (this.tableText.TableAccTxt[j].hasOwnProperty('Acc')) {
           this.accProp.push({
+            accId: this.tableText.TableAccTxt[j].AccId,
             name: this.tableText.TableAccTxt[j].Acc.Name || '',
             label: Mdf.descrOfDescrNote(this.tableText.TableAccTxt[j])
           })
         } else {
-          this.accProp.push({ name: '', label: '' })
+          this.accProp.push({ accId: 0, name: '', label: '' })
         }
       }
 
@@ -514,26 +546,33 @@ export default {
       this.tv.kind = kind.EXPR
       this.tv.start = 0
       this.tv.size = Math.min(20, this.tableSize.dimTotal * this.tableSize.exprCount)
-      this.setExprColHeaders()
+      this.setColumnsView()
     },
-    // column headers for output table expressions
-    setExprColHeaders () {
-      this.htSettings.colHeaders = []
+
+    // table columns if view is output table expressions
+    setColumnsView () {
+      this.htSettings.columns = []
+
+      // dimension columns
       for (let j = 0; j < this.tableSize.rank; j++) {
-        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
+        this.htSettings.columns.push({title: (this.dimProp[j].label || this.dimProp[j].name)})
       }
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // expression dimension
-      this.htSettings.colHeaders.push('Value')          // expression value
-    },
-    // column headers for accumulators or all accumulators veiw
-    setAccColHeaders () {
-      this.htSettings.colHeaders = []
-      for (let j = 0; j < this.tableSize.rank; j++) {
-        this.htSettings.colHeaders.push(this.dimProp[j].label || this.dimProp[j].name)
-      }
-      this.htSettings.colHeaders.push(this.tableText.ExprDescr || 'Measure')  // accumulator dimension
-      for (let j = 0; j < this.subCount; j++) {
-        this.htSettings.colHeaders.push(j.toString())   // column for each sub-value
+      this.htSettings.columns.push({      // expression dimension
+        title: (this.tableText.ExprDescr || 'Measure')
+      })
+
+      // value column or saccumultor sub-value columns
+      if (this.tv.kind === kind.EXPR) {
+        this.htSettings.columns.push({    // expression value
+          title: 'Value',
+          className: 'htRight'
+        })
+      } else {
+        for (let j = 0; j < this.subCount; j++) {
+          this.htSettings.columns.push({    // column for each sub-value
+            title: j.toString(),
+            className: 'htRight'})
+        }
       }
     },
 
@@ -542,6 +581,7 @@ export default {
       this.loadDone = false
       this.loadWait = true
       this.msg = 'Loading...'
+
       this.tv.isNext = false
       this.tv.isPrev = false
       this.tv.isInc = false

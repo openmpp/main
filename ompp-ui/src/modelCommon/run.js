@@ -1,4 +1,5 @@
 // db structures common functions: model run and run list
+import * as Hlpr from './helper'
 
 // run count: number of run text entries in the run text list
 export const runTextCount = (rtl) => {
@@ -8,7 +9,7 @@ export const runTextCount = (rtl) => {
 // return true if each list element isRunText()
 export const isRunTextList = (rtl) => {
   if (!rtl) return false
-  if (!rtl.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(rtl)) return false
   for (let k = 0; k < rtl.length; k++) {
     if (!isRunText(rtl[k])) return false
   }
@@ -21,8 +22,7 @@ export const isRunText = (rt) => {
   if (!rt.hasOwnProperty('ModelName') || !rt.hasOwnProperty('ModelDigest')) return false
   if (!rt.hasOwnProperty('Name') || !rt.hasOwnProperty('Digest')) return false
   if (!rt.hasOwnProperty('SubCount') || !rt.hasOwnProperty('Status')) return false
-  if (!rt.hasOwnProperty('Param') || !rt.hasOwnProperty('Txt')) return false
-  if (!rt.Param.hasOwnProperty('length') || !rt.Txt.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(rt.Param) || !Hlpr.hasLength(rt.Txt)) return false
   return true
 }
 
@@ -68,4 +68,71 @@ export const statusText = (rt) => {
     case RUN_EXIT: return 'exit (not completed)'
   }
   return 'unknown'
+}
+
+// if this is run state (model run status)
+export const isRunState = (rst) => {
+  if (!rst) return false
+  return rst.hasOwnProperty('RunKey') && rst.hasOwnProperty('IsFinal') &&
+    rst.hasOwnProperty('RunName') && rst.hasOwnProperty('StartDateTime') && rst.hasOwnProperty('UpdateDateTime')
+}
+
+// if this is not empty run state (model run status)
+export const isNotEmptyRunState = (rst) => {
+  if (!isRunState(rst)) return false
+  return (rst.RunKey || '') !== '' && (rst.RunName || '') !== '' && (rst.StartDateTime || '') !== ''
+}
+
+// return run state (model run status)
+export const emptyRunState = () => {
+  return {
+    RunKey: '',
+    IsFinal: false,
+    RunName: '',
+    StartDateTime: '',
+    UpdateDateTime: ''
+  }
+}
+
+// if this is RunStateLog: run state (model run status) and run log page
+export const isRunStateLog = (rlp) => {
+  if (!rlp) return false
+  if (!isRunState(rlp)) return false
+  return rlp.hasOwnProperty('Offset') && rlp.hasOwnProperty('Size') &&
+    rlp.hasOwnProperty('TotalSize') && Hlpr.hasLength(rlp.Lines)
+}
+
+// if this is not empty RunStateLog: run state (model run status) and run log page
+export const isNotEmptyRunStateLog = (rlp) => {
+  return isRunStateLog(rlp)
+}
+
+// return empty RunStateLog: run state (model run status) and run log page
+export const emptyRunStateLog = () => {
+  return {
+    RunKey: '',
+    IsFinal: false,
+    RunName: '',
+    StartDateTime: '',
+    UpdateDateTime: '',
+    Offset: 0,
+    Size: 0,
+    TotalSize: 0,
+    Lines: []
+  }
+}
+
+// return RunState part of RunStateLog
+export const toRunStateFromLog = (rlp) => {
+  if (!rlp) return emptyRunState()
+  if (!isRunState(rlp)) return emptyRunState()
+  return {
+    RunKey: rlp.RunKey || '',
+    IsFinal: !!rlp.IsFinal,
+    RunName: rlp.RunName || '',
+    SetName: rlp.SetName || '',
+    SubCount: rlp.SubCount || 0,
+    StartDateTime: rlp.StartDateTime || '',
+    UpdateDateTime: rlp.UpdateDateTime || ''
+  }
 }

@@ -32,7 +32,7 @@
         <span v-if="isModel" class="menu-count mdc-list-item__end-detail">{{runTextCount}}</span>
       </router-link>
       <router-link 
-        :to="'/model/' + modelDigest + '/parameter-list'" 
+        :to="'/model/' + modelDigest + '/run/parameter-list'" 
         :class="{'disable-item': !isModel}" class="mdc-list-item" 
         alt="Model parameters"
         role="menuitem">
@@ -42,7 +42,7 @@
         <span v-if="isModel" class="menu-count mdc-list-item__end-detail">{{paramCount}}</span>
       </router-link>
       <router-link 
-        :to="'/model/' + modelDigest + '/table-list'" 
+        :to="'/model/' + modelDigest + '/run/table-list'" 
         :class="{'disable-item': !isModel}" class="mdc-list-item" 
         alt="Output tables"
         role="menuitem">
@@ -63,7 +63,7 @@
         <span v-if="isModel" class="menu-count mdc-list-item__end-detail">{{worksetTextCount}}</span>
       </router-link>
       <router-link 
-        to="/parameters" 
+        :to="'/model/' + modelDigest + '/set/parameter-list'" 
         :class="{'disable-item': !isModel}" class="mdc-list-item" 
         alt="Model parameters"
         role="menuitem">
@@ -109,7 +109,7 @@
 
           <router-link 
             v-if="isModel" 
-            :to="'/model/' + modelDigest + '/parameter-list'" 
+            :to="'/model/' + modelDigest" 
             :title="modelName"
             :alt="modelName"
             class="mdc-toolbar__title toolbar-title-link">
@@ -171,7 +171,7 @@
     <main class="main-container">
       <router-view :refresh-tickle="refreshTickle"></router-view>
 
-      <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
+      <om-mcw-dialog ref="theModelInfoDlg" id="the-model-info-dlg" :scrollable="true" acceptText="OK">
         <span slot="header">{{titleNoteDlg}}</span>
         <div>{{textNoteDlg}}</div>
         <br/>
@@ -270,7 +270,7 @@ export default {
       this.nameNoteDlg = Mdf.modelName(md)
       this.createdNoteDlg = Mdf.dtStr(md.Model.CreateDateTime)
       this.digestNoteDlg = Mdf.modelDigest(md)
-      this.$refs.noteDlg.open()
+      this.$refs.theModelInfoDlg.open()
     },
 
     ...mapActions({
@@ -382,7 +382,7 @@ export default {
     /* position: relative; */
   }
   /* note dialog, fix handsontable z-index: 101; */
-  #note-dlg {
+  #the-model-info-dlg {
     z-index: 201;
   }
 </style>

@@ -16,7 +16,8 @@ export default {
   props: {
     modelDigest: '',
     runDigest: '',
-    refreshTickle: false
+    refreshTickle: false,
+    refreshRunTickle: false
   },
 
   data () {
@@ -35,23 +36,21 @@ export default {
   },
 
   watch: {
-    // refresh button handler
-    refreshTickle () {
-      this.doRefreshRunText() // reload run
-    },
-    runDigest () {
-      this.doRefreshRunText() // reload run
-    }
+    // refresh handlers
+    refreshTickle () { this.doRefreshRunText() },
+    refreshRunTickle () { this.doRefreshRunText() },
+    runDigest () { this.doRefreshRunText() }
   },
 
   methods: {
     // refersh run text
     async doRefreshRunText () {
-      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/run/' + (this.runDigest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
       this.msgLoad = 'Loading model run...'
       this.$emit('wait')
+
+      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/run/' + (this.runDigest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setRunText(response.data)   // update run text in store
@@ -63,6 +62,7 @@ export default {
       this.loadWait = false
       this.$emit('done', this.loadDone)
     },
+
     ...mapActions({
       setRunText: SET.THE_RUN_TEXT
     })

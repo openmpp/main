@@ -117,31 +117,43 @@ const mutations = {
     if (Mdf.isModelList(ml)) state.modelList = ml
   },
 
-  // clear current run if model digest not the same else set current run to first in run list
-  [UPDATE.THE_RUN_TEXT_ON_NEW] (state, modelDigest) {
-    if ((modelDigest || '') !== state.theRunText.ModelDigest) {
-      state.theRunText = Mdf.emptyRunText()
-    } else {
-      state.theRunText =
-        (state.runTextList.length > 0)
-        ? JSON.parse(JSON.stringify(state.runTextList[0]))
-        : Mdf.emptyRunText()
-    }
-  },
-
   // set current run
   [UPDATE.THE_RUN_TEXT] (state, rt) {
-    state.theRunText = Mdf.isRunText(rt) ? rt : Mdf.emptyRunText()
+    if (!Mdf.isRunText(rt)) {
+      state.theRunText = Mdf.emptyRunText()
+      return
+    }
+    // update current model run
+    state.theRunText = rt
+
+    // find current model run in the list and update it
+    if (!Mdf.isNotEmptyRunText(rt) || !Mdf.isLength(state.runTextList)) return
+
+    for (let k = 0; k < state.runTextList.length; k++) {
+      if (state.runTextList[k].ModelDigest === rt.ModelDigest &&
+        ((rt.Digest !== '' && state.runTextList[k].Digest === rt.Digest) ||
+        (rt.Digest === '' &&
+        state.runTextList[k].Digest === rt.Digest &&
+        state.runTextList[k].Name === rt.Name &&
+        state.runTextList[k].Status === rt.Status &&
+        state.runTextList[k].SubCount === rt.SubCount &&
+        state.runTextList[k].CreateDateTime === rt.CreateDateTime &&
+        state.runTextList[k].UpdateDateTime === rt.UpdateDateTime))) {
+        // update run list with current value
+        state.runTextList.splice(k, 1, JSON.parse(JSON.stringify(rt)))
+        break
+      }
+    }
   },
 
   // set current run by index in run list or empty if index out of range
   [UPDATE.THE_RUN_TEXT_BY_IDX] (state, idx) {
     // if index out of range then set current run to empty value
-    if (idx < 0 && idx >= state.runTextList.length) {
+    if (idx < 0 || idx >= state.runTextList.length) {
       state.theRunText = Mdf.emptyRunText()
       return
     }
-    // if current run same as index run then do nothing
+    // if current run same as index run then return
     if (Mdf.isNotEmptyRunText(state.theRunText) &&
       state.theRunText.ModelDigest === state.runTextList[idx].ModelDigest &&
       state.theRunText.Name === state.runTextList[idx].Name &&
@@ -150,10 +162,34 @@ const mutations = {
       state.theRunText.SubCount === state.runTextList[idx].SubCount &&
       (state.theRunText.CreateDateTime || '') === (state.runTextList[idx].CreateDateTime || '') &&
       (state.theRunText.UpdateDateTime || '') === (state.runTextList[idx].UpdateDateTime || '')) {
-      return  // same workset
+      return  // same model run
     }
     // update current run to run at the index
     state.theRunText = JSON.parse(JSON.stringify(state.runTextList[idx]))
+  },
+
+  // clear current run if model digest not the same else set current run to first in run list
+  [UPDATE.THE_RUN_TEXT_ON_NEW] (state, modelDigest) {
+    if ((modelDigest || '') !== state.theRunText.ModelDigest) {
+      state.theRunText = Mdf.emptyRunText()
+      return
+    }
+    if (!Mdf.isLength(state.runTextList)) return  // model run list empty
+
+    // if current run same as index run then return
+    if (Mdf.isNotEmptyRunText(state.theRunText) &&
+      state.theRunText.ModelDigest === state.runTextList[0].ModelDigest &&
+      state.theRunText.Name === state.runTextList[0].Name &&
+      state.theRunText.Digest === state.runTextList[0].Digest &&
+      state.theRunText.Status === state.runTextList[0].Status &&
+      state.theRunText.SubCount === state.runTextList[0].SubCount &&
+      (state.theRunText.CreateDateTime || '') === (state.runTextList[0].CreateDateTime || '') &&
+      (state.theRunText.UpdateDateTime || '') === (state.runTextList[0].UpdateDateTime || '')) {
+      return  // same model run
+    }
+
+    // update current model run to the first in model run list
+    state.theRunText = JSON.parse(JSON.stringify(state.runTextList[0]))
   },
 
   // assign new value to run list, if (rl) is a model run text list
@@ -170,31 +206,36 @@ const mutations = {
     if ((modelDigest || '') !== digest) state.runTextList = []
   },
 
-  // clear current workset if model digest not the same else set current workset to first in workset list
-  [UPDATE.THE_WORKSET_TEXT_ON_NEW] (state, modelDigest) {
-    if ((modelDigest || '') !== state.theWorksetText.ModelDigest) {
-      state.theWorksetText = Mdf.emptyWorksetText()
-    } else {
-      state.theWorksetText =
-        (state.worksetTextList.length > 0)
-        ? JSON.parse(JSON.stringify(state.worksetTextList[0]))
-        : Mdf.emptyWorksetText()
-    }
-  },
-
   // set current workset
   [UPDATE.THE_WORKSET_TEXT] (state, wt) {
-    state.theWorksetText = Mdf.isWorksetText(wt) ? wt : Mdf.emptyWorksetText()
+    if (!Mdf.isWorksetText(wt)) {
+      state.theWorksetText = Mdf.emptyWorksetText()
+      return
+    }
+    // update current workset
+    state.theWorksetText = wt
+
+    // find current workset in the list and update it
+    if (!Mdf.isNotEmptyWorksetText(wt) || !Mdf.isLength(state.worksetTextList)) return
+
+    for (let k = 0; k < state.worksetTextList.length; k++) {
+      if (state.worksetTextList[k].ModelDigest === wt.ModelDigest &&
+        state.worksetTextList[k].Name === wt.Name) {
+        // update workset list with current value
+        state.worksetTextList.splice(k, 1, JSON.parse(JSON.stringify(wt)))
+        break
+      }
+    }
   },
 
   // set current workset by index in workset list or empty if index out of range
   [UPDATE.THE_WORKSET_TEXT_BY_IDX] (state, idx) {
     // if index out of range then set current workset to empty value
-    if (idx < 0 && idx >= state.worksetTextList.length) {
+    if (idx < 0 || idx >= state.worksetTextList.length) {
       state.theWorksetText = Mdf.emptyWorksetText()
       return
     }
-    // if current workset same as index workset then do nothing
+    // if current workset same as index workset then return
     if (Mdf.isNotEmptyWorksetText(state.theWorksetText) &&
       state.theWorksetText.ModelDigest === state.worksetTextList[idx].ModelDigest &&
       state.theWorksetText.Name === state.worksetTextList[idx].Name) {
@@ -202,6 +243,25 @@ const mutations = {
     }
     // update current workset to workset at the index
     state.theWorksetText = JSON.parse(JSON.stringify(state.worksetTextList[idx]))
+  },
+
+  // clear current workset if model digest not the same else set current workset to first in workset list
+  [UPDATE.THE_WORKSET_TEXT_ON_NEW] (state, modelDigest) {
+    if ((modelDigest || '') !== state.theWorksetText.ModelDigest) {
+      state.theWorksetText = Mdf.emptyWorksetText()
+      return
+    }
+    if (!Mdf.isLength(state.worksetTextList)) return // workset list empty
+
+    // if current workset has same model and name then exit
+    if (Mdf.isNotEmptyWorksetText(state.theWorksetText) &&
+      state.theWorksetText.ModelDigest === modelDigest &&
+      state.theWorksetText.Name === state.worksetTextList[0].Name) {
+      return  // same workset
+    }
+
+    // update current workset to the first in workset list
+    state.theWorksetText = JSON.parse(JSON.stringify(state.worksetTextList[0]))
   },
 
   // assign new value to workset list, if (wtl) is a model run list
@@ -271,7 +331,7 @@ const actions = {
   // set new value to run list
   [SET.RUN_TEXT_LIST] ({ commit, dispatch }, rl) {
     commit(UPDATE.RUN_TEXT_LIST, rl)
-    commit(UPDATE.THE_RUN_TEXT_BY_IDX, 0)
+    dispatch(SET.THE_RUN_TEXT_BY_IDX, 0)
   },
 
   // clear run list: set to empty value
@@ -291,7 +351,7 @@ const actions = {
 
   [SET.WORKSET_TEXT_LIST] ({ commit, dispatch }, wl) {
     commit(UPDATE.WORKSET_TEXT_LIST, wl)
-    commit(UPDATE.THE_WORKSET_TEXT_BY_IDX, 0)
+    dispatch(SET.THE_WORKSET_TEXT_BY_IDX, 0)
   },
 
   // clear workset list: set to empty value

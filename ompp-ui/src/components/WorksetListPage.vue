@@ -14,14 +14,15 @@
           :alt="w.Name + ' notes'">event_note</span>
         <span
           @click="doWsClick(idx, w.Name)"
-          href="#"
           class="link-next" 
           :title="w.Name"
           :alt="w.Name" 
           >
           <span class="mdc-list-item__text">
             <span>{{ w.Name }}</span>
-            <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}</span>
+            <span class="item-line mdc-list-item__secondary-text">
+              <span class="mono mdc-typography--body1">{{lastTime(w)}} </span>{{ descrOf(w) }}
+            </span>
           </span>
         </span>
 
@@ -46,8 +47,7 @@ export default {
   components: { WorksetInfoDialog },
 
   props: {
-    digest: '',
-    refreshTickle: false
+    digest: ''
   },
 
   data () {

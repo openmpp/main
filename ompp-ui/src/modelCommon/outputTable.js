@@ -1,6 +1,7 @@
 // db structures common functions: output table and table list
 
 import * as Mdl from './model'
+import * as Hlpr from './helper'
 
 // number of model output tables
 export const outTableCount = (md) => {
@@ -10,8 +11,7 @@ export const outTableCount = (md) => {
 // is model has output table text list and each element is Table
 export const isTableTextList = (md) => {
   if (!Mdl.isModel(md)) return false
-  if (!md.hasOwnProperty('TableTxt')) return false
-  if (!md.TableTxt.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(md.TableTxt)) return false
   for (let k = 0; k < md.TableTxt.length; k++) {
     if (!isTable(md.TableTxt[k].Table)) return false
   }

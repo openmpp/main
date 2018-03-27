@@ -5,18 +5,50 @@
   <div class="hdr-row mdc-typography--body1">
 
     <span v-if="loadDone">
+
       <span v-if="!isWsView" 
         @click="showRunInfoDlg()" 
         class="cell-icon-link material-icons"
         alt="Description and notes" title="Description and notes">
           <span v-if="isSuccessTheRun">event_note</span>
           <span v-else>priority_high</span>
+      </span>
+      <!-- isWsView -->
+      <span v-else>
+
+        <span
+          @click="showWsInfoDlg()" 
+          class="cell-icon-link material-icons"
+          alt="Description and notes" title="Description and notes">event_note</span>
+
+        <span v-if="!isWsEdit">
+          <span
+            @click="doWsEditToggle()" 
+            class="cell-icon-link material-icons"
+            alt="Edit input set of parameters" title="Edit input set of parameters">mode_edit</span>
+          <span v-if="!isRunPanel"
+            @click="showRunPanel()" 
+            class="cell-icon-link material-icons"
+            alt="Run the model" title="Run the model">directions_run</span>
+          <span v-else
+            class="cell-icon-empty material-icons" 
+            alt="Run the model" title="Run the model">directions_run</span>
         </span>
-      <span v-else 
-        @click="showWsInfoDlg()" 
-        class="cell-icon-link material-icons"
-        alt="Description and notes" title="Description and notes">event_note</span>
+        <!-- isWsEdit -->
+        <span v-else>
+          <span
+            @click="doWsEditToggle()" 
+            class="cell-icon-link material-icons"
+            alt="Save input set of parameters" title="Save input set of parameters">save</span>
+          <span
+            class="cell-icon-empty material-icons" 
+            alt="Run the model" title="Run the model">directions_run</span>
+        </span>
+
+      </span>
     </span>
+
+    <!-- !loadDone -->
     <span v-else 
       class="cell-icon-empty material-icons" 
       title="Information not available" alt="Information not available" aria-hidden="true">event_note</span>
@@ -42,27 +74,129 @@
         :model-digest="digest"
         :run-digest="runDigest"
         :refresh-tickle="refreshTickle"
+        :refresh-run-tickle="refreshRunTickle"
         @done="doneRunLoad" @wait="()=>{}">
       </refresh-run>
       <refresh-run-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
+        :refresh-run-list-tickle="refreshRunListTickle"
         @done="doneRunListLoad" @wait="()=>{}">
       </refresh-run-list>
       <refresh-workset v-if="(wsName || '') !== ''"
         :model-digest="digest"
         :workset-name="wsName"
         :refresh-tickle="refreshTickle"
+        :refresh-ws-tickle="refreshWsTickle"
         @done="doneWsLoad" @wait="()=>{}">
       </refresh-workset>
       <refresh-workset-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
+        :refresh-ws-list-tickle="refreshWsListTickle"
         @done="doneWsListLoad" @wait="()=>{}">
       </refresh-workset-list>
+      <update-workset-status v-if="(wsName || '') !== ''"
+        :model-digest="digest"
+        :workset-name="wsName"
+        :enable-edit="!isWsEdit"
+        :save-ws-status-tickle="saveWsStatusTickle"
+        @done="doneWsStatusUpdate" @wait="()=>{}">
+      </update-workset-status>
     </span>
 
   </div>
+
+  <template v-if="isRunPanel">
+
+    <div v-if="isEmptyRunStep" class="panel-frame mdc-typography--body1">
+      <div>
+        <span
+          @click="hideRunPanel()" 
+          class="cell-icon-link material-icons"
+          alt="Close" title="Close">close</span>
+        <span class="panel-item">Enter the name for new model run:</span>
+      </div>
+      <div>
+        <span
+          :class="{'mdc-text-field--disabled': isWsEdit}"
+          class="mdc-text-field mdc-text-field--box mdc-text-field--fullwidth">
+          <input type="text"
+            id="run-name-input"
+            ref="runNameInput"
+            maxlength="255"
+            :disabled="isWsEdit"
+            :value="autoNewRunName"
+            alt="Name of new model run"
+            title="Name of new model run"
+            class="mdc-text-field__input"></input>
+        </span>
+      </div>
+      <div>
+        <om-mcw-button 
+          @click="doModelRun"
+          :raised="true"
+          :disabled="isWsEdit"
+          class="panel-item"
+          :alt="'Run the model with input set ' + wsName"
+          :title="'Run the model with input set ' + wsName">
+          <i class="material-icons mdc-button__icon">directions_run</i>Run the model</om-mcw-button>
+        <input type="number"
+          id="sub-count-input" ref="subCountInput" size="4" maxlength="4" min="1" max="9999"
+          :value="newRunSubCount"
+          :disabled="isWsEdit"
+          class="panel-sub-count" alt="Number of sub-values" title="Number of sub-values"></input>
+        <span class="panel-item">Sub-Values</span>
+      </div>
+    </div>
+
+    <div v-if="isInitRunStep" class="panel-frame mdc-typography--body1">
+      <div>
+        <span
+          @click="hideRunPanel()" 
+          class="cell-icon-link material-icons"
+          alt="Close" title="Close">close</span>
+        <span class="mdc-typography--body2">Running: </span><span class="mdc-typography--body1">{{newRunName}}</span>
+      </div>
+      <div>
+        <new-run-init
+          :model-digest="digest"
+          :new-run-name="newRunName"
+          :workset-name="wsName"
+          :sub-count="newRunSubCount"
+          @done="doneNewRunInit"
+          @wait="()=>{}">
+        </new-run-init>
+      </div>
+    </div>
+
+    <div v-if="isProcRunStep || isFinalRunStep" class="panel-frame mdc-typography--body1">
+      <div>
+        <span
+          @click="hideRunPanel()" 
+          class="cell-icon-link material-icons"
+          alt="Close" title="Close">close</span>
+        <span class="mdc-typography--body1">{{newRunName}}</span>
+      </div>
+      <div class="panel-line">
+        <new-run-progress  v-if="!isFinalRunStep"
+          :model-digest="digest"
+          :new-run-key="newRunState.RunKey"
+          :start="newRunLogStart"
+          :count="newRunLogSize"
+          @done="doneNewRunProgress"
+          @wait="()=>{}">
+        </new-run-progress>
+        <span class="mono"><span v-if="newRunTimeDt">{{newRunTimeDt}} = </span>{{newRunState.StartDateTime}} - {{newRunState.UpdateDateTime}}</span>
+        <span class="mono"><i>[{{newRunState.RunKey}}.log]</i></span>
+      </div>
+      <div>
+        <div v-for="ln in newRunLineLst" :key="ln.offset" class="mono mdc-typography--caption">{{ln.text}}</div>
+      </div>
+    </div>
+
+  <!-- isRunPanel -->
+  </template>
 
   <nav class="tab-container mdc-typography--body2">
     <div
@@ -89,7 +223,6 @@
   
   <main class="main-container">
     <router-view
-      :refresh-tickle="refreshTickle"
       @tab-mounted="doTabMounted"
       @run-select="doRunSelect"
       @workset-select="doWsSelect"></router-view>
@@ -112,12 +245,32 @@ import RefreshRun from './RefreshRun'
 import RefreshRunList from './RefreshRunList'
 import RefreshWorkset from './RefreshWorkset'
 import RefreshWorksetList from './RefreshWorksetList'
+import UpdateWorksetStatus from './UpdateWorksetStatus'
+import NewRunInit from './NewRunInit'
+import NewRunProgress from './NewRunProgress'
 import RunInfoDialog from './RunInfoDialog'
 import WorksetInfoDialog from './WorksetInfoDialog'
 
+const EMPTY_RUN_STEP = 0      // empty state of new model: undefined
+const INIT_RUN_STEP = 1       // initiate new model run: submit request to the server
+const PROC_RUN_STEP = 2       // model run in progress
+const FINAL_RUN_STEP = 16     // final state of model run: completed or failed
+const MIN_LOG_PAGE_SIZE = 4   // min run log page size to read from the server
+const MAX_LOG_PAGE_SIZE = 10  // max run log page size to read from the server
+
 export default {
   components: {
-    OmMcwButton, RunInfoDialog, WorksetInfoDialog, RefreshModel, RefreshRun, RefreshRunList, RefreshWorkset, RefreshWorksetList
+    OmMcwButton,
+    RefreshModel,
+    RefreshRun,
+    RefreshRunList,
+    RefreshWorkset,
+    RefreshWorksetList,
+    UpdateWorksetStatus,
+    NewRunInit,
+    NewRunProgress,
+    RunInfoDialog,
+    WorksetInfoDialog
   },
 
   props: {
@@ -132,10 +285,25 @@ export default {
       loadRunListDone: false,
       loadWsDone: false,
       loadWsListDone: false,
+      refreshRunTickle: false,
+      refreshRunListTickle: false,
+      refreshWsTickle: false,
+      refreshWsListTickle: false,
+      saveWsStatusTickle: false,
       mountedDone: false,
+      modelName: '',
       runDigest: '',
       wsName: '',
-      isWsView: false,    // if true then page view is a workset else run
+      isWsView: false,            // if true then page view is a workset else run
+      isRunPanel: false,          // if true then run panel is visible
+      newRunStep: EMPTY_RUN_STEP, // model run step: initial, start new, view progress
+      newRunName: '',
+      newRunSubCount: 1,
+      newRunState: Mdf.emptyRunState(),
+      newRunTimeDt: '',
+      newRunLogStart: 0,
+      newRunLogSize: 0,
+      newRunLineLst: [],
       tabCount: 0,
       tabLst: []
     }
@@ -148,6 +316,23 @@ export default {
     },
     isSuccessTheRun () { return Mdf.isRunSuccess(this.theRunText) },
     currentRunSetKey () { return [this.runDigest, this.wsName, this.isWsView].toString() },
+
+    // if true then workset edit mode else readonly and model run enabled
+    isWsEdit () {
+      return this.isWsView && Mdf.isNotEmptyWorksetText(this.theWorksetText) && !this.theWorksetText.IsReadonly
+    },
+    // make new model run name
+    autoNewRunName () {
+      const dt = new Date()
+      return (this.wsName || '') + ' ' + Mdf.dtToTimeStamp(dt)
+    },
+
+    // model new run step: empty, initialize, in progress, final
+    isEmptyRunStep () { return this.newRunStep === EMPTY_RUN_STEP },
+    isInitRunStep () { return this.newRunStep === INIT_RUN_STEP },
+    isProcRunStep () { return this.newRunStep === PROC_RUN_STEP },
+    isFinalRunStep () { return this.newRunStep === FINAL_RUN_STEP },
+
     // view header line
     isNotEmptyHdr () {
       return this.isWsView ? Mdf.isNotEmptyWorksetText(this.theWorksetText) : Mdf.isNotEmptyRunText(this.theRunText)
@@ -193,7 +378,10 @@ export default {
           this.doTabAdd(false, false, 'run-list')
         }
         this.doTabAdd(false, false, 'workset-list')
+        //
         this.doTabHeaderRefresh()
+        this.doTabPathRefresh()
+        this.doTabAdd(true, true, 'parameter-list')
       }
     },
 
@@ -207,7 +395,11 @@ export default {
 
   methods: {
     // reload event handlers: async get the model, runs and worksets
-    doneModelLoad (isSuccess) { this.loadModelDone = true },
+    doneModelLoad (isSuccess) {
+      this.modelName = this.theModel.Name
+      this.loadModelDone = true
+      this.resetRunStep()
+    },
     doneRunLoad (isSuccess) {
       this.loadRunDone = true
       this.isWsView = !isSuccess
@@ -232,6 +424,9 @@ export default {
         this.loadWsDone = true  // do not refresh workset: workset list empty
       }
     },
+    doneWsStatusUpdate () {
+      this.refreshWsTickle = !this.refreshWsTickle  // refersh current workset
+    },
 
     // run selected from the list: reload run info
     doRunSelect (dgst) {
@@ -252,6 +447,95 @@ export default {
       this.isWsView = true
     },
 
+    // toggle workset readonly status
+    doWsEditToggle () {
+      this.saveWsStatusTickle = !this.saveWsStatusTickle
+    },
+
+    // show or close model run panel
+    showRunPanel () { this.isRunPanel = true },
+    hideRunPanel () {
+      this.isRunPanel = false
+      this.resetRunStep()
+    },
+    // clean new run data
+    resetRunStep () {
+      this.newRunStep = EMPTY_RUN_STEP
+      this.newRunName = ''
+      this.newRunSubCount = 1
+      this.newRunState = Mdf.emptyRunState()
+      this.newRunTimeDt = ''
+      this.newRunLogStart = 0
+      this.newRunLogSize = MIN_LOG_PAGE_SIZE
+      this.newRunLineLst = []
+    },
+
+    // run the model
+    doModelRun () {
+      // cleanup model run name and sub-count
+      let name = this.$refs.runNameInput.value
+      name = name.replace(/["'`$}{@\\]/g, ' ').trim()
+      if ((name || '') === '') name = this.autoNewRunName
+
+      let sub = this.$refs.subCountInput.value
+      sub = sub.replace(/[^0-9]/g, ' ').trim()
+      let nSub = ((sub || '') !== '') ? parseInt(sub) : 1
+
+      this.newRunName = name  // actual values after cleanup
+      this.newRunSubCount = nSub || 1
+      this.newRunState = Mdf.emptyRunState()
+
+      // start new model run: send request to the server
+      this.newRunStep = INIT_RUN_STEP
+    },
+
+    // new model run started: response from server
+    doneNewRunInit (ok, rst) {
+      this.newRunStep = ok ? PROC_RUN_STEP : FINAL_RUN_STEP
+      if (!!ok && Mdf.isNotEmptyRunState(rst)) {
+        this.newRunState = rst
+        this.newRunName = rst.RunName
+        this.newSubCount = (rst.SubCount || 1)
+      }
+    },
+
+    // model run progress: response from server
+    doneNewRunProgress (ok, rlp) {
+      if (!ok || !Mdf.isNotEmptyRunStateLog(rlp)) return  // empty run state or error
+
+      this.newRunState = Mdf.toRunStateFromLog(rlp)
+      this.newRunTimeDt = Mdf.toIntervalStr(this.newRunState.StartDateTime, this.newRunState.UpdateDateTime)
+
+      // update log lines
+      let nLen = Mdf.lengthOf(rlp.Lines)
+      if (nLen > 0) {
+        let log = []
+        for (let k = 0; k < nLen; k++) {
+          log.push({offset: rlp.Offset + k, text: rlp.Lines[k]})
+        }
+        this.newRunLineLst = log
+      }
+
+      // check is it final update: model run completed
+      let isDone = (this.newRunState.IsFinal && rlp.Offset + rlp.Size >= rlp.TotalSize)
+
+      if (!isDone) {
+        this.newRunLogStart = rlp.Offset + rlp.Size
+        if (this.newRunLogStart + this.newRunLogSize < rlp.TotalSize) {
+          this.newRunLogSize = Math.min(rlp.TotalSize - this.newRunLogStart, MAX_LOG_PAGE_SIZE)
+          this.newRunLogStart = rlp.TotalSize - this.newRunLogSize
+        } else {
+          if (this.newRunLogStart + this.newRunLogSize >= rlp.TotalSize) this.newRunLogStart = rlp.TotalSize - this.newRunLogSize
+        }
+        if (this.newRunLogStart < rlp.Offset) this.newRunLogStart = rlp.Offset + 1
+      } else {
+        this.loadRunListDone = false
+        this.refreshRunListTickle = !this.refreshRunListTickle  // refersh run list and current run
+        this.refreshRunTickle = !this.refreshRunTickle          // refersh run list and current run
+        this.newRunStep = FINAL_RUN_STEP
+      }
+    },
+
     // show currently selected run info
     showRunInfoDlg () {
       this.$refs.theRunInfoDlg.showRunInfo(this.theRunText)
@@ -267,16 +551,17 @@ export default {
         console.log('invalid (empty) kind of tab mounted')
         return
       }
+      if (!this.loadDone) {
+        return    // wait until model loaded
+      }
       this.doTabAdd(true, false, kind, dn)
     },
 
     // click on tab link: activate that tab
     doTabLink (tabId, isRoute = false, path = '') {
-      //
       for (let k = 0; k < this.tabLst.length; k++) {
         this.tabLst[k].active = this.tabLst[k].id === tabId
       }
-
       // if new path is a result of tab add or close then route to new path
       if (isRoute && (path || '') !== '') {
         this.$router.push(path)
@@ -432,6 +717,7 @@ export default {
 
   mounted () {
     this.mountedDone = true
+    this.resetRunStep()
   }
 }
 </script>
@@ -440,6 +726,7 @@ export default {
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
+  @import "@material/textfield/mdc-text-field";
   
   /* page and tab container content body */
   .main-container {
@@ -521,10 +808,42 @@ export default {
   }
   */
 
+  /* model run panel */
+  .panel-border {
+    margin-top: .5rem;
+    margin-right: 2rem;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+  .panel-frame {
+    margin-top: .5rem;
+    margin-right: 2rem;
+    @extend .panel-border;
+  }
+  .panel-item {
+    margin-right: .5rem;
+  }
+  .panel-value {
+    @extend .panel-item;
+    @extend .panel-border;
+    @extend .mdc-typography--body1;
+  }
+  .panel-sub-count {
+    width: 4rem;
+    text-align: right;
+    @extend .panel-value;
+  }
+  .panel-line {
+    margin-top: .25rem;
+  }
+
   /* cell material icon: a link or empty (non-link) */
   .cell-icon {
     vertical-align: middle;
     margin: 0;
+    padding-left: 0;
+    padding-right: 0;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -541,7 +860,9 @@ export default {
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--text-disabled-on-background;
+    @extend .mdc-theme--primary-light-bg;
+    @extend .mdc-theme--text-primary-on-primary;
+    /* @extend .mdc-theme--text-disabled-on-background; */
   }
   .cell-status {
     text-transform: uppercase;

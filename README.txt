@@ -9,7 +9,14 @@ Cluster version:
   Linux:   openmpp_centos_mpi_YYYYMMDD.tar.gz
   Windows: openmpp_win_mpi_YYYYMMDD.zip 
 
+It is recommended to start with desktop version.
+Do NOT download _mpi_ binaries unless you have MPI installed on your cluster.
+  
 More information at: http://ompp.sourceforge.net/wiki/
+
+2018_02_05:
+    openM++ user interface (ompp-ui) alpha version
+    oms web-service API changes related to ompp-ui
 
 2017_12_19:
     major changes: beta version of openM++ web-service to access (oms)

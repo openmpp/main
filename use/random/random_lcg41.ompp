@@ -7,7 +7,7 @@
 *
 * The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
 *
-* The interface to framework modules, e.g. case_based_modgen.ompp consists of the functions
+* The interface to framework modules, e.g. case_based_common.ompp consists of the functions
 * new_streams, delete_streams, initialize_stream
 *
 * Other content in this module should be considered to be 'private'.

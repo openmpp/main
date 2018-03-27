@@ -31,7 +31,7 @@
     <span v-if="loadWait" class="material-icons om-mcw-spin">star</span><span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
-  <om-mcw-dialog ref="noteDlg" id="note-dlg" acceptText="OK">
+  <om-mcw-dialog ref="modelInfoDlg" id="model-info-dlg" :scrollable="true" acceptText="OK">
     <span slot="header">{{titleNoteDlg}}</span>
     <div>{{textNoteDlg}}</div>
     <br/>
@@ -104,15 +104,15 @@ export default {
       this.nameNoteDlg = Mdf.modelName(md)
       this.createdNoteDlg = Mdf.dtStr(md.Model.CreateDateTime)
       this.digestNoteDlg = Mdf.modelDigest(md)
-      this.$refs.noteDlg.open()
+      this.$refs.modelInfoDlg.open()
     },
 
     // refersh model list
     async doRefresh () {
-      let u = this.omppServerUrl + '/api/model-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       this.loadDone = false
       this.loadWait = true
       this.msg = 'Loading...'
+      let u = this.omppServerUrl + '/api/model-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
         this.setModelList(response.data)   // update model list in store

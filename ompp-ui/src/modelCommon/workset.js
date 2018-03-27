@@ -1,6 +1,8 @@
 // db structures common functions: workset and workset list
 // workset is input set of model parameters
 
+import * as Hlpr from './helper'
+
 // workset count: number of worksettext entries in workset text list
 export const worksetTextCount = (wtl) => {
   return isWorksetTextList(wtl) ? wtl.length : 0
@@ -12,8 +14,7 @@ export const isWorksetText = (wt) => {
   if (!wt.hasOwnProperty('ModelName') || !wt.hasOwnProperty('ModelDigest')) return false
   if (!wt.hasOwnProperty('Name')) return false
   if (!wt.hasOwnProperty('IsReadonly') || !wt.hasOwnProperty('BaseRunDigest')) return false
-  if (!wt.hasOwnProperty('Param') || !wt.hasOwnProperty('Txt')) return false
-  if (!wt.Param.hasOwnProperty('length') || !wt.Txt.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(wt.Param) || !Hlpr.hasLength(wt.Txt)) return false
   return true
 }
 
@@ -39,7 +40,7 @@ export const emptyWorksetText = () => {
 // return true if each list element isWorksetText()
 export const isWorksetTextList = (wtl) => {
   if (!wtl) return false
-  if (!wtl.hasOwnProperty('length')) return false
+  if (!Hlpr.hasLength(wtl)) return false
   for (let k = 0; k < wtl.length; k++) {
     if (!isWorksetText(wtl[k])) return false
   }

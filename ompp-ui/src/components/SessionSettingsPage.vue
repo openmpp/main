@@ -53,6 +53,24 @@
         <span class="set-table-cell mdc-typography--body2">{{ worksetCount }}</span>
       </div>
 
+      <div v-if="isNotEmptyRun" class="set-table-row">
+        <span class="set-table-cell"></span>
+        <span class="set-table-cell">Current model run:</span>
+        <span class="set-table-cell">
+          <span class="mono">{{lastTimeOfRun}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfRun}}</span>
+          <span>{{ descrOfRun }}</span>
+        </span>
+      </div>
+
+      <div v-if="isNotEmptyWorkset" class="set-table-row">
+        <span class="set-table-cell"></span>
+        <span class="set-table-cell">Current input set:</span>
+        <span class="set-table-cell">
+          <span class="mono">{{lastTimeOfWorkset}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfWorkset}}</span>
+          <span>{{ descrOfWorkset }}</span>
+        </span>
+      </div>
+
     </div>
   </div>
 </template>
@@ -81,6 +99,14 @@ export default {
     modelCount () { return this.modelListCount },
     runCount () { return Mdf.runTextCount(this.runTextList) },
     worksetCount () { return Mdf.worksetTextCount(this.worksetTextList) },
+    isNotEmptyRun () { return Mdf.isNotEmptyRunText(this.theRunText) },
+    lastTimeOfRun () { return Mdf.dtStr(this.theRunText.UpdateDateTime) },
+    nameOfRun () { return this.theRunText.Name || '' },
+    descrOfRun () { return Mdf.descrOfTxt(this.theRunText) },
+    isNotEmptyWorkset () { return Mdf.isNotEmptyWorksetText(this.theWorksetText) },
+    lastTimeOfWorkset () { return Mdf.dtStr(this.theWorksetText.UpdateDateTime) },
+    nameOfWorkset () { return this.theWorksetText.Name || '' },
+    descrOfWorkset () { return Mdf.descrOfTxt(this.theWorksetText) },
 
     ...mapGetters({
       uiLang: GET.UI_LANG,
@@ -88,6 +114,8 @@ export default {
       modelListCount: GET.MODEL_LIST_COUNT,
       runTextList: GET.RUN_TEXT_LIST,
       worksetTextList: GET.WORKSET_TEXT_LIST,
+      theRunText: GET.THE_RUN_TEXT,
+      theWorksetText: GET.THE_WORKSET_TEXT,
       omppServerUrl: GET.OMPP_SRV_URL
     })
   },

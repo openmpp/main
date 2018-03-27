@@ -38,7 +38,7 @@ namespace openm
     static ModelEntryHolder theModelEntry(RunOnce, RunInit, ModelStartup, RunModel, ModelShutdown);
 
     // size of parameters list: number of model input parameters
-    const size_t PARAMETER_NAME_ARR_LEN = 6;
+    const size_t PARAMETER_NAME_ARR_LEN = 7;
 
     // list of model input parameters name, type and size
     const ParameterNameSizeItem parameterNameSizeArr[PARAMETER_NAME_ARR_LEN] = {
@@ -47,6 +47,7 @@ namespace openm
         {"salaryAge", typeid(int), N_SALARY * N_AGE},
         {"salaryFull", typeid(int), N_SALARY},
         {"baseSalary", typeid(int), 1},
-        {"filePath", typeid(string), 1}
+        {"filePath", typeid(string), 1},
+        {"isOldAge", typeid(bool), N_AGE}
     };
 }

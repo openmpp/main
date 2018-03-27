@@ -10,11 +10,13 @@ DROP VIEW ageSex;
 DROP VIEW salaryFull;
 DROP VIEW baseSalary;
 DROP VIEW filePath;
+DROP VIEW isOldAge;
 
 DROP VIEW salarySex_d_2012820;
 
 DROP TABLE salarySex_v_2012820;
 DROP TABLE salarySex_a_2012820;
+
 DROP TABLE StartingSeed_w_2012819;
 DROP TABLE StartingSeed_p_2012819;
 DROP TABLE salaryAge_w_2012818;
@@ -27,3 +29,5 @@ DROP TABLE baseSalary_w_2012811;
 DROP TABLE baseSalary_p_2012811;
 DROP TABLE filePath_w_2012814;
 DROP TABLE filePath_p_2012814;
+DROP TABLE isOldAge_p_2012815;
+DROP TABLE isOldAge_w_2012815;
