@@ -10,6 +10,10 @@
 
 #include "omc/omSimulation.h" // For IDE
 #if 0 // Hide from IDE
+
+// for probabilistic analysis, average measures aross members
+options measures_method = average;
+
 // The following modules will be compiled and assembled in this order
 // after all model-specific modules.
 use "common.ompp";
@@ -18,6 +22,7 @@ use "random/random_lcg200.ompp";
 use "case_based/case_based_lcg200.ompp";
 use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
+
 #endif
 
 namespace fmk {

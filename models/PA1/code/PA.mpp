@@ -1,21 +1,109 @@
-// Copyright (c) 2013-2018 OpenM++ Contributors
+﻿// Copyright (c) 2013-2018 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(PA, EN) Probabilistic Analysis
 /* NOTE(PA, EN)
-	Probabilistic Analysis.
+	Probabilistic Analysis (PA) illustrative model
 */
+
+parameters
+{
+    //EN Mortality hazard
+    double Lambda;
+
+    //EN Relative risk of mortality with condition
+    model_generated double RR;
+
+    //EN Relative risk of mortality without condition
+    model_generated double RR_without;
+
+    //EN RR estimation distribution (mu)
+    double RR_mu;
+
+    //EN RR estimation distribution (sigma)
+    double RR_sigma;
+
+    //EN Proportion with risk factor at birth
+    double Alpha;
+};
+
 
 void PreSimulation()
 {
-    const long rg_m = 2147483647; // RNG divisor 2^31 - 1
+    // Draw value of RR wtih condition from estimation distribution
+    double z = RandNormal(2);
+    RR = RR_mu + RR_sigma * z;
 
-    const int n_draws = 5;
-    long a[n_draws];
-    for (int j=0; j<n_draws; ++j) {
-        double dbl = RandUniform(0);
-        // recover original long from uniform
-        long lng = dbl * rg_m;
-        a[j] = lng;
+    // Compute RR without condition to maintain same life expectancy
+    RR_without = RR * (1.0 - Alpha) / (RR - Alpha);
+};
+
+
+actor Person //EN Individual
+{
+    //EN alive
+    bool alive = { true };
+
+    //EN integer age
+    int integer_age = self_scheduling_int(age);
+
+    //EN risk factor
+    bool risk_factor = { false };
+
+    void Start_risk_factor(); //EN Set risk factor at birth
+    hook Start_risk_factor, Start;
+
+    event timeMortalityEvent, MortalityEvent;    //EN Mortality event
+};
+
+void Person::Start_risk_factor()
+{
+    risk_factor = (RandUniform(2) < Alpha);
+}
+
+
+TIME Person::timeMortalityEvent()
+{
+    TIME tEventTime = TIME_INFINITE;
+    double hazard = risk_factor ? (RR * Lambda) : (RR_without * Lambda);
+    tEventTime = WAIT(-TIME(log(RandUniform(1)) / hazard));
+    return tEventTime;
+}
+
+void Person::MortalityEvent()
+{
+    alive = FALSE;
+    Finish();
+}
+
+table Person A1 //EN Duration of Life
+{
+    {
+        value_in(alive),                //EN Population size
+        min_value_out(duration()),      //EN Minimum duration of life decimals=4
+        max_value_out(duration()),      //EN Maximum duration of life decimals=4
+        duration() / value_in(alive)    //EN Life expectancy decimals=4
+    }    //EN Demographic characteristics
+};
+
+table Person A2 //EN Proportion with condition at age 50
+[trigger_entrances(integer_age, 50)]
+{
+    {
+        value_in(risk_factor) / unit //EN Proportion decimals=4
     }
+};
+
+
+// Output value of derived parameter RR in a table
+user_table UT_RR //EN Derived parameter RR
+{
+    {
+        VALUE //EN Value
+    }
+};
+void UserTables()
+{
+    double dValue = RR;
+    SetTableValue("UT_RR.VALUE", dValue);
 };

@@ -1,0 +1,12 @@
+﻿parameters {
+/* NOTE ( Lambda, EN )
+    Produces a life expectancy of 80 years.
+*/
+	double Lambda    = 0.0125; //EN Mortality hazard
+
+    double RR_mu     = 2.00;   //EN RR estimation distribution (mu)
+    double RR_sigma  = 0.10;   //EN RR estimation distribution (sigma)
+
+    double Alpha     = 0.10;   //EN Proportion at birth with condition
+};
+
