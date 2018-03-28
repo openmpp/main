@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 OpenM++ Contributors
+// Copyright (c) 2013-2018 OpenM++ Contributors (see AUTHORS.txt for details)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(model_core, EN) Core simulation functionality
@@ -8,6 +8,9 @@
 
 // The model type
 model_type case_based;
+
+// This model uses Probabilistic Analysis, so average measures aross simulation members.
+options measures_method = average;
 
 // The data type used to represent time
 time_type double;

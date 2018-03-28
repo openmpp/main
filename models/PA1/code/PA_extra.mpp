@@ -1,0 +1,100 @@
+﻿// Copyright (c) 2013-2018 OpenM++ Contributors (see AUTHORS.txt for details)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(PA_extra, EN) Additional outputs
+/* NOTE(PA_extra, EN)
+	Assitional outputs for PA1
+*/
+
+//
+// Age-dependent exploration
+// 
+
+range RANGE_AGE //EN Age
+{
+    0, 99
+};
+classification STATUS //EN Status
+{
+    //EN None
+    ST_NONE,
+
+    //EN Untreated
+    ST_UNTREATED,
+
+    //EN Treated
+    ST_TREATED
+};
+actor Person
+{
+    int integer_age = self_scheduling_int(age); //EN Age
+    RANGE_AGE range_age = RANGE_AGE(integer_age); //EN Age
+    STATUS status; //EN Status
+    void Start_status(); //EN Set status (after condition)
+    hook Start_status, Start_condition;
+};
+
+void Person::Start_status()
+{
+    if (condition) {
+        if (treated) {
+            status = ST_TREATED;
+        }
+        else {
+            status = ST_UNTREATED;
+        }
+
+    }
+    else {
+        status = ST_NONE;
+    }
+}
+table Person A_StatusByAge //EN Status by age
+[integer_age < 100]
+{
+    range_age
+    *
+    status
+    *
+    {
+        duration() //EN PY
+    }
+};
+
+//
+// Output derived parameters as tables
+//
+
+user_table A_RR_with //EN Derived parameter RR_with
+{
+    {
+        VALUE //EN Value
+    }
+};
+user_table A_RR_without //EN Derived parameter RR_without
+{
+    {
+        VALUE //EN Value
+    }
+};
+user_table A_RR_treated //EN Derived parameter RR_treated
+{
+    {
+        VALUE //EN Value
+    }
+};
+void UserTables()
+{
+    {
+        double dValue = RR_with;
+        SetTableValue("A_RR_with.VALUE", dValue);
+    }
+    {
+        double dValue = RR_without;
+        SetTableValue("A_RR_without.VALUE", dValue);
+    }
+    {
+        double dValue = RR_treated;
+        SetTableValue("A_RR_treated.VALUE", dValue);
+    }
+};

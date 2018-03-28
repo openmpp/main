@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 OpenM++
+// Copyright (c) 2013-2018 OpenM++ Contributors (see AUTHORS.txt for details)
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 //LABEL(ompp_framework, EN) OpenM++ simulation framework
@@ -10,9 +10,6 @@
 
 #include "omc/omSimulation.h" // For IDE
 #if 0 // Hide from IDE
-
-// for probabilistic analysis, average measures aross members
-options measures_method = average;
 
 // The following modules will be compiled and assembled in this order
 // after all model-specific modules.

@@ -1,109 +1,126 @@
-﻿// Copyright (c) 2013-2018 OpenM++ Contributors
+﻿// Copyright (c) 2013-2018 OpenM++ Contributors (see AUTHORS.txt for details)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-//LABEL(PA, EN) Probabilistic Analysis
+//LABEL(PA, EN) Substantive module
 /* NOTE(PA, EN)
-	Probabilistic Analysis (PA) illustrative model
+	Substantive module for PA1
 */
 
+#include "omc/omSimulation.h" // For IDE
+
+#if 0 // Hide from IDE
 parameters
 {
     //EN Mortality hazard
     double Lambda;
 
     //EN Relative risk of mortality with condition
-    model_generated double RR;
+    model_generated double RR_with;
 
     //EN Relative risk of mortality without condition
     model_generated double RR_without;
 
-    //EN RR estimation distribution (mu)
-    double RR_mu;
+    //EN Relative risk of mortality with condition adn treated
+    model_generated double RR_treated;
 
-    //EN RR estimation distribution (sigma)
-    double RR_sigma;
+    //EN log(RR) estimation distribution (mu)
+    double log_RR_mu;
 
-    //EN Proportion with risk factor at birth
+    //EN log(RR) estimation distribution (sigma)
+    double log_RR_sigma;
+
+    //EN Proportion with condition at birth
     double Alpha;
+
+    //EN Proportion with condition identified at birth and treated
+    double Treated_proportion;
+
+    //EN Effectiveness of treatment
+    double Treated_effectiveness;
 };
-
-
-void PreSimulation()
-{
-    // Draw value of RR wtih condition from estimation distribution
-    double z = RandNormal(2);
-    RR = RR_mu + RR_sigma * z;
-
-    // Compute RR without condition to maintain same life expectancy
-    RR_without = RR * (1.0 - Alpha) / (RR - Alpha);
-};
-
 
 actor Person //EN Individual
 {
     //EN alive
     bool alive = { true };
 
-    //EN integer age
-    int integer_age = self_scheduling_int(age);
+    //EN condition
+    bool condition = { false };
 
-    //EN risk factor
-    bool risk_factor = { false };
+    //EN treated
+    bool treated = { false };
 
-    void Start_risk_factor(); //EN Set risk factor at birth
-    hook Start_risk_factor, Start;
+    void Start_condition(); //EN Set condition at birth
+    hook Start_condition, Start;
 
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
 };
 
-void Person::Start_risk_factor()
+table Person A_LifeExpectancy //EN Life expectancy
+[trigger_entrances(alive, false)]
 {
-    risk_factor = (RandUniform(2) < Alpha);
-}
+    {
+        value_out(age) / unit    //EN Age at death decimals=4
+    } //EN Measure
+};
 
+#endif // Hide from IDE
+
+void PreSimulation()
+{
+    // Draw value of RR with condition for current simulation member
+    // from estimation distribution.
+    double z = RandNormal(1);
+    RR_with = exp(log_RR_mu + log_RR_sigma * z);
+
+    // Compute RR without condition to maintain same average life expectancy (with no treatment)
+    RR_without = RR_with * (1.0 - Alpha) / (RR_with - Alpha);
+
+    // Compute RR with condition and treated.
+    // Is between RR_without and RR_with, a function of effectiveness.
+    RR_treated = RR_without * Treated_effectiveness + RR_with * (1.0 - Treated_effectiveness);
+};
+
+void Person::Start_condition()
+{
+    // Draw condition at birth
+    condition = (RandUniform(2) < Alpha);
+
+    // If person has condition, draw if treated
+    if (condition) {
+        treated = (RandUniform(3) < Treated_proportion);
+    }
+
+    // Allow other functions to hook to this function
+    hook_Start_condition();
+}
 
 TIME Person::timeMortalityEvent()
 {
-    TIME tEventTime = TIME_INFINITE;
-    double hazard = risk_factor ? (RR * Lambda) : (RR_without * Lambda);
-    tEventTime = WAIT(-TIME(log(RandUniform(1)) / hazard));
-    return tEventTime;
+    // Apply appropriate RR to baseline hazard
+    // depending on presence of condition and treatment.
+    double hazard = 0.0;
+    if (condition) {
+        if (treated) {
+            hazard = RR_treated * Lambda;
+        }
+        else {
+            hazard = RR_with * Lambda;
+        }
+    }
+    else {
+        hazard = RR_without * Lambda;
+    }
+
+    // Draw time to event, with constant hazard (exponential distribution).
+    TIME event_time = WAIT(-TIME(log(RandUniform(4)) / hazard));
+    return event_time;
 }
 
 void Person::MortalityEvent()
 {
-    alive = FALSE;
+    alive = false;
     Finish();
 }
 
-table Person A1 //EN Duration of Life
-{
-    {
-        value_in(alive),                //EN Population size
-        min_value_out(duration()),      //EN Minimum duration of life decimals=4
-        max_value_out(duration()),      //EN Maximum duration of life decimals=4
-        duration() / value_in(alive)    //EN Life expectancy decimals=4
-    }    //EN Demographic characteristics
-};
 
-table Person A2 //EN Proportion with condition at age 50
-[trigger_entrances(integer_age, 50)]
-{
-    {
-        value_in(risk_factor) / unit //EN Proportion decimals=4
-    }
-};
-
-
-// Output value of derived parameter RR in a table
-user_table UT_RR //EN Derived parameter RR
-{
-    {
-        VALUE //EN Value
-    }
-};
-void UserTables()
-{
-    double dValue = RR;
-    SetTableValue("UT_RR.VALUE", dValue);
-};
