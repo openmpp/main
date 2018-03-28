@@ -26,8 +26,14 @@ namespace fmk {
 /**
 * Called before invocation of PreSimulation functions.
 */
-void before_presimulation()
+void before_presimulation(int mem_id, int mem_count)
 {
+    // The number of member simulations in the sample of simulations
+    fmk::simulation_members = mem_count;
+
+    // The member to simulate of the sample of simulations
+    fmk::simulation_member = mem_id;
+
     // In PreSimulation, the master seed is the same for all simulation members.
     // For lcg-style generators, a different generator is used for each member.
     // For other generators, the actual starting seed is generated from the master seed
