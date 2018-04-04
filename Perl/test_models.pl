@@ -772,7 +772,6 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.RunName", $scenario_name,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
 					"-OpenM.SubValues", $members,
-					"-SubValue.Member", "iota",
 					"-OpenM.Threads", $threads,
 					);
 				system(@args);
@@ -959,7 +958,6 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.RunName", $scenario_name,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
 					"-OpenM.SubValues", $members,
-					"-SubValue.Member", "iota",
 					"-OpenM.Threads", $threads,
 					);
 				system(@args);

@@ -84,14 +84,6 @@ namespace fmk {
     thread_local bool do_exit_simulation_all = false;
 }
 
-parameters {
-    //EN Number of simulation members
-    int MemberCount;
-
-    //EN Simulation member
-    int Member;
-};
-
 /**
  * Gets the combined seed.
  * 

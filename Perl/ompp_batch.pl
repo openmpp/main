@@ -310,7 +310,6 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
 				"-OpenM.LogToFile", "true",
 				"-OpenM.LogFilePath", "${log_file}",
 				"-OpenM.SubValues", $members,
-				"-SubValue.Member", "iota",
 				"-OpenM.Threads", $threads,
 				"-ini", $ini_file,
 				);
