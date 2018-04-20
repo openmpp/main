@@ -15,6 +15,9 @@ actor Person {
 
     TIME a_t1 = { 2.34 };
 
+    double a_tt_d1 = 2.34; // a read-only Attribute, wrapping fundament type double
+    double a_tt_d2 = { 2.34 }; // an AssignableAttribute, wrapping fundamental type double
+
     void SomeTernaryTests();
     hook SomeTernaryTests, MortalityEvent, 3;
 };
@@ -25,37 +28,47 @@ void Person::SomeTernaryTests()
 {
     auto t1 = true ? 1.1 : 2; // sanity check
 
-    int i1 = 2;
-    double d1 = (22.0 / 7.0);
+    int l_i1 = 2;
+    double l_d1 = (22.0 / 7.0);
 
     // The following produces a C++ compile error 'attempting to access a deleted function'
 #if false
-    auto t7 = (a_dbl2 < i1) ? a_dbl2 : i1;
-    if (a_dbl2 < i1) {
-        if (t7 != a_dbl2) {
+    auto t7 = (a_tt_d2 < l_i1) ? a_tt_d2 : l_i1;
+    if (a_tt_d2 < i1) {
+        if (t7 != a_tt_d2) {
             stringstream ss;
-            ss << "error: t7=" << t7 << " a_dbl2=" << a_dbl2;
+            ss << "error: t7=" << t7 << " a_tt_d2=" << a_tt_d2;
             ModelExit(ss.str().c_str());
         }
     }
 #endif
 
-    auto t8 = (a_dbl2 < i1) ? (double)a_dbl2 : i1;
+    // Ternary operator using Attribute of a fundamental type (double)
+    // different error behaviour in VC and gcc
+    bool l_b0 = (a_tt_d1 < l_i1);
+    //auto d8 = (a_tt_d1 < l_i1) ? a_tt_d1 : l_i1;
 
     // Ternary operator using Attribute of a wrapped type fixed_precision<double> aka Time aka TIME
     // BAD!! The following produces result int, truncating the value of a_t1
     // a_t1 = 2.34, i2 = 3, t9 = 2 (is an int)
     // What is the conversion sequence from Attribute<Time, double...> to int??
     // Debug shows it is going through the T2 user-defined conversion to double
-    int i2 = 3;
-    auto t9 = (a_t1 < i2) ? a_t1 : i2;
-    if (a_t1 < i2) {
+ 
+    int l_i2 = 3;
+    auto t9 = (a_t1 < l_i2) ? a_t1 : l_i2;
+    bool l_b1 = a_t1 < l_i2;
+    auto t9a = l_b1 ? a_t1 : l_i2;
+    if (a_t1 < l_i2) {
         if (t9 != a_t1) {
+            std::cout << "return type of ternary is " << typeid(t9).name() << std::endl;
             stringstream ss;
             ss << "error: t9=" << t9 << " a_t1=" << a_t1;
             ModelExit(ss.str().c_str());
         }
     }
+
+    double d2 = l_i2;
+    auto t10 = (a_t1 < l_i2) ? a_t1 : d2;
 
     // The following produces a C++ compile error 'attempting to reference a deleted function'
     // which is the copy constructor for the Attribute a_dble2.

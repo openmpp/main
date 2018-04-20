@@ -43,10 +43,10 @@ class AssignableAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, N
 public:
     // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
     AssignableAgentVar(const AssignableAgentVar&) = delete; // copy constructor
-    //AssignableAgentVar& operator=(const AssignableAgentVar&) = delete; // copy initialization operator
+    //AssignableAgentVar& operator=(const AssignableAgentVar&) = delete; // copy assignment operator
 
     // operator: copy assignment
-    // Handle ocasional situation where an Attribute is assigned to an identical Attribute in another Entity.
+    // Handle occasional situation where an Attribute is assigned to an identical Attribute in another Entity.
     // An example is assigning newborn's time to mother's time at creation of newborn.
     AssignableAgentVar& operator=(const AssignableAgentVar & other)
     {
@@ -55,17 +55,16 @@ public:
         return *this;
     }
 
-    // ctor
+    // default ctor
     AssignableAgentVar()
     {
     }
 
-    // 1-argument ctor for creating temporary r-values
+    // converting ctor for creating temporary r-values
     AssignableAgentVar(T assign_value)
         : AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
     {
     }
-
 
     // operator: direct assignment of wrapped type
     AssignableAgentVar& operator=( T new_value )

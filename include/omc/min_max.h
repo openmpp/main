@@ -10,49 +10,82 @@
 #include <type_traits>
 #include <algorithm> // for std::min and std::max
 
+// enable std templates (arguments have identical types)
+using std::min;
+using std::max;
+//using std::clamp;
+
+#define OVERLOAD_MIN_MAX 1
+#if OVERLOAD_MIN_MAX // being tested
 //
-// min/max/clamp functions with explicit argument types passed value
+// min/max/clamp overload functions with explicit argument types
 //
 
 // minimum of two doubles
-inline double mind(double a, double b)
+inline const double min(const double& a, const double& b)
 {
     return (b < a ? b : a);
 }
 
 // maximum of two doubles
-inline double maxd(double a, double b)
+inline double max(const double& a, const double& b)
 {
     return (a < b ? b : a);
 }
 
 // clamped value of a double
-inline double clampd(double v, double lo, double hi)
+inline const double clamp(const double &v, const double &lo, const double &hi)
+{
+    return (v < lo ? lo : v > hi ? hi : v);
+}
+
+#endif // OVERLOAD_MIN_MAX // being tested
+
+
+
+//
+// min/max/clamp functions with explicit argument types passed value
+//
+
+// minimum of two doubles
+inline const double mind(const double& a, const double& b)
+{
+    return (b < a ? b : a);
+}
+
+// maximum of two doubles
+inline double maxd(const double& a, const double& b)
+{
+    return (a < b ? b : a);
+}
+
+// clamped value of a double
+inline const double clampd(const double &v, const double &lo, const double &hi)
 {
     return (v < lo ? lo : v > hi ? hi : v);
 }
 
 // minimum of two ints
-inline int mini(int a, int b)
+inline const int mini(const int& a, const int& b)
 {
     return (b < a ? b : a);
 }
 
 // maximum of two ints
-inline int maxi(int a, int b)
+inline const int maxi(const int& a, const int& b)
 {
     return (a < b ? b : a);
 }
 
 // clamped value of an int
-inline int clampi(int v, int lo, int hi)
+inline const int clampi(const int& v, const int& lo, const int& hi)
 {
     return (v < lo ? lo : v > hi ? hi : v);
 }
 
 
-
-#if true // being tested
+#define MIXED_MODE_MIN_MAX 0
+#if MIXED_MODE_MIN_MAX // being tested
 
 //
 // min/max/clamp templates for mixed-mode argument types

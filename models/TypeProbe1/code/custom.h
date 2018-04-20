@@ -9,6 +9,7 @@
 #pragma once
 #include <algorithm> // for std:min, std::max, std::clamp
 #include <cassert>
+#include <iostream>
 #include "case_based.h"
 
 #if defined(MODGEN)

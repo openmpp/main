@@ -4,6 +4,11 @@
 	This module contains various tests.
 */
 
+#ifndef MODGEN
+#include "omc/omSimulation.h" // so that IDE can understand C++ portions
+#endif
+
+#if false // hide syntactic island from IDE
 classification EMOTION
 {
     HAPPY,
@@ -84,6 +89,7 @@ actor Person
 
     void helper();
 };
+#endif // hide syntactic island from IDE
 
 void Person::helper()
 {

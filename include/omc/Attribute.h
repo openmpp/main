@@ -44,26 +44,38 @@ class AgentVar
 public:
     // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
     AgentVar(const AgentVar&) = delete; // copy constructor
-    AgentVar& operator=(const AgentVar&) = delete; // copy initialization operator
+    AgentVar& operator=(const AgentVar&) = delete; // copy assignment operator
 
-    // ctor
+    // default ctor
     AgentVar()
     {
     }
 
-    // 1-argument ctor for creating temporary r-values
+    // converting ctor using T
+    // 
+    // For creating temporary r-values in expressions.
     AgentVar(T assign_value)
     {
         // N.B. no side-effects
         value = assign_value;
     }
 
-    // 1-argument ctor for creating temporary r-values
-    //AgentVar(T2 assign_value)
-    //{
-    //    // N.B. no side-effects
-    //    value = assign_value;
-    //}
+#if false // under test
+    // converting ctor using T2
+    // 
+    // For creating temporary r-values in expressions.
+    // Disabled if T2 is void.
+    template <typename U = T2>
+#if defined(CXX_17)
+    AgentVar(typename std::enable_if_t< !std::is_void_v<U>, U > assign_value)
+#else
+    AgentVar(typename std::enable_if< !std::is_void<U>::value, U >::type assign_value)
+#endif
+    {
+        // N.B. no side-effects
+        value = assign_value;
+    }
+#endif // under test
 
     // initialization
     void initialize( T initial_value )
@@ -72,15 +84,34 @@ public:
     }
 
     // operator: user-defined conversion to T
+    // 
+//    // Use SFINAE to disable if type is wrapped (T2 is void)
+//    template <typename U = T2>
+//#if defined(CXX_17)
+//    operator typename std::enable_if_t< std::is_void_v<U>, T >() const
+//#else
+//    operator typename std::enable_if< std::is_void<U>::value, T >::type() const
+//#endif
     operator T() const
     {
-        return (T) get();
+        return get();
     }
 
     // operator: user-defined conversion to T2 (when Attribute type is itself a wrapped type)
+    // 
+    // Disabled if type is not wrapped (T2 is void).
+    // Not really necessary to disable, since C++ user-defined conversion to void is legal and ignored.
+//    template <
+//        typename U = T2,
+//#if defined(CXX_17)
+//        typename = typename std::enable_if_t< !std::is_void_v<U> >
+//#else
+//        typename = typename std::enable_if< !std::is_void<U>::value>::type
+//#endif
+//    >
     operator T2() const
     {
-        return (T2) get();
+        return get();
     }
 
     // member template to pass conversion inwards to the contained type to do the cast

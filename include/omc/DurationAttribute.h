@@ -45,7 +45,18 @@ class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_
 public:
     // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
     DurationAgentVar(const DurationAgentVar&) = delete; // copy constructor
-    DurationAgentVar& operator=(const DurationAgentVar&) = delete; // copy initialization operator
+    DurationAgentVar& operator=(const DurationAgentVar&) = delete; // copy assignment operator
+
+    // default ctor
+    DurationAgentVar()
+    {
+    }
+
+    // converting ctor for creating temporary r-values
+    DurationAgentVar(T assign_value)
+        : AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
+    {
+    }
 
     // update duration 
     void advance( T delta_time )

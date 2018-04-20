@@ -53,6 +53,9 @@ actor Person //EN Individual
     void Start_condition(); //EN Set condition at birth
     hook Start_condition, Start;
 
+    void do_nothing(); //EN Empty function
+    hook do_nothing, Start_condition, 100; // Force generation of hook_Start_condition
+
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
 };
 
@@ -81,6 +84,10 @@ void PreSimulation()
     RR_treated = RR_without * Treated_effectiveness + RR_with * (1.0 - Treated_effectiveness);
 };
 
+void Person::do_nothing()
+{
+}
+
 void Person::Start_condition()
 {
     // Draw condition at birth
@@ -94,6 +101,7 @@ void Person::Start_condition()
     // Allow other functions to hook to this function
     hook_Start_condition();
 }
+
 
 TIME Person::timeMortalityEvent()
 {

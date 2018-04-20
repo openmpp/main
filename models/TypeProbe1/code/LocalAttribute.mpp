@@ -1,17 +1,22 @@
 //LABEL(LocalAttribute, EN) Tests of ability to create Attribute a local variable
 
-#if false // hide syntactic islands from IDE
+#ifndef MODGEN
+#include "omc/omSimulation.h" // enable IDE to understand C++ portions
+#endif
+
+#if false // hide syntactic island from IDE
 actor Person {
 
     double my_d = 1.1; // this is an Attribute (identity Attribute)
+double my_q = { 2.2 }; // this is an Attribute (AssignableAttribute)
 
     void LocalAttributeTests();
     hook LocalAttributeTests, MortalityEvent, 2;
 };
-#endif
+#endif // hide syntactic island from IDE
 
 #ifndef MODGEN
-#include "omc/omSimulation.h" // enable IDE to understand C++ portions
+#include "omc/omSimulation.h" // so that IDE understands C++ portions
 #endif
 
 // The implement function of MortalityEvent
@@ -26,19 +31,28 @@ void Person::LocalAttributeTests()
     // Use of Attribute should create instance of wrapped type
 
     // Test AssignableAttribute
-    // following generates C++ compile error (correctly, due to deleted function)
+    // The following line generates C++ compile error
+    // (as desired, due to deleted copy assignment operator)
 #if false
     auto y1a = time;
 #endif
 
-    decltype(time) y1b;
+    // The following line declares a local variable as an Attribute.
+    // Model devs shouldn't do this...
+    decltype(my_q) local_q;
+    // ...because the following line triggers side-effects of assignment to my_q
+    // without changing the Attribute my_q in the containing Entity.
+    local_q += 1.0;
 
     // Test Attribute
     // following generates C++ compile error (correctly, due to deleted function)
     //auto y2a = my_d;
     decltype(my_d) y2b;
 
-    // Obtain wrapped value
+    // Obtain singly-wrapped value, type is fixed_precision_float<double>
+    TIME y4 = time;
+
+    // Obtain doubly-wrapped value
     double y3 = time;
 }
 

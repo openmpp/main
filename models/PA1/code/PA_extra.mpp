@@ -3,12 +3,15 @@
 
 //LABEL(PA_extra, EN) Additional outputs
 /* NOTE(PA_extra, EN)
-	Assitional outputs for PA1
+	Additional optional outputs for PA1.
+    Not required for analysis script (do_everything.pl).
 */
 
 //
 // Age-dependent exploration
 // 
+
+/* DISABLE ENTIRE MODULE
 
 range RANGE_AGE //EN Age
 {
@@ -98,3 +101,5 @@ void UserTables()
         SetTableValue("A_RR_treated.VALUE", dValue);
     }
 };
+
+DISABLE ENTIRE MODULE */

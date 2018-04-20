@@ -8,7 +8,8 @@
 actor Person {
     double a_dbl1 = { 3.14159 };
     double a_dbl2 = { 2.71828 };
-    TIME a_special_time = {2.34};
+    TIME a_special_time = { 2.34 };
+    int a_int1 = { 3 };
     int a_clamped_count;
     void MinMaxClampTests();
     hook MinMaxClampTests, MortalityEvent, 1;
@@ -36,34 +37,52 @@ void Person::MinMaxClampTests()
 
     // constants and fundamental type combos
     auto w1 = min(1, 2);
+#if MIXED_MODE_MIN_MAX || OVERLOAD_MIN_MAX // under test
     auto w2 = min(1, 1.2);
+#endif
     auto w3 = min(1.2, 1.2);
     auto w3a = min(lower, 39);
     auto w4 = min(lower, upper);
     //auto w5 = min(lower, 39.9);
 
+    //
     // Attribute of a non-wrapped type (double)
+    //
 
-    double a1 = (22.0 / 7.0);
-    int i1 = 3;
-    auto q1 = min(a_dbl1, a1); // works, Attribute has cast to other type (double)
-    auto q1r = min(a1, a_dbl1);
-    auto q2 = min(a_dbl1, i1); // works, C++ fundamental type promotion rules apply
-    auto q2r = min(i1, a_dbl1);
-    //auto q3 = min(a_dbl1, a_dbl2); // does not work, no common type of two Attributes
+    double l_d1 = (22.0 / 7.0);
+    int l_i1 = 3;
+#if MIXED_MODE_MIN_MAX || OVERLOAD_MIN_MAX // under test
+    auto q1 = min(a_dbl1, l_d1);
+    auto q1r = min(l_d1, a_dbl1);
+    auto q2 = min(a_dbl1, l_i1);
+    auto q2r = min(l_i1, a_dbl1);
+    auto q3 = min(a_dbl1, a_int1);
+    auto q4 = min(a_dbl1, a_dbl2);
     // std::clamp not implemented in MSVC 15 (VS2017)
-    //auto q4 = clamp(a_dbl1, i1, a1); // works, only one Attribute
+    //auto q5 = clamp(a_dbl1, l_i1, a_dbl1);
+#endif
 
+    //
+    // a wrapped type (fixed_precision<double>)
+    // 
+
+    TIME l_t1 = 1.1;
+    TIME l_t2 = 2.2;
+    auto t3 = std::min(l_t1, l_t2);
+    auto t4 = min(l_t1, l_t2);
+    auto t4a = min(l_t1, l_i1);
+
+    //
     // attribute of a wrapped type (fixed_precision<double>)
-    TIME t1 = { 1.1 };
-    TIME t2 = { 2.2 };
-    auto t3 = std::min(t1, t2); // works, identical types
-    auto t4 = min(t1, t2);
-    //auto t4a = min(t1, i1); // works in MSVC (result is type Time) fails in gcc
-    //auto t4b = (t1 < i1) ? t1 : i1; // same as above
-    //auto t4c = (t1 < a1) ? t1 : a1; // same as above
-    auto t5 = min(time, a1); // works, wrapped type has cast to other type, which is a C++ fundamental type
-    auto t6 = min(a_dbl2, i1);
+    // 
+
+    //auto t4b = (l_t1 < l_i1) ? l_t1 : l_i1;
+    //auto t4c = (l_t1 < l_d1) ? l_t1 : l_d1;
+
+#if MIXED_MODE_MIN_MAX || OVERLOAD_MIN_MAX // under test
+    auto t5 = min(time, l_d1);
+    auto t6 = min(a_dbl2, l_i1);
+#endif
     //auto t7 = (a_dbl2 < i1) ? dbl2 : i1;
     //if (a_dbl2 < i1) {
     //    if (t7 != a_dbl2) {
@@ -75,11 +94,11 @@ void Person::MinMaxClampTests()
 
     //auto t7 = min(time, t2); // does not work, no common type of two wrapped types
 
-#if false // approach abandoned due to fragility and lack of generality
+#if MIXED_MODE_MIN_MAX || OVERLOAD_MIN_MAX // under test
     double clamped1 = 0.0;
     double clamped2 = 0.0;
     auto clamped0 = max(lower, min((double)time, upper));
-    clamped = max(lower, min((double)time, upper));
+    double clamped = max(lower, min((double)time, upper));
     clamped = max(lower, min(time, upper));
     double x0 = min(lower, upper);
     auto x1 = min(clamped1, upper);
@@ -117,7 +136,7 @@ void Person::MinMaxClampTests()
     //    }
     //}
 #endif
-    auto clamped1 = clampd(time, lower, upper);
+    auto clamped3 = clampd(time, lower, upper);
 
     double diff = time - clamped1;
     if (diff != 0.0) a_clamped_count++;
