@@ -9,6 +9,15 @@
 #include "omc/omSimulation.h" // For IDE
 
 #if 0 // Hide from IDE
+
+partition FIND_DIFFICULTY //EN Thresholds of hard-to-find difficulty
+{
+    0.70,
+    0.80,
+    0.90,
+    0.95
+};
+
 parameters
 {
     //EN Mortality hazard
@@ -32,11 +41,20 @@ parameters
     //EN Proportion with condition at birth
     double Alpha;
 
-    //EN Proportion with condition identified at birth and treated
-    double Treated_proportion;
+    //EN Proportion of population reached in intervention [0,1]
+    double InterventionProportion;
 
-    //EN Effectiveness of treatment
-    double Treated_effectiveness;
+    //EN Effectiveness of treatment [0,1]
+    double TreatedEffectiveness;
+
+    //EN Cost of finding
+    double FindCost[FIND_DIFFICULTY];
+
+    //EN Cost of test
+    double TestCost;
+
+    //EN Cost of treatment
+    double TreatCost;
 };
 
 actor Person //EN Individual
@@ -47,23 +65,44 @@ actor Person //EN Individual
     //EN condition
     bool condition = { false };
 
-    //EN treated
+    //EN hard to find
+    double hard_to_find;
+
+    //EN found (intervention)
+    bool found = { false };
+
+    //EN treated (intervention)
     bool treated = { false };
 
-    void Start_condition(); //EN Set condition at birth
-    hook Start_condition, Start;
+    //EN Cost of finding person
+    double find_cost = { 0 };
+
+    //EN Cost of testing person for condition
+    double test_cost = { 0 };
+
+    //EN Cost of treating person with condition
+    double treat_cost = { 0 };
+
+    //EN Total intervention cost
+    double intervention_cost = { 0 };
+
+    void Start_characteristics(); //EN Set characteristics at birth
+    hook Start_characteristics, Start,1;
 
     void do_nothing(); //EN Empty function
-    hook do_nothing, Start_condition, 100; // Force generation of hook_Start_condition
+    hook do_nothing, Start_characteristics, 100; // Force generation of hook_Start_characteristics
 
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
 };
 
-table Person A_LifeExpectancy //EN Life expectancy
+table Person Results //EN Results
 [trigger_entrances(alive, false)]
 {
     {
-        value_out(age) / unit    //EN Age at death decimals=4
+        unit,                               //EN Persons
+        value_out(age) / unit,              //EN Average Years Lived decimals=4
+        gini(value_out(age)),               //EN Gini Coefficient of Years Lived decimals=6
+        value_out(intervention_cost) / unit //EN Average Intervention cost decimals=0
     } //EN Measure
 };
 
@@ -71,8 +110,7 @@ table Person A_LifeExpectancy //EN Life expectancy
 
 void PreSimulation()
 {
-    // Draw value of RR with condition for current simulation member
-    // from estimation distribution.
+    // Draw value of RR with condition for current replicate from estimation distribution.
     double z = RandNormal(1);
     RR_with = exp(log_RR_mu + log_RR_sigma * z);
 
@@ -81,25 +119,44 @@ void PreSimulation()
 
     // Compute RR with condition and treated.
     // Is between RR_without and RR_with, a function of effectiveness.
-    RR_treated = RR_without * Treated_effectiveness + RR_with * (1.0 - Treated_effectiveness);
+    RR_treated = RR_without * TreatedEffectiveness + RR_with * (1.0 - TreatedEffectiveness);
 };
 
 void Person::do_nothing()
 {
 }
 
-void Person::Start_condition()
+void Person::Start_characteristics()
 {
     // Draw condition at birth
     condition = (RandUniform(2) < Alpha);
 
-    // If person has condition, draw if treated
-    if (condition) {
-        treated = (RandUniform(3) < Treated_proportion);
+    // Draw hard-to-find characteristic at birth
+    hard_to_find = RandUniform(4);
+
+    // Implement intervention (at birth)
+    // Determine if found during intervention
+    if (hard_to_find < InterventionProportion) {
+        found = true;
+
+        // prt is a local variable of type partition
+        FIND_DIFFICULTY prt;
+        prt.set_from_value(hard_to_find);
+        find_cost = FindCost[prt];
+
+        test_cost = TestCost;
+        
+        if (condition) {
+            treated = true;
+            treat_cost = TreatCost;
+        }
+
+        intervention_cost = find_cost + test_cost + treat_cost;
     }
 
+
     // Allow other functions to hook to this function
-    hook_Start_condition();
+    hook_Start_characteristics();
 }
 
 

@@ -12,7 +12,19 @@
 
     double Alpha                 = 0.20;   //EN Proportion at birth with condition
 
-    double Treated_proportion    = 0.20;
-    double Treated_effectiveness = 0.50;
+    double InterventionProportion = 0.80;
+    double TreatedEffectiveness   = 0.75;
+
+    double FindCost[FIND_DIFFICULTY] = {
+         50.00, // [0.00, 0.70)
+         75.00, // [0.70, 0.80)
+        100.00, // [0.80 ,0.90)
+        125.00, // [0.80, 0.95)
+        200.00, // [0.95, 1.00)
+    };
+
+    double TestCost = 100.00;
+    double TreatCost = 500.00;
+
 };
 

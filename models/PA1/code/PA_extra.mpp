@@ -34,7 +34,7 @@ actor Person
     RANGE_AGE range_age = RANGE_AGE(integer_age); //EN Age
     STATUS status; //EN Status
     void Start_status(); //EN Set status (after condition)
-    hook Start_status, Start_condition;
+    hook Start_status, Start_characteristics, 1;
 };
 
 void Person::Start_status()

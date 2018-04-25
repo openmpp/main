@@ -4,11 +4,15 @@
 	This module contains the basic information which defines the Person case.
 */
 
+#include "omc/omSimulation.h" // For IDE
+
+#if 0 // Hide from IDE
 actor Person //EN Individual
 {
     void Start();
     void Finish();
 };
+#endif // Hide from IDE
 
 void Person::Start()
 {

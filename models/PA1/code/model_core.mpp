@@ -6,6 +6,10 @@
 	This module contains model settings and the central simulation function.
 */
 
+#include "omc/omSimulation.h" // For IDE
+
+#if 0 // Hide from IDE
+
 // The model type
 model_type case_based;
 
@@ -14,6 +18,8 @@ options measures_method = average;
 
 // The data type used to represent time
 time_type double;
+
+#endif // Hide from IDE
 
 /**
  * Simulates a single case.

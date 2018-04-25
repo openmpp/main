@@ -1,7 +1,11 @@
 # Simulate all PA1 scenarios and construct csv for Excel PivotTable exploration
 
-my $log_RR_sigma = 0.10; # For PA: The s.d. of RR with condition
-my $Alpha_mu     = 0.20;  # For PA: The mean of Alpha values
+my $log_RR_sigma      = 0.10; # For PA: The s.d. of RR with condition (from equation estimation)
+my $Alpha_mu          = 0.190000;  # For PA: The mean of the sample of Alpha values (copied from [Alpha.xlsx]Distribution!B3)
+my $chosen_cases      = 10000000; # The chosen number of cases for the analysis
+my $chosen_replicates = 100; # The chosen number of replicates for the analysis
+my $chosen_intrv_prop = 0.80; # The chosen target proportion of the population in the Intervention
+my $chosen_treat_eff  = 0.75; # The chosen value for treatment effectiveness
 
 use strict;
 use warnings;
@@ -18,49 +22,111 @@ $om_root ne '' or die 'environment variable OM_ROOT (ompp install directory) not
 my $dbcopy_exe = "${om_root}/bin/dbcopy.exe";
 -f $dbcopy_exe or die "ompp utility $dbcopy_exe not found, stopped";
 
-
 my $model = 'PA1';
 my $model_exe = "../ompp/bin/${model}.exe";
 my $model_sqlite = "../output/${model}.sqlite";
 
-print "copy model exe and DB to current directory (analysis directory)\n";
-copy $model_exe, '.' or die "failed to copy ${model_exe}, stopped";
-copy $model_sqlite, '.' or die "failed to copy ${model_sqlite}, stopped";
 
+####################
+# Initialise       #
+####################
+
+if (1) {
+	print "copy model exe and DB to current directory (analysis directory)\n";
+	copy $model_exe, '.' or die "failed to copy ${model_exe}, stopped";
+	copy $model_sqlite, '.' or die "failed to copy ${model_sqlite}, stopped";
+}
 
 # remove any existing csv output
 rmtree "${model}";
 
-# Enumerate the runs to simulate
-my @runs = (
-	#    Cases   Replicates PAonRR PAonAlpha TreatProp TreatEff
-	[     10000,        100,     0,        0,     0.00,    1.00 ],
-	[    100000,        100,     0,        0,     0.00,    1.00 ],
-	[   1000000,        100,     0,        0,     0.00,    1.00 ],
-	[  10000000,        100,     0,        0,     0.00,    1.00 ],
-	[ 100000000,        100,     0,        0,     0.00,    1.00 ],
-);
 
+####################
+# Specify Runs     #
+####################
+
+# Runs to simulate (array of hashrefs)
+my @runs;
+
+if (1) {
+	# Vary number of replicates, with number of cases constant
+	my $run = { Cases => $chosen_cases,
+				TreatEff => $chosen_treat_eff };
+	# Iterate over values for Base (0.00) and the chosen value for the Intervention
+	for my $IntrvProp (0.00, $chosen_intrv_prop) {
+		$run->{IntrvProp} = $IntrvProp;
+		for my $Replicates (4, 8, 10, 16, 20, 32, 64, 100, 200, 400, 800, 1000) {
+		#for my $Replicates (10, 16) { # test
+			$run->{Replicates} = $Replicates;
+			# Activate sources of PA, sequentially
+			for my $PAonRR (0, 1) {
+				$run->{PAonRR} = $PAonRR;
+				for my $PAonAlpha (0, 1) {
+					$run->{PAonAlpha} = $PAonAlpha;
+					push @runs, { %$run }; # create shallow copy of hashref and push into array
+				}
+			}
+		}
+	}
+}
+
+if (1) {
+	# Vary number of cases, with number of replicates constant
+	my $run = { Replicates => $chosen_replicates,
+				TreatEff => $chosen_treat_eff};
+	# Iterate over values for Base (0.00) and the chosen value for the Intervention
+	for my $IntrvProp (0.00, $chosen_intrv_prop) {
+		$run->{IntrvProp} = $IntrvProp;
+		for my $Cases (10000, 100000, 1000000, 10000000, 100000000) {
+		#for my $Cases (10000, 100000) {
+			$run->{Cases} = $Cases;
+			# Activate sources of PA, sequentially
+			for my $PAonRR (0, 1) {
+				$run->{PAonRR} = $PAonRR;
+				for my $PAonAlpha (0, 1) {
+					$run->{PAonAlpha} = $PAonAlpha;
+					push @runs, { %$run }; # create shallow copy of hashref and push into array
+				}
+			}
+		}
+	}
+}
+
+
+####################
+# Simulate Runs    #
+####################
+
+my %run_names;
+
+# Simulate all runs
 for my $run (@runs) {
-	# get the row as an array
-	my @run = @{$run};
 	# Turn the row into variables
-	my $Cases      = $run[0]; # number of cases
-	my $Replicates = $run[1]; # number of replicates
-	my $PAonRR     = $run[2]; # do PA on RR_condition
-	my $PAonAlpha  = $run[3]; # do PA on Alpha
-	my $TreatProp  = $run[4]; # treatment proportion
-	my $TreatEff   = $run[5]; # treatment effectiveness
+	my $Cases      = $run->{Cases}; # number of cases
+	my $Replicates = $run->{Replicates}; # number of replicates
+	my $PAonRR     = $run->{PAonRR}; # do PA on RR_condition
+	my $PAonAlpha  = $run->{PAonAlpha}; # do PA on Alpha
+	my $IntrvProp  = $run->{IntrvProp}; # treatment proportion
+	my $TreatEff   = $run->{TreatEff}; # treatment effectiveness
 
+	# Determine scenario based on parameter inputs
+	my $Scenario = 'Unknown';
+	$Scenario = 'Base' if $IntrvProp == 0.0; # Base scenario
+	$Scenario = 'Intervention' if $IntrvProp == $chosen_intrv_prop; # Intervention scenario
+	
 	# Construct run name
-	my $run_name = 'N';
-	$run_name .= ($Cases >= 1000000) ? ($Cases/1000000).'m' : ($Cases/1000).'k';
+	my $run_name = $Scenario;
+	$run_name .= '_N'.(($Cases >= 1000000) ? ($Cases/1000000).'m' : ($Cases/1000).'k');
 	$run_name .= '_R'.$Replicates;
 	$run_name .= '_PA'.$PAonRR.$PAonAlpha;
-	$run_name .= '_T'.($TreatProp*100);
+	$run_name .= '_P'.($IntrvProp*100);
 	$run_name .= '_E'.($TreatEff*100);
 	
-	#my $run_name = "N10m_R100_PA00_T00_E00";
+	# skip run if already done
+	next if exists $run_names{$run_name};
+	$run_names{$run_name} = 1;
+	
+	#my $run_name = "N10m_R100_PA00_P00_E00";
 	print "simulate run ${run_name}\n";
 
 	# construct command line argument list for model executable
@@ -82,49 +148,23 @@ for my $run (@runs) {
 		'-Parameter.log_RR_sigma', ($PAonRR ? $log_RR_sigma : 0.000000),
 		# do PA for Alpha (use values from csv, or supply mean to disable PA for Alpha
 		($PAonAlpha
-		  ? ('-SubValue.Alpha', 'csv')      # get PA values for ALpha from csv file
+		  ? ('-SubValue.Alpha', 'csv')      # get PA values for Alpha from csv file
 		  : ('-Parameter.Alpha', $Alpha_mu) # turn PA off by setting Alpha to the average value
 		),
-		# Treated proportion
-		'-Parameter.Treated_proportion', $TreatProp,
+		# Intervention proportion
+		'-Parameter.InterventionProportion', $IntrvProp,
 		# Treated efficacy
-		'-Parameter.Treated_effectiveness', $TreatEff,
+		'-Parameter.TreatedEffectiveness', $TreatEff,
 	);
 	#print @args, "\n";
 	# simulate the scenario
 	system(@args);
 }
 
-if (0) {
-	my $run_name = "B_N10m_R100_PA00";
-	print "run scenario ${run_name}\n";
-	my @args = (
-		$model_exe,
-		'-ini',	'Common.ini',
-		'-OpenM.RunName', $run_name,
-		'-OpenM.LogFilePath', "${run_name}.log", 
-		'-Parameter.log_RR_sigma', '0.100000',
-		'-OpenM.ParamDir', '.',
-		'-SubValue.Alpha', 'csv',
-		);
-	system(@args);
-}
 
-if (0) {
-	my $run_name = 'Intervention_PA';
-	print "running scenario ${run_name}\n";
-	my @args = (
-		$model_exe,
-		'-ini',	'Common.ini',
-		'-OpenM.RunName', $run_name,
-		'-OpenM.LogFilePath', "${run_name}.log", 
-		'-Parameter.log_RR_sigma', '0.100000',
-		'-OpenM.ParamDir', '.',
-		'-SubValue.Alpha', 'csv',
-		'-Parameter.Treated_proportion', '0.750000',
-		);
-	system(@args);
-}
+####################
+# Assemble results #
+####################
 
 print "export DB to csv\n";
 system (
@@ -133,10 +173,6 @@ system (
 	'-m', $model,
 	'-dbcopy.To', 'csv',
 );
-
-#
-# Assemble results
-#
 
 # Get run_lst.csv as a refarray of refhash's, (array of records with named fields)
 # Note: The helper function get_table_rh is defined below.
@@ -153,27 +189,28 @@ for my $rec (@{$run_option_ra}) {
 	$run_option{$key} = $option_value;
 }
 
-#
 # Prepare output csv file for PivotTable construction
-#
 
 # Output file name 
 my $out_name_csv = "Results.csv";
 
 # Output csv column names, in output order
 my @out_column_names = (
-	# columns from run characteristics
+	# columns from inputs
 	  'run_name'
+	, 'Scenario' # derived from inputs
 	, 'Cases'
 	, 'Replicates'
 	, 'PAonRR'
 	, 'PAonAlpha'
-	, 'TreatProp'
+	, 'IntrvProp'
 	, 'TreatEff'
 	
-	# columns from input record for table cell
+	# columns from results
 	, 'member' # replicate identifier {0..whatever}
-	, 'LifeExpectancy' # Life Expectancy from table
+	, 'AvgYearsLived' # Average Years lived
+	, 'GiniYearsLived' # Gini coefficient of years lived
+	, 'AvgIntrvCost' # Average intervention cost
 );
 
 # Initialize output csv file
@@ -186,7 +223,6 @@ print $out join(',', @out_column_names), "\n";
 # Create Text::CSV object for output
 my $out_csv = Text::CSV_XS->new({ binary => 1, auto_diag => 1 });
 $out_csv->column_names(\@out_column_names);
-
 
 # Iterate all runs
 for my $run (@{$run_lst_ra}) {
@@ -207,40 +243,52 @@ for my $run (@{$run_lst_ra}) {
 	my $log_RR_sigma = $run_option{"${run_id}|Parameter.log_RR_sigma"};
 	my $PAonRR = ($log_RR_sigma != 0.0) ? 1 : 0;
 	my $PAonAlpha = (exists $run_option{"${run_id}|SubValue.Alpha"}) ? 1 : 0;
-	my $TreatProp  = $run_option{"${run_id}|Parameter.Treated_proportion"};
-	my $TreatEff   = $run_option{"${run_id}|Parameter.Treated_effectiveness"};
+	my $IntrvProp  = $run_option{"${run_id}|Parameter.InterventionProportion"};
+	my $TreatEff   = $run_option{"${run_id}|Parameter.TreatedEffectiveness"};
 
+	# Determine scenario from prefix of run_name
+	my $Scenario = $run_name;
+	$Scenario =~ s/_.*//; # delete trailing part of name, _ and everything following
+	
 	# Diagnostic output
 	print "run_name=${run_name}:"
+		." Scenario=${Scenario}"
 		." Cases=${Cases}"
 		." Replicates=${Replicates}"
 		." PAonRR=${PAonRR}"
 		." PAonAlpha=${PAonAlpha}"
-		." TreatProp=${TreatProp}"
+		." IntrvProp=${IntrvProp}"
 		." TreatEff=${TreatEff}"
 		."\n" if 0;
 
-	# Get LifeExpectancy table
-	my $LifeExpectancy_acc = get_table_rh("${data_dir}/A_LifeExpectancy.acc-all.csv");
+	# Get Results table, with all accumulators (trailing accumulators are computed measures)
+	my $Results_acc_all = get_table_rh("${data_dir}/Results.acc-all.csv");
 	
 	# Initialize output record hash values for scenario properties, using values set from run properties (above).
 	# These values will be reused for each CSV record written in loop below.
 	my $out_rec = {
 		run_name => $run_name,
+		Scenario => $Scenario,
 		Cases => $Cases,
 		Replicates => $Replicates,
 		PAonRR => $PAonRR,
 		PAonAlpha => $PAonAlpha,
-		TreatProp => $TreatProp,
+		IntrvProp => $IntrvProp,
 		TreatEff => $TreatEff,
 	};
 
 	# Iterate over all table cells
-	for my $in_rec (@{$LifeExpectancy_acc}) {
+	for my $in_rec (@{$Results_acc_all}) {
 		my $member = $in_rec->{sub_id};
-		my $LifeExpectancy = $in_rec->{acc2};
+		# Get measures
+		my $Persons =  $in_rec->{acc4};
+		my $AvgYearsLived = $in_rec->{acc5};
+		my $GiniYearsLived = $in_rec->{acc6};
+		my $AvgIntrvCost = $in_rec->{acc7};
 		$out_rec->{member} = $member;
-		$out_rec->{LifeExpectancy} = $LifeExpectancy;
+		$out_rec->{AvgYearsLived} = $AvgYearsLived;
+		$out_rec->{GiniYearsLived} = $GiniYearsLived;
+		$out_rec->{AvgIntrvCost} = $AvgIntrvCost;
 		$out_csv->print_hr($out, $out_rec);
 		print $out "\n";
 	}
@@ -250,13 +298,9 @@ for my $run (@{$run_lst_ra}) {
 close $out;
 
 
-
-
-
-
-#
-# Helper functions follow
-#
+####################
+# Helper functions #
+####################
 
 # Retrieve all values of a table from a csv exported by dbcopy, as an array of hashref's
 # arg0 - the input csv file for the table (exported by dbcopy)
