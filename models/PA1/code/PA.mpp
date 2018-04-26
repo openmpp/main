@@ -83,8 +83,8 @@ actor Person //EN Individual
     //EN Cost of treating person with condition
     double treat_cost = { 0 };
 
-    //EN Total intervention cost
-    double intervention_cost = { 0 };
+    //EN Total cost
+    double total_cost = find_cost + test_cost + treat_cost;
 
     void Start_characteristics(); //EN Set characteristics at birth
     hook Start_characteristics, Start,1;
@@ -102,7 +102,7 @@ table Person Results //EN Results
         unit,                               //EN Persons
         value_out(age) / unit,              //EN Average Years Lived decimals=4
         gini(value_out(age)),               //EN Gini Coefficient of Years Lived decimals=6
-        value_out(intervention_cost) / unit //EN Average Intervention cost decimals=0
+        value_out(total_cost) / unit //EN Average Total Cost decimals=0
     } //EN Measure
 };
 
@@ -141,6 +141,7 @@ void Person::Start_characteristics()
 
         // prt is a local variable of type partition
         FIND_DIFFICULTY prt;
+        // set the partition category based on the value of hard_to_find [0,1]
         prt.set_from_value(hard_to_find);
         find_cost = FindCost[prt];
 
@@ -150,8 +151,6 @@ void Person::Start_characteristics()
             treated = true;
             treat_cost = TreatCost;
         }
-
-        intervention_cost = find_cost + test_cost + treat_cost;
     }
 
 
