@@ -19,7 +19,7 @@ using namespace openm;
 #ifdef OM_UCVT_ICONV
     #include <iconv.h>
     #include <langinfo.h>
-    #include <xlocale.h>
+//    #include <locale>
 #endif  // OM_UCVT_ICONV
 
 /** UTF-8 byte order mark bytes */

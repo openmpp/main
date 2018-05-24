@@ -8,6 +8,8 @@
 #ifndef OM_DB_COMMON_H
 #define OM_DB_COMMON_H
 
+#include <cmath>
+
 using namespace std;
 
 #include "libopenm/omError.h"
