@@ -208,7 +208,7 @@ size_t IOutputTableWriter::sizeOf(const MetaHolder * i_metaStore, int i_tableId)
         if (dim.dimSize <= 0) throw DbException("invalid size of dimension %s for table: %s", dim.name.c_str(), tblRow->tableName.c_str());
         nTotal *= dim.dimSize;
     }
-    if (nTotal <= 0 || nTotal > SIZE_MAX) throw DbException("invalid size of the table: %s", tblRow->tableName.c_str());
+    if (nTotal <= 0 || nTotal > INT_MAX) throw DbException("invalid size of the table: %s", tblRow->tableName.c_str());
 
     return (size_t)nTotal;
 }
