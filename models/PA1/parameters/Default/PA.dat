@@ -1,0 +1,18 @@
+﻿parameters {
+    /*NOTE(Lambda, EN)
+        Gives average life expectancy of 50 years.
+    */
+	double Lambda    = 0.0200; //EN Mortality hazard
+
+    /*NOTE(log_RR_mu, EN)
+        Value is ln(2) which gives mean RR of 2.0.
+    */
+    double log_RR_mu             = 0.69314718055994530941723212145818;   //EN log(RR) estimation distribution (mu)
+    double log_RR_sigma          = 0.100000;   //EN log(RR) estimation distribution (sigma)
+
+    double Alpha                 = 0.20;   //EN Proportion at birth with condition
+
+    double Treated_proportion    = 0.20;
+    double Treated_effectiveness = 0.50;
+};
+

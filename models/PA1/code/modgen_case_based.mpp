@@ -1,0 +1,92 @@
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(modgen_case_based, EN) Modgen simulation framework for case-based cross-compatible models
+
+/* NOTE(modgen_case_based, EN)
+    This module implements Modgen versions of core global functions for case-based models
+    
+    This module is ignored by the OpenM++ compiler.
+    
+    It should not be necessary to modify any code in this module.
+*/
+
+/**
+ * Simulate all events for all entities in the simulation.
+ *
+ * Used in the main simulation module of the model.
+ */
+void SimulateEvents()
+{
+    while (!gpoEventQueue->Empty())
+    {
+        if (gbCancelled || gbErrors) 
+        {
+            // Terminate the case.
+            gpoEventQueue->FinishAllActors();
+        }
+        else 
+        {
+            // Age actor to the time of the next event.
+            gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
+
+            // Implement the next event.
+            gpoEventQueue->Implement();
+        }
+    }
+}
+
+/**
+ * The Simulation function is called by Modgen to simulate a set of cases.
+ */
+void Simulation()
+{
+    // The following are defined in the main simulation model, e.g. model.mpp
+    extern void Simulation_start(case_info &ci);
+    extern void Simulation_end(case_info &ci);
+    extern void CaseSimulation(case_info &ci);
+
+    // Create the case information communication object
+    case_info ci;
+
+    // Initialize CaseInfo API
+    CaseInfo(&ci);
+
+    // Perform operations at the start of Simulation
+    Simulation_start(ci);
+
+    long  lCase = 0;     // counter for cases simulated
+
+    // Loop through all cases.
+    for ( lCase = 0; lCase < CASES() && !gbInterrupted 
+          && !gbCancelled && !gbErrors; lCase++ )
+    {
+        // Tell the Modgen run-time to prepare to simulate a new case.
+        StartCase(); 
+
+        // Call the CaseSimulation function defined earlier in this module.
+        CaseSimulation(ci); 
+
+        // Tell the Modgen run-time that the case has been completed.
+        SignalCase();
+    }
+    
+    // Perform operations at the end of Simulation
+    Simulation_end(ci);
+
+    // Reset CaseInfo API
+    CaseInfo(nullptr, true);
+}
+                            
+case_info* CaseInfo(case_info* ci, bool reset)
+{
+    static thread_local case_info* ci_stored = nullptr;
+
+    if (reset) {
+        ci_stored = nullptr;
+    }
+    else if (ci) {
+        ci_stored = ci;
+    }
+    return ci_stored;
+}

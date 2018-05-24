@@ -199,6 +199,7 @@ public:
     // bound a quantity to the limits of a range, with 'long long' argument returning 'long long' result
     static long long bound(long long val)
     {
+        // TODO - throw exception if limit of int exceeded?
         if (val < min) return min;
         if (val > max) return max;
         else return val;
@@ -216,12 +217,12 @@ public:
         return integer_counter<int, T_min, T_max>();
     }
 
-    // convert given value to 0-based index
-    static size_t to_index(int value)
+    // convert a range value to 0-based index
+    static size_t to_index(int val)
     {
-        if (value < min) return 0;
-        else if (value > max) return max - min;
-        else return value - min;
+        if (val < min) return 0;
+        else if (val > max) return max - min;
+        else return val - min;
     }
 
     // convert given 0-based index to value

@@ -1,0 +1,18 @@
+// Copyright (c) 2013-2018 OpenM++ Contributors (see AUTHORS.txt for details)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(model_info, EN) Model information
+/* NOTE(model_info, EN)
+This module contains the model version, description, and notes.
+*/
+
+// The model version number
+version 1, 0, 0, 0;
+
+//LABEL(model, EN) Probabilistic Analysis (PA) illustrative model
+/* NOTE(model, EN)
+This model illustrates two kinds of Probabilistic Analysis.
+In one, a parameter is drawn from the parameter's estimation distribution
+within the model.
+In the other, a parameter is drawn, a sample of parameter values is supplied to the model.
+*/

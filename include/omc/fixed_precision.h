@@ -15,17 +15,18 @@ public:
     // expose the wrapped type as .type
     typedef T type;
 
-    // ctors
+    // default ctor
     fixed_precision_float()
         : value(0)
     {}
 
+    // converting ctor to wrapped type T
     fixed_precision_float(T value)
     {
         this->set(value);
     }
 
-    // operator: conversion overload
+    // operator: user-defined conversion to T
     operator T() const
     {
         return value;
@@ -174,7 +175,7 @@ int fixed_precision_float<T>::addend = 0;
 // Enable fixed_precision to participate in type resolution
 // e.g. in min/max/clamp templates, by specializing std::common_type
 
-#if false // approach in testing
+#if false // in testing
 namespace std {
 
     template<typename T>

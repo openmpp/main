@@ -28,14 +28,14 @@ public:
     typedef T type;
 
     /**
-     * Default constructor.
+     * Default ctor
      */
     Classification()
         : enum_value((T)0)
     {}
 
     /**
-     * Constructor from enum
+     * Converting ctor from enum
      *
      * @param val The value.
      */
@@ -44,7 +44,7 @@ public:
     {}
 
     /**
-     * Constructor from integer
+     * Converting ctor from int
      * 
      * Not preferred, since type checking is bypassed.  For compatibility
      * with older code.  Value is trunced to valid range of underlying enum.
@@ -56,7 +56,7 @@ public:
         set_value(val);
     }
 
-    // operator: conversion to T
+    // operator: user-defined conversion to enum
     operator T() const
     {
         return enum_value;

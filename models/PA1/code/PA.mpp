@@ -1,0 +1,126 @@
+﻿// Copyright (c) 2013-2018 OpenM++ Contributors (see AUTHORS.txt for details)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(PA, EN) Substantive module
+/* NOTE(PA, EN)
+	Substantive module for PA1
+*/
+
+#include "omc/omSimulation.h" // For IDE
+
+#if 0 // Hide from IDE
+parameters
+{
+    //EN Mortality hazard
+    double Lambda;
+
+    //EN Relative risk of mortality with condition
+    model_generated double RR_with;
+
+    //EN Relative risk of mortality without condition
+    model_generated double RR_without;
+
+    //EN Relative risk of mortality with condition adn treated
+    model_generated double RR_treated;
+
+    //EN log(RR) estimation distribution (mu)
+    double log_RR_mu;
+
+    //EN log(RR) estimation distribution (sigma)
+    double log_RR_sigma;
+
+    //EN Proportion with condition at birth
+    double Alpha;
+
+    //EN Proportion with condition identified at birth and treated
+    double Treated_proportion;
+
+    //EN Effectiveness of treatment
+    double Treated_effectiveness;
+};
+
+actor Person //EN Individual
+{
+    //EN alive
+    bool alive = { true };
+
+    //EN condition
+    bool condition = { false };
+
+    //EN treated
+    bool treated = { false };
+
+    void Start_condition(); //EN Set condition at birth
+    hook Start_condition, Start;
+
+    event timeMortalityEvent, MortalityEvent;    //EN Mortality event
+};
+
+table Person A_LifeExpectancy //EN Life expectancy
+[trigger_entrances(alive, false)]
+{
+    {
+        value_out(age) / unit    //EN Age at death decimals=4
+    } //EN Measure
+};
+
+#endif // Hide from IDE
+
+void PreSimulation()
+{
+    // Draw value of RR with condition for current simulation member
+    // from estimation distribution.
+    double z = RandNormal(1);
+    RR_with = exp(log_RR_mu + log_RR_sigma * z);
+
+    // Compute RR without condition to maintain same average life expectancy (with no treatment)
+    RR_without = RR_with * (1.0 - Alpha) / (RR_with - Alpha);
+
+    // Compute RR with condition and treated.
+    // Is between RR_without and RR_with, a function of effectiveness.
+    RR_treated = RR_without * Treated_effectiveness + RR_with * (1.0 - Treated_effectiveness);
+};
+
+void Person::Start_condition()
+{
+    // Draw condition at birth
+    condition = (RandUniform(2) < Alpha);
+
+    // If person has condition, draw if treated
+    if (condition) {
+        treated = (RandUniform(3) < Treated_proportion);
+    }
+
+    // Allow other functions to hook to this function
+    hook_Start_condition();
+}
+
+TIME Person::timeMortalityEvent()
+{
+    // Apply appropriate RR to baseline hazard
+    // depending on presence of condition and treatment.
+    double hazard = 0.0;
+    if (condition) {
+        if (treated) {
+            hazard = RR_treated * Lambda;
+        }
+        else {
+            hazard = RR_with * Lambda;
+        }
+    }
+    else {
+        hazard = RR_without * Lambda;
+    }
+
+    // Draw time to event, with constant hazard (exponential distribution).
+    TIME event_time = WAIT(-TIME(log(RandUniform(4)) / hazard));
+    return event_time;
+}
+
+void Person::MortalityEvent()
+{
+    alive = false;
+    Finish();
+}
+
+

@@ -413,7 +413,7 @@ void CodeGen::do_RunInit()
 
 void CodeGen::do_ModelStartup()
 {
-    c += "// Model startup method: Initialization for a simulation thread";
+    c += "// Model startup method: Initialization for a simulation member";
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
 
@@ -465,6 +465,9 @@ void CodeGen::do_ModelStartup()
     c += "theLog->logMsg(\"compute derived parameters\");";
     auto & sg = Symbol::pre_simulation;
     if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
+        c += "int mem_id = i_model->subValueId();";
+        c += "int mem_count = i_model->subValueCount();";
+        c += "before_presimulation(mem_id, mem_count); // defined in model framework module";
         for (size_t id = 0; id < sg.ambiguous_count; ++id) {
             // The following line was useful to track down a runtime error occurring in a PreSimulation function
             //c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
@@ -475,6 +478,7 @@ void CodeGen::do_ModelStartup()
             //c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
             c += sg.prefix + suffix + "();";
         }
+        c += "after_presimulation(); // defined in model framework module";
         c += "";
     }
 
