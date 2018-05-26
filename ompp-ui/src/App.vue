@@ -184,7 +184,7 @@
   </div>
   
 </div>
-  
+
 </template>
 
 <script>

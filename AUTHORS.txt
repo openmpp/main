@@ -12,6 +12,7 @@ Anatoly Cherkassky  amc1999     anatoly@beyond2020.com     uOttawa
 Contributors:
 
 De Gouffe, Julien   jd-statcan  julien.degouffe@canada.ca  StatCan
+Dr Andrew P Smith   virgesmith  A.P.Smith@leeds.ac.uk
 
 --------------------------
 Contributing Organizations
