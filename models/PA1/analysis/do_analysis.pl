@@ -38,9 +38,8 @@ $om_root ne '' or die 'environment variable OM_ROOT (ompp install directory) not
 my $dbcopy_exe = "${om_root}/bin/dbcopy.exe";
 -f $dbcopy_exe or die "ompp utility $dbcopy_exe not found, stopped";
 
+# Locate model and database
 my $model = 'PA1';
-my $model_exe = "../ompp/bin/${model}.exe";
-my $model_sqlite = "../output/${model}.sqlite";
 
 
 ####################
@@ -48,13 +47,12 @@ my $model_sqlite = "../output/${model}.sqlite";
 ####################
 
 if ($do_initialise) {
-	print "copy model exe and DB to current directory (analysis directory)\n";
+	# copy model executable and DB to current directory for analysis
+	my $model_exe = "../ompp/bin/${model}.exe";
+	my $model_sqlite = "../output/${model}.sqlite";
 	copy $model_exe, '.' or die "failed to copy ${model_exe}, stopped";
 	copy $model_sqlite, '.' or die "failed to copy ${model_sqlite}, stopped";
 }
-
-# remove any existing csv output
-rmtree "${model}";
 
 
 ####################
@@ -187,7 +185,9 @@ if ($do_simulate_runs) {
 ####################
 
 if ($do_assemble_runs) {
-
+	# remove any existing csv output
+	rmtree "${model}";
+	
 	print "export DB to csv\n";
 	system (
 		$dbcopy_exe,
