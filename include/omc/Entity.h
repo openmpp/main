@@ -360,9 +360,6 @@ public:
         assert(zombies);
         assert(available);
         while ( ! zombies->empty() ) {
-            // invoke destructor on zombie to invoke member destructors
-            // e.g. for multi-links to avoid memory leaks
-            zombies->front()->~A();
             available->push_front( zombies->front() );
             zombies->pop_front();
         }
