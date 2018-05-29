@@ -50,11 +50,6 @@ if ($opt->help) {
 	exit 0;
 }
 
-use Cwd qw(abs_path);
-my $script_path = abs_path($0);
-$script_path =~ s@[^/\\]*$@@;
-#print "script_path=".$script_path."\n";
-
 
 #####################
 # Common settings
@@ -197,6 +192,11 @@ use File::Compare;
 use File::stat;
 use POSIX qw(strftime);
 
+# Add directory of this script to @INC to resolve use and require statements
+use File::Basename;
+use File::Spec;
+use lib File::Basename::dirname(File::Spec->rel2abs($0));
+
 # use the common.pm module of shared functions	
 use common qw(
 				warning change error info
@@ -222,7 +222,7 @@ if ($is_windows) {
 	#				run_jet_statement
 	#				modgen_tables_to_csv
 	#			);
-	require "${script_path}/common_windows.pm";
+	require 'common_windows.pm';
 }
 
 ###############
