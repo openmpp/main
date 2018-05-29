@@ -286,13 +286,14 @@ sub ompp_tables_to_csv
 		}
 		my $header_line = 1;
 		while (<IN_CSV>) {
+			s/\s*$//; # workaround to trailing \r\n in sqlite3 3.22.0 on Ubuntu
+			#chomp;
 			if ($header_line) {
-				print OUT_CSV;
-				print OUT_CSV_UNROUNDED if $do_unrounded_file;
+				print OUT_CSV $_."\n";
+				print OUT_CSV_UNROUNDED $_."\n" if $do_unrounded_file;
 				$header_line = 0;
 				next;
 			}
-			chomp;
 			my $line = $_;
 			if (length($line) && substr($line, -1, 1) ne ',') {
 				# value field is not empty, process it
