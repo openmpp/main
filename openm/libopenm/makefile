@@ -50,7 +50,7 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) -D_REENTRANT \
+CXXFLAGS = -Wall -std=gnu++11 -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) -D_REENTRANT \
   -I$(INCLUDE_G_DIR) -I$(INCLUDE_L_DIR) $(OM_DB_CFLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
