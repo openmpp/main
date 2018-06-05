@@ -87,11 +87,11 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
     FloatingPointLiteral *pval_FloatingPointLiteral;
     StringLiteral        *pval_StringLiteral;
 	Symbol               *pval_Symbol;
-	EntityMemberSymbol    *pval_AgentMemberSymbol;
+	EntityMemberSymbol   *pval_AgentMemberSymbol;
 	ConstantSymbol       *pval_ConstantSymbol;
 	Constant             *pval_Constant;
     list<Constant *>     *pval_Constant_list;
-	ExprForAttribute      *pval_AgentVarExpr;
+	ExprForAttribute     *pval_AgentVarExpr;
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
     list<string *>       *pval_string_list;
@@ -270,6 +270,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_value_out2                 "value_out2"
 %token <val_token>    TK_weighted_cumulation        "weighted_cumulation"
 %token <val_token>    TK_weighted_duration          "weighted_duration"
+%token <val_token>    TK_double_arrow               "=>"
 
 // C++ keywords, in alphabetic order
 // Source: http://en.cppreference.com/w/cpp/keyword

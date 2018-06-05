@@ -288,6 +288,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_value_out2, "value_out2" },
     { token::TK_weighted_cumulation, "weighted_cumulation" },
     { token::TK_weighted_duration, "weighted_duration" },
+    { token::TK_double_arrow, "=>" },
 
     // C++ reserved words, in alphabetic order
     // Source: http://en.cppreference.com/w/cpp/keyword
