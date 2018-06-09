@@ -319,6 +319,23 @@ blank       [ \t]
 
 <om_code>{ /* identifiers and keywords in ompp declarative islands */
 	
+{word}/{blank}*=> {
+                /* name followed by naming operator => is returned as string */
+                yylloc->step();
+                string word = yytext;
+                yylval->pval_string = new string(word);
+                pc.next_word_is_string = false;
+                return token::STRING;
+            }
+
+"=>"        {
+				/* double arrow naming operator */
+                yylloc->step();
+				token_type tok = Symbol::string_to_token(yytext);
+                yylval->val_token = tok;
+                return tok;
+            }
+
 {word}      {
                 yylloc->step();
                 string word = yytext;
