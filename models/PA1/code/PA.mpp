@@ -99,10 +99,10 @@ table Person Results //EN Results
 [trigger_entrances(alive, false)]
 {
     {
-        unit,                               //EN Persons
-        value_out(age) / unit,              //EN Average Years Lived decimals=4
-        gini(value_out(age)),               //EN Gini Coefficient of Years Lived decimals=6
-        value_out(total_cost) / unit //EN Average Total Cost decimals=0
+        Persons        => unit,                        //EN Persons
+        AvgYearsLived  => value_out(age) / unit,       //EN Average Years Lived decimals=4
+        GiniYearsLived => gini(value_out(age)),        //EN Gini Coefficient of Years Lived decimals=6
+        AvgTotalCost   => value_out(total_cost) / unit //EN Average Total Cost decimals=0
     } //EN Measure
 };
 
