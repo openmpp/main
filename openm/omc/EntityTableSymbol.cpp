@@ -516,7 +516,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         if (measure->scale != 0) {
             scale_part = measure->scale_as_factor() + " * ";
         }
-        // E.g. for ( int cell = 0; cell < n_cells; cell++ ) expr[0][cell] = acc[0][cell] ;
+        // E.g. for ( int cell = 0; cell < n_cells; cell++ ) measure[0][cell] = acc[0][cell] ;
         c += "for (int cell = 0; cell < n_cells; cell++ ) "
             "measure[" + to_string(etm->index) + "][cell] = " + scale_part + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::cxx) + " ;";
         c += "";
@@ -759,6 +759,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = acc->index;
+        tableAcc.name = "acc" + to_string(acc->index); // hardcode acc0, acc1, etc. to align with constructed expressions for measures
         tableAcc.accSrc = acc->pretty_name();   // expression is a part of model digest, do we need pretty here?
         tableAcc.isDerived = false;
         metaRows.tableAcc.push_back(tableAcc);
@@ -785,13 +786,13 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         TableExprRow tableExpr;
 
-        auto expr = dynamic_cast<EntityTableMeasureSymbol *>(measure);
-        assert(expr); // logic guarantee
+        auto etm = dynamic_cast<EntityTableMeasureSymbol *>(measure);
+        assert(etm); // logic guarantee
 
         tableExpr.tableId = pp_table_id;
-        tableExpr.exprId = expr->index;
-        tableExpr.name = "meas" + to_string(expr->index);
-        tableExpr.decimals = expr->decimals;
+        tableExpr.exprId = etm->index;
+        tableExpr.name = mangle_name(etm->measure_name, etm->index); // Default is Expr0, Expr1, but can be named in model using =>
+        tableExpr.decimals = etm->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "
         string scale_part;
@@ -800,14 +801,14 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
 
         // Construct the expression to compute the measure for a single simulation member.
-        string measure_expr = expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
+        string measure_expr = etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
 
         // Construct the expression used to compute the measure over simulation members.
         if (measures_are_aggregated) {
             // Aggregate accumulators across simulation members before evaluating the expression for the measure.
             tableExpr.srcExpr =
                 scale_part
-                + expr->get_expression(expr->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
+                + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
         }
         else {
             // Average the measure across simulation members.
@@ -821,13 +822,13 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         for (auto lang : Symbol::pp_all_languages) {
             TableExprTxtLangRow tableExprTxt;
             tableExprTxt.tableId = pp_table_id;
-            tableExprTxt.exprId = expr->index;
+            tableExprTxt.exprId = etm->index;
 
             tableExprTxt.langCode = lang->name;
 
-            tableExprTxt.descr = expr->label(*lang);
+            tableExprTxt.descr = etm->label(*lang);
 
-            tableExprTxt.note = expr->note(*lang);
+            tableExprTxt.note = etm->note(*lang);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
 
@@ -835,6 +836,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         TableAccRow tableAcc;
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = ++maxAccIndex;
+        tableAcc.name = tableExpr.name;
         tableAcc.isDerived = true;
         tableAcc.accSrc = scale_part + measure_expr;
         metaRows.tableAcc.push_back(tableAcc);

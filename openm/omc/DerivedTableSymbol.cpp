@@ -125,7 +125,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = measure->index;
-        tableExpr.name = "meas" + to_string(measure->index);
+        tableExpr.name = mangle_name(measure->measure_name, measure->index);
         tableExpr.decimals = measure->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "
@@ -163,6 +163,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         TableAccRow tableAcc;
         tableAcc.tableId = pp_table_id;
         tableAcc.accId = ++maxAccIndex;
+        tableAcc.name = tableExpr.name;
         tableAcc.isDerived = true;
         tableAcc.accSrc = scale_part + measure_expr;
         metaRows.tableAcc.push_back(tableAcc);

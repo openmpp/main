@@ -858,6 +858,16 @@ public:
     static bool is_om_developer_function(const char* nm);
 
     /**
+    * Mangle name to length 8 for API
+    *
+    * @param name  The original name.
+    * @param index Numeric index associated with the name.
+    *
+    * @return mangled version of name
+    */
+    static string mangle_name(string name, int index);
+
+    /**
      * Pathnames of use folders.
      * 
      * Used to resolve 'use' statements to physical files. 
