@@ -169,3 +169,75 @@ actor Person
     void SomethingStringee(int a, std::string s);
     void SomethingStringee2(std::string s);
 };
+
+
+// Parameter with named dimensions
+// (copy of parameter Something)
+parameters
+{
+    double Something_with_names
+        Sex    => [SEX]
+        AgeGrp => [AGE_GROUP];
+};
+
+
+// Entity table with named dimensions and measure
+// (copy of MultiDimTest)
+table Person MultiDimTest_with_names
+{
+    {
+        PY => duration()
+    }
+    *
+    Happy   => happy
+    *
+    Playing => playing
+};
+
+// Entity table with named dimensions and measure
+// (copy of ut1_feeder)
+table Person ut1_feeder_with_names //EN Feeder table for ut1
+{
+    AgeGrp   => self_scheduling_split(age, AGE_GROUP)
+    *
+    EyeColor => eye_colour
+    *
+    {
+       PY => duration()
+    }
+};
+
+
+// Derived table with named dimensions
+// Copy of ut1
+user_table ut1_with_names //EN User table #1 (with names)
+{
+    AgeGrp   => AGE_GROUP
+    *
+    EyeColor => EYE_COLOUR
+    *
+    {
+        ANALYSIS1,
+        ANALYSIS2,
+        ANALYSIS3 //EN scale=-3 decimals=3
+    }
+};
+
+void UserTables()
+{
+    const int nAgeGroups = SIZE(AGE_GROUP);
+    const int nEyeColours = SIZE(EYE_COLOUR);
+    for (int nA = 0; nA < nAgeGroups; ++nA) {
+        for (int nC = 0; nC < nEyeColours; ++nC) {
+            // Note that entity table measure name is "PY", not "Expr0"
+            double dValue = GetTableValue("ut1_feeder_with_names.PY", nA, nC);
+            double dValue1 = 1.0 + dValue;
+            double dValue2 = 2.0 + dValue;
+            double dValue3 = 3.0 + dValue;
+            SetTableValue("ut1_with_names.ANALYSIS1", dValue1, nA, nC);
+            SetTableValue("ut1_with_names.ANALYSIS2", dValue2, nA, nC);
+            SetTableValue("ut1_with_names.ANALYSIS3", dValue3, nA, nC);
+        }
+    }
+}
+
