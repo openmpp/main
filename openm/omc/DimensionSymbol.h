@@ -27,8 +27,9 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    DimensionSymbol(Symbol *symbol_with_dimensions, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
+    DimensionSymbol(Symbol *symbol_with_dimensions, string *pname, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, yy::location decl_loc = yy::location())
         : Symbol(symbol_name(symbol_with_dimensions, index, after_analysis_dim), decl_loc)
+        , dim_name(pname ? *pname : "dim" + to_string(index))
         , index(index)
         , after_analysis_dim(after_analysis_dim)
         , has_margin(has_margin)
@@ -52,6 +53,11 @@ public:
     static string symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim);
 
     void post_parse(int pass);
+
+    /**
+    * Name of the dimension
+    */
+    string dim_name;
 
     /**
      * Zero-based index of the dimension in the table.

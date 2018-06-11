@@ -528,7 +528,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         assert(es); // logic guarantee
         paramDims.paramId = pp_parameter_id;
         paramDims.dimId = dim->index;
-        //paramDims.name = "dim" + to_string(dim->index);
+        paramDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
         paramDims.typeId = es->type_id;
         metaRows.paramDims.push_back(paramDims);
 

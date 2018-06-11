@@ -148,7 +148,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         assert(es); // logic guarantee
         tableDims.tableId = pp_table_id;
         tableDims.dimId = dim->index;
-        //tableDims.name = "dim" + to_string(dim->index);
+        tableDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
         tableDims.typeId = es->type_id;
         tableDims.isTotal = false;
         tableDims.dimSize = es->pp_size();
