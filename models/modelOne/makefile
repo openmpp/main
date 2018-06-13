@@ -70,7 +70,7 @@ LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++11 -D_REENTRANT -I$(OM_INC_DIR) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++17 -pthread -I$(OM_INC_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
@@ -103,7 +103,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ -lpthread
+	$(CXX) -pthread -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++
 
 #
 # create model SQLite database
