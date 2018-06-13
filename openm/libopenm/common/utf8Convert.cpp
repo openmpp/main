@@ -5,6 +5,14 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+
+#ifdef OM_UCVT_MSSTL
+    // c++17: significant portion of codevect deprecated
+    // and C++ Standard doesn't provide equivalent non-deprecated functionality:
+    // suppresss compilation error until new solution implemented
+    #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#endif  // OM_UCVT_MSSTL
+
 #include "libopenm/common/omHelper.h"
 #include "libopenm/common/omFile.h"
 #include "log.h"
