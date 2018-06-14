@@ -27,7 +27,7 @@
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
     
     <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
-    <PUBLISH_DIR>$(ProjectDir)../output</PUBLISH_DIR>
+    <PUBLISH_DIR>$(ProjectDir)bin</PUBLISH_DIR>
     
     <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
 

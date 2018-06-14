@@ -122,11 +122,9 @@ MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
 # location and name of output database
 #
 ifndef PUBLISH_DIR
-  PUBLISH_DIR = output-linux
-  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).sqlite
-else
-  MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME).sqlite
+  PUBLISH_DIR = $(OUT_BIN_DIR)
 endif
+MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME).sqlite
 
 #
 # source files subdirectory: .ompp .mpp .odat .dat .cpp
