@@ -298,7 +298,7 @@ for my $model (@models) {
 		or die "Failed to copy ${model_exe}";
 		
 	# model db.sqlite
-	copy "${model_dir}/output/${model}.sqlite", "${models_bin}/${model}.sqlite" 
+	copy "${model_dir}/ompp/bin/${model}.sqlite", "${models_bin}/${model}.sqlite" 
 		or die "Failed to copy ${model_dir}/output/${model}.sqlite";
 	
 	# model message.ini
