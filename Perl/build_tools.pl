@@ -3,7 +3,11 @@
 
 # Script to build utilities, etc.
 
-my $R_exe = 'C:\Program Files\R\R-3.4.3\bin\R.exe';
+# Get highest installed R version by enumeration (with implicit sorting)
+my @R_exes = glob('"C:/Program Files/R/*/bin/R.exe"');
+#print join("\n", @R_exes)."\n";
+my $R_exe = pop(@R_exes);
+#print "R_exe=".$R_exe."\n";
 
 # Verbosity of report:
 #  0 - errors only
@@ -23,7 +27,7 @@ chdir 'Perl' or die;
 
 my $merged; # output from build command
 my $retval; # return value from build command
-for my $utility ('ompp_export_excel', 'ompp_export_csv', 'modgen_export_csv', 'ompp_create_scex', 'patch_modgen11_outputs', 'patch_modgen12_outputs', 'patch_modgen12.1_outputs') {
+for my $utility ('ompp_export_excel', 'ompp_export_csv', 'modgen_export_csv', 'ompp_create_scex', 'patch_modgen12.1_outputs') {
 	my $input = "${utility}.pl";
 	my $output = "${om_root}/bin/${utility}.exe";
 	print "Building utility ${utility}\n";
@@ -43,7 +47,7 @@ if (! -e "${R_exe}") {
 	print "Skip R package build, not found: ${R_exe}\n";
 }
 else {
-    print "Building R package\n";
+    print "Building R package using ${R_exe}\n";
     chdir "${om_root}/R";
     ($merged, $retval) = capture_merged {
         my @args = (
@@ -58,62 +62,53 @@ else {
 
 # if GOROOT and GOPATH (and others for MinGW) defined then build dbcopy and oms
 #
-if ("$ENV{GOROOT}" eq "" || "$ENV{GOPATH}" eq "" || "$ENV{CPLUS_INCLUDE_PATH}" eq "" || "$ENV{C_INCLUDE_PATH}" eq "") {
-	print "Skip dbcopy and oms build: GOROOT or GOPATH or CPLUS_INCLUDE_PATH or C_INCLUDE_PATH is empty\n";
+if ("$ENV{GOROOT}" eq "" || "$ENV{GOPATH}" eq "") {
+	print "Skip go-based utilities (dbcopy, oms) : GOROOT or GOPATH is empty\n";
 }
 else {
-	# For successful go build, must set persistent environment variables for MinGW
-	# (normally done through cmd line prompt by executing set_distro_paths before invoking go).
-	# Example to set persistent values:
-	# setx CPLUS_INCLUDE_PATH C:\MinGW\include;C:\MinGW\include\freetype2
-	# setx C_INCLUDE_PATH C:\MinGW\include;C:\MinGW\include\freetype2
+	# For successful go build, arrange PATH so that gcc is 64-bit MinGW version
+	# e.g. First path entry is C:\MinGW\mingw64\bin
 	
-	print "Building utility dbcopy\n";
-	chdir "$ENV{GOPATH}";
-	($merged, $retval) = capture_merged {
-		my @args = (
-			'go',
-			'install',
-			'go.openmpp.org/dbcopy',
-			);
-		system(@args);
-	};
-	if ($retval != 0) {
-		print "Build dbcopy failed (output follows:\n$merged\n"
+	my $gopath = "$ENV{GOPATH}";
+	
+	for my $utility ('dbcopy', 'oms') {
+		print "Building utility ${utility}\n";
+		($merged, $retval) = capture_merged {
+			my @args = (
+				'go',
+				'install',
+				'go.openmpp.org/'.$utility,
+				);
+			system(@args);
+		};
+		if ($retval != 0) {
+			print "Build ${utility} failed (output follows:\n$merged\n"
+		}
+		else {
+			copy "${gopath}/bin/${utility}.exe", "${om_root}/bin";
+		}
 	}
-    
-	print "Building utility oms\n";
-	chdir "$ENV{GOPATH}";
-	($merged, $retval) = capture_merged {
-		my @args = (
-			'go',
-			'install',
-			'go.openmpp.org/oms',
-			);
-		system(@args);
-	};
-	if ($retval != 0) {
-		print "Build oms failed (output follows:\n$merged\n"
-	}
-
-    copy 'bin/dbcopy.exe', "${om_root}/bin";
-    copy 'bin/oms.exe', "${om_root}/bin";
-    chdir "${om_root}";
 }
 
 # build ompp-ui
 my $npm_exe = which 'npm';
 
+sub is_folder_empty {
+    my $dirname = shift;
+    opendir(my $dh, $dirname) or die "Not a directory";
+    return scalar(grep { $_ ne "." && $_ ne ".." } readdir($dh)) == 0;
+}
+
 if (! -e "${npm_exe}") {
-	print "Skip ompp-ui build, npm found. Install node and run nodevars.bat\n";
+	print "Skip ompp-ui build, npm not found. Install node and run nodevars.bat\n";
 }
 else {
     print "Building ompp-ui\n";
     chdir "${om_root}/ompp-ui";
     
     # install node modules if not yet installed
-    if (! -d "node_modules") {
-        print 'Doing "npm install", please wait...\n';
+    if (! -d 'node_modules' || is_folder_empty('node_modules') ) {
+        print "Doing 'npm install', please wait...\n";
         ($merged, $retval) = capture_merged {
             my @args = (
                 'npm',
@@ -122,9 +117,10 @@ else {
             system(@args);
         };
         if ($retval != 0) {
-            print "Build ompp-ui failed (output follows:\n$merged\n"
+            print "Build ompp-ui failed (output follows:\n$merged\n";
+			die;
         }
-        print 'Now we can do "npm run build"\n';
+        print "Now we can do 'npm run build'\n";
     }
     
     # do actual build
