@@ -32,17 +32,17 @@ void CaseSimulation(case_info &ci)
         }
 #else // defined(MODGEN)
         if (clone_id == 0) {
-            // defined in modgen_case_based.mpp (modgen)
+            // defined in modgen_random_state.mpp (modgen)
             store_random_state();
         }
         else {
-            // defined in modgen_case_based.mpp (modgen)
+            // defined in modgen_random_state.mpp (modgen)
             retrieve_random_state();
         }
 #endif
         // Initialize the person actor
         auto prPerson = new Person();
-        prPerson->Start(clone_id, &clone_count); // the entity can chagne the clone count
+        prPerson->Start(clone_id, &clone_count); // the entity can change the clone count
 
         // Simulate events until there are no more.
         SimulateEvents();
