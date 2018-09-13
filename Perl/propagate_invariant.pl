@@ -37,6 +37,8 @@ if ($@) {
 	exit;
 }
 
+my $verbose = 0;
+
 # Default location assumes script is invoked from OM_ROOT/Perl.
 my $models_root = "../models";
 
@@ -73,18 +75,19 @@ else {
 		$path =~ s/\/.*//;
 		push @models, $path;
 	}
-	#logmsg info, "models: ".join(',',@models);
+	logmsg info, "models: ".join(',',@models) if $verbose > 1;
 }
 
-# Active option to remove target file (perhaps not necessary - doc'n unclear)
+# Activate option to remove target file (perhaps not necessary - doc'n unclear)
 local $File::Copy::Recursive::RMTrgFil = 1;
 
 MODEL:
 for my $model (@models) {
 
-	my $model_path = "${models_root}/${model}";
-	if (! -d $model_path) {
-		logmsg error, "${model_path}: Missing model";
+	logmsg info, "checking model=$model" if $verbose > 0;
+
+	if (! -d "${models_root}/${model}/code") {
+		logmsg error, "${model}: Not a model folder";
 		next MODEL;
 	}
 
@@ -100,8 +103,7 @@ for my $model (@models) {
 
 		"MODEL-ompp.sln",               "NewCaseBased",
 		"ompp/Model.vcxproj",           "NewCaseBased",
-		"ompp-model.props",             "NewCaseBased",
-		"ompp-model.vcxproj.filters",   "NewCaseBased",
+		"ompp/Model.vcxproj.filters",   "NewCaseBased",
 
 		"code/modgen_case_based.mpp",   "NewCaseBased",
 		"code/case_based.h",            "NewCaseBased",
@@ -119,13 +121,13 @@ for my $model (@models) {
 		$src =~ s/MODEL/${invariant_model}/;
 		$dst =~ s/MODEL/${model}/;
 		-e "${src}" || die "Not found: ${src}";
-		#logmsg info, "checking src=$src";
-		#logmsg info, "checking dst=$dst";
-		if (-f "${dst}" && ${model} ne ${invariant_model} && -d "${model}/code") {
-			#logmsg info, "checking src=$src and dst=$dst";
+		logmsg info, "checking src=$src" if $verbose > 1;
+		logmsg info, "checking dst=$dst" if $verbose > 1;
+		if (-f "${dst}" && ${model} ne ${invariant_model}) {
+			logmsg info, "checking src=$src and dst=$dst" if $verbose > 0;
 			if (compare ${src}, ${dst}) {
 				logmsg info, ${model}, "Updating ${invariant_file} from ${invariant_model}";
-				#copy ${src}, ${dst};
+				copy ${src}, ${dst};
 				$any_propagated = 1;
 			}
 		}

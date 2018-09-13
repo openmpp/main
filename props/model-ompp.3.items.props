@@ -6,10 +6,10 @@
     <OMC_INPUTS Include="$(MODEL_CODE_DIR)/*.mpp" />
     <OMC_INPUTS Include="$(MODEL_CODE_DIR)/*.ompp" />
     <OMC_INPUTS Include="Model.props" />
-    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'" />
-    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.odat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'" />
+    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" />
+    <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" />
+    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'" />
+    <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.odat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'" />
   
     <OMC_H_OUTPUTS Include="$(OMC_OUT_DIR)/om_types0.h" />
     <OMC_H_OUTPUTS Include="$(OMC_OUT_DIR)/om_types1.h" />
@@ -47,7 +47,7 @@
     with slightly complex Include property)
   -->
   <ItemGroup>
-    <ClCompile Include="$(PCH_CXX)" Condition="'$(USE_PCH)'=='1'">
+    <ClCompile Include="$(PCH_CXX)" Condition="'$(USE_PCH)'=='true'">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src/om_definitions.cpp" />

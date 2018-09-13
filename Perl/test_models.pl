@@ -211,7 +211,7 @@ use common qw(
 				create_digest
 				digest_differences
 				modgen_create_scex
-				get_user_macro
+				get_build_property
 				normalize_event_trace
 		    );
 
@@ -406,25 +406,25 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to where vcxproj, etc. are located
 			chdir "${project_dir}" || die;
 
-			# The property sheet containing user macros
-			my $model_props = "Model.props";
+			# The xml file containing user-configurable build properties
+			my $model_props = "Model.vcxproj";
 			if ( ! -e $model_props ) {
-				logmsg error, $model_dir, $flavour, "Missing property sheet with user macros: $model_props";
+				logmsg error, $model_dir, $flavour, "Missing file with configurable properties: $model_props";
 				next FLAVOUR;
 			}
 			
-			# Determine executable model name from MODEL_NAME user macro in Model.props
-			# Default is model folder name
-			my $model_name = get_user_macro($model_props, 'MODEL_NAME');
+			# Determine model name from MODEL_NAME property
+			my $model_name = get_property($model_props, 'MODEL_NAME');
 			if ($model_name eq '') {
+				# Default is model folder name
 				$model_name = $model_dir;
 			}
 
-			# Determine scenario name from SCENARIO_NAME user macro in Model.props
-			my $scenario_name = get_user_macro($model_props, 'SCENARIO_NAME');
+			# Determine scenario name from SCENARIO_NAME property
+			my $scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get SCENARIO_NAME from ${model_props}";
-				next FLAVOUR;
+				# Default is 'Default'
+				$scenario_name = 'Default';
 			}
 			
 			# Project file
@@ -446,7 +446,7 @@ for my $model_dir (@model_dirs) {
 					"/p:Platform=${modgen_platform}",
 					"/p:MODGEN_VERSION=${modgen_version}",
 					"/p:SCENARIO_NAME=${scenario_name}",
-					"/p:RUN_SCENARIO=0",
+					"/p:RUN_SCENARIO=false",
 					"/t:Rebuild",
 					);
 				system(@args);
@@ -579,34 +579,33 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to project directory for compilation.
 			chdir $project_dir || die;
 
-			# The property sheet containing user macros
-			my $model_props = "Model.props";
+			# The xml file containing user-configurable build properties
+			my $model_props = "Model.vcxproj";
 			if ( ! -e $model_props ) {
 				logmsg error, $model_dir, $flavour, "Missing property sheet contining user macros: $model_props";
 				next FLAVOUR;
 			}
 			
-			# Determine executable model name from MODEL_NAME user macro in Model.props
-			my $model_name = get_user_macro($model_props, 'MODEL_NAME');
+			# Determine model name from MODEL_NAME property
+			my $model_name = get_property($model_props, 'MODEL_NAME');
 			if ($model_name eq '') {
+				# Default is model folder name
 				$model_name = $model_dir;
 			}
-			
-			# Determine scenario name from SCENARIO_NAME user macro in Model.props
-			my $scenario_name = get_user_macro($model_props, 'SCENARIO_NAME');
+
+			# Determine scenario name from SCENARIO_NAME property
+			my $scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get SCENARIO_NAME from ${model_props}";
-				next FLAVOUR;
+				# Default is 'Default'
+				$scenario_name = 'Default';
 			}
 			
-			# Determine fixed parameter folder from FIXED_PARAMETERS_FOLDER user macro in Model.props
-			my $fixed_parameters_folder = get_user_macro($model_props, 'FIXED_PARAMETERS_FOLDER');
-			# Use files in Fixed folder if not empty, independent of user macro ENABLE_FIXED_PARAMETERS
-			# This works around a consequence of propagate_invariant, which copies WizardCaseBased/ompp/Model.props,
-			# which does not use parameters/Fixed
-			my $enable_fixed_parameters = '0';
-			if ( -d $fixed_parameters_folder ) {
-				$enable_fixed_parameters = '1';
+			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
+			my $fixed_parameters_folder = get_property($model_props, 'FIXED_PARAMETERS_FOLDER');
+			my $enable_fixed_parameters = 'true';
+			if ($fixed_parameters_folder eq '') {
+				# Default is disabled
+				$enable_fixed_parameters = 'false';
 			}
 			
 			# Determine grid computing option GRID_COMPUTING user macro in Model.props
@@ -615,7 +614,7 @@ for my $model_dir (@model_dirs) {
 				$grid_computing = 'MPI'
 			}
 			else {
-				$grid_computing = get_user_macro($model_props, 'GRID_COMPUTING');
+				$grid_computing = get_property($model_props, 'GRID_COMPUTING');
 			}
 			if ($grid_computing eq '') {
 				logmsg error, $model_dir, $flavour, "failed to get GRID_COMPUTING from ${model_props}";
@@ -642,10 +641,10 @@ for my $model_dir (@model_dirs) {
 					"/p:GRID_COMPUTING=${grid_computing}",
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
-					"/p:RUN_SCENARIO=0",
-					"/p:EXPORT_CSV=0",
-					"/p:EXPORT_EXCEL=0",
-					"/p:EXPORT_EXCEL_LAUNCH=0",
+					"/p:RUN_SCENARIO=false",
+					"/p:EXPORT_CSV=false",
+					"/p:EXPORT_EXCEL=false",
+					"/p:EXPORT_EXCEL_LAUNCH=false",
 					"/t:Rebuild"
 					);
 				system(@args);
@@ -723,21 +722,21 @@ for my $model_dir (@model_dirs) {
 			chdir $project_dir || die;
 			
 			# Determine number of members in simulation from MEMBERS user macro in Model.props
-			my $members = get_user_macro($model_props, 'MEMBERS');
+			my $members = get_property($model_props, 'MEMBERS');
 			if ($members eq '') {
 				logmsg error, $model_dir, $flavour, "failed to get MEMBERS from ${model_props}";
 				next FLAVOUR;
 			}
 			
 			# Determine number of threads in simulation from THREADS user macro in Model.props
-			my $threads = get_user_macro($model_props, 'THREADS');
+			my $threads = get_property($model_props, 'THREADS');
 			if ($threads eq '') {
 				logmsg error, $model_dir, $flavour, "failed to get THREADS from ${model_props}";
 				next FLAVOUR;
 			}
 
 			# Determine number of instances if MPI version from PROCESSES user macro in Model.props
-			my $processes = get_user_macro($model_props, 'PROCESSES');
+			my $processes = get_property($model_props, 'PROCESSES');
 			if ($processes eq '' && $grid_computing eq 'MPI') {
 				logmsg error, $model_dir, $flavour, "failed to get PROCESSES from ${model_props}";
 				next FLAVOUR;
@@ -828,13 +827,13 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			# Determine executable model name from MODEL_NAME user macro in Model.props
-			my $model_name = get_user_macro($model_props, 'MODEL_NAME');
+			my $model_name = get_property($model_props, 'MODEL_NAME');
 			if ($model_name eq '') {
 				$model_name = $model_dir;
 			}
 			
 			# Determine scenario name from SCENARIO_NAME user macro in Model.props
-			my $scenario_name = get_user_macro($model_props, 'SCENARIO_NAME');
+			my $scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
 				logmsg error, $model_dir, $flavour, "failed to get SCENARIO_NAME from ${model_props}";
 				next FLAVOUR;
@@ -921,14 +920,14 @@ for my $model_dir (@model_dirs) {
 			#####################################
 			
 			# Determine number of members in simulation from MEMBERS user macro in Model.props
-			my $members = get_user_macro($model_props, 'MEMBERS');
+			my $members = get_property($model_props, 'MEMBERS');
 			if ($members eq '') {
 				logmsg error, $model_dir, $flavour, "failed to get MEMBERS from ${model_props}";
 				next FLAVOUR;
 			}
 			
 			# Determine number of threads in simulation from THREADS user macro in Model.props
-			my $threads = get_user_macro($model_props, 'THREADS');
+			my $threads = get_property($model_props, 'THREADS');
 			if ($threads eq '') {
 				logmsg error, $model_dir, $flavour, "failed to get THREADS from ${model_props}";
 				next FLAVOUR;

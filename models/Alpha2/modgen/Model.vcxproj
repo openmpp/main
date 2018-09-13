@@ -3,6 +3,19 @@
   <PropertyGroup>
     <!-- OM_ROOT set first allows indirection to folder containing props files -->
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+    <!-- The following properties can be set by model developer in the VS IDE through project properties -->
+    <MODEL_NAME>
+    </MODEL_NAME>
+    <SCENARIO_NAME>
+    </SCENARIO_NAME>
+    <MODEL_CODE_DIR>
+    </MODEL_CODE_DIR>
+    <SCENARIO_PARAMETERS_FOLDER>
+    </SCENARIO_PARAMETERS_FOLDER>
+    <FIXED_PARAMETERS_FOLDER>../parameters/Fixed</FIXED_PARAMETERS_FOLDER>
+    <RUN_SCENARIO>false</RUN_SCENARIO>
+    <MEMBERS>1</MEMBERS>
+    <THREADS>1</THREADS>
   </PropertyGroup>
   <!-- Import common early properties for model projects -->
   <Import Project="$(OM_ROOT)/props/model-modgen.0.version.props" />
@@ -58,19 +71,15 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="Model.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="Model.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="Model.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="Model.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <!-- Import properties for Modgen model projects -->

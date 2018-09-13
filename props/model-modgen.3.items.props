@@ -41,10 +41,10 @@
     
       <None Include="$(MODEL_CODE_DIR)/*.mpp" />
       <None Include="$(MODEL_CODE_DIR)/*.ompp" />
-      <None Include="$(MODEL_PARAM_DIR)/$(FIXED_NAME)/*.dat" />
-      <None Include="$(MODEL_PARAM_DIR)/$(FIXED_NAME)/*.odat" />
-      <None Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.dat" />
-      <None Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.odat" />
+      <None Include="$(FIXED_PARAMETERS_FOLDER)/*.dat" />
+      <None Include="$(FIXED_PARAMETERS_FOLDER)/*.odat" />
+      <None Include="$(SCENARIO_PARAMETERS_FOLDER)/*.dat" />
+      <None Include="$(SCENARIO_PARAMETERS_FOLDER)/*.odat" />
     -->
     <None Include="../code/*.mpp" />
     <None Include="../code/*.ompp" />
@@ -52,8 +52,8 @@
     <None Include="../parameters/*/*.odat" />
     
     
-    <SCENARIO_DATS Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/*.dat" />
-    <SCENARIO_DATS Include="$(MODEL_PARAM_DIR)/$(FIXED_NAME)/*.dat" />
+    <SCENARIO_DATS Include="$(SCENARIO_PARAMETERS_FOLDER)/*.dat" />
+    <SCENARIO_DATS Include="$(FIXED_PARAMETERS_FOLDER)/*.dat"  Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'"/>
     
   </ItemGroup>
 

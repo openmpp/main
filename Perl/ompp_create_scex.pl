@@ -21,7 +21,7 @@ my ($opt, $usage) = describe_options(
 		{ required => 1 } ],
 	[ 'ompp:s'       => "input ompp OpenM++ model framework module",
 		{ required => 1 } ],
-	[ 'props:s'      => "input model OpenM++ Visual Studio user macros file",
+	[ 'props:s'      => "input model OpenM++ Visual Studio xml file (vcxproj)",
 		{ required => 1 } ],
 );
 

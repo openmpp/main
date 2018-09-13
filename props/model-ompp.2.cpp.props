@@ -134,7 +134,7 @@
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup>
-    <ClCompile Condition="'$(USE_PCH)'=='1'">
+    <ClCompile Condition="'$(USE_PCH)'=='true'">
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>omc/omPch.h</PrecompiledHeaderFile>
     </ClCompile>

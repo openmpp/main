@@ -1,8 +1,8 @@
 /**
  * @file   case_based.h
- * Declarations common to cross-compatible case-based models
+ * Common declarations for case based models
  *  
- * Included in custom.h.
+ * Included by custom.h.
  */
 
 #pragma once

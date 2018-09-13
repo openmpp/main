@@ -35,17 +35,11 @@
 	    Text="SCENARIO_NAME cannot be empty"
         Condition=" ( '$(SCENARIO_NAME)' == '' )" />
     <Error
-	    Text="ENABLE_SCENARIO_PARAMETERS must be either 0 or 1. Value is $(ENABLE_SCENARIO_PARAMETERS)"
-        Condition=" ! ( '$(ENABLE_SCENARIO_PARAMETERS)' == '0' Or '$(ENABLE_SCENARIO_PARAMETERS)' == '1' )" />
-    <Error
 	    Text="SCENARIO_PARAMETERS_FOLDER does not exist. Value is $(SCENARIO_PARAMETERS_FOLDER)"
-        Condition=" ( '$(PUBLISH_SCENARIO)' == '1' And ! Exists('$(SCENARIO_PARAMETERS_FOLDER)') )" />
-    <Error
-	    Text="ENABLE_FIXED_PARAMETERS must be either 0 or 1. Value is $(ENABLE_FIXED_PARAMETERS)"
-        Condition=" ! ( '$(ENABLE_FIXED_PARAMETERS)' == '0' Or '$(ENABLE_FIXED_PARAMETERS)' == '1' )" />
+        Condition=" ( ! Exists('$(SCENARIO_PARAMETERS_FOLDER)') )" />
     <Error
 	    Text="FIXED_PARAMETERS_FOLDER does not exist. Value is $(FIXED_PARAMETERS_FOLDER)"
-        Condition=" ( '$(ENABLE_FIXED_PARAMETERS)' == '1' And ! Exists('$(FIXED_PARAMETERS_FOLDER)') )" />
+        Condition=" ( '$(ENABLE_FIXED_PARAMETERS)' == 'true' And ! Exists('$(FIXED_PARAMETERS_FOLDER)') )" />
     <Error
 	    Text="GRID_COMPUTING must be either EMPTY or MPI. Value is $(GRID_COMPUTING)"
         Condition=" ! ( '$(GRID_COMPUTING)' == 'EMPTY' Or '$(GRID_COMPUTING)' == 'MPI' )" />
@@ -59,17 +53,17 @@
 	    Text="DB_PROVIDER must be set to SQLITE. Value is $(DB_PROVIDER)"
         Condition=" ! ( '$(DB_PROVIDER)' == 'SQLITE' )" />
     <Error
-	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
-        Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
+	    Text="RUN_SCENARIO must be either true or false. Value is $(RUN_SCENARIO)"
+        Condition=" ! ( '$(RUN_SCENARIO)' == 'true' Or '$(RUN_SCENARIO)' == 'false' )" />
     <Error
-	    Text="EXPORT_CSV must be either 0 or 1. Value is $(EXPORT_CSV)"
-        Condition=" ! ( '$(EXPORT_CSV)' == '0' Or '$(EXPORT_CSV)' == '1' )" />
+	    Text="EXPORT_CSV must be either true or false. Value is $(EXPORT_CSV)"
+        Condition=" ! ( '$(EXPORT_CSV)' == 'true' Or '$(EXPORT_CSV)' == 'false' )" />
     <Error
-	    Text="EXPORT_EXCEL must be either 0 or 1. Value is $(EXPORT_EXCEL)"
-        Condition=" ! ( '$(EXPORT_EXCEL)' == '0' Or '$(EXPORT_EXCEL)' == '1' )" />
+	    Text="EXPORT_EXCEL must be either true or false. Value is $(EXPORT_EXCEL)"
+        Condition=" ! ( '$(EXPORT_EXCEL)' == 'true' Or '$(EXPORT_EXCEL)' == 'false' )" />
     <Error
-	    Text="EXPORT_EXCEL_LAUNCH must be either 0 or 1. Value is $(EXPORT_EXCEL_LAUNCH)"
-        Condition=" ! ( '$(EXPORT_EXCEL_LAUNCH)' == '0' Or '$(EXPORT_EXCEL_LAUNCH)' == '1' )" />
+	    Text="EXPORT_EXCEL_LAUNCH must be either true or false. Value is $(EXPORT_EXCEL_LAUNCH)"
+        Condition=" ! ( '$(EXPORT_EXCEL_LAUNCH)' == 'true' Or '$(EXPORT_EXCEL_LAUNCH)' == 'false' )" />
   </Target>
 
   
@@ -100,13 +94,13 @@
     <PropertyGroup>
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
     </PropertyGroup>
-    <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
-    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) -Omc.noLineDirectives $(NO_LINE_DIRECTIVES)" />
+    <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />
     <WriteLinesToFile 
-        Condition="'$(USE_PCH)'=='1' And !Exists('$(PCH_CXX)')"
+        Condition="'$(USE_PCH)'=='true' And !Exists('$(PCH_CXX)')"
         File="$(PCH_CXX)"
         Lines="#include &quot;omc/omPch.h&quot;"
         Overwrite="true"
@@ -163,6 +157,7 @@
             />
   </Target>
 
+  
   <!--
   RunModel
   -->
@@ -179,7 +174,7 @@
   </PropertyGroup>
 
   <Target Name="RunModel"
-          Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'EMPTY'" 
+          Condition="'$(RUN_SCENARIO)'=='true' And '$(GRID_COMPUTING)' == 'EMPTY'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
@@ -194,7 +189,7 @@
             />
   </Target>
   <Target Name="RunModel_mpi"
-          Condition="'$(RUN_SCENARIO)'=='1' And '$(GRID_COMPUTING)' == 'MPI'" 
+          Condition="'$(RUN_SCENARIO)'=='true' And '$(GRID_COMPUTING)' == 'MPI'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
@@ -209,6 +204,7 @@
             />
   </Target>
 
+  
   <!--
   ExportCsv
   -->
@@ -219,7 +215,7 @@
   </PropertyGroup>
 
   <Target Name="ExportCsv"
-          Condition="'$(EXPORT_CSV)'=='1'"
+          Condition="'$(EXPORT_CSV)'=='true'"
           AfterTargets="RunModel"
           >
     <RemoveDir Directories="$(CSV_EXPORT_DIR)" />
@@ -241,7 +237,7 @@
   </PropertyGroup>
 
   <Target Name="ExportExcel"
-          Condition="'$(EXPORT_EXCEL)'=='1'" 
+          Condition="'$(EXPORT_EXCEL)'=='true'" 
           Inputs="$(RUN_MODEL_TICKLE)"
           Outputs="$(EXCEL_EXPORT_OUT)"
           AfterTargets="RunModel"
@@ -258,7 +254,7 @@
 
   
   <Target Name="RunExcel"
-          Condition="'$(EXPORT_EXCEL_LAUNCH)'=='1'"
+          Condition="'$(EXPORT_EXCEL_LAUNCH)'=='true'"
           AfterTargets="ExportExcel"
           >
     <Message Text="Launching Excel with outputs from scenario $(SCENARIO_NAME)..." />
@@ -275,14 +271,30 @@
           Condition="'1'=='1'">
     <Message Text="MODEL_NAME=$(MODEL_NAME)" />
     <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
+    <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
+    <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
+    <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
     <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />
+    <Message Text="CHARACTER_SET=$(CHARACTER_SET)" />
+
     <Message Text="OM_MSG_USE=$(OM_MSG_USE)" />
-    <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
     <Message Text="OMC_INPUTS=@(OMC_INPUTS)" />
     <Message Text="OMC_OUTPUTS=@(OMC_OUTPUTS)" />
   </Target>
+
+ 
+  <!-- 
+  Visual Studio IDE integration
+  -->
+ 
+ 
+  <ItemGroup>
+    <PropertyPageSchema Include="$(OM_ROOT)/props/model-ompp.VS.xml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
 
 </Project>

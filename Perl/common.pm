@@ -341,28 +341,28 @@ sub ompp_tables_to_csv
 }
 
 
-# Get the user macro from a property file
+# Get the property from an xml property file (e.g. .targets file)
 # arg0 - the path of the property file Model.props
 # arg1 - the user macro (property) name
-# returns - the name, or empty string if failure
-sub get_user_macro
+# returns - the name, or empty string if not found
+sub get_property
 {
-	my $model_props = shift(@_);
-	my $user_macro = shift(@_);
+	my $xml_file = shift(@_);
+	my $property = shift(@_);
 	my $value = '';
 	
-	if (!open MODEL_PROPS, "<${model_props}") {
+	if (!open XML_FILE, "<${xml_file}") {
 		return '';
 	}
-	while (<MODEL_PROPS>) {
+	while (<XML_FILE>) {
 		chomp;
 		my $line = $_;
-		if ( $line =~ /<${user_macro}>(.*)<\/${user_macro}>/ ) {
+		if ( $line =~ /<${property}>(.*)<\/${property}>/ ) {
 			$value = $1;
 			last;
 		}
 	}
-	close MODEL_PROPS;
+	close XML_FILE;
 	return $value;
 }
 
@@ -408,10 +408,10 @@ sub modgen_create_scex
 		MemoryReports => 0,
 	);
 	
-	# Override values based on Model.props
-	my $members = get_user_macro($model_props, 'MEMBERS');
+	# Override values based on user-specified properties
+	my $members = get_property($model_props, 'MEMBERS');
 	$General{"Subsamples"} = $members;
-	my $threads = get_user_macro($model_props, 'THREADS');
+	my $threads = get_property($model_props, 'THREADS');
 	$General{"Threads"} = $threads;
 
 	# Parse Base ompp framework code file for .scex scenario information

@@ -10,4 +10,93 @@
       <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(PCH_CXX)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="$(CUSTOM_CPP)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+  <!-- 
+  Integrates Modgen configurable build options into the Visual Studio IDE.
+  Incorporated into VS using a PropertyPageSchema tag in a .props or .targets file included in the vcxproj file.
+  -->
+<Rule Name="OmppCompile" PageTemplate="generic" DisplayName="Modgen" Order="9" xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" />
+  </Rule.DataSource>
+  
+  <Rule.Categories>	
+    <Category Name="Names"        DisplayName="1. Names" />
+    <Category Name="Folders"      DisplayName="2. Folders" />
+    <Category Name="BuildOptions" DisplayName="3. Build Options" />
+    <Category Name="RunOptions"   DisplayName="4. Run Options" />
+  </Rule.Categories>
+  
+  <!-- Names -->
+  <StringProperty Category="Names"
+                  Name="MODEL_NAME"
+                  DisplayName="Model Name"
+                  Description="The name of the model published in the database, also the name of the executable (possibly with an appended suffix). The default is the name of the grandparent folder of the project file."
+                  />
+  <StringProperty Category="Names"
+                  Name="SCENARIO_NAME"
+                  DisplayName="Scenario Name"
+                  Description="The name of the default scenario published in the database. The default is Default."
+                  />
+  
+  <!-- Folders -->
+  <StringProperty Category="Folders"
+                  Subtype="folder"
+                  Name="MODEL_CODE_DIR"
+                  DisplayName="Model Code Folder"
+                  Description="The folder containing model source code modules (*.mpp, *.ompp, *.cpp, *.h). The path is relative to the project file. The default is ../code."
+                  />
+  <StringProperty Category="Folders"
+                  Subtype="folder"
+                  Name="SCENARIO_PARAMETERS_FOLDER"
+                  DisplayName="Scenario Parameter Folder"
+                  Description="The folder containing modifiable parameter values (*.dat and *.odat) for the published scenario. The path is relative to the project file. The default is ../parameters/$(SCENARIO_NAME)."
+                  />
+  <StringProperty Category="Folders"
+                  Subtype="folder"
+                  Name="FIXED_PARAMETERS_FOLDER"
+                  DisplayName="Fixed Parameter Folder"
+                  Description="The folder containing fixed parameter values (*.dat and *.odat) for the model. The path is relative to the project file. If empty, the fixed parameters folder is disabled.  A typical value if enabled is ../parameters/Fixed."
+                  />
+
+  <!-- Build Options -->
+  
+  <!-- Run Options -->
+  <BoolProperty Category="RunOptions"
+                Name="RUN_SCENARIO"
+                DisplayName="Run the scenario after build"
+                Description="Run the scenario after building and publishing the model and scenario."
+                />
+  <IntProperty  Category="RunOptions"
+                Name="MEMBERS"
+                DisplayName="Number of members in Run"
+                Description="A run can be divided into a number of independent members (aka sub-samples or replicates)"
+                />
+  <IntProperty  Category="RunOptions"
+                Name="THREADS"
+                DisplayName="Number of threads in each process"
+                Description="To follow"
+                />
+                  
+</Rule>

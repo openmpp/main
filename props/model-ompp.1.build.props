@@ -3,6 +3,36 @@
 
   <PropertyGroup>
 
+    <!-- 
+    The following properties are set through the VS UI in project properties:
+    
+    -->
+
+    <!-- 
+    Begin: Set default values for user-specified properties
+    -->
+    
+    <!--  Default value for MODEL_NAME -->
+    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME> <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
+    <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>     <!--  Remove trailing backslash -->
+    <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
+    
+    <!--  Default value for SCENARIO_NAME -->
+    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
+
+    <!--  Default value for MODEL_CODE_DIR -->
+    <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
+
+    <!--  Default value for SCENARIO_PARAMETERS_FOLDER -->
+    <SCENARIO_PARAMETERS_FOLDER Condition="'$(SCENARIO_PARAMETERS_FOLDER)'==''">../parameters/$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
+    
+    <!--  Default value for OMC_USE_DIR -->
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
+
+    <!-- 
+    End: Set default values for user-specified properties
+    -->
+
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
 
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
@@ -23,18 +53,17 @@
     <OM_LIB_DIR Condition="'$(OM_LIB_DIR)'==''">$(OM_ROOT)/lib</OM_LIB_DIR>
     <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(OM_ROOT)/sql</OM_SQL_DIR>
 
-    <MODEL_CODE_DIR>$(ProjectDir)../code</MODEL_CODE_DIR>
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
+
+    <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>
+    <ENABLE_FIXED_PARAMETERS Condition="'$(FIXED_PARAMETERS_FOLDER)'!=''">true</ENABLE_FIXED_PARAMETERS>
     
-    <MODEL_PARAM_DIR>$(ProjectDir)../parameters</MODEL_PARAM_DIR>
     <PUBLISH_DIR>$(ProjectDir)bin</PUBLISH_DIR>
     
     <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
 
     <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
     <PCH_CXX>$(OMC_OUT_DIR)/pch.cxx</PCH_CXX>
-
-    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
 
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
 
@@ -45,16 +74,8 @@
 
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     
-    <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
-    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME>
-    <!--  Remove trailing backslash -->
-    <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>
-    <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
-
     <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
     
-    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
-
     <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
 
     <!-- 
@@ -66,27 +87,16 @@
     
   </PropertyGroup>
   
-  <!-- 
-  This property group uses properties specified in the model-specific 'user macros' property sheet Model.props
-  to set properties used subsequently.
-  -->
   <PropertyGroup>
     <!-- omc -p option to supply parameters -->
-    <OMC_IN_SCENARIO_OPT Condition="'$(ENABLE_SCENARIO_PARAMETERS)'=='1'">-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
+    <OMC_IN_SCENARIO_OPT>-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
     <!-- omc -f option to supply fixed parameter -->
-    <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='1'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
+    <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
+    <!-- omc -noLineDirectives option -->
+    <OMC_NO_LINE_DIRECTIVES_OPT Condition="'$(NO_LINE_DIRECTIVES)'=='true'">-Omc.noLineDirectives 1</OMC_NO_LINE_DIRECTIVES_OPT>
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- 
-    Use this to control the multiprocessor compilation option (true/false)
-    -->
-    <MULTIPROCESSOR_COMPILE Condition="'$(MULTIPROCESSOR_COMPILE)'==''">false</MULTIPROCESSOR_COMPILE>
-    
-    <!-- 
-    Use this to control the use of pre-compiled headers (1/0)
-    -->
-    <USE_PCH Condition="'$(USE_PCH)'==''">0</USE_PCH>
     
     <!-- 
     Use this to disable #line directives in generated cpp files (0=use, 1=disable)

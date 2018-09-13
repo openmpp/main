@@ -35,8 +35,11 @@
 	    Text="SCENARIO_NAME cannot be empty"
         Condition=" ( '$(SCENARIO_NAME)' == '' )" />
     <Error
-	    Text="RUN_SCENARIO must be either 0 or 1. Value is $(RUN_SCENARIO)"
-        Condition=" ! ( '$(RUN_SCENARIO)' == '0' Or '$(RUN_SCENARIO)' == '1' )" />
+	    Text="FRAMEWORK_ODAT does not exist. Value is $(FRAMEWORK_ODAT)"
+        Condition=" ( ! Exists('$(FRAMEWORK_ODAT)') )" />
+    <Error
+	    Text="RUN_SCENARIO must be either true or false. Value is $(RUN_SCENARIO)"
+        Condition=" ! ( '$(RUN_SCENARIO)' == 'true' Or '$(RUN_SCENARIO)' == 'false' )" />
   </Target>
 
   
@@ -74,13 +77,7 @@
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
     </PropertyGroup>
     <Exec 
-          WorkingDirectory="$(MODGEN_IN_DIR)"
-          Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -EN" 
-          Condition="'$(MODGEN_VERSION)'=='11'"
-    />
-    <Exec 
           Command="$(COMPLETE_MODGEN_EXE) -D $(MODGEN_OUT_DIR) -i $(MODGEN_IN_DIR) -EN" 
-          Condition="'$(MODGEN_VERSION)'=='12' Or '$(MODGEN_VERSION)'=='12.1'"
     />
     <Message Text="Modgen elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
@@ -108,10 +105,6 @@
   -->
   
   
-  <ItemGroup>
-    <FRAMEWORK_ODAT Include="$(MODEL_PARAM_DIR)/$(SCENARIO_NAME)/Framework.odat" />
-  </ItemGroup>
- 
   <PropertyGroup>
     <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
     <FRAMEWORK_OMPP>$(MODEL_CODE_DIR)/ompp_framework.ompp</FRAMEWORK_OMPP>
@@ -119,21 +112,17 @@
   </PropertyGroup>
  
   <Target Name="ScexPublish"
-          Inputs="@(FRAMEWORK_ODAT);$(FRAMEWORK_OMPP);@(SCENARIO_DATS)"
+          Inputs="$(FRAMEWORK_ODAT);$(FRAMEWORK_OMPP);@(SCENARIO_DATS)"
           Outputs="$(SCENARIO_SCEX)"
           AfterTargets="Build"
           >
-    <Error
-        Condition="'1' != '@(FRAMEWORK_ODAT->Count())'"
-        Text="Cannot find framework .odat file"
-    />
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(SCENARIO_SCEX)" />
     <Message
-          Text="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat @(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) @(SCENARIO_DATS, ' ')"
+          Text="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) @(SCENARIO_DATS, ' ')"
     />
     <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
-          Command="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat @(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) @(SCENARIO_DATS, ' ')" 
+          Command="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) @(SCENARIO_DATS, ' ')" 
     />
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
@@ -153,7 +142,7 @@
   </PropertyGroup>
 
   <Target Name="RunModel"
-          Condition="'$(RUN_SCENARIO)'=='1'" 
+          Condition="'$(RUN_SCENARIO)'=='true'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ScexPublish"
@@ -179,15 +168,31 @@
           Condition="'1'=='1'">
     <Message Text="MODEL_NAME=$(MODEL_NAME)" />
     <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
+    <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
+    <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
+    <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
-    <Message Text="MODGEN_VERSION=$(MODGEN_VERSION)" />
-    <Message Text="MODGEN_ROOT=$(MODGEN_ROOT)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
     <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />
     <Message Text="CHARACTER_SET=$(CHARACTER_SET)" />
+
+    <Message Text="MODGEN_VERSION=$(MODGEN_VERSION)" />
+    <Message Text="MODGEN_ROOT=$(MODGEN_ROOT)" />
     <Message Text="MODGEN_INPUTS=@(MODGEN_INPUTS)" />
     <Message Text="MODGEN_OUTPUTS=@(MODGEN_OUTPUTS)" />
   </Target>
+
+ 
+  <!-- 
+  Visual Studio IDE integration
+  -->
+ 
+ 
+  <ItemGroup>
+    <PropertyPageSchema Include="$(OM_ROOT)/props/model-modgen.VS.xml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
 
 </Project>
