@@ -77,6 +77,7 @@ extern int GetCaseSample();
 extern int GetUserTableSubSample();
 extern long long GetAllCases();
 extern int GetSubSamples();
+extern void SetCaseWeight(double weight);
 
 // defined in use/time_based/time_based.ompp
 extern int GetReplicate();

@@ -163,6 +163,26 @@ int GetSubSamples()
 }
 
 /**
+ * Sets the weight of all entities in a case.
+ * 
+ * See Modgen Developer's Guide. Entity weighting is not yet implemented in ompp. A call to this
+ * function will cause a run-time fatal error if weight is not equal to 1.0.
+ *
+ * @param weight The weight.
+ */
+void SetCaseWeight(double weight)
+{
+    if (weight == 1.0) {
+        return;
+    }
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+       << LT("error : Entity weight not implemented.  Argument to SetCaseWeight must be 1.0, is ") << weight
+       ;
+    ModelExit(ss.str().c_str());
+}
+
+/**
  * Gets case counter in thread.
  *
  * @return The case counter in thread.
