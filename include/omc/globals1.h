@@ -26,6 +26,7 @@ extern void StopEventTrace();
 extern int GetThreadNumber();
 extern int GetThreads();
 extern void SetPopulation(long lPopulation);
+extern long GetPopulation();
 double PieceLinearLookup(double x, const double *ax, const double *ay, int n);
 bool IsUndefined(double x);
 void report_simulation_progress(int member, int percent);

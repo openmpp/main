@@ -309,6 +309,16 @@ void SetPopulation(long lPopulation)
 }
 
 /**
+ * Gets the total population used for population scaling
+ *
+ * @return The population.
+ */
+long GetPopulation()
+{
+    return fmk::set_population_value;
+}
+
+/**
  * Tells the framework to exit all entities from the simulation after completion of the current event.
  */
 void signal_exit_simulation_all()
