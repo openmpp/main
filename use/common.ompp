@@ -342,19 +342,28 @@ double PieceLinearLookup(double x, const double *ax, const double *ay, int n)
     double y = 0.0;
 
     if (x <= ax[0]) {
+        // X is less than lower bound of first interval, return Y of lower bound of first interval.
         y = ay[0];
-    }
-    else if (x >= ax[n - 1]) {
-        y = ay[n - 1];
     }
     else {
         // a simple linear search
+        bool found = false;
         for (int j = 1; j < n; ++j) {
-            if (x <= ax[j]) {
+            if (!(ax[j] > ax[j - 1])) {
+                // non-increasing X, throw error
+                ModelExit("error : non-increasing x in PieceLinearLookup");
+                // NOT_REACHED
+            }
+            if (x < ax[j]) {
+                found = true;
                 // interpolate
                 y = ay[j - 1] + (ay[j] - ay[j - 1]) / (ax[j] - ax[j - 1]) * (x - ax[j - 1]);
                 break;
             }
+        }
+        if (!found) {
+            // X is greater than upper bound of last interval, return Y of upper bound of last interval.
+            y = ay[n - 1];
         }
     }
     return y;
