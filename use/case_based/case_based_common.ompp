@@ -29,7 +29,7 @@ namespace fmk {
     {
         // The case checksum format reproduces the Modgen format precisely.
         theTrace->logFormatted("Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f",
-                           case_seed,
+                           GetCaseSeed(),
                            case_sample,
                            BaseEvent::get_event_checksum());
     }
