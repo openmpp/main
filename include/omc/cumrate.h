@@ -40,8 +40,8 @@ public:
     void initialize(const double *freq)
     {
         assert(freq); // logic guarantee
-        assert(!is_initialized); // should be initialized only once
-        is_initialized = true;
+        is_degenerate = false;
+        is_initialized = false;
 
         // initialize the permutation vector
         iota(value.begin(), value.end(), 0);
@@ -77,6 +77,7 @@ public:
             cumprob.fill(1.0);
             is_degenerate = true;
         }
+        is_initialized = true;
     }
 
     /**
@@ -149,12 +150,12 @@ public:
      */
     void initialize(const double *freq)
     {
-        assert(!is_initialized); // should be initialized only once
-        is_initialized = true;
+        is_initialized = false;
         for (int j = 0; j < M; ++j) {
             distns[j].initialize(freq);
             freq += N;
         }
+        is_initialized = true;
     }
 
     /**
