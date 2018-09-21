@@ -79,7 +79,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
                 switch (accumulator->accumulator) {
                 case token::TK_sum:
                 case token::TK_unit:
-                    agg_func = "OM_SUM";
+                    agg_func = "OM_AVG";
                     break;
                 case token::TK_minimum:
                     agg_func = "OM_MIN";

@@ -17,5 +17,5 @@
  */
 double population_scaling_factor()
 {
-    return 1.0;
+    return (double)fmk::all_cases / (double)fmk::member_cases;
 }
