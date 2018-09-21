@@ -459,6 +459,29 @@ void CodeGen::do_ModelStartup()
     }
 
     c += "";
+    c += "// Zero-initialize derived parameters.";
+    c += "";
+    for (auto parameter : Symbol::pp_all_parameters) {
+
+        // Process only derived parameters in this for loop
+        if (parameter->source != ParameterSymbol::derived_parameter) continue;
+
+        if (parameter->size() > 1) {
+            // array
+            // std::memset(om_value_BreastScreeningProtocol, 0, 5200 * sizeof(double));
+            c += "std::memset(om_value_" + parameter->name + ", 0, "
+                + to_string(parameter->size())
+                + " * sizeof(" + parameter->pp_datatype->name + ")"
+                + ");";
+        }
+        else {
+            // scalar
+            c += parameter->name
+                + " = (" + parameter->pp_datatype->name + ") 0;";
+        }
+    }
+
+    c += "";
     c += "// Parameters are now ready and can be used by the model.";
     c += "";
 
