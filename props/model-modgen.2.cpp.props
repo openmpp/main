@@ -66,7 +66,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <PreprocessorDefinitions>MODGEN;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>$(MODEL_CODE_DIR);$(MODGEN_INC_DIR);$(OM_INC_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
