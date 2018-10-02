@@ -57,6 +57,15 @@ public:
     string cxx_shape_initializer_list() const;
 
     /**
+     * The C++ initializer list for the dimension with a margin
+     *
+     * Example: {0, 2} for a table with margins for the first and third dimensions.
+     *
+     * @return A string.
+     */
+    string cxx_margin_dims_initializer_list() const;
+
+    /**
      * The C++ initializer list for the measure names.
      * 
      * Examples:
@@ -91,18 +100,25 @@ public:
 
     /**
      * The total number of table cells in the table.
-     *
+     * 
+     * Includes margin cells.
+     * 
      * @return An size_t.
      */
     size_t cell_count() const;
 
     /**
+     * The total number of dimensions with margins in the table.
+     *
+     * @return A size_t.
+     */
+    size_t margin_count() const;
+
+    /**
      * The C++ initializer for the table
      * 
      * This is an expression list used to initialize the table at construction.
-     * The expression list does not include the enclosing parentheses used for construction.
-     * 
-     * Example: {2, 5} for a 2x5 table
+     * The expression list does not include the enclosing braces used for construction.
      * 
      * @return A string.
      */

@@ -546,35 +546,41 @@ void EntityTableSymbol::build_body_current_cell()
         return;
     }
 
-    c += "int cell = 0;" ;
-    c += "int index = 0;" ;
-
-    // build an unwound loop of code
-    for (auto dim : dimension_list ) {
+    c += "// Dimensionality of table (does not include measure dimension)";
+    c += "const size_t rank = " + to_string(dimension_count()) + ";";
+    c += "";
+    c += "// Size of each dimension of table (includes margin if present)";
+    c += "const std::array<size_t, rank> shape = " + cxx_shape_initializer_list() + ";";
+    c += "";
+    c += "// Dimension coordinates of current cell";
+    c += "const std::array<size_t, rank> coordinates = {";
+    for (auto dim : dimension_list) {
         auto av = dim->pp_attribute;
         auto es = dim->pp_enumeration;
         // bail if dimension erroneous (error already reported)
         if (!av || !es) {
             break;
         }
-        assert(es); // integrity check guarantee
-        c += "";
-        c += "// dimension=" + to_string(dim->index) + " attribute=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
-        if (dim > 0) {
-            c += "cell *= " + to_string(es->pp_size()) + ";";
-        }
-        c += "index = " + av->name + ";";
         auto rs = dynamic_cast<RangeSymbol *>(es);
-        if (rs) {
-            c += "// adjust range to zero-based" ;
-            c += "index -= " + to_string(rs->lower_bound) + ";";
+        if (rs && rs->lower_bound != 0) {
+            // if type is range adjust to zero-based
+            c += av->name + " - " + to_string(rs->lower_bound) + ", ";
         }
-        c += "cell += index;";
+        else {
+            c += av->name + ", ";
+        }
     }
+    c += "};";
+    c += "";
+    c += "// Encode the dimension coordinates of the margin cell into flattened index";
+    c += "int cell = coordinates[0];";
+    c += "for (int j = 1; j < rank; ++j) {";
+    c += "cell *= shape[j];";
+    c += "cell += coordinates[j];";
+    c += "}";
     c += "";
     c += "assert(cell >= 0 && cell < " + to_string(cell_count()) + "); // logic guarantee";
-    c += "";
-    c += "return cell;" ;
+    c += "return cell;";
 }
 
 void EntityTableSymbol::build_body_init_increment()
@@ -606,10 +612,10 @@ void EntityTableSymbol::build_body_init_increment()
 
             c += "{";
             c += "// event(" + attr->name +")";
-            c += "auto & value_in = " + ma->in_event_member_name() + ";";
+            c += "auto& value_in = " + ma->in_event_member_name() + ";";
             c += attr->pp_data_type->name + " value_curr = " + attr->name + ";";
-            c += "auto & value_lagged = " + attr->lagged->name + ";";
-            c += "auto & value_lagged_counter = " + attr->lagged_event_counter->name + ";";
+            c += "auto& value_lagged = " + attr->lagged->name + ";";
+            c += "auto& value_lagged_counter = " + attr->lagged_event_counter->name + ";";
             c += "";
             c += "if (pending && pending_event_counter == value_lagged_counter) {";
             c += "value_curr = value_lagged;";
@@ -625,11 +631,83 @@ void EntityTableSymbol::build_body_push_increment()
 {
     CodeBlock& c = push_increment_fn->func_body;
 
-    c += "auto & table = the" + name + ";";
-    for (auto acc : pp_accumulators) {
+    c += "auto& table = the" + name + ";";
+    bool has_margins = margin_count() > 0;
+    if (!has_margins) {
+        c += "";
+        c += "// Table has no margins";
+    }
+    else {
+        c += "";
+        c += "// Table has margins";
+        c += "";
+        c += "// Dimensionality of table (does not include measure dimension)";
+        c += "const size_t rank = " + to_string(dimension_count()) + ";";
+        c += "";
+        c += "// Size of each dimension of table (includes margin if present)";
+        c += "const std::array<size_t, rank> shape = " + cxx_shape_initializer_list() + ";";
+        c += "";
+        c += "// Number of dimensions with a margin";
+        c += "const size_t margin_count = " + to_string(margin_count()) + ";";
+        c += "";
+        c += "// Dimensions with a margin";
+        c += "const std::array<size_t, margin_count> margin_dims = " + cxx_margin_dims_initializer_list() + ";";
+        c += "";
+        c += "// Number of margin combinations for a cell in the table body";
+        c += "// e.g. a table with 3 margins has 2^3-1=7 margin cells associated with a body cell";
+        c += "const size_t margin_combos = (1 << margin_count) - 1;";
+        c += "";
+        c += "// Indexes of table cells to increment (cell in table body and cells in margins)";
+        c += "std::array<size_t, 1 + margin_combos> cells_to_increment;";
+        c += "";
+        c += "// Populate cells_to_increment";
+        c += "";
+        c += "// The cell in the table body:";
+        c += "cells_to_increment[0] = cell_in;";
+        c += "";
+        c += "// The margin cells";
         c += "{";
+        c += "// Dimension coordinates of the body cell being incremented";
+        c += "std::array<size_t, rank> body_coordinates;";
+        c += "// Decode dimension coordinates of the body cell";
+        c += "for (int j = rank - 1, w = cell_in; j >= 0; --j) {";
+        c += "body_coordinates[j] = w % shape[j];";
+        c += "w /= shape[j];";
+        c += "}";
+        c += "// Working coordinates of a margin cell";
+        c += "std::array<size_t, rank> margin_coordinates;";
+        c += "for (int combo = 1; combo <= margin_combos; ++combo) {";
+        c += "// The binary bits of combo select the margin dimensions for the combination.";
+        c += "margin_coordinates = body_coordinates;";
+        c += "int bits = combo;";
+        c += "for (int margin = 0; margin < margin_count; ++margin) {";
+        c += "// read out the bits in combo";
+        c += "if (bits & 1) {";
+        c += "// low order bit set, so replace coordinate from body cell by margin coordinate";
+        c += "margin_coordinates[margin_dims[margin]] = shape[margin_dims[margin]] - 1;";
+        c += "}";
+        c += "bits >>= 1;";
+        c += "}";
+        c += "// Encode the dimension coordinates of the margin cell into flattened index";
+        c += "int margin_cell = margin_coordinates[0];";
+        c += "for (int j = 1; j < rank; ++j) {";
+        c += "margin_cell *= shape[j];";
+        c += "margin_cell += margin_coordinates[j];";
+        c += "}";
+        c += "assert(margin_cell >= 0 && margin_cell < " + to_string(cell_count()) + "); // logic guarantee";
+        c += "cells_to_increment[combo] = margin_cell;";
+        c += "}";
+        c += "}";
+    }
+
+    c += "";
+    c += "// Increments and Accumulators:";
+    for (auto acc : pp_accumulators) {
         c += "// " + acc->pretty_name();
+        c += "{";
         c += "const int acc_index = " + to_string(acc->index) + "; // accumulator index";
+        c += "";
+        c += "// Compute increment";
         if (acc->accumulator != token::TK_unit) {
             auto attr = acc->pp_agentvar;
             assert(attr);
@@ -638,14 +716,14 @@ void EntityTableSymbol::build_body_push_increment()
             }
             if (acc->uses_value_in()) {
                 if (acc->table_op == token::TK_interval) {
-                    c += "auto & value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
+                    c += "auto& value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
                 }
                 else if (acc->table_op == token::TK_event) {
-                    c += "auto & value_in = " + acc->pp_analysis_agentvar->in_event_member_name() + ";";
+                    c += "auto& value_in = " + acc->pp_analysis_agentvar->in_event_member_name() + ";";
                     assert(attr->lagged);
                     assert(attr->lagged_event_counter);
-                    c += "auto & value_lagged = " + attr->lagged->name + ";";
-                    c += "auto & value_lagged_counter = " + attr->lagged_event_counter->name + ";";
+                    c += "auto& value_lagged = " + attr->lagged->name + ";";
+                    c += "auto& value_lagged_counter = " + attr->lagged_event_counter->name + ";";
                     c += "";
                     c += "if (pending && pending_event_counter == value_lagged_counter) {";
                     c += "value_out = value_lagged;";
@@ -691,9 +769,18 @@ void EntityTableSymbol::build_body_push_increment()
         default:
             assert(false); // parser guarantee
         }
-        c += "";
 
-        c += "auto & dAccumulator = table->acc[acc_index][cell_in];";
+        c += "";
+        if (!has_margins) {
+            c += "// Push increment to body cell";
+            c += "{";
+            c += "int cell = cell_in;";
+        }
+        else {
+            c += "// Push increment to body cell and margin cells";
+            c += "for (int cell : cells_to_increment) {";
+        }
+        c += "auto& dAccumulator = table->acc[acc_index][cell];";
         switch (acc->accumulator) {
         case token::TK_unit:
             c += "dAccumulator += dIncrement;";
@@ -728,18 +815,19 @@ void EntityTableSymbol::build_body_push_increment()
         {
             c += "const int obs_index = " + to_string(acc->obs_collection_index) + "; // observation collection index";
             if (acc->updates_obs_collection) {
-                c += "auto &obs_coll = table->coll[cell_in][obs_index];";
+                c += "auto& obs_coll = table->coll[cell][obs_index];";
                 c += "obs_coll.push_front(dIncrement);";
             }
             else {
-                c += "// Same increment is being pushed by another accumulator";
+                c += "// Same increment already being pushed to same collection by another accumulator";
             }
         }
         break;
         default:
             assert(0); // parser guarantee
         }
-        c += "}";
+        c += "}"; // block for cells to increment
+        c += "}"; // block for accumulator
     }
 }
 

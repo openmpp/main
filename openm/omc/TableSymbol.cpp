@@ -70,10 +70,20 @@ size_t TableSymbol::cell_count() const
     for (auto dim : dimension_list) {
         auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
-        cells *= es->pp_size();
+        cells *= es->pp_size() + dim->has_margin;
     }
     return cells;
 }
+
+size_t TableSymbol::margin_count() const
+{
+    size_t result = 0;
+    for (auto dim : dimension_list) {
+        result += dim->has_margin;
+    }
+    return result;
+}
+
 
 string TableSymbol::cxx_shape_initializer_list() const
 {
@@ -88,7 +98,29 @@ string TableSymbol::cxx_shape_initializer_list() const
         }
         auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
-        cxx += to_string(es->pp_size());
+        cxx += to_string(es->pp_size() + dim->has_margin);
+    }
+    cxx += "}";
+
+    return cxx;
+}
+
+string TableSymbol::cxx_margin_dims_initializer_list() const
+{
+    string cxx = "{";
+    bool first_value = true;
+    size_t dim_index = 0;
+    for (auto dim : dimension_list) {
+        if (dim->has_margin) {
+            if (first_value) {
+                first_value = false;
+            }
+            else {
+                cxx += ", ";
+            }
+            cxx += to_string(dim_index);
+        }
+        ++dim_index;
     }
     cxx += "}";
 
@@ -150,8 +182,8 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDims.dimId = dim->index;
         tableDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
         tableDims.typeId = es->type_id;
-        tableDims.isTotal = false;
-        tableDims.dimSize = es->pp_size();
+        tableDims.isTotal = dim->has_margin;
+        tableDims.dimSize = es->pp_size() + dim->has_margin;
         metaRows.tableDims.push_back(tableDims);
 
         // Labels and notes for the dimensions of the table
