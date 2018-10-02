@@ -232,6 +232,17 @@ table Person FilterTest
 };
 
 
+table Person MarginTest //EN Test of table margins
+{
+    self_scheduling_split(age, AGE_GROUP)+
+    * eye_colour+
+    * {
+        duration(), //EN PY's
+        duration(happy, TRUE) //EN Happy PY's
+    }
+};
+
+
 actor Person
 {
     RNG_0_20 first_20_agent_ids = COERCE(RNG_0_20, actor_id);
@@ -393,11 +404,11 @@ parameters {
 
 void PreSimulation()
 {
-    assert(mg_year1 == MIN(YEAR)); // default value of range is lower bound
+    //assert(mg_year1 == MIN(YEAR)); // default value of range is lower bound
 
     mg_year2 = mg_year1;
     mg_year2++;
-    assert(mg_year2 == 1 + MIN(YEAR)); // derived parameter value persists
+    //assert(mg_year2 == 1 + MIN(YEAR)); // derived parameter value persists
 
     assert(mg_int == 0); // default value of int is zero
     mg_int = 42;
@@ -407,11 +418,11 @@ void PreSimulation()
     mg_double = 42.0;
     assert(mg_double == 42.0); // derived parameter value persists
 
-    assert(mg_year_array[MALE] == MIN(YEAR));  // default value of range is lower bound
-    assert(mg_year_array[FEMALE] == MIN(YEAR));  // default value of range is lower bound
+    //assert(mg_year_array[MALE] == MIN(YEAR));  // default value of range is lower bound
+    //assert(mg_year_array[FEMALE] == MIN(YEAR));  // default value of range is lower bound
 
     mg_year_array[MALE]++;
-    assert(mg_year_array[MALE] == 1 + MIN(YEAR));  // derived parameter value persists
+    //assert(mg_year_array[MALE] == 1 + MIN(YEAR));  // derived parameter value persists
 
     assert(mg_int_array[FEMALE] == 0); // default value of int is zero
     assert(mg_int_array[MALE] == 0); // default value of int is zero
