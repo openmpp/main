@@ -88,7 +88,7 @@ sub modgen_tables_to_csv
 	}
 	my $retval;
 	
-	my $suppress_margins = 1;
+	my $suppress_margins = 0;
 
 	if (! -d $dir) {
 		if (!mkdir $dir) {
