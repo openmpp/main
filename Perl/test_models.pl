@@ -845,7 +845,7 @@ for my $model_dir (@model_dirs) {
 			my $build_log = "${project_dir}/make.log";
 			unlink $build_log;
 			open BUILD_LOG, ">${build_log}";
-			for my $make_target ('cleanall', 'model', 'publish') {
+			for my $make_target ('cleanall', 'model', 'publish_views') {
 				logmsg info, $model_dir, $flavour, "make ${make_target} ${make_defines}" if $verbosity >= 2;
 				($merged, $retval) = capture_merged {
 					my @args = (
