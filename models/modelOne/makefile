@@ -133,6 +133,9 @@ copy_ini:
 	@if [ -e modelOne.ini ] ; then cp -pf modelOne.ini $(OUT_BIN_DIR) ; fi
 	@if [ -e modelOne.message.ini ] ; then cp -pf modelOne.message.ini $(OUT_BIN_DIR) ; fi
 
+.PHONY : publish_views
+publish_views : publish
+
 #
 # run the model
 #
