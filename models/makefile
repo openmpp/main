@@ -54,9 +54,9 @@ publish : prepare
 	cp -pf modelOne/*.sql $(LOCAL_SQL_DIR)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/$(OMC_SRC_DIR)/*.sql $(LOCAL_SQL_DIR);)
 
-.PHONY : publish_views
-publish_views : publish
-	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish_views;)
+.PHONY : publish-views
+publish-views : publish
+	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish-views;)
 	
 .PHONY : run
 run : prepare
