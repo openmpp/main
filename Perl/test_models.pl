@@ -820,7 +820,7 @@ for my $model_dir (@model_dirs) {
 			chdir ${model_path};
 
 			# The property sheet containing user macros
-			my $model_props = "ompp/Model.props";
+			my $model_props = "ompp/Model.vcxproj";
 			if ( ! -e $model_props ) {
 				logmsg error, $model_dir, $flavour, "Missing property sheet containing user macros: $model_props";
 				next FLAVOUR;
@@ -835,8 +835,7 @@ for my $model_dir (@model_dirs) {
 			# Determine scenario name from SCENARIO_NAME user macro in Model.props
 			my $scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get SCENARIO_NAME from ${model_props}";
-				next FLAVOUR;
+				$scenario_name = 'Default';
 			}
 
 			my $make_defines = '';
@@ -886,26 +885,6 @@ for my $model_dir (@model_dirs) {
 			my $publish_sqlite = "${publish_dir}/${model_name}.sqlite";
 			if ( ! -f $publish_sqlite ) {
 				logmsg error, $model_dir, $flavour, "Missing database: ${publish_sqlite}";
-				logerrors $merged;
-				next FLAVOUR;
-			}
-
-			# run optional views sql scripts to prepare database for csv export utility
-			run_sqlite_script 
-				$publish_sqlite, 
-				"${om_root}/sql/sqlite/optional_meta_views_sqlite.sql", 
-				$retval;
-			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "Failed to create optional views in database: ${publish_sqlite}";
-				logerrors $merged;
-				next FLAVOUR;
-			}
-			run_sqlite_script 
-				$publish_sqlite, 
-				"${project_dir}/build/${ompp_linux_config}/src/${model_name}_optional_views_sqlite.sql", 
-				$retval;
-			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "Failed to create model views in database: ${publish_sqlite}";
 				logerrors $merged;
 				next FLAVOUR;
 			}
