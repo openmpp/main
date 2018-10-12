@@ -8,6 +8,7 @@
 #pragma once
 #include <cassert>
 #include <string>
+#include <vector>
 #include <unordered_set>
 #include <unordered_map>
 #include <forward_list>
