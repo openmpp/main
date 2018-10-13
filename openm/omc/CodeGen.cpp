@@ -492,13 +492,17 @@ void CodeGen::do_ModelStartup()
         c += "int mem_count = i_model->subValueCount();";
         c += "before_presimulation(mem_id, mem_count); // defined in model framework module";
         for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-            // The following line was useful to track down a runtime error occurring in a PreSimulation function
-            //c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
+            // The following can be useful to track down run-time errors occurring in a PreSimulation function
+            c += "#ifdef _DEBUG";
+            c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
+            c += "#endif";
             c += sg.disambiguated_name(id) + "();";
         }
         for (auto suffix : sg.suffixes) {
-            // The following line was useful to track down a runtime error occurring in a PreSimulation function
-            //c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
+            // The following can be useful to track down run-time errors occurring in a PreSimulation function
+            c += "#ifdef _DEBUG";
+            c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
+            c += "#endif";
             c += sg.prefix + suffix + "();";
         }
         c += "after_presimulation(); // defined in model framework module";
