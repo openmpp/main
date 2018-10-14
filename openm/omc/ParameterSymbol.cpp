@@ -289,10 +289,25 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
         }
     }
     if (source == fixed_parameter) {
-        h += "extern const "
-            + pp_datatype->name + " "
-            + name
-            + cxx_dimensions() + ";";
+        if (is_extendable) {
+            h += " ";
+            // declare non-const version for extension at run-time
+            h += "extern "
+                + pp_datatype->name + " "
+                  "om_value_" + name
+                + cxx_dimensions() + "; // non-const version for extension";
+            // declare const version (reference) for use in model code
+            h += "extern const "
+                + pp_datatype->name + " "
+                "(&" + name + ")"
+                + cxx_dimensions() + "; // const alias for use in model code";
+        }
+        else {
+            h += "extern const "
+                + pp_datatype->name + " "
+                + name
+                + cxx_dimensions() + ";";
+        }
     }
     if (source == missing_parameter) {
         h += "extern const "
@@ -346,12 +361,31 @@ CodeBlock ParameterSymbol::cxx_definition_global()
         assert(!initializer_list.empty());
         // Note that extern is required in the definition (not just the declaration)
         // since in C++ default linkage of 'const' is local, not global.
-        c += "extern const "
-            + pp_datatype->name + " "
-            + name
-            + cxx_dimensions() + " = ";
-        c += cxx_initializer();
-        c += ";";
+
+        if (is_extendable) {
+            c += " ";
+            // define non-const version for extension at run-time
+            c += "extern "
+                + pp_datatype->name + " "
+                  "om_value_" + name
+                + cxx_dimensions() + " =   // non-const version for extension";
+            c += cxx_initializer();
+            c += ";";
+            // define const version (reference) for use in model code
+            c += "extern const "
+                + pp_datatype->name + " "
+                "(&" + name + ")"
+                + cxx_dimensions() + " = om_value_" + name + ";  // const alias for use in model code";
+        }
+        else {
+            c += "extern const "
+                + pp_datatype->name + " "
+                + name
+                + cxx_dimensions() + " = ";
+            c += cxx_initializer();
+            c += ";";
+        }
+
     }
     if (source == missing_parameter) {
         // Initialize using the default value for a type of this kind.
@@ -404,6 +438,25 @@ CodeBlock ParameterSymbol::cxx_initializer()
             line += s_value + ",";
             values_in_line++;
         }
+        if (is_extendable) {
+            // if an extendable parameter has unspecified trailing values, append quiet NaN's
+            // Different constant used depending on whether parameter type is float or double
+            // QNAN_F, QNAN_D, QNAN_LD are const globals defined at start of om_fixed_parms.cpp
+            // TODO
+            string s_value = "QNAN_D";
+            //(pp_datatype->is_floating());
+            int unspecified_count = size() - initializer_list.size();
+            for (int k = 0; k < unspecified_count; ++k) {
+                // output line if values per line limit has been reached
+                if (values_in_line == values_per_line) {
+                    c += line;
+                    line = "";
+                    values_in_line = 0;
+                }
+                line += s_value + ",";
+                values_in_line++;
+            }
+        }
         // output final partial line
         if (values_in_line > 0) {
             c += line;
@@ -431,8 +484,22 @@ void ParameterSymbol::validate_initializer()
     }
 
     // Size check
-    if (size() != initializer_list.size()) {
-        pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(" - should be ") + to_string(size()));
+    if (initializer_list.size() > size()) {
+        pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", exceeds ") + to_string(size()));
+    }
+    if (is_extendable) {
+        // check that last slice of initializer is complete
+        int first_dim_size = pp_shape.front();
+        int slice_size = size() / first_dim_size;
+        if (0 != (initializer_list.size() % slice_size)) {
+            pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", last slice incomplete"));
+        }
+    }
+    else {
+        // not extendable, number of initializers must match exactly
+        if (initializer_list.size() != size()) {
+            pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", must be ") + to_string(size()));
+        }
     }
 
     // Element check
@@ -449,6 +516,13 @@ list<string> ParameterSymbol::initializer_for_storage()
     list<string> values;
     for (auto k : initializer_list) {
         values.push_back(k->format_for_storage(*pp_datatype));
+    }
+    if (is_extendable) {
+        // if an extendable parameter has unspecified trailing values, append NULL's
+        int unspecified_count = size() - initializer_list.size();
+        for (int k = 0; k < unspecified_count; ++k) {
+            values.push_back("NULL");
+        }
     }
     return values;
 }
@@ -693,4 +767,44 @@ string ParameterSymbol::cxx_initialize_cumrate()
     }
     return result;
 }
+
+CodeBlock ParameterSymbol::cxx_extend()
+{
+    CodeBlock c;
+
+    if (!is_extendable) {
+        return c;
+    }
+
+    // Parameters are extended using the first dimension (e.g. YEAR).
+    // The target parameter is flattened and passed to the helper function
+    // populate_extended_parameter which replaces unspecified values (NaN)
+    // with replicated or grown values.
+
+    size_t dim0_size = pp_shape.front();
+    size_t slice_size = size() / dim0_size;
+
+    auto floating_type = pp_datatype->name; // double, float, ldouble
+    string arg1 = "\"" + name + "\"";
+    string arg2 = "reinterpret_cast<" + floating_type + " *>(om_value_" + name + ")";
+    string arg3 = to_string(dim0_size);
+    string arg4 = to_string(slice_size);
+
+    if (pp_index_series) {
+        string arg5 = pp_index_series->name;
+        string arg6 = to_string(index_series_offset);
+        c += "omr::populate_extended_parameter("
+            + arg1 + ", " + arg2 + ", " + arg3 + ", " + arg4 + ", " + arg5 + ", " + arg6
+            + ");";
+    }
+    else {
+        c += "omr::populate_extended_parameter("
+            + arg1 + ", " + arg2 + ", " + arg3 + ", " + arg4
+            + ");";
+    }
+
+    return c;
+}
+
+
 

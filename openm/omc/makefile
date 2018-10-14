@@ -87,6 +87,7 @@ EntityTableSymbol.cpp \
 EnumerationSymbol.cpp \
 EnumerationWithEnumeratorsSymbol.cpp \
 EnumeratorSymbol.cpp \
+ExtendParameterSymbol.cpp \
 GlobalFuncSymbol.cpp \
 GroupSymbol.cpp \
 HeaderCheck.cpp \

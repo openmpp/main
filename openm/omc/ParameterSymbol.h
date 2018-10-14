@@ -34,6 +34,9 @@ public:
         , haz1rate(false)
         , is_hidden(false)
         , is_declared(false)
+        , is_extendable(false)
+        , pp_index_series(nullptr)
+        , index_series_offset(0)
         , datatype2(nullptr)
         , pp_datatype2(nullptr)
         , pp_parameter_id(0)
@@ -142,6 +145,13 @@ public:
      * @return A string.
      */
     string cxx_initialize_cumrate();
+
+    /**
+    * C++ code to extend a fixed parameter.
+    *
+    * @return A block of code.
+    */
+    CodeBlock cxx_extend();
 
     /**
      * Enumeration indicating source of parameter value.
@@ -320,6 +330,31 @@ public:
      * True if the parameter was declared in model source
      */
     bool is_declared;
+
+    /**
+     * True if an extend_parameter statement targets the parameter
+     */
+    bool is_extendable;
+
+    /**
+     * The parameter containing an index series used to extend the parameter
+     * 
+     * Is nullptr unless parameter is the target of an extend_parameter statement
+     * which specifies an index series parameter.
+     */
+    ParameterSymbol *pp_index_series;
+
+    /**
+     * The offset of indices in the index series parameter relative to the target parameter
+     * 
+     * The leading dimension of the target parameter is a range which is completely
+     * contained in the range of the index series parameter.  For example, the range
+     * of the index series parameter might be [2000,2025] and the range of the
+     * leading dimension of the target parameter might be [2015,2020].
+     * In this example, the offset is +5, i.e. the index 0 in the target parameter
+     * corresponds to index 5 in the index series parameter.
+     */
+    int index_series_offset;
 
     /**
      * The data type of the parameter contents - redeclaration
