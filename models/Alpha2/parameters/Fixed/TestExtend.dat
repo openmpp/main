@@ -1,0 +1,62 @@
+parameters {
+    //EN Parameter value duplicated (1D)
+    double TEP_Target1[TER_YEARS1] = {
+        1.15, 1.16, 1.17, 1.18
+        // two trailing values (2019, 2020) not specified
+    };
+
+    //EN Parameter value duplicated (2D)
+    double TEP_Target2[TER_YEARS1][TEC_COLOUR] = {
+        1.151, 1.152, 1.153,
+        1.161, 1.162, 1.163,
+        1.171, 1.172, 1.173,
+        1.181, 1.182, 1.183,
+        // two trailing slices (2019, 2020) not specified
+    };
+
+    //EN Parameter value grown (1D)
+    double TEP_Target1b[TER_YEARS1] = {
+        1.15, 1.16, 1.17, 1.18
+        // two trailing values (2019, 2020) not specified
+    };
+
+    //EN Parameter value grown (2D)
+    double TEP_Target2b[TER_YEARS1][TEC_COLOUR] = {
+        1.151, 1.152, 1.153,
+        1.161, 1.162, 1.163,
+        1.171, 1.172, 1.173,
+        1.181, 1.182, 1.183,
+        // two trailing slices (2019, 2020) not specified
+    };
+
+    //EN Index values for growth (10% annual)
+    double TEP_Index[TER_YEARS2] = {
+        1.0000000000,
+        1.0100000000,
+        1.0202010000,
+        1.0306070502,
+        1.0412223028,
+        1.0520510148,
+        1.0630975504,
+        1.0743663845,
+        1.0858621048,
+        1.0975894155,
+        1.1095531401,
+        1.1217582247,
+        1.1342097410,
+        1.1469128901,
+        1.1598730057,
+        1.1730955580,
+        1.1865861569,
+        1.2003505563,
+        1.2143946578,
+        1.2287245148,
+        1.2433463365,
+        1.2582664926,
+        1.2734915171,
+        1.2890281136,
+        1.3048831594,
+        1.3210637106,
+    };
+};
+

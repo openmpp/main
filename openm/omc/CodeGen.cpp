@@ -160,6 +160,10 @@ void CodeGen::do_preamble()
     z += "#include \"omc/cumrate.h\"";
     z += "#include \"om_types1.h\"";
 	z += "";
+    z += "const double QNAN_F = numeric_limits<float>::quiet_NaN();";
+    z += "const double QNAN_D = numeric_limits<double>::quiet_NaN();";
+    z += "const double QNAN_LD = numeric_limits<long double>::quiet_NaN();";
+    z += "";
 }
 
 // insert commomn headers in all files and define model name and digest
@@ -382,6 +386,10 @@ void CodeGen::do_RunOnce()
             // prepare cumrate for parameter
             c += parameter->cxx_initialize_cumrate();
         }
+
+        if (parameter->is_extendable) {
+            c += parameter->cxx_extend();
+        }
     }
     if (any_missing_parameters) {
         m += "};";
@@ -439,6 +447,15 @@ void CodeGen::do_ModelStartup()
         if (parameter->cumrate) {
             // prepare cumrate for scenario parameter
             c += parameter->cxx_initialize_cumrate();
+        }
+    }
+    c += "";
+
+    // A second pass of scenario parameters is required to extend parameters
+    // because index series parameter(s) must first be bound in first pass above.
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter && parameter->is_extendable) {
+            c += parameter->cxx_extend();
         }
     }
 

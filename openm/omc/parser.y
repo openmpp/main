@@ -6,7 +6,7 @@
 // The following code is written to the header file, not the implementation file
 %code requires {
 
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2018 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -578,8 +578,9 @@ ompp_declarative_island:
 	| decl_link             { pc.InitializeForCxx(); }
 	| decl_entity_set       { pc.InitializeForCxx(); }
 	| decl_table            { pc.InitializeForCxx(); }
-	| decl_derived_table  { pc.InitializeForCxx(); }
-	;
+	| decl_derived_table    { pc.InitializeForCxx(); }
+    | decl_extend_parameter { pc.InitializeForCxx(); }
+    ;
 
 /*
  * use
@@ -2600,6 +2601,27 @@ derived_table_placeholder_list:
                             pc.counter1++;  // counter for placeholders
                         }
 	;
+
+
+
+/*
+ * extend_parameter
+ */
+
+decl_extend_parameter:
+	  "extend_parameter"[tok] SYMBOL[target_parameter] ";"
+                        {
+                            auto sym = new ExtendParameterSymbol($target_parameter, nullptr, @tok);
+                            assert(sym);
+                        }
+	| "extend_parameter"[tok] SYMBOL[target_parameter] SYMBOL[index_parameter] ";"
+                        {
+                            auto sym = new ExtendParameterSymbol($target_parameter, $index_parameter, @tok);
+                            assert(sym);
+                        }
+	| "extend_parameter" error ";"
+    ;
+
 
 
 /*

@@ -74,4 +74,5 @@
 #include "AggregationSymbol.h"
 #include "ExprForTable.h"
 #include "ExprForAttribute.h"
+#include "ExtendParameterSymbol.h"
 

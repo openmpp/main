@@ -1,0 +1,103 @@
+// Copyright (c) 2013-2019 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(TestExtend, EN) Tests of extend_parameter
+
+range TER_YEARS1 //EN Years 2015-2020
+{ 2015, 2020 };
+
+range TER_YEARS2 //EN Years 2000-2025
+{ 2000, 2025 };
+
+classification TEC_COLOUR //EN Colour
+{
+    TE_RED,
+    TE_GREEN,
+    TE_BLUE
+};
+
+parameters {
+    //EN Parameter value duplicated (1D)
+    double TEP_Target1[TER_YEARS1];
+
+    //EN Parameter value duplicated (2D)
+    double TEP_Target2[TER_YEARS1][TEC_COLOUR];
+
+    //EN Parameter value grown (1D)
+    double TEP_Target1b[TER_YEARS1];
+
+    //EN Parameter value grown (2D)
+    double TEP_Target2b[TER_YEARS1][TEC_COLOUR];
+
+    //EN Index values for growth
+    double TEP_Index[TER_YEARS2];
+};
+
+extend_parameter TEP_Target1;
+extend_parameter TEP_Target2;
+extend_parameter TEP_Target1b TEP_Index;
+extend_parameter TEP_Target2b TEP_Index;
+
+
+// Extended parameters are echoed to corresponding output tables
+
+user_table TET_Target1 //EN Parameter value duplicated (1D)
+{
+    TER_YEARS1
+    * { VALUE }
+};
+
+user_table TET_Target2 //EN Parameter value duplicated (2D)
+{
+    TER_YEARS1
+    * TEC_COLOUR
+    * { VALUE }
+};
+
+user_table TET_Target1b //EN Parameter value grown (1D)
+{
+    TER_YEARS1
+    * { VALUE }
+};
+
+user_table TET_Target2b //EN Parameter value grown (2D)
+{
+    TER_YEARS1
+    * TEC_COLOUR
+    * { VALUE }
+};
+void UserTables()
+{
+    // copy extended parameters to tables
+
+    const int nYears = SIZE(TER_YEARS1);
+    const int nColours = SIZE(TEC_COLOUR);
+
+    // TEP_Target1
+    for (int nY = 0; nY < nYears; ++nY) {
+        double dValue = TEP_Target1[nY];
+        SetTableValue("TET_Target1.VALUE", dValue, nY);
+    }
+
+    // TEP_Target2
+    for (int nC = 0; nC < nColours; ++nC) {
+        for (int nY = 0; nY < nYears; ++nY) {
+            double dValue = TEP_Target2[nY][nC];
+            SetTableValue("TET_Target2.VALUE", dValue, nY, nC);
+        }
+    }
+
+    // TEP_Target1b
+    for (int nY = 0; nY < nYears; ++nY) {
+        double dValue = TEP_Target1b[nY];
+        SetTableValue("TET_Target1b.VALUE", dValue, nY);
+    }
+
+    // TEP_Target2b
+    for (int nC = 0; nC < nColours; ++nC) {
+        for (int nY = 0; nY < nYears; ++nY) {
+            double dValue = TEP_Target2b[nY][nC];
+            SetTableValue("TET_Target2b.VALUE", dValue, nY, nC);
+        }
+    }
+};
