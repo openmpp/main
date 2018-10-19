@@ -87,7 +87,7 @@ void ChildController::broadcastLanguageMessages(void)
     // broadcast from root to all child processes
     IRowBaseVec codeValueVec;
     unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::codeValue));
-    msgExec->bcastPacked(ProcessGroupDef::all, codeValueVec, *packAdp);
+    msgExec->bcastReceivePacked(ProcessGroupDef::all, codeValueVec, *packAdp);
 
     // unpack messages
     unordered_map<string, string> msgMap;
@@ -141,7 +141,7 @@ void ChildController::readParameter(const char * i_name, int /*i_subId*/, const 
 
     try {
         // receive broadcasted parameter from root process
-        msgExec->bcast(groupDef.groupOne, i_type, i_size, io_valueArr);
+        msgExec->bcastReceive(groupDef.groupOne, i_type, i_size, io_valueArr);
     }
     catch (exception & ex) {
         throw ModelException("Failed to read input parameter: %s. %s", i_name, ex.what());

@@ -46,7 +46,7 @@ namespace openm
     struct ProcessGroupDef
     {
         int groupSize;          // size of modeling group
-        int groupCount;         // number of modeling group
+        int groupCount;         // number of modeling groups
         int activeRank;         // active rank in group: process index among other modeling processes in the group
         int groupOne;           // current process modeling group number, one based, not a zero based
         bool isRootActive;      // if true then root process used for modeling else dedicated for data exchange

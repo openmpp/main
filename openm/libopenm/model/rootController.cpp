@@ -164,7 +164,7 @@ void RootController::broadcastLanguageMessages(void)
         codeValueVec.push_back(std::move(cvUptr));
     }
     unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::codeValue));
-    msgExec->bcastPacked(ProcessGroupDef::all, codeValueVec, *packAdp);
+    msgExec->bcastSendPacked(ProcessGroupDef::all, codeValueVec, *packAdp);
 }
 
 /** next run for root process: create new run and input parameters in database and support data exchange. 
@@ -247,7 +247,9 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     return nowSetRun.runId;
 }
 
-/** communicate with child processes to send new input and receive accumulators of output tables. */
+/** communicate with child processes to send new input, receive accumulators of output tables, start new run.
+*   return true if any status changed: data received, run completed, run started.
+*/
 bool RootController::childExchange(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
@@ -424,7 +426,7 @@ void RootController::readParameter(const char * i_name, int i_subId, const type_
         reader->readParameter(dbExec, i_subId, i_type, i_size, io_valueArr);
 
         // broadcast parameter to root group child modeling processes
-        msgExec->bcast(rootGroupDef.groupOne, i_type, i_size, io_valueArr);
+        msgExec->bcastSend(rootGroupDef.groupOne, i_type, i_size, io_valueArr);
     }
     catch (exception & ex) {
         throw ModelException("Failed to read input parameter: %s. %s", i_name, ex.what());
@@ -461,7 +463,7 @@ void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
             reader->readParameter(dbExec, nSub, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
 
             // broadcast parameter to all child modeling processes
-            msgExec->bcast(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
+            msgExec->bcastSend(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
         }
     }
 }
@@ -509,7 +511,7 @@ bool RootController::receiveSubValues(void)
             unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
             double * valueArr = valueUptr.get();
 
-            // try to received
+            // try to receive accumulator values
             accRecv.isReceived = msgExec->tryReceive(
                 accRecv.senderRank, (MsgTag)accRecv.msgTag, typeid(double), accRecv.valueSize, valueArr
             );

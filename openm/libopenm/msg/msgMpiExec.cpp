@@ -178,87 +178,178 @@ MPI_Comm MpiExec::commByGroupOne(int i_groupOne)
     return (i_groupOne > 0 && mpiCommVec.size() != 0) ? mpiCommVec[i_groupOne - 1] : MPI_COMM_WORLD;
 }
 
-/**
-* broadcast value array from root to all other processes.
+/** wait until MPI request completed.
 *
-* @param[in]     i_groupOne  if zero then worldwide else one-based group number
-* @param[in]     i_type      value type
-* @param[in]     i_size      size of array (row count)
-* @param[in,out] io_valueArr value array to send or output buffer to receive
+* @param[in]     i_pollTime  dealy in millisends between test MPI request status
+* @param[in,out] io_request  MPI request to wait
 */
-void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr)
-{
+void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {
+
+    if (io_request == MPI_REQUEST_NULL) return;     // no active request
+
+    int isDone = 0;
+    do {
+        int mpiRet = MPI_Test(&io_request, &isDone, MPI_STATUS_IGNORE);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+
+        if (!isDone) {
+            this_thread::sleep_for(chrono::milliseconds(i_pollTime));
+        }
+    } while (!isDone);
+}
+
+/**
+ * broadcast value from root to all other processes.
+ *
+ * @param[in]     i_groupOne  if zero then worldwide else one-based group number
+ * @param[in]     i_type      value type
+ * @param[in,out] io_value    value to send or output value to receive
+ */
+void MpiExec::bcastValue(int i_groupOne, const type_info & i_type, void * io_value) {
     try {
-        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to broadcast");
+        if (io_value == nullptr) throw MsgException("Invalid (null pointer) to value for broadcasting");
+        if (i_type == typeid(string)) throw MsgException("Invalid value type to broadcast (string)");
 
         lock_guard<recursive_mutex> lck(msgMutex);
 
         // select communicator: group or worldwide
         MPI_Comm mComm = commByGroupOne(i_groupOne);
 
-        // if this is a sender then send it by broadcast
-        if (isRoot()) {
+        // send it by async broadcast
+        MPI_Request mpiRq = MPI_REQUEST_NULL;
+        int mpiRet = MPI_Ibcast(io_value, 1, MpiPacked::toMpiType(i_type), rootRank, mComm, &mpiRq);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-            if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to broadcast: %zu", i_size);
+        // wait until broadcast completed
+        waitRequest((isRoot() ? OM_SEND_SLEEP_TIME : OM_SEND_SLEEP_TIME), mpiRq);
+    }
+    catch (MsgException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw MsgException(ex.what());
+    }
+}
 
-            if (i_type != typeid(string)) {
+/** send broadcast value array from root to all other processes.
+*
+* @param[in]     i_groupOne  if zero then worldwide else one-based group number
+* @param[in]     i_type      value type
+* @param[in]     i_size      size of array (row count)
+* @param[in,out] io_valueArr value array to send or output buffer to receive
+*/
+void MpiExec::bcastSend(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr)
+{
+    try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to broadcast");
+        if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to broadcast: %zu", i_size);
 
-                // send size of array
-                int sendSize = (int)i_size;
-                int mpiRet = MPI_Bcast(&sendSize, 1, MPI_INT, rootRank, mComm);
-                if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+        lock_guard<recursive_mutex> lck(msgMutex);
 
-                // send value array
-                mpiRet = MPI_Bcast(io_valueArr, sendSize, MpiPacked::toMpiType(i_type), rootRank, mComm);
-                if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-            }
-            else {  // pack string array
+        // select communicator: group or worldwide
+        MPI_Comm mComm = commByGroupOne(i_groupOne);
 
-                const string * srcArr = reinterpret_cast<const string *>(io_valueArr);
-                int sendSize = MpiPacked::packedSize(i_size, srcArr);
-                if (sendSize <= 0 || sendSize >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %d", sendSize);
+        // send it by async broadcast
+        MPI_Request sizeRq = MPI_REQUEST_NULL;
+        MPI_Request dataRq = MPI_REQUEST_NULL;
+        unique_ptr<char> packedData;
 
-                unique_ptr<char> packedData = MpiPacked::packArray(i_size, srcArr);
+        if (i_type != typeid(string)) {     // if source is not a string array then send it without packing
 
-                // send byte size of packed string array
-                int mpiRet = MPI_Bcast(&sendSize, 1, MPI_INT, rootRank, mComm);
-                if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-
-                // send packed string array
-                mpiRet = MPI_Bcast(packedData.get(), sendSize, MPI_PACKED, rootRank, mComm);
-                if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-            }
-        }
-        else {  // receive the data
-
-            // receive size of data
-            int recvSize = 0;
-            int mpiRet = MPI_Bcast(&recvSize, 1, MPI_INT, rootRank, mComm);
+            // send size of array
+            int sendSize = (int)i_size;
+            int mpiRet = MPI_Ibcast(&sendSize, 1, MPI_INT, rootRank, mComm, &sizeRq);
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-            // receive array data: array of primitive type or packed array of strings
-            if (i_type != typeid(string)) {
+            // send value array
+            mpiRet = MPI_Ibcast(io_valueArr, sendSize, MpiPacked::toMpiType(i_type), rootRank, mComm, &dataRq);
+            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+        }
+        else {  // pack string array
 
-                if (recvSize <= 0 || (size_t)recvSize != i_size) throw MsgException("Invalid size of array broadcasted: %d, expected: %zu", recvSize, i_size);
+            const string * srcArr = reinterpret_cast<const string *>(io_valueArr);
+            int sendSize = MpiPacked::packedSize(i_size, srcArr);
+            if (sendSize <= 0 || sendSize >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %d", sendSize);
 
-                // receive value array
-                mpiRet = MPI_Bcast(io_valueArr, recvSize, MpiPacked::toMpiType(i_type), rootRank, mComm);
-                if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-            }
-            else {  // packed string array
+            packedData = MpiPacked::packArray(i_size, srcArr);
 
-                if (recvSize <= 0 || recvSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", recvSize);
+            // send byte size of packed string array
+            int mpiRet = MPI_Ibcast(&sendSize, 1, MPI_INT, rootRank, mComm, &sizeRq);
+            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-                // receive packed data
-                unique_ptr<char> recvPack(new char[recvSize]);
+            // send packed string array
+            mpiRet = MPI_Ibcast(packedData.get(), sendSize, MPI_PACKED, rootRank, mComm, &dataRq);
+            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+        }
 
-                mpiRet = MPI_Bcast(recvPack.get(), recvSize, MPI_PACKED, rootRank, mComm);
-                if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+        // wait until broadcast send completed
+        waitRequest(OM_SEND_SLEEP_TIME, sizeRq);
+        waitRequest(OM_SEND_SLEEP_TIME, dataRq);
+    }
+    catch (MsgException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw MsgException(ex.what());
+    }
+}
 
-                // unpack received array of strings
-                string * recvData = reinterpret_cast<string *>(io_valueArr);
-                MpiPacked::unpackArray(recvSize, recvPack.get(), i_size, recvData);
-            }
+/** receive broadcasted value array from root process.
+*
+* @param[in]     i_groupOne  if zero then worldwide else one-based group number
+* @param[in]     i_type      value type
+* @param[in]     i_size      size of array (row count)
+* @param[in,out] io_valueArr value array to send or output buffer to receive
+*/
+void MpiExec::bcastReceive(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr)
+{
+    try {
+        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to broadcast");
+        if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to broadcast: %zu", i_size);
+
+        lock_guard<recursive_mutex> lck(msgMutex);
+
+        // select communicator: group or worldwide
+        MPI_Comm mComm = commByGroupOne(i_groupOne);
+
+        // receive size of data
+        MPI_Request mpiRq = MPI_REQUEST_NULL;
+        int recvSize = 0;
+        int mpiRet = MPI_Ibcast(&recvSize, 1, MPI_INT, rootRank, mComm, &mpiRq);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+
+        waitRequest(OM_RECV_SLEEP_TIME, mpiRq);     // wait until receive size completed
+
+        // receive array data: array of primitive type or packed array of strings
+        if (i_type != typeid(string)) {
+
+            if (recvSize <= 0 || (size_t)recvSize != i_size) throw MsgException("Invalid size of array broadcasted: %d, expected: %zu", recvSize, i_size);
+
+            // receive value array
+            mpiRet = MPI_Ibcast(io_valueArr, recvSize, MpiPacked::toMpiType(i_type), rootRank, mComm, &mpiRq);
+            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+
+            waitRequest(OM_RECV_SLEEP_TIME, mpiRq);     // wait intil receive data completed
+        }
+        else {  // packed string array
+
+            if (recvSize <= 0 || recvSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", recvSize);
+
+            // receive packed data
+            unique_ptr<char> recvPack(new char[recvSize]);
+
+            mpiRet = MPI_Ibcast(recvPack.get(), recvSize, MPI_PACKED, rootRank, mComm, &mpiRq);
+            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+
+            waitRequest(OM_RECV_SLEEP_TIME, mpiRq);     // wait intil receive data completed
+
+            // unpack received array of strings
+            string * recvData = reinterpret_cast<string *>(io_valueArr);
+            MpiPacked::unpackArray(recvSize, recvPack.get(), i_size, recvData);
         }
     }
     catch (MsgException & ex) {
@@ -271,14 +362,13 @@ void MpiExec::bcast(int i_groupOne, const type_info & i_type, size_t i_size, voi
     }
 }
 
-/**
-* broadcast vector of db rows from root to all other processes.
+/** send broadcast vector of db rows from root to all other processes. 
 *
 * @param[in]     i_groupOne  if zero then worldwide else one-based group number
 * @param[in,out] io_rowVec   vector of db rows to send or vector to push back received db rows
 * @param[in]     i_adapter   adapter to pack and unpack db rows
 */
-void MpiExec::bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter)
+void MpiExec::bcastSendPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter)
 {
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
@@ -286,41 +376,72 @@ void MpiExec::bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPacked
         // select communicator: group or worldwide
         MPI_Comm mComm = commByGroupOne(i_groupOne);
 
-        // if this is a sender then pack db rows and send it by broadcast
-        if (isRoot()) {
+        // pack db rows
+        vector<char> packedData = i_adapter.pack(io_rowVec);
 
-            // pack db rows
-            vector<char> packedData = i_adapter.pack(io_rowVec);
+        if (packedData.size() <= 0 || packedData.size() >= INT_MAX)
+            throw MsgException("Invalid size of data to broadcast: %zu", packedData.size());
 
-            // send size of packed data
-            if (packedData.size() <= 0 || packedData.size() >= INT_MAX) 
-                throw MsgException("Invalid size of data to broadcast: %zu", packedData.size());
+        // send size of packed data
+        MPI_Request sizeRq = MPI_REQUEST_NULL;
+        int packedSize = (int)packedData.size();
+        int mpiRet = MPI_Ibcast(&packedSize, 1, MPI_INT, rootRank, mComm, &sizeRq);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-            int packedSize = (int)packedData.size();
-            int mpiRet = MPI_Bcast(&packedSize, 1, MPI_INT, rootRank, mComm);
-            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+        // send packed db rows
+        MPI_Request dataRq = MPI_REQUEST_NULL;
+        mpiRet = MPI_Ibcast(packedData.data(), packedSize, MPI_PACKED, rootRank, mComm, &dataRq);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-            // send packed db rows
-            mpiRet = MPI_Bcast(packedData.data(), packedSize, MPI_PACKED, rootRank, mComm);
-            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-        }
-        else {  // receive and unpack db rows
+        // wait until broadcast send completed
+        waitRequest(OM_RECV_SLEEP_TIME, sizeRq);
+        waitRequest(OM_RECV_SLEEP_TIME, dataRq);
+    }
+    catch (MsgException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw MsgException(ex.what());
+    }
+}
 
-            // receive size of packed data
-            int packedSize = 0;
-            int mpiRet = MPI_Bcast(&packedSize, 1, MPI_INT, rootRank, mComm);
-            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
-            if (packedSize <= 0 || packedSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", packedSize);
+/** receive broadcasted vector of db rows from root. 
+*
+* @param[in]     i_groupOne  if zero then worldwide else one-based group number
+* @param[in,out] io_rowVec   vector of db rows to send or vector to push back received db rows
+* @param[in]     i_adapter   adapter to pack and unpack db rows
+*/
+void MpiExec::bcastReceivePacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter)
+{
+    try {
+        lock_guard<recursive_mutex> lck(msgMutex);
 
-            // receive packed db rows
-            unique_ptr<char> recvPack(new char[packedSize]);
+        // select communicator: group or worldwide
+        MPI_Comm mComm = commByGroupOne(i_groupOne);
 
-            mpiRet = MPI_Bcast(recvPack.get(), packedSize, MPI_PACKED, rootRank, mComm);
-            if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+        // receive size of packed data
+        MPI_Request mpiRq = MPI_REQUEST_NULL;
+        int packedSize = 0;
+        int mpiRet = MPI_Ibcast(&packedSize, 1, MPI_INT, rootRank, mComm, &mpiRq);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-            // unpack received db rows
-            i_adapter.unpackTo(packedSize, recvPack.get(), io_rowVec);
-        }
+        waitRequest(OM_RECV_SLEEP_TIME, mpiRq);     // wait until size received
+
+        if (packedSize <= 0 || packedSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", packedSize);
+
+        // receive packed db rows
+        unique_ptr<char> recvPack(new char[packedSize]);
+
+        mpiRet = MPI_Ibcast(recvPack.get(), packedSize, MPI_PACKED, rootRank, mComm, &mpiRq);
+        if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
+
+        waitRequest(OM_RECV_SLEEP_TIME, mpiRq);     // wait until data received
+
+        // unpack received db rows
+        i_adapter.unpackTo(packedSize, recvPack.get(), io_rowVec);
+
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

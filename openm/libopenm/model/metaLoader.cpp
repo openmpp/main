@@ -253,7 +253,7 @@ void MetaLoader::broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_val
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    i_msgExec->bcast(i_groupOne, typeid(int), 1, io_value);
+    i_msgExec->bcastValue(i_groupOne, typeid(int), io_value);
 }
 
 // broadcast run options from root to group of modeling processes
@@ -261,22 +261,22 @@ void MetaLoader::broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec)
 {
     if (i_msgExec == nullptr) throw ModelException("invalid (NULL) message passing interface");
 
-    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subValueCount);
-    i_msgExec->bcast(i_groupOne, typeid(int), 1, &baseRunOpts.subValueId);
-    i_msgExec->bcast(i_groupOne, typeid(bool), 1, &baseRunOpts.useSparse);
-    i_msgExec->bcast(i_groupOne, typeid(double), 1, &baseRunOpts.nullValue);
+    i_msgExec->bcastValue(i_groupOne, typeid(int), &baseRunOpts.subValueCount);
+    i_msgExec->bcastValue(i_groupOne, typeid(int), &baseRunOpts.subValueId);
+    i_msgExec->bcastValue(i_groupOne, typeid(bool), &baseRunOpts.useSparse);
+    i_msgExec->bcastValue(i_groupOne, typeid(double), &baseRunOpts.nullValue);
 
     // broadcast number of parameters with sub-values and parameters id
     int n = (int)paramIdSubArr.size();
-    i_msgExec->bcast(i_groupOne, typeid(int), 1, &n);
+    i_msgExec->bcastValue(i_groupOne, typeid(int), &n);
 
     if (n > 0) {
         if (i_msgExec->isRoot()) {
-            i_msgExec->bcast(i_groupOne, typeid(int), n, paramIdSubArr.data());
+            i_msgExec->bcastSend(i_groupOne, typeid(int), n, paramIdSubArr.data());
         }
         else {
             paramIdSubArr.resize(n);
-            i_msgExec->bcast(i_groupOne, typeid(int), n, paramIdSubArr.data());
+            i_msgExec->bcastReceive(i_groupOne, typeid(int), n, paramIdSubArr.data());
         }
     }
 }
@@ -289,11 +289,11 @@ void MetaLoader::broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag
 
     if (i_msgExec->isRoot()) {
         IRowBaseVec & rv = io_tableUptr->rowsRef();
-        i_msgExec->bcastPacked(i_groupOne, rv, *packAdp);
+        i_msgExec->bcastSendPacked(i_groupOne, rv, *packAdp);
     }
     else {
         IRowBaseVec rv;
-        i_msgExec->bcastPacked(i_groupOne, rv, *packAdp);
+        i_msgExec->bcastReceivePacked(i_groupOne, rv, *packAdp);
         io_tableUptr.reset(MetaTbl::create(rv));
     }
 }

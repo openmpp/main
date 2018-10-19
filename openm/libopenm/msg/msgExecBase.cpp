@@ -91,62 +91,6 @@ void MsgExecBase::startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, co
 }
 
 /**
-* initiate non-blocking recveive of value array into io_valueArr.
-*
-* @param[in]     i_recvFrom  sender proccess rank
-* @param[in]     i_msgTag    tag to identify message content (parameter or output data)
-* @param[in]     i_type      value type
-* @param[in]     i_size      size of array
-* @param[in,out] io_valueArr allocated buffer to recieve value array
-*/
-void MsgExecBase::startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr)
-{
-    try {
-        if (io_valueArr == nullptr) throw MsgException("Invalid (null) value array to recieve");
-
-        lock_guard<recursive_mutex> lck(msgMutex);
-
-        recvLst.push_back(unique_ptr<IMsgRecv>(
-            IMsgRecvArray::create(rank(), i_recvFrom, i_msgTag, i_type, i_size, io_valueArr)
-            ));
-    }
-    catch (MsgException & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        throw;
-    }
-    catch (exception & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        throw MsgException(ex.what());
-    }
-}
-
-/**
-* initiate non-blocking recveive of vector of db rows into io_rowVec.
-*
-* @param[in]     i_recvFrom      sender proccess rank
-* @param[in,out] io_resultRowVec vector to push back received db rows
-* @param[in]     i_adapter       adapter to unpack db rows
-*/
-void MsgExecBase::startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter)
-{
-    try {
-        lock_guard<recursive_mutex> lck(msgMutex);
-
-        recvLst.push_back(unique_ptr<IMsgRecv>(
-            IMsgRecvPacked::create(rank(), i_recvFrom, io_resultRowVec, i_adapter)
-            ));
-    }
-    catch (MsgException & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        throw;
-    }
-    catch (exception & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        throw MsgException(ex.what());
-    }
-}
-
-/**
 * try to non-blocking receive value array, return true if completed.
 *
 * @param[in]     i_recvFrom  sender proccess rank
@@ -222,39 +166,6 @@ void MsgExecBase::waitSendAll(void)
         while (!isAllDone);
         
         sendLst.clear();    // all request completed, clear the list
-    }
-    catch (MsgException & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        throw;
-    }
-    catch (exception & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        throw MsgException(ex.what());
-    }
-}
-
-/** wait for all non-blocking receive to be completed. */
-void MsgExecBase::waitRecvAll(void)
-{
-    try {
-        lock_guard<recursive_mutex> lck(msgMutex);
-
-        bool isAllDone = true;
-        do {
-            isAllDone = true;
-
-            // check for any active receive request
-            for (const auto & rs : recvLst) {
-                bool isDone = rs.get()->tryReceive();
-                isAllDone = isAllDone && isDone;
-            }
-
-            // sleep if any outstanding request exist
-            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
-        }
-        while (!isAllDone);
-        
-        recvLst.clear();    // all request completed, clear the list
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

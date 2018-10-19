@@ -39,12 +39,6 @@ namespace openm
         /** pack and start non-blocking send of vector of db rows to i_sendTo process. */
         void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter);
 
-        /** initiate non-blocking recveive of value array into io_valueArr. */
-        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr);
-
-        /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
-        void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter);
-
         /** try to non-blocking receive value array, return return true if completed. */
         bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const;
 
@@ -53,9 +47,6 @@ namespace openm
 
         /** wait for all non-blocking send to be completed. */
         void waitSendAll(void);
-
-        /** wait for all non-blocking receive to be completed. */
-        void waitRecvAll(void);
 
     protected:
         MsgExecBase(void) : worldCommSize(1), worldRank(0), group_rank(0) { }
@@ -66,7 +57,6 @@ namespace openm
         int group_rank;         // rank of process in group communicator
 
         list<unique_ptr<IMsgSend> > sendLst;    // list of active send requests
-        list<unique_ptr<IMsgRecv> > recvLst;    // list of active receive requests
 
     private:
         MsgExecBase(const MsgExecBase & i_msgExec) = delete;

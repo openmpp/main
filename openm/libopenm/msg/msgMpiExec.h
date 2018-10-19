@@ -40,11 +40,20 @@ namespace openm
         /** create groups for parallel run of modeling task. */
         void createGroups(int i_groupSize, int i_groupCount) override;
 
-        /** broadcast value array from root to all other processes. */
-        void bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) override;
+        /** broadcast value from root to all other processes. */
+        void bcastValue(int i_groupOne, const type_info & i_type, void * io_value) override;
 
-        /** broadcast vector of db rows from root to all other processes. */
-        void bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) override;
+        /** send broadcast value array from root to all other processes. */
+        void bcastSend(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) override;
+
+        /** receive broadcasted value array from root process. */
+        void bcastReceive(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) override;
+
+        /** send broadcast vector of db rows from root to all other processes. */
+        void bcastSendPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) override;
+
+        /** receive broadcasted vector of db rows from root. */
+        void bcastReceivePacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) override;
 
         /** start non-blocking send of value array to i_sendTo process. */
         void startSend(int i_sendTo, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * i_valueArr) override
@@ -53,14 +62,6 @@ namespace openm
         /** pack and start non-blocking send of vector of db rows to i_sendTo process. */
         void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter) override
         { MsgExecBase::startSendPacked(i_sendTo, i_rowVec, i_adapter); }
-
-        /** initiate non-blocking recveive of value array into io_valueArr. */
-        void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) override
-        { MsgExecBase::startRecv(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
-
-        /** initiate non-blocking recveive of vector of db rows into io_rowVec. */
-        void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) override
-        { MsgExecBase::startRecvPacked(i_recvFrom, io_resultRowVec, i_adapter); }
 
         /** try to non-blocking receive and unpack vector of db rows, return true if completed. */
         bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const override
@@ -73,9 +74,6 @@ namespace openm
         /** wait for all non-blocking send to be completed. */
         void waitSendAll(void) override { MsgExecBase::waitSendAll(); }
 
-        /** wait for all non-blocking receive to be completed. */
-        void waitRecvAll(void) override { MsgExecBase::waitRecvAll(); }
-
     private:
         MPI_Group worldGroup;           // MPI world global group
         MPI_Comm groupComm;             // modeling group communicator for current process
@@ -87,6 +85,9 @@ namespace openm
 
         /** return group communicator by one-based group number or worldwide communicator. */
         MPI_Comm commByGroupOne(int i_groupOne);
+
+        /** wait until MPI request completed. */
+        void waitRequest(int i_pollTime, MPI_Request & io_request) const;
 
     private:
         MpiExec(const MpiExec & i_exec) = delete;

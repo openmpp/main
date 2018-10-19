@@ -164,23 +164,49 @@ namespace openm
         virtual void createGroups(int i_groupSize, int i_groupCount) = 0;
 
         /**
-         * broadcast value array from root to all other processes.
+         * broadcast value from root to all other processes.
+         *
+         * @param[in]     i_groupOne  if zero then worldwide else one-based group number
+         * @param[in]     i_type      value type
+         * @param[in,out] io_value    value to send or output value to receive
+         */
+        virtual void bcastValue(int i_groupOne, const type_info & i_type, void * io_value) = 0;
+
+        /** send broadcast value array from root to all other processes.
          *
          * @param[in]     i_groupOne  if zero then worldwide else one-based group number
          * @param[in]     i_type      value type
          * @param[in]     i_size      size of array
          * @param[in,out] io_valueArr value array to send or output buffer to receive
          */
-        virtual void bcast(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
+        virtual void bcastSend(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
 
         /**
-         * broadcast vector of db rows from root to all other processes.
+         * receive broadcasted value array from root process.
+         *
+         * @param[in]     i_groupOne  if zero then worldwide else one-based group number
+         * @param[in]     i_type      value type
+         * @param[in]     i_size      size of array
+         * @param[in,out] io_valueArr value array to send or output buffer to receive
+         */
+        virtual void bcastReceive(int i_groupOne, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
+
+
+        /** send broadcast vector of db rows from root to all other processes.
          *
          * @param[in]     i_groupOne  if zero then worldwide else one-based group number
          * @param[in,out] io_rowVec   vector of db rows to send or vector to push back received db rows
          * @param[in]     i_adapter   adapter to pack and unpack db rows
          */
-        virtual void bcastPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) = 0;
+        virtual void bcastSendPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) = 0;
+
+        /** receive broadcasted vector of db rows from root.
+         *
+         * @param[in]     i_groupOne  if zero then worldwide else one-based group number
+         * @param[in,out] io_rowVec   vector of db rows to send or vector to push back received db rows
+         * @param[in]     i_adapter   adapter to pack and unpack db rows
+         */
+        virtual void bcastReceivePacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPackedAdapter & i_adapter) = 0;
 
         /**
          * start non-blocking send of value array to i_sendTo process.
@@ -201,26 +227,6 @@ namespace openm
          * @param[in] i_adapter  adapter to pack db rows
          */
         virtual void startSendPacked(int i_sendTo, const IRowBaseVec & i_rowVec, const IPackedAdapter & i_adapter) = 0;
-
-        /**
-         * initiate non-blocking recveive of value array into io_valueArr.
-         *
-         * @param[in]     i_recvFrom  sender proccess rank
-         * @param[in]     i_msgTag    tag to identify message content (parameter or output data)
-         * @param[in]     i_type      value type
-         * @param[in]     i_size      size of array
-         * @param[in,out] io_valueArr allocated buffer to recieve value array
-         */
-        virtual void startRecv(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
-
-        /**
-         * initiate non-blocking recveive of vector of db rows into io_rowVec.
-         *
-         * @param[in]     i_recvFrom      sender proccess rank
-         * @param[in,out] io_resultRowVec vector to push back received db rows
-         * @param[in]     i_adapter       adapter to unpack db rows
-         */
-        virtual void startRecvPacked(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) = 0;
 
         /**
          * try to non-blocking receive value array, return true if completed.
@@ -244,9 +250,6 @@ namespace openm
 
         /** wait for all non-blocking send to be completed. */
         virtual void waitSendAll(void) = 0;
-
-        /** wait for all non-blocking receive to be completed. */
-        virtual void waitRecvAll(void) = 0;
     };
 }
 
