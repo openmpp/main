@@ -826,34 +826,61 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 			
-			# Determine executable model name from MODEL_NAME user macro in Model.props
+			# Determine model name from MODEL_NAME property
 			my $model_name = get_property($model_props, 'MODEL_NAME');
 			if ($model_name eq '') {
+				# Default is model folder name
 				$model_name = $model_dir;
 			}
-			
-			# Determine scenario name from SCENARIO_NAME user macro in Model.props
+
+			# Determine scenario name from SCENARIO_NAME property
 			my $scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
+				# Default is 'Default'
 				$scenario_name = 'Default';
 			}
-
-			my $make_defines = '';
-			$make_defines .= ' RELEASE=1' if $ompp_linux_config eq 'release';
+			
+			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
+			my $fixed_parameters_folder = get_property($model_props, 'FIXED_PARAMETERS_FOLDER');
+			my $enable_fixed_parameters = 'true';
+			if ($fixed_parameters_folder eq '') {
+				# Default is disabled
+				$enable_fixed_parameters = 'false';
+			}
+			# SFG TODO partial hack to account for fact that vcxproj is one level deeper than makefile
+			# trim off leading '../' if present
+			$fixed_parameters_folder =~ s@^../@@;
+			
+			# Determine grid computing option GRID_COMPUTING user macro in Model.props
+			my $grid_computing = '';
+			if ($ompp_deploy_mpi eq 'yes') {
+				$grid_computing = 'MPI'
+			}
+			else {
+				$grid_computing = get_property($model_props, 'GRID_COMPUTING');
+			}
+			if ($grid_computing eq '') {
+				logmsg error, $model_dir, $flavour, "failed to get GRID_COMPUTING from ${model_props}";
+				next FLAVOUR;
+			}
+			
+			my @make_defines;
+			push @make_defines, "MODEL_NAME=${model_name}";
+			push @make_defines, "SCENARIO_NAME=${scenario_name}";
+			push @make_defines, "OMC_FIXED_PARAM_DIR=${fixed_parameters_folder}" if $enable_fixed_parameters eq 'true';
+			push @make_defines, 'RELEASE=1' if $ompp_linux_config eq 'release';
 			
 			my $build_log = "${project_dir}/make.log";
 			unlink $build_log;
 			open BUILD_LOG, ">${build_log}";
 			for my $make_target ('cleanall', 'model', 'publish-views') {
-				logmsg info, $model_dir, $flavour, "make ${make_target} ${make_defines}" if $verbosity >= 2;
 				($merged, $retval) = capture_merged {
 					my @args = (
 						"make",
 						"${make_target}",
 						);
-					if ($make_defines ne '') {
-						push @args, $make_defines;
-					}
+					push @args, @make_defines;
+					logmsg info, $model_dir, $flavour, join(' ', @args) if $verbosity >= 2;
 					system(@args);
 				};
 				print BUILD_LOG $merged;
