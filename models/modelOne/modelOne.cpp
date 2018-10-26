@@ -65,6 +65,8 @@ void RunModel(IModel * const i_model)
             ((double)(nSalary + 800 * i_model->subValueId() + 1));
     }
 
+    i_model->updateProgress(50);            // update sub-value progress: 50% completed
+
     // calculte salary by sex, accumulator 1: count
     // "sex" dimension has total enabled
     nCell = 0;
@@ -99,6 +101,7 @@ void RunInit(IRunBase * const i_runBase)
 {
     // load model parameters
     theLog->logMsg("Reading Parameters");
+    theModelRunState->updateProgress(0);            // update model process-wide progress: 0% completed
 
     om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
     om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
@@ -113,6 +116,7 @@ void RunInit(IRunBase * const i_runBase)
 void ModelStartup(IModel * const i_model)
 {
     theTrace->logMsg("Start model sub-value");
+    i_model->updateProgress(0);             // update sub-value progress: 0% completed
 
     // bind parameters reference thread local values
     // at this point parameter values undefined and cannot be used by the model
@@ -138,6 +142,7 @@ void ModelStartup(IModel * const i_model)
 void ModelShutdown(IModel * const i_model)
 {
     // write output result tables: salarySex sub-value
+    i_model->updateProgress(100);               // update sub-value progress: 100% completed
     theLog->logMsg("Writing Output Tables");
 
     i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);

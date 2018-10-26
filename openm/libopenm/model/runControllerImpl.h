@@ -21,7 +21,9 @@ namespace openm
     {
     public:
         /** create new single process run controller */
-        SingleController(const ArgReader & i_argStore, IDbExec * i_dbExec) : RunController(i_argStore),
+        SingleController(const ArgReader & i_argStore, IDbExec * i_dbExec) : 
+            RunController(i_argStore),
+            runId(0),
             taskId(0),
             taskRunId(0),
             isWaitTaskRun(false),
@@ -57,7 +59,7 @@ namespace openm
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) override 
-            { doShutdownOnExit(i_status, nowSetRun.runId, taskRunId, dbExec); }
+            { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
 
         /** communicate with child processes to send new input and receive accumulators of output tables. */
         virtual bool childExchange(void) override { return false; }
@@ -67,10 +69,10 @@ namespace openm
         virtual void init(void) override;
 
     private:
+        int runId;              // if > 0 then model run id
         int taskId;             // if > 0 then modeling task id
         int taskRunId;          // if > 0 then modeling task run id
         bool isWaitTaskRun;     // if true then task run under external supervision
-        SetRunItem nowSetRun;   // current set id, run id and status
         IDbExec * dbExec;       // db-connection
         DoneVector isSubDone;   // size of [sub-value count], if true then all sub-value accumulators saved in database
 
@@ -125,7 +127,7 @@ namespace openm
         virtual void shutdownOnExit(ModelStatus i_status) override 
             { doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec); }
 
-        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        /** communicate with child processes to start new run, send new input, send and receive status update, receive accumulators of output tables. */
         virtual bool childExchange(void) override;
 
     protected:
@@ -145,17 +147,30 @@ namespace openm
         // return root process run group: last run group
         RunGroup & rootRunGroup(void) { return runGroupLst.back(); }
 
+        /** broadcast metadata tables from root to all modeling processes. */
+        void broadcastMetaData(void);
+
+        /** broadcast meta table db rows from root to all modeling processes. */
+        template <class MetaTbl>
+        void broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
+
+        /** broadcast run options from root to group of modeling processes. */
+        void broadcastRunOptions(void);
+
         /** broadcast model messages from root to all child processes. */
         void broadcastLanguageMessages(void);
 
         /** create new run and assign it to modeling group. */
         int makeNextRun(RunGroup & i_runGroup);
 
-        /** receive accumulators of output tables sub-values and write into database. */
-        void appendAccReceiveList(int i_runId, const RunGroup & i_runGroup);
-
         /** read all input parameters by run id and broadcast to child processes. */
         void readAllRunParameters(const RunGroup & i_runGroup) const;
+
+        /** receive status update from all child processes. */
+        bool receiveStatusUpdate(void);
+
+        /** append to list of accumulators to be received from child modeling processes. */
+        void appendAccReceiveList(int i_runId, const RunGroup & i_runGroup);
 
         /** receive accumulators of output tables sub-values and write into database. */
         bool receiveSubValues(void);
@@ -176,7 +191,9 @@ namespace openm
         ChildController(int i_processCount, const ArgReader & i_argStore, IMsgExec * i_msgExec) :
             RunController(i_argStore),
             runId(0),
-            msgExec(i_msgExec)
+            msgExec(i_msgExec),
+            lastTimeStatus(chrono::system_clock::now()),
+            lastModelStatus(ModelStatus::init)
         {
             processCount = i_processCount; 
         }
@@ -205,23 +222,35 @@ namespace openm
         virtual void shutdownRun(int i_runId) override;
 
         /** model process shutdown: cleanup resources. */
-        virtual void shutdownWaitAll(void) override { theModelRunState.updateStatus(ModelStatus::done); }
+        virtual void shutdownWaitAll(void) override;
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        virtual void shutdownOnExit(ModelStatus i_status) override { theModelRunState.updateStatus(i_status); }
+        virtual void shutdownOnExit(ModelStatus i_status) override { theModelRunState->updateStatus(i_status); }
 
-        /** communicate with child processes to send new input and receive accumulators of output tables. */
-        virtual bool childExchange(void) override { return false; }
+        /** communicate with root processes to send and receive status update. */
+        virtual bool childExchange(void) override;
 
     private:
-        int runId;                  // if > 0 then model run id
-        ProcessGroupDef groupDef;   // child process groups size, groups count and process rank in group
-        IMsgExec * msgExec;         // message passing interface
+        int runId;                                          // if > 0 then model run id
+        ProcessGroupDef groupDef;                           // child process groups size, groups count and process rank in group
+        IMsgExec * msgExec;                                 // message passing interface
+        chrono::system_clock::time_point lastTimeStatus;    // last status update time sent to root
+        ModelStatus lastModelStatus;                        // last model status sent to root
 
         /** initialize child modeling process. */
         virtual void init(void) override;
 
-        /** receive broadcasted model messages from root. */
+        /** receive broadcasted metadata tables from root process. */
+        int broadcastMetaData(void);
+
+        /** receive broadcasted meta table db rows from root process. */
+        template <class MetaTbl>
+        void broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
+
+        /** receive broadcasted run options from root process. */
+        void broadcastRunOptions(void);
+
+        /** receive broadcasted model messages from root process. */
         void broadcastLanguageMessages(void);
 
     private:

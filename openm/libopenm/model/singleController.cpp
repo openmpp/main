@@ -154,18 +154,19 @@ int SingleController::nextRun(void)
     // find next working set of input parameters
     // if this is a modeling task then next set from that task
     // else if no run completed then get set by id or name or as default set for the model
-    nowSetRun = createNewRun(taskRunId, isWaitTaskRun, dbExec);
+    SetRunItem nowSetRun = createNewRun(taskRunId, isWaitTaskRun, dbExec);
+    runId = nowSetRun.runId;
 
-    ModelStatus mStatus = theModelRunState.updateStatus(nowSetRun.state.status());  // update model status: progress, wait, shutdown
+    ModelStatus mStatus = theModelRunState->updateStatus(nowSetRun.status);  // update model status: progress, wait, shutdown
 
-    if (ModelRunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
+    if (RunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
         return 0;   // all done: all sets from task or single run completed
     }
 
     // reset write status for sub-values
     isSubDone.reset();
 
-    return nowSetRun.runId;
+    return runId;
 }
 
 /**
@@ -184,7 +185,7 @@ void SingleController::readParameter(const char * i_name, int i_subId, const typ
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(nowSetRun.runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(runId, i_name, dbExec, metaStore.get())
             );
         reader->readParameter(dbExec, i_subId, i_type, i_size, io_valueArr);
     }
@@ -210,12 +211,12 @@ void SingleController::writeAccumulators(
     )
 {
     // write accumulators into database
-    doWriteAccumulators(nowSetRun.runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
+    doWriteAccumulators(runId, dbExec, i_runOpts, i_name, i_size, io_accValues);
 
     // if all accumulators of sub-value completed then update restart sub-value index
     if (i_isLastTable) {
         isSubDone.setAt(i_runOpts.subValueId);      // mark that sub-value as completed
-        updateRestartSubValueId(nowSetRun.runId, dbExec, isSubDone.countFirst());
+        updateRestartSubValueId(runId, dbExec, isSubDone.countFirst());
     }
 }
 

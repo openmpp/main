@@ -86,7 +86,28 @@ namespace openm
             forward_list<unique_ptr<double> > & io_accValues
             ) = 0;
 
+        /** add new run state on modeling thread start */
+        void addModelRunState(int i_runId, int i_subId) { return runStateStore.add(i_runId, i_subId); }
+
+        /** remove run state on modeling thread exit */
+        void removeModelRunState(int i_runId, int i_subId) { return runStateStore.remove(i_runId, i_subId); }
+
+        /** set sub-value modeling progress count */
+        bool updateProgress(int i_runId, int i_subId, int i_progress) {
+            return runStateStore.updateProgress(i_runId, i_subId, i_progress);
+        }
+
+        /** update model status in the list if not already set as one of exit status values, if found then return true and actual status */
+        ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status) {
+            return runStateStore.updateStatus(i_runId, i_subId, i_status);
+        }
+
     protected:
+        /** run states for all modeling threads */
+        RunStateHolder runStateStore;
+
+
+
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
             subFirstId(0),
@@ -102,11 +123,10 @@ namespace openm
         {
             int setId;              // set id of input parameters
             int runId;              // if >0 then run id
-            ModelRunState state;    // run status
+            ModelStatus status;     // run status
 
             SetRunItem(void) : setId(0), runId(0) { }
-            SetRunItem(int i_setId, int i_runId, ModelStatus i_status) : setId(i_setId), runId(i_runId)
-                { state.updateStatus(i_status); }
+            SetRunItem(int i_setId, int i_runId, ModelStatus i_status) : setId(i_setId), runId(i_runId), status(i_status) { }
 
             // return true if set or run undefined
             bool isEmpty(void) { return setId <= 0 || runId <= 0; }

@@ -170,6 +170,21 @@ namespace openm
     /** set of strings with case neutral key search */
     typedef set<string, LessNoCase> NoCaseSet;
 
+    /** db-row abstract base */
+    struct IRowBase
+    {
+        virtual ~IRowBase(void) throw() = 0;
+    };
+
+    /** unique pointer to db row */
+    typedef unique_ptr<IRowBase> IRowBaseUptr;
+
+    /** db rows: vector of unique pointers to db row */
+    typedef vector<IRowBaseUptr> IRowBaseVec;
+
+    /** db rows: list of unique pointers to db row */
+    typedef list<IRowBaseUptr> IRowBaseList;
+
     /** simple resource exit guard implementation */
     template <class ResourceHolder>
     class exit_guard

@@ -6,6 +6,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "helper.h"
 #include "model.h"
 #include "modelHelper.h"
 #include "runControllerImpl.h"
@@ -44,9 +45,9 @@ void ChildController::init(void)
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
 
     // broadcast basic run options from root to all other processes
-    broadcastInt(ProcessGroupDef::all, msgExec, &subValueCount);
-    broadcastInt(ProcessGroupDef::all, msgExec, &threadCount);
-    broadcastInt(ProcessGroupDef::all, msgExec, &modelId);
+    msgExec->bcastInt(ProcessGroupDef::all, &subValueCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &threadCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &modelId);
 
     // basic validation: number of processes expected to be > 1
     if (subValueCount <= 0) throw ModelException("Invalid number of sub-values: %d", subValueCount);
@@ -69,19 +70,71 @@ void ChildController::init(void)
 
     // adjust number of active processes: exit from unused child processes
     if (msgExec->rank() > groupDef.groupSize * groupDef.groupCount) {
-        theModelRunState.updateStatus(ModelStatus::exit);
+        theModelRunState->updateStatus(ModelStatus::exit);
     }
 
     // receive metadata tables from root process
     // receive model run options
     // receive broadcasted model messages from root
     metaStore.reset(new MetaHolder);
-    modelId = broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
-    broadcastRunOptions(ProcessGroupDef::all, msgExec);
+    modelId = broadcastMetaData();
+    broadcastRunOptions();
     broadcastLanguageMessages();
 }
 
-/** receive broadcasted model messages from root. */
+/** receive broadcasted metadata tables from root process. */
+int ChildController::broadcastMetaData(void)
+{
+    broadcastMetaTable<IModelDicTable>(MsgTag::modelDic, metaStore->modelTable);
+    broadcastMetaTable<ITypeDicTable>(MsgTag::typeDic, metaStore->typeDic);
+    broadcastMetaTable<ITypeEnumLstTable>(MsgTag::typeEnumLst, metaStore->typeEnumLst);
+    broadcastMetaTable<IParamDicTable>(MsgTag::parameterDic, metaStore->paramDic);
+    broadcastMetaTable<IParamDimsTable>(MsgTag::parameterDims, metaStore->paramDims);
+    broadcastMetaTable<ITableDicTable>(MsgTag::tableDic, metaStore->tableDic);
+    broadcastMetaTable<ITableDimsTable>(MsgTag::tableDims, metaStore->tableDims);
+    broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
+    broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
+
+    // find model by name digest
+    metaStore->modelRow = metaStore->modelTable->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
+    if (metaStore->modelRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+
+    return metaStore->modelRow->modelId;
+}
+
+/** receive broadcasted meta table db rows from root process. */
+template <typename MetaTbl>
+void ChildController::broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr)
+{
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(i_msgTag));
+
+    IRowBaseVec rv;
+    msgExec->bcastReceivePacked(ProcessGroupDef::all, rv, *packAdp);
+    io_tableUptr.reset(MetaTbl::create(rv));
+}
+
+/** receive broadcasted run options from root process. */
+void ChildController::broadcastRunOptions(void)
+{
+    RunOptions opts;
+    msgExec->bcastInt(ProcessGroupDef::all, &opts.subValueCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &opts.subValueId);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.useSparse);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.nullValue);
+
+    setRunOptions(opts);    // update model run options
+
+    // broadcast number of parameters with sub-values and parameters id
+    int n = (int)paramIdSubArr.size();
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+    if (n > 0) {
+        paramIdSubArr.resize(n);
+        msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
+    }
+}
+
+/** receive broadcasted model messages from root process. */
 void ChildController::broadcastLanguageMessages(void)
 {
     // broadcast from root to all child processes
@@ -106,15 +159,15 @@ int ChildController::nextRun(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
 
-    if (theModelRunState.isShutdownOrExit()) return 0;      // exit if status not a continue status
+    if (theModelRunState->isShutdownOrExit()) return 0;      // exit if status not a continue status
 
     // broadcast metadata: model status, run id and other run options from root to all other processes
     // if run id received from the root <= 0 then all done, stop this child modeling process
     ModelStatus mStatus;
-    broadcastInt(groupDef.groupOne, msgExec, (int *)&mStatus);
-    broadcastInt(groupDef.groupOne, msgExec, &runId);
+    msgExec->bcastInt(groupDef.groupOne, (int *)&mStatus);
+    msgExec->bcastInt(groupDef.groupOne, &runId);
 
-    theModelRunState.updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit
+    theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit
 
     return runId;
 }
@@ -122,8 +175,15 @@ int ChildController::nextRun(void)
 /** model run shutdown: save results and update run status. */
 void ChildController::shutdownRun(int /*i_runId*/)
 { 
-    // wait for send completion, if any outstanding
-    msgExec->waitSendAll();
+    msgExec->waitSendAll();     // wait for send completion, if any outstanding
+}
+
+/** model process shutdown: cleanup resources. */
+void ChildController::shutdownWaitAll(void)
+{ 
+    msgExec->waitSendAll();     // wait for send completion, if any outstanding
+
+    theModelRunState->updateStatus(ModelStatus::done);   // set model status as completed OK
 }
 
 /**
@@ -184,4 +244,31 @@ void ChildController::writeAccumulators(
             );
         accIndex++;
     }
+}
+
+/** communicate with root processes to send and receive status update. */
+bool ChildController::childExchange(void) 
+{
+    // get process-wide model run state
+    // if model status same and last progress report sent recently then exit
+    auto nowTime = chrono::system_clock::now();
+    RunState rst = theModelRunState->get();
+    if (rst.theStatus == lastModelStatus && nowTime - lastTimeStatus < chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
+        return false;
+    }
+
+    // get run state for all sub-values and append process model run state
+    IRowBaseVec rsVec = runStateStore.toRowVector();
+    rsVec.push_back(
+        make_unique<RunStateItem>(RunStateItem{ runId, 0, rst })
+    );
+
+    // send new status update to root
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
+
+    msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
+
+    lastModelStatus = rst.theStatus;
+    lastTimeStatus = nowTime;
+    return true;
 }

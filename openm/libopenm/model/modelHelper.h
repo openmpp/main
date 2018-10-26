@@ -55,7 +55,7 @@ namespace openm
 
         static const int all = 0;   // worldwide group, all processes
 
-        ProcessGroupDef(void) : 
+        ProcessGroupDef(void) :
             groupSize(1), groupCount(0), activeRank(0), groupOne(0), isRootActive(true), subPerProcess(1), selfSubCount(1)
         { }
 
@@ -63,7 +63,7 @@ namespace openm
     };
 
     // helper struct to hold modeling group run id and run state
-    struct RunGroup 
+    struct RunGroup
     {
         int groupOne;           // modeling group number, one based, not a zero based
         int runId;              // if > 0 then model run id
@@ -114,7 +114,7 @@ namespace openm
             int i_accId,
             int i_accIndex,
             size_t i_valueSize
-            ) :
+        ) :
             runId(i_runId),
             subValueId(i_subId),
             tableId(i_tableId),

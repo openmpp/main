@@ -34,9 +34,6 @@ namespace openm
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
         }
 
-        /** MPI_Pack string into data buffer at i_packPos position. */
-        static void pack(const string & i_value, int i_packedSize, void * io_packedData, int & io_packPos);
-
         /**
          * MPI_Unpack value of primitive type from data buffer at i_packPos position and return the value.
          *
@@ -54,6 +51,9 @@ namespace openm
 
             return val;
         }
+
+        /** MPI_Pack string into data buffer at i_packPos position. */
+        static void pack(const string & i_value, int i_packedSize, void * io_packedData, int & io_packPos);
 
         /** MPI_Unpack string from data buffer at i_packPos position and return the string. */
         static string unpackStr(int i_packedSize, void * i_packedData, int & io_packPos);

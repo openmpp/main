@@ -136,7 +136,7 @@ int main(int argc, char ** argv)
         if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
 
         // run the model until modeling task completed
-        while(!theModelRunState.isShutdownOrExit()) {
+        while(!theModelRunState->isShutdownOrExit()) {
 
             // create next run id: find model input data set
             int runId = runCtrl->nextRun();
@@ -204,6 +204,7 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
         unique_ptr<IModel> model(
             ModelBase::create(i_runId, i_subCount, i_subId, i_runCtrl, i_runCtrl->meta())
             );
+        i_runCtrl->addModelRunState(i_runId, i_subId);
 
         // initialize model sub-value
         if (ModelStartupHandler != NULL) ModelStartupHandler(model.get());
@@ -213,6 +214,7 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
 
         // write output tables
         ModelShutdownHandler(model.get());
+        i_runCtrl->updateStatus(i_runId, i_subId, ModelStatus::done);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -301,13 +303,16 @@ void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl)
 
     bool isAnyChildActivity = false;
     do {
-        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes, if any
+        if (theModelRunState->isShutdownOrExit()) return;    // model completed
 
-        if (isAnyChildActivity) 
+        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes, if any
+        if (isAnyChildActivity) {
             this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
+        }
     }
     while (isAnyChildActivity && --nExchange > 0);
 
-    if (nExchange > 0 && i_runCtrl->processCount > 1 && !theModelRunState.isShutdownOrExit()) 
+    if (nExchange > 0 && i_runCtrl->processCount > 1 && !theModelRunState->isShutdownOrExit()) {
         this_thread::sleep_for(chrono::milliseconds(nExchange * OM_ACTIVE_SLEEP_TIME)); // sleep more if no child activity
+    }
 }

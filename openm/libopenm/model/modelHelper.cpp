@@ -130,3 +130,4 @@ int RunGroup::rankBySubValueId(int i_subId) const
     }
     return nRank;
 }
+

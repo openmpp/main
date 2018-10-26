@@ -135,6 +135,9 @@
     <ClInclude Include="..\..\include\libopenm\omModel.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\omModelRunState.h">
+      <Filter>Header Files\libopenm</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\omError.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>

@@ -12,6 +12,8 @@
 
 using namespace std;
 
+// time intervals for interprocess communication and model status update
+//
 #define OM_SEND_SLEEP_TIME  29L         /* msec, send completion test sleep interval */
 #define OM_RECV_SLEEP_TIME  31L         /* msec, receive probe sleep interval */
 #define OM_RUN_POLL_TIME 17L            /* msec, wait interval for modeling threads polling */
@@ -19,6 +21,7 @@ using namespace std;
 #define OM_WAIT_SLEEP_TIME 971L         /* msec, sleep interval if no progress in modeling threads */
 
 // add file and line number to debug log
+//
 #ifdef _DEBUG
     #define OM_DBG_STR(line)        #line
     #define OM_DBG_TO_STR(s_line)   OM_DBG_STR(s_line)

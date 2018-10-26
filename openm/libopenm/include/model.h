@@ -52,18 +52,17 @@ namespace openm
         /** return model run options */
         const RunOptions * runOptions(void) const override { return &runOpts; }
 
-        /** update modeling progress */
-        int updateProgress(void) override { return runState.updateProgress(); }
-
         /** write result into output table and release accumulators memory. */
         void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) override;
+
+        /** set sub-value modeling progress count */
+        int updateProgress(int i_progress) override { return runCtrl->updateProgress(runId, runOpts.subValueId, i_progress); }
 
     private:
         int modelId;                        // model id in database
         int runId;                          // model run id
         RunController * runCtrl;            // run controller interface
         const MetaHolder * metaStore;       // metadata tables
-        ModelRunState runState;             // model run state
         RunOptions runOpts;                 // model run options
 
         ModelBase(

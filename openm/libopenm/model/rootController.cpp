@@ -108,9 +108,9 @@ void RootController::init(void)
     isWaitTaskRun = argOpts().boolOption(RunOptionsKey::taskWait);          // if true then task run under external supervision
 
     // broadcast basic run options from root to all other processes
-    broadcastInt(ProcessGroupDef::all, msgExec, &subValueCount);
-    broadcastInt(ProcessGroupDef::all, msgExec, &threadCount);
-    broadcastInt(ProcessGroupDef::all, msgExec, &modelId);
+    msgExec->bcastInt(ProcessGroupDef::all, &subValueCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &threadCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &modelId);
 
     // basic validation: number of processes expected to be > 1
     if (subValueCount <= 0) throw ModelException("Invalid number of sub-values: %d", subValueCount);
@@ -141,14 +141,57 @@ void RootController::init(void)
     // broadcast metadata tables from root to all child processes
     // broadcast basic model run options
     // broadcast model messages from root to all child processes
-    broadcastMetaData(ProcessGroupDef::all, msgExec, metaStore.get());
-    broadcastRunOptions(ProcessGroupDef::all, msgExec);
+    broadcastMetaData();
+    broadcastRunOptions();
     broadcastLanguageMessages();
 
     // if this is modeling task then find it in database
     // and create task run entry in database
     taskId = findTask(dbExec);
     if (taskId > 0) taskRunId = createTaskRun(taskId, dbExec);
+}
+
+// broadcast metadata tables from root to all modeling processes
+void RootController::broadcastMetaData(void)
+{
+    // broadcast metadata tables
+    broadcastMetaTable<IModelDicTable>(MsgTag::modelDic, metaStore->modelTable);
+    broadcastMetaTable<ITypeDicTable>(MsgTag::typeDic, metaStore->typeDic);
+    broadcastMetaTable<ITypeEnumLstTable>(MsgTag::typeEnumLst, metaStore->typeEnumLst);
+    broadcastMetaTable<IParamDicTable>(MsgTag::parameterDic, metaStore->paramDic);
+    broadcastMetaTable<IParamDimsTable>(MsgTag::parameterDims, metaStore->paramDims);
+    broadcastMetaTable<ITableDicTable>(MsgTag::tableDic, metaStore->tableDic);
+    broadcastMetaTable<ITableDimsTable>(MsgTag::tableDims, metaStore->tableDims);
+    broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
+    broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
+}
+
+// broadcast meta table db rows
+template <typename MetaTbl>
+void RootController::broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr)
+{
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(i_msgTag));
+
+    IRowBaseVec & rv = io_tableUptr->rowsRef();
+    msgExec->bcastSendPacked(ProcessGroupDef::all, rv, *packAdp);
+}
+
+// broadcast run options from root to group of modeling processes
+void RootController::broadcastRunOptions(void)
+{
+    RunOptions opts = modelRunOptions();
+    msgExec->bcastInt(ProcessGroupDef::all, &opts.subValueCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &opts.subValueId);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.useSparse);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.nullValue);
+
+    // broadcast number of parameters with sub-values and parameters id
+    int n = (int)paramIdSubArr.size();
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+    if (n > 0) {
+        msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
+    }
 }
 
 /** broadcast model messages from root to all child processes. */
@@ -229,15 +272,15 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     // else if no run completed then get set by id or name or as default set for the model
     SetRunItem nowSetRun = createNewRun(taskRunId, isWaitTaskRun, dbExec);
 
-    ModelStatus mStatus = theModelRunState.updateStatus(nowSetRun.state.status());  // update model status: progress, wait, shutdown
+    ModelStatus mStatus = theModelRunState->updateStatus(nowSetRun.status);  // update model status: progress, wait, shutdown
 
     i_runGroup.nextRun(nowSetRun.runId, nowSetRun.setId, mStatus);
 
     // broadcast metadata: run id and other run options from root to all other processes
-    broadcastInt(i_runGroup.groupOne, msgExec, (int *)&mStatus);
-    broadcastInt(i_runGroup.groupOne, msgExec, &nowSetRun.runId);
+    msgExec->bcastInt(i_runGroup.groupOne, (int *)&mStatus);
+    msgExec->bcastInt(i_runGroup.groupOne, &nowSetRun.runId);
 
-    if (ModelRunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
+    if (RunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
         return 0;   // task "wait" for next input set or all done: all sets from task or single run completed
     }
 
@@ -247,13 +290,16 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     return nowSetRun.runId;
 }
 
-/** communicate with child processes to send new input, receive accumulators of output tables, start new run.
+/** communicate with child processes to start new run, send new input, send and receive status update, receive accumulators of output tables.
 *   return true if any status changed: data received, run completed, run started.
 */
 bool RootController::childExchange(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
+
+    // receive status update from children
+    bool isStatusUpdate = receiveStatusUpdate();
 
     // try to receive sub-values and wait for send completion, if any outstanding
     bool isReceived = receiveSubValues();
@@ -297,12 +343,12 @@ bool RootController::childExchange(void)
             isNewRun = true;
         }
 
-        if (nRunId <= 0 || theModelRunState.isShutdownOrExit()) {
-            return isReceived || isCompleted || isNewRun;   // task "wait" for next input set or all done: all sets from task or single run completed
+        if (nRunId <= 0 || theModelRunState->isShutdownOrExit()) {
+            break;          // task "wait" for next input set or all done: all sets from task or single run completed
         }
     }
 
-    return isReceived || isCompleted || isNewRun;
+    return isReceived || isCompleted || isNewRun || isStatusUpdate;
 }
 
 /** model process shutdown: wait for all child to be completed and do final cleanup. */
@@ -342,8 +388,8 @@ void RootController::shutdownWaitAll(void)
         }
 
         // send "done" to the group and update group final status
-        broadcastInt(rg.groupOne, msgExec, (int *)&mStatus);
-        broadcastInt(rg.groupOne, msgExec, &zeroRunId);
+        msgExec->bcastInt(rg.groupOne, (int *)&mStatus);
+        msgExec->bcastInt(rg.groupOne, &zeroRunId);
         rg.state.updateStatus(mStatus);
     }
 
@@ -376,33 +422,6 @@ void RootController::shutdownRun(int i_runId)
     // run completed
     doShutdownRun(i_runId, taskRunId, dbExec);
     rootRunGroup().reset();
-}
-
-// append to list of accumulators to be received from child modeling processes
-void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGroup)
-{
-    const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
-
-    int tblId = -1;
-    size_t valSize = 0;
-    for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
-
-        // get accumulator data size
-        if (tblId != accVec[nAcc].tableId) {
-            tblId = accVec[nAcc].tableId;
-            valSize = IOutputTableWriter::sizeOf(metaStore.get(), tblId);
-        }
-
-        for (int nSub = 0; nSub < subValueCount; nSub++) {
-
-            int nRank = i_runGroup.rankBySubValueId(nSub);
-            if (nRank == msgExec->rootRank) continue;
-
-            accRecvLst.push_back(
-                AccReceive(i_runId, nSub, subValueCount, nRank, tblId, accVec[nAcc].accId, nAcc, valSize)
-                );
-        }
-    }
 }
 
 /**
@@ -491,6 +510,62 @@ void RootController::writeAccumulators(
     if (i_isLastTable) {
         rootRunGroup().isSubDone.setAt(i_runOpts.subValueId);       // mark that sub-value as completed
         updateRestartSubValueId(rootRunGroup().runId, dbExec, rootRunGroup().isSubDone.countFirst());
+    }
+}
+
+/** receive status update from all child processes. */
+bool RootController::receiveStatusUpdate(void)
+{
+    // try to receive and save accumulators
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
+    IRowBaseVec rsVec;
+    bool isAnyReceived = false;
+
+    for (int nRank = 1; nRank < msgExec->worldSize(); nRank++) {
+        
+        // try to receive child status update
+        if (!msgExec->tryReceive(nRank, rsVec, *packAdp)) {
+            continue;     // no status update from that child
+        }
+        isAnyReceived = true;
+
+        if (rsVec.size() <= 1) {    // at least one item expected: child process-wide state, ignore it
+            continue;               // no update for any of child sub-values run state
+        }
+
+        // update sub-values run state
+        rsVec.erase(--rsVec.cend());        // remove last element, it is child process run state
+        runStateStore.fromRowVector(rsVec);
+        rsVec.clear();
+    }
+
+    return isAnyReceived;
+}
+
+/** append to list of accumulators to be received from child modeling processes. */
+void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGroup)
+{
+    const vector<TableAccRow> accVec = metaStore->tableAcc->byModelId(modelId);
+
+    int tblId = -1;
+    size_t valSize = 0;
+    for (int nAcc = 0; nAcc < (int)accVec.size(); nAcc++) {
+
+        // get accumulator data size
+        if (tblId != accVec[nAcc].tableId) {
+            tblId = accVec[nAcc].tableId;
+            valSize = IOutputTableWriter::sizeOf(metaStore.get(), tblId);
+        }
+
+        for (int nSub = 0; nSub < subValueCount; nSub++) {
+
+            int nRank = i_runGroup.rankBySubValueId(nSub);
+            if (nRank == msgExec->rootRank) continue;
+
+            accRecvLst.push_back(
+                AccReceive(i_runId, nSub, subValueCount, nRank, tblId, accVec[nAcc].accId, nAcc, valSize)
+            );
+        }
     }
 }
 

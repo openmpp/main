@@ -131,7 +131,7 @@ int RestartController::nextRun(void)
     // delete any existing output accumulators where sub_id >= restart sub-value index
     // delete output aggregated values for that run id
     if (!cleanupRestartSubValue()) {
-        theModelRunState.updateStatus(ModelStatus::shutdown);
+        theModelRunState->updateStatus(ModelStatus::shutdown);
         runId = 0;
         return 0;           // run already completed
     }
@@ -142,7 +142,7 @@ int RestartController::nextRun(void)
 
         shutdownRun(runId);
 
-        theModelRunState.updateStatus(ModelStatus::shutdown);
+        theModelRunState->updateStatus(ModelStatus::shutdown);
         runId = 0;
         return 0;           // run completed
     }

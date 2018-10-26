@@ -12,6 +12,7 @@
 using namespace std;
 
 #include "libopenm/omLog.h"
+#include "libopenm/omModelRunState.h"
 #include "libopenm/common/omHelper.h"
 #include "libopenm/db/dbCommon.h"
 
@@ -171,6 +172,14 @@ namespace openm
          * @param[in,out] io_value    value to send or output value to receive
          */
         virtual void bcastValue(int i_groupOne, const type_info & i_type, void * io_value) = 0;
+
+        /**
+         * broadcast integer value from root to all other processes.
+         *
+         * @param[in]     i_groupOne  if zero then worldwide else one-based group number
+         * @param[in,out] io_value    integer value to send or output value to receive
+         */
+        void bcastInt(int i_groupOne, void * io_value) { bcastValue(i_groupOne, typeid(int), io_value); }
 
         /** send broadcast value array from root to all other processes.
          *

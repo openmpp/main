@@ -40,21 +40,6 @@ namespace openm
     /** db-exception */
     typedef OpenmException<4000, dbUnknownErrorMessage> DbException;
 
-    /** db-row abstract base */
-    struct IRowBase
-    {
-        virtual ~IRowBase(void) throw() = 0;
-    };
-
-    /** unique pointer to db row */
-    typedef unique_ptr<IRowBase> IRowBaseUptr;
-
-    /** db rows: vector of unique pointers to db row */
-    typedef vector<IRowBaseUptr> IRowBaseVec;
-
-    /** db rows: list of unique pointers to db row */
-    typedef list<IRowBaseUptr> IRowBaseList;
-
     /** row factory and setter interface to select row from database */
     class IRowAdapter
     {

@@ -220,7 +220,7 @@ void ModelExit(const char* msg)
 void report_simulation_progress(int member, int percent)
 {
     theLog->logFormatted("Member=%d simulation progress=%d%%", member, percent);
-    fmk::i_model->updateProgress();
+    fmk::i_model->updateProgress(percent);
 }
 
 

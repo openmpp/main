@@ -16,6 +16,7 @@
 #include <vector>
 using namespace std;
 
+#include "omModelRunState.h"
 #include "omLog.h"
 #include "omError.h"
 
@@ -27,7 +28,7 @@ namespace openm
         /** number of sub-values */
         int subValueCount;
 
-        /** sub-value index for current modeling process */
+        /** sub-value index for current modeling thread */
         int subValueId;
 
         /** if true then use sparse output to database */
@@ -44,56 +45,6 @@ namespace openm
             nullValue(FLT_MIN)
         { }
         ~RunOptions(void) throw() { }
-    };
-
-    /** modeling job status */
-    enum class ModelStatus : int
-    {
-        /** unknown status */
-        undefined = 0,
-
-        /** initial status */
-        init = 1,
-
-        /** run in progress */
-        progress,
-
-        /** run in progress, under external supervision */
-        waitProgress,
-
-        /** shutdown model process */
-        shutdown,
-
-        /** completed successfully */
-        done = 64,
-
-        /** exit and not completed (reserved) */
-        exit,
-
-        /** error failure */
-        error = 128
-    };
-
-    /** model run status codes */
-    struct RunStatus
-    {
-        /** i = initial status */
-        static const char * init;
-
-        /** p = run in progress */
-        static const char * progress;
-
-        /** w = wait: run in progress, under external supervision */
-        static const char * waitProgress;
-
-        /** s = completed successfully */
-        static const char * done;
-
-        /** x = exit and not completed (reserved) */
-        static const char * exit;
-
-        /** e = error failure */
-        static const char * error;
     };
 
     /** public interface to initialize model run and input parameters */
@@ -134,14 +85,14 @@ namespace openm
         /** return model run options */
         virtual const RunOptions * runOptions(void) const = 0;
 
-        /** update modeling progress */
-        virtual int updateProgress(void) = 0;
-
         /** return index of parameter sub-value in the array of sub-values, used to find thread local parameter values */
         virtual int parameterSubValueIndex(const char * i_name) const = 0;
 
         /** write output result table: sub values */
         virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
+
+        /** set sub-value modeling progress count */
+        virtual int updateProgress(int i_progress) = 0;
     };
 
     /** model input parameter name, type and size */
@@ -274,6 +225,9 @@ extern OM_EVENT_LOOP_HANDLER RunModelHandler;
 /** model shutdown method: save output results */
 typedef void (*OM_SHUTDOWN_HANDLER)(openm::IModel * const i_model);
 extern OM_SHUTDOWN_HANDLER ModelShutdownHandler;
+
+/** public interface of process-wide model run state: status, progress, update times */
+extern openm::IModelRunState * theModelRunState;
 
 #ifdef __cplusplus
     }

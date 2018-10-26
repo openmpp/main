@@ -74,7 +74,7 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
 {
     // if this is not a part of task then and model status not "initial"
     // then exit with "no more" data to signal all input completed because it was single input set
-    ModelStatus mStatus = theModelRunState.status();
+    ModelStatus mStatus = theModelRunState->status();
     if (i_taskRunId <= 0 && mStatus != ModelStatus::init) return SetRunItem(0, 0, ModelStatus::shutdown);
 
     // update in transaction scope
@@ -132,15 +132,15 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
             -1);
 
         // model status (task run status): progress, wait, shutdown or exit
-        mStatus = ModelRunState::fromRunStatus(stat);
+        mStatus = RunState::fromRunStatus(stat);
         if (mStatus <= ModelStatus::undefined) throw MsgException("invalid (undefined) model run status");
 
         // no input sets exist: task completed or wait for additional input
         if (nSetId <= 0) {                          
 
-            if (mStatus == ModelStatus::progress || (!i_isWaitTaskRun && mStatus == ModelStatus::init))
+            if (mStatus == ModelStatus::progress || (!i_isWaitTaskRun && mStatus == ModelStatus::init)) {
                 mStatus = ModelStatus::shutdown;    // task completed
-            
+            }
             i_dbExec->rollback();                   // rollback all database changes
             return SetRunItem(0, 0, mStatus);       // return empty data set and current model status: wait or exit
         }
@@ -527,7 +527,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 /** impelementation of model process shutdown if exiting without completion. */
 void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
-    theModelRunState.updateStatus(i_status);    // set model status
+    theModelRunState->updateStatus(i_status);    // set model status
 
     // update run status and task status in database
     {
@@ -536,7 +536,7 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
         string sDt = makeDateTime(chrono::system_clock::now());
 
         // if error then update run status only else update run status and run digest
-        if (ModelRunState::isError(i_status)) {
+        if (RunState::isError(i_status)) {
             i_dbExec->update(
                 "UPDATE run_lst SET status = " + toQuoted(RunStatus::error) + "," +
                 " update_dt = " + toQuoted(sDt) +
@@ -562,7 +562,7 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
         if (i_taskRunId > 0) {
             i_dbExec->update(
                 "UPDATE task_run_lst SET status = " +
-                (!ModelRunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
+                (!RunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
                 " update_dt = " + toQuoted(sDt) +
                 " WHERE task_run_id = " + to_string(i_taskRunId)
                 );
@@ -636,7 +636,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 /** implementation model process shutdown: cleanup resources. */
 void RunController::doShutdownAll(int i_taskRunId, IDbExec * i_dbExec)
 {
-    theModelRunState.updateStatus(ModelStatus::done);   // set model status as completed OK
+    theModelRunState->updateStatus(ModelStatus::done);   // set model status as completed OK
 
     if (i_taskRunId > 0) {      // update task status as completed
         i_dbExec->update(

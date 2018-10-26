@@ -566,6 +566,48 @@ namespace openm
             MpiPacked::packedSize(val->code) +
             MpiPacked::packedSize(val->value);
     }
+
+    // pack model run state into MPI message
+    template<>
+    void RowMpiPackedAdapter<RunStateItem>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
+    {
+        const RunStateItem * val = dynamic_cast<const RunStateItem *>(i_row.get());
+
+        MpiPacked::pack<decltype(val->runId)>(val->runId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->subId)>(val->subId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<int>((int)val->state.theStatus, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->state.progressCount)>(val->state.progressCount, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<time_t>(chrono::system_clock::to_time_t(val->state.startTime), i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<time_t>(chrono::system_clock::to_time_t(val->state.updateTime), i_packedSize, io_packedData, io_packPos);
+    }
+
+    // unpack MPI message into model run state
+    template<>
+    void RowMpiPackedAdapter<RunStateItem>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
+    {
+        RunStateItem * val = static_cast<RunStateItem *>(io_row.get());
+
+        val->runId = MpiPacked::unpack<decltype(val->runId)>(i_packedSize, i_packedData, io_packPos);
+        val->subId = MpiPacked::unpack<decltype(val->subId)>(i_packedSize, i_packedData, io_packPos);
+        val->state.theStatus = (ModelStatus)MpiPacked::unpack<int>(i_packedSize, i_packedData, io_packPos);
+        val->state.progressCount = MpiPacked::unpack<decltype(val->state.progressCount)>(i_packedSize, i_packedData, io_packPos);
+        val->state.startTime = chrono::system_clock::from_time_t(MpiPacked::unpack<time_t>(i_packedSize, i_packedData, io_packPos));
+        val->state.updateTime = chrono::system_clock::from_time_t(MpiPacked::unpack<time_t>(i_packedSize, i_packedData, io_packPos));
+    }
+
+    // return byte size to pack model run state into MPI message
+    template<>
+    int RowMpiPackedAdapter<RunStateItem>::packedSize(const IRowBaseUptr & i_row)
+    {
+        const RunStateItem * val = dynamic_cast<const RunStateItem *>(i_row.get());
+        return
+            MpiPacked::packedSize(typeid(val->runId)) +
+            MpiPacked::packedSize(typeid(val->subId)) +
+            MpiPacked::packedSize(typeid(int)) +
+            MpiPacked::packedSize(typeid(val->state.progressCount)) +
+            MpiPacked::packedSize(typeid(time_t)) +
+            MpiPacked::packedSize(typeid(time_t));
+    }
 }
 
 // create new pack and unpack adapter for metadata table db rows
@@ -601,6 +643,8 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
         return new MetaMpiPackedAdapter<MsgTag::groupPc, GroupPcRow>();
     case MsgTag::codeValue:
         return new MetaMpiPackedAdapter<MsgTag::codeValue, CodeValueRow>();
+    case MsgTag::statusUpdate:
+        return new MetaMpiPackedAdapter<MsgTag::statusUpdate, RunStateItem>();
     default:
         throw MsgException("Fail to create message adapter: invalid message tag");
     }

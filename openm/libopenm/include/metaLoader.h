@@ -170,20 +170,14 @@ namespace openm
             argStore(i_argStore)
         { }
 
-        // return basic model run options
+        /** return basic model run options */
         const RunOptions & modelRunOptions(void) const { return baseRunOpts; }
+
+        /** set basic model run options */
+        void setRunOptions(const RunOptions & i_opts) { baseRunOpts = i_opts; }
 
         // read metadata tables from db, except of run_option table
         static int readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore);
-
-        // broadcast metadata tables from root to all modeling processes
-        static int broadcastMetaData(int i_groupOne, IMsgExec * i_msgExec, MetaHolder * io_metaStore);
-
-        // broadcast int value from root to group of modeling processes
-        static void broadcastInt(int i_groupOne, IMsgExec * i_msgExec, int * io_value);
-
-        // broadcast run options from root to group of modeling processes
-        void broadcastRunOptions(int i_groupOne, IMsgExec * i_msgExec);
 
         /** read model messages from database.
         *
@@ -207,10 +201,6 @@ namespace openm
     private:
         RunOptions baseRunOpts;     // basic model run options
         ArgReader argStore;         // arguments as key-value string pairs with case-neutral search
-
-        // broadcast meta table db rows
-        template <class MetaTbl>
-        static void broadcastMetaTable(int i_groupOne, IMsgExec * i_msgExec, MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
 
         // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValue.Age" argument
         void mergeParameterProfile(

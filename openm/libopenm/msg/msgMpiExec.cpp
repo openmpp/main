@@ -441,7 +441,6 @@ void MpiExec::bcastReceivePacked(int i_groupOne, IRowBaseVec & io_rowVec, const 
 
         // unpack received db rows
         i_adapter.unpackTo(packedSize, recvPack.get(), io_rowVec);
-
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
