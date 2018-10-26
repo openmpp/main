@@ -221,7 +221,7 @@ void SimulateEvents()
  * @param mem_id    Identifier of the member to be simulated (sub-sample).
  * @param mem_count Total number of members (sub-samples).
  */
-void RunSimulation(int mem_id, int mem_count)
+void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 {
     // The following functions are usually defined in the main simulation module, e.g. model.mpp
     // case_info is usually declared in the model-specific include file custom_early.h
@@ -231,20 +231,8 @@ void RunSimulation(int mem_id, int mem_count)
 
     using namespace fmk;
 
-#if false
-    // Run-time sanity check that Member and MemberCount parameters
-    // correspond to the values retrieved from the IModel interface.
-    if (mem_id != Member || mem_count != MemberCount) {
-        ostringstream ss;
-        ss  << LT("error : simulation member inconsistency")
-            << LT(" Member=") << Member
-            << LT(" (IModel value=") << mem_id << ")"
-            << LT(" MemberCount=") << MemberCount
-            << LT(" (IModel value=") << mem_count << ")"
-            ;
-        ModelExit(ss.str().c_str());
-    }
-#endif
+    // note API object for subsequent use in modeling thread
+    fmk::i_model = i_model;
 
     // Initialize the entity counter for this simulation member
     member_entity_counter = 0;

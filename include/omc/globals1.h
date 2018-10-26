@@ -67,7 +67,7 @@ double LeaplessCalendarToTime(int year, int month_in_year, int day_in_month);
 
 // defined in use/case_based/case_based.ompp
 //         or use/time_based/time_based.ompp
-extern void RunSimulation(int mem_id, int mem_count);
+extern void RunSimulation(int mem_id, int mem_count, openm::IModel * const i_model);
 extern void before_presimulation(int mem_id, int mem_count);
 extern void after_presimulation();
 

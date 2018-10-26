@@ -11,6 +11,11 @@
 namespace fmk {
 
     /**
+     * The run-time API
+     */
+    thread_local openm::IModel * i_model = nullptr;
+
+    /**
      * The number of simulations in the sample of simulations
      */
     int simulation_members = 0;
@@ -215,6 +220,7 @@ void ModelExit(const char* msg)
 void report_simulation_progress(int member, int percent)
 {
     theLog->logFormatted("Member=%d simulation progress=%d%%", member, percent);
+    fmk::i_model->updateProgress();
 }
 
 
