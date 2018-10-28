@@ -16,7 +16,7 @@ namespace fmk {
     thread_local openm::IModel * i_model = nullptr;
 
     /**
-     * The number of simulations in the sample of simulations
+     * The number of simulations in the run
      */
     int simulation_members = 0;
 
@@ -87,6 +87,25 @@ namespace fmk {
      * NB: DEPRECATED - not needed or useful in ompp design
      */
     thread_local bool do_exit_simulation_all = false;
+
+    /**
+     * The target number of % progress steps to report
+     */
+    const int progress_steps = 10;
+
+    /**
+     * Event count threshold for progress reporting
+     * 
+     * Intermediate % progress log message will be produced
+     * if number of events since last % progress message 
+     * exceeds this threshold.
+     */
+    const unsigned long long progress_event_threshold = 10000000;
+
+    /**
+     * Always report 1% progress
+     */
+    const bool progress_always_1pct = true;
 }
 
 /**

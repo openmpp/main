@@ -140,10 +140,14 @@ void SimulateEvents()
     // initial simulation progress message (0%)
     report_simulation_progress(simulation_member, 0);
 
-    // number of progress reporting steps
-    const int progress_steps = 10;
-    // current reporting step
-    int current_step = 0;
+    // previous reporting step (of total fmk::progress_steps)
+    int previous_step = 0;
+
+    // previous reporting %
+    int previous_pct = 0;
+
+    // event count at last progress message
+    unsigned long long previous_event_count = 0;
 
     // Simulate the population
     while ( true ) {
@@ -171,13 +175,24 @@ void SimulateEvents()
         // Compute progress and report periodically
         if (simulation_end - time_first_event > 0) {
             double progress_fraction = (the_time - time_first_event) / (simulation_end - time_first_event);
-            int the_step = (int)(progress_fraction * progress_steps);
-            if (the_step > current_step) {
-                // Note that rapid progress can skip over steps.
-                current_step = the_step;
-                int percent_done = (100 / progress_steps) * current_step;
+            int percent_done = 100 * progress_fraction;
+            unsigned long long current_event_count = BaseEvent::global_event_counter;
+            int current_step = (int)(progress_fraction * fmk::progress_steps);
+            if (current_step > previous_step) {
+                // Rapid progress can skip over steps.
                 report_simulation_progress(simulation_member, percent_done);
-            };
+                previous_step = current_step;
+                previous_pct = percent_done;
+                previous_event_count = current_event_count;
+            }
+            else if (percent_done > previous_pct) {
+                // Report intermediate % step if event count threshold exceeded, and at 1% mark
+                if ((fmk::progress_always_1pct && percent_done == 1) || (current_event_count - previous_event_count > progress_event_threshold)) {
+                    report_simulation_progress(simulation_member, percent_done);
+                    previous_pct = percent_done;
+                    previous_event_count = current_event_count;
+                }
+            }
         }
     }
 
@@ -186,7 +201,7 @@ void SimulateEvents()
     BaseEvent::clean_all();
     BaseAgent::free_all_zombies();
 
-    if (current_step < progress_steps) {
+    if (previous_step < fmk::progress_steps) {
         // final progress message
         report_simulation_progress(simulation_member, 100);
     }
