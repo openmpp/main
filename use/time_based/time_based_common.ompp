@@ -256,5 +256,18 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 	// Free random stream generator objects
 	// delete_streams is generator-specific - defined in random/random_YYY.ompp
 	delete_streams();
+
+    {
+        // report simulation summary information for member
+        auto event_count = BaseEvent::global_event_counter;
+        double events_per_entity = (double)event_count / (double)fmk::member_entity_counter;
+        theLog->logFormatted(
+            "member=%d Simulation summary: entities=%ld events/entity=%.1f",
+            fmk::simulation_member,
+            fmk::member_entity_counter,
+            events_per_entity
+        );
+    }
+
 }
 

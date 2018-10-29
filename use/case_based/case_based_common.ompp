@@ -360,6 +360,20 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         // final progress message
         report_simulation_progress(simulation_member, 100);
     }
+
+    {
+        // report simulation summary information for member
+        auto event_count = BaseEvent::global_event_counter;
+        double events_per_case = (double)event_count / (double)fmk::member_cases;
+        double entities_per_case = (double)fmk::member_entity_counter / (double)fmk::member_cases;
+        theLog->logFormatted(
+            "member=%d Simulation summary: cases=%lld events/case=%.1f entities/case=%.1f",
+            fmk::simulation_member,
+            fmk::member_cases,
+            events_per_case,
+            entities_per_case
+        );
+    }
 }
 
 case_info* CaseInfo(case_info* ci, bool reset)
