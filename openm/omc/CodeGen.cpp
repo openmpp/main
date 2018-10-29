@@ -363,7 +363,7 @@ void CodeGen::do_RunOnce()
     c += "// Model one-time initialization";
     c += "void RunOnce(IRunBase * const i_runBase)";
     c += "{";
-    c += "theLog->logMsg(\"Process fixed and missing parameters\");";
+    c += "theLog->logMsg(\"Prepare fixed and missing parameters\");";
     // Missing parameters are handled like fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -393,7 +393,7 @@ void CodeGen::do_RunOnce()
     }
     if (any_missing_parameters) {
         m += "};";
-        theLog->logMsg("Missing parameters written to Missing.dat.tmp");
+        theLog->logMsg("Note: Missing parameters were written to Missing.dat.tmp");
     }
     c += "";
 
@@ -407,7 +407,7 @@ void CodeGen::do_RunInit()
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
 
-    c += "theLog->logMsg(\"Get scenario parameters\");";
+    c += "theLog->logMsg(\"Get scenario parameters for process\");";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
             c += parameter->cxx_read_parameter();
@@ -424,10 +424,13 @@ void CodeGen::do_ModelStartup()
     c += "// Model startup method: Initialization for a simulation member";
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
-
+    c += "// obtain simulation member to use for log messages";
+    c += "int simulation_member = i_model->subValueId();";
+    c += "";
     c += "// Bind scenario parameter references to thread local values (for scenario parameters).";
     c += "// Until this is done scenario parameter values are undefined and cannot be used by the model.";
     c += "";
+    c += "theLog->logFormatted(\"member=%d Bind scenario parameters\", simulation_member);";
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only scenario parameters in this for loop
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
@@ -502,7 +505,7 @@ void CodeGen::do_ModelStartup()
     c += "// Parameters are now ready and can be used by the model.";
     c += "";
 
-    c += "theLog->logMsg(\"compute derived parameters\");";
+    c += "theLog->logFormatted(\"member=%d Compute derived parameters\", simulation_member);";
     auto & sg = Symbol::pre_simulation;
     if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
         c += "int mem_id = i_model->subValueId();";
@@ -535,7 +538,7 @@ void CodeGen::do_ModelStartup()
         }
     }
 
-    c += "theLog->logMsg(\"Initialize invariant entity data\");";
+    c += "theLog->logFormatted(\"member=%d Prepare for simulation\", simulation_member);";
 
     c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
     for (auto agent : Symbol::pp_all_agents) {
@@ -615,7 +618,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::post_simulation;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logFormatted(\"member=%d Running post-simulation\", simulation_member);";
+            c += "theLog->logFormatted(\"member=%d Compute post-simulation\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -629,7 +632,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::derived_tables;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logFormatted(\"member=%d Computing derived tables\", simulation_member);";
+            c += "theLog->logFormatted(\"member=%d Compute derived tables\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -640,7 +643,7 @@ void CodeGen::do_ModelShutdown()
         }
     }
 
-    c += "theLog->logFormatted(\"member=%d writing output tables - start\", simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Write output tables - start\", simulation_member);";
     c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
         if (!table->is_internal) {
@@ -662,7 +665,7 @@ void CodeGen::do_ModelShutdown()
     }
     c += "// at this point table->measure[k][j] will cause memory access violation";
     c += "";
-    c += "theLog->logFormatted(\"member=%d write output tables - finish\", simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Write output tables - finish\", simulation_member);";
 
     c += "// Entity table destruction";
     for (auto table : Symbol::pp_all_entity_tables) {
