@@ -21,6 +21,11 @@ namespace fmk {
      */
     Time simulation_end;
 
+    /**
+     * The clock time at which event simulation started.
+     */
+    thread_local std::chrono::system_clock::time_point clock_time_start_events;
+
 } // namespace fmk
 
 /**
@@ -108,7 +113,7 @@ void LogSimulationStart()
 {
     // Default global start time
     BaseEvent::set_global_time(0);
-    theLog->logFormatted("Member=%d create starting population", fmk::simulation_member);
+    theLog->logFormatted("Member=%d Create starting population", fmk::simulation_member);
 }
 
 double SIMULATION_END()
@@ -133,6 +138,13 @@ void Set_actor_subsample_weight(double weight)
 void SimulateEvents()
 {
     using namespace fmk;
+
+    theLog->logFormatted("Member=%d Simulate events", fmk::simulation_member);
+
+    // Note clock time at which event simulation started.
+    // This allows separating simulation time into portion for creation
+    // of starting population, and portion for events.
+    fmk::clock_time_start_events = std::chrono::system_clock::now();
 
     bool is_first_event = true;
     Time time_first_event(0); // used to calculate progress
@@ -217,6 +229,8 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 {
     using namespace fmk;
 
+    auto clock_time_start = std::chrono::system_clock::now();
+
     // note API object for subsequent use in modeling thread
     fmk::i_model = i_model;
 
@@ -250,7 +264,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
     // Initialize global time (can override in StartSimulation)
     BaseEvent::set_global_time(-time_infinite);
      
-    // Model-specific
+    // Model-specific, calls SimulateEvents() after creating starting population
     Simulation();
 
 	// Free random stream generator objects
@@ -259,13 +273,21 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
     {
         // report simulation summary information for member
+        auto clock_time_end = std::chrono::system_clock::now();
+        std::chrono::duration<double> startpop_seconds = fmk::clock_time_start_events - clock_time_start;
+        double clock_time_startpop = (double)startpop_seconds.count();
+        std::chrono::duration<double> events_seconds = clock_time_end - fmk::clock_time_start_events;
+        double clock_time_events = (double)events_seconds.count();
+
         auto event_count = BaseEvent::global_event_counter;
         double events_per_entity = (double)event_count / (double)fmk::member_entity_counter;
         theLog->logFormatted(
-            "member=%d Simulation summary: entities=%ld events/entity=%.1f",
+            "member=%d Simulation summary: entities=%ld, events/entity=%.1f, elapsed(startpop)=%.6fs, elapsed(events)=%.6fs",
             fmk::simulation_member,
             fmk::member_entity_counter,
-            events_per_entity
+            events_per_entity,
+            clock_time_startpop,
+            clock_time_events
         );
     }
 

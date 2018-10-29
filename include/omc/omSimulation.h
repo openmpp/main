@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cstdarg>
 #include <random>
+#include <chrono>
 #include <forward_list> // for observation collections in tables
 #include "libopenm/omModel.h"
 #include "libopenm/common/omHelper.h" // for openm::SimulationException

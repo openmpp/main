@@ -89,12 +89,12 @@ namespace fmk {
     thread_local bool do_exit_simulation_all = false;
 
     /**
-     * The target number of % progress steps to report
+     * Number of % progress messages during simulation
      */
     const int progress_steps = 10;
 
     /**
-     * Event count threshold for progress reporting
+     * Event count threshold for additional % progress messages
      * 
      * Intermediate % progress log message will be produced
      * if number of events since last % progress message 
@@ -103,7 +103,7 @@ namespace fmk {
     const unsigned long long progress_event_threshold = 10000000;
 
     /**
-     * Always report 1% progress
+     * Always do 1% progress message
      */
     const bool progress_always_1pct = true;
 }
