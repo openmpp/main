@@ -197,6 +197,17 @@ public:
     }
 
     /**
+     * Get next event in the queue.
+     *
+     * @return next event.
+     */
+    static BaseEvent * get_next_event()
+    {
+        return *BaseEvent::event_queue->begin();
+    }
+
+
+    /**
      * Time of next event.
      *
      * @return Time of next event, time_infinite if none.
