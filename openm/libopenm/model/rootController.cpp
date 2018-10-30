@@ -184,6 +184,8 @@ void RootController::broadcastRunOptions(void)
     msgExec->bcastInt(ProcessGroupDef::all, &opts.subValueId);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.useSparse);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.nullValue);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(int), &opts.progressPercent);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.progressStep);
 
     // broadcast number of parameters with sub-values and parameters id
     int n = (int)paramIdSubArr.size();
@@ -623,7 +625,7 @@ void RootController::updateAccReceiveList(void)
     // exit if nothing to receive
     if (accRecvLst.empty()) return;
 
-    // collect accumulators received ststus: find if any accumulators not received
+    // collect accumulators received status: find if any accumulators not received
     struct RunSubDone {
         int runId;      // run id to to receive from child
         int subValueId; // sub-values number to receive

@@ -106,8 +106,6 @@ namespace openm
         /** run states for all modeling threads */
         RunStateHolder runStateStore;
 
-
-
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
             subFirstId(0),

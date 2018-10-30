@@ -37,12 +37,20 @@ namespace openm
         /** if use sparse and abs(value) <= nullValue then value not stored */
         double nullValue;
 
+        /** if positive then used for simulation progress reporting, ex: every 10% */
+        int progressPercent;
+
+        /** if positive then used for simulation progress reporting, ex: every 1000 cases or every 0.1 time step */
+        double progressStep;
+
         /** init run options with default values */
         RunOptions(void) :
             subValueCount(1),
             subValueId(0),
             useSparse(false),
-            nullValue(FLT_MIN)
+            nullValue(FLT_MIN),
+            progressPercent(0),
+            progressStep(0.0)
         { }
         ~RunOptions(void) throw() { }
     };

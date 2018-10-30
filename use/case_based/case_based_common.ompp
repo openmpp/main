@@ -52,6 +52,19 @@ namespace fmk {
 } // namespace fmk
 
 /**
+ * Report simulation progress for case-based model.
+ * 
+ */
+void report_simulation_progress(int member, int percent, long long cases)
+{
+    theLog->logFormatted("member=%d Simulation progress=%d%% cases=%lld", member, percent, cases);
+    fmk::i_model->updateProgress(percent);
+    //
+    // TODO after new update progress check in:
+    // fmk::i_model->updateProgress(percent, (double)cases);
+}
+
+/**
 * Called before invocation of PreSimulation functions.
 */
 void before_presimulation(int mem_id, int mem_count)
@@ -245,16 +258,40 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
     // The member to simulate of the sample of simulations
     simulation_member = mem_id;
 
-    report_simulation_progress(simulation_member, 0);
+    // if run option ProgressStep >0 then progress report must be done by number of cases completed
+    // if run option ProgressPercent >0 then progress report must be done by percent completed
+    // if none of above explicitly specified then progress report done by percent completed default value
+    
+    // for case based models progress step must be positive integer, if not zero default
+    // casting between double and long long may produce incorrect result if value > 0x6fffffffffffffffi64
+    bool is_step_progress = i_model->runOptions()->progressStep > 1.0;
 
-    // previous reporting step (of total fmk::progress_steps)
-    int previous_step = 0;
+    if (i_model->runOptions()->progressStep != 0.0  && 
+        (i_model->runOptions()->progressStep < 1.0 || 
+            i_model->runOptions()->progressStep > (double)0x3fffffffffffffffi64 ||
+            (i_model->runOptions()->progressStep - (long long)i_model->runOptions()->progressStep)) != 0.0) {
+        is_step_progress = false;
+        theLog->logFormatted("Warning: incorrect value of progress step reporting: %g", i_model->runOptions()->progressStep);
+    }
+    long long step_progress = is_step_progress ? (long long)i_model->runOptions()->progressStep : 0;
 
-    // previous reporting %
-    int previous_pct = 0;
+    // progress percent, if not zero, must be positive
+    // if no options specified then by default do percent progress reporting
+    bool is_percent_progress = i_model->runOptions()->progressPercent > 0;
 
-    // event count at last progress message
-    unsigned long long previous_event_count = 0;
+    if (i_model->runOptions()->progressPercent < 0) {
+        theLog->logFormatted("Warning: incorrect value of progress percent reporting: %d", i_model->runOptions()->progressPercent);
+    }
+    int percent_progress = is_percent_progress ? i_model->runOptions()->progressPercent : progress_percent_default;
+
+    is_percent_progress |= !is_step_progress;   // by default report progress percent completed
+
+    // next progress values to trigger reporting
+    long long next_step_progress = step_progress;
+    int next_percent_progress = percent_progress;
+    bool is_100_percent_done = false;
+
+    report_simulation_progress(simulation_member, 0, 0);    // initial progress report 
 
     // Create the case information communication object
     case_info ci;
@@ -326,24 +363,26 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
         // Compute progress and report periodically
         {
-            double progress_fraction = (double)thisCase / (double)member_cases;
-            int percent_done = 100 * progress_fraction;
-            unsigned long long current_event_count = BaseEvent::global_event_counter;
-            int current_step = (int)(progress_fraction * fmk::progress_steps);
-            if (current_step > previous_step) {
-                // Rapid progress can skip over steps.
-                report_simulation_progress(simulation_member, percent_done);
-                previous_step = current_step;
-                previous_pct = percent_done;
-                previous_event_count = current_event_count;
-            }
-            else if (percent_done > previous_pct) {
-                // Report intermediate % step if event count threshold exceeded, and at 1% mark
-                if ((fmk::progress_always_1pct && percent_done == 1) || (current_event_count - previous_event_count > progress_event_threshold)) {
-                    report_simulation_progress(simulation_member, percent_done);
-                    previous_pct = percent_done;
-                    previous_event_count = current_event_count;
+            bool is_do_percent_progress = false;
+            bool is_do_step_progress = false;
+
+            int percent_done = 100 * ((double)thisCase / (double)member_cases);
+
+            if (is_percent_progress) {
+                is_do_percent_progress = percent_done >= next_percent_progress;
+                if (is_do_percent_progress) {
+                    next_percent_progress = (percent_done / percent_progress) * percent_progress + percent_progress;
                 }
+            }
+            if (!is_do_percent_progress && is_step_progress) {
+                is_do_step_progress = thisCase >= next_step_progress;
+                if (is_do_step_progress) {
+                    next_step_progress = (thisCase / step_progress) * step_progress + step_progress;
+                }
+            }
+            if (is_do_percent_progress || is_do_step_progress) {
+                is_100_percent_done = percent_done >= 100;
+                report_simulation_progress(simulation_member, percent_done, thisCase);
             }
         }
     } // cases
@@ -358,9 +397,9 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
     // Reset CaseInfo API
     CaseInfo(nullptr, true);
 
-    if (previous_step < fmk::progress_steps) {
-        // final progress message
-        report_simulation_progress(simulation_member, 100);
+    // final progress message
+    if (!is_100_percent_done) {
+        report_simulation_progress(simulation_member, 100, fmk::member_cases);
     }
 
     {

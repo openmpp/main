@@ -15,10 +15,10 @@ namespace openm
     /** short name for options file name: -ini fileName.ini */
     const char * RunShortKey::optionsFile = "ini";
 
-    /** options started with "Parameter." treated as value of model scalar input parameters */
+    /** options started with "Parameter." treated as value of model scalar input parameters, ex: "-Parameter.Age 42" */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
-    /** options started with "SubValue." used to describe sub-values of model input parameters */
+    /** options started with "SubValue." used to describe sub-values of model input parameters, ex: "-SubValue.Age csv" */
     const char * RunOptionsKey::subValuePrefix = "SubValue";
 
     /** number of sub-values */
@@ -81,6 +81,12 @@ namespace openm
     /** if true then parameter value is enum id, default: enum code */
     const char * RunOptionsKey::useIdParamValue = "OpenM.IdParameterValue";
     
+    /** if positive then used for simulation progress reporting, ex: every 10% */
+    const char * RunOptionsKey::progressPercent = "OpenM.ProgressPercent";
+
+    /** if positive then used for simulation progress reporting, ex: every 1000 cases or every 0.1 time step */
+    const char * RunOptionsKey::progressStep = "OpenM.ProgressStep";
+
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
 
@@ -130,6 +136,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     RunOptionsKey::doubleFormat,
+    RunOptionsKey::progressPercent,
+    RunOptionsKey::progressStep,
     RunOptionsKey::paramDir,
     RunOptionsKey::useIdCsv,
     RunOptionsKey::useIdParamValue,
@@ -330,6 +338,8 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 
     defaultOpt[RunOptionsKey::useSparse] = baseRunOpts.useSparse ? "true" : "false";
     defaultOpt[RunOptionsKey::sparseNull] = toString(baseRunOpts.nullValue);
+    defaultOpt[RunOptionsKey::progressPercent] = to_string(baseRunOpts.progressPercent);
+    defaultOpt[RunOptionsKey::progressStep] = toString(baseRunOpts.progressStep);
     defaultOpt[RunOptionsKey::threadCount] = "1";
 
     // load default run options from profile options, default profile name = model name
@@ -430,6 +440,8 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
     baseRunOpts.nullValue = argStore.doubleOption(RunOptionsKey::sparseNull, FLT_MIN);
+    baseRunOpts.progressPercent = argStore.intOption(RunOptionsKey::progressPercent, 0);
+    baseRunOpts.progressStep = argStore.doubleOption(RunOptionsKey::progressStep, 0.0);
 }
 
 // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValue.Age" argument

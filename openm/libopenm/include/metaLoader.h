@@ -19,10 +19,10 @@ namespace openm
     /** keys for model run options */
     struct RunOptionsKey
     {
-        /** options started with "Parameter." treated as value of model scalar input parameters */
+        /** options started with "Parameter." treated as value of model scalar input parameters, ex: "-Parameter.Age 42" */
         static const char * parameterPrefix;
 
-        /** options started with "SubValue." used to describe sub-values of model input parameters */
+        /** options started with "SubValue." used to describe sub-values of model input parameters, ex: "-SubValue.Age csv" */
         static const char * subValuePrefix;
 
         /** number of sub-values */
@@ -66,6 +66,12 @@ namespace openm
 
         /** sparse null value */
         static const char * sparseNull;
+
+        /** if positive then used for simulation progress reporting, ex: every 10% */
+        static const char * progressPercent;
+
+        /** if positive then used for simulation progress reporting, ex: every 1000 cases or every 0.1 time step */
+        static const char * progressStep;
 
         /** convert to string format for float, double, long double */
         static const char * doubleFormat;
