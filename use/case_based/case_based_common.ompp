@@ -268,7 +268,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
     if (i_model->runOptions()->progressStep != 0.0  && 
         (i_model->runOptions()->progressStep < 1.0 || 
-            i_model->runOptions()->progressStep > (double)0x3fffffffffffffffi64 ||
+            i_model->runOptions()->progressStep > (double)0x3fffffffffffffffLL ||
             (i_model->runOptions()->progressStep - (long long)i_model->runOptions()->progressStep)) != 0.0) {
         is_step_progress = false;
         theLog->logFormatted("Warning: incorrect value of progress step reporting: %g", i_model->runOptions()->progressStep);
