@@ -577,6 +577,7 @@ namespace openm
         MpiPacked::pack<decltype(val->subId)>(val->subId, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<int>((int)val->state.theStatus, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->state.progressCount)>(val->state.progressCount, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->state.progressValue)>(val->state.progressValue, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<time_t>(chrono::system_clock::to_time_t(val->state.startTime), i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<time_t>(chrono::system_clock::to_time_t(val->state.updateTime), i_packedSize, io_packedData, io_packPos);
     }
@@ -591,6 +592,7 @@ namespace openm
         val->subId = MpiPacked::unpack<decltype(val->subId)>(i_packedSize, i_packedData, io_packPos);
         val->state.theStatus = (ModelStatus)MpiPacked::unpack<int>(i_packedSize, i_packedData, io_packPos);
         val->state.progressCount = MpiPacked::unpack<decltype(val->state.progressCount)>(i_packedSize, i_packedData, io_packPos);
+        val->state.progressValue = MpiPacked::unpack<decltype(val->state.progressValue)>(i_packedSize, i_packedData, io_packPos);
         val->state.startTime = chrono::system_clock::from_time_t(MpiPacked::unpack<time_t>(i_packedSize, i_packedData, io_packPos));
         val->state.updateTime = chrono::system_clock::from_time_t(MpiPacked::unpack<time_t>(i_packedSize, i_packedData, io_packPos));
     }
@@ -605,6 +607,7 @@ namespace openm
             MpiPacked::packedSize(typeid(val->subId)) +
             MpiPacked::packedSize(typeid(int)) +
             MpiPacked::packedSize(typeid(val->state.progressCount)) +
+            MpiPacked::packedSize(typeid(val->state.progressValue)) +
             MpiPacked::packedSize(typeid(time_t)) +
             MpiPacked::packedSize(typeid(time_t));
     }

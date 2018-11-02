@@ -68,7 +68,7 @@ static bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControl
 // run modeling threads to calculate sub-values
 static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
-// communicate with child modeling processes or sleep if no child activity
+// communicate with child modeling processes and modeling threads, sleep if no child activity
 static void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl);
 
 /** main entry point */
@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
             // create next run id: find model input data set
             int runId = runCtrl->nextRun();
             if (runId <= 0) {
-                childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes, if any, or sleep
+                childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes and threads, if any, or sleep
                 continue;                                                   // no input: completed or waiting for additional input
             }
             theLog->logFormatted("Run: %d", runId);
@@ -212,9 +212,11 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
         // do the modeling
         RunModelHandler(model.get());
 
-        // write output tables
+        // write output tables and update final run status
         ModelShutdownHandler(model.get());
+
         i_runCtrl->updateStatus(i_runId, i_subId, ModelStatus::done);
+        i_runCtrl->removeModelRunState(i_runId, i_subId);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -289,23 +291,23 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
 
         // wait if no modeling progress and any threads still running
         if (!isAnyCompleted && modelFutureLst.size() > 0) {
-            childExchangeOrSleep(2L * OM_ACTIVE_SLEEP_TIME, i_runCtrl); // communicate with child processes, if any, or sleep
+            childExchangeOrSleep(2L * OM_ACTIVE_SLEEP_TIME, i_runCtrl); // communicate with child processes and threads, if any, or sleep
         }
     }
 
     return true;    // modeling completed OK
 }
 
-// communicate with child modeling processes or sleep if no child activity
+// communicate with child modeling processes and modeling threads, sleep if no child activity
 void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl)
 {
     long nExchange = 1 + i_sleepTime / OM_ACTIVE_SLEEP_TIME;
 
     bool isAnyChildActivity = false;
     do {
-        if (theModelRunState->isShutdownOrExit()) return;    // model completed
+        if (theModelRunState->isShutdownOrExit()) return;   // model completed
 
-        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes, if any
+        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes and threads, if any
         if (isAnyChildActivity) {
             this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
         }

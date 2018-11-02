@@ -177,13 +177,15 @@ int ChildController::nextRun(void)
 /** model run shutdown: save results and update run status. */
 void ChildController::shutdownRun(int /*i_runId*/)
 { 
-    msgExec->waitSendAll();     // wait for send completion, if any outstanding
+    sendStatusUpdate();     // send status update for that run
+    msgExec->waitSendAll(); // wait for send completion, if any outstanding
 }
 
 /** model process shutdown: cleanup resources. */
 void ChildController::shutdownWaitAll(void)
 { 
-    msgExec->waitSendAll();     // wait for send completion, if any outstanding
+    sendStatusUpdate();     // send last status update
+    msgExec->waitSendAll(); // wait for send completion, if any outstanding
 
     theModelRunState->updateStatus(ModelStatus::done);   // set model status as completed OK
 }
@@ -254,23 +256,24 @@ bool ChildController::childExchange(void)
     // get process-wide model run state
     // if model status same and last progress report sent recently then exit
     auto nowTime = chrono::system_clock::now();
-    RunState rst = theModelRunState->get();
-    if (rst.theStatus == lastModelStatus && nowTime - lastTimeStatus < chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
+    ModelStatus mStatus = theModelRunState->status();
+    if (mStatus == lastModelStatus &&  nowTime < lastTimeStatus + chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
         return false;
     }
+    
+    sendStatusUpdate();     // send status update
 
-    // get run state for all sub-values and append process model run state
-    IRowBaseVec rsVec = runStateStore.toRowVector();
-    rsVec.push_back(
-        make_unique<RunStateItem>(RunStateItem{ runId, 0, rst })
-    );
-
-    // send new status update to root
-    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
-
-    msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
-
-    lastModelStatus = rst.theStatus;
+    lastModelStatus = mStatus;
     lastTimeStatus = nowTime;
     return true;
+}
+
+/** send sub-values run status update to root */
+void ChildController::sendStatusUpdate(void)
+{
+    IRowBaseVec rsVec = runStateStore.saveToRowVector();
+    if (rsVec.size() > 0) {
+        unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
+        msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
+    }
 }

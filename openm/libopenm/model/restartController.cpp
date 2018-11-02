@@ -285,3 +285,16 @@ void RestartController::writeAccumulators(
         updateRestartSubValueId(runId, dbExec, isSubDone.countFirst());
     }
 }
+
+/** communicate with child threads to receive status update. */
+bool RestartController::childExchange(void)
+{
+    if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
+
+    auto stm = runStateStore.saveUpdated();
+    if (stm.size() > 0) {
+        updateRunState(dbExec, stm);
+        return true;
+    }
+    return false;
+}

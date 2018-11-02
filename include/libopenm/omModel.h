@@ -99,8 +99,8 @@ namespace openm
         /** write output result table: sub values */
         virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
 
-        /** set sub-value modeling progress count */
-        virtual int updateProgress(int i_progress) = 0;
+        /** set modeling progress count and value */
+        virtual void updateProgress(int i_count, double i_value = 0.0) = 0;
     };
 
     /** model input parameter name, type and size */

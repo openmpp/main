@@ -71,17 +71,23 @@ namespace openm
         /** current status */
         ModelStatus theStatus;
 
-        /**  progress count */
+        /** progress count, usually percent completed */
         int progressCount;
 
-        /**  process start time */
+        /** progress value: number of cases or time completed */
+        double progressValue;
+
+        /** process start time */
         chrono::system_clock::time_point startTime;
 
-        /**  last update time */
+        /** last update time */
         chrono::system_clock::time_point updateTime;
 
         /** initialize model run state data with default values */
         RunState(void);
+
+        /** check if two run states are equal: state, progress and update times are equal */
+        bool operator==(const RunState & i_other) const;
 
         /** return true if status is one of exiting: ie done, exit, error */
         static bool isExit(ModelStatus i_status) { return i_status >= ModelStatus::done; }
@@ -95,11 +101,14 @@ namespace openm
         /** convert run status to model status */
         static ModelStatus fromRunStatus(const string & i_runStatus);
 
+        /** convert model status to run status */
+        static string toRunStatus(ModelStatus i_modelStatus);
+
         /** set model status if not already set as one of exit status values */
         ModelStatus setStatus(ModelStatus i_status);
 
-        /** set modeling progress count */
-        int setProgress(int i_progress);
+        /** set modeling progress count and value */
+        void setProgress(int i_count, double i_value);
     };
 
     /** model run state public interface: thread safe */
@@ -125,8 +134,8 @@ namespace openm
         /** set model status if not already set as one of exit status values */
         virtual ModelStatus updateStatus(ModelStatus i_status) = 0;
 
-        /** set modeling progress count */
-        virtual int updateProgress(int i_progress) = 0;
+        /** set modeling progress count and value */
+        virtual void updateProgress(int i_count, double i_value = 0.0) = 0;
     };
 
     /** run state data for sub-value identified by run id and sub-value id */
@@ -143,7 +152,7 @@ namespace openm
 
         /** initialize run state data for sub-value */
         RunStateItem(int i_runId, int i_subId, const RunState i_state) : runId(i_runId), subId(i_subId), state(i_state) {}
-        RunStateItem(void) :RunStateItem(0, 0, RunState()) {}
+        RunStateItem(void) : RunStateItem(0, 0, RunState()) {}
     };
 }
 

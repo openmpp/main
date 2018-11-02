@@ -55,8 +55,8 @@ namespace openm
         /** write result into output table and release accumulators memory. */
         void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) override;
 
-        /** set sub-value modeling progress count */
-        int updateProgress(int i_progress) override { return runCtrl->updateProgress(runId, runOpts.subValueId, i_progress); }
+        /** set modeling progress count and value */
+        void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->updateProgress(runId, runOpts.subValueId, i_count, i_value); }
 
     private:
         int modelId;                        // model id in database

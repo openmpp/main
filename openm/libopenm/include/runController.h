@@ -74,7 +74,7 @@ namespace openm
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) = 0;
 
-        /** communicate with child processes to send new input and receive accumulators of output tables. */
+        /** communicate with child processes and threads. send new input, receive accumulators of output tables, send and receive status update. */
         virtual bool childExchange(void) = 0;
 
         /** write output table accumulators or send data to root process. */
@@ -92,12 +92,12 @@ namespace openm
         /** remove run state on modeling thread exit */
         void removeModelRunState(int i_runId, int i_subId) { return runStateStore.remove(i_runId, i_subId); }
 
-        /** set sub-value modeling progress count */
-        bool updateProgress(int i_runId, int i_subId, int i_progress) {
-            return runStateStore.updateProgress(i_runId, i_subId, i_progress);
+        /** set sub-value modeling progress count and value, return false if not exist  */
+        bool updateProgress(int i_runId, int i_subId, int i_count, double i_value) {
+            return runStateStore.updateProgress(i_runId, i_subId, i_count, i_value);
         }
 
-        /** update model status in the list if not already set as one of exit status values, if found then return true and actual status */
+        /** update model status in the list if not already set as one of exit status values, if found then return actual status */
         ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status) {
             return runStateStore.updateStatus(i_runId, i_subId, i_status);
         }
@@ -153,7 +153,10 @@ namespace openm
             ) const;
 
         /** update sub-value index to restart the run */
-        void updateRestartSubValueId(int i_runId, IDbExec * i_dbExec, size_t i_subRestart) const;
+        void updateRestartSubValueId(int i_runId, IDbExec * i_dbExec, int i_subRestart) const;
+
+        /** merge updated sub-values run statue into database */
+        void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
     private:
         // create run options in run_option table

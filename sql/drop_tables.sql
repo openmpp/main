@@ -12,6 +12,7 @@ DROP TABLE workset_parameter_txt;
 DROP TABLE workset_parameter;
 DROP TABLE workset_txt;
 DROP TABLE workset_lst;
+DROP TABLE run_progress;
 DROP TABLE run_table;
 DROP TABLE run_parameter_txt;
 DROP TABLE run_parameter;

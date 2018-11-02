@@ -292,16 +292,19 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     return nowSetRun.runId;
 }
 
-/** communicate with child processes to start new run, send new input, send and receive status update, receive accumulators of output tables.
-*   return true if any status changed: data received, run completed, run started.
+/** communicate with child processes and threads.
+*   start new run, send new input, receive accumulators of output tables, send and receive status update.
+*   return true if any: data received, run completed, run started, status update received.
 */
 bool RootController::childExchange(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
-    // receive status update from children
+    // receive status update from children and save it
     bool isStatusUpdate = receiveStatusUpdate();
+
+    updateRunState(dbExec, runStateStore.saveUpdated());
 
     // try to receive sub-values and wait for send completion, if any outstanding
     bool isReceived = receiveSubValues();
@@ -371,6 +374,9 @@ void RootController::shutdownWaitAll(void)
         if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
     }
     while (isAnyToRecv);
+
+    // receive status update from children
+    receiveStatusUpdate();
 
     // wait for send completion, if any outstanding
     msgExec->waitSendAll();
@@ -531,12 +537,9 @@ bool RootController::receiveStatusUpdate(void)
         }
         isAnyReceived = true;
 
-        if (rsVec.size() <= 1) {    // at least one item expected: child process-wide state, ignore it
-            continue;               // no update for any of child sub-values run state
-        }
+        if (rsVec.size() <= 0) continue;    // no update for any of child sub-values run state
 
         // update sub-values run state
-        rsVec.erase(--rsVec.cend());        // remove last element, it is child process run state
         runStateStore.fromRowVector(rsVec);
         rsVec.clear();
     }
