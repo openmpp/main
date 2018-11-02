@@ -169,9 +169,6 @@ namespace openm
         /** read all input parameters by run id and broadcast to child processes. */
         void readAllRunParameters(const RunGroup & i_runGroup) const;
 
-        /** receive status update from all child processes. */
-        bool receiveStatusUpdate(void);
-
         /** append to list of accumulators to be received from child modeling processes. */
         void appendAccReceiveList(int i_runId, const RunGroup & i_runGroup);
 
@@ -180,6 +177,9 @@ namespace openm
 
         /** update restart sub-value in database and list of accumulators to be received. */
         void updateAccReceiveList(void);
+
+        /** receive status update from all child processes. */
+        bool receiveStatusUpdate(long i_waitTime = 0L);
 
     private:
         RootController(const RootController & i_runCtrl) = delete;

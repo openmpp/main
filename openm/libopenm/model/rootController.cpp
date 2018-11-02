@@ -303,7 +303,6 @@ bool RootController::childExchange(void)
 
     // receive status update from children and save it
     bool isStatusUpdate = receiveStatusUpdate();
-
     updateRunState(dbExec, runStateStore.saveUpdated());
 
     // try to receive sub-values and wait for send completion, if any outstanding
@@ -375,9 +374,6 @@ void RootController::shutdownWaitAll(void)
     }
     while (isAnyToRecv);
 
-    // receive status update from children
-    receiveStatusUpdate();
-
     // wait for send completion, if any outstanding
     msgExec->waitSendAll();
    
@@ -400,6 +396,9 @@ void RootController::shutdownWaitAll(void)
         msgExec->bcastInt(rg.groupOne, &zeroRunId);
         rg.state.updateStatus(mStatus);
     }
+
+    // receive final status update from children
+    receiveStatusUpdate(OM_WAIT_SLEEP_TIME);
 
     // finalize shutdown: update database and status
     doShutdownAll(taskRunId, dbExec); 
@@ -519,32 +518,6 @@ void RootController::writeAccumulators(
         rootRunGroup().isSubDone.setAt(i_runOpts.subValueId);       // mark that sub-value as completed
         updateRestartSubValueId(rootRunGroup().runId, dbExec, rootRunGroup().isSubDone.countFirst());
     }
-}
-
-/** receive status update from all child processes. */
-bool RootController::receiveStatusUpdate(void)
-{
-    // try to receive and save accumulators
-    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
-    IRowBaseVec rsVec;
-    bool isAnyReceived = false;
-
-    for (int nRank = 1; nRank < msgExec->worldSize(); nRank++) {
-        
-        // try to receive child status update
-        if (!msgExec->tryReceive(nRank, rsVec, *packAdp)) {
-            continue;     // no status update from that child
-        }
-        isAnyReceived = true;
-
-        if (rsVec.size() <= 0) continue;    // no update for any of child sub-values run state
-
-        // update sub-values run state
-        runStateStore.fromRowVector(rsVec);
-        rsVec.clear();
-    }
-
-    return isAnyReceived;
 }
 
 /** append to list of accumulators to be received from child modeling processes. */
@@ -682,4 +655,37 @@ void RootController::updateAccReceiveList(void)
 
     // remove accumulators which received from the list
     accRecvLst.remove_if([](AccReceive i_recv) -> bool { return i_recv.isReceived; });
+}
+
+/** receive status update from all child processes. */
+bool RootController::receiveStatusUpdate(long i_waitTime)
+{
+    // try to receive and save status update from child precesses
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
+    IRowBaseVec rsVec;
+    bool isAnyReceived = false;
+
+    long nAttempt = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;
+
+    do {
+        for (int nRank = 1; nRank < msgExec->worldSize(); nRank++) {
+
+            // try to receive child status update
+            if (!msgExec->tryReceive(nRank, rsVec, *packAdp)) {
+                continue;     // no status update from that child
+            }
+            isAnyReceived = true;
+
+            if (rsVec.size() <= 0) continue;    // no update for any of child sub-values run state
+
+            // update sub-values run state
+            runStateStore.fromRowVector(rsVec);
+            rsVec.clear();
+        }
+        if (nAttempt > 0) {
+            this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
+        }
+    } while (--nAttempt > 0);
+
+    return isAnyReceived;
 }

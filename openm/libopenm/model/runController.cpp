@@ -638,7 +638,7 @@ void RunController::doShutdownAll(int i_taskRunId, IDbExec * i_dbExec)
 {
     updateRunState(i_dbExec, runStateStore.saveUpdated(true)); // update run status for all sub-values
 
-    theModelRunState->updateStatus(ModelStatus::done);          // set model status as completed OK
+    theModelRunState->updateStatus(ModelStatus::done);         // set model status as completed OK
 
     if (i_taskRunId > 0) {      // update task status as completed
         i_dbExec->update(

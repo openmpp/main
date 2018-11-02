@@ -69,7 +69,7 @@ static bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControl
 static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
 // communicate with child modeling processes and modeling threads, sleep if no child activity
-static void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl);
+static void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl);
 
 /** main entry point */
 int main(int argc, char ** argv) 
@@ -299,9 +299,9 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
 }
 
 // communicate with child modeling processes and modeling threads, sleep if no child activity
-void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl)
+void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl)
 {
-    long nExchange = 1 + i_sleepTime / OM_ACTIVE_SLEEP_TIME;
+    long nExchange = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;
 
     bool isAnyChildActivity = false;
     do {
