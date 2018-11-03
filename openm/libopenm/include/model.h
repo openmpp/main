@@ -56,7 +56,7 @@ namespace openm
         void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) override;
 
         /** set modeling progress count and value */
-        void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->updateProgress(runId, runOpts.subValueId, i_count, i_value); }
+        void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->runStateStore().updateProgress(runId, runOpts.subValueId, i_count, i_value); }
 
     private:
         int modelId;                        // model id in database

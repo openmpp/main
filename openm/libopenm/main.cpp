@@ -204,7 +204,7 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
         unique_ptr<IModel> model(
             ModelBase::create(i_runId, i_subCount, i_subId, i_runCtrl, i_runCtrl->meta())
             );
-        i_runCtrl->addModelRunState(i_runId, i_subId);
+        i_runCtrl->runStateStore().add(i_runId, i_subId);
 
         // initialize model sub-value
         if (ModelStartupHandler != NULL) ModelStartupHandler(model.get());
@@ -214,9 +214,6 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
 
         // write output tables and update final run status
         ModelShutdownHandler(model.get());
-
-        i_runCtrl->updateStatus(i_runId, i_subId, ModelStatus::done);
-        i_runCtrl->removeModelRunState(i_runId, i_subId);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -253,21 +250,22 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
 // run modeling threads to calculate sub-values
 bool runModelThreads(int i_runId, RunController * i_runCtrl)
 {
-    list<future<bool> > modelFutureLst;     // modeling threads
+    list<pair<int, future<bool>>> modelFutureLst;     // modeling threads
 
     int nextSub = 0;
     while (nextSub < i_runCtrl->selfSubCount || modelFutureLst.size() > 0) {
 
         // create and start new modeling threads
         while (nextSub < i_runCtrl->selfSubCount && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
-            modelFutureLst.push_back(std::move(std::async(
-                launch::async,
-                modelThreadLoop,
-                i_runId,
-                i_runCtrl->subValueCount,
-                i_runCtrl->subFirstId + nextSub,
-                i_runCtrl
-                )));
+            modelFutureLst.push_back(pair(i_runCtrl->subFirstId + nextSub, 
+                std::move(std::async(
+                    launch::async,
+                    modelThreadLoop,
+                    i_runId,
+                    i_runCtrl->subValueCount,
+                    i_runCtrl->subFirstId + nextSub,
+                    i_runCtrl
+                ))));
             nextSub++;
         }
 
@@ -276,14 +274,16 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         for (auto mfIt = modelFutureLst.begin(); mfIt != modelFutureLst.end(); ) {
 
             // skip thread if modeling not completed yet
-            if (mfIt->wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
+            if (mfIt->second.wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
                 ++mfIt;
                 continue;
             }
             isAnyCompleted = true;
 
-            // modeling completed: get result success and remove thread from the list
-            bool isOk = mfIt->get();
+            // modeling completed: get result success or error, update sub-value status and remove thread from the list
+            bool isOk = mfIt->second.get();
+            i_runCtrl->runStateStore().updateStatus(i_runId, mfIt->first, (isOk ? ModelStatus::done : ModelStatus::error), true);
+
             mfIt = modelFutureLst.erase(mfIt);
 
             if (!isOk) return false;    // exit with error if model failed

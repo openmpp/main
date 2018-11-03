@@ -72,11 +72,8 @@ namespace openm
         /** add new or replace existing model run state */
         void add(int i_runId, int i_subId, RunState i_state);
 
-        /** remove model run state */
-        void remove(int i_runId, int i_subId);
-
-        /** update model status if not already set as one of exit status values, if found then return actual status else undefined */
-        ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status);
+        /** update model status if not already set as one of exit status values, return actual status or undefined if not found */
+        ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status, bool i_isFinalUpdate = true);
 
         /**  set modeling progress count and value, return false if not exist */
         bool updateProgress(int i_runId, int i_subId, int i_count, double i_value);

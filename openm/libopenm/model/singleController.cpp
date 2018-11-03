@@ -225,7 +225,7 @@ bool SingleController::childExchange(void)
 {
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
-    auto stm = runStateStore.saveUpdated();
+    auto stm = runStateStore().saveUpdated();
     if (stm.size() > 0) {
         updateRunState(dbExec, stm);
         return true;

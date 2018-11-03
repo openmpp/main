@@ -257,7 +257,7 @@ bool ChildController::childExchange(void)
     // if model status same and last progress report sent recently then exit
     auto nowTime = chrono::system_clock::now();
     ModelStatus mStatus = theModelRunState->status();
-    if (mStatus == lastModelStatus &&  nowTime < lastTimeStatus + chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
+    if (mStatus == lastModelStatus && nowTime < lastTimeStatus + chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
         return false;
     }
     
@@ -271,7 +271,7 @@ bool ChildController::childExchange(void)
 /** send sub-values run status update to root */
 void ChildController::sendStatusUpdate(void)
 {
-    IRowBaseVec rsVec = runStateStore.saveToRowVector();
+    IRowBaseVec rsVec = runStateStore().saveToRowVector();
     if (rsVec.size() > 0) {
         unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
         msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);

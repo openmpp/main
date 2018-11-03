@@ -636,7 +636,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 /** implementation model process shutdown: update run state and cleanup resources. */
 void RunController::doShutdownAll(int i_taskRunId, IDbExec * i_dbExec)
 {
-    updateRunState(i_dbExec, runStateStore.saveUpdated(true)); // update run status for all sub-values
+    updateRunState(i_dbExec, runStateStore().saveUpdated(true)); // update run status for all sub-values
 
     theModelRunState->updateStatus(ModelStatus::done);         // set model status as completed OK
 
@@ -729,40 +729,38 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
     if (i_updated.size() <= 0) return;    // no updates of run states
 
     // merge updated sub-values run state into run progress table
-    {
-        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
-        for (const auto & rst : i_updated) {
+    for (const auto & rst : i_updated) {
 
-            string sRunId = to_string(rst.first.first);
-            string sSubId = to_string(rst.first.second);
-            string sCt = toQuoted(makeDateTime(rst.second.startTime));
-            string sSt = toQuoted(RunState::toRunStatus(rst.second.theStatus));
-            string sUpd = toQuoted(makeDateTime(rst.second.updateTime));
-            string sPc = to_string(rst.second.progressCount);
-            string sPv = toString(rst.second.progressValue);
+        string sRunId = to_string(rst.first.first);
+        string sSubId = to_string(rst.first.second);
+        string sCt = toQuoted(makeDateTime(rst.second.startTime));
+        string sSt = toQuoted(RunState::toRunStatus(rst.second.theStatus));
+        string sUpd = toQuoted(makeDateTime(rst.second.updateTime));
+        string sPc = to_string(rst.second.progressCount);
+        string sPv = toString(rst.second.progressValue);
 
-            i_dbExec->update(
-                "UPDATE run_progress SET"
-                " status = " + sSt + "," +
-                " update_dt = " + sUpd + "," +
-                " progress_count = " + sPc + "," +
-                " progress_value = " + sPv +
-                " WHERE run_id = " + sRunId + " AND sub_id = " + sSubId
-            );
-            i_dbExec->update(
-                "INSERT INTO run_progress" \
-                " (run_id, sub_id, create_dt, status, update_dt, progress_count, progress_value)" \
-                " SELECT " +
-                sRunId + ", " + sSubId + ", " + sCt + ", " + sSt + ", " + sUpd + ", " + sPc + ", " + sPv +
-                " FROM run_lst R" \
-                " WHERE R.run_id = " + sRunId +
-                " AND NOT EXISTS" \
-                " (" \
-                "   SELECT * FROM run_progress RP WHERE RP.run_id = R.run_id AND RP.sub_id = " + sSubId +
-                ")"
-            );
-        }
-        i_dbExec->commit();
+        i_dbExec->update(
+            "UPDATE run_progress SET"
+            " status = " + sSt + "," +
+            " update_dt = " + sUpd + "," +
+            " progress_count = " + sPc + "," +
+            " progress_value = " + sPv +
+            " WHERE run_id = " + sRunId + " AND sub_id = " + sSubId
+        );
+        i_dbExec->update(
+            "INSERT INTO run_progress" \
+            " (run_id, sub_id, create_dt, status, update_dt, progress_count, progress_value)" \
+            " SELECT " +
+            sRunId + ", " + sSubId + ", " + sCt + ", " + sSt + ", " + sUpd + ", " + sPc + ", " + sPv +
+            " FROM run_lst R" \
+            " WHERE R.run_id = " + sRunId +
+            " AND NOT EXISTS" \
+            " (" \
+            "   SELECT * FROM run_progress RP WHERE RP.run_id = R.run_id AND RP.sub_id = " + sSubId +
+            ")"
+        );
     }
+    i_dbExec->commit();
 }

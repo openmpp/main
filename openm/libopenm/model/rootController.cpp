@@ -301,10 +301,6 @@ bool RootController::childExchange(void)
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
-    // receive status update from children and save it
-    bool isStatusUpdate = receiveStatusUpdate();
-    updateRunState(dbExec, runStateStore.saveUpdated());
-
     // try to receive sub-values and wait for send completion, if any outstanding
     bool isReceived = receiveSubValues();
     msgExec->waitSendAll();
@@ -351,6 +347,10 @@ bool RootController::childExchange(void)
             break;          // task "wait" for next input set or all done: all sets from task or single run completed
         }
     }
+
+    // receive status update from children and save it
+    bool isStatusUpdate = receiveStatusUpdate();
+    updateRunState(dbExec, runStateStore().saveUpdated());
 
     return isReceived || isCompleted || isNewRun || isStatusUpdate;
 }
@@ -679,7 +679,7 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
             if (rsVec.size() <= 0) continue;    // no update for any of child sub-values run state
 
             // update sub-values run state
-            runStateStore.fromRowVector(rsVec);
+            runStateStore().fromRowVector(rsVec);
             rsVec.clear();
         }
         if (nAttempt > 0) {

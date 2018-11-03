@@ -68,7 +68,7 @@ string RunState::toRunStatus(ModelStatus i_modelStatus)
     if (i_modelStatus == ModelStatus::init) return RunStatus::init;
     if (i_modelStatus == ModelStatus::progress) return RunStatus::progress;
     if (i_modelStatus == ModelStatus::waitProgress) return RunStatus::waitProgress;
-    if (i_modelStatus == ModelStatus::shutdown) return RunStatus::done;     // shutdown is sub-value completed
+    if (i_modelStatus == ModelStatus::shutdown) return RunStatus::progress; // shutdown is a progress after modeling completed
     if (i_modelStatus == ModelStatus::done) return RunStatus::done;
     if (i_modelStatus == ModelStatus::exit) return RunStatus::exit;
     if (RunState::isError(i_modelStatus)) return RunStatus::error;
@@ -166,23 +166,19 @@ void RunStateHolder::add(int i_runId, int i_subId, RunState i_state)
     updateStateMap[pair(i_runId, i_subId)] = i_state;
 }
 
-/** remove model run state */
-void RunStateHolder::remove(int i_runId, int i_subId)
-{
-    lock_guard<recursive_mutex> lck(theMutex);
-    if (auto it = stateMap.find(pair(i_runId, i_subId)); it != stateMap.end()) {
-        stateMap.erase(it);
-    }
-}
-
-/** update model status if not already set as one of exit status values, if found then return actual status else undefined */
-ModelStatus RunStateHolder::updateStatus(int i_runId, int i_subId, ModelStatus i_status)
+/** update model status if not already set as one of exit status values, return actual status or undefined if not found */
+ModelStatus RunStateHolder::updateStatus(int i_runId, int i_subId, ModelStatus i_status, bool i_isFinalUpdate)
 {
     lock_guard<recursive_mutex> lck(theMutex);
 
     if (auto it = stateMap.find(pair(i_runId, i_subId)); it != stateMap.end()) {
+
         ModelStatus mStatus = it->second.setStatus(i_status);
         updateStateMap[pair(it->first.first, it->first.second)] = it->second;
+
+        if (i_isFinalUpdate) {
+            stateMap.erase(it); // this final status update, keep only updated status
+        }
         return mStatus;
     }
     return ModelStatus::undefined;

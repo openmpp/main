@@ -62,6 +62,9 @@ namespace openm
             return subFirstId <= i_subId && i_subId < subFirstId + selfSubCount;
         }
 
+        /** return holder of all sub-values modeling run states */
+        RunStateHolder & runStateStore(void) { return runStateHolder; }
+
         /** create new run and input parameters in database. */
         virtual int nextRun(void) = 0;
 
@@ -86,26 +89,7 @@ namespace openm
             forward_list<unique_ptr<double> > & io_accValues
             ) = 0;
 
-        /** add new run state on modeling thread start */
-        void addModelRunState(int i_runId, int i_subId) { return runStateStore.add(i_runId, i_subId); }
-
-        /** remove run state on modeling thread exit */
-        void removeModelRunState(int i_runId, int i_subId) { return runStateStore.remove(i_runId, i_subId); }
-
-        /** set sub-value modeling progress count and value, return false if not exist  */
-        bool updateProgress(int i_runId, int i_subId, int i_count, double i_value) {
-            return runStateStore.updateProgress(i_runId, i_subId, i_count, i_value);
-        }
-
-        /** update model status in the list if not already set as one of exit status values, if found then return actual status */
-        ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status) {
-            return runStateStore.updateStatus(i_runId, i_subId, i_status);
-        }
-
     protected:
-        /** run states for all modeling threads */
-        RunStateHolder runStateStore;
-
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
             subFirstId(0),
@@ -159,6 +143,9 @@ namespace openm
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
     private:
+        /** run states for all modeling threads */
+        RunStateHolder runStateHolder;
+
         // create run options in run_option table
         void createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
