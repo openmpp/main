@@ -94,6 +94,7 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 -- modelOne input parameters
 -- parameter digest: not a real digest (32 digits hex)
 -- db suffix: not a real value (8 digits hex)
+--   ageSex parameter is float and parameter value can be null
 --   salaryFull parameter is enum-based
 --   baseSalary is scalar parameter is enum-based
 --   filePath is a test parameter of string type
@@ -284,7 +285,7 @@ CREATE TABLE ageSex_p_2012817
   sub_id      INT   NOT NULL, 
   dim0        INT   NOT NULL, 
   dim1        INT   NOT NULL, 
-  param_value FLOAT NOT NULL,
+  param_value FLOAT NULL,     -- float parameter value can be null
   PRIMARY KEY (run_id, sub_id, dim0, dim1)
 );
 
@@ -294,7 +295,7 @@ CREATE TABLE ageSex_w_2012817
   sub_id      INT   NOT NULL, 
   dim0        INT   NOT NULL, 
   dim1        INT   NOT NULL, 
-  param_value FLOAT NOT NULL,
+  param_value FLOAT NULL,     -- float parameter value can be null
   PRIMARY KEY (set_id, sub_id, dim0, dim1)
 );
 
