@@ -495,23 +495,26 @@ namespace openm
         /** parameter_digest VARCHAR(32)  NOT NULL */
         string digest;
 
-        /** db_run_table     VARCHAR(64)  NOT NULL */
-        string dbRunTable;
-
-        /** db_set_table     VARCHAR(64)  NOT NULL */
-        string dbSetTable;
-
         /** parameter_rank   INT         NOT NULL */
         int rank;
 
         /** model_type_id    INT          NOT NULL */
         int typeId;
 
+        /** is_extendable    SMALLINT     NOT NULL */
+        bool isExtendable;
+
         /** is_hidden        SMALLINT     NOT NULL */
         bool isHidden;
 
         /** num_cumulated    INT          NOT NULL */
         int numCumulated;
+
+        /** db_run_table     VARCHAR(64)  NOT NULL */
+        string dbRunTable;
+
+        /** db_set_table     VARCHAR(64)  NOT NULL */
+        string dbSetTable;
 
         /** create row with supplied unique key field values. */
         ParamDicRow(int i_modelId, int i_paramId) : 
@@ -520,12 +523,13 @@ namespace openm
             paramName(""),
             paramHid(0),
             digest(""),
-            dbRunTable(""),
-            dbSetTable(""),
             rank(0),
             typeId(0),
+            isExtendable(0),
             isHidden(false),
-            numCumulated(0)
+            numCumulated(0),
+            dbRunTable(""),
+            dbSetTable("")
         { }
 
         /** create row with default empty field values. */

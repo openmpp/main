@@ -302,21 +302,22 @@ void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_
     if (io_row.paramHid <= 0) throw DbException("invalid (not positive) parameter Hid, parameter: %s", io_row.paramName.c_str());
 
     // INSERT INTO parameter_dic
-    //   (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+    //   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
     // VALUES
-    //   (4321, 'ageSex', 'cdef', 'ageSex_pcdef', 'ageSex_wcdef', 2, 7890, 0) 
+    //   (4321, 'ageSex', 'cdef', 2, 7890, 1, 0, 'ageSex_pcdef', 'ageSex_wcdef') 
     i_dbExec->update(
         "INSERT INTO parameter_dic" \
-        " (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)" \
+        " (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)" \
         " VALUES (" +
         to_string(io_row.paramHid) + ", " +
         toQuoted(io_row.paramName) + ", " +
         toQuoted(io_row.digest) + ", " +
-        toQuoted(io_row.dbRunTable) + ", " +
-        toQuoted(io_row.dbSetTable) + ", " +
         to_string(io_row.rank) + ", " +
         to_string(typeIt->second) + ", " +
-        to_string(io_row.numCumulated) +
+        (io_row.isExtendable ? " 1" : " 0") + ", " +
+        to_string(io_row.numCumulated) + ", " +
+        toQuoted(io_row.dbRunTable) + ", " +
+        toQuoted(io_row.dbSetTable) + 
         ")");
 
     // INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1234, 1, 4321, 0)

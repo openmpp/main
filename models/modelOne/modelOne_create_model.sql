@@ -101,39 +101,39 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 --   isOldAge parameter of logical type
 --
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (4, 'ageSex', '_20128171604590131', 'ageSex_p_2012817', 'ageSex_w_2012817', 2, 14, 0);
+  (4, 'ageSex', '_20128171604590131', 2, 14, 1, 0, 'ageSex_p_2012817', 'ageSex_w_2012817');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (5, 'salaryAge', '_20128171604590132', 'salaryAge_p_2012818', 'salaryAge_w_2012818', 2, 4, 0);
+  (5, 'salaryAge', '_20128171604590132', 2, 4, 0, 0, 'salaryAge_p_2012818', 'salaryAge_w_2012818');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (6, 'StartingSeed', '_20128171604590133', 'StartingSeed_p_2012819', 'StartingSeed_w_2012819', 0, 4, 0);
+  (6, 'StartingSeed', '_20128171604590133', 0, 4, 0, 0, 'StartingSeed_p_2012819', 'StartingSeed_w_2012819');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (7, 'salaryFull', '_20128171604590134', 'salaryFull_p_2012812', 'salaryFull_w_2012812', 1, 99, 0);
+  (7, 'salaryFull', '_20128171604590134', 1, 99, 0, 0, 'salaryFull_p_2012812', 'salaryFull_w_2012812');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (8, 'baseSalary', '_20128171604590135', 'baseSalary_p_2012811', 'baseSalary_w_2012811', 0, 99, 0);
+  (8, 'baseSalary', '_20128171604590135', 0, 99, 0, 0, 'baseSalary_p_2012811', 'baseSalary_w_2012811');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (9, 'filePath', '_20128171604590136', 'filePath_p_2012814', 'filePath_w_2012814', 0, 21, 0);
+  (9, 'filePath', '_20128171604590136', 0, 21, 0, 0, 'filePath_p_2012814', 'filePath_w_2012814');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, db_run_table, db_set_table, parameter_rank, type_hid, num_cumulated)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (10, 'isOldAge', '_20128171604590137', 'isOldAge_p_2012815', 'isOldAge_w_2012815', 1, 7, 0);
+  (10, 'isOldAge', '_20128171604590137', 1, 7, 0, 0, 'isOldAge_p_2012815', 'isOldAge_w_2012815');
   
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);

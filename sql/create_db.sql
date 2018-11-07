@@ -173,11 +173,12 @@ CREATE TABLE parameter_dic
   parameter_hid    INT          NOT NULL, -- unique parameter id
   parameter_name   VARCHAR(255) NOT NULL, -- parameter name
   parameter_digest VARCHAR(32)  NOT NULL, -- parameter digest
-  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
-  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   parameter_rank   INT          NOT NULL, -- parameter rank
   type_hid         INT          NOT NULL, -- parameter type id
+  is_extendable    SMALLINT     NOT NULL, -- if non-zero then parameter value can be NULL
   num_cumulated    INT          NOT NULL, -- number of cumulated dimensions
+  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
+  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   PRIMARY KEY (parameter_hid),
   CONSTRAINT parameter_dic_un UNIQUE (parameter_digest),
   CONSTRAINT parameter_dic_type_fk

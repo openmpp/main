@@ -146,12 +146,13 @@ namespace openm
         MpiPacked::pack(val->paramName, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->paramHid)>(val->paramHid, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->digest, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->dbRunTable, i_packedSize, io_packedData, io_packPos);
-        MpiPacked::pack(val->dbSetTable, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->rank)>(val->rank, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->typeId)>(val->typeId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->isExtendable)>(val->isExtendable, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->numCumulated)>(val->numCumulated, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbRunTable, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->dbSetTable, i_packedSize, io_packedData, io_packPos);
     }
 
     // parameter_dic: unpack MPI message into db row
@@ -165,12 +166,13 @@ namespace openm
         val->paramName = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->paramHid = MpiPacked::unpack<decltype(val->paramHid)>(i_packedSize, i_packedData, io_packPos);
         val->digest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->dbRunTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
-        val->dbSetTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->rank = MpiPacked::unpack<decltype(val->rank)>(i_packedSize, i_packedData, io_packPos);
         val->typeId = MpiPacked::unpack<decltype(val->typeId)>(i_packedSize, i_packedData, io_packPos);
+        val->isExtendable = MpiPacked::unpack<decltype(val->isExtendable)>(i_packedSize, i_packedData, io_packPos);
         val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
         val->numCumulated = MpiPacked::unpack<decltype(val->numCumulated)>(i_packedSize, i_packedData, io_packPos);
+        val->dbRunTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->dbSetTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
     // parameter_dic: return byte size to pack db row into MPI message
@@ -184,12 +186,13 @@ namespace openm
             MpiPacked::packedSize(val->paramName) +
             MpiPacked::packedSize(typeid(val->paramHid)) +
             MpiPacked::packedSize(val->digest) +
-            MpiPacked::packedSize(val->dbRunTable) +
-            MpiPacked::packedSize(val->dbSetTable) +
             MpiPacked::packedSize(typeid(val->rank)) +
             MpiPacked::packedSize(typeid(val->typeId)) +
+            MpiPacked::packedSize(typeid(val->isExtendable)) +
             MpiPacked::packedSize(typeid(val->isHidden)) +
-            MpiPacked::packedSize(typeid(val->numCumulated));
+            MpiPacked::packedSize(typeid(val->numCumulated)) +
+            MpiPacked::packedSize(val->dbRunTable) +
+            MpiPacked::packedSize(val->dbSetTable);
     }
 
     // parameter_dims: pack db row into MPI message

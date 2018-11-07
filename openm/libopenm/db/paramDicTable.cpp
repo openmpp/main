@@ -46,12 +46,13 @@ namespace openm
         &typeid(decltype(ParamDicRow::paramName)), 
         &typeid(decltype(ParamDicRow::paramHid)), 
         &typeid(decltype(ParamDicRow::digest)), 
-        &typeid(decltype(ParamDicRow::dbRunTable)), 
-        &typeid(decltype(ParamDicRow::dbSetTable)), 
         &typeid(decltype(ParamDicRow::rank)), 
         &typeid(decltype(ParamDicRow::typeId)), 
-        &typeid(decltype(ParamDicRow::isHidden)), 
-        &typeid(decltype(ParamDicRow::numCumulated))
+        &typeid(decltype(ParamDicRow::isExtendable)),
+        &typeid(decltype(ParamDicRow::isHidden)),
+        &typeid(decltype(ParamDicRow::numCumulated)),
+        &typeid(decltype(ParamDicRow::dbRunTable)),
+        &typeid(decltype(ParamDicRow::dbSetTable))
     };
 
     // Size (number of columns) for parameter_dic join to model_parameter_dic row
@@ -84,22 +85,25 @@ namespace openm
                 dynamic_cast<ParamDicRow *>(i_row)->digest = ((const char *)i_value);
                 break;
             case 5:
-                dynamic_cast<ParamDicRow *>(i_row)->dbRunTable = ((const char *)i_value);
-                break;
-            case 6:
-                dynamic_cast<ParamDicRow *>(i_row)->dbSetTable = ((const char *)i_value);
-                break;
-            case 7:
                 dynamic_cast<ParamDicRow *>(i_row)->rank = (*(int *)i_value);
                 break;
-            case 8:
+            case 6:
                 dynamic_cast<ParamDicRow *>(i_row)->typeId = (*(int *)i_value);
                 break;
-            case 9:
+            case 7:
+                dynamic_cast<ParamDicRow *>(i_row)->isExtendable = (*(bool *)i_value);
+                break;
+            case 8:
                 dynamic_cast<ParamDicRow *>(i_row)->isHidden = (*(bool *)i_value);
                 break;
-            case 10:
+            case 9:
                 dynamic_cast<ParamDicRow *>(i_row)->numCumulated = (*(int *)i_value);
+                break;
+            case 10:
+                dynamic_cast<ParamDicRow *>(i_row)->dbRunTable = ((const char *)i_value);
+                break;
+            case 11:
+                dynamic_cast<ParamDicRow *>(i_row)->dbSetTable = ((const char *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -130,7 +134,7 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
     rowVec = load(
         "SELECT" \
         " M.model_id, M.model_parameter_id, D.parameter_name, D.parameter_hid, D.parameter_digest," \
-        " D.db_run_table, D.db_set_table, D.parameter_rank, T.model_type_id, M.is_hidden, D.num_cumulated" \
+        " D.parameter_rank, T.model_type_id, D.is_extendable, M.is_hidden, D.num_cumulated, D.db_run_table, D.db_set_table" \
         " FROM parameter_dic D" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
         " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
