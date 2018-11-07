@@ -772,6 +772,7 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
 					"-OpenM.SubValues", $members,
 					"-OpenM.Threads", $threads,
+					"-OpenM.ProgressPercent", "25",
 					);
 				system(@args);
 			};
