@@ -99,6 +99,9 @@ namespace openm
 
             /** if true then parameter added to workset */
             bool isAdded;
+
+            /** if true then parameter value can be NULL */
+            bool isNullable;
         };
 
         /** helper struct to collect info for db accumulators table and value view */

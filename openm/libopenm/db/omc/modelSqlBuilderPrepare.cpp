@@ -979,6 +979,7 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
         tblInf.modelId = io_metaRows.modelDic.modelId;
         tblInf.id = paramRow.paramId;
         tblInf.name = paramRow.paramName;
+        tblInf.isNullable = paramRow.isExtendable;
 
         // collect dimension names
         tblInf.dimNameVec.clear();
