@@ -68,8 +68,8 @@ static bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControl
 // run modeling threads to calculate sub-values
 static bool runModelThreads(int i_runId, RunController * i_runCtrl);
 
-// communicate with child modeling processes or sleep if no child activity
-static void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl);
+// communicate with child modeling processes and modeling threads, sleep if no child activity
+static void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl);
 
 /** main entry point */
 int main(int argc, char ** argv) 
@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
             // create next run id: find model input data set
             int runId = runCtrl->nextRun();
             if (runId <= 0) {
-                childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes, if any, or sleep
+                childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes and threads, if any, or sleep
                 continue;                                                   // no input: completed or waiting for additional input
             }
             theLog->logFormatted("Run: %d", runId);
@@ -204,7 +204,7 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
         unique_ptr<IModel> model(
             ModelBase::create(i_runId, i_subCount, i_subId, i_runCtrl, i_runCtrl->meta())
             );
-        i_runCtrl->addModelRunState(i_runId, i_subId);
+        i_runCtrl->runStateStore().add(i_runId, i_subId);
 
         // initialize model sub-value
         if (ModelStartupHandler != NULL) ModelStartupHandler(model.get());
@@ -212,9 +212,8 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
         // do the modeling
         RunModelHandler(model.get());
 
-        // write output tables
+        // write output tables and update final run status
         ModelShutdownHandler(model.get());
-        i_runCtrl->updateStatus(i_runId, i_subId, ModelStatus::done);
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, "Helper error");
@@ -251,21 +250,22 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
 // run modeling threads to calculate sub-values
 bool runModelThreads(int i_runId, RunController * i_runCtrl)
 {
-    list<future<bool> > modelFutureLst;     // modeling threads
+    list<pair<int, future<bool>>> modelFutureLst;     // modeling threads
 
     int nextSub = 0;
     while (nextSub < i_runCtrl->selfSubCount || modelFutureLst.size() > 0) {
 
         // create and start new modeling threads
         while (nextSub < i_runCtrl->selfSubCount && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
-            modelFutureLst.push_back(std::move(std::async(
-                launch::async,
-                modelThreadLoop,
-                i_runId,
-                i_runCtrl->subValueCount,
-                i_runCtrl->subFirstId + nextSub,
-                i_runCtrl
-                )));
+            modelFutureLst.push_back(pair(i_runCtrl->subFirstId + nextSub, 
+                std::move(std::async(
+                    launch::async,
+                    modelThreadLoop,
+                    i_runId,
+                    i_runCtrl->subValueCount,
+                    i_runCtrl->subFirstId + nextSub,
+                    i_runCtrl
+                ))));
             nextSub++;
         }
 
@@ -274,14 +274,16 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         for (auto mfIt = modelFutureLst.begin(); mfIt != modelFutureLst.end(); ) {
 
             // skip thread if modeling not completed yet
-            if (mfIt->wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
+            if (mfIt->second.wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
                 ++mfIt;
                 continue;
             }
             isAnyCompleted = true;
 
-            // modeling completed: get result success and remove thread from the list
-            bool isOk = mfIt->get();
+            // modeling completed: get result success or error, update sub-value status and remove thread from the list
+            bool isOk = mfIt->second.get();
+            i_runCtrl->runStateStore().updateStatus(i_runId, mfIt->first, (isOk ? ModelStatus::done : ModelStatus::error), true);
+
             mfIt = modelFutureLst.erase(mfIt);
 
             if (!isOk) return false;    // exit with error if model failed
@@ -289,23 +291,23 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
 
         // wait if no modeling progress and any threads still running
         if (!isAnyCompleted && modelFutureLst.size() > 0) {
-            childExchangeOrSleep(2L * OM_ACTIVE_SLEEP_TIME, i_runCtrl); // communicate with child processes, if any, or sleep
+            childExchangeOrSleep(2L * OM_ACTIVE_SLEEP_TIME, i_runCtrl); // communicate with child processes and threads, if any, or sleep
         }
     }
 
     return true;    // modeling completed OK
 }
 
-// communicate with child modeling processes or sleep if no child activity
-void childExchangeOrSleep(long i_sleepTime, RunController * i_runCtrl)
+// communicate with child modeling processes and modeling threads, sleep if no child activity
+void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl)
 {
-    long nExchange = 1 + i_sleepTime / OM_ACTIVE_SLEEP_TIME;
+    long nExchange = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;
 
     bool isAnyChildActivity = false;
     do {
-        if (theModelRunState->isShutdownOrExit()) return;    // model completed
+        if (theModelRunState->isShutdownOrExit()) return;   // model completed
 
-        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes, if any
+        isAnyChildActivity = i_runCtrl->childExchange();    // communicate with child processes and threads, if any
         if (isAnyChildActivity) {
             this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
         }

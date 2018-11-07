@@ -61,8 +61,8 @@ namespace openm
         virtual void shutdownOnExit(ModelStatus i_status) override 
             { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
 
-        /** communicate with child processes to send new input and receive accumulators of output tables. */
-        virtual bool childExchange(void) override { return false; }
+        /** communicate with child threads to receive status update. */
+        virtual bool childExchange(void) override;
 
     protected:
         /** initialize root modeling process. */
@@ -127,7 +127,10 @@ namespace openm
         virtual void shutdownOnExit(ModelStatus i_status) override 
             { doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec); }
 
-        /** communicate with child processes to start new run, send new input, send and receive status update, receive accumulators of output tables. */
+        /** communicate with child processes and threads.
+        *   start new run, send new input, receive accumulators of output tables, send and receive status update.
+        *   return true if any: data received, run completed, run started, status update received.
+        */
         virtual bool childExchange(void) override;
 
     protected:
@@ -166,9 +169,6 @@ namespace openm
         /** read all input parameters by run id and broadcast to child processes. */
         void readAllRunParameters(const RunGroup & i_runGroup) const;
 
-        /** receive status update from all child processes. */
-        bool receiveStatusUpdate(void);
-
         /** append to list of accumulators to be received from child modeling processes. */
         void appendAccReceiveList(int i_runId, const RunGroup & i_runGroup);
 
@@ -177,6 +177,9 @@ namespace openm
 
         /** update restart sub-value in database and list of accumulators to be received. */
         void updateAccReceiveList(void);
+
+        /** receive status update from all child processes. */
+        bool receiveStatusUpdate(long i_waitTime = 0L);
 
     private:
         RootController(const RootController & i_runCtrl) = delete;
@@ -253,6 +256,9 @@ namespace openm
         /** receive broadcasted model messages from root process. */
         void broadcastLanguageMessages(void);
 
+        /** send sub-values run status update to root */
+        void sendStatusUpdate(void);
+
     private:
         ChildController(const ChildController & i_runCtrl) = delete;
         ChildController & operator=(const ChildController & i_runCtrl) = delete;
@@ -299,8 +305,8 @@ namespace openm
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, 0, dbExec); }
 
-        /** communicate with child processes to send new input and receive accumulators of output tables. */
-        virtual bool childExchange(void) override { return false; }
+        /** communicate with child threads to receive status update. */
+        virtual bool childExchange(void) override;
 
     private:
         int runId;              // if > 0 then model run id

@@ -88,7 +88,7 @@ ProcessGroupDef::ProcessGroupDef(int i_subValueCount, int i_threadCount, int i_w
 
     // is current process active: 
     // "active" process means it is used for modeling 
-    // if process count == group size * group count then all processes used for modeliung, including root
+    // if process count == group size * group count then all processes used for modeling, including root
     // else root process dedicated to data exchange and children > (group size * group count) unused (not active)
     // isActive = (i_worldRank == 0 && isRootActive) || (0 < i_worldRank && i_worldRank <= groupSize * groupCount);
 }

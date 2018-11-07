@@ -590,6 +590,25 @@ CREATE TABLE run_table
 );
 
 --
+-- Run progress for each sub-value
+-- progress_count usually contains percent of completed cases (case based models) or time (time based)
+-- progress_value usually contains number cases completed (case based models) or time (time based)
+--
+CREATE TABLE run_progress
+(
+  run_id         INT         NOT NULL, -- master key
+  sub_id         INT         NOT NULL, -- sub-value id (zero based index)
+  create_dt      VARCHAR(32) NOT NULL, -- sub-value start date-time
+  status         VARCHAR(1)  NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
+  update_dt      VARCHAR(32) NOT NULL, -- last update date-time
+  progress_count INT         NOT NULL, -- progress count: percent completed
+  progress_value FLOAT       NOT NULL, -- progress value: number of cases (case based) or time (time based)
+  PRIMARY KEY (run_id, sub_id),
+  CONSTRAINT run_table_mk 
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
+);
+
+--
 -- Workset (working set of model input parameters):
 --   it can be a full set, which include all model parameters 
 --   or subset and include only some parameters

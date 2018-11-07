@@ -99,8 +99,8 @@ namespace openm
         /** write output result table: sub values */
         virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
 
-        /** set sub-value modeling progress count */
-        virtual int updateProgress(int i_progress) = 0;
+        /** set modeling progress count and value */
+        virtual void updateProgress(int i_count, double i_value = 0.0) = 0;
     };
 
     /** model input parameter name, type and size */
@@ -145,11 +145,15 @@ namespace openm
         // extra parameter value for exchange between root and child process
         vector<TVal> valueVec(selfCount);
         TVal extraVal;
+        bool isStr = typeid(TVal) == typeid(string);    // no default null values for string parameters
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
 
             void * pData = &extraVal;
+            if (!isStr) {
+                extraVal = numeric_limits<TVal>::quiet_NaN();   // set default null value
+            }
             i_runBase->readParameter(i_name, nSub, typeid(TVal), 1, pData);
 
             if (allCount <= 1) {
@@ -181,6 +185,7 @@ namespace openm
         if (allCount > 1) {
             extraVal.reset(new TVal[i_size]);
         }
+        bool isStr = typeid(TVal) == typeid(string);    // no default null values for string parameters
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
@@ -191,6 +196,10 @@ namespace openm
                     i_runBase->isUseSubValue(nSub) ?
                     valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)].get() :
                     extraVal.get();
+            }
+            // set default null values and read parameter
+            if (!isStr) {
+                fill(static_cast<TVal *>(pData), &(static_cast<TVal *>(pData))[i_size], numeric_limits<TVal>::quiet_NaN());
             }
             i_runBase->readParameter(i_name, nSub, typeid(TVal), i_size, pData);
         }

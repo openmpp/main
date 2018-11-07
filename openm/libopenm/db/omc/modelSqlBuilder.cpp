@@ -818,7 +818,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 //  sub_id      INT   NOT NULL,
 //  dim0        INT   NOT NULL,
 //  dim1        INT   NOT NULL,
-//  param_value FLOAT NOT NULL,
+//  param_value FLOAT NULL,
 //  PRIMARY KEY (run_id, sub_id, dim0, dim1)  -- set_id for workset parameter
 // );
 const void ModelSqlBuilder::paramCreateTable(
@@ -834,7 +834,7 @@ const void ModelSqlBuilder::paramCreateTable(
     }
 
     sqlBody +=
-        "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + " NOT NULL," +
+        "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + "," +
         " PRIMARY KEY (" + i_runSetId + ", sub_id";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
@@ -850,35 +850,35 @@ string ModelSqlBuilder::valueDbType(const string & i_sqlProvider, const ParamTbl
 {
     // C++ ambiguous integral type
     // (in C/C++, the signedness of char is not specified)
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "char")) return "SMALLINT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "char")) return "SMALLINT NOT NULL";
 
     // C++ signed integral types
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "schar")) return "SMALLINT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "short")) return "SMALLINT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "int")) return "INT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "schar")) return "SMALLINT NOT NULL";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "short")) return "SMALLINT NOT NULL";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "int")) return "INT NOT NULL";
 
     // C++ unsigned integral types
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "uchar")) return "SMALLINT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "ushort")) return "INT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "uchar")) return "SMALLINT NOT NULL";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "ushort")) return "INT NOT NULL";
 
     // Changeable numeric types
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "integer")) return "INT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "counter")) return "INT";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "integer")) return "INT NOT NULL";
+    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "counter")) return "INT NOT NULL";
 
     // C++ bool type
-    if (i_tblInfo.valueTypeIt->isBool()) return "SMALLINT";
+    if (i_tblInfo.valueTypeIt->isBool()) return "SMALLINT NOT NULL";
 
     // C++ int64 and uint64 types
-    if (i_tblInfo.valueTypeIt->isBigInt()) return IDbExec::bigIntTypeName(i_sqlProvider);
+    if (i_tblInfo.valueTypeIt->isBigInt()) return IDbExec::bigIntTypeName(i_sqlProvider) + " NOT NULL";
 
     // C++ floating point types
-    if (i_tblInfo.valueTypeIt->isFloat()) return IDbExec::floatTypeName(i_sqlProvider);
+    if (i_tblInfo.valueTypeIt->isFloat()) return IDbExec::floatTypeName(i_sqlProvider) + " NULL";
 
     // path to a file (a string)
-    if (i_tblInfo.valueTypeIt->isString()) return IDbExec::textTypeName(i_sqlProvider, OM_PATH_MAX);
+    if (i_tblInfo.valueTypeIt->isString()) return IDbExec::textTypeName(i_sqlProvider, OM_PATH_MAX) + " NOT NULL";
 
     // model specific types: it must be enum
-    if (!i_tblInfo.valueTypeIt->isBuiltIn()) return "INT";
+    if (!i_tblInfo.valueTypeIt->isBuiltIn()) return "INT NOT NULL";
 
     throw DbException("invalid value type for parameter id: %d, db table name: %s", i_tblInfo.id, i_tblInfo.name.c_str());
 }

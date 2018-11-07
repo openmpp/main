@@ -365,6 +365,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
     bool isBool = paramTypeRow->isBool();
     bool isStr = paramTypeRow->isString();
     bool isEnum = !paramTypeRow->isBuiltIn();
+    bool isFloat = paramTypeRow->isFloat();
 
     // if csv file contain enum codes then sort type enum by unique key: model id, type id, enum name
     auto enumNameCmp = [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
@@ -501,12 +502,11 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
             ++col;  // next column
         }
 
-        // make insert sql: append parameter value, it cannot be empty
-        if (col->empty())
-            throw DbException("invalid parameter.csv file at line %zd, value is empty at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+        // make insert sql: append parameter value, it can be empty only for float column
+        if (!isFloat && col->empty()) throw DbException("invalid parameter.csv file at line %zd, value is empty at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
 
-        if (!isStr && !isBool && !isEnum) {     // default: no conversion required, insert value as is
-            insSql += *col + ")";
+        if (!isStr && !isBool && !isEnum) {     // default: no conversion required, insert value as is or NULL if value column empty
+            insSql += (!col->empty() ? *col : "NULL") + ")";
         }
 
         if (isStr) {

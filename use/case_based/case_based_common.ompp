@@ -58,10 +58,7 @@ namespace fmk {
 void report_simulation_progress(int member, int percent, long long cases)
 {
     theLog->logFormatted("member=%d Simulation progress=%d%% cases=%lld", member, percent, cases);
-    fmk::i_model->updateProgress(percent);
-    //
-    // TODO after new update progress check in:
-    // fmk::i_model->updateProgress(percent, (double)cases);
+    fmk::i_model->updateProgress(percent, (double)cases);
 }
 
 /**
@@ -268,7 +265,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
     if (i_model->runOptions()->progressStep != 0.0  && 
         (i_model->runOptions()->progressStep < 1.0 || 
-            i_model->runOptions()->progressStep > (double)0x3fffffffffffffffi64 ||
+            i_model->runOptions()->progressStep > (double)0x3fffffffffffffffLL ||
             (i_model->runOptions()->progressStep - (long long)i_model->runOptions()->progressStep)) != 0.0) {
         is_step_progress = false;
         theLog->logFormatted("Warning: incorrect value of progress step reporting: %g", i_model->runOptions()->progressStep);
@@ -366,7 +363,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
             bool is_do_percent_progress = false;
             bool is_do_step_progress = false;
 
-            int percent_done = 100 * ((double)thisCase / (double)member_cases);
+            int percent_done = (int)(100 * ((double)thisCase / (double)member_cases));
 
             if (is_percent_progress) {
                 is_do_percent_progress = percent_done >= next_percent_progress;
@@ -411,7 +408,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         auto event_count = BaseEvent::global_event_counter;
         double events_per_case = (double)event_count / (double)fmk::member_cases;
         double entities_per_case = (double)fmk::member_entity_counter / (double)fmk::member_cases;
-        double seconds_per_case = clock_time_delta / (double)fmk::member_cases;
+        // double seconds_per_case = clock_time_delta / (double)fmk::member_cases;
         theLog->logFormatted(
             "member=%d Simulation summary: cases=%lld, events/case=%.1f, entities/case=%.1f, elapsed=%.6fs",
             fmk::simulation_member,

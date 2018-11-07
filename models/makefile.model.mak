@@ -227,6 +227,7 @@ publish-views : publish
 .PHONY : run
 run:
 	$(OUT_BIN_DIR)/$(MODEL_EXE) $(RUN_OPT_MEMBERS) $(RUN_OPT_THREADS) \
+		-OpenM.ProgressPercent 25 \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean

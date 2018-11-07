@@ -15,6 +15,7 @@
 using namespace std;
 
 #include "libopenm/omModel.h"
+#include "helper.h"
 
 namespace openm
 {
@@ -24,12 +25,6 @@ namespace openm
     public:
         /** initialize model run state */
         ModelRunState(void) : RunState() { };
-
-        /** initialize model run state */
-        ModelRunState(const RunState & i_state);
-
-        /** set model run state */
-        ModelRunState & operator=(const RunState & i_state);
 
         /** get model status */
         ModelStatus status(void) override;
@@ -49,8 +44,8 @@ namespace openm
         /** set model status if not already set as one of exit status values */
         ModelStatus updateStatus(ModelStatus i_status) override;
 
-        /** set modeling progress count */
-        int updateProgress(int i_progress) override;
+        /** set modeling progress count and value */
+        void updateProgress(int i_count, double i_value = 0.0) override;
 
     private:
         recursive_mutex theMutex;                       // mutex to lock status upadte operations
@@ -66,41 +61,39 @@ namespace openm
     class RunStateHolder
     {
     public:
-        RunStateHolder(void) {}
+        RunStateHolder(void) { }
 
         /** find model run state, return false and empty model run state if not exist */
         tuple<bool, RunState> get(int i_runId, int i_subId);
 
-        /** add new or replace existing model run state, return true if not already exist */
+        /** add new or replace existing model run state */
         void add(int i_runId, int i_subId) { add(i_runId, i_subId, RunState()); };
 
-        /** add new or replace existing model run state, return true if not already exist */
+        /** add new or replace existing model run state */
         void add(int i_runId, int i_subId, RunState i_state);
 
-        /** remove model run state from the store, return false if not exist */
-        void remove(int i_runId, int i_subId);
+        /** update model status if not already set as one of exit status values, return actual status or undefined if not found */
+        ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status, bool i_isFinalUpdate = true);
 
-        /** update model run state, return false if not exist */
-        bool update(int i_runId, int i_subId, RunState i_state);
+        /**  set modeling progress count and value, return false if not exist */
+        bool updateProgress(int i_runId, int i_subId, int i_count, double i_value);
 
-        /** update model status if not already set as one of exit status values, if found then return true and actual status */
-        ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status);
+        /** return updated sub-values run state since previous call.
+        * it return non empty results not more often than OM_STATE_SAVE_TIME unless i_isNow is true.
+        */
+        const map<pair<int, int>, RunState> saveUpdated(bool i_isNow = false);
 
-        /** set modeling progress count, return false if not exist */
-        bool updateProgress(int i_runId, int i_subId, int i_progress);
+        /** copy updated run states into output vector of (run id, sub-value id, run state) */
+        IRowBaseVec saveToRowVector(void);
 
-        /** remove from store all run states where status is completed (shutdown, done, exit, error) */
-        void removeShutdownOrExit(void);
-
-        /** copy all run states into output vector of (run id, sub-value id, run state) */
-        IRowBaseVec toRowVector(void);
-
-        /** append or replace existing run states from output vector of (run id, sub-value id, run state) */
+        /** append or replace existing run states from received vector of (run id, sub-value id, run state) */
         void fromRowVector(const IRowBaseVec & i_src);
 
     private:
-        recursive_mutex theMutex;               // mutex to lock access operations
-        map<pair<int, int>, RunState> stateMap; // store of run state for each modeling thread, key: (run id, sub-value id) pair
+        recursive_mutex theMutex;                           // mutex to lock access operations
+        map<pair<int, int>, RunState> stateMap;             // store of current runs state for all sub-values, key: (run id, sub-value id) pair
+        map<pair<int, int>, RunState> updateStateMap;       // run states updated since last save call
+        chrono::system_clock::time_point lastSaveTime = chrono::system_clock::time_point::min();   // last time of save
 
     private:
         RunStateHolder(const RunStateHolder & i_state) = delete;
