@@ -67,6 +67,7 @@ ageSex_paramRs <- selectRunParameter(theDb, defRs, runId, "ageSex")
 #   base salary:   int enum scalar value
 #   starting seed: int scalar value
 #   file path:     string parameter
+#   isOldAge:      parameter of logical type
 #
 
 # age by sex parameter value and notes
@@ -137,6 +138,14 @@ filePath <- list(
   )
 )
 
+# is old age parameter value and notes
+isOldAge <- list(
+  name = "isOldAge", value = c(FALSE, FALSE, FALSE, TRUE),
+  txt = data.frame(
+    lang = c("EN"), note = c("if true then old age adjustment"), stringsAsFactors = FALSE
+  )
+)
+
 #
 # name, description and notes for this set of model parameters
 # for test only: make workset name unique
@@ -171,7 +180,7 @@ setDef <- data.frame(
 # it is a full set and includes all "modelOne" parameters: 
 #   "ageSex", "salaryAge", "salaryFull", "baseSalary", "StartingSeed"
 #
-setId <- createWorkset(theDb, defRs, setDef, ageSex, salaryAge, salaryFull, baseSalary, startingSeed, filePath)
+setId <- createWorkset(theDb, defRs, setDef, ageSex, salaryAge, salaryFull, baseSalary, startingSeed, filePath, isOldAge)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # find working set id by name
@@ -192,7 +201,7 @@ setDef$name <- NA
 setDef$descr <- c("other set of parameters", "FR other set of parameters")
 setDef$note <- NA
 
-setId <- createWorkset(theDb, defRs, setDef, ageSex, salaryAge, baseSalary, salaryFull, startingSeed, filePath)
+setId <- createWorkset(theDb, defRs, setDef, ageSex, salaryAge, baseSalary, salaryFull, startingSeed, filePath, isOldAge)
 if (setId <= 0L) stop("workset creation failed: ", defRs$modelDic$model_name, " ", defRs$modelDic$model_digest)
 
 # 
