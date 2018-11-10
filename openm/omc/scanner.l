@@ -40,7 +40,7 @@
 
 floating    (([0-9]*"."[0-9]+|[0-9]+".")([eE][+-]?[0-9]+)?[flFL]?)|([0-9]+[eE][+-]?[0-9]+[flFL]?)
 integer     [0-9]+
-word        [a-zA-Z\x80-\xff][_a-zA-Z0-9\x80-\xff]*
+word        [_a-zA-Z\x80-\xff][_a-zA-Z0-9\x80-\xff]*
 blank       [ \t]
 
 %x comment
