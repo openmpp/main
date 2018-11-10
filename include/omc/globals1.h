@@ -36,9 +36,12 @@ void initialize_model_streams();
 void handle_streams_exceeded(int strm, int model_streams);
 
 // defined in use/random/random_*.ompp
+typedef std::vector<std::string> random_state; // type used to store state of all streams
 extern void new_streams();
 extern void delete_streams();
 extern void initialize_stream(int model_stream, int member, long seed);
+random_state serialize_random_state();
+void deserialize_random_state(const random_state & rs);
 extern double RandUniform(int strm);
 extern double RandNormal(int strm);
 extern double RandLogistic(int strm);
