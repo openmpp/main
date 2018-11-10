@@ -105,6 +105,14 @@ void Ticker::TickEvent()
 		    auto prHost = asAllHosts->Item( nJ );
 		    prHost->report_time = report_time;
 	    }
+
+        if (report_time == 5) {
+            // arbitrarily chosen time, for one-time test
+            // simple test of random_state API
+            auto rs = serialize_random_state();
+            deserialize_random_state(rs);
+            // results should not change
+        }
     }
 
 	// Schedule the next tick.

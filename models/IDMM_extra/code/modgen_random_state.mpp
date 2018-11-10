@@ -1,0 +1,62 @@
+// Copyright (c) 2013-2017 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(modgen_random_state, EN) Functions to save and restore the rnadom state for Modgen models
+
+/* NOTE(modgen_random_state, EN)
+    This module is ignored by the OpenM++ compiler.
+    It should not be necessary to modify any code in this module.
+    The functions in this module are used to implement cloning for a Modgen model.
+    There are no ompp versions of store_random_state and retrieve_random_state.
+    There are ompp implementations of serialize_random_state and deserialize_random_state
+*/
+
+thread_local CRandState *stored_rand_state = nullptr;
+
+// Store the state of random streams for later restoration
+void store_random_state()
+{
+    if (stored_rand_state == nullptr) {
+        stored_rand_state = new CRandState;
+    }
+    GetRandState(*stored_rand_state);
+}
+
+// Retrieve the state of random streams stored by a previous call to store_random_state
+void retrieve_random_state()
+{
+    if (stored_rand_state == nullptr) {
+        ModelExit("call to retrieve_random_state without previous call to store_random_state");
+        // NOT_REACHED
+    }
+    SetRandState(*stored_rand_state);
+}
+
+random_state serialize_random_state()
+{
+    int streams = gppiModelInfo->nRandoms;
+    random_state rs;
+    rs.reserve(2 * streams);
+    CRandState mrs; // Modgen random state
+    GetRandState(mrs);
+    const size_t bufsize = 50;
+    char wrk[bufsize];
+    for (int j = 0; j < streams; ++j) {
+        snprintf(wrk, bufsize, "%ld", mrs.plSeeds[j]);
+        rs.push_back(wrk);
+        snprintf(wrk, bufsize, "%a", mrs.pdDeviates[j]);
+        rs.push_back(wrk);
+    }
+    return rs;
+}
+
+void deserialize_random_state(const random_state& rs)
+{
+    int streams = gppiModelInfo->nRandoms;
+    CRandState mrs; // Modgen random state
+    for (int j = 0, k = 0; j < streams; ++j) {
+        mrs.plSeeds[j] = atol(rs[k++].c_str());
+        mrs.pdDeviates[j] = atof(rs[k++].c_str());
+    }
+    SetRandState(mrs);
+}
