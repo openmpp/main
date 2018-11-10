@@ -8,7 +8,7 @@
 * The interface to models consists of the functions RandUniform, RandNormal, RandLogistic.
 *
 * The interface to framework modules, e.g. case_based_common.ompp consists of the functions
-* new_streams, delete_streams, initialize_stream
+* new_streams, delete_streams, initialize_stream, serialize_random_state, deserialize_random_state
 *
 * Other content in this module should be considered to be 'private'.
 */
@@ -69,6 +69,55 @@ void initialize_stream(int model_stream, int member, long seed)
 	fmk::stream_uniforms[model_stream]->reset();
 
 	fmk::other_normal_valid[model_stream] = false;
+}
+
+/**
+ * Serialize random state
+ *
+ * The random state consists of the random engine state and Normal values for each stream.
+ * These are converted to strings and pushed to the random_state.
+ * If there is no random Normal available, an empty string is pushed.
+ *
+ * @return A random_state.
+ */
+random_state serialize_random_state()
+{
+    random_state rs;
+    rs.reserve(2 * fmk::model_streams);
+    for (int j = 0; j < fmk::model_streams; ++j) {
+        std::stringstream ss;
+        ss << stream_generators[j];
+        rs.push_back(ss.str());
+        if (fmk::other_normal_valid[j]) {
+            snprintf(wrk, bufsize, "%a", fmk::other_normal[j]);
+        }
+        else {
+            // string of length 0 means no other normal for this stream
+            wrk[0] = '\0';
+        }
+        rs.push_back(wrk);
+    }
+    return rs;
+}
+
+/**
+ * Deserialize random state
+ *
+ * @param rs A previously saved random state to restore.
+ */
+void deserialize_random_state(const random_state & rs)
+{
+    for (int j = 0, k = 0; j < fmk::model_streams; ++j) {
+        rs[k++] >> fmk::stream_generators[j] ;
+        auto wrk = rs[k++];
+        fmk::other_normal_valid[j] = (wrk != "");
+        if (fmk::other_normal_valid) {
+            fmk::other_normal[j] = atof(wrk.c_str());
+        }
+        else {
+            fmk::other_normal[j] = 0.0; // value is irrelevant, never used
+        }
+    }
 }
 
 double RandUniform(int strm)
