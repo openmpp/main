@@ -295,6 +295,56 @@ void initialize_stream(int model_stream, int member, long seed)
     fmk::other_normal_valid[model_stream] = false;
 }
 
+/**
+ * Serialize random state
+ *
+ * The random state consists of seeds and Normal values for each stream.
+ * These are converted to strings and pushed to the random_state.
+ * If there is no random Normal available, an empty string is pushed.
+ *
+ * @return A random_state.
+ */
+random_state serialize_random_state()
+{
+    random_state rs;
+    rs.reserve(2 * fmk::model_streams);
+    const size_t bufsize = 50;
+    char wrk[bufsize];
+    for (int j = 0; j < fmk::model_streams; ++j) {
+        snprintf(wrk, bufsize, "%ld", fmk::stream_seeds[j]);
+        rs.push_back(wrk);
+        if (fmk::other_normal_valid[j]) {
+            snprintf(wrk, bufsize, "%a", fmk::other_normal[j]);
+        }
+        else {
+            // string of length 0 means no other normal for this stream
+            wrk[0] = '\0';
+        }
+        rs.push_back(wrk);
+    }
+    return rs;
+}
+
+/**
+ * Deserialize random state
+ *
+ * @param rs A previously saved random state to restore.
+ */
+void deserialize_random_state(const random_state & rs)
+{
+    for (int j = 0, k = 0; j < fmk::model_streams; ++j) {
+        fmk::stream_seeds[j] = atol(rs[k++].c_str());
+        auto wrk = rs[k++];
+        fmk::other_normal_valid[j] = (wrk != "");
+        if (fmk::other_normal_valid) {
+            fmk::other_normal[j] = atof(wrk.c_str());
+        }
+        else {
+            fmk::other_normal[j] = 0.0; // value is irrelevant, never used
+        }
+    }
+}
+
 double RandUniform(int strm)
 {
     using namespace fmk;
