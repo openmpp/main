@@ -12,7 +12,7 @@
 *
 * Other content in this module should be considered to be 'private'.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2018 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 namespace fmk {
@@ -67,8 +67,69 @@ void initialize_stream(int model_stream, int member, long seed)
 	std::seed_seq sseq(vals, vals + 2); // constructor using iterators
 	fmk::stream_generators[model_stream]->seed(sseq);
 	fmk::stream_uniforms[model_stream]->reset();
-
 	fmk::other_normal_valid[model_stream] = false;
+}
+
+/**
+ * Serialize random state
+ *
+ * The random state has 3 parts for each stream:
+ *   the random engine state,
+ *   the uniform distribution state,
+ *   the 'next' Normal value.
+ * These are converted to strings and pushed to the random_state.
+ * If there is no 'next' random Normal, an empty string is pushed.
+ *
+ * @return A random_state.
+ */
+random_state serialize_random_state()
+{
+    random_state rs;
+    rs.reserve(3 * fmk::model_streams);
+    const size_t bufsize = 50;
+    char wrk[bufsize];
+    std::stringstream ss;
+    for (int j = 0; j < fmk::model_streams; ++j) {
+        ss.str("");
+        ss << *fmk::stream_generators[j];
+        rs.push_back(ss.str());
+        ss.str("");
+        ss << *fmk::stream_uniforms[j];
+        rs.push_back(ss.str());
+        if (fmk::other_normal_valid[j]) {
+            snprintf(wrk, bufsize, "%a", fmk::other_normal[j]);
+        }
+        else {
+            // string of length 0 means no other normal for this stream
+            wrk[0] = '\0';
+        }
+        rs.push_back(wrk);
+    }
+    return rs;
+}
+
+/**
+ * Deserialize random state
+ *
+ * @param rs A previously saved random state to restore.
+ */
+void deserialize_random_state(const random_state & rs)
+{
+    for (int j = 0, k = 0; j < fmk::model_streams; ++j) {
+        std::stringstream ss;
+        ss.str(rs[k++]);
+        ss >> *fmk::stream_generators[j];
+        ss.str(rs[k++]);
+        ss >> *fmk::stream_uniforms[j];
+        auto wrk = rs[k++];
+        fmk::other_normal_valid[j] = (wrk != "");
+        if (fmk::other_normal_valid) {
+            fmk::other_normal[j] = atof(wrk.c_str());
+        }
+        else {
+            fmk::other_normal[j] = 0.0; // value is irrelevant, never used
+        }
+    }
 }
 
 double RandUniform(int strm)
@@ -89,51 +150,46 @@ double RandUniform(int strm)
 
 double RandNormal(int strm)
 {
-	using namespace fmk;
-
-	assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
-    if (strm > model_streams) {
+    assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
+    if (strm > fmk::model_streams) {
         // The stream number exceeds the maximum number of streams.
-        handle_streams_exceeded(strm, model_streams);
+        handle_streams_exceeded(strm, fmk::model_streams);
         // not reached
     }
 
-	if (other_normal_valid[strm]) {
-		other_normal_valid[strm] = false;
-		return other_normal[strm];
-	}
-	else {
-		double r2 = 1;
-		double x = 0;
-		double y = 0;
-		while (r2 >= 1) {
-			x = 2.0 * RandUniform(strm) - 1.0;
-			y = 2.0 * RandUniform(strm) - 1.0;
-			r2 = x * x + y * y;
-		}
-		double scale = sqrt(-2.0 * log(r2) / r2);
-		double n1 = scale * x;
-		double n2 = scale * y;
-		other_normal[strm] = n2;
-		other_normal_valid[strm] = true;
-		return n1;
-	}
+    if (fmk::other_normal_valid[strm]) {
+        fmk::other_normal_valid[strm] = false;
+        return fmk::other_normal[strm];
+    }
+    else {
+        double r2 = 1;
+        double x = 0;
+        double y = 0;
+        while (r2 >= 1) {
+            x = 2.0 * RandUniform(strm) - 1.0;
+            y = 2.0 * RandUniform(strm) - 1.0;
+            r2 = x * x + y * y;
+        }
+        double scale = sqrt(-2.0 * log(r2) / r2);
+        double n1 = scale * x;
+        double n2 = scale * y;
+        fmk::other_normal[strm] = n2;
+        fmk::other_normal_valid[strm] = true;
+        return n1;
+    }
 }
 
 double RandLogistic(int strm)
 {
-	using namespace fmk;
-
-	assert(strm < model_streams); // If assertion fails, increase model_streams in framework module of model.
-    if (strm > model_streams) {
+    assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
+    if (strm > fmk::model_streams) {
         // The stream number exceeds the maximum number of streams.
-        handle_streams_exceeded(strm, model_streams);
+        handle_streams_exceeded(strm, fmk::model_streams);
         // not reached
     }
 
-	double p = RandUniform(strm);
-	double odds_ratio = p / (1.0 - p);
-	double x = log(odds_ratio);
-	return x;
+    double p = RandUniform(strm);
+    double odds_ratio = p / (1.0 - p);
+    double x = log(odds_ratio);
+    return x;
 }
-

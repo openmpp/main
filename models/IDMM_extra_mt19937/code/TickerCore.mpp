@@ -20,6 +20,12 @@
 	accurate reports.
 */
 
+// used to activate or deactivate the test of RNG serialization in TickEvent
+// As of writing,
+// In VS: mt19997 works, ranlux48 does not
+// In gcc: neither work (hang).
+static const bool test_RNG_serialization = false;
+
 classification TICKER_EVENT_TYPE	//EN Ticker Event Type
 {
 
@@ -106,7 +112,7 @@ void Ticker::TickEvent()
 		    prHost->report_time = report_time;
 	    }
 
-        if (report_time == 5) {
+        if (report_time == 5 && test_RNG_serialization) {
             // arbitrarily chosen time, for one-time test
             // simple test of random_state API
             auto rs = serialize_random_state();

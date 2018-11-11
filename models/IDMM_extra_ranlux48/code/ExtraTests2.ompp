@@ -1,5 +1,5 @@
 
-// Example #1
+// Hook a function to a self-scheduling event: Example #1
 
 actor Host
 {
@@ -53,7 +53,7 @@ void Host::party_clean_up()
     lifetime_party_cleanups++;
 }
 
-// Example #2
+// Hook a function to a self-scheduling event: Example #2
 
 actor Host
 {
@@ -73,7 +73,7 @@ void Host::medical_follow_up()
     medical_follow_ups++;
 }
 
-// Example #3
+// Hook a function to a self-scheduling event: Example #3
 
 actor Host
 {
