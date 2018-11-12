@@ -123,6 +123,11 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
             // unary operators have no left argument
         }
         string expr_right = get_expression(binary_node->right, style);
-        return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";
+        if (binary_node->op == token::TK_sqrt) {
+            return "sqrt( " + expr_right + " )";
+        }
+        else {
+            return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";
+        }
     }
 }

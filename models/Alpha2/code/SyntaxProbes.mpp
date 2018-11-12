@@ -163,6 +163,16 @@ table Person ProbeOfHappiness2 //EN Probe of happiness #2
 	} //EN Quantity
 };
 
+/*NOTE(ProbeOfHappiness3, EN)
+    This table contains statistics related to happiness (#3).
+*/
+table Person ProbeOfHappiness3 //EN Probe of happiness #3
+{
+    {
+        sqrt(duration(playing, TRUE) / value_in(alive)) //EN Square root of average years playing in lifetime decimals=4
+    } //EN Quantity
+};
+
 parameters {
     logical i_bool;
     SEX i_sex;

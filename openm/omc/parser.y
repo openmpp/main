@@ -115,7 +115,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 
 // NB: There is an exact one-to-one correspondence with code in Symbol.cpp
 
-// top-level om keywords, in alphabetic order
+// top level om keywords, in alphabetic order
 %token <val_token>    TK_aggregation    "aggregation"
 %token <val_token>    TK_big_counter_type "big_counter_type"
 %token <val_token>    TK_classification "classification"
@@ -148,7 +148,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_user_table     "user_table"
 %token <val_token>    TK_version        "version"
 
-// body-level om keywords, in alphabetic order
+// body level om keywords, in alphabetic order
 %token <val_token>    TK_active_spell_delta        "active_spell_delta"
 %token <val_token>    TK_active_spell_duration     "active_spell_duration"
 %token <val_token>    TK_active_spell_weighted_duration  "active_spell_weighted_duration"
@@ -230,6 +230,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_self_scheduling_split     "self_scheduling_split"
 %token <val_token>    TK_sparse                    "sparse"
 %token <val_token>    TK_split                     "split"
+%token <val_token>    TK_sqrt                      "sqrt"
 %token <val_token>    TK_sum                       "sum"
 %token <val_token>    TK_sum_over                  "sum_over"
 %token <val_token>    TK_Time                      "Time"
@@ -2434,6 +2435,10 @@ expr_for_table[result]:
     | "+"[op] expr_for_table[right] %prec UNARY_PLUS
                         {
 	                        $result = new ExprForTableOp( (token_type) $op, nullptr, $right );
+                        }
+    | "sqrt"[op] "(" expr_for_table[right] ")"
+                        {
+                            $result = new ExprForTableOp((token_type)$op, nullptr, $right);
                         }
     | "(" expr_for_table[expr] ")"
                         {

@@ -248,6 +248,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_self_scheduling_split, "self_scheduling_split" },
     { token::TK_sparse, "sparse" },
     { token::TK_split, "split" },
+    { token::TK_sqrt, "sqrt" },
     { token::TK_sum, "sum" },
     { token::TK_sum_over, "sum_over" },
     { token::TK_Time, "Time" },
