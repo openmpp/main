@@ -28,6 +28,7 @@ extern int GetThreads();
 extern void SetPopulation(long lPopulation);
 extern long GetPopulation();
 double PieceLinearLookup(double x, const double *ax, const double *ay, int n);
+double PieceLinearLookup(double x, const double *axy, int n);
 bool IsUndefined(double x);
 void report_simulation_progress(int member, int percent);
 void ProgressMsg(const char *msg);

@@ -381,6 +381,56 @@ double PieceLinearLookup(double x, const double *ax, const double *ay, int n)
 }
 
 /**
+ * Piece linear lookup (deprecated 3-argument version)
+ *
+ * @param x   The x coordinate.
+ * @param axy The array of x-y coordinates of the points.
+ * @param n   The number of values in axy (twice the number of points).
+ *
+ * @return The y value corresponding to x.
+ */
+double PieceLinearLookup(double x, const double *axy, int n)
+{
+    assert(0 == n % 2);
+    // change n to number of points, to parallel logic in 4-argument version above
+    n = n / 2;
+    double y = 0.0;
+
+    if (x <= axy[0]) {
+        // X is less than lower bound of first interval, return Y of lower bound of first interval.
+        y = axy[1];
+    }
+    else {
+        // a simple linear search
+        bool found = false;
+        for (int j = 1; j < n; ++j) {
+            int jx = 2 * j;    // index in axy of x of point j
+            int jy = jx + 1;   // index in axy of y of point j
+            int jx_p = jx - 2; // index in axy of x of point j-1
+            int jy_p = jy - 2; // index in axy of y of point j-1
+            if (!(axy[jx] > axy[jx_p])) {
+                // non-increasing X, throw error
+                ModelExit("error : non-increasing x in PieceLinearLookup");
+                // NOT_REACHED
+            }
+            if (x < axy[jx]) {
+                found = true;
+                // interpolate
+                y = axy[jy_p] + (axy[jy] - axy[jy_p]) / (axy[jx] - axy[jx_p]) * (x - axy[jx_p]);
+                break;
+            }
+        }
+        if (!found) {
+            // X is greater than upper bound of last interval, return Y of upper bound of last interval.
+            int jy = 2 * n - 1;
+            y = axy[jy];
+        }
+    }
+    return y;
+}
+
+
+/**
  * Query if the value x is a numeric quantity.
  * 
  * Used to determine if a table cell contains a numeric value, or is empty.
