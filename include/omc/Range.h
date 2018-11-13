@@ -180,6 +180,12 @@ public:
         return (value >= min) && (value <= max);
     }
 
+    // test if value falls within range limits
+    static bool within(long long value)
+    {
+        return (value >= min) && (value <= max);
+    }
+
     // bound a quantity to the limits of a range, with 'int' argument returning 'int' result
     static int bound(int val)
     {
