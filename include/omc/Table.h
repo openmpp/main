@@ -306,3 +306,8 @@ void SetTableValue(const string measure_name, double value, Items... args)
     }
 }
 
+inline void TotalSum(const std::string table_name)
+{
+    //TODO - implement
+}
+
