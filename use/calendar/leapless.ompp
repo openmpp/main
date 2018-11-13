@@ -117,8 +117,11 @@ int time_to_day(double exact_time)
  */
 int time_to_day(double exact_time, bool& day_boundary) 
 {
-	int year = (int) exact_time;
-	double year_part = exact_time - year;
+    // protect against extreme values
+    double clamped_time = std::clamp(exact_time, -10000.0, 10000.0);
+
+    int year = (int)clamped_time;
+	double year_part = clamped_time - year;
 	int day_in_year = (int) ( year_part / day_length() );
 	int day_number = 365 * year + day_in_year;
 	day_boundary = ( year_part == day_in_year * day_length() ) ? true : false;
