@@ -6,6 +6,7 @@
 #   "taskOne" modeling taskOne, usually task_id = 1
 #   results of "taskOne" run
 #
+library(DBI)
 library("openMpp")
 library("RSQLite")
 

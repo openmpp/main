@@ -39,14 +39,14 @@ createTask <- function(dbCon, defRs, taskTxt = NA, setIds = NA)
     dbBegin(dbCon)
 
     # get next task id
-    dbGetQuery(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'task_id'")
+    dbExecute(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'task_id'")
     idRs <- dbGetQuery(dbCon, "SELECT id_value FROM id_lst WHERE id_key = 'task_id'")
     if (nrow(idRs) <= 0L || idRs$id_value <= 0L) stop("can not get new task id from id_lst table")
     
     taskId <- idRs$id_value
   
     # create task with auto-name
-    dbGetQuery(
+    dbExecute(
       dbCon, 
       paste(
         "INSERT INTO task_lst (task_id, model_id, task_name) VALUES (",
@@ -157,7 +157,7 @@ setTaskWaitCompleted <- function(dbCon, taskRunId, isWaitCompleted = FALSE)
     dbBegin(dbCon)
     
     # check if task exist
-    dbGetQuery(dbCon, 
+    dbExecute(dbCon, 
       paste(
         "UPDATE task_run_lst", 
         " SET status = CASE",

@@ -33,7 +33,7 @@ updateTaskTxt <- function(dbCon, defRs, i_taskId, i_taskTxt = NA)
   taskName <- ifelse(isAnyTaskTxt, i_taskTxt$name, NA)
   if (is.na(taskName)) taskName <- paste("task_", i_taskId, sep = "")
   
-  dbGetQuery(
+  dbExecute(
     dbCon, 
     paste(
       "UPDATE task_lst SET task_name = ", toQuoted(taskName), " WHERE task_id = ", i_taskId,
@@ -45,7 +45,7 @@ updateTaskTxt <- function(dbCon, defRs, i_taskId, i_taskTxt = NA)
   # delete existing task text
   # insert task text rows where language and description non-empty
   #
-  dbGetQuery(
+  dbExecute(
     dbCon, 
     paste(
       "DELETE FROM task_txt WHERE task_id = ", i_taskId,
@@ -60,10 +60,10 @@ updateTaskTxt <- function(dbCon, defRs, i_taskId, i_taskTxt = NA)
       " )",
       sep = ""
     )
-  dbGetPreparedQuery(
+  dbExecute(
     dbCon, 
     sqlInsTxt,
-    bind.data = i_taskTxt[which(!is.na(i_taskTxt$lang) & !is.na(i_taskTxt$descr)), ]
+    params = subset(i_taskTxt, !is.na(lang) & !is.na(descr), select = c(lang, descr, note))
   )
 }
 
@@ -104,13 +104,13 @@ updateTaskSetIds <- function(dbCon, i_taskId, i_setIds = NA)
 
     if (isScalar || isVector) {
       if (!is.numeric(i_setIds)) stop("workset ids must integer")
-      idDf <- data.frame(set_id = i_setIds, s1 = 1)
+      idDf <- data.frame(ne_id = i_setIds, set_id = i_setIds)
     }
     # if set ids is a frame then it expected to have $set_id column
     if (isFrame) {
       if (is.null(i_setIds$"set_id")) stop("workset ids data frame must have $set_id column")
       if (!is.numeric(i_setIds$"set_id")) stop("workset ids must integer")
-      idDf <- data.frame(set_id = i_setIds$set_id, s1 = 1)
+      idDf <- data.frame(ne_id = i_setIds$set_id, set_id = i_setIds$set_id)
     }
 
     if (is.null(idDf)) stop("invalid (or missing) workset ids")
@@ -119,33 +119,33 @@ updateTaskSetIds <- function(dbCon, i_taskId, i_setIds = NA)
   #
   # validate set id: it must be integer and exist in workset_lst
   #
-  res <- dbSendPreparedQuery(
+  res <- dbSendQuery(
     dbCon, 
     paste(
-      "SELECT :set_id AS \"set_id\" FROM task_lst T",
+      "SELECT :ne_id FROM task_lst T",
       " WHERE T.task_id = ", i_taskId,
       " AND NOT EXISTS (SELECT 1 FROM workset_lst W WHERE W.set_id = :set_id)", 
       sep = ""
     ),
-    bind.data = idDf[which(!is.na(idDf$set_id)), ]
+    params = idDf[which(!is.na(idDf$set_id)), ]
   )
   
   idRs <- dbFetch(res, 10)
   dbClearResult(res)
-  if (nrow(idRs) > 0L) stop("invalid (non-existing) workset id's (up to first 10): ", paste(idRs$set_id, collapse = ", "))
+  if (nrow(idRs) > 0L) stop("invalid (non-existing) workset id's (up to first 10): ", paste(idRs$ne_id, collapse = ", "))
 
   #
   # append workset into task_set if not already exists
   #
-  dbGetPreparedQuery(
+  dbExecute(
     dbCon, 
     paste(
       "INSERT INTO task_set (task_id, set_id)",
-      " SELECT L.task_id, :set_id FROM task_lst L",
+      " SELECT L.task_id, :ne_id FROM task_lst L",
       " WHERE L.task_id = ", i_taskId,
       " AND NOT EXISTS (SELECT S.set_id FROM task_set S WHERE S.task_id = L.task_id AND S.set_id = :set_id)",
       sep = ""
     ),
-    bind.data = idDf[which(!is.na(idDf$set_id)), ]
+    params = idDf[which(!is.na(idDf$set_id)), ]
   )
 }

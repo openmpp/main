@@ -117,7 +117,7 @@ lockWorksetUsingReadonly <- function(dbCon, i_defRs, i_isSetId, i_setId, i_isAdd
   
   if (i_isSetId) {    # use workset id
   
-    dbGetQuery(
+    dbExecute(
       dbCon, 
       paste(
         "UPDATE workset_lst SET is_readonly = ", rdOnlyExpr,
@@ -140,7 +140,7 @@ lockWorksetUsingReadonly <- function(dbCon, i_defRs, i_isSetId, i_setId, i_isAdd
   }
   else {    # use model id
   
-    dbGetQuery(
+    dbExecute(
       dbCon, 
       paste(
         "UPDATE workset_lst SET is_readonly = ", rdOnlyExpr,

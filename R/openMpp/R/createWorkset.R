@@ -182,7 +182,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, i_setDef, 
     dbBegin(dbCon)
 
     # get next set id
-    dbGetQuery(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'")
+    dbExecute(dbCon, "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'")
     idRs <- dbGetQuery(dbCon, "SELECT id_value FROM id_lst WHERE id_key = 'run_id_set_id'")
     if (nrow(idRs) <= 0L || idRs$id_value <= 0L) stop("can not get new set id from id_lst table")
     
@@ -193,7 +193,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, i_setDef, 
     if (is.na(setName)) setName <- toQuoted(paste("set_", setId, sep = ""))
     
     # create workset
-    dbGetQuery(
+    dbExecute(
       dbCon, 
       paste(
         "INSERT INTO workset_lst (set_id, base_run_id, model_id, set_name, is_readonly, update_dt)",
@@ -217,10 +217,10 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, i_setDef, 
           " VALUES (", setId, ", ", " :lang, :descr, :note", " )",
           sep = ""
         )
-      dbGetPreparedQuery(
+      dbExecute(
         dbCon, 
         sqlInsTxt,
-        bind.data = i_setDef[which(!is.na(i_setDef$lang) & !is.na(i_setDef$descr)), ]
+        params = subset(i_setDef, !is.na(lang) & !is.na(descr), select = c(lang, descr, note))
       )
     }
     
@@ -263,7 +263,7 @@ createNewWorkset <- function(dbCon, defRs, i_isRunBased, i_baseRunId, i_setDef, 
       if (nSubId < 0 || nSubId >= nCount) stop("invalid sub-value index for parameter ", wsParam$name)
       
       # add parameter into workset
-      dbGetQuery(
+      dbExecute(
         dbCon, 
         paste(
           "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count) VALUES (", setId, ", ", paramRow$parameter_hid, ", ", nCount, " )",
