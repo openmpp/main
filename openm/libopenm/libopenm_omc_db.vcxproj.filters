@@ -60,9 +60,6 @@
     <ClInclude Include="..\..\include\libopenm\db\modelBuilder.h">
       <Filter>Header Files\db</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\libopenm\omCommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\db\metaSetHolder.h">
       <Filter>Header Files\db</Filter>
     </ClInclude>

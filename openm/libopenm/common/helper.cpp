@@ -256,7 +256,7 @@ const string openm::toDateTimeString(const string & i_timestamp)
 // format message into supplied buffer using vsnprintf()
 void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args)
 {
-    // if buffer is null or too short or too large (error in size) then exit
+    // if buffer is null or too short or too long (error in size) then exit
     if (i_size < 1 || i_size >= OM_STRLEN_MAX || io_buffer == NULL) return;
 
     // if format is empty then return empty "" string
@@ -266,6 +266,22 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
     // format message
     vsnprintf(io_buffer, i_size, i_format, io_args);
     io_buffer[i_size - 1] = '\0';
+}
+
+/** if source string exceed max size than return ellipted copy into the buffer */
+const char * openm::elliptString(const char * i_src, size_t i_size, char * io_buffer)
+{
+    if (i_src == nullptr || i_src[0] == '\0') return "";        // source is empty, return empty
+    if (i_size < 1 || i_size >= OM_STRLEN_MAX) return "";       // size is too short or too long (error in size)
+    if (strnlen(i_src, i_size + 1) <= i_size) return i_src;     // source does not exceed max size, return as is
+    if (io_buffer == nullptr) return "";                        // buffer is null, return empty
+
+    // return ellipted copy of source
+    strncpy(io_buffer, i_src, i_size - 3);
+    io_buffer[i_size - 1] = io_buffer[i_size - 2] = io_buffer[i_size - 3] = '.';
+    io_buffer[i_size] = '\0';
+
+    return io_buffer;
 }
 
 // this function exists only because g++ below 4.9 does not support std::regex

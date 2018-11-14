@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <Import Project="$(SolutionDir)openm.0.version.props" />
-
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -145,7 +143,6 @@
     <ClInclude Include="..\..\include\libopenm\db\metaModelHolder.h" />
     <ClInclude Include="..\..\include\libopenm\db\metaSetHolder.h" />
     <ClInclude Include="..\..\include\libopenm\db\modelBuilder.h" />
-    <ClInclude Include="..\..\include\libopenm\omCommon.h" />
     <ClInclude Include="common\log.h" />
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />

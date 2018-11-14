@@ -467,7 +467,7 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & /* i_metaRows */, const
         // validate workset parameters: all parameters must be added to workset
         for (const ParamTblInfo & tblInfo : paramInfoVec) {
             if (!tblInfo.isAdded)
-                throw DbException("workset must include all model parameters, missing: %d: %s", tblInfo.id, tblInfo.name.c_str());
+                throw DbException("workset %s must include all model parameters, missing: %d: %s", i_metaSet.worksetRow.name.c_str(), tblInfo.id, tblInfo.name.c_str());
         }
 
         // mark workset as readonly: ready to use

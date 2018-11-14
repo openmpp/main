@@ -43,6 +43,9 @@ using namespace std;
 
 #define OM_STRLEN_MAX   INT_MAX         /** max string length supported */
 #define OM_STR_DB_MAX   32000           /** max database string length: notes varchar (clob, text) */
+#define OM_CODE_DB_MAX  32              /** max database length for codes: language code, digests, date-time string */
+#define OM_NAME_DB_MAX  255             /** max database length for names: parameter name, table name, etc. */
+#define OM_DESCR_DB_MAX 255             /** max database length for description: parameter description, table description, etc. */
 
 namespace openm
 {
@@ -108,6 +111,9 @@ namespace openm
 
     /** format message into supplied buffer using vsnprintf() */
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);
+
+    /** if source string exceed max size than return ellipted copy into the buffer */
+    extern const char * elliptString(const char * i_src, size_t i_size, char * io_buffer);
 
     // this function exist only because g++ below 4.9 does not support std::regex
     extern string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
