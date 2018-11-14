@@ -197,18 +197,26 @@ public:
     }
 
     /**
-     * Get next event in the queue.
+     * Peek next event in the queue.
+     * 
+     * Same as do_next_event, but does not implement the event.
+     * NB: Updates dirty events in the event queue.
      *
      * @return next event.
      */
-    static BaseEvent * get_next_event()
+    static BaseEvent * peek_next_event()
     {
+        BaseEvent::clean_all();
+        BaseAgent::free_all_zombies();
+
         return *BaseEvent::event_queue->begin();
     }
 
 
     /**
      * Time of next event.
+     *
+     * NB: Updates dirty events in the event queue.
      *
      * @return Time of next event, time_infinite if none.
      */
