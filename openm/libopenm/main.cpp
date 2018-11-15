@@ -257,7 +257,8 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
 
         // create and start new modeling threads
         while (nextSub < i_runCtrl->selfSubCount && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
-            modelFutureLst.push_back(pair(i_runCtrl->subFirstId + nextSub, 
+            modelFutureLst.push_back(
+                pair(i_runCtrl->subFirstId + nextSub, 
                 std::move(std::async(
                     launch::async,
                     modelThreadLoop,

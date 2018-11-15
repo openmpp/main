@@ -26,7 +26,7 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
 {
     // parse and validate provider names
     dbProviderLst = IDbExec::parseListOfProviderNames(i_providerNames);
-    if (dbProviderLst.empty()) throw DbException("invalid (empty) list db-provider names");
+    if (dbProviderLst.empty()) throw DbException(LT("invalid (empty) list db-provider names"));
 
     isSqlite = dbProviderLst.cend() != std::find(dbProviderLst.cbegin(), dbProviderLst.cend(), SQLITE_DB_PROVIDER);
 
@@ -50,7 +50,7 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     dbPrefixSize = minSize - (2 + dbSuffixSize);
 
     if (dbPrefixSize < 2 || dbSuffixSize < 8)
-        throw DbException("invalid db table name prefix size: %d or suffix size: %d", dbPrefixSize, dbSuffixSize);
+        throw DbException(LT("invalid db table name prefix size: %d or suffix size: %d"), dbPrefixSize, dbSuffixSize);
  }
 
 // validate metadata and return sql script to create new model from supplied metadata rows
@@ -223,7 +223,7 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
         if (typeId != row.typeId) {     // on type change find type Hid by model type id
             typeId = row.typeId;
             map<int, int>::const_iterator it = typeIdMap.find(typeId);
-            if (it == typeIdMap.cend()) throw DbException("invalid type id: %d", typeId);
+            if (it == typeIdMap.cend()) throw DbException(LT("invalid type id: %d"), typeId);
             typeHid = it->second;
         }
 
@@ -238,7 +238,7 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
         if (typeId != row.typeId) {     // on type change find type Hid by model type id
             typeId = row.typeId;
             map<int, int>::const_iterator it = typeIdMap.find(typeId);
-            if (it == typeIdMap.cend()) throw DbException("invalid type id: %d", typeId);
+            if (it == typeIdMap.cend()) throw DbException(LT("invalid type id: %d"), typeId);
             typeHid = it->second;
         }
 
@@ -427,7 +427,7 @@ void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  
 void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) 
 {
     try {
-        if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
+        if (!isSqlite) throw DbException(LT("cannot create workset without model SQLite database."));
 
         // validate workset metadata: uniqueness and referential integrity
         prepareWorkset(i_metaRows, io_metaSet);
@@ -462,12 +462,12 @@ void ModelSqlBuilder::beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLa
 void ModelSqlBuilder::endWorkset(const MetaModelHolder & /* i_metaRows */, const MetaSetLangHolder & i_metaSet)
 {
     try {
-        if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
+        if (!isSqlite) throw DbException(LT("cannot create workset without model SQLite database."));
 
         // validate workset parameters: all parameters must be added to workset
         for (const ParamTblInfo & tblInfo : paramInfoVec) {
             if (!tblInfo.isAdded)
-                throw DbException("workset must include all model parameters, missing: %d: %s", tblInfo.id, tblInfo.name.c_str());
+                throw DbException(LT("workset %s must include all model parameters, missing: %d: %s"), i_metaSet.worksetRow.name.c_str(), tblInfo.id, tblInfo.name.c_str());
         }
 
         // mark workset as readonly: ready to use
@@ -496,8 +496,8 @@ void ModelSqlBuilder::addWorksetParameter(
     )
 {
     // check parameters
-    if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
-    if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
+    if (!isSqlite) throw DbException(LT("cannot create workset without model SQLite database."));
+    if (i_name.empty()) throw DbException(LT("invalid (empty) input parameter name"));
 
     // find parameter info
     auto paramRow = std::find_if(
@@ -505,14 +505,14 @@ void ModelSqlBuilder::addWorksetParameter(
         i_metaRows.paramDic.cend(),
         [i_name](const ParamDicRow & i_row) -> bool { return i_row.paramName == i_name; }
     );
-    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
+    if (paramRow == i_metaRows.paramDic.cend()) throw DbException(LT("parameter not found in parameters dictionary: %s"), i_name.c_str());
 
     auto paramInfo = std::find_if(
         paramInfoVec.begin(), 
         paramInfoVec.end(),
         [i_name](const ParamTblInfo & i_info) -> bool { return i_info.name == i_name; }
     );
-    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
+    if (paramInfo == paramInfoVec.cend()) throw DbException(LT("parameter not found in parameters dictionary: %s"), i_name.c_str());
 
     // create sql to insert value of scalar paarameter
     doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_value);
@@ -531,7 +531,7 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
     )
 {
     // scalar parameter expected: check number of dimensions
-    if (i_paramInfo->dimNameVec.size() != 0) throw DbException("invalid number of dimensions for scalar parameter: %s", i_name.c_str());
+    if (i_paramInfo->dimNameVec.size() != 0) throw DbException(LT("invalid number of dimensions for scalar parameter: %s"), i_name.c_str());
 
     // make sql to insert parameter value
     // if parameter value is string type then it must be sql-quoted
@@ -550,8 +550,8 @@ void ModelSqlBuilder::addWorksetParameter(
     )
 {
     // check parameters
-    if (!isSqlite) throw DbException("cannot create workset without model SQLite database.");
-    if (i_name.empty()) throw DbException("invalid (empty) input parameter name");
+    if (!isSqlite) throw DbException(LT("cannot create workset without model SQLite database."));
+    if (i_name.empty()) throw DbException(LT("invalid (empty) input parameter name"));
 
     // find parameter info
     auto paramRow = std::find_if(
@@ -559,14 +559,14 @@ void ModelSqlBuilder::addWorksetParameter(
         i_metaRows.paramDic.cend(),
         [i_name](const ParamDicRow & i_row) -> bool { return i_row.paramName == i_name; }
     );
-    if (paramRow == i_metaRows.paramDic.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
+    if (paramRow == i_metaRows.paramDic.cend()) throw DbException(LT("parameter not found in parameters dictionary: %s"), i_name.c_str());
 
     auto paramInfo = std::find_if(
         paramInfoVec.begin(),
         paramInfoVec.end(),
         [i_name](const ParamTblInfo & i_info) -> bool { return i_info.name == i_name; }
     );
-    if (paramInfo == paramInfoVec.cend()) throw DbException("parameter not found in parameters dictionary: %s", i_name.c_str());
+    if (paramInfo == paramInfoVec.cend()) throw DbException(LT("parameter not found in parameters dictionary: %s"), i_name.c_str());
 
     int dimCount = (int)paramInfo->dimNameVec.size();
 
@@ -594,7 +594,7 @@ void ModelSqlBuilder::addWorksetParameter(
         }
         );
     if ((dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend()) || dimCount != (int)(dimRange.second - dimRange.first))
-        throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name.c_str());
+        throw DbException(LT("invalid parameter rank or dimensions not found for parameter: %s"), i_name.c_str());
 
     // get dimensions type and size, calculate total size
     size_t totalSize = 1;
@@ -607,7 +607,7 @@ void ModelSqlBuilder::addWorksetParameter(
         auto dimTypeRow = std::lower_bound(
             i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
             );
-        if (dimTypeRow == i_metaRows.typeDic.cend()) throw DbException("type not found for dimension %s of parameter: %s", dRow->name.c_str(), i_name.c_str());
+        if (dimTypeRow == i_metaRows.typeDic.cend()) throw DbException(LT("type not found for dimension %s of parameter: %s"), dRow->name.c_str(), i_name.c_str());
 
         // find dimension size as number of enums in type_enum_lst table, if type is not simple type
         int dimSize = 0;
@@ -625,7 +625,7 @@ void ModelSqlBuilder::addWorksetParameter(
                 }
                 );
             if (enumRange.first == i_metaRows.typeEnum.cend())
-                throw DbException("invalid dimension size (no enums found), dimension: %s of parameter: %s", dRow->name.c_str(), i_name.c_str());
+                throw DbException(LT("invalid dimension size (no enums found), dimension: %s of parameter: %s"), dRow->name.c_str(), i_name.c_str());
 
             dimSize = (int)(enumRange.second - enumRange.first);
         }
@@ -635,8 +635,8 @@ void ModelSqlBuilder::addWorksetParameter(
         if (dimSize > 0) totalSize *= dimSize;
     }
 
-    if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name.c_str());
-    if (totalSize != i_valueLst.size()) throw DbException("invalid value array size: %ld, expected: %ld for parameter: %s", i_valueLst.size(), totalSize, i_name.c_str());
+    if (totalSize <= 0) throw DbException(LT("invalid size of the parameter: %s"), i_name.c_str());
+    if (totalSize != i_valueLst.size()) throw DbException(LT("invalid value array size: %ld, expected: %ld for parameter: %s"), i_valueLst.size(), totalSize, i_name.c_str());
 
     // make sql to insert parameter dimesion enums and parameter value
     // if parameter value is string type then it must be sql-quoted
@@ -680,7 +680,7 @@ void ModelSqlBuilder::addWorksetParameter(
                  sql += toQuoted(*valueIt);
             }
             else {
-                if (valueIt->empty()) throw DbException("invalid (empty) parameter value, parameter: %s", i_name.c_str());
+                if (valueIt->empty()) throw DbException(LT("invalid (empty) parameter value, parameter: %s"), i_name.c_str());
                 sql += *valueIt;
             }
             sql += ")";
@@ -698,7 +698,7 @@ void ModelSqlBuilder::addWorksetParameter(
                     break;
                 }
             }
-            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("invalid value array size, parameter: %s", i_name.c_str());
+            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException(LT("invalid value array size, parameter: %s"), i_name.c_str());
 
             valueIt++;     // next value
         }
@@ -880,7 +880,7 @@ string ModelSqlBuilder::valueDbType(const string & i_sqlProvider, const ParamTbl
     // model specific types: it must be enum
     if (!i_tblInfo.valueTypeIt->isBuiltIn()) return "INT";
 
-    throw DbException("invalid value type for parameter id: %d, db table name: %s", i_tblInfo.id, i_tblInfo.name.c_str());
+    throw DbException(LT("invalid value type for parameter id: %d, db table name: %s"), i_tblInfo.id, i_tblInfo.name.c_str());
 }
 
 // create table sql for accumulator table:
@@ -994,7 +994,7 @@ const void ModelSqlBuilder::accAllCreateView(
 
         vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, accId, i_accVec);
         if (accIt == i_accVec.cend())
-            throw DbException("output table %s accumulator not found, id: %d", i_tblInfo.name.c_str(), accId);
+            throw DbException(LT("output table %s accumulator not found, id: %d"), i_tblInfo.name.c_str(), accId);
 
         sqlBody += ", (" + accIt->accSql + ") AS " + accIt->name;
     }

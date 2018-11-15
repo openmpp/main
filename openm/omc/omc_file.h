@@ -22,6 +22,7 @@
 #include <fstream>
 #include <list>
 #include <unordered_set>
+#include "libopenm/omLog.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/iniReader.h"
 #include "libopenm/db/dbMetaRow.h"

@@ -9,7 +9,7 @@
 #define OM_H_ERROR_H
 
 #include <cstdarg>
-#include "common/omHelper.h"   // define formatTo
+#include "common/omHelper.h"
 using namespace std;
 
 namespace openm
@@ -54,6 +54,26 @@ namespace openm
 
     /** helper library exception */
     typedef OpenmException<4000, helperUnknownErrorMessage> HelperException;
+
+    /** helper to return ellipted string if source string exceed max size.
+    * it may return pointer to shared buffer and can be used only once per error message.
+    */
+    struct MessageEllipter 
+    {
+        /** if source string exceed max size than return ellipted copy.
+        * it may return pointer to shared buffer and can be used only once per error message.
+        */
+        const char * ellipt(const char * i_src) { return elliptString(i_src, maxItemSize, msgItem); }
+
+        /** if source string exceed max size than return ellipted copy.
+        * it may return pointer to shared buffer and can be used only once per error message.
+        */
+        const char * ellipt(const string & i_src) { return elliptString(i_src.c_str(), maxItemSize, msgItem); }
+
+    private:
+        static const size_t maxItemSize = 40;   // max size of string item inside of error message
+        char msgItem[maxItemSize + 1];          // string item inside of error message, truncated to max size and ellipted
+    };
 }
 
 #endif  // OM_H_ERROR_H

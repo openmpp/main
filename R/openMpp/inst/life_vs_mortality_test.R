@@ -1,4 +1,5 @@
 # use openMpp library for openM++ database access
+library(DBI)
 library("openMpp")
 library("RSQLite")
 
@@ -113,6 +114,7 @@ for (mortality in mortalityData$value)
       " -OpenM.SetId ", setId, 
       " -OpenM.LogToConsole false",
       " -OpenM.LogToFile true",
+      " -OpenM.ProgressPercent 100",
       sep = ""
     )
   )
@@ -120,7 +122,7 @@ for (mortality in mortalityData$value)
 
 #
 # read final results from database
-#   average duration of life: DurationOfLife.meas3
+#   average duration of life: DurationOfLife.Expr3
 #
 runIdRs <- getWorksetRunIds(theDb, setId)   # get result id's
 
@@ -129,7 +131,7 @@ for (runId in runIdRs$run_id)
 {
   lifeDurationData <- rbind(
     lifeDurationData,
-    selectRunOutputValue(theDb, defRs, runId, "DurationOfLife", "meas3")
+    selectRunOutputValue(theDb, defRs, runId, "DurationOfLife", "Expr3")
   )
 }
 

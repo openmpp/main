@@ -42,11 +42,11 @@ updateWorksetParameterTxt <- function(dbCon, i_paramDef, i_wsParamTxt = NULL)
     )
     
   # execute delete and insert
-  dbGetQuery(dbCon, sqlDel)
-  dbGetPreparedQuery(
+  dbExecute(dbCon, sqlDel)
+  dbExecute(
     dbCon, 
     sqlIns,
-    bind.data = i_wsParamTxt[which(!is.na(i_wsParamTxt$lang) & !is.na(i_wsParamTxt$note)), ]
+    params = i_wsParamTxt[which(!is.na(i_wsParamTxt$lang) & !is.na(i_wsParamTxt$note)), ]
   )
 }
 
@@ -110,10 +110,10 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
   # make data frame to insert
   #
   dbDf <- NULL
-  if (isScalar) dbDf <- data.frame(value = i_value)
+  if (isScalar) dbDf <- data.frame(value = i_value, stringsAsFactors = FALSE)
   
   if (isVector) {
-    dbDf <- data.frame(value = i_value)
+    dbDf <- data.frame(value = i_value, stringsAsFactors = FALSE)
     
     # make items for all dimensions
     for (k in 1L:dimCount) {
@@ -167,8 +167,8 @@ updateWorksetParameterValue <- function(dbCon, i_paramDef, i_value = NULL)
     )
   
   # execute delete and insert
-  dbGetQuery(dbCon, sqlDel)
-  dbGetPreparedQuery(dbCon, sqlIns, bind.data = dbDf)
+  dbExecute(dbCon, sqlDel)
+  dbExecute(dbCon, sqlIns, params = dbDf)
 }
 
 # 

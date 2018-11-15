@@ -128,7 +128,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
       )
       
       # add parameter into workset
-      dbGetQuery(
+      dbExecute(
         dbCon, 
         paste(
           "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count)",
@@ -151,7 +151,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
         ""
       )
       
-      dbGetQuery(
+      dbExecute(
         dbCon, 
         paste(
           "INSERT INTO ", paramDef$dbTableName, 
@@ -174,7 +174,7 @@ copyWorksetParameterFromRun <- function(dbCon, defRs, worksetId, baseRunId, ...)
     }
     
     # change workset time of last update and reset readonly to read-write
-    dbGetQuery(
+    dbExecute(
       dbCon, 
       paste(
         "UPDATE workset_lst",

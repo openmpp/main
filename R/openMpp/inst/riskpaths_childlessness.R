@@ -1,4 +1,5 @@
 # use openMpp library for openM++ database access
+library(DBI)
 library("openMpp")
 library("RSQLite")
 
@@ -131,13 +132,14 @@ system2(
     " -OpenM.TaskId ", taskId, 
     " -OpenM.LogToConsole false",
     " -OpenM.LogToFile true",
+    " -OpenM.ProgressPercent 100",
     sep = ""
   )
 )
 
 #
 # read results of task run from database
-#   cohort fertility: T05_CohortFertility.meas1
+#   cohort fertility: T05_CohortFertility.Expr1
 #
 taskRunId <- getTaskLastRunId(theDb, taskId)  # most recent task run id
 taskRunRs <- selectTaskRun(theDb, taskRunId)  # get result id's
@@ -150,8 +152,8 @@ for (k in 1:scaleLen)
 {
   for (j in 1:scaleLen)
   {
-    # cohort fertility: T05_CohortFertility.meas1
-    expr1Rs <- selectRunOutputValue(theDb, defRs, taskRunRs$taskRunSet$run_id[runPos], "T05_CohortFertility", "meas1")
+    # cohort fertility: T05_CohortFertility.Expr1
+    expr1Rs <- selectRunOutputValue(theDb, defRs, taskRunRs$taskRunSet$run_id[runPos], "T05_CohortFertility", "Expr1")
     childlessnessMat[k, j] = expr1Rs$expr_value
     runPos <- runPos + 1
   }

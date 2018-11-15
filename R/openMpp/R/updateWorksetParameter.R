@@ -131,7 +131,7 @@ updateWorksetParameter <- function(dbCon, defRs, worksetId, ...)
     }
     
     # change workset time of last update and reset readonly to read-write
-    dbGetQuery(
+    dbExecute(
       dbCon, 
       paste(
         "UPDATE workset_lst",

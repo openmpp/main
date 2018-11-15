@@ -5,7 +5,6 @@
 // Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#include "omc_common.h"
 #include "omc_file.h"
 
 using namespace std;
