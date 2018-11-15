@@ -122,4 +122,7 @@ extern openm::ITrace * theTrace;
     }
 #endif
 
+/** LT localisation function: return is temporary const char* and must be copied to avoid memory violation crash. */
+#define LT(sourceMessage) ((theLog->getMessage(sourceMessage)).c_str())
+
 #endif  // OM_H_LOG_H

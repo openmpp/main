@@ -312,7 +312,7 @@ const string ModelAggregationSql::translateFnc(
     )
 {
     // check arguments
-    if (i_arg.length() < 1) throw DbException("Invalid (empty) function %d argument", i_code);
+    if (i_arg.length() < 1) throw DbException(LT("Invalid (empty) function %d argument"), i_code);
 
     string sqlArg = translateArg(i_innerAlias, i_arg);
     string avgCol;
@@ -373,7 +373,7 @@ const string ModelAggregationSql::translateFnc(
             " ) / AVG(" + sqlArg + ") )";
 
     default:
-        throw DbException("unknown aggregation function code: %d with arguments: %s", i_code, i_arg.c_str());
+        throw DbException(LT("unknown aggregation function code: %d with arguments: %s"), i_code, i_arg.c_str());
     }
 }
 
@@ -574,7 +574,7 @@ const FncToken FncToken::next(const string & i_expr)
         fncToken.openPos = nPos;
         break;
     }
-    if (!isOpen) throw DbException("missing open bracket after function at: %d in: %s", fncToken.namePos, i_expr.c_str());
+    if (!isOpen) throw DbException(LT("missing open bracket after function at: %d in: %s"), fncToken.namePos, i_expr.c_str());
 
     // find function body ) close bracket, it must be on the same bracket level
     int depth = 0;
@@ -607,7 +607,7 @@ const FncToken FncToken::next(const string & i_expr)
             }
         }
     }
-    if (!isClose) throw DbException("missing close bracket after function at: %d in: %s", fncToken.namePos, i_expr.c_str());
+    if (!isClose) throw DbException(LT("missing close bracket after function at: %d in: %s"), fncToken.namePos, i_expr.c_str());
 
     return fncToken;
 }
@@ -643,7 +643,7 @@ size_t skipIfQuoted(size_t i_pos, const string & i_str)
     for (size_t nPos = i_pos + 1; nPos < i_str.length(); nPos++) {
         if (i_str[nPos] == chQuote) return nPos;
     }
-    throw DbException("unbalanced \"quotes\" or 'apostrophes' in: %s", i_str.c_str());
+    throw DbException(LT("unbalanced \"quotes\" or 'apostrophes' in: %s"), i_str.c_str());
 }
 
 /** translate output table "native" (non-derived) accumulator into sql subquery. */
@@ -733,7 +733,7 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
                 // validate: it must be native accumulator
                 const map<string, string>::const_iterator it = i_nativeMap.find(accNameVec[accPos]);
                 if (it == i_nativeMap.cend()) 
-                    throw DbException("error in derived accumulator: %s invalid name: %s in: %s", i_accName.c_str(), accNameVec[accPos].c_str(), i_expr.c_str());
+                    throw DbException(LT("error in derived accumulator: %s invalid name: %s in: %s"), i_accName.c_str(), accNameVec[accPos].c_str(), i_expr.c_str());
 
                 sql += "(" + it->second +")";   // append subquery
 
