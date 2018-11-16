@@ -58,8 +58,7 @@ namespace openm
         virtual void shutdownWaitAll(void) override { doShutdownAll(taskRunId, dbExec); }
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        virtual void shutdownOnExit(ModelStatus i_status) override 
-            { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
+        virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
 
         /** communicate with child threads to receive status update. */
         virtual bool childExchange(void) override;

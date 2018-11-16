@@ -157,7 +157,10 @@ namespace openm
         /** return rank in modeling group. */
         virtual int groupRank(void) const = 0;
 
-        /** create groups for parallel run of modeling task. 
+        /** set clean exit flag for normal shutdown of message passing interface. */
+        virtual void setCleanExit(bool i_isClean = false) = 0;
+
+        /** create groups for parallel run of modeling task.
          *
          * @param[in] i_groupSize   number of processes in each group
          * @param[in] i_groupCount  number of groups
