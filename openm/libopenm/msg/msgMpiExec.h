@@ -37,6 +37,9 @@ namespace openm
         /** return rank in modeling group. */
         int groupRank(void) const throw() override { return MsgExecBase::groupRank(); }
 
+        /** set clean exit flag for normal shutdown messaging else abort MPI. */
+        void setCleanExit(bool i_isClean = false) override;
+
         /** create groups for parallel run of modeling task. */
         void createGroups(int i_groupSize, int i_groupCount) override;
 
@@ -75,6 +78,7 @@ namespace openm
         void waitSendAll(void) override { MsgExecBase::waitSendAll(); }
 
     private:
+        bool isCleanExit;               // if false then process exit by error or exception
         MPI_Group worldGroup;           // MPI world global group
         MPI_Comm groupComm;             // modeling group communicator for current process
         vector<MPI_Group> mpiGroupVec;  // handles of modeling groups

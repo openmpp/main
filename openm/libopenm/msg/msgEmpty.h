@@ -65,6 +65,9 @@ namespace openm
         /** return rank in modeling group: always = 0. */
         int groupRank(void) const throw() { return MsgExecBase::groupRank(); }
 
+        /** set clean exit flag for normal shutdown of message passing interface. */
+        void setCleanExit(bool /*i_isClean*/) override { }
+
         /** create groups for parallel run of modeling task (does nothing). */
         void createGroups(int /*i_groupSize*/, int /*i_groupCount*/) override { }
 

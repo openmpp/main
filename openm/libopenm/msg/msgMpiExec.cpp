@@ -20,6 +20,7 @@ using namespace openm;
 */
 MpiExec::MpiExec(int & argc, char ** & argv) :
     MsgExecBase(),
+    isCleanExit(true),
     worldGroup(MPI_GROUP_NULL), 
     groupComm(MPI_COMM_WORLD)
 {
@@ -58,7 +59,8 @@ MpiExec::MpiExec(int & argc, char ** & argv) :
         throw MsgException(ex.what());
     }
 
-    onExit.hold();  // initialization completed OK
+    isCleanExit = false;    // do MPI_Abort on exit unless this flag is set by main at process shutdown
+    onExit.hold();          // initialization completed OK
 }
 
 /** cleanup message passing resources by MPI_Finalize. */
@@ -75,6 +77,11 @@ MpiExec::~MpiExec(void) throw()
 void MpiExec::cleanup(void) throw()
 {
     try {
+        if (!isCleanExit) {
+            if (isRoot()) MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+            isCleanExit = true;
+        }
+
         for (MPI_Comm & mc : mpiCommVec) {
             if (mc != MPI_COMM_NULL && mc != MPI_COMM_WORLD) MPI_Comm_free(&mc);
         }
@@ -93,6 +100,13 @@ void MpiExec::cleanup(void) throw()
         MPI_Finalize();
     }
     catch (...) { }
+}
+
+/** set clean exit flag for normal shutdown messaging else abort MPI. */
+void MpiExec::setCleanExit(bool i_isClean)
+{
+    lock_guard<recursive_mutex> lck(msgMutex);
+    isCleanExit = i_isClean;
 }
 
 /** create groups for parallel run of modeling task. */

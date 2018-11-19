@@ -114,70 +114,90 @@ int main(int argc, char ** argv)
         // init message interface
         unique_ptr<IMsgExec> msgExec(IMsgExec::create(argc, argv));
 
-        // get db-connection string or use default if not specified
-        string connectionStr = argOpts.strOption(
-            RunOptionsKey::dbConnStr,
-            string("Database=") + OM_MODEL_NAME + ".sqlite; Timeout=86400; OpenMode=ReadWrite;"
+        try {
+            // get db-connection string or use default if not specified
+            string connectionStr = argOpts.strOption(
+                RunOptionsKey::dbConnStr,
+                string("Database=") + OM_MODEL_NAME + ".sqlite; Timeout=86400; OpenMode=ReadWrite;"
             );
 
-        // open db-connection
-        unique_ptr<IDbExec> dbExec(
-            (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
+            // open db-connection
+            unique_ptr<IDbExec> dbExec(
+                (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
             );
 
-        // load metadata tables and broadcast it to all modeling processes
-        unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
+            // load metadata tables and broadcast it to all modeling processes
+            unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
-        if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
-            theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);
-        }
-
-        // model one-time initialization
-        if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
-
-        // run the model until modeling task completed
-        while(!theModelRunState->isShutdownOrExit()) {
-
-            // create next run id: find model input data set
-            int runId = runCtrl->nextRun();
-            if (runId <= 0) {
-                childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes and threads, if any, or sleep
-                continue;                                                   // no input: completed or waiting for additional input
-            }
-            theLog->logFormatted("Run: %d", runId);
-
-            // initialize model run: read input parameters
-            RunInitHandler(runCtrl.get());
-
-            // do the modeling: run modeling threads to calculate sub-values
-            bool isRunOk = runModelThreads(runId, runCtrl.get());
-            if (!isRunOk) {
-                runCtrl->shutdownOnExit(ModelStatus::error);
-                throw ModelException("modeling FAILED");
+            if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
+                theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);
             }
 
-            // run completed OK, receive and write the data
-            runCtrl->shutdownRun(runId);
-        }
+            // model one-time initialization
+            if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
 
-        // model completed OK at local process
-        // wait for all child to be completed and do final cleanup
-        runCtrl->shutdownWaitAll();
+            // run the model until modeling task completed
+            while (!theModelRunState->isShutdownOrExit()) {
+
+                // create next run id: find model input data set
+                int runId = runCtrl->nextRun();
+                if (runId <= 0) {
+                    childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // communicate with child processes and threads, if any, or sleep
+                    continue;                                                   // no input: completed or waiting for additional input
+                }
+                theLog->logFormatted("Run: %d", runId);
+
+                // initialize model run: read input parameters
+                RunInitHandler(runCtrl.get());
+
+                // do the modeling: run modeling threads to calculate sub-values
+                bool isRunOk = runModelThreads(runId, runCtrl.get());
+                if (!isRunOk) {
+                    runCtrl->shutdownOnExit(ModelStatus::error);    // shutdown of modeling process on error
+                    break;
+                }
+
+                // run completed OK, receive and write the data
+                runCtrl->shutdownRun(runId);
+            }
+
+            // if model completed OK at local process then wait for all child to be completed and do final cleanup
+            if (!theModelRunState->isError()) {
+                runCtrl->shutdownWaitAll();
+                msgExec->setCleanExit(true);
+            }
+        }
+        catch (ModelException & ex) {
+            theLog->logErr(ex, "Model error");
+            return EXIT_FAILURE;
+        }
+        catch (DbException & ex) {
+            theLog->logErr(ex, "DB error");
+            return EXIT_FAILURE;
+        }
+        catch (MsgException & ex) {
+            theLog->logErr(ex, "Messaging error");
+            return EXIT_FAILURE;
+        }
+        catch (HelperException & ex) {
+            theLog->logErr(ex, "Helper error");
+            return EXIT_FAILURE;
+        }
+        catch (exception & ex) {
+            theLog->logErr(ex);
+            return EXIT_FAILURE;
+        }
+        catch (...) {    // exit with failure on unhandled exception
+            theLog->logMsg("FAILED", OM_FILE_LINE);
+            return EXIT_FAILURE;
+        }
     }
-    catch(HelperException & ex) {
-        theLog->logErr(ex, "Helper error");
-        return EXIT_FAILURE;
-    }
-    catch(DbException & ex) {
-        theLog->logErr(ex, "DB error");
-        return EXIT_FAILURE;
-    }
-    catch(MsgException & ex) {
+    catch (MsgException & ex) {
         theLog->logErr(ex, "Messaging error");
         return EXIT_FAILURE;
     }
-    catch(ModelException & ex) {
-        theLog->logErr(ex, "Model error");
+    catch(HelperException & ex) {
+        theLog->logErr(ex, "Helper error");
         return EXIT_FAILURE;
     }
     catch(exception & ex) {
@@ -214,43 +234,44 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
 
         // write output tables and update final run status
         ModelShutdownHandler(model.get());
+        i_runCtrl->runStateStore().updateStatus(i_runId, i_subId, ModelStatus::done, true);
+
+        return true;    // model sub-value completed OK
     }
-    catch (HelperException & ex) {
-        theLog->logErr(ex, "Helper error");
-        return false;
-    }
-    catch (DbException & ex) {
-        theLog->logErr(ex, "DB error");
-        return false;
-    }
-    catch (MsgException & ex) {
-        theLog->logErr(ex, "Messaging error");
-        return false;
+    catch (SimulationException & ex) {      // simulation failed for that sub-value, continue modeling
+        theLog->logErr(ex, "Simulation error");
+        i_runCtrl->runStateStore().updateStatus(i_runId, i_subId, ModelStatus::error, true);
+        return true;    // return OK to continue modeling
     }
     catch (ModelException & ex) {
         theLog->logErr(ex, "Model error");
-        return false;
     }
-    catch (SimulationException & ex) {
-        theLog->logErr(ex, "Simulation error");
-        return false;
+    catch (DbException & ex) {
+        theLog->logErr(ex, "DB error");
+    }
+    catch (MsgException & ex) {
+        theLog->logErr(ex, "Messaging error");
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, "Helper error");
     }
     catch (exception & ex) {
         theLog->logErr(ex);
-        return false;
     }
     catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
         return false;
     }
 
-    return true;    // modeling thread completed OK
+    // modeling thread failed, initiate shutdown of modeling process
+    i_runCtrl->runStateStore().updateStatus(i_runId, i_subId, ModelStatus::error, true);
+    return false;
 }
 
 // run modeling threads to calculate sub-values
 bool runModelThreads(int i_runId, RunController * i_runCtrl)
 {
-    list<pair<int, future<bool>>> modelFutureLst;     // modeling threads
+    list<future<bool>> modelFutureLst;     // modeling threads
 
     int nextSub = 0;
     while (nextSub < i_runCtrl->selfSubCount || modelFutureLst.size() > 0) {
@@ -258,7 +279,6 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         // create and start new modeling threads
         while (nextSub < i_runCtrl->selfSubCount && (int)modelFutureLst.size() < i_runCtrl->threadCount) {
             modelFutureLst.push_back(
-                pair(i_runCtrl->subFirstId + nextSub, 
                 std::move(std::async(
                     launch::async,
                     modelThreadLoop,
@@ -266,7 +286,7 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
                     i_runCtrl->subValueCount,
                     i_runCtrl->subFirstId + nextSub,
                     i_runCtrl
-                ))));
+                )));
             nextSub++;
         }
 
@@ -275,19 +295,17 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         for (auto mfIt = modelFutureLst.begin(); mfIt != modelFutureLst.end(); ) {
 
             // skip thread if modeling not completed yet
-            if (mfIt->second.wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
+            if (mfIt->wait_for(chrono::milliseconds(OM_RUN_POLL_TIME)) != future_status::ready) {
                 ++mfIt;
                 continue;
             }
             isAnyCompleted = true;
 
-            // modeling completed: get result success or error, update sub-value status and remove thread from the list
-            bool isOk = mfIt->second.get();
-            i_runCtrl->runStateStore().updateStatus(i_runId, mfIt->first, (isOk ? ModelStatus::done : ModelStatus::error), true);
-
-            mfIt = modelFutureLst.erase(mfIt);
-
-            if (!isOk) return false;    // exit with error if model failed
+            // modeling completed: get result success or error
+            if (!mfIt->get()) {
+                return false;   // exit with error to initiate shutdown of modeling process
+            }
+            mfIt = modelFutureLst.erase(mfIt);  // remove thread from the list
         }
 
         // wait if no modeling progress and any threads still running
@@ -296,7 +314,9 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         }
     }
 
-    return true;    // modeling completed OK
+    // for all sub-values model run completed OK or with error if SimulationException raised
+    // return OK to continue modeling
+    return true;
 }
 
 // communicate with child modeling processes and modeling threads, sleep if no child activity
