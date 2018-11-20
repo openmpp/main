@@ -73,8 +73,9 @@ namespace openm
         bool isUseRoot;         // if true then root process used for modeling else dedicated for data exchange
         int groupSize;          // size of modeling group
         int subPerProcess;      // number of sub-values per modeling process, except of last process where rest is calculated
-        ModelRunState state;    // group status and modeling progress
-        DoneVector isSubDone;   // size of [subValue count], if true then all sub-value accumulators saved in database
+        ModelRunState state;                // group status and modeling progress
+        DoneVector isSubDone;               // size of [subValue count], if true then all sub-value accumulators saved in database
+        vector<ModelRunState> childState;   // size of [childCount] run state for all group child processes
 
         // set initial run group size, assign process ranks and initial state state
         RunGroup(int i_groupOne, int i_subValueCount, const ProcessGroupDef & i_rootGroupDef);

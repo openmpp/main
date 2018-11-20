@@ -52,7 +52,6 @@ namespace openm
 
     private:
         ModelRunState(const ModelRunState & i_state) = delete;
-        ModelRunState(const ModelRunState && i_state) = delete;
         ModelRunState & operator=(const ModelRunState & i_state) = delete;
 
     };
@@ -83,11 +82,11 @@ namespace openm
         */
         const map<pair<int, int>, RunState> saveUpdated(bool i_isNow = false);
 
-        /** copy updated run states into output vector of (run id, sub-value id, run state) */
-        IRowBaseVec saveToRowVector(void);
+        /** copy updated run states into output vector of (run id, sub-value id, run state), last element is process run state */
+        IRowBaseVec saveToRowVector(int i_runId);
 
-        /** append or replace existing run states from received vector of (run id, sub-value id, run state) */
-        void fromRowVector(const IRowBaseVec & i_src);
+        /** append or replace existing run states from received vector of (run id, sub-value id, run state) and return child process state */
+        const RunState fromRowVector(const IRowBaseVec & i_src);
 
     private:
         recursive_mutex theMutex;                           // mutex to lock access operations

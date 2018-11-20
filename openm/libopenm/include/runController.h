@@ -77,7 +77,7 @@ namespace openm
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) = 0;
 
-        /** communicate with child processes and threads. send new input, receive accumulators of output tables, send and receive status update. */
+        /** exchange between root and child processes and threads. send new input, receive accumulators of output tables, send and receive status update. */
         virtual bool childExchange(void) = 0;
 
         /** write output table accumulators or send data to root process. */

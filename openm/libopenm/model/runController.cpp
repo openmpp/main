@@ -46,6 +46,7 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
         else {
             ctrl.reset(new SingleController(i_argOpts, i_dbExec));
         }
+        i_msgExec->setCleanExit(true);  // clean exit flag applicable only to multiple processes model run, only to root or child process
     }
 
     // load metadata tables and broadcast it to all modeling processes
@@ -527,7 +528,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 /** impelementation of model process shutdown if exiting without completion. */
 void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
-    theModelRunState->updateStatus(i_status);    // set model status
+    ModelStatus mStatus = theModelRunState->updateStatus(i_status);     // set model status
 
     // update run status and task status in database
     {
@@ -536,7 +537,7 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
         string sDt = makeDateTime(chrono::system_clock::now());
 
         // if error then update run status only else update run status and run digest
-        if (RunState::isError(i_status)) {
+        if (RunState::isError(mStatus)) {
             i_dbExec->update(
                 "UPDATE run_lst SET status = " + toQuoted(RunStatus::error) + "," +
                 " update_dt = " + toQuoted(sDt) +
@@ -558,11 +559,20 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
             );
         }
 
+        // for all sub-values where status is in-progress set to final (error) status
+        i_dbExec->update(
+            "UPDATE run_progress SET"
+            " status = " + toQuoted(RunState::toRunStatus(mStatus)) + "," +
+            " update_dt = " + toQuoted(sDt) +
+            " WHERE run_id = " + to_string(i_runId) +
+            " AND status IN (" + toQuoted(RunStatus::init) + ", " + toQuoted(RunStatus::progress) + ")"
+        );
+
         // update task run progress
         if (i_taskRunId > 0) {
             i_dbExec->update(
                 "UPDATE task_run_lst SET status = " +
-                (!RunState::isError(i_status) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
+                (!RunState::isError(mStatus) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
                 " update_dt = " + toQuoted(sDt) +
                 " WHERE task_run_id = " + to_string(i_taskRunId)
                 );
@@ -571,21 +581,69 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
     }
 }
 
+/** implementation model process shutdown: update run state and cleanup resources. */
+void RunController::doShutdownAll(int i_taskRunId, IDbExec * i_dbExec)
+{
+    updateRunState(i_dbExec, runStateStore().saveUpdated(true)); // update run status for all sub-values
+
+    theModelRunState->updateStatus(ModelStatus::done);          // set model status as completed OK
+
+    if (i_taskRunId > 0) {      // update task status as completed
+
+        string sDt = makeDateTime(chrono::system_clock::now());
+
+        i_dbExec->update(
+            "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::done) + ", " +
+            " update_dt = " + toQuoted(sDt) +
+            " WHERE task_run_id = " + to_string(i_taskRunId)
+        );
+        i_dbExec->update(
+            "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::error) + 
+            " WHERE task_run_id = " + to_string(i_taskRunId) +
+            " AND EXISTS" \
+            " (" \
+            "   SELECT * FROM task_run_set TRS " \
+            "   INNER JOIN run_lst RL ON (RL.run_id = TRS.run_id)" \
+            "   WHERE TRS.task_run_id = task_run_lst.task_run_id" \
+            "   AND RL.status = " + toQuoted(RunStatus::error) +
+            " )"
+        );
+    }
+}
+
 /** implementation of model run shutdown. */
 void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
+    updateRunState(i_dbExec, runStateStore().saveUpdated(true)); // update run status for all sub-values
+
     // update run status: all sub-values completed at this point
     string sDt = makeDateTime(chrono::system_clock::now());
+    bool isRunError = false;
     {
         unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
         i_dbExec->update(
-            "UPDATE run_lst SET status = " + toQuoted(RunStatus::progress) + ", " +
-            " sub_completed = sub_count," +
-            " sub_restart = sub_count,"
+            "UPDATE run_lst" \
+            " SET status = CASE WHEN status = 'i' THEN 'p' ELSE status END," \
+            " sub_completed = sub_count," \
+            " sub_restart = sub_count," \
             " update_dt = " + toQuoted(sDt) +
             " WHERE run_id = " + to_string(i_runId)
         );
+
+        i_dbExec->update(
+            "UPDATE run_lst SET status = " + toQuoted(RunStatus::error) +
+            " WHERE run_id = " + to_string(i_runId) +
+            " AND status IN ('i', 'p')" +
+            " AND EXISTS" \
+            " (" \
+            "   SELECT * FROM run_progress RP WHERE RP.run_id = run_lst.run_id AND RP.status = " + toQuoted(RunStatus::error) +
+            " )"
+        );
+
+        isRunError = 0 < i_dbExec->selectToInt(
+            "SELECT COUNT(*) FROM run_lst WHERE run_id = " + to_string(i_runId) + " AND status = " + toQuoted(RunStatus::error),
+            0);
 
         // update task progress
         if (i_taskRunId > 0) {
@@ -594,9 +652,10 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
                 " WHERE task_run_id = " + to_string(i_taskRunId)
             );
         }
-
         i_dbExec->commit();
     }
+
+    if (isRunError) return;     // run completed with errors, exit without expressions calculation
 
     // calculate output tables aggregated values and mark this run as completed
 #ifdef _DEBUG
@@ -630,22 +689,6 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
             );
         }
         i_dbExec->commit();
-    }
-}
-
-/** implementation model process shutdown: update run state and cleanup resources. */
-void RunController::doShutdownAll(int i_taskRunId, IDbExec * i_dbExec)
-{
-    updateRunState(i_dbExec, runStateStore().saveUpdated(true)); // update run status for all sub-values
-
-    theModelRunState->updateStatus(ModelStatus::done);         // set model status as completed OK
-
-    if (i_taskRunId > 0) {      // update task status as completed
-        i_dbExec->update(
-            "UPDATE task_run_lst SET status = " + toQuoted(RunStatus::done) + ", " +
-            " update_dt = " + toQuoted(makeDateTime(chrono::system_clock::now())) +
-            " WHERE task_run_id = " + to_string(i_taskRunId)
-            );
     }
 }
 
@@ -731,12 +774,16 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
     // merge updated sub-values run state into run progress table
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
+    unordered_set<int> runSet;
+
     for (const auto & rst : i_updated) {
 
-        string sRunId = to_string(rst.first.first);
+        ModelStatus mSt = rst.second.theStatus;
+        int nRunId = rst.first.first;
+        string sRunId = to_string(nRunId);
         string sSubId = to_string(rst.first.second);
         string sCt = toQuoted(makeDateTime(rst.second.startTime));
-        string sSt = toQuoted(RunState::toRunStatus(rst.second.theStatus));
+        string sSt = toQuoted(RunState::toRunStatus(mSt));
         string sUpd = toQuoted(makeDateTime(rst.second.updateTime));
         string sPc = to_string(rst.second.progressCount);
         string sPv = toString(rst.second.progressValue);
@@ -761,6 +808,34 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
             "   SELECT * FROM run_progress RP WHERE RP.run_id = R.run_id AND RP.sub_id = " + sSubId +
             ")"
         );
+
+        if (RunState::isError(mSt)) runSet.insert(nRunId);
     }
+
+    // update run status if sub-value status is error
+    if (runSet.size() > 0) {
+
+        // concatenate run id's where sub-value run state is error
+        string sLst;
+        bool isFirst = true;
+
+        for (int n : runSet) {
+            if (isFirst) {
+                sLst = to_string(n);
+                isFirst = false;
+            }
+            else{
+                sLst += ", " + to_string(n);
+            }
+        }
+
+        // set run status as error if sub-value status is error
+        i_dbExec->update(
+            "UPDATE run_lst SET status = " + toQuoted(RunStatus::error) +
+            " WHERE run_id IN (" + sLst + ")"
+            " AND status IN ('i', 'p')"
+        );
+    }
+
     i_dbExec->commit();
 }

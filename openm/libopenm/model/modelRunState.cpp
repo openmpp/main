@@ -223,32 +223,43 @@ const map<pair<int, int>, RunState> RunStateHolder::saveUpdated(bool i_isNow)
     return map<pair<int, int>, RunState>(move(updateStateMap)); // move updates out: return updated run states and clear it
 }
 
-/** copy updated run states into output vector of (run id, sub-value id, run state) */
-IRowBaseVec RunStateHolder::saveToRowVector(void)
+/** copy updated run states into output vector of (run id, sub-value id, run state), last element is process run state */
+IRowBaseVec RunStateHolder::saveToRowVector(int i_runId)
 {
     lock_guard<recursive_mutex> lck(theMutex);
 
     IRowBaseVec rv;
-    rv.reserve(updateStateMap.size());
+    rv.reserve(updateStateMap.size() + 1);
 
     for (const auto & rst : updateStateMap) {
         rv.push_back(
             make_unique<RunStateItem>(RunStateItem{ rst.first.first, rst.first.second, rst.second })
         );
     }
-
     updateStateMap.clear(); // clear updates after saving
+
+    // append process run state
+    rv.push_back(
+        make_unique<RunStateItem>(RunStateItem{ i_runId,  0, theModelRunState->get() })
+    );
     return rv;
 }
 
-/** append or replace existing run states from received vector of (run id, sub-value id, run state) */
-void RunStateHolder::fromRowVector(const IRowBaseVec & i_src)
+/** append or replace existing run states from received vector of (run id, sub-value id, run state) and return child process state */
+const RunState RunStateHolder::fromRowVector(const IRowBaseVec & i_src)
 {
+    if (i_src.size() < 1) return RunState();    // at least one element expectd: process status
+
     lock_guard<recursive_mutex> lck(theMutex);
 
-    for (const auto & rsiUp : i_src) {
-        const RunStateItem * rsi = static_cast<const RunStateItem *>(rsiUp.get());
+    // update sub-values status
+    for (size_t k = 0; k < i_src.size() - 1; k++) {
+        const RunStateItem * rsi = static_cast<const RunStateItem *>(i_src[k].get());
         stateMap[pair(rsi->runId, rsi->subId)] = rsi->state;
         updateStateMap[pair(rsi->runId, rsi->subId)] = rsi->state;
     }
+
+    // process state is last element of states vector
+    const RunStateItem * rsi = static_cast<const RunStateItem *>(i_src[i_src.size() - 1].get());
+    return rsi->state;
 }

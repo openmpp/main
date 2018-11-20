@@ -174,20 +174,30 @@ int ChildController::nextRun(void)
     return runId;
 }
 
+/** model process shutdown if exiting without completion (ie: exit on error). */
+void ChildController::shutdownOnExit(ModelStatus i_status) {
+    sendStatusUpdate();     // send last status update
+    theModelRunState->updateStatus(i_status);
+}
+ 
+/** model process shutdown: cleanup resources. */
+void ChildController::shutdownWaitAll(void)
+{
+    sendStatusUpdate();     // send last status update
+    msgExec->waitSendAll(); // wait for send completion, if any outstanding
+
+    ModelStatus mStatus = theModelRunState->updateStatus(ModelStatus::done);    // set model status as completed OK
+
+    if (!RunState::isError(mStatus)) {
+        msgExec->setCleanExit(true);    // if model status not error then do clean shutdown of MPI
+    }
+}
+
 /** model run shutdown: save results and update run status. */
 void ChildController::shutdownRun(int /*i_runId*/)
 { 
     sendStatusUpdate();     // send status update for that run
     msgExec->waitSendAll(); // wait for send completion, if any outstanding
-}
-
-/** model process shutdown: cleanup resources. */
-void ChildController::shutdownWaitAll(void)
-{ 
-    sendStatusUpdate();     // send last status update
-    msgExec->waitSendAll(); // wait for send completion, if any outstanding
-
-    theModelRunState->updateStatus(ModelStatus::done);   // set model status as completed OK
 }
 
 /**
@@ -250,7 +260,7 @@ void ChildController::writeAccumulators(
     }
 }
 
-/** communicate with root processes to send and receive status update. */
+/** exchange between root and child process to send and receive status update. */
 bool ChildController::childExchange(void) 
 {
     // get process-wide model run state
@@ -271,7 +281,7 @@ bool ChildController::childExchange(void)
 /** send sub-values run status update to root */
 void ChildController::sendStatusUpdate(void)
 {
-    IRowBaseVec rsVec = runStateStore().saveToRowVector();
+    IRowBaseVec rsVec = runStateStore().saveToRowVector(runId);
     if (rsVec.size() > 0) {
         unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
         msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
