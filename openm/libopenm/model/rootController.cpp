@@ -268,6 +268,9 @@ int RootController::nextRun(void)
 /** create new run and assign it to modeling group. */
 int RootController::makeNextRun(RunGroup & i_runGroup)
 {
+    // if group inactive then or at error state then do not create new run for that group
+    if (i_runGroup.state.isShutdownOrExit()) return 0;
+
     // create new run:
     // find next working set of input parameters
     // if this is a modeling task then next set from that task
@@ -292,7 +295,7 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     return nowSetRun.runId;
 }
 
-/** communicate with child processes and threads.
+/** exchange between root and child processes and threads.
 *   start new run, send new input, receive accumulators of output tables, send and receive status update.
 *   return true if any: data received, run completed, run started, status update received.
 */
@@ -304,6 +307,10 @@ bool RootController::childExchange(void)
     // try to receive sub-values and wait for send completion, if any outstanding
     bool isReceived = receiveSubValues();
     msgExec->waitSendAll();
+
+    // receive status update from children and save it
+    bool isStatusUpdate = receiveStatusUpdate(OM_ACTIVE_SLEEP_TIME);
+    updateRunState(dbExec, runStateStore().saveUpdated());
 
     // find modeling groups where all sub-values completed and finalize run results
     bool isCompleted = false;
@@ -322,6 +329,22 @@ bool RootController::childExchange(void)
                 rg.reset();                                 // group is ready for next run
             }
         }
+    }
+
+    // check if all groups already completed, all groups status one of: exit, done, error
+    if (!theModelRunState->isShutdownOrExit()) {
+
+        bool isAnyGroupActive = false;
+        ModelStatus maxStatus = ModelStatus::undefined;
+
+        for (RunGroup & rg : runGroupLst) {
+            ModelStatus gStatus = rg.state.status();
+            isAnyGroupActive |= !RunState::isExit(gStatus);
+            if (gStatus > maxStatus) maxStatus = gStatus;
+        }
+
+        // all group are at exit status (exit, done or error)
+        if (!isAnyGroupActive) theModelRunState->updateStatus(maxStatus);   // set model process status to exit
     }
 
     // create new run and assign it to idle modeling group
@@ -348,11 +371,16 @@ bool RootController::childExchange(void)
         }
     }
 
-    // receive status update from children and save it
-    bool isStatusUpdate = receiveStatusUpdate();
-    updateRunState(dbExec, runStateStore().saveUpdated());
-
     return isReceived || isCompleted || isNewRun || isStatusUpdate;
+}
+
+/** model process shutdown if exiting without completion (ie: exit on error). */
+void RootController::shutdownOnExit(ModelStatus i_status)
+{
+    // receive final status update from children
+    receiveStatusUpdate(OM_WAIT_SLEEP_TIME);
+
+    doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec);
 }
 
 /** model process shutdown: wait for all child to be completed and do final cleanup. */
@@ -400,8 +428,9 @@ void RootController::shutdownWaitAll(void)
     // receive final status update from children
     receiveStatusUpdate(OM_WAIT_SLEEP_TIME);
 
-    // finalize shutdown: update database and status
-    doShutdownAll(taskRunId, dbExec); 
+    // finalize shutdown: update database and status, set clean shutdown of MPI
+    doShutdownAll(taskRunId, dbExec);
+    msgExec->setCleanExit(true);
 }
 
 /** model run shutdown: save results and update run status. */
@@ -667,25 +696,53 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
 
     long nAttempt = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;
 
+    bool isAnyActive = false;   // is any group still active: state is not doen, exit or error
     do {
-        for (int nRank = 1; nRank < msgExec->worldSize(); nRank++) {
+        isAnyActive = false;
 
-            // try to receive child status update
-            if (!msgExec->tryReceive(nRank, rsVec, *packAdp)) {
-                continue;     // no status update from that child
+        for (RunGroup & rg : runGroupLst) {
+
+            if (rg.state.isExit()) continue;    // group completed, for all processes in group status: done, exit or error
+
+            for (int n = 0; n < rg.childCount; n++) {
+
+                // try to receive child status update
+                if (!msgExec->tryReceive(n + rg.firstChildRank, rsVec, *packAdp)) {
+                    continue;     // no status update from that child
+                }
+                isAnyReceived = true;
+
+                if (rsVec.size() <= 0) continue;    // no update for any of sub-values run state or child process run state
+
+                // update sub-values run state
+                RunState childState = runStateStore().fromRowVector(rsVec);
+
+                // if status of any child process is error then mark entire group as error
+                rg.childState[n].updateStatus(childState.theStatus);
+
+                if (RunState::isError(childState.theStatus)) {
+                    rg.state.updateStatus(childState.theStatus);    // if status of any child process is error then mark entire group as error
+                }
             }
-            isAnyReceived = true;
 
-            if (rsVec.size() <= 0) continue;    // no update for any of child sub-values run state
+            // if status of all child processes is exit then set entire group as exit
+            if (!rootGroupDef.isRootActive || rg.groupOne != rootRunGroup().groupOne) {     // it not an active root group
+                
+                bool isAllExit = true;
 
-            // update sub-values run state
-            runStateStore().fromRowVector(rsVec);
-            rsVec.clear();
+                for (int n = 0; isAllExit && n < rg.childCount; n++) {
+                    isAllExit &= rg.childState[n].status() == ModelStatus::exit;
+                }
+                if (isAllExit) rg.state.updateStatus(ModelStatus::exit);    // set group status as exit: status of all child processes is exit
+            }
+
+            isAnyActive |= !rg.state.isExit();  // check if any group still "active", group status not: done, exit, error
         }
-        if (nAttempt > 0) {
+
+        if (isAnyActive && nAttempt > 0) {
             this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
         }
-    } while (--nAttempt > 0);
+    } while (isAnyActive && --nAttempt > 0);
 
     return isAnyReceived;
 }

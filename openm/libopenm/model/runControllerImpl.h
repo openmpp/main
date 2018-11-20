@@ -9,6 +9,7 @@
 #define RUN_CTRL_IMPL_H
 
 #include <iterator>
+#include <unordered_set>
 #include "dbParameter.h"
 #include "dbOutputTable.h"
 
@@ -123,10 +124,9 @@ namespace openm
         virtual void shutdownWaitAll(void) override;
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        virtual void shutdownOnExit(ModelStatus i_status) override 
-            { doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec); }
+        virtual void shutdownOnExit(ModelStatus i_status) override;
 
-        /** communicate with child processes and threads.
+        /** exchange between root and child processes and threads.
         *   start new run, send new input, receive accumulators of output tables, send and receive status update.
         *   return true if any: data received, run completed, run started, status update received.
         */
@@ -227,9 +227,9 @@ namespace openm
         virtual void shutdownWaitAll(void) override;
 
         /** model process shutdown if exiting without completion (ie: exit on error). */
-        virtual void shutdownOnExit(ModelStatus i_status) override { theModelRunState->updateStatus(i_status); }
+        virtual void shutdownOnExit(ModelStatus i_status) override;
 
-        /** communicate with root processes to send and receive status update. */
+        /** exchange between root and child process to send and receive status update. */
         virtual bool childExchange(void) override;
 
     private:

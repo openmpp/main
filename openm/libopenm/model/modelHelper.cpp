@@ -105,6 +105,7 @@ RunGroup::RunGroup(int i_groupOne, int i_subValueCount, const ProcessGroupDef & 
     firstChildRank = 1 + (i_groupOne - 1) * groupSize;
     childCount = (i_groupOne >= i_rootGroupDef.groupCount && i_rootGroupDef.isRootActive) ? groupSize - 1 : groupSize;
     isUseRoot = (i_groupOne == i_rootGroupDef.groupOne) ? i_rootGroupDef.isRootActive : false;
+    childState = vector<ModelRunState>(childCount);
 }
 
 // set group state for next run
