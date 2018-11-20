@@ -95,7 +95,7 @@ int IDbExec::maxDbTableNameSize(const string & i_sqlProvider)
     if (i_sqlProvider == PGSQL_DB_PROVIDER) return 63;
     if (i_sqlProvider == ORACLE_DB_PROVIDER) return 30;
 
-    // MySQL=64, MSSQL=28, DB2=128
+    // MySQL=64, MSSQL=128, DB2=128
     // limit to 64 to create similar names for all db providers, except Oracle
     return 64;
 }
