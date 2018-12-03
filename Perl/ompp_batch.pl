@@ -25,10 +25,17 @@
 #   to be executed after run assembly.
 # The specification file returns the value 1 to indicate success.
 #
+# --x64
+#
+# If set, appends the 64-bit suffix to the model executable:
+# $in_dir/$model.'64.exe'
+#
 # --mpi
 #
-# If set, specifies to use the mpi version of the model executable, which is
+# If set, appends the mpi suffix to the model executable:
 # $in_dir/$model.'_mpi.exe'
+# If both x64 and mpi are specified, is
+# $in_dir/$model.'64_mpi.exe'
 #
 # --runs
 #
@@ -82,16 +89,16 @@ my ($opt, $usage) = describe_options(
 	[ 'pub_dir=s'   => 'model publishing directory (default is current directory)' ],
 	[ 'prefix|p=s'  => 'run prefix (default is no prefix)' ],
 	
-	[ 'members=i'   => 'members' ],
 	[ 'threads=i'   => 'threads' ],
 	[ 'processes=i' => 'MPI processes' ],
-	[ 'x64'         => 'append suffix 64 to name of executable' ],
-	[ 'mpi'         => 'use mpi to name and launch model' ],
+	[ 'x64'         => 'append suffix 64 to executable' ],
+	[ 'mpi'         => 'appned _mpi suffix to executable' ],
 
 	[ 'runs|r=s'    => 'which runs to launch, e.g. 0,1,2,4,8-10' ],
 	[ 'force|f'     => 'launch runs even if results present' ],
 
 	[ 'list|l'      => 'just list runs in batch' ],
+	[ 'ini|i'       => 'just write ini files' ],
 	[ 'assemble|a'  => 'just assemble existing runs' ],
 	[ 'post_assemble|p' => 'just post-assemble existing runs' ],
 	[ 'verbose'     => 'additional diagnostic messages' ],
@@ -158,8 +165,6 @@ my $pub_dir = '.';
 # The prefix added at the beginning of run names.
 my $prefix = '';
 
-# The number of members in each run.
-my $members = 1;
 # Number of threads in each process.
 my $threads = 1;
 # Number of MPI processes.
@@ -175,6 +180,8 @@ my $assemble = 0;
 my $post_assemble = 0;
 # Flag indicating to just list runs in batch
 my $list = 0;
+# Flag indicating to just write ini files in batch
+my $ini = 0;
 
 # Assign any argument values given in the specification file
 eval $batch_options;
@@ -187,7 +194,6 @@ $out_dir       = $opt->out_dir    if $opt->out_dir;
 $pub_dir       = $opt->pub_dir    if $opt->pub_dir;
 $prefix        = $opt->prefix     if $opt->prefix;
 
-$members       = $opt->members    if $opt->members;
 $threads       = $opt->threads    if $opt->threads;
 $processes     = $opt->processes  if $opt->processes;
 $x64           = 1 if $opt->x64;
@@ -196,6 +202,7 @@ $mpi           = 1 if $opt->mpi || $processes > 1;
 $assemble      = 1 if $opt->assemble;
 $post_assemble = 1 if $opt->post_assemble;
 $list          = 1 if $opt->list;
+$ini           = 1 if $opt->ini;
 
 # Checks on final values of arguments
 
@@ -263,7 +270,7 @@ my $dbcopy_exe = "${om_root}/bin/dbcopy.exe" or die;
 
 #print "runs are numbered from 0 to $#run_names\n";
 
-if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
+if ($assemble == 0 && $post_assemble == 0 && $list == 0 && $ini == 0) {
 	# Launch runs
 	
 	my $retval; # return value from external commands
@@ -315,7 +322,6 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0) {
 				"-OpenM.Database", "\"Database=${database_sqlite}; Timeout=86400; OpenMode=ReadWrite;\"",
 				"-OpenM.LogToFile", "true",
 				"-OpenM.LogFilePath", "${log_file}",
-				"-OpenM.SubValues", $members,
 				"-OpenM.Threads", $threads,
 				"-ini", $ini_file,
 				);
@@ -336,6 +342,21 @@ elsif ($list == 1) {
 		my $in_database_sqlite = "${out_dir}/${run_name}.sqlite";
 		my $status = (-f $in_database_sqlite) ? "  DONE" : "ABSENT";
 		print $run, ' ', $status, ' ', $run_name, "\n";
+	}
+}
+elsif ($ini == 1) {
+	for my $run (0..$#run_names) {
+		my $run_name = $prefix.$run_names[$run];
+		# Create ini file with parameter values
+		my $ini_file = "${out_dir}/${run_name}.ini";
+		if (-f $ini_file) {
+			print $run, ' EXISTS: ', $run_name, ".ini\n";
+			next;
+		}
+		print $run, ' CREATE: ', $run_name, ".ini\n";
+		open INI_TXT, '>'.$ini_file or die;
+		print INI_TXT $run_inis[$run];
+		close INI_TXT;
 	}
 }
 elsif ($assemble == 1) {
