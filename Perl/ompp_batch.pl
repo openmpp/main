@@ -85,6 +85,7 @@ my ($opt, $usage) = describe_options(
 	[ 'members=i'   => 'members' ],
 	[ 'threads=i'   => 'threads' ],
 	[ 'processes=i' => 'MPI processes' ],
+	[ 'x64'         => 'append suffix 64 to name of executable' ],
 	[ 'mpi'         => 'use mpi to name and launch model' ],
 
 	[ 'runs|r=s'    => 'which runs to launch, e.g. 0,1,2,4,8-10' ],
@@ -163,6 +164,8 @@ my $members = 1;
 my $threads = 1;
 # Number of MPI processes.
 my $processes = 1;
+# Flag to append 64 to name of executable.
+my $x64 = 0;
 # Flag to name executable and launch using mpiexec.
 my $mpi = 0;
 
@@ -187,6 +190,7 @@ $prefix        = $opt->prefix     if $opt->prefix;
 $members       = $opt->members    if $opt->members;
 $threads       = $opt->threads    if $opt->threads;
 $processes     = $opt->processes  if $opt->processes;
+$x64           = 1 if $opt->x64;
 $mpi           = 1 if $opt->mpi || $processes > 1;
 
 $assemble      = 1 if $opt->assemble;
@@ -200,7 +204,9 @@ my $input_db = "${pub_dir}/${model}.sqlite";
 -f $input_db or die "Invalid input database '$input_db'";
 
 # The model executable
-my $exe_suffix = '_mpi' if $mpi;
+my $exe_suffix = '';
+$exe_suffix .= '64' if $x64;
+$exe_suffix .= '_mpi' if $mpi;
 my $model_exe = "${pub_dir}/${model}${exe_suffix}.exe";
 $model_exe =~ s/\//\\/g; # replace all forward slash by backwards slash
 -x $model_exe or die "invalid model executable '${model_exe}', stopped";
