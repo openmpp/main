@@ -1241,6 +1241,11 @@ public:
     static bool option_case_checksum;
 
     /**
+     * true if allow_time_travel activated in options statement.
+     */
+    static bool option_allow_time_travel;
+
+    /**
      * Code page to use for source file conversion
      */
     static string code_page;

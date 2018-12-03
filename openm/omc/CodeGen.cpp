@@ -153,6 +153,14 @@ void CodeGen::do_preamble()
     // The checksum must be defined in any case
     c += "thread_local double BaseEvent::event_checksum_value = 0.0;";
 
+    if (Symbol::option_allow_time_travel) {
+        // Let the run-time know that time travel is allowed
+        c += "const bool BaseEvent::allow_time_travel = true;";
+    }
+    else {
+        c += "const bool BaseEvent::allow_time_travel = false;";
+    }
+
     c += "";
 
     // om_fixed_parms.cpp

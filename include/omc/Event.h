@@ -77,7 +77,7 @@ public:
      */
     void verified_age_agent()
     {
-        if (event_time < get_time()) {
+        if (!allow_time_travel && event_time < get_time()) {
             // The time of this event is in the local past of the entity within which the event occurs.
             // This is an error in model logic.
             // Write log message and throw run-time exception.
@@ -364,6 +364,11 @@ public:
      * true to enable event logging (use API)
      */
     static thread_local bool trace_event_on;
+
+    /**
+     * True if time travel is allowed
+     */
+    static const bool allow_time_travel;
 
     /**
      * The global event counter.

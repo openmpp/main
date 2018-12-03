@@ -551,6 +551,8 @@ bool Symbol::option_event_trace = false;
 
 bool Symbol::option_case_checksum = false;
 
+bool Symbol::option_allow_time_travel = false;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -1573,6 +1575,24 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_case_checksum = false;
+            }
+        }
+    }
+
+    {
+        string key = "allow_time_travel";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_allow_time_travel = true;
+                // This option should be off to detect model logic errors
+                // so always emit a warning if it is on.
+                theLog->logMsg(LT("warning : option allow_time_travel is on."));
+                Symbol::post_parse_warnings++;
+            }
+            else if (value == "off") {
+                option_allow_time_travel = false;
             }
         }
     }
