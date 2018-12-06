@@ -587,35 +587,34 @@ bool RootController::receiveSubValues(void)
 
     for (AccReceive & accRecv : accRecvLst) {
 
-        if (!accRecv.isReceived) {      // if accumulator not yet received
+        if (accRecv.isReceived) continue;   // accumulator already received
 
-            // allocate buffer to receive the data
-            unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
-            double * valueArr = valueUptr.get();
+        // allocate buffer to receive the data
+        unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
+        double * valueArr = valueUptr.get();
 
-            // try to receive accumulator values
-            accRecv.isReceived = msgExec->tryReceive(
-                accRecv.senderRank, (MsgTag)accRecv.msgTag, typeid(double), accRecv.valueSize, valueArr
-            );
-            if (!accRecv.isReceived) continue;
+        // try to receive accumulator values
+        accRecv.isReceived = msgExec->tryReceive(
+            accRecv.senderRank, (MsgTag)accRecv.msgTag, typeid(double), accRecv.valueSize, valueArr
+        );
+        if (!accRecv.isReceived) continue;
 
-            // accumulator received: write it into database
-            const TableDicRow * tblRow = metaStore->tableDic->byKey(modelId, accRecv.tableId);
-            if (tblRow == nullptr) throw new DbException("output table not found in table dictionary, id: %d", accRecv.tableId);
+        // accumulator received: write it into database
+        const TableDicRow * tblRow = metaStore->tableDic->byKey(modelId, accRecv.tableId);
+        if (tblRow == nullptr) throw new DbException("output table not found in table dictionary, id: %d", accRecv.tableId);
 
-            unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-                accRecv.runId,
-                tblRow->tableName.c_str(),
-                dbExec,
-                metaStore.get(),
-                subValueCount,
-                modelRunOptions().useSparse,
-                modelRunOptions().nullValue
-            ));
-            writer->writeAccumulator(dbExec, accRecv.subValueId, accRecv.accId, accRecv.valueSize, valueArr);
+        unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
+            accRecv.runId,
+            tblRow->tableName.c_str(),
+            dbExec,
+            metaStore.get(),
+            subValueCount,
+            modelRunOptions().useSparse,
+            modelRunOptions().nullValue
+        ));
+        writer->writeAccumulator(dbExec, accRecv.subValueId, accRecv.accId, accRecv.valueSize, valueArr);
 
-            isAnyReceived = true;
-        }
+        isAnyReceived = true;
     }
 
     // update restart sub-value in database and list of accumulators

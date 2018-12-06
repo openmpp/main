@@ -31,7 +31,8 @@ MpiExec::MpiExec(int & argc, char ** & argv) :
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        int mpiRet = MPI_Init(&argc, &argv);
+        int provided = MPI_THREAD_SINGLE;
+        int mpiRet = MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);     // multiple only because most of implementations provided only that level
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);
 
         // return error code instead of aborting process

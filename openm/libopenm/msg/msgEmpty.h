@@ -112,8 +112,11 @@ namespace openm
         bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const override
         { return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
-        /** wait for all non-blocking send to be completed. */
-        void waitSendAll(void) override { MsgExecBase::waitSendAll(); }
+        /** wait for non-blocking send to be completed.
+         *
+         * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
+         */
+        void waitSendAll(bool i_isOnce = false) override { MsgExecBase::waitSendAll(i_isOnce); }
 
     private:
         MsgEmptyExec(const MsgEmptyExec & i_exec) = delete;

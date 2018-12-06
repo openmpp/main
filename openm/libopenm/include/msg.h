@@ -260,8 +260,11 @@ namespace openm
          */
         virtual bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const = 0;
 
-        /** wait for all non-blocking send to be completed. */
-        virtual void waitSendAll(void) = 0;
+        /** wait for non-blocking send to be completed.
+        *
+        * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
+        */
+        virtual void waitSendAll(bool i_isOnce = false) = 0;
     };
 }
 

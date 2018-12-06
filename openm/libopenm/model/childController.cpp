@@ -263,6 +263,9 @@ void ChildController::writeAccumulators(
 /** exchange between root and child process to send and receive status update. */
 bool ChildController::childExchange(void) 
 {
+    // wait for send completion, if any outstanding
+    msgExec->waitSendAll(true);
+
     // get process-wide model run state
     // if model status same and last progress report sent recently then exit
     auto nowTime = chrono::system_clock::now();

@@ -45,8 +45,11 @@ namespace openm
         /** try to non-blocking receive and unpack vector of db rows, return return true if completed. */
         bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const;
 
-        /** wait for all non-blocking send to be completed. */
-        void waitSendAll(void);
+        /** wait for non-blocking send to be completed.
+         *
+         * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
+         */
+        void waitSendAll(bool i_isOnce);
 
     protected:
         MsgExecBase(void) : worldCommSize(1), worldRank(0), group_rank(0) { }

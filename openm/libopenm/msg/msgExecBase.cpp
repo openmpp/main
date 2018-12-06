@@ -144,8 +144,11 @@ bool MsgExecBase::tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, cons
     }
 }
 
-/** wait for all non-blocking send to be completed. */
-void MsgExecBase::waitSendAll(void)
+/** wait for non-blocking send to be completed.
+*
+* @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
+*/
+void MsgExecBase::waitSendAll(bool i_isOnce)
 {
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
@@ -155,17 +158,23 @@ void MsgExecBase::waitSendAll(void)
             isAllDone = true;
 
             // check for any active send request
-            for (const auto & rs : sendLst) {
-                bool isDone = rs.get()->isCompleted();
+            for (auto it = sendLst.begin(); it != sendLst.end(); ) {
+
+                bool isDone = it->get()->isCompleted();
                 isAllDone = isAllDone && isDone;
+
+                if (isDone) {
+                    it = sendLst.erase(it); // remove completed requests from the list
+                }
+                else {
+                    it++;
+                }
             }
 
             // sleep if any outstanding request exist
-            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_SEND_SLEEP_TIME));
+            if (!i_isOnce && !isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_SEND_SLEEP_TIME));
         }
-        while (!isAllDone);
-        
-        sendLst.clear();    // all request completed, clear the list
+        while (!i_isOnce && !isAllDone);
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
