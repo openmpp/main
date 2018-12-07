@@ -45,8 +45,10 @@ void ChildController::init(void)
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
 
     // broadcast basic run options from root to all other processes
+    int nRootIdle = 0;
     msgExec->bcastInt(ProcessGroupDef::all, &subValueCount);
     msgExec->bcastInt(ProcessGroupDef::all, &threadCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &nRootIdle);
     msgExec->bcastInt(ProcessGroupDef::all, &modelId);
 
     // basic validation: number of processes expected to be > 1
@@ -55,7 +57,7 @@ void ChildController::init(void)
     // if (processCount <= 1) throw ModelException("Invalid number of modeling processes: %d", processCount);
 
     // create groups for parallel run of modeling task
-    groupDef = ProcessGroupDef(subValueCount, threadCount, msgExec->worldSize(), msgExec->rank());
+    groupDef = ProcessGroupDef(subValueCount, threadCount, (nRootIdle != 0), msgExec->worldSize(), msgExec->rank());
 
     msgExec->createGroups(groupDef.groupSize, groupDef.groupCount);
 

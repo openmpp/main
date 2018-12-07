@@ -46,8 +46,9 @@ using namespace openm;
 *   by default is only one group, which include all modeling processes \n
 *
 * Root process may or may not be be used for modeling \n
-*   if (group size * group count) == process count then "root is active" \n
-*   else root process dedicated for data exchange and modeling done only by child processes
+*   if (group size * group count) == (process count) then "root is active" \n
+*   else root process dedicated for data exchange and modeling done only by child processes \n
+*   if run option "NotOnRoot" is true then no modeling done at root process
 *
 * Number of sub-values per process = total number of sub-values / group size \n
 *   if total number of sub-values % number of processes != 0 then remainder calculated at group last process \n
@@ -105,11 +106,14 @@ void RootController::init(void)
     // get main run control values: number of sub-values, threads
     subValueCount = argOpts().intOption(RunOptionsKey::subValueCount, 1);   // number of sub-values from command line or ini-file
     threadCount = argOpts().intOption(RunOptionsKey::threadCount, 1);       // max number of modeling threads
+    bool isRootIdle = argOpts().boolOption(RunOptionsKey::notOnRoot);       // if true then do not run modeling threads at root process
     isWaitTaskRun = argOpts().boolOption(RunOptionsKey::taskWait);          // if true then task run under external supervision
 
     // broadcast basic run options from root to all other processes
+    int nRootIdle = isRootIdle ? 1 : 0;
     msgExec->bcastInt(ProcessGroupDef::all, &subValueCount);
     msgExec->bcastInt(ProcessGroupDef::all, &threadCount);
+    msgExec->bcastInt(ProcessGroupDef::all, &nRootIdle);
     msgExec->bcastInt(ProcessGroupDef::all, &modelId);
 
     // basic validation: number of processes expected to be > 1
@@ -121,7 +125,7 @@ void RootController::init(void)
     // "is root active": root may be used for modeling in last group
     // if (group size * group count) == process count then "root is active"
     // else root process dedicated for data exchange and modeling done only by child processes
-    rootGroupDef = ProcessGroupDef(subValueCount, threadCount, msgExec->worldSize(), msgExec->rank());
+    rootGroupDef = ProcessGroupDef(subValueCount, threadCount, isRootIdle, msgExec->worldSize(), msgExec->rank());
 
     msgExec->createGroups(rootGroupDef.groupSize, rootGroupDef.groupCount);
 

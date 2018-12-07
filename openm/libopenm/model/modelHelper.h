@@ -59,7 +59,7 @@ namespace openm
             groupSize(1), groupCount(0), activeRank(0), groupOne(0), isRootActive(true), subPerProcess(1), selfSubCount(1)
         { }
 
-        ProcessGroupDef(int i_subValueCount, int i_threadCount, int i_worldSize, int i_worldRank);
+        ProcessGroupDef(int i_subValueCount, int i_threadCount, bool i_isRootIdle, int i_worldSize, int i_worldRank);
     };
 
     // helper struct to hold modeling group run id and run state

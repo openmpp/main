@@ -27,6 +27,9 @@ namespace openm
     /** number of modeling threads */
     const char * RunOptionsKey::threadCount = "OpenM.Threads";
 
+    /** if true then do not run modeling threads at root process */
+    const char * RunOptionsKey::notOnRoot = "OpenM.NotOnRoot";
+
     /** database connection string */
     const char * RunOptionsKey::dbConnStr = "OpenM.Database";
 
@@ -125,6 +128,7 @@ namespace openm
 static const char * runOptKeyArr[] = {
     RunOptionsKey::subValueCount,
     RunOptionsKey::threadCount,
+    RunOptionsKey::notOnRoot,
     RunOptionsKey::dbConnStr,
     RunOptionsKey::restartRunId,
     RunOptionsKey::runName,

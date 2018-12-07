@@ -31,6 +31,9 @@ namespace openm
         /** number of modeling threads */
         static const char * threadCount;
 
+        /** if true then do not run modeling threads at root process */
+        static const char * notOnRoot;
+
         /** database connection string */
         static const char * dbConnStr;
 
