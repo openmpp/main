@@ -161,7 +161,7 @@ public:
      */
     static const string & get_name()
     {
-        return NT_name;
+        return *NT_name;
     }
 
     // storage
