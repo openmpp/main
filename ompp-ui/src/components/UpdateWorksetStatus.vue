@@ -2,9 +2,9 @@
 <template>
 
 <span id="update-workset-status" v-show="!loadDone" class="mdc-typography--caption">
-  <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
+  <span v-show="loadWait" class="material-icons om-mcw-spin">hourglass_empty</span><span>{{msgLoad}}</span>
 </span>
-  
+
 </template>
 
 <script>
@@ -52,7 +52,7 @@ export default {
         '/workset/' + (this.worksetName || '') +
         '/readonly/' + (!this.enableEdit).toString()
       try {
-        const response = await axios.post(u)
+        const response = await axios.post(u, { }, { responseType: 'text' })
         const rsp = response.data
         if ((rsp || '') !== '') console.log('Server reply:', rsp)
         this.loadDone = true
@@ -69,9 +69,3 @@ export default {
   }
 }
 </script>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
-</style>

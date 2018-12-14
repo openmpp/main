@@ -26,14 +26,14 @@
     </div>
   </div>
 </om-mcw-dialog>
- 
+
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import * as Mdf from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import OmMcwDialog from '@/om-mcw/OmMcwDialog'
 
 export default {
   components: { OmMcwDialog },
@@ -87,7 +87,7 @@ export default {
       this.paramNote = Mdf.noteOfDescrNote(txt)
       this.paramDigest = txt.Param.Digest || ''
 
-      this.$refs.noteDlg.open()   // show param info dialog
+      this.$refs.noteDlg.open() // show param info dialog
     }
   }
 }
@@ -97,11 +97,8 @@ export default {
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
-  
-  /* note dialog, fix handsontable z-index: 101; */
-  .note-dlg {
-    z-index: 201;
-  }
+
+  /* note dialog */
   .note-table {
     display: table;
     margin-top: .5rem;
@@ -116,10 +113,4 @@ export default {
       padding-right: .5rem;
     }
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

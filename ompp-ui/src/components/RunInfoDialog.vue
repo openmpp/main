@@ -29,7 +29,7 @@
 
 <script>
 import * as Mdf from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import OmMcwDialog from '@/om-mcw/OmMcwDialog'
 
 export default {
   components: { OmMcwDialog },
@@ -78,7 +78,7 @@ export default {
       this.lastDt = Mdf.dtStr(rt.UpdateDateTime)
       this.timeDt = Mdf.toIntervalStr(this.createdDt, this.lastDt)
 
-      this.$refs.noteDlg.open()   // show run info dialog
+      this.$refs.noteDlg.open() // show run info dialog
     }
   }
 }
@@ -88,11 +88,8 @@ export default {
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
-  
-  /* note dialog, fix handsontable z-index: 101; */
-  .note-dlg {
-    z-index: 201;
-  }
+
+  /* note dialog */
   .note-table {
     display: table;
     margin-top: .5rem;
@@ -107,10 +104,4 @@ export default {
       padding-right: .5rem;
     }
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

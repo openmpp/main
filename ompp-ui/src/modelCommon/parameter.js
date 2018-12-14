@@ -52,7 +52,7 @@ export const paramTextByName = (md, name) => {
     if (!isParam(md.ParamTxt[k].Param)) continue
     if (md.ParamTxt[k].Param.Name === name) return md.ParamTxt[k]
   }
-  return emptyParamText()  // not found
+  return emptyParamText() // not found
 }
 
 // return empty parameter size

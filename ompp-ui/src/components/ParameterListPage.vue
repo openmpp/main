@@ -8,22 +8,24 @@
       <li v-for="p in paramList()" :key="'pt-' + p.Param.ParamId" class="mdc-list-item">
 
         <span
-          @click="showParamInfo(p)" 
-          class="material-icons mdc-list-item__start-detail note-link" 
+          @click="showParamInfo(p)"
+          class="material-icons mdc-list-item__graphic note-link"
           :title="p.Param.Name + ' info'"
           :alt="p.Param.Name + ' info'">event_note</span>
         <router-link v-if="pathRunSet !== '/'"
-          :to="'/model/' + digest + '/' + pathRunSet + '/parameter/' + p.Param.Name" 
-          class="ahref-next" 
+          :to="'/model/' + digest + '/' + pathRunSet + '/parameter/' + p.Param.Name"
+          class="ahref-next"
           :title="p.Param.Name"
-          :alt="p.Param.Name" 
+          :alt="p.Param.Name"
           >
-          <span class="mdc-list-item__text">{{ p.Param.Name }}
+          <span class="mdc-list-item__text">
+            <span class="mdc-list-item__primary-text">{{ p.Param.Name }}</span>
             <span class="mdc-list-item__secondary-text">{{ descrOf(p) }}</span>
           </span>
         </router-link>
         <span v-else class="ahref-next">
-          <span class="mdc-list-item__text">{{ p.Param.Name }}
+          <span class="mdc-list-item__text">
+            <span class="mdc-list-item__primary-text">{{ p.Param.Name }}</span>
             <span class="mdc-list-item__secondary-text">{{ descrOf(p) }}</span>
           </span>
         </span>
@@ -36,7 +38,7 @@
   <param-info-dialog ref="noteDlg" id="param-note-dlg"></param-info-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
@@ -115,13 +117,23 @@ export default {
     padding-left: 0;
   }
 
-  /* a link to next page */
-  .ahref-next {
+  /* link to next page */
+  .item-link-next {
     display: block;
     width: 100%;
     height: 100%;
     text-decoration: none;
     @extend .mdc-theme--text-primary-on-background;
+  }
+  .link-next {
+    @extend .item-link-next;
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+  .ahref-next {
+    @extend .item-link-next;
     &:hover {
       background: rgba(0, 0, 0, 0.1);
     }
@@ -130,9 +142,9 @@ export default {
   /* notes: a link or empty (not a link) */
   .note-item {
     display: inline-block;
-    vertical-align: top;
     height: 100%;
     margin: 0;
+    padding-top: 2rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -149,10 +161,4 @@ export default {
     cursor: default;
     @extend .mdc-theme--text-disabled-on-background;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

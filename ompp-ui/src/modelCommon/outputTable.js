@@ -53,7 +53,7 @@ export const tableTextByName = (md, name) => {
     if (!isTable(md.TableTxt[k].Table)) continue
     if (md.TableTxt[k].Table.Name === name) return md.TableTxt[k]
   }
-  return emptyTableText()  // not found
+  return emptyTableText() // not found
 }
 
 // return empty table size

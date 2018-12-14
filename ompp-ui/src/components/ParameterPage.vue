@@ -3,9 +3,9 @@
 <div id="parameter-page" class="main-container mdc-typography mdc-typography--body1">
 
   <div v-if="loadDone && saveDone" class="hdr-row mdc-typography--body1">
-    
+
     <span
-      @click="showParamInfo()" 
+      @click="showParamInfo()"
       class="cell-icon-link material-icons" :alt="paramName + ' info'" :title="paramName + ' info'">event_note</span>
 
     <span v-if="tv.isPrev">
@@ -31,7 +31,6 @@
         @click="doLastPage()"
         class="cell-icon-link material-icons" title="Last page" alt="Last page">last_page</span>
     </span>
-    </span>
     <span v-else>
       <span
         class="cell-icon-empty material-icons" title="Next page" alt="Next page">navigate_next</span>
@@ -41,7 +40,7 @@
 
     <span v-if="isEdit">
       <span v-if="isEditUpdated"
-        @click="doSave()" 
+        @click="doSave()"
         class="cell-icon-link material-icons" :alt="'Save ' + paramName" :title="'Save ' + paramName">save</span>
       <span v-else
         class="cell-icon-empty material-icons" title="Save" alt="Save">save</span>
@@ -83,17 +82,17 @@
 
       <span
         @click="doRefresh()"
-        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
+        class="cell-icon-link material-icons" title="Refresh" alt="Refresh">refresh</span>
 
     </span>
 
-    <span class="mdc-typography--body2">{{ paramName }}: </span>
+    <span class="medium-wt">{{ paramName }}: </span>
     <span>{{ paramDescr() }}</span>
 
   </div>
-  <div v-else class="hdr-row mdc-typography--body2">
+  <div v-else class="hdr-row medium-wt">
     <span class="cell-icon-empty material-icons" aria-hidden="true">refresh</span>
-    <span v-if="loadWait || saveWait" class="material-icons om-mcw-spin">star</span>
+    <span v-if="loadWait || saveWait" class="material-icons om-mcw-spin">hourglass_empty</span>
     <span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
@@ -104,7 +103,7 @@
   <param-info-dialog ref="noteDlg" id="param-note-dlg"></param-info-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
@@ -113,7 +112,7 @@ import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import * as Mdf from '@/modelCommon'
 import { default as ParamInfoDialog } from './ParameterInfoDialog'
-import HotTable from '@/vue-handsontable-official/src/HotTable'
+import { HotTable } from '@handsontable/vue'
 
 const MAX_PAGE_SIZE = 65536
 const MAX_PAGE_OFFSET = (MAX_PAGE_SIZE * MAX_PAGE_SIZE)
@@ -141,7 +140,8 @@ export default {
       paramType: Mdf.emptyTypeText(),
       paramRunSet: Mdf.emptyParamRunSet(),
       subCount: 0,
-      isWsView: false,    // if true then page view is a workset else model run
+      isNullable: false, // if true then parameter value can be NULL
+      isWsView: false, // if true then page view is a workset else model run
       htRoot: '',
       htSettings: {
         manualColumnMove: true,
@@ -287,9 +287,9 @@ export default {
     // cell(s) edit completed event: load data, copy-paste, undo-redo
     // handsontable issue: even data not changed handsontable emit 'eidt' event
     doAfterChange (changes, source) {
-      if (!this.isEdit) return      // edit not allowed
+      if (!this.isEdit) return // edit not allowed
 
-      if (source === 'loadData') {  // new data loaded
+      if (source === 'loadData') { // new data loaded
         this.editCount = 0
         this.isEditUpdated = false
         this.editRowCol = []
@@ -309,12 +309,12 @@ export default {
 
       // compare old and new value: it may be no changes
       let len = Mdf.lengthOf(changes)
-      if (len <= 0) return      // changes undefined
+      if (len <= 0) return // changes undefined
       try {
         for (let k = 0; k < len; k++) {
           let oldVal = changes[k][2]
           let newVal = changes[k][3]
-          let iRow = this.$refs.ht.table.toPhysicalRow(changes[k][0])
+          let iRow = this.$refs.ht.hotInstance.toPhysicalRow(changes[k][0])
           let iCol = changes[k][1]
           let isUpd = false
 
@@ -328,7 +328,7 @@ export default {
             } else {
               if (typeof newVal !== 'number') {
                 let nv = parseFloat(newVal)
-                isUpd = nv !== oldVal                 // cell updated only if numeric values different
+                isUpd = nv !== oldVal // cell updated only if numeric values different
                 this.htSettings.data[iRow][iCol] = nv // restore numeric value
               }
             }
@@ -368,28 +368,28 @@ export default {
       const vp = []
       const dp = []
 
-      let nowKey = '?'  // non-existent start key to enforce append of the first row
+      let nowKey = '?' // non-existent start key to enforce append of the first row
       let n = 0
       const nSub0 = this.paramSize.rank // first sub-value position
 
       for (let i = 0; i < len; i++) {
         let sk = [d[i].DimIds].toString() // current row key
 
-        if (sk === nowKey) {  // same key: set sub-value at position of sub_id
-          vp[n][nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)  // convert sub-value from enum id to label if required
-        } else {              // make new row
+        if (sk === nowKey) { // same key: set sub-value at position of sub_id
+          vp[n][nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].IsNull, d[i].Value) // convert sub-value from enum id to label if required
+        } else { // make new row
           let row = []
           for (let j = 0; j < this.paramSize.rank; j++) {
             row.push(
               this.translateDimEnumId(j, d[i].DimIds[j]) || d[i].DimIds[j]
             )
           }
-          for (let j = 0; j < this.subCount; j++) {   // append empty sub-values
+          for (let j = 0; j < this.subCount; j++) { // append empty sub-values
             row.push(void 0)
           }
 
           // append new row to page data, set first row value, store dimension ids
-          row[nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].Value)
+          row[nSub0 + (d[i].SubId || 0)] = this.translateValue(d[i].IsNull, d[i].Value)
           n = vp.length
           vp.push(row)
           nowKey = sk
@@ -420,7 +420,8 @@ export default {
     },
 
     // translate column value if parameter value is enum-based
-    translateValue (val) {
+    translateValue (isNull, val) {
+      if (isNull || val === void 0 || val === null) return '' // value is null
       if (!Mdf.isBuiltIn(this.paramType.Type)) return Mdf.enumDescrOrCodeById(this.paramType, val)
       return val
     },
@@ -439,6 +440,7 @@ export default {
         this.isWsView ? this.theWorksetText : this.theRunText,
         this.paramName)
       this.subCount = this.paramRunSet.SubCount || 0
+      this.isNullable = this.paramText.Param.hasOwnProperty('IsExtendable') && (this.paramText.Param.IsExtendable || false)
       this.isEdit = this.isWsView && !this.theWorksetText.IsReadonly
 
       // find dimension type for each dimension
@@ -495,20 +497,24 @@ export default {
       }
 
       // editing enabled
-      let col = {readOnly: false, allowInvalid: false, allowEmpty: false, title: title}
+      let col = {readOnly: false, allowInvalid: false, allowEmpty: this.isNullable, title: title}
 
       if (Mdf.isInt(this.paramType.Type)) {
         col.validator = /^[-+]?[0-9]+$/
         col.className = 'htRight'
       }
       if (Mdf.isFloat(this.paramType.Type)) {
-        col.validator = /^[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$/
+        if (this.isNullable) {
+          col.validator = /(^$)|(^[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$)/
+        } else {
+          col.validator = /^[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$/
+        }
         col.className = 'htRight'
       }
       if (Mdf.isBool(this.paramType.Type)) {
         col.type = 'checkbox'
       }
-      if (!Mdf.isBuiltIn(this.paramType.Type)) {  // enum type
+      if (!Mdf.isBuiltIn(this.paramType.Type)) { // enum type
         col.editor = 'select'
         col.selectOptions = Mdf.enumDescrOrCodeArray(this.paramType)
         // col.type = 'dropdown'
@@ -652,7 +658,7 @@ export default {
 
     // prepare page of parameter data for save
     makePageForSave () {
-      if (!this.isEdit || this.editRowCol.length <= 0) return []   // no changes or edit disabled
+      if (!this.isEdit || this.editRowCol.length <= 0) return [] // no changes or edit disabled
 
       const nSub0 = this.paramSize.rank // first sub-value position
       const pv = []
@@ -668,6 +674,7 @@ export default {
 
         pv.push({
           DimIds: this.dimKeys[iRow],
+          IsNull: this.isNullable && ((v || '') === ''),
           Value: v,
           SubId: iCol - nSub0})
       }
@@ -683,17 +690,22 @@ export default {
 }
 </script>
 
+<!-- handsontable css: cannot be local css -->
+<style lang="css">
+  @import "handsontable/dist/handsontable.full.css";
+</style>
+
 <!-- local scope css: this component only -->
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
-  @import "handsontable/dist/handsontable.full.css";
+  @import "@/om-mcw.scss";
 
   /* main container, header row and data table */
   .main-container {
     height: 100%;
     flex: 1 1 auto;
-    display: flex; 
+    display: flex;
     flex-direction: column;
     overflow-y: hidden;
   }
@@ -726,20 +738,13 @@ export default {
     &:hover {
       cursor: pointer;
     }
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .mdc-theme--on-primary;
     @extend .mdc-theme--primary-bg;
   }
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--primary-light-bg;
-    @extend .mdc-theme--text-primary-on-primary;
-    /* @extend .mdc-theme--text-disabled-on-background; */
+    @extend .om-theme-primary-light-bg;
+    @extend .mdc-theme--on-primary;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

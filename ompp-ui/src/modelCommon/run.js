@@ -52,6 +52,7 @@ export const isRunSuccess = (rt) => {
   return isRunText(rt) && rt.Status === RUN_SUCCESS
 }
 
+/* eslint-disable no-multi-spaces */
 export const RUN_SUCCESS = 's'      // run completed successfuly
 export const RUN_IN_PROGRESS = 'p'  // run in progress
 export const RUN_INITIAL = 'i'      // run not started yet

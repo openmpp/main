@@ -2,9 +2,9 @@
 <template>
 
 <span id="refresh-workset-list" v-show="!loadDone" class="mdc-typography--caption">
-  <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
+  <span v-show="loadWait" class="material-icons om-mcw-spin">hourglass_empty</span><span>{{msgLoad}}</span>
 </span>
-  
+
 </template>
 
 <script>
@@ -52,7 +52,7 @@ export default {
       let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/workset-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
-        this.setWorksetTextList(response.data)  // update workset list in store
+        this.setWorksetTextList(response.data) // update workset list in store
         this.loadDone = true
       } catch (e) {
         this.msgLoad = '<Server offline or no model input sets published>'
@@ -72,9 +72,3 @@ export default {
   }
 }
 </script>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
-</style>

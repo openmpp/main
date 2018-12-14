@@ -46,22 +46,22 @@ module.exports = {
         loader: 'vue-loader',
         options: vueLoaderConfig
       },
-      /*
       {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
       },
-      */
+      /*resolve('node_modules/@material'),*/
+/*      
       {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [
           resolve('src'),
           resolve('test'),
-          path.join(__dirname, '../node_modules/@material'),
           resolve('node_modules/webpack-dev-server/client')]
       },
+*/
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',

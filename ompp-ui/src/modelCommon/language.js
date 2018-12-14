@@ -31,5 +31,5 @@ export const wordByCode = (mw, code) => {
       if (mw.LangWords[k].Code === code) return mw.LangWords[k].Label
     }
   }
-  return code   // not found: return original code
+  return code // not found: return original code
 }

@@ -41,14 +41,14 @@ export const emptyTypeText = () => {
 
 // find TypeTxt by TypeId
 export const typeTextById = (md, typeId) => {
-  if (!Mdl.isModel(md) || typeId === void 0 || typeId === null) {  // model empty or type id empty: return empty result
+  if (!Mdl.isModel(md) || typeId === void 0 || typeId === null) { // model empty or type id empty: return empty result
     return emptyTypeText()
   }
   for (let k = 0; k < md.TypeTxt.length; k++) {
     if (!isType(md.TypeTxt[k].Type)) continue
     if (md.TypeTxt[k].Type.TypeId === typeId) return md.TypeTxt[k]
   }
-  return emptyTypeText()  // not found
+  return emptyTypeText() // not found
 }
 
 // built-in types
@@ -133,7 +133,7 @@ export const enumCodeById = (typeTxt, enumId) => {
       return (typeTxt.TypeEnumTxt[k].Enum.Name || '')
     }
   }
-  return ''   // not found
+  return '' // not found
 }
 
 // find enum description or code by enum id or empty string if not found
@@ -144,7 +144,7 @@ export const enumDescrOrCodeById = (typeTxt, enumId) => {
       return Dnf.descrOfDescrNote(typeTxt.TypeEnumTxt[k]) || (typeTxt.TypeEnumTxt[k].Enum.Name || '')
     }
   }
-  return ''   // not found
+  return '' // not found
 }
 
 // find enum id by description or code retrun null if not found

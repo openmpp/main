@@ -8,8 +8,8 @@
       <li v-for="(r, idx) in runTextList" :key="'rt-' + idx.toString()" class="mdc-list-item">
 
         <span
-          @click="showRunInfo(r)" 
-          class="material-icons mdc-list-item__start-detail note-link" 
+          @click="showRunInfo(r)"
+          class="note-link mdc-list-item__graphic material-icons"
           :title="r.Name + ' notes'"
           :alt="r.Name + ' notes'">
             <span v-if="isSuccess(r)">event_note</span>
@@ -17,13 +17,13 @@
         </span>
         <span
           @click="doRunClick(idx, r.Digest)"
-          class="link-next" 
+          class="link-next"
           :title="r.Name"
-          :alt="r.Name" 
+          :alt="r.Name"
           >
           <span class="mdc-list-item__text">
-            <span>{{ r.Name }}</span>
-            <span class="item-line mdc-list-item__secondary-text"><span class="mono mdc-typography--body1">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
+            <span class="mdc-list-item__primary-text">{{ r.Name }}</span>
+            <span class="item-line mdc-list-item__secondary-text"><span class="mono">{{lastTime(r)}} </span>{{ descrOf(r) }}</span>
           </span>
         </span>
 
@@ -35,7 +35,7 @@
   <run-info-dialog ref="runInfoDlg" id="run-info-dlg"></run-info-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
@@ -77,7 +77,7 @@ export default {
 
     // click on run: select this run as current run
     doRunClick (idx, runDigest) {
-      if (idx === this.prevIndex && runDigest === this.prevDigest) return  // exit: click on same item in the list
+      if (idx === this.prevIndex && runDigest === this.prevDigest) return // exit: click on same item in the list
       this.prevDigest = (runDigest || '')
       this.prevIndex = (idx || 0)
       // select new current run by index
@@ -110,25 +110,24 @@ export default {
     padding-left: 0;
   }
 
-  /* a link to next page */
-  .ahref-next {
+  /* link to next page */
+  .item-link-next {
     display: block;
     width: 100%;
     height: 100%;
     text-decoration: none;
     @extend .mdc-theme--text-primary-on-background;
+  }
+  .link-next {
+    @extend .item-link-next;
     &:hover {
+      cursor: pointer;
       background: rgba(0, 0, 0, 0.1);
     }
   }
-  .link-next {
-    display: block;
-    width: 100%;
-    height: 100%;
-    text-decoration: none;
-    @extend .mdc-theme--text-primary-on-background;
+  .ahref-next {
+    @extend .item-link-next;
     &:hover {
-      cursor: pointer;
       background: rgba(0, 0, 0, 0.1);
     }
   }
@@ -136,9 +135,9 @@ export default {
   /* notes: a link or empty (not a link) */
   .note-item {
     display: inline-block;
-    vertical-align: top;
     height: 100%;
     margin: 0;
+    padding-top: 2rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -155,26 +154,4 @@ export default {
     cursor: default;
     @extend .mdc-theme--text-disabled-on-background;
   }
-
-  /* note dialog table info */
-  .note-table {
-    display: table;
-    margin-top: .5rem;
-  }
-  .note-row {
-    display: table-row;
-  }
-  .note-cell {
-    display: table-cell;
-    white-space: nowrap;
-    &:first-child {
-      padding-right: .5rem;
-    }
-  }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

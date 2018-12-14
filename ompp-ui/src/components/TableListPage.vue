@@ -8,17 +8,18 @@
       <li v-for="t in TableList()" :key="'tt-' + t.Table.TableId" class="mdc-list-item">
 
         <span
-          @click="showTableInfo(t)" 
-          class="material-icons mdc-list-item__start-detail note-link" 
+          @click="showTableInfo(t)"
+          class="material-icons mdc-list-item__graphic note-link"
           :title="t.Table.Name + ' notes'"
           :alt="t.Table.Name + ' notes'">event_note</span>
         <router-link
-          :to="'/model/' + digest + '/run/' + pathNameDigest + '/table/' + t.Table.Name" 
-          class="ahref-next" 
+          :to="'/model/' + digest + '/run/' + pathNameDigest + '/table/' + t.Table.Name"
+          class="ahref-next"
           :title="t.Table.Name"
-          :alt="t.Table.Name" 
+          :alt="t.Table.Name"
           >
-          <span class="mdc-list-item__text">{{ t.Table.Name }}
+          <span class="mdc-list-item__text">
+            <span class="mdc-list-item__primary-text">{{ t.Table.Name }}</span>
             <span class="mdc-list-item__secondary-text">{{ t.TableDescr }}</span>
           </span>
         </router-link>
@@ -31,7 +32,7 @@
   <table-info-dialog ref="noteDlg" id="table-note-dlg"></table-info-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
@@ -105,13 +106,23 @@ export default {
     padding-left: 0;
   }
 
-  /* a link to next page */
-  .ahref-next {
+  /* link to next page */
+  .item-link-next {
     display: block;
     width: 100%;
     height: 100%;
     text-decoration: none;
     @extend .mdc-theme--text-primary-on-background;
+  }
+  .link-next {
+    @extend .item-link-next;
+    &:hover {
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+  .ahref-next {
+    @extend .item-link-next;
     &:hover {
       background: rgba(0, 0, 0, 0.1);
     }
@@ -120,9 +131,9 @@ export default {
   /* notes: a link or empty (not a link) */
   .note-item {
     display: inline-block;
-    vertical-align: top;
     height: 100%;
     margin: 0;
+    padding-top: 2rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -139,10 +150,4 @@ export default {
     cursor: default;
     @extend .mdc-theme--text-disabled-on-background;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

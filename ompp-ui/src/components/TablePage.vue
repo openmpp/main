@@ -3,9 +3,9 @@
 <div id="table-page" class="main-container mdc-typography  mdc-typography--body1">
 
   <div v-if="loadDone" class="hdr-row mdc-typography--body1">
-    
+
     <span
-      @click="showTableInfo()" 
+      @click="showTableInfo()"
       class="cell-icon-link material-icons" :alt="tableName + ' info'" :title="tableName + ' info'">event_note</span>
 
     <span v-if="tv.isPrev">
@@ -31,7 +31,6 @@
         @click="doLastPage()"
         class="cell-icon-link material-icons" title="Last page" alt="Last page">last_page</span>
     </span>
-    </span>
     <span v-else>
       <span
         class="cell-icon-empty material-icons" title="Next page" alt="Next page">navigate_next</span>
@@ -43,7 +42,7 @@
       @click="toggleMoreControls()"
       class="cell-icon-link material-icons" :title="moreControlsLabel" :alt="moreControlsLabel">more_horiz</span>
 
-    <span v-if="isShowMoreControls" class="hdr-row mdc-typography--body2">
+    <span v-if="isShowMoreControls" class="hdr-row medium-wt">
 
       <span
         @click="doResetView()"
@@ -74,25 +73,25 @@
         class="cell-icon-link material-icons" title="Unlimited page size, show all data" alt="Unlimited page size, show all data">all_inclusive</span>
       <span
         @click="doExpressionPage()"
-        class="cell-icon-link material-icons" title="View table expressions"alt="View table expressions">filter_none</span>
+        class="cell-icon-link material-icons" title="View table expressions" alt="View table expressions">filter_none</span>
       <span
         @click="doAccumulatorPage()"
-        class="cell-icon-link material-icons" title="View accumulators and sub-values"alt="View accumulators and sub-values">filter_8</span>
+        class="cell-icon-link material-icons" title="View accumulators and sub-values" alt="View accumulators and sub-values">filter_8</span>
       <span
         @click="doAllAccumulatorPage()"
-        class="cell-icon-link material-icons" title="View all accumulators and sub-values"alt="View all accumulators and sub-values">library_add</span>
+        class="cell-icon-link material-icons" title="View all accumulators and sub-values" alt="View all accumulators and sub-values">library_add</span>
       <span
         @click="doRefresh()"
-        class="cell-icon-link material-icons" title="Refresh"alt="Refresh">refresh</span>
+        class="cell-icon-link material-icons" title="Refresh" alt="Refresh">refresh</span>
     </span>
-    
-    <span class="mdc-typography--body2">{{ tableName }}: </span>
+
+    <span class="medium-wt">{{ tableName }}: </span>
     <span>{{ tableDescr() }}</span>
 
   </div>
-  <div v-else class="hdr-row mdc-typography--body2">
+  <div v-else class="hdr-row medium-wt">
     <span class="cell-icon-link material-icons" aria-hidden="true">refresh</span>
-    <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>
+    <span v-if="loadWait" class="material-icons om-mcw-spin">hourglass_empty</span>
     <span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
@@ -103,7 +102,7 @@
   <table-info-dialog ref="noteDlg" id="table-note-dlg"></table-info-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
@@ -112,8 +111,9 @@ import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import * as Mdf from '@/modelCommon'
 import TableInfoDialog from './TableInfoDialog'
-import HotTable from '@/vue-handsontable-official/src/HotTable'
+import { HotTable } from '@handsontable/vue'
 
+/* eslint-disable no-multi-spaces */
 const kind = {
   EXPR: 0,  // output table expression(s)
   ACC: 1,   // output table accumulator(s)
@@ -155,7 +155,7 @@ export default {
         readOnly: true,
         rowHeaders: true,
         rowHeaderWidth: 72,
-        colHeaders: [],
+        columns: [],
         data: []
       },
       dimProp: [],
@@ -340,7 +340,7 @@ export default {
 
       let nowKey = '?'  // non-existent start key to enforce append of the first row
       let n = 0
-      const nSub0 = this.tableSize.rank + 1   // first sub-value position
+      const nSub0 = this.tableSize.rank + 1 // first sub-value position
 
       for (let i = 0; i < len; i++) {
         let sk = [d[i].DimIds, d[i].AccId].toString() // current row key
@@ -357,7 +357,7 @@ export default {
             )
           }
           row.push(this.translateAccId(d[i].AccId) || d[i].AccId)
-          for (let j = 0; j < this.subCount; j++) {   // append empty sub-values
+          for (let j = 0; j < this.subCount; j++) { // append empty sub-values
             row.push(void 0)
           }
 
@@ -379,7 +379,7 @@ export default {
 
       let dKey = '?'  // non-existent start key to enforce append of the first row
       let nf = 0
-      const nSub0 = this.tableSize.rank + 1   // first sub-value position
+      const nSub0 = this.tableSize.rank + 1 // first sub-value position
 
       for (let i = 0; i < len; i++) {
         let sk = [d[i].DimIds].toString() // current dimensions key
@@ -402,7 +402,7 @@ export default {
               )
             }
             row.push(this.translateAccId(k) || k)
-            for (let j = 0; j < this.subCount; j++) {   // append empty sub-values
+            for (let j = 0; j < this.subCount; j++) { // append empty sub-values
               row.push(void 0)
             }
             // append new row to page data
@@ -459,13 +459,13 @@ export default {
           return this.accProp[j].label || this.accProp[j].name
         }
       }
-      return accId.toString()   // accumulator id not found
+      return accId.toString() // accumulator id not found
     },
 
     // return expression value formatted with specified decimals
     // decimals undefined then default format is used
     formatExprValue (exprId, isNull, val) {
-      if (isNull || val === void 0 || val === null) return ''   // value is null
+      if (isNull || val === void 0 || val === null) return '' // value is null
       if (exprId === void 0 || exprId === null || exprId < 0) { // expression id undefined
         return val.toString()
       }
@@ -474,10 +474,10 @@ export default {
           if (this.exprProp[j].dec !== void 0 && this.exprProp[j].dec !== null) {
             return val.toFixed(this.exprProp[j].dec)
           }
-          break   // decimals undefined: use default format
+          break // decimals undefined: use default format
         }
       }
-      return val.toString()   // default format if expression id not found or decimals undefined
+      return val.toString() // default format if expression id not found or decimals undefined
     },
 
     // refresh current page view on mounted or tab switch
@@ -526,7 +526,7 @@ export default {
       for (let j = 0; j < this.tableText.TableAccTxt.length; j++) {
         if (this.tableText.TableAccTxt[j].hasOwnProperty('Acc')) {
           this.accProp.push({
-            accId: this.tableText.TableAccTxt[j].AccId,
+            accId: this.tableText.TableAccTxt[j].Acc.AccId,
             name: this.tableText.TableAccTxt[j].Acc.Name || '',
             label: Mdf.descrOfDescrNote(this.tableText.TableAccTxt[j])
           })
@@ -557,19 +557,19 @@ export default {
       for (let j = 0; j < this.tableSize.rank; j++) {
         this.htSettings.columns.push({title: (this.dimProp[j].label || this.dimProp[j].name)})
       }
-      this.htSettings.columns.push({      // expression dimension
+      this.htSettings.columns.push({  // expression dimension
         title: (this.tableText.ExprDescr || 'Measure')
       })
 
-      // value column or saccumultor sub-value columns
+      // value column or accumultor sub-value columns
       if (this.tv.kind === kind.EXPR) {
-        this.htSettings.columns.push({    // expression value
+        this.htSettings.columns.push({  // expression value
           title: 'Value',
           className: 'htRight'
         })
       } else {
         for (let j = 0; j < this.subCount; j++) {
-          this.htSettings.columns.push({    // column for each sub-value
+          this.htSettings.columns.push({  // column for each sub-value
             title: j.toString(),
             className: 'htRight'})
         }
@@ -679,17 +679,22 @@ export default {
 }
 </script>
 
+<!-- handsontable css: cannot be local css -->
+<style lang="css">
+  @import "handsontable/dist/handsontable.full.css";
+</style>
+
 <!-- local scope css: this component only -->
 <style lang="scss" scoped>
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
-  @import "handsontable/dist/handsontable.full.css";
+  @import "@/om-mcw.scss";
 
   /* main container, header row and data table */
   .main-container {
     height: 100%;
     flex: 1 1 auto;
-    display: flex; 
+    display: flex;
     flex-direction: column;
     overflow-y: hidden;
   }
@@ -722,20 +727,13 @@ export default {
     &:hover {
       cursor: pointer;
     }
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .mdc-theme--on-primary;
     @extend .mdc-theme--primary-bg;
   }
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--primary-light-bg;
-    @extend .mdc-theme--text-primary-on-primary;
-    /* @extend .mdc-theme--text-disabled-on-background; */
+    @extend .om-theme-primary-light-bg;
+    @extend .mdc-theme--on-primary;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

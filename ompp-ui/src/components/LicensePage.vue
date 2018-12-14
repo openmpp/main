@@ -1,6 +1,6 @@
 <template>
   <div id="license-page" class="mdc-typography mdc-typography--body1">
-   <span v-if="loadWait" class="material-icons om-mcw-spin">star</span>{{ msg }}
+   <span v-if="loadWait" class="material-icons om-mcw-spin">hourglass_empty</span>{{ msg }}
   </div>
 </template>
 
@@ -57,7 +57,7 @@ export default {
   }
   /*
   #license-page {
-    flex: 1 0 auto; 
+    flex: 1 0 auto;
     height: 100%;
     width: 100%;
     overflow: auto;
@@ -67,7 +67,7 @@ export default {
   */
 </style>
 
-<!-- MDC styles -->
+<!-- import MDC styles -->
 <style lang="scss">
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";

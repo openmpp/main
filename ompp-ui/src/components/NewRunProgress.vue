@@ -3,7 +3,7 @@
 
 <span id="new-run-progress">
   <span
-    @click="runLogPauseToggle()" 
+    @click="runLogPauseToggle()"
     class="cell-icon-link material-icons"
     :alt="!isPaused ? 'Pause' : 'Refresh'"
     :title="!isPaused ? 'Pause' : 'Refresh'">{{!isPaused ? (isFlip ? 'autorenew' : 'loop') : 'play_circle_outline'}}</span>
@@ -18,7 +18,7 @@ import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import * as Mdf from '@/modelCommon'
 
-const PROGRESS_UPDATE_TIME = 1000   // msec, run progress update time
+const PROGRESS_UPDATE_TIME = 1000 // msec, run progress update time
 
 export default {
   props: {
@@ -62,7 +62,7 @@ export default {
 
     // refresh new model run state: receive run state and log page from the server
     async doNewRunProgress () {
-      if ((this.modelDigest || '') === '') return   // exit: model digest unknown
+      if ((this.modelDigest || '') === '') return // exit: model digest unknown
 
       this.loadDone = false
       this.loadWait = true
@@ -112,7 +112,8 @@ export default {
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
   @import "@material/textfield/mdc-text-field";
-  
+  @import "@/om-mcw.scss";
+
   /* cell material icon: a link or empty (non-link) */
   .cell-icon {
     vertical-align: middle;
@@ -129,19 +130,13 @@ export default {
     &:hover {
       cursor: pointer;
     }
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .mdc-theme--on-primary;
     @extend .mdc-theme--primary-bg;
   }
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--primary-light-bg;
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .om-theme-primary-light-bg;
+    @extend .mdc-theme--on-primary;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

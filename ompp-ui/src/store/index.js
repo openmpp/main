@@ -162,7 +162,7 @@ const mutations = {
       state.theRunText.SubCount === state.runTextList[idx].SubCount &&
       (state.theRunText.CreateDateTime || '') === (state.runTextList[idx].CreateDateTime || '') &&
       (state.theRunText.UpdateDateTime || '') === (state.runTextList[idx].UpdateDateTime || '')) {
-      return  // same model run
+      return // same model run
     }
     // update current run to run at the index
     state.theRunText = JSON.parse(JSON.stringify(state.runTextList[idx]))
@@ -174,7 +174,7 @@ const mutations = {
       state.theRunText = Mdf.emptyRunText()
       return
     }
-    if (!Mdf.isLength(state.runTextList)) return  // model run list empty
+    if (!Mdf.isLength(state.runTextList)) return // model run list empty
 
     // if current run same as index run then return
     if (Mdf.isNotEmptyRunText(state.theRunText) &&
@@ -185,7 +185,7 @@ const mutations = {
       state.theRunText.SubCount === state.runTextList[0].SubCount &&
       (state.theRunText.CreateDateTime || '') === (state.runTextList[0].CreateDateTime || '') &&
       (state.theRunText.UpdateDateTime || '') === (state.runTextList[0].UpdateDateTime || '')) {
-      return  // same model run
+      return // same model run
     }
 
     // update current model run to the first in model run list
@@ -239,7 +239,7 @@ const mutations = {
     if (Mdf.isNotEmptyWorksetText(state.theWorksetText) &&
       state.theWorksetText.ModelDigest === state.worksetTextList[idx].ModelDigest &&
       state.theWorksetText.Name === state.worksetTextList[idx].Name) {
-      return  // same workset
+      return // same workset
     }
     // update current workset to workset at the index
     state.theWorksetText = JSON.parse(JSON.stringify(state.worksetTextList[idx]))
@@ -257,7 +257,7 @@ const mutations = {
     if (Mdf.isNotEmptyWorksetText(state.theWorksetText) &&
       state.theWorksetText.ModelDigest === modelDigest &&
       state.theWorksetText.Name === state.worksetTextList[0].Name) {
-      return  // same workset
+      return // same workset
     }
 
     // update current workset to the first in workset list

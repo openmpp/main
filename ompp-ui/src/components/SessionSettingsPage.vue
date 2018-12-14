@@ -1,63 +1,63 @@
 <template>
   <div id="settings-page" class="mdc-typography mdc-typography--body1">
-    
+
     <div class="set-table">
 
       <div class="set-table-row">
         <span class="set-table-cell">
-          <om-mcw-button :raised="true" @click="doUiLangClear()" alt="Clear language">
-            <i class="material-icons mdc-button__icon">clear</i>Clear
+          <om-mcw-button @click="doUiLangClear()" unelevated class="clear-button" alt="Clear language" title="Clear language">
+            <i class="material-icons mdc-button__icon">clear</i>
           </om-mcw-button>
         </span>
         <span class="set-table-cell">Language:</span>
-        <span class="set-table-cell mdc-typography--body2">{{ uiLangTitle }}</span>
+        <span class="set-table-cell medium-wt">{{ uiLangTitle }}</span>
       </div>
 
       <div class="set-table-row">
         <span class="set-table-cell">
-          <om-mcw-button :raised="true" @click="doModelListClear()" alt="Clear model list">
-            <i class="material-icons mdc-button__icon">clear</i>Clear
+          <om-mcw-button @click="doModelListClear()" unelevated class="clear-button" alt="Clear model list" title="Clear model list">
+            <i class="material-icons mdc-button__icon">clear</i>
           </om-mcw-button>
         </span>
         <span class="set-table-cell">Models list:</span>
-        <span class="set-table-cell mdc-typography--body2">{{ modelCount }} model(s)</span>
+        <span class="set-table-cell medium-wt">{{ modelCount }} model(s)</span>
       </div>
 
       <div class="set-table-row">
         <span class="set-table-cell">
-          <om-mcw-button :raised="true" @click="doModelClear()" alt="Clear model">
-            <i class="material-icons mdc-button__icon">clear</i>Clear
+          <om-mcw-button @click="doModelClear()" unelevated class="clear-button" alt="Clear model" title="Clear model">
+            <i class="material-icons mdc-button__icon">clear</i>
           </om-mcw-button>
         </span>
         <span class="set-table-cell">Current model:</span>
-        <span class="set-table-cell mdc-typography--body2">{{ modelTitle }}</span>
+        <span class="set-table-cell medium-wt">{{ modelTitle }}</span>
       </div>
 
       <div class="set-table-row">
         <span class="set-table-cell">
-          <om-mcw-button :raised="true" @click="doRunClear()" alt="Clear model run list">
-            <i class="material-icons mdc-button__icon">clear</i>Clear
+          <om-mcw-button @click="doRunClear()" unelevated class="clear-button" alt="Clear model run list" title="Clear model run list">
+            <i class="material-icons mdc-button__icon">clear</i>
           </om-mcw-button>
         </span>
         <span class="set-table-cell">Model run results:</span>
-        <span class="set-table-cell mdc-typography--body2">{{ runCount }}</span>
+        <span class="set-table-cell medium-wt">{{ runCount }}</span>
       </div>
 
       <div class="set-table-row">
         <span class="set-table-cell">
-          <om-mcw-button :raised="true" @click="doWsClear()" alt="Clear model workset list">
-            <i class="material-icons mdc-button__icon">clear</i>Clear
+          <om-mcw-button @click="doWsClear()" unelevated class="clear-button" alt="Clear model workset list" title="Clear model workset list">
+            <i class="material-icons mdc-button__icon">clear</i>
           </om-mcw-button>
         </span>
         <span class="set-table-cell">Sets of input parameters:</span>
-        <span class="set-table-cell mdc-typography--body2">{{ worksetCount }}</span>
+        <span class="set-table-cell medium-wt">{{ worksetCount }}</span>
       </div>
 
       <div v-if="isNotEmptyRun" class="set-table-row">
         <span class="set-table-cell"></span>
         <span class="set-table-cell">Current model run:</span>
         <span class="set-table-cell">
-          <span class="mono">{{lastTimeOfRun}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfRun}}</span>
+          <span class="mono">{{lastTimeOfRun}}&nbsp;</span><span class="medium-wt">{{nameOfRun}}</span>
           <span>{{ descrOfRun }}</span>
         </span>
       </div>
@@ -66,7 +66,7 @@
         <span class="set-table-cell"></span>
         <span class="set-table-cell">Current input set:</span>
         <span class="set-table-cell">
-          <span class="mono">{{lastTimeOfWorkset}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfWorkset}}</span>
+          <span class="mono">{{lastTimeOfWorkset}}&nbsp;</span><span class="medium-wt">{{nameOfWorkset}}</span>
           <span>{{ descrOfWorkset }}</span>
         </span>
       </div>
@@ -79,7 +79,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
 import * as Mdf from '@/modelCommon'
-import OmMcwButton from './OmMcwButton'
+import OmMcwButton from '@/om-mcw/OmMcwButton'
 
 export default {
   props: {
@@ -144,6 +144,15 @@ export default {
 <!-- local scope css: this component only -->
 <style lang="scss" scoped>
 
+  .clear-button {
+    border: 0;
+    padding: 0 0 0 .5rem;
+    min-width: 1rem;
+  }
+  :not(:disabled).clear-button {
+    background-color: var(--mdc-theme-primary);
+  }
+
   .set-table {
     display: table;
     padding-top: 0.5rem;
@@ -158,10 +167,4 @@ export default {
     padding-right: 0.5rem;
     padding-top: 0.5rem;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

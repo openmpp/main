@@ -6,8 +6,8 @@
 
     <span v-if="loadDone">
 
-      <span v-if="!isWsView" 
-        @click="showRunInfoDlg()" 
+      <span v-if="!isWsView"
+        @click="showRunInfoDlg()"
         class="cell-icon-link material-icons"
         alt="Description and notes" title="Description and notes">
           <span v-if="isSuccessTheRun">event_note</span>
@@ -17,31 +17,31 @@
       <span v-else>
 
         <span
-          @click="showWsInfoDlg()" 
+          @click="showWsInfoDlg()"
           class="cell-icon-link material-icons"
           alt="Description and notes" title="Description and notes">event_note</span>
 
         <span v-if="!isWsEdit">
           <span
-            @click="doWsEditToggle()" 
+            @click="doWsEditToggle()"
             class="cell-icon-link material-icons"
             alt="Edit input set of parameters" title="Edit input set of parameters">mode_edit</span>
           <span v-if="!isRunPanel"
-            @click="showRunPanel()" 
+            @click="showRunPanel()"
             class="cell-icon-link material-icons"
             alt="Run the model" title="Run the model">directions_run</span>
           <span v-else
-            class="cell-icon-empty material-icons" 
+            class="cell-icon-empty material-icons"
             alt="Run the model" title="Run the model">directions_run</span>
         </span>
         <!-- isWsEdit -->
         <span v-else>
           <span
-            @click="doWsEditToggle()" 
+            @click="doWsEditToggle()"
             class="cell-icon-link material-icons"
             alt="Save input set of parameters" title="Save input set of parameters">save</span>
           <span
-            class="cell-icon-empty material-icons" 
+            class="cell-icon-empty material-icons"
             alt="Run the model" title="Run the model">directions_run</span>
         </span>
 
@@ -49,22 +49,22 @@
     </span>
 
     <!-- !loadDone -->
-    <span v-else 
-      class="cell-icon-empty material-icons" 
+    <span v-else
+      class="cell-icon-empty material-icons"
       title="Information not available" alt="Information not available" aria-hidden="true">event_note</span>
 
     <span v-if="loadDone" class="hdr-text">
       <span v-if="isNotEmptyHdr">
-        <span v-if="!isWsView && !isSuccessTheRun" class="cell-status mdc-typography--body2">{{statusOfTheRun}}</span>
-        <span class="mono">{{lastTimeOfHdr}}&nbsp;</span><span class="mdc-typography--body2">{{nameOfHdr}}</span>
+        <span v-if="!isWsView && !isSuccessTheRun" class="cell-status medium-wt">{{statusOfTheRun}}</span>
+        <span class="mono">{{lastTimeOfHdr}}&nbsp;</span><span class="medium-wt">{{nameOfHdr}}</span>
         <span>{{ descrOfHdr }}</span>
       </span>
       <span v-else>
-        <span class="mdc-typography--body2">{{emptyHdrMsg}}</span>
+        <span class="medium-wt">{{emptyHdrMsg}}</span>
       </span>
     </span>
-    
-    <span class="hdr-text mdc-typography--body2">
+
+    <span class="hdr-text medium-wt">
       <refresh-model
         :digest="digest"
         :refresh-tickle="refreshTickle"
@@ -112,7 +112,7 @@
     <div v-if="isEmptyRunStep" class="panel-frame mdc-typography--body1">
       <div>
         <span
-          @click="hideRunPanel()" 
+          @click="hideRunPanel()"
           class="cell-icon-link material-icons"
           alt="Close" title="Close">close</span>
         <span class="panel-item">Enter the name for new model run:</span>
@@ -129,11 +129,11 @@
             :value="autoNewRunName"
             alt="Name of new model run"
             title="Name of new model run"
-            class="mdc-text-field__input"></input>
+            class="mdc-text-field__input" />
         </span>
       </div>
       <div>
-        <om-mcw-button 
+        <om-mcw-button
           @click="doModelRun"
           :raised="true"
           :disabled="isWsEdit"
@@ -145,7 +145,7 @@
           id="sub-count-input" ref="subCountInput" size="4" maxlength="4" min="1" max="9999"
           :value="newRunSubCount"
           :disabled="isWsEdit"
-          class="panel-sub-count" alt="Number of sub-values" title="Number of sub-values"></input>
+          class="panel-sub-count" alt="Number of sub-values" title="Number of sub-values" />
         <span class="panel-item">Sub-Values</span>
       </div>
     </div>
@@ -153,10 +153,10 @@
     <div v-if="isInitRunStep" class="panel-frame mdc-typography--body1">
       <div>
         <span
-          @click="hideRunPanel()" 
+          @click="hideRunPanel()"
           class="cell-icon-link material-icons"
           alt="Close" title="Close">close</span>
-        <span class="mdc-typography--body2">Running: </span><span class="mdc-typography--body1">{{newRunName}}</span>
+        <span class="medium-wt">Running: </span><span class="mdc-typography--body1">{{newRunName}}</span>
       </div>
       <div>
         <new-run-init
@@ -173,7 +173,7 @@
     <div v-if="isProcRunStep || isFinalRunStep" class="panel-frame mdc-typography--body1">
       <div>
         <span
-          @click="hideRunPanel()" 
+          @click="hideRunPanel()"
           class="cell-icon-link material-icons"
           alt="Close" title="Close">close</span>
         <span class="mdc-typography--body1">{{newRunName}}</span>
@@ -198,7 +198,7 @@
   <!-- isRunPanel -->
   </template>
 
-  <nav class="tab-container mdc-typography--body2">
+  <nav class="tab-container medium-wt">
     <div
       v-for="t in tabLst" :key="t.key" :id="t.id"
       :class="t.active ? 'tab-item-active' : 'tab-item-inactive'" class="tab-item">
@@ -210,17 +210,16 @@
           :title="t.title"
           class="tab-link">{{t.title}}</router-link>
 
-        <om-mcw-button
-          :compact="true" 
+        <button
           @click="doTabClose(t.id)"
+          class="mdc-button mdc-button-dense tab-close-button"
           :alt="'Close ' + t.title"
-          :title="'Close ' + t.title" 
-          class="tab-close-button"><i class="tab-close-icon material-icons mdc-button__icon">close</i>
-        </om-mcw-button>
+          :title="'Close ' + t.title"><i class="tab-close-icon material-icons mdc-button__icon">close</i>
+        </button>
 
     </div>
   </nav>
-  
+
   <main class="main-container">
     <router-view
       @tab-mounted="doTabMounted"
@@ -232,14 +231,14 @@
   <workset-info-dialog ref="theWsInfoDlg" id="the-ws-info-dlg"></workset-info-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { GET } from '@/store'
 import * as Mdf from '@/modelCommon'
-import OmMcwButton from './OmMcwButton'
+import OmMcwButton from '@/om-mcw/OmMcwButton'
 import RefreshModel from './RefreshModel'
 import RefreshRun from './RefreshRun'
 import RefreshRunList from './RefreshRunList'
@@ -251,6 +250,7 @@ import NewRunProgress from './NewRunProgress'
 import RunInfoDialog from './RunInfoDialog'
 import WorksetInfoDialog from './WorksetInfoDialog'
 
+/* eslint-disable no-multi-spaces */
 const EMPTY_RUN_STEP = 0      // empty state of new model: undefined
 const INIT_RUN_STEP = 1       // initiate new model run: submit request to the server
 const PROC_RUN_STEP = 2       // model run in progress
@@ -411,7 +411,7 @@ export default {
         this.runDigest = this.theRunText.Digest
       } else {
         this.isWsView = true
-        this.loadRunDone = true   // do not refresh run: run list empty
+        this.loadRunDone = true // do not refresh run: run list empty
       }
     },
     doneWsLoad (isSuccess) { this.loadWsDone = true },
@@ -421,11 +421,11 @@ export default {
       if (ok) {
         this.wsName = this.theWorksetText.Name
       } else {
-        this.loadWsDone = true  // do not refresh workset: workset list empty
+        this.loadWsDone = true // do not refresh workset: workset list empty
       }
     },
     doneWsStatusUpdate () {
-      this.refreshWsTickle = !this.refreshWsTickle  // refersh current workset
+      this.refreshWsTickle = !this.refreshWsTickle // refersh current workset
     },
 
     // run selected from the list: reload run info
@@ -552,7 +552,7 @@ export default {
         return
       }
       if (!this.loadDone) {
-        return    // wait until model loaded
+        return  // wait until model loaded
       }
       this.doTabAdd(true, false, kind, dn)
     },
@@ -727,12 +727,13 @@ export default {
   @import "@material/theme/mdc-theme";
   @import "@material/typography/mdc-typography";
   @import "@material/textfield/mdc-text-field";
-  
+  @import "@/om-mcw.scss";
+
   /* page and tab container content body */
   .main-container {
     height: 100%;
     flex: 1 1 auto;
-    display: flex; 
+    display: flex;
     flex-direction: column;
     overflow-y: auto;
   }
@@ -756,7 +757,7 @@ export default {
   }
   .tab-item-inactive {
     @extend .tab-item;
-    @extend .mdc-theme--primary-light-bg;
+    @extend .om-theme-primary-light-bg;
   }
   .tab-item-active {
     @extend .tab-item;
@@ -768,7 +769,7 @@ export default {
     text-overflow: ellipsis;
     text-decoration: none;
     outline: none;
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .mdc-theme--on-primary;
   }
   .tab-close-button {
     border: 0;
@@ -776,7 +777,7 @@ export default {
     min-width: 1rem;
   }
   .tab-close-icon {
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .mdc-theme--on-primary;
   }
 
   /* header row of model, run, workset properties */
@@ -794,19 +795,6 @@ export default {
     text-overflow: ellipsis;
     margin-left: .5rem;
   }
-  /*
-  .hdr-table {
-    display: table;
-    padding-top: .5rem;
-  }
-  .hdr-table-row {
-    display: table-row;
-  }
-  .hdr-table-cell {
-    display: table-cell;
-    padding-right: .5rem;
-  }
-  */
 
   /* model run panel */
   .panel-border {
@@ -854,42 +842,16 @@ export default {
     &:hover {
       cursor: pointer;
     }
-    @extend .mdc-theme--text-primary-on-primary;
+    @extend .mdc-theme--on-primary;
     @extend .mdc-theme--primary-bg;
   }
   .cell-icon-empty {
     @extend .cell-icon;
     cursor: default;
-    @extend .mdc-theme--primary-light-bg;
-    @extend .mdc-theme--text-primary-on-primary;
-    /* @extend .mdc-theme--text-disabled-on-background; */
+    @extend .mdc-theme--on-primary;
+    @extend .om-theme-primary-light-bg;
   }
   .cell-status {
     text-transform: uppercase;
   }
-
-  /* note dialog, fix handsontable z-index: 101; */
-  #the-run-note-dlg {
-    z-index: 201;
-  }
-  .note-table {
-    display: table;
-    margin-top: .5rem;
-  }
-  .note-row {
-    display: table-row;
-  }
-  .note-cell {
-    display: table-cell;
-    white-space: nowrap;
-    &:first-child {
-      padding-right: .5rem;
-    }
-  }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

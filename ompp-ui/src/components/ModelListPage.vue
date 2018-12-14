@@ -6,29 +6,32 @@
     <ul class="main-list mdc-list mdc-list--two-line">
 
       <li v-for="m in modelList" :key="m.Model.Digest" class="mdc-list-item">
+
         <template v-if="isModel(m)">
-          <a href="#" 
-            @click="showModelNote(m)" 
-            class="material-icons mdc-list-item__start-detail note-link" 
+          <a href="#"
+            @click="showModelNote(m)"
+            class="note-link mdc-list-item__graphic material-icons"
             :title="m.Model.Name + ' notes'"
             :alt="m.Model.Name + ' notes'">event_note</a>
           <router-link
-            :to="'/model/' + m.Model.Digest" 
-            class="ahref-model" 
-            :title="m.Model.Name + ' model'" 
+            :to="'/model/' + m.Model.Digest"
+            class="ahref-model"
+            :title="m.Model.Name + ' model'"
             :alt="m.Model.Name + ' model'"
             >
-            <span class="mdc-list-item__text">{{ m.Model.Name }}
+            <span class="mdc-list-item__text">
+              <span class="mdc-list-item__primary-text">{{ m.Model.Name }}</span>
               <span class="mdc-list-item__secondary-text">{{ descrOf(m) }}</span>
             </span>
           </router-link>
         </template>
+
       </li>
 
     </ul>
   </div>
   <div v-else>
-    <span v-if="loadWait" class="material-icons om-mcw-spin">star</span><span class="mdc-typography--caption">{{msg}}</span>
+    <span v-if="loadWait" class="material-icons om-mcw-spin">hourglass_empty</span><span class="mdc-typography--caption">{{msg}}</span>
   </div>
 
   <om-mcw-dialog ref="modelInfoDlg" id="model-info-dlg" :scrollable="true" acceptText="OK">
@@ -41,7 +44,7 @@
   </om-mcw-dialog>
 
 </div>
-  
+
 </template>
 
 <script>
@@ -49,7 +52,7 @@ import axios from 'axios'
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
 import * as Mdf from '@/modelCommon'
-import OmMcwDialog from './OmMcwDialog'
+import OmMcwDialog from '@/om-mcw/OmMcwDialog'
 
 export default {
   props: {
@@ -115,7 +118,7 @@ export default {
       let u = this.omppServerUrl + '/api/model-list/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
-        this.setModelList(response.data)   // update model list in store
+        this.setModelList(response.data) // update model list in store
         this.loadDone = true
       } catch (e) {
         this.msg = 'Server offline or no models published'
@@ -148,26 +151,12 @@ export default {
 
   /* model list: containers and list itself */
   .main-container {
-    display: block; 
+    display: block;
     overflow-y: auto;
   }
   .main-list {
     padding-left: 0;
   }
-
-  /* model list: containers and list itself */
-  /*
-  .main-container {
-    height: 100%;
-    flex: 1 1 auto;
-    display: flex; 
-    flex-direction: column;
-    overflow-y: auto;
-  }
-  .main-list {
-    padding-left: 0;
-  }
-  */
 
   /* model a link */
   .ahref-model {
@@ -184,9 +173,9 @@ export default {
   /* notes: a link or empty (not a link) */
   .note-item {
     display: inline-block;
-    vertical-align: top;
     height: 100%;
     margin: 0;
+    padding-top: 2rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -204,11 +193,4 @@ export default {
     cursor: default;
     @extend .mdc-theme--text-disabled-on-background;
   }
-</style>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/list/mdc-list";
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

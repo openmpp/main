@@ -12,7 +12,7 @@ export default {
       msg: '404 - not found: ' +
         (((window.location.pathname || '').length > 100)
           ? (window.location.pathname || '').substr(0, 100) + '...'
-            : (window.location.pathname || ''))
+          : (window.location.pathname || ''))
     }
   }
 }
@@ -29,10 +29,4 @@ export default {
     display: inline;
     vertical-align: middle;
   }
-</style>
-
-<!-- import MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
 </style>

@@ -2,7 +2,7 @@
 <template>
 
 <span id="refresh-model" v-show="!loadDone" class="mdc-typography--caption">
-  <span v-show="loadWait" class="material-icons om-mcw-spin">star</span><span>{{msgLoad}}</span>
+  <span v-show="loadWait" class="material-icons om-mcw-spin">hourglass_empty</span><span>{{msgLoad}}</span>
 </span>
 
 </template>
@@ -53,7 +53,7 @@ export default {
       let u = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/text' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(u)
-        this.setTheModel(response.data)   // update current model in store
+        this.setTheModel(response.data) // update current model in store
         this.loadDone = true
       } catch (e) {
         this.msgLoad = '<Server offline or model not found>'
@@ -66,7 +66,7 @@ export default {
       let uw = this.omppServerUrl + '/api/model/' + (this.digest || '') + '/word-list' + (this.uiLang !== '' ? '/lang/' + this.uiLang : '')
       try {
         const response = await axios.get(uw)
-        this.setWordList(response.data)  // update model words list in store
+        this.setWordList(response.data) // update model words list in store
       } catch (e) {
         console.log('Model words refresh failed')
       }
@@ -89,9 +89,3 @@ export default {
   }
 }
 </script>
-
-<!-- MDC styles -->
-<style lang="scss">
-  @import "@material/theme/mdc-theme";
-  @import "@material/typography/mdc-typography";
-</style>
